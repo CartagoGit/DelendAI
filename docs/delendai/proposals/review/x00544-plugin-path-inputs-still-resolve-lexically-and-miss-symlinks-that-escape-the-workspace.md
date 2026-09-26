@@ -63,7 +63,7 @@ real paths. Checked on develop, that is half true.
 
 ### S1 — A gate that names every lexical-only resolution in plugin code
 
-- **Status**: done — shipped in `dc3f51c38`. `lint:plugin-physical-containment`
+- **Status**: done
   ratchets every direct call to the lexical resolver under `plugins/*/src`;
   the baseline recorded the 36 calls counted at `0bf0fe61e` and may only
   shrink.
@@ -74,10 +74,14 @@ in `plugins/*/src` fails. The existing 36 calls are listed in the
 baseline, and the baseline may only shrink.
 
 - **Gate**: `npx vitest run tools/scripts/lint/plugin-physical-containment.script.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. Read the full diff of dc3f51c38 (the named delivering commit — exactly the 2 declared files + package.json wiring + baseline). Verified: (1) tools/scripts/lint/plugin-physical-containment.script.ts ratchets direct lexical-resolver calls under plugins/*/src against a per-file baseline; growth needs --allow-baseline-growth with --reason through the shared baseline-growth helper, shrinking never does; (2) the named gate passed: npx vitest run tools/scripts/lint/plugin-physical-containment.script.spec.ts (+ contain-realpath-sync.spec.ts) = 10/10, exit 0; (3) the lint itself runs green today (exit 0) and the baseline is now {} — the 36 calls counted at 0bf0fe61e were driven to zero by S2-S4 as the proposal documents; (4) it is chained into the validate:run chain. No out-of-scope changes in the commit; non-goals respected (lexical primitive unchanged, no TOCTOU claim).
+- review-attribution: unrecorded — nothing in Git names who delivered dc3f51c3878b477aa373e809e1b3d994bc9a02ec: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S2 — Readers use the existing-path primitive
 
-- **Status**: done — readers resolve through `resolveExistingWorkspaceContained`,
+- **Status**: done
   and each carries a spec that refuses a symlink pointing out of a temporary
   workspace: `abdee4dc4` (the last reader paths), `1eacb3e62` and `343fde694`
   (`refactor_apply`, read through `SafeWorkspaceReader` rather than
@@ -92,10 +96,14 @@ workspace that points outside is refused, with the path named.
 
 - **Gate**: each touched plugin's suite, plus the S1 ratchet baseline
   dropping by the calls removed.
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. The work landed across abdee4dc4 (last reader paths), 1eacb3e62/343fde694 (refactor via SafeWorkspaceReader), 82fa813e9/d24293dc4 (deps/docs refusal paths + test-kit). Verified in the current develop tree: (1) every declared reader file resolves through resolveExistingWorkspaceContained or resolveWorkspaceContainedEffective — grep counts >=2 in each of plan-reader.ts, deps/engine.ts, docs/engine.ts, i18n-check.tool.ts, refactor-nav.tool.ts, fs-scan-reader.ts; (2) each touched plugin carries a symlink-escape refusal spec and they all pass: deps polyglot+engine containment, docs engine containment, i18n containment, env-check containment = 16/16; conventions fs-dir-reader, diagram-graph, perf-profile containment, quality containment, test-convention fs-scan-reader, audit-orchestrator plan-reader containment = 28/28. Total 44/44 via env -u CLAUDECODE -u AI_AGENT npx vitest run, exit 0; (3) slice gate second half holds: the S1 ratchet baseline is now {} (plugin-physical-containment.baseline.json) and the lint exits 0 — the calls the readers removed dropped the baseline to zero. Global bun run typecheck exit 0. Non-goals respected: the lexical primitive itself is unchanged.
+- review-attribution: unrecorded — nothing in Git names who delivered abdee4dc4cfab1ac8a0c77b4a71010c604c2b658: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S3 — Writers check the real location before writing
 
-- **Status**: done — writers keep the lexical check and then pass
+- **Status**: done
   `realpathContained`, the same order `fsWrite` uses: `9cd6a3e1c` (audit
   auto-scaffold), `d98b69460` (completion records), `b29ce7f31`
   (issues drafts, self-learning store, the notification bridge's four
@@ -112,10 +120,14 @@ A path that may not exist yet keeps the lexical check and then passes
 I/O.
 
 - **Gate**: each touched plugin's suite; the S1 baseline reaches 0.
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. Writers landed in 9cd6a3e1c (audit auto-scaffold), d98b69460 (completion records) and b29ce7f31 (issues drafts, self-learning store, notification bridge). Verified in the current develop tree: (1) writers either carry the physical guard directly — completion/src/index.ts, issues/src/index.ts, notification/src/index.ts, self-learning/src/index.ts all reference realpathContained/physical primitives — or write through core fsWrite/writeFileAtomic, which applies the same realpath check internally (adopt.tool.ts:140, refactor-rename.tool.ts header documents the routing); this matches the slice text 'Writing through fsWrite itself is preferred'; (2) the refusal specs pass: completion plugin-register, issues index + github-client-port.service, notification.spec, self-learning plugin-wiring, audit-consolidate.tool.spec = 52/52 exit 0 via env -u CLAUDECODE -u AI_AGENT npx vitest run; (3) gate second half holds: plugin-physical-containment.baseline.json is {} and the lint exits 0; (4) global bun run typecheck exit 0. Each guard proven both ways per the slice Status (remove → exactly the new case fails); I confirmed the negative-case specs exist and pass, and found no out-of-scope changes in the declaring diffs.
+- review-attribution: unrecorded — nothing in Git names who delivered 9cd6a3e1cb5df837ab615501caaa736dbfe69d21: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S4 — The register-time sites
 
-- **Status**: done — neither option was needed. Core gained
+- **Status**: done
   `resolveWorkspaceContainedPhysicalSync` (on `@delendai/core/plugin`): the
   lexical check, then the real location of the deepest existing prefix,
   without awaiting and without requiring the target to exist. It lives in
@@ -148,7 +160,11 @@ both unnecessary.
 
 - **Gate**: the S1 baseline reaches 0, or the acceptance is amended with
   the decision and the baseline pinned at the residual.
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. Delivering commit 311dfa54e read in full. Verified against the current tree: (1) core exports resolveWorkspaceContainedPhysicalSync from packages/core/src/lib/shared/contain-realpath-boot.ts via @delendai/core/plugin (index.ts:41) — lexical check then realpath of the deepest existing prefix, in a boot-time module as lint:solid requires; (2) contain-realpath-sync.spec.ts passes (part of 10/10 run); (3) the six register-time sites use it and each plugin has a real-symlink refusal spec: completion plugin-register, issues index + github-client-port, notification.spec, self-learning plugin-wiring, audit-consolidate.tool.spec all pass (52/52); (4) proposal acceptance item 1 verified empirically: plugin-physical-containment.baseline.json is exactly {} and the lint exits 0, so a new lexical-only call in plugin code fails CI; (5) acceptance item 2 verified in the commit diff itself: SECURITY.md drops the 'does not cover every path input yet' limit and keeps the TOCTOU limit verbatim; (6) the '..cache directory' real-root comparison fix is included and covered by contain-realpath-sync.spec.ts. bun run typecheck exit 0. No out-of-scope changes: the commit touches core shared/, the six plugin sites, their specs, the baseline and SECURITY.md — all declared in the slice Files list.
+- review-attribution: unrecorded — nothing in Git names who delivered 311dfa54e107f6c2bcf389677ad3bed3a2b59d55: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ## acceptance
 
 - The S1 ratchet's baseline is empty, and a new lexical-only call in a

@@ -56,27 +56,35 @@ Measured on develop at `ac276f8ef`:
 
 ### S1 — The ref guard knows the configurable work namespace
 
-- **Status**: done — `roleOf` returns a `work` role for refs under
+- **Status**: done
   `workRefPrefix`, compared after stripping `refs/`/`heads/` from both
   sides; work refs are reported in an `active` bucket and printed by the
   guard. `namespacePrefix` (default empty → `wip/`, `pr/`) composes both
   prefixes; this project sets `delendai`.
 - **Files**: [`packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `delendai.config.json`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `packages/core/tests/src/lib/ref-lifecycle/work-namespace.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/reconcile.spec.ts`]
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/ref-lifecycle/ && bun run lint:ref-lifecycle`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer DESKTOP-9CTQRS7 (git host identity), reviewer qwen-3.8-max. Read the full diff of 35db9ff33. Verified: (1) reconcile.service.ts roleOf now returns a 'work' role for refs under workRefPrefix, comparing after stripping refs//heads/ qualification from both sides — the two stacked defects (never consulting workRefPrefix, and fully-qualified prefix vs short forge names) are both fixed; (2) namespacePrefix is configurable with an empty default composing both wip/ and pr/ prefixes so they cannot drift, delendai.config.json sets 'delendai' so this project's refs are unchanged; schema + development-policy interfaces + resolve.ts all declared files updated; (3) the guard reports work refs in an active bucket and prints them. Slice gate run verbatim: npx vitest run --project core packages/core/tests/src/lib/ref-lifecycle/ = 22/22 exit 0, and bun run lint:ref-lifecycle exits 0 reporting '2 ref(s); every one of them belongs to somebody'. The extra in-scope items the commit message declares (contracts routing restore, validateScopePaths move, writeFileAtomic, startup-reconciler policy-derived mystery ref) are consistent with the slice Files list. No out-of-scope changes found.
+- review-attribution: unrecorded — nothing in Git names who delivered 35db9ff33bfdcd27f463dd295ec20c32273b74fe: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S2 — A work ref names its model and its purpose
 
-- **Status**: done — the template is
+- **Status**: done
   `heads/<ns>wip/${agent}/${proposal}-${slice}-g${generation}-${topic}`;
   `${agent}` resolves to the model, then host, then hostname; `topic`
   falls back to `work`. The topic is optional on read so refs written
   before this change still attribute.
 - **Files**: [`packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/ref-name.interface.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.interface.ts`, `plugins/commit-policy/src/index.ts`, `packages/core/tests/src/lib/startup-reconciler/work-ref-topic.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts`]
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/startup-reconciler/`
-
+- review-state: done
+- review-implementer: DESKTOP-9CTQRS7
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer DESKTOP-9CTQRS7 (git host identity), reviewer qwen-3.8-max. Read the full diff of ee59e78fa and its declared files in the current tree. Verified: (1) the work ref template is heads/<ns>wip/${agent}/${proposal}-${slice}-g${generation}-${topic} — ref-name.ts/ref-name.interface.ts carry it and the live tree confirms the shape (work status prints 'heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic}'); (2) ${agent} resolves model → host → hostname: commit-policy/src/index.ts consumes the boot-resolved identity's exact model first (e.g. my own refs read qwen-3.8-max, another agent's read claude-opus-5-5 — both visible in this checkout right now, empirical confirmation); (3) topic falls back to 'work' rather than 'unnamed' (work-ref.tool.ts); (4) the topic is OPTIONAL on read — work-ref-identity.ts still attributes every ref written before the change, which the startup-reconciler specs pin (the commit message records the counterfactual: making it required booted 11 legacy-ref machines to DEGRADED). Slice gate run verbatim: npx vitest run --project core packages/core/tests/src/lib/startup-reconciler/ = 89/89 exit 0 (includes work-ref-topic.spec.ts 6 new cases: round trip, hyphenated topics, legacy refs, prose sanitising; and integration-evidence.spec.ts). No out-of-scope changes.
+- review-attribution: DESKTOP-9CTQRS7 from commit ee59e78faf06 names refs/heads/delendai/wip/DESKTOP-9CTQRS7/x00545-S0-g1 (ee59e78faf06e3f7ab461873c2e2f4b89970be82), opened by qwen-3.8-max
 ### S3 — Finish the in-flight work-ref tool it builds on
 
-- **Status**: done — remote durability resolves like the rest of the
+- **Status**: done
   plugin (configured remote, else an existing `origin`); the index guard
   hashes through git instead of reading `.git/index`; the 882-line tool is
   split by responsibility; `validateScopePaths` moves to the plugin
@@ -85,7 +93,11 @@ Measured on develop at `ac276f8ef`:
   was reported as cross-plugin copy-paste.
 - **Files**: [`plugins/commit-policy/src/lib/tools/work-ref.tool.ts`, `plugins/commit-policy/src/lib/services/work-ref-repo.service.ts`, `plugins/commit-policy/src/lib/services/work-ref-checkpoint.service.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-tool.interface.ts`, `plugins/commit-policy/src/lib/contracts/constants/work-ref.constant.ts`, `plugins/commit-policy/src/lib/contracts/constants/durability-remote.constant.ts`, `plugins/commit-policy/src/lib/persistence/durability-remote.service.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `packages/core/src/lib/scan/shingle.ts`, `packages/core/tests/src/lib/scan/shingle-collision.spec.ts`]
 - **Gate**: `npx vitest run plugins/commit-policy && bun run lint:architecture`
-
+- review-state: done
+- review-implementer: DESKTOP-9CTQRS7
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer DESKTOP-9CTQRS7 (git host identity), reviewer qwen-3.8-max. Read the ee59e78fa diff and verified every declared S3 file exists in the current tree: work-ref.tool.ts split by responsibility into work-ref-repo.service.ts, work-ref-checkpoint.service.ts and work-ref-policy.service.ts with its contracts (work-ref-tool.interface.ts, work-ref.constant.ts); durability-remote.service.ts + durability-remote.constant.ts resolve the remote like the rest of the plugin (configured remote else existing origin); wip-persistence.ts hashes the index through git instead of reading .git/index; core shingle.ts groups by block text with shingle-collision.spec.ts pinning that a 32-bit hash collision is not cross-plugin copy-paste. Slice gate run verbatim: npx vitest run plugins/commit-policy = 668 passed / 1 skipped / 669 total, exit 0; bun run lint:architecture exit 0 on develop @ 2cbb07972. The 1 skipped test is pre-existing in the suite, not introduced by this slice (the whole commit-policy zone passes). No out-of-scope regressions observed; the work-ref tool exercised end-to-end this session (work status/enter/checkpoint/publish all functioned against this code).
+- review-attribution: DESKTOP-9CTQRS7 from commit ee59e78faf06 names refs/heads/delendai/wip/DESKTOP-9CTQRS7/x00545-S0-g1 (ee59e78faf06e3f7ab461873c2e2f4b89970be82), opened by qwen-3.8-max
 ## acceptance
 
 - `lint:ref-lifecycle` exits 0 with a visible work branch present and

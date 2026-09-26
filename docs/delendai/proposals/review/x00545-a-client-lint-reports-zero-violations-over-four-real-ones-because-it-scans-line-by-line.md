@@ -90,7 +90,7 @@ because `import type` is erased.
 
 The alternative the lint names must exist before the lint can demand it.
 
-- **Status**: done — the four batch contract types moved as a set into
+- **Status**: done
   `packages/core/src/lib/contracts/interfaces/batch-atomic-writer.interface.ts`;
   they reference each other (`IBatchAtomicWriter` returns
   `IBatchWriteResult`, which carries `IBatchOperationError`), so moving
@@ -101,10 +101,14 @@ The alternative the lint names must exist before the lint can demand it.
   files now import from `@delendai/core/contracts`.
 - **Files**: [`packages/core/src/lib/contracts/interfaces/batch-atomic-writer.interface.ts`, `packages/core/src/lib/shared/batch-atomic-writer.ts`, `packages/core/src/contracts/index.ts`, `packages/client/src/node/scaffold/project-plugins.ts`, `packages/client/src/node/scaffold/write-scaffolded-files.ts`, `packages/client/src/node/services/plugin-activation.service.ts`, `packages/client/src/lib/services/agent-catalog-service.ts`]
 - **Gate**: `bun run lint:core-contracts-library-safe && bun run typecheck`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. Read the full diff of 6ed673a78. Verified in the current tree: (1) packages/core/src/lib/contracts/interfaces/batch-atomic-writer.interface.ts exists — the four interdependent batch types moved as a set so the contracts module never re-drags node:fs/promises, and the implementation re-exports them so existing importers are untouched; (2) contracts barrel gained the eleven type re-exports; (3) all four client files named in the violation list now take their TYPES from @delendai/core/contracts (grep: 1 contracts import each) while their residual @delendai/core/public imports are value-only (DEFAULT_CONFIG_FILENAME, parseConfigFile, scaffoldPluginFiles — legal, the rule forbids type imports); (4) slice gate run: bun run lint:core-contracts-library-safe exit 0 ('compiles with no @types/node') and bun run typecheck exit 0. Non-goals respected: no @types/node added to the library-safe tsconfig, no baseline/allowlist for the four violations (they migrated), core/public surface budget untouched at 1076.
+- review-attribution: unrecorded — nothing in Git names who delivered 6ed673a7811197dac335356ad8857e0ba0553750: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S2 — Make the lint able to fail, and pin that it can
 
-- **Status**: done — the scan is over the whole file with comments
+- **Status**: done
   blanked (newlines preserved, so line numbers stay true) and each
   finding attributed to the line its `import` starts on. `findViolations`
   is exported as the pure half so the spec drives source text rather
@@ -114,7 +118,11 @@ The alternative the lint names must exist before the lint can demand it.
   handling, and `@delendai/core-extras` as a non-match.
 - **Files**: [`tools/scripts/lint/no-core-public-types-in-client.script.ts`, `tools/scripts/lint/no-core-public-types-in-client.script.spec.ts`]
 - **Gate**: `npx vitest run --project tools tools/scripts/lint/no-core-public-types-in-client.script.spec.ts && bun run lint:no-core-public-types-in-client`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. Read the full diff of 6ed673a78. Verified in the current tree: (1) the scan is whole-file with comments blanked and newlines preserved (line numbers stay true), findings attributed to the import's start line — the per-line regex blind spot that produced '0 violations across 53 file(s)' over four real ones is gone; (2) findViolations is exported as the pure half and its spec drives source text instead of whatever sits in packages/client; (3) slice gate run exactly as named: npx vitest run --project tools tools/scripts/lint/no-core-public-types-in-client.script.spec.ts = 14/14, exit 0 — the cases include the wrapped-import regression pin (the original failure mode), value-import and core/contracts negatives, comment handling, and core-extras non-match; (4) the live lint now runs on the migrated tree and exits 0 with the four files clean, which means its green is now falsifiable: reintroducing a wrapped `import type` from core/public in packages/client would fail it (proved by the spec's regression case). No out-of-scope changes in the commit beyond the generated catalog one-line count.
+- review-attribution: unrecorded — nothing in Git names who delivered 6ed673a7811197dac335356ad8857e0ba0553750: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ## acceptance
 
 - The spec fails if the per-line scan is restored.

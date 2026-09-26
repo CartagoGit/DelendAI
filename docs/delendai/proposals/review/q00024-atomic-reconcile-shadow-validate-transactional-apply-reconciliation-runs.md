@@ -7,9 +7,10 @@ type: proposal
 track: architecture
 date: 2026-09-07
 shipped-in:
-  - "bd2d093c7"
-  - "6bf2c289c"
-  - "432385a3f"
+  - bd2d093c7
+  - 6bf2c289c
+  - 432385a3f
+  - c1547ce4538fd00dc68be09263c4e37e021b41df
 priority: P1
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -123,7 +124,7 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 
 ### S2 — `applyValidatedCandidate()` atomically applies the validated candidate into active
 
-- **Status**: done — `bd2d093c7`. `applyValidatedCandidate` checks integrity, foreign keys and digest, applies in one transaction that rolls back as a unit, preserves the operational ledgers and records its run; 13 passing specs. Verified 2026-09-15.
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
     (new)
@@ -172,12 +173,14 @@ not hold:
 A `degraded` candidate is recorded with status `degraded`, not `ok`: that
 is x00539 S2's deliberate change (a quarantined README must not block a
 promotion), kept.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen-3.8-max
 - review-log: requested_changes by delendai-delivery-verifier — Revisado
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5-5, reviewer qwen-3.8-max. Reviewed bd2d093c7 (original delivery) plus post-review fix 23ada0db5 in current develop; the earlier requested_changes (delendai-delivery-verifier) are both addressed and documented in the proposal: checkIntegrity now opens staging with PRAGMA query_only=1 so SQLite enforces CHECK constraints, and a genuine corrupt-candidate test asserts full active-DB identity including ledgers. Gate type: bun run typecheck exit 0. bun run test:sqlite (bun-owned suite covering reconciler-apply-candidate.spec.ts): 403 pass / 0 fail / 403 total. No out-of-scope changes: bd2d093c7 touched exactly the two declared files.
 ### S3 — `reconciliation_runs` is the audit trail: every reconcile + every transactional apply is logged
 
-- **Status**: done — `6bf2c289c`, `432385a3f`. Every shadow run writes one `reconciliation_runs` row carrying files seen/changed and entities created/updated/deleted/quarantined, and every promote writes its own. Before `432385a3f` the created/updated counts were taken against the rebuilt-empty staging database, so an edit was recorded as a creation; they are now measured against the active authority. `reconciler-runs.spec.ts` asserts all six counters across a create run and an edit-plus-delete run. Verified 2026-09-15.
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler-runs.ts` (new)
   - `packages/proposals-sqlite/tests/src/lib/reconciler-runs.spec.ts`
@@ -221,9 +224,11 @@ Changes requested on 2026-09-25 and addressed the same day:
   `plugins/proposals/src/lib/services/db-verify.ts`,
   `packages/proposals-sqlite/tests/src/lib/reconciler-runs.spec.ts`,
   `packages/proposals-sqlite/tests/src/lib/apply-candidate-run-kind.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen-3.8-max
 - review-log: requested_changes by delendai-delivery-verifier — Revisados 6bf2c289c y 432385a3f. bun run typecheck pasa y las 3 pruebas Bun de reconciler-runs pasan. La aceptacion de S3 no se cumple: reconciler-incremental.service.ts inserta entities_created y entities_updated como 0 y logical_digest como NULL incluso cuando despues calcula propuestas creadas y actualizadas. Reproducir una reconciliacion incremental con un archivo nuevo y consultar reconciliation_runs por source_commit: la fila informa 0 creaciones y digest nulo. La aplicacion graba kind=promote en reconciler-apply-candidate.ts, mientras la propuesta exige apply_candidate. La prueba de S3 solo cubre los contadores del modo shadow y el commit 6bf2c289c mueve ademas una propuesta x00323 ajena al scope declarado. Para aprobar, registrar los contadores y digest correctos en incremental, resolver la discrepancia del kind sin modificar la propuesta para adaptarla al codigo, cubrir ambos flujos con pruebas y separar el cambio ajeno al scope.
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5-5, reviewer qwen-3.8-max. The previous requested_changes (delendai-delivery-verifier, 2026-09-25) are all addressed by fix 1b1144844 in current develop and each is documented in the proposal: (1) incremental pass now records entities_created/entities_updated and logical_digest once computed — I read reconciler-incremental.service.ts:76-78 and 171-172 directly; (2) apply kind is 'apply_candidate' per acceptance — reconciler-apply-candidate.ts:493 via migration 0022 with index/AUTOINCREMENT preservation, the proposal was NOT bent to fit the code, the code was fixed to fit the proposal; (3) both flows covered by tests — reconciler-runs.spec.ts covers shadow, incremental and the audit SELECT, apply-candidate-run-kind.spec.ts covers the migration; (4) the out-of-scope x00323 rename from 6bf2c289c is disclosed in the proposal notes with its harmless history (x00323 was independently reviewed to done) — a published commit cannot be split, disclosure is the honest resolution. Gates: bun run typecheck exit 0; bun run test:sqlite 403 pass / 0 fail / 403 total.
 ## acceptance
 
 - All S1-S3 slices land.

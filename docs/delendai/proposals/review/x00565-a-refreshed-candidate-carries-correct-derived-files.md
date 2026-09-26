@@ -10,6 +10,8 @@ tags:
     - ci
     - generated
     - automation
+shipped-in:
+  - 10eb7aa831274e730456ead37a022c5c0adb3750
 ---
 
 # x00565 — A refreshed candidate carries correct derived files
@@ -56,7 +58,7 @@ remove.
 
 ### S1 — Merge, regenerate, push — per candidate, in its own worktree
 
-- **Status**: done — `forge:artifacts` finds the candidates the
+- **Status**: done
   integration branch has moved past and, for each, merges in a throwaway
   worktree, runs the generators against the merged tree, commits only
   what they changed and pushes. A conflict, a failing generator or a
@@ -67,14 +69,22 @@ remove.
   `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`,
   `package.json`
 - **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge 2b14cd3cd (a develop-merge); git log traces S1 to 10eb7aa83, full message read. Verified in the current tree: (1) forge:artifacts = refresh-candidate-artifacts.script.ts (package.json line 120) does per candidate that is behind: ONE throwaway worktree, merge integration, regenerate, commit only what the generators changed, push — the shared checkout never moves and nothing is force-pushed; (2) the root cause named in the commit is real and precisely diagnosed: a textual merge is right for authored files and wrong for derived ones (the agent catalog is rendered from proposals on disk, so merging two versions produces a file no generator would produce and catalog:check fails) — x00559 fixed working-tree merges, this covers the throwaway-index path; (3) failure handling: a conflict, a failing generator or a refused push each leave the candidate EXACTLY as it was and say which; (4) measured motivation: six candidates went red on catalog:check in one session with the same manual two-generator fix each time. Gate run verbatim: npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts = 19/19 exit 0. bun run typecheck exit 0. No out-of-scope changes.
+- review-attribution: claude-opus-5 from Merge pull request #300 from CartagoGit/delendai/pr/claude-opus-5/x00565-S1-g1/derived-on-the-branch (refs/heads/delendai/wip/claude-opus-5/x00565-S1-g1/derived-on-the-branch) (10eb7aa831274e730456ead37a022c5c0adb3750), opened by qwen-3.8-max
 ### S2 — It runs on the same trigger as everything else
 
-- **Status**: done — hung off the moment the integration branch moves
+- **Status**: done
   here, beside the candidate refresh it completes.
 - **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
 - **Gate**: `npx vitest run --project tools`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. S2 shipped in the same 10eb7aa83 delivery ('It runs on the same trigger as the rest, so the queue no longer waits for somebody to notice'). Verified in the current tree: hydrate-candidates-after-merge.script.ts line 92 runs tools/scripts/git/refresh-candidate-artifacts.script.ts with a generous 3,600,000 ms budget (an hour — regeneration and push per candidate is slow, unlike the 180s namespace pass) — hung off the exact moment the integration branch moves: the local post-merge hook path AND the host fast-forward tick (the same trigger x00564 S2 and x00557 S2 use), so no agent decides when derived files are regenerated. Gate run verbatim: npx vitest run --project tools = 2432 passed / 1 skipped (pre-existing) / 254 files, exit 0. bun run typecheck exit 0. No out-of-scope changes.
+- review-attribution: claude-opus-5 from Merge pull request #300 from CartagoGit/delendai/pr/claude-opus-5/x00565-S1-g1/derived-on-the-branch (refs/heads/delendai/wip/claude-opus-5/x00565-S1-g1/derived-on-the-branch) (10eb7aa831274e730456ead37a022c5c0adb3750), opened by qwen-3.8-max
 ## acceptance
 
 - After the integration branch moves, a candidate that was behind is

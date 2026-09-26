@@ -60,7 +60,7 @@ delendai exists to protect: work in progress that nobody published yet.
 
 ### S1 — A fetch may not delete a local branch
 
-- **Status**: done — the work namespace is mirrored into remote-tracking
+- **Status**: done
   refs in its own fetch (`+<ns>/*:refs/remotes/<remote>/<tail>/*`), so a
   prune can only ever remove the copy of a ref the remote dropped and can
   never reach a local branch. Observing work refs reads this machine's own
@@ -74,7 +74,11 @@ delendai exists to protect: work in progress that nobody published yet.
 - **Files**: [`packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/tests/src/lib/startup-reconciler/unpublished-work.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/fresh-machine.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/ambiguous-conditions.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts`]
 
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. Read the full commit 99be75d82 (message + diff regions). Verified against acceptance: (1) 'no refspec the startup runs can delete a ref under refs/heads/' — git-seam.ts now mirrors the work namespace into refs/remotes/<remote>/... in a separate pruned fetch, and the in-file comment at lines 108-117 states the exact defect: the old mirror-into-local-names + --prune combination deleted a local work branch carrying five commits; --prune only deletes refs inside the refspecs it is given, so local work branches are now structurally out of reach; (2) work-ref-identity.ts resolves a ref through its mirror when this machine has no branch for it, so a ref published by another machine is still listed under its logical name (acceptance 2); unpublished-work.spec.ts and fresh-machine.spec.ts pin both directions; (3) slice gate run verbatim: npx vitest run packages/core/tests/src/lib/startup-reconciler = 89/89, 13 files, exit 0. bun run typecheck exit 0. No out-of-scope changes: the diff touches exactly the declared files plus the proposal doc.
+- review-attribution: unrecorded — nothing in Git names who delivered 99be75d82910cb163df5469fd497a01a52da7aa1: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ## acceptance
 
 - Starting the server twice leaves an unpublished work branch untouched.
