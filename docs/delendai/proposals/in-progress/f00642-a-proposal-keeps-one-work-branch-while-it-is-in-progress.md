@@ -21,17 +21,6 @@ A proposal in progress has exactly one visible work branch, from its first commi
 
 Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`), and `work publish` deletes it. A proposal with four slices shows four short-lived branches, and between two slices it shows none. From the integration branch its work looks discontinuous. The maintainer asked (2026-09-26) for one branch per proposal that stays while the proposal is in progress, with slice pull requests cut from it. They also asked that the branch goes away when the proposal is blocked or paused. The blocker is ref-lifecycle: a work ref whose content is already in a publication ref is classified `work-published` and reaped (x00648, 'a work branch ends when it is published'). With `--keep-work-ref`, the first slice PR therefore makes the proposal branch a violation. Reviewers (x00660) need the same shape: one branch per review round, committed after each verdict (x00664).
 
-## why no separate parking step
-
-The first draft had a fourth slice that parked a blocked proposal's
-unique commits under a non-branch ref. It is not needed. A proposal
-leaves in-progress through a commit on its own branch, and publishing
-that tree ends the branch the way any last publication does. The
-publication carries every commit and is proven on the remote before
-the branch is deleted. A branch that is never published keeps its
-unique commits, and ref-lifecycle never reaps it. A parked ref would
-hold a copy of what the publication already holds.
-
 ## non-goals
 
 - Squash merges: the repository merges with merge commits, which is what lets a later pull request from the same branch show only the new commits.
@@ -80,3 +69,15 @@ hold a copy of what the publication already holds.
 - A work ref whose proposal is in-progress on the integration branch is classified as ongoing work even when its content is in a publication ref; it is neither a violation nor reapable.
 - The same ref, once its proposal is in review, done, blocked, paused or retired, is classified work-published or abandoned exactly as today.
 - Publishing a tree that takes the proposal out of progress (to blocked, paused or retired) ends the branch like any last publication: the publication carries every commit and is proven on the remote before the branch is deleted, so nothing is lost; a branch never published keeps its unique commits and is never reaped.
+
+## notes
+
+**Why there is no separate parking step.**
+The first draft had a fourth slice that parked a blocked proposal's
+unique commits under a non-branch ref. It is not needed. A proposal
+leaves in-progress through a commit on its own branch, and publishing
+that tree ends the branch the way any last publication does. The
+publication carries every commit and is proven on the remote before
+the branch is deleted. A branch that is never published keeps its
+unique commits, and ref-lifecycle never reaps it. A parked ref would
+hold a copy of what the publication already holds.
