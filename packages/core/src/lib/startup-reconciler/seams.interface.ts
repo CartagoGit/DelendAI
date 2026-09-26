@@ -115,6 +115,14 @@ export interface IStartupGitSeam {
 	): Promise<IWorkRefSnapshot | undefined>;
 	/** True when `ancestor` is contained in `descendant`. */
 	isAncestor(ancestor: string, descendant: string): Promise<boolean>;
+	/**
+	 * True when every path `sha` changed since it forked from `integration`
+	 * holds identical content in `integration`: the work is there even if
+	 * the commit is not (an empty checkpoint, a squash, a rewritten
+	 * branch). Optional: a seam without it proves containment by ancestry
+	 * alone.
+	 */
+	contentContained?(sha: string, integration: string): Promise<boolean>;
 	/** The branch HEAD points at, or undefined when detached. */
 	currentBranch(): Promise<string | undefined>;
 	/**
