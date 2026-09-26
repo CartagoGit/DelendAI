@@ -102,6 +102,9 @@ export const lintManifestVsPackage = async (
 			version?: string;
 			private?: boolean;
 			publishConfig?: { access?: string };
+			dependencies?: Record<string, string>;
+			peerDependencies?: Record<string, string>;
+			optionalDependencies?: Record<string, string>;
 		};
 		const runtimeVersion = await readRuntimeVersion(root, manifest.id);
 		if (manifest.package !== packageJson.name) {
@@ -151,6 +154,23 @@ export const lintManifestVsPackage = async (
 				plugin: manifest.id,
 				rule: 'MANIFEST-VIS-002',
 				message: `manifest.visibility is private but ${manifest.package} is configured as a public package.`,
+			});
+		}
+		// A dependency the manifest names must be one a consumer's install
+		// brings: a devDependency is not installed for them, and inside this
+		// workspace a hoisted copy hides the gap until someone installs the
+		// package on its own.
+		const installed = new Set([
+			...Object.keys(packageJson.dependencies ?? {}),
+			...Object.keys(packageJson.peerDependencies ?? {}),
+			...Object.keys(packageJson.optionalDependencies ?? {}),
+		]);
+		for (const dependency of manifest.dependencies) {
+			if (installed.has(dependency)) continue;
+			violations.push({
+				plugin: manifest.id,
+				rule: 'MANIFEST-DEP-001',
+				message: `manifest.dependencies names ${JSON.stringify(dependency)}, which package.json does not declare in dependencies, peerDependencies or optionalDependencies.`,
 			});
 		}
 		const registeredToolIds = REGISTERED_TOOL_IDS[manifest.id];
