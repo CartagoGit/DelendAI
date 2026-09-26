@@ -337,7 +337,7 @@ export const buildReviewQueue = async (
 	const claims =
 		input.refShape === undefined
 			? new Map<string, readonly string[]>()
-			: await reviewClaims(input.run, input.refShape);
+			: await reviewClaims(input.run, input.refShape, input.integration);
 	const heldByOthers = (id: string): readonly string[] =>
 		(claims.get(id.toLowerCase()) ?? []).filter(
 			(agent) => agent !== input.agent,

@@ -49,9 +49,41 @@ export const workRefFor = (
 };
 
 /** Proposal id (lower case) → the agents holding a review unit on it. */
+/**
+ * The refs whose work the integration branch already holds. A review
+ * unit whose verdicts merged has ended: its local ref, a spent publication
+ * ref not yet reaped, or a remote-tracking copy nobody pruned would
+ * otherwise hold the proposal forever.
+ */
+const endedRefs = async (
+	run: IGitRunner,
+	integration: string | undefined,
+): Promise<ReadonlySet<string>> => {
+	if (integration === undefined || integration.length === 0) {
+		return new Set();
+	}
+	// The local integration branch, and what it tracks: verdicts merge on
+	// the remote first, and a local branch not yet brought level would
+	// keep a finished review holding its proposal.
+	const ended = new Set<string>();
+	for (const base of [integration, `${integration}@{upstream}`]) {
+		const merged = await run([
+			'for-each-ref',
+			`--merged=${base}`,
+			'--format=%(refname)',
+			'refs/heads/',
+			'refs/remotes/',
+		]);
+		if (!merged.ok) continue;
+		for (const line of merged.output.split('\n')) ended.add(line.trim());
+	}
+	return ended;
+};
+
 export const reviewClaims = async (
 	run: IGitRunner,
 	shape: IWorkRefShape,
+	integration?: string,
 ): Promise<ReadonlyMap<string, readonly string[]>> => {
 	const claims = new Map<string, string[]>();
 	const parser = compileWorkRefParser(
@@ -62,14 +94,23 @@ export const reviewClaims = async (
 	if (parser === undefined || work.length === 0) return claims;
 	const listed = await run([
 		'for-each-ref',
-		'--format=%(refname)',
+		'--format=%(refname) %(worktreepath)',
 		'refs/heads/',
 		'refs/remotes/',
 	]);
 	if (!listed.ok) return claims;
+	const ended = await endedRefs(run, integration);
 	const publication = bare(shape.publicationRefPrefix);
 	for (const line of listed.output.split('\n')) {
-		const ref = workRefFor(line.trim(), work, publication);
+		// A ref name holds no space; a worktree path may, so split once.
+		const trimmed = line.trim();
+		const space = trimmed.indexOf(' ');
+		const name = space === -1 ? trimmed : trimmed.slice(0, space);
+		const worktree = space === -1 ? '' : trimmed.slice(space + 1);
+		// A unit checked out in a worktree is live even before its first
+		// commit, when its tip is still the integration branch's.
+		if (worktree.length === 0 && ended.has(name)) continue;
+		const ref = workRefFor(name, work, publication);
 		if (ref === undefined) continue;
 		const identity = parser.parse(ref);
 		if (
