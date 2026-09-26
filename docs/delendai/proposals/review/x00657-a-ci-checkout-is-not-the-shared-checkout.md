@@ -2,12 +2,15 @@
 id: x00657
 title: "A CI checkout is not the shared checkout"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00653, x00649]
+last-transition-id: 19c40bff-1637-43f6-b909-cda567a0de3b
+last-correlation-id: 19c40bff-1637-43f6-b909-cda567a0de3b
+last-transition-from: in-progress
 ---
 
 # x00657 — A CI checkout is not the shared checkout
@@ -66,7 +69,8 @@ provider.
 - **Files**:
   - `packages/core/src/lib/development-policy/project-branches.ts`
   - `packages/core/tests/src/lib/development-policy/project-branches.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
