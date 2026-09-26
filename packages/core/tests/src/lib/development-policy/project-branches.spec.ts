@@ -160,4 +160,20 @@ describe('integrationCheckoutRefusal', () => {
 			await integrationCheckoutRefusal(root, { CI: 'true' }),
 		).toBeUndefined();
 	});
+
+	it('still refuses an agent that exports CI=true in the shared checkout', async () => {
+		const root = repoOn('develop', WORK_REFS);
+		expect(
+			await integrationCheckoutRefusal(root, {
+				CI: 'true',
+				AI_AGENT: 'some-runtime_1.0_agent',
+			}),
+		).toBeDefined();
+		expect(
+			await integrationCheckoutRefusal(root, {
+				CI: 'true',
+				DELENDAI_AGENT_ID: 'agent-a',
+			}),
+		).toBeDefined();
+	});
 });
