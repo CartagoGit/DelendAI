@@ -20,6 +20,10 @@ export interface IGuardFacts {
 	 * agent legitimately has its own work ref checked out.
 	 */
 	readonly inMainWorktree: () => boolean;
+	/** Who the commit is authored as, `Name <email>`; undefined when unknown. */
+	readonly author?: () => string | undefined;
+	/** The configured identity, without command-line overrides. */
+	readonly configuredAuthor?: () => string | undefined;
 	/** Everything git wrote to the hook's stdin. */
 	readonly stdin: () => Promise<string>;
 	/**

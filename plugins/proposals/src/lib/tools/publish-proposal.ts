@@ -42,7 +42,12 @@
  */
 import { randomUUID } from 'node:crypto';
 
-import { createWipEngine, UNANCHORED } from '@delendai/core/public';
+import {
+	createWipEngine,
+	resolveWorkRef,
+	UNANCHORED,
+	WORK_REF_SHAPE,
+} from '@delendai/core/public';
 
 import type {
 	IProposalCommitPort,
@@ -63,29 +68,19 @@ export type {
 /** Longest topic a publication ref carries. */
 const TOPIC_MAX_LENGTH = 72;
 
-/** A ref component from free text: lower case, dashes, bounded. */
-const refComponent = (value: string, fallback: string): string => {
-	const component = value
-		.toLowerCase()
-		.replaceAll(/[^a-z0-9._-]+/gu, '-')
-		.replaceAll(/-{2,}/gu, '-')
-		.replace(/^[-._]+/u, '')
-		.replace(/[-._]+$/u, '')
-		.slice(0, TOPIC_MAX_LENGTH)
-		.replace(/[-._]+$/u, '');
-	return component.length === 0 ? fallback : component;
-};
+/** The template a host that declares none gets: the project shape. */
+const DEFAULT_TEMPLATE = `heads/wip/${WORK_REF_SHAPE}`;
 
 /**
- * The ref a proposal is published on, in the shape every other
- * publication has: `<prefix><agent>/<id>-all-g1/<topic>`.
+ * The ref a proposal is published on: the project's work-ref template,
+ * rendered for a `create` unit of the whole proposal, under the
+ * publication prefix instead of the work prefix.
  *
  * It used to be `<prefix>proposal-<id>`, the one publication ref in the
- * project with no agent, no unit and no topic. Nothing that reads refs
- * (the ref lifecycle, review claims, the queue) could place it, and a
- * person scanning the branch list could not tell who proposed what. The
+ * project with no agent, no unit and no topic (x00671). It is rendered,
+ * never spelled, so it follows any change to the shape (f00644). The
  * agent is the declared one (`DELENDAI_AGENT_ID`), or `unattributed` when
- * nothing declares it — never a guess. The prefix is the project's own.
+ * nothing declares it — never a guess.
  */
 export const publicationRefFor = (
 	prefix: string,
@@ -93,18 +88,36 @@ export const publicationRefFor = (
 	naming: {
 		readonly agent?: string | undefined;
 		readonly title?: string | undefined;
+		readonly template?: string | undefined;
 	} = {},
 ): string => {
 	// A blank prefix would produce `/…`, a ref git refuses. Fall back to
 	// the default rather than emit something unpushable.
 	const chosen = prefix.trim().length === 0 ? 'delendai/pr/' : prefix;
 	const normalised = chosen.endsWith('/') ? chosen : `${chosen}/`;
-	const agent = refComponent(
-		naming.agent ?? process.env.DELENDAI_AGENT_ID ?? '',
-		'unattributed',
-	);
-	const topic = refComponent(naming.title ?? '', 'proposal');
-	return `${normalised}${agent}/${proposalId}-all-g1/${topic}`;
+	const template =
+		naming.template === undefined || naming.template === ''
+			? DEFAULT_TEMPLATE
+			: naming.template;
+	const agent = (naming.agent ?? process.env.DELENDAI_AGENT_ID ?? '').trim();
+	const rendered = resolveWorkRef(template, {
+		agent: agent.length === 0 ? 'unattributed' : agent.toLowerCase(),
+		kind: 'create',
+		proposal: proposalId,
+		slice: 'all',
+		generation: 1,
+		topic:
+			(naming.title ?? '').toLowerCase().slice(0, TOPIC_MAX_LENGTH) ||
+			'proposal',
+	});
+	// Everything from the agent on is the unit; the head of the template
+	// is the work namespace, replaced by the publication prefix.
+	const head =
+		`refs/${template.slice(0, template.indexOf('${agent}'))}`.replace(
+			/^refs\/refs\//u,
+			'refs/',
+		);
+	return `${normalised}${rendered.slice(head.length)}`;
 };
 
 /**
@@ -208,7 +221,11 @@ export const publishProposalOnRef = async (
 	const ref = publicationRefFor(
 		request.policy?.publicationRefPrefix ?? 'delendai/pr/',
 		request.proposalId,
-		{ agent: request.agent, title: request.title },
+		{
+			agent: request.agent,
+			title: request.title,
+			template: request.policy?.workRefTemplate,
+		},
 	);
 
 	const protectedBranch = protectedPushTarget(ref, request.policy);

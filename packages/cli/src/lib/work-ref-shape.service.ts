@@ -26,84 +26,54 @@
  * that disagreed with the writer is no longer expressible, and renders it
  * for messages so a refusal cannot teach a spelling nothing produces.
  */
+import { compileWorkRefParser } from '@delendai/core/public';
+
 import type { IWorkRefParts } from '../contracts/interfaces/work-ref-shape.interface';
 
 export type { IWorkRefParts } from '../contracts/interfaces/work-ref-shape.interface';
 
-/** `${agent}`, `${proposal}` … as they appear in a template. */
-const PLACEHOLDER = /\$\{(agent|proposal|slice|generation|topic)\}/gu;
-
-/** Regex-literal text, so a `.` in a template cannot match anything. */
-const escaped = (literal: string): string =>
-	literal.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+const AGENT_MARKER = '${agent}/';
 
 /**
- * The template's tail: everything after `${agent}/`.
+ * Read a work ref's subject — everything after `${agent}/` — or
+ * `undefined` when it is not this shape.
  *
- * The agent is stripped by the caller (it is the ref's owner, read
- * separately), so the pattern describes only what is left to identify.
+ * The reading is core's, the same parser the reconciler and the guard
+ * use, so this module holds no second copy of the shape (f00644). It is
+ * strict about the topic's separator: a ref in the old dash spelling
+ * cannot be renamed into the shape without guessing where its slice
+ * ended. A ref written before the shape named its kind still reads, with
+ * its kind derived.
  */
-const subjectOf = (template: string | undefined): string => {
-	// A profile may declare no work refs at all (`shared-direct`), and a
-	// policy can reach here unresolved. Neither is a crash: both mean
-	// "this project names no work refs", which reads as a shape that
-	// matches nothing.
-	if (template === undefined || template === '') return '';
-	const marker = '${agent}/';
-	const at = template.indexOf(marker);
-	return at === -1 ? template : template.slice(at + marker.length);
-};
-
-/**
- * A reader for the subject of a work ref, built from the template that
- * writes it.
- *
- * `${generation}` is digits because it is a counter; everything else is
- * whatever the sanitiser emits, bounded by the separators the template
- * itself puts between them. A template with no placeholders yields a
- * pattern that matches nothing rather than everything — an unreadable
- * configuration must not read every ref as claimable.
- */
-export const workSubjectPatternFor = (template: string | undefined): RegExp => {
-	const subject = subjectOf(template);
-	let matched = false;
-	let source = '';
-	let cursor = 0;
-	for (const match of subject.matchAll(PLACEHOLDER)) {
-		matched = true;
-		source += escaped(subject.slice(cursor, match.index));
-		const name = match[1] ?? '';
-		source +=
-			name === 'generation'
-				? '(?<generation>\\d+)'
-				: `(?<${name}>[^/]+?)`;
-		cursor = match.index + match[0].length;
-	}
-	if (!matched) return /(?!)/u;
-	source += escaped(subject.slice(cursor));
-	// The last placeholder is greedy-safe only if it may contain slashes:
-	// a topic is one component, so lazy matching plus an anchored end is
-	// what makes `a-S1-g1/x` read as topic `x` and not as part of a slice.
-	return new RegExp(`^${source}$`, 'u');
-};
-
-/** Read a work ref's subject, or `undefined` when it is not this shape. */
 export const parseWorkSubject = (
 	template: string | undefined,
 	subject: string,
 ): IWorkRefParts | undefined => {
-	const groups = workSubjectPatternFor(template).exec(subject)?.groups;
-	if (groups === undefined) return undefined;
-	const { proposal, slice, generation, topic } = groups;
-	if (
-		proposal === undefined ||
-		slice === undefined ||
-		generation === undefined ||
-		topic === undefined
-	) {
+	// A profile may declare no work refs at all (`shared-direct`), and a
+	// policy can reach here unresolved. Neither is a crash: both mean
+	// "this project names no work refs", which reads nothing.
+	if (template === undefined || template === '') return undefined;
+	const parser = compileWorkRefParser(template, '', {
+		strict: true,
+		requireKind: false,
+	});
+	if (parser === undefined) return undefined;
+	const at = template.indexOf(AGENT_MARKER);
+	const name =
+		at === -1 ? subject : `${template.slice(0, at)}agent/${subject}`;
+	const identity = parser.parse(
+		name.startsWith('refs/') ? name : `refs/${name}`,
+	);
+	if (identity === undefined || identity.topic === undefined) {
 		return undefined;
 	}
-	return { proposal, slice, generation, topic };
+	return {
+		kind: identity.kind,
+		proposal: identity.proposal,
+		slice: identity.slice,
+		generation: String(identity.generation),
+		topic: identity.topic,
+	};
 };
 
 /**
@@ -119,4 +89,4 @@ export const workRefShapeInWords = (
 ): string =>
 	template === undefined || template === ''
 		? `${prefix}<the shape branches.workRefTemplate declares>`
-		: `${prefix}${template.replaceAll(PLACEHOLDER, (_m, name: string) => `<${name}>`)}`;
+		: `${prefix}${template.replaceAll(/\$\{([a-z]+)\}/gu, '<$1>')}`;

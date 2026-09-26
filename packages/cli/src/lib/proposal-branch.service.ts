@@ -4,9 +4,6 @@
  */
 import { parseWorkSubject } from './work-ref-shape.service';
 
-/** Units a reviewer works under: a review round is its own branch. */
-const REVIEW_SLICES: ReadonlySet<string> = new Set(['review', 'close']);
-
 /** The agent and subject of `ref` under `template`, when it has that shape. */
 const partsOf = (template: string, ref: string) => {
 	const prefix = template.slice(0, template.indexOf('${agent}/'));
@@ -35,7 +32,9 @@ export const liveProposalBranch = (
 	worktreeListing: string,
 ): { readonly ref: string; readonly path: string } | undefined => {
 	const wanted = partsOf(template, ref);
-	if (wanted === undefined || REVIEW_SLICES.has(wanted.slice)) {
+	// Only implementation continues on a proposal's branch: a review
+	// round, an audit or any other kind of work is its own unit.
+	if (wanted === undefined || wanted.kind !== 'implement') {
 		return undefined;
 	}
 	for (const block of worktreeListing.split('\n\n')) {
@@ -53,7 +52,7 @@ export const liveProposalBranch = (
 			found.agent === wanted.agent &&
 			found.proposal === wanted.proposal &&
 			found.generation === wanted.generation &&
-			!REVIEW_SLICES.has(found.slice)
+			found.kind === wanted.kind
 		) {
 			return { ref: branch, path };
 		}

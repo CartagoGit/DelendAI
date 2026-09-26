@@ -57,11 +57,46 @@ export const DEFAULT_DEVELOPMENT_PROFILE: IDevelopmentProfile =
 	'shared-checkout-merge';
 
 /**
- * The shape of a work ref, after its namespace: who, what, and what it
- * is about. Stated ONCE — `resolve.ts` used to re-spell it when a
- * project set a namespace prefix, so the two disagreed the moment either
- * changed, and a project with a prefix silently got the other shape
- * (x00563).
+ * The kinds of work a unit can carry, named in its ref (f00644). Closed
+ * on purpose: a kind outside this list is refused, so a typo never
+ * becomes a new kind, and a new kind is added here and nowhere else.
+ */
+export const WORK_KINDS = [
+	'implement',
+	'review',
+	'create',
+	'revise',
+	'audit',
+	'retire',
+	'repair',
+] as const;
+
+/**
+ * The proposal segment of a review batch: one branch reviewing many
+ * proposals, each claimed with a `Claims: <id>` commit (f00644).
+ */
+export const REVIEW_BATCH_ID = 'batch';
+
+/** The kind a unit has when nothing names one. */
+export const DEFAULT_WORK_KIND = 'implement';
+
+/** The placeholders a work-ref template may use, in one list. */
+export const WORK_REF_PLACEHOLDERS = [
+	'agent',
+	'kind',
+	'proposal',
+	'slice',
+	'generation',
+	'topic',
+] as const;
+
+/**
+ * The shape of a work ref, after its namespace: who, what kind of work,
+ * on what, and what it is about. Stated ONCE — `resolve.ts` used to
+ * re-spell it when a project set a namespace prefix, so the two disagreed
+ * the moment either changed, and a project with a prefix silently got
+ * the other shape (x00563). Change the scheme here and every writer and
+ * reader follows.
  */
 export const WORK_REF_SHAPE =
-	'${agent}/${proposal}-${slice}-g${generation}/${topic}';
+	'${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';

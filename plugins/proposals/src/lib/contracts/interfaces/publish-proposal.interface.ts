@@ -22,6 +22,8 @@ export interface IProposalPublicationPolicy {
 	readonly requiresPullRequest?: boolean | undefined;
 	/** Ref prefix for published work, e.g. `delendai/pr/`. */
 	readonly publicationRefPrefix?: string | undefined;
+	/** The work-ref template publication names are rendered from. */
+	readonly workRefTemplate?: string | undefined;
 	/** The integration branch, which publication must never push onto. */
 	readonly integration?: string | undefined;
 	/** The release branch, which publication must never push onto. */

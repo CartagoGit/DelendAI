@@ -14,6 +14,13 @@ export type IGuardedGitOperation =
 			 * the checkout everyone else depends on.
 			 */
 			readonly inMainWorktree?: boolean | undefined;
+			/** Who the commit is authored as, `Name <email>`, when observed. */
+			readonly author?: string | undefined;
+			/**
+			 * The identity the repository is configured with, read without
+			 * command-line overrides, `Name <email>`, when observed.
+			 */
+			readonly configuredAuthor?: string | undefined;
 	  }
 	| {
 			readonly kind: 'branch-create';

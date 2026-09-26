@@ -38,6 +38,7 @@ import {
 	reconcileRefs,
 	type IObservedPullRequest,
 } from '@delendai/core/lib/ref-lifecycle/reconcile.service';
+import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
 
 // `monorepo-paths` rather than a hardcoded path: the layout convention
 // is that every consumer of these paths imports the path module. This
@@ -92,21 +93,55 @@ export const publishedInFor = (
 			(container.sha === work.sha || contains(container.sha, work.sha)),
 	)?.name;
 
-/** The unit a conventionally named work or publication ref belongs to. */
-const unitOf = (
-	name: string,
-):
-	| {
-			readonly model: string;
-			readonly id: string;
-			readonly slice: string;
-			readonly generation: string;
-	  }
-	| undefined => {
-	const match = /\/([^/]+)\/([a-z]\d{5})-([A-Za-z0-9]+)-g(\d+)\//u.exec(name);
-	if (match === null) return undefined;
-	const [, model = '', id = '', slice = '', generation = ''] = match;
-	return { model, id, slice, generation };
+/** The unit a work or publication ref belongs to. */
+interface IRefUnit {
+	readonly model: string;
+	readonly id: string;
+	readonly slice: string;
+	readonly generation: string;
+}
+
+/**
+ * A reader of the unit a ref names, with core's parser for the project's
+ * own template — the same one the guard and the reconciler use (f00644).
+ * A publication ref is read as the work it publishes. It used to be a
+ * regex spelled here, which would have read a kind segment as the model.
+ */
+export const unitReader = (branches: {
+	readonly workRefTemplate: string;
+	readonly workRefPrefix: string;
+	readonly publicationRefPrefix: string;
+}): ((name: string) => IRefUnit | undefined) => {
+	const parser = compileWorkRefParser(
+		branches.workRefTemplate,
+		branches.workRefPrefix,
+	);
+	const work = shortRef(branches.workRefPrefix);
+	const publication = shortRef(branches.publicationRefPrefix);
+	return (name) => {
+		const short = shortRef(name);
+		const asWork =
+			publication !== '' && short.startsWith(publication)
+				? `${work}${short.slice(publication.length)}`
+				: short;
+		const identity = parser?.parse(`refs/heads/${asWork}`);
+		return identity === undefined
+			? undefined
+			: {
+					model: identity.agent,
+					id: identity.proposal,
+					slice: identity.slice,
+					generation: String(identity.generation),
+				};
+	};
+};
+
+let projectReader: ((name: string) => IRefUnit | undefined) | undefined;
+
+/** The unit a ref names, under this project's declared branches. */
+const unitOf = (name: string): IRefUnit | undefined => {
+	projectReader ??= unitReader(declaredBranches(repoRoot()));
+	return projectReader(name);
 };
 
 /**

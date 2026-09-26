@@ -2,12 +2,15 @@
 id: f00644
 title: "A branch names the kind of work"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00563, f00642, x00660, x00671]
+last-transition-id: 8218fa5c-6d15-4f4b-afd4-969cdcd6c052
+last-correlation-id: 8218fa5c-6d15-4f4b-afd4-969cdcd6c052
+last-transition-from: in-progress
 ---
 
 # f00644 — A branch names the kind of work
@@ -78,35 +81,41 @@ reviews advance on one work branch and land as one pull request.
 
 ### S1 — The shape carries the kind, stated once, and every reader parses it
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.interface.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/ref-name.interface.ts`, `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/cli.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/lib/work-ref-shape.service.ts`, `packages/cli/src/contracts/interfaces/work-ref-shape.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.ts`, `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/classification.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/work-ref-topic.spec.ts`, `packages/cli/src/lib/work-ref-shape.service.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `packages/core/src/lib/development-policy/git-guard-shape.ts`, `packages/core/src/lib/development-policy/git-guard-namespaces.ts`
 - **Gate**: type
 - acceptance:
   - "`WORK_REF_SHAPE` contains `${kind}`, and the vocabulary is one exported constant next to it."
   - "The template's parser reads a ref of the new shape and a ref of the old one (kind `implement`, or `review` for the old `review`/`close` slices)."
   - "No reader of work or publication refs spells the shape in its own regex."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — Writers name the kind
 
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
-- **Files**: `packages/cli/src/commands/work.command.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/proposal-branch.service.ts`, `packages/cli/src/lib/publication-target.service.ts`, `packages/cli/src/contracts/interfaces/publication-target.interface.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `packages/cli/src/commands/work.command.spec.ts`, `packages/cli/src/commands/work-claim.command.spec.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/contracts/constants/work-ref.constant.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`, `tools/scripts/lint/pr-head-shape.script.ts`, `tools/scripts/lint/pr-head-shape.script.spec.ts`, `package.json`, `.github/workflows/ci.yml`, `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/guard.command.ts`
 - **Gate**: type
 - acceptance:
-  - "`work enter --kind=<kind>` names the ref with it, defaults to `implement`, and refuses a kind outside the vocabulary by naming the vocabulary."
+  - "`work enter --kind=<kind>` names the ref with it, defaults to `implement` (`review` for the old `review`/`close` slices), and refuses a kind outside the vocabulary by naming the vocabulary."
+  - "The guard refuses, whatever host runs git and whether or not it declares an agent marker, a new work ref without a kind, an agent id that spells a kind, and a publication ref whose shape is not its work's, inside delendai's namespaces only."
+  - "CI refuses a pull request whose head is not a well-shaped publication ref, whatever opened it."
+  - "On delendai's branches a commit is authored as the repository's configured identity: `--author`, `-c user.*` and `GIT_AUTHOR_*` overrides are refused; the agent is named by the ref, in lower case."
   - "A review unit is `review`, a proposal published by `create_proposal` is `create`, and review claims recognise the kind instead of the magic slices."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S3 — A batch of reviews is one branch and one pull request
 
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
-- **Files**: `plugins/proposals/src/lib/services/review-procedure.ts`, `plugins/proposals/src/lib/services/review-batch-claims.service.ts`
+- **Files**: `plugins/proposals/src/lib/services/review-procedure.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A reviewer enters one `review` batch unit and claims each proposal with a `Claims: <id>` commit before reviewing it."
   - "`review_queue` reports a proposal claimed in another agent's batch as held by that agent, until the batch merges."
   - "The procedure tells the reviewer to commit after each verdict and to publish the batch once, when it is done."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 S1 → S2 → S3.

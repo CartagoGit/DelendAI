@@ -34,6 +34,12 @@ import type {
 	IResolvedDevelopmentPolicy,
 	IWipEngine,
 } from '@delendai/core/public';
+import {
+	isWorkKind,
+	kindsInAgentId,
+	legacyWorkKind,
+	WORK_KINDS,
+} from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
@@ -270,6 +276,40 @@ const statusOf = async (
  * The ref this identity works in. Kept in one place so `enter` and
  * `checkpoint` can never disagree about which ref an agent owns.
  */
+/**
+ * The kind of work a unit carries (f00644): `--kind=` when given, else
+ * what its slice has always meant — a review round for `review`/`close`,
+ * implementation otherwise.
+ */
+const kindFor = (args: readonly string[], slice: string): string =>
+	scalarArg(args, 'kind') ?? legacyWorkKind(slice);
+
+/**
+ * A refusal for an agent id that spells a kind of work, or `undefined`.
+ * The agent segment names who works; `…-review-20260926` put the task
+ * there, and every such ref read as an agent nobody could recognise.
+ */
+const kindInAgent = (agent: string): ICliCommandResult | undefined => {
+	const kinds = kindsInAgentId(agent);
+	if (kinds.length === 0) return undefined;
+	return refused(
+		`The agent id \`${agent}\` spells a kind of work (${kinds.join(', ')}); an agent id names who works — the model.`,
+		`Use the model id as the agent (--agent=<model>, or DELENDAI_AGENT_ID=<model>) and name the work with --kind=<${WORK_KINDS.join('|')}>.`,
+	);
+};
+
+/** A refusal for a `--kind=` outside the vocabulary, or `undefined`. */
+const unknownKind = (
+	args: readonly string[],
+): ICliCommandResult | undefined => {
+	const kind = scalarArg(args, 'kind');
+	if (kind === undefined || isWorkKind(kind)) return undefined;
+	return refused(
+		`\`${kind}\` is not a kind of work this project names.`,
+		`Pass --kind=<${WORK_KINDS.join('|')}>; a new kind is added to the vocabulary, not typed into a ref.`,
+	);
+};
+
 const workRefFor = (
 	args: readonly string[],
 	policy: IResolvedDevelopmentPolicy,
@@ -279,6 +319,7 @@ const workRefFor = (
 ): string =>
 	resolveWorkRef(policy.branches.workRefTemplate, {
 		agent,
+		kind: kindFor(args, slice),
 		proposal,
 		slice,
 		generation: Number(scalarArg(args, 'generation') ?? '1'),
@@ -352,6 +393,8 @@ const entered = async (
 			'There is nothing to isolate; edit the checkout as the profile intends.',
 		);
 	}
+	const badKind = unknownKind(args) ?? kindInAgent(agent);
+	if (badKind !== undefined) return badKind;
 	const ref = workRefFor(args, policy, agent, proposal, slice);
 	const branch = ref.replace(/^refs\/heads\//u, '');
 	const base = integrationBase(root, policy);
@@ -452,6 +495,8 @@ const published = async (
 			'There is nothing to publish from; this profile integrates without a work ref.',
 		);
 	}
+	const badKind = unknownKind(args) ?? kindInAgent(agent);
+	if (badKind !== undefined) return badKind;
 	const workRef = workRefFor(args, policy, agent, proposal, slice);
 	if (publicationRefFromWorkRef(policy, workRef) === undefined) {
 		return refused(
@@ -478,6 +523,7 @@ const published = async (
 		slice,
 		generation: Number(scalarArg(args, 'generation') ?? '1'),
 		topic: scalarArg(args, 'topic'),
+		kind: kindFor(args, slice),
 		base,
 		workRef,
 	});
@@ -754,6 +800,8 @@ const checkpointed = async (
 			'Fetch it (git fetch), or correct development.branches.integration.',
 		);
 	}
+	const badKind = unknownKind(args) ?? kindInAgent(agent);
+	if (badKind !== undefined) return badKind;
 	const ref = workRefFor(args, policy, agent, proposal, slice);
 	const result = await engine.createOrUpdateWipRef({
 		baseSha: base,

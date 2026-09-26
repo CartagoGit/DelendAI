@@ -14,42 +14,23 @@ import type {
 	IGitGuardVerdict,
 	IGuardedGitOperation,
 } from '../contracts/interfaces/git-guard.interface';
-import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { describeWorkIsolation } from './work-isolation';
+import {
+	insideNamespaces,
+	policyNamespaces,
+	shortName,
+} from './git-guard-namespaces';
+import {
+	judgeNamespaceShape,
+	refuseBorrowedAuthor,
+	refuseUnshapedPublication,
+	refuseUnshapedWorkRef,
+} from './git-guard-shape';
 
 const allow = (reason: string): IGitGuardVerdict => ({
 	refused: false,
 	reason,
 });
-
-/** `refs/heads/wip/`, `heads/wip/` and `wip/` are the same namespace. */
-const shortName = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
-
-/** The branch names and namespaces the policy itself uses. */
-const policyNamespaces = (
-	policy: IResolvedDevelopmentPolicy,
-): { exact: readonly string[]; prefixes: readonly string[] } => ({
-	exact: [policy.branches.integration, policy.branches.release],
-	prefixes: [
-		policy.branches.workRefPrefix,
-		policy.branches.publicationRefPrefix,
-		...policy.branches.foreignRefPrefixes,
-	]
-		.map(shortName)
-		.filter((prefix) => prefix.length > 0),
-});
-
-const insideNamespaces = (
-	policy: IResolvedDevelopmentPolicy,
-	branch: string,
-): boolean => {
-	const { exact, prefixes } = policyNamespaces(policy);
-	return (
-		exact.includes(branch) ||
-		prefixes.some((prefix) => branch.startsWith(prefix))
-	);
-};
 
 const namespaceList = (policy: IResolvedDevelopmentPolicy): string => {
 	const { exact, prefixes } = policyNamespaces(policy);
@@ -102,38 +83,6 @@ const judgeCommit = (
 		};
 	}
 	return allow(`\`${branch}\` is a branch the policy uses.`);
-};
-
-/**
- * A work ref whose name does not match the policy's own template.
- *
- * Undefined when there is nothing to say: no template declared, or the
- * ref is not in the work namespace, or it parses. The parser is the SAME
- * one the reconciler attributes refs with, so "git accepted it" and "the
- * system can attribute it" cannot drift apart.
- */
-const refuseUnshapedWorkRef = (
-	policy: IResolvedDevelopmentPolicy,
-	ref: string,
-	branch: string,
-): IGitGuardVerdict | undefined => {
-	const template = policy.branches.workRefTemplate;
-	const prefix = shortName(policy.branches.workRefPrefix);
-	if (template.length === 0 || prefix.length === 0) return undefined;
-	if (!branch.startsWith(prefix)) return undefined;
-	const parser = compileWorkRefParser(
-		template,
-		policy.branches.workRefPrefix,
-		{ strict: true },
-	);
-	if (parser === undefined || parser.parse(ref) !== undefined) {
-		return undefined;
-	}
-	return {
-		refused: true,
-		reason: `\`${branch}\` is in the work namespace but does not match the shape the \`${policy.profile}\` profile declares (\`${template}\`), so nothing can attribute it to a proposal, a slice or a generation.`,
-		remedy: 'Let the name come from the policy instead of typing it: `delendai work enter --proposal=<id> --slice=<id>` (or `work checkpoint`) renders it from the same template the reconciler reads.',
-	};
 };
 
 const judgeBranchCreate = (
@@ -194,6 +143,10 @@ const judgePush = (
 			remedy: describeWorkIsolation(policy).rule,
 		};
 	}
+	if (policy.workspace.pinnedCheckout) {
+		const unshaped = refuseUnshapedPublication(policy, branch);
+		if (unshaped !== undefined) return unshaped;
+	}
 	return allow(`\`${branch}\` may be pushed under the policy.`);
 };
 
@@ -233,6 +186,12 @@ export const judgeGitOperation = (
 		return allow('no development policy is declared.');
 	}
 	if (actor.agentMarker === undefined) {
+		// The names inside delendai's own namespaces are not a person's
+		// choice either: the tools write them and every reader parses them.
+		// A host that declares no agent marker still gets its refs judged
+		// there (f00644), and a person's branches elsewhere stay free.
+		const unshaped = judgeNamespaceShape(policy, operation);
+		if (unshaped !== undefined) return unshaped;
 		return allow(
 			'a person is running git; the development policy governs agents.',
 		);
@@ -252,11 +211,14 @@ const judgeAgentOperation = (
 ): IGitGuardVerdict => {
 	switch (operation.kind) {
 		case 'commit':
-			return judgeCommit(
-				policy,
-				operation.branch,
-				operation.isMerge,
-				operation.inMainWorktree ?? true,
+			return (
+				refuseBorrowedAuthor(policy, operation) ??
+				judgeCommit(
+					policy,
+					operation.branch,
+					operation.isMerge,
+					operation.inMainWorktree ?? true,
+				)
 			);
 		case 'branch-create':
 			return judgeBranchCreate(policy, operation.ref);

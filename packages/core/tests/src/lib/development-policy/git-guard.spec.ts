@@ -74,7 +74,7 @@ describe('shared-checkout-merge — the observed project', () => {
 	});
 
 	it('allows delendai work refs and publication refs', () => {
-		const work = 'wip/codex-mcp-client/x00056-S1-g1/tetris-mock';
+		const work = 'wip/codex-mcp-client/implement/x00056-S1-g1/tetris-mock';
 		expect(
 			judgeGitOperation(policy, create(`refs/heads/${work}`), AGENT)
 				.refused,
@@ -139,7 +139,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/claude-opus-5/x00549-S1-g1/guard',
+					'refs/heads/delendai/wip/claude-opus-5/implement/x00549-S1-g1/guard',
 				),
 				AGENT,
 			).refused,
@@ -147,10 +147,131 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		expect(
 			judgeGitOperation(
 				policy,
-				push('refs/heads/delendai/pr/x00549-guard'),
+				push(
+					'refs/heads/delendai/pr/claude-opus-5/implement/x00549-S1-g1/guard',
+				),
 				AGENT,
 			).refused,
 		).toBe(false);
+	});
+
+	it('refuses a work ref without its kind, or with a kind outside the vocabulary (f00644)', () => {
+		for (const name of [
+			'delendai/wip/claude-opus-5/x00549-S1-g1/guard',
+			'delendai/wip/claude-opus-5/bogus/x00549-S1-g1/guard',
+		]) {
+			expect(
+				judgeGitOperation(policy, create(`refs/heads/${name}`), AGENT)
+					.refused,
+			).toBe(true);
+		}
+	});
+
+	it('refuses an agent id that spells the kind of work (f00644)', () => {
+		const verdict = judgeGitOperation(
+			policy,
+			create(
+				'refs/heads/delendai/wip/github-copilot-review-20260926/review/c00528-S1-g1/review',
+			),
+			AGENT,
+		);
+		expect(verdict.refused).toBe(true);
+		expect(verdict.reason).toContain('spells the kind of work');
+	});
+
+	it('judges the shape inside delendai namespaces whoever runs git, and nothing outside (f00644)', () => {
+		// A host that declares no agent marker is indistinguishable from a
+		// person; the names in delendai's own namespaces are still the
+		// tools', and a person's branches elsewhere stay free.
+		expect(
+			judgeGitOperation(
+				policy,
+				push(
+					'refs/heads/delendai/pr/minimax-m3-review-20260926/x00558-review-g1/review',
+				),
+				PERSON,
+			).refused,
+		).toBe(true);
+		expect(
+			judgeGitOperation(
+				policy,
+				create('refs/heads/delendai/wip/someone/x00558-S1-g1/t'),
+				PERSON,
+			).refused,
+		).toBe(true);
+		expect(
+			judgeGitOperation(policy, create('refs/heads/my-own-idea'), PERSON)
+				.refused,
+		).toBe(false);
+	});
+
+	it('keeps a unit written before the kind pushable and publishable (f00644)', () => {
+		for (const ref of [
+			'refs/heads/delendai/wip/claude-opus-5-5/f00644-S1-g1/the-work',
+			'refs/heads/delendai/pr/claude-opus-5-5/f00644-S1-g1/the-work',
+		]) {
+			expect(judgeGitOperation(policy, push(ref), AGENT).refused).toBe(
+				false,
+			);
+		}
+		// Creating one in the old shape is what the kind now forbids.
+		expect(
+			judgeGitOperation(
+				policy,
+				create(
+					'refs/heads/delendai/wip/claude-opus-5-5/f00644-S1-g1/new',
+				),
+				AGENT,
+			).refused,
+		).toBe(true);
+	});
+
+	it('refuses an agent id not written the way delendai writes it (f00644)', () => {
+		expect(
+			judgeGitOperation(
+				policy,
+				create(
+					'refs/heads/delendai/wip/MiniMax-m3/review/x00553-all-g1/review',
+				),
+				PERSON,
+			).reason,
+		).toContain('lower case');
+	});
+
+	it('refuses a commit on a delendai branch authored as somebody else (f00644)', () => {
+		const commit = {
+			kind: 'commit' as const,
+			branch: 'delendai/wip/minimax-m3/review/x00553-all-g1/review',
+			isMerge: false,
+			inMainWorktree: false,
+			author: 'MiniMax-m3-review-20260926 <m@MiniMax-m3.invalid>',
+			configuredAuthor: 'Owner <owner@example.com>',
+		};
+		for (const actor of [AGENT, PERSON]) {
+			expect(judgeGitOperation(policy, commit, actor).refused).toBe(true);
+		}
+		expect(
+			judgeGitOperation(
+				policy,
+				{ ...commit, author: 'Owner <owner@example.com>' },
+				AGENT,
+			).refused,
+		).toBe(false);
+		// A person's own branch elsewhere is theirs to author as they like.
+		expect(
+			judgeGitOperation(policy, { ...commit, branch: 'my-idea' }, PERSON)
+				.refused,
+		).toBe(false);
+	});
+
+	it('refuses a publication ref that does not have the shape of its work (f00644)', () => {
+		const verdict = judgeGitOperation(
+			policy,
+			push('refs/heads/delendai/pr/proposal-f00643'),
+			AGENT,
+		);
+		expect(verdict.refused).toBe(true);
+		expect(verdict.remedy).toContain('delendai work publish');
 	});
 
 	it('refuses pushing the integration or release branch past pull requests', () => {
@@ -305,7 +426,7 @@ describe('a work ref carries the shape the policy declares (x00563 S3)', () => {
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/claude-opus-5/x00563-S1-g1/the-explanation',
+					'refs/heads/delendai/wip/claude-opus-5/implement/x00563-S1-g1/the-explanation',
 				),
 				AGENT,
 			).refused,

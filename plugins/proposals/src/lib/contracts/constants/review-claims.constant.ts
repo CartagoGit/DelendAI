@@ -1,12 +1,13 @@
 /**
- * The unit names a reviewer works under. `review` is the one the review
- * procedure names; `close` is what reviewers used for a closing pass
- * before there was one name, and a unit under it is a claim all the same.
+ * The slice a reviewer's unit is entered under. The ref's kind says it is
+ * a review (f00644); the unit covers the whole proposal. Units written
+ * before the kind existed went by the slice names `review` and `close`,
+ * and core still reads those as reviews.
  */
-export const REVIEW_UNIT_SLICES: ReadonlySet<string> = new Set([
-	'review',
-	'close',
-]);
+export const REVIEW_UNIT_SLICE = 'all';
 
-/** The unit name the procedure tells a reviewer to claim. */
-export const REVIEW_UNIT_SLICE = 'review';
+/** The proposal segment of a review batch, from the naming scheme's one source. */
+export { REVIEW_BATCH_ID } from '@delendai/core/public';
+
+/** The trailer a review batch claims a proposal with. */
+export const REVIEW_CLAIM_TRAILER = 'Claims';

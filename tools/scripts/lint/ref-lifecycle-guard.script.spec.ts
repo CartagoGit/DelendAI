@@ -278,3 +278,40 @@ describe('proposalInProgressFor', () => {
 		).toBe(false);
 	});
 });
+
+describe('refs that name their kind of work (f00644)', () => {
+	const kinded = {
+		name: 'delendai/wip/claude-opus-5-5/implement/x00642-S2-g1/t',
+		sha: 'kkk',
+	};
+
+	it('counts the same unit’s publication, reading the kind as a kind', () => {
+		expect(
+			publishedInFor(
+				kinded,
+				[
+					{
+						name: 'delendai/pr/claude-opus-5-5/implement/x00642-all-g1/t',
+						sha: 'lll',
+					},
+				],
+				() => true,
+			),
+		).toBe('delendai/pr/claude-opus-5-5/implement/x00642-all-g1/t');
+	});
+
+	it('never takes the kind for the model: another agent’s unit is not its publication', () => {
+		expect(
+			publishedInFor(
+				kinded,
+				[
+					{
+						name: 'delendai/pr/other-model/implement/x00642-S2-g1/t',
+						sha: 'mmm',
+					},
+				],
+				() => true,
+			),
+		).toBeUndefined();
+	});
+});

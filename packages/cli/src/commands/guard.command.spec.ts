@@ -268,7 +268,7 @@ describe('guard through real git hooks', () => {
 			root,
 			'switch',
 			'-c',
-			'delendai/wip/claude/x00553-S1-g1/topic',
+			'delendai/wip/claude/implement/x00553-S1-g1/topic',
 		);
 		expect(moved.status).toBe(0);
 		expect(moved.stderr).toContain('post-checkout');
@@ -282,6 +282,48 @@ describe('guard through real git hooks', () => {
 		expect(committed.stderr).toContain('refused');
 		expect(committed.stderr).toContain('delendai work checkpoint');
 	});
+
+	it('refuses a borrowed author on a delendai branch, however it was borrowed (f00644)', () => {
+		const root = repoWith({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		const unit = join(root, '..', `${root.split('/').at(-1)}-unit`);
+		roots.push(unit);
+		expect(
+			git(
+				root,
+				'worktree',
+				'add',
+				'-q',
+				'-b',
+				'delendai/wip/codex/implement/x00056-S1-g1/t',
+				unit,
+			).status,
+		).toBe(0);
+		writeFileSync(join(unit, 'a.ts'), 'export const a = 1;\n');
+		git(unit, 'add', 'a.ts');
+		for (const args of [
+			['commit', '-q', '--author=Bot <bot@x.invalid>', '-m', 'feat: a'],
+			[
+				'-c',
+				'user.name=Bot',
+				'-c',
+				'user.email=bot@x.invalid',
+				'commit',
+				'-q',
+				'-m',
+				'feat: a',
+			],
+		]) {
+			const borrowed = git(unit, ...args);
+			expect(borrowed.status).not.toBe(0);
+			expect(borrowed.stderr).toContain('is authored as');
+		}
+		expect(git(unit, 'commit', '-q', '-m', 'feat: a').status).toBe(0);
+	}, 60_000);
 
 	it('under shared-checkout-merge, blocks the hand-made branch and the direct commit', () => {
 		const root = repoWith({
@@ -317,7 +359,13 @@ describe('guard through real git hooks', () => {
 		// from the SHARED checkout is refused (x00553): work refs are
 		// written by the engine, never checked out and committed on.
 		expect(
-			git(root, 'switch', '-q', '-c', 'wip/codex/x00056-S1-g1/t').status,
+			git(
+				root,
+				'switch',
+				'-q',
+				'-c',
+				'wip/codex/implement/x00056-S1-g1/t',
+			).status,
 		).toBe(0);
 		const onWorkBranch = git(
 			root,
@@ -345,7 +393,11 @@ describe('guard through real git hooks', () => {
 			'-m',
 			'feat: written to the work ref by plumbing',
 		);
-		plumb('update-ref', 'refs/heads/wip/codex/x00056-S1-g1/t', commit);
+		plumb(
+			'update-ref',
+			'refs/heads/wip/codex/implement/x00056-S1-g1/t',
+			commit,
+		);
 		// HEAD never moved: the shared checkout is still on develop.
 		expect(plumb('symbolic-ref', '--short', 'HEAD')).toBe('develop');
 		expect(
@@ -356,7 +408,7 @@ describe('guard through real git hooks', () => {
 				'--no-ff',
 				'-m',
 				'merge work',
-				'wip/codex/x00056-S1-g1/t',
+				'wip/codex/implement/x00056-S1-g1/t',
 			).status,
 		).toBe(0);
 	}, 60_000);
