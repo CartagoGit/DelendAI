@@ -1728,6 +1728,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00670",
+				"title": "x00670",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
 			}
 		]
 	}

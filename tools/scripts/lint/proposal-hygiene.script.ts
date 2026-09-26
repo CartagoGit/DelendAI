@@ -52,7 +52,11 @@ const SCAFFOLD_PLACEHOLDERS = [
 
 export interface IProposalHygieneFinding {
 	readonly file: string;
-	readonly rule: 'unfilled-scaffold' | 'heading-id-mismatch' | 'duplicate';
+	readonly rule:
+		| 'unfilled-scaffold'
+		| 'heading-id-mismatch'
+		| 'duplicate'
+		| 'delivered-in-progress';
 	readonly detail: string;
 }
 
@@ -106,6 +110,15 @@ const sliceFileLists = (text: string): readonly string[] => {
 	return lists;
 };
 
+/** Slice statuses that mean the slice's work has been delivered. */
+const DELIVERED_STATUSES: ReadonlySet<string> = new Set(['review', 'done']);
+
+/** The first word of each slice's `Status` line, lower case. */
+export const sliceStatuses = (text: string): readonly string[] =>
+	[...text.matchAll(/^- \*\*Status\*\*:\s*([A-Za-z-]+)/gmu)].map((match) =>
+		(match[1] ?? '').toLowerCase(),
+	);
+
 export const fingerprintProposal = (text: string): string | undefined => {
 	const files = sliceFileLists(text);
 	if (files.length === 0) return undefined;
@@ -148,6 +161,24 @@ export const checkProposal = (
 			file,
 			rule: 'heading-id-mismatch',
 			detail: `frontmatter says ${declared}, the H1 says ${heading}`,
+		});
+	}
+
+	// Every slice delivered, and the proposal still in progress: the
+	// hand-off to review was never made, so no reviewer is ever handed it.
+	// On 2026-09-26 eleven proposals sat like that, their pull requests
+	// merged for a day; a one-off sweep (x00654) had fixed the same state
+	// the day before, and nothing stopped it from coming back.
+	const statuses = sliceStatuses(text);
+	if (
+		file.split(/[\\/]/u).includes('in-progress') &&
+		statuses.length > 0 &&
+		statuses.every((status) => DELIVERED_STATUSES.has(status))
+	) {
+		findings.push({
+			file,
+			rule: 'delivered-in-progress',
+			detail: `every slice is ${[...new Set(statuses)].join(' or ')}, but the proposal is still in progress — hand it to review with proposal_transition`,
 		});
 	}
 
