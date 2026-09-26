@@ -43,6 +43,7 @@ const SLICE_SCHEMA = z.object({
 	changedSince: z
 		.array(z.object({ commit: z.string(), subject: z.string() }))
 		.optional(),
+	changedSinceTruncated: z.boolean().optional(),
 });
 
 export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({

@@ -1009,6 +1009,7 @@ export interface DelendaiProposalsReviewQueueOutput {
 				commit: string;
 				subject: string;
 			}[];
+			changedSinceTruncated?: boolean;
 		}>;
 		close?: string;
 		claimedBy?: string[];
