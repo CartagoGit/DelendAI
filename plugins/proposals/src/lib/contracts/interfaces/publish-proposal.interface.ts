@@ -65,6 +65,10 @@ export interface IPublishProposalRequest {
 	readonly policy?: IProposalPublicationPolicy | undefined;
 	/** Push remote. Defaults to `origin`. */
 	readonly remote?: string | undefined;
+	/** Who proposes it; `DELENDAI_AGENT_ID` when absent. */
+	readonly agent?: string | undefined;
+	/** The proposal's title, which names the ref's topic. */
+	readonly title?: string | undefined;
 }
 
 /**

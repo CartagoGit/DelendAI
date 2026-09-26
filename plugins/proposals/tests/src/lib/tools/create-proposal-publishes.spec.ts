@@ -160,7 +160,8 @@ describe('create_proposal publishes what it writes', () => {
 
 		expect(result.published).toBe(true);
 		expect(result.publishedRef).toMatch(
-			new RegExp(`^${PR_PATTERN}proposal-f\\d{5}$`, 'u'),
+			// The shape of every other publication: agent, unit, topic.
+			new RegExp(`^${PR_PATTERN}[^/]+/f\\d{5}-all-g1/[^/]+$`, 'u'),
 		);
 		const published = git(
 			root,
@@ -169,6 +170,43 @@ describe('create_proposal publishes what it writes', () => {
 			`refs/heads/${result.publishedRef ?? ''}`,
 		);
 		expect(published).not.toBe('');
+	});
+
+	it('leaves a proposal written in a unit to that unit, instead of a second ref', async () => {
+		const options = optionsFor(true);
+		const root = options.workspaceRoot;
+		const unit = join(root, '.wt-unit');
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			'-b',
+			'wip/agent-a/f00001-S1-g1/the-work',
+			unit,
+			'HEAD',
+		);
+		mkdirSync(join(unit, 'docs/delendai/proposals/ready/feats'), {
+			recursive: true,
+		});
+
+		const result = (
+			(await (
+				await handlerFor(options)
+			)({
+				kind: 'feat',
+				title: 'Written in a unit',
+				goal: 'travel with the unit',
+				slices: [{ sliceId: 's1', files: ['src/one.ts'] }],
+				checkout: unit,
+			})) as { readonly structuredContent?: ICreatedProposal }
+		).structuredContent;
+
+		expect(result?.published).toBe(false);
+		expect(result?.publishReason).toContain(
+			'wip/agent-a/f00001-S1-g1/the-work',
+		);
+		expect(git(root, 'ls-remote', 'origin')).toBe('');
 	});
 
 	it('publishes only its own file, on top of the integration branch', async () => {
