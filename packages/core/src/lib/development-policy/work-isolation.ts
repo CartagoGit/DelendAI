@@ -38,7 +38,15 @@ export const describeWorkIsolation = (
 	const persistence = policy.persistence.usesWipRefs
 		? `delendai checkpoints each finished slice to a work ref under \`${displayPrefix(policy.branches.workRefPrefix)}\` and removes it once its work is integrated`
 		: `finished slices are committed to \`${policy.branches.integration}\``;
-	const rule = `This project uses the \`${policy.profile}\` development profile: every agent works in the shared checkout, which stays on \`${policy.branches.integration}\`. Do not create worktrees or branches (no \`git worktree add\`, \`git switch\`, \`git checkout -b\`), and do not call agent_worktree. Claim the files you edit with agent_lock so agents never touch the same file; ${persistence}.`;
+	// With work refs, a unit of work lives in the worktree `delendai work
+	// enter` makes for it, and delendai's writes are refused in the shared
+	// checkout on the integration branch. Telling an agent "do not create
+	// worktrees" without naming that command sent it to write where
+	// nothing commits; what is forbidden is making them by hand.
+	const route = policy.persistence.usesWipRefs
+		? ` Start each unit of work with \`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>\`: it creates the unit's worktree and work ref. Work there, pass that worktree as \`checkout\` to delendai's tools, and finish with \`delendai work publish\`.`
+		: '';
+	const rule = `This project uses the \`${policy.profile}\` development profile: the shared checkout stays on \`${policy.branches.integration}\`. Do not create worktrees or branches by hand (no \`git worktree add\`, \`git switch\`, \`git checkout -b\`), and do not call agent_worktree.${route} Claim the files you edit with agent_lock so agents never touch the same file; ${persistence}.`;
 	return {
 		agentWorktrees: false,
 		rule,
