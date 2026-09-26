@@ -2,12 +2,15 @@
 id: x00666
 title: "A manifest dependency is one the package installs"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P2
 related: []
+last-transition-id: 21668554-4f54-4568-ab4c-9104c2776e11
+last-correlation-id: 21668554-4f54-4568-ab4c-9104c2776e11
+last-transition-from: in-progress
 ---
 
 # x00666 — A manifest dependency is one the package installs
@@ -64,7 +67,8 @@ not install. Inside this workspace a hoisted copy hid the gap.
   - `plugins/container/plugin.manifest.ts`
   - `plugins/audit-orchestrator/package.json`
   - `bun.lock`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
