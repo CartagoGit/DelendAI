@@ -2,15 +2,15 @@
 id: x00677
 title: "A publication becomes a pull request by itself"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [f00644, x00655]
-last-transition-id: 86b3f9e3-6b87-4028-85c7-96ead250d62c
-last-correlation-id: 86b3f9e3-6b87-4028-85c7-96ead250d62c
-last-transition-from: in-progress
+last-transition-id: 5d0eadd5-0452-4e62-b878-95efff045977
+last-correlation-id: 5d0eadd5-0452-4e62-b878-95efff045977
+last-transition-from: review
 shipped-in:
   - "7d0bd5252c40cbd7ab9192c0ec267b93ee2851e3"
 ---

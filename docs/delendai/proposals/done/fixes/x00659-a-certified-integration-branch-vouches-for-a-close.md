@@ -2,15 +2,15 @@
 id: x00659
 title: "A certified integration branch vouches for a close"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00653, x00637]
-last-transition-id: bde49b53-66e4-443b-ae4f-7f37bf1e6573
-last-correlation-id: bde49b53-66e4-443b-ae4f-7f37bf1e6573
-last-transition-from: in-progress
+last-transition-id: 80474a3e-9018-4135-94b6-d1f0456c92b1
+last-correlation-id: 80474a3e-9018-4135-94b6-d1f0456c92b1
+last-transition-from: review
 shipped-in:
   - "cf4e3e4f4224a61a05fc77c6596cad2fd49d21f2"
 ---

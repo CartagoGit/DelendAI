@@ -2,15 +2,15 @@
 id: x00674
 title: "A unit entered before the kind stays reachable"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00644]
-last-transition-id: 1b8676b1-1077-4792-adb5-2ef998a17cc8
-last-correlation-id: 1b8676b1-1077-4792-adb5-2ef998a17cc8
-last-transition-from: in-progress
+last-transition-id: 8a5f19a8-232e-4c75-9ed8-579df0dd3838
+last-correlation-id: 8a5f19a8-232e-4c75-9ed8-579df0dd3838
+last-transition-from: review
 shipped-in:
   - "5fe5c9728c671de03aaf26da81c995c40cf818f5"
 ---

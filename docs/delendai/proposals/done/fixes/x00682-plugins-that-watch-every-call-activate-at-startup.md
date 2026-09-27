@@ -2,15 +2,15 @@
 id: x00682
 title: "Plugins that watch every call activate at startup"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00645]
-last-transition-id: 37dd5a49-eaea-4bf2-b0d8-c90803b7106e
-last-correlation-id: 37dd5a49-eaea-4bf2-b0d8-c90803b7106e
-last-transition-from: in-progress
+last-transition-id: d0d72ba6-e7e7-4136-8b7b-d855fbe13e47
+last-correlation-id: d0d72ba6-e7e7-4136-8b7b-d855fbe13e47
+last-transition-from: review
 shipped-in:
   - "85ed7fb8445872534201dacea3fe5206a43afe61"
 ---
