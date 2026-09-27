@@ -2,7 +2,7 @@
 id: x00565
 title: "A refreshed candidate carries correct derived files"
 kind: fix
-status: review
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-20
@@ -12,6 +12,9 @@ tags:
     - automation
 shipped-in:
   - 10eb7aa831274e730456ead37a022c5c0adb3750
+last-transition-id: 55f83d36-9b86-4c04-a98c-2fc6a20bd82f
+last-correlation-id: 55f83d36-9b86-4c04-a98c-2fc6a20bd82f
+last-transition-from: review
 ---
 
 # x00565 — A refreshed candidate carries correct derived files

@@ -2,7 +2,7 @@
 id: x00574
 title: "The merge driver is actually installed"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -12,6 +12,9 @@ tags:
     - queue
 shipped-in:
   - e783b0986
+last-transition-id: 174059e7-a3dc-4e4a-a696-be441d3d4284
+last-correlation-id: 174059e7-a3dc-4e4a-a696-be441d3d4284
+last-transition-from: review
 ---
 
 # x00574 — The merge driver is actually installed

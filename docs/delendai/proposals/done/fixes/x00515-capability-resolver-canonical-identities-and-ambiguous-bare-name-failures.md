@@ -2,13 +2,14 @@
 id: x00515
 title: "capability resolver canonical identities and ambiguous bare-name failures"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
-last-transition-id: ee7edd71-a0c3-461c-9bec-201b77737ac5
-last-correlation-id: ee7edd71-a0c3-461c-9bec-201b77737ac5
-last-transition-from: in-progress
+last-transition-id: 96b764bb-96c4-419b-b35f-eb8c469097ad
+last-correlation-id: 96b764bb-96c4-419b-b35f-eb8c469097ad
+last-transition-from: review
+shipped-in: ["a028f6be3"]
 ---
 
 # x00515 — capability resolver canonical identities and ambiguous bare-name failures

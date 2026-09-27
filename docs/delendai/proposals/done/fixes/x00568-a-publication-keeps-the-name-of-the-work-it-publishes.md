@@ -2,7 +2,7 @@
 id: x00568
 title: "A publication keeps the name of the work it publishes"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -12,6 +12,9 @@ tags:
     - contracts
 shipped-in:
   - 1456be9a0
+last-transition-id: 0bbc350f-b864-448e-9cf3-e7b35f8bb903
+last-correlation-id: 0bbc350f-b864-448e-9cf3-e7b35f8bb903
+last-transition-from: review
 ---
 
 # x00568 — A publication keeps the name of the work it publishes

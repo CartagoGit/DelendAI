@@ -2,7 +2,7 @@
 id: x00571
 title: "CI is proportional to the change"
 kind: fix
-status: review
+status: done
 type: proposal
 track: speed
 date: 2026-09-20
@@ -11,6 +11,9 @@ tags:
     - job-scope
 shipped-in:
   - 41d928fd1
+last-transition-id: 6bd772cd-a651-4d03-8096-3d88f1ec5f52
+last-correlation-id: 6bd772cd-a651-4d03-8096-3d88f1ec5f52
+last-transition-from: review
 ---
 
 # x00571 — CI is proportional to the change

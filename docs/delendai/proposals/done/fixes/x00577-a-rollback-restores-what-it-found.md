@@ -2,7 +2,7 @@
 id: x00577
 title: "A rollback restores what it found"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -11,6 +11,9 @@ tags:
     - safety
 shipped-in:
   - 60f8a60af
+last-transition-id: df59f7c6-1d0a-4377-8cea-21abeb7a97ed
+last-correlation-id: df59f7c6-1d0a-4377-8cea-21abeb7a97ed
+last-transition-from: review
 ---
 
 # x00577 — A rollback restores what it found

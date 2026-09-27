@@ -2,7 +2,7 @@
 id: x00557
 title: "An automation that cannot finish must not report success"
 kind: fix
-status: review
+status: done
 type: proposal
 shipped-in:
   - 36427d47b
@@ -17,6 +17,9 @@ tags:
     - release
     - forge
     - honesty
+last-transition-id: a403206e-719a-4224-a34e-fc7f6c708b62
+last-correlation-id: a403206e-719a-4224-a34e-fc7f6c708b62
+last-transition-from: review
 ---
 
 # x00557 — An automation that cannot finish must not report success

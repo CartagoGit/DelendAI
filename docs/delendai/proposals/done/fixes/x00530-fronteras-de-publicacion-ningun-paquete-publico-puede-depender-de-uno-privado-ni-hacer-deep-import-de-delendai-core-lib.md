@@ -2,13 +2,14 @@
 id: x00530
 title: "Fronteras de publicacion: ningun paquete publico puede depender de uno privado ni hacer deep import de @delendai/core/lib"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
-last-transition-id: 1ab6b185-29ae-4565-a01a-814d23d2e95b
-last-correlation-id: 1ab6b185-29ae-4565-a01a-814d23d2e95b
-last-transition-from: in-progress
+last-transition-id: bd0f40f0-f67b-4cf6-9ae1-b7208a03011f
+last-correlation-id: bd0f40f0-f67b-4cf6-9ae1-b7208a03011f
+last-transition-from: review
+shipped-in: ["5bfb94498"]
 ---
 
 # x00530 — Fronteras de publicacion: ningun paquete publico puede depender de uno privado ni hacer deep import de @delendai/core/lib

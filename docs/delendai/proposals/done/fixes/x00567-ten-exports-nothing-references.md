@@ -2,7 +2,7 @@
 id: x00567
 title: "Ten exports nothing references"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -12,6 +12,9 @@ tags:
     - core
 shipped-in:
   - fcc947b1e
+last-transition-id: 14783d9b-0786-4d9e-8a78-b5beb2be6173
+last-correlation-id: 14783d9b-0786-4d9e-8a78-b5beb2be6173
+last-transition-from: review
 ---
 
 # x00567 — Ten exports nothing references

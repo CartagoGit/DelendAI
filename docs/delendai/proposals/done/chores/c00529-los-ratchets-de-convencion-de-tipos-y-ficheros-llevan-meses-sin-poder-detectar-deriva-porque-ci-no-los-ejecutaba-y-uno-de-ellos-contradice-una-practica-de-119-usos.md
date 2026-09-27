@@ -2,13 +2,14 @@
 id: c00529
 title: "Los ratchets de convencion de tipos y ficheros llevan meses sin poder detectar deriva porque CI no los ejecutaba, y uno de ellos contradice una practica de 119 usos"
 kind: chore
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-08
-last-transition-id: 154c2935-409f-4556-a6e4-ab8d01bab1a6
-last-correlation-id: 154c2935-409f-4556-a6e4-ab8d01bab1a6
-last-transition-from: in-progress
+last-transition-id: cc0d3196-b260-4bdc-9ff5-6faea2af1a0d
+last-correlation-id: cc0d3196-b260-4bdc-9ff5-6faea2af1a0d
+last-transition-from: review
+shipped-in: ["165333644"]
 ---
 
 # c00529 — Los ratchets de convencion de tipos y ficheros llevan meses sin poder detectar deriva porque CI no los ejecutaba, y uno de ellos contradice una practica de 119 usos

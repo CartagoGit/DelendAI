@@ -2,7 +2,7 @@
 id: x00566
 title: "A guard that cannot run must not pass"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -12,6 +12,9 @@ tags:
     - fail-closed
 shipped-in:
   - c0445a69e
+last-transition-id: f72a8721-c413-49eb-8c3d-d92067d53e6a
+last-correlation-id: f72a8721-c413-49eb-8c3d-d92067d53e6a
+last-transition-from: review
 ---
 
 # x00566 — A guard that cannot run must not pass
