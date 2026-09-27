@@ -2,15 +2,15 @@
 id: x00654
 title: "Delivered proposals are handed off"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00653]
-last-transition-id: 78c0fc9c-1371-48e0-acd5-c7b31bdc3d21
-last-correlation-id: 78c0fc9c-1371-48e0-acd5-c7b31bdc3d21
-last-transition-from: in-progress
+last-transition-id: 570a13d5-b00a-4449-b529-2449294f7414
+last-correlation-id: 570a13d5-b00a-4449-b529-2449294f7414
+last-transition-from: review
 shipped-in:
   - "e4713d4a4e6c62e5b166aebf5c760997ab3e4143"
 ---
