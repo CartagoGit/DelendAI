@@ -93,9 +93,10 @@ export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
 	['tools/scripts/git/maintain-ref-namespace.script.ts', 180_000],
 	// Every well-shaped publication has its pull request (x00677).
 	['tools/scripts/forge/open-publication-prs.script.ts', 180_000],
-	// Last: once the tip's certification finishes, the queue moves
-	// (x00680); nothing else starts it after a merge.
-	['tools/scripts/forge/advance-queue.script.ts', 3_000_000],
+	// Last: once the tip's certification has finished, the queue moves
+	// (x00680); nothing else starts it after a merge. One read, no wait
+	// (x00683): the next pass picks up a certification still running.
+	['tools/scripts/forge/advance-queue.script.ts', 60_000],
 ];
 
 const main = (): void => {
