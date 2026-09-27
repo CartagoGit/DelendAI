@@ -9,6 +9,8 @@ date: 2026-09-25
 last-transition-id: 6e14363a-f203-4958-b3ca-2d5871e5d7da
 last-correlation-id: 6e14363a-f203-4958-b3ca-2d5871e5d7da
 last-transition-from: in-progress
+shipped-in:
+  - "9b774a2915ab51c60d5f669e245fe475ca8e6340"
 ---
 
 # x00646 — Reviewing proposals works the same in any project and from any host
@@ -32,16 +34,18 @@ x00643 made a review possible where no round was ever opened, but by rules only 
 - global_gate: e2e
 
 ### S1 — A checkpoint names the work ref it belongs to
-- **Status**: review — shipped in #459 (merge 9b774a291)
+- **Status**: done
 - **Files**: `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/wip-engine/scope.constant.ts`, `packages/core/src/lib/wip-engine/checkpoint.ts`, `packages/core/src/lib/wip-engine/rebase.ts`, `packages/core/tests/src/lib/wip-engine/checkpoint.spec.ts`, `packages/core/tests/src/lib/wip-engine/rebase.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Every checkpoint commit the WIP engine writes carries a trailer naming the ref it was written for, next to the scope and digest trailers."
   - "The trailer survives a squash merge that keeps commit bodies and a rebase, so the delivery stays attributable whatever the forge does."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 9b774a291 (S1+S2). S1 (atribución de implementador): cada checkpoint del WIP engine lleva un trailer con el ref para el que se escribió (junto a scope y digest); el trailer sobrevive squash y rebase; el implementador se lee en orden: trailer work-ref del commit entregador → refs nombrados en el mensaje del merge (GitHub/GitLab/Bitbucket/git plano) → Co-Authored-By; el ref se decodifica con el workRefTemplate del proyecto y el publication ref se mapea atrás; squash/rebase/merge-commit y template no-default se testean sobre repo real. S2 (review queue + CLI): tool read-only lista lo pendiente oldest-first con estado, implementador (grabado/derivable/faltante), candidatos con su origen, gate, acceptance y la llamada exacta; el CLI expone la cola y proposals review acepta commit + evidencia; el knowledge del workflow declara el procedimiento del reviewer; el overview cuenta las pendientes y apunta a la cola. Acceptance: 30/30 review-attribution.spec + 43/43 en el lote. Sin cambios fuera de alcance.
 ### S2 — Attribution reads the project's declared ref shape, whatever the forge
-- **Status**: review — shipped in #459 (merge 9b774a291)
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/services/work-ref-mention.ts`, `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/services/work-ref-mention.spec.ts`, `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-close.spec.ts`
 - **Gate**: e2e
@@ -49,8 +53,10 @@ x00643 made a review possible where no round was ever opened, but by rules only 
   - "The implementer is read, in order, from the work-ref trailer of the delivering commit, from any work or publication ref named in the message of the merge that brought it in (GitHub, GitLab, Bitbucket and plain git phrasings), and from a Co-Authored-By trailer."
   - "A ref is decoded with the project's own workRefTemplate, so the agent is found wherever the template puts it; a publication ref is mapped back to its work ref first."
   - "Squash, rebase and merge-commit histories each attribute in a test on a real repository, and so does a project with a non-default template."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 9b774a291 (S1+S2). S1 (atribución de implementador): cada checkpoint del WIP engine lleva un trailer con el ref para el que se escribió (junto a scope y digest); el trailer sobrevive squash y rebase; el implementador se lee en orden: trailer work-ref del commit entregador → refs nombrados en el mensaje del merge (GitHub/GitLab/Bitbucket/git plano) → Co-Authored-By; el ref se decodifica con el workRefTemplate del proyecto y el publication ref se mapea atrás; squash/rebase/merge-commit y template no-default se testean sobre repo real. S2 (review queue + CLI): tool read-only lista lo pendiente oldest-first con estado, implementador (grabado/derivable/faltante), candidatos con su origen, gate, acceptance y la llamada exacta; el CLI expone la cola y proposals review acepta commit + evidencia; el knowledge del workflow declara el procedimiento del reviewer; el overview cuenta las pendientes y apunta a la cola. Acceptance: 30/30 review-attribution.spec + 43/43 en el lote. Sin cambios fuera de alcance.
 ### S3 — One call tells a reviewer what the review backlog needs
 - **Status**: review — shipped in #459 (merge 9b774a291)
 - **DependsOn**: [S2]

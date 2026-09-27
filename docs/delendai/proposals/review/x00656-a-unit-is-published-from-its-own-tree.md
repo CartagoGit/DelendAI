@@ -11,6 +11,8 @@ related: [x00653, x00648]
 last-transition-id: 6e80d077-78ee-4d31-8ae0-b6b67d04186f
 last-correlation-id: 6e80d077-78ee-4d31-8ae0-b6b67d04186f
 last-transition-from: in-progress
+shipped-in:
+  - "02c1a119a13e0bcfcb4e648eb6e0bfe640be35ae"
 ---
 
 # x00656 — A unit is published from its own tree
@@ -56,13 +58,15 @@ unchanged; only the tree they inspect is now the right one.
 
 ### S1 — The publication push runs from the unit's worktree
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts`
 - **Files**:
   - `packages/cli/src/lib/work-publish.service.ts`
   - `packages/cli/src/lib/work-publish.service.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 02c1a119a. La publicación corre los hooks pre-push en el worktree de la UNIDAD, no en el shared checkout: con unit worktree y un fichero suelto en el shared, el pre-push corre en el worktree de la unidad, la publicación tiene éxito y el fichero suelto queda intacto; sin unit worktree, el push corre desde el shared checkout (comportamiento anterior). work-publish.service +12 y spec +51. Acceptance cubierta; gate verde 44/44 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

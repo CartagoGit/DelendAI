@@ -2,15 +2,17 @@
 id: x00667
 title: "A pull request runs on the branch it merges into"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00657, x00649]
-last-transition-id: 89f2cbf0-4981-446b-a3bf-5e30f6bf0762
-last-correlation-id: 89f2cbf0-4981-446b-a3bf-5e30f6bf0762
-last-transition-from: in-progress
+last-transition-id: a8d83e7e-1801-4063-b8c1-5d989059265e
+last-correlation-id: a8d83e7e-1801-4063-b8c1-5d989059265e
+last-transition-from: review
+shipped-in:
+  - "ae150485fe11231b9f45be97faa5abb9eb6b39ca"
 ---
 
 # x00667 — A pull request runs on the branch it merges into
@@ -63,12 +65,14 @@ branch-dependent checks. An external audit (2026-09-26) rated the gap P0.
 
 ### S1 — The merge commit is checked out on the base branch's name
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `CI run of the pull request`
 - **Files**:
   - `.github/actions/setup-bun-repo/action.yml`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real ae150485f. En un run de pull_request, cada job que usa la shared setup action tiene el merge commit del PR checked out en una rama local nombrada como la rama base (los checks de que afectan a la rama que se mergea, no a un detached SHA); los runs de push no cambian; el PR que llevó este cambio estuvo verde en todos los checks requeridos (mergeado como parte del flujo). Cambio mínimo de workflow (+7/-4). Acceptance cubierta. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

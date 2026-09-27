@@ -11,6 +11,8 @@ related: [x00681]
 last-transition-id: 0cda12da-1d0f-431b-8741-35f7cc6acb5c
 last-correlation-id: 0cda12da-1d0f-431b-8741-35f7cc6acb5c
 last-transition-from: in-progress
+shipped-in:
+  - "b7a9154b60e09a08f84e548ce48255df42cb2e29"
 ---
 
 # x00692 — A short SHA is never read as a number
@@ -61,14 +63,16 @@ The same happens to any real approval whose SHA has that shape.
 
 ### S1 — Recorded commits stay strings
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-attribution.ts`
   - `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real b7a9154b6. Un SHA corto nunca se lee como número: `12345e678`, `123456789` y `0123456789` escritos por withShippedIn pasan guardShippedInPresent INTACTOS — sin el fix, `12345e678` (notación científica al parsear como número) fallaba con el error que CI reportó. review-attribution +5 con corrección de coerción, specs +27. Acceptance cubierta; gate 29/29 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

@@ -11,6 +11,8 @@ related: [x00636, x00637, x00647]
 last-transition-id: e2f31afc-62c6-42fb-80ac-b3e843d952a2
 last-correlation-id: e2f31afc-62c6-42fb-80ac-b3e843d952a2
 last-transition-from: in-progress
+shipped-in:
+  - "5fb16db2bb60fb031052bb311d82e012ce9cb173"
 ---
 
 # x00649 — A red integration branch can be repaired by the queue
@@ -86,7 +88,7 @@ Head-only hydration stays as it is (decided 2026-09-25).
 
 ### S1 — The queue lands the candidate proven to repair a red branch
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/queue-order.spec.ts tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/queue-order.ts`
@@ -94,8 +96,10 @@ Head-only hydration stays as it is (decided 2026-09-25).
   - `tools/scripts/forge/queue-order.spec.ts`
   - `tools/scripts/forge/keep-the-queue-moving.script.ts`
   - `.github/workflows/ci.yml`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 5fb16db2b. keep-the-queue-moving puede REPARAR una integración roja: un candidato level con full run verde se arma y no se desarma; uno con full run rojo se pasa; al siguiente level sin full run se le despacha UNO solo a la vez; candidatos behind/conflicting/red/draft jamás se proponen; una certificación roja y un full run despachado en una publication branch despiertan la cola en la integración. queue-order.ts +55 con spec 77 líneas; ci.yml wire. Acceptance cubierta; gate verde 64/64 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

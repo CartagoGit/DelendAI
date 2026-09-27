@@ -11,6 +11,8 @@ related: [x00687, x00626, f00644]
 last-transition-id: 924102cd-9959-4703-ba49-c4269366a46f
 last-correlation-id: 924102cd-9959-4703-ba49-c4269366a46f
 last-transition-from: in-progress
+shipped-in:
+  - "b3ed44321f75c6345112ec4c6df9d3bda03f0ffa"
 ---
 
 # x00688 — An agent is known by its worktree, whatever its runtime
@@ -75,7 +77,7 @@ swarm.
 
 ### S1 — The worktree names its agent
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/lib/worktree-agent.service.spec.ts packages/cli/src/commands/guard.command.spec.ts`
 - **Files**:
   - `packages/cli/src/lib/worktree-agent.service.ts`
@@ -85,8 +87,10 @@ swarm.
   - `packages/cli/src/commands/guard.command.ts`
   - `packages/cli/src/commands/guard.command.spec.ts`
   - `packages/cli/src/contracts/interfaces/guard.interface.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real b3ed44321. Un agente se conoce por su worktree SEA CUAL SEA su runtime: el worktree lleva un marker con el agente (worktree-agent.service 67 líneas lo escribe/lee; stampWorktreeAgent del work enter); sin variable de agente, un commit sobre la rama de integración se NIEGA si el worktree nombra un agente y se permite si no lo nombra; guard +30 y work.command +5 wired. El briefing del work enter ya decía "whatever runtime works here is recognised as this agent". Acceptance cubierta; gate 38/38 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

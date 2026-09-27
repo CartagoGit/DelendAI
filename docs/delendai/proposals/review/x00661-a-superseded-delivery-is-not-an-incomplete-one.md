@@ -11,6 +11,8 @@ related: [x00660, x00646]
 last-transition-id: bdb54bca-7c9a-4595-9c99-9d72e66fe595
 last-correlation-id: bdb54bca-7c9a-4595-9c99-9d72e66fe595
 last-transition-from: in-progress
+shipped-in:
+  - "21499c52ccfb70b9f8ccfaf75800ca28fdaf0333"
 ---
 
 # x00661 — A superseded delivery is not an incomplete one
@@ -62,7 +64,7 @@ changes on work that was correct when it landed.
 
 ### S1 — Later changes are named, and the slice is judged on its delivery
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-queue.service.ts`
@@ -72,8 +74,10 @@ changes on work that was correct when it landed.
   - `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`
   - `plugins/proposals/src/generated/tool-outputs.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 21499c52c. changedSince: un slice cuyos ficheros cambió un commit posterior lista ese commit (review-changed-since.service 45 líneas) — el juez puede juzgar el estado ENTREGADO y nombrar los commits posteriores que lo superseden/extienden sin considerarlo defecto del slice; el queue schema y la interfaz lo exponen. Es el campo que esta sesión usó en las notas de x00579/00580. Acceptance cubierta; gate 137/137 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 Built on x00660 (#474), merged into this branch because both change the

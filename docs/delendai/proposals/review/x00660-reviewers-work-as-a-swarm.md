@@ -11,6 +11,8 @@ related: [x00646, x00653, x00659]
 last-transition-id: 9b32a134-af0e-4db0-9d1a-37212bd1ecd1
 last-correlation-id: 9b32a134-af0e-4db0-9d1a-37212bd1ecd1
 last-transition-from: in-progress
+shipped-in:
+  - "05cbdcefe5b70cc7658836d33ab1745038bf3ce5"
 ---
 
 # x00660 — Reviewers work as a swarm
@@ -86,7 +88,7 @@ On 2026-09-26 two reviewers (qwen, GLM) ran against the same backlog:
 
 ### S1 — Reviewers claim, and share one journal
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts packages/cli/src/commands/groups/proposals.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-claims.service.ts`
@@ -103,8 +105,10 @@ On 2026-09-26 two reviewers (qwen, GLM) ran against the same backlog:
   - `packages/cli/src/commands/groups/proposals.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 05cbdcef5. Los reviewers trabajan como swarm: la cola lista al final las propuestas que OTRO reviewer tiene, con claimedBy; las libres llevan el comando claim que nombra al llamador. Es exactamente el comportamiento que esta sesión observó (f00552 claimedBy=minimax-3 por el worktree pack2). review-claims constant/service + queue schema; CLI spec adaptado. Acceptance cubierta (criterio único); gate 137/137 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
