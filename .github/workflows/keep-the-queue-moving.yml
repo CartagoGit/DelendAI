@@ -121,6 +121,17 @@ jobs:
                   GH_TOKEN: ${{ github.token }}
               run: bun run lint:ref-lifecycle -- --reap
 
+            # A pull request not opened from a publication fails
+            # `pr-head-shape` and is neither brought forward nor armed, so
+            # it stayed open and red until somebody noticed (#514, from a
+            # work ref, x00690). It is closed with the reason and the way to
+            # publish; its branch is never touched.
+            - name: Close the pull requests not opened from a publication
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun tools/scripts/forge/close-unpublished-prs.script.ts --apply
+
             # CI reports the candidates that are behind; it does not bring
             # them forward (x00628, as x00557 S2 decided).
             #
