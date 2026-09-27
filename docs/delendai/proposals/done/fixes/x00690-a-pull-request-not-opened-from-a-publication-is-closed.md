@@ -2,15 +2,15 @@
 id: x00690
 title: "A pull request not opened from a publication is closed"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00644, x00677]
-last-transition-id: 20223827-d928-4dca-beaa-e105929e7db0
-last-correlation-id: 20223827-d928-4dca-beaa-e105929e7db0
-last-transition-from: in-progress
+last-transition-id: db4d6280-0edb-4626-8319-3c2ed19dcfd9
+last-correlation-id: db4d6280-0edb-4626-8319-3c2ed19dcfd9
+last-transition-from: review
 shipped-in:
   - "0bcc0b357bf654e666a0f779e46459338e2f2807"
 ---

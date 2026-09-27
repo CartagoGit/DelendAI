@@ -2,15 +2,15 @@
 id: x00669
 title: "Loose edits on the integration branch are announced"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00653, x00645]
-last-transition-id: 6a160ad6-1b4d-4a79-b8c2-73191ebb52f9
-last-correlation-id: 6a160ad6-1b4d-4a79-b8c2-73191ebb52f9
-last-transition-from: in-progress
+last-transition-id: c8201e9f-438b-4649-828d-0db4e7952e3c
+last-correlation-id: c8201e9f-438b-4649-828d-0db4e7952e3c
+last-transition-from: review
 shipped-in:
   - "d0a3607ed5f8a1089391b0d64bc55afd1972c0f0"
 ---

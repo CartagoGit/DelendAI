@@ -2,15 +2,15 @@
 id: x00689
 title: "A repair decision never lands in the shared checkout"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00687, x00675]
-last-transition-id: 3efcd412-17f3-4058-ad53-30ffec5d6c2f
-last-correlation-id: 3efcd412-17f3-4058-ad53-30ffec5d6c2f
-last-transition-from: in-progress
+last-transition-id: 96343719-377a-480a-b806-615167b46cf4
+last-correlation-id: 96343719-377a-480a-b806-615167b46cf4
+last-transition-from: review
 shipped-in:
   - "bca10bfbac77b24c49b3050705476f6a819ab7a1"
 ---

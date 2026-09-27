@@ -2,15 +2,15 @@
 id: x00686
 title: "A hand-moved proposal is refused at commit"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00685]
-last-transition-id: 3c6d15f4-3f3f-4db2-8287-e76e1aca14ee
-last-correlation-id: 3c6d15f4-3f3f-4db2-8287-e76e1aca14ee
-last-transition-from: in-progress
+last-transition-id: 00ed9038-032d-46dc-9ebf-be9bd4ac54e3
+last-correlation-id: 00ed9038-032d-46dc-9ebf-be9bd4ac54e3
+last-transition-from: review
 shipped-in:
   - "4e8013ead3e4fc7c4845695b38e25831f14038c7"
 ---

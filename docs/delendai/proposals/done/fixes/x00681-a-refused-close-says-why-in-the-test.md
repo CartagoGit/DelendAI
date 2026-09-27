@@ -2,15 +2,15 @@
 id: x00681
 title: "A refused close says why in the test"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P2
 related: [x00672]
-last-transition-id: c0cfe4ec-6666-443b-baf5-3fcf1ccc8a58
-last-correlation-id: c0cfe4ec-6666-443b-baf5-3fcf1ccc8a58
-last-transition-from: in-progress
+last-transition-id: 138c4a09-7016-4ebc-9934-5d8e0cba0592
+last-correlation-id: 138c4a09-7016-4ebc-9934-5d8e0cba0592
+last-transition-from: review
 shipped-in:
   - "6c88827c4ac5f3f25967bafa97ed1b1354907265"
 ---

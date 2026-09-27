@@ -2,15 +2,15 @@
 id: x00688
 title: "An agent is known by its worktree, whatever its runtime"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00687, x00626, f00644]
-last-transition-id: 924102cd-9959-4703-ba49-c4269366a46f
-last-correlation-id: 924102cd-9959-4703-ba49-c4269366a46f
-last-transition-from: in-progress
+last-transition-id: f1e0c47e-4715-44ea-95e0-d10d897310f5
+last-correlation-id: f1e0c47e-4715-44ea-95e0-d10d897310f5
+last-transition-from: review
 shipped-in:
   - "b3ed44321f75c6345112ec4c6df9d3bda03f0ffa"
 ---
