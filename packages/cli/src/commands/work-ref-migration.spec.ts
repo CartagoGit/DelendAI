@@ -91,6 +91,9 @@ const repoWithUnitUnder = (
 			},
 		}),
 	);
+	// The unit's worktree is placed in the repository; it is ignored, as
+	// a worktree in the shared checkout's tree must be (x00695).
+	writeFileSync(join(root, '.gitignore'), 'unit/\n');
 	git(root, 'add', '-A');
 	git(root, 'commit', '-q', '-m', 'base');
 	git(root, 'remote', 'add', 'origin', remote);

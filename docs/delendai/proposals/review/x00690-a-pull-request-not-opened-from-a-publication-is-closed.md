@@ -11,6 +11,8 @@ related: [f00644, x00677]
 last-transition-id: 20223827-d928-4dca-beaa-e105929e7db0
 last-correlation-id: 20223827-d928-4dca-beaa-e105929e7db0
 last-transition-from: in-progress
+shipped-in:
+  - "0bcc0b357bf654e666a0f779e46459338e2f2807"
 ---
 
 # x00690 — A pull request not opened from a publication is closed
@@ -60,14 +62,16 @@ finding it among the branches that "never get rehydrated".
 
 ### S1 — The queue closes unpublished pull requests
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/close-unpublished-prs.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/close-unpublished-prs.script.ts`
   - `tools/scripts/forge/close-unpublished-prs.script.spec.ts`
   - `.github/workflows/keep-the-queue-moving.yml`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 0bcc0b357. Un PR no abierto desde una publicación se CIERRA: close-unpublished-prs selecciona PRs cuyo head es un work ref o está fuera de los namespaces; una publication y un fork NO se seleccionan; corrido read-only contra el repo vivo seleccionaba #514 y nada más (verificado por el implementador en su momento). Script 100 líneas + spec 51; workflow wire +11. Acceptance cubierta; gate 29/29 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

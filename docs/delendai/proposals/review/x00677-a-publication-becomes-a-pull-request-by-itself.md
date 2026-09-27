@@ -11,6 +11,8 @@ related: [f00644, x00655]
 last-transition-id: 86b3f9e3-6b87-4028-85c7-96ead250d62c
 last-correlation-id: 86b3f9e3-6b87-4028-85c7-96ead250d62c
 last-transition-from: in-progress
+shipped-in:
+  - "7d0bd5252c40cbd7ab9192c0ec267b93ee2851e3"
 ---
 
 # x00677 — A publication becomes a pull request by itself
@@ -79,7 +81,7 @@ entered before f00644 merged kept enforcing the old rules.
 
 ### S1 — Publications open their pull requests, and the guard is the integration branch's
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/lib/publication-pull-request.service.spec.ts packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/lib/publication-pull-request.service.ts`
@@ -90,8 +92,10 @@ entered before f00644 merged kept enforcing the old rules.
   - `tools/scripts/forge/open-publication-prs.script.ts`
   - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
   - `lefthook.yml`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 7d0bd5252. La publicación se convierte en PR por sí sola: work publish de una unidad en remoto GitHub termina con un PR ABIERTO de su publicación (reutiliza uno ya abierto, nunca arma duplicados); publication-pull-request.service 111 líneas + spec 126; lefthook + open-publication-prs.script barrido forzoso. Es el mecanismo que abrió los PR #544/#547 de esta sesión sin que yo llamara a gh pr create primero. Acceptance cubierta; gate 113/113 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
