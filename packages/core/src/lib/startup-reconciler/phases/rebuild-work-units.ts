@@ -197,6 +197,32 @@ export const runWorkRefPhase = async (
 			}
 		}
 
+		// An integrated checkpoint stays integrated: that fact is never
+		// un-observed. A ref that moved on from one (a unit entered at the
+		// integration tip is integrated before its first commit) carries
+		// work of a new generation under the old name; recording it over
+		// the integrated row broke the schema and stopped the boot.
+		if (
+			existing !== null &&
+			existing.integratedSha !== null &&
+			existing.wipHeadSha !== ref.sha
+		) {
+			findings.push(
+				finding({
+					code: 'work-refs.work-after-integration',
+					phase: 'work-refs',
+					kind: 'note',
+					subject: ref.name,
+					message: `${ref.name} moved past checkpoint ${existing.wipHeadSha}, which is already integrated; its new work was not recorded. Continue it as the next generation (g${String(identity.generation + 1)}).`,
+					detail: {
+						integrated: existing.wipHeadSha,
+						live: ref.sha,
+					},
+				}),
+			);
+			continue;
+		}
+
 		const snapshot = await input.git.describeRef(
 			ref.name,
 			input.integrationRef,
@@ -220,22 +246,37 @@ export const runWorkRefPhase = async (
 		const contained =
 			input.integrationSha.length > 0 &&
 			(await input.git.isAncestor(snapshot.sha, input.integrationSha));
-		input.ports.generations.record({
-			workUnitId: unit.id,
-			generation: identity.generation,
-			baseIntegrationSha:
-				snapshot.baseSha.length > 0
-					? snapshot.baseSha
-					: input.integrationSha,
-			wipRef: snapshot.name,
-			wipHeadSha: snapshot.sha,
-			patchDigest: snapshot.patchDigest,
-			fileScope: snapshot.fileScope,
-			checkpointKind: contained ? 'merge-candidate' : 'durability',
-			authorAgentId: identity.agent,
-			machineId: input.machineId,
-			now: input.now,
-		});
+		try {
+			input.ports.generations.record({
+				workUnitId: unit.id,
+				generation: identity.generation,
+				baseIntegrationSha:
+					snapshot.baseSha.length > 0
+						? snapshot.baseSha
+						: input.integrationSha,
+				wipRef: snapshot.name,
+				wipHeadSha: snapshot.sha,
+				patchDigest: snapshot.patchDigest,
+				fileScope: snapshot.fileScope,
+				checkpointKind: contained ? 'merge-candidate' : 'durability',
+				authorAgentId: identity.agent,
+				machineId: input.machineId,
+				now: input.now,
+			});
+		} catch (error) {
+			// One ref the database refuses must not stop the boot for every
+			// agent on the machine: it is reported and the rest proceed.
+			findings.push(
+				finding({
+					code: 'work-refs.record-failed',
+					phase: 'work-refs',
+					kind: 'blocker',
+					subject: ref.name,
+					message: `The checkpoint ${snapshot.sha} of ${ref.name} could not be recorded: ${error instanceof Error ? error.message : String(error)}. The ref was left untouched.`,
+				}),
+			);
+			continue;
+		}
 		generationsRecorded += 1;
 		findings.push(
 			finding({
