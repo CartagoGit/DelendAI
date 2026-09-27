@@ -395,6 +395,73 @@ const workRefFor = (
 	});
 
 /**
+ * The refs of one unit whatever their kind and topic, when those were not
+ * asked for. A unit is its agent, proposal, slice and generation; the kind
+ * and topic only name it. `work publish` without the `--topic` it was
+ * entered with rendered `…/work`, found nothing, and the unit was left
+ * unpublished.
+ */
+const unitRefsAnyName = (
+	root: string,
+	args: readonly string[],
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	proposal: string,
+	slice: string,
+): readonly string[] => {
+	const open: Record<string, string> = {};
+	if (scalarArg(args, 'kind') === undefined) open.kind = 'zzanykindzz';
+	if (scalarArg(args, 'topic') === undefined) open.topic = 'zzanytopiczz';
+	if (Object.keys(open).length === 0) return [];
+	const rendered = resolveWorkRef(policy.branches.workRefTemplate, {
+		agent,
+		kind: open.kind ?? kindFor(args, slice),
+		proposal,
+		slice,
+		generation: Number(scalarArg(args, 'generation') ?? '1'),
+		...(open.topic === undefined
+			? { topic: scalarArg(args, 'topic') ?? '' }
+			: { topic: open.topic }),
+	});
+	const sentinels = Object.values(open);
+	const firstOpen = Math.min(
+		...sentinels.map((s) => rendered.indexOf(s)).filter((i) => i >= 0),
+	);
+	if (!Number.isFinite(firstOpen)) return [];
+	const prefix = rendered.slice(0, rendered.lastIndexOf('/', firstOpen) + 1);
+	let pattern = rendered.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+	for (const s of sentinels) pattern = pattern.replace(s, '[^/]+');
+	const shape = new RegExp(`^${pattern}$`, 'u');
+	return (git(root, ['for-each-ref', '--format=%(refname)', prefix]) ?? '')
+		.split('\n')
+		.filter((name) => shape.test(name));
+};
+
+/**
+ * A refusal when the arguments leave open which of one unit's refs is
+ * meant, or `undefined`. Picking one would publish or extend the wrong
+ * work; rendering a fresh name would start a second copy of the unit.
+ */
+const ambiguousUnit = (
+	root: string,
+	args: readonly string[],
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	proposal: string,
+	slice: string,
+): ICliCommandResult | undefined => {
+	const rendered = workRefFor(args, policy, agent, proposal, slice);
+	if (git(root, ['rev-parse', '-q', '--verify', rendered]) !== undefined)
+		return undefined;
+	const named = unitRefsAnyName(root, args, policy, agent, proposal, slice);
+	if (named.length < 2) return undefined;
+	return refused(
+		`${proposal} ${slice} of \`${agent}\` has ${named.length} refs: ${named.map((n) => `\`${n}\``).join(', ')}.`,
+		'Name the one meant with --kind=<kind> and --topic=<topic>.',
+	);
+};
+
+/**
  * The ref of the unit these arguments name, as it exists in this clone.
  *
  * A unit entered before the shape named its kind lives under the name
@@ -415,7 +482,10 @@ const existingWorkRef = (
 	const ref = workRefFor(args, policy, agent, proposal, slice);
 	const exists = (name: string): boolean =>
 		git(root, ['rev-parse', '-q', '--verify', name]) !== undefined;
-	if (scalarArg(args, 'kind') !== undefined || exists(ref)) return ref;
+	if (exists(ref)) return ref;
+	const named = unitRefsAnyName(root, args, policy, agent, proposal, slice);
+	if (named.length === 1) return named[0] ?? ref;
+	if (scalarArg(args, 'kind') !== undefined) return ref;
 	const template = policy.branches.workRefTemplate;
 	const withoutKind = template.replace('${kind}/', '');
 	if (withoutKind === template) return ref;
@@ -504,6 +574,8 @@ const entered = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
+	if (ambiguous !== undefined) return ambiguous;
 	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);
 	const branch = ref.replace(/^refs\/heads\//u, '');
 	const base = integrationBase(root, policy);
@@ -644,6 +716,8 @@ const published = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
+	if (ambiguous !== undefined) return ambiguous;
 	const workRef = existingWorkRef(root, args, policy, agent, proposal, slice);
 	if (publicationRefFromWorkRef(policy, workRef) === undefined) {
 		return refused(
@@ -977,6 +1051,8 @@ const checkpointed = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
+	if (ambiguous !== undefined) return ambiguous;
 	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);
 	const result = await engine.createOrUpdateWipRef({
 		baseSha: base,

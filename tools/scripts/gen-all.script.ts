@@ -135,6 +135,21 @@ export const STEPS: readonly IStep[] = [
 			'Regenerate the plugin catalog page and the README plugin table.',
 	},
 	{
+		name: 'core-public-inventory',
+		cmd: [
+			'bun',
+			'tools/scripts/inspect/core-public-inventory.script.ts',
+			'--write',
+		],
+		checkCmd: [
+			'bun',
+			'tools/scripts/inspect/core-public-inventory.script.ts',
+			'--check',
+		],
+		description:
+			'Regenerate the public API inventory from the barrel parser the surface budget reads.',
+	},
+	{
 		name: 'provenance-truth',
 		cmd: ['bun', 'tools/scripts/gen/provenance-truth.script.ts'],
 		checkCmd: [
