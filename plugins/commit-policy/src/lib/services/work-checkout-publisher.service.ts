@@ -264,11 +264,22 @@ export const startWorkCheckoutPublisher = (
 	let inFlight: Promise<readonly IWorkCheckoutPublication[]> | undefined;
 	const tick = (): Promise<readonly IWorkCheckoutPublication[]> => {
 		if (inFlight !== undefined) return inFlight;
-		inFlight = publishWorkCheckouts(
-			options.run,
-			options.policy,
-			options.remote,
-		)
+		inFlight = (options.standDown?.() ?? Promise.resolve(undefined))
+			.then((reason) =>
+				reason === undefined
+					? publishWorkCheckouts(
+							options.run,
+							options.policy,
+							options.remote,
+						)
+					: [
+							{
+								ref: '*',
+								outcome: 'skipped' as const,
+								reason: `${reason} It pushes no work ref until it is restarted.`,
+							},
+						],
+			)
 			.then((publications) => {
 				const moved = publications.filter(
 					(each) => each.outcome !== 'level',

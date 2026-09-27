@@ -7,6 +7,7 @@ import { waitUntil } from '@delendai/test-kit';
 
 import {
 	createStaleRuntimeAdvisory,
+	createStaleRuntimeWatch,
 	staleRuntimeAdvisoryFor,
 } from '@delendai/core/lib/development-policy/stale-runtime-advisory';
 
@@ -69,5 +70,23 @@ describe('createStaleRuntimeAdvisory', () => {
 			'the checkout comparison lands',
 			() => advisory(CALL)?.code === 'SERVER_BEHIND_CHECKOUT',
 		);
+	});
+});
+
+describe('createStaleRuntimeWatch (x00709)', () => {
+	it('answers behind() from a fresh reading, not the advisory interval', async () => {
+		let head = BOOT;
+		let changed = ['plugins/proposals/src/lib/x.ts'];
+		const watch = createStaleRuntimeWatch('/repo', {
+			head: async () => head,
+			changedBetween: async () => changed,
+			now: () => 0,
+			intervalMs: 60_000,
+		});
+		expect(await watch.behind()).toBeUndefined();
+		head = NOW;
+		expect(await watch.behind()).toContain('source file(s) it runs');
+		changed = ['docs/delendai/x.md'];
+		expect(await watch.behind()).toBeUndefined();
 	});
 });

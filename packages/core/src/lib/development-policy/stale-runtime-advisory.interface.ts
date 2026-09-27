@@ -1,6 +1,7 @@
 /**
  * Contract shapes for `./stale-runtime-advisory`.
  */
+import type { CheckpointAdvisoryProvider } from '../contracts/interfaces/checkpoint-advisory.interface';
 
 export interface IStaleRuntimeReading {
 	/** The commit the checkout was at when this server started. */
@@ -20,4 +21,14 @@ export interface IStaleRuntimeAdvisoryDeps {
 	) => Promise<readonly string[]>;
 	readonly now?: () => number;
 	readonly intervalMs?: number;
+}
+
+export interface IStaleRuntimeWatch {
+	/** For the checkpoint-advisory channel; never waits on git. */
+	readonly advisory: CheckpointAdvisoryProvider;
+	/**
+	 * Why this server runs older code than its checkout, read afresh, or
+	 * `undefined` when it runs what the checkout has.
+	 */
+	readonly behind: () => Promise<string | undefined>;
 }

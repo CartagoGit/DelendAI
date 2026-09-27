@@ -45,6 +45,13 @@ export interface IMcpPluginContext {
 	 * the host does not expose it.
 	 */
 	readonly subagentRuntime?: IHostSubagentRuntime | undefined;
+	/**
+	 * Why this server runs older code than its checkout, or `undefined`
+	 * when it is current (x00709). A plugin that changes shared state in
+	 * the background (pushes, deletions) stands down while it answers:
+	 * the rules it would apply are the ones the checkout replaced.
+	 */
+	readonly runtimeBehindCheckout?: () => Promise<string | undefined>;
 	/** Absolute workspace root resolver (never hardcode paths). */
 	readonly workspace: IWorkspacePathProvider;
 	/** Resolved cache/docs roots (workspace-relative). */
