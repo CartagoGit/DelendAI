@@ -2,12 +2,15 @@
 id: x00697
 title: "A closed pull request keeps its publication"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00687, x00691]
+last-transition-id: ef4cf508-d12a-42a6-9e2e-53c35124626b
+last-correlation-id: ef4cf508-d12a-42a6-9e2e-53c35124626b
+last-transition-from: in-progress
 ---
 
 # x00697 — A closed pull request keeps its publication
@@ -56,13 +59,14 @@ the queue did the same thing to a closed pull request's work.
 
 ### S1 — Closed publications are kept
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/ref-lifecycle/reconcile.spec.ts`
 - **Files**:
   - `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`
   - `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`
   - `packages/core/tests/src/lib/ref-lifecycle/reconcile.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
