@@ -2,12 +2,15 @@
 id: x00693
 title: "Every generated artifact is checked in CI"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00541]
+last-transition-id: aa5f98cd-6b8f-4cfe-99a9-02bc2ff75a3a
+last-correlation-id: aa5f98cd-6b8f-4cfe-99a9-02bc2ff75a3a
+last-transition-from: in-progress
 ---
 
 # x00693 — Every generated artifact is checked in CI
@@ -63,14 +66,15 @@ after comments, and `generated-artifacts-check` was green.
 
 ### S1 — The inventory is generated and every generated artifact is checked
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `bun run check:generated`
 - **Files**:
   - `tools/scripts/inspect/core-public-inventory.script.ts`
   - `tools/scripts/gen-all.script.ts`
   - `tools/scripts/lint/check-generated-artifacts.script.ts`
   - `docs/delendai/CORE-PUBLIC-API-INVENTORY.md`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
