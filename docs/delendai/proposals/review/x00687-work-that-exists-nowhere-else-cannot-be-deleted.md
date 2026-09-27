@@ -2,12 +2,15 @@
 id: x00687
 title: "Work that exists nowhere else cannot be deleted"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00685, f00644]
+last-transition-id: 8bcd2c49-032e-401b-8147-cbaae7fd764c
+last-correlation-id: 8bcd2c49-032e-401b-8147-cbaae7fd764c
+last-transition-from: in-progress
 ---
 
 # x00687 — Work that exists nowhere else cannot be deleted
@@ -71,7 +74,7 @@ things let it through:
 
 ### S1 — Deleting unkept work is refused
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/git-guard.spec.ts packages/cli/src/commands/guard.command.spec.ts`
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`
@@ -81,7 +84,8 @@ things let it through:
   - `packages/cli/src/contracts/interfaces/guard.interface.ts`
   - `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`
   - `packages/cli/src/commands/guard.command.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
