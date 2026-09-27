@@ -63,6 +63,7 @@ Watching a swarm of five reviewers on 2026-09-27:
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
   - `packages/cli/src/commands/work.command.spec.ts`
+  - `packages/cli/src/commands/work-ref-migration.spec.ts`
 
 ## dependency graph
 
