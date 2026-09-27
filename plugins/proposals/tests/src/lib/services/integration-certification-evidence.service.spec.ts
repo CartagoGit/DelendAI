@@ -116,8 +116,9 @@ describe('resolveIntegrationCertificationEvidence', () => {
 		expect(
 			await resolve(root, [delivered], line(stray, 'certified'), tip),
 		).toBeNull();
+		// Certified later than the branch the transition reads.
 		expect(
-			await resolve(root, [delivered], line(tip, 'certified'), `${tip}0`),
+			await resolve(root, [delivered], line(tip, 'certified'), delivered),
 		).toBeNull();
 	});
 
