@@ -13,6 +13,7 @@ import { fakePartial } from '@delendai/test-kit';
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
 import {
 	createStdioContext,
+	forwardedToServer,
 	type IConnectToServer,
 	resolveServerEntrypoint,
 } from './stdio-context.factory';
@@ -103,6 +104,36 @@ describe('createStdioContext (x00612)', () => {
 		expect(options?.cwd).toBe('/somebody/else/project');
 		expect(options?.args?.[0]).toBe(process.argv[1]);
 		expect(options?.args).toContain('__serve');
+	});
+
+	it('tells the server who is working, and nothing secret (x00713)', async () => {
+		expect(
+			forwardedToServer({
+				DELENDAI_AGENT_ID: 'model-b',
+				AI_AGENT: 'probe',
+				CLAUDECODE: '1',
+				DELENDAI_SESSION_ID: 's1',
+				DELENDAI_BOOTSTRAP_TOKEN: 'never',
+				DELENDAI_API_KEY: 'never',
+				GITHUB_TOKEN: 'never',
+				OPENAI_API_KEY: 'never',
+				PATH: '/bin',
+			}),
+		).toEqual({
+			DELENDAI_AGENT_ID: 'model-b',
+			AI_AGENT: 'probe',
+			CLAUDECODE: '1',
+			DELENDAI_SESSION_ID: 's1',
+		});
+		const { seen, connect } = spy();
+		await createStdioContext(
+			'/p',
+			globalsWith({ workspace: '/p' }),
+			[],
+			connect,
+		);
+		// The server starts with the SDK's baseline (PATH, HOME, ...).
+		expect(seen[0]?.env?.PATH).toBeDefined();
 	});
 
 	it('refuses a tcp remote by name rather than trying to speak it', async () => {
