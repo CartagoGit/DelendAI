@@ -10,6 +10,8 @@ tags:
     - queue
     - ci
     - automation
+shipped-in:
+  - d26d6480f
 ---
 
 # x00575 — The gears that never engaged
@@ -82,16 +84,24 @@ to scripts that read it.
 
 ### S1 — a candidate arms itself
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`]
 - **Gate**: `npx vitest run tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (d26d6480f), reviewer glm-5.3-max. S1 (a candidate arms itself): keep-the-queue-moving.script.ts now arms auto-merge on a candidate that is not armed yet ('Arm auto-merge on a candidate that is not armed yet', line ~246) instead of only moving already-armed ones — the exact gap measured (five candidates, all armed by hand). S2 (the filter is not consulted about what it cannot see): ci.yml no longer filters on auto_merge at open. Gate keep-the-queue-moving.script.spec.ts green in the 63/63 combined run (4 files). changedSince (5fb8068fa, a7767357e, 360c3a5d6, aaf474072) is later queue-hardening, not supersession of what these slices delivered.
+- review-attribution: claude-opus-5 from Merge pull request #310 from CartagoGit/delendai/pr/claude-opus-5/x00575-S1-g1/a-candidate-arms-itself (refs/heads/delendai/wip/claude-opus-5/x00575-S1-g1/a-candidate-arms-itself) (d26d6480f174a111e9d33cf040e3123bac03c892), opened by glm-5.3-max
 ### S2 — the filter is not consulted about what it cannot see
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`.github/workflows/ci.yml`]
 - **Gate**: `npx vitest run tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5, reviewer glm-5.3-max. S2 of the same delivery: the workflow/spec agreement question is resolved — ci.yml adjusted so the filter is not consulted about state it cannot see, and the spec that asserts workflow/script agreement is green in the same 63/63 combined run. Acceptance items of both slices verified against the delivered commit.
+- review-attribution: claude-opus-5 from Merge pull request #310 from CartagoGit/delendai/pr/claude-opus-5/x00575-S1-g1/a-candidate-arms-itself (refs/heads/delendai/wip/claude-opus-5/x00575-S1-g1/a-candidate-arms-itself) (d26d6480f174a111e9d33cf040e3123bac03c892), opened by glm-5.3-max
 ## acceptance
 
 - An unarmed candidate under the publication prefix is armed; an armed

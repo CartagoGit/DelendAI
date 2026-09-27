@@ -10,6 +10,8 @@ tags:
     - work-refs
     - naming
     - contracts
+shipped-in:
+  - 1456be9a0
 ---
 
 # x00568 — A publication keeps the name of the work it publishes
@@ -79,16 +81,24 @@ name to keep, and inventing one is the behaviour being removed.
 
 ### S1 — the publication ref is derived, not chosen
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/work-publish.service.ts`, `packages/cli/src/lib/work-publish.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts packages/cli/src/commands/work.command.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (1456be9a0), reviewer glm-5.3-max. S1 (publication ref derived, not chosen): work-publish.service derives the canonical ref from the work unit (agent/slice/generation), work.command passes through; gates work-publish.service.spec + work.command.spec green in a 62/62 combined run. S2 (forge allows the canonical ref): forge-settings.lib.spec green in the same run; the publication pattern permits agent/slice/generation segments. Non-goals respected: no renaming of existing publications, only new ones canonical.
+- review-attribution: claude-opus-5 from Merge pull request #303 from CartagoGit/delendai/pr/claude-opus-5/x00568-S1-g1/a-publication-keeps-its-name (refs/heads/delendai/wip/claude-opus-5/x00568-S1-g1/a-publication-keeps-its-name) (1456be9a06b4a3a1ed0612d8570cd7911cf8e730), opened by glm-5.3-max
 ### S2 — the forge lets the canonical publication ref exist
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`]
 - **Gate**: `npx vitest run tools/scripts/governance/forge-settings.lib.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5, reviewer glm-5.3-max. S2 of the same delivery: forge-settings.lib carries the canonical publication pattern; forge-settings.lib.spec.ts green (62/62 combined run with the S1 specs). The publication refs published during the 09-26/09-27 review rounds (delendai/pr/<agent>/<id>-review) resolve under the same canonical shape, confirming the forge-side allowance works in production.
+- review-attribution: claude-opus-5 from Merge pull request #303 from CartagoGit/delendai/pr/claude-opus-5/x00568-S1-g1/a-publication-keeps-its-name (refs/heads/delendai/wip/claude-opus-5/x00568-S1-g1/a-publication-keeps-its-name) (1456be9a06b4a3a1ed0612d8570cd7911cf8e730), opened by glm-5.3-max
 ## acceptance
 
 - `publicationRefFromWorkRef` maps
