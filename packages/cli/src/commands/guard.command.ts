@@ -68,6 +68,7 @@ export const operationsForHook = (
 		readonly inMainWorktree?: boolean;
 		readonly author?: string | undefined;
 		readonly configuredAuthor?: string | undefined;
+		readonly tipKept?: IGuardFacts['tipKept'];
 	},
 ): IGuardedGitOperation[] => {
 	if (hook === 'pre-commit') {
@@ -105,18 +106,29 @@ export const operationsForHook = (
 			},
 		);
 	}
-	return lines(stdin).flatMap(([localRef, localOid, remoteRef]) =>
-		localRef !== undefined &&
-		localOid !== undefined &&
-		remoteRef !== undefined
-			? [
-					{
-						kind: 'push' as const,
-						remoteRef,
-						deleting: ZERO_OID.test(localOid),
-					},
-				]
-			: [],
+	return lines(stdin).flatMap(
+		([localRef, localOid, remoteRef, remoteOid]) => {
+			if (
+				localRef === undefined ||
+				localOid === undefined ||
+				remoteRef === undefined
+			) {
+				return [];
+			}
+			const deleting = ZERO_OID.test(localOid);
+			const deletedTipKept =
+				deleting && remoteOid !== undefined && !ZERO_OID.test(remoteOid)
+					? facts.tipKept?.(remoteOid, remoteRef)
+					: undefined;
+			return [
+				{
+					kind: 'push' as const,
+					remoteRef,
+					deleting,
+					...(deletedTipKept === undefined ? {} : { deletedTipKept }),
+				},
+			];
+		},
 	);
 };
 
@@ -166,6 +178,32 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 		git(workspace, ['rev-parse', '--git-dir']) ===
 		git(workspace, ['rev-parse', '--git-common-dir']),
 	worktreeAgent: () => worktreeAgent(workspace),
+	tipKept: (sha, deletedRef) => {
+		if (git(workspace, ['cat-file', '-e', `${sha}^{commit}`]) === undefined)
+			return undefined;
+		const branch = deletedRef.replace(/^refs\/heads\//u, '');
+		const holders = (
+			git(workspace, [
+				'for-each-ref',
+				'--contains',
+				sha,
+				'--format=%(refname)',
+			]) ?? ''
+		)
+			.split('\n')
+			.filter((ref) => ref.length > 0)
+			// The branch being deleted does not keep its own work, whether
+			// named locally or as any remote's tracking ref.
+			.filter(
+				(ref) =>
+					ref !== `refs/heads/${branch}` &&
+					!(
+						ref.startsWith('refs/remotes/') &&
+						ref.endsWith(`/${branch}`)
+					),
+			);
+		return holders.length > 0;
+	},
 	// What git will author the commit as — `--author`, `-c user.*` and
 	// `GIT_AUTHOR_*` all show here — without its timestamp.
 	author: () =>
@@ -489,6 +527,9 @@ export const createGuardCommand = (
 				branch: facts.branch(),
 				isMerge: facts.isMerge(),
 				inMainWorktree: facts.inMainWorktree(),
+				...(facts.tipKept === undefined
+					? {}
+					: { tipKept: facts.tipKept }),
 				...(hook === 'pre-commit'
 					? {
 							author: facts.author?.(),

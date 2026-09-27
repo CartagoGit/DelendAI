@@ -24,6 +24,7 @@ import type { IGuardFacts } from '../contracts/interfaces/guard.interface';
 import {
 	checkoutWarning,
 	createGuardCommand,
+	defaultGuardFacts,
 	operationsForHook,
 } from './guard.command';
 
@@ -138,6 +139,29 @@ describe('operationsForHook', () => {
 			{ kind: 'push', remoteRef: 'refs/heads/wip/a/x', deleting: false },
 			{ kind: 'push', remoteRef: 'refs/heads/old', deleting: true },
 		]);
+	});
+
+	it('pre-push asks whether the tip a deletion removes is kept elsewhere', () => {
+		const asked: string[] = [];
+		const stdin = `(delete) ${ZERO} refs/heads/wip/a/x ${B}\n`;
+		expect(
+			operationsForHook('pre-push', ['origin', 'url'], stdin, {
+				branch: undefined,
+				isMerge: false,
+				tipKept: (sha, ref) => {
+					asked.push(`${sha} ${ref}`);
+					return false;
+				},
+			}),
+		).toEqual([
+			{
+				kind: 'push',
+				remoteRef: 'refs/heads/wip/a/x',
+				deleting: true,
+				deletedTipKept: false,
+			},
+		]);
+		expect(asked).toEqual([`${B} refs/heads/wip/a/x`]);
 	});
 });
 
@@ -614,5 +638,38 @@ describe('a project whose trunk is not develop can still commit (x00602)', () =>
 			'{ "development": { "profile": "shared-checkout-merge", "branches": { "integration": "trunk" } } }',
 		);
 		expect(said).toContain('git switch trunk');
+	});
+});
+
+describe('defaultGuardFacts.tipKept (x00687)', () => {
+	it('keeps a tip another ref holds, and not one only the deleted branch holds', () => {
+		const root = mkdtempSync(join(tmpdir(), 'guard-tip-kept-'));
+		try {
+			const git = (...args: string[]): string =>
+				execFileSync('git', args, {
+					cwd: root,
+					encoding: 'utf8',
+				}).trim();
+			git('init', '-q', '-b', 'develop');
+			git('config', 'user.email', 'a@example.com');
+			git('config', 'user.name', 'A');
+			git('commit', '-q', '--allow-empty', '--no-verify', '-m', 'base');
+			git('switch', '-q', '-c', 'wip/a/x');
+			git('commit', '-q', '--allow-empty', '--no-verify', '-m', 'work');
+			const tip = git('rev-parse', 'HEAD');
+			git('update-ref', 'refs/remotes/origin/wip/a/x', tip);
+			const facts = defaultGuardFacts(root);
+			expect(facts.tipKept?.(tip, 'refs/heads/wip/a/x')).toBe(false);
+			git('update-ref', 'refs/remotes/origin/pr/a/x', tip);
+			expect(facts.tipKept?.(tip, 'refs/heads/wip/a/x')).toBe(true);
+			expect(
+				facts.tipKept?.(
+					'0123456789abcdef0123456789abcdef01234567',
+					'refs/heads/wip/a/x',
+				),
+			).toBeUndefined();
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });

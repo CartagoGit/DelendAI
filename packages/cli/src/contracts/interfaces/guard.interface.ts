@@ -29,6 +29,13 @@ export interface IGuardFacts {
 	 * undefined in the shared checkout or a worktree delendai did not make.
 	 */
 	readonly worktreeAgent?: () => string | undefined;
+	/**
+	 * Whether `sha`, the tip a push deletes from `deletedRef`, is still
+	 * reachable from another ref: the integration branch, a publication or
+	 * another work ref, not the deleted branch under any of its names.
+	 * `undefined` when the commit is not known here.
+	 */
+	readonly tipKept?: (sha: string, deletedRef: string) => boolean | undefined;
 	/** Everything git wrote to the hook's stdin. */
 	readonly stdin: () => Promise<string>;
 	/**
