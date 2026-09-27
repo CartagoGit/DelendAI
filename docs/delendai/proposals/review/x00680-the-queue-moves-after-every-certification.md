@@ -2,12 +2,15 @@
 id: x00680
 title: "The queue moves after every certification"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00672, x00677]
+last-transition-id: a757a5ec-84f1-4699-b98d-b8903b9b20b4
+last-correlation-id: a757a5ec-84f1-4699-b98d-b8903b9b20b4
+last-transition-from: in-progress
 ---
 
 # x00680 — The queue moves after every certification
@@ -66,13 +69,14 @@ three reasons:
 
 ### S1 — The hydrator dispatches the queue after certification
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/forge/advance-queue.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/advance-queue.script.ts`
   - `tools/scripts/forge/advance-queue.script.spec.ts`
   - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
