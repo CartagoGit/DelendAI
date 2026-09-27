@@ -66,7 +66,7 @@ describe('a verdict on a slice no round was opened for', () => {
 		expect(existsSync(closed)).toBe(true);
 		const markdown = readFileSync(closed, 'utf8');
 		expect(markdown).toMatch(/^status: done$/mu);
-		expect(markdown).toContain(`- ${commit.slice(0, 9)}`);
+		expect(markdown).toContain(`- "${commit.slice(0, 9)}"`);
 		expect(markdown).toContain(
 			'- review-attribution: agent-a from Merge pull request #7 from Owner/delendai/pr/agent-a/x00001-S1-g1/the-work (refs/heads/delendai/wip/agent-a/x00001-S1-g1/the-work)',
 		);

@@ -14,6 +14,11 @@ import {
 	unrecordedAttribution,
 	withShippedIn,
 } from '@delendai/proposals/lib/services/review-attribution';
+import {
+	extractYamlBlock,
+	parseFrontmatterBlock,
+} from '@delendai/proposals/lib/proposals/frontmatter-parser';
+import { guardShippedInPresent } from '@delendai/proposals/lib/services/proposal-state';
 import { EMPTY_REVIEW } from '@delendai/proposals/lib/swarm/proposal-review';
 
 const PROPOSAL = (frontmatter: string, slices: string): string => `---
@@ -80,7 +85,7 @@ describe('checkAttributedApprover', () => {
 describe('withShippedIn', () => {
 	it('adds the field when the proposal has none', () => {
 		expect(withShippedIn(PROPOSAL('', ''), 'abc1234')).toContain(
-			'shipped-in:\n  - abc1234\n',
+			'shipped-in:\n  - "abc1234"\n',
 		);
 	});
 
@@ -89,7 +94,23 @@ describe('withShippedIn', () => {
 			PROPOSAL('shipped-in: ["1111111"]\n', ''),
 			'abc1234',
 		);
-		expect(updated).toContain('shipped-in:\n  - 1111111\n  - abc1234\n');
+		expect(updated).toContain(
+			'shipped-in:\n  - "1111111"\n  - "abc1234"\n',
+		);
+	});
+
+	it('keeps a short SHA a string even when YAML would read a number (x00692)', () => {
+		for (const sha of ['12345e678', '123456789', '0123456789']) {
+			const yaml = extractYamlBlock(withShippedIn(PROPOSAL('', ''), sha));
+			expect(
+				guardShippedInPresent(
+					parseFrontmatterBlock(yaml ?? '') as Record<
+						string,
+						unknown
+					>,
+				),
+			).toEqual({ ok: true, shas: [sha] });
+		}
 	});
 
 	it('does not repeat a commit already listed, short or long', () => {
