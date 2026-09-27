@@ -11,6 +11,8 @@ related: [x00650, x00653]
 last-transition-id: c0a57445-43e6-4294-8b1a-50bea6572e01
 last-correlation-id: c0a57445-43e6-4294-8b1a-50bea6572e01
 last-transition-from: in-progress
+shipped-in:
+  - "16cbb78b30bad4574514992567bd2512c11f6d3c"
 ---
 
 # x00655 — A candidate red only on derived files is regenerated
@@ -74,7 +76,7 @@ nothing loops.
 
 ### S1 — A candidate red only on derived files is regenerated once
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/candidate-disposition.ts`
@@ -94,8 +96,10 @@ duplicate of x00650. Its fingerprint read the text after `Files:` with
 of a multi-line list. Any two proposals whose lists started with the
 same file counted as the same work. The fingerprint now reads the whole
 list.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 16cbb78b3. Un candidato level rojo SOLO en drift/lint-presets (con o sin el check agregado) recibe disposition `regenerate` y se trae adelante: el rojo viene de artefactos derivados desactualizados, no del contenido del candidato — refresh-candidate-artifacts los regenera en lugar de castigarlo. candidate-disposition +29 con constantes y spec +47. Acceptance cubierta (criterio único); gate verde 44/44 en lote. Coherente con x00642 (conflicto en derivados no estanca la cola). Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
