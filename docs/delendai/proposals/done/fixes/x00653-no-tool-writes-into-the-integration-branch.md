@@ -2,17 +2,17 @@
 id: x00653
 title: "No tool writes into the integration branch"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00651, x00636, x00650]
-last-transition-id: 7f99d46c-38a8-4efa-9265-38112ce6f2a6
-last-correlation-id: 7f99d46c-38a8-4efa-9265-38112ce6f2a6
-last-transition-from: in-progress
+last-transition-id: f86b8fb8-cd02-45c3-8b75-6c4997762a2f
+last-correlation-id: f86b8fb8-cd02-45c3-8b75-6c4997762a2f
+last-transition-from: review
+shipped-in: ["239e2b208"]
 ---
-
 # x00653 — No tool writes into the integration branch
 
 ## goal

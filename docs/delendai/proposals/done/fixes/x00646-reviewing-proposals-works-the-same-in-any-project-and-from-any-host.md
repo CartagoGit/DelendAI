@@ -2,15 +2,15 @@
 id: x00646
 title: "Reviewing proposals works the same in any project and from any host"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
-last-transition-id: 6e14363a-f203-4958-b3ca-2d5871e5d7da
-last-correlation-id: 6e14363a-f203-4958-b3ca-2d5871e5d7da
-last-transition-from: in-progress
+last-transition-id: df3f0f56-f35e-4d3f-8089-d41cc1605276
+last-correlation-id: df3f0f56-f35e-4d3f-8089-d41cc1605276
+last-transition-from: review
+shipped-in: ["b01987f5f"]
 ---
-
 # x00646 — Reviewing proposals works the same in any project and from any host
 
 ## Goal

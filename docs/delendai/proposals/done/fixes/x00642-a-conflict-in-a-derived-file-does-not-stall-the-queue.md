@@ -2,17 +2,17 @@
 id: x00642
 title: "A conflict in a derived file does not stall the queue"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00554, x00565, x00637, f00552]
-last-transition-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
-last-correlation-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
-last-transition-from: in-progress
+last-transition-id: 5bcc6572-7fa1-4769-afbd-cfddadd1a470
+last-correlation-id: 5bcc6572-7fa1-4769-afbd-cfddadd1a470
+last-transition-from: review
+shipped-in: ["28d0ab6c1"]
 ---
-
 # x00642 — A conflict in a derived file does not stall the queue
 
 ## goal

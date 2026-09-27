@@ -2,15 +2,18 @@
 id: x00604
 title: "A search that narrows as you say more"
 kind: fix
-status: review
+status: done
 type: proposal
 track: swarm
 date: 2026-09-23
+last-transition-id: 87b28d87-b165-4a9f-a8e7-6dd17db58b4f
+last-correlation-id: 87b28d87-b165-4a9f-a8e7-6dd17db58b4f
+last-transition-from: review
 tags:
-    - tool-surface
-    - agents
+  - tool-surface
+  - agents
+shipped-in: ["f5163e015"]
 ---
-
 # x00604 — A search that narrows as you say more
 
 ## goal

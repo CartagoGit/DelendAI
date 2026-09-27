@@ -2,19 +2,19 @@
 id: x00643
 title: "A proposal in review can be reviewed by someone who did not write it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
+last-transition-id: 2bdc2d3b-69a5-4f99-b52b-346d3fdbef16
+last-correlation-id: 2bdc2d3b-69a5-4f99-b52b-346d3fdbef16
+last-transition-from: review
 tags:
-    - review
-    - lifecycle
-    - independence
-last-transition-id: a098a172-a1fe-457b-8e4f-a4a147df2c9f
-last-correlation-id: a098a172-a1fe-457b-8e4f-a4a147df2c9f
-last-transition-from: in-progress
+  - review
+  - lifecycle
+  - independence
+shipped-in: ["6ec4b8fff"]
 ---
-
 # x00643 — A proposal in review can be reviewed by someone who did not write it
 
 ## goal

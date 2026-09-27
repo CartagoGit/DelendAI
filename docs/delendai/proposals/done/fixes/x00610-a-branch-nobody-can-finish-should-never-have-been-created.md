@@ -2,12 +2,15 @@
 id: x00610
 title: "A branch nobody can finish should never have been created"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 2cb5c458-44ae-4ad6-8576-b992a22f15fd
+last-correlation-id: 2cb5c458-44ae-4ad6-8576-b992a22f15fd
+last-transition-from: review
+shipped-in: ["359705a2b"]
 ---
-
 # x00610 — A branch nobody can finish should never have been created
 
 ## goal

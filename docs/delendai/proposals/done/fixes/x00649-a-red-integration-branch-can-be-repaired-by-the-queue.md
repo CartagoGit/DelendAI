@@ -2,17 +2,17 @@
 id: x00649
 title: "A red integration branch can be repaired by the queue"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00636, x00637, x00647]
-last-transition-id: e2f31afc-62c6-42fb-80ac-b3e843d952a2
-last-correlation-id: e2f31afc-62c6-42fb-80ac-b3e843d952a2
-last-transition-from: in-progress
+last-transition-id: 393b32df-7952-45cf-9c44-f0ffa0e707ce
+last-correlation-id: 393b32df-7952-45cf-9c44-f0ffa0e707ce
+last-transition-from: review
+shipped-in: ["360c3a5d6"]
 ---
-
 # x00649 — A red integration branch can be repaired by the queue
 
 ## goal

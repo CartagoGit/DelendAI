@@ -2,15 +2,15 @@
 id: x00651
 title: "A proposal move leaves the shared index alone, and a repeated tombstone is the same fact"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
-last-transition-id: f3a28b0b-a1c3-4e86-8d74-925793f139ee
-last-correlation-id: f3a28b0b-a1c3-4e86-8d74-925793f139ee
-last-transition-from: in-progress
+last-transition-id: 859fa718-764b-4c16-86b3-4965a10ba0da
+last-correlation-id: 859fa718-764b-4c16-86b3-4965a10ba0da
+last-transition-from: review
+shipped-in: ["23ed60286"]
 ---
-
 # x00651 — A proposal move leaves the shared index alone, and a repeated tombstone is the same fact
 
 ## Goal

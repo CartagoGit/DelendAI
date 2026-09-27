@@ -2,17 +2,17 @@
 id: x00657
 title: "A CI checkout is not the shared checkout"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00653, x00649]
-last-transition-id: 19c40bff-1637-43f6-b909-cda567a0de3b
-last-correlation-id: 19c40bff-1637-43f6-b909-cda567a0de3b
-last-transition-from: in-progress
+last-transition-id: 64d8d717-341a-4643-ad53-71a864e3d487
+last-correlation-id: 64d8d717-341a-4643-ad53-71a864e3d487
+last-transition-from: review
+shipped-in: ["a0c2aabae"]
 ---
-
 # x00657 — A CI checkout is not the shared checkout
 
 ## goal

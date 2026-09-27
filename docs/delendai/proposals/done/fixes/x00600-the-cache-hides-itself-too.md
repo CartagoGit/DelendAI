@@ -2,15 +2,18 @@
 id: x00600
 title: "The cache hides itself too"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
+last-transition-id: 3436b3c3-9fa8-4b65-945b-5cff7f33c866
+last-correlation-id: 3436b3c3-9fa8-4b65-945b-5cff7f33c866
+last-transition-from: review
 tags:
-    - adoption
-    - safety
+  - adoption
+  - safety
+shipped-in: ["706cec883"]
 ---
-
 # x00600 — The cache hides itself too
 
 ## goal

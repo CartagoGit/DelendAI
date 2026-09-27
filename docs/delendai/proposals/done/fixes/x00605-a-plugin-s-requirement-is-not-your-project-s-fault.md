@@ -2,14 +2,17 @@
 id: x00605
 title: "A plugin's requirement is not your project's fault"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 00c9a2a8-96f9-4d1b-adb6-314422a6afe2
+last-correlation-id: 00c9a2a8-96f9-4d1b-adb6-314422a6afe2
+last-transition-from: review
 tags:
-    - adoption
+  - adoption
+shipped-in: ["c48ac87a9"]
 ---
-
 # x00605 — A plugin's requirement is not your project's fault
 
 ## goal

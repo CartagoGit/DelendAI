@@ -2,15 +2,18 @@
 id: x00603
 title: "The worktree reads are declared"
 kind: fix
-status: review
+status: done
 type: proposal
 track: ci
 date: 2026-09-22
+last-transition-id: 719aa595-5f92-4fda-b499-1122f6eda1ea
+last-correlation-id: 719aa595-5f92-4fda-b499-1122f6eda1ea
+last-transition-from: review
 tags:
-    - ci
-    - plugins
+  - ci
+  - plugins
+shipped-in: ["ee72c9622"]
 ---
-
 # x00603 — The worktree reads are declared
 
 ## goal

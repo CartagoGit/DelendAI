@@ -2,15 +2,18 @@
 id: x00599
 title: "A moved proposal is counted once, and reported as a move"
 kind: fix
-status: review
+status: done
 type: proposal
 track: proposals
 date: 2026-09-22
+last-transition-id: bd819c01-58cb-4bd9-8c33-78017f89d81b
+last-correlation-id: bd819c01-58cb-4bd9-8c33-78017f89d81b
+last-transition-from: review
 tags:
-    - sqlite
-    - reconciler
+  - sqlite
+  - reconciler
+shipped-in: ["5c924bc5f"]
 ---
-
 # x00599 — A moved proposal is counted once, and reported as a move
 
 ## goal

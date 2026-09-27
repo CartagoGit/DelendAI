@@ -2,17 +2,17 @@
 id: x00655
 title: "A candidate red only on derived files is regenerated"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00650, x00653]
-last-transition-id: c0a57445-43e6-4294-8b1a-50bea6572e01
-last-correlation-id: c0a57445-43e6-4294-8b1a-50bea6572e01
-last-transition-from: in-progress
+last-transition-id: cc1f16c3-82e1-41ea-a542-d60c9cf66896
+last-correlation-id: cc1f16c3-82e1-41ea-a542-d60c9cf66896
+last-transition-from: review
+shipped-in: ["5fb8068fa"]
 ---
-
 # x00655 — A candidate red only on derived files is regenerated
 
 ## goal

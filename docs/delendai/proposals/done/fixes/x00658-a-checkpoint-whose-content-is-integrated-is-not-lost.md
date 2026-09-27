@@ -2,17 +2,17 @@
 id: x00658
 title: "A checkpoint whose content is integrated is not lost"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00551]
-last-transition-id: 74e97980-b14a-4ed9-85a8-279999bcbd76
-last-correlation-id: 74e97980-b14a-4ed9-85a8-279999bcbd76
-last-transition-from: in-progress
+last-transition-id: 0f263eaf-ae07-4cd4-8cad-fe9981fd32bc
+last-correlation-id: 0f263eaf-ae07-4cd4-8cad-fe9981fd32bc
+last-transition-from: review
+shipped-in: ["3f89c6cd1"]
 ---
-
 # x00658 — A checkpoint whose content is integrated is not lost
 
 ## goal

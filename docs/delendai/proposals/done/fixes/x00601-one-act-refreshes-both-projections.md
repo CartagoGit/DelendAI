@@ -2,15 +2,18 @@
 id: x00601
 title: "One act refreshes both projections"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-22
+last-transition-id: 5958e2d6-ad73-4dac-bc57-a0d9f736b9e9
+last-correlation-id: 5958e2d6-ad73-4dac-bc57-a0d9f736b9e9
+last-transition-from: review
 tags:
-    - proposals
-    - sqlite
+  - proposals
+  - sqlite
+shipped-in: ["fdeba7b58"]
 ---
-
 # x00601 — One act refreshes both projections
 
 ## goal

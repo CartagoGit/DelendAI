@@ -2,15 +2,15 @@
 id: x00645
 title: "Edits no work ref carries are reported, not silent"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
-last-transition-id: 3f6b6bdc-38fc-42bb-b531-5fab485b5f3f
-last-correlation-id: 3f6b6bdc-38fc-42bb-b531-5fab485b5f3f
-last-transition-from: in-progress
+last-transition-id: 7bdd1350-50d0-46a2-b81d-104025f5b734
+last-correlation-id: 7bdd1350-50d0-46a2-b81d-104025f5b734
+last-transition-from: review
+shipped-in: ["2c27eec1e"]
 ---
-
 # x00645 — Edits no work ref carries are reported, not silent
 
 ## Goal

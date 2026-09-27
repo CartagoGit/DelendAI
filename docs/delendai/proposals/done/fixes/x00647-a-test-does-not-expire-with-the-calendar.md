@@ -2,17 +2,17 @@
 id: x00647
 title: "A test does not expire with the calendar"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00637]
-last-transition-id: 6a54fbd4-4e25-4fbf-bdcc-48b8e8e4796f
-last-correlation-id: 6a54fbd4-4e25-4fbf-bdcc-48b8e8e4796f
-last-transition-from: in-progress
+last-transition-id: dc24bdcb-68a9-481d-ab54-999f3d6cc58d
+last-correlation-id: dc24bdcb-68a9-481d-ab54-999f3d6cc58d
+last-transition-from: review
+shipped-in: ["55c2e81d7"]
 ---
-
 # x00647 — A test does not expire with the calendar
 
 ## goal

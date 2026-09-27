@@ -2,15 +2,18 @@
 id: x00606
 title: "A stale index is not an empty backlog"
 kind: fix
-status: review
+status: done
 type: proposal
 track: swarm
 date: 2026-09-23
+last-transition-id: bc792d53-c4b4-4ffa-ae74-e64a771f8db2
+last-correlation-id: bc792d53-c4b4-4ffa-ae74-e64a771f8db2
+last-transition-from: review
 tags:
-    - agents
-    - proposals
+  - agents
+  - proposals
+shipped-in: ["e88541adb"]
 ---
-
 # x00606 — A stale index is not an empty backlog
 
 ## goal
