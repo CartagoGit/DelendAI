@@ -37,10 +37,13 @@ import type {
 import { readWorkspacePolicy } from '../lib/development-policy.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
 
-const workspaceOf = (
-	ctx: ICliCommandContext,
-	args: readonly string[],
-): string => scalarArg(args, 'workspace') ?? ctx.cwd;
+/**
+ * `--workspace` is a global flag: the parser consumes it before a command
+ * sees its arguments. Read from `args`, it was never there, and a decision
+ * meant for a repair unit was refused as a write to the shared checkout.
+ */
+const workspaceOf = (ctx: ICliCommandContext): string =>
+	ctx.globals.workspace.length > 0 ? ctx.globals.workspace : ctx.cwd;
 
 /**
  * A decision is a tracked file that reaches the integration branch by a
@@ -112,11 +115,8 @@ const readResolutions = async (
 const readDecision = (value: string | undefined): IRepairDecision | undefined =>
 	REPAIR_DECISIONS.find((decision) => decision === value);
 
-const listed = async (
-	args: readonly string[],
-	ctx: ICliCommandContext,
-): Promise<ICliCommandResult> => {
-	const path = filePathFor(workspaceOf(ctx, args));
+const listed = async (ctx: ICliCommandContext): Promise<ICliCommandResult> => {
+	const path = filePathFor(workspaceOf(ctx));
 	const { resolutions, errors } = await readResolutions(path);
 	const payload = { path, resolutions, errors };
 	// An entry that could not be read is a decision that is NOT in force:
@@ -160,9 +160,9 @@ const resolved = async (
 			error: `repair resolve <task-id> --evidence=<digest> --decision=<${REPAIR_DECISIONS.join('|')}> --reason="..." [--by=<who>]. The boot report prints the task id and its evidence digest; --by defaults to DELENDAI_AGENT_ID.`,
 		};
 	}
-	const refusal = await sharedCheckoutRefusal(workspaceOf(ctx, args));
+	const refusal = await sharedCheckoutRefusal(workspaceOf(ctx));
 	if (refusal !== undefined) return refusal;
-	const path = filePathFor(workspaceOf(ctx, args));
+	const path = filePathFor(workspaceOf(ctx));
 	const { resolutions, errors } = await readResolutions(path);
 	if (errors.length > 0) {
 		return {
@@ -205,9 +205,9 @@ const forgotten = async (
 			error: 'repair forget <task-id> [--workspace=<path>]',
 		};
 	}
-	const refusal = await sharedCheckoutRefusal(workspaceOf(ctx, args));
+	const refusal = await sharedCheckoutRefusal(workspaceOf(ctx));
 	if (refusal !== undefined) return refusal;
-	const path = filePathFor(workspaceOf(ctx, args));
+	const path = filePathFor(workspaceOf(ctx));
 	const { resolutions } = await readResolutions(path);
 	const kept = resolutions.filter((entry) => entry.taskId !== taskId);
 	if (kept.length === resolutions.length) {
@@ -230,7 +230,7 @@ export const createRepairCommand = (): ICliCommand => ({
 	usage: 'repair <list|resolve|forget> [task-id] [--evidence=<digest>] [--decision=<kind>] [--reason=<text>] [--by=<who>] [--workspace=<path>]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const sub = args[0];
-		if (sub === 'list' || sub === undefined) return listed(args, ctx);
+		if (sub === 'list' || sub === undefined) return listed(ctx);
 		if (sub === 'resolve') return resolved(args, ctx);
 		if (sub === 'forget') return forgotten(args, ctx);
 		return {

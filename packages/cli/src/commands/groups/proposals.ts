@@ -17,9 +17,13 @@ import {
 	usage,
 } from './group-helpers';
 
-/** Parse an optional `--json=<payload>` flag into a value, or undefined. */
-const jsonArg = (args: readonly string[]): unknown => {
-	const raw = scalarArg(args, 'json');
+/**
+ * Parse an optional JSON-valued flag into a value, or undefined. Never
+ * `--json`: that is the global output switch, which the parser consumes
+ * before a command sees its arguments.
+ */
+const jsonArg = (args: readonly string[], flag: string): unknown => {
+	const raw = scalarArg(args, flag);
 	if (raw === undefined) return undefined;
 	try {
 		return JSON.parse(raw) as unknown;
@@ -65,13 +69,13 @@ const createCommand: ICliCommand = {
 		const title = scalarArg(args, 'title');
 		if (title === undefined) {
 			return usage(
-				'proposals create --title=<t> [--kind=feat] [--goal=<g>] [--track=<t>] [--json=<slices>]',
+				'proposals create --title=<t> [--kind=feat] [--goal=<g>] [--track=<t>] [--slices=<json>]',
 			);
 		}
 		const kind = scalarArg(args, 'kind');
 		const goal = scalarArg(args, 'goal');
 		const track = scalarArg(args, 'track');
-		const slices = jsonArg(args);
+		const slices = jsonArg(args, 'slices');
 		return data(
 			await request(ctx, 'delendai_proposals_create_proposal', {
 				title,
@@ -464,10 +468,10 @@ const taskQueueCommand: ICliCommand = {
 		const action = scalarArg(args, 'action') ?? positionalArg(args);
 		if (action === undefined) {
 			return usage(
-				'proposals task-queue --action=enqueue|dequeue|subscribe|report [--json=<params>]',
+				'proposals task-queue --action=enqueue|dequeue|subscribe|report [--params=<json>]',
 			);
 		}
-		const params = jsonArg(args);
+		const params = jsonArg(args, 'params');
 		return data(
 			await request(ctx, 'delendai_proposals_task_queue', {
 				action,
@@ -509,11 +513,11 @@ const planCommand: ICliCommand = {
 	name: 'proposals plan',
 	summary: 'Validate proposed slices into a parallel plan (disjointness).',
 	async run(args, ctx) {
-		const slices = jsonArg(args);
+		const slices = jsonArg(args, 'slices');
 		if (!Array.isArray(slices)) {
 			return {
 				code: EXIT_CODE.USAGE,
-				error: 'usage: proposals plan --json=\'[{"sliceId":"S1","files":[...]}]\' [--proposal=<id>]',
+				error: 'usage: proposals plan --slices=\'[{"sliceId":"S1","files":[...]}]\' [--proposal=<id>]',
 			};
 		}
 		const proposalId = scalarArg(args, 'proposal');

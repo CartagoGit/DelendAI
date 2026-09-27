@@ -651,7 +651,8 @@ const published = async (
 			'A publication keeps the name of the work it publishes; a ref outside the namespace has no name to keep.',
 		);
 	}
-	const remote = scalarArg(args, 'remote') ?? integrationRemote(root, policy);
+	// `--remote` is global: the parser hands it over as `globals.remote`.
+	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
 	const base = integrationBase(root, policy);
 	if (base === undefined) {
 		return refused(
