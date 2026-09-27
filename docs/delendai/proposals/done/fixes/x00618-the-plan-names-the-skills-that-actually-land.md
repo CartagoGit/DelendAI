@@ -2,13 +2,15 @@
 id: x00618
 title: "The plan names the skills that actually land"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 12027d63-5638-444c-b12e-98d45e29f510
+last-correlation-id: 12027d63-5638-444c-b12e-98d45e29f510
+last-transition-from: review
 shipped-in: ["f936bf444"]
 ---
-
 # x00618 — The plan names the skills that actually land
 
 ## goal

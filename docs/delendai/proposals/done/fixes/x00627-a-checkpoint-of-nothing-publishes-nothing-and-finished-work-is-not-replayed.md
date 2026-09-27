@@ -2,13 +2,15 @@
 id: x00627
 title: "A checkpoint of nothing publishes nothing, and finished work is not replayed"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-24
+last-transition-id: 12354bb7-a443-4492-90bb-35148b6dcade
+last-correlation-id: 12354bb7-a443-4492-90bb-35148b6dcade
+last-transition-from: review
 shipped-in: ["f6452cf32", "05c814d22"]
 ---
-
 # x00627 — A checkpoint of nothing publishes nothing, and finished work is not replayed
 
 ## goal

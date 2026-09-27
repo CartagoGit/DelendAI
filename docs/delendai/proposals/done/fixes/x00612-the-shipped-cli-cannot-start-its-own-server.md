@@ -2,13 +2,15 @@
 id: x00612
 title: "The shipped CLI cannot start its own server"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 0bb281ea-a2bd-4803-adef-457600973528
+last-correlation-id: 0bb281ea-a2bd-4803-adef-457600973528
+last-transition-from: review
 shipped-in: ["dea43b3d7"]
 ---
-
 # x00612 — The shipped CLI cannot start its own server
 
 ## goal

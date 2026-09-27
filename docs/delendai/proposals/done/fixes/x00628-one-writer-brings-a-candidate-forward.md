@@ -2,13 +2,15 @@
 id: x00628
 title: "One writer brings a candidate forward"
 kind: fix
-status: review
+status: done
 type: proposal
 track: workflow
 date: 2026-09-24
+last-transition-id: 845da22f-dcc2-418e-b745-3d8c69be8554
+last-correlation-id: 845da22f-dcc2-418e-b745-3d8c69be8554
+last-transition-from: review
 shipped-in: ["de9656046", "9dc578b82", "bcb388cd1", "e796efabd", "31ed234b3"]
 ---
-
 # x00628 — One writer brings a candidate forward
 
 ## goal

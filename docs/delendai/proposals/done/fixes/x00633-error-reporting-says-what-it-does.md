@@ -2,13 +2,15 @@
 id: x00633
 title: "Error reporting says what it does"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-24
+last-transition-id: 5c735082-b9aa-4a6d-8e50-c3768e3d0071
+last-correlation-id: 5c735082-b9aa-4a6d-8e50-c3768e3d0071
+last-transition-from: review
 shipped-in: ["33a750721", "309bbe59d"]
 ---
-
 # x00633 — Error reporting says what it does
 
 ## goal

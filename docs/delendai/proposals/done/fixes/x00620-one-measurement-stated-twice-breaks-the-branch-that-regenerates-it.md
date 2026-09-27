@@ -2,13 +2,15 @@
 id: x00620
 title: "One measurement stated twice breaks the branch that regenerates it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 382e2127-b9d5-4fdb-9725-0c8e65d5d194
+last-correlation-id: 382e2127-b9d5-4fdb-9725-0c8e65d5d194
+last-transition-from: review
 shipped-in: ["f7fb19915"]
 ---
-
 # x00620 — One measurement stated twice breaks the branch that regenerates it
 
 ## goal

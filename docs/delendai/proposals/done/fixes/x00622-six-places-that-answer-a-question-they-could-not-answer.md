@@ -2,13 +2,15 @@
 id: x00622
 title: "Six places that answer a question they could not answer"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 40426327-2d3d-4f60-b549-48fce1eaa419
+last-correlation-id: 40426327-2d3d-4f60-b549-48fce1eaa419
+last-transition-from: review
 shipped-in: ["ef8fe9d77"]
 ---
-
 # x00622 — Six places that answer a question they could not answer
 
 ## goal

@@ -2,13 +2,15 @@
 id: x00623
 title: "A write declares which tree it belongs to"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 79342e15-cfa9-44ad-84a3-6addd0b1664d
+last-correlation-id: 79342e15-cfa9-44ad-84a3-6addd0b1664d
+last-transition-from: review
 shipped-in: ["088361e5e", "a25428a05", "218646867", "532b4a072", "bf1814f1a", "1d1df0b29", "280f2b2c1"]
 ---
-
 # x00623 — A write declares which tree it belongs to
 
 ## goal

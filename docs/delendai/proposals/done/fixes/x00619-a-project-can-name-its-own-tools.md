@@ -2,13 +2,15 @@
 id: x00619
 title: "A project can name its own tools"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 47a1b1a0-f830-4d00-a4fc-f751e60dd106
+last-correlation-id: 47a1b1a0-f830-4d00-a4fc-f751e60dd106
+last-transition-from: review
 shipped-in: ["0e0fbedf7"]
 ---
-
 # x00619 — A project can name its own tools
 
 ## goal

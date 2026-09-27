@@ -2,13 +2,15 @@
 id: x00617
 title: "A host is not an agent"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: dee52ecf-b4f5-4a79-8d12-bc33961369bd
+last-correlation-id: dee52ecf-b4f5-4a79-8d12-bc33961369bd
+last-transition-from: review
 shipped-in: ["f936bf444"]
 ---
-
 # x00617 — A host is not an agent
 
 ## goal

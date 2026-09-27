@@ -2,13 +2,15 @@
 id: x00615
 title: "A skill ships by what it declares, not by where it sits"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 6ba07881-8943-471f-ab98-8db96ea6c9a7
+last-correlation-id: 6ba07881-8943-471f-ab98-8db96ea6c9a7
+last-transition-from: review
 shipped-in: ["33e6d4a18"]
 ---
-
 # x00615 — A skill ships by what it declares, not by where it sits
 
 ## goal

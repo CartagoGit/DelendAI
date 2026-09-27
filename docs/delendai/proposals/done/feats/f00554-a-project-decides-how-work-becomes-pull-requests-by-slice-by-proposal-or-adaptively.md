@@ -2,13 +2,15 @@
 id: f00554
 title: "A project decides how work becomes pull requests: by slice, by proposal, or adaptively"
 kind: feat
-status: review
+status: done
 type: proposal
 track: workflow
 date: 2026-09-24
+last-transition-id: ddf9b7a3-d0cc-4d0d-96ef-d29fb6703a89
+last-correlation-id: ddf9b7a3-d0cc-4d0d-96ef-d29fb6703a89
+last-transition-from: review
 shipped-in: ["c713706a9", "03deea8d1"]
 ---
-
 # f00554 — A project decides how work becomes pull requests: by slice, by proposal, or adaptively
 
 ## goal

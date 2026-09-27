@@ -2,13 +2,15 @@
 id: x00616
 title: "The CLI reached past the surface that decides what is reachable"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 7a05763e-17db-42f2-b36f-45ad7ec9dfb9
+last-correlation-id: 7a05763e-17db-42f2-b36f-45ad7ec9dfb9
+last-transition-from: review
 shipped-in: ["6f0d3f094"]
 ---
-
 # x00616 — The CLI reached past the surface that decides what is reachable
 
 ## goal

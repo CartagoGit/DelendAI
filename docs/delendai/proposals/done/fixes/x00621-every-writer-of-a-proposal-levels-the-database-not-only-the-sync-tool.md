@@ -2,13 +2,15 @@
 id: x00621
 title: "Every writer of a proposal levels the database, not only the sync tool"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-23
+last-transition-id: 552716ae-8fc2-4f4c-8a4b-51e066dfdd7c
+last-correlation-id: 552716ae-8fc2-4f4c-8a4b-51e066dfdd7c
+last-transition-from: review
 shipped-in: ["b0193719f"]
 ---
-
 # x00621 — Every writer of a proposal levels the database, not only the sync tool
 
 ## goal

@@ -2,13 +2,15 @@
 id: x00614
 title: "The plan and the act were two different lists"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: ea710d2f-4090-493f-b334-c19fca0990d1
+last-correlation-id: ea710d2f-4090-493f-b334-c19fca0990d1
+last-transition-from: review
 shipped-in: ["794629862"]
 ---
-
 # x00614 — The plan and the act were two different lists
 
 ## goal

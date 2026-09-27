@@ -2,13 +2,15 @@
 id: x00609
 title: "A gate asks the forge for what git already knows"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: c9cef1a1-bb6e-4488-8d81-8bf9e0eadbfe
+last-correlation-id: c9cef1a1-bb6e-4488-8d81-8bf9e0eadbfe
+last-transition-from: review
 shipped-in: ["1de88bd51"]
 ---
-
 # x00609 — A gate asks the forge for what git already knows
 
 ## goal

@@ -2,13 +2,15 @@
 id: x00611
 title: "A server that refuses to start says why"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 37008578-b46f-4d0b-9d9c-beba50d9152a
+last-correlation-id: 37008578-b46f-4d0b-9d9c-beba50d9152a
+last-transition-from: review
 shipped-in: ["2fdd43da1"]
 ---
-
 # x00611 — A server that refuses to start says why
 
 ## goal

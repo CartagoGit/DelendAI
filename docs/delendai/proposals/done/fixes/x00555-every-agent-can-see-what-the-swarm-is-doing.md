@@ -2,21 +2,20 @@
 id: x00555
 title: "Every agent can see what the swarm is doing"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19
-shipped-in:
-  - c910135c6
-  - dfd088264aa55de528356067653bec321e5c2efb
-  - 69408501831111213fb9539f90190302ffc257e0
+last-transition-id: bc9b807d-764c-4307-8577-a9e127b4bb5e
+last-correlation-id: bc9b807d-764c-4307-8577-a9e127b4bb5e
+last-transition-from: review
 tags:
-    - swarm
-    - coordination
-    - claims
-    - awareness
+  - swarm
+  - coordination
+  - claims
+  - awareness
+shipped-in: ["c910135c6", "dfd088264aa55de528356067653bec321e5c2efb", "69408501831111213fb9539f90190302ffc257e0"]
 ---
-
 # x00555 — Every agent can see what the swarm is doing
 
 ## goal

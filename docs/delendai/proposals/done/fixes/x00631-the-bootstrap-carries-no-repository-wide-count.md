@@ -2,13 +2,15 @@
 id: x00631
 title: "The bootstrap carries no repository-wide count"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-24
+last-transition-id: 40df1f68-f448-4114-8d7b-1d35936b8fc6
+last-correlation-id: 40df1f68-f448-4114-8d7b-1d35936b8fc6
+last-transition-from: review
 shipped-in: ["f2ae6e19f"]
 ---
-
 # x00631 — The bootstrap carries no repository-wide count
 
 ## goal

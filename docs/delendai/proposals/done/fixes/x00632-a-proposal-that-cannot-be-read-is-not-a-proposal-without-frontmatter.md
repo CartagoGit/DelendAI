@@ -2,13 +2,15 @@
 id: x00632
 title: "A proposal that cannot be read is not a proposal without frontmatter"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-24
+last-transition-id: faba46ba-3f66-4aa4-8dc7-1d48d4f64b74
+last-correlation-id: faba46ba-3f66-4aa4-8dc7-1d48d4f64b74
+last-transition-from: review
 shipped-in: ["2e443b638"]
 ---
-
 # x00632 — A proposal that cannot be read is not a proposal without frontmatter
 
 ## goal

@@ -2,13 +2,15 @@
 id: x00608
 title: "A proposal tool writes where the server stands, not where the agent works"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: cca289f9-a570-43d7-97ec-8d4b3406ad6d
+last-correlation-id: cca289f9-a570-43d7-97ec-8d4b3406ad6d
+last-transition-from: review
 shipped-in: ["f7fb19915"]
 ---
-
 # x00608 — A proposal tool writes where the server stands, not where the agent works
 
 ## goal

@@ -2,13 +2,15 @@
 id: f00553
 title: "Work in progress is visible on its work ref while it happens"
 kind: feat
-status: review
+status: done
 type: proposal
 track: workflow
 date: 2026-09-24
+last-transition-id: a3e2d355-a4fb-4295-9b3e-2f887c7e8994
+last-correlation-id: a3e2d355-a4fb-4295-9b3e-2f887c7e8994
+last-transition-from: review
 shipped-in: ["2cb4fee6b", "efa5ce460"]
 ---
-
 # f00553 — Work in progress is visible on its work ref while it happens
 
 ## goal

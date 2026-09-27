@@ -2,13 +2,15 @@
 id: x00613
 title: "A default that is copied is not a default"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 0d0d932c-a84d-4b27-8ff0-6930ca1a018f
+last-correlation-id: 0d0d932c-a84d-4b27-8ff0-6930ca1a018f
+last-transition-from: review
 shipped-in: ["794629862"]
 ---
-
 # x00613 — A default that is copied is not a default
 
 ## goal

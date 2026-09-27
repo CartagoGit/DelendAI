@@ -2,13 +2,15 @@
 id: x00625
 title: "The catalog is derived from the proposals that exist, not from a stale index"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 4b7da3e1-ed0d-4188-a32a-180b08176778
+last-correlation-id: 4b7da3e1-ed0d-4188-a32a-180b08176778
+last-transition-from: review
 shipped-in: ["e568f9e9c"]
 ---
-
 # x00625 — The catalog is derived from the proposals that exist, not from a stale index
 
 ## goal

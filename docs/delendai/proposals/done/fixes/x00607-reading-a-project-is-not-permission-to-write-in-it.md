@@ -2,13 +2,15 @@
 id: x00607
 title: "Reading a project is not permission to write in it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
+last-transition-id: 065fafe6-ad27-4bcb-a628-37b4ff1ad831
+last-correlation-id: 065fafe6-ad27-4bcb-a628-37b4ff1ad831
+last-transition-from: review
 shipped-in: ["1308d13ca"]
 ---
-
 # x00607 — Reading a project is not permission to write in it
 
 ## goal

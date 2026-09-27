@@ -2,13 +2,15 @@
 id: x00626
 title: "delendai governs agents; a person uses git freely"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-24
+last-transition-id: 8e5d62f4-f0a0-46c9-9cd7-9115641db718
+last-correlation-id: 8e5d62f4-f0a0-46c9-9cd7-9115641db718
+last-transition-from: review
 shipped-in: ["11aeddb95"]
 ---
-
 # x00626 — delendai governs agents; a person uses git freely
 
 ## goal

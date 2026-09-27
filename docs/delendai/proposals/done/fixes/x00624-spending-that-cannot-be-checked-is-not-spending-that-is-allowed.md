@@ -2,13 +2,15 @@
 id: x00624
 title: "Spending that cannot be checked is not spending that is allowed"
 kind: fix
-status: review
+status: done
 type: proposal
 track: batuta
 date: 2026-09-23
+last-transition-id: 34b235b9-e2f6-4e31-8323-a23f892c89da
+last-correlation-id: 34b235b9-e2f6-4e31-8323-a23f892c89da
+last-transition-from: review
 shipped-in: ["7c7cc8066"]
 ---
-
 # x00624 — Spending that cannot be checked is not spending that is allowed
 
 ## goal

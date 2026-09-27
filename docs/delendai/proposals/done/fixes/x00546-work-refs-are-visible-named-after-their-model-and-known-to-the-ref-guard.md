@@ -2,25 +2,20 @@
 id: x00546
 title: "Work refs are visible, named after their model, and known to the ref guard"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17
-shipped-in:
-    - 35db9ff33bfdcd27f463dd295ec20c32273b74fe
-    - ee59e78faf06e3f7ab461873c2e2f4b89970be82
-    - 4e19d1bc4669a03798d169652648238f5a82003c
-    - 7715725d99cb1704946e33c524aa3836639a9ff4
+last-transition-id: 1ed2adb8-9c5e-4b62-b741-c9848b09bded
+last-correlation-id: 1ed2adb8-9c5e-4b62-b741-c9848b09bded
+last-transition-from: review
 tags:
-    - git
-    - workflow
-    - agents
-    - gates
-last-transition-id: 199e0004-6272-44a9-bc1c-d9482da7727c
-last-correlation-id: 199e0004-6272-44a9-bc1c-d9482da7727c
-last-transition-from: done
+  - git
+  - workflow
+  - agents
+  - gates
+shipped-in: ["35db9ff33bfdcd27f463dd295ec20c32273b74fe", "ee59e78faf06e3f7ab461873c2e2f4b89970be82", "4e19d1bc4669a03798d169652648238f5a82003c", "7715725d99cb1704946e33c524aa3836639a9ff4"]
 ---
-
 # x00546 — Work refs are visible, named after their model, and known to the ref guard
 
 ## goal
