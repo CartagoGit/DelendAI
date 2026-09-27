@@ -2,13 +2,18 @@
 id: x00580
 title: "A guard never authorises what it did not check"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
 tags:
     - guards
     - fail-closed
+shipped-in:
+  - "c0fc10564f06f466d27ca827d24b9bb50d14d446"
+last-transition-id: 90ccaa7c-2325-4b7d-b4ac-ad3cb0940644
+last-correlation-id: 90ccaa7c-2325-4b7d-b4ac-ad3cb0940644
+last-transition-from: review
 ---
 
 # x00580 — A guard never authorises what it did not check
@@ -62,10 +67,14 @@ the project genuinely has no policy.
 
 ### S1 — an unreadable policy refuses, a missing one passes
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard.command.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/commands/guard.command.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé c0fc10564 completo (guard.command.ts + spec + bootstrap). Separa dos casos que antes devolvían el mismo OK: proyecto sin política declarada (OK legítimo) vs política declarada e ilegible (ahora VALIDATION, fail-closed, con mensaje accionable que nombra el fix). Elimina la forma fail-open que el ciclo ya había encontrado tres veces. LEFTHOOK=0 sigue siendo el escape de emergencia. El test antiguo que afirmaba el comportamiento fail-open se dividió en sus dos casos reales. Acceptance cubierta: la lectura que lanza rechaza, la ausencia de política pasa, y los 22 tests del spec pasan con vitest en el worktree del batch (el fallo previo con `bun test` era del runner, vi.unstubAllEnvs no existe ahí — ambiental, no del slice). changedSince: sin commits posteriores que toquen estos ficheros. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from Merge pull request #315 from CartagoGit/delendai/pr/claude-opus-5/x00580-S1-g1/a-guard-never-authorises-what-it-did-not-check (refs/heads/delendai/wip/claude-opus-5/x00580-S1-g1/a-guard-never-authorises-what-it-did-not-check) (c0fc10564f06f466d27ca827d24b9bb50d14d446), opened by glm-5.3-max
 ## acceptance
 
 - A policy read that throws refuses the hook.
