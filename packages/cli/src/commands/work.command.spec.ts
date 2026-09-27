@@ -233,17 +233,31 @@ describe('delendai work (x00553)', () => {
 		});
 		// The shared checkout is untouched.
 		expect(git(root, 'symbolic-ref', '--short', 'HEAD')).toBe('develop');
-		const again = await command.run(
-			[
-				'enter',
-				'--proposal=x00553',
-				'--slice=S2',
-				'--agent=claude-opus-5',
-				'--topic=isolated',
-			],
-			contextFor(root),
+		const session = String(
+			(created.data as { session?: unknown }).session ?? '',
 		);
-		expect(again.data).toMatchObject({ created: false });
+		expect(session.length).toBeGreaterThan(0);
+		const reenter = (extra: readonly string[]) =>
+			command.run(
+				[
+					'enter',
+					'--proposal=x00553',
+					'--slice=S2',
+					'--agent=claude-opus-5',
+					'--topic=isolated',
+					...extra,
+				],
+				contextFor(root),
+			);
+		const again = await reenter([`--session=${session}`]);
+		expect(again.data).toMatchObject({ created: false, session });
+		// Another instance under the same agent id does not get the unit
+		// another session holds (x00699).
+		for (const extra of [[], ['--session=someone-else']]) {
+			const other = await reenter(extra);
+			expect(other.code).not.toBe(0);
+			expect(other.error).toContain('held by another session');
+		}
 	});
 
 	it('says nothing to do when the project declares no policy', async () => {
