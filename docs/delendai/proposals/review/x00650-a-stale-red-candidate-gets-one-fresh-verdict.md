@@ -11,6 +11,8 @@ related: [x00636, x00647, x00649]
 last-transition-id: d0ee23cb-cc84-4aca-a5e9-eac1583e0cab
 last-correlation-id: d0ee23cb-cc84-4aca-a5e9-eac1583e0cab
 last-transition-from: in-progress
+shipped-in:
+  - "a9532d69d450653bb6a7f7abcf4609b07922480b"
 ---
 
 # x00650 — A stale red candidate gets one fresh verdict
@@ -109,7 +111,7 @@ not moving" is one line of that log.
 
 ### S1 — Every candidate has a stated fate, and a stale red one is run again
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/candidate-disposition.ts`
@@ -120,8 +122,10 @@ not moving" is one line of that log.
   - `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
   - `tools/scripts/host/host-server.script.ts`
   - `tools/scripts/host/host-server.script.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real a9532d69d. candidate-disposition (111 líneas + spec 136): candidato rojo behind con head no-merge de la integración se TRAE adelante (bring forward); rojo level o re-rojo tras traerse queda para su autor hasta que empuje; verde behind SOLO se trae si su fichero autorado fue también cambiado por la integración desde el merge-base (si no, no); los verdes conservan el orden uno-a-la-vez; cada pasada imprime la disposition y su razón de cada candidato; el host corre la pasada a intervalos (10 min por defecto, 0 apaga) en vez de dormirse dentro del job. Acceptance cubierta; gate verde 64/64 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None. x00649 (a red integration branch repaired by the queue) is

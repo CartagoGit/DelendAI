@@ -11,6 +11,8 @@ related: [x00551]
 last-transition-id: 74e97980-b14a-4ed9-85a8-279999bcbd76
 last-correlation-id: 74e97980-b14a-4ed9-85a8-279999bcbd76
 last-transition-from: in-progress
+shipped-in:
+  - "a2fe25dcabfb174dc574a11ae1b2abbd5cd4692a"
 ---
 
 # x00658 — A checkpoint whose content is integrated is not lost
@@ -70,15 +72,17 @@ ancestry alone, as before.
 
 ### S1 — Identical content is evidence of integration
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/seams.interface.ts`
   - `packages/core/src/lib/startup-reconciler/git-seam.ts`
   - `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
   - `packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real a2fe25dca. integration-evidence distingue contenido integrado de ref desaparecida: un ref que se esfumó pero cuyo contenido llegó a la integración por SQUASH se registra como integrada y el boot es READY; la misma ref, tras cambiar la integración de nuevo ese path, sigue degradando el boot (la evidencia no se reutiliza); un checkpoint vacío que NO es ancestro también se registra como integrado (nada que perder). git-seam.ts 33 líneas para leer la evidencia; integration-evidence.spec 71 líneas. Acceptance cubierta; gate verde 44/44 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

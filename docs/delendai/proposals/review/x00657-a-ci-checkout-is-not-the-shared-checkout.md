@@ -11,6 +11,8 @@ related: [x00653, x00649]
 last-transition-id: 19c40bff-1637-43f6-b909-cda567a0de3b
 last-correlation-id: 19c40bff-1637-43f6-b909-cda567a0de3b
 last-transition-from: in-progress
+shipped-in:
+  - "200d3cb8b1ee53b5e6510d63ed6e76e711f4d21a"
 ---
 
 # x00657 — A CI checkout is not the shared checkout
@@ -64,13 +66,15 @@ provider.
 
 ### S1 — The guard stands down in a CI job's checkout
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/project-branches.spec.ts packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/project-branches.ts`
   - `packages/core/tests/src/lib/development-policy/project-branches.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 200d3cb8b. Un checkout de CI NO es el shared checkout: con CI=true el shared checkout sobre la rama de integración NO se rechaza; sin CI=true sigue rechazándose; con CI=true y un marker de agente (AI_AGENT, CLAUDECODE o el agent id declarado) sigue rechazándose — un agente no puede hacerse pasar por CI. verify:tools sobre un clon en develop pasa fs_write y scaffold con CI=true (es exactamente el fallo ambiental que mi memoria había registrado como "ambiental: no arreglar" — esta propuesta lo arregla de raíz distinguiendo CI real de agente local). project-branches +13 y spec +16. Acceptance cubierta; gate verde 44/44 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
