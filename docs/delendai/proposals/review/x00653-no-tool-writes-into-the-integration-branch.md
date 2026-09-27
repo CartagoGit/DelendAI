@@ -11,6 +11,8 @@ related: [x00651, x00636, x00650]
 last-transition-id: 7f99d46c-38a8-4efa-9265-38112ce6f2a6
 last-correlation-id: 7f99d46c-38a8-4efa-9265-38112ce6f2a6
 last-transition-from: in-progress
+shipped-in:
+  - "ce61b70d4b12f44ecc1051613b72954a58680fc3"
 ---
 
 # x00653 — No tool writes into the integration branch
@@ -100,7 +102,7 @@ The audit of every write tool found no other route:
 
 ### S1 — The finished proposals are handed off through a pull request
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Files**:
   - `docs/delendai/proposals/review/r00643-proposal-frontmatter-is-parsed-once-as-yaml.md`
@@ -114,8 +116,10 @@ The audit of every write tool found no other route:
 Moved with `proposal_transition`, which wrote into the shared checkout.
 The moves were then carried onto this work ref, and the shared checkout
 was restored.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real ce61b70d4. Ningún tool escribe en la rama de integración: un tool caller-checkout llamado SIN checkout mientras el server corre en el shared checkout sobre la integración bajo política work-ref se NIEGA — el tool no llega a ejecutarse y la negación nombra `delendai work enter`. project-branches.ts +38 implementa el chequeo compartido; el catálogo generado y varias propuestas derivadas se regeneran. Acceptance cubierta (el criterio único del slice); gate 8/8 en lote + verificación en vivo: esta misma sesión vio la negación "would write into the shared checkout on develop" al correr proposals sync fuera del worktree. Sin cambios fuera de alcance.
 ### S2 — A write into the integration branch is refused with the canonical step
 
 - **Status**: review
