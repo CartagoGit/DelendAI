@@ -11,6 +11,8 @@ related: [x00685]
 last-transition-id: 3c6d15f4-3f3f-4db2-8287-e76e1aca14ee
 last-correlation-id: 3c6d15f4-3f3f-4db2-8287-e76e1aca14ee
 last-transition-from: in-progress
+shipped-in:
+  - "4e8013ead3e4fc7c4845695b38e25831f14038c7"
 ---
 
 # x00686 — A hand-moved proposal is refused at commit
@@ -60,13 +62,15 @@ Meanwhile the owner saw proposals whose Markdown and folder disagree.
 
 ### S1 — Folder drift is refused at commit
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `bun tools/scripts/lint/proposal-folder-drift.script.ts`
 - **Files**:
   - `lefthook.yml`
   - `tools/scripts/lint/proposal-folder-drift.script.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 4e8013ead. Una propuesta movida A MANO al estado done se rechaza en commit: mover una review proposal a done/ con git mv y commitear lo REFUSA el pre-commit nombrando la propuesta y el comando de transición correcto (proposal-folder-drift +12 wired en lefthook +10), verificado por el implementador ejecutando el hook sobre ese cambio exacto. Los movimientos de estado pasan por proposal_transition (que mueve fichero y actualiza BD a la vez). Acceptance cubierta (criterio único); gate 38/38 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

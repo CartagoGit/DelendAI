@@ -11,6 +11,8 @@ related: [x00645, x00563]
 last-transition-id: d100fd95-58da-4b7b-b349-80da6e61a2cc
 last-correlation-id: d100fd95-58da-4b7b-b349-80da6e61a2cc
 last-transition-from: in-progress
+shipped-in:
+  - "4cfe2cabb0b6264eadc421056bb5b14b952dd256"
 ---
 
 # x00671 — A proposal is published under the project's shape
@@ -65,7 +67,7 @@ repository's own `publishCommand` told agents to use the same name
 
 ### S1 — Proposal publication follows the project's shape
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/tools/publish-proposal.ts`
@@ -75,8 +77,10 @@ repository's own `publishCommand` told agents to use the same name
   - `delendai.config.json`
   - `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 4cfe2cabb. La publicación de una propuesta usa la FORMA del proyecto: el ref publicado es `<prefix><agent>/<id>-all-g1/<topic>` con `unattributed` cuando no hay agente declarado (delendai.config.json +2 — el template del proyecto); con checkout en la work branch de una unidad, create_proposal no publica nada y nombra la unidad que ya lleva el fichero (no duplica). authoring.tool refactorizado (137 líneas tocadas), publish-proposal +44, specs +88. Acceptance cubierta; gate 22/22 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

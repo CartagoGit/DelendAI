@@ -11,6 +11,8 @@ related: [x00672, x00677]
 last-transition-id: a757a5ec-84f1-4699-b98d-b8903b9b20b4
 last-correlation-id: a757a5ec-84f1-4699-b98d-b8903b9b20b4
 last-transition-from: in-progress
+shipped-in:
+  - "6e55adec2f7dc54cee262841b3e6d774d477c7fe"
 ---
 
 # x00680 — The queue moves after every certification
@@ -69,14 +71,16 @@ three reasons:
 
 ### S1 — The hydrator dispatches the queue after certification
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/advance-queue.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/advance-queue.script.ts`
   - `tools/scripts/forge/advance-queue.script.spec.ts`
   - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 6e55adec2. La cola se mueve tras CADA certificación: advance-queue (103 líneas + spec 43) despacha UNA vez con tip certificado o rojo; un tip pendiente se espera como mucho 50 minutos; si el tip se mueve mientras se espera, no se despacha (la espera observa el ref, no un reloj ciego). hydrate-candidates-after-merge ajustado. Acceptance cubierta; gate 113/113 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

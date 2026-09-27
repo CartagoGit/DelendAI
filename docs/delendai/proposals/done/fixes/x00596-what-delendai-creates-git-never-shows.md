@@ -2,7 +2,7 @@
 id: x00596
 title: "What delendai creates, git never shows"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
@@ -11,6 +11,9 @@ tags:
     - safety
 shipped-in:
   - "4f40a039323f18e4630c1e663d07507542fe3924"
+last-transition-id: c4e3ca24-f3ab-466f-8226-b95442eaf27c
+last-correlation-id: c4e3ca24-f3ab-466f-8226-b95442eaf27c
+last-transition-from: review
 ---
 
 # x00596 — What delendai creates, git never shows
