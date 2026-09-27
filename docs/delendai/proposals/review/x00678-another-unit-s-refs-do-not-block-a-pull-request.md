@@ -2,12 +2,15 @@
 id: x00678
 title: "Another unit's refs do not block a pull request"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00677, x00647]
+last-transition-id: 1e3d8b2c-96eb-4977-8667-ae0ad1feddf1
+last-correlation-id: 1e3d8b2c-96eb-4977-8667-ae0ad1feddf1
+last-transition-from: in-progress
 ---
 
 # x00678 — Another unit's refs do not block a pull request
@@ -55,7 +58,7 @@ settled, and its author cannot settle it.
 
 ### S1 — A pull request run fails only over its own ref
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Files**:
   - `tools/scripts/lint/ref-lifecycle-guard.script.ts`
