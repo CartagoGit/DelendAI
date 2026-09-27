@@ -2,12 +2,15 @@
 id: x00699
 title: "An agent session holds its unit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00688, x00695]
+last-transition-id: 173bc13c-ce47-482d-87c5-9e9756a20065
+last-correlation-id: 173bc13c-ce47-482d-87c5-9e9756a20065
+last-transition-from: in-progress
 ---
 
 # x00699 — An agent session holds its unit
@@ -64,14 +67,15 @@ the instance.
 
 ### S1 — A unit is held by the session that entered it
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/lib/worktree-agent.service.ts`
   - `packages/cli/src/commands/work.command.ts`
   - `packages/cli/src/contracts/interfaces/work-briefing.interface.ts`
   - `packages/cli/src/commands/work.command.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 x00695 (the same `work enter`), merged into this unit.
