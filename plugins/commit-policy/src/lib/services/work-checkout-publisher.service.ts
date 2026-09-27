@@ -123,6 +123,38 @@ const publishHeld = async (
 	if (own.ok) {
 		return { ref, outcome: 'skipped', reason: 'no commits of its own yet' };
 	}
+	// Work that already reached the remote under another ref (the
+	// integration branch, its publication) is finished work: the work ref
+	// ends when its work does, and pushing it again only brings back a
+	// branch that was removed on purpose. On 2026-09-27 a work ref deleted
+	// from the remote came back from here, from a checkout that still had
+	// it (x00691).
+	const holders = await run([
+		'for-each-ref',
+		'--contains',
+		commit,
+		'--format=%(refname)',
+		'refs/remotes',
+	]);
+	const ownMirror = `refs/remotes/${remote}/${ref.replace(/^refs\/heads\//u, '')}`;
+	const heldElsewhere = holders.ok
+		? holders.output
+				.split('\n')
+				.map((line) => line.trim())
+				.find(
+					(line) =>
+						line.length > 0 &&
+						line !== ownMirror &&
+						!line.endsWith('/HEAD'),
+				)
+		: undefined;
+	if (heldElsewhere !== undefined) {
+		return {
+			ref,
+			outcome: 'skipped',
+			reason: `its commits are already kept by ${heldElsewhere}`,
+		};
+	}
 	const remoteTip = await run(['ls-remote', remote, ref]);
 	if (!remoteTip.ok) {
 		return {
