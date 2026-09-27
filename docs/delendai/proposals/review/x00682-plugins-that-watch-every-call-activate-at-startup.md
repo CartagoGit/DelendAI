@@ -2,12 +2,15 @@
 id: x00682
 title: "Plugins that watch every call activate at startup"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00645]
+last-transition-id: 37dd5a49-eaea-4bf2-b0d8-c90803b7106e
+last-correlation-id: 37dd5a49-eaea-4bf2-b0d8-c90803b7106e
+last-transition-from: in-progress
 ---
 
 # x00682 — Plugins that watch every call activate at startup
@@ -75,7 +78,7 @@ Each failure was silent.
 
 ### S1 — Observers activate at startup
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/generate/managed-lazy-catalog.script.spec.ts packages/core/tests/src/lib/cli/assemble.lazy-register-errors.spec.ts`
 - **Files**:
   - `tools/scripts/generate/managed-lazy-catalog.script.ts`
@@ -83,7 +86,8 @@ Each failure was silent.
   - `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`
   - `packages/core/src/lib/cli/assemble-plugins.ts`
   - `packages/core/tests/src/lib/cli/assemble.lazy-register-errors.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
