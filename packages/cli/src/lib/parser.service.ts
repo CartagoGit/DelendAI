@@ -1,19 +1,14 @@
 import { resolve } from 'node:path';
 
+import {
+	CONSUMED_GLOBAL_FLAGS,
+	GLOBAL_FLAGS_WITH_VALUE,
+} from '../contracts/constants/cli-global-flags.constant';
 import type {
 	ICliGlobalOptions,
 	IParsedCliInvocation,
 } from '../contracts/interfaces/cli-command.interface';
 
-const GLOBAL_FLAGS_WITH_VALUE = new Set([
-	'workspace',
-	'remote',
-	'format',
-	'lang',
-	'plugins',
-	'preset',
-	'config',
-]);
 const VALUE_FLAGS = GLOBAL_FLAGS_WITH_VALUE;
 // Fallback set of command groups whose names are two words. The real CLI
 // derives this from the live command registry (see `index.ts`) so every
@@ -172,11 +167,7 @@ export const parseCliInvocation = (
 		const key = body.includes('=')
 			? body.slice(0, body.indexOf('='))
 			: body;
-		if (
-			!GLOBAL_FLAGS_WITH_VALUE.has(key) &&
-			key !== 'json' &&
-			key !== 'no-color'
-		) {
+		if (!CONSUMED_GLOBAL_FLAGS.has(key)) {
 			continue;
 		}
 		const parsed = takeFlagValue(commandArgs, index, body);
