@@ -2,7 +2,7 @@
 id: f00549
 title: "Where a new file belongs, and which layers it may import"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -17,6 +17,9 @@ tags:
     - architecture
     - placement
     - layers
+last-transition-id: 43df57c2-5ab6-4be3-9857-8fa2bb201f95
+last-correlation-id: 43df57c2-5ab6-4be3-9857-8fa2bb201f95
+last-transition-from: review
 ---
 
 # f00549 — Where a new file belongs, and which layers it may import

@@ -2,7 +2,7 @@
 id: x00576
 title: "Every generated file merges the same way"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -11,6 +11,9 @@ tags:
     - git
 shipped-in:
   - 4f3f25e5c
+last-transition-id: d2e48eec-a920-4bca-9e11-d4d5a6a0bac7
+last-correlation-id: d2e48eec-a920-4bca-9e11-d4d5a6a0bac7
+last-transition-from: review
 ---
 
 # x00576 — Every generated file merges the same way

@@ -2,7 +2,7 @@
 id: x00569
 title: "A repository-wide count is not a branch artifact"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -12,6 +12,9 @@ tags:
     - queue
 shipped-in:
   - b29dbfb5d
+last-transition-id: 31df6e5e-d5c0-4314-a071-9088aa844873
+last-correlation-id: 31df6e5e-d5c0-4314-a071-9088aa844873
+last-transition-from: review
 ---
 
 # x00569 — A repository-wide count is not a branch artifact

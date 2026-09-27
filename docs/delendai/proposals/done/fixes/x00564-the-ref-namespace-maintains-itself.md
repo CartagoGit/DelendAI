@@ -2,7 +2,7 @@
 id: x00564
 title: "The ref namespace maintains itself"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -12,6 +12,9 @@ tags:
     - swarm
 shipped-in:
   - 79863b5c274b4c299380836ffa138af39a082371
+last-transition-id: 09ad69f5-88f8-4220-a366-27b4a0b954df
+last-correlation-id: 09ad69f5-88f8-4220-a366-27b4a0b954df
+last-transition-from: review
 ---
 
 # x00564 — The ref namespace maintains itself

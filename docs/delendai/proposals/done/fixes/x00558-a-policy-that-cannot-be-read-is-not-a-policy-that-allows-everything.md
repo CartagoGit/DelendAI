@@ -2,7 +2,7 @@
 id: x00558
 title: "A policy that cannot be read is not a policy that allows everything"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19
@@ -11,6 +11,9 @@ tags:
     - guard
     - startup
     - fail-closed
+last-transition-id: 84bd55d8-02f4-473d-9690-d6e816f3eff4
+last-correlation-id: 84bd55d8-02f4-473d-9690-d6e816f3eff4
+last-transition-from: review
 ---
 
 # x00558 — A policy that cannot be read is not a policy that allows everything

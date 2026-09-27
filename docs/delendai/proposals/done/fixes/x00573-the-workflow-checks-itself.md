@@ -2,7 +2,7 @@
 id: x00573
 title: "The workflow checks itself"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -11,6 +11,9 @@ tags:
     - diagnostics
 shipped-in:
   - 38a2520de
+last-transition-id: 5c74043e-c09c-4aee-992f-8434f2c2b776
+last-correlation-id: 5c74043e-c09c-4aee-992f-8434f2c2b776
+last-transition-from: review
 ---
 
 # x00573 — The workflow checks itself

@@ -2,7 +2,7 @@
 id: x00578
 title: "A shallow clone is not a conflict"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -11,6 +11,9 @@ tags:
     - queue
 shipped-in:
   - 87cc1e38f
+last-transition-id: 34507d5a-0ebe-4c4b-93b0-481edaab7cc7
+last-correlation-id: 34507d5a-0ebe-4c4b-93b0-481edaab7cc7
+last-transition-from: review
 ---
 
 # x00578 — A shallow clone is not a conflict

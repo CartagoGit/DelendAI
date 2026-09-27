@@ -2,7 +2,7 @@
 id: x00572
 title: "The queue rehydrates itself"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -12,6 +12,9 @@ tags:
     - automation
 shipped-in:
   - 46d593142
+last-transition-id: aa40b344-fec4-4918-a417-e65aaae8e20a
+last-correlation-id: aa40b344-fec4-4918-a417-e65aaae8e20a
+last-transition-from: review
 ---
 
 # x00572 — The queue rehydrates itself

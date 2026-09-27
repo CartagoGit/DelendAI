@@ -2,7 +2,7 @@
 id: x00575
 title: "The gears that never engaged"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -12,6 +12,9 @@ tags:
     - automation
 shipped-in:
   - d26d6480f
+last-transition-id: 01f22225-1ffc-4cdc-bb94-3b70f66cddf4
+last-correlation-id: 01f22225-1ffc-4cdc-bb94-3b70f66cddf4
+last-transition-from: review
 ---
 
 # x00575 — The gears that never engaged

@@ -2,13 +2,14 @@
 id: x00534
 title: "develop-protection-live pasa en verde cuando no puede verificar nada y no forma parte del check agregado"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-08
-last-transition-id: ef97c618-13e0-447a-8370-3d8b420b5ce9
-last-correlation-id: ef97c618-13e0-447a-8370-3d8b420b5ce9
-last-transition-from: in-progress
+last-transition-id: e08b4c16-0412-43e7-9175-b750ded109d2
+last-correlation-id: e08b4c16-0412-43e7-9175-b750ded109d2
+last-transition-from: review
+shipped-in: ["8a3e2a315"]
 ---
 
 # x00534 — develop-protection-live pasa en verde cuando no puede verificar nada y no forma parte del check agregado

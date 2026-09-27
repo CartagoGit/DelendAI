@@ -2,7 +2,7 @@
 id: x00560
 title: "The agent a ref is named after has one source of truth"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -13,6 +13,9 @@ tags:
     - swarm
 shipped-in:
   - 831d1399718fb9ee1b49644fd2bc13e5e8a33d0b
+last-transition-id: 68c7fa41-e004-4680-ba71-4ebe40cb5394
+last-correlation-id: 68c7fa41-e004-4680-ba71-4ebe40cb5394
+last-transition-from: review
 ---
 
 # x00560 — The agent a ref is named after has one source of truth

@@ -2,7 +2,7 @@
 id: x00563
 title: "The shape of a work ref is stated once"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -13,6 +13,9 @@ tags:
 shipped-in:
   - 0a323aecb626f454c2c1c1d46d517074ef24557e
   - eb42953c666c85079d3dc99ae02cc224a4f5d542
+last-transition-id: bf3ddbf7-0d76-45f7-9ac3-4bc4ff902ac2
+last-correlation-id: bf3ddbf7-0d76-45f7-9ac3-4bc4ff902ac2
+last-transition-from: review
 ---
 
 # x00563 — The shape of a work ref is stated once
