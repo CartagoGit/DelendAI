@@ -2,12 +2,15 @@
 id: x00706
 title: "A certified delivery closes while develop moves"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00700, x00696]
+last-transition-id: eb7328d0-2ed8-45f8-9330-0c6b8888f8fe
+last-correlation-id: eb7328d0-2ed8-45f8-9330-0c6b8888f8fe
+last-transition-from: in-progress
 ---
 
 # x00706 — A certified delivery closes while develop moves
@@ -58,7 +61,7 @@ reviewers were blamed.
 
 ### S1 — Approved work closes
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/integration-certification-evidence.service.spec.ts tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/integration-certification-evidence.service.ts`
@@ -66,7 +69,8 @@ reviewers were blamed.
   - `tools/scripts/proposals/close-approved-proposals.script.ts`
   - `tools/scripts/proposals/close-approved-proposals.script.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
