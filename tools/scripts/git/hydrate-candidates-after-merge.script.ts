@@ -91,6 +91,9 @@ export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
 	['tools/scripts/forge/certify-integration.script.ts', 60_000],
 	['tools/scripts/git/refresh-candidate-artifacts.script.ts', 3_600_000],
 	['tools/scripts/git/maintain-ref-namespace.script.ts', 180_000],
+	// Last: once the tip's certification finishes, the queue moves
+	// (x00680); nothing else starts it after a merge.
+	['tools/scripts/forge/advance-queue.script.ts', 3_000_000],
 ];
 
 const main = (): void => {
