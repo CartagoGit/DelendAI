@@ -17,32 +17,35 @@ last-transition-from: in-progress
 
 ## goal
 
-A pull request's `ref-lifecycle` run fails only over the pull request's
-own ref. Every other unit's ref is reported. The integration branch's
-runs, the schedule and a dispatch still fail over any ref in the
-repository.
+CI — a pull request's run and the integration branch's certification —
+fails `ref-lifecycle` only over the pull request's own ref, and reports
+every other unit's ref. The queue job judges the whole forge and fails
+on any of it.
 
 ## why
 
-`ref-lifecycle` judges every ref on the forge, and `delendai-validate`,
-the only required check, needs it. On 2026-09-26 and 27, first nine
-publication refs of one reviewer, then two, then twelve of another, had
-no pull request. Each time, every other pull request went red on
-`ref-lifecycle` and nothing could merge until somebody cleaned up after
-that agent. A pull request is not the place where a stranger's ref is
-settled, and its author cannot settle it.
+`ref-lifecycle` judged every ref on the forge, and `delendai-validate`,
+the only required check, needs it. On 2026-09-26 and 27 one reviewer's
+nine publication refs with no pull request, then another's two, then its
+twelve, turned every other pull request red. They also left develop
+uncertified, and the queue arms only on a certified integration branch.
+So nothing merged, not even the fixes, until somebody cleaned up after
+that agent: three times in two days. A certification certifies a tree,
+and another unit's ref is not part of it.
 
 ## why this design
 
-- **Judge the pull request on the pull request.** On a `pull_request`
-  run, only a blocking verdict on the PR's own head fails the run. The
-  others are printed with the note that they are judged on the
-  integration branch.
-- **The repository is still judged.** Push, schedule and dispatch runs
-  keep failing over any blocking ref, so the integration branch's own
-  certification still says when the forge carries work nobody owns.
-- x00677 removes most of the cause: publications now open their own pull
-  requests, and the hydrator opens the missing ones of well-shaped refs.
+- **CI judges its own tree.** On a pull request, a blocking verdict on
+  the head fails the run; everything else is printed as reported. On
+  the integration branch's own runs nothing fails for refs of other
+  units.
+- **The forge is still judged.** The queue job runs `ref-lifecycle
+  --reap` with `REF_LIFECYCLE_SCOPE=repository` and fails over any
+  blocking ref, so an orphaned publication is still reported, and
+  reaped when it is a published copy.
+- x00677 removes most of the cause: publications open their own pull
+  requests, the hydrator opens the missing ones of well-shaped refs, and
+  the guard is the integration branch's.
 
 ## non-goals
 
@@ -63,6 +66,7 @@ settled, and its author cannot settle it.
 - **Files**:
   - `tools/scripts/lint/ref-lifecycle-guard.script.ts`
   - `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+  - `.github/workflows/keep-the-queue-moving.yml`
 
 ## dependency graph
 
@@ -72,4 +76,6 @@ None.
 
 - On a pull request run, a blocking ref other than the head is reported
   and does not fail the run; the head's does.
-- On push, schedule and dispatch runs, every blocking ref fails the run.
+- The integration branch's CI does not fail over another unit's ref.
+- With `REF_LIFECYCLE_SCOPE=repository` (the queue job), every
+  blocking ref fails the run.

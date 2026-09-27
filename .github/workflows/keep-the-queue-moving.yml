@@ -116,6 +116,8 @@ jobs:
             - name: Reap the refs whose pull requests are finished
               if: always()
               env:
+                  # The queue job judges the whole forge (x00678).
+                  REF_LIFECYCLE_SCOPE: repository
                   GH_TOKEN: ${{ github.token }}
               run: bun run lint:ref-lifecycle -- --reap
 

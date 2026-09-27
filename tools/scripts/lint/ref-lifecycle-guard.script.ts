@@ -206,17 +206,20 @@ export const blockingRefs = <TVerdict extends { readonly name: string }>(
 /**
  * What a run is allowed to fail for (x00678).
  *
- * A pull request's run is judged on the pull request. Refs of other units
- * are reported, never failed on: one agent's publications with no pull
- * request made `ref-lifecycle` — and the required check that needs it —
- * red on every other pull request, so nothing could merge until somebody
- * cleaned up after that agent. The integration branch's own runs, the
- * schedule and a dispatch still judge the whole repository and fail on
- * any of it.
+ * CI certifies a tree — a pull request's, or the integration branch's —
+ * and a ref of another unit is not part of that tree. When it failed CI,
+ * one agent's publications with no pull request turned every other pull
+ * request red and left the integration branch uncertified, and the queue,
+ * which arms only on a certified integration branch, stopped for
+ * everyone: three times in two days. So CI fails only over a pull
+ * request's own ref, and reports the rest. The queue job, which exists to
+ * keep the forge tidy, judges the whole repository and fails on any of it
+ * (`REF_LIFECYCLE_SCOPE=repository`).
  */
 export const failingFor = <TVerdict extends { readonly name: string }>(
 	blocking: readonly TVerdict[],
 	run: {
+		readonly scope: string | undefined;
 		readonly event: string | undefined;
 		readonly head: string | undefined;
 	},
@@ -224,11 +227,12 @@ export const failingFor = <TVerdict extends { readonly name: string }>(
 	readonly failing: readonly TVerdict[];
 	readonly reported: readonly TVerdict[];
 } => {
-	if (run.event !== 'pull_request')
-		return { failing: blocking, reported: [] };
+	if (run.scope === 'repository') return { failing: blocking, reported: [] };
+	const own = (verdict: TVerdict): boolean =>
+		run.event === 'pull_request' && verdict.name === run.head;
 	return {
-		failing: blocking.filter((verdict) => verdict.name === run.head),
-		reported: blocking.filter((verdict) => verdict.name !== run.head),
+		failing: blocking.filter(own),
+		reported: blocking.filter((verdict) => !own(verdict)),
 	};
 };
 
@@ -435,12 +439,13 @@ const main = (): void => {
 	}
 
 	const judged = failingFor(blockingRefs(outstanding, result.reapable), {
+		scope: process.env.REF_LIFECYCLE_SCOPE,
 		event: process.env.GITHUB_EVENT_NAME,
 		head: process.env.GITHUB_HEAD_REF,
 	});
 	for (const verdict of judged.reported) {
 		console.log(
-			`ref-lifecycle: ${verdict.name} — ${verdict.reason} (another unit's ref: reported here, judged on the integration branch)`,
+			`ref-lifecycle: ${verdict.name} — ${verdict.reason} (not this tree's: reported here, judged by the queue job)`,
 		);
 	}
 	const blocking = judged.failing;

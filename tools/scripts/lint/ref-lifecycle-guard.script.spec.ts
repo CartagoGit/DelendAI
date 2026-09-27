@@ -325,6 +325,7 @@ describe('failingFor (x00678)', () => {
 
 	it('fails a pull request only on its own ref, and reports the rest', () => {
 		const judged = failingFor(blocking, {
+			scope: undefined,
 			event: 'pull_request',
 			head: 'delendai/pr/me/implement/x00001-S1-g1/mine',
 		});
@@ -336,25 +337,25 @@ describe('failingFor (x00678)', () => {
 		]);
 	});
 
-	it('does not fail a pull request over another unit’s refs', () => {
-		expect(
-			failingFor([blocking[0] ?? { name: '' }], {
-				event: 'pull_request',
-				head: 'delendai/pr/me/implement/x00001-S1-g1/mine',
-			}).failing,
-		).toEqual([]);
+	it('does not fail the integration branch\u2019s certification over refs of any unit', () => {
+		for (const event of ['push', 'workflow_dispatch', undefined]) {
+			const judged = failingFor(blocking, {
+				scope: undefined,
+				event,
+				head: undefined,
+			});
+			expect(judged.failing).toEqual([]);
+			expect(judged.reported).toHaveLength(2);
+		}
 	});
 
-	it('judges the whole repository on the integration branch, the schedule and a dispatch', () => {
-		for (const event of [
-			'push',
-			'schedule',
-			'workflow_dispatch',
-			undefined,
-		]) {
-			expect(
-				failingFor(blocking, { event, head: undefined }).failing,
-			).toHaveLength(2);
-		}
+	it('judges the whole repository in the queue job', () => {
+		expect(
+			failingFor(blocking, {
+				scope: 'repository',
+				event: 'schedule',
+				head: undefined,
+			}).failing,
+		).toHaveLength(2);
 	});
 });
