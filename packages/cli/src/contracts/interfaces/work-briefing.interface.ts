@@ -30,4 +30,9 @@ export interface IEnteredWorktree {
 	readonly path: string | null;
 	/** Whether this call created it, rather than finding it. */
 	readonly created: boolean;
+	/**
+	 * The session that holds the unit (x00699). Pass it back
+	 * (`--session`, or `DELENDAI_SESSION_ID`) to enter the unit again.
+	 */
+	readonly session?: string | undefined;
 }
