@@ -45,6 +45,12 @@ export const runIntegrationEvidencePhase = async (input: {
 	readonly integrationSha: string;
 	/** Ref names git currently reports, for "deleted because merged". */
 	readonly liveRefs: ReadonlySet<string>;
+	/**
+	 * Tips of refs that may still hold a checkpoint whose work ref is gone:
+	 * publishing a unit moves its work to a publication and deletes the
+	 * work ref, which is not a loss (x00702).
+	 */
+	readonly keptBy?: readonly string[];
 	readonly now: number;
 }): Promise<IIntegrationPhaseResult> => {
 	const findings: IStartupFinding[] = [];
@@ -111,6 +117,27 @@ export const runIntegrationEvidencePhase = async (input: {
 			}
 
 			if (!present) {
+				let kept = false;
+				for (const tip of input.keptBy ?? []) {
+					if (
+						await input.git.isAncestor(generation.wipHeadSha, tip)
+					) {
+						kept = true;
+						break;
+					}
+				}
+				if (kept) {
+					findings.push(
+						finding({
+							code: 'integration-evidence.checkpoint-published',
+							phase: 'integration-evidence',
+							kind: 'note',
+							subject: generation.wipRef,
+							message: `The ref ${generation.wipRef} is gone and its checkpoint ${generation.wipHeadSha} is held by another ref (its publication): the work was published, not lost.`,
+						}),
+					);
+					continue;
+				}
 				findings.push(
 					finding({
 						code: 'integration-evidence.ref-vanished',

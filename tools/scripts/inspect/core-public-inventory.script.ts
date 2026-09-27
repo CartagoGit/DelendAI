@@ -277,8 +277,32 @@ export const renderMd = (exports: readonly IExport[]): string => {
 	return `${head.join('\n')}\n${body}\n`;
 };
 
+/**
+ * The checked-in inventory. It is written from the same `parseBarrel`
+ * the surface budget and the consumer lint read, by `gen:all`, and its
+ * drift fails the generated-artifacts check (x00693). Before, nothing
+ * regenerated it: it said 747 exports while the barrel had 1080, and
+ * after a cut edited by hand, 402 while the budget counted 645.
+ */
+export const INVENTORY_PATH = 'docs/delendai/CORE-PUBLIC-API-INVENTORY.md';
+
 export const main = async (argv: readonly string[]): Promise<number> => {
 	const exports = await parseBarrel();
+	if (hasFlag(argv, 'write') || hasFlag(argv, 'check')) {
+		const here = import.meta.dirname ?? import.meta.dir;
+		const path = `${here}/../../../${INVENTORY_PATH}`;
+		const wanted = renderMd(exports);
+		if (hasFlag(argv, 'write')) {
+			await writeFile(path, wanted, 'utf8');
+			return 0;
+		}
+		const current = await readFile(path, 'utf8').catch(() => '');
+		if (current === wanted) return 0;
+		process.stderr.write(
+			`core-public-inventory: ${INVENTORY_PATH} is not what the barrel publishes (${String(exports.length)} exports). Run \`bun run gen:all\`.\n`,
+		);
+		return 1;
+	}
 	const wantJson = hasFlag(argv, 'json') || !hasFlag(argv, 'md');
 	const _wantMd = hasFlag(argv, 'md');
 	const outFile = flag(argv, 'out');
