@@ -2,12 +2,15 @@
 id: x00712
 title: "Validate runs the gates the project declares"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00706, x00692, x00681]
+last-transition-id: 8c9d9a77-0118-471a-8212-7d0fd9aa708d
+last-correlation-id: 8c9d9a77-0118-471a-8212-7d0fd9aa708d
+last-transition-from: in-progress
 ---
 
 # x00712 — Validate runs the gates the project declares
@@ -61,7 +64,7 @@ proposal. The refusal then told it to run `bun run validate` too.
 
 ### S1 — Evidence in any project
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/lib/validate-run.service.spec.ts packages/cli/src/commands/registry.spec.ts plugins/proposals/tests/src/lib/services/validate-blocker.spec.ts tools/scripts/proposals/record-validate-evidence.script.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/shared/validate-journal.ts`
