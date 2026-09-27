@@ -2,12 +2,52 @@
 	"version": 1,
 	"resolutions": [
 		{
+			"taskId": "234a490ff3d4564f19e041ba7005de81",
+			"evidenceDigest": "3944e86f936b68eb165756b759bb1b45",
+			"decision": "accepted-loss",
+			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:02.570Z"
+		},
+		{
 			"taskId": "3ef6bab00c31b1dec6dbdca9e2805133",
 			"evidenceDigest": "d718bf3e86b1edda26ef9b0eb3aaa36a",
 			"decision": "accepted-loss",
 			"reason": "Investigated in x00546: the x00545-S1 work was discarded deliberately in an earlier session and its SHAs are recorded there; commit 9421185e is not in develop and never will be.",
 			"decidedBy": "cartago",
 			"decidedAt": "2026-09-19T12:27:03.041Z"
+		},
+		{
+			"taskId": "7fb60a464799d3f86ae87e6b1dffda89",
+			"evidenceDigest": "3f949959c0cf84117df82084e438d092",
+			"decision": "resolved-elsewhere",
+			"reason": "x00553 moved to review on develop through the normal path (docs/delendai/proposals/review/x00553-the-checkout-cannot-leave-the-integration-node.md); this checkpoint only carried that move.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:13.974Z"
+		},
+		{
+			"taskId": "b939802bc4278d0fcb50fa59af7f0c01",
+			"evidenceDigest": "14e7a3de190dcaeae1e970b723f1cd3f",
+			"decision": "accepted-loss",
+			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:05.602Z"
+		},
+		{
+			"taskId": "c3f86dc68828a5596d504d65cf227ac6",
+			"evidenceDigest": "bef4f9839e9ae93992de6c0545ccb912",
+			"decision": "accepted-loss",
+			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:08.700Z"
+		},
+		{
+			"taskId": "dc2ab703141c51c5a562edf34c9e3bc8",
+			"evidenceDigest": "f3091a9a6ea8e707f365f91da895d794",
+			"decision": "accepted-loss",
+			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:11.730Z"
 		}
 	]
 }
