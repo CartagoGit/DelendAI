@@ -2,12 +2,15 @@
 id: x00707
 title: "No output points around the review"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00696, x00677, x00690]
+last-transition-id: 50154694-6a07-4f2d-b1ea-eb10a94bc384
+last-correlation-id: 50154694-6a07-4f2d-b1ea-eb10a94bc384
+last-transition-from: in-progress
 ---
 
 # x00707 — No output points around the review
@@ -53,7 +56,7 @@ The outputs still pointed at them.
 
 ### S1 — Outputs name the owner's step
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/review.tool.spec.ts plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts packages/cli/src/lib/publication-pull-request.service.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
@@ -62,7 +65,8 @@ The outputs still pointed at them.
   - `plugins/proposals/tests/src/lib/review.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts`
   - `packages/cli/src/lib/publication-pull-request.service.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
