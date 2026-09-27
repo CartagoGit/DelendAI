@@ -357,10 +357,13 @@ export const withShippedIn = (markdown: string, commit: string): string => {
 		return known.startsWith(wanted) || wanted.startsWith(known);
 	});
 	if (present) return markdown;
+	// Quoted: a short SHA such as `12345e678` is a float to YAML, read back
+	// as a number (or `null`), and the close gate then found no commit.
+	// It failed ~1 approval in 70 in CI, decided by the hash (x00692).
 	return setFrontmatterBlockField(
 		markdown,
 		'shipped-in',
-		[...listed, commit.trim()].map((value) => `- ${value}`),
+		[...listed, commit.trim()].map((value) => `- ${JSON.stringify(value)}`),
 	);
 };
 
