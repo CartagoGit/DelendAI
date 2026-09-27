@@ -80,7 +80,7 @@ export const ownPublications = (
 	listing: string,
 	publicationRefPrefix: string,
 ): readonly { readonly ref: string; readonly sha: string }[] => {
-	const prefix = `refs/heads/${publicationRefPrefix.replace(/^refs\/(heads\/)?/u, '')}`;
+	const prefix = `refs/heads/${publicationRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '')}`;
 	return listing
 		.split('\n')
 		.map((line) => line.trim().split(/\s+/u))
@@ -103,6 +103,85 @@ const sweepOwnUnits = (root: string): void => {
 		}
 		tryRun('git', ['worktree', 'remove', '--force', path], root);
 		if (branch !== undefined) tryRun('git', ['branch', '-D', branch], root);
+	}
+};
+
+/**
+ * This closer's work refs on the remote, from `git ls-remote --heads`
+ * output: what the durability publisher backed up of units it entered.
+ */
+export const ownWorkRefs = (
+	listing: string,
+	workRefPrefix: string,
+): readonly string[] =>
+	listing
+		.split('\n')
+		.map((line) => line.trim().split(/\s+/u)[1])
+		.filter(
+			(ref): ref is string =>
+				ref?.startsWith(
+					`refs/heads/${workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '')}${AGENT}/`,
+				) === true,
+		);
+
+/**
+ * Remove the remote copies of this closer's units whose every file is
+ * already kept by the integration branch or one of its publications.
+ * Its units are disposable, but a copy the backup pushed mid-pass
+ * outlived the pass: sixteen piled up on 2026-09-27, one per pass.
+ */
+const sweepRemoteUnits = (
+	root: string,
+	integration: string,
+	branches: ReturnType<typeof declaredBranches>,
+): void => {
+	const listing =
+		tryRun('git', ['ls-remote', '--heads', 'origin'], root) ?? '';
+	const keepers = [
+		integration,
+		...ownPublications(listing, branches.publicationRefPrefix).flatMap(
+			({ ref }) =>
+				tryRun('git', ['fetch', '--quiet', 'origin', ref], root) ===
+				undefined
+					? []
+					: [run('git', ['rev-parse', 'FETCH_HEAD'], root)],
+		),
+	];
+	for (const ref of ownWorkRefs(listing, branches.workRefPrefix)) {
+		if (
+			tryRun('git', ['fetch', '--quiet', 'origin', ref], root) ===
+			undefined
+		) {
+			continue;
+		}
+		const tip = run('git', ['rev-parse', 'FETCH_HEAD'], root);
+		const base = tryRun('git', ['merge-base', tip, integration], root);
+		const added = (
+			tryRun(
+				'git',
+				['diff', '--name-only', '--diff-filter=AMR', base ?? tip, tip],
+				root,
+			) ?? ''
+		)
+			.split('\n')
+			.filter((path) => path.length > 0);
+		const kept = added.every((path) =>
+			keepers.some(
+				(keeper) =>
+					tryRun(
+						'git',
+						['cat-file', '-e', `${keeper}:${path}`],
+						root,
+					) !== undefined,
+			),
+		);
+		if (!kept || base === undefined) {
+			console.log(
+				`close-approved-proposals: left ${ref} — it carries files nothing else keeps.`,
+			);
+			continue;
+		}
+		tryRun('git', ['push', '--quiet', 'origin', '--delete', ref], root);
 	}
 };
 
@@ -155,6 +234,11 @@ const main = (): number => {
 		}
 	});
 	if (integration === undefined) return 0;
+	const apply = process.argv.includes('--apply');
+	if (apply) {
+		sweepOwnUnits(root);
+		sweepRemoteUnits(root, integration, declaredBranches(root));
+	}
 	const candidates = run(
 		'git',
 		['ls-tree', '-r', '--name-only', integration, REVIEW_DIR],
@@ -172,14 +256,13 @@ const main = (): number => {
 		);
 		return 0;
 	}
-	if (!process.argv.includes('--apply')) {
+	if (!apply) {
 		console.log(
 			`close-approved-proposals: ready to close (read-only): ${candidates.join(', ')}`,
 		);
 		return 0;
 	}
 	const branches = declaredBranches(root);
-	sweepOwnUnits(root);
 	const topic = `close-approved-${new Date().toISOString().slice(0, 16).replaceAll(/[-:T]/gu, '')}`;
 	const unit = [
 		'--kind=review',
@@ -302,6 +385,7 @@ const main = (): number => {
 		// Published or not, the unit's worktree and branch end here: a pass
 		// that failed to publish used to leave both behind, one per pass.
 		sweepOwnUnits(root);
+		sweepRemoteUnits(root, integration, branches);
 	}
 };
 

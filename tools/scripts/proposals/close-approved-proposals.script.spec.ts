@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	ownPublications,
+	ownWorkRefs,
 	readyToClose,
 	refusalOf,
 } from './close-approved-proposals.script';
@@ -104,5 +105,25 @@ describe('ownPublications (x00710)', () => {
 		expect(
 			ownPublications('ddd\trefs/heads/develop\n', 'delendai/pr/'),
 		).toEqual([]);
+	});
+});
+
+describe('ownWorkRefs (x00711)', () => {
+	it('finds the backed-up units of the closer and nothing else', () => {
+		const listing = [
+			'aaa\trefs/heads/delendai/pr/delendai-queue/review/batch-all-g1/close-approved-1817',
+			'bbb\trefs/heads/delendai/wip/delendai-queue/review/batch-all-g1/close-approved-1849',
+			'ccc\trefs/heads/delendai/wip/glm-5.3-max/review/batch-all-g1/packs',
+			'',
+		].join('\n');
+		for (const prefix of [
+			'delendai/wip/',
+			'heads/delendai/wip/',
+			'refs/heads/delendai/wip/',
+		]) {
+			expect(ownWorkRefs(listing, prefix)).toEqual([
+				'refs/heads/delendai/wip/delendai-queue/review/batch-all-g1/close-approved-1849',
+			]);
+		}
 	});
 });
