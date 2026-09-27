@@ -25,7 +25,7 @@ import type {
 } from '@delendai/auto-agent-selector/public';
 import { buildDashboard } from '@delendai/auto-agent-selector/public';
 import { formatRows } from '../../lib/text-format.service';
-import { data, hasFlag, request, scalarArg } from './group-helpers';
+import { data, request, scalarArg } from './group-helpers';
 
 const STATUS = 'delendai_auto-agent-selector_auto_status';
 const RECOMMEND = 'delendai_auto-agent-selector_auto_recommend';
@@ -188,7 +188,7 @@ const routerDashboardCommand: ICliCommand = {
 			}
 		}
 
-		if (ctx.globals.json || hasFlag(args, 'json')) {
+		if (ctx.globals.json) {
 			return data(vm);
 		}
 		return {
