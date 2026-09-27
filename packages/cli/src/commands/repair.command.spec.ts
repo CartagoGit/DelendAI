@@ -2,7 +2,14 @@
  * repair.command.spec.ts — recording the decision that closes a startup
  * repair task, from a plain shell, with no server and no database.
  */
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -223,5 +230,45 @@ describe('delendai repair (x00552)', () => {
 			contextFor(elsewhere),
 		);
 		expect(recorded(target)).toHaveLength(1);
+	});
+});
+
+describe('a decision never lands in the shared checkout (x00689)', () => {
+	it('is refused in a pinned shared checkout and recorded in a linked worktree', async () => {
+		const root = workspace();
+		const git = (...args: string[]) =>
+			execFileSync('git', args, { cwd: root, stdio: 'ignore' });
+		git('init', '-q', '-b', 'develop');
+		git('config', 'user.email', 'a@example.com');
+		git('config', 'user.name', 'A');
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({
+				development: {
+					profile: 'shared-checkout-pr',
+					branches: { namespacePrefix: 'delendai' },
+				},
+			}),
+		);
+		git('add', '-A');
+		git('commit', '-q', '--no-verify', '-m', 'base');
+
+		const shared = await command.run(resolveArgs(), contextFor(root));
+		expect(shared.code).not.toBe(0);
+		expect(shared.error).toContain('work enter --kind=repair');
+		expect(existsSync(fileIn(root))).toBe(false);
+
+		const unit = join(root, 'unit');
+		git(
+			'worktree',
+			'add',
+			'-q',
+			'-b',
+			'delendai/wip/a/repair/batch-all-g1/t',
+			unit,
+		);
+		const inUnit = await command.run(resolveArgs(), contextFor(unit));
+		expect(inUnit.code).toBe(0);
+		expect(recorded(unit)).toHaveLength(1);
 	});
 });
