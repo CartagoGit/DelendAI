@@ -36,6 +36,8 @@ export interface IGuardFacts {
 	 * `undefined` when the commit is not known here.
 	 */
 	readonly tipKept?: (sha: string, deletedRef: string) => boolean | undefined;
+	/** The commit `ref` points at now, if it exists (x00703). */
+	readonly refAt?: (ref: string) => string | undefined;
 	/** Everything git wrote to the hook's stdin. */
 	readonly stdin: () => Promise<string>;
 	/**

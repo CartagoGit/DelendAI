@@ -41,9 +41,21 @@ export type {
 	IWorkRefPhaseResult,
 	IWorkRefPhaseInput,
 } from './rebuild-work-units.interface';
+import { REVIEW_BATCH_ID } from '../../development-policy/profiles.constant';
 
 const identityKey = (proposal: string, slice: string, generation: number) =>
 	`${proposal}/${slice}@${String(generation)}`;
+
+/**
+ * The proposal a unit is recorded under. A review batch is not a
+ * proposal: every reviewer enters its own (`batch`/`all`), so two agents'
+ * batches of the same generation are two units, never a duplicate
+ * (x00702). Recorded as `batch-<agent>`.
+ */
+const unitProposal = (identity: { proposal: string; agent: string }) =>
+	identity.proposal === REVIEW_BATCH_ID
+		? `${REVIEW_BATCH_ID}-${identity.agent}`
+		: identity.proposal;
 
 export const runWorkRefPhase = async (
 	input: IWorkRefPhaseInput,
@@ -89,7 +101,7 @@ export const runWorkRefPhase = async (
 		}
 		attributed.set(ref.name, identity);
 		const key = identityKey(
-			identity.proposal,
+			unitProposal(identity),
 			identity.slice,
 			identity.generation,
 		);
@@ -128,12 +140,12 @@ export const runWorkRefPhase = async (
 		const identity = attributed.get(ref.name);
 		if (identity === undefined || conflicted.has(ref.name)) continue;
 
-		const unitKey = `${identity.proposal}/${identity.slice}`;
+		const unitKey = `${unitProposal(identity)}/${identity.slice}`;
 		const isNewUnit = !knownUnits.has(unitKey);
 		const unit = input.ports.workUnits.ensure({
 			repositoryId: input.repositoryId,
 			repository: input.repository,
-			proposalUid: identity.proposal,
+			proposalUid: unitProposal(identity),
 			sliceUid: identity.slice,
 			createdByAgentId: identity.agent,
 			now: input.now,
