@@ -211,9 +211,9 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	// The identity the repository is configured with: the same read with
 	// the command line's `-c` overrides taken away.
 	configuredAuthor: () => {
-		const configured = (key: string): string | undefined => {
+		const configured = (args: readonly string[]): string | undefined => {
 			try {
-				return execFileSync('git', ['config', '--get', key], {
+				return execFileSync('git', ['config', ...args], {
 					cwd: workspace,
 					encoding: 'utf8',
 					stdio: ['ignore', 'pipe', 'ignore'],
@@ -227,8 +227,17 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 				return undefined;
 			}
 		};
-		const name = configured('user.name');
-		const email = configured('user.email');
+		// The owner's identity lives in the global (or system) config. The
+		// repository's own config is shared by every worktree, and an agent
+		// that wrote `user.name` there made every agent commit as itself
+		// and passed this very check (x00698); a repository-level identity
+		// that differs from the owner's is exactly the borrowed author.
+		const owner = (key: string): string | undefined =>
+			configured(['--global', '--get', key]) ??
+			configured(['--system', '--get', key]);
+		const name = owner('user.name') ?? configured(['--get', 'user.name']);
+		const email =
+			owner('user.email') ?? configured(['--get', 'user.email']);
 		return name === undefined || email === undefined
 			? undefined
 			: `${name} <${email}>`;
