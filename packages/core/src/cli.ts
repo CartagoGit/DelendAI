@@ -32,6 +32,7 @@ export {
 	legacyWorkKind,
 } from './lib/development-policy/work-ref-placeholders';
 export { agentEnvironmentMarker } from './lib/work-identity/agent-environment.helper';
+export { AGENT_ENVIRONMENT_MARKERS } from './lib/contracts/constants/agent-environment.constant';
 export type {
 	IGitGuardVerdict,
 	IGuardedGitOperation,
