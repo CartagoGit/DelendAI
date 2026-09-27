@@ -2,12 +2,15 @@
 id: x00696
 title: "A proposal closes only with an independent approval"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00686, x00690]
+last-transition-id: 9dbbab47-73dd-4d25-9d73-e749b2b6e1a1
+last-correlation-id: 9dbbab47-73dd-4d25-9d73-e749b2b6e1a1
+last-transition-from: in-progress
 ---
 
 # x00696 — A proposal closes only with an independent approval
@@ -69,14 +72,15 @@ not arm.
 
 ### S1 — Closes without independent approval are red
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - **Files**:
   - `tools/scripts/lint/closed-with-independent-approval.script.ts`
   - `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
   - `package.json`
   - `.github/workflows/ci.yml`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
