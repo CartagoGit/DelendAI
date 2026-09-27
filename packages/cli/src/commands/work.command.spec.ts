@@ -42,6 +42,9 @@ const repoWith = (config: object | undefined): string => {
 	run('config', 'user.name', 'Work');
 	run('config', 'commit.gpgsign', 'false');
 	writeFileSync(join(root, 'README.md'), '# repo\n');
+	// The worktrees these cases place inside the repository are ignored,
+	// as a worktree in the shared checkout's tree must be (x00695).
+	writeFileSync(join(root, '.gitignore'), 'wt*/\nbatch-wt/\n');
 	if (config !== undefined) {
 		writeFileSync(
 			join(root, 'delendai.config.json'),
@@ -169,6 +172,45 @@ describe('delendai work (x00553)', () => {
 		const result = await checkpoint(root, ['--paths=../outside.ts']);
 		expect(result.code).not.toBe(0);
 		expect(result.error).toContain('Invalid scope');
+	});
+
+	it('refuses a worktree the shared checkout would show as untracked (x00695)', async () => {
+		const root = repoWith(PINNED);
+		const loose = await command.run(
+			[
+				'enter',
+				'--proposal=x1',
+				'--slice=S1',
+				'--agent=minimax-m3',
+				'--dir=batch-g5',
+			],
+			contextFor(root),
+		);
+		expect(loose.code).not.toBe(0);
+		expect(loose.error).toContain('loose edit on the integration branch');
+	});
+
+	it('gives two agents entering the same batch two worktrees (x00695)', async () => {
+		const root = repoWith(PINNED);
+		const paths: string[] = [];
+		for (const agent of ['glm-5', 'minimax-m3']) {
+			const entered = await command.run(
+				[
+					'enter',
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					`--agent=${agent}`,
+					'--topic=close',
+					'--json',
+				],
+				contextFor(root, { json: true }),
+			);
+			expect(entered.code).toBe(0);
+			paths.push(String((entered.data as { path?: unknown }).path));
+		}
+		expect(paths[0]).toContain('glm-5-batch-all');
+		expect(paths[1]).toContain('minimax-m3-batch-all');
 	});
 
 	it('gives an agent its own worktree, and finds it again', async () => {
