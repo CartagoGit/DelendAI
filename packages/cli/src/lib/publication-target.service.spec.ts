@@ -235,6 +235,31 @@ describe('which pull request a slice goes to', () => {
 		expect('reason' in target && target.reason).toContain('slice by slice');
 	});
 
+	it('republishes a slice to the pull request it already has (x00708)', () => {
+		const policy = policyWith();
+		const { root, base } = setup(2);
+		commitWork(root, workRefFor(policy, 'S1'), base, 5);
+		const alone = choose(
+			root,
+			base,
+			policyWith({ granularity: 'slice' }),
+			'S1',
+		);
+		if (!('publicationRef' in alone)) throw new Error(alone.refusal);
+		git(
+			root,
+			'push',
+			'-q',
+			'origin',
+			`${workRefFor(policy, 'S1')}:${alone.publicationRef}`,
+		);
+		// Measured afresh, this small proposal would go whole.
+		expect(choose(root, base, policy, 'S1')).toMatchObject({
+			unit: 'slice',
+			publicationRef: alone.publicationRef,
+		});
+	});
+
 	it('publishes alone, and says why, when the proposal file is missing', () => {
 		const policy = policyWith();
 		const { root, base } = setup(2);
