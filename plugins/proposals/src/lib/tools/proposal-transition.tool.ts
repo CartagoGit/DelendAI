@@ -33,6 +33,8 @@
 
 import { randomUUID } from 'node:crypto';
 import { access, mkdir, rm } from 'node:fs/promises';
+
+import { landedPath } from '../services/transition-landing.service';
 import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
@@ -1318,24 +1320,55 @@ export const runProposalTransition = async (
 			from,
 		}).catch(() => undefined);
 	}
+	// The sync after the move may have renamed the file to its canonical
+	// slug (x00676): everything after this point, and the answer, use the
+	// file that exists.
+	const reported = movedPathOf(result);
+	const landed =
+		result.isError === true || reported === undefined
+			? reported
+			: await landedPath(options.proposalsDirAbs, reported, args.id);
 	// x00643: the hand-off is the one moment the implementer is certainly
 	// present, so it opens the rounds the reviewer will act on.
-	const movedTo = movedPathOf(result);
 	if (
 		result.isError !== true &&
 		finalTo === 'review' &&
 		options.requirePeerReview !== false &&
 		args.agent !== undefined &&
-		movedTo !== undefined
+		landed !== undefined
 	) {
 		await openReviewRounds({
-			docPathAbs: join(options.proposalsDirAbs, movedTo),
+			docPathAbs: join(options.proposalsDirAbs, landed),
 			proposalId: args.id,
 			implementer: args.agent,
 			workspaceRoot: options.workspaceRoot,
 		});
 	}
-	return result;
+	return landed === reported || landed === undefined
+		? result
+		: withLandedPath(result, landed);
+};
+
+/** The same answer, reporting where the document actually is. */
+const withLandedPath = <TResult extends object>(
+	result: TResult,
+	landed: string,
+): TResult => {
+	if (!('structuredContent' in result)) return result;
+	const structured = result.structuredContent as Record<string, unknown>;
+	const entity = structured.entity as Record<string, unknown> | undefined;
+	const patched = {
+		...structured,
+		...(entity === undefined
+			? {}
+			: { entity: { ...entity, path: landed } }),
+		...('movedTo' in structured ? { movedTo: landed } : {}),
+	};
+	return {
+		...result,
+		structuredContent: patched,
+		content: [{ type: 'text', text: JSON.stringify(patched) }],
+	};
 };
 
 /** Where a successful transition left the document, relative to the tree. */
