@@ -2,15 +2,15 @@
 id: x00656
 title: "A unit is published from its own tree"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00653, x00648]
-last-transition-id: 6e80d077-78ee-4d31-8ae0-b6b67d04186f
-last-correlation-id: 6e80d077-78ee-4d31-8ae0-b6b67d04186f
-last-transition-from: in-progress
+last-transition-id: 5d2f631d-2b8d-4dee-b7fa-9123b65cfc6a
+last-correlation-id: 5d2f631d-2b8d-4dee-b7fa-9123b65cfc6a
+last-transition-from: review
 shipped-in:
   - "02c1a119a13e0bcfcb4e648eb6e0bfe640be35ae"
 ---
