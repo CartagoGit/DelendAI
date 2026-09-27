@@ -134,7 +134,7 @@ describe('proposals group (f00046 S7)', async () => {
 		const missing = await find('proposals plan').run([], ctx);
 		expect(missing.code).toBe(EXIT_CODE.USAGE);
 		await find('proposals plan').run(
-			['--json=[{"sliceId":"S1","files":["a.ts"]}]'],
+			['--slices=[{"sliceId":"S1","files":["a.ts"]}]'],
 			ctx,
 		);
 		expect(calls[0]).toEqual({
