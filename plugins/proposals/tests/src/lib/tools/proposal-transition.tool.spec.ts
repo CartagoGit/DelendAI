@@ -1623,6 +1623,42 @@ describe('x00643: handing a proposal to review opens its rounds', () => {
 		expect(identities).toContain('"agent":"agent-impl"');
 	});
 
+	it('opens the rounds on the file that exists when the move lands it under its canonical name (x00676)', async () => {
+		// The index sync after a move may rename the file to the slug of
+		// its title; this runner does the same, landing it under another
+		// name than the move reports.
+		const renaming: IGitRunner = async (args) => {
+			if (args[0] === 'mv') {
+				const [, from, to] = args;
+				if (from && to)
+					await rename(
+						from,
+						to.replace(
+							/f92001-handoff\.md$/u,
+							'f92001-hand-off.md',
+						),
+					);
+			}
+			return { ok: true, output: '' };
+		};
+		const result = await runProposalTransition(
+			{
+				id: 'f92001',
+				to: 'review',
+				reason: 'all slices merged',
+				agent: 'agent-impl',
+			},
+			{ ...options, gitRunner: renaming },
+		);
+		expect(isErrorResult(result)).toBe(false);
+		const landed = await readFile(
+			join(root, 'review', 'f92001-hand-off.md'),
+			'utf8',
+		);
+		expect(landed).toContain('- review-state: in_review');
+		expect(JSON.stringify(result)).toContain('review/f92001-hand-off.md');
+	});
+
 	it('leaves a slice that already has a round untouched', async () => {
 		await runProposalTransition(
 			{
