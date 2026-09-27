@@ -2,12 +2,15 @@
 id: x00686
 title: "A hand-moved proposal is refused at commit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00685]
+last-transition-id: 3c6d15f4-3f3f-4db2-8287-e76e1aca14ee
+last-correlation-id: 3c6d15f4-3f3f-4db2-8287-e76e1aca14ee
+last-transition-from: in-progress
 ---
 
 # x00686 — A hand-moved proposal is refused at commit
@@ -57,12 +60,13 @@ Meanwhile the owner saw proposals whose Markdown and folder disagree.
 
 ### S1 — Folder drift is refused at commit
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `bun tools/scripts/lint/proposal-folder-drift.script.ts`
 - **Files**:
   - `lefthook.yml`
   - `tools/scripts/lint/proposal-folder-drift.script.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
