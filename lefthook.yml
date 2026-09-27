@@ -204,6 +204,16 @@ pre-commit:
             run: 'if [ -f .cache/delendai/proposals/index.json ]; then bun run sync:proposals >/dev/null && bun tools/scripts/proposals/sync-proposal-counters.script.ts >/dev/null && bun tools/scripts/catalog/generate-agent-catalog.script.ts --mode=compact >/dev/null; else echo "catalog-drift-check: skipped (proposal index not present yet)"; fi'
             stage_fixed: true
 
+        # A proposal moved by hand (status edited, or the file moved with
+        # `git mv`) skips the index, the state database, `shipped-in` and
+        # the review rounds; CI finds it only after the push. It is
+        # refused here, in under a second.
+        proposal-folder-drift:
+            env: *hook-locale
+            glob:
+                - 'docs/delendai/proposals/**'
+            run: bun tools/scripts/lint/proposal-folder-drift.script.ts
+
         host-hints-drift-check:
             env: *hook-locale
             glob:
