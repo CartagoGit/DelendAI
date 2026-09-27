@@ -81,6 +81,7 @@ proposal. The refusal then told it to run `bun run validate` too.
   - `packages/cli/src/commands/registry.spec.ts`
   - `tools/scripts/proposals/record-validate-evidence.script.ts`
   - `tools/scripts/proposals/record-validate-evidence.script.spec.ts`
+  - `plugins/proposals/tests/src/lib/auto-transition.spec.ts`
 
 ## dependency graph
 
