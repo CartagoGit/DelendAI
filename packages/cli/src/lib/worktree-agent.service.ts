@@ -43,25 +43,45 @@ const linkedGitDir = (dir: string): string | undefined => {
 	return own === undefined || own === common ? undefined : own;
 };
 
-/** Record `agent` as the owner of the linked worktree at `dir`. */
-export const stampWorktreeAgent = (dir: string, agent: string): boolean => {
+/**
+ * Record `agent`, and the session of that agent (x00699), as the owner of
+ * the linked worktree at `dir`. Two instances of one model share an agent
+ * id; the session is what tells them apart.
+ */
+export const stampWorktreeAgent = (
+	dir: string,
+	agent: string,
+	session?: string,
+): boolean => {
 	const gitDir = linkedGitDir(dir);
 	if (gitDir === undefined) return false;
-	writeFileSync(join(gitDir, WORKTREE_AGENT_FILE), `${agent}\n`);
+	writeFileSync(
+		join(gitDir, WORKTREE_AGENT_FILE),
+		`${agent}\n${session ?? ''}\n`,
+	);
 	return true;
+};
+
+const stampLines = (dir: string): readonly string[] => {
+	const gitDir = linkedGitDir(dir);
+	if (gitDir === undefined) return [];
+	try {
+		return readFileSync(join(gitDir, WORKTREE_AGENT_FILE), 'utf8')
+			.split('\n')
+			.map((line) => line.trim());
+	} catch {
+		return [];
+	}
 };
 
 /** The agent the worktree at `dir` was made for, if delendai made it. */
 export const worktreeAgent = (dir: string): string | undefined => {
-	const gitDir = linkedGitDir(dir);
-	if (gitDir === undefined) return undefined;
-	try {
-		const agent = readFileSync(
-			join(gitDir, WORKTREE_AGENT_FILE),
-			'utf8',
-		).trim();
-		return agent.length > 0 ? agent : undefined;
-	} catch {
-		return undefined;
-	}
+	const agent = stampLines(dir)[0];
+	return agent !== undefined && agent.length > 0 ? agent : undefined;
+};
+
+/** The session that holds the worktree at `dir`, if one was recorded. */
+export const worktreeSession = (dir: string): string | undefined => {
+	const session = stampLines(dir)[1];
+	return session !== undefined && session.length > 0 ? session : undefined;
 };
