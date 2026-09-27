@@ -48,8 +48,14 @@ export const REF_ROLES = [
 	'protected',
 	/** A publication ref with an open pull request — doing its job. */
 	'publication-open',
-	/** A publication ref whose pull request is finished. Reapable. */
+	/** A publication ref whose pull request merged. Reapable. */
 	'publication-spent',
+	/**
+	 * A publication ref whose pull request was closed without merging.
+	 * Its commits may exist nowhere else, so it is kept for its author to
+	 * reopen or to end (x00697); deleting it was a loss nothing recorded.
+	 */
+	'publication-closed',
 	/** A publication ref with no pull request at all. */
 	'publication-unclaimed',
 	/**

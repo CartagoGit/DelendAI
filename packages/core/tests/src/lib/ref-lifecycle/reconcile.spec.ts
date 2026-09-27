@@ -48,6 +48,25 @@ describe('reconcileRefs', () => {
 		expect(roleOf(branches.release)).toBe('protected');
 	});
 
+	it('reaps the publication of a merged pull request, and keeps one closed without merging (x00697)', () => {
+		const merged = reconcileRefs(
+			refs(`${PR}delivered`),
+			[pr(80, `${PR}delivered`, 'merged')],
+			branches,
+		);
+		expect(merged.reapable.map((v) => v.role)).toEqual([
+			'publication-spent',
+		]);
+		const closed = reconcileRefs(
+			refs(`${PR}withdrawn`),
+			[pr(81, `${PR}withdrawn`, 'closed')],
+			branches,
+		);
+		expect(closed.verdicts[0]?.role).toBe('publication-closed');
+		expect(closed.reapable).toEqual([]);
+		expect(closed.needsAttention).toEqual([]);
+	});
+
 	it('recognises a publication ref doing its job', () => {
 		expect(
 			roleOf(`${PR}policy-anchor`, [
