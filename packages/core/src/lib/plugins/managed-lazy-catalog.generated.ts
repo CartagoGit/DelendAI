@@ -621,6 +621,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			{
 				summary: 'Structured logs reader (tail, query, redact).',
 				tags: ['logs', 'observability'],
+				startupActivation: true,
 			},
 		),
 		tools(
@@ -646,6 +647,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Persistent memory store (BM25 + recall, save, search).',
 				tags: ['memory', 'persistence'],
+				startupActivation: true,
 			},
 		),
 		tools(
@@ -850,6 +852,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Proposals workflow + multi-agent (swarm) orchestration.',
 				tags: ['proposals', 'swarm', 'orchestration'],
+				startupActivation: true,
 				toolDisclosure: {
 					agents_lock_diagnose: 'administrative',
 					agent_worktree: 'contextual',
@@ -1112,6 +1115,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			{
 				summary: 'Per-token/per-call usage tracking (spend, budget).',
 				tags: ['usage', 'spend'],
+				startupActivation: true,
 			},
 		),
 		tools(
