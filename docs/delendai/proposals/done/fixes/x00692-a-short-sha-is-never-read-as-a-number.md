@@ -2,15 +2,15 @@
 id: x00692
 title: "A short SHA is never read as a number"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00681]
-last-transition-id: 0cda12da-1d0f-431b-8741-35f7cc6acb5c
-last-correlation-id: 0cda12da-1d0f-431b-8741-35f7cc6acb5c
-last-transition-from: in-progress
+last-transition-id: fa0ce9e9-1611-4d6a-b79d-d57a5e406dbc
+last-correlation-id: fa0ce9e9-1611-4d6a-b79d-d57a5e406dbc
+last-transition-from: review
 shipped-in:
   - "b7a9154b60e09a08f84e548ce48255df42cb2e29"
 ---

@@ -2,15 +2,15 @@
 id: x00680
 title: "The queue moves after every certification"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00672, x00677]
-last-transition-id: a757a5ec-84f1-4699-b98d-b8903b9b20b4
-last-correlation-id: a757a5ec-84f1-4699-b98d-b8903b9b20b4
-last-transition-from: in-progress
+last-transition-id: f25281b1-c61b-4d45-82b3-3077c3b29b7b
+last-correlation-id: f25281b1-c61b-4d45-82b3-3077c3b29b7b
+last-transition-from: review
 shipped-in:
   - "6e55adec2f7dc54cee262841b3e6d774d477c7fe"
 ---

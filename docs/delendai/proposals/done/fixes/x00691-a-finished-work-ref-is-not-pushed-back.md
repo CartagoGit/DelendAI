@@ -2,15 +2,15 @@
 id: x00691
 title: "A finished work ref is not pushed back"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00687, x00690]
-last-transition-id: c58b79a0-9f99-4a00-8dec-bb2588f83cb4
-last-correlation-id: c58b79a0-9f99-4a00-8dec-bb2588f83cb4
-last-transition-from: in-progress
+last-transition-id: c1d043ce-9cce-46c4-b169-d09f2a19173a
+last-correlation-id: c1d043ce-9cce-46c4-b169-d09f2a19173a
+last-transition-from: review
 shipped-in:
   - "66840ab84dda82f636da7a7e432b9ba2e6845630"
 ---

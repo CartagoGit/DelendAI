@@ -2,15 +2,15 @@
 id: x00660
 title: "Reviewers work as a swarm"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00646, x00653, x00659]
-last-transition-id: 9b32a134-af0e-4db0-9d1a-37212bd1ecd1
-last-correlation-id: 9b32a134-af0e-4db0-9d1a-37212bd1ecd1
-last-transition-from: in-progress
+last-transition-id: 609c7847-ad62-44c7-83c5-3e24a00e6e36
+last-correlation-id: 609c7847-ad62-44c7-83c5-3e24a00e6e36
+last-transition-from: review
 shipped-in:
   - "05cbdcefe5b70cc7658836d33ab1745038bf3ce5"
 ---

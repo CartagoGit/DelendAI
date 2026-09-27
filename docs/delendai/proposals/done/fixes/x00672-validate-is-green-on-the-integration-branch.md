@@ -2,15 +2,15 @@
 id: x00672
 title: "Validate is green on the integration branch"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00658, f00644, x00659]
-last-transition-id: f8054db1-969b-411a-bd96-ec5e6780869a
-last-correlation-id: f8054db1-969b-411a-bd96-ec5e6780869a
-last-transition-from: in-progress
+last-transition-id: 98a81a59-ab6f-45a3-afb1-18b09cba6fd4
+last-correlation-id: 98a81a59-ab6f-45a3-afb1-18b09cba6fd4
+last-transition-from: review
 shipped-in:
   - "3a384200ca25312a6c186f37595a4bdbe9294934"
 ---

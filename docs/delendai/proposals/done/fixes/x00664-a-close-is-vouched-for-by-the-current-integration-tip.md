@@ -2,15 +2,15 @@
 id: x00664
 title: "A close is vouched for by the current integration tip"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00659, x00661]
-last-transition-id: 9d091072-dfb9-48ed-90b3-49db5a12fada
-last-correlation-id: 9d091072-dfb9-48ed-90b3-49db5a12fada
-last-transition-from: in-progress
+last-transition-id: a379096d-0fc2-4329-b1b7-fb1ef1e43df4
+last-correlation-id: a379096d-0fc2-4329-b1b7-fb1ef1e43df4
+last-transition-from: review
 shipped-in:
   - "ede26ccd73317e8301c8fac90387a89b6a9df075"
 ---

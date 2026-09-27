@@ -64,7 +64,7 @@ that can read the same picture before they move.
   was the right source: it is the one thing every clone in a swarm
   shares, while the operational database describes one machine.
 - **Gate**: `npx vitest run packages/cli/src/lib/work-swarm.service.spec.ts`
-- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/proposals-sqlite/src/lib/work-model/**`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-swarm.service.ts`, `packages/cli/src/contracts/interfaces/work-swarm.interface.ts`
 - `delendai work swarm` (and the equivalent MCP surface) answers: who
   holds which live claims, which work units have unmerged checkpoints,
   which proposals are in flight, and which publication refs are open —

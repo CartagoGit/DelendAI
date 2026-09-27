@@ -2,15 +2,15 @@
 id: x00683
 title: "The queue advances without holding the hydration"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00680]
-last-transition-id: 4dd0c38e-fc57-4711-98c8-2a99a5d8b6b6
-last-correlation-id: 4dd0c38e-fc57-4711-98c8-2a99a5d8b6b6
-last-transition-from: in-progress
+last-transition-id: b81624b9-9d2c-44f0-ba6b-d7203af86a4f
+last-correlation-id: b81624b9-9d2c-44f0-ba6b-d7203af86a4f
+last-transition-from: review
 shipped-in:
   - "6462a71f9c45ee8795a91fa03bb92a11dd409c42"
 ---
