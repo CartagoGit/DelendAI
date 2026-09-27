@@ -83,7 +83,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 ### S4 — Documentation and host integration contract
 - **Status**: done
 - **DependsOn**: [S1, S2, S3]
-- **Files**: `docs/delendai/ADOPTER-SURFACE-MODE.md`, `plugins/agent-orchestrator/README.md`, `docs/delendai/proposals/ready/fixes/f00525-host-neutral-automatic-subagent-runtime-and-role-tool-profiles.md`
+- **Files**: `docs/delendai/ADOPTER-SURFACE-MODE.md`, `plugins/agent-orchestrator/README.md```
 - **Gate**: type
 - acceptance:
   - "Document which agent to use by default."
