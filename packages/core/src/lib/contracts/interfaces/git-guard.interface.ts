@@ -39,6 +39,12 @@ export type IGuardedGitOperation =
 			/** Fully qualified remote ref, e.g. `refs/heads/develop`. */
 			readonly remoteRef: string;
 			readonly deleting: boolean;
+			/**
+			 * For a deletion: whether the commit being deleted stays reachable
+			 * from another ref (the integration branch, a publication, another
+			 * work ref). `undefined` when that could not be determined.
+			 */
+			readonly deletedTipKept?: boolean | undefined;
 	  };
 
 /** Whether the operation may proceed, and why. */

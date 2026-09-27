@@ -22,6 +22,7 @@ import {
 } from './git-guard-namespaces';
 import {
 	judgeNamespaceShape,
+	refuseLosingDeletion,
 	refuseBorrowedAuthor,
 	refuseUnshapedPublication,
 	refuseUnshapedWorkRef,
@@ -119,13 +120,20 @@ const judgePush = (
 	policy: IResolvedDevelopmentPolicy,
 	remoteRef: string,
 	deleting: boolean,
+	deletedTipKept: boolean | undefined,
 ): IGitGuardVerdict => {
 	if (!remoteRef.startsWith('refs/heads/')) {
 		return allow('only branches are judged.');
 	}
-	if (deleting)
-		return allow('removing a branch never loses integrated work.');
 	const branch = remoteRef.slice('refs/heads/'.length);
+	if (deleting) {
+		return (
+			refuseLosingDeletion(policy, branch, deletedTipKept) ??
+			allow(
+				'the deleted branch holds no commit that is not kept elsewhere.',
+			)
+		);
+	}
 	const protectedBranch =
 		branch === policy.branches.integration ||
 		branch === policy.branches.release;
@@ -223,7 +231,12 @@ const judgeAgentOperation = (
 		case 'branch-create':
 			return judgeBranchCreate(policy, operation.ref);
 		case 'push':
-			return judgePush(policy, operation.remoteRef, operation.deleting);
+			return judgePush(
+				policy,
+				operation.remoteRef,
+				operation.deleting,
+				operation.deletedTipKept,
+			);
 		case 'stash':
 			return judgeStash(policy);
 	}
