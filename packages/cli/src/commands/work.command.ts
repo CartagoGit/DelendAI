@@ -329,6 +329,44 @@ const workRefFor = (
 	});
 
 /**
+ * The ref of the unit these arguments name, as it exists in this clone.
+ *
+ * A unit entered before the shape named its kind lives under the name
+ * without the kind segment (f00644). Rendering only the new name would
+ * leave it unreachable: it could not be entered again, checkpointed or
+ * published. Unless a kind is asked for explicitly, the existing unit is
+ * found under the template with its `${kind}/` segment taken out — the
+ * same template, read, not re-spelled.
+ */
+const existingWorkRef = (
+	root: string,
+	args: readonly string[],
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	proposal: string,
+	slice: string,
+): string => {
+	const ref = workRefFor(args, policy, agent, proposal, slice);
+	const exists = (name: string): boolean =>
+		git(root, ['rev-parse', '-q', '--verify', name]) !== undefined;
+	if (scalarArg(args, 'kind') !== undefined || exists(ref)) return ref;
+	const template = policy.branches.workRefTemplate;
+	const withoutKind = template.replace('${kind}/', '');
+	if (withoutKind === template) return ref;
+	const legacy = workRefFor(
+		args,
+		{
+			...policy,
+			branches: { ...policy.branches, workRefTemplate: withoutKind },
+		},
+		agent,
+		proposal,
+		slice,
+	);
+	return exists(legacy) ? legacy : ref;
+};
+
+/**
  * Hand an entering agent the picture, in whichever form it reads.
  *
  * The briefing is attached to the payload rather than only printed,
@@ -395,7 +433,7 @@ const entered = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
-	const ref = workRefFor(args, policy, agent, proposal, slice);
+	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);
 	const branch = ref.replace(/^refs\/heads\//u, '');
 	const base = integrationBase(root, policy);
 	if (base === undefined) {
@@ -497,7 +535,7 @@ const published = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
-	const workRef = workRefFor(args, policy, agent, proposal, slice);
+	const workRef = existingWorkRef(root, args, policy, agent, proposal, slice);
 	if (publicationRefFromWorkRef(policy, workRef) === undefined) {
 		return refused(
 			`\`${workRef}\` is not under this policy's work-ref prefix \`${policy.branches.workRefPrefix}\`.`,
@@ -802,7 +840,7 @@ const checkpointed = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
-	const ref = workRefFor(args, policy, agent, proposal, slice);
+	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);
 	const result = await engine.createOrUpdateWipRef({
 		baseSha: base,
 		paths: scope.valid,

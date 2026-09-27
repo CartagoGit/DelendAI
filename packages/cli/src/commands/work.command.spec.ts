@@ -515,6 +515,45 @@ describe('delendai work (x00553)', () => {
 		expect(badAgent.error).toContain('spells a kind of work');
 	});
 
+	it('still publishes a unit entered before the shape named its kind (f00644)', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		// A unit written by the old shape: no kind segment.
+		const tree = git(root, 'rev-parse', 'HEAD^{tree}');
+		const commit = git(
+			root,
+			'commit-tree',
+			tree,
+			'-p',
+			'HEAD',
+			'-m',
+			'feat: work from before the kind',
+		);
+		git(
+			root,
+			'update-ref',
+			'refs/heads/delendai/wip/claude-opus-5/x00553-S1-g1/probe',
+			commit,
+		);
+		const result = await command.run(
+			[
+				'publish',
+				'--proposal=x00553',
+				'--slice=S1',
+				'--agent=claude-opus-5',
+				'--topic=probe',
+			],
+			contextFor(root),
+		);
+		expect(result.data).toMatchObject({ published: true });
+		expect(
+			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
+		).toContain('refs/heads/delendai/pr/claude-opus-5/x00553-S1-g1/probe');
+	});
+
 	it('reports a publication that could not be pushed, and keeps everything', async () => {
 		const root = repoWith(PINNED);
 		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
