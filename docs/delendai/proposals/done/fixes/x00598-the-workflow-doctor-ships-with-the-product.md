@@ -2,7 +2,7 @@
 id: x00598
 title: "The workflow doctor ships with the product"
 kind: fix
-status: review
+status: done
 type: proposal
 track: swarm
 date: 2026-09-22
@@ -11,6 +11,9 @@ tags:
     - adoption
 shipped-in:
   - "dc61149157eb9019456c13cc0dfbb8155a0e9f4a"
+last-transition-id: dc70264d-6ebf-49a4-9c6e-eb451ad12ce4
+last-correlation-id: dc70264d-6ebf-49a4-9c6e-eb451ad12ce4
+last-transition-from: review
 ---
 
 # x00598 — The workflow doctor ships with the product

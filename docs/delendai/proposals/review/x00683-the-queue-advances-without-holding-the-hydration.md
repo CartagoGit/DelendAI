@@ -11,6 +11,8 @@ related: [x00680]
 last-transition-id: 4dd0c38e-fc57-4711-98c8-2a99a5d8b6b6
 last-correlation-id: 4dd0c38e-fc57-4711-98c8-2a99a5d8b6b6
 last-transition-from: in-progress
+shipped-in:
+  - "6462a71f9c45ee8795a91fa03bb92a11dd409c42"
 ---
 
 # x00683 — The queue advances without holding the hydration
@@ -60,14 +62,16 @@ to wait inside a pass.
 
 ### S1 — One read per pass, one dispatch per tip
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/advance-queue.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/advance-queue.script.ts`
   - `tools/scripts/forge/advance-queue.script.spec.ts`
   - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 6462a71f9. La cola avanza SIN retener la hidratación: una pasada cuyo tip está siendo certificado RETORNA enseguida sin despachar (no bloquea el job de hidratación); con tip certificado o rojo se despacha una vez y las pasadas siguientes sobre el MISMO tip no hacen nada (deduplicación por tip, no por reloj). advance-queue reestructurado (128 líneas tocadas) con spec adaptado (36). Acceptance cubierta; gate 22/22 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

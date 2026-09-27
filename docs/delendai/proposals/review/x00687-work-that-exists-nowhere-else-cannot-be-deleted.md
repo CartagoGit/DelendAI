@@ -11,6 +11,8 @@ related: [x00685, f00644]
 last-transition-id: 8bcd2c49-032e-401b-8147-cbaae7fd764c
 last-correlation-id: 8bcd2c49-032e-401b-8147-cbaae7fd764c
 last-transition-from: in-progress
+shipped-in:
+  - "54fc887ed97b86e085c5bc71fa7a61170d1624be"
 ---
 
 # x00687 — Work that exists nowhere else cannot be deleted
@@ -74,7 +76,7 @@ things let it through:
 
 ### S1 — Deleting unkept work is refused
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/git-guard.spec.ts packages/cli/src/commands/guard.command.spec.ts`
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`
@@ -84,8 +86,10 @@ things let it through:
   - `packages/cli/src/contracts/interfaces/guard.interface.ts`
   - `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`
   - `packages/cli/src/commands/guard.command.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 54fc887ed. Trabajo que no existe en ningún otro sitio no se puede borrar: borrar una work branch cuyo tip no sostiene NINGÚN otro ref se NIEGA — para un agente y para un proceso sin marker; tips kept (los que otra cosa sostiene) y unknown (refs no reconocidas) pasan. guard.command +65, git-guard-shape +38, git-guard +19, specs +96. Acceptance cubierta; gate 38/38 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

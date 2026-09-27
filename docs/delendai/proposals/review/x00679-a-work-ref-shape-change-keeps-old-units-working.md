@@ -11,6 +11,8 @@ related: [f00644, x00674]
 last-transition-id: 1dc1014c-5645-47f7-a93b-6c6102998151
 last-correlation-id: 1dc1014c-5645-47f7-a93b-6c6102998151
 last-transition-from: in-progress
+shipped-in:
+  - "39408361f39cbf64d929dd4a2804d9e0be02de5a"
 ---
 
 # x00679 — A work-ref shape change keeps old units working
@@ -57,12 +59,14 @@ not a fix per migration.
 
 ### S1 — Old shapes are proven to keep working
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/commands/work-ref-migration.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work-ref-migration.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 39408361f. Un cambio de forma del work-ref NO rompe las unidades viejas: para la forma anterior al segmento kind, el CLI ACTUAL entra en la misma unidad, checkpointa sobre ella y la publica bajo su propio nombre (x00674 generalizado a todo el ciclo); un cambio de forma sin actualizar el pin FALLA la suite y el mensaje dice qué hay que grabar (work-ref-migration.spec 180 líneas como contrato de migración). Acceptance cubierta; gate 113/113 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

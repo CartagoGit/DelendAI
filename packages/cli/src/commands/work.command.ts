@@ -17,6 +17,8 @@
  * and another agent's dirty files are neither captured nor a reason to
  * refuse — which is what lets twenty agents share one checkout.
  */
+import { randomUUID } from 'node:crypto';
+import { isAbsolute, relative, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 import {
@@ -75,7 +77,10 @@ import {
 import { renderInvariantReport } from '../lib/workflow-invariants.service';
 import { runWorkflowDoctor } from '../lib/workflow-doctor.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
-import { stampWorktreeAgent } from '../lib/worktree-agent.service';
+import {
+	stampWorktreeAgent,
+	worktreeSession,
+} from '../lib/worktree-agent.service';
 
 /** Read-only git, for the facts the engine does not already answer. */
 /** The forge's CLI (`gh`), trimmed output or `undefined` on failure. */
@@ -320,6 +325,45 @@ const kindInAgent = (agent: string): ICliCommandResult | undefined => {
 	);
 };
 
+/**
+ * The session entering, from `--session` or `DELENDAI_SESSION_ID`.
+ *
+ * Four MiniMax instances worked as one agent id on 2026-09-27, and
+ * `work enter` handed each the unit another already had: the id names
+ * the model, and nothing named the instance. The session does (x00699).
+ */
+const sessionFor = (args: readonly string[]): string | undefined => {
+	const given = scalarArg(args, 'session') ?? process.env.DELENDAI_SESSION_ID;
+	return given !== undefined && given.trim().length > 0
+		? given.trim()
+		: undefined;
+};
+
+/** A refusal when another session of this agent holds `path`. */
+const heldByAnother = (
+	path: string,
+	session: string | undefined,
+): ICliCommandResult | undefined => {
+	const held = worktreeSession(path);
+	if (held === undefined || held === session) return undefined;
+	return refused(
+		`${path} is held by another session: the unit is someone else's work, even under the same agent id.`,
+		'If this is your unit, pass the --session you were given when you entered it (or set DELENDAI_SESSION_ID). Otherwise enter your own unit: a different --topic, or --generation=<next>.',
+	);
+};
+
+/** Stamp `path` for this agent and session, issuing a session if none. */
+const claimWorktree = (
+	path: string,
+	agent: string,
+	session: string | undefined,
+): string => {
+	const claimed =
+		session ?? worktreeSession(path) ?? randomUUID().slice(0, 8);
+	stampWorktreeAgent(path, agent, claimed);
+	return claimed;
+};
+
 /** A refusal for a `--kind=` outside the vocabulary, or `undefined`. */
 const unknownKind = (
 	args: readonly string[],
@@ -415,6 +459,11 @@ const withBriefing = (
 		`${[
 			`ref              ${data.ref}`,
 			`worktree         ${data.path ?? '(none)'}`,
+			...(data.session === undefined
+				? []
+				: [
+						`session          ${data.session} (pass --session=${data.session} to enter this unit again)`,
+					]),
 			...describeBriefing(briefing),
 		].join('\n')}\n`,
 	);
@@ -468,16 +517,23 @@ const entered = async (
 	const known = existing
 		.split('\n\n')
 		.find((block) => block.includes(`branch ${ref}`));
+	const session = sessionFor(args);
 	if (known !== undefined) {
 		const path = known
 			.split('\n')
 			.find((line) => line.startsWith('worktree '))
 			?.slice('worktree '.length);
+		const held =
+			path === undefined ? undefined : heldByAnother(path, session);
+		if (held !== undefined) return held;
+		const claimed =
+			path === undefined ? session : claimWorktree(path, agent, session);
 		return withBriefing(ctx, root, policy, agent, {
 			ref,
 			branch,
 			path: path ?? null,
 			created: false,
+			session: claimed,
 		});
 	}
 	// A proposal in progress keeps one branch: a later slice continues on
@@ -488,13 +544,18 @@ const entered = async (
 		existing,
 	);
 	if (continued !== undefined) {
-		if (continued.path !== undefined && continued.path !== null)
-			stampWorktreeAgent(continued.path, agent);
+		const path = continued.path ?? undefined;
+		const held =
+			path === undefined ? undefined : heldByAnother(path, session);
+		if (held !== undefined) return held;
+		const claimed =
+			path === undefined ? session : claimWorktree(path, agent, session);
 		return withBriefing(ctx, root, policy, agent, {
 			ref: continued.ref,
 			branch: continued.ref.replace(/^refs\/heads\//u, ''),
 			path: continued.path,
 			created: false,
+			session: claimed,
 		});
 	}
 	if (git(root, ['rev-parse', '-q', '--verify', ref]) === undefined) {
@@ -506,9 +567,29 @@ const entered = async (
 			);
 		}
 	}
+	// The agent is part of the path, as it is of the unit (x00695): two
+	// reviewers each entering `--proposal=batch --slice=all` were both sent
+	// to `batch-all`, and took turns checking their branches out in it.
 	const dir =
 		scalarArg(args, 'dir') ??
-		`${scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees'}/${sanitizeRefComponent(`${proposal}-${slice}`)}`;
+		`${scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees'}/${sanitizeRefComponent(`${agent}-${proposal}-${slice}`)}`;
+	// A worktree an agent places in the shared checkout's tree is a loose
+	// edit on the integration branch (`?? batch-g5/`) unless git ignores
+	// the path. The default location is delendai's own, self-ignoring.
+	const within = relative(root, resolve(root, dir));
+	if (
+		scalarArg(args, 'dir') !== undefined &&
+		within.length > 0 &&
+		!within.startsWith('..') &&
+		!isAbsolute(within) &&
+		git(root, ['check-ignore', '-q', '--no-index', `${within}/`]) ===
+			undefined
+	) {
+		return refused(
+			`${dir} is inside the shared checkout and not ignored: the worktree would show there as an untracked directory, a loose edit on the integration branch.`,
+			'Leave --dir out (units live under .cache/delendai/.worktrees), or give a path git ignores or outside the repository.',
+		);
+	}
 	const added = git(root, ['worktree', 'add', dir, branch]);
 	if (added === undefined) {
 		return refused(
@@ -516,13 +597,15 @@ const entered = async (
 			'Check that the path is free and that the branch is not already checked out elsewhere.',
 		);
 	}
-	// Whatever runtime works here is recognised as this agent (x00688).
-	stampWorktreeAgent(`${root}/${dir}`, agent);
+	// Whatever runtime works here is recognised as this agent (x00688),
+	// and this session of it holds the unit (x00699).
+	const claimed = claimWorktree(`${root}/${dir}`, agent, session);
 	return withBriefing(ctx, root, policy, agent, {
 		ref,
 		branch,
 		path: `${root}/${dir}`,
 		created: true,
+		session: claimed,
 	});
 };
 
