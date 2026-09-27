@@ -682,8 +682,6 @@ export type {
 	IPushAuthorization,
 	IPushForceMode,
 	IPushOptions,
-	IGitRunner as IWriteGitRunner,
-	IGitRunResult as IWriteGitRunResult,
 } from '../lib/shared/git-write';
 export type { ICommitAndPushOptions, ICommitAndPushResult } from '../contracts';
 // --- commit author policy (f00082) ---
@@ -991,7 +989,6 @@ export {
 	DEFAULT_MEMORY_COST_THRESHOLD,
 	DEFAULT_MEMORY_UTILITY_WEIGHTS,
 	filterByUtility,
-	utility as computeMemoryUtility,
 } from '../lib/memory/utility';
 export type {
 	IMemoryEntry,
@@ -1710,12 +1707,7 @@ export type {
 	IAnchorVerdict,
 } from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
-export {
-	REVIEW_BATCH_ID,
-	WORK_KINDS,
-	WORK_REF_SHAPE,
-} from '../lib/development-policy/profiles.constant';
-export { legacyWorkKind } from '../lib/development-policy/work-ref-placeholders';
+export { WORK_REF_NAMING } from '../lib/contracts/constants/work-ref-naming.constant';
 // Publishing a unit and the host's cadence push both write a work ref's
 // remote copy; this is how they keep out of each other's way.
 export { holdWorkRef } from '../lib/wip-engine/work-ref-lock';
