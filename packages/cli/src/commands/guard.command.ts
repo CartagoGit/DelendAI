@@ -69,6 +69,7 @@ export const operationsForHook = (
 		readonly author?: string | undefined;
 		readonly configuredAuthor?: string | undefined;
 		readonly tipKept?: IGuardFacts['tipKept'];
+		readonly refAt?: IGuardFacts['refAt'];
 	},
 ): IGuardedGitOperation[] => {
 	if (hook === 'pre-commit') {
@@ -100,9 +101,14 @@ export const operationsForHook = (
 				// it, and judging creations alone let every stash after the
 				// first through.
 				if (ref === 'refs/stash') return [{ kind: 'stash' }];
-				return ZERO_OID.test(oldOid)
-					? [{ kind: 'branch-create', ref }]
-					: [];
+				if (!ZERO_OID.test(oldOid)) return [];
+				// `git pack-refs` (run by gc) moves every loose ref into the
+				// packed store in a transaction that reads as a creation. A
+				// ref that already points at the same commit is being packed,
+				// not created: judged as a creation, one badly named ref
+				// stopped git's maintenance for the whole repository (x00703).
+				if (facts.refAt?.(ref) === newOid) return [];
+				return [{ kind: 'branch-create', ref }];
 			},
 		);
 	}
@@ -178,6 +184,7 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 		git(workspace, ['rev-parse', '--git-dir']) ===
 		git(workspace, ['rev-parse', '--git-common-dir']),
 	worktreeAgent: () => worktreeAgent(workspace),
+	refAt: (ref) => git(workspace, ['rev-parse', '--verify', '--quiet', ref]),
 	tipKept: (sha, deletedRef) => {
 		if (git(workspace, ['cat-file', '-e', `${sha}^{commit}`]) === undefined)
 			return undefined;
@@ -211,9 +218,9 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	// The identity the repository is configured with: the same read with
 	// the command line's `-c` overrides taken away.
 	configuredAuthor: () => {
-		const configured = (key: string): string | undefined => {
+		const configured = (args: readonly string[]): string | undefined => {
 			try {
-				return execFileSync('git', ['config', '--get', key], {
+				return execFileSync('git', ['config', ...args], {
 					cwd: workspace,
 					encoding: 'utf8',
 					stdio: ['ignore', 'pipe', 'ignore'],
@@ -227,8 +234,17 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 				return undefined;
 			}
 		};
-		const name = configured('user.name');
-		const email = configured('user.email');
+		// The owner's identity lives in the global (or system) config. The
+		// repository's own config is shared by every worktree, and an agent
+		// that wrote `user.name` there made every agent commit as itself
+		// and passed this very check (x00698); a repository-level identity
+		// that differs from the owner's is exactly the borrowed author.
+		const owner = (key: string): string | undefined =>
+			configured(['--global', '--get', key]) ??
+			configured(['--system', '--get', key]);
+		const name = owner('user.name') ?? configured(['--get', 'user.name']);
+		const email =
+			owner('user.email') ?? configured(['--get', 'user.email']);
 		return name === undefined || email === undefined
 			? undefined
 			: `${name} <${email}>`;
@@ -530,6 +546,7 @@ export const createGuardCommand = (
 				...(facts.tipKept === undefined
 					? {}
 					: { tipKept: facts.tipKept }),
+				...(facts.refAt === undefined ? {} : { refAt: facts.refAt }),
 				...(hook === 'pre-commit'
 					? {
 							author: facts.author?.(),

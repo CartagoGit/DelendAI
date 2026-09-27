@@ -11,6 +11,8 @@ related: [x00551]
 last-transition-id: e75fcbc7-2777-4708-8f1f-aff2db4ab588
 last-correlation-id: e75fcbc7-2777-4708-8f1f-aff2db4ab588
 last-transition-from: in-progress
+shipped-in:
+  - "9c7aa1874f4d7f2ae431e819b763449824aef821"
 ---
 
 # x00685 — One work ref cannot stop the server booting
@@ -68,14 +70,16 @@ thrown from `rebuild-work-units.ts`:
 
 ### S1 — The boot survives a ref it cannot record
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler/work-after-integration.spec.ts`
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/phases/rebuild-work-units.ts`
   - `packages/core/src/lib/startup-reconciler/finding-catalog.constant.ts`
   - `packages/core/tests/src/lib/startup-reconciler/work-after-integration.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 9c7aa1874. Un work-ref NO puede tumbar el arranque del server: un ref entered en el tip de la integración y commiteada DESPUÉS produce el finding `work-refs.work-after-integration` — la fila integrada no cambia y el boot NO tiene blocker (antes lanzaba el error de producción); un checkpoint que la BD rechaza produce `work-refs.record-failed` en lugar de tumbar. rebuild-work-units +73, finding-catalog +7, work-after-integration.spec 136 líneas. Acceptance cubierta; gate 22/22 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

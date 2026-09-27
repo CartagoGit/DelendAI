@@ -11,6 +11,8 @@ related: [x00687, x00690]
 last-transition-id: c58b79a0-9f99-4a00-8dec-bb2588f83cb4
 last-correlation-id: c58b79a0-9f99-4a00-8dec-bb2588f83cb4
 last-transition-from: in-progress
+shipped-in:
+  - "66840ab84dda82f636da7a7e432b9ba2e6845630"
 ---
 
 # x00691 — A finished work ref is not pushed back
@@ -64,13 +66,15 @@ should have ended reappears, unowned.
 
 ### S1 — Finished work is not pushed back
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
 - **Files**:
   - `plugins/commit-policy/src/lib/services/work-checkout-publisher.service.ts`
   - `plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 66840ab84 (el merge que era tip de develop al empezar esta sesión). Un work checkout cuyos commits SU publicación ya lleva se salta, nombrando la publicación, y su work ref NO se crea en el remoto (un ref terminado no se empuja de vuelta); un work checkout con commits que nadie más lleva sigue publicándose y queda level después. work-checkout-publisher +32 y spec +19. Acceptance cubierta; gate 29/29 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

@@ -11,6 +11,8 @@ related: [f00645]
 last-transition-id: 37dd5a49-eaea-4bf2-b0d8-c90803b7106e
 last-correlation-id: 37dd5a49-eaea-4bf2-b0d8-c90803b7106e
 last-transition-from: in-progress
+shipped-in:
+  - "85ed7fb8445872534201dacea3fe5206a43afe61"
 ---
 
 # x00682 — Plugins that watch every call activate at startup
@@ -78,7 +80,7 @@ Each failure was silent.
 
 ### S1 — Observers activate at startup
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/generate/managed-lazy-catalog.script.spec.ts packages/core/tests/src/lib/cli/assemble.lazy-register-errors.spec.ts`
 - **Files**:
   - `tools/scripts/generate/managed-lazy-catalog.script.ts`
@@ -86,8 +88,10 @@ Each failure was silent.
   - `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`
   - `packages/core/src/lib/cli/assemble-plugins.ts`
   - `packages/core/tests/src/lib/cli/assemble.lazy-register-errors.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 85ed7fb84. Plugins que observan TODAS las llamadas activan al arranque: todo plugin que registre un observer de tool-call o el logs sink se activa en startup bajo lazy loading (managed-lazy-catalog generado con la marca, assemble-plugins +5 los activa), y un plugin activado al arranque sigue pudiendo activarse por el mecanismo normal. managed-lazy-catalog.script +26 con spec +25. Acceptance cubierta; gate 22/22 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

@@ -273,6 +273,20 @@ const CLI_ENTRY = resolve(
 
 describe('guard through real git hooks', () => {
 	const roots: string[] = [];
+	// The owner's identity is the global config's (x00698), so the machine
+	// running the suite must not lend its own: each case gets a global
+	// config naming the test repository's owner, and no system config.
+	beforeEach(() => {
+		const home = mkdtempSync(join(tmpdir(), 'guard-e2e-home-'));
+		roots.push(home);
+		const global = join(home, 'gitconfig');
+		writeFileSync(
+			global,
+			'[user]\n\tname = Guard\n\temail = guard@example.com\n',
+		);
+		vi.stubEnv('GIT_CONFIG_GLOBAL', global);
+		vi.stubEnv('GIT_CONFIG_NOSYSTEM', '1');
+	});
 	afterEach(() => {
 		for (const root of roots.splice(0)) {
 			rmSync(root, { recursive: true, force: true });
@@ -340,6 +354,63 @@ describe('guard through real git hooks', () => {
 		expect(committed.status).not.toBe(0);
 		expect(committed.stderr).toContain('refused');
 		expect(committed.stderr).toContain('delendai work checkpoint');
+	});
+
+	it('lets git pack an existing ref it would refuse to create (x00703)', () => {
+		const root = repoWith({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		// A badly named ref that exists already, made without hooks.
+		expect(
+			git(
+				root,
+				'-c',
+				'core.hooksPath=/dev/null',
+				'branch',
+				'delendai/wip/copilot/review/batch-all-g1/t',
+			).status,
+		).toBe(0);
+		const packed = git(root, 'pack-refs', '--all');
+		expect(packed.stderr).not.toContain('aborted by hook');
+		expect(packed.status).toBe(0);
+		// Creating one is still refused.
+		expect(
+			git(root, 'branch', 'delendai/wip/copilot/review/batch-all-g1/u')
+				.status,
+		).not.toBe(0);
+	});
+
+	it('refuses an identity an agent wrote into the repository config (x00698)', () => {
+		const root = repoWith({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		const unit = join(root, '..', `${root.split('/').at(-1)}-owned`);
+		roots.push(unit);
+		expect(
+			git(
+				root,
+				'worktree',
+				'add',
+				'-q',
+				'-b',
+				'delendai/wip/minimax-m3/review/batch-all-g1/t',
+				unit,
+			).status,
+		).toBe(0);
+		// Shared by every worktree: what MiniMax did on 2026-09-27.
+		git(root, 'config', 'user.name', 'delendai-impl-minimax-3');
+		git(root, 'config', 'user.email', 'delendai@MiniMax.local');
+		writeFileSync(join(unit, 'a.ts'), 'export const a = 1;\n');
+		git(unit, 'add', 'a.ts');
+		const committed = git(unit, 'commit', '-m', 'feat: as the agent');
+		expect(committed.status).not.toBe(0);
+		expect(committed.stderr).toContain('Guard <guard@example.com>');
 	});
 
 	it('refuses a borrowed author on a delendai branch, however it was borrowed (f00644)', () => {

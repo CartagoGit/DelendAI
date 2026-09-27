@@ -11,6 +11,8 @@ related: [f00644]
 last-transition-id: 1b8676b1-1077-4792-adb5-2ef998a17cc8
 last-correlation-id: 1b8676b1-1077-4792-adb5-2ef998a17cc8
 last-transition-from: in-progress
+shipped-in:
+  - "5fe5c9728c671de03aaf26da81c995c40cf818f5"
 ---
 
 # x00674 — A unit entered before the kind stays reachable
@@ -56,13 +58,15 @@ guard kept that promise, but the CLI did not.
 
 ### S1 — Existing units are found under their old name
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
   - `packages/cli/src/commands/work.command.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 5fe5c9728. Una unidad cuyo ref no tiene segmento de kind (creada antes de que la forma nombrara el kind, x00644/f00644) sigue siendo publicable: work publish SIN --kind publica bajo SU PROPIO nombre (el template sin el segmento); con --kind usa el nombre kinded. work.command +44 y spec +39 — es el existingWorkRef que esta sesión vio en el código al publicar el pack 1. Acceptance cubierta; gate 82/82 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

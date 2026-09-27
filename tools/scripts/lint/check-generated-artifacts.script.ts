@@ -13,6 +13,16 @@ import {
 } from '../generate/managed-lazy-catalog.script.ts';
 import { buildCapabilityMatrixMarkdown } from '../gen/capability-matrix.script.ts';
 import { buildTokenBudgetDashboardMarkdown } from '../report/token-budget-dashboard.script.ts';
+import { spawnSync } from 'node:child_process';
+
+import { STEPS } from '../gen-all.script.ts';
+
+/** The `gen:all` steps this script already checks by itself, above. */
+const CHECKED_ABOVE: ReadonlySet<string> = new Set([
+	'plugin-manifests',
+	'preset-metadata',
+	'managed-lazy-catalog',
+]);
 
 const DASHBOARD_RELATIVE_PATH = 'docs/delendai/TOKEN-BUDGETS.md';
 const CAPABILITY_MATRIX_RELATIVE_PATH =
@@ -188,6 +198,31 @@ const main = async (): Promise<number> => {
 		failures.push(
 			`CAPABILITY_MATRIX: generation failed. ${error instanceof Error ? error.message : String(error)}`,
 		);
+	}
+
+	// Every other generator `gen:all` knows how to check, from its own
+	// list: a generator registered there is checked here with no second
+	// list to keep. Seven of them never ran in CI, the public API inventory
+	// among them, which is how it drifted to 402 exports while the budget
+	// counted 645 with every gate green (x00693).
+	for (const step of STEPS) {
+		if (
+			step.checkCmd === undefined ||
+			step.measured === true ||
+			CHECKED_ABOVE.has(step.name)
+		) {
+			continue;
+		}
+		const [command, ...args] = step.checkCmd;
+		const result = spawnSync(command ?? 'bun', args, {
+			cwd: workspaceRoot,
+			encoding: 'utf8',
+		});
+		if (result.status !== 0) {
+			failures.push(
+				`${step.name.toUpperCase()}: drift detected. Run \`bun run gen:all\` and commit the generated outputs.`,
+			);
+		}
 	}
 
 	if (failures.length > 0) {
