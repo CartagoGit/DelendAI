@@ -197,6 +197,41 @@ describe('guard command', () => {
 		}
 	});
 
+	it('judges a runtime with no agent marker as the agent its worktree was made for (x00688)', async () => {
+		for (const name of ['AI_AGENT', 'CLAUDECODE', 'DELENDAI_AGENT_ID']) {
+			vi.stubEnv(name, '');
+		}
+		const person = await createGuardCommand(() => facts({})).run(
+			['pre-commit'],
+			context('/ws'),
+		);
+		expect(person.code).toBe(0);
+		const stamped = await createGuardCommand(() =>
+			facts({ worktreeAgent: () => 'glm-5' }),
+		).run(['pre-commit'], context('/ws'));
+		expect(stamped.code).not.toBe(0);
+		expect(stamped.error).toContain('the worktree delendai made for glm-5');
+		// A worktree made before the stamp: its work branch names the agent.
+		const named = await createGuardCommand(() =>
+			facts({
+				branch: () => 'delendai/wip/minimax-3/review/x00001-S1-g1/t',
+				inMainWorktree: () => false,
+				stdin: async () => `${ZERO} ${A} refs/stash\n`,
+				policy: async () =>
+					resolveDevelopmentPolicy({
+						development: {
+							profile: 'shared-checkout-pr',
+							branches: { namespacePrefix: 'delendai' },
+						},
+					}),
+			}),
+		).run(['reference-transaction', 'prepared'], context('/ws'));
+		expect(named.code).not.toBe(0);
+		expect(named.error).toContain(
+			'the worktree delendai made for minimax-3',
+		);
+	});
+
 	it('rejects an unknown hook as a usage error', async () => {
 		const result = await createGuardCommand(() => facts({})).run(
 			['post-rewrite'],

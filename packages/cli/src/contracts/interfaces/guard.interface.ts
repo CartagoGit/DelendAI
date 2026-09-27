@@ -24,6 +24,11 @@ export interface IGuardFacts {
 	readonly author?: () => string | undefined;
 	/** The configured identity, without command-line overrides. */
 	readonly configuredAuthor?: () => string | undefined;
+	/**
+	 * The agent the current linked worktree was made for by `work enter`;
+	 * undefined in the shared checkout or a worktree delendai did not make.
+	 */
+	readonly worktreeAgent?: () => string | undefined;
 	/** Everything git wrote to the hook's stdin. */
 	readonly stdin: () => Promise<string>;
 	/**
