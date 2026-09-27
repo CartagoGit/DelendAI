@@ -11,6 +11,8 @@ related: [x00672]
 last-transition-id: c0cfe4ec-6666-443b-baf5-3fcf1ccc8a58
 last-correlation-id: c0cfe4ec-6666-443b-baf5-3fcf1ccc8a58
 last-transition-from: in-progress
+shipped-in:
+  - "6c88827c4ac5f3f25967bafa97ed1b1354907265"
 ---
 
 # x00681 — A refused close says why in the test
@@ -52,12 +54,14 @@ re-running it until it is green would only hide it.
 
 ### S1 — The close assertion names the refusal
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - **Files**:
   - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 6c88827c4. Un close RECHAZADO dice por qué EN EL TEST: el spec de attribution assertiona con el TEXTO de la negación (+3 líneas) — un cierre que el tool rechace por datos que faltan rompe la suite nombrando la razón exacta, no solo el código. Acceptance cubierta (criterio único); gate 22/22 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

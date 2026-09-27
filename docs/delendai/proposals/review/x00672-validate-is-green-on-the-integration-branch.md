@@ -11,6 +11,8 @@ related: [x00658, f00644, x00659]
 last-transition-id: f8054db1-969b-411a-bd96-ec5e6780869a
 last-correlation-id: f8054db1-969b-411a-bd96-ec5e6780869a
 last-transition-from: in-progress
+shipped-in:
+  - "3a384200ca25312a6c186f37595a4bdbe9294934"
 ---
 
 # x00672 — Validate is green on the integration branch
@@ -75,7 +77,7 @@ red for nine days, since 2026-09-17:
 
 ### S1 — The four validate failures are fixed at their cause
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `bun run lint:commit-driver-guard && bun run lint:cache && bun run lint:core-public-surface-budget`
 - **Files**:
   - `plugins/commit-policy/src/lib/services/commit-driver.ts`
@@ -91,8 +93,10 @@ red for nine days, since 2026-09-17:
   - `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`
   - `plugins/proposals/src/lib/tools/publish-proposal.ts`
   - `packages/cli/src/lib/publication-target.service.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 3a384200c. Validate verde en la integración: los tres lints que llevaban rojo el develop compartido quedan reparados — lint:commit-driver-guard (las primitivas de commit viven solo en commit-driver.ts, constantes de naming compartidas vía work-ref-naming), lint:cache (la suite de commit-policy corre desde su propia carpeta, no deja .cache stray) y lint:core-public-surface-budget (imports de core vía public/ index). publication-target + commit-policy engine/persistence ajustados; engine.spec +19. Acceptance cubierta; gate 82/82 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

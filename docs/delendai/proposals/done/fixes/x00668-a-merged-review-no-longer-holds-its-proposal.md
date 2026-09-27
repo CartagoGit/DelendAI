@@ -2,15 +2,17 @@
 id: x00668
 title: "A merged review no longer holds its proposal"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00660]
-last-transition-id: 0dbbfb31-e2be-478c-9d67-5c2efd304de2
-last-correlation-id: 0dbbfb31-e2be-478c-9d67-5c2efd304de2
-last-transition-from: in-progress
+last-transition-id: 863bcb0e-8a2c-41bd-b9ef-1a2bb2b9c993
+last-correlation-id: 863bcb0e-8a2c-41bd-b9ef-1a2bb2b9c993
+last-transition-from: review
+shipped-in:
+  - "c10880f3e4fe2432c7965710c694e7a8713883b2"
 ---
 
 # x00668 — A merged review no longer holds its proposal
@@ -63,14 +65,16 @@ asked for claims aware of abandoned refs.
 
 ### S1 — Claims end when the review merges
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-claims.service.ts`
   - `plugins/proposals/src/lib/services/review-queue.service.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real c10880f3e. Un review ref en un commit YA MERGEADO no reclama: ni local sin worktree, ni remote-tracking, ni publication ref gastado (los tres casos son unidades terminadas cuyo PR integró); una unidad de review checked out en un worktree reclama ANTES de su primer commit (worktreepath presente); un ref con commits sin mergear reclama como siempre. review-claims.service +45, queue.service +2, review-queue.tool.spec +53. Es exactamente el caso del claim fantasma de f00552 que esta sesión diagnosticó. Acceptance cubierta; gate 22/22 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

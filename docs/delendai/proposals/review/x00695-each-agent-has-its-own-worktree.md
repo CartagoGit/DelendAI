@@ -2,12 +2,15 @@
 id: x00695
 title: "Each agent has its own worktree"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00688, x00553]
+last-transition-id: 261daa45-0d11-4d74-b19a-a817bc961551
+last-correlation-id: 261daa45-0d11-4d74-b19a-a817bc961551
+last-transition-from: in-progress
 ---
 
 # x00695 — Each agent has its own worktree
@@ -58,13 +61,14 @@ Watching a swarm of five reviewers on 2026-09-27:
 
 ### S1 — One worktree per agent, never in the shared tree
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
   - `packages/cli/src/commands/work.command.spec.ts`
   - `packages/cli/src/commands/work-ref-migration.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.

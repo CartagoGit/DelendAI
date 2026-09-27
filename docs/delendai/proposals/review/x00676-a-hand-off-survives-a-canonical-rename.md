@@ -11,6 +11,8 @@ related: [x00643]
 last-transition-id: 127956a4-306f-48ba-b9d8-a5e493335ead
 last-correlation-id: 127956a4-306f-48ba-b9d8-a5e493335ead
 last-transition-from: in-progress
+shipped-in:
+  - "4b4765869eef2ae7a371fb01184d54a10567d52b"
 ---
 
 # x00676 — A hand-off survives a canonical rename
@@ -58,14 +60,16 @@ trip out of review and back.
 
 ### S1 — The rounds and the answer follow the renamed file
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/transition-landing.service.ts`
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 4b4765869. Un hand-off cuyo documento aterriza bajo OTRO nombre del que reportó el movimiento abre las rondas de review en ESE documento y la respuesta lo nombra (transition-landing.service 43 líneas resuelve el aterrizaje real post-rename canónico; el tool +41 reporta el nombre efectivo). proposal-transition.tool.spec +36. Acceptance cubierta (criterio único); gate 113/113 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

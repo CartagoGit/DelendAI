@@ -11,6 +11,8 @@ related: [x00653]
 last-transition-id: cfe8a226-d4d1-4ec5-8a25-0c89c91c95e2
 last-correlation-id: cfe8a226-d4d1-4ec5-8a25-0c89c91c95e2
 last-transition-from: in-progress
+shipped-in:
+  - "7e1172378f8c0c04aa75864621d7f8c1b5a20c80"
 ---
 
 # x00663 — The guard runs where lefthook owns the hooks
@@ -81,7 +83,7 @@ route is `delendai work enter`, which makes the unit's worktree.
 
 ### S1 — The report tells the truth, and the guard names the route
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks.service.spec.ts packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`
 - **Files**:
   - `packages/cli/src/lib/guard-hooks.service.ts`
@@ -91,8 +93,10 @@ route is `delendai work enter`, which makes the unit's worktree.
   - `packages/cli/src/lib/guard-hooks.service.spec.ts`
   - `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
   - `packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 7e1172378. El guard reconoce los hooks que LEFTHOOK posee: un hook cuya sección lefthook ejecuta `guard <hook>` se reporta installed; un hook owned-por-lefthook sin ese comando es absent y el reporte apunta a lefthook.yml (no a guard install — el instalador no es dueño ahí); en este repo los tres hooks lefthook leen installed; bajo shared-checkout-pr/merge la regla de aislamiento nombra delendai work enter y bajo shared-direct no. guard-hooks.service +50, autoinstall +5 con specs (+29/+33), work-isolation ajustado. Acceptance cubierta; gates 24/24 + 11/11 en el lote del pack. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
