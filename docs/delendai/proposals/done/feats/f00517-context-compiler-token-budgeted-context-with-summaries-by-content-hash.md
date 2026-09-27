@@ -2,7 +2,7 @@
 id: f00517
 title: "Context compiler — token-budgeted context with summaries by content_hash"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -15,9 +15,10 @@ related:
   - q00022
   - f00514
   - f00516
-last-transition-id: b7039ff4-4625-408d-8838-4de11cde3ebc
-last-correlation-id: b7039ff4-4625-408d-8838-4de11cde3ebc
-last-transition-from: in-progress
+last-transition-id: d6fd2d72-6fd9-4606-993c-e1e53edea756
+last-correlation-id: d6fd2d72-6fd9-4606-993c-e1e53edea756
+last-transition-from: review
+shipped-in: ["eaf03fb5c"]
 ---
 
 # f00517 — Context compiler + summaries by hash

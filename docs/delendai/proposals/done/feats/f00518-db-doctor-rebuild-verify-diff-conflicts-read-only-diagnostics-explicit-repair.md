@@ -2,7 +2,7 @@
 id: f00518
 title: "db doctor / rebuild / verify / diff / conflicts — read-only diagnostics + explicit repair"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -15,9 +15,10 @@ related:
   - q00022
   - f00515
   - f00519
-last-transition-id: a4b564d8-7c65-4aed-be27-a28db17ea04c
-last-correlation-id: a4b564d8-7c65-4aed-be27-a28db17ea04c
-last-transition-from: in-progress
+last-transition-id: bb5f2531-63cc-4c2a-9478-c1f66e457744
+last-correlation-id: bb5f2531-63cc-4c2a-9478-c1f66e457744
+last-transition-from: review
+shipped-in: ["a889a6a87", "eaf03fb5c"]
 ---
 
 # f00518 — db doctor / rebuild / verify / diff / conflicts

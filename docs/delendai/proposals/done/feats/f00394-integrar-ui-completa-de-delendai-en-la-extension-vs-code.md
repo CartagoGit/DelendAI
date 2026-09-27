@@ -2,13 +2,14 @@
 id: f00394
 title: "Integrar UI completa de DelendAI en la extension VS Code"
 kind: feat
-status: review
+status: done
 type: proposal
 track: vscode-shared-ui
 date: 2026-08-31
-last-transition-id: 4a970254-e183-467a-b2bf-af334ba6e4a5
-last-correlation-id: 4a970254-e183-467a-b2bf-af334ba6e4a5
-last-transition-from: in-progress
+last-transition-id: e1bf1079-b206-4979-9633-0064dedd1dbc
+last-correlation-id: e1bf1079-b206-4979-9633-0064dedd1dbc
+last-transition-from: review
+shipped-in: ["2a7c8c71e"]
 ---
 
 # f00394 — Integrar UI completa de DelendAI en la extension VS Code
