@@ -11,6 +11,8 @@ related: [x00653, x00645]
 last-transition-id: 6a160ad6-1b4d-4a79-b8c2-73191ebb52f9
 last-correlation-id: 6a160ad6-1b4d-4a79-b8c2-73191ebb52f9
 last-transition-from: in-progress
+shipped-in:
+  - "d0a3607ed5f8a1089391b0d64bc55afd1972c0f0"
 ---
 
 # x00669 — Loose edits on the integration branch are announced
@@ -69,15 +71,17 @@ nobody. x00645 reports such paths, but only to an agent that runs
 
 ### S1 — Core announces loose edits on every tool result
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/loose-edits-advisory.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/loose-edits-advisory.ts`
   - `packages/core/src/lib/development-policy/loose-edits-advisory.interface.ts`
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/tests/src/lib/development-policy/loose-edits-advisory.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real d0a3607ed. Los edits sueltos sobre la integración SE ANUNCIAN: en el shared checkout sobre la integración bajo política work-ref, un tracked file cambiado produce el advisory LOOSE_EDITS_ON_INTEGRATION nombrándolo; fuera de ese checkout o con el árbol limpio no se dice nada; una tool call nunca espera a git (la lectura tiene como mucho un intervalo de antigüedad — muestreo en background). loose-edits-advisory 123 líneas + spec 140; assemble cableado. Acceptance cubierta; gate 22/22 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

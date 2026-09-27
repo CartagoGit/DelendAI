@@ -11,6 +11,8 @@ related: [x00687, x00675]
 last-transition-id: 3efcd412-17f3-4058-ad53-30ffec5d6c2f
 last-correlation-id: 3efcd412-17f3-4058-ad53-30ffec5d6c2f
 last-transition-from: in-progress
+shipped-in:
+  - "bca10bfbac77b24c49b3050705476f6a819ab7a1"
 ---
 
 # x00689 — A repair decision never lands in the shared checkout
@@ -54,13 +56,15 @@ do that.
 
 ### S1 — Decisions are recorded in a unit
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/commands/repair.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/repair.command.ts`
   - `packages/cli/src/commands/repair.command.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real bca10bfba. Una decisión de reparación NUNCA aterriza en el shared checkout: en un shared checkout pineado, repair resolve se NIEGA, nombra `work enter --kind=repair` y no escribe nada; en un linked worktree del mismo repo sí registra la decisión. repair.command +50 y spec +49. Acceptance cubierta; gate 38/38 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

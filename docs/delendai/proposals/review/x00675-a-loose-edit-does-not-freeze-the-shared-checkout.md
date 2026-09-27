@@ -11,6 +11,8 @@ related: [x00558, x00669]
 last-transition-id: cb9e384e-0857-47cd-a487-214ee1dd486e
 last-correlation-id: cb9e384e-0857-47cd-a487-214ee1dd486e
 last-transition-from: in-progress
+shipped-in:
+  - "3d45dcddee0b63f597a2565ed52b05cc4bf5fe97"
 ---
 
 # x00675 — A loose edit does not freeze the shared checkout
@@ -66,7 +68,7 @@ file.
 
 ### S1 — Advance past edits the advance does not touch
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler/checkout-freshness.spec.ts packages/core/tests/src/lib/startup-reconciler/hydration-watch.spec.ts`
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/seams.interface.ts`
@@ -75,8 +77,10 @@ file.
   - `packages/core/src/lib/startup-reconciler/phases/checkout-overlap.ts`
   - `packages/core/tests/src/lib/startup-reconciler/checkout-freshness.spec.ts`
   - `packages/core/tests/src/lib/startup-reconciler/hydration-watch.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 3d45dcdde. Un loose edit no congela el shared checkout: un checkout detrás de su remoto con una edición SIN commitear en un path que el avance NO cambia se avanza igual y la edición queda intacta; si el avance cambia ese path, el checkout se hidrata en su lugar sin perder el edit (checkout-overlap + verify-checkout en el startup-reconciler, git-seam +13). checkout-freshness.spec +48, hydration-watch.spec +25. Acceptance cubierta; gate 82/82 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

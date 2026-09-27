@@ -11,6 +11,8 @@ related: [x00646, f00644]
 last-transition-id: 8caf1d0f-27da-4bc6-b33a-1848f51e1e39
 last-correlation-id: 8caf1d0f-27da-4bc6-b33a-1848f51e1e39
 last-transition-from: in-progress
+shipped-in:
+  - "7828a786bf961a36bf31dd42b7d8483a2b70b59d"
 ---
 
 # x00673 — The review queue is a compact list
@@ -62,7 +64,7 @@ tokens and context as the project's weakest area.
 
 ### S1 — List by default, evidence on request
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue-view.spec.ts plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-queue-view.service.ts`
@@ -72,8 +74,10 @@ tokens and context as the project's weakest area.
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue-view.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue-candidates.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 7828a786b. La cola de review es una lista COMPACTA: sin proposalId ningún slice trae candidates/files/acceptance/nextAction/later-commits — solo su veredicto (la página de 50 cabe); con proposalId o detail=true el payload completo llega como esta sesión lo usó todo el rato. review-queue-view.service 34 líneas nuevas; schema +13. Acceptance cubierta; gate 82/82 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
