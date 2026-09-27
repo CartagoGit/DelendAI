@@ -45,6 +45,8 @@ reviewers were blamed.
 - **Merges after it are not the proposal's work.** If they break it,
   their own run goes red and the newest verdict stops vouching.
 - **A refusal is printed with its reason**, per proposal.
+- **A refused pass leaves nothing behind.** Its empty unit branch is
+  deleted with its worktree. Every refused pass had left one for the reaper.
 
 ## non-goals
 

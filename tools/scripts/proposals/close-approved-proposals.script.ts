@@ -144,7 +144,11 @@ const main = (): number => {
 	const cli = ['packages/cli/src/index.ts'];
 	const entered = JSON.parse(
 		run('bun', [...cli, 'work', 'enter', ...unit, '--json'], root),
-	) as { readonly path?: string; readonly session?: string };
+	) as {
+		readonly path?: string;
+		readonly session?: string;
+		readonly branch?: string;
+	};
 	const path = entered.path;
 	if (path === undefined) return 1;
 	const refusals = new Map<string, string>();
@@ -173,6 +177,11 @@ const main = (): number => {
 	}
 	if (closed.length === 0) {
 		run('git', ['worktree', 'remove', '--force', path], root);
+		// The unit carries nothing: its branch goes with its worktree, or
+		// every refused pass left one more behind for the reaper.
+		if (entered.branch !== undefined) {
+			run('git', ['branch', '-D', entered.branch], root);
+		}
 		console.log(
 			`close-approved-proposals: ${candidates.join(', ')} are approved, and every close was refused; a later pass tries again.`,
 		);
