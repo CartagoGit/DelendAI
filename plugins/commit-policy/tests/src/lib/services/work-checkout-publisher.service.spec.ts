@@ -324,6 +324,25 @@ describe('when the policy asks for it', () => {
 		expect(await remoteHas(WORK_BRANCH)).toBe('');
 	});
 
+	it('pushes nothing while the host says it runs older code than its checkout (x00709)', async () => {
+		const { enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'work';\n");
+		let behind: string | undefined = 'This server started at abc.';
+		const publisher = startWorkCheckoutPublisher({
+			run,
+			policy: POLICY,
+			standDown: async () => behind,
+		});
+		cleanups.push(async () => publisher.stop());
+		const stale = await publisher.tick();
+		expect(outcomes(stale)).toEqual(['skipped']);
+		expect(stale[0]?.reason).toContain('until it is restarted');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
+		behind = undefined;
+		expect(outcomes(await publisher.tick())).toEqual(['published']);
+	});
+
 	it('reads the work branches out of the worktree listing', () => {
 		const porcelain = [
 			'worktree /repo',
