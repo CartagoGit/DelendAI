@@ -75,6 +75,10 @@ describe('gen-all.script', () => {
 				cmd: 'bun tools/scripts/docs/generate-catalog.script.ts',
 			},
 			{
+				name: 'core-public-inventory',
+				cmd: 'bun tools/scripts/inspect/core-public-inventory.script.ts --write',
+			},
+			{
 				name: 'provenance-truth',
 				cmd: 'bun tools/scripts/gen/provenance-truth.script.ts',
 			},
@@ -145,6 +149,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/build/stable-manifest.script.ts',
 			'bun tools/scripts/generate/managed-lazy-catalog.script.ts --check',
 			'bun tools/scripts/docs/generate-catalog.script.ts --check',
+			'bun tools/scripts/inspect/core-public-inventory.script.ts --check',
 			'bun tools/scripts/gen/provenance-truth.script.ts --check',
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
 			'bun tools/scripts/gen/authorities.script.ts --check',
@@ -215,6 +220,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/build/stable-manifest.script.ts',
 			'bun tools/scripts/generate/managed-lazy-catalog.script.ts --check',
 			'bun tools/scripts/docs/generate-catalog.script.ts --check',
+			'bun tools/scripts/inspect/core-public-inventory.script.ts --check',
 			'bun tools/scripts/gen/provenance-truth.script.ts --check',
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
 			'bun tools/scripts/gen/authorities.script.ts --check',
