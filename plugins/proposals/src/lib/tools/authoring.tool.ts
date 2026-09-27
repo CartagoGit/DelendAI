@@ -1555,7 +1555,7 @@ export const buildCloseSliceRegistration = (
 								kind: 'validation-error' as const,
 								blockerType: 'validate-required' as const,
 								error: {
-									reason: `slice "${args.sliceId}" requires recent validate evidence before close_slice may flip it (gate requires \`bun run validate\`). Pass { validateEvidence: { timestamp, exitCode: 0, logPath } } or run \`bun run validate\` first, then retry.`,
+									reason: `slice "${args.sliceId}" requires recent validate evidence before close_slice may flip it (gate requires \`delendai validate\`). Pass { validateEvidence: { timestamp, exitCode: 0, logPath } } or run \`bun run validate\` first, then retry.`,
 									nextAction:
 										'Pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path-to-validate.jsonl> } } or set `force: true` to skip the gate.',
 									kind: 'validation-error' as const,

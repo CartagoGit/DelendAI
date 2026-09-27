@@ -30,6 +30,7 @@ import {
 	scalarArg,
 } from '../lib/helpers/cli-command.helper';
 import { formatRows } from '../lib/text-format.service';
+import { runValidate } from '../lib/validate-run.service';
 import { agentsCommands } from './groups/agents';
 import { auditCommands } from './groups/audit';
 import { conventionsCommands } from './groups/conventions';
@@ -306,13 +307,26 @@ export const registerAllCommands = async (): Promise<
 	},
 	{
 		name: 'validate',
-		summary: 'Run the root validation gate.',
+		summary:
+			"Run the project's declared validation gates and journal the outcome.",
 		async run(_args, ctx) {
-			return runProcess(
-				'bun',
-				['run', 'validate'],
-				ctx.globals.workspace,
-			);
+			const outcome = await runValidate(ctx.globals.workspace);
+			if (!outcome.declared) {
+				return {
+					code: EXIT_CODE.VALIDATION,
+					error: [
+						'This project declares no validation gates, so there is nothing to run and no evidence a proposal could close on.',
+						'Declare them in delendai.config.json, e.g. "validationMatrix": { "scopes": { "tests": [{ "command": "npm test", "expect": "exit0" }] } }, or add a `validate` script to package.json.',
+					].join('\n'),
+				};
+			}
+			return outcome.passed
+				? dataOrText(outcome, ctx)
+				: {
+						code: EXIT_CODE.VALIDATION,
+						data: outcome,
+						error: `validation failed: ${outcome.failed.join('; ')}`,
+					};
 		},
 	},
 	{

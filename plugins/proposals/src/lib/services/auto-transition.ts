@@ -70,31 +70,37 @@ export const markProposalDoneForAutoTransition = (
 	};
 };
 
-const createAutoTransitionRepairDeps = (): IAutoTransitionRepairDeps => ({
-	ensureDir: async (path) => {
-		await mkdir(path, { recursive: true });
-	},
-	now: () => new Date().toISOString(),
-	readText: async (path) =>
-		new SafeWorkspaceReader(dirname(path))
-			.readText(basename(path))
-			.then((value) => value.content)
-			.catch((error: unknown) => {
-				if (
-					error &&
-					typeof error === 'object' &&
-					'code' in error &&
-					error.code === 'ENOENT'
-				) {
-					return '';
-				}
-				throw error;
-			}),
-	withLock: async (path, work) => withFileMutex(path, work),
-	writeText: async (path, text) => {
-		await writeFileAtomic(path, text);
-	},
-});
+/**
+ * The file access every proposals journal under `.cache` goes through:
+ * this one, the validate journal (x00712). One adapter, so a fix to how
+ * a journal is read or written reaches every journal.
+ */
+export const createAutoTransitionRepairDeps =
+	(): IAutoTransitionRepairDeps => ({
+		ensureDir: async (path) => {
+			await mkdir(path, { recursive: true });
+		},
+		now: () => new Date().toISOString(),
+		readText: async (path) =>
+			new SafeWorkspaceReader(dirname(path))
+				.readText(basename(path))
+				.then((value) => value.content)
+				.catch((error: unknown) => {
+					if (
+						error &&
+						typeof error === 'object' &&
+						'code' in error &&
+						error.code === 'ENOENT'
+					) {
+						return '';
+					}
+					throw error;
+				}),
+		withLock: async (path, work) => withFileMutex(path, work),
+		writeText: async (path, text) => {
+			await writeFileAtomic(path, text);
+		},
+	});
 
 export const readAutoTransitionRepairs = async (
 	workspaceRoot: string,

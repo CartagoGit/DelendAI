@@ -10,7 +10,7 @@ describe('diagnoseValidateBlocker', () => {
 	it('tells an agent that has never run validate to run it', () => {
 		const diagnosis = diagnoseValidateBlocker([], NOW);
 		expect(diagnosis.state).toBe('never-ran');
-		expect(diagnosis.nextAction).toContain('bun run validate');
+		expect(diagnosis.nextAction).toContain('delendai validate');
 	});
 
 	it('does NOT tell an agent whose validate just failed to run it again', () => {
@@ -55,7 +55,7 @@ describe('diagnoseValidateBlocker', () => {
 		);
 		expect(diagnosis.state).toBe('stale-pass');
 		expect(diagnosis.reason).toContain('more than 24h ago');
-		expect(diagnosis.nextAction).toContain('bun run validate');
+		expect(diagnosis.nextAction).toContain('delendai validate');
 	});
 
 	it('judges by the most recent run, not the most recent pass', () => {

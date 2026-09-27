@@ -16,6 +16,7 @@ import {
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
 import {
+	createAutoTransitionRepairDeps,
 	markProposalDoneForAutoTransition,
 	shouldAutoTransitionProposal,
 } from '@delendai/proposals/lib/services/auto-transition';
@@ -212,5 +213,23 @@ type: plan
 				requirePeerReview: false,
 			}),
 		).toBe(false);
+	});
+});
+
+describe('the journal file adapter (x00712)', () => {
+	it('reads a journal that does not exist yet as empty, and writes one', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'journal-deps-'));
+		try {
+			const deps = createAutoTransitionRepairDeps();
+			const path = join(dir, 'logs', 'j.jsonl');
+			expect(await deps.readText(path)).toBe('');
+			await deps.ensureDir(join(dir, 'logs'));
+			expect(deps.withLock).toBeDefined();
+			await deps.withLock?.(path, () => deps.writeText(path, 'x\n'));
+			expect(await deps.readText(path)).toBe('x\n');
+			expect(Number.isNaN(Date.parse(deps.now()))).toBe(false);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });
