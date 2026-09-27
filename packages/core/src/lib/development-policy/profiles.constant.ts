@@ -100,3 +100,37 @@ export const WORK_REF_PLACEHOLDERS = [
  */
 export const WORK_REF_SHAPE =
 	'${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
+
+/**
+ * Programs an agent runs inside, which are not agents (x00694). The agent
+ * segment of a work ref names the model that does the work: GLM or
+ * MiniMax driven through the Copilot extension is `glm-…` or `minimax-…`,
+ * never `copilot`. On 2026-09-27 an agent entered
+ * `delendai/wip/copilot/review/…`, and nothing could tell which model it
+ * was. Compared as whole names, so a model such as `gpt-5-codex` is not
+ * mistaken for the `codex` program.
+ */
+export const HOST_APPLICATION_IDS: readonly string[] = [
+	'copilot',
+	'github-copilot',
+	'vscode',
+	'visual-studio-code',
+	'code',
+	'claude-code',
+	'cursor',
+	'windsurf',
+	'cline',
+	'roo',
+	'roo-code',
+	'kilo',
+	'kilo-code',
+	'continue',
+	'aider',
+	'opencode',
+	'codex',
+	'codex-cli',
+	'codex-mcp-client',
+	'gemini-cli',
+	'zed',
+	'mcp-inspector',
+];

@@ -12,7 +12,10 @@
  * template.
  */
 import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
-import { kindsInAgentId } from '@delendai/core/lib/development-policy/work-ref-placeholders';
+import {
+	isHostApplicationId,
+	kindsInAgentId,
+} from '@delendai/core/lib/development-policy/work-ref-placeholders';
 
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
@@ -49,6 +52,9 @@ export const prHeadProblem = (
 	);
 	if (identity === undefined) {
 		return `\`${head}\` does not have the shape of the work it publishes (\`${branches.workRefTemplate}\` under \`${publication}\`).`;
+	}
+	if (isHostApplicationId(identity.agent)) {
+		return `\`${head}\` names its agent \`${identity.agent}\`, the program the agent runs in; the agent is the model that did the work.`;
 	}
 	const kinds = kindsInAgentId(identity.agent);
 	return kinds.length === 0

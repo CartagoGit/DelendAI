@@ -19,7 +19,7 @@ import {
 	shortName,
 } from './git-guard-namespaces';
 import { WORK_KINDS } from './profiles.constant';
-import { kindsInAgentId } from './work-ref-placeholders';
+import { isHostApplicationId, kindsInAgentId } from './work-ref-placeholders';
 
 /**
  * A work ref whose name does not match the policy's own template.
@@ -76,6 +76,13 @@ const refuseKindInAgent = (
 			refused: true,
 			reason: `\`${branch}\` names its agent \`${agent}\`, which is not written the way delendai writes agent ids (lower case), so the same agent would read as two.`,
 			remedy: 'Let the name come from the policy: `delendai work enter` normalises the agent id it puts in the ref.',
+		};
+	}
+	if (isHostApplicationId(agent)) {
+		return {
+			refused: true,
+			reason: `\`${branch}\` names its agent \`${agent}\`, which is the program the agent runs in, not the agent. The agent segment names the model that does the work.`,
+			remedy: 'Declare the agent as the model id (DELENDAI_AGENT_ID=<model>, e.g. glm-5 or minimax-m3) and enter the unit again with `delendai work enter --agent=<model> …`.',
 		};
 	}
 	const kinds = kindsInAgentId(agent);
