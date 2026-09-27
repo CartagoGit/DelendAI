@@ -9,6 +9,8 @@ date: 2026-09-20
 tags:
     - generated-artifacts
     - safety
+shipped-in:
+  - 60f8a60af
 ---
 
 # x00577 — A rollback restores what it found
@@ -68,10 +70,14 @@ that did not exist before is removed again.
 
 ### S1 — the refresh restores the state it found, not the commit
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/generated-refresh.service.ts`, `packages/cli/src/lib/generated-refresh.service.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/generated-refresh.service.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (60f8a60af), reviewer glm-5.3-max. Diff read: generated-refresh.service.ts rollback no longer runs `git checkout HEAD --` (which restored paths to the COMMIT and could destroy an unrelated local edit — the AGENT-BOOTSTRAP.md case the why documents); it restores the state it found. Spec covers the distinction: with a pre-existing local modification, the rollback preserves it instead of clobbering; gate generated-refresh.service.spec.ts green in the 63/63 combined run. Acceptance 'no automatic cleanup can cost work that was never published' is exactly what the new restore semantics guarantee.
+- review-attribution: claude-opus-5 from commit 60f8a60afb09 names refs/heads/delendai/wip/claude-opus-5/x00577-S1-g1/a-rollback-restores-what-it-found (60f8a60afb0945f4217d4de73f1c719f79b05314), opened by glm-5.3-max
 ## acceptance
 
 - An uncommitted edit in a bounded path survives a refused refresh, byte

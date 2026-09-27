@@ -10,6 +10,8 @@ tags:
     - git-hooks
     - worktrees
     - fail-closed
+shipped-in:
+  - c0445a69e
 ---
 
 # x00566 — A guard that cannot run must not pass
@@ -81,10 +83,14 @@ install changes the file exactly once.
 
 ### S1 — the hook resolves from the common directory, and refuses when it cannot
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/git/harden-git-hooks.script.ts`, `tools/scripts/git/harden-git-hooks.constant.ts`, `tools/scripts/git/harden-git-hooks.interface.ts`, `tools/scripts/git/harden-git-hooks.script.spec.ts`, `package.json`]
 - **Gate**: `npx vitest run tools/scripts/git/harden-git-hooks.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (PR #301, merge 9c2a35fa2), reviewer glm-5.3-max. Diff read: harden-git-hooks.script.ts rewrites generated lefthook hooks after install, inserting a preamble that sets LEFTHOOK_BIN from `git rev-parse --git-common-dir` (identical answer in shared checkout and worktrees) and replacing the fall-open fallback (echo + exit 0) with a stderr message + non-zero exit. Marked and idempotent. Gate green: harden-git-hooks.script.spec.ts part of an 18/18 run covering all four acceptance lines (worktree runs the binary; no-binary exits non-zero; shared checkout still works; second pass byte-identical).
+- review-attribution: claude-opus-5 from commit c0445a69e92f names refs/heads/delendai/wip/claude-opus-5/x00566-S1-g1/guards-run-in-every-worktree (c0445a69e92f50db6f2f498e63932d6a7a4faec7), opened by glm-5.3-max
 ## acceptance
 
 - A hardened hook invoked from a worktree runs the binary; the generated
