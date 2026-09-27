@@ -49,6 +49,9 @@ describe('a verdict on a slice no round was opened for', () => {
 		});
 
 		expect(approved.isError).toBe(false);
+		// First, so a refused close fails naming the refusal; the object
+		// match below hides it among the omitted properties.
+		expect(approved.body.proposalCloseBlocker).toBeUndefined();
 		expect(approved.body).toMatchObject({
 			status: 'done',
 			implementer: 'agent-a',
