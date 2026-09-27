@@ -17,6 +17,7 @@
  * and another agent's dirty files are neither captured nor a reason to
  * refuse — which is what lets twenty agents share one checkout.
  */
+import { isAbsolute, relative, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 import {
@@ -499,9 +500,29 @@ const entered = async (
 			);
 		}
 	}
+	// The agent is part of the path, as it is of the unit (x00695): two
+	// reviewers each entering `--proposal=batch --slice=all` were both sent
+	// to `batch-all`, and took turns checking their branches out in it.
 	const dir =
 		scalarArg(args, 'dir') ??
-		`${scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees'}/${sanitizeRefComponent(`${proposal}-${slice}`)}`;
+		`${scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees'}/${sanitizeRefComponent(`${agent}-${proposal}-${slice}`)}`;
+	// A worktree an agent places in the shared checkout's tree is a loose
+	// edit on the integration branch (`?? batch-g5/`) unless git ignores
+	// the path. The default location is delendai's own, self-ignoring.
+	const within = relative(root, resolve(root, dir));
+	if (
+		scalarArg(args, 'dir') !== undefined &&
+		within.length > 0 &&
+		!within.startsWith('..') &&
+		!isAbsolute(within) &&
+		git(root, ['check-ignore', '-q', '--no-index', `${within}/`]) ===
+			undefined
+	) {
+		return refused(
+			`${dir} is inside the shared checkout and not ignored: the worktree would show there as an untracked directory, a loose edit on the integration branch.`,
+			'Leave --dir out (units live under .cache/delendai/.worktrees), or give a path git ignores or outside the repository.',
+		);
+	}
 	const added = git(root, ['worktree', 'add', dir, branch]);
 	if (added === undefined) {
 		return refused(
