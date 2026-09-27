@@ -2,12 +2,15 @@
 id: x00679
 title: "A work-ref shape change keeps old units working"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00644, x00674]
+last-transition-id: 1dc1014c-5645-47f7-a93b-6c6102998151
+last-correlation-id: 1dc1014c-5645-47f7-a93b-6c6102998151
+last-transition-from: in-progress
 ---
 
 # x00679 — A work-ref shape change keeps old units working
@@ -54,11 +57,12 @@ not a fix per migration.
 
 ### S1 — Old shapes are proven to keep working
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/work-ref-migration.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work-ref-migration.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
