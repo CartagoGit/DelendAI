@@ -25,6 +25,7 @@ import type {
 	IGuardFacts,
 	IGuardedHook,
 } from '../contracts/interfaces/guard.interface';
+import { worktreeAgent } from '../lib/worktree-agent.service';
 import { readWorkspacePolicy } from '../lib/development-policy.service';
 import {
 	inspectGuardHooks,
@@ -176,6 +177,7 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	inMainWorktree: () =>
 		git(workspace, ['rev-parse', '--git-dir']) ===
 		git(workspace, ['rev-parse', '--git-common-dir']),
+	worktreeAgent: () => worktreeAgent(workspace),
 	tipKept: (sha, deletedRef) => {
 		if (git(workspace, ['cat-file', '-e', `${sha}^{commit}`]) === undefined)
 			return undefined;
@@ -452,10 +454,34 @@ export const createGuardCommand = (
 			return { code: EXIT_CODE.VALIDATION };
 		}
 		if (policy === undefined) return { code: EXIT_CODE.OK };
+		// An agent is recognised by its runtime's variable or, whatever the
+		// runtime, by the worktree `work enter` made for it (x00688).
+		// A worktree made before the stamp existed still says whose it is:
+		// a linked worktree on a work branch belongs to the agent the branch
+		// names.
+		const workPrefix = policy.branches.workRefPrefix
+			.replace(/^refs\//u, '')
+			.replace(/^heads\//u, '');
+		const onWorkBranch =
+			!facts.inMainWorktree() &&
+			workPrefix.length > 0 &&
+			(facts.branch() ?? '').startsWith(workPrefix)
+				? (facts.branch() ?? '').slice(workPrefix.length).split('/')[0]
+				: undefined;
+		const stamped =
+			facts.worktreeAgent?.() ??
+			(onWorkBranch !== undefined && onWorkBranch.length > 0
+				? onWorkBranch
+				: undefined);
+		const agentMarker =
+			agentEnvironmentMarker(process.env) ??
+			(stamped === undefined
+				? undefined
+				: `the worktree delendai made for ${stamped}`);
 		if (hook === 'post-checkout') {
 			// A warning is still a limit on how somebody uses their own
 			// checkout; it is for agents, like every other verdict here.
-			if (agentEnvironmentMarker(process.env) === undefined) {
+			if (agentMarker === undefined) {
 				return { code: EXIT_CODE.OK };
 			}
 			const warning = checkoutWarning(
@@ -514,7 +540,7 @@ export const createGuardCommand = (
 		);
 		for (const operation of operations) {
 			const verdict = judgeGitOperation(policy, operation, {
-				agentMarker: agentEnvironmentMarker(process.env),
+				agentMarker,
 			});
 			if (!verdict.refused) continue;
 			return {
