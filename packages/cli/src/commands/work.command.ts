@@ -74,6 +74,7 @@ import {
 import { renderInvariantReport } from '../lib/workflow-invariants.service';
 import { runWorkflowDoctor } from '../lib/workflow-doctor.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
+import { stampWorktreeAgent } from '../lib/worktree-agent.service';
 
 /** Read-only git, for the facts the engine does not already answer. */
 /** The forge's CLI (`gh`), trimmed output or `undefined` on failure. */
@@ -480,6 +481,8 @@ const entered = async (
 		existing,
 	);
 	if (continued !== undefined) {
+		if (continued.path !== undefined && continued.path !== null)
+			stampWorktreeAgent(continued.path, agent);
 		return withBriefing(ctx, root, policy, agent, {
 			ref: continued.ref,
 			branch: continued.ref.replace(/^refs\/heads\//u, ''),
@@ -506,6 +509,8 @@ const entered = async (
 			'Check that the path is free and that the branch is not already checked out elsewhere.',
 		);
 	}
+	// Whatever runtime works here is recognised as this agent (x00688).
+	stampWorktreeAgent(`${root}/${dir}`, agent);
 	return withBriefing(ctx, root, policy, agent, {
 		ref,
 		branch,
