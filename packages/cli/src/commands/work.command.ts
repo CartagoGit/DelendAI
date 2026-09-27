@@ -17,6 +17,7 @@
  * and another agent's dirty files are neither captured nor a reason to
  * refuse — which is what lets twenty agents share one checkout.
  */
+import { randomUUID } from 'node:crypto';
 import { isAbsolute, relative, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
@@ -76,7 +77,10 @@ import {
 import { renderInvariantReport } from '../lib/workflow-invariants.service';
 import { runWorkflowDoctor } from '../lib/workflow-doctor.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
-import { stampWorktreeAgent } from '../lib/worktree-agent.service';
+import {
+	stampWorktreeAgent,
+	worktreeSession,
+} from '../lib/worktree-agent.service';
 
 /** Read-only git, for the facts the engine does not already answer. */
 /** The forge's CLI (`gh`), trimmed output or `undefined` on failure. */
@@ -321,6 +325,45 @@ const kindInAgent = (agent: string): ICliCommandResult | undefined => {
 	);
 };
 
+/**
+ * The session entering, from `--session` or `DELENDAI_SESSION_ID`.
+ *
+ * Four MiniMax instances worked as one agent id on 2026-09-27, and
+ * `work enter` handed each the unit another already had: the id names
+ * the model, and nothing named the instance. The session does (x00699).
+ */
+const sessionFor = (args: readonly string[]): string | undefined => {
+	const given = scalarArg(args, 'session') ?? process.env.DELENDAI_SESSION_ID;
+	return given !== undefined && given.trim().length > 0
+		? given.trim()
+		: undefined;
+};
+
+/** A refusal when another session of this agent holds `path`. */
+const heldByAnother = (
+	path: string,
+	session: string | undefined,
+): ICliCommandResult | undefined => {
+	const held = worktreeSession(path);
+	if (held === undefined || held === session) return undefined;
+	return refused(
+		`${path} is held by another session: the unit is someone else's work, even under the same agent id.`,
+		'If this is your unit, pass the --session you were given when you entered it (or set DELENDAI_SESSION_ID). Otherwise enter your own unit: a different --topic, or --generation=<next>.',
+	);
+};
+
+/** Stamp `path` for this agent and session, issuing a session if none. */
+const claimWorktree = (
+	path: string,
+	agent: string,
+	session: string | undefined,
+): string => {
+	const claimed =
+		session ?? worktreeSession(path) ?? randomUUID().slice(0, 8);
+	stampWorktreeAgent(path, agent, claimed);
+	return claimed;
+};
+
 /** A refusal for a `--kind=` outside the vocabulary, or `undefined`. */
 const unknownKind = (
 	args: readonly string[],
@@ -352,6 +395,73 @@ const workRefFor = (
 	});
 
 /**
+ * The refs of one unit whatever their kind and topic, when those were not
+ * asked for. A unit is its agent, proposal, slice and generation; the kind
+ * and topic only name it. `work publish` without the `--topic` it was
+ * entered with rendered `…/work`, found nothing, and the unit was left
+ * unpublished.
+ */
+const unitRefsAnyName = (
+	root: string,
+	args: readonly string[],
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	proposal: string,
+	slice: string,
+): readonly string[] => {
+	const open: Record<string, string> = {};
+	if (scalarArg(args, 'kind') === undefined) open.kind = 'zzanykindzz';
+	if (scalarArg(args, 'topic') === undefined) open.topic = 'zzanytopiczz';
+	if (Object.keys(open).length === 0) return [];
+	const rendered = resolveWorkRef(policy.branches.workRefTemplate, {
+		agent,
+		kind: open.kind ?? kindFor(args, slice),
+		proposal,
+		slice,
+		generation: Number(scalarArg(args, 'generation') ?? '1'),
+		...(open.topic === undefined
+			? { topic: scalarArg(args, 'topic') ?? '' }
+			: { topic: open.topic }),
+	});
+	const sentinels = Object.values(open);
+	const firstOpen = Math.min(
+		...sentinels.map((s) => rendered.indexOf(s)).filter((i) => i >= 0),
+	);
+	if (!Number.isFinite(firstOpen)) return [];
+	const prefix = rendered.slice(0, rendered.lastIndexOf('/', firstOpen) + 1);
+	let pattern = rendered.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+	for (const s of sentinels) pattern = pattern.replace(s, '[^/]+');
+	const shape = new RegExp(`^${pattern}$`, 'u');
+	return (git(root, ['for-each-ref', '--format=%(refname)', prefix]) ?? '')
+		.split('\n')
+		.filter((name) => shape.test(name));
+};
+
+/**
+ * A refusal when the arguments leave open which of one unit's refs is
+ * meant, or `undefined`. Picking one would publish or extend the wrong
+ * work; rendering a fresh name would start a second copy of the unit.
+ */
+const ambiguousUnit = (
+	root: string,
+	args: readonly string[],
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	proposal: string,
+	slice: string,
+): ICliCommandResult | undefined => {
+	const rendered = workRefFor(args, policy, agent, proposal, slice);
+	if (git(root, ['rev-parse', '-q', '--verify', rendered]) !== undefined)
+		return undefined;
+	const named = unitRefsAnyName(root, args, policy, agent, proposal, slice);
+	if (named.length < 2) return undefined;
+	return refused(
+		`${proposal} ${slice} of \`${agent}\` has ${named.length} refs: ${named.map((n) => `\`${n}\``).join(', ')}.`,
+		'Name the one meant with --kind=<kind> and --topic=<topic>.',
+	);
+};
+
+/**
  * The ref of the unit these arguments name, as it exists in this clone.
  *
  * A unit entered before the shape named its kind lives under the name
@@ -372,7 +482,10 @@ const existingWorkRef = (
 	const ref = workRefFor(args, policy, agent, proposal, slice);
 	const exists = (name: string): boolean =>
 		git(root, ['rev-parse', '-q', '--verify', name]) !== undefined;
-	if (scalarArg(args, 'kind') !== undefined || exists(ref)) return ref;
+	if (exists(ref)) return ref;
+	const named = unitRefsAnyName(root, args, policy, agent, proposal, slice);
+	if (named.length === 1) return named[0] ?? ref;
+	if (scalarArg(args, 'kind') !== undefined) return ref;
 	const template = policy.branches.workRefTemplate;
 	const withoutKind = template.replace('${kind}/', '');
 	if (withoutKind === template) return ref;
@@ -416,6 +529,11 @@ const withBriefing = (
 		`${[
 			`ref              ${data.ref}`,
 			`worktree         ${data.path ?? '(none)'}`,
+			...(data.session === undefined
+				? []
+				: [
+						`session          ${data.session} (pass --session=${data.session} to enter this unit again)`,
+					]),
 			...describeBriefing(briefing),
 		].join('\n')}\n`,
 	);
@@ -456,6 +574,8 @@ const entered = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
+	if (ambiguous !== undefined) return ambiguous;
 	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);
 	const branch = ref.replace(/^refs\/heads\//u, '');
 	const base = integrationBase(root, policy);
@@ -469,16 +589,23 @@ const entered = async (
 	const known = existing
 		.split('\n\n')
 		.find((block) => block.includes(`branch ${ref}`));
+	const session = sessionFor(args);
 	if (known !== undefined) {
 		const path = known
 			.split('\n')
 			.find((line) => line.startsWith('worktree '))
 			?.slice('worktree '.length);
+		const held =
+			path === undefined ? undefined : heldByAnother(path, session);
+		if (held !== undefined) return held;
+		const claimed =
+			path === undefined ? session : claimWorktree(path, agent, session);
 		return withBriefing(ctx, root, policy, agent, {
 			ref,
 			branch,
 			path: path ?? null,
 			created: false,
+			session: claimed,
 		});
 	}
 	// A proposal in progress keeps one branch: a later slice continues on
@@ -489,13 +616,18 @@ const entered = async (
 		existing,
 	);
 	if (continued !== undefined) {
-		if (continued.path !== undefined && continued.path !== null)
-			stampWorktreeAgent(continued.path, agent);
+		const path = continued.path ?? undefined;
+		const held =
+			path === undefined ? undefined : heldByAnother(path, session);
+		if (held !== undefined) return held;
+		const claimed =
+			path === undefined ? session : claimWorktree(path, agent, session);
 		return withBriefing(ctx, root, policy, agent, {
 			ref: continued.ref,
 			branch: continued.ref.replace(/^refs\/heads\//u, ''),
 			path: continued.path,
 			created: false,
+			session: claimed,
 		});
 	}
 	if (git(root, ['rev-parse', '-q', '--verify', ref]) === undefined) {
@@ -537,13 +669,15 @@ const entered = async (
 			'Check that the path is free and that the branch is not already checked out elsewhere.',
 		);
 	}
-	// Whatever runtime works here is recognised as this agent (x00688).
-	stampWorktreeAgent(`${root}/${dir}`, agent);
+	// Whatever runtime works here is recognised as this agent (x00688),
+	// and this session of it holds the unit (x00699).
+	const claimed = claimWorktree(`${root}/${dir}`, agent, session);
 	return withBriefing(ctx, root, policy, agent, {
 		ref,
 		branch,
 		path: `${root}/${dir}`,
 		created: true,
+		session: claimed,
 	});
 };
 
@@ -582,6 +716,8 @@ const published = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
+	if (ambiguous !== undefined) return ambiguous;
 	const workRef = existingWorkRef(root, args, policy, agent, proposal, slice);
 	if (publicationRefFromWorkRef(policy, workRef) === undefined) {
 		return refused(
@@ -915,6 +1051,8 @@ const checkpointed = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
+	if (ambiguous !== undefined) return ambiguous;
 	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);
 	const result = await engine.createOrUpdateWipRef({
 		baseSha: base,
