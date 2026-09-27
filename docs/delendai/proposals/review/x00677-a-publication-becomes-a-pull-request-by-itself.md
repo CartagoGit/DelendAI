@@ -2,12 +2,15 @@
 id: x00677
 title: "A publication becomes a pull request by itself"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [f00644, x00655]
+last-transition-id: 86b3f9e3-6b87-4028-85c7-96ead250d62c
+last-correlation-id: 86b3f9e3-6b87-4028-85c7-96ead250d62c
+last-transition-from: in-progress
 ---
 
 # x00677 — A publication becomes a pull request by itself
@@ -76,7 +79,7 @@ entered before f00644 merged kept enforcing the old rules.
 
 ### S1 — Publications open their pull requests, and the guard is the integration branch's
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/lib/publication-pull-request.service.spec.ts packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/lib/publication-pull-request.service.ts`
@@ -87,7 +90,8 @@ entered before f00644 merged kept enforcing the old rules.
   - `tools/scripts/forge/open-publication-prs.script.ts`
   - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
   - `lefthook.yml`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
