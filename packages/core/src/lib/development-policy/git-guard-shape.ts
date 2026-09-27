@@ -13,7 +13,11 @@ import type {
 	IGuardedGitOperation,
 } from '../contracts/interfaces/git-guard.interface';
 import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
-import { insideNamespaces, shortName } from './git-guard-namespaces';
+import {
+	insideNamespaces,
+	policyNamespaces,
+	shortName,
+} from './git-guard-namespaces';
 import { WORK_KINDS } from './profiles.constant';
 import { kindsInAgentId } from './work-ref-placeholders';
 
@@ -147,6 +151,30 @@ export const refuseBorrowedAuthor = (
  * The shape rules alone, for a ref inside the work or publication
  * namespace; `undefined` for anything else, or when it is well shaped.
  */
+/**
+ * Deleting a work or publication branch whose commits nothing else holds
+ * deletes the only copy of that work. On 2026-09-26 five work refs were
+ * removed that way; the next boot found the checkpoints gone and blocked
+ * every agent on the machine. Judged inside delendai's namespaces for
+ * whoever runs git (x00687): the namespaces are the work model's, and a
+ * runtime that sets no agent marker must not slip past it.
+ */
+export const refuseLosingDeletion = (
+	policy: IResolvedDevelopmentPolicy,
+	branch: string,
+	deletedTipKept: boolean | undefined,
+): IGitGuardVerdict | undefined =>
+	deletedTipKept === false &&
+	policyNamespaces(policy).prefixes.some((prefix) =>
+		branch.startsWith(prefix),
+	)
+		? {
+				refused: true,
+				reason: `deleting \`${branch}\` would lose its commits: no other branch, publication or the integration branch contains them.`,
+				remedy: `Publish the work (\`delendai work publish\`) or bring it into the branch that continues it, then delete \`${branch}\`. A person who means to discard it can push with --no-verify.`,
+			}
+		: undefined;
+
 export const judgeNamespaceShape = (
 	policy: IResolvedDevelopmentPolicy,
 	operation: IGuardedGitOperation,
@@ -158,6 +186,14 @@ export const judgeNamespaceShape = (
 		if (!operation.ref.startsWith('refs/heads/')) return undefined;
 		const branch = operation.ref.slice('refs/heads/'.length);
 		return refuseUnshapedWorkRef(policy, operation.ref, branch);
+	}
+	if (operation.kind === 'push' && operation.deleting) {
+		if (!operation.remoteRef.startsWith('refs/heads/')) return undefined;
+		return refuseLosingDeletion(
+			policy,
+			operation.remoteRef.slice('refs/heads/'.length),
+			operation.deletedTipKept,
+		);
 	}
 	if (operation.kind === 'push' && !operation.deleting) {
 		if (!operation.remoteRef.startsWith('refs/heads/')) return undefined;

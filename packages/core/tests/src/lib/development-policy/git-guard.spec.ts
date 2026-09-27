@@ -293,6 +293,45 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 				.refused,
 		).toBe(true);
 	});
+
+	it('refuses deleting a work branch whose commits nothing else holds (x00687)', () => {
+		const deletion = (deletedTipKept: boolean | undefined) =>
+			({
+				kind: 'push',
+				remoteRef:
+					'refs/heads/delendai/wip/agent/review/x00001-S1-g1/t',
+				deleting: true,
+				deletedTipKept,
+			}) as const;
+		const lost = judgeGitOperation(policy, deletion(false), AGENT);
+		expect(lost.refused).toBe(true);
+		expect(lost.remedy).toContain('work publish');
+		expect(judgeGitOperation(policy, deletion(true), AGENT).refused).toBe(
+			false,
+		);
+		// Unknown here (the commit is not local): not refused.
+		expect(
+			judgeGitOperation(policy, deletion(undefined), AGENT).refused,
+		).toBe(false);
+		// Inside delendai's namespaces the rule holds for whoever runs git:
+		// a runtime that sets no agent marker is judged like one.
+		expect(judgeGitOperation(policy, deletion(false), PERSON).refused).toBe(
+			true,
+		);
+		// Outside them, a person deletes what they like.
+		expect(
+			judgeGitOperation(
+				policy,
+				{
+					kind: 'push',
+					remoteRef: 'refs/heads/my-own-branch',
+					deleting: true,
+					deletedTipKept: false,
+				},
+				PERSON,
+			).refused,
+		).toBe(false);
+	});
 });
 
 describe('shared-direct', () => {
