@@ -15,6 +15,7 @@
  * together, and it stops answering automatically when the evidence
  * changes.
  */
+import { execFileSync } from 'node:child_process';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, isAbsolute, join } from 'node:path';
 
@@ -33,12 +34,57 @@ import type {
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
+import { readWorkspacePolicy } from '../lib/development-policy.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
 
 const workspaceOf = (
 	ctx: ICliCommandContext,
 	args: readonly string[],
 ): string => scalarArg(args, 'workspace') ?? ctx.cwd;
+
+/**
+ * A decision is a tracked file that reaches the integration branch by a
+ * pull request. Written into a shared checkout the policy pins, it was a
+ * loose edit on the integration branch that blocked the next hydration
+ * (x00689). The command says where to record it instead.
+ */
+const sharedCheckoutRefusal = async (
+	workspaceRoot: string,
+): Promise<ICliCommandResult | undefined> => {
+	const gitPath = (flag: string): string | undefined => {
+		try {
+			return execFileSync(
+				'git',
+				['rev-parse', '--path-format=absolute', flag],
+				{
+					cwd: workspaceRoot,
+					encoding: 'utf8',
+					stdio: ['ignore', 'pipe', 'ignore'],
+				},
+			).trim();
+		} catch {
+			return undefined;
+		}
+	};
+	const gitDir = gitPath('--git-dir');
+	if (gitDir === undefined || gitDir !== gitPath('--git-common-dir')) {
+		return undefined;
+	}
+	const policy = await readWorkspacePolicy(workspaceRoot).catch(
+		() => undefined,
+	);
+	if (policy?.workspace.pinnedCheckout !== true) return undefined;
+	return {
+		code: EXIT_CODE.VALIDATION,
+		error: [
+			`This is the shared checkout, which stays on \`${policy.branches.integration}\`: a decision written here is a loose edit on the integration branch.`,
+			'Record it in a repair unit and publish it:',
+			'  delendai work enter --kind=repair --proposal=batch --slice=all --agent=<you> --topic=<what>',
+			'  delendai repair resolve … --workspace=<the path work enter printed>',
+			'  (commit there) delendai work publish --kind=repair --proposal=batch --slice=all --agent=<you> --topic=<what>',
+		].join('\n'),
+	};
+};
 
 const filePathFor = (workspaceRoot: string): string =>
 	isAbsolute(REPAIR_RESOLUTIONS_PATH)
@@ -114,6 +160,8 @@ const resolved = async (
 			error: `repair resolve <task-id> --evidence=<digest> --decision=<${REPAIR_DECISIONS.join('|')}> --reason="..." [--by=<who>]. The boot report prints the task id and its evidence digest; --by defaults to DELENDAI_AGENT_ID.`,
 		};
 	}
+	const refusal = await sharedCheckoutRefusal(workspaceOf(ctx, args));
+	if (refusal !== undefined) return refusal;
 	const path = filePathFor(workspaceOf(ctx, args));
 	const { resolutions, errors } = await readResolutions(path);
 	if (errors.length > 0) {
@@ -157,6 +205,8 @@ const forgotten = async (
 			error: 'repair forget <task-id> [--workspace=<path>]',
 		};
 	}
+	const refusal = await sharedCheckoutRefusal(workspaceOf(ctx, args));
+	if (refusal !== undefined) return refusal;
 	const path = filePathFor(workspaceOf(ctx, args));
 	const { resolutions } = await readResolutions(path);
 	const kept = resolutions.filter((entry) => entry.taskId !== taskId);
