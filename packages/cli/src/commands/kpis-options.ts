@@ -164,10 +164,7 @@ export const parseKpiCliOptions = (
 		ok: true,
 		value: {
 			view: viewArg,
-			emitJson:
-				globals.json ||
-				globals.format === 'json' ||
-				hasFlag(args, 'json'),
+			emitJson: globals.json || globals.format === 'json',
 			watch: hasFlag(args, 'watch'),
 			watchIntervalMs: watchIntervalMs ?? DEFAULT_WATCH_INTERVAL_MS,
 			...(windowDays !== undefined ? { windowDays } : {}),
