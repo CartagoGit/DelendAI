@@ -2,6 +2,7 @@
  * index.ts — the `@delendai/commit-policy` plugin entry point.
  */
 
+import { resolve as resolvePath } from 'node:path';
 import {
 	createWriteGitRunner,
 	definePlugin,
@@ -369,7 +370,12 @@ export default definePlugin({
 			maxSamplesPerStorm: 5,
 		});
 		const stormLog = new StormLog({
-			cacheDir: ctx.pluginCacheDir,
+			// Resolved against the workspace, like every other context path:
+			// the context may hand it over relative, and a relative dir
+			// resolved against the process's cwd wrote storms wherever the
+			// server or the suite happened to start (`plugins/commit-policy/
+			// .cache` under validate, which lint:cache refuses).
+			cacheDir: resolvePath(ctx.workspace.root, ctx.pluginCacheDir),
 		});
 		// No `ensureDir()` here. Registration is not a write, and creating
 		// the directory at boot meant every host that merely LOADED this

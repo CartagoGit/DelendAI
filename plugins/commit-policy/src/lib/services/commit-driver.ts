@@ -296,6 +296,27 @@ export interface IParsedHeader {
 const HEADER_TYPE_PATTERN = '[A-Za-z][A-Za-z0-9_.-]*';
 const SCOPE_PATTERN = String.raw`\([^)]+\)`;
 
+/**
+ * Point `ref` at `to` only while it still points at `expected` (empty:
+ * only while it does not exist), or delete it when `to` is undefined.
+ *
+ * The one place this plugin writes a ref (commit-driver-guard): a ref
+ * write outside the driver is a side door around every guard the driver
+ * applies, so the services that tidy or restore work refs come through
+ * here instead of calling `update-ref` themselves.
+ */
+export const compareAndSwapRef = (
+	run: IGitRunner,
+	ref: string,
+	to: string | undefined,
+	expected: string,
+) =>
+	run(
+		to === undefined
+			? ['update-ref', '-d', ref, expected]
+			: ['update-ref', ref, to, expected],
+	);
+
 export const parseHeader = (raw: string): IParsedHeader => {
 	const trimmed = raw.trimStart();
 	// Match: type(scope)!: subject OR type!: subject OR type: subject

@@ -1,3 +1,7 @@
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
@@ -6,6 +10,11 @@ import { DEFAULT_BRANCH_POLICY } from './contracts/branch';
 import type { ICommitPolicyOptions } from './contracts/options';
 import { createCommitPolicyEngine } from './engine';
 import type { IProcessedEventsStore } from './processed-events';
+
+// Absolute and private: a relative cache dir resolves against wherever
+// the suite runs, and from the plugin's own folder that left a stray
+// `plugins/commit-policy/.cache` behind, which `lint:cache` refuses.
+const PLUGIN_CACHE_DIR = mkdtempSync(join(tmpdir(), 'engine-spec-cache-'));
 
 const PIPELINE_STEPS = [
 	'selector',
@@ -179,7 +188,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 					identityCtx: { run: runner, envVars: Object.freeze({}) },
 					auditAgent: null,
 					workspaceRoot: '/tmp/workspace',
-					pluginCacheDir: '.cache/delendai/commit-policy',
+					pluginCacheDir: PLUGIN_CACHE_DIR,
 				},
 				branchPolicy: DEFAULT_BRANCH_POLICY,
 			});
@@ -334,7 +343,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 				},
 				auditAgent: null,
 				workspaceRoot: '/tmp/workspace',
-				pluginCacheDir: '.cache/delendai/commit-policy',
+				pluginCacheDir: PLUGIN_CACHE_DIR,
 			},
 			branchPolicy: DEFAULT_BRANCH_POLICY,
 		});
@@ -361,7 +370,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 				},
 				auditAgent: null,
 				workspaceRoot: '/tmp/workspace',
-				pluginCacheDir: '.cache/delendai/commit-policy',
+				pluginCacheDir: PLUGIN_CACHE_DIR,
 			},
 			branchPolicy: DEFAULT_BRANCH_POLICY,
 			onCommitSucceeded: async () => ({
@@ -422,7 +431,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 				identityCtx: { run: runner, envVars: Object.freeze({}) },
 				auditAgent: null,
 				workspaceRoot: '/tmp/workspace',
-				pluginCacheDir: '.cache/delendai/commit-policy',
+				pluginCacheDir: PLUGIN_CACHE_DIR,
 			},
 			branchPolicy: DEFAULT_BRANCH_POLICY,
 			onResult,
@@ -455,7 +464,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 				identityCtx: { run: runner, envVars: Object.freeze({}) },
 				auditAgent: null,
 				workspaceRoot: '/tmp/workspace',
-				pluginCacheDir: '.cache/delendai/commit-policy',
+				pluginCacheDir: PLUGIN_CACHE_DIR,
 			},
 			branchPolicy: {
 				protected: ['develop'],
