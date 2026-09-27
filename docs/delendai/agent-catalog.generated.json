@@ -1744,6 +1744,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00704",
+				"title": "x00704",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
 			}
 		]
 	}

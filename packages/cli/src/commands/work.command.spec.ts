@@ -560,6 +560,85 @@ describe('delendai work (x00553)', () => {
 		).toContain('refs/heads/delendai/pr/claude-opus-5/x00553-S1-g1/probe');
 	});
 
+	it('finds a unit by what it is, not by the name it was entered under (x00704)', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		await command.run(
+			[
+				'enter',
+				'--kind=review',
+				'--proposal=batch',
+				'--slice=all',
+				'--agent=claude-opus-5',
+				'--topic=sweep',
+				'--dir=batch-wt',
+			],
+			contextFor(root),
+		);
+		execFileSync(
+			'git',
+			[
+				'commit',
+				'-q',
+				'--allow-empty',
+				'-m',
+				'chore(review): claim x00001',
+			],
+			{ cwd: join(root, 'batch-wt') },
+		);
+		// Neither the kind nor the topic it was entered with.
+		const published = await command.run(
+			[
+				'publish',
+				'--proposal=batch',
+				'--slice=all',
+				'--agent=claude-opus-5',
+			],
+			contextFor(root),
+		);
+		expect(published.data).toMatchObject({
+			published: true,
+			publication: {
+				ref: 'refs/heads/delendai/pr/claude-opus-5/review/batch-all-g1/sweep',
+			},
+		});
+	});
+
+	it('refuses to guess between two refs of one unit (x00704)', async () => {
+		const root = repoWith(PINNED);
+		const head = git(root, 'rev-parse', 'HEAD');
+		for (const topic of ['first', 'second']) {
+			git(
+				root,
+				'update-ref',
+				`refs/heads/delendai/wip/claude-opus-5/implement/x00553-S1-g1/${topic}`,
+				head,
+			);
+		}
+		const result = await command.run(
+			[
+				'publish',
+				'--proposal=x00553',
+				'--slice=S1',
+				'--agent=claude-opus-5',
+			],
+			contextFor(root),
+		);
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('has 2 refs');
+		expect(
+			git(
+				root,
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/heads/delendai/wip/',
+			).split('\n'),
+		).toHaveLength(2);
+	});
+
 	it('reports a publication that could not be pushed, and keeps everything', async () => {
 		const root = repoWith(PINNED);
 		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
