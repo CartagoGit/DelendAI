@@ -8,6 +8,7 @@
  */
 import {
 	DEFAULT_WORK_KIND,
+	HOST_APPLICATION_IDS,
 	WORK_KINDS,
 	WORK_REF_PLACEHOLDERS,
 } from './profiles.constant';
@@ -47,3 +48,7 @@ export const kindsInAgentId = (agent: string): readonly string[] =>
 		.toLowerCase()
 		.split(/[-_.]/u)
 		.filter((word) => isWorkKind(word) || LEGACY_REVIEW_SLICES.has(word));
+
+/** Whether `agent` names the program it runs in rather than a model. */
+export const isHostApplicationId = (agent: string): boolean =>
+	HOST_APPLICATION_IDS.includes(agent.trim().toLowerCase());

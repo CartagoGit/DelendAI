@@ -74,7 +74,7 @@ describe('shared-checkout-merge — the observed project', () => {
 	});
 
 	it('allows delendai work refs and publication refs', () => {
-		const work = 'wip/codex-mcp-client/implement/x00056-S1-g1/tetris-mock';
+		const work = 'wip/gpt-5-codex/implement/x00056-S1-g1/tetris-mock';
 		expect(
 			judgeGitOperation(policy, create(`refs/heads/${work}`), AGENT)
 				.refused,
@@ -177,6 +177,27 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		);
 		expect(verdict.refused).toBe(true);
 		expect(verdict.reason).toContain('spells the kind of work');
+	});
+
+	it('refuses an agent id that names the program it runs in, and accepts a model (x00694)', () => {
+		const verdict = judgeGitOperation(
+			policy,
+			create('refs/heads/delendai/wip/copilot/review/batch-all-g1/close'),
+			AGENT,
+		);
+		expect(verdict.refused).toBe(true);
+		expect(verdict.reason).toContain('program the agent runs in');
+		for (const model of ['gpt-5-codex', 'minimax-m3', 'glm-5']) {
+			expect(
+				judgeGitOperation(
+					policy,
+					create(
+						`refs/heads/delendai/wip/${model}/review/batch-all-g1/close`,
+					),
+					AGENT,
+				).refused,
+			).toBe(false);
+		}
 	});
 
 	it('judges the shape inside delendai namespaces whoever runs git, and nothing outside (f00644)', () => {
