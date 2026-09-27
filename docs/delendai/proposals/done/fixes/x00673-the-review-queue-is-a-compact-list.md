@@ -2,15 +2,15 @@
 id: x00673
 title: "The review queue is a compact list"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00646, f00644]
-last-transition-id: 8caf1d0f-27da-4bc6-b33a-1848f51e1e39
-last-correlation-id: 8caf1d0f-27da-4bc6-b33a-1848f51e1e39
-last-transition-from: in-progress
+last-transition-id: a7234350-7fc6-4ad2-8919-83b84ececc58
+last-correlation-id: a7234350-7fc6-4ad2-8919-83b84ececc58
+last-transition-from: review
 shipped-in:
   - "7828a786bf961a36bf31dd42b7d8483a2b70b59d"
 ---

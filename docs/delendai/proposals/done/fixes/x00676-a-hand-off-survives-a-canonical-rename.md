@@ -2,15 +2,15 @@
 id: x00676
 title: "A hand-off survives a canonical rename"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00643]
-last-transition-id: 127956a4-306f-48ba-b9d8-a5e493335ead
-last-correlation-id: 127956a4-306f-48ba-b9d8-a5e493335ead
-last-transition-from: in-progress
+last-transition-id: 611eec2a-2805-4968-8453-252e2a767785
+last-correlation-id: 611eec2a-2805-4968-8453-252e2a767785
+last-transition-from: review
 shipped-in:
   - "4b4765869eef2ae7a371fb01184d54a10567d52b"
 ---

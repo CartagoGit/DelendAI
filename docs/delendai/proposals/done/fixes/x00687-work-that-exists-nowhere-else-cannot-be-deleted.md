@@ -2,15 +2,15 @@
 id: x00687
 title: "Work that exists nowhere else cannot be deleted"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00685, f00644]
-last-transition-id: 8bcd2c49-032e-401b-8147-cbaae7fd764c
-last-correlation-id: 8bcd2c49-032e-401b-8147-cbaae7fd764c
-last-transition-from: in-progress
+last-transition-id: 4e56457f-c49e-434e-b0b1-b1ab3be09e63
+last-correlation-id: 4e56457f-c49e-434e-b0b1-b1ab3be09e63
+last-transition-from: review
 shipped-in:
   - "54fc887ed97b86e085c5bc71fa7a61170d1624be"
 ---

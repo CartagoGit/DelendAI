@@ -2,15 +2,15 @@
 id: x00666
 title: "A manifest dependency is one the package installs"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P2
 related: []
-last-transition-id: 21668554-4f54-4568-ab4c-9104c2776e11
-last-correlation-id: 21668554-4f54-4568-ab4c-9104c2776e11
-last-transition-from: in-progress
+last-transition-id: 77adda53-5fac-4356-a52d-4eda49048a3a
+last-correlation-id: 77adda53-5fac-4356-a52d-4eda49048a3a
+last-transition-from: review
 shipped-in:
   - "6309c8a7b48ba5bb3ce18fa8397a334430b601d5"
 ---

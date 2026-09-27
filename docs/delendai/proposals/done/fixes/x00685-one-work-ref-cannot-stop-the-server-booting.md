@@ -2,15 +2,15 @@
 id: x00685
 title: "One work ref cannot stop the server booting"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00551]
-last-transition-id: e75fcbc7-2777-4708-8f1f-aff2db4ab588
-last-correlation-id: e75fcbc7-2777-4708-8f1f-aff2db4ab588
-last-transition-from: in-progress
+last-transition-id: cba440f8-c64d-4263-a7f9-a4064a7f9f8c
+last-correlation-id: cba440f8-c64d-4263-a7f9-a4064a7f9f8c
+last-transition-from: review
 shipped-in:
   - "9c7aa1874f4d7f2ae431e819b763449824aef821"
 ---

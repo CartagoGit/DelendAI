@@ -2,15 +2,15 @@
 id: x00663
 title: "The guard runs where lefthook owns the hooks"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P2
 related: [x00653]
-last-transition-id: cfe8a226-d4d1-4ec5-8a25-0c89c91c95e2
-last-correlation-id: cfe8a226-d4d1-4ec5-8a25-0c89c91c95e2
-last-transition-from: in-progress
+last-transition-id: 32c4db2f-221a-42df-9d27-e2adf1513a1b
+last-correlation-id: 32c4db2f-221a-42df-9d27-e2adf1513a1b
+last-transition-from: review
 shipped-in:
   - "7e1172378f8c0c04aa75864621d7f8c1b5a20c80"
 ---

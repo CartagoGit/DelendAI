@@ -2,15 +2,15 @@
 id: x00679
 title: "A work-ref shape change keeps old units working"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00644, x00674]
-last-transition-id: 1dc1014c-5645-47f7-a93b-6c6102998151
-last-correlation-id: 1dc1014c-5645-47f7-a93b-6c6102998151
-last-transition-from: in-progress
+last-transition-id: 68ac0275-fd17-4979-ae62-6f1319011339
+last-correlation-id: 68ac0275-fd17-4979-ae62-6f1319011339
+last-transition-from: review
 shipped-in:
   - "39408361f39cbf64d929dd4a2804d9e0be02de5a"
 ---
