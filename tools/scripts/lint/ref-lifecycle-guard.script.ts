@@ -203,6 +203,35 @@ export const blockingRefs = <TVerdict extends { readonly name: string }>(
 		(verdict) => !reapable.some((copy) => copy.name === verdict.name),
 	);
 
+/**
+ * What a run is allowed to fail for (x00678).
+ *
+ * A pull request's run is judged on the pull request. Refs of other units
+ * are reported, never failed on: one agent's publications with no pull
+ * request made `ref-lifecycle` — and the required check that needs it —
+ * red on every other pull request, so nothing could merge until somebody
+ * cleaned up after that agent. The integration branch's own runs, the
+ * schedule and a dispatch still judge the whole repository and fail on
+ * any of it.
+ */
+export const failingFor = <TVerdict extends { readonly name: string }>(
+	blocking: readonly TVerdict[],
+	run: {
+		readonly event: string | undefined;
+		readonly head: string | undefined;
+	},
+): {
+	readonly failing: readonly TVerdict[];
+	readonly reported: readonly TVerdict[];
+} => {
+	if (run.event !== 'pull_request')
+		return { failing: blocking, reported: [] };
+	return {
+		failing: blocking.filter((verdict) => verdict.name === run.head),
+		reported: blocking.filter((verdict) => verdict.name !== run.head),
+	};
+};
+
 const pullRequestState = (request: {
 	readonly state: string;
 	readonly merged_at: string | null;
@@ -405,7 +434,16 @@ const main = (): void => {
 		return;
 	}
 
-	const blocking = blockingRefs(outstanding, result.reapable);
+	const judged = failingFor(blockingRefs(outstanding, result.reapable), {
+		event: process.env.GITHUB_EVENT_NAME,
+		head: process.env.GITHUB_HEAD_REF,
+	});
+	for (const verdict of judged.reported) {
+		console.log(
+			`ref-lifecycle: ${verdict.name} — ${verdict.reason} (another unit's ref: reported here, judged on the integration branch)`,
+		);
+	}
+	const blocking = judged.failing;
 	if (blocking.length === 0) {
 		// Every ref left is a copy of work already published: nothing can
 		// be lost, and the queue's own `--reap` pass deletes it. Failing

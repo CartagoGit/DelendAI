@@ -13,6 +13,7 @@ import {
 	blockingRefs,
 	containedInGit,
 	containsWith,
+	failingFor,
 	proposalInProgressFor,
 	publishedInFor,
 } from './ref-lifecycle-guard.script';
@@ -313,5 +314,47 @@ describe('refs that name their kind of work (f00644)', () => {
 				() => true,
 			),
 		).toBeUndefined();
+	});
+});
+
+describe('failingFor (x00678)', () => {
+	const blocking = [
+		{ name: 'delendai/pr/glm-5.3-max/x00566-review' },
+		{ name: 'delendai/pr/me/implement/x00001-S1-g1/mine' },
+	];
+
+	it('fails a pull request only on its own ref, and reports the rest', () => {
+		const judged = failingFor(blocking, {
+			event: 'pull_request',
+			head: 'delendai/pr/me/implement/x00001-S1-g1/mine',
+		});
+		expect(judged.failing.map((v) => v.name)).toEqual([
+			'delendai/pr/me/implement/x00001-S1-g1/mine',
+		]);
+		expect(judged.reported.map((v) => v.name)).toEqual([
+			'delendai/pr/glm-5.3-max/x00566-review',
+		]);
+	});
+
+	it('does not fail a pull request over another unit’s refs', () => {
+		expect(
+			failingFor([blocking[0] ?? { name: '' }], {
+				event: 'pull_request',
+				head: 'delendai/pr/me/implement/x00001-S1-g1/mine',
+			}).failing,
+		).toEqual([]);
+	});
+
+	it('judges the whole repository on the integration branch, the schedule and a dispatch', () => {
+		for (const event of [
+			'push',
+			'schedule',
+			'workflow_dispatch',
+			undefined,
+		]) {
+			expect(
+				failingFor(blocking, { event, head: undefined }).failing,
+			).toHaveLength(2);
+		}
 	});
 });
