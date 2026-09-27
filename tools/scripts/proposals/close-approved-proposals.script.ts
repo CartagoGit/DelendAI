@@ -58,6 +58,54 @@ const run = (command: string, args: readonly string[], cwd: string): string =>
 		},
 	}).trim();
 
+const UNIT_DIR = '.cache/delendai/.worktrees';
+
+const tryRun = (
+	command: string,
+	args: readonly string[],
+	cwd: string,
+): string | undefined => {
+	try {
+		return run(command, args, cwd);
+	} catch {
+		return undefined;
+	}
+};
+
+/**
+ * This closer's publications on the remote, from `git ls-remote --heads`
+ * output: the refs under the publication prefix that its agent owns.
+ */
+export const ownPublications = (
+	listing: string,
+	publicationRefPrefix: string,
+): readonly { readonly ref: string; readonly sha: string }[] => {
+	const prefix = `refs/heads/${publicationRefPrefix.replace(/^refs\/(heads\/)?/u, '')}`;
+	return listing
+		.split('\n')
+		.map((line) => line.trim().split(/\s+/u))
+		.flatMap(([sha, ref]) =>
+			sha !== undefined && ref?.startsWith(`${prefix}${AGENT}/`) === true
+				? [{ ref, sha }]
+				: [],
+		);
+};
+
+/** Remove every unit a pass of this closer entered, worktree and branch. */
+const sweepOwnUnits = (root: string): void => {
+	const listed =
+		tryRun('git', ['worktree', 'list', '--porcelain'], root) ?? '';
+	for (const block of listed.split('\n\n')) {
+		const path = block.match(/^worktree (.+)$/mu)?.[1];
+		const branch = block.match(/^branch refs\/heads\/(.+)$/mu)?.[1];
+		if (path === undefined || !path.includes(`/${AGENT}-close-approved-`)) {
+			continue;
+		}
+		tryRun('git', ['worktree', 'remove', '--force', path], root);
+		if (branch !== undefined) tryRun('git', ['branch', '-D', branch], root);
+	}
+};
+
 /** The reason a transition gave, read from what it printed. */
 export const refusalOf = (error: unknown): string => {
 	const printed = [
@@ -130,6 +178,8 @@ const main = (): number => {
 		);
 		return 0;
 	}
+	const branches = declaredBranches(root);
+	sweepOwnUnits(root);
 	const topic = `close-approved-${new Date().toISOString().slice(0, 16).replaceAll(/[-:T]/gu, '')}`;
 	const unit = [
 		'--kind=review',
@@ -139,7 +189,7 @@ const main = (): number => {
 		`--topic=${topic}`,
 		// Its own directory: a review batch's default one was shared by
 		// every agent entering a batch before x00695.
-		`--dir=.cache/delendai/.worktrees/${AGENT}-${topic}`,
+		`--dir=${UNIT_DIR}/${AGENT}-${topic}`,
 	];
 	const cli = ['packages/cli/src/index.ts'];
 	const entered = JSON.parse(
@@ -151,72 +201,108 @@ const main = (): number => {
 	};
 	const path = entered.path;
 	if (path === undefined) return 1;
-	const refusals = new Map<string, string>();
-	const closed = candidates.filter((id) => {
-		try {
+	try {
+		// The closer's open pull request is where these closes go: the
+		// publisher joins it. Built on it, the push is a fast-forward and
+		// brings it level with the integration branch; built beside it,
+		// every pass closed the same proposals again and could not push
+		// (x00710), and a red pull request no author moved sat forever.
+		const existing = ownPublications(
+			tryRun('git', ['ls-remote', '--heads', 'origin'], root) ?? '',
+			branches.publicationRefPrefix,
+		)[0];
+		if (existing !== undefined) {
+			run('git', ['fetch', '--quiet', 'origin', existing.ref], path);
+			if (
+				tryRun('git', ['merge', '--no-edit', 'FETCH_HEAD'], path) ===
+				undefined
+			) {
+				tryRun('git', ['merge', '--abort'], path);
+				console.log(
+					`close-approved-proposals: ${existing.ref} does not merge with ${branches.integration}; a person resolves it.`,
+				);
+				return 0;
+			}
+		}
+		const inReview = run(
+			'git',
+			['ls-tree', '-r', '--name-only', 'HEAD', REVIEW_DIR],
+			path,
+		);
+		const refusals = new Map<string, string>();
+		const closed = candidates
+			.filter((id) => inReview.includes(`/${id}-`))
+			.filter((id) => {
+				try {
+					run(
+						'bun',
+						[
+							`${root}/tools/scripts/proposals/transition-proposal.script.ts`,
+							id,
+							'done',
+							'every slice independently approved',
+						],
+						path,
+					);
+					return true;
+				} catch (error) {
+					refusals.set(id, refusalOf(error));
+					return false;
+				}
+			});
+		// A refusal nobody reads is a close nobody can fix: every pass on
+		// 2026-09-27 refused 37 closes and printed only that it had.
+		for (const [id, reason] of refusals) {
+			console.log(`close-approved-proposals: ${id} refused — ${reason}`);
+		}
+		if (closed.length > 0) {
+			run('git', ['add', '-A'], path);
 			run(
-				'bun',
+				'git',
 				[
-					`${root}/tools/scripts/proposals/transition-proposal.script.ts`,
-					id,
-					'done',
-					'every slice independently approved',
+					'commit',
+					'-q',
+					'-m',
+					`docs(proposals): close ${String(closed.length)} independently approved proposal(s)`,
+					'-m',
+					`${closed.join(', ')}: every finished slice approved by someone other than its implementer; closed by the owner machine after the reviewer's own close was refused.`,
 				],
 				path,
 			);
-			return true;
-		} catch (error) {
-			refusals.set(id, refusalOf(error));
-			return false;
 		}
-	});
-	// A refusal nobody reads is a close nobody can fix: every pass on
-	// 2026-09-27 refused 37 closes and printed only that it had.
-	for (const [id, reason] of refusals) {
-		console.log(`close-approved-proposals: ${id} refused — ${reason}`);
-	}
-	if (closed.length === 0) {
-		run('git', ['worktree', 'remove', '--force', path], root);
-		// The unit carries nothing: its branch goes with its worktree, or
-		// every refused pass left one more behind for the reaper.
-		if (entered.branch !== undefined) {
-			run('git', ['branch', '-D', entered.branch], root);
+		const moved =
+			existing !== undefined &&
+			run('git', ['rev-parse', 'HEAD'], path) !== existing.sha;
+		if (closed.length === 0 && !moved) {
+			console.log(
+				`close-approved-proposals: nothing new to close; ${existing === undefined ? 'no pull request is open' : `${existing.ref} is level`}.`,
+			);
+			return 0;
 		}
+		run(
+			'bun',
+			[
+				...cli,
+				'work',
+				'publish',
+				...unit.filter((arg) => !arg.startsWith('--dir=')),
+				...(entered.session === undefined
+					? []
+					: [`--session=${entered.session}`]),
+			],
+			root,
+		);
 		console.log(
-			`close-approved-proposals: ${candidates.join(', ')} are approved, and every close was refused; a later pass tries again.`,
+			closed.length > 0
+				? `close-approved-proposals: published the close of ${closed.join(', ')}.`
+				: `close-approved-proposals: brought ${existing?.ref ?? ''} level with ${branches.integration}.`,
 		);
 		return 0;
+	} finally {
+		// Published or not, the unit's worktree and branch end here: a pass
+		// that failed to publish used to leave both behind, one per pass.
+		sweepOwnUnits(root);
 	}
-	run('git', ['add', '-A'], path);
-	run(
-		'git',
-		[
-			'commit',
-			'-q',
-			'-m',
-			`docs(proposals): close ${String(closed.length)} independently approved proposal(s)`,
-			'-m',
-			`${closed.join(', ')}: every finished slice approved by someone other than its implementer; closed by the owner machine after the reviewer's own close was refused.`,
-		],
-		path,
-	);
-	run(
-		'bun',
-		[
-			...cli,
-			'work',
-			'publish',
-			...unit.filter((arg) => !arg.startsWith('--dir=')),
-			...(entered.session === undefined
-				? []
-				: [`--session=${entered.session}`]),
-		],
-		root,
-	);
-	console.log(
-		`close-approved-proposals: published the close of ${closed.join(', ')}.`,
-	);
-	return 0;
 };
 
 if (import.meta.main) process.exit(main());
