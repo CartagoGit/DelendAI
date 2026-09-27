@@ -2,12 +2,15 @@
 id: x00685
 title: "One work ref cannot stop the server booting"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00551]
+last-transition-id: e75fcbc7-2777-4708-8f1f-aff2db4ab588
+last-correlation-id: e75fcbc7-2777-4708-8f1f-aff2db4ab588
+last-transition-from: in-progress
 ---
 
 # x00685 — One work ref cannot stop the server booting
@@ -65,13 +68,14 @@ thrown from `rebuild-work-units.ts`:
 
 ### S1 — The boot survives a ref it cannot record
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler/work-after-integration.spec.ts`
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/phases/rebuild-work-units.ts`
   - `packages/core/src/lib/startup-reconciler/finding-catalog.constant.ts`
   - `packages/core/tests/src/lib/startup-reconciler/work-after-integration.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
