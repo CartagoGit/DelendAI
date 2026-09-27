@@ -2,12 +2,15 @@
 id: x00704
 title: "A unit is found by what it is"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00644, x00553, x00695]
+last-transition-id: 0f8b038d-2721-40f4-bbd9-b6da6a220b52
+last-correlation-id: 0f8b038d-2721-40f4-bbd9-b6da6a220b52
+last-transition-from: in-progress
 ---
 
 # x00704 — A unit is found by what it is
@@ -53,12 +56,13 @@ same situation starts a second copy of the unit under the default name.
 
 ### S1 — Publish reaches the unit
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
   - `packages/cli/src/commands/work.command.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
