@@ -2,12 +2,15 @@
 id: x00705
 title: "A flag the parser consumes never reaches a command"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00689, x00553]
+last-transition-id: 5d971632-c6be-4f25-bf31-4116b67876ab
+last-correlation-id: 5d971632-c6be-4f25-bf31-4116b67876ab
+last-transition-from: in-progress
 ---
 
 # x00705 — A flag the parser consumes never reaches a command
@@ -71,7 +74,7 @@ parser never makes, so every one of them was green.
 
 ### S1 — Commands read globals from globals
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/lib/parser.service.spec.ts packages/cli/src/commands`
 - **Files**:
   - `packages/cli/src/contracts/constants/cli-global-flags.constant.ts`
@@ -90,7 +93,8 @@ parser never makes, so every one of them was green.
   - `packages/cli/src/commands/kpis.command.spec.ts`
   - `tools/scripts/lib/hermetic-git-setup.ts`
   - `vitest.shared.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
