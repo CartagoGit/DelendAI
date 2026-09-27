@@ -2,12 +2,15 @@
 id: x00701
 title: "A server behind the checkout says so"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00669]
+last-transition-id: 9969e4d4-d2c8-4423-9afe-a29b82fc0772
+last-correlation-id: 9969e4d4-d2c8-4423-9afe-a29b82fc0772
+last-transition-from: in-progress
 ---
 
 # x00701 — A server behind the checkout says so
@@ -60,14 +63,15 @@ owner found out from the branch graph.
 
 ### S1 — A stale server announces itself
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/stale-runtime-advisory.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/stale-runtime-advisory.ts`
   - `packages/core/src/lib/development-policy/stale-runtime-advisory.interface.ts`
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/tests/src/lib/development-policy/stale-runtime-advisory.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.

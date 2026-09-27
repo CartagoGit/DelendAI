@@ -3,6 +3,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { waitUntil } from '@delendai/test-kit';
+
 import {
 	createStaleRuntimeAdvisory,
 	staleRuntimeAdvisoryFor,
@@ -63,9 +65,9 @@ describe('createStaleRuntimeAdvisory', () => {
 		expect(advisory(CALL)).toBeNull();
 		head = NOW;
 		clock = 20;
-		advisory(CALL);
-		await new Promise((resolve) => setTimeout(resolve, 0));
-		await new Promise((resolve) => setTimeout(resolve, 0));
-		expect(advisory(CALL)?.code).toBe('SERVER_BEHIND_CHECKOUT');
+		await waitUntil(
+			'the checkout comparison lands',
+			() => advisory(CALL)?.code === 'SERVER_BEHIND_CHECKOUT',
+		);
 	});
 });
