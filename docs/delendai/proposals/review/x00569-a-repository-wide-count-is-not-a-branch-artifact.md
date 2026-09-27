@@ -10,6 +10,8 @@ tags:
     - generated-artifacts
     - drift
     - queue
+shipped-in:
+  - b29dbfb5d
 ---
 
 # x00569 — A repository-wide count is not a branch artifact
@@ -71,10 +73,14 @@ re-adding it fails rather than quietly restarting the queue stalls.
 
 ### S1 — the catalog carries no repository-wide roll-up
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/catalog/generate-agent-catalog.script.ts`, `tools/scripts/catalog/generate-agent-catalog.spec.ts`, `docs/delendai/agent-catalog.generated.json`]
 - **Gate**: `npx vitest run tools/scripts/catalog/generate-agent-catalog.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (b29dbfb5d, PR #304), reviewer glm-5.3-max. Verified: docs/delendai/agent-catalog.generated.json contains NO byStatus key (programmatic scan of the whole artifact, not just top level); generate-agent-catalog.spec.ts green 18/18 including the assertion that fails if the roll-up is re-added; the generator no longer builds the field. Acceptance catalog:check/check:quantitative: catalog:check is part of the validate chain that ran; the count consumers (proposals_compact_status) count live as the proposal states. This slice is the fix that stopped N candidates fighting over one repository-wide number in the merge ref — root cause of the four-times-in-one-session stall.
+- review-attribution: claude-opus-5 from Merge pull request #304 from CartagoGit/delendai/pr/claude-opus-5/x00569-S1-g1/a-repo-wide-count-is-not-a-branch-artifact (refs/heads/delendai/wip/claude-opus-5/x00569-S1-g1/a-repo-wide-count-is-not-a-branch-artifact) (b29dbfb5d2bd75c56327c3ec29dc39314f70eebd), opened by glm-5.3-max
 ## acceptance
 
 - The generated artifact has no `byStatus` key.

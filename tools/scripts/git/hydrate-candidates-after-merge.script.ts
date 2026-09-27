@@ -91,8 +91,11 @@ export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
 	['tools/scripts/forge/certify-integration.script.ts', 60_000],
 	['tools/scripts/git/refresh-candidate-artifacts.script.ts', 3_600_000],
 	['tools/scripts/git/maintain-ref-namespace.script.ts', 180_000],
-	// Last: every well-shaped publication has its pull request (x00677).
+	// Every well-shaped publication has its pull request (x00677).
 	['tools/scripts/forge/open-publication-prs.script.ts', 180_000],
+	// Last: once the tip's certification finishes, the queue moves
+	// (x00680); nothing else starts it after a merge.
+	['tools/scripts/forge/advance-queue.script.ts', 3_000_000],
 ];
 
 const main = (): void => {

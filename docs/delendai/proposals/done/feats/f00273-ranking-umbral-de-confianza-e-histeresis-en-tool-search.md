@@ -2,7 +2,7 @@
 id: f00273
 title: "Ranking, umbral de confianza e histéresis en `tool_search`"
 kind: feat
-status: review
+status: done
 type: proposal
 track: adaptive
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00272, f00198]
-last-transition-id: a129dd92-7111-44eb-a5ea-cf54f3fe1565
-last-correlation-id: a129dd92-7111-44eb-a5ea-cf54f3fe1565
-last-transition-from: in-progress
+last-transition-id: c21dbdd2-4f76-49f8-9c97-908ba2d92250
+last-correlation-id: c21dbdd2-4f76-49f8-9c97-908ba2d92250
+last-transition-from: review
 shipped-in:
   - 54d76bf64
   - 7bbb3da18

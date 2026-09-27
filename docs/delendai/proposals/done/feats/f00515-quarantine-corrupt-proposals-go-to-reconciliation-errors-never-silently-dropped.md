@@ -2,7 +2,7 @@
 id: f00515
 title: "Quarantine — corrupt proposals go to reconciliation_errors, never silently dropped"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -14,9 +14,10 @@ audit-source:
 related:
   - q00022
   - f00514
-last-transition-id: 7a1a476c-2538-4f52-aa24-53f8aa521e84
-last-correlation-id: 7a1a476c-2538-4f52-aa24-53f8aa521e84
-last-transition-from: in-progress
+last-transition-id: 9066cd1e-dc18-4c87-9cda-ff0d12dd952b
+last-correlation-id: 9066cd1e-dc18-4c87-9cda-ff0d12dd952b
+last-transition-from: review
+shipped-in: ["df3828ebd"]
 ---
 
 # f00515 — Quarantine
