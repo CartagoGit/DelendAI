@@ -2,7 +2,7 @@
 id: f00516
 title: "FTS5 — full-text search over proposals, plans, slices (no embeddings yet)"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -14,9 +14,10 @@ audit-source:
 related:
   - q00022
   - f00517
-last-transition-id: 12cfb5d8-2e21-4e7b-a137-c661384e3f8e
-last-correlation-id: 12cfb5d8-2e21-4e7b-a137-c661384e3f8e
-last-transition-from: in-progress
+last-transition-id: 035d6bf8-b3f0-42e0-b913-9b69ba55b13d
+last-correlation-id: 035d6bf8-b3f0-42e0-b913-9b69ba55b13d
+last-transition-from: review
+shipped-in: ["6b1ac5ca6"]
 ---
 
 # f00516 — FTS5 over proposals / plans / slices

@@ -2,13 +2,14 @@
 id: f00418
 title: "Autodeteccion de terminal y herramientas del shell para agentes LLM"
 kind: feat
-status: review
+status: done
 type: proposal
 track: quality
 date: 2026-09-03
-last-transition-id: 0d2adec3-8147-4cd6-9725-9f2c8d4fe548
-last-correlation-id: 0d2adec3-8147-4cd6-9725-9f2c8d4fe548
-last-transition-from: in-progress
+last-transition-id: 23fb6c10-b77e-4c05-899a-65eb413258e2
+last-correlation-id: 23fb6c10-b77e-4c05-899a-65eb413258e2
+last-transition-from: review
+shipped-in: ["893ce254e"]
 ---
 
 # f00418 — Autodeteccion de terminal y herramientas del shell para agentes LLM

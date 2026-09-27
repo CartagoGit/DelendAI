@@ -2,10 +2,14 @@
 id: f00523
 title: "Split per-agent validation from global integration gate"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-07
+shipped-in: ["3c5a2c055"]
+last-transition-id: 2c353e72-f43a-4a97-9052-6b126386e0af
+last-correlation-id: 2c353e72-f43a-4a97-9052-6b126386e0af
+last-transition-from: review
 ---
 
 # f00523 — Split per-agent validation from global integration gate

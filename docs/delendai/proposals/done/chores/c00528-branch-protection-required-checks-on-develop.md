@@ -2,7 +2,7 @@
 id: c00528
 title: "Branch protection — required checks on develop"
 kind: chore
-status: review
+status: done
 type: proposal
 track: operations
 date: 2026-09-07
@@ -14,9 +14,10 @@ audit-source:
 related:
   - q00022
   - c00528
-last-transition-id: 75ec3cb7-35fd-448a-a04e-ce4494f866e9
-last-correlation-id: 75ec3cb7-35fd-448a-a04e-ce4494f866e9
-last-transition-from: in-progress
+last-transition-id: 07c940ea-bc00-4672-a486-75b76591bbd7
+last-correlation-id: 07c940ea-bc00-4672-a486-75b76591bbd7
+last-transition-from: review
+shipped-in: ["5eb3621ca", "ef700d890"]
 ---
 
 # c00528 — Branch protection on develop
