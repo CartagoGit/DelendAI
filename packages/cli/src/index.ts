@@ -28,6 +28,9 @@ export { buildCanonicalLaunch } from './lib/server-args.service';
 // project's development policy declares. It does not install them:
 // starting a server is not consent to edit the repository (x00591).
 export { reportGuardHooks } from './lib/guard-hooks-autoinstall.service';
+// The one way a publication becomes a pull request (x00677): the CLI's
+// publish and the local hydrator both go through it.
+export { openPublicationPullRequest } from './lib/publication-pull-request.service';
 export {
 	checkWorkflowInvariants,
 	renderInvariantReport,
