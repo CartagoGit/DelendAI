@@ -2,12 +2,15 @@
 id: x00692
 title: "A short SHA is never read as a number"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00681]
+last-transition-id: 0cda12da-1d0f-431b-8741-35f7cc6acb5c
+last-correlation-id: 0cda12da-1d0f-431b-8741-35f7cc6acb5c
+last-transition-from: in-progress
 ---
 
 # x00692 — A short SHA is never read as a number
@@ -58,13 +61,14 @@ The same happens to any real approval whose SHA has that shape.
 
 ### S1 — Recorded commits stay strings
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-attribution.ts`
   - `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
