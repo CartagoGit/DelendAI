@@ -23,6 +23,7 @@ import type {
 import type {
 	IStaleRuntimeAdvisoryDeps,
 	IStaleRuntimeReading,
+	IStaleRuntimeWatch,
 } from './stale-runtime-advisory.interface';
 
 const REFRESH_INTERVAL_MS = 60_000;
@@ -71,13 +72,15 @@ export const staleRuntimeAdvisoryFor = (
 };
 
 /**
- * A provider for the checkpoint-advisory channel. The first reading
- * records the commit the server started at; later readings compare.
+ * The server's view of its own code: the commit it started at against the
+ * one its checkout is at now. `advisory` rides on every tool result and
+ * never waits on git; `behind` reads afresh, for work that must not run
+ * on older rules at all (x00709).
  */
-export const createStaleRuntimeAdvisory = (
+export const createStaleRuntimeWatch = (
 	root: string,
 	deps: IStaleRuntimeAdvisoryDeps = {},
-): CheckpointAdvisoryProvider => {
+): IStaleRuntimeWatch => {
 	const head = deps.head ?? ((at: string) => git(at, ['rev-parse', 'HEAD']));
 	const changedBetween =
 		deps.changedBetween ??
@@ -95,13 +98,9 @@ export const createStaleRuntimeAdvisory = (
 	const boot = head(root).then((sha) => {
 		reading = { bootHead: sha, head: sha, changed: [] };
 	});
-	let readAt = now();
-	let inFlight = false;
-	return () => {
-		if (!inFlight && now() - readAt >= interval) {
-			inFlight = true;
-			readAt = now();
-			boot.then(async () => {
+	const refresh = (): Promise<void> =>
+		boot
+			.then(async () => {
 				const current = await head(root);
 				const from = reading.bootHead;
 				if (current === undefined || from === undefined) return;
@@ -114,13 +113,31 @@ export const createStaleRuntimeAdvisory = (
 							: await changedBetween(root, from, current),
 				};
 			})
-				.catch(() => {
-					// A reading that fails leaves the last one standing.
-				})
-				.finally(() => {
+			.catch(() => {
+				// A reading that fails leaves the last one standing.
+			});
+	let readAt = now();
+	let inFlight = false;
+	return {
+		advisory: () => {
+			if (!inFlight && now() - readAt >= interval) {
+				inFlight = true;
+				readAt = now();
+				void refresh().finally(() => {
 					inFlight = false;
 				});
-		}
-		return staleRuntimeAdvisoryFor(reading);
+			}
+			return staleRuntimeAdvisoryFor(reading);
+		},
+		behind: async () => {
+			await refresh();
+			return staleRuntimeAdvisoryFor(reading)?.message;
+		},
 	};
 };
+
+/** The advisory alone, for callers that need nothing else. */
+export const createStaleRuntimeAdvisory = (
+	root: string,
+	deps: IStaleRuntimeAdvisoryDeps = {},
+): CheckpointAdvisoryProvider => createStaleRuntimeWatch(root, deps).advisory;

@@ -531,6 +531,9 @@ export default definePlugin({
 				run,
 				policy: ctx.developmentPolicy,
 				remote: policy.push.remote,
+				...(ctx.runtimeBehindCheckout === undefined
+					? {}
+					: { standDown: ctx.runtimeBehindCheckout }),
 				report: (moved) =>
 					console.debug(
 						JSON.stringify({
