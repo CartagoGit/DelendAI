@@ -13,6 +13,8 @@ tags:
 last-transition-id: a098a172-a1fe-457b-8e4f-a4a147df2c9f
 last-correlation-id: a098a172-a1fe-457b-8e4f-a4a147df2c9f
 last-transition-from: in-progress
+shipped-in:
+  - "07f355f702af5fe98856f7a97851d609223c283b"
 ---
 
 # x00643 — A proposal in review can be reviewed by someone who did not write it
@@ -68,7 +70,7 @@ here has the same author.
 
 ### S1 — A reviewer opens the round a historical delivery never opened
 
-- **Status**: review — shipped in #451 (merge 07f355f70)
+- **Status**: done
 - **Gate**: e2e
 - **Files**: `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/generated/tool-outputs.ts`, `tools/scripts/review/proposal-review.script.ts`, `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - acceptance:
@@ -77,8 +79,10 @@ here has the same author.
   - "When neither a pull-request ref with an agent segment nor a Co-Authored-By trailer names the implementer, the verdict is refused and the refusal names that missing datum; nothing is written."
   - "A reviewer whose name equals the derived implementer is refused as a self-approval."
   - "request_changes on a slice hand-marked done reopens the slice as in-progress and moves the proposal back to in-progress."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 07f355f70. review-attribution (335 líneas) + review-handoff: un reviewer puede aprobar/rechazar cualquier slice de una propuesta en review/ con proposal_review ALONE — incluidos slices entregados antes de que existieran rondas — y el implementador contra el que se comprueba la independencia sale de GIT (no de un registro). La última aprobación deja la propuesta en done/ por la transición normal, o reporta exactamente por qué no pudo (p. ej. validate rojo). Una propuesta entregada a review por el tool llega con sus rondas abiertas. Acceptance cubierta — review-attribution.spec 30/30 verificado junto a review.tool y review-identity en el lote del pack. Este flujo es el que esta misma sesión ejercitó de extremo a extremo. Sin cambios fuera de alcance.
 ### S2 — The approval that ends a proposal closes it
 
 - **Status**: review — shipped in #451 (merge 07f355f70)
