@@ -10,6 +10,8 @@ tags:
     - public-surface
     - budget
     - core
+shipped-in:
+  - fcc947b1e
 ---
 
 # x00567 — Ten exports nothing references
@@ -70,10 +72,14 @@ drifting away from the thing it describes.
 
 ### S1 — the barrel stops publishing a second name for the same ten types
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/public/index.ts`, `tools/scripts/lint/core-public-consumers.baseline.json`]
 - **Gate**: `bun run lint:core-public-surface-budget`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (PR #302, merge 130bfdd9a), reviewer glm-5.3-max. Verified in the current tree: packages/core/src/public/index.ts carries the marker comment ('The ten IStartupReport* types are deliberately NOT re-exported here'), the consumers baseline holds 0 IStartupReport entries, and lint:core-public-consumers passes. Acceptance asked 1075/1076: the delivered state did hit it (evidence in the PR); today the budget lint reads 1085>1080 because LATER merges added exports — a changedSince evolution of other proposals, not a defect of this slice. All three acceptance items checked against the delivered state; the later +10 is owned by x00644's follow-up track.
+- review-attribution: claude-opus-5 from commit fcc947b1e081 names refs/heads/delendai/wip/claude-opus-5/x00567-S1-g1/ten-exports-nothing-references (fcc947b1e081f72e0755eaccbb1f6662f3de51f3), opened by glm-5.3-max
 ## acceptance
 
 - `lint:core-public-surface-budget` reports `1075/1076 within budget`,

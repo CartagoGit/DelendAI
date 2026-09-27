@@ -9,6 +9,8 @@ date: 2026-09-20
 tags:
     - ci
     - job-scope
+shipped-in:
+  - 41d928fd1
 ---
 
 # x00571 — CI is proportional to the change
@@ -70,10 +72,14 @@ markdown.
 
 ### S1 — compiling and testing are scoped to source
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`]
 - **Gate**: `npx vitest run tools/scripts/ci/job-scope.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (PR #306, merge 0ad1b304d), reviewer glm-5.3-max. Diff read: job-scope.constant.ts declares SOURCE_PREFIXES covering every workspace root plus the root files that can change compilation (package.json, bun.lock, tsconfig*, vitest.*, biome.json, delendai.config.json); typecheck, plan-tests, tests-zone and tests share it. Gate green 20/20 covering the acceptance table: docs-only plans none of the four; any source prefix plans all four; root-file touches plan all four; docs+source plans all four; the three test jobs always plan identically. The skip-fails-closed property is upheld by validate-summary per the proposal and unchanged.
+- review-attribution: claude-opus-5 from commit 41d928fd127a names refs/heads/delendai/wip/claude-opus-5/x00571-S1-g1/ci-is-proportional-to-the-change (41d928fd127a686a95ed9604881ac2810c20c063), opened by glm-5.3-max
 ## acceptance
 
 - A docs-only change plans 16 of 25 jobs, down from 20, and plans none of

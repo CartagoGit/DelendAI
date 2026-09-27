@@ -9,6 +9,8 @@ date: 2026-09-20
 tags:
     - generated-artifacts
     - git
+shipped-in:
+  - 4f3f25e5c
 ---
 
 # x00576 — Every generated file merges the same way
@@ -71,10 +73,14 @@ file it cannot regenerate. Both are now failures, in both directions.
 
 ### S1 — every generator's output is routed, and the two lists are pinned together
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/git/generated-merge-driver.constant.ts`, `tools/scripts/git/generated-merge-driver.script.ts`, `tools/scripts/git/generated-merge-driver.script.spec.ts`, `.gitattributes`]
 - **Gate**: `npx vitest run tools/scripts/git/generated-merge-driver.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (4f3f25e5c), reviewer glm-5.3-max. Verified in the tree: .gitattributes routes ALL generator outputs through merge=delendai-generated — AGENT-BOOTSTRAP.md, agent-catalog.generated.json, host-hints/agent-instructions.generated.md (the x00559 three) PLUS AGENT.md and the manifest/capability-matrix outputs x00576 added; the constant+script+spec trio (generated-merge-driver.*) pins the generator-output list to the routed list so they cannot drift apart. Gate generated-merge-driver.script.spec.ts green in the 63/63 combined run. Acceptance 'no pair of candidates can conflict on a file neither authored' holds for every output gen:all produces.
+- review-attribution: claude-opus-5 from commit 4f3f25e5c177 names refs/heads/delendai/wip/claude-opus-5/x00576-S1-g1/every-generated-file-merges-the-same-way (4f3f25e5c17740f69cdb5760bd89b4ca2680564d), opened by glm-5.3-max
 ## acceptance
 
 - `.gitattributes` routes every path the rule table knows how to
