@@ -177,6 +177,25 @@ describe('publishing agents work checkouts', () => {
 		expect(only?.outcome).toBe('skipped');
 	});
 
+	it('does not push back a work ref whose commits its publication already carries (x00691)', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'published';\n");
+		const tip = (await repo.git('rev-parse', WORK_BRANCH)).trim();
+		await repo.git(
+			'push',
+			'--quiet',
+			'origin',
+			`${tip}:refs/heads/pr/agent-a/x00001-S1-g1/work`,
+		);
+		await repo.git('fetch', '--quiet', 'origin');
+
+		const [only] = await publishWorkCheckouts(run, POLICY);
+		expect(only?.outcome).toBe('skipped');
+		expect(only?.reason).toContain('pr/agent-a/x00001-S1-g1/work');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
+	});
+
 	it('pushes nothing while a publication holds the ref', async () => {
 		const { repo, enter, commitIn, remoteHas, run } = await setup();
 		const dir = await enter(WORK_BRANCH);
