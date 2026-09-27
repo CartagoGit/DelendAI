@@ -2,12 +2,15 @@
 id: x00713
 title: "The server knows who called it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00694, x00699, x00626]
+last-transition-id: 41d36482-c521-4162-8207-da50922cd7c0
+last-correlation-id: 41d36482-c521-4162-8207-da50922cd7c0
+last-transition-from: in-progress
 ---
 
 # x00713 — The server knows who called it
@@ -57,7 +60,7 @@ here. It is the same on every host.
 
 ### S1 — Identity reaches the server
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/lib/stdio-context.factory.spec.ts`
 - **Files**:
   - `packages/client/src/lib/transport/mcp-stdio-client.ts`
