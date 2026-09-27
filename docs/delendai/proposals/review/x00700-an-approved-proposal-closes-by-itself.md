@@ -2,12 +2,15 @@
 id: x00700
 title: "An approved proposal closes by itself"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00696, x00680]
+last-transition-id: e85d5648-b7f1-4afc-b0e7-64a987f1438b
+last-correlation-id: e85d5648-b7f1-4afc-b0e7-64a987f1438b
+last-transition-from: in-progress
 ---
 
 # x00700 — An approved proposal closes by itself
@@ -67,14 +70,15 @@ and reviewers kept looking at work that was already reviewed.
 
 ### S1 — Approved proposals close on the next pass
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - **Files**:
   - `tools/scripts/proposals/close-approved-proposals.script.ts`
   - `tools/scripts/proposals/close-approved-proposals.script.spec.ts`
   - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
   - `docs/delendai/proposals/review/x00546-work-refs-are-visible-named-after-their-model-and-known-to-the-ref-guard.md`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 x00696 (the approval rule it reuses).
