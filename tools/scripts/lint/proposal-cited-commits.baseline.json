@@ -1187,6 +1187,42 @@
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
 			"recordedAt": "2026-09-09T20:49:49.523Z"
+		},
+		{
+			"hash": "80e311ba213345e620be9649365a6421de994172",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00546-work-refs-are-visible-named-after-their-model-and-known-to-the-ref-guard.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-27T13:13:56.798Z"
+		},
+		{
+			"hash": "9421185e4429e7837264b014ad9678cce08f57fc",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00546-work-refs-are-visible-named-after-their-model-and-known-to-the-ref-guard.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-27T13:13:56.798Z"
+		},
+		{
+			"hash": "d4f482ccf841e0eb9b00003c6e8146f970d576c1",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00546-work-refs-are-visible-named-after-their-model-and-known-to-the-ref-guard.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-27T13:13:56.798Z"
+		},
+		{
+			"hash": "d02f770ab5dc1b71703d85a18480b6bba438631a",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00546-work-refs-are-visible-named-after-their-model-and-known-to-the-ref-guard.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-27T13:13:56.798Z"
 		}
 	]
 }
