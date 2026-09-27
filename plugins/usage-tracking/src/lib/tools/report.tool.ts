@@ -23,6 +23,8 @@ import {
 	readInvocations,
 	withinWindow,
 } from '../rollup';
+import { RESULT_SIZE_RANK_LIMIT } from '../contracts/constants/result-size-rank-limit.constant';
+import { rankToolResultSizes } from '../result-size-ranking.helper';
 import type { IInvocationRecord } from '../types';
 import { summarizeLocalKpis } from '../usage-kpis.helper';
 
@@ -53,6 +55,14 @@ const ExpensiveCallSchema = z.object({
 	costUsd: z.number().nullable(),
 	durationMs: z.number().nullable(),
 	outcome: z.string(),
+});
+
+const ToolResultSizeSchema = z.object({
+	plugin: z.string(),
+	tool: z.string(),
+	calls: z.number(),
+	totalBytes: z.number(),
+	largestBytes: z.number(),
 });
 
 const TokenTaxSchema = z.object({
@@ -135,6 +145,10 @@ const OutputSchema = z.object({
 	pluginKpis: z.array(PluginKpiSchema),
 	kpis: KpisSchema,
 	expensiveCalls: z.array(ExpensiveCallSchema),
+	resultSizes: z.object({
+		byTotal: z.array(ToolResultSizeSchema),
+		byLargest: z.array(ToolResultSizeSchema),
+	}),
 });
 
 type UsageReportPayload = Omit<z.infer<typeof OutputSchema>, 'detail'>;
@@ -150,6 +164,7 @@ const projectUsageReport = (
 				...full,
 				pluginKpis: [],
 				expensiveCalls: [],
+				resultSizes: { byTotal: [], byLargest: [] },
 			}),
 			normal: (full) => full,
 			full: (full) => full,
@@ -216,7 +231,7 @@ export const buildReportToolRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_usage_report`,
 			{
-				description: `Report recorded tool usage grouped by provider, plugin, agent, extension or model. Returns spend, tokens used, attributable tokens saved and savings percent plus the top-${EXPENSIVE_CALL_LIMIT} most expensive calls. Group by \`model\` to see which LLM spent and saved what (calls with no model land in an \`unattributed\` bucket). Reads the append-only log on demand; no message content is ever recorded or returned. \`detail\` defaults to \`normal\`; \`compact\` suppresses the expensive-call list and plugin KPI breakdown while preserving totals and buckets.`,
+				description: `Report recorded tool usage grouped by provider, plugin, agent, extension or model. Returns spend, tokens used, attributable tokens saved and savings percent plus the top-${EXPENSIVE_CALL_LIMIT} most expensive calls and the tools ranked by the total and the largest result they returned. Group by \`model\` to see which LLM spent and saved what (calls with no model land in an \`unattributed\` bucket). Reads the append-only log on demand; no message content is ever recorded or returned. \`detail\` defaults to \`normal\`; \`compact\` suppresses the expensive-call list, the result-size rankings and the plugin KPI breakdown while preserving totals and buckets.`,
 				inputSchema: InputSchema,
 				outputSchema: compactOutputSchema(),
 			},
@@ -261,6 +276,10 @@ export const buildReportToolRegistration = (
 						outcome: r.outcome,
 					}));
 				const localKpis = summarizeLocalKpis(windowed, windowDays);
+				const resultSizes = rankToolResultSizes(
+					windowed,
+					RESULT_SIZE_RANK_LIMIT,
+				);
 				const payload = projectUsageReport(
 					{
 						groupBy,
@@ -270,6 +289,10 @@ export const buildReportToolRegistration = (
 						pluginKpis: [...localKpis.pluginKpis],
 						kpis: localKpis.kpis,
 						expensiveCalls,
+						resultSizes: {
+							byTotal: [...resultSizes.byTotal],
+							byLargest: [...resultSizes.byLargest],
+						},
 					},
 					detail,
 				);
