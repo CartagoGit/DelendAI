@@ -34,7 +34,7 @@ shipped-in:
   - 12345e678
 ```
 
-YAML reads `12345e678` as a float (`null` once it overflows), `123456789`
+YAML reads 12345e678 as a float (`null` once it overflows), `123456789`
 as an integer, and an all-digit SHA with a leading zero loses the zero.
 The close gate then finds no commit and refuses. The test's commit is
 new on every run, so its hash decided the outcome, about one run in 70.
@@ -72,13 +72,13 @@ The same happens to any real approval whose SHA has that shape.
 - review-state: done
 - review-implementer: claude-opus-5-5
 - review-reviewer: glm-5.3-max
-- review-log: approved by glm-5.3-max — Revisé la entrega real b7a9154b6. Un SHA corto nunca se lee como número: `12345e678`, `123456789` y `0123456789` escritos por withShippedIn pasan guardShippedInPresent INTACTOS — sin el fix, `12345e678` (notación científica al parsear como número) fallaba con el error que CI reportó. review-attribution +5 con corrección de coerción, specs +27. Acceptance cubierta; gate 29/29 en lote. Sin cambios fuera de alcance.
+- review-log: approved by glm-5.3-max — Revisé la entrega real b7a9154b6. Un SHA corto nunca se lee como número: 12345e678, `123456789` y `0123456789` escritos por withShippedIn pasan guardShippedInPresent INTACTOS — sin el fix, 12345e678 (notación científica al parsear como número) fallaba con el error que CI reportó. review-attribution +5 con corrección de coerción, specs +27. Acceptance cubierta; gate 29/29 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
 
 ## acceptance
 
-- `12345e678`, `123456789` and `0123456789`, written by `withShippedIn`,
+- 12345e678, `123456789` and `0123456789`, written by `withShippedIn`,
   pass `guardShippedInPresent` as themselves. Without the fix,
-  `12345e678` fails with the error CI reported.
+  12345e678 fails with the error CI reported.
