@@ -21,6 +21,7 @@ import {
 	pluginConfigFor,
 } from '../plugins/load-config-file';
 import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
+import { createStaleRuntimeAdvisory } from '../development-policy/stale-runtime-advisory';
 import { resolveDevelopmentPolicy } from '../development-policy/resolve';
 import {
 	validateDevelopmentPolicy,
@@ -241,6 +242,7 @@ export const assembleCliConfig = async (
 ): Promise<IAssembledCliConfig> => {
 	const workspace = createWorkspacePathProvider(args.workspace);
 	const looseEdits = createLooseEditsAdvisory(workspace.root);
+	const staleRuntime = createStaleRuntimeAdvisory(workspace.root);
 	const readFile: (absolutePath: string) => Promise<string | undefined> =
 		deps.readFile ??
 		(async (absolutePath: string) => {
@@ -1157,6 +1159,7 @@ export const assembleCliConfig = async (
 			selectCheckpointAdvisory([
 				...getCheckpointAdvisoryFns.map((fn) => fn(context)),
 				looseEdits(context),
+				staleRuntime(context),
 			]),
 		...(moduleLoading === 'lazy' || beforeToolCallFns.length > 0
 			? {
