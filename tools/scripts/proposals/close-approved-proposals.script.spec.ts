@@ -3,7 +3,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { readyToClose, refusalOf } from './close-approved-proposals.script';
+import {
+	ownPublications,
+	readyToClose,
+	refusalOf,
+} from './close-approved-proposals.script';
 
 const doc = (frontmatter: string, body: string) =>
 	`---\nid: x1\n${frontmatter}---\n\n# x1\n\n${body}`;
@@ -71,5 +75,34 @@ describe('refusalOf (x00706)', () => {
 			),
 		).toBe('ENOENT: gone');
 		expect(refusalOf(new Error('x'))).toBe('no reason printed');
+	});
+});
+
+describe('ownPublications (x00710)', () => {
+	const listing = [
+		'aaa\trefs/heads/delendai/pr/delendai-queue/review/batch-all-g1/close-approved-1817',
+		'bbb\trefs/heads/delendai/pr/claude-opus-5-5/implement/x00706-all-g1/t',
+		'ccc\trefs/heads/delendai/wip/delendai-queue/review/batch-all-g1/close-approved-1900',
+		'ddd\trefs/heads/develop',
+		'',
+	].join('\n');
+
+	it("finds the closer's publications and nothing else", () => {
+		const expected = [
+			{
+				ref: 'refs/heads/delendai/pr/delendai-queue/review/batch-all-g1/close-approved-1817',
+				sha: 'aaa',
+			},
+		];
+		expect(ownPublications(listing, 'delendai/pr/')).toEqual(expected);
+		expect(ownPublications(listing, 'refs/heads/delendai/pr/')).toEqual(
+			expected,
+		);
+	});
+
+	it('finds none when the closer has no pull request open', () => {
+		expect(
+			ownPublications('ddd\trefs/heads/develop\n', 'delendai/pr/'),
+		).toEqual([]);
 	});
 });
