@@ -2,12 +2,15 @@
 id: x00681
 title: "A refused close says why in the test"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P2
 related: [x00672]
+last-transition-id: c0cfe4ec-6666-443b-baf5-3fcf1ccc8a58
+last-correlation-id: c0cfe4ec-6666-443b-baf5-3fcf1ccc8a58
+last-transition-from: in-progress
 ---
 
 # x00681 — A refused close says why in the test
@@ -49,11 +52,12 @@ re-running it until it is green would only hide it.
 
 ### S1 — The close assertion names the refusal
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - **Files**:
   - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
