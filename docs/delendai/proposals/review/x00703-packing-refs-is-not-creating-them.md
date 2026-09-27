@@ -2,12 +2,15 @@
 id: x00703
 title: "Packing refs is not creating them"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00694, f00644]
+last-transition-id: e2fa8bcb-a0f7-47b4-89eb-e93bed7e9956
+last-correlation-id: e2fa8bcb-a0f7-47b4-89eb-e93bed7e9956
+last-transition-from: in-progress
 ---
 
 # x00703 — Packing refs is not creating them
@@ -52,13 +55,14 @@ stopped git's maintenance for everyone.
 
 ### S1 — Maintenance is never refused
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/guard.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/guard.command.ts`
   - `packages/cli/src/contracts/interfaces/guard.interface.ts`
   - `packages/cli/src/commands/guard.command.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
