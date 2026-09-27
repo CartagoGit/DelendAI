@@ -2,7 +2,7 @@
 id: x00555
 title: "Every agent can see what the swarm is doing"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19
@@ -15,6 +15,9 @@ tags:
     - coordination
     - claims
     - awareness
+last-transition-id: 570f7736-b692-4e12-8cb3-eac531eaea4b
+last-correlation-id: 570f7736-b692-4e12-8cb3-eac531eaea4b
+last-transition-from: review
 ---
 
 # x00555 — Every agent can see what the swarm is doing
