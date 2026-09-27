@@ -2029,7 +2029,7 @@ export const buildReviewRegistration = (
 					return toolError(resolved.reason, resolved.nextAction);
 				}
 				const { entry, docPath } = resolved;
-				const missingSliceNextAction = `Call ${options.namespacePrefix}_proposal_get { view: "slices", proposalId: "${entry.id}" } and retry with a declared sliceId. If this historical proposal is already done, do not submit a review: run ${options.namespacePrefix}_proposal_reconcile_folder { id: "${entry.id}", reason: "repair historical proposal state" }; if the done state still needs an audited repair, ask the host to approve ${options.namespacePrefix}_proposal_force_transition { id: "${entry.id}", to: "done", reason: "repair historical proposal state", skipPeerReview: true }.`;
+				const missingSliceNextAction = `Call ${options.namespacePrefix}_proposal_get { view: "slices", proposalId: "${entry.id}" } and retry with a declared sliceId. If this historical proposal is already done, do not submit a review: run ${options.namespacePrefix}_proposal_reconcile_folder { id: "${entry.id}", reason: "repair historical proposal state" }. If the done state still needs repair after that, report it to the owner; closing without a review is not a reviewer's step.`;
 				// redact the reviewer note...
 				const redactedNote = args.note
 					? redactSecrets(args.note)
