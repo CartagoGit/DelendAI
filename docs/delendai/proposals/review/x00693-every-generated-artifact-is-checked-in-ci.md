@@ -71,6 +71,7 @@ after comments, and `generated-artifacts-check` was green.
 - **Files**:
   - `tools/scripts/inspect/core-public-inventory.script.ts`
   - `tools/scripts/gen-all.script.ts`
+  - `tools/scripts/gen-all.spec.ts`
   - `tools/scripts/lint/check-generated-artifacts.script.ts`
   - `docs/delendai/CORE-PUBLIC-API-INVENTORY.md`
 - review-state: in_review
