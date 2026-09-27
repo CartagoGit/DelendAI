@@ -54,9 +54,12 @@ pre-commit:
         # is not refused by it). lefthook owns the hook files, so this line
         # is how the guard is installed here; the rule above is this
         # repository's stricter one, for everyone.
+        # The guard runs the shared checkout's CLI, not the worktree's: a
+        # worktree entered before a policy change kept enforcing the old
+        # rules, and its agent pushed names the policy forbids (x00677).
         delendai-guard:
             env: *hook-locale
-            run: bun packages/cli/src/index.ts --workspace="$(git rev-parse --show-toplevel)" guard pre-commit
+            run: bun "$(git rev-parse --path-format=absolute --git-common-dir)/../packages/cli/src/index.ts" --workspace="$(git rev-parse --show-toplevel)" guard pre-commit
             stage_fixed: false
 
         # Staged-file Biome formatter (x00088). The script filters staged
@@ -344,7 +347,7 @@ pre-push:
         delendai-guard:
             env: *hook-locale
             use_stdin: true
-            run: bun packages/cli/src/index.ts --workspace="$(git rev-parse --show-toplevel)" guard pre-push {1} {2}
+            run: bun "$(git rev-parse --path-format=absolute --git-common-dir)/../packages/cli/src/index.ts" --workspace="$(git rev-parse --show-toplevel)" guard pre-push {1} {2}
 
         # A candidate is proved on the machine that wrote it, before the
         # forge spends a matrix on it. BLOCKING, and deliberately the

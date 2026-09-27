@@ -65,6 +65,7 @@ import {
 	proposalStillInProgress,
 } from '../lib/publication-target.service';
 import { liveProposalBranch } from '../lib/proposal-branch.service';
+import { openPublicationPullRequest } from '../lib/publication-pull-request.service';
 import {
 	applyWorkClaim,
 	claimableWorkRefs,
@@ -75,6 +76,19 @@ import { runWorkflowDoctor } from '../lib/workflow-doctor.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
 
 /** Read-only git, for the facts the engine does not already answer. */
+/** The forge's CLI (`gh`), trimmed output or `undefined` on failure. */
+const forgeCli = (cwd: string, args: readonly string[]): string | undefined => {
+	try {
+		return execFileSync('gh', [...args], {
+			cwd,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+	} catch {
+		return undefined;
+	}
+};
+
 const git = (cwd: string, args: readonly string[]): string | undefined => {
 	try {
 		return execFileSync('git', args, {
@@ -602,6 +616,30 @@ const published = async (
 				}
 			: {}),
 	};
+	// The publication becomes a pull request here, by the machine that
+	// holds the forge credential (x00677): a publication nobody opened a
+	// pull request for is work that never lands.
+	const pullRequest =
+		outcome.published &&
+		outcome.tip !== null &&
+		policy.integration.requiresPullRequest &&
+		!args.includes('--no-pull-request')
+			? openPublicationPullRequest({
+					remote,
+					base: policy.branches.integration,
+					branch: target.publicationRef.replace(
+						/^refs\/heads\//u,
+						'',
+					),
+					tip: outcome.tip,
+					integrationBase: base,
+					fallbackTitle: `${kindFor(args, slice)} ${proposal}`,
+					ports: {
+						git: (gitArgs) => git(root, gitArgs),
+						gh: (ghArgs) => forgeCli(root, ghArgs),
+					},
+				})
+			: undefined;
 	return {
 		// Published but not cleaned up is not a success: the namespace is
 		// left carrying a ref that looks like live work.
@@ -609,7 +647,11 @@ const published = async (
 			outcome.published && (outcome.workRefRemoved || keepWorkRef)
 				? EXIT_CODE.OK
 				: EXIT_CODE.VALIDATION,
-		data: { ...outcome, publication },
+		data: {
+			...outcome,
+			publication,
+			...(pullRequest === undefined ? {} : { pullRequest }),
+		},
 	};
 };
 
