@@ -2,12 +2,15 @@
 id: x00709
 title: "A server behind its checkout stops pushing"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00701, x00691, x00697]
+last-transition-id: 107136f8-0dc1-4237-a833-3bc8744cdd94
+last-correlation-id: 107136f8-0dc1-4237-a833-3bc8744cdd94
+last-transition-from: in-progress
 ---
 
 # x00709 — A server behind its checkout stops pushing
@@ -58,7 +61,7 @@ safe answer is that it mutates nothing shared until restarted.
 
 ### S1 — The publisher stands down on older code
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/stale-runtime-advisory.spec.ts plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/stale-runtime-advisory.ts`
