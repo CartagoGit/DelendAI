@@ -18,11 +18,11 @@
 import { execFileSync } from 'node:child_process';
 
 import {
-	REVIEW_BATCH_ID,
 	publicationUnitFor,
 	resolveWorkRef,
 	type IResolvedDevelopmentPolicy,
 } from '@delendai/core/public';
+import { REVIEW_BATCH_ID } from '@delendai/core/cli';
 
 import type {
 	IPublicationTarget,

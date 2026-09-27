@@ -15,6 +15,7 @@ import type {
 	IReapIntegratedWorkRefsInput,
 	IReapIntegratedWorkRefsResult,
 } from '../contracts/interfaces/integrated-work-refs.interface';
+import { compareAndSwapRef } from './commit-driver';
 
 const qualify = (prefix: string): string =>
 	prefix.startsWith('refs/') ? prefix : `refs/${prefix}`;
@@ -106,7 +107,7 @@ export const reapIntegratedWorkRefs = async (
 		if (!(await isWorkIntegrated(input.run, sha, input.integrationSha)))
 			continue;
 		// The expected old value makes this a no-op if the ref moved.
-		const deleted = await input.run(['update-ref', '-d', ref, sha]);
+		const deleted = await compareAndSwapRef(input.run, ref, undefined, sha);
 		if (deleted.ok) removedLocal.push(ref);
 		else failures.push(`${ref}: ${deleted.reason ?? 'update-ref failed'}`);
 	}

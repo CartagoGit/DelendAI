@@ -46,7 +46,7 @@ import {
 	createWipEngine,
 	resolveWorkRef,
 	UNANCHORED,
-	WORK_REF_SHAPE,
+	WORK_REF_NAMING,
 } from '@delendai/core/public';
 
 import type {
@@ -69,7 +69,7 @@ export type {
 const TOPIC_MAX_LENGTH = 72;
 
 /** The template a host that declares none gets: the project shape. */
-const DEFAULT_TEMPLATE = `heads/wip/${WORK_REF_SHAPE}`;
+const DEFAULT_TEMPLATE = `heads/wip/${WORK_REF_NAMING.shape}`;
 
 /**
  * The ref a proposal is published on: the project's work-ref template,

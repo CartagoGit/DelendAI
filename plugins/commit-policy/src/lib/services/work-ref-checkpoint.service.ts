@@ -4,6 +4,7 @@ import { resolveDurabilityRemote } from '../persistence/durability-remote.servic
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IWipEngine } from '../contracts/interfaces/work-ref-tool.interface';
 import { integrationBase, runOutput } from './work-ref-repo.service';
+import { compareAndSwapRef } from './commit-driver';
 
 export const verifyCheckpoint = async (
 	engine: IWipEngine,
@@ -121,12 +122,12 @@ export const recoverCheckpoint = async (
 	]);
 	if (current !== undefined && current !== commit)
 		throw new Error(`ref ${ref} already points to a different commit`);
-	const updated = await engine.context.run([
-		'update-ref',
+	const updated = await compareAndSwapRef(
+		engine.context.run,
 		ref,
 		commit,
 		current ?? '',
-	]);
+	);
 	if (!updated.ok)
 		throw new Error(
 			`could not restore local ref ${ref}: ${updated.reason ?? 'git update-ref failed'}`,
