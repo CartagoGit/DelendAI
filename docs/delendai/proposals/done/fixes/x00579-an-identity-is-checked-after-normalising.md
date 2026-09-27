@@ -2,15 +2,18 @@
 id: x00579
 title: "An identity is checked after normalising"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
+last-transition-id: 0894af46-86a5-4374-b200-4c74eb54ff75
+last-correlation-id: 0894af46-86a5-4374-b200-4c74eb54ff75
+last-transition-from: review
 tags:
-    - work-identity
-    - agents
+  - work-identity
+  - agents
+shipped-in: ["b39bfe073"]
 ---
-
 # x00579 — An identity is checked after normalising
 
 ## goal

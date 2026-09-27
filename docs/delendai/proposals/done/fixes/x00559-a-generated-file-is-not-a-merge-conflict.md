@@ -2,17 +2,20 @@
 id: x00559
 title: "A generated file is not a merge conflict"
 kind: fix
-status: review
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-19
+last-transition-id: 7002162b-409d-4f1e-95a6-0347680ef55a
+last-correlation-id: 7002162b-409d-4f1e-95a6-0347680ef55a
+last-transition-from: review
 tags:
-    - git
-    - merge
-    - generated
-    - swarm
+  - git
+  - merge
+  - generated
+  - swarm
+shipped-in: ["d1864c7dd"]
 ---
-
 # x00559 — A generated file is not a merge conflict
 
 ## goal

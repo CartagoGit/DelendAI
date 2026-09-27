@@ -2,16 +2,19 @@
 id: x00570
 title: "The shared checkout is never left dirty"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
+last-transition-id: c1065699-030f-4f4e-a9ce-924cb1b5ee5f
+last-correlation-id: c1065699-030f-4f4e-a9ce-924cb1b5ee5f
+last-transition-from: review
 tags:
-    - work-refs
-    - generated-artifacts
-    - hooks
+  - work-refs
+  - generated-artifacts
+  - hooks
+shipped-in: ["c0677a9b8"]
 ---
-
 # x00570 — The shared checkout is never left dirty
 
 ## goal

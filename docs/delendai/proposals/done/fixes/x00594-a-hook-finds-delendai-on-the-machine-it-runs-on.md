@@ -2,16 +2,19 @@
 id: x00594
 title: "A hook finds delendai on the machine it runs on"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
+last-transition-id: 03b5ae1e-fdc9-4338-b752-938079eb10ad
+last-correlation-id: 03b5ae1e-fdc9-4338-b752-938079eb10ad
+last-transition-from: review
 tags:
-    - adoption
-    - privacy
-    - host
+  - adoption
+  - privacy
+  - host
+shipped-in: ["fe14489c3"]
 ---
-
 # x00594 — A hook finds delendai on the machine it runs on
 
 ## goal

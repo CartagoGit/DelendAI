@@ -2,15 +2,18 @@
 id: x00587
 title: "Every project gets a ref of its own"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-21
+last-transition-id: 848d9c93-39c3-4cc8-b4be-1dc9b10ed0c4
+last-correlation-id: 848d9c93-39c3-4cc8-b4be-1dc9b10ed0c4
+last-transition-from: review
 tags:
-    - development-policy
-    - defaults
+  - development-policy
+  - defaults
+shipped-in: ["70f27f8fc"]
 ---
-
 # x00587 — Every project gets a ref of its own
 
 ## goal

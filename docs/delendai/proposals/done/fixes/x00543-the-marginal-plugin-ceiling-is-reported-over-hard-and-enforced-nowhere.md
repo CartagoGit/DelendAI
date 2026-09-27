@@ -2,17 +2,20 @@
 id: x00543
 title: "The marginal plugin ceiling is reported over hard and enforced nowhere"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-15
+last-transition-id: d4785cf2-2ec3-4b8d-b345-abe25d6dd80b
+last-correlation-id: d4785cf2-2ec3-4b8d-b345-abe25d6dd80b
+last-transition-from: review
 tags:
-    - tokens
-    - budgets
-    - gates
-    - test-fidelity
+  - tokens
+  - budgets
+  - gates
+  - test-fidelity
+shipped-in: ["4815b2479"]
 ---
-
 # x00543 — The marginal plugin ceiling is reported over hard and enforced nowhere
 
 ## goal

@@ -2,17 +2,20 @@
 id: x00561
 title: "An operation that is safe alone must be safe in sequence"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
+last-transition-id: dd399f7e-1d47-49da-a50f-0adf541858b8
+last-correlation-id: dd399f7e-1d47-49da-a50f-0adf541858b8
+last-transition-from: review
 tags:
-    - data-loss
-    - release
-    - ci
-    - isolation
+  - data-loss
+  - release
+  - ci
+  - isolation
+shipped-in: ["1db4ea316"]
 ---
-
 # x00561 — An operation that is safe alone must be safe in sequence
 
 ## goal

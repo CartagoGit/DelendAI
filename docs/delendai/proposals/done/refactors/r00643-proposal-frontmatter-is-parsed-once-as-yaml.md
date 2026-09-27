@@ -2,17 +2,17 @@
 id: r00643
 title: "Proposal frontmatter is parsed once, as YAML"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-25
 priority: P1
 related: [q00022, r00049, f00552]
-last-transition-id: dd69239b-dcb0-4d31-af9e-2d5d35adfcc8
-last-correlation-id: dd69239b-dcb0-4d31-af9e-2d5d35adfcc8
-last-transition-from: in-progress
+last-transition-id: 27d5b6b5-811b-4713-947c-a56aeae62455
+last-correlation-id: 27d5b6b5-811b-4713-947c-a56aeae62455
+last-transition-from: review
+shipped-in: ["67ff19114"]
 ---
-
 # r00643 — Proposal frontmatter is parsed once, as YAML
 
 ## goal

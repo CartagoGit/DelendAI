@@ -2,16 +2,19 @@
 id: x00591
 title: "Starting a server does not edit your repository"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
+last-transition-id: 0310afe4-783d-4032-95cb-f48d50f27bc7
+last-correlation-id: 0310afe4-783d-4032-95cb-f48d50f27bc7
+last-transition-from: review
 tags:
-    - adoption
-    - safety
-    - host
+  - adoption
+  - safety
+  - host
+shipped-in: ["6934be452"]
 ---
-
 # x00591 — Starting a server does not edit your repository
 
 ## goal

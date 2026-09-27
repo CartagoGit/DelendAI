@@ -2,15 +2,18 @@
 id: x00590
 title: "A test waits for the thing, not the clock"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
+last-transition-id: 3ceeff2f-be91-49cd-95bf-fbcfbc55dfbc
+last-correlation-id: 3ceeff2f-be91-49cd-95bf-fbcfbc55dfbc
+last-transition-from: review
 tags:
-    - tests
-    - races
+  - tests
+  - races
+shipped-in: ["365dc9bf7"]
 ---
-
 # x00590 — A test waits for the thing, not the clock
 
 ## goal

@@ -2,15 +2,18 @@
 id: x00580
 title: "A guard never authorises what it did not check"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
+last-transition-id: 93ce9225-655f-4a57-8d70-2f1977887e6d
+last-correlation-id: 93ce9225-655f-4a57-8d70-2f1977887e6d
+last-transition-from: review
 tags:
-    - guards
-    - fail-closed
+  - guards
+  - fail-closed
+shipped-in: ["c0fc10564"]
 ---
-
 # x00580 — A guard never authorises what it did not check
 
 ## goal

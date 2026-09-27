@@ -2,15 +2,15 @@
 id: f00552
 title: "Every fact names its authority, and every copy of it is a declared projection"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-23
-last-transition-id: a0bba70f-758a-474d-9a4f-d9d3b6296993
-last-correlation-id: a0bba70f-758a-474d-9a4f-d9d3b6296993
-last-transition-from: in-progress
+last-transition-id: 656a8a82-3a8a-48ef-9524-62b51dc366f2
+last-correlation-id: 656a8a82-3a8a-48ef-9524-62b51dc366f2
+last-transition-from: review
+shipped-in: ["89e37143d"]
 ---
-
 # f00552 — Every fact names its authority, and every copy of it is a declared projection
 
 ## goal

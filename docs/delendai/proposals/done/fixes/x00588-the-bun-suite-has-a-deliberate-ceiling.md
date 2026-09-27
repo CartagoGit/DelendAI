@@ -2,15 +2,18 @@
 id: x00588
 title: "The bun suite has a deliberate ceiling"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
+last-transition-id: 7e7366fc-4cb6-4ee2-ba47-03881c649a27
+last-correlation-id: 7e7366fc-4cb6-4ee2-ba47-03881c649a27
+last-transition-from: review
 tags:
-    - tests
-    - ci
+  - tests
+  - ci
+shipped-in: ["6a3b39707"]
 ---
-
 # x00588 — The bun suite has a deliberate ceiling
 
 ## goal

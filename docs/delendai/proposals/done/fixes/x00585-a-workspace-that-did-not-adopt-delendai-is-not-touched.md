@@ -2,16 +2,19 @@
 id: x00585
 title: "A workspace that did not adopt delendai is not touched"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-21
+last-transition-id: f26c975b-7afd-4edf-bb38-e983340c2496
+last-correlation-id: f26c975b-7afd-4edf-bb38-e983340c2496
+last-transition-from: review
 tags:
-    - adoption
-    - safety
-    - host
+  - adoption
+  - safety
+  - host
+shipped-in: ["a1a4bae51"]
 ---
-
 # x00585 — A workspace that did not adopt delendai is not touched
 
 ## goal

@@ -2,15 +2,15 @@
 id: x00519
 title: "State SQLite fail-closed versioning and corrupt snapshot recovery"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
-last-transition-id: 22d5c0fc-7d29-468a-b96c-c64b2b4cb42e
-last-correlation-id: 22d5c0fc-7d29-468a-b96c-c64b2b4cb42e
-last-transition-from: in-progress
+last-transition-id: 688b3368-ae32-44b1-953d-36781aab97e8
+last-correlation-id: 688b3368-ae32-44b1-953d-36781aab97e8
+last-transition-from: review
+shipped-in: ["83fcaf6aa"]
 ---
-
 # x00519 — State SQLite fail-closed versioning and corrupt snapshot recovery
 
 ## Goal

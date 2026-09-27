@@ -2,15 +2,18 @@
 id: x00581
 title: "The remote is the authority for a shared ref"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
+last-transition-id: 8d8d7ea5-81c5-4897-a504-74eebd63502e
+last-correlation-id: 8d8d7ea5-81c5-4897-a504-74eebd63502e
+last-transition-from: review
 tags:
-    - work-refs
-    - safety
+  - work-refs
+  - safety
+shipped-in: ["13eff3e11"]
 ---
-
 # x00581 — The remote is the authority for a shared ref
 
 ## goal

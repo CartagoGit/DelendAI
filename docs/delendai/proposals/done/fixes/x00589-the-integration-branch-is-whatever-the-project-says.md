@@ -2,15 +2,18 @@
 id: x00589
 title: "The integration branch is whatever the project says"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
+last-transition-id: 65704699-d153-4ca8-b4ca-aac234b5101c
+last-correlation-id: 65704699-d153-4ca8-b4ca-aac234b5101c
+last-transition-from: review
 tags:
-    - agnostic
-    - development-policy
+  - agnostic
+  - development-policy
+shipped-in: ["f7397d64e"]
 ---
-
 # x00589 — The integration branch is whatever the project says
 
 ## goal

@@ -2,18 +2,21 @@
 id: x00553
 title: "The checkout cannot leave the integration node"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19
+last-transition-id: dbc841af-be84-41d9-8203-3eac70db915c
+last-correlation-id: dbc841af-be84-41d9-8203-3eac70db915c
+last-transition-from: review
 tags:
-    - workflow
-    - git
-    - guard
-    - isolation
-    - swarm
+  - workflow
+  - git
+  - guard
+  - isolation
+  - swarm
+shipped-in: ["c83ffdcc5"]
 ---
-
 # x00553 — The checkout cannot leave the integration node
 
 ## goal

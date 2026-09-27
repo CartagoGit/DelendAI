@@ -2,15 +2,18 @@
 id: x00582
 title: "The index goes back exactly"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
+last-transition-id: ffde611b-6ed1-4f4e-a7d9-91d4c77c777e
+last-correlation-id: ffde611b-6ed1-4f4e-a7d9-91d4c77c777e
+last-transition-from: review
 tags:
-    - generated-artifacts
-    - safety
+  - generated-artifacts
+  - safety
+shipped-in: ["80adc1f0f"]
 ---
-
 # x00582 — The index goes back exactly
 
 ## goal

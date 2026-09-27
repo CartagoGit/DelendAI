@@ -2,16 +2,19 @@
 id: x00592
 title: "A migration means there was something to migrate"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
+last-transition-id: 7dc47d79-8eec-401a-adf2-060dc9a61905
+last-correlation-id: 7dc47d79-8eec-401a-adf2-060dc9a61905
+last-transition-from: review
 tags:
-    - migration
-    - adoption
-    - safety
+  - migration
+  - adoption
+  - safety
+shipped-in: ["15ad35b01"]
 ---
-
 # x00592 — A migration means there was something to migrate
 
 ## goal

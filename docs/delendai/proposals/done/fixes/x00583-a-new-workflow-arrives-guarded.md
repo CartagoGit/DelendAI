@@ -2,15 +2,18 @@
 id: x00583
 title: "A new workflow arrives guarded"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-21
+last-transition-id: 75234a2a-360c-4938-a90f-b93ad0a3fca6
+last-correlation-id: 75234a2a-360c-4938-a90f-b93ad0a3fca6
+last-transition-from: review
 tags:
-    - ci
-    - workflows
+  - ci
+  - workflows
+shipped-in: ["5ae6ff9c6"]
 ---
-
 # x00583 — A new workflow arrives guarded
 
 ## goal

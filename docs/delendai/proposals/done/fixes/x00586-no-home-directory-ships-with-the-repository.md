@@ -2,15 +2,18 @@
 id: x00586
 title: "No home directory ships with the repository"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-21
+last-transition-id: fdcf4870-075a-41ce-87d1-6f50f56b8258
+last-correlation-id: fdcf4870-075a-41ce-87d1-6f50f56b8258
+last-transition-from: review
 tags:
-    - privacy
-    - adoption
+  - privacy
+  - adoption
+shipped-in: ["14206b91e"]
 ---
-
 # x00586 — No home directory ships with the repository
 
 ## goal

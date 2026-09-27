@@ -2,15 +2,18 @@
 id: x00595
 title: "The old name is the payload in a legacy fixture"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
+last-transition-id: fc869d79-1dcf-418e-93c5-790d185967d1
+last-correlation-id: fc869d79-1dcf-418e-93c5-790d185967d1
+last-transition-from: review
 tags:
-    - migration
-    - ci
+  - migration
+  - ci
+shipped-in: ["52d957c3f"]
 ---
-
 # x00595 — The old name is the payload in a legacy fixture
 
 ## goal

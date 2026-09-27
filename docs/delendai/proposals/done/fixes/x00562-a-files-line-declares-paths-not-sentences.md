@@ -2,16 +2,19 @@
 id: x00562
 title: "A Files line declares paths, not sentences"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
+last-transition-id: 8a4991e1-fbaf-4549-b18d-0ceebbf9c92a
+last-correlation-id: 8a4991e1-fbaf-4549-b18d-0ceebbf9c92a
+last-transition-from: review
 tags:
-    - proposals
-    - wip-engine
-    - checkpoints
+  - proposals
+  - wip-engine
+  - checkpoints
+shipped-in: ["45a743247"]
 ---
-
 # x00562 — A Files line declares paths, not sentences
 
 ## goal
