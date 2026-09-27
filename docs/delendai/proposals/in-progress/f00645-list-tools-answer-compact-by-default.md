@@ -2,12 +2,15 @@
 id: f00645
 title: "List tools answer compact by default"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00673, f00536]
+last-transition-id: 6c8ffa0b-2c18-4837-b9e8-b13d4ac0f3f2
+last-correlation-id: 6c8ffa0b-2c18-4837-b9e8-b13d4ac0f3f2
+last-transition-from: ready
 ---
 
 # f00645 — List tools answer compact by default
@@ -26,16 +29,16 @@ been 624 KB, most of it evidence for proposals the reviewer was not going
 to review. An external review (2026-09-27) called this pattern
 (list → select → detail) one of the strongest token levers in the
 project, and asked for it to become a rule across tools rather than a
-one-off. Today the rule cannot even be applied by priority. The server's
-logs record every call, but not how big its answer was, so which tools
-cost the most context is not known.
+one-off. Today the rule cannot even be applied by priority. Every
+invocation record already carries its result's size (`responseBytes`),
+but the usage report only summarises it per plugin as percentiles, so
+which tools cost the most context is not known.
 
 ## why this design
 
-- **Measure first.** The host records each tool result's serialized
-  size (bytes of `structuredContent`, else of the text) in the call log
-  it already writes, and the usage report ranks tools by size and by
-  total.
+- **Measure first.** The usage report ranks tools by the total and by
+  the largest result they returned, from the `responseBytes` the
+  invocation log already records. The host's call path does not change.
 - **One shape for list tools.** A list tool's input takes an item id
   (the detail of that item) and `detail: true` (the whole page in full).
   Without either, it returns entries of the item's identity, state and
@@ -55,11 +58,18 @@ cost the most context is not known.
 
 ### S1 — Tool results are measured
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/project/instrument-tool-handlers.helper.ts`
+- **Status**: review
+- **Files**:
+  - `plugins/usage-tracking/src/lib/result-size-ranking.helper.ts`
+  - `plugins/usage-tracking/src/lib/contracts/constants/result-size-rank-limit.constant.ts`
+  - `plugins/usage-tracking/src/lib/contracts/result-size-ranking.interface.ts`
+  - `plugins/usage-tracking/src/lib/tools/report.tool.ts`
+  - `plugins/usage-tracking/tests/src/lib/result-size-ranking.spec.ts`
+  - `plugins/usage-tracking/package.json`
+  - `bun.lock`
 - **Gate**: type
 - acceptance:
-  - "Every tool call's log entry carries the serialized size of its result."
+  - "Every tool call's log entry carries the serialized size of its result." (already true: `responseBytes` in the invocation record)
   - "The usage report ranks tools by largest and by total result size."
 
 ### S2 — The largest list tools answer compact by default
