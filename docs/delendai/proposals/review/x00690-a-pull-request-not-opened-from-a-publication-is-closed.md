@@ -2,12 +2,15 @@
 id: x00690
 title: "A pull request not opened from a publication is closed"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00644, x00677]
+last-transition-id: 20223827-d928-4dca-beaa-e105929e7db0
+last-correlation-id: 20223827-d928-4dca-beaa-e105929e7db0
+last-transition-from: in-progress
 ---
 
 # x00690 — A pull request not opened from a publication is closed
@@ -57,13 +60,14 @@ finding it among the branches that "never get rehydrated".
 
 ### S1 — The queue closes unpublished pull requests
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/forge/close-unpublished-prs.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/close-unpublished-prs.script.ts`
   - `tools/scripts/forge/close-unpublished-prs.script.spec.ts`
   - `.github/workflows/keep-the-queue-moving.yml`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
