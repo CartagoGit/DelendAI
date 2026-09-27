@@ -1,5 +1,9 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
+import { CONSUMED_GLOBAL_FLAGS } from '../contracts/constants/cli-global-flags.constant';
 import { parseCliInvocation } from './parser.service';
 
 describe('parseCliInvocation', async () => {
@@ -146,5 +150,35 @@ describe('parseCliInvocation', async () => {
 				maxEntries: '10',
 			});
 		});
+	});
+});
+
+describe('a flag the parser consumes never reaches a command (x00705)', () => {
+	it("is not read from any command's arguments", () => {
+		const commands = join(import.meta.dirname, '..', 'commands');
+		const sources = readdirSync(commands, { recursive: true })
+			.map(String)
+			.filter(
+				(file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'),
+			);
+		expect(sources.length).toBeGreaterThan(20);
+		const flags = [...CONSUMED_GLOBAL_FLAGS].join('|');
+		const reads = new RegExp(
+			`\\w+\\(\\s*args,\\s*'(?:${flags})'|args\\.includes\\('--(?:${flags})[=']`,
+			'u',
+		);
+		const offenders = sources.filter((file) =>
+			reads.test(readFileSync(join(commands, file), 'utf8')),
+		);
+		expect(offenders).toEqual([]);
+	});
+
+	it("takes a command's --remote, --workspace and --json out of its arguments", () => {
+		const parsed = parseCliInvocation(
+			['work', 'publish', '--remote=up', '--workspace=/w', '--json=[1]'],
+			'/cwd',
+		);
+		expect(parsed.commandArgs).toEqual(['publish']);
+		expect(parsed.globals.remote).toBe('up');
 	});
 });

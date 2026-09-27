@@ -229,6 +229,27 @@ describe('x00638 S2 — proposals tools act in the caller’s checkout', () => {
 		expect(sharedState(checkout)).toBe('');
 	});
 
+	it('refuses review → done without an approval, and names no way around it (x00707)', async () => {
+		const { checkout, worktree } = repositoryWithWorktree();
+		const handlers = await handlersAt(checkout);
+		await answer(handlers, 'proposal_force_transition', {
+			id: ONLY_IN_WORKTREE,
+			to: 'review',
+			reason: 'x00707',
+			checkout: worktree,
+		});
+		const refused = await answer(handlers, 'proposal_force_transition', {
+			id: ONLY_IN_WORKTREE,
+			to: 'done',
+			reason: 'x00707',
+			checkout: worktree,
+		});
+		const said = JSON.stringify(refused);
+		expect(said).toContain('peer-review required');
+		expect(said).toContain('owner');
+		expect(said).not.toContain('skipPeerReview');
+	});
+
 	it('incident_proposals and auto_fix_queue write their drafts in the worktree', async () => {
 		for (const build of [
 			buildIncidentProposalRegistration,

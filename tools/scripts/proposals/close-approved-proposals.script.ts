@@ -58,6 +58,38 @@ const run = (command: string, args: readonly string[], cwd: string): string =>
 		},
 	}).trim();
 
+/** The reason a transition gave, read from what it printed. */
+export const refusalOf = (error: unknown): string => {
+	const printed = [
+		(error as { stdout?: unknown }).stdout,
+		(error as { stderr?: unknown }).stderr,
+	]
+		.map((stream) => (stream === undefined ? '' : String(stream)))
+		.join('\n');
+	const reported = printed
+		.split('\n')
+		.flatMap((text) => {
+			try {
+				const parsed = JSON.parse(text) as {
+					readonly error?: unknown;
+					readonly reason?: unknown;
+				};
+				return [
+					[parsed.error, parsed.reason]
+						.filter((part) => typeof part === 'string')
+						.join(': '),
+				];
+			} catch {
+				return [];
+			}
+		})
+		.find((text) => text.length > 0);
+	return (
+		reported ??
+		(printed.trim().split('\n').at(-1) || 'no reason printed').slice(0, 300)
+	);
+};
+
 const main = (): number => {
 	const root = repoRoot();
 	// The remote-tracking ref when the clone keeps one, else the local
@@ -112,9 +144,14 @@ const main = (): number => {
 	const cli = ['packages/cli/src/index.ts'];
 	const entered = JSON.parse(
 		run('bun', [...cli, 'work', 'enter', ...unit, '--json'], root),
-	) as { readonly path?: string; readonly session?: string };
+	) as {
+		readonly path?: string;
+		readonly session?: string;
+		readonly branch?: string;
+	};
 	const path = entered.path;
 	if (path === undefined) return 1;
+	const refusals = new Map<string, string>();
 	const closed = candidates.filter((id) => {
 		try {
 			run(
@@ -128,12 +165,23 @@ const main = (): number => {
 				path,
 			);
 			return true;
-		} catch {
+		} catch (error) {
+			refusals.set(id, refusalOf(error));
 			return false;
 		}
 	});
+	// A refusal nobody reads is a close nobody can fix: every pass on
+	// 2026-09-27 refused 37 closes and printed only that it had.
+	for (const [id, reason] of refusals) {
+		console.log(`close-approved-proposals: ${id} refused — ${reason}`);
+	}
 	if (closed.length === 0) {
 		run('git', ['worktree', 'remove', '--force', path], root);
+		// The unit carries nothing: its branch goes with its worktree, or
+		// every refused pass left one more behind for the reaper.
+		if (entered.branch !== undefined) {
+			run('git', ['branch', '-D', entered.branch], root);
+		}
 		console.log(
 			`close-approved-proposals: ${candidates.join(', ')} are approved, and every close was refused; a later pass tries again.`,
 		);

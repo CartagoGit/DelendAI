@@ -33,10 +33,19 @@ const workspace = (): string => {
 	return root;
 };
 
-const contextFor = (root: string, json = false): ICliCommandContext =>
+// The parser consumes `--workspace` and resolves it, or the cwd, into
+// `globals.workspace`; a command never sees it among its arguments.
+const contextFor = (
+	root: string,
+	json = false,
+	workspaceFlag = root,
+): ICliCommandContext =>
 	fakePartial<ICliCommandContext>({
 		cwd: root,
-		globals: fakePartial<ICliCommandContext['globals']>({ json }),
+		globals: fakePartial<ICliCommandContext['globals']>({
+			json,
+			workspace: workspaceFlag,
+		}),
 	});
 
 const fileIn = (root: string): string => join(root, REPAIR_RESOLUTIONS_PATH);
@@ -225,11 +234,9 @@ describe('delendai repair (x00552)', () => {
 	it('records into an explicit workspace, not the cwd', async () => {
 		const target = workspace();
 		const elsewhere = workspace();
-		await command.run(
-			resolveArgs([`--workspace=${target}`]),
-			contextFor(elsewhere),
-		);
+		await command.run(resolveArgs(), contextFor(elsewhere, false, target));
 		expect(recorded(target)).toHaveLength(1);
+		expect(existsSync(fileIn(elsewhere))).toBe(false);
 	});
 });
 
@@ -270,5 +277,15 @@ describe('a decision never lands in the shared checkout (x00689)', () => {
 		const inUnit = await command.run(resolveArgs(), contextFor(unit));
 		expect(inUnit.code).toBe(0);
 		expect(recorded(unit)).toHaveLength(1);
+
+		// As the refusal says: from the shared checkout, --workspace=<unit>
+		// (x00705).
+		const named = await command.run(
+			['resolve', 'task-2', ...resolveArgs().slice(2)],
+			contextFor(root, false, unit),
+		);
+		expect(named.code).toBe(0);
+		expect(recorded(unit)).toHaveLength(2);
+		expect(existsSync(fileIn(root))).toBe(false);
 	});
 });

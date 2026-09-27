@@ -2,15 +2,15 @@
 id: x00650
 title: "A stale red candidate gets one fresh verdict"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00636, x00647, x00649]
-last-transition-id: d0ee23cb-cc84-4aca-a5e9-eac1583e0cab
-last-correlation-id: d0ee23cb-cc84-4aca-a5e9-eac1583e0cab
-last-transition-from: in-progress
+last-transition-id: 9f2effd6-964e-4f2e-b405-07d610200155
+last-correlation-id: 9f2effd6-964e-4f2e-b405-07d610200155
+last-transition-from: review
 shipped-in:
   - "a9532d69d450653bb6a7f7abcf4609b07922480b"
 ---

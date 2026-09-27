@@ -2,15 +2,15 @@
 id: x00652
 title: "An expiring exception warns before it fails"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P2
 related: [x00647, r00043]
-last-transition-id: 65f0e036-a221-477f-bdd0-c2dad02f3260
-last-correlation-id: 65f0e036-a221-477f-bdd0-c2dad02f3260
-last-transition-from: in-progress
+last-transition-id: bf92feba-1164-4a1c-b401-0e5bb4c93553
+last-correlation-id: bf92feba-1164-4a1c-b401-0e5bb4c93553
+last-transition-from: review
 shipped-in:
   - "1fe417a3e1f8fe805ac2c381f83f274cd6269b2b"
 ---
