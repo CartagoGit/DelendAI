@@ -11,6 +11,8 @@ related: [x00654]
 last-transition-id: c4063c78-baf3-4eec-a76b-a5a0b6365fa9
 last-correlation-id: c4063c78-baf3-4eec-a76b-a5a0b6365fa9
 last-transition-from: in-progress
+shipped-in:
+  - "379186cf3c2990f3d7e7ae1ccc1a0936934a31bc"
 ---
 
 # x00670 — A delivered proposal cannot stay in progress
@@ -60,13 +62,15 @@ and it did, ten times over, from the agent that wrote x00654.
 
 ### S1 — Sweep the delivered proposals, and refuse the state
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/proposal-hygiene.spec.ts`
 - **Files**:
   - `tools/scripts/lint/proposal-hygiene.script.ts`
   - `tools/scripts/lint/proposal-hygiene.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 379186cf3. Una propuesta bajo in-progress/ con TODOS sus slices en review o done es un finding `delivered-in-progress` (la entrega ya ocurrió, no puede seguir in-progress); una con algún slice por entregar, o una bajo review/, no lo es. Tras el cambio, ninguna propuesta de in-progress/ queda con el finding (el estado del árbol era limpio). Regeneración del catálogo de agentes y varias propuestas derivadas. Acceptance cubierta (criterios del .md); gate del lote 22/22. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

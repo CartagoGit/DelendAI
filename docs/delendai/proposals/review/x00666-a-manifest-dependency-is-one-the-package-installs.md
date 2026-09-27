@@ -11,6 +11,8 @@ related: []
 last-transition-id: 21668554-4f54-4568-ab4c-9104c2776e11
 last-correlation-id: 21668554-4f54-4568-ab4c-9104c2776e11
 last-transition-from: in-progress
+shipped-in:
+  - "6309c8a7b48ba5bb3ce18fa8397a334430b601d5"
 ---
 
 # x00666 — A manifest dependency is one the package installs
@@ -59,7 +61,7 @@ not install. Inside this workspace a hoisted copy hid the gap.
 
 ### S1 — `MANIFEST-DEP-001`, and the two drifts it found
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/manifest-vs-package.spec.ts`
 - **Files**:
   - `tools/scripts/lint/manifest-vs-package.script.ts`
@@ -67,8 +69,10 @@ not install. Inside this workspace a hoisted copy hid the gap.
   - `plugins/container/plugin.manifest.ts`
   - `plugins/audit-orchestrator/package.json`
   - `bun.lock`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 6309c8a7b. manifest-vs-package: una dependencia declarada en el plugin.manifest pero solo en devDependencies (o ausente) del package.json del plugin es violación MANIFEST-DEP-001 que nombra plugin y paquete; declarada en dependencies/peerDependencies/optionalDependencies se acepta; los plugins del repo pasan (lint verde en vivo: "[manifest-vs-package] OK." — el fix fue mover la dep de audit-orchestrator a dependencies reales y el pin de container). spec 11/11 verde. Acceptance cubierta; gate 11/11 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

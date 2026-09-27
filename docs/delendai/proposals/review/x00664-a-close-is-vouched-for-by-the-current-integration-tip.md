@@ -11,6 +11,8 @@ related: [x00659, x00661]
 last-transition-id: 9d091072-dfb9-48ed-90b3-49db5a12fada
 last-correlation-id: 9d091072-dfb9-48ed-90b3-49db5a12fada
 last-transition-from: in-progress
+shipped-in:
+  - "ede26ccd73317e8301c8fac90387a89b6a9df075"
 ---
 
 # x00664 — A close is vouched for by the current integration tip
@@ -78,7 +80,7 @@ An external audit of the review flow (2026-09-26) found three gaps.
 
 ### S1 — Tip-bound certification, truncation flag, reviewer commit cadence
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/integration-certification-evidence.service.spec.ts plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/integration-certification-evidence.service.ts`
@@ -92,8 +94,10 @@ An external audit of the review flow (2026-09-26) found three gaps.
   - `plugins/proposals/tests/src/lib/services/integration-certification-evidence.service.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real ede26ccd7. La certificación debe ser del TIP actual: una certificación de un commit anterior al tip de la integración NO vouches para un close aunque contenga la entrega (la rama pudo volver a ponerse roja después); con el tip ilegible ninguna certificación vouches (fallback a validate local como antes de x00659); changedSince pide 11, lista 10 y marca changedSinceTruncated cuando hay más (sin query extra); el procedimiento servido dice al reviewer commitear tras CADA veredicto (lo que esta sesión hizo). integration-certification-evidence.service +28. Acceptance cubierta; gate 24/24 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
