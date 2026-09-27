@@ -2,7 +2,7 @@
 id: f00272
 title: "Useful tokens: qué fracción de `tools/list` se usa de verdad"
 kind: feat
-status: review
+status: done
 type: proposal
 track: tokens
 date: 2026-08-29
@@ -13,9 +13,11 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00198, f00199, f00273]
-last-transition-id: 23343407-da37-4c7c-a19e-3b72130f39d6
-last-correlation-id: 23343407-da37-4c7c-a19e-3b72130f39d6
-last-transition-from: in-progress
+last-transition-id: 24d719b5-ad61-4f47-b5f3-9e9473ca6f77
+last-correlation-id: 24d719b5-ad61-4f47-b5f3-9e9473ca6f77
+last-transition-from: review
+shipped-in:
+  - 0c42fcd60
 ---
 
 # f00272 — Useful tokens: qué fracción de `tools/list` se usa de verdad
@@ -105,25 +107,31 @@ sesión) y cruzarlo contra el conjunto de tools efectivamente usadas.
 
 ### S1 — Registrar bytes servidos de `tools/list` por sesión
 
-- **Status**: review — shipped in #428 (merge 0c42fcd60)
+- **Status**: done
 - **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/contracts/interfaces/surface-use.interface.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5-5 (PR #428, commits 6eefb127d + 06810165c, merge 0c42fcd60), reviewer glm-5.3-max. Delivery diff read: recordToolListServed added to metrics-registry, wired from the tools/list hook in create-mcp-project.ts; surface-use type in contracts (06810165c). Gate green: useful-tokens.spec.ts 3/3 exit 0 — covers no-served-before-list, counts-every-list-served/only-used-tools-as-useful, and a real session measure. Acceptance: ratio = usefulBytes/servedBytes computed over BYTES not counts (metrics-registry.ts rounds (usefulBytes/servedBytes)*1e4/1e4); ratio omitted when servedBytes=0; wire hook records each served definition. Deliberate deviation documented in the proposal: KPI exposed by the core metrics tool (surface.usefulTokensRatio) instead of usage_report — one place for per-session tool cost, avoids a second copy in usage-tracking; output schema declares it (metrics-tool.ts usefulTokensRatio: z.number().optional()).
 ### S2 — Calcular `usefulTokensRatio` cruzando servido vs. usado
 
-- **Status**: review — shipped in #428 (merge 0c42fcd60)
+- **Status**: done
 - **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/contracts/interfaces/surface-use.interface.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5-5, reviewer glm-5.3-max. Same delivery (0c42fcd60) read for the computation half: usefulBytes sums served bytes of tools invoked >=1x; tools reached only through the router (never served) count in neither side, so the ratio cannot exceed 1. Verified in metrics-registry.ts (surface.attribution/surface.usefulBytes) and the spec's counts-every-list-served case. Acceptance 'ratio approx bytes(2)/bytes(10), not 2/10' is pinned by the spec operating on byte maps, not tool counts.
 ### S3 — Exponer en `usage_report`
 
-- **Status**: review — shipped in #428 (merge 0c42fcd60)
+- **Status**: done
 - **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/contracts/interfaces/surface-use.interface.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5-5, reviewer glm-5.3-max. Exposure half of 0c42fcd60 verified: the core metrics tool returns surface.{listsServed, servedBytes, usefulBytes, usefulTokensRatio} and declares it in its output schema (metrics-tool.ts). Acceptance asked for usage_report; the proposal records the deviation as deliberate (expose by the metrics tool, one place for per-session tool cost) — reviewed as an honest documented deviation, not a missing delivery. Gate useful-tokens.spec.ts 3/3 exit 0; surface fields read in the registry source.
 ## dependency graph
 
 `f00272` es independiente de `f00198`/`f00199` en implementación
