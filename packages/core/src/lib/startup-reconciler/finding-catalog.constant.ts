@@ -41,6 +41,8 @@ export const SAFE_FINDING_CODES = [
 	'integration-evidence.checkpoint-integrated',
 	/** A work ref is gone AND its content is proven merged. */
 	'integration-evidence.merged-ref-absent',
+	/** A work ref gone because it was published; its publication holds it. */
+	'integration-evidence.checkpoint-published',
 	/** A lease whose TTL elapsed was reaped. */
 	'leases.expired-reaped',
 	/** Claims held by a reaped lease were released. */
