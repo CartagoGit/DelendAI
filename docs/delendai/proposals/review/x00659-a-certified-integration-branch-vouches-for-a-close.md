@@ -11,6 +11,8 @@ related: [x00653, x00637]
 last-transition-id: bde49b53-66e4-443b-ae4f-7f37bf1e6573
 last-correlation-id: bde49b53-66e4-443b-ae4f-7f37bf1e6573
 last-transition-from: in-progress
+shipped-in:
+  - "cf4e3e4f4224a61a05fc77c6596cad2fd49d21f2"
 ---
 
 # x00659 — A certified integration branch vouches for a close
@@ -83,7 +85,7 @@ commits are parsed once.
 
 ### S1 — The integration branch certification is evidence for a close
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts plugins/proposals/tests/src/lib/services tools/scripts/forge/certify-integration.script.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/integration-certification-evidence.service.ts`
@@ -95,8 +97,10 @@ commits are parsed once.
   - `plugins/proposals/tests/src/lib/services/integration-certification-evidence.service.spec.ts`
   - `plugins/proposals/tests/src/lib/services/proposal-state.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real cf4e3e4f4. integration-certification-evidence (97 líneas): sin validate local, una propuesta cuyo commit entregado está CONTENIDO en el commit certificado más reciente de la integración cierra a done — la certificación de la integración VOUCHES por el close (la rama estaba verde en un commit que contiene la entrega). proposal-transition lo consulta (+38) y los specs del tool/service/script cubren los caminos (137/137 en el lote). Acceptance cubierta (criterio único). Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

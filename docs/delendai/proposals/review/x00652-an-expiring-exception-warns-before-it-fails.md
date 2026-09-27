@@ -11,6 +11,8 @@ related: [x00647, r00043]
 last-transition-id: 65f0e036-a221-477f-bdd0-c2dad02f3260
 last-correlation-id: 65f0e036-a221-477f-bdd0-c2dad02f3260
 last-transition-from: in-progress
+shipped-in:
+  - "1fe417a3e1f8fe805ac2c381f83f274cd6269b2b"
 ---
 
 # x00652 — An expiring exception warns before it fails
@@ -59,14 +61,16 @@ extend the exception on purpose.
 
 ### S1 — The boundary gate warns a month before an exception expires
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/architecture/core-proposals-boundary.spec.ts`
 - **Files**:
   - `tools/scripts/lint/core-proposals-boundary.script.ts`
   - `tools/scripts/lint/core-proposals-boundary.script.d.ts`
   - `packages/core/tests/src/architecture/core-proposals-boundary.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 1fe417a3e. El gate de core-proposals-boundary AVISA antes de fallar: dentro de la ventana (un mes), cada fecha de expiración se nombra con cuántas exceptions caducan en ella; fuera de la ventana no imprime nada; las exceptions vivas se avisan un mes antes de su fecha; en CI emite anotación ::warning y fuera una línea plana; el resultado pass/fail del gate NO cambia (solo advierte). core-proposals-boundary.spec 78 líneas. Acceptance cubierta; gate 8/8 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

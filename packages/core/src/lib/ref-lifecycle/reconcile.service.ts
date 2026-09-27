@@ -154,14 +154,23 @@ const roleOf = (
 				reason: 'a publication ref with no pull request: it carries work nothing is reviewing, and nothing will clean it up',
 			};
 		}
-		return request.state === 'open'
+		if (request.state === 'open') {
+			return {
+				role: 'publication-open',
+				reason: 'carrying an open pull request',
+			};
+		}
+		// Only a merge delivered the work. A pull request closed without
+		// merging leaves the ref as the only copy of what it carried; it
+		// was reaped all the same until 2026-09-27 (x00697).
+		return request.state === 'merged'
 			? {
-					role: 'publication-open',
-					reason: 'carrying an open pull request',
+					role: 'publication-spent',
+					reason: 'its pull request merged, so the ref has delivered its work',
 				}
 			: {
-					role: 'publication-spent',
-					reason: `its pull request is ${request.state}, so the ref has delivered whatever it was going to`,
+					role: 'publication-closed',
+					reason: 'its pull request was closed without merging: the ref may be the only copy of its work, so it is kept for its author to reopen or end',
 				};
 	}
 	return {

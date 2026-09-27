@@ -11,6 +11,8 @@ related: [x00554, x00565, x00637, f00552]
 last-transition-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
 last-correlation-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
 last-transition-from: in-progress
+shipped-in:
+  - "c3e4ce4d93d6fb01d077615c9d2b36f75cfba1b3"
 ---
 
 # x00642 — A conflict in a derived file does not stall the queue
@@ -82,7 +84,7 @@ doing the machine's job.
 
 ### S1 — Derived conflicts are resolved and the hydrator walks the queue
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts tools/scripts/forge/queue-order.spec.ts`
 - **Files**: `tools/scripts/forge/queue-order.ts`,
   `tools/scripts/forge/queue-order.spec.ts`,
@@ -90,8 +92,10 @@ doing the machine's job.
   `tools/scripts/git/refresh-candidate-artifacts.constant.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real c3e4ce4d9. ref-lifecycle-guard: un candidato que solo confligta con la integración en proyecciones DECLARADAS (ficheros derivados) lo resuelve el hydrator regenerando y empujando; un conflicto en cualquier OTRO fichero deja el candidato intacto y el hydrator pasa al siguiente de la cola; el head del forge es el primer candidato sin conflicto del mismo orden que el hydrator recorre. El conflicto en derivados no detiene la cola. Acceptance cubierta por el spec +16 líneas; gate 43/43 en lote. Sin cambios fuera de alcance.
 ### S2 — A level head nobody armed asks the queue to run
 
 - **Status**: review
