@@ -9,6 +9,8 @@ date: 2026-09-22
 tags:
     - sqlite
     - reconciler
+shipped-in:
+  - "0f2a7216a8e1c37a7d719c4936148e560ea5b754"
 ---
 
 # x00599 — A moved proposal is counted once, and reported as a move
@@ -78,10 +80,14 @@ and the two want very different reactions.
 
 ### S1 — count every move, and report it
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/proposals-sqlite/src/lib/reconciler-tombstone.ts`, `packages/proposals-sqlite/src/lib/reconciler-staging.ts`, `packages/proposals-sqlite/tests/src/lib/reconciler-tombstone.spec.ts`]
 - **Gate**: `bun test --timeout 30000 packages/proposals-sqlite/`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 0f2a7216a. reconciler-staging/tombstone cuentan una propuesta MOVIDA una sola vez: el run que mueve el fichero y reproyecta reporta relocated: 1 y la fila lee files_changed: 1, entities_created: 0, entities_updated: 1, entities_deleted: 0 (el movimiento no se cuentan ni como creación ni como borrado); una propuesta editada donde está reporta relocated: 0; el tombstone repetido es el mismo hecho y no duplica. reconciler-tombstone.spec 173 líneas nuevas. Acceptance cubierta; gate verificado 9/9 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 0f2a7216a8e1 names refs/heads/delendai/wip/claude-opus-5/x00599-S1-g1/a-moved-proposal-is-counted-once (0f2a7216a8e1c37a7d719c4936148e560ea5b754), opened by glm-5.3-max
 ## acceptance
 
 - A proposal whose file moved, and which still projects, reports

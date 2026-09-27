@@ -9,6 +9,8 @@ date: 2026-09-22
 tags:
     - adoption
     - safety
+shipped-in:
+  - "e4cb5c596e3bb3ef987e471aea187f05dcbcf970"
 ---
 
 # x00600 — The cache hides itself too
@@ -59,10 +61,14 @@ git does not report a directory whose every entry is ignored, so
 
 ### S1 — the resolved cache directory ignores itself
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/cache/cache-layout-bootstrap.ts`, `packages/core/tests/src/lib/cache/cache-layout-bootstrap.spec.ts`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/cache/cache-layout-bootstrap.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real e4cb5c596. cache-layout-bootstrap añade un .gitignore DENTRO de .cache/delendai/ (la caché se esconde a sí misma sin tocar el .gitignore del proyecto): tras el bootstrap y escritura, git status --porcelain solo reporta el untracked propio del proyecto; git add -A stagea solo lo del proyecto; un .cache/theirs/ ajeno sigue viéndose tanto como .cache/ como con --untracked-files=all. Verificado contra repo git real (coherente con x00596/x00583). Acceptance cubierta — cache-layout-bootstrap.spec 79 líneas; gate 9/9 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit e4cb5c596e3b names refs/heads/delendai/wip/claude-opus-5/x00600-S1-g1/the-cache-hides-itself-too (e4cb5c596e3bb3ef987e471aea187f05dcbcf970), opened by glm-5.3-max
 ## acceptance
 
 Measured against a real git repository:

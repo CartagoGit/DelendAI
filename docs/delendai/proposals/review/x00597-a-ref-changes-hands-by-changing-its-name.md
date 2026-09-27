@@ -9,6 +9,8 @@ date: 2026-09-22
 tags:
     - work-refs
     - swarm
+shipped-in:
+  - "088fef7cc5ae08069034743ff3098386c56b7c1f"
 ---
 
 # x00597 — A ref changes hands by changing its name
@@ -77,19 +79,27 @@ and a wrong guess produces a ref claiming work it is not.
 
 ### S1 — claiming renames, proves, and only then deletes
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/work-claim.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-claim.interface.ts`, `packages/cli/src/lib/work-ref-shape.service.ts` (the pattern this
   slice shipped in `work-claim.constant.ts`; x00610 replaced that hand-written
   twin of the shape with one derived from the policy's template, and deleted
   the constant), `packages/cli/src/commands/work.command.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/work-claim.service.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 088fef7cc (S1+S2 comparten merge). work claim transfiere una unidad de trabajo cambiando el NOMBRE del ref: reclamar .../codex-astra-6/f00551-S0-g1/batuta como claude-opus-5 produce .../claude-opus-5/f00551-S0-g2/batuta apuntando al MISMO commit y el ref viejo desaparece; el listado solo ofrece lo que otro agentea tiene, un ref propio no se ofrece ni se toca; g2 incrementa la generación. work-claim.service (183 líneas) + spec (293) contra repo git real y CLI real. Acceptance cubierta; gate verificado 45/45 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 088fef7cc5ae names refs/heads/delendai/wip/claude-opus-5/x00597-S1-g1/a-ref-changes-hands-by-changing-its-name (088fef7cc5ae08069034743ff3098386c56b7c1f), opened by glm-5.3-max
 ### S2 — every refusal is exercised, and the proof step is guarded
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/work-claim.service.spec.ts`, `packages/cli/src/commands/work-claim.command.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/work-claim.service.spec.ts packages/cli/src/commands/work-claim.command.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 088fef7cc (S1+S2 comparten merge). work claim transfiere una unidad de trabajo cambiando el NOMBRE del ref: reclamar .../codex-astra-6/f00551-S0-g1/batuta como claude-opus-5 produce .../claude-opus-5/f00551-S0-g2/batuta apuntando al MISMO commit y el ref viejo desaparece; el listado solo ofrece lo que otro agentea tiene, un ref propio no se ofrece ni se toca; g2 incrementa la generación. work-claim.service (183 líneas) + spec (293) contra repo git real y CLI real. Acceptance cubierta; gate verificado 45/45 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 088fef7cc5ae names refs/heads/delendai/wip/claude-opus-5/x00597-S1-g1/a-ref-changes-hands-by-changing-its-name (088fef7cc5ae08069034743ff3098386c56b7c1f), opened by glm-5.3-max
 ## acceptance
 
 Against a real git repository, and then through the real CLI:

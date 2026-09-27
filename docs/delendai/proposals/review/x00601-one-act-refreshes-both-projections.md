@@ -9,6 +9,8 @@ date: 2026-09-22
 tags:
     - proposals
     - sqlite
+shipped-in:
+  - "e44153fa9461436736c7721542fc7725e5ffbf7a"
 ---
 
 # x00601 — One act refreshes both projections
@@ -130,22 +132,34 @@ through.
 
 ### S1 — the registry and the database are refreshed together
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/proposals/src/lib/services/projection-refresh.ts`, `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`, `tools/scripts/proposals/sync-proposal-registry.script.ts`]
 - **Gate**: `npx vitest run tools/scripts/proposals/reconcile-projection.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real e44153fa9 (S1+S2+S3; los merges fdeba7b58/f3db772f7 de la cola eran parciales + este). S1: tras sync:proposals el lector reporta sql-parity con 0 fallbacks y sin notice — verificado en vivo por el implementador con la misma sonda que antes reportaba 12 divergencias ({"reads":1,"fallbacks":0,"last":"sql-parity","lastDivergence":0}). S2: un reconcile que lanza se reporta y el registry sigue en pie (no deja estado a medias). S3: resolveHeadCommit devuelve el commit real desde dentro de un worktree y workspace para un dir que no es checkout; proposals_sync_proposals responde projection: 'refreshed'. Un solo acto refresca ambas proyecciones (md + sql) sin duplicación de writers. Acceptance cubierta — sync-proposals-projection.spec 170 líneas; gates 63/63 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit e44153fa9461 names refs/heads/delendai/wip/claude-opus-5/x00601-S2-g1/a-consumer-project-reconciles-at-all (e44153fa9461436736c7721542fc7725e5ffbf7a), opened by glm-5.3-max
 ### S2 — a consumer project reconciles at all
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/proposals/src/lib/services/projection-refresh.ts`, `plugins/proposals/src/lib/contracts/interfaces/projection-refresh.interface.ts`, `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`, `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`]
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts plugins/proposals/tests/src/lib/tools/sync-proposals-projection.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real e44153fa9 (S1+S2+S3; los merges fdeba7b58/f3db772f7 de la cola eran parciales + este). S1: tras sync:proposals el lector reporta sql-parity con 0 fallbacks y sin notice — verificado en vivo por el implementador con la misma sonda que antes reportaba 12 divergencias ({"reads":1,"fallbacks":0,"last":"sql-parity","lastDivergence":0}). S2: un reconcile que lanza se reporta y el registry sigue en pie (no deja estado a medias). S3: resolveHeadCommit devuelve el commit real desde dentro de un worktree y workspace para un dir que no es checkout; proposals_sync_proposals responde projection: 'refreshed'. Un solo acto refresca ambas proyecciones (md + sql) sin duplicación de writers. Acceptance cubierta — sync-proposals-projection.spec 170 líneas; gates 63/63 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit e44153fa9461 names refs/heads/delendai/wip/claude-opus-5/x00601-S2-g1/a-consumer-project-reconciles-at-all (e44153fa9461436736c7721542fc7725e5ffbf7a), opened by glm-5.3-max
 ### S3 — HEAD resolves from inside a worktree
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/proposals/src/lib/tools/db-reconcile.tool.ts`, `plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`]
 - **Gate**: `bun test --timeout 30000 plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real e44153fa9 (S1+S2+S3; los merges fdeba7b58/f3db772f7 de la cola eran parciales + este). S1: tras sync:proposals el lector reporta sql-parity con 0 fallbacks y sin notice — verificado en vivo por el implementador con la misma sonda que antes reportaba 12 divergencias ({"reads":1,"fallbacks":0,"last":"sql-parity","lastDivergence":0}). S2: un reconcile que lanza se reporta y el registry sigue en pie (no deja estado a medias). S3: resolveHeadCommit devuelve el commit real desde dentro de un worktree y workspace para un dir que no es checkout; proposals_sync_proposals responde projection: 'refreshed'. Un solo acto refresca ambas proyecciones (md + sql) sin duplicación de writers. Acceptance cubierta — sync-proposals-projection.spec 170 líneas; gates 63/63 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit e44153fa9461 names refs/heads/delendai/wip/claude-opus-5/x00601-S2-g1/a-consumer-project-reconciles-at-all (e44153fa9461436736c7721542fc7725e5ffbf7a), opened by glm-5.3-max
 ## acceptance
 
 - After `sync:proposals`, the reader reports `sql-parity` with zero

@@ -9,6 +9,8 @@ date: 2026-09-22
 tags:
     - ci
     - plugins
+shipped-in:
+  - "37de626d67d83506d442721de6183e036636fec2"
 ---
 
 # x00603 — The worktree reads are declared
@@ -47,10 +49,14 @@ a subprocess per call.
 
 ### S1 — the three reads are named
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/tests/src/lib/plugin-drift-budget.spec.ts`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/plugin-drift-budget.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 37de626d6. plugin-drift-budget añade el tercer presupuesto: 0 llamadas sync node:fs en plugins/*/src fuera de la allowlist documentada (las lecturas del worktree se DECLARAN, no se ocultan); los otros dos presupuestos del spec no se tocan y siguen pasando en develop. Cambio de 82 líneas (13 del spec + allowlist). Acceptance cubierta; gate verificado en el lote 63/63. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 37de626d67d8 names refs/heads/delendai/wip/claude-opus-5/x00603-S1-g1/the-worktree-reads-are-declared (37de626d67d83506d442721de6183e036636fec2), opened by glm-5.3-max
 ## acceptance
 
 - `0 sync node:fs calls in plugins/*/src outside the documented

@@ -2,13 +2,18 @@
 id: x00589
 title: "The integration branch is whatever the project says"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
 tags:
     - agnostic
     - development-policy
+shipped-in:
+  - "e6dbf04e19aa085245aa4be253a7cb2c9a31204b"
+last-transition-id: 105a9b5b-66ae-4d68-bc08-0ca7cbeb7c26
+last-correlation-id: 105a9b5b-66ae-4d68-bc08-0ca7cbeb7c26
+last-transition-from: review
 ---
 
 # x00589 — The integration branch is whatever the project says
@@ -86,10 +91,14 @@ Fifteen files are baselined, visible as debt rather than forgotten.
 
 ### S1 — the branch comes from the project, and a rule keeps it that way
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/development-policy/project-branches.spec.ts`, `plugins/proposals/src/lib/shared/branch-gc-engine.ts`, `plugins/proposals/src/lib/shared/branch-status-engine.ts`, `plugins/proposals/src/lib/shared/swarm-hygiene-engine.ts`, `plugins/proposals/src/lib/tools/branch-status.tool.ts`, `tools/scripts/lint/no-hardcoded-branch-names.script.ts`, `tools/scripts/lint/no-hardcoded-branch-names.constant.ts`, `tools/scripts/lint/no-hardcoded-branch-names.interface.ts`, `tools/scripts/lint/no-hardcoded-branch-names.script.spec.ts`, `tools/scripts/lint/no-hardcoded-branch-names.baseline.json`, `package.json`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/project-branches.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real e6dbf04e1. projectBranches descubre la rama de integración del proyecto en vez de asumir develop: branches.integration declarado gana; si no, rama checked-out/trunk (main, trunk, release/*) resuelta con checkedOutBranch; detached-head y no-repo responden sin lanzar; el prefijo de work-refs sale del namespace de la política (nunca agent/). Los engines de branch-gc/status/swarm-hygiene y el tool branch-status pasan a usar la política del proyecto, y el lint no-hardcoded-branch-names (con baseline) prohibe literales en fuente ignorando tests y comentarios y nombres que no son troncales. Acceptance cubierta — spec 102 líneas; gate verificado 34/34 en lote. Elimina el supuesto hardcodeado de develop en core/plugins/cli. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit e6dbf04e19aa names refs/heads/delendai/wip/claude-opus-5/x00589-S1-g1/the-integration-branch-is-whatever-the-project-says (e6dbf04e19aa085245aa4be253a7cb2c9a31204b), opened by glm-5.3-max
 ## acceptance
 
 - A project on `trunk`, `main` or `release/2026.4` with no configuration
