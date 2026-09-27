@@ -173,7 +173,11 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // same validation used by core's manifest loader and the repository's
 // authority-document generator. Before these exports the count was exactly
 // 1077; the two contract types and one shared parser bring it to 1080.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1080;
+// Lowered to 645 (2026-09-27, x00541 S3): 434 exports that nothing outside
+// `packages/core/src` references — no plugin, package, app, tool, spec
+// importing through the barrel, or document other than the generated
+// inventory — left the barrel. They stay exported from their `lib/` modules.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 645;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;
