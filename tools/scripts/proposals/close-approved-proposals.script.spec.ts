@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { readyToClose } from './close-approved-proposals.script';
+import { readyToClose, refusalOf } from './close-approved-proposals.script';
 
 const doc = (frontmatter: string, body: string) =>
 	`---\nid: x1\n${frontmatter}---\n\n# x1\n\n${body}`;
@@ -50,5 +50,26 @@ describe('readyToClose', () => {
 				),
 			),
 		).toBe(false);
+	});
+});
+
+describe('refusalOf (x00706)', () => {
+	it('names the reason a transition printed', () => {
+		const printed = Object.assign(new Error('Command failed'), {
+			stdout: '{"ok":false,"error":"validate required","reason":"No validate run has been journalled."}\n',
+			stderr: '',
+		});
+		expect(refusalOf(printed)).toBe(
+			'validate required: No validate run has been journalled.',
+		);
+	});
+
+	it('falls back to the last line printed, and never to nothing', () => {
+		expect(
+			refusalOf(
+				Object.assign(new Error('x'), { stderr: 'a\nENOENT: gone\n' }),
+			),
+		).toBe('ENOENT: gone');
+		expect(refusalOf(new Error('x'))).toBe('no reason printed');
 	});
 });
