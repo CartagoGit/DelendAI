@@ -11,6 +11,8 @@ related: [q00022, r00049, f00552]
 last-transition-id: dd69239b-dcb0-4d31-af9e-2d5d35adfcc8
 last-correlation-id: dd69239b-dcb0-4d31-af9e-2d5d35adfcc8
 last-transition-from: in-progress
+shipped-in:
+  - "c48e36f2a1218907e7b3ec26fc395fa2446d45ff"
 ---
 
 # r00643 — Proposal frontmatter is parsed once, as YAML
@@ -116,7 +118,7 @@ as an error rather than guessed silently.
 - review-implementer: claude-opus-5-5
 ### S1 — One parser, on YAML
 
-- **Status**: done — merged in #443 (`67ff19114`).
+- **Status**: done
 - **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/frontmatter.spec.ts`
 - **Files**: `packages/proposals-sqlite/src/lib/frontmatter.helper.ts`,
   `packages/proposals-sqlite/src/lib/frontmatter-loose.helper.ts`,
@@ -146,8 +148,10 @@ the hand parser read their `contains` as `{ proposals: null }`, so the
 plan-closure gate and `blockedByFor` saw no children and a plan could
 close before its 4 to 48 children were done. A test that had pinned this
 as a known gap since 2026-06-23 now asserts the children.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real c48e36f2a (merge de r00643). El frontmatter de propuestas se parsea UNA VEZ como YAML y el valor se reutiliza: sync-proposal-registry ya no re-lee con un parser ad-hoc; el proposals lint FALLA si un frontmatter no parsea como YAML; spec diferencial verifica que reconciler y registry scan producen el mismo valor para cada clave de cada propuesta del árbol; ningún consumidor strippea comentarios de valores parseados. Acceptance cubierta; gate 43/43 en el lote del pack (incluye ref-lifecycle-guard + work-dirty-paths + proposals CLI spec). Sin cambios fuera de alcance.
 ### S2 — The other proposal readers use the one parser
 
 - **Status**: review
