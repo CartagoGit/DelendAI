@@ -2,12 +2,15 @@
 id: x00711
 title: "The closer leaves no remote copies"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00710, x00691]
+last-transition-id: 9346b278-171c-4757-94a8-3bb15ba8c533
+last-correlation-id: 9346b278-171c-4757-94a8-3bb15ba8c533
+last-transition-from: in-progress
 ---
 
 # x00711 — The closer leaves no remote copies
@@ -60,7 +63,7 @@ was checked against the real remote.
 
 ### S1 — Nothing of the closer outlives its pass
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - **Files**:
   - `tools/scripts/proposals/close-approved-proposals.script.ts`
