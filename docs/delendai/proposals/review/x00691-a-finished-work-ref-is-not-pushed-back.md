@@ -2,12 +2,15 @@
 id: x00691
 title: "A finished work ref is not pushed back"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00687, x00690]
+last-transition-id: c58b79a0-9f99-4a00-8dec-bb2588f83cb4
+last-correlation-id: c58b79a0-9f99-4a00-8dec-bb2588f83cb4
+last-transition-from: in-progress
 ---
 
 # x00691 — A finished work ref is not pushed back
@@ -61,12 +64,13 @@ should have ended reappears, unowned.
 
 ### S1 — Finished work is not pushed back
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
 - **Files**:
   - `plugins/commit-policy/src/lib/services/work-checkout-publisher.service.ts`
   - `plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
