@@ -11,6 +11,8 @@ related: [x00653]
 last-transition-id: 78c0fc9c-1371-48e0-acd5-c7b31bdc3d21
 last-correlation-id: 78c0fc9c-1371-48e0-acd5-c7b31bdc3d21
 last-transition-from: in-progress
+shipped-in:
+  - "e4713d4a4e6c62e5b166aebf5c760997ab3e4143"
 ---
 
 # x00654 — Delivered proposals are handed off
@@ -66,7 +68,7 @@ with a reviewer who wrote none of them.
 
 ### S1 — Delivered slices name their pull request, and delivered proposals reach review
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Files**:
   - `docs/delendai/proposals/review/f00552-every-fact-names-its-authority-and-every-copy-of-it-is-a-declared-projection.md`
@@ -76,8 +78,10 @@ with a reviewer who wrote none of them.
   - `docs/delendai/proposals/review/x00645-edits-no-work-ref-carries-are-reported-not-silent.md`
   - `docs/delendai/proposals/review/x00646-reviewing-proposals-works-the-same-in-any-project-and-from-any-host.md`
   - `docs/delendai/proposals/review/x00651-a-proposal-move-leaves-the-shared-index-alone-and-a-repeated-tombstone-is-the-same-fact.md`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real e4713d4a4. Hand-off de propuestas entregadas: cada slice de la lista del proposal nombra su PR y su merge commit (verificado en el fichero); el estado declarado coincide con el árbol al momento y sigue siendo alcanzable hoy: f00552, x00643, x00645, x00646, x00651 en review/ (f00272 ya cerrada desde entonces por el propio flujo) y f00536 sigue in-progress con S4 pendiente; ningún movimiento se hizo en el shared checkout — todo en el worktree de la unidad. El proposal queda como registro de entrega con evidencia de PR/merge. Acceptance cubierta. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
