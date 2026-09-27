@@ -2,15 +2,15 @@
 id: x00675
 title: "A loose edit does not freeze the shared checkout"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00558, x00669]
-last-transition-id: cb9e384e-0857-47cd-a487-214ee1dd486e
-last-correlation-id: cb9e384e-0857-47cd-a487-214ee1dd486e
-last-transition-from: in-progress
+last-transition-id: c42f717a-304f-49f6-a4f5-740d18713c4e
+last-correlation-id: c42f717a-304f-49f6-a4f5-740d18713c4e
+last-transition-from: review
 shipped-in:
   - "3d45dcddee0b63f597a2565ed52b05cc4bf5fe97"
 ---

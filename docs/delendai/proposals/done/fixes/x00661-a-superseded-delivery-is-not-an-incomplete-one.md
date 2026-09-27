@@ -2,15 +2,15 @@
 id: x00661
 title: "A superseded delivery is not an incomplete one"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00660, x00646]
-last-transition-id: bdb54bca-7c9a-4595-9c99-9d72e66fe595
-last-correlation-id: bdb54bca-7c9a-4595-9c99-9d72e66fe595
-last-transition-from: in-progress
+last-transition-id: eaa37334-49ef-4380-a788-593e8a0cdc00
+last-correlation-id: eaa37334-49ef-4380-a788-593e8a0cdc00
+last-transition-from: review
 shipped-in:
   - "21499c52ccfb70b9f8ccfaf75800ca28fdaf0333"
 ---

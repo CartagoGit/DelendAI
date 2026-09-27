@@ -2,15 +2,15 @@
 id: x00670
 title: "A delivered proposal cannot stay in progress"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00654]
-last-transition-id: c4063c78-baf3-4eec-a76b-a5a0b6365fa9
-last-correlation-id: c4063c78-baf3-4eec-a76b-a5a0b6365fa9
-last-transition-from: in-progress
+last-transition-id: 03d109ea-ce15-415f-b99c-0cbaf6db3196
+last-correlation-id: 03d109ea-ce15-415f-b99c-0cbaf6db3196
+last-transition-from: review
 shipped-in:
   - "379186cf3c2990f3d7e7ae1ccc1a0936934a31bc"
 ---

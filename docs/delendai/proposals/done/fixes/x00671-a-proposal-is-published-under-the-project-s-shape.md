@@ -2,15 +2,15 @@
 id: x00671
 title: "A proposal is published under the project's shape"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00645, x00563]
-last-transition-id: d100fd95-58da-4b7b-b349-80da6e61a2cc
-last-correlation-id: d100fd95-58da-4b7b-b349-80da6e61a2cc
-last-transition-from: in-progress
+last-transition-id: 7a8783c2-24ed-4c76-93b0-015b40deb4c6
+last-correlation-id: 7a8783c2-24ed-4c76-93b0-015b40deb4c6
+last-transition-from: review
 shipped-in:
   - "4cfe2cabb0b6264eadc421056bb5b14b952dd256"
 ---
