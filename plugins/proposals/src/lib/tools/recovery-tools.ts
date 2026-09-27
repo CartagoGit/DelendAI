@@ -541,7 +541,7 @@ export const runProposalForceTransition = async (
 		} else if (!hasIndependentPeerApproval(found.raw)) {
 			return toolError(
 				`peer-review required before force_transition of "${args.id}" review → done`,
-				`Run ${options.namespacePrefix}_proposal_review { action: "approve", agent: "<reviewer≠implementer>" } first, or pass skipPeerReview:true only with host approval.`,
+				`Run ${options.namespacePrefix}_proposal_review { action: "approve", agent: "<reviewer≠implementer>" } first. Closing without an independent approval is the owner's decision, not an agent's: CI refuses a pull request that does it (closed-with-independent-approval).`,
 			);
 		}
 	}

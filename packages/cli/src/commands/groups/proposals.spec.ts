@@ -134,7 +134,7 @@ describe('proposals group (f00046 S7)', async () => {
 		const missing = await find('proposals plan').run([], ctx);
 		expect(missing.code).toBe(EXIT_CODE.USAGE);
 		await find('proposals plan').run(
-			['--json=[{"sliceId":"S1","files":["a.ts"]}]'],
+			['--slices=[{"sliceId":"S1","files":["a.ts"]}]'],
 			ctx,
 		);
 		expect(calls[0]).toEqual({
@@ -211,5 +211,119 @@ describe('proposals group (f00046 S7)', async () => {
 			tool: 'delendai_proposals_review_queue',
 			args: { proposalId: 'x00001', limit: 5, agent: 'glm-5.3-max' },
 		});
+	});
+
+	it.each([
+		['proposals board', [], 'delendai_proposals_proposal_board', {}],
+		['proposals health', [], 'delendai_proposals_state_health', {}],
+		[
+			'proposals stale-list',
+			[],
+			'delendai_proposals_proposal_stale_list',
+			{},
+		],
+		[
+			'proposals workflow',
+			[],
+			'delendai_proposals_get_proposal_workflow',
+			{},
+		],
+		[
+			'proposals status',
+			['--fields=locks,counts'],
+			'delendai_proposals_compact_status',
+			{ fields: ['locks', 'counts'] },
+		],
+		[
+			'proposals agent-names',
+			['--action=list', '--agent=a', '--task=t'],
+			'delendai_proposals_agent_names',
+			{ action: 'list', agent: 'a', task_id: 't' },
+		],
+		[
+			'proposals worktree',
+			[
+				'--action=create',
+				'--agent=a',
+				'--base-branch=develop',
+				'--force',
+			],
+			'delendai_proposals_agent_worktree',
+			{
+				action: 'create',
+				agent: 'a',
+				base_branch: 'develop',
+				force: true,
+			},
+		],
+		[
+			'proposals round-context',
+			['--force'],
+			'delendai_proposals_round_context',
+			{ forceRefresh: true },
+		],
+		[
+			'proposals diagnose',
+			['x1'],
+			'delendai_proposals_proposal_diagnose',
+			{ id: 'x1' },
+		],
+		[
+			'proposals adopt',
+			['--dir=docs'],
+			'delendai_proposals_proposal_adopt',
+			{ dir: 'docs' },
+		],
+		[
+			'proposals force-transition',
+			['x1', 'review', '--reason=why'],
+			'delendai_proposals_proposal_force_transition',
+			{ id: 'x1', to: 'review', reason: 'why' },
+		],
+		[
+			'proposals reconcile-folder',
+			['x1', '--dry-run'],
+			'delendai_proposals_proposal_reconcile_folder',
+			{ id: 'x1', dryRun: true },
+		],
+		[
+			'proposals create',
+			[
+				'--title=T',
+				'--kind=fix',
+				'--goal=G',
+				'--track=trust',
+				'--slices=[{"id":"S1"}]',
+			],
+			'delendai_proposals_create_proposal',
+			{
+				title: 'T',
+				kind: 'fix',
+				goal: 'G',
+				track: 'trust',
+				slices: [{ id: 'S1' }],
+			},
+		],
+	] as const)(
+		'%s maps its flags onto its tool',
+		async (name, args, tool, expected) => {
+			const { ctx, calls } = buildStubContext();
+			await find(name).run([...args], ctx);
+			expect(calls[0]).toEqual({ tool, args: expected });
+		},
+	);
+
+	it.each([
+		'proposals create',
+		'proposals agent-names',
+		'proposals worktree',
+		'proposals diagnose',
+		'proposals force-transition',
+		'proposals reconcile-folder',
+	])('%s calls nothing without what it needs', async (name) => {
+		const { ctx, calls } = buildStubContext();
+		const result = await find(name).run([], ctx);
+		expect(calls).toHaveLength(0);
+		expect(result.code).not.toBe(EXIT_CODE.OK);
 	});
 });

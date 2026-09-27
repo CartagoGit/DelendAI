@@ -61,14 +61,14 @@ const git = (root: string, ...args: string[]): string =>
 
 const contextFor = (
 	root: string,
-	over: { readonly json?: boolean } = {},
+	over: { readonly json?: boolean; readonly remote?: string } = {},
 ): ICliCommandContext =>
 	fakePartial<ICliCommandContext, 'cwd' | 'globals'>({
 		cwd: root,
 		globals: fakePartial<
 			ICliCommandContext['globals'],
-			'workspace' | 'json'
-		>({ workspace: root, json: over.json ?? true }),
+			'workspace' | 'json' | 'remote'
+		>({ workspace: root, json: over.json ?? true, remote: over.remote }),
 	});
 
 const checkpoint = (
@@ -706,9 +706,9 @@ describe('delendai work (x00553)', () => {
 				'--slice=S1',
 				'--agent=claude-opus-5',
 				'--topic=probe',
-				'--remote=nowhere',
 			],
-			contextFor(root),
+			// `--remote=nowhere`, as the parser hands it over.
+			contextFor(root, { remote: 'nowhere' }),
 		);
 		expect(result.code).not.toBe(0);
 		expect(result.data).toMatchObject({

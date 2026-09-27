@@ -377,8 +377,8 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		expect(result.error.nextAction).toContain(
 			'proposal_reconcile_folder { id: "f00092"',
 		);
-		expect(result.error.nextAction).toContain(
-			'proposal_force_transition { id: "f00092", to: "done"',
-		);
+		// Never a way around the review (x00707).
+		expect(result.error.nextAction).not.toContain('force_transition');
+		expect(result.error.nextAction).not.toContain('skipPeerReview');
 	});
 });

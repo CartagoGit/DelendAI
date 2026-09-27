@@ -94,7 +94,7 @@ const memoryExportCommand: ICliCommand = {
 	name: 'memory export',
 	summary: 'Export the note store as a portable snapshot.',
 	async run(args, ctx) {
-		const format = scalarArg(args, 'format');
+		const format = scalarArg(args, 'snapshot-format');
 		const includeExpired = hasFlag(args, 'include-expired');
 		return data(
 			await request(ctx, 'delendai_memory_export', {
@@ -112,10 +112,10 @@ const memoryImportCommand: ICliCommand = {
 		const payload = positionalArg(args);
 		if (payload === undefined) {
 			return usage(
-				'memory import <payload> [--mode=merge|replace] [--conflict=overwrite|skip|merge] [--format=json|ndjson]',
+				'memory import <payload> [--mode=merge|replace] [--conflict=overwrite|skip|merge] [--snapshot-format=json|ndjson]',
 			);
 		}
-		const format = scalarArg(args, 'format');
+		const format = scalarArg(args, 'snapshot-format');
 		const mode = scalarArg(args, 'mode');
 		const conflict = scalarArg(args, 'conflict');
 		return data(
