@@ -2,7 +2,7 @@
 id: x00597
 title: "A ref changes hands by changing its name"
 kind: fix
-status: review
+status: done
 type: proposal
 track: swarm
 date: 2026-09-22
@@ -11,6 +11,9 @@ tags:
     - swarm
 shipped-in:
   - "088fef7cc5ae08069034743ff3098386c56b7c1f"
+last-transition-id: 18a5bea0-daea-4f17-9106-d2dc50a37184
+last-correlation-id: 18a5bea0-daea-4f17-9106-d2dc50a37184
+last-transition-from: review
 ---
 
 # x00597 — A ref changes hands by changing its name

@@ -2,7 +2,7 @@
 id: x00602
 title: "The integration branch is discovered, not assumed"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
@@ -11,6 +11,9 @@ tags:
     - policy
 shipped-in:
   - "4fe64d343a2cbf2d4aae42e6b057bb24b592704e"
+last-transition-id: ea549845-9e83-4b85-9a45-2e57fe466093
+last-correlation-id: ea549845-9e83-4b85-9a45-2e57fe466093
+last-transition-from: review
 ---
 
 # x00602 — The integration branch is discovered, not assumed
