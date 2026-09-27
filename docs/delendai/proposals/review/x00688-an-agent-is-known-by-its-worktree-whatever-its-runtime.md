@@ -2,12 +2,15 @@
 id: x00688
 title: "An agent is known by its worktree, whatever its runtime"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00687, x00626, f00644]
+last-transition-id: 924102cd-9959-4703-ba49-c4269366a46f
+last-correlation-id: 924102cd-9959-4703-ba49-c4269366a46f
+last-transition-from: in-progress
 ---
 
 # x00688 — An agent is known by its worktree, whatever its runtime
@@ -72,7 +75,7 @@ swarm.
 
 ### S1 — The worktree names its agent
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/lib/worktree-agent.service.spec.ts packages/cli/src/commands/guard.command.spec.ts`
 - **Files**:
   - `packages/cli/src/lib/worktree-agent.service.ts`
@@ -82,7 +85,8 @@ swarm.
   - `packages/cli/src/commands/guard.command.ts`
   - `packages/cli/src/commands/guard.command.spec.ts`
   - `packages/cli/src/contracts/interfaces/guard.interface.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
