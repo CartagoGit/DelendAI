@@ -356,6 +356,33 @@ describe('guard through real git hooks', () => {
 		expect(committed.stderr).toContain('delendai work checkpoint');
 	});
 
+	it('lets git pack an existing ref it would refuse to create (x00703)', () => {
+		const root = repoWith({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		// A badly named ref that exists already, made without hooks.
+		expect(
+			git(
+				root,
+				'-c',
+				'core.hooksPath=/dev/null',
+				'branch',
+				'delendai/wip/copilot/review/batch-all-g1/t',
+			).status,
+		).toBe(0);
+		const packed = git(root, 'pack-refs', '--all');
+		expect(packed.stderr).not.toContain('aborted by hook');
+		expect(packed.status).toBe(0);
+		// Creating one is still refused.
+		expect(
+			git(root, 'branch', 'delendai/wip/copilot/review/batch-all-g1/u')
+				.status,
+		).not.toBe(0);
+	});
+
 	it('refuses an identity an agent wrote into the repository config (x00698)', () => {
 		const root = repoWith({
 			development: {
