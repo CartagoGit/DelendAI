@@ -2,12 +2,15 @@
 id: x00710
 title: "The closer builds on its own pull request"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00700, x00706, x00708]
+last-transition-id: 2a3949d9-da92-4428-852a-3278990326d1
+last-correlation-id: 2a3949d9-da92-4428-852a-3278990326d1
+last-transition-from: in-progress
 ---
 
 # x00710 — The closer builds on its own pull request
@@ -57,7 +60,7 @@ proposal text that #568 then fixed. It never recovered:
 
 ### S1 — One pull request, kept moving
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - **Files**:
   - `tools/scripts/proposals/close-approved-proposals.script.ts`
