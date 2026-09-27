@@ -2,12 +2,15 @@
 id: x00708
 title: "A republished slice keeps its pull request"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00553, x00677]
+last-transition-id: 0c760c21-050c-41e6-9344-97d493933856
+last-correlation-id: 0c760c21-050c-41e6-9344-97d493933856
+last-transition-from: in-progress
 ---
 
 # x00708 — A republished slice keeps its pull request
@@ -46,7 +49,7 @@ slice's own publication fell through to the size decision.
 
 ### S1 — Same slice, same pull request
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/lib/publication-target.service.spec.ts`
 - **Files**:
   - `packages/cli/src/lib/publication-target.service.ts`
