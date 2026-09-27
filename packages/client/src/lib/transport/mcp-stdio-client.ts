@@ -1,5 +1,8 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import {
+	getDefaultEnvironment,
+	StdioClientTransport,
+} from '@modelcontextprotocol/sdk/client/stdio.js';
 import type { ZodType } from 'zod';
 
 import {
@@ -30,6 +33,19 @@ const defaultSdkBindings = (): IMcpSdkBindings => ({
 });
 
 let sdkBindings: IMcpSdkBindings = defaultSdkBindings();
+
+/**
+ * The environment to start a delendai server with: what the SDK passes
+ * any server (`PATH`, `HOME`, …), plus `extra`.
+ *
+ * The SDK passes nothing else unless told to, which is right for a
+ * stranger's server and wrong for ours: a server the CLI started never
+ * saw `DELENDAI_AGENT_ID`, named every agent `unknown-agent`, and could
+ * not tell an agent from a person (x00713).
+ */
+export const serverEnvironment = (
+	extra: Readonly<Record<string, string>>,
+): Record<string, string> => ({ ...getDefaultEnvironment(), ...extra });
 
 export const __setMcpSdkBindingsForTests = (
 	overrides: Partial<IMcpSdkBindings>,

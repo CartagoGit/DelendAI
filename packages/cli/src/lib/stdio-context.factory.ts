@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 
-import { McpStdioClient } from '@delendai/client/public';
+import { McpStdioClient, serverEnvironment } from '@delendai/client/public';
+import { AGENT_ENVIRONMENT_MARKERS } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IConnectToServer } from '../contracts/interfaces/stdio-context.interface';
@@ -52,6 +53,27 @@ export const resolveServerEntrypoint = (
 	);
 };
 
+/**
+ * What the server must see of the caller's environment: who is working
+ * (the agent markers) and delendai's own settings. Nothing else, and no
+ * credential, reaches it this way.
+ */
+/** A variable whose name says it holds a secret is never forwarded. */
+const SECRET_NAME = /TOKEN|SECRET|PASSWORD|CREDENTIAL|_KEY$/u;
+
+export const forwardedToServer = (
+	env: Readonly<Record<string, string | undefined>>,
+): Record<string, string> =>
+	Object.fromEntries(
+		Object.entries(env).filter(
+			(entry): entry is [string, string] =>
+				entry[1] !== undefined &&
+				(AGENT_ENVIRONMENT_MARKERS.includes(entry[0]) ||
+					(entry[0].startsWith('DELENDAI_') &&
+						!SECRET_NAME.test(entry[0]))),
+		),
+	);
+
 export const createStdioContext = async (
 	cwd: string,
 	globals: ICliGlobalOptions,
@@ -87,6 +109,7 @@ export const createStdioContext = async (
 		command: 'bun',
 		args: [entrypoint, ...buildServerArgs(globals, extraPlugins)],
 		cwd,
+		env: serverEnvironment(forwardedToServer(process.env)),
 		stderr: 'pipe',
 	}).catch((error: unknown) => {
 		throw Object.assign(

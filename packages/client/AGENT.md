@@ -11,6 +11,7 @@
 - McpToolError
 - logHintFromResult
 - payloadFromResult
+- serverEnvironment
 - DEFAULT_NAMESPACE_PREFIX
 - formatToolName
 - parsePrefix
@@ -20,7 +21,6 @@
 - pluginFromToolName
 - KnowledgeNotFoundError
 - KnowledgeService
-- categoryOf
 
 ## Depends on
 

@@ -3,6 +3,7 @@ export {
 	McpToolError,
 	logHintFromResult,
 	payloadFromResult,
+	serverEnvironment,
 } from '../lib/transport/mcp-stdio-client';
 export type {
 	IMcpLogHint,
