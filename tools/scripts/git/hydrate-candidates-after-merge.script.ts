@@ -93,6 +93,10 @@ export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
 	['tools/scripts/git/maintain-ref-namespace.script.ts', 180_000],
 	// Every well-shaped publication has its pull request (x00677).
 	['tools/scripts/forge/open-publication-prs.script.ts', 180_000],
+	// Approved proposals whose own close was refused are closed here, in
+	// a unit and a pull request of their own (x00700), before the queue
+	// runs so the pull request is a candidate in the same pass.
+	['tools/scripts/proposals/close-approved-proposals.script.ts', 600_000],
 	// Last: once the tip's certification has finished, the queue moves
 	// (x00680); nothing else starts it after a merge. One read, no wait
 	// (x00683): the next pass picks up a certification still running.
