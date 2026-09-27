@@ -2,7 +2,7 @@
 id: x00551
 title: "Startup must never delete work that was not published"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19
@@ -13,6 +13,9 @@ tags:
     - startup
     - work-refs
     - data-loss
+last-transition-id: 6ab508a9-51c4-466e-b704-fd201ec5337e
+last-correlation-id: 6ab508a9-51c4-466e-b704-fd201ec5337e
+last-transition-from: review
 ---
 
 # x00551 — Startup must never delete work that was not published

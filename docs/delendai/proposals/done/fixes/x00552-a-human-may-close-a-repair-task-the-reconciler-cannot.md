@@ -2,7 +2,7 @@
 id: x00552
 title: "A human may close a repair task the reconciler cannot"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19
@@ -13,6 +13,9 @@ tags:
     - recovery
 shipped-in:
   - 71a83785da584c6ddc31d1e3bf70ccf89ded9fc6
+last-transition-id: 6d49ead2-32e7-4823-87e2-aef9955d6f92
+last-correlation-id: 6d49ead2-32e7-4823-87e2-aef9955d6f92
+last-transition-from: review
 ---
 
 # x00552 — A human may close a repair task the reconciler cannot

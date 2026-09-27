@@ -100,15 +100,14 @@ describe('hydrateOnce, against real git', () => {
 		);
 	});
 
-	it('leaves a dirty tree exactly as found, and says how many files', async () => {
+	it('leaves a tree alone when the advance would change an edited file', async () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('dirty');
 		const before = local.git('rev-parse', 'HEAD').trim();
 		advanceTheForge(origin);
-		// Somebody's uncommitted work. A fast-forward would not delete
-		// it, but it would move the ground under an edit whose author is
-		// not here to agree.
-		local.write('src/beta.ts', 'export const beta = 99;\n');
+		// Somebody's uncommitted edit to the very file the advance changes:
+		// moving it would put their edit in question (x00675).
+		local.write('src/alpha.ts', 'export const alpha = 99;\n');
 
 		const tick = await hydrateOnce({
 			git: local.seam,
@@ -121,6 +120,22 @@ describe('hydrateOnce, against real git', () => {
 			'checkout.behind-integration',
 		);
 		expect(local.git('rev-parse', 'HEAD').trim()).toBe(before);
+	});
+
+	it('advances past an edit to a file the advance does not touch (x00675)', async () => {
+		origin = createStartupOrigin();
+		const local = origin.clone('dirty-elsewhere');
+		advanceTheForge(origin);
+		local.write('src/beta.ts', 'export const beta = 99;\n');
+
+		const tick = await hydrateOnce({
+			git: local.seam,
+			policy: testPolicy(),
+			clock,
+		});
+
+		expect(tick.hydrated).toBe(true);
+		expect(local.git('status', '--porcelain').trim()).toBe('M src/beta.ts');
 	});
 });
 

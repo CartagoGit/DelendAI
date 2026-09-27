@@ -173,6 +173,15 @@ export interface IStartupGitSeam {
 	 * building on a tree that old.
 	 */
 	fastForward(target: string): Promise<IGitOutcome>;
+	/**
+	 * The paths `target` changes relative to `base`, or `undefined` when
+	 * git could not say. A fast-forward that changes none of the paths
+	 * somebody is editing leaves their edit exactly as it is.
+	 */
+	pathsChangedBetween?(
+		base: string,
+		target: string,
+	): Promise<readonly string[] | undefined>;
 }
 
 /** One pull request as the forge reports it. */

@@ -22,7 +22,10 @@ let repo: IReviewRepo;
 const queue = async (
 	args: Record<string, unknown> = {},
 ): Promise<IToolAnswer> =>
-	(await captureHandler(buildReviewQueueRegistration(repo.options())))(args);
+	(await captureHandler(buildReviewQueueRegistration(repo.options())))({
+		detail: true,
+		...args,
+	});
 
 interface ISliceView {
 	readonly sliceId: string;

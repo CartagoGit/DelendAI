@@ -2,7 +2,7 @@
 id: x00545
 title: "A client lint reports zero violations over four real ones because it scans line by line"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17
@@ -15,6 +15,9 @@ tags:
     - gates
     - test-fidelity
     - contracts
+last-transition-id: 5c037dc2-b87a-4098-b470-08e512b0ee06
+last-correlation-id: 5c037dc2-b87a-4098-b470-08e512b0ee06
+last-transition-from: review
 ---
 
 # x00545 — A client lint reports zero violations over four real ones because it scans line by line

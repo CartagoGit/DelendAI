@@ -2,7 +2,7 @@
 id: x00544
 title: "Plugin path inputs still resolve lexically and miss symlinks that escape the workspace"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-15
@@ -22,6 +22,9 @@ tags:
     - containment
     - symlinks
     - plugins
+last-transition-id: b879f4b0-91d6-4a1e-9ef0-c9438e7d71de
+last-correlation-id: b879f4b0-91d6-4a1e-9ef0-c9438e7d71de
+last-transition-from: review
 ---
 
 # x00544 — Plugin path inputs still resolve lexically and miss symlinks that escape the workspace

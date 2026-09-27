@@ -35,7 +35,8 @@ const firstSlice = async (
 		await captureHandler(
 			buildReviewQueueRegistration(repo.options(overrides)),
 		)
-	)({});
+	)({ detail: true });
+	// The evidence these cases inspect comes with the detail (x00673).
 	const proposals = answer.body.proposals as readonly {
 		readonly slices: readonly ISliceView[];
 	}[];
