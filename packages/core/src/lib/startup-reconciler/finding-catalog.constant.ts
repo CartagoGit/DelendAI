@@ -26,6 +26,11 @@ export const SAFE_FINDING_CODES = [
 	'work-refs.generation-recorded',
 	/** A ref was unchanged since the last run and was not re-read. */
 	'work-refs.unchanged',
+	/**
+	 * A ref carries new work on a checkpoint already recorded as
+	 * integrated; the record stands and the ref is left as it is.
+	 */
+	'work-refs.work-after-integration',
 	/** A pull request's state was mirrored from the forge. */
 	'forge.pull-request-reconciled',
 	/** A CI verdict was mirrored from the forge. */
@@ -95,4 +100,6 @@ export const UNVERIFIED_FINDING_CODES = [
 	'governance.unverifiable',
 	'governance.drift',
 	'mutex.busy',
+	/** A ref's checkpoint could not be written to the state database. */
+	'work-refs.record-failed',
 ] as const;
