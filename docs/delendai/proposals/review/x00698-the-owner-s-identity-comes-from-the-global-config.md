@@ -2,12 +2,15 @@
 id: x00698
 title: "The owner's identity comes from the global config"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [f00644, x00688]
+last-transition-id: dfb188ac-775b-4087-ad50-e875f30fdf14
+last-correlation-id: dfb188ac-775b-4087-ad50-e875f30fdf14
+last-transition-from: in-progress
 ---
 
 # x00698 — The owner's identity comes from the global config
@@ -60,7 +63,7 @@ passed.
 
 ### S1 — The owner's identity is not the repository's to change
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/guard.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/guard.command.ts`
