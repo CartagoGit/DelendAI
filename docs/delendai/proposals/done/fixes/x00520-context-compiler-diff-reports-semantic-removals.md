@@ -2,7 +2,7 @@
 id: x00520
 title: "Context compiler diff reports semantic removals"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07

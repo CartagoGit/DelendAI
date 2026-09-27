@@ -2,7 +2,7 @@
 id: f00525
 title: "Host-neutral automatic subagent runtime and role tool profiles"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -45,7 +45,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 - review-state: done
 - review-implementer: swarm
 - review-reviewer: Claude Opus 5
-- review-log: approved — `IHostSubagentRuntime` in `packages/contracts/src/host-subagent-runtime.interface.ts` carries `hostId` plus `spawnSubagent`, and reaches plugins through `IMcpPluginContext.subagentRuntime` (`plugin-contract.ts:42`), fed from `assembleCliConfig({ hostSubagentRuntime })`. The contract states in its own header that it is "deliberately absent from JSON configuration", which is the property the acceptance asks for.
+- review-log: approved by Claude Opus 5 — `IHostSubagentRuntime` in `packages/contracts/src/host-subagent-runtime.interface.ts` carries `hostId` plus `spawnSubagent`, and reaches plugins through `IMcpPluginContext.subagentRuntime` (`plugin-contract.ts:42`), fed from `assembleCliConfig({ hostSubagentRuntime })`. The contract states in its own header that it is "deliberately absent from JSON configuration", which is the property the acceptance asks for.
 
 ### S2 — Agent orchestrator consumes host runtime automatically
 - **Status**: done
@@ -61,7 +61,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 - review-state: done
 - review-implementer: swarm
 - review-reviewer: Claude Opus 5
-- review-log: approved — `resolveDispatchPort({ subagentRuntime })` prefers the injected runtime, `allowFakeDispatchPort` is an explicit opt-in documented as tests/fixtures only, and the absent-runtime path returns `MissingDispatchPortError` through `dispatchPortRefusal` rather than a throw. `port-resolution.helper.spec.ts` covers dispatch through the injected runtime with no `portFactory`.
+- review-log: approved by Claude Opus 5 — `resolveDispatchPort({ subagentRuntime })` prefers the injected runtime, `allowFakeDispatchPort` is an explicit opt-in documented as tests/fixtures only, and the absent-runtime path returns `MissingDispatchPortError` through `dispatchPortRefusal` rather than a throw. `port-resolution.helper.spec.ts` covers dispatch through the injected runtime with no `portFactory`.
 
 ### S3 — Canonical role tool profiles and generated host adapters
 - **Status**: done
@@ -78,7 +78,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 - review-state: done
 - review-implementer: swarm
 - review-reviewer: Claude Opus 5
-- review-log: approved — `agent-tool-profiles.ts` defines all five roles with the claimed shape; spot-checked `technical_investigator` (`directWork: false`, `canDelegate: false`, purpose states it reports without editing).
+- review-log: approved by Claude Opus 5 — `agent-tool-profiles.ts` defines all five roles with the claimed shape; spot-checked `technical_investigator` (`directWork: false`, `canDelegate: false`, purpose states it reports without editing).
 
 ### S4 — Documentation and host integration contract
 - **Status**: done
@@ -93,7 +93,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 - review-state: done
 - review-implementer: swarm
 - review-reviewer: Claude Opus 5
-- review-log: approved — documentation slice; the `portFactory`-in-JSON implication is gone from the plugin options docstring, which now marks it a compatibility/test seam.
+- review-log: approved by Claude Opus 5 — documentation slice; the `portFactory`-in-JSON implication is gone from the plugin options docstring, which now marks it a compatibility/test seam.
 
 ## acceptance
 

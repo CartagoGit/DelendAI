@@ -2,7 +2,7 @@
 id: x00546
 title: "Work refs are visible, named after their model, and known to the ref guard"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17
