@@ -2,12 +2,15 @@
 id: x00683
 title: "The queue advances without holding the hydration"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00680]
+last-transition-id: 4dd0c38e-fc57-4711-98c8-2a99a5d8b6b6
+last-correlation-id: 4dd0c38e-fc57-4711-98c8-2a99a5d8b6b6
+last-transition-from: in-progress
 ---
 
 # x00683 — The queue advances without holding the hydration
@@ -57,13 +60,14 @@ to wait inside a pass.
 
 ### S1 — One read per pass, one dispatch per tip
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/forge/advance-queue.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/advance-queue.script.ts`
   - `tools/scripts/forge/advance-queue.script.spec.ts`
   - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
