@@ -33,7 +33,7 @@ import { agentIdOf } from '../services/work-ref-naming.service';
 import { reapIntegratedWorkRefs } from '../services/integrated-work-refs.service';
 import type { IGitRunner } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
-import { legacyWorkKind, resolveWorkRef } from '@delendai/core/public';
+import { resolveWorkRef, WORK_REF_NAMING } from '@delendai/core/public';
 
 import type {
 	ICheckpointReport,
@@ -170,7 +170,7 @@ export const createPolicyPersistence = (
 			agent: agentIdOf(options.agentId),
 			// A checkpoint of a claimed slice is implementation work; a
 			// review unit keeps its kind through its old slice names.
-			kind: legacyWorkKind(slice),
+			kind: WORK_REF_NAMING.legacyKind(slice),
 			...(topic === undefined ? {} : { topic }),
 			proposal:
 				request.proposalId.length > 0
