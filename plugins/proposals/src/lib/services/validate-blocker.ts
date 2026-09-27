@@ -9,7 +9,7 @@ import type {
  * Explain a refused validate gate.
  *
  * The gate has always been correct to refuse; it was never able to say
- * why. "Run `bun run validate`" is the right answer exactly once — when
+ * why. "Run `delendai validate`" is the right answer exactly once — when
  * nothing has run. Said to an agent that just ran it and watched it
  * fail, it is an instruction to repeat the thing that did not work, and
  * an agent that follows its tooling does precisely that, forever. In a
@@ -52,11 +52,11 @@ export const latestValidateRow = <TRow extends IValidateJournalRow>(
 };
 
 const RUN_VALIDATE =
-	'Run `bun run validate` (it journals its own evidence; no arguments are needed afterwards).';
+	'Run `delendai validate`: it runs the gates this project declares and journals the evidence; no arguments are needed afterwards.';
 
 const describeSteps = (steps: readonly string[]): string =>
 	steps.length === 0
-		? 'the run did not record which steps failed — re-run `bun run validate` and read its summary'
+		? 'the run did not record which steps failed — re-run `delendai validate` and read its summary'
 		: steps.map((step) => `\`${step}\``).join(', ');
 
 export const diagnoseValidateBlocker = (
@@ -86,7 +86,7 @@ export const diagnoseValidateBlocker = (
 			// chain, and in a shared checkout the repair is worth doing
 			// even when the breakage is somebody else's — it is blocking
 			// every agent, not just this one.
-			nextAction: `Fix the failing steps, then re-run \`bun run validate\`. Failing: ${describeSteps(failedSteps)}. If they are not in files you changed, this is shared-branch breakage: it blocks every agent in this workspace, so fix it or hand it to whoever owns those files — do NOT start another slice and do NOT retry this call unchanged.`,
+			nextAction: `Fix the failing steps, then re-run \`delendai validate\`. Failing: ${describeSteps(failedSteps)}. If they are not in files you changed, this is shared-branch breakage: it blocks every agent in this workspace, so fix it or hand it to whoever owns those files — do NOT start another slice and do NOT retry this call unchanged.`,
 		};
 	}
 	if (nowMs - timestampOf(latest) > VALIDATE_EVIDENCE_MAX_AGE_MS) {

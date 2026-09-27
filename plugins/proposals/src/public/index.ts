@@ -279,5 +279,15 @@ export {
 } from '../lib/contracts/schemas/proposal-kind.schema';
 export type { IKindIdMatch } from '../lib/contracts/schemas/proposal-kind.schema';
 
+export {
+	appendValidateJournalEntry,
+	buildValidateJournalEntry,
+} from '../lib/shared/validate-journal';
+export type {
+	IValidateJournalDeps,
+	IValidateJournalEntry,
+} from '../lib/contracts/interfaces/validate-journal.interface';
+export { VALIDATE_LOG_RELATIVE_PATH } from '../lib/contracts/constants/proposal-paths.constant';
+
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

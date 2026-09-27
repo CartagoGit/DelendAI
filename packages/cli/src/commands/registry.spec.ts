@@ -1,3 +1,7 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
@@ -259,5 +263,44 @@ describe('dataOrText fallback (a00087)', async () => {
 		expect(result.data).toBeUndefined();
 		expect(result.text).toBeDefined();
 		expect(result.text?.trim().length).toBeGreaterThan(0);
+	});
+});
+
+describe('validate runs what the project declares (x00712)', () => {
+	const inProject = async (config: object | undefined) => {
+		const dir = mkdtempSync(join(tmpdir(), 'registry-validate-'));
+		try {
+			if (config !== undefined) {
+				writeFileSync(
+					join(dir, 'delendai.config.json'),
+					JSON.stringify(config),
+				);
+			}
+			const validate = (await registerAllCommands()).find(
+				(command) => command.name === 'validate',
+			);
+			return await validate?.run([], fakeOverviewCtx({ workspace: dir }));
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	};
+	const gates = (command: string) => ({
+		validationMatrix: { scopes: { gates: [{ command, expect: 'exit0' }] } },
+	});
+
+	it('says what to declare when the project declares nothing', async () => {
+		const result = await inProject(undefined);
+		expect(result?.code).not.toBe(0);
+		expect(result?.error).toContain('validationMatrix');
+	});
+
+	it('fails naming the gate that failed', async () => {
+		const result = await inProject(gates('false'));
+		expect(result?.code).not.toBe(0);
+		expect(result?.error).toContain('gates: false');
+	});
+
+	it('passes when every declared gate does', async () => {
+		expect((await inProject(gates('true')))?.code).toBe(0);
 	});
 });

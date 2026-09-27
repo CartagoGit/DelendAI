@@ -64,6 +64,7 @@ describe('package.json wiring', () => {
 describe('buildValidateJournalEntry', () => {
 	it('maps exit code 0 to a pass entry', () => {
 		const entry = buildValidateJournalEntry({
+			command: 'bun run validate:run',
 			exitCode: 0,
 			timestamp: '2026-08-31T10:00:00.000Z',
 			logPath: '/tmp/validate.jsonl',
@@ -76,6 +77,7 @@ describe('buildValidateJournalEntry', () => {
 		for (const exitCode of [1, 2, 127]) {
 			expect(
 				buildValidateJournalEntry({
+					command: 'bun run validate:run',
 					exitCode,
 					timestamp: '2026-08-31T10:00:00.000Z',
 					logPath: '/tmp/validate.jsonl',
@@ -100,6 +102,7 @@ describe('appendValidateJournalEntry ↔ resolveRecentValidateEvidence', () => {
 		await appendValidateJournalEntry({
 			workspaceRoot,
 			entry: buildValidateJournalEntry({
+				command: 'bun run validate:run',
 				exitCode: 0,
 				timestamp: new Date().toISOString(),
 				logPath: join(workspaceRoot, VALIDATE_JOURNAL_RELATIVE_PATH),
@@ -118,6 +121,7 @@ describe('appendValidateJournalEntry ↔ resolveRecentValidateEvidence', () => {
 		await appendValidateJournalEntry({
 			workspaceRoot,
 			entry: buildValidateJournalEntry({
+				command: 'bun run validate:run',
 				exitCode: 1,
 				timestamp: new Date().toISOString(),
 				logPath: join(workspaceRoot, VALIDATE_JOURNAL_RELATIVE_PATH),
@@ -136,6 +140,7 @@ describe('appendValidateJournalEntry ↔ resolveRecentValidateEvidence', () => {
 		await appendValidateJournalEntry({
 			workspaceRoot,
 			entry: buildValidateJournalEntry({
+				command: 'bun run validate:run',
 				exitCode: 0,
 				timestamp: twoDaysAgo,
 				logPath: join(workspaceRoot, VALIDATE_JOURNAL_RELATIVE_PATH),
@@ -152,6 +157,7 @@ describe('appendValidateJournalEntry ↔ resolveRecentValidateEvidence', () => {
 			await appendValidateJournalEntry({
 				workspaceRoot,
 				entry: buildValidateJournalEntry({
+					command: 'bun run validate:run',
 					exitCode,
 					timestamp: new Date().toISOString(),
 					logPath: join(
