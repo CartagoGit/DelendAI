@@ -2,12 +2,15 @@
 id: x00689
 title: "A repair decision never lands in the shared checkout"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00687, x00675]
+last-transition-id: 3efcd412-17f3-4058-ad53-30ffec5d6c2f
+last-correlation-id: 3efcd412-17f3-4058-ad53-30ffec5d6c2f
+last-transition-from: in-progress
 ---
 
 # x00689 — A repair decision never lands in the shared checkout
@@ -51,12 +54,13 @@ do that.
 
 ### S1 — Decisions are recorded in a unit
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/repair.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/repair.command.ts`
   - `packages/cli/src/commands/repair.command.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
