@@ -16,6 +16,10 @@ related: [q00011, f00272, f00198]
 last-transition-id: a129dd92-7111-44eb-a5ea-cf54f3fe1565
 last-correlation-id: a129dd92-7111-44eb-a5ea-cf54f3fe1565
 last-transition-from: in-progress
+shipped-in:
+  - 54d76bf64
+  - 7bbb3da18
+  - 3f8204590
 ---
 
 # f00273 — Ranking, umbral de confianza e histéresis en `tool_search`
@@ -96,18 +100,20 @@ evicción de plugin   → si (now - activatedAt) < minWarmMs: no evictar
 
 ### S1 — Puntuación y orden en `searchTools`
 
-- **Status**: done — verified 2026-09-15 by an evidence pass. The one change the review requested is in the tree: ties now break with a binary comparison (`left < right ? -1 : 1` in `tool-surface-runtime.service.ts`) instead of `localeCompare`, and a regression with non-ASCII names pins it. `tool-surface-runtime.search.spec.ts` 4/4: for the query `search` an exact `toolId` ranks first, then a name prefix, then a tag, then a summary match; equal scores break by name; a blank query stays alphabetical.
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
       (`searchTools`, `matchesFilter` → nueva `scoreCandidate`)
     - `packages/core/tests/src/lib/project/tool-surface-runtime.search.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/project/tool-surface-runtime.search.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot
+- review-reviewer: glm-5.3-max
 - review-log: requested_changes by delivery_verifier — El ranking usa localeCompare sin locale fijo en el desempate; eso puede variar según ICU/locale del runtime. Cambiar el comparador a un criterio portable independiente del entorno y añadir una regresión con nombres no ASCII o comparación sensible a locale. El resto de la slice está correcto; no aprobar hasta corregir este punto.
+- review-log: approved by glm-5.3-max — Independence OK: implementer copilot (S1, PR #219 review-stuck round + 5c0c0789a), reviewer glm-5.3-max. The prior delivery_verifier requested_changes (localeCompare tie-break varies with ICU locale) is RESOLVED in the tree: tool-surface-runtime.service.ts:279 breaks ties with binary left<right?-1:1, and the non-ASCII regression is pinned in tool-surface-runtime.search.spec.ts. Gate green: search.spec 4 cases under (f00273-S1) — exact toolId ranks first, then name prefix, then tag, then summary; equal scores break by name; blank query stays alphabetical. Acceptance 'correct tool at position 1 for name/prefix/tag queries' verified in the spec source and 22/22 across the three f00273 gates.
 ### S2 — Umbral de confianza con respuesta explícita "no encontrado"
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
     - `packages/core/src/lib/contracts/interfaces/tool-search-result.interface.ts`
@@ -128,8 +134,10 @@ desactiva el umbral y sin consulta no se aplica. `searchTools` (usado
 por el capability resolver) sigue devolviendo todas las coincidencias.
 El spec comprueba que cada tool se encuentra por su id, su nombre y
 cada tag.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5-5 (7bbb3da18, PR #430), reviewer glm-5.3-max. Delivery diff read: rankTools returns {entries, found, suggestion}; tool_search exposes it (tool-surface.tool.ts calls requireToolSurfaceRuntime(...).rankTools). Verified in source: with a query the best match must score >= tokenInName (8); below it weak matches are withheld and the suggestion names the plugins holding them (service line ~273 'Weak matches are in: ...'); minScore:0 disables the threshold; a blank query lists the catalog instead (spec line 118 pins that). searchTools used by the capability resolver keeps returning all matches (minScore:0 forced, service line 557). Gate green: search-confidence.spec 22/22 combined run; spec checks every tool findable by id, name and each tag.
 ### S3 — Histéresis: `minWarmMs` antes de evictar
 
 - **Status**: done
@@ -154,8 +162,10 @@ Los valores por defecto (5 min, 8, 30 s) viven ahora en un único
 `DEFAULT_WORKING_SET_POLICY` de contracts; antes estaban copiados en el
 runtime, `assemble.ts` y el startup report. Un plan sin `minWarmMs`
 conserva el comportamiento anterior.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5-5 (3f8204590, PR #429), reviewer glm-5.3-max. Delivery diff read: minWarmMs floor applies to both automatic eviction branches (TTL and LRU); the working set may exceed maxWarmPlugins during the window; explicit plugin_deactivate bypasses it (caller's decision). Defaults centralized in DEFAULT_WORKING_SET_POLICY (contracts/working-set-policy.constant.ts) replacing copies in runtime/assemble.ts/startup-report; config schema + ADOPTER-SURFACE-MODE.md updated in the same commit. Gate green: hysteresis.spec 4 cases (fast-check property) in the 22/22 combined run. Acceptance 'no activate-deactivate-activate under minWarmMs' covered by the property test.
 ## dependency graph
 
 Independiente de `f00272`/`f00198` para implementar, pero su criterio

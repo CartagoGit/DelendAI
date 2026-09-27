@@ -3,7 +3,7 @@
  */
 import z from 'zod';
 
-import { WORK_KINDS } from '@delendai/core/public';
+import { WORK_REF_NAMING } from '@delendai/core/public';
 
 export const WORK_REF_ID_MAX_LENGTH = 200;
 export const WORK_REF_PATH_MAX_LENGTH = 1000;
@@ -35,7 +35,7 @@ export const WORK_REF_INPUT_SCHEMA = z
 		generation: z.number().int().positive().max(1_000_000),
 		topic: ID.optional(),
 		/** The kind of work (f00644); derived from the slice when absent. */
-		kind: z.enum(WORK_KINDS).optional(),
+		kind: z.enum(WORK_REF_NAMING.kinds).optional(),
 		paths: z.array(PATH).min(1).max(10_000),
 		message: z.string().trim().min(1).max(20_000).optional(),
 		commit: z.string().regex(COMMIT_SHA_PATTERN).optional(),
