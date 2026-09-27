@@ -2,12 +2,15 @@
 id: x00676
 title: "A hand-off survives a canonical rename"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00643]
+last-transition-id: 127956a4-306f-48ba-b9d8-a5e493335ead
+last-correlation-id: 127956a4-306f-48ba-b9d8-a5e493335ead
+last-transition-from: in-progress
 ---
 
 # x00676 — A hand-off survives a canonical rename
@@ -55,13 +58,14 @@ trip out of review and back.
 
 ### S1 — The rounds and the answer follow the renamed file
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/transition-landing.service.ts`
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
