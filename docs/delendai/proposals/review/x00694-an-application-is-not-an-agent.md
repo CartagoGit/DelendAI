@@ -2,12 +2,15 @@
 id: x00694
 title: "An application is not an agent"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00644, x00688]
+last-transition-id: 880d8d79-ab48-40b4-8cbb-ebcbd386fe98
+last-correlation-id: 880d8d79-ab48-40b4-8cbb-ebcbd386fe98
+last-transition-from: in-progress
 ---
 
 # x00694 — An application is not an agent
@@ -59,7 +62,7 @@ lower case and "does not spell a kind of work".
 
 ### S1 — Programs are refused as agent ids
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/git-guard.spec.ts packages/cli/src/commands/work.command.spec.ts tools/scripts/lint/pr-head-shape.script.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/profiles.constant.ts`
@@ -72,7 +75,8 @@ lower case and "does not spell a kind of work".
   - `packages/cli/src/commands/work.command.spec.ts`
   - `packages/cli/src/commands/guard.command.spec.ts`
   - `tools/scripts/lint/pr-head-shape.script.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
