@@ -2,13 +2,18 @@
 id: x00588
 title: "The bun suite has a deliberate ceiling"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
 tags:
     - tests
     - ci
+shipped-in:
+  - "6066dc3082b04382f878d544aa64909301abb691"
+last-transition-id: 833d7d16-7ae9-425e-be08-5285a4c9138d
+last-correlation-id: 833d7d16-7ae9-425e-be08-5285a4c9138d
+last-transition-from: review
 ---
 
 # x00588 — The bun suite has a deliberate ceiling
@@ -73,10 +78,14 @@ would be turned off within a week.
 
 ### S1 — every bun suite states its timeout, and a rule keeps it stated
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`package.json`, `tools/scripts/lint/bun-suite-has-a-ceiling.script.ts`, `tools/scripts/lint/bun-suite-has-a-ceiling.constant.ts`, `tools/scripts/lint/bun-suite-has-a-ceiling.interface.ts`, `tools/scripts/lint/bun-suite-has-a-ceiling.script.spec.ts`]
 - **Gate**: `npx vitest run tools/scripts/lint/bun-suite-has-a-ceiling.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 6066dc308. Nuevo lint bun-suite-has-a-ceiling: toda suite `bun test`/`bun run test` encadenada en package.json debe llevar --timeout explícito (REQUIRED_TIMEOUT_FLAG) alineado con el techo deliberado de vitest; suites sin techo se rechazan con fix accionable; `bun run …`/`bun tools/…`/`bun build …` no se mencionan; lint reaches CI vía lints-reach-ci. Acceptance: test:sqlite 355/355 verificado por el implementador y gate del spec 47 líneas — verificado en el lote 34/34. Techo explícito frente a reloj implícito (coherente con x00647). Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 6066dc3082b0 names refs/heads/delendai/wip/claude-opus-5/x00588-S1-g1/the-bun-suite-has-a-deliberate-ceiling (6066dc3082b04382f878d544aa64909301abb691), opened by glm-5.3-max
 ## acceptance
 
 - `test:sqlite` passes: 355 tests, 0 failures.

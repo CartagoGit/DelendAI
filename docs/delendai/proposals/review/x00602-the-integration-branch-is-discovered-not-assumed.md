@@ -9,6 +9,8 @@ date: 2026-09-22
 tags:
     - adoption
     - policy
+shipped-in:
+  - "4fe64d343a2cbf2d4aae42e6b057bb24b592704e"
 ---
 
 # x00602 — The integration branch is discovered, not assumed
@@ -117,16 +119,24 @@ purpose, and collapsing it would trade that property away.
 
 ### S1 — the branch is discovered from the project, not assumed
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/lint/no-hardcoded-branch-names.baseline.json`, `packages/core/src/lib/development-policy/default-branch.ts`, `packages/core/src/lib/development-policy/default-branch.constant.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/lib/shared/shared-checkout.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/lib/development-policy.service.ts`, `packages/cli/src/lib/development-policy.service.spec.ts`, `packages/cli/src/lib/workflow-doctor.service.ts`, `packages/cli/src/commands/guard.command.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/development-policy.service.spec.ts packages/cli/src/commands/guard.command.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 4fe64d343 (S1+S2 comparten merge). La rama de integración se DESCUBRE, no se asume: proyecto en main sin configurar resuelve main, en master resuelve master; refs/remotes/origin/HEAD gana a toda conjetura local; init.defaultBranch gana a la lista de nombres convencionales; con dos troncales convencionales y nada más estable, se DECLINA en vez de elegir; branches.integration declarado sigue ganando a todo; el guard en un proyecto consumidor en main nombra la rama correcta. default-branch.ts (78) + project-branches + workflow-doctor adaptado; development-policy.service.spec 217 líneas, guard.command.spec +70. Acceptance cubierta; gates 63/63 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 4fe64d343a2c names refs/heads/delendai/wip/claude-opus-5/x00602-S1-g1/the-integration-branch-is-discovered-not-assumed (4fe64d343a2cbf2d4aae42e6b057bb24b592704e), opened by glm-5.3-max
 ### S2 — the doctor reads the same policy
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/workflow-doctor.service.ts`, `packages/cli/src/lib/development-policy.service.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/development-policy.service.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 4fe64d343 (S1+S2 comparten merge). La rama de integración se DESCUBRE, no se asume: proyecto en main sin configurar resuelve main, en master resuelve master; refs/remotes/origin/HEAD gana a toda conjetura local; init.defaultBranch gana a la lista de nombres convencionales; con dos troncales convencionales y nada más estable, se DECLINA en vez de elegir; branches.integration declarado sigue ganando a todo; el guard en un proyecto consumidor en main nombra la rama correcta. default-branch.ts (78) + project-branches + workflow-doctor adaptado; development-policy.service.spec 217 líneas, guard.command.spec +70. Acceptance cubierta; gates 63/63 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 4fe64d343a2c names refs/heads/delendai/wip/claude-opus-5/x00602-S1-g1/the-integration-branch-is-discovered-not-assumed (4fe64d343a2cbf2d4aae42e6b057bb24b592704e), opened by glm-5.3-max
 ## acceptance
 
 - A project on `main` that declares no integration branch resolves to

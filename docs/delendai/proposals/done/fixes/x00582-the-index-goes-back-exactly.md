@@ -2,13 +2,18 @@
 id: x00582
 title: "The index goes back exactly"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
 tags:
     - generated-artifacts
     - safety
+shipped-in:
+  - "bce54340b"
+last-transition-id: 87a0c8fe-c6af-4cc4-a520-a9ae0e042072
+last-correlation-id: 87a0c8fe-c6af-4cc4-a520-a9ae0e042072
+last-transition-from: review
 ---
 
 # x00582 — The index goes back exactly
@@ -51,10 +56,14 @@ index did not hold is unstaged as before.
 
 ### S1 — the rollback restores the index entry, not a summary of it
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/generated-refresh.service.ts`, `packages/cli/src/lib/generated-refresh.service.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/generated-refresh.service.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real bce54340b (merge #317; el candidato de la cola, 38fa526ff, era un merge de alineación). IPathSnapshot pasa de un booleano `staged` a la entrada exacta del índice (`<mode> <object>` de ls-files --stage): un booleano no puede representar el estado intermedio "half-staged" y restaurarlo con `git add` promovía la mitad unstaged, reescribiendo silenciosamente el próximo commit. Ahora el índice vuelve EXACTAMENTE a lo que era (update-index con la entrada guardada) y lo no trackeado no se toca. Acceptance cubierta: half-staged conserva contenido y entrada de índice; lo no held sigue untracked; lo establecido por x00577/x00570 se mantiene; el test nuevo fallaba contra la implementación booleana. Gate: 13/13 tests del spec en el worktree del batch. changedSince: sin commits posteriores que toquen el servicio. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit bce54340ba87 names refs/heads/delendai/wip/claude-opus-5/x00582-S1-g1/the-index-goes-back-exactly (bce54340ba87238bbd754f1d514ff04b3b64bd7a), opened by glm-5.3-max
 ## acceptance
 
 - A half-staged file keeps its worktree content **and** its index entry:
