@@ -27,9 +27,11 @@ import { fakePartial } from '@delendai/test-kit/public';
 /**
  * Two ids that are real entries in `managed-lazy-catalog.generated.ts`
  * — the lazy route refuses any plugin it cannot find there, so a
- * made-up id would silently fall back to eager and test nothing.
+ * made-up id would silently fall back to eager and test nothing. The
+ * observer's id must also be one the catalog does not activate at
+ * startup, or it is active before any failure and nothing is replayed.
  */
-const OBSERVER_PLUGIN = 'logs';
+const OBSERVER_PLUGIN = 'perf';
 const FAILING_PLUGIN = 'cache';
 
 let workspace: string;

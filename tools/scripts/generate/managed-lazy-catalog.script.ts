@@ -29,6 +29,25 @@ import { repoRoot } from '../lib/monorepo-paths';
 export const GENERATED_MANAGED_LAZY_CATALOG_PATH =
 	'packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts';
 
+/**
+ * Whether a plugin watches calls it does not own: tool-call observers or
+ * the logs sink. Under lazy loading a plugin registers its hooks only when
+ * it activates, and until then every call goes unobserved. usage-tracking,
+ * activated only by its own tools, recorded nothing from 2026-09-07 on.
+ * Such a plugin activates at startup; the registrations decide, so a new
+ * observer cannot forget to say so.
+ */
+export const observesOtherPlugins = (registrations: {
+	readonly onToolStart?: unknown;
+	readonly onToolCall?: unknown;
+	readonly onToolCancel?: unknown;
+	readonly logsSink?: unknown;
+}): boolean =>
+	registrations.onToolStart !== undefined ||
+	registrations.onToolCall !== undefined ||
+	registrations.onToolCancel !== undefined ||
+	registrations.logsSink !== undefined;
+
 const quote = (value: string): string => `'${value.replaceAll("'", "\\'")}'`;
 
 const readOrUndefined = async (path: string): Promise<string | undefined> => {
@@ -191,16 +210,17 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 						? []
 						: [`${quote(tool.id)}: ${quote(tool.disclosure)}`],
 			);
+			const startupActivation =
+				metadata?.startupActivation === true ||
+				observesOtherPlugins(registrations);
 			const metadataFields = [
 				...(metadata === undefined
 					? []
 					: [
 							`summary: ${quote(metadata.summary)}`,
 							`tags: ${renderTools(metadata.tags)}`,
-							...(metadata.startupActivation === true
-								? ['startupActivation: true']
-								: []),
 						]),
+				...(startupActivation ? ['startupActivation: true'] : []),
 				...(disclosureEntries.length === 0
 					? []
 					: [`toolDisclosure: { ${disclosureEntries.join(', ')} }`]),

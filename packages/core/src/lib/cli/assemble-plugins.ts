@@ -615,6 +615,11 @@ const tryAssembleManagedLazy = async (input: {
 			}
 		}),
 	);
+	// What startup activation contributed is already in the boot prompts,
+	// resources and knowledge the host registers once. Left pending, the
+	// first lazy materialization registered it again and failed with
+	// "Prompt … is already registered".
+	pendingRegistrations.clear();
 	const pluginToolEntries: IOverviewToolEntry[] = [];
 	const toolSurfaceDescriptors: IToolSurfaceDescriptor[] = [];
 	const lazyToolActivators = new Map<
