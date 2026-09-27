@@ -200,6 +200,17 @@ export const choosePublicationTarget = (
 			reason: `${proposal} already has a pull request for the whole proposal; this slice joins it`,
 		};
 	}
+	// A slice published alone stays where it is. Deciding again by size
+	// could name the whole proposal this time (the work grew, or merged
+	// the integration branch in), and open a second pull request beside
+	// the first for the same work.
+	if (published.includes(own)) {
+		return {
+			unit: 'slice',
+			publicationRef: own,
+			reason: `${proposal} ${request.slice} already has its own pull request; this publication updates it`,
+		};
+	}
 	const alone = published.find(
 		(ref) => sliceOf(ref) !== WHOLE_PROPOSAL_SLICE,
 	);

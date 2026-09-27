@@ -2,6 +2,14 @@
 	"version": 1,
 	"resolutions": [
 		{
+			"taskId": "03e62b03af6b776226e6d96b23dc571b",
+			"evidenceDigest": "d54ac235248a4a622b63e213d5412725",
+			"decision": "not-a-problem",
+			"reason": "Two agents' review batches share a generation (copilot and glm-5.3-max batch-all-g1): different units, not a duplicate. The reconciler keyed batch units by proposal alone; x00702 keys them per agent.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T16:01:45.980Z"
+		},
+		{
 			"taskId": "234a490ff3d4564f19e041ba7005de81",
 			"evidenceDigest": "3944e86f936b68eb165756b759bb1b45",
 			"decision": "accepted-loss",
@@ -16,6 +24,14 @@
 			"reason": "Investigated in x00546: the x00545-S1 work was discarded deliberately in an earlier session and its SHAs are recorded there; commit 9421185e is not in develop and never will be.",
 			"decidedBy": "cartago",
 			"decidedAt": "2026-09-19T12:27:03.041Z"
+		},
+		{
+			"taskId": "593fd173544d841c22d9a37777cc8344",
+			"evidenceDigest": "662e3a41011d9781b7a6a260d5b4fe34",
+			"decision": "not-a-problem",
+			"reason": "x00699's wip ref was removed by its own publication; the work is kept on its publication (PR #553). x00702 counts publication tips as keeping a checkpoint.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T16:01:57.931Z"
 		},
 		{
 			"taskId": "7fb60a464799d3f86ae87e6b1dffda89",

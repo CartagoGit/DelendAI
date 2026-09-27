@@ -122,7 +122,7 @@ describe('memory group (f00046 S2)', async () => {
 	it('memory export forwards format + include-expired', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('memory export').run(
-			['--format=ndjson', '--include-expired'],
+			['--snapshot-format=ndjson', '--include-expired'],
 			ctx,
 		);
 		expect(calls[0]).toEqual({
@@ -140,7 +140,7 @@ describe('memory group (f00046 S2)', async () => {
 				'{"notes":[]}',
 				'--mode=merge',
 				'--conflict=skip',
-				'--format=json',
+				'--snapshot-format=json',
 			],
 			ctx,
 		);

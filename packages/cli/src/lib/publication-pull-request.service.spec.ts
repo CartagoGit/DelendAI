@@ -96,8 +96,19 @@ describe('openPublicationPullRequest', () => {
 			}),
 		).toMatchObject({
 			status: 'skipped',
-			reason: expect.stringContaining('gh pr create'),
+			reason: expect.stringContaining('owner machine opens'),
 		});
+		expect(
+			JSON.stringify(
+				openPublicationPullRequest({
+					...INPUT,
+					ports: portsWith({
+						url: 'git@github.com:o/r.git',
+						gh: false,
+					}),
+				}),
+			),
+		).not.toContain('gh pr create');
 	});
 
 	it('reports a create that did not open anything', () => {

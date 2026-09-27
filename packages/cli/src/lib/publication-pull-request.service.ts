@@ -61,7 +61,10 @@ export const openPublicationPullRequest = (input: {
 	if (ports.gh(['--version']) === undefined) {
 		return {
 			status: 'skipped',
-			reason: `the \`gh\` CLI is not available; open it with \`gh pr create --base ${input.base} --head ${input.branch}\`.`,
+			// Never "open it by hand": a pull request an agent opens is a second
+			// author for one publication. The machine holding the forge
+			// credential opens it after the next merge (open-publication-prs).
+			reason: `the \`gh\` CLI is not available here; \`${input.branch}\` stays published, and the owner machine opens its pull request into \`${input.base}\` after the next merge.`,
 		};
 	}
 	const existing = ports.gh([
@@ -105,7 +108,7 @@ export const openPublicationPullRequest = (input: {
 	return created === undefined || created === ''
 		? {
 				status: 'failed',
-				reason: `\`gh pr create\` did not open it; run \`gh pr create --base ${input.base} --head ${input.branch}\`.`,
+				reason: `\`gh pr create\` did not open it; \`${input.branch}\` stays published, and the owner machine opens its pull request into \`${input.base}\` after the next merge.`,
 			}
 		: { status: 'opened', url: created };
 };

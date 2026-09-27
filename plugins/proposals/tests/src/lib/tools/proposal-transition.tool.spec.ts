@@ -966,13 +966,18 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 					.join(''),
 			);
 		};
-		/** Only the certified tip contains the shipped commit. */
+		/**
+		 * The integration branch: the shipped commit, then the certified
+		 * one, then a later merge. `offtip` was never on it.
+		 */
+		const line = ['30551533', 'certtip', 'newtip'];
+		const isAncestor = (a = '', b = '') =>
+			line.includes(a) &&
+			line.includes(b) &&
+			line.indexOf(a) <= line.indexOf(b);
 		const containing: IGitRunner = async (args) =>
 			args[0] === 'merge-base'
-				? {
-						ok: args[2] === '30551533' && args[3] === 'certtip',
-						output: '',
-					}
+				? { ok: isAncestor(args[2], args[3]), output: '' }
 				: args[0] === 'rev-parse'
 					? // The integration tip is the certified commit.
 						{ ok: true, output: 'certtip\n' }
@@ -1027,7 +1032,16 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			expect(JSON.parse(result.content[0]?.text ?? '{}').to).toBe('done');
 		});
 
-		it('refuses when the integration branch moved past the certified commit', async () => {
+		it('refuses when the certified commit was never on the integration branch', async () => {
+			await certify(['offtip', 'certified']);
+			const result = await close('f00978');
+			expect(result.isError).toBe(true);
+			expect(JSON.parse(result.content[0]?.text ?? '{}').error).toBe(
+				'validate required',
+			);
+		});
+
+		it('closes while the integration branch has moved past the certified commit (x00706)', async () => {
 			await certify(['certtip', 'certified']);
 			const moved: IGitRunner = async (args) =>
 				args[0] === 'rev-parse'
@@ -1072,10 +1086,8 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 					validateEvidenceDeps: { readValidateLog: async () => [] },
 				},
 			);
-			expect(result.isError).toBe(true);
-			expect(JSON.parse(result.content[0]?.text ?? '{}').error).toBe(
-				'validate required',
-			);
+			expect(result.isError).toBeUndefined();
+			expect(JSON.parse(result.content[0]?.text ?? '{}').to).toBe('done');
 		});
 
 		it('still refuses when the newest verdict is red', async () => {
