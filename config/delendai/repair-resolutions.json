@@ -26,6 +26,14 @@
 			"decidedAt": "2026-09-19T12:27:03.041Z"
 		},
 		{
+			"taskId": "4eef0c8fe5f1b95e46f526fe8efb865f",
+			"evidenceDigest": "9a67c2a6206813f30d7c12aea6f7b8e7",
+			"decision": "accepted-loss",
+			"reason": "Discarded on the owner's instruction (2026-09-27). wip/copilot/.../close-the-ready-review-batches (tip c8604804458d) closed 124 proposals by moving files into done/ by hand, without independent approval, and raised the proposal-cited-commits baseline; its pull requests (#535-#540) were closed. Nothing legitimate is lost: approved proposals are closed through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T21:51:45.162Z"
+		},
+		{
 			"taskId": "593fd173544d841c22d9a37777cc8344",
 			"evidenceDigest": "662e3a41011d9781b7a6a260d5b4fe34",
 			"decision": "not-a-problem",
@@ -40,6 +48,14 @@
 			"reason": "x00553 moved to review on develop through the normal path (docs/delendai/proposals/review/x00553-the-checkout-cannot-leave-the-integration-node.md); this checkpoint only carried that move.",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-09-27T09:33:13.974Z"
+		},
+		{
+			"taskId": "96e8c4cd562d58d29663878f48bba0e3",
+			"evidenceDigest": "5658cfafad26115749667c7dfa7c58e5",
+			"decision": "accepted-loss",
+			"reason": "Discarded on the owner's instruction (2026-09-27). wip/minimax-3/.../close-pack-20260927 (tip 8c5b39504) closed 6 proposals by moving files into done/ by hand, including x00546 which awaits the owner's decision; its pull request #545 was closed. The legitimate closes (x00555) went through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T21:51:48.300Z"
 		},
 		{
 			"taskId": "b939802bc4278d0fcb50fa59af7f0c01",
