@@ -103,11 +103,29 @@ describe('resolveIntegrationCertificationEvidence', () => {
 		).toBeNull();
 	});
 
-	it('does not vouch when the certified commit is an earlier tip than the current one', async () => {
+	it('vouches while develop has moved past the certified commit (x00706)', async () => {
 		const { root, delivered, tip } = repo();
-		// develop moved on to a commit that is not certified yet.
+		// The next merge landed; its run is not certified yet.
+		expect(
+			await resolve(root, [delivered], line(delivered, 'certified'), tip),
+		).toMatchObject({ exitCode: 0 });
+	});
+
+	it('does not vouch for a certified commit the integration branch never had', async () => {
+		const { root, delivered, tip, stray } = repo();
+		expect(
+			await resolve(root, [delivered], line(stray, 'certified'), tip),
+		).toBeNull();
 		expect(
 			await resolve(root, [delivered], line(tip, 'certified'), `${tip}0`),
+		).toBeNull();
+	});
+
+	it('does not vouch for an earlier certified commit that lacks the shipped one', async () => {
+		const { root, delivered, tip } = repo();
+		const base = git(root, 'rev-parse', `${delivered}~1`);
+		expect(
+			await resolve(root, [delivered], line(base, 'certified'), tip),
 		).toBeNull();
 	});
 
