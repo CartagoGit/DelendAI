@@ -1744,14 +1744,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00702",
-				"title": "x00702",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
 			}
 		]
 	}
