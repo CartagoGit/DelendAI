@@ -9,6 +9,8 @@ date: 2026-09-22
 tags:
     - work-refs
     - adoption
+shipped-in:
+  - "dc61149157eb9019456c13cc0dfbb8155a0e9f4a"
 ---
 
 # x00598 — The workflow doctor ships with the product
@@ -75,10 +77,14 @@ moment they are reliably looking.
 
 ### S1 — the invariants ship, and boot names the broken ones
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/workflow-invariants.service.ts`, `packages/cli/src/lib/workflow-invariants.service.spec.ts`, `packages/cli/src/lib/workflow-doctor.service.ts`, `packages/cli/src/contracts/interfaces/workflow-invariants.interface.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`, `tools/scripts/git/check-workflow-invariants.script.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/workflow-invariants.service.spec.ts packages/cli/src/index.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real dc6114915. El doctor del workflow AHORA SE ENVÍA CON EL PRODUCTO: `delendai work doctor` funciona en un proyecto que NO es delendai, reporta las 7 invariantes con su evidencia (--forge acota a las compartidas, --json devuelve el reporte) y sale no-cero cuando una invariante falla. La lógica migró del script ad-hoc check-workflow-invariants (311 líneas recortadas) al workflow-invariants.service reutilizable (274) wired en el CLI. Acepta un proyecto que no adoptó delendai sin tocarlo (coherente con x00585). Acceptance cubierta — index.spec +106; gate verificado 45/45 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit dc61149157eb names refs/heads/delendai/wip/claude-opus-5/x00598-S1-g1/the-workflow-doctor-ships-with-the-product (dc61149157eb9019456c13cc0dfbb8155a0e9f4a), opened by glm-5.3-max
 ## acceptance
 
 - `delendai work doctor` runs in a project that is not delendai and

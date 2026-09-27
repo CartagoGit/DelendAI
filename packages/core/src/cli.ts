@@ -27,6 +27,7 @@ export {
 } from './lib/development-policy/profiles.constant';
 export {
 	isWorkKind,
+	isHostApplicationId,
 	kindsInAgentId,
 	legacyWorkKind,
 } from './lib/development-policy/work-ref-placeholders';

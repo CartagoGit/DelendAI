@@ -2,13 +2,18 @@
 id: x00586
 title: "No home directory ships with the repository"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-21
 tags:
     - privacy
     - adoption
+shipped-in:
+  - "817cfda53f43dd940c39d25a7b26c6225152d811"
+last-transition-id: 7cbef8f4-9d09-4fee-80f8-88e4814c5ad9
+last-correlation-id: 7cbef8f4-9d09-4fee-80f8-88e4814c5ad9
+last-transition-from: review
 ---
 
 # x00586 — No home directory ships with the repository
@@ -70,10 +75,14 @@ rather than forgotten.
 
 ### S1 — the two live files, and a rule so there is no third
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`.claude/settings.json`, `config/external/cursor/cursorrules`, `tools/scripts/lint/no-home-directory-in-tracked-files.script.ts`, `tools/scripts/lint/no-home-directory-in-tracked-files.constant.ts`, `tools/scripts/lint/no-home-directory-in-tracked-files.interface.ts`, `tools/scripts/lint/no-home-directory-in-tracked-files.script.spec.ts`, `tools/scripts/lint/no-home-directory-in-tracked-files.baseline.json`, `package.json`]
 - **Gate**: `bun run lint:no-home-directory`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 817cfda53 (merge con el lint no-home-directory-in-tracked-files). HOME_PATTERNS detecta las dos formas que se colaron (spellings Linux/macOS/Windows), homePathsIn reporta fichero y línea, isHistorical salta prosa histórica (docs antiguos) mientras que la configuración viva no se perdona, y un path idéntico en todas las máquinas no se menciona. Baseline separa lo histórico; guard-hooks y package.json wired; el propio repo queda limpio (ningún fichero vivo nombra un home). Acceptance cubierta según spec (75 líneas de tests) — gate 34/34 en lote con x00587/x00588/x00589. Sin cambios fuera de alcance (los toques a .claude/settings.json, cursorrules y package.json son parte del wire del lint).
+- review-attribution: claude-opus-5 from commit 817cfda53f43 names refs/heads/delendai/wip/claude-opus-5/x00586-S1-g1/no-home-directory-ships-with-the-repository (817cfda53f43dd940c39d25a7b26c6225152d811), opened by glm-5.3-max
 ## acceptance
 
 - Neither live file names a home directory.

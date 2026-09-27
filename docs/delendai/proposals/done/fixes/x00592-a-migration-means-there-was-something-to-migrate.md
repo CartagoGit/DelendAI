@@ -2,7 +2,7 @@
 id: x00592
 title: "A migration means there was something to migrate"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
@@ -10,6 +10,11 @@ tags:
     - migration
     - adoption
     - safety
+shipped-in:
+  - "08630375e684831a2c2ceb8e7cc48bd2542984a9"
+last-transition-id: 2aa9a473-3d4f-4c15-a51e-d405af7ca937
+last-correlation-id: 2aa9a473-3d4f-4c15-a51e-d405af7ca937
+last-transition-from: review
 ---
 
 # x00592 — A migration means there was something to migrate
@@ -125,22 +130,34 @@ to migrate *from* is, by construction, a workspace this product may heal.
 
 ### S1 — a migration that plans nothing does nothing
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/workspace-migration/`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 08630375e (S1+S2+S3 comparten merge). S1: una migración con plan vacío no se aplica, no se registra ni se reporta; con plan no vacío corre igual. S2: el registry real sobre proyecto adoptado sin legado reporta not-needed, no llama al reporter y deja config/manifest/host-config byte-idénticos. S3: cada renombre garantiza from !== to, from lleva el nombre viejo y to no; proyecto en mcp-vertex reconocido como adoptado y un solo run mueve mcp-vertex.config.json, .cache/mcp-vertex y docs/mcp-vertex con contenidos intactos; solo un package.json sigue siendo un extraño (coherente con x00585). Acceptance cubierta — legacy-migration.service.spec 181 líneas, manager/migrator specs adaptados; gates verificados 20/20 y en el lote 62/62. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 08630375e684 names refs/heads/delendai/wip/claude-opus-5/x00592-S2-g1/a-migration-means-there-was-something-to-migrate (08630375e684831a2c2ceb8e7cc48bd2542984a9), opened by glm-5.3-max
 ### S2 — the renames are real renames, from one table
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/workspace-migration/migrators/cache-and-docs.migrator.ts`, `packages/core/src/lib/workspace-migration/migrations/delendai-to-delendai-v1.ts`, `packages/core/src/lib/workspace-migration/legacy-migration.constant.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/cache-and-docs.migrator.spec.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration-manager.spec.ts`]
 - **Gate**: `npx vitest run --project core`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 08630375e (S1+S2+S3 comparten merge). S1: una migración con plan vacío no se aplica, no se registra ni se reporta; con plan no vacío corre igual. S2: el registry real sobre proyecto adoptado sin legado reporta not-needed, no llama al reporter y deja config/manifest/host-config byte-idénticos. S3: cada renombre garantiza from !== to, from lleva el nombre viejo y to no; proyecto en mcp-vertex reconocido como adoptado y un solo run mueve mcp-vertex.config.json, .cache/mcp-vertex y docs/mcp-vertex con contenidos intactos; solo un package.json sigue siendo un extraño (coherente con x00585). Acceptance cubierta — legacy-migration.service.spec 181 líneas, manager/migrator specs adaptados; gates verificados 20/20 y en el lote 62/62. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 08630375e684 names refs/heads/delendai/wip/claude-opus-5/x00592-S2-g1/a-migration-means-there-was-something-to-migrate (08630375e684831a2c2ceb8e7cc48bd2542984a9), opened by glm-5.3-max
 ### S3 — the measurement harness disposes what it started
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/report/token-budget-report-lib.ts`]
 - **Gate**: `npx vitest run --project tools`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 08630375e (S1+S2+S3 comparten merge). S1: una migración con plan vacío no se aplica, no se registra ni se reporta; con plan no vacío corre igual. S2: el registry real sobre proyecto adoptado sin legado reporta not-needed, no llama al reporter y deja config/manifest/host-config byte-idénticos. S3: cada renombre garantiza from !== to, from lleva el nombre viejo y to no; proyecto en mcp-vertex reconocido como adoptado y un solo run mueve mcp-vertex.config.json, .cache/mcp-vertex y docs/mcp-vertex con contenidos intactos; solo un package.json sigue siendo un extraño (coherente con x00585). Acceptance cubierta — legacy-migration.service.spec 181 líneas, manager/migrator specs adaptados; gates verificados 20/20 y en el lote 62/62. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 08630375e684 names refs/heads/delendai/wip/claude-opus-5/x00592-S2-g1/a-migration-means-there-was-something-to-migrate (08630375e684831a2c2ceb8e7cc48bd2542984a9), opened by glm-5.3-max
 ## acceptance
 
 - A migration whose `plan` is empty is not applied, not recorded, and

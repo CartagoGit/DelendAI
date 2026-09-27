@@ -37,6 +37,15 @@ describe('prHeadProblem', () => {
 		).toContain('is a work ref');
 	});
 
+	it('refuses an agent named after the program it runs in (x00694)', () => {
+		expect(
+			prHeadProblem(
+				'delendai/pr/copilot/review/batch-all-g1/close-the-ready-review-batches',
+				BRANCHES,
+			),
+		).toContain('the program the agent runs in');
+	});
+
 	it('refuses an agent that spells the kind of work', () => {
 		expect(
 			prHeadProblem(

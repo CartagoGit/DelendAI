@@ -2,13 +2,18 @@
 id: x00583
 title: "A new workflow arrives guarded"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-21
 tags:
     - ci
     - workflows
+shipped-in:
+  - "7a4e8fb77"
+last-transition-id: 90ae7cc9-41a3-46c5-80ec-ffd2488e431e
+last-correlation-id: 90ae7cc9-41a3-46c5-80ec-ffd2488e431e
+last-transition-from: review
 ---
 
 # x00583 — A new workflow arrives guarded
@@ -75,10 +80,14 @@ check on its first run. Fixed here.
 
 ### S1 — a job that reads history must ask for it
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/lint/workflow-history-depth.script.ts`, `tools/scripts/lint/workflow-history-depth.constant.ts`, `tools/scripts/lint/workflow-history-depth.interface.ts`, `tools/scripts/lint/workflow-history-depth.script.spec.ts`, `.github/workflows/ci.yml`, `package.json`]
 - **Gate**: `npx vitest run tools/scripts/lint/workflow-history-depth.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 7a4e8fb77 (merge #318; los dos candidatos de la cola eran merges de alineación — 2309e3c6a de claude-opus-5 y d577ac95a de codex-astra-6 sin contenido del slice). Nuevo lint workflow-history-depth: todo job que ejecuta comandos hambrientos de historia (git merge, merge-base, diff de 2/3 puntos) debe declarar fetch-depth: '0' o un waiver escrito con motivo. El escaneo es por texto de los run: (shell, no YAML — decisión correcta y explícita). Detecta merges directos y a un nivel vía script invocado; los jobs de solo-lectura del tip no se mencionan. Acceptance cubierta por los 9 tests del spec (gate verde en el worktree del batch): merge sin depth rechazado, con fetch-depth aceptado, reach-through-script rechazado, waiver exigido y documentado, replay de keep-the-queue-moving reproduce el finding, y los 16 workflows actuales pasan. CI y package.json wire el lint. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 7a4e8fb778a0 names refs/heads/delendai/wip/claude-opus-5/x00583-S1-g1/a-new-workflow-arrives-guarded (7a4e8fb778a00d7fa9dc29aa986a8e65c8800d38), opened by glm-5.3-max
 ## acceptance
 
 - A job that merges on the default clone is refused; the same job with

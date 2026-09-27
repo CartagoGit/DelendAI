@@ -358,7 +358,7 @@ describe('guard through real git hooks', () => {
 				'add',
 				'-q',
 				'-b',
-				'delendai/wip/codex/implement/x00056-S1-g1/t',
+				'delendai/wip/gpt-5-codex/implement/x00056-S1-g1/t',
 				unit,
 			).status,
 		).toBe(0);
@@ -423,7 +423,7 @@ describe('guard through real git hooks', () => {
 				'switch',
 				'-q',
 				'-c',
-				'wip/codex/implement/x00056-S1-g1/t',
+				'wip/gpt-5-codex/implement/x00056-S1-g1/t',
 			).status,
 		).toBe(0);
 		const onWorkBranch = git(
@@ -454,7 +454,7 @@ describe('guard through real git hooks', () => {
 		);
 		plumb(
 			'update-ref',
-			'refs/heads/wip/codex/implement/x00056-S1-g1/t',
+			'refs/heads/wip/gpt-5-codex/implement/x00056-S1-g1/t',
 			commit,
 		);
 		// HEAD never moved: the shared checkout is still on develop.
@@ -467,7 +467,7 @@ describe('guard through real git hooks', () => {
 				'--no-ff',
 				'-m',
 				'merge work',
-				'wip/codex/implement/x00056-S1-g1/t',
+				'wip/gpt-5-codex/implement/x00056-S1-g1/t',
 			).status,
 		).toBe(0);
 	}, 60_000);
