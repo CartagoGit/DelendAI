@@ -2,13 +2,18 @@
 id: x00579
 title: "An identity is checked after normalising"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
 tags:
     - work-identity
     - agents
+shipped-in:
+  - "b39bfe073e3b380477eb17eaa514457e154faa6d"
+last-transition-id: b999596d-44da-4853-a9bd-9861e2663d64
+last-correlation-id: b999596d-44da-4853-a9bd-9861e2663d64
+last-transition-from: review
 ---
 
 # x00579 — An identity is checked after normalising
@@ -64,10 +69,14 @@ when none survives.
 
 ### S1 — a source that cannot survive normalising has not answered
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/work-identity/resolve-work-agent.service.ts`, `packages/core/tests/src/lib/work-identity/resolve-work-agent.spec.ts`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-identity/resolve-work-agent.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé b39bfe073 (diff completo, service + spec + bootstrap). El resolver ahora juzga cada fuente DESPUÉS de normalizar: un valor que no sobrevive (normaliza a '') no "respondió", y se pregunta la siguiente fuente — elimina el shadowing de fuentes válidas por basura como '!!!' y el id vacío que producía refs inválidos. unknown-agent sigue siendo la respuesta final. Orden de preferencia model→environment→client intacto. Acceptance: los 4 ítems están cubiertos por los 5 tests nuevos del spec (12 pass / 0 fail ejecutados en el worktree del batch). changedSince nombra 4c931738a (x00617, "a host is not an agent") que extiende después esta lógica — no es defecto de este slice. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from Merge pull request #314 from CartagoGit/delendai/pr/claude-opus-5/x00579-S1-g1/an-identity-is-checked-after-normalising (refs/heads/delendai/wip/claude-opus-5/x00579-S1-g1/an-identity-is-checked-after-normalising) (b39bfe073e3b380477eb17eaa514457e154faa6d), opened by glm-5.3-max
 ## acceptance
 
 - `{ model: '!!!' }` answers `unknown-agent`, never an empty id.

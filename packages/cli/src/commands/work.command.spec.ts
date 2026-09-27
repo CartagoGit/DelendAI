@@ -555,6 +555,12 @@ describe('delendai work (x00553)', () => {
 		);
 		expect(badAgent.code).not.toBe(0);
 		expect(badAgent.error).toContain('spells a kind of work');
+		const host = await command.run(
+			['enter', '--proposal=x1', '--slice=S1', '--agent=copilot'],
+			contextFor(root),
+		);
+		expect(host.code).not.toBe(0);
+		expect(host.error).toContain('program the agent runs in');
 	});
 
 	it('still publishes a unit entered before the shape named its kind (f00644)', async () => {

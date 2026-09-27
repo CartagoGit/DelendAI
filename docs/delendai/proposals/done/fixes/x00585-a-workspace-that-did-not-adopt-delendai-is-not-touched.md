@@ -2,7 +2,7 @@
 id: x00585
 title: "A workspace that did not adopt delendai is not touched"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-21
@@ -10,6 +10,11 @@ tags:
     - adoption
     - safety
     - host
+shipped-in:
+  - "a8613bf58"
+last-transition-id: a1d21399-7818-4f01-89fa-7bd39f179388
+last-correlation-id: a1d21399-7818-4f01-89fa-7bd39f179388
+last-transition-from: review
 ---
 
 # x00585 — A workspace that did not adopt delendai is not touched
@@ -68,10 +73,14 @@ any future entrypoint inherit it rather than each remembering.
 
 ### S1 — boot heals only what adopted it
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/src/lib/workspace-migration/legacy-migration.constant.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real a8613bf58 (merge #320). ensureWorkspaceMigrated ahora es guard de adopción: si el workspace no muestra ningún ADOPTION_MARKER (delendai.config.json o .delendai/), retorna {not-needed, acted:false} sin leer ni escribir nada — evita que el arranque en proyectos ajenos renombre identidades en .vscode/*.json, package.json y configs de host, o cree .delendai/ donde nadie pidió nada. Marcadores deliberadamente cortos (adopción = algo que alguien HIZO, no inferencia difusa); .delendai/ cuenta para no tratar como extraño un workspace healed con config momentáneamente ausente. Acceptance cubierta (árbol byte-idéntico sin marker, con marker se cura, .delendai/ adopta, el test falla sin el gate): 20/20 en el worktree del batch. changedSince: sin commits posteriores que toquen el servicio. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit a8613bf58fdd names refs/heads/delendai/wip/claude-opus-5/x00585-S1-g1/a-workspace-that-did-not-adopt-delendai-is-not-touched (a8613bf58fdd51770a4f366bf3591cba05dbec8b), opened by glm-5.3-max
 ## acceptance
 
 - In a directory with a `package.json` and a `.vscode/settings.json` and

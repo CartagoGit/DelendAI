@@ -2,13 +2,18 @@
 id: x00590
 title: "A test waits for the thing, not the clock"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
 tags:
     - tests
     - races
+shipped-in:
+  - "be4f447c3cd6f12cb139395a669efc7e6937401c"
+last-transition-id: 84e39be7-7ebe-4db8-be4d-6da957c1e6a1
+last-correlation-id: 84e39be7-7ebe-4db8-be4d-6da957c1e6a1
+last-transition-from: review
 ---
 
 # x00590 — A test waits for the thing, not the clock
@@ -84,10 +89,14 @@ reading it because CI failed and they cannot reproduce it.
 
 ### S1 — the waiting says what it is waiting for, and a rule keeps it out
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/test-kit/src/lib/wait-until.helper.ts`, `packages/test-kit/src/lib/wait-until.constant.ts`, `packages/test-kit/src/public/index.ts`, `packages/test-kit/tests/src/lib/wait-until.helper.spec.ts`, `plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`, `plugins/commit-policy/src/lib/triggers/slice-listener.ts`, `tools/scripts/lint/no-sleep-in-specs.script.ts`, `tools/scripts/lint/no-sleep-in-specs.constant.ts`, `tools/scripts/lint/no-sleep-in-specs.interface.ts`, `tools/scripts/lint/no-sleep-in-specs.script.spec.ts`, `tools/scripts/lint/no-sleep-in-specs.baseline.json`, `package.json`]
 - **Gate**: `bun run lint:no-sleep-in-specs`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real be4f447c3. waitUntil (test-kit) espera la CONDICIÓN con backoff corto en vez de un sleep fijo: retorna en cuanto la condición se cumple (mediblemente más rápido), inmediato si ya se cumple, acepta condiciones async, y su fallo nombra qué se esperaba Y el techo. slice-replay deja de depender de la rapidez de la máquina (34 líneas de spec adaptadas) y el lint no-sleep-in-specs (con baseline) rechaza await de duraciones, ignora setTimeout que solo programa, vi.advanceTimersByTime y waitUntil, y acepta waiver en la línea o encima. Acceptance cubierta; gate 49+34 líneas verificado en el lote 62/62. Coherente con x00647 (un test no expira con el calendario). Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit be4f447c3cd6 names refs/heads/delendai/wip/claude-opus-5/x00590-S1-g1/a-test-waits-for-the-thing-not-the-clock (be4f447c3cd6f12cb139395a669efc7e6937401c), opened by glm-5.3-max
 ## acceptance
 
 - `waitUntil` returns as soon as the condition holds, measurably faster

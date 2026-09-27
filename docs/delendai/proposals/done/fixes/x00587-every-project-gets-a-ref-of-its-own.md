@@ -2,13 +2,18 @@
 id: x00587
 title: "Every project gets a ref of its own"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-21
 tags:
     - development-policy
     - defaults
+shipped-in:
+  - "1655ff141175369282782369d4b0627ddc25cee9"
+last-transition-id: 4587b72a-7d60-4e65-bb10-58f737b167e5
+last-correlation-id: 4587b72a-7d60-4e65-bb10-58f737b167e5
+last-transition-from: review
 ---
 
 # x00587 — Every project gets a ref of its own
@@ -92,10 +97,14 @@ the moment the default moved.
 
 ### S1 — the default grants a work ref, and every profile spells it the same
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 1655ff141 (merge de x00587). El perfil por defecto de un proyecto sin configurar pasa de shared-direct a shared-checkout-merge: todo proyecto adoptado recibe work-ref propio y certificación local, sin exigir PR/branch-protection del forge; los cuatro perfiles producen el mismo workRefTemplate; shared-direct sigue resolviendo al modelo histórico cuando se pide por nombre; la config legacy no cambia; la política por defecto pasa validateDevelopmentPolicy sin problemas. Acceptance cubierta (resolve.spec 28 líneas nuevas; gate 34/34 en lote). Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 1655ff141175 names refs/heads/delendai/wip/claude-opus-5/x00587-S1-g1/every-profile-gives-an-agent-a-ref-of-its-own (1655ff141175369282782369d4b0627ddc25cee9), opened by glm-5.3-max
 ## acceptance
 
 - An unconfigured project resolves to `merge`, with a work ref, local

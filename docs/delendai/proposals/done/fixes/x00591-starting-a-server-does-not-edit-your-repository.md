@@ -2,7 +2,7 @@
 id: x00591
 title: "Starting a server does not edit your repository"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-22
@@ -10,6 +10,11 @@ tags:
     - adoption
     - safety
     - host
+shipped-in:
+  - "9b9dccfc7837e657623a670ff212733d49bc61be"
+last-transition-id: d116ebd1-11e4-48a4-9dc6-4167ceee2265
+last-correlation-id: d116ebd1-11e4-48a4-9dc6-4167ceee2265
+last-transition-from: review
 ---
 
 # x00591 — Starting a server does not edit your repository
@@ -90,16 +95,24 @@ than through boot.
 
 ### S1 — boot inspects, and cannot install
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `packages/cli/src/index.ts`, `tools/scripts/host/host-server.script.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 9b9dccfc7 (S1 y S2 comparten merge). S1: el boot de un proyecto adoptado deja el árbol byte-idéntico (sha256 de cada fichero) — guard-hooks pasa a report por defecto (nunca instala sin `guardHooks: install`), escribe el reporte y nombra `delendai guard install` sin tocar .husky/pre-commit existente ni escribir merge.delendai-generated.driver en .git/config; `off` y no-adoptado no producen salida ni escrituras. S2 (el juez sabe en qué worktree está): runEntry('__serve') arranca el server y reporta el guard sin instalar; runEntry('guard') no migra (git tiene los locks durante un hook). Acceptance verificada por index.spec (260 líneas reescritas) y guard-hooks-autoinstall.service.spec (193) — gates verificados en el lote 62/62. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 9b9dccfc7837 names refs/heads/delendai/wip/claude-opus-5/x00591-S1-g1/starting-a-server-does-not-edit-your-repository (9b9dccfc7837e657623a670ff212733d49bc61be), opened by glm-5.3-max
 ### S2 — the boot sequence is a function, so it can be tested
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/index.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 9b9dccfc7 (S1 y S2 comparten merge). S1: el boot de un proyecto adoptado deja el árbol byte-idéntico (sha256 de cada fichero) — guard-hooks pasa a report por defecto (nunca instala sin `guardHooks: install`), escribe el reporte y nombra `delendai guard install` sin tocar .husky/pre-commit existente ni escribir merge.delendai-generated.driver en .git/config; `off` y no-adoptado no producen salida ni escrituras. S2 (el juez sabe en qué worktree está): runEntry('__serve') arranca el server y reporta el guard sin instalar; runEntry('guard') no migra (git tiene los locks durante un hook). Acceptance verificada por index.spec (260 líneas reescritas) y guard-hooks-autoinstall.service.spec (193) — gates verificados en el lote 62/62. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 9b9dccfc7837 names refs/heads/delendai/wip/claude-opus-5/x00591-S1-g1/starting-a-server-does-not-edit-your-repository (9b9dccfc7837e657623a670ff212733d49bc61be), opened by glm-5.3-max
 ## acceptance
 
 - A project declaring a policy and nothing about hooks resolves to

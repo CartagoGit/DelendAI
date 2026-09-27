@@ -2,15 +2,17 @@
 id: x00647
 title: "A test does not expire with the calendar"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00637]
-last-transition-id: 6a54fbd4-4e25-4fbf-bdcc-48b8e8e4796f
-last-correlation-id: 6a54fbd4-4e25-4fbf-bdcc-48b8e8e4796f
-last-transition-from: in-progress
+last-transition-id: 4cbd6cad-d0c8-4b13-92b9-02136c19adef
+last-correlation-id: 4cbd6cad-d0c8-4b13-92b9-02136c19adef
+last-transition-from: review
+shipped-in:
+  - "46cb5907bc5a9f5291e4e4ddc0b87dbcb89e0bb1"
 ---
 
 # x00647 — A test does not expire with the calendar
@@ -53,11 +55,13 @@ the only clock it reads.
 
 ### S1 — The history spec reads only its own clock
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/project-kpis`
 - **Files**: `plugins/project-kpis/tests/src/kpi-history.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 46cb5907b. kpi-history.spec deja de depender del reloj: cada persistKpiSnapshotHistory recibe now explícito, así el spec pasa en cualquier fecha (el fallo calendar-dependiente desaparece). +4 líneas quirúrgicas. Acceptance cubierta (pasa en cualquier fecha; todas las llamadas llevan now); gate verde en el lote 64/64. Coherente con x00590 (waitUntil) — un test no expira con el calendario. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.

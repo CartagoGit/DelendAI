@@ -9,6 +9,8 @@ date: 2026-09-22
 tags:
     - adoption
     - safety
+shipped-in:
+  - "4f40a039323f18e4630c1e663d07507542fe3924"
 ---
 
 # x00596 — What delendai creates, git never shows
@@ -78,10 +80,14 @@ to an answer from the file rather than from a search.
 
 ### S1 — the directory hides itself as it appears
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/shared/self-ignoring-dir.ts`, `packages/core/src/lib/shared/self-ignoring-dir.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/src/lib/workspace-migration/config-transitions.service.ts`, `packages/core/src/lib/adopt/project-profile.service.ts`, `packages/core/tests/src/lib/shared/self-ignoring-dir.spec.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`]
 - **Gate**: `npx vitest run --project core`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 4f40a0393. self-ignoring-dir crea directorios de delendai que git no ve: tras crear el dir y escribir en él, git status --porcelain queda vacío; git add -A stagea solo el fichero del proyecto y nada de delendai; el .gitignore del proyecto queda byte-idéntico (el dir se auto-ignora a sí mismo sin tocar el ignore del proyecto). Verificado contra un repo git real porque la afirmación es sobre lo que una persona ve. project-profile/migration-registry lo adoptan. Acceptance cubierta — self-ignoring-dir.spec 113 líneas + legacy-migration.service.spec +46; gate verificado 45/45 en lote. Sin cambios fuera de alcance.
+- review-attribution: claude-opus-5 from commit 4f40a039323f names refs/heads/delendai/wip/claude-opus-5/x00596-S1-g1/what-delendai-creates-git-never-shows (4f40a039323f18e4630c1e663d07507542fe3924), opened by glm-5.3-max
 ## acceptance
 
 Measured against a real git repository, because the claim is about what

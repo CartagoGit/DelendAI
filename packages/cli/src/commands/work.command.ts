@@ -37,6 +37,7 @@ import type {
 } from '@delendai/core/public';
 import {
 	isWorkKind,
+	isHostApplicationId,
 	kindsInAgentId,
 	legacyWorkKind,
 	WORK_KINDS,
@@ -306,6 +307,12 @@ const kindFor = (args: readonly string[], slice: string): string =>
  * there, and every such ref read as an agent nobody could recognise.
  */
 const kindInAgent = (agent: string): ICliCommandResult | undefined => {
+	if (isHostApplicationId(agent)) {
+		return refused(
+			`The agent id \`${agent}\` is the program the agent runs in, not the agent; an agent id names who works — the model (x00694).`,
+			'Use the model id as the agent (--agent=<model>, or DELENDAI_AGENT_ID=<model>), e.g. --agent=glm-5 or --agent=minimax-m3.',
+		);
+	}
 	const kinds = kindsInAgentId(agent);
 	if (kinds.length === 0) return undefined;
 	return refused(

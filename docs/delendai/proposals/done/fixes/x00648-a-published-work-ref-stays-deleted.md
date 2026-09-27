@@ -2,15 +2,17 @@
 id: x00648
 title: "A published work ref stays deleted"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00635, x00568]
-last-transition-id: d25e8d99-9c26-4eef-8186-329505d42830
-last-correlation-id: d25e8d99-9c26-4eef-8186-329505d42830
-last-transition-from: in-progress
+last-transition-id: 3f692bfe-cd01-4666-9f6c-70913dd44c65
+last-correlation-id: 3f692bfe-cd01-4666-9f6c-70913dd44c65
+last-transition-from: review
+shipped-in:
+  - "5a612656fac7667201a849a5e0ee31f6a9d9a27f"
 ---
 
 # x00648 — A published work ref stays deleted
@@ -88,7 +90,7 @@ the publication ends first and the cadence push finds nothing to push.
 
 ### S1 — Publishing and the cadence push exclude each other
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/wip-engine/work-ref-lock.spec.ts packages/cli/src/lib/work-publish.service.spec.ts plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-ref-lock.ts`
@@ -102,8 +104,10 @@ the publication ends first and the cadence push finds nothing to push.
   - `packages/cli/src/commands/work.command.ts`
   - `plugins/commit-policy/src/lib/services/work-checkout-publisher.service.ts`
   - `plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Revisé la entrega real 5a612656f. work-ref-lock (core, 68 líneas): mientras otro proceso hold-ea un work ref, work publish no empuja nada y su rechazo NOMBRA al holder; espera al holder que libera y entonces publica y libera; el checkout publisher tampoco empuja para un ref held elsewhere (dice quién) y SOLO LO LEE cuando tiene el hold — un ref borrado antes de concederse el hold se salta y NO se restaura en el remoto (a published work ref stays deleted). Acceptance cubierta — work-publish.service.spec +64; gate verde 64/64 en lote. Sin cambios fuera de alcance.
 ## dependency graph
 
 None.
