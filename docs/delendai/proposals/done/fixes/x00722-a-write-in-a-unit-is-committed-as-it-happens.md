@@ -2,15 +2,17 @@
 id: x00722
 title: "A write in a unit is committed as it happens"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00707, x00714]
-last-transition-id: 90508029-2760-4f34-832a-a30d248f196b
-last-correlation-id: 90508029-2760-4f34-832a-a30d248f196b
-last-transition-from: in-progress
+last-transition-id: 208ef62c-9c8d-4edf-9271-68bbfa3a4bcb
+last-correlation-id: 208ef62c-9c8d-4edf-9271-68bbfa3a4bcb
+last-transition-from: review
+shipped-in:
+  - "f887906d5"
 ---
 
 # x00722 — A write in a unit is committed as it happens
@@ -70,13 +72,18 @@ pushes committed work every few minutes; nothing was committed to push.
 
 ### S1 — Commit what the call wrote, in a unit
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
 - **Files**:
   - `packages/core/src/lib/shared/commit-call-writes.ts`
   - `packages/core/src/lib/shared/bind-write-root.ts`
   - `packages/core/src/lib/development-policy/project-branches.ts`
   - `packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé f887906d5 (x00722 S1, merge PR #590). fix(core): a write in a unit is committed as it happens. wip-engine commitea la write del usuario en su work ref a medida que pasa, no en batch al final. 62/62 verde en wip-engine (7 specs). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #590 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00722-S1-g1/a-write-in-a-unit-is-committed-as-it-happens (refs/heads/delendai/wip/claude-opus-5-5/implement/x00722-S1-g1/a-write-in-a-unit-is-committed-as-it-happens) (f887906d5dd5f5290ff03d4e6ecab148502c97c4), opened by minimax-m3
 
 ## dependency graph
 

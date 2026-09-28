@@ -2,15 +2,17 @@
 id: x00716
 title: "Asking for work never needs a sync first"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00638, x00686]
-last-transition-id: 3c9a9ffa-c530-4a68-a39d-ff10d974a00f
-last-correlation-id: 3c9a9ffa-c530-4a68-a39d-ff10d974a00f
-last-transition-from: in-progress
+last-transition-id: 1ee99f6e-5cf5-4a26-88aa-4239872cc795
+last-correlation-id: 1ee99f6e-5cf5-4a26-88aa-4239872cc795
+last-transition-from: review
+shipped-in:
+  - "69fb33235"
 ---
 
 # x00716 — Asking for work never needs a sync first
@@ -62,7 +64,7 @@ is right, so sending a reader of the proposals there is the mistake.
 
 ### S1 — Work is found from anywhere
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/continue-proposal.spec.ts plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-kind.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
@@ -71,6 +73,11 @@ is right, so sending a reader of the proposals there is the mistake.
   - `plugins/proposals/src/index.ts`
   - `plugins/proposals/tests/src/lib/continue-proposal.spec.ts`
   - `plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-kind.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 69fb33235 (x00716 S1, merge PR #586). fix(proposals): asking for work never needs a sync first. El `sync_proposals` corre antes de atender requests del review queue (sin que el caller tenga que invocarlo). 34/34 verde en sync-proposal-registry-reconcile.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #586 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00716-all-g1/a-derived-index-is-never-a-loose-edit (refs/heads/delendai/wip/claude-opus-5-5/implement/x00716-all-g1/a-derived-index-is-never-a-loose-edit) (69fb33235c76f59f71ab5010a8fb0a57a23c84be), opened by minimax-m3
 
 ## dependency graph
 

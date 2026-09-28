@@ -2,15 +2,17 @@
 id: x00724
 title: "Every server publishes work refs on the cadence"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00691, x00722]
-last-transition-id: d5dfa66a-bea5-4871-8e71-15a7f12159f0
-last-correlation-id: d5dfa66a-bea5-4871-8e71-15a7f12159f0
-last-transition-from: in-progress
+last-transition-id: 456e3cde-0ccb-4008-ad24-8be63044f79b
+last-correlation-id: 456e3cde-0ccb-4008-ad24-8be63044f79b
+last-transition-from: review
+shipped-in:
+  - "8849728c8"
 ---
 
 # x00724 — Every server publishes work refs on the cadence
@@ -71,7 +73,7 @@ makes those commits visible.
 
 ### S1 — The server publishes; the plugin does not
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/project/create-mcp-project-start.spec.ts packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
@@ -91,6 +93,11 @@ makes those commits visible.
   - `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
   - `packages/core/tests/src/lib/project/create-mcp-project-start.spec.ts`
   - `plugins/commit-policy/tests/src/register-runtime.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 8849728c8 (x00724 S1, merge PR #593). fix(core): every server publishes work refs on the cadence. startup-reconciler.ts asegura que cada server (no solo el principal) sincroniza work refs según la cadencia declarada. 100/100 verde en startup-reconciler (15 specs). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #593 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00724-S1-g1/every-server-runs-the-same-boot (refs/heads/delendai/wip/claude-opus-5-5/implement/x00724-S1-g1/every-server-runs-the-same-boot) (8849728c881e566595de935146d1b363bfe11c11), opened by minimax-m3
 
 ## dependency graph
 

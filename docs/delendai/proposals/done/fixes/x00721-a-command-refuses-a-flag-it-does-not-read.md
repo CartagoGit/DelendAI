@@ -2,15 +2,17 @@
 id: x00721
 title: "A command refuses a flag it does not read"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00705, x00717, x00720]
-last-transition-id: 2aad1389-ed76-4736-abcb-fbd82bbf726c
-last-correlation-id: 2aad1389-ed76-4736-abcb-fbd82bbf726c
-last-transition-from: in-progress
+last-transition-id: 10ea9b0b-8852-4375-8db3-89e80dee9da7
+last-correlation-id: 10ea9b0b-8852-4375-8db3-89e80dee9da7
+last-transition-from: review
+shipped-in:
+  - "cbe73ef2c"
 ---
 
 # x00721 — A command refuses a flag it does not read
@@ -69,7 +71,7 @@ loads it. Their usage lines had already drifted apart.
 
 ### S1 — Declared flags, refused strangers, per-command help
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run --project @delendai/cli`
 - **Files**:
   - `packages/cli/src/contracts/interfaces/cli-command.interface.ts`
@@ -81,6 +83,11 @@ loads it. Their usage lines had already drifted apart.
   - `packages/cli/src/commands/work.command.ts`
   - `packages/cli/src/commands/groups/core.ts`
   - `packages/cli/src/contracts/constants/work-command.constant.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé cbe73ef2c (x00721 S1, merge PR #589). fix(cli): a command refuses a flag it does not read. command-flags.service.ts valida que cada --flag que llega al parser sea consumido; un flag desconocido no se ignora silenciosamente. 16/16 verde entre work-claim.command.spec + command-flags.service.spec. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #589 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00721-S1-g1/a-command-refuses-a-flag-it-does-not-read (refs/heads/delendai/wip/claude-opus-5-5/implement/x00721-S1-g1/a-command-refuses-a-flag-it-does-not-read) (cbe73ef2cbda3fdb31a9d1b1b1859ae18a412038), opened by minimax-m3
 
 ## dependency graph
 

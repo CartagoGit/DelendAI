@@ -2,15 +2,17 @@
 id: x00718
 title: "Nothing reaches done without an independent approval"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00696, x00707, x00715]
-last-transition-id: d30687b3-675e-48b6-8456-be14131e6469
-last-correlation-id: d30687b3-675e-48b6-8456-be14131e6469
-last-transition-from: in-progress
+last-transition-id: b4d10ca2-4fc4-4e82-8476-f3046d38990d
+last-correlation-id: b4d10ca2-4fc4-4e82-8476-f3046d38990d
+last-transition-from: review
+shipped-in:
+  - "6f0fd740c"
 ---
 
 # x00718 — Nothing reaches done without an independent approval
@@ -80,7 +82,7 @@ instance review another.
 
 ### S1 — One rule, no bypass, the project's choice
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run --project proposals`
 - **Files**:
   - `plugins/proposals/src/lib/shared/independent-approval.ts`
@@ -100,6 +102,11 @@ instance review another.
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts`
   - `plugins/proposals/tests/src/lib/transition-untracked-file.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 6f0fd740c (x00718 S1, merge PR #583). fix(proposals): nothing reaches done without an independent approval. La transición review → done falla con peer-review gate si la única aprobación es self-review (force:true no la salta). 12/12 verde en closed-with-independent-approval.script.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #583 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00718-S1-g1/nothing-reaches-done-without-an-independent-approval (refs/heads/delendai/wip/claude-opus-5-5/implement/x00718-S1-g1/nothing-reaches-done-without-an-independent-approval) (6f0fd740c05045532c4e8b3e66e07936ebed3527), opened by minimax-m3
 
 ## dependency graph
 

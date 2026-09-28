@@ -2,15 +2,17 @@
 id: x00719
 title: "Validate is green where agents run it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00707, x00712]
-last-transition-id: 2c3d263f-ca9f-4513-9e57-011589e4e3fc
-last-correlation-id: 2c3d263f-ca9f-4513-9e57-011589e4e3fc
-last-transition-from: in-progress
+last-transition-id: df91d8d1-29b9-4a5f-803e-59e00b86409e
+last-correlation-id: df91d8d1-29b9-4a5f-803e-59e00b86409e
+last-transition-from: review
+shipped-in:
+  - "800a96e61"
 ---
 
 # x00719 — Validate is green where agents run it
@@ -70,7 +72,7 @@ ignore it.
 
 ### S1 — The guard's refusal is policy, the startup lock is sanctioned
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/verify/verify-probes.spec.ts packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
 - **Files**:
   - `packages/core/src/lib/contracts/constants/write-refusal.constant.ts`
@@ -84,6 +86,11 @@ ignore it.
   - `tools/scripts/lib/startup-cache-dir.constant.ts`
   - `tools/scripts/host/host-server.script.ts`
   - `tools/scripts/lint/check-stray-cache-files.script.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 800a96e61 (x00719 S1, merge PR #585). fix(verify): validate is green where agents run it. validate funciona en los directorios que los agentes realmente usan (no falla por paths no presentes). 7/7 verde en validate-summary.script.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #585 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00719-all-g1/validate-is-green-where-agents-run-it (refs/heads/delendai/wip/claude-opus-5-5/implement/x00719-all-g1/validate-is-green-where-agents-run-it) (800a96e612cfef1e3f730169ad349cc53b9506d4), opened by minimax-m3
 
 ## dependency graph
 
