@@ -982,6 +982,13 @@ export interface DelendaiProposalsProposalsSummaryBackfillOutput {
 	skipped: number;
 }
 
+export interface DelendaiProposalsReviewClaimOutput {
+	ok: true;
+	proposalId: string;
+	claimed: boolean;
+	commit?: string;
+}
+
 export interface DelendaiProposalsReviewQueueOutput {
 	ok: true;
 	proposals: Array<{
@@ -1211,6 +1218,7 @@ export interface IProposalsToolOutputs {
 	"delendai_proposals_proposals_db_verify": DelendaiProposalsProposalsDbVerifyOutput;
 	"delendai_proposals_proposals_search": DelendaiProposalsProposalsSearchOutput;
 	"delendai_proposals_proposals_summary_backfill": DelendaiProposalsProposalsSummaryBackfillOutput;
+	"delendai_proposals_review_claim": DelendaiProposalsReviewClaimOutput;
 	"delendai_proposals_review_queue": DelendaiProposalsReviewQueueOutput;
 	"delendai_proposals_round_context": DelendaiProposalsRoundContextOutput;
 	"delendai_proposals_state_health": DelendaiProposalsStateHealthOutput;

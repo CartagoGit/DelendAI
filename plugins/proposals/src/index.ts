@@ -92,6 +92,7 @@ import { buildProposalGetRegistration } from './lib/tools/proposal-get.tool';
 import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
 import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
 import { movesStayOutOfTheIndex } from './lib/shared/index-free-git-runner';
+import { buildReviewClaimRegistration } from './lib/tools/review-claim.tool';
 import { buildReviewQueueRegistration } from './lib/tools/review-queue.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import type { IStateToolOptions } from './lib/tools/state-tools.tool';
@@ -935,6 +936,7 @@ export default definePlugin({
 					buildCloseSliceRegistration(authoringOptions),
 					buildReviewRegistration(authoringOptions),
 					buildReviewQueueRegistration(authoringOptions),
+					buildReviewClaimRegistration(authoringOptions),
 					buildProposalBoardRegistration(authoringOptions),
 					buildAdoptRegistration(authoringOptions),
 					// on-demand audit of the host-instruction files

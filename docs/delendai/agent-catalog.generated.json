@@ -745,6 +745,10 @@
 			"plugin": "proposals"
 		},
 		{
+			"name": "delendai_proposals_review_claim",
+			"plugin": "proposals"
+		},
+		{
 			"name": "delendai_proposals_review_queue",
 			"plugin": "proposals"
 		},
@@ -1741,6 +1745,14 @@
 				"id": "x00644",
 				"title": "x00644",
 				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00737",
+				"title": "x00737",
+				"track": "hosts",
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
