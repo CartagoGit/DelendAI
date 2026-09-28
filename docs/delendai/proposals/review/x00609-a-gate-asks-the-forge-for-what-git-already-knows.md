@@ -6,7 +6,9 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-23
-shipped-in: ["713104606"]
+shipped-in:
+  - "713104606"
+  - "9045105285a86086b1854157034e04005d2252e6"
 ---
 
 # x00609 — A gate asks the forge for what git already knows
@@ -74,7 +76,7 @@ it must not pass, and it must not read as a code defect either.
 
 ### S1 — Containment is read from the commits
 
-- **Status**: done — `containedInGit` answers from
+- **Status**: done
   `git merge-base --is-ancestor`, returning `undefined` when this clone
   cannot tell; `containsWith` prefers it and falls back to the forge only
   then, naming both refs if neither can answer. Measured against the real
@@ -85,7 +87,11 @@ it must not pass, and it must not read as a code defect either.
 - **Gate**: `npx vitest run tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`,
   `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: delendai-delivery-verifier
+- review-log: approved by delendai-delivery-verifier
+- review-attribution: unrecorded — nothing in Git names who delivered 9045105285a86086b1854157034e04005d2252e6: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by delendai-delivery-verifier
 ## acceptance
 
 - The guard judges every ref in this repository with no `compare` call at
