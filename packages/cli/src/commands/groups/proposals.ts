@@ -395,7 +395,7 @@ const integerArg = (
  * The evidence an approval carries, from flags. Absent unless at least
  * one evidence flag was given, so a submit or a status call sends none.
  */
-const evidenceArgs = (
+export const evidenceArgs = (
 	args: readonly string[],
 ): Record<string, unknown> | undefined => {
 	const evidence = {

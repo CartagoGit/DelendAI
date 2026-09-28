@@ -120,6 +120,7 @@ const EXPECTED_COMMANDS = [
 	'guard',
 	'repair',
 	'work',
+	'review',
 	'docs search',
 	'proposals auto-work',
 	'proposals continue',
