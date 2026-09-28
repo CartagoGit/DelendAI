@@ -2,7 +2,7 @@
 id: x00543
 title: "The marginal plugin ceiling is reported over hard and enforced nowhere"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-15
@@ -11,6 +11,8 @@ tags:
     - budgets
     - gates
     - test-fidelity
+shipped-in:
+  - "4815b2479"
 ---
 
 # x00543 — The marginal plugin ceiling is reported over hard and enforced nowhere
@@ -72,7 +74,7 @@ there is nothing to compare, and the gate says that rather than reporting
 
 ### S2 — The e2e marginal cases measure the surface they name
 
-- **Status**: done — with the swarm, lean and per-preset marginal cases pinned to `surfaceMode: 'native'`, and `marginalPluginBytes` refusing a surface with no plugin owners, the spec failed exactly once before S3: `standard marginal plugin bytes = 11167B: expected 11167 to be less than or equal to 11000`. The other 16 cases passed, on the same surface as before.
+- **Status**: done
 - **Files**: [`packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`]
 
 Each marginal case pins `surfaceMode: 'native'`. Each also asserts that at
@@ -80,10 +82,14 @@ least one plugin owner was measured, so a future change of surface cannot
 empty the assertion again without failing.
 
 - **Gate**: `npx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max
+- review-attribution: unrecorded — nothing in Git names who delivered 4815b247981543efa2793f3f5ba84b04eeb80c48: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by glm-5.3-max
 ### S3 — `agent-orchestrator` fits under its preset ceilings
 
-- **Status**: done, over the warning — the plugin measures 10,577 B on `standard` (was 11,167 B): under the 11,000 B hard ceiling and still over the 9,500 B warning. `_budget` is removed. It listed a second schema for figures `_dispatch` already returns, and it invented what it could not know: both token ceilings were always 0, and `exhausted` meant "spent more than nothing". Spend now comes back through `_plan_ref` as `spent`, next to the plan's real `budget` ceilings, and `SpendSchema`/`spendOf` are shared with `_dispatch`. The swarm cost pin moves 161,042 → 160,451 B and 149 → 148 tools. The agent-orchestrator suite passes: 306 tests in 29 files.
+- **Status**: done
 - **Files**: [`plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts`, `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/dispatch.tool.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/dispatch-output-contract.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/dispatch-port-refusal.spec.ts`, `plugins/agent-orchestrator/tests/src/index.spec.ts`, `packages/core/tests/src/lib/token/catalog-task-context-cost.spec.ts`, `docs/delendai/ADOPTER-SURFACE-MODE.md`]
 
 Getting under the warning would need another 1,077 B. The largest
@@ -95,17 +101,23 @@ this fix.
 - **Gate**: `bun run tokens:gate` exits 0 with every preset's largest
   plugin within hard, and `bun run tokens:dashboard:check` reports no
   `over hard` marginal row.
-
+- review-state: done
+- review-implementer: qwen-3.8-max
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max
 ### S4 — The dashboard and the gate share one verdict
 
-- **Status**: done — the dashboard's marginal column is now `marginalStatus(row.ownerRows, …)`, built on the same `marginalVerdict` the gate enforces, so a surface with no plugin tool reads `n/a` instead of `within hard`. Regenerated on 2026-09-15: `TOKEN-BUDGETS.md` has 0 `over hard` rows, and `standard` reads `over warning (9,500B)` at 10,577 B. `tokens:dashboard:check` passes, and `tokens:gate` exits 0 across all six governed presets.
+- **Status**: done
 - **Files**: [`tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/test/preset-marginal-ceiling.ts`]
 
 The dashboard's marginal status comes from the same function S1 adds. An
 "over hard" row and a zero exit can no longer coexist.
 
 - **Gate**: `bun run tokens:dashboard:check && bun run tokens:gate`
-
+- review-state: done
+- review-implementer: qwen-3.8-max
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max
 ## acceptance
 
 - Adding 200 B of schema to any plugin that sits within 200 B of its
