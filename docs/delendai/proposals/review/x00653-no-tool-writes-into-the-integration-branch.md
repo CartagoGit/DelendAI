@@ -105,7 +105,7 @@ The audit of every write tool found no other route:
 - **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Files**:
-  - `docs/delendai/proposals/review/r00643-proposal-frontmatter-is-parsed-once-as-yaml.md`
+  - `docs/delendai/proposals/done/refactors/r00643-proposal-frontmatter-is-parsed-once-as-yaml.md`
   - `docs/delendai/proposals/review/x00642-a-conflict-in-a-derived-file-does-not-stall-the-queue.md`
   - `docs/delendai/proposals/review/x00647-a-test-does-not-expire-with-the-calendar.md`
   - `docs/delendai/proposals/review/x00648-a-published-work-ref-stays-deleted.md`

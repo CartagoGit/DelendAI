@@ -71,7 +71,7 @@ with a reviewer who wrote none of them.
 - **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Files**:
-  - `docs/delendai/proposals/review/f00552-every-fact-names-its-authority-and-every-copy-of-it-is-a-declared-projection.md`
+  - `docs/delendai/proposals/done/feats/f00552-every-fact-names-its-authority-and-every-copy-of-it-is-a-declared-projection.md`
   - `docs/delendai/proposals/review/f00272-useful-tokens-que-fraccion-de-tools-list-se-usa-de-verdad.md`
   - `docs/delendai/proposals/in-progress/f00536-context-frugality-as-an-enforced-agent-property-and-automatic-compaction-of-tool-output.md`
   - `docs/delendai/proposals/review/x00643-a-proposal-in-review-can-be-reviewed-by-someone-who-did-not-write-it.md`
