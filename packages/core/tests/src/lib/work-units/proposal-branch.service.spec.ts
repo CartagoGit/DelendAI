@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { liveProposalBranch } from './proposal-branch.service';
+import { liveProposalBranch } from '@delendai/core/lib/work-units/proposal-branch.service';
 
 const TEMPLATE =
 	'refs/heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic}';

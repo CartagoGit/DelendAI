@@ -8,7 +8,7 @@ import { resolveWorkRef } from '@delendai/core/public';
 import {
 	parseWorkSubject,
 	workRefShapeInWords,
-} from './work-ref-shape.service';
+} from '@delendai/core/lib/work-units/work-ref-shape.service';
 
 const TEMPLATE =
 	'delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic}';

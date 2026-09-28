@@ -1,7 +1,3 @@
-import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
 import {
 	CONFIG_FILE_SCHEMA,
 	DEFAULT_CONFIG_FILENAME,
@@ -15,16 +11,7 @@ import {
 
 import type { IConfigSetPlan } from '../contracts/interfaces/config-file.interface';
 
-export const configPathFor = (workspace: string): string =>
-	join(workspace, DEFAULT_CONFIG_FILENAME);
-
-export const readConfigText = async (
-	workspace: string,
-): Promise<string | undefined> => {
-	const path = configPathFor(workspace);
-	if (!existsSync(path)) return undefined;
-	return readFile(path, 'utf8');
-};
+export { configPathFor, readConfigText } from '@delendai/core/cli';
 
 const parseValue = (raw: string): unknown => {
 	try {

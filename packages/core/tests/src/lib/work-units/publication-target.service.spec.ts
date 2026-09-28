@@ -25,7 +25,7 @@ import {
 	proposalSliceCount,
 	proposalStillInProgress,
 	publicationPattern,
-} from './publication-target.service';
+} from '@delendai/core/lib/work-units/publication-target.service';
 
 const roots: string[] = [];
 afterEach(() => {

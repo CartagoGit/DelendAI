@@ -10,7 +10,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import {
 	checkWorkflowInvariants,
 	renderInvariantReport,
-} from './workflow-invariants.service';
+} from '@delendai/core/lib/work-units/workflow-invariants.service';
 
 const roots: string[] = [];
 afterAll(() => {

@@ -35,21 +35,19 @@ export { buildCanonicalLaunch } from './lib/server-args.service';
 export { reportGuardHooks } from './lib/guard-hooks-autoinstall.service';
 // The one way a publication becomes a pull request (x00677): the CLI's
 // publish and the local hydrator both go through it.
-export { openPublicationPullRequest } from './lib/publication-pull-request.service';
 export {
 	checkWorkflowInvariants,
-	renderInvariantReport,
-} from './lib/workflow-invariants.service';
-export {
+	openPublicationPullRequest,
 	policyOf,
+	renderInvariantReport,
 	runWorkflowDoctor,
 	sharedCheckoutOf,
-} from './lib/workflow-doctor.service';
+} from '@delendai/core/cli';
 export type {
 	IInvariantReport,
 	IInvariantResult,
 	IInvariantScope,
-} from './contracts/interfaces/workflow-invariants.interface';
+} from '@delendai/core/cli';
 export type { IGuardAutoinstallOutcome } from './contracts/interfaces/guard-hooks-autoinstall.interface';
 
 const commandMatches = (
@@ -229,9 +227,7 @@ const brokenInvariants = async (
 	workspaceRoot: string,
 ): Promise<readonly string[]> => {
 	try {
-		const { runWorkflowDoctor } = await import(
-			'./lib/workflow-doctor.service'
-		);
+		const { runWorkflowDoctor } = await import('@delendai/core/cli');
 		const report = await runWorkflowDoctor({
 			from: workspaceRoot,
 			scopes: ['checkout'],

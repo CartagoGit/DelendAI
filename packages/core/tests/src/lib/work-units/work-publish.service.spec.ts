@@ -6,6 +6,7 @@
  * the failure being fixed is a sequence that half happened: two pull
  * requests opened, both work refs left standing on the forge.
  */
+import { holdWorkRef } from '@delendai/core/lib/wip-engine/work-ref-lock';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -13,7 +14,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { holdWorkRef, resolveDevelopmentPolicy } from '@delendai/core/public';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	captureWorkingState,
@@ -23,9 +24,9 @@ import {
 import {
 	publicationRefFor,
 	publicationRefFromWorkRef,
-	publishWorkRef,
-	publishWorkRefExclusively,
-} from './work-publish.service';
+	publishWorkUnit,
+	publishWorkUnitExclusively,
+} from '@delendai/core/lib/work-units/work-publish.service';
 
 const roots: string[] = [];
 
@@ -72,7 +73,7 @@ const repoWithWork = (): string => {
 };
 
 const publish = (root: string, over: Record<string, unknown> = {}) =>
-	publishWorkRef({
+	publishWorkUnit({
 		root,
 		cwd: root,
 		workRef: WORK_REF,
@@ -133,7 +134,7 @@ describe('publicationRefFromWorkRef (x00568 S1)', () => {
 	});
 });
 
-describe('publishWorkRef (x00553 S5)', () => {
+describe('publishWorkUnit (x00553 S5)', () => {
 	it('names the publication ref from the policy prefix', () => {
 		expect(publicationRefFor(policy, 'a-name')).toBe(
 			'refs/heads/delendai/pr/a-name',
@@ -188,7 +189,7 @@ describe('publishWorkRef (x00553 S5)', () => {
 			join(root, 'wt'),
 			WORK_REF.replace('refs/heads/', ''),
 		);
-		const standing = publishWorkRef({
+		const standing = publishWorkUnit({
 			root,
 			cwd: join(root, 'wt'),
 			workRef: WORK_REF,
@@ -209,7 +210,7 @@ describe('publishWorkRef (x00553 S5)', () => {
 
 	it('refuses a work ref that does not exist, and removes nothing', () => {
 		const root = repoWithWork();
-		const outcome = publishWorkRef({
+		const outcome = publishWorkUnit({
 			root,
 			cwd: root,
 			workRef: 'refs/heads/delendai/wip/claude/nothing-here',
@@ -301,7 +302,7 @@ describe('publishing holds the work ref against a cadence push', () => {
 		});
 		expect(held.kind).toBe('acquired');
 
-		const outcome = await publishWorkRefExclusively(request(root), {
+		const outcome = await publishWorkUnitExclusively(request(root), {
 			waitMs: 0,
 		});
 
@@ -325,7 +326,7 @@ describe('publishing holds the work ref against a cadence push', () => {
 		if (held.kind !== 'acquired') throw new Error('expected to hold it');
 		setTimeout(() => void held.release(), 50);
 
-		const outcome = await publishWorkRefExclusively(request(root), {
+		const outcome = await publishWorkUnitExclusively(request(root), {
 			pollMs: 10,
 		});
 

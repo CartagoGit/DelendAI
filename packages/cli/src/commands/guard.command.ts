@@ -25,8 +25,7 @@ import type {
 	IGuardFacts,
 	IGuardedHook,
 } from '../contracts/interfaces/guard.interface';
-import { worktreeAgent } from '../lib/worktree-agent.service';
-import { readWorkspacePolicy } from '../lib/development-policy.service';
+import { readWorkspacePolicy, worktreeAgent } from '@delendai/core/cli';
 import {
 	inspectGuardHooks,
 	installGuardHooks,

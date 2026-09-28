@@ -55,6 +55,40 @@ export type {
 	IGuardInvocation,
 } from './lib/contracts/interfaces/guard-hooks.interface';
 
+// A unit of work, one engine for the CLI's `work` command and the MCP
+// `work` tool: entering, checkpointing, claiming and publishing it, and
+// the policy it reads.
+export { runWorkUnit } from './lib/work-units/work-unit.service';
+export { EXIT_CODE } from './lib/contracts/constants/exit-code.constant';
+export type { IExitCode } from './lib/contracts/interfaces/exit-code.interface';
+export type {
+	IWorkUnitContext,
+	IWorkUnitResult,
+} from './lib/contracts/interfaces/work-unit-context.interface';
+export {
+	configPathFor,
+	isRecord,
+	readConfigText,
+	scalarArg,
+} from './lib/work-units/command-args.helper';
+export { readWorkspacePolicy } from './lib/work-units/development-policy.service';
+export { openPublicationPullRequest } from './lib/work-units/publication-pull-request.service';
+export {
+	checkWorkflowInvariants,
+	renderInvariantReport,
+} from './lib/work-units/workflow-invariants.service';
+export {
+	policyOf,
+	runWorkflowDoctor,
+	sharedCheckoutOf,
+} from './lib/work-units/workflow-doctor.service';
+export type {
+	IInvariantReport,
+	IInvariantResult,
+	IInvariantScope,
+} from './lib/contracts/interfaces/workflow-invariants.interface';
+export { worktreeAgent } from './lib/work-units/worktree-agent.service';
+
 if (import.meta.main) {
 	void runCli(process.argv.slice(2), process.cwd());
 }

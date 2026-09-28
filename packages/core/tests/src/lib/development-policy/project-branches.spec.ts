@@ -117,6 +117,26 @@ describe('integrationCheckoutRefusal', () => {
 		);
 	});
 
+	it("reads the project's policy the way every reader does: comments allowed, trunk discovered (x00735)", async () => {
+		// A project whose trunk is `main`, with a comment in its config and
+		// no declared integration branch. Read with JSON.parse and the
+		// `develop` default, nothing here was the integration branch: every
+		// write into this shared checkout went through.
+		const root = repoOn(
+			'main',
+			`{
+	// the project's own note
+	"development": {
+		"profile": "shared-checkout-pr",
+		"branches": { "namespacePrefix": "acme" }
+	}
+}`,
+		);
+		expect(await integrationCheckoutRefusal(root, {})).toMatch(
+			/shared checkout on main, the integration branch/u,
+		);
+	});
+
 	it('allows a worktree of the same repository, where a unit of work lives', async () => {
 		const root = repoOn('develop', WORK_REFS);
 		const worktree = mkdtempSync(join(tmpdir(), 'branches-wt-'));

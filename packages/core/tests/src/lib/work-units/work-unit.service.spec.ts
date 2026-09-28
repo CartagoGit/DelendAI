@@ -17,13 +17,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fakePartial } from '@delendai/test-kit';
 
 import type {
-	ICliCommandContext,
-	ICliCommandResult,
-} from '../contracts/interfaces/cli-command.interface';
-import { createWorkCommand } from './work.command';
+	IWorkUnitContext,
+	IWorkUnitResult,
+} from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
+import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 
 const roots: string[] = [];
-const command = createWorkCommand();
+const command = { run: runWorkUnit };
 
 const PINNED = {
 	development: {
@@ -62,11 +62,11 @@ const git = (root: string, ...args: string[]): string =>
 const contextFor = (
 	root: string,
 	over: { readonly json?: boolean; readonly remote?: string } = {},
-): ICliCommandContext =>
-	fakePartial<ICliCommandContext, 'cwd' | 'globals'>({
+): IWorkUnitContext =>
+	fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
 		cwd: root,
 		globals: fakePartial<
-			ICliCommandContext['globals'],
+			IWorkUnitContext['globals'],
 			'workspace' | 'json' | 'remote'
 		>({ workspace: root, json: over.json ?? true, remote: over.remote }),
 	});
@@ -74,7 +74,7 @@ const contextFor = (
 const checkpoint = (
 	root: string,
 	extra: readonly string[] = [],
-): Promise<ICliCommandResult> =>
+): Promise<IWorkUnitResult> =>
 	command.run(
 		[
 			'checkpoint',
@@ -921,7 +921,7 @@ describe('delendai work (x00553)', () => {
 
 describe('delendai work, as a person reads it', () => {
 	const printed = async (
-		run: () => Promise<ICliCommandResult>,
+		run: () => Promise<IWorkUnitResult>,
 	): Promise<string> => {
 		const lines: string[] = [];
 		const spy = vi

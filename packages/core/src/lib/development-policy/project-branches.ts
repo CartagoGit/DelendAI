@@ -14,6 +14,8 @@
  * single place that should. This reads it, so the last resort is the
  * project's own configuration rather than this repository's habits.
  */
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { readWorkspacePolicy } from '../work-units/development-policy.service';
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -52,6 +54,22 @@ const declaredDevelopment = async (
  * when it just needs the name, and it is the ONLY implementation of that
  * question — `work.command.ts` had a private copy of it.
  */
+/**
+ * The project's development policy as every reader of it reads it:
+ * `delendai.config.json` with comments allowed, and the integration branch
+ * discovered when the project does not declare one (x00735). A config that
+ * does not parse is no policy here: these checks never block on it.
+ */
+const readPolicyOrNone = async (
+	root: string,
+): Promise<IResolvedDevelopmentPolicy | undefined> => {
+	try {
+		return await readWorkspacePolicy(root);
+	} catch {
+		return undefined;
+	}
+};
+
 export const checkedOutBranch = (workspaceRoot: string): string | undefined => {
 	try {
 		const branch = execFileSync(
@@ -153,9 +171,8 @@ export const integrationCheckoutRefusal = async (
 	if (env.CI === 'true' && agentEnvironmentMarker(env) === undefined) {
 		return undefined;
 	}
-	const development = await declaredDevelopment(root);
-	if (development === undefined) return undefined;
-	const policy = resolveDevelopmentPolicy({ development });
+	const policy = await readPolicyOrNone(root);
+	if (policy === undefined) return undefined;
 	if (policy.branches.workRefTemplate.length === 0) return undefined;
 	const shared = sharedCheckout(root);
 	if (shared === undefined || resolve(shared) !== resolve(root)) {
@@ -175,9 +192,8 @@ export const integrationCheckoutRefusal = async (
 export const unitBranchOf = async (
 	root: string,
 ): Promise<string | undefined> => {
-	const development = await declaredDevelopment(root);
-	if (development === undefined) return undefined;
-	const policy = resolveDevelopmentPolicy({ development });
+	const policy = await readPolicyOrNone(root);
+	if (policy === undefined) return undefined;
 	if (policy.branches.workRefTemplate.length === 0) return undefined;
 	const prefix = policy.branches.workRefPrefix
 		.replace(/^refs\//u, '')

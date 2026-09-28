@@ -8,7 +8,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { stampWorktreeAgent, worktreeAgent } from './worktree-agent.service';
+import {
+	stampWorktreeAgent,
+	worktreeAgent,
+} from '@delendai/core/lib/work-units/worktree-agent.service';
 
 let root = '';
 

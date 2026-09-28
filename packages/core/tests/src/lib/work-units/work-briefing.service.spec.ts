@@ -8,8 +8,11 @@ import { fakePartial } from '@delendai/test-kit';
 import type {
 	ISwarmUnit,
 	ISwarmView,
-} from '../contracts/interfaces/work-swarm.interface';
-import { briefingFrom, describeBriefing } from './work-briefing.service';
+} from '@delendai/core/lib/contracts/interfaces/work-swarm.interface';
+import {
+	briefingFrom,
+	describeBriefing,
+} from '@delendai/core/lib/work-units/work-briefing.service';
 
 const unit = (agent: string, paths: readonly string[]): ISwarmUnit =>
 	fakePartial<ISwarmUnit, 'agent' | 'ref' | 'subject' | 'paths'>({

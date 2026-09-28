@@ -5,6 +5,7 @@
  *
  * Driven against a real repository, real worktrees and a bare remote.
  */
+import { holdWorkRef } from '@delendai/core/lib/wip-engine/work-ref-lock';
 import { execFile } from 'node:child_process';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -15,7 +16,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
 	createWriteGitRunner,
-	holdWorkRef,
 	type IResolvedDevelopmentPolicy,
 } from '@delendai/core/public';
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';

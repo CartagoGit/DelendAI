@@ -7,11 +7,9 @@
  * shared checkout — which is what makes `doctor` tell the truth when an
  * agent runs it from inside its own worktree.
  */
-import {
-	type IResolvedDevelopmentPolicy,
-	resolveDevelopmentPolicy,
-	sharedCheckout,
-} from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { resolveDevelopmentPolicy } from '../development-policy/resolve';
+import { sharedCheckout } from '../shared/shared-checkout';
 
 import type { IInvariantReport } from '../contracts/interfaces/workflow-invariants.interface';
 import { readWorkspacePolicy } from './development-policy.service';
