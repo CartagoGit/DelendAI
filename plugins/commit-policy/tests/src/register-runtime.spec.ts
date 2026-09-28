@@ -202,44 +202,21 @@ describe('commit-policy register() runtime', () => {
 		await runtime.dispose();
 	});
 
-	it('publishes an agent work checkout on the development cadence', async () => {
-		const exec = promisify(execFile);
+	it('leaves publishing work checkouts to the server (x00724)', async () => {
+		// The server publishes on the cadence from the moment it starts
+		// (`createMcpProject`). This plugin loads lazily and is evicted when
+		// idle, so a publisher of its own ran only while an agent happened to
+		// be using one of its tools, and a second one would push twice.
 		const repo = await createTempGitRepo({ branch: 'develop' });
-		const remote = await mkdtemp(join(tmpdir(), 'commit-policy-remote-'));
-		const tree = join(workspace, 'work');
 		try {
-			await exec('git', ['init', '--bare', '-q'], { cwd: remote });
-			await writeFile(join(repo.cwd, 'a.ts'), 'export const a = 1;\n');
-			await repo.git('add', '--', 'a.ts');
-			await repo.git('commit', '-q', '-m', 'chore: base');
-			await repo.git('remote', 'add', 'origin', remote);
-			await repo.git('push', '-q', '-u', 'origin', 'develop');
-			const branch = 'wip/agent-a/x00001-S1-g1/work';
-			await repo.git(
-				'worktree',
-				'add',
-				'-q',
-				'-b',
-				branch,
-				tree,
-				'develop',
-			);
-			await writeFile(join(tree, 'a.ts'), 'export const a = 2;\n');
-			await exec('git', ['commit', '-q', '-am', 'feat: work'], {
-				cwd: tree,
-			});
-
-			const ticks: Array<{ ms: number; handler: () => void }> = [];
+			const ticks: number[] = [];
 			vi.spyOn(globalThis, 'setInterval').mockImplementation(((
-				handler: () => void,
+				_handler: () => void,
 				ms: number,
 			) => {
-				ticks.push({ ms, handler });
+				ticks.push(ms);
 				return nativeSetInterval(() => {}, 3_600_000);
 			}) as typeof setInterval);
-			const debug = vi
-				.spyOn(console, 'debug')
-				.mockImplementation(() => {});
 			const policy = resolveDevelopmentPolicy({
 				development: {
 					profile: 'shared-checkout-pr',
@@ -256,37 +233,14 @@ describe('commit-policy register() runtime', () => {
 				}),
 			);
 			try {
-				const cadence = ticks.find(
-					(each) =>
-						each.ms === policy.checkpoint.intervalMinutes * 60_000,
+				expect(ticks).not.toContain(
+					policy.checkpoint.intervalMinutes * 60_000,
 				);
-				if (cadence === undefined)
-					throw new Error('the declared cadence scheduled nothing');
-				cadence.handler();
-				await vi.waitFor(() =>
-					expect(
-						debug.mock.calls.some((args) =>
-							String(args[0]).includes(
-								'work-checkouts.published',
-							),
-						),
-					).toBe(true),
-				);
-				expect(
-					(
-						await repo.git(
-							'ls-remote',
-							'origin',
-							`refs/heads/${branch}`,
-						)
-					).trim(),
-				).not.toBe('');
 			} finally {
 				await runtime.dispose();
 			}
 		} finally {
 			await repo.cleanup();
-			await rm(remote, { recursive: true, force: true });
 		}
 	});
 
