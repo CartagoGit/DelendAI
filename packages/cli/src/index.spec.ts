@@ -71,6 +71,29 @@ describe('runHumanCli', () => {
 		expect(captured.err).toContain('--help');
 	});
 
+	it("prints a command's own help instead of running it (x00721)", async () => {
+		capture();
+		const code = await runHumanCli(['proposals', 'review-queue', '--help']);
+		expect(code).toBe(EXIT_CODE.OK);
+		expect(captured.out).toContain(
+			'usage: delendai proposals review-queue',
+		);
+		expect(captured.out).toContain('--offset');
+	});
+
+	it('refuses a flag the command does not read, before anything runs (x00721)', async () => {
+		capture();
+		const code = await runHumanCli([
+			'proposals',
+			'review-queue',
+			'--proposalId=x00001',
+		]);
+		expect(code).toBe(EXIT_CODE.USAGE);
+		expect(captured.err).toContain('did you mean --proposal?');
+		expect(captured.err).toContain('Nothing ran.');
+		expect(captured.out).toBe('');
+	});
+
 	it('runs an offline command against --workspace, not the process cwd', async () => {
 		// a00061, pinned: `guard` is offline, so it gets a noop context
 		// built from `parsed.globals.workspace`. Passing the raw cwd here
