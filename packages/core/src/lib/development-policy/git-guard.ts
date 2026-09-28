@@ -27,6 +27,7 @@ import {
 	refuseUnshapedPublication,
 	refuseUnshapedWorkRef,
 } from './git-guard-shape';
+import { refuseReviewOutsideScope } from './git-guard-review-scope';
 
 const allow = (reason: string): IGitGuardVerdict => ({
 	refused: false,
@@ -221,6 +222,7 @@ const judgeAgentOperation = (
 		case 'commit':
 			return (
 				refuseBorrowedAuthor(policy, operation) ??
+				refuseReviewOutsideScope(policy, operation) ??
 				judgeCommit(
 					policy,
 					operation.branch,

@@ -397,6 +397,20 @@ pre-push:
 commit-msg:
     parallel: false
     commands:
+        # The same two guards as `pre-commit`, again. lefthook skips every
+        # `pre-commit` command when nothing is staged, so an empty commit —
+        # a reviewer's claim — reached `develop` past both on 2026-09-28.
+        # `commit-msg` runs for every commit, empty or not. The guard is
+        # asked as `pre-commit`: it judges the same commit, and the shared
+        # checkout's CLI (the one hooks run) knows that name in every
+        # version, including the ones from before `commit-msg` existed.
+        refuse-integration-commit:
+            env: *hook-locale
+            run: bun tools/scripts/hooks/refuse-integration-commit.script.ts
+        delendai-guard:
+            env: *hook-locale
+            run: bun "$(git rev-parse --path-format=absolute --git-common-dir)/../packages/cli/src/index.ts" --workspace="$(git rev-parse --show-toplevel)" guard pre-commit
+
         commit-msg-conventional:
             env: *hook-locale
             run: bun run lint:commit-msg -- {1}

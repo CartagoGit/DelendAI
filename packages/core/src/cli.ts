@@ -71,7 +71,10 @@ export {
 	readConfigText,
 	scalarArg,
 } from './lib/work-units/command-args.helper';
-export { readWorkspacePolicy } from './lib/work-units/development-policy.service';
+export {
+	readWorkspaceDocsDir,
+	readWorkspacePolicy,
+} from './lib/work-units/development-policy.service';
 export { openPublicationPullRequest } from './lib/work-units/publication-pull-request.service';
 export {
 	checkWorkflowInvariants,

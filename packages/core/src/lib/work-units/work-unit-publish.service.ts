@@ -13,6 +13,11 @@ import {
 } from './publication-target.service';
 import { openPublicationPullRequest } from './publication-pull-request.service';
 import { scalarArg } from './command-args.helper';
+import { readWorkspaceDocsDir } from './development-policy.service';
+import {
+	isReviewUnitBranch,
+	outsideReviewScope,
+} from '../development-policy/git-guard-review-scope';
 
 import {
 	agentFor,
@@ -80,6 +85,29 @@ export const published = async (
 			`The integration branch \`${policy.branches.integration}\` resolves to no commit in this clone.`,
 			'Fetch it (git fetch), or correct development.branches.integration.',
 		);
+	}
+	// A review records verdicts. What it changes beyond the project's
+	// documents is not a review's to publish, however it was committed.
+	if (isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, ''))) {
+		const outside = outsideReviewScope(
+			(
+				readGit(root, [
+					'diff',
+					'--name-only',
+					'--no-renames',
+					`${base}...${workRef}`,
+				]) ?? ''
+			)
+				.split('\n')
+				.filter((path) => path.length > 0),
+			await readWorkspaceDocsDir(root),
+		);
+		if (outside.length > 0) {
+			return refused(
+				`\`${workRef}\` is a review unit, and it changes ${outside.join(', ')}: a review records verdicts, it does not change the product.`,
+				'Take those changes out of the unit (revert the commits that made them). A change the product needs is a proposal of its own, implemented in an `implement` unit.',
+			);
+		}
 	}
 	// Whether this slice is published alone or joins its proposal's pull
 	// request is the policy's decision (integration.publication).

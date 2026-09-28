@@ -21,6 +21,10 @@ export type IGuardedGitOperation =
 			 * command-line overrides, `Name <email>`, when observed.
 			 */
 			readonly configuredAuthor?: string | undefined;
+			/** The paths the commit changes, when observed. */
+			readonly paths?: readonly string[] | undefined;
+			/** The project's documents directory (`docsDir`), when observed. */
+			readonly docsDir?: string | undefined;
 	  }
 	| {
 			readonly kind: 'branch-create';
