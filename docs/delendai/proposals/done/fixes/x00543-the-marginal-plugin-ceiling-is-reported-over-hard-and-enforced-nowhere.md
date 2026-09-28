@@ -2,7 +2,7 @@
 id: x00543
 title: "The marginal plugin ceiling is reported over hard and enforced nowhere"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-15
@@ -11,6 +11,11 @@ tags:
     - budgets
     - gates
     - test-fidelity
+shipped-in:
+  - "4815b247981543efa2793f3f5ba84b04eeb80c48"
+last-transition-id: 0a5efc64-2c93-4331-94b1-208da1837023
+last-correlation-id: 0a5efc64-2c93-4331-94b1-208da1837023
+last-transition-from: review
 ---
 
 # x00543 — The marginal plugin ceiling is reported over hard and enforced nowhere
@@ -56,7 +61,7 @@ green harness measuring a different reality from the one it names.
 
 ### S1 — `tokens:gate` enforces the marginal ceiling
 
-- **Status**: done — before the S3 shrink, `bun run tokens:gate -- --preset=standard,swarm,lean` printed `largest plugin (agent-orchestrator): 11,167 B (warning 9,500 / hard 11,000) => HARD BREACH` and exited 1. The same gate over develop's code exited 0. `preset-marginal-ceiling.spec.ts` covers the boundary: 11,001 B breaches, exactly 11,000 B does not, core is never counted, and a core-only surface is `no-plugins`.
+- **Status**: done
 - shipped-in: `4815b2479`
 - **Files**: [`tools/scripts/test/run-actual-preset-budget.script.ts`, `tools/scripts/test/preset-marginal-ceiling.ts`, `tools/scripts/test/preset-marginal-ceiling.interface.ts`, `tools/scripts/test/preset-marginal-ceiling.spec.ts`]
 
@@ -70,10 +75,15 @@ there is nothing to compare, and the gate says that rather than reporting
 - **Gate**: `npx vitest run tools/scripts/test/preset-marginal-ceiling.spec.ts`
 - **Expect**: an owner at `hard + 1` B breaches, an owner at exactly
   `hard` B passes, and core is never counted.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4815b2479 (x00543 S1-S4, ya en develop). S1: preset-marginal-ceiling.ts añade marginalVerdict que mide owners (excluyendo core) vs hard ceiling; preset-marginal-ceiling.spec 6/6 cubre boundary (11,001 breach, 11,000 pass, core excluded). S2: token-budget.e2e.spec.ts 17/17 — cada caso marginal pin surfaceMode=native y asserts ≥1 plugin owner measured. S3: agent-orchestrator shrunken de 11,167→10,577 B en standard; _budget tool eliminado, SpendSchema + spendOf() compartidos con _dispatch; suite 306/306. S4: dashboard usa marginalStatus(row.ownerRows,...) — mismo marginalVerdict que el gate; tokens:dashboard:check exit 0 + tokens:gate exit 0 across 6 presets. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 4815b247981543efa2793f3f5ba84b04eeb80c48: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — The e2e marginal cases measure the surface they name
 
-- **Status**: done — with the swarm, lean and per-preset marginal cases pinned to `surfaceMode: 'native'`, and `marginalPluginBytes` refusing a surface with no plugin owners, the spec failed exactly once before S3: `standard marginal plugin bytes = 11167B: expected 11167 to be less than or equal to 11000`. The other 16 cases passed, on the same surface as before.
+- **Status**: done
 - shipped-in: `4815b2479`
 - **Files**: [`packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`]
 
@@ -82,10 +92,15 @@ least one plugin owner was measured, so a future change of surface cannot
 empty the assertion again without failing.
 
 - **Gate**: `npx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4815b2479 para x00543 S2. token-budget.e2e.spec.ts 17/17 — cada caso marginal (swarm, lean y per-preset) pin surfaceMode='native' y asserta ≥1 plugin owner measured. La regresión documentada en el slice Status (standard marginal plugin bytes = 11167B: expected ≤11000) ya no puede repetirse porque surfaceMode nativo garantiza owners reales. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 4815b247981543efa2793f3f5ba84b04eeb80c48: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S3 — `agent-orchestrator` fits under its preset ceilings
 
-- **Status**: done, over the warning — the plugin measures 10,577 B on `standard` (was 11,167 B): under the 11,000 B hard ceiling and still over the 9,500 B warning. `_budget` is removed. It listed a second schema for figures `_dispatch` already returns, and it invented what it could not know: both token ceilings were always 0, and `exhausted` meant "spent more than nothing". Spend now comes back through `_plan_ref` as `spent`, next to the plan's real `budget` ceilings, and `SpendSchema`/`spendOf` are shared with `_dispatch`. The swarm cost pin moves 161,042 → 160,451 B and 149 → 148 tools. The agent-orchestrator suite passes: 306 tests in 29 files.
+- **Status**: done
 - shipped-in: `4815b2479`
 - **Files**: [`plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts`, `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/dispatch.tool.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/dispatch-output-contract.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/dispatch-port-refusal.spec.ts`, `plugins/agent-orchestrator/tests/src/index.spec.ts`, `packages/core/tests/src/lib/token/catalog-task-context-cost.spec.ts`, `docs/delendai/ADOPTER-SURFACE-MODE.md`]
 
@@ -98,10 +113,15 @@ this fix.
 - **Gate**: `bun run tokens:gate` exits 0 with every preset's largest
   plugin within hard, and `bun run tokens:dashboard:check` reports no
   `over hard` marginal row.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4815b2479 para x00543 S3. agent-orchestrator shrunken de 11,167→10,577 B en standard (bajo 11,000 hard, sobre 9,500 warning). _budget tool eliminado (segundo schema redundante; ceilings siempre 0; 'spent' viene ahora via _plan_ref.spent junto a budget). SpendSchema + spendOf() compartidos con _dispatch. Swarm cost pin 161,042→160,451 B y 149→148 tools. Suite del plugin 306/306 verde en 29 specs. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 4815b247981543efa2793f3f5ba84b04eeb80c48: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S4 — The dashboard and the gate share one verdict
 
-- **Status**: done — the dashboard's marginal column is now `marginalStatus(row.ownerRows, …)`, built on the same `marginalVerdict` the gate enforces, so a surface with no plugin tool reads `n/a` instead of `within hard`. Regenerated on 2026-09-15: `TOKEN-BUDGETS.md` has 0 `over hard` rows, and `standard` reads `over warning (9,500B)` at 10,577 B. `tokens:dashboard:check` passes, and `tokens:gate` exits 0 across all six governed presets.
+- **Status**: done
 - shipped-in: `4815b2479`
 - **Files**: [`tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/test/preset-marginal-ceiling.ts`]
 
@@ -109,6 +129,11 @@ The dashboard's marginal status comes from the same function S1 adds. An
 "over hard" row and a zero exit can no longer coexist.
 
 - **Gate**: `bun run tokens:dashboard:check && bun run tokens:gate`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4815b2479 para x00543 S4. token-budget-dashboard.script.ts ahora usa marginalStatus(row.ownerRows,...) construido sobre el mismo marginalVerdict del gate. TOKEN-BUDGETS.md regenerado: 0 over-hard rows, standard reads 'over warning (9,500B)' at 10,577 B. tokens:dashboard:check exit 0 + tokens:gate exit 0 across 6 governed presets. Un 'over hard' y exit 0 ya no pueden coexistir (invariante cubierto por el cambio). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 4815b247981543efa2793f3f5ba84b04eeb80c48: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ## acceptance
 

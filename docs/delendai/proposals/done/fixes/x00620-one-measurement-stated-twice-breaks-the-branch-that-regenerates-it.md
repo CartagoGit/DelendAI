@@ -2,11 +2,16 @@
 id: x00620
 title: "One measurement stated twice breaks the branch that regenerates it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
-shipped-in: ["f7fb19915"]
+shipped-in:
+  - "f7fb19915"
+  - "57914a5f6060bdb7a2df399864a2bb9a0368cc99"
+last-transition-id: eda43e13-2ce8-430b-a4f9-f135e197fdbe
+last-correlation-id: eda43e13-2ce8-430b-a4f9-f135e197fdbe
+last-transition-from: review
 ---
 
 # x00620 — One measurement stated twice breaks the branch that regenerates it
@@ -66,7 +71,7 @@ same commit, with the same amount of thought.
 
 ### S1 — The figures live in the generated file only
 
-- **Status**: done — proved in both directions: with the dashboard
+- **Status**: done
 - shipped-in: `57914a5f6`
   reverted to its committed state the spec fails; regenerated, it passes.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/token/catalog-task-context-cost.spec.ts`
@@ -75,6 +80,11 @@ same commit, with the same amount of thought.
   measurement script's output, instead of restating nine figures from it.
   The corpus-label assertions stay, because they are about the corpus
   being measured at all rather than about its size.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 57914a5f6 para x00620 S1. catalog-task-context-cost.spec.ts (3/3) ya no restatea 9 figuras del dashboard — asserta que docs/delendai/TOKEN-BUDGETS.md CONTIENE el output del script de medición, vía búsquedas substring sobre el documento generado. Las assertions de corpus-label se mantienen (porque hablan del corpus medido, no de su tamaño). El slice Status lo prueba en ambos sentidos: con el dashboard revertido a su committed state el spec falla; regenerado, pasa. La ratchet no se debilita: gen:all + drift-check siguen forzando regeneración deliberada, y el ledger de razones queda en los comentarios del spec. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #362 from CartagoGit/delendai/pr/claude-opus-5-5/x00608-S1-g1/a-proposal-is-written-where-the-caller-stands (refs/heads/delendai/wip/claude-opus-5-5/x00608-S1-g1/a-proposal-is-written-where-the-caller-stands) (57914a5f6060bdb7a2df399864a2bb9a0368cc99), opened by minimax-m3
 
 ## acceptance
 
