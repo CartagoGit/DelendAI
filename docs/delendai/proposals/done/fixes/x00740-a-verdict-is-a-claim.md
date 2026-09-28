@@ -2,15 +2,17 @@
 id: x00740
 title: "A verdict is a claim"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00737, x00739]
-last-transition-id: 5982c2cd-e551-4a34-b88e-715493ed6128
-last-correlation-id: 5982c2cd-e551-4a34-b88e-715493ed6128
-last-transition-from: in-progress
+last-transition-id: 6468eda8-134e-4950-b273-2fd3acfe778c
+last-correlation-id: 6468eda8-134e-4950-b273-2fd3acfe778c
+last-transition-from: review
+shipped-in:
+  - "51aabcbd0"
 ---
 
 # x00740 — A verdict is a claim
@@ -73,7 +75,7 @@ A swarm of `minimax-3` and `glm-5.3-max` reviewers, watched on 2026-09-28:
 
 ### S1 — Verdicts claim, claims commit alone, review lines keep the blank line
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/contracts/interfaces/review-claim-outcome.interface.ts`
@@ -88,6 +90,11 @@ A swarm of `minimax-3` and `glm-5.3-max` reviewers, watched on 2026-09-28:
   - `packages/core/src/lib/contracts/constants/work-topic.constant.ts`
   - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
   - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 51aabcbd0 (x00740 S1, merge PR #608). review-claim.service.ts + review-claim.tool.ts + authoring.tool.ts + swarm/proposal-review.ts: un verdict en un review unit sobre propuesta no reclamada deja un commit Claims en la unidad; sobre propuesta retenida por OTRA unidad es rechazado incluso con el mismo modelo, archivo sin cambios. El commit de claim no toca archivos (lo que esté stageado sigue stageado). withClosingLines termina las líneas de review con blank line antes del heading y mendiga slices escritos por el viejo código. work enter rechaza topic > 48 chars sin crear ref. 51/51 verde. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from commit 51aabcbd0c4c names refs/heads/delendai/wip/claude-opus-5-5/implement/x00740-S1-g1/a-verdict-is-a-claim (51aabcbd0c4c73ce6907c3b12ba8fb313b21186b), opened by minimax-m3
 
 ## dependency graph
 
