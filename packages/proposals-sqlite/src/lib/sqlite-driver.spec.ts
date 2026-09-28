@@ -24,8 +24,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
-	MIGRATION_CHECKSUMS,
-	MIGRATION_FILES,
+	migrationChecksums,
+	migrationFiles,
 	MigrationChecksumMismatchError,
 	applyMigrations,
 	currentSchemaVersion,
@@ -58,8 +58,8 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		rmSync(tmpDir, { recursive: true, force: true });
 	});
 
-	it('MIGRATION_FILES lists the migrations in order', () => {
-		expect(MIGRATION_FILES).toEqual([
+	it('migrationFiles() lists the migrations in order', () => {
+		expect(migrationFiles()).toEqual([
 			'0001_initial.sql',
 			'0002_reconciliation_runs.sql',
 			'0003_lifecycle_events.sql',
@@ -84,9 +84,9 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0022_apply_candidate_run_kind.sql',
 			'0023_frontmatter_json.sql',
 		]);
-		expect(MIGRATION_CHECKSUMS).toBeDefined();
-		for (const name of MIGRATION_FILES) {
-			expect(MIGRATION_CHECKSUMS[name]).toMatch(/^[0-9a-f]{64}$/);
+		expect(migrationChecksums()).toBeDefined();
+		for (const name of migrationFiles()) {
+			expect(migrationChecksums()[name]).toMatch(/^[0-9a-f]{64}$/);
 		}
 	});
 
@@ -113,7 +113,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		// `0010_fts5.sql` without bumping the constant, and a hardcoded
 		// `toBe(9)` here turned every future migration into a failing test
 		// in a spec that is not about migration counts at all.
-		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(MIGRATION_FILES.length);
+		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(migrationFiles().length);
 		expect(
 			SQLITE_BOOT_PRAGMAS.some((p) =>
 				p.startsWith('PRAGMA user_version'),
