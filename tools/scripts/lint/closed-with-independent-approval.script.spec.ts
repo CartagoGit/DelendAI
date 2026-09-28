@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	agentOfRef,
+	approvalsAdded,
+	kindOfRef,
 	approvalsNotBy,
 	unapprovedSlices,
 } from './closed-with-independent-approval.script';
@@ -95,5 +97,32 @@ describe('an approval enters through its reviewer (x00715)', () => {
 		expect(approvalsNotBy(diff, 'glm-5')).toEqual(['minimax-m3']);
 		expect(approvalsNotBy(diff, 'GLM-5')).toEqual(['minimax-m3']);
 		expect(approvalsNotBy(diff, 'minimax-m3')).toEqual(['glm-5']);
+	});
+});
+
+describe('an approval enters through a review unit (x00729)', () => {
+	const prefixes = ['delendai/pr/', 'heads/delendai/wip/'];
+
+	it('reads the kind of work a ref names', () => {
+		expect(
+			kindOfRef('delendai/pr/glm-5/review/batch-all-g2/r', prefixes),
+		).toBe('review');
+		expect(
+			kindOfRef(
+				'refs/heads/delendai/wip/minimax-m3/implement/x00001-S1-g1/t',
+				prefixes,
+			),
+		).toBe('implement');
+		expect(kindOfRef('delendai/pr/glm-5', prefixes)).toBeUndefined();
+		expect(kindOfRef('feature/owner-work', prefixes)).toBeUndefined();
+	});
+
+	it('names every approval a diff adds, and nothing else', () => {
+		const diff = [
+			'+- review-log: approved by glm-5 — checked',
+			'-- review-log: approved by gone — removed',
+			'+- review-log: requested_changes by qwen — no test',
+		].join('\n');
+		expect(approvalsAdded(diff)).toEqual(['glm-5']);
 	});
 });
