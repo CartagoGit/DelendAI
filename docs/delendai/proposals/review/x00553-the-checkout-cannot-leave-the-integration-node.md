@@ -132,7 +132,7 @@ adopter project, whatever the integration branch is called.
 
 ### S3 — The mistake is reported when it happens, not on the next boot
 
-- **Status**: done — a guarded `post-checkout` hook reports the move at
+- **Status**: done
   once and never refuses, because git offers no veto after the fact; S2
   is what makes it harmless.
 - **Files**: `packages/cli/src/contracts/constants/guard-hooks.constant.ts`,
@@ -143,6 +143,11 @@ adopter project, whatever the integration branch is called.
   lands anywhere but the integration branch, what happened and how to
   return without losing work. Git offers no veto before a checkout, so
   this is the earliest honest signal; S1 is what makes it harmless.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0ccb5461d (x00553 S3). guard-hooks.constant.ts + guard-hooks.interface.ts + guard.command.spec.ts 27/27 — añade un hook post-checkout que reporta el movimiento sin rehusarlo (git no permite veto post-checkout). Acceptance: el shared checkout que aterriza fuera de la rama de integración ve un mensaje claro inmediatamente; el comando rechazado en S2 es lo que lo hace inofensivo. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 0ccb5461d8620da32d4982d3b8652805f73ac1df: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S4 — The branch model is documented where the branch model is
 
