@@ -11,6 +11,7 @@ last-correlation-id: 3f6b6bdc-38fc-42bb-b531-5fab485b5f3f
 last-transition-from: in-progress
 shipped-in:
   - "abdd94bb3d6a27422527cc4b5f1482028e866336"
+  - "2c27eec1e689b84671a485c6144ad0bf68e17fa2"
 ---
 
 # x00645 — Edits no work ref carries are reported, not silent
@@ -47,15 +48,18 @@ The same session showed the second way work misses its ref: `create_proposal` pu
 - review-reviewer: glm-5.3-max
 - review-log: approved by glm-5.3-max — Revisé la entrega real abdd94bb3. work-dirty-paths: rename/copy de git status -z producen AMBAS rutas (no solo la origen); work status lista los dirty paths que ningún work ref lleva bajo undurable y el texto nombra el comando checkpoint; un path que algún ref lleva no se lista. Además create_proposal bajo perfiles shared-* publica su fichero en el publication ref sin mover HEAD ni stagear nada en el índice compartido. Acceptance cubierta — work-dirty-paths.service.spec 128 líneas + create-proposal-publishes.spec; gate 43/43 en lote. Sin cambios fuera de alcance.
 ### S2 — a proposal is published from a private index, never from HEAD
-- **Status**: review — shipped in #450 (merge abdd94bb3)
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The publication commit is built with a temporary index and `commit-tree` on the integration branch head; `HEAD`, the checked-out branch and `.git/index` are unchanged afterwards."
   - "Only the proposal file differs between the publication commit and its parent."
   - "A failure at any step leaves nothing staged in the shared index."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 2c27eec1e (x00645 S2, merge abdd94bb3 = PR #450). publish-proposal.ts construye el commit con índice temporal y commit-tree sobre el head de la rama de integración; HEAD/branch/.git/index quedan intactos. Diff del commit = solo el fichero de propuesta. Fallo en cualquier paso no deja nada stageado en el índice compartido (los 2 tests 'reports a failed push...' + 'reports a failed commit...' cubren ambos paths). 20/20 verde en los 2 specs focalizados. claude-opus-5-5 != minimax-m3 → veredicto independiente. Sin cambios fuera de alcance.
+
 ## acceptance
 
 - Rename and copy entries of `git status -z` yield both repository paths intact.

@@ -2,17 +2,22 @@
 id: x00642
 title: "A conflict in a derived file does not stall the queue"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00554, x00565, x00637, f00552]
-last-transition-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
-last-correlation-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
-last-transition-from: in-progress
+last-transition-id: fd83c1a8-6a39-4a51-874f-a3638c384ab5
+last-correlation-id: fd83c1a8-6a39-4a51-874f-a3638c384ab5
+last-transition-from: review
 shipped-in:
   - "c3e4ce4d93d6fb01d077615c9d2b36f75cfba1b3"
+  - "aaf4740726c2b44d3e666afe7ceb5bca4705ebdf"
+  - "a5f1ad22ba579ee48b9c3e7f4b2b7d2e004e1aba"
+  - "4c37a0f5cf4e41776dd0151f2a02610aa5439d03"
+  - "530c941c55ade6f7bafd1c165bb09a73b739e555"
+  - "e8a2df52305a23fd94d33ccd03eedd71bf531a45"
 ---
 
 # x00642 — A conflict in a derived file does not stall the queue
@@ -98,7 +103,7 @@ doing the machine's job.
 - review-log: approved by glm-5.3-max — Revisé la entrega real c3e4ce4d9. ref-lifecycle-guard: un candidato que solo confligta con la integración en proyecciones DECLARADAS (ficheros derivados) lo resuelve el hydrator regenerando y empujando; un conflicto en cualquier OTRO fichero deja el candidato intacto y el hydrator pasa al siguiente de la cola; el head del forge es el primer candidato sin conflicto del mismo orden que el hydrator recorre. El conflicto en derivados no detiene la cola. Acceptance cubierta por el spec +16 líneas; gate 43/43 en lote. Sin cambios fuera de alcance.
 ### S2 — A level head nobody armed asks the queue to run
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`,
@@ -113,11 +118,14 @@ pass whose dispatch failed) waited for the hourly schedule, which runs
 main's stale workflow and fails. The hydrator now also asks when the head
 is level and not armed (`shouldAskQueueToRun`); the queue job is
 idempotent and still arms only on a certified integration branch.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé aaf474072. S2 añade shouldAskQueueToRun que dispara cuando (apply ∧ head !== undefined ∧ (refreshed ∨ ¬headArmed)). Sustituye currentQueueOrderBranches por currentQueueOrder en la rama principal y mantiene order = queue.map(e => e.branch) para preservar la API externa. 19/19 verde en el gate; las 4 pruebas nuevas cubren los 4 caminos del predicado. El implementer claude-opus-5-5 != minimax-m3, así que el veredicto es independiente. No toca acceptance de S1 ni non-goals (sigue dejando los conflictos authored al autor).
+
 ### S3 — A stacked work ref is not reported as published
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`,
   `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
@@ -134,11 +142,14 @@ proposal and generation, and the same slice or the whole proposal. The
 integration branch and names outside the convention keep the plain
 containment rule. The red certification was re-run in full once the ref
 was gone.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé a5f1ad22b. S3 introduce unitOf() que parsea /<model>/<id>-<slice>-g<gen>/ y couldPublish(work, container) que devuelve true solo si la unidad del contenedor coincide con la del work en (model, id, generation) y slice==all o ==slice del work. Nombres fuera de la convención + integration branch devuelven true (mantiene la regla de contención). 26/26 verde en el gate; las 4 nuevas pruebas cubren exactamente los 4 escenarios descritos en la slice. El gate previo del ref-lifecycle que iba rojo por S3 (work ref apilado en la publicación de otra unidad) ahora pasa. Sin cambios fuera de alcance.
+
 ### S4 — A refused push says why, and does not hold the queue
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
@@ -150,11 +161,14 @@ hook or the remote marked as failing (`pushRefusalReason`), and a
 candidate that could not be brought forward for any reason (an authored
 conflict, a failed generator, a refused push) is passed over instead of
 being retried while every candidate behind it waits.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4c37a0f5c. S4 añade pushRefusalReason (regex /✖|\berror\b|\bFAIL\b|rejected|refused|denied/iu sobre líneas trim/non-empty; marcadas si las hay, sino las 3 últimas; truncadas a 500 chars) y pushCandidate (devuelve string de razón o undefined). El main loop cambia 'if (conflicted) continue' por 'if (outcome.state !== refreshed) continue', así un authored conflict, un generador que falla o un push rechazado pasan al siguiente candidato sin reintentar. 19/19 verde; las 2 nuevas pruebas cubren ambos paths del parser. Acceptance de la propuesta cubierta (el log ahora dice 'failed: push refused: <reason>'). Sin cambios fuera de alcance.
+
 ### S5 — Every AGENT.md is written after the dashboard it quotes
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/gen-all.spec.ts`
 - **Files**: `tools/scripts/gen-all.script.ts`, `tools/scripts/gen-all.spec.ts`
 
@@ -166,11 +180,14 @@ measurement behind; the drift check, which re-derives AGENT.md from the
 committed dashboard, then failed a push that had just regenerated
 everything — the hydrator's included. `agent-md` now runs after
 `token-budget-dashboard`, and a spec pins that dependency.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 530c941c5. S5 mueve el step agent-md después de token-budget-dashboard en STEPS (línea 192 vs 186) y añade un comentario explicativo en el step. El spec 'writes every AGENT.md after the dashboard it quotes' asserta el orden en runtime, así un cambio futuro que los invierta falla el test. 12/12 verde. Acceptance de la propuesta cubierta: AGENT.md ahora se regenera DESPUÉS del dashboard que cita, así no se queda una medición atrás y el drift-check (que re-deriva AGENT.md desde el dashboard comiteado) ya no rompe el push que acaba de regenerar todo. Sin cambios fuera de alcance.
+
 ### S6 — A published copy does not fail every run
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`,
   `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
@@ -187,8 +204,11 @@ failing. Who re-created the copies is not established: publication
 deletes the remote work ref, and the proposals persistence
 (`commit-and-push`) or commit-policy push on commit may push a work
 tree's branch.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé e8a2df523. S6 introduce blockingRefs(outstanding, reapable) que devuelve outstanding.filter(v => !reapable.some(c => c.name === v.name)). Si blocking.length===0 ahora solo logea cada ref como '(reapable; the queue deletes it)' y termina sin fallar; antes fallaba el gate entero. 26/26 verde; las 2 pruebas nuevas cubren ambos caminos (reapable → [], unpublished → solo el unpublished). Acceptance: 3 PRs + certification de develop que iban rojo por copias de wip/... refs ya publicadas ahora pasan; el --reap del queue las borra. Esta aprobación cierra x00642 (S1 aprobado por glm-5.3-max, S2-S6 por minimax-m3). Sin cambios fuera de alcance.
+
 ## dependency graph
 
 S2 builds on S1's queue order; S3 is independent. It relies on f00552's declarations being
