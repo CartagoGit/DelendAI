@@ -14,6 +14,7 @@ tags:
     - swarm
 shipped-in:
   - "0ccb5461d8620da32d4982d3b8652805f73ac1df"
+  - "436cb1b7b87d029779f3f9f9863581bb7674e62e"
 ---
 
 # x00553 — The checkout cannot leave the integration node
@@ -164,7 +165,7 @@ adopter project, whatever the integration branch is called.
 
 ### S5 — Publishing ends the work ref
 
-- **Status**: done — `delendai work publish` pushes the work ref to its
+- **Status**: done
   publication ref, PROVES the remote carries the same commit, and only
   then removes the work ref (local and remote) and the worktree standing
   on it. Any step that fails stops the sequence with the work ref
@@ -176,6 +177,11 @@ adopter project, whatever the integration branch is called.
   `packages/cli/src/contracts/interfaces/work-publish.interface.ts`,
   `packages/cli/src/commands/work.command.ts`, `package.json`
 - **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 436cb1b7b (x00553 S5). feat(workflow): publishing a unit of work ends its work ref. work-publish.service.ts + work.command.ts + guard-facts.spec.ts 11/11 — `work publish` empuja el work ref al publication ref, prueba que el remoto carga el mismo commit, y solo entonces borra work ref (local + remoto) y worktree. Cualquier paso que falla deja el work ref intacto (la publicación es la que lo carga, así que mientras no llegue allí el trabajo no se pierde). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 436cb1b7b87d029779f3f9f9863581bb7674e62e: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ## acceptance
 
