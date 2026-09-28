@@ -1587,11 +1587,20 @@ describe('x00643: handing a proposal to review opens its rounds', () => {
 
 	beforeEach(async () => {
 		root = await mkdtemp(join(tmpdir(), 'transition-handoff-'));
+		// A hand-off is of delivered work (x00745): the declared files
+		// exist, and a commit on the branch changed them.
+		await mkdir(join(root, 'src'), { recursive: true });
+		for (const file of ['a.ts', 'b.ts', 'c.ts']) {
+			await writeFile(join(root, 'src', file), 'export {};\n');
+		}
 		options = {
 			namespacePrefix: 'proposals',
 			proposalsDirAbs: root,
 			workspaceRoot: root,
-			gitRunner: FAKE_GIT_MV,
+			gitRunner: async (args) =>
+				args[0] === 'log'
+					? { ok: true, output: 'abc1234def567890\n' }
+					: FAKE_GIT_MV(args),
 		};
 		await writeProposal(
 			root,
@@ -1638,6 +1647,8 @@ describe('x00643: handing a proposal to review opens its rounds', () => {
 		// its title; this runner does the same, landing it under another
 		// name than the move reports.
 		const renaming: IGitRunner = async (args) => {
+			if (args[0] === 'log')
+				return { ok: true, output: 'abc1234def567890\n' };
 			if (args[0] === 'mv') {
 				const [, from, to] = args;
 				if (from && to)

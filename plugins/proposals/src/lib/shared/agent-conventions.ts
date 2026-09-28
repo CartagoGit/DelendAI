@@ -41,3 +41,22 @@ export const AGENT_CONVENTIONS = {
 } as const;
 
 export type IAgentConventions = typeof AGENT_CONVENTIONS;
+
+/**
+ * The canonical role a name spells, however it is written
+ * (`delivery_verifier`, `delivery-verifier`, `delendai-delivery-verifier`),
+ * or `undefined`. A role is what a subagent does, not who reviews: on
+ * 2026-09-28 three proposals carried approvals signed `delivery_verifier`,
+ * a Claude subagent approving Claude's work, which no reader could tell
+ * from an independent review (x00745).
+ */
+export const canonicalRoleOf = (
+	name: string,
+): IAgentCanonicalRole | undefined => {
+	const spelled = name
+		.trim()
+		.toLowerCase()
+		.replaceAll('-', '_')
+		.replace(/^delendai_/u, '');
+	return AGENT_CANONICAL_ROLES.find((role) => role === spelled);
+};

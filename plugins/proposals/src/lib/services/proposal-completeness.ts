@@ -247,3 +247,27 @@ export const guardTransitionToDone = async (input: {
 	}
 	return result;
 };
+
+/**
+ * Every file a slice declares that does not exist, whatever the slice's
+ * status: what a reviewer would approve and nobody could then close
+ * (x00745).
+ */
+export const missingDeclaredFiles = async (
+	markdown: string,
+	workspaceRoot: string,
+): Promise<readonly string[]> => {
+	const missing: string[] = [];
+	for (const slice of collectSliceStatuses(markdown)) {
+		for (const file of slice.files) {
+			try {
+				await stat(
+					isAbsolute(file) ? file : resolve(workspaceRoot, file),
+				);
+			} catch {
+				missing.push(file);
+			}
+		}
+	}
+	return missing;
+};

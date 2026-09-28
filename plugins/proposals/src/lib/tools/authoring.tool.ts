@@ -19,6 +19,7 @@ import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentNames } from './agent-names.tool';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { verdictClaimRefusal } from '../services/review-claim.service';
+import { canonicalRoleOf } from '../shared/agent-conventions';
 import { toolErrorEnvelope } from '../shared/tool-envelope';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
@@ -2073,6 +2074,13 @@ export const buildReviewRegistration = (
 					args.action === 'approve' ||
 					args.action === 'request_changes'
 				) {
+					const role = canonicalRoleOf(args.agent);
+					if (role !== undefined) {
+						return toolError(
+							`"${args.agent}" is a role, not a reviewer: a verdict is signed by the model that reached it.`,
+							'Record the verdict under the model id you run as (for example `glm-5.3-max`), the same one your review unit is named after.',
+						);
+					}
 					const branches = scoped.developmentPolicy?.branches;
 					const refusal = await verdictClaimRefusal(
 						scoped.run ?? createGitRunner(scoped.workspaceRoot),
