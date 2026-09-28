@@ -13,6 +13,7 @@ last-correlation-id: 7f99d46c-38a8-4efa-9265-38112ce6f2a6
 last-transition-from: in-progress
 shipped-in:
   - "ce61b70d4b12f44ecc1051613b72954a58680fc3"
+  - "239e2b208d3b4e82c44a12b37dd9d8a4acb6e288"
 ---
 
 # x00653 — No tool writes into the integration branch
@@ -122,15 +123,18 @@ was restored.
 - review-log: approved by glm-5.3-max — Revisé la entrega real ce61b70d4. Ningún tool escribe en la rama de integración: un tool caller-checkout llamado SIN checkout mientras el server corre en el shared checkout sobre la integración bajo política work-ref se NIEGA — el tool no llega a ejecutarse y la negación nombra `delendai work enter`. project-branches.ts +38 implementa el chequeo compartido; el catálogo generado y varias propuestas derivadas se regeneran. Acceptance cubierta (el criterio único del slice); gate 8/8 en lote + verificación en vivo: esta misma sesión vio la negación "would write into the shared checkout on develop" al correr proposals sync fuera del worktree. Sin cambios fuera de alcance.
 ### S2 — A write into the integration branch is refused with the canonical step
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/bind-write-root.spec.ts packages/core/tests/src/lib/development-policy/project-branches.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/project-branches.ts`
   - `packages/core/src/lib/shared/bind-write-root.ts`
   - `packages/core/tests/src/lib/development-policy/project-branches.spec.ts`
   - `packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 239e2b2 (x00653 S2, merge ce61b70d4 = PR #465). project-branches.ts añade integrationCheckoutRefusal() que rechaza una llamada caller-checkout sin checkout cuando el server corre en el shared checkout sobre la rama de integración bajo política work-ref, devolviendo un mensaje que nombra 'delendai work enter'. bind-write-root.ts invoca el chequeo antes del handler (inyectable para tests). Exenciones: worktree permitido, shared checkout en otra rama permitido, sin política permitido, shared-direct permitido. 28/28 verde en los 2 specs focalizados; el test 'still refuses an agent that exports CI=true in the shared checkout' cubre el caso adversario. claude-opus-5-5 != minimax-m3 → veredicto independiente. Sin cambios fuera de alcance.
+
 ## dependency graph
 
 None. S1 and S2 are independent.
