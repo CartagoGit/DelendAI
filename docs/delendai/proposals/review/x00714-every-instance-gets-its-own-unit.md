@@ -2,12 +2,15 @@
 id: x00714
 title: "Every instance gets its own unit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00699, x00695, x00704]
+last-transition-id: b7e0c9de-ae6b-48ce-b5a2-553b1bb50c07
+last-correlation-id: b7e0c9de-ae6b-48ce-b5a2-553b1bb50c07
+last-transition-from: in-progress
 ---
 
 # x00714 — Every instance gets its own unit
@@ -69,7 +72,7 @@ review batch:
 
 ### S1 — One unit per instance
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
