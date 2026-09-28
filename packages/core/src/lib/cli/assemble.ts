@@ -999,6 +999,7 @@ export const assembleCliConfig = async (
 		keepLegacy,
 		agentWorktreeEnabled,
 		developmentPolicy,
+		runtimeBehindCheckout: staleRuntime.behind,
 		validationMatrix,
 		knowledge,
 		metricsRegistry,

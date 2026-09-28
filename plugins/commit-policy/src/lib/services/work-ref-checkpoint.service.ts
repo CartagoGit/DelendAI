@@ -1,7 +1,8 @@
-import { DURABILITY_REMOTE_MISSING } from '../contracts/constants/durability-remote.constant';
-import { resolveDurabilityRemote } from '../persistence/durability-remote.service';
-
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import {
+	DURABILITY_REMOTE_MISSING,
+	resolveDurabilityRemote,
+	type IResolvedDevelopmentPolicy,
+} from '@delendai/core/public';
 import type { IWipEngine } from '../contracts/interfaces/work-ref-tool.interface';
 import { integrationBase, runOutput } from './work-ref-repo.service';
 import { compareAndSwapRef } from './commit-driver';

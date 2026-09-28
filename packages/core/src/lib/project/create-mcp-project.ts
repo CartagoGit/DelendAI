@@ -1,4 +1,6 @@
 import type { IDelendaiProject } from '../contracts/interfaces/delendai-project.interface';
+import type { IWorkCheckoutPublisher } from '../wip-engine/work-checkout-publisher.interface';
+import { startServerWorkCheckoutPublisher } from '../wip-engine/work-checkout-publisher';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -569,10 +571,16 @@ export async function createMcpProject(
 		await resource.register(server);
 	}
 	let disposed = false;
+	let workCheckouts: IWorkCheckoutPublisher | undefined;
 	return {
 		server,
 		registrationOrder: ordered.map((registration) => registration.id),
 		async start(): Promise<void> {
+			// Agents' committed work reaches its work ref on the remote at
+			// the cadence the policy declares, for as long as this server
+			// runs, whichever launcher started it and whichever plugins are
+			// loaded. It never commits, and never touches this checkout.
+			workCheckouts = startServerWorkCheckoutPublisher(config);
 			const transport = new StdioServerTransport();
 			// The MCP SDK attaches one `drain` listener per pending stdio
 			// write. Startup can legitimately publish more than ten frames
@@ -593,6 +601,7 @@ export async function createMcpProject(
 					);
 				}
 			}
+			workCheckouts?.stop();
 			await config.disposePlugins?.();
 		},
 	};

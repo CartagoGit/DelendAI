@@ -1,7 +1,5 @@
-import type {
-	IGitRunner,
-	IResolvedDevelopmentPolicy,
-} from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 
 /** What one tick did with one agent's work checkout. */
 export interface IWorkCheckoutPublication {
