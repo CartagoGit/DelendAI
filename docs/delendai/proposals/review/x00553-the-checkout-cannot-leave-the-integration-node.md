@@ -12,6 +12,9 @@ tags:
     - guard
     - isolation
     - swarm
+shipped-in:
+  - "0ccb5461d8620da32d4982d3b8652805f73ac1df"
+  - "436cb1b7b87d029779f3f9f9863581bb7674e62e"
 ---
 
 # x00553 — The checkout cannot leave the integration node
@@ -83,7 +86,7 @@ adopter project, whatever the integration branch is called.
 
 ### S1 — The documented path exists outside the MCP host
 
-- **Status**: done — `delendai work status|enter|checkpoint` reaches the
+- **Status**: done
   core WIP engine with no MCP server and no database, so the rule can be
   obeyed from a console, from Claude, Codex or Copilot alike.
 - **Files**: `packages/cli/src/commands/work.command.ts`,
@@ -100,10 +103,15 @@ adopter project, whatever the integration branch is called.
   `git switch -c`. That is the root cause of every stray branch. A
   `delendai work` command exposes checkpoint and status over the same
   engine, offline, so the rule can actually be obeyed everywhere.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0ccb5461d (x00553 S1, merge PR #279). feat(workflow): the checkout cannot leave the integration node. work.command.ts (y su spec) alcanzan el core WIP engine con MCP server apagado y DB apagada (probado por los 146 tests del workspace work-units/ que cubren work.command refactorizado). Los archivos del slice (work.command.ts, work.command.spec.ts, public/index.ts) están en 0ccb5461d; development-policy.service.ts y groups/core.ts fueron movidos por 8cc4acffc — el slice los declara en su path antiguo pero el feat los entrega correctamente, así que nombre el drift. La acceptance (work status|enter|checkpoint funciona fuera de MCP) está cubierta por los specs del engine. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 0ccb5461d8620da32d4982d3b8652805f73ac1df: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — A pinned checkout may not commit from a work ref
 
-- **Status**: done — the judge learns which worktree it is in; a commit
+- **Status**: done
   from anywhere but the integration branch in the shared checkout is
   refused, naming the branch the policy declared, and the same commit in
   an agent's own worktree stays allowed.
@@ -117,10 +125,15 @@ adopter project, whatever the integration branch is called.
   not the integration branch) is refused, naming the integration branch
   from the policy and the way back. In a linked worktree under
   `agentWorktrees: true`, it is allowed.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0ccb5461d (x00553 S2). git-guard.ts + guard.command.ts + guard.interface.ts añadidos/movidos. 35/35 verde en git-guard.spec.ts cubre 'integrationCheckoutRefusal' y 'shared checkout refuses work-ref commit'. Acceptance: el guard aprende en qué worktree está y rechaza commits desde el shared checkout si está en work ref (con path declarado), mientras en el worktree del agente permite el commit. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 0ccb5461d8620da32d4982d3b8652805f73ac1df: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S3 — The mistake is reported when it happens, not on the next boot
 
-- **Status**: done — a guarded `post-checkout` hook reports the move at
+- **Status**: done
   once and never refuses, because git offers no veto after the fact; S2
   is what makes it harmless.
 - **Files**: `packages/cli/src/contracts/constants/guard-hooks.constant.ts`,
@@ -131,18 +144,28 @@ adopter project, whatever the integration branch is called.
   lands anywhere but the integration branch, what happened and how to
   return without losing work. Git offers no veto before a checkout, so
   this is the earliest honest signal; S1 is what makes it harmless.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0ccb5461d (x00553 S3). guard-hooks.constant.ts + guard-hooks.interface.ts + guard.command.spec.ts 27/27 — añade un hook post-checkout que reporta el movimiento sin rehusarlo (git no permite veto post-checkout). Acceptance: el shared checkout que aterriza fuera de la rama de integración ve un mensaje claro inmediatamente; el comando rechazado en S2 es lo que lo hace inofensivo. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 0ccb5461d8620da32d4982d3b8652805f73ac1df: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S4 — The branch model is documented where the branch model is
 
-- **Status**: done — the invariant is no longer a sub-bullet of the
+- **Status**: done
   file-claims rule, states the two commands that implement it, and reads
   the integration branch from the policy instead of naming `develop`.
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: `bun run lint:prompt-size`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0ccb5461d (x00553 S4). docs/delendai/AGENT-BOOTSTRAP.md incluye la sección sobre el invariante 'no work ref from shared checkout', nombrando los dos comandos que lo implementan (work enter/work checkpoint) y leyendo la rama de integración desde la policy en vez de hardcodear 'develop'. bun run lint:prompt-size exit 0 (AGENT-BOOTSTRAP.md 31957B/32000B). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 0ccb5461d8620da32d4982d3b8652805f73ac1df: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S5 — Publishing ends the work ref
 
-- **Status**: done — `delendai work publish` pushes the work ref to its
+- **Status**: done
   publication ref, PROVES the remote carries the same commit, and only
   then removes the work ref (local and remote) and the worktree standing
   on it. Any step that fails stops the sequence with the work ref
@@ -154,6 +177,11 @@ adopter project, whatever the integration branch is called.
   `packages/core/src/lib/contracts/interfaces/work-publish.interface.ts`,
   `packages/cli/src/commands/work.command.ts`, `package.json`
 - **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 436cb1b7b (x00553 S5). feat(workflow): publishing a unit of work ends its work ref. work-publish.service.ts + work.command.ts + guard-facts.spec.ts 11/11 — `work publish` empuja el work ref al publication ref, prueba que el remoto carga el mismo commit, y solo entonces borra work ref (local + remoto) y worktree. Cualquier paso que falla deja el work ref intacto (la publicación es la que lo carga, así que mientras no llegue allí el trabajo no se pierde). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 436cb1b7b87d029779f3f9f9863581bb7674e62e: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ## acceptance
 
