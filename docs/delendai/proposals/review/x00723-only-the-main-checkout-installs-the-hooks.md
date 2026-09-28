@@ -2,12 +2,15 @@
 id: x00723
 title: "Only the main checkout installs the hooks"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00551]
+last-transition-id: d504cc60-3fc8-4cff-a5ee-4293f8c209dc
+last-correlation-id: d504cc60-3fc8-4cff-a5ee-4293f8c209dc
+last-transition-from: in-progress
 ---
 
 # x00723 — Only the main checkout installs the hooks
@@ -50,7 +53,7 @@ them to lefthook's fallbacks.
 
 ### S1 — lefthook installs nothing by itself
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/git/prepare-clone.script.spec.ts`
 - **Files**:
   - `lefthook.yml`
