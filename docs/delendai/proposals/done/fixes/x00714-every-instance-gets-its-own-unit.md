@@ -2,15 +2,17 @@
 id: x00714
 title: "Every instance gets its own unit"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00699, x00695, x00704]
-last-transition-id: b7e0c9de-ae6b-48ce-b5a2-553b1bb50c07
-last-correlation-id: b7e0c9de-ae6b-48ce-b5a2-553b1bb50c07
-last-transition-from: in-progress
+last-transition-id: 1f6b541c-9beb-404d-aca7-ebc28348c91c
+last-correlation-id: 1f6b541c-9beb-404d-aca7-ebc28348c91c
+last-transition-from: review
+shipped-in:
+  - "f02d71754"
 ---
 
 # x00714 — Every instance gets its own unit
@@ -72,11 +74,16 @@ review batch:
 
 ### S1 — One unit per instance
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
   - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé f02d71754 (x00714 S1, merge PR #577). fix(work): every instance gets its own unit. Una nueva instancia del mismo agente entrando al mismo tiempo recibe una unidad de trabajo distinta (no comparte el lock ni la work ref). 42/42 verde en work-unit.service.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #577 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00714-all-g1/every-instance-gets-its-own-unit (refs/heads/delendai/wip/claude-opus-5-5/implement/x00714-all-g1/every-instance-gets-its-own-unit) (f02d71754bc17e91aa68ee48f3b3087b425fa39c), opened by minimax-m3
 
 ## dependency graph
 

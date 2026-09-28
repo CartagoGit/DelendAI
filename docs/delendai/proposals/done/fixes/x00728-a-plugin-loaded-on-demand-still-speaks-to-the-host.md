@@ -2,15 +2,17 @@
 id: x00728
 title: "A plugin loaded on demand still speaks to the host"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: []
-last-transition-id: 9dbbdccd-124e-4a31-bcc4-c088753c974e
-last-correlation-id: 9dbbdccd-124e-4a31-bcc4-c088753c974e
-last-transition-from: in-progress
+last-transition-id: 220b54ea-e063-46d8-b988-2b14a4ab89ad
+last-correlation-id: 220b54ea-e063-46d8-b988-2b14a4ab89ad
+last-transition-from: review
+shipped-in:
+  - "4aa599ee9"
 ---
 
 # x00728 — A plugin loaded on demand still speaks to the host
@@ -62,7 +64,7 @@ guard around the same gap.
 
 ### S1 — The captured server reaches the live one
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/plugins/capture-server.spec.ts`
 - **Files**:
   - `packages/core/src/lib/plugins/capture-server.ts`
@@ -74,6 +76,11 @@ guard around the same gap.
   - `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`
   - `packages/core/src/lib/project/create-mcp-project.ts`
   - `packages/core/tests/src/lib/plugins/capture-server.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4aa599ee9 (x00728 S1, merge PR #595). fix(core): a plugin loaded on demand still speaks to the host. Un plugin lazy-loaded sigue pudiendo comunicar errores al host (no se queda mudo cuando no estaba cargado al boot). 380/380 verde en packages/core/tests/src/lib/plugins + cli managed-lazy (36 specs). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #595 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00728-S1-g1/a-plugin-loaded-on-demand-still-speaks-to-the-host (refs/heads/delendai/wip/claude-opus-5-5/implement/x00728-S1-g1/a-plugin-loaded-on-demand-still-speaks-to-the-host) (4aa599ee98e602d311311b9e840338b2e1e91405), opened by minimax-m3
 
 ## dependency graph
 

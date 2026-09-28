@@ -2,15 +2,17 @@
 id: x00730
 title: "review refuses a flag it does not read"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P2
 related: [x00721, x00727]
-last-transition-id: 103837de-b23e-49ff-b769-47101184ebe8
-last-correlation-id: 103837de-b23e-49ff-b769-47101184ebe8
-last-transition-from: in-progress
+last-transition-id: f3b3db16-f30e-4c66-a526-ebac0a4f726a
+last-correlation-id: f3b3db16-f30e-4c66-a526-ebac0a4f726a
+last-transition-from: review
+shipped-in:
+  - "e3da796b5"
 ---
 
 # x00730 — review refuses a flag it does not read
@@ -50,11 +52,16 @@ None.
 
 ### S1 — review declares its flags
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/lib/command-flags.service.spec.ts`
 - **Files**:
   - `packages/cli/src/contracts/constants/review-command.constant.ts`
   - `packages/cli/src/lib/command-flags.service.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé e3da796b5 (x00730 S1, merge PR #598). fix(cli): review refuses a flag it does not read. El comando review rehúsa flags que no conoce (en lugar de ignorarlos). 8/8 verde en review.command.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #598 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00730-all-g1/review-refuses-a-flag-it-does-not-read (refs/heads/delendai/wip/claude-opus-5-5/implement/x00730-all-g1/review-refuses-a-flag-it-does-not-read) (e3da796b5321f082babc779767086386d94501f0), opened by minimax-m3
 
 ## dependency graph
 

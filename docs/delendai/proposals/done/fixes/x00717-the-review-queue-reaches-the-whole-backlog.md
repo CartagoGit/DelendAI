@@ -2,15 +2,17 @@
 id: x00717
 title: "The review queue reaches the whole backlog"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00714]
-last-transition-id: dd731a60-1e85-45c6-a93b-9c5c9397f1a7
-last-correlation-id: dd731a60-1e85-45c6-a93b-9c5c9397f1a7
-last-transition-from: in-progress
+last-transition-id: e9bcffd3-dabb-42b1-9f04-e5dff334b134
+last-correlation-id: e9bcffd3-dabb-42b1-9f04-e5dff334b134
+last-transition-from: review
+shipped-in:
+  - "6e7dec55f"
 ---
 
 # x00717 — The review queue reaches the whole backlog
@@ -60,7 +62,7 @@ other in time. The other 73 went unseen.
 
 ### S1 — Paging and a per-reviewer start
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`
@@ -71,6 +73,11 @@ other in time. The other 73 went unseen.
   - `plugins/proposals/src/generated/tool-outputs.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 6e7dec55f (x00717 S1, merge PR #587). fix(proposals): the review queue reaches the whole backlog. La cola de review lista TODAS las propuestas en review (no solo un subset visible). 10/10 verde entre review-queue-summary.service.spec + review-queue-swarm.tool.spec. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #587 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00717-S1-g1/every-reviewer-sees-the-whole-backlog (refs/heads/delendai/wip/claude-opus-5-5/implement/x00717-S1-g1/every-reviewer-sees-the-whole-backlog) (6e7dec55fc5b0e7cce59756154cf18a1176dbc0e), opened by minimax-m3
 
 ## dependency graph
 

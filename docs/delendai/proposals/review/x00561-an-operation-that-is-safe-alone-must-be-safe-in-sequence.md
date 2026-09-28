@@ -11,6 +11,8 @@ tags:
     - release
     - ci
     - isolation
+shipped-in:
+  - "1db4ea316"
 ---
 
 # x00561 — An operation that is safe alone must be safe in sequence
@@ -69,47 +71,72 @@ S3).
 
 ### S1 — Publishing never deletes work it did not publish
 
-- **Status**: done — the worktree is inspected before removal, `--force`
+- **Status**: done
   is gone, and a tree with uncommitted changes keeps both the worktree
   and the work ref, saying what it found and what to do. A state that
   cannot be read is treated the same way.
 - **Files**: `packages/core/src/lib/work-units/work-publish.service.ts`,
   `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`
 - **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 1db4ea316 (x00561 S1, merge PR #288). fix(workflow): an operation that is safe alone must be safe in sequence — work-publish.service.ts inspecciona el worktree antes del remove y mata `--force`; un tree con cambios sin commit mantiene worktree + work ref y dice qué encontró. Un estado ilegible se trata igual. 16/16 verde en work-publish.service.spec.ts cubre los 4 casos (tree clean, tree dirty, tree illegible, tree ya removido). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 1db4ea316f3a0aa41440d230d264423b83511541: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — A tag release reuses the tag that triggered it
 
-- **Status**: done — an existing tag on the same commit is reused; one
+- **Status**: done
   pointing elsewhere fails BEFORE anything is published; a push that
   races is accepted when the remote already carries the same commit.
 - **Files**: `.github/workflows/release.yml`
 - **Gate**: `bun run lint:workflow-yaml`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 1db4ea316 (x00561 S2). .github/workflows/release.yml reusa un tag existente en el mismo commit, falla ANTES de publicar si el tag apunta a otro commit, y acepta push raceado si el remoto ya carga el mismo commit. bun run lint:workflow-yaml exit 0 (16 workflows válidos). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 1db4ea316f3a0aa41440d230d264423b83511541: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S3 — The regenerator commits only what it generated
 
-- **Status**: done — the commit names the generated paths, so a staged
+- **Status**: done
   file belonging to another agent cannot be swept in. The test now stages
   the other agent's file, which is the case that was passing for the
   wrong reason.
 - **Files**: `packages/cli/src/lib/generated-refresh.service.ts`,
   `packages/cli/src/lib/generated-refresh.service.spec.ts`
 - **Gate**: `npx vitest run packages/cli/src/lib/generated-refresh.service.spec.ts`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 1db4ea316 (x00561 S3). generated-refresh.service.ts ahora nombra los paths generados en el commit (no `git commit -m …` sin paths que captura todo el index). 13/13 verde en generated-refresh.service.spec.ts; el test ahora STAGE el archivo del otro agente (que era el caso que pasaba por la razón equivocada). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 1db4ea316f3a0aa41440d230d264423b83511541: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S4 — The reaper runs even when the report is red
 
-- **Status**: done — `if: always()`, so a stuck queue no longer costs the
+- **Status**: done
   cleanup that keeps the namespace readable.
 - **Files**: `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: `bun run lint:workflow-yaml`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 1db4ea316 (x00561 S4). .github/workflows/keep-the-queue-moving.yml: el reap-step usa `if: always()` (era `if: success()`) — corre incluso cuando el report-job va rojo (x00557 hace que termine rojo en cola atascada). El comentario en el workflow explica el porqué. bun run lint:workflow-yaml exit 0. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 1db4ea316f3a0aa41440d230d264423b83511541: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S5 — The CLI integrates with the same remote the reconciler does
 
-- **Status**: done — `work` resolves the integration remote from what the
+- **Status**: done
   integration branch tracks, then `origin`, then the only remote there
   is, for both the base it checkpoints against and the remote it
   publishes to.
 - **Files**: `packages/cli/src/commands/work.command.ts`
 - **Gate**: `npx vitest run --project @delendai/cli`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 1db4ea316 (x00561 S5). packages/cli/src/commands/work.command.ts ahora resuelve el remote desde la rama de integración (lo que trackea), luego `origin`, luego el único remote — tanto para el base del checkpoint como para el push. Elimina la resolución a mano que duplicaba la del reconciler (x00558 S3). 668/668 verde en el proyecto @delendai/cli (63 specs). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 1db4ea316f3a0aa41440d230d264423b83511541: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ## acceptance
 

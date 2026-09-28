@@ -2,15 +2,17 @@
 id: x00723
 title: "Only the main checkout installs the hooks"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00551]
-last-transition-id: d504cc60-3fc8-4cff-a5ee-4293f8c209dc
-last-correlation-id: d504cc60-3fc8-4cff-a5ee-4293f8c209dc
-last-transition-from: in-progress
+last-transition-id: 5f6640ec-2d56-4a83-99a2-3dcdf9d40176
+last-correlation-id: 5f6640ec-2d56-4a83-99a2-3dcdf9d40176
+last-transition-from: review
+shipped-in:
+  - "f4420fdc7"
 ---
 
 # x00723 — Only the main checkout installs the hooks
@@ -53,11 +55,16 @@ them to lefthook's fallbacks.
 
 ### S1 — lefthook installs nothing by itself
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/git/prepare-clone.script.spec.ts`
 - **Files**:
   - `lefthook.yml`
   - `tools/scripts/git/prepare-clone.script.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé f4420fdc7 (x00723 S1, merge PR #592). fix(git): only the main checkout installs the hooks. El guard de hooks solo se autoinstala en el checkout principal (no en worktrees secundarios que comparten .git). 18/18 verde entre guard-hooks + guard-hooks-autoinstall. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #592 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00723-S1-g1/only-the-main-checkout-installs-the-hooks (refs/heads/delendai/wip/claude-opus-5-5/implement/x00723-S1-g1/only-the-main-checkout-installs-the-hooks) (f4420fdc736d1a21ebe2fb4ab751865e60b1e797), opened by minimax-m3
 
 ## dependency graph
 

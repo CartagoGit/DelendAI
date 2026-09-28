@@ -2,15 +2,17 @@
 id: x00727
 title: "A review is four commands"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00714, x00717, x00718, x00722]
-last-transition-id: 4886e74e-d395-4574-910e-0c216fb349a9
-last-correlation-id: 4886e74e-d395-4574-910e-0c216fb349a9
-last-transition-from: in-progress
+last-transition-id: 97512dc2-d502-4176-8a4d-e34922d65ffb
+last-correlation-id: 97512dc2-d502-4176-8a4d-e34922d65ffb
+last-transition-from: review
+shipped-in:
+  - "e4d82b509"
 ---
 
 # x00727 — A review is four commands
@@ -75,7 +77,7 @@ had not reviewed.
 
 ### S1 — next, approve, changes, finish
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/commands/review.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/review.command.ts`
@@ -88,6 +90,11 @@ had not reviewed.
   - `packages/cli/src/contracts/constants/help-translation.constant.ts`
   - `tools/scripts/lint/cli-ui-parity.map.json`
   - `plugins/proposals/src/lib/services/review-procedure.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé e4d82b509 (x00727 S1, merge PR #596). fix(cli): a review is four commands. review command set reducido a 4 (next, approve, changes, finish). 8/8 verde en review.command.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #596 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00727-S1-g1/a-review-is-four-commands (refs/heads/delendai/wip/claude-opus-5-5/implement/x00727-S1-g1/a-review-is-four-commands) (e4d82b509dd6a9442e5f0eb90dae4a6af129c228), opened by minimax-m3
 
 ## dependency graph
 

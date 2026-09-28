@@ -2,11 +2,16 @@
 id: x00611
 title: "A server that refuses to start says why"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
-shipped-in: ["2fdd43da1"]
+shipped-in:
+  - "2fdd43da1"
+  - "9e17d9fcb"
+last-transition-id: 6e354f00-5b01-4458-bfd2-a9095a86afbe
+last-correlation-id: 6e354f00-5b01-4458-bfd2-a9095a86afbe
+last-transition-from: review
 ---
 
 # x00611 — A server that refuses to start says why
@@ -95,7 +100,7 @@ explain it.
 
 ### S1 — The caller hears the server's own words
 
-- **Status**: done — `withServerWords` quotes the child's last 4KB,
+- **Status**: done
   indented, and says "the server exited without saying why" when it was
   silent, so a caller can tell an explanation from a vanishing. stderr is
   piped by default now; `inherit` stays available and costs that caller
@@ -107,10 +112,15 @@ explain it.
   server that said nothing is reported as silent rather than as
   unexplained; a multi-line context puts the transport's own summary on
   its own line instead of gluing it to the last sentence.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 9e17d9fcb (x00611 S1, merge PR #351). fix(client): a server that refuses to start says why. McpStdioClient.connect pipe stderr por default; `withServerWords` cita los últimos 4KB del child, indentados, y reporta 'the server exited without saying why' cuando no hubo output. Quien quiera su log en su terminal pasa `stderr: 'inherit'` (explícito) y pierde la explicación (explícito también). mcp-stdio-client.spec cubre los 3 casos (explicación quoted, silencio, summary en su propia línea). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from Merge pull request #351 from CartagoGit/delendai/pr/claude-opus-5/x00611-S1-g1/a-server-that-dies-says-why (refs/heads/delendai/wip/claude-opus-5/x00611-S1-g1/a-server-that-dies-says-why) (9e17d9fcb86cc62e211c89f474ddd0a606bd79ad), opened by minimax-m3
 
 ### S2 — A refusal is a refusal, not a stack trace
 
-- **Status**: done — the serve call keeps its fire-and-forget shape (it
+- **Status**: done
   never returns) and gains a `.catch` that reports one line and sets a
   non-zero exit code; the spawn failure names the entrypoint and the
   workspace, which the server cannot report because it never ran.
@@ -120,6 +130,11 @@ explain it.
 - A server that rejects on start is reported in one line and sets a
   non-zero exit code, without awaiting a call that never returns; the
   spawn failure names the entrypoint and the workspace.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 9e17d9fcb (x00611 S2). fix(cli): el `void serve(...)` gana un `.catch` que reporta una línea y fija exit code ≠ 0; stdio-context.factory.ts nombra el entrypoint spawneado y el workspace, que el server no puede reportar porque nunca arrancó. Un refusal al boot ya no es stack trace con source listing. index.spec.ts 40/40 verde (entre cli + client). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from Merge pull request #351 from CartagoGit/delendai/pr/claude-opus-5/x00611-S1-g1/a-server-that-dies-says-why (refs/heads/delendai/wip/claude-opus-5/x00611-S1-g1/a-server-that-dies-says-why) (9e17d9fcb86cc62e211c89f474ddd0a606bd79ad), opened by minimax-m3
 
 ## acceptance
 
