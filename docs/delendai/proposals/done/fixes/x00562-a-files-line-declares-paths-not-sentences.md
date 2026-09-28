@@ -2,7 +2,7 @@
 id: x00562
 title: "A Files line declares paths, not sentences"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20
@@ -10,6 +10,11 @@ tags:
     - proposals
     - wip-engine
     - checkpoints
+shipped-in:
+  - "45a743247165a1176989d2df6c31a0586c362fd3"
+last-transition-id: 18886c28-071c-41b0-8d9c-8f03c182ad92
+last-correlation-id: 18886c28-071c-41b0-8d9c-8f03c182ad92
+last-transition-from: review
 ---
 
 # x00562 — A Files line declares paths, not sentences
@@ -71,17 +76,22 @@ everything looked busy.
 
 ### S1 — The parser keeps the paths and drops the commentary
 
-- **Status**: done — a backticked span is kept only when it looks like a
+- **Status**: done
   path: a separator or a file extension, and none of the punctuation
   prose carries (spaces, quotes, brackets, colons). Every string in the
   spec is copied from the live log.
 - **Files**: `plugins/proposals/src/lib/proposals/expand-declared-files.ts`,
   `plugins/proposals/tests/src/lib/proposals/expand-declared-files-prose.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/expand-declared-files-prose.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 45a743247 (x00562 S1, merge PR #298). fix(proposals): a Files line declares paths, not sentences. expand-declared-files.ts mantiene un span en backticks solo si parece un path (separador o extensión; sin espacios, comillas, corchetes, dos puntos). El spec prose.test cubre los 9 strings del log live (incluye `private: true` que ahora se descarta). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from Merge pull request #298 from CartagoGit/delendai/pr/claude-opus-5/x00562-S1-g1/files-are-paths (refs/heads/delendai/wip/claude-opus-5/x00562-S1-g1/files-are-paths) (45a743247165a1176989d2df6c31a0586c362fd3), opened by minimax-m3
 
 ### S2 — A declared glob is resolved, not refused
 
-- **Status**: done — the checkpoint expands `*`/`**` against the working
+- **Status**: done
   tree into concrete relative paths BEFORE validation, so the engine
   still never hands magic to git and a slice that declares `dir/**` can
   finally be checkpointed. A glob that resolves to nothing still fails,
@@ -90,6 +100,11 @@ everything looked busy.
   `packages/core/src/lib/wip-engine/checkpoint.ts`,
   `packages/core/tests/src/lib/wip-engine/checkpoint.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/wip-engine/checkpoint.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 45a743247 (x00562 S2). scope.ts + checkpoint.ts expanden `*`/`**` contra el working tree en paths relativos concretos ANTES de validar — el motor nunca entrega magic a git y un slice que declara `dir/**` puede checkpoint. Un glob que no resuelve nada falla con 'no paths claimed' (no éxito silencioso). 23/23 verde entre expand-declared-files-prose.spec + checkpoint.spec. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from Merge pull request #298 from CartagoGit/delendai/pr/claude-opus-5/x00562-S1-g1/files-are-paths (refs/heads/delendai/wip/claude-opus-5/x00562-S1-g1/files-are-paths) (45a743247165a1176989d2df6c31a0586c362fd3), opened by minimax-m3
 
 ## acceptance
 

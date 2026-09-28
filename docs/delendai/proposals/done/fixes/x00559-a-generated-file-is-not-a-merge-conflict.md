@@ -2,7 +2,7 @@
 id: x00559
 title: "A generated file is not a merge conflict"
 kind: fix
-status: review
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-19
@@ -11,6 +11,12 @@ tags:
     - merge
     - generated
     - swarm
+shipped-in:
+  - "bc1054fb9"
+  - "8eb773386"
+last-transition-id: 192de9f9-c986-48f5-8bd8-64c20b858e8b
+last-correlation-id: 192de9f9-c986-48f5-8bd8-64c20b858e8b
+last-transition-from: review
 ---
 
 # x00559 — A generated file is not a merge conflict
@@ -65,7 +71,7 @@ disagrees with what landed, so this cannot hide a real divergence.
 
 ### S1 — A conflicted generated file is regenerated, not resolved
 
-- **Status**: done — a git merge driver regenerates the file from the
+- **Status**: done
   merged tree and fails loudly when the generator cannot run, leaving the
   conflict for a human rather than guessing a side. `.gitattributes`
   names it; `delendai guard install` configures it per clone, because git
@@ -79,10 +85,15 @@ disagrees with what landed, so this cannot hide a real divergence.
   `packages/cli/src/contracts/constants/generated-merge-driver.constant.ts`,
   `packages/cli/src/contracts/interfaces/generated-merge-driver.interface.ts`
 - **Gate**: `npx vitest run tools/scripts/git/generated-merge-driver.script.spec.ts`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé bc1054fb9 (x00559 S1, merge PR #281). feat(git): a generated file is merged by regenerating it. generated-merge-driver.script.ts añade un merge driver que regenera el archivo desde el árbol fusionado en vez de resolverlo a mano; falla ruidosamente si el regenerador no puede correr (dejando el conflict intacto). 13/13 verde en generated-merge-driver.script.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered bc1054fb9e72bf438703d5f46071bd622875980e: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — The finished tree gets the last word
 
-- **Status**: done — a merge driver runs per file, mid-merge, on an
+- **Status**: done
   incomplete tree, so what it generates can be subtly wrong (measured: a
   spec count computed from half a merge). A `post-merge` hook re-runs the
   generators against what actually landed and commits only the generated
@@ -97,6 +108,11 @@ disagrees with what landed, so this cannot hide a real divergence.
   `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`,
   `lefthook.yml`
 - **Gate**: `npx vitest run packages/cli/src/lib/generated-refresh.service.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 8eb773386 (x00559 S2). fix(git): the merge driver is actually installed. install-merge-drivers.script.ts + guard-hooks-autoinstall.service.ts instalan el driver via config de git (no solo lo escriben en .gitattributes). 274256928 fix(cli): call the merge-driver installer that already exists — hace que el path CLI llame al installer en lugar de duplicarlo. 10/10 verde entre los 2 specs. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from Merge pull request #309 from CartagoGit/delendai/pr/claude-opus-5/x00574-S1-g1/the-merge-driver-is-installed (refs/heads/delendai/wip/claude-opus-5/x00574-S1-g1/the-merge-driver-is-installed) (8eb773386aa8b843266115032a0dd140778a5f10), opened by minimax-m3
 
 ## acceptance
 

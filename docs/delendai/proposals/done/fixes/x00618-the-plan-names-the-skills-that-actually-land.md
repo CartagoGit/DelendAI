@@ -2,11 +2,16 @@
 id: x00618
 title: "The plan names the skills that actually land"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
-shipped-in: ["f936bf444"]
+shipped-in:
+  - "f936bf444"
+  - "21cbc4dc9"
+last-transition-id: f4b95013-e7d4-4186-8ae2-860823ee00f1
+last-correlation-id: f4b95013-e7d4-4186-8ae2-860823ee00f1
+last-transition-from: review
 ---
 
 # x00618 — The plan names the skills that actually land
@@ -57,7 +62,7 @@ table changes with it and `gen:all --check` says so.
 
 ### S1 — The plan separates what lands from what exists
 
-- **Status**: done — verified in a throwaway consumer project by
+- **Status**: done
   comparing the plan's list against the directories on disk: **8 and 8,
   identical**. 19 skills move to the second heading, which is where they
   were always true.
@@ -70,6 +75,11 @@ table changes with it and `gen:all --check` says so.
   own predicate; the plan lists the bundled ones under the migrate
   sentence and the rest under a heading that says `init` does not copy
   them.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 21cbc4dc9 (x00618 S1, merge PR #359). fix: six places that answered a question they could not answer. init-skill-inventory.script.ts + init-adoption-plan.builder.ts separan los skills en dos headings: 'bundled' (los que init copia, body en core + appliesTo cubre un adopter) y el resto bajo un heading que dice que init no los copia. Cada skill canónico lleva `bundled: boolean` calculado con el mismo predicate de la projection. 173/173 verde en packages/cli/src/lib/init (17 specs). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from commit 21cbc4dc9ed9 names refs/heads/delendai/wip/claude-opus-5/x00618-S1-g1/the-plan-says-which-skills-actually-land (21cbc4dc9ed983008cfc3e6fa42d22e4e6292cb7), opened by minimax-m3
 
 ## acceptance
 
