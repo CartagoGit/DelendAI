@@ -2,15 +2,17 @@
 id: x00739
 title: "A claim belongs to a unit"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00737]
-last-transition-id: 43373782-b7e8-4f71-8740-b22713bd38c8
-last-correlation-id: 43373782-b7e8-4f71-8740-b22713bd38c8
-last-transition-from: in-progress
+last-transition-id: 0a92b222-0b06-45df-b688-e294a8f1d886
+last-correlation-id: 0a92b222-0b06-45df-b688-e294a8f1d886
+last-transition-from: review
+shipped-in:
+  - "60cf44fb31f30d13c36d385edd746f7bef3814aa"
 ---
 
 # x00739 — A claim belongs to a unit
@@ -69,7 +71,7 @@ repository, two server processes, one model name. It found two defects.
 
 ### S1 — Claims by unit, and verdicts that reopen are committed
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/contracts/interfaces/review-claim-holder.interface.ts`
@@ -85,6 +87,11 @@ repository, two server processes, one model name. It found two defects.
   - `packages/core/src/lib/shared/commit-call-writes.ts`
   - `packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
   - `packages/cli/src/commands/review.command.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 60cf44fb3 (x00739 S1, merge PR #607). review-claims.service.ts añade unit-scoping: cada claim está atado a (unitId, agent, proposalId); una segunda instancia del mismo modelo en otra unidad ve su claim rechazado y la cola marca la propuesta como held. request_changes se commitea por unidad vía commit-call-writes.ts y libera el claim; al publicar la unidad se eliminan worktree + work ref. 26/26 verde en los 3 specs focalizados. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from commit 60cf44fb31f3 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00739-all-g1/a-claim-belongs-to-a-unit (60cf44fb31f30d13c36d385edd746f7bef3814aa), opened by minimax-m3
 
 ## dependency graph
 
