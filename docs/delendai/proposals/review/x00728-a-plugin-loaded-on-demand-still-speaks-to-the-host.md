@@ -2,12 +2,15 @@
 id: x00728
 title: "A plugin loaded on demand still speaks to the host"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: []
+last-transition-id: 9dbbdccd-124e-4a31-bcc4-c088753c974e
+last-correlation-id: 9dbbdccd-124e-4a31-bcc4-c088753c974e
+last-transition-from: in-progress
 ---
 
 # x00728 — A plugin loaded on demand still speaks to the host
@@ -59,7 +62,7 @@ guard around the same gap.
 
 ### S1 — The captured server reaches the live one
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/plugins/capture-server.spec.ts`
 - **Files**:
   - `packages/core/src/lib/plugins/capture-server.ts`
