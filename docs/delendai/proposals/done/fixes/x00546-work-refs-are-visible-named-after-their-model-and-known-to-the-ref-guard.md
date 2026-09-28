@@ -2,7 +2,7 @@
 id: x00546
 title: "Work refs are visible, named after their model, and known to the ref guard"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17
@@ -16,9 +16,9 @@ tags:
     - workflow
     - agents
     - gates
-last-transition-id: 199e0004-6272-44a9-bc1c-d9482da7727c
-last-correlation-id: 199e0004-6272-44a9-bc1c-d9482da7727c
-last-transition-from: done
+last-transition-id: 0bb8afc2-b309-41fe-8e50-93ee57b8688a
+last-correlation-id: 0bb8afc2-b309-41fe-8e50-93ee57b8688a
+last-transition-from: review
 owner-decision: pending
 ---
 
@@ -95,7 +95,7 @@ Measured on develop at `ac276f8ef`:
   subpath; the contracts routing a rehydrate undid is restored; and the
   shingle detector groups by block text, since a 32-bit hash collision
   was reported as cross-plugin copy-paste.
-- **Files**: [`plugins/commit-policy/src/lib/tools/work-ref.tool.ts`, `plugins/commit-policy/src/lib/services/work-ref-repo.service.ts`, `plugins/commit-policy/src/lib/services/work-ref-checkpoint.service.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-tool.interface.ts`, `plugins/commit-policy/src/lib/contracts/constants/work-ref.constant.ts`, `plugins/commit-policy/src/lib/contracts/constants/durability-remote.constant.ts`, `plugins/commit-policy/src/lib/persistence/durability-remote.service.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `packages/core/src/lib/scan/shingle.ts`, `packages/core/tests/src/lib/scan/shingle-collision.spec.ts`]
+- **Files**: [`plugins/commit-policy/src/lib/tools/work-ref.tool.ts`, `plugins/commit-policy/src/lib/services/work-ref-repo.service.ts`, `plugins/commit-policy/src/lib/services/work-ref-checkpoint.service.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-tool.interface.ts`, `plugins/commit-policy/src/lib/contracts/constants/work-ref.constant.ts`, `packages/core/src/lib/wip-engine/durability-remote.constant.ts`, `packages/core/src/lib/wip-engine/durability-remote.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `packages/core/src/lib/scan/shingle.ts`, `packages/core/tests/src/lib/scan/shingle-collision.spec.ts`]
 - **Gate**: `npx vitest run plugins/commit-policy && bun run lint:architecture`
 - review-state: done
 - review-implementer: DESKTOP-9CTQRS7
