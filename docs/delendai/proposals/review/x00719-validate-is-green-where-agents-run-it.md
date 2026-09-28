@@ -2,12 +2,15 @@
 id: x00719
 title: "Validate is green where agents run it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00707, x00712]
+last-transition-id: 2c3d263f-ca9f-4513-9e57-011589e4e3fc
+last-correlation-id: 2c3d263f-ca9f-4513-9e57-011589e4e3fc
+last-transition-from: in-progress
 ---
 
 # x00719 — Validate is green where agents run it
@@ -67,7 +70,7 @@ ignore it.
 
 ### S1 — The guard's refusal is policy, the startup lock is sanctioned
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/verify/verify-probes.spec.ts packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
 - **Files**:
   - `packages/core/src/lib/contracts/constants/write-refusal.constant.ts`
