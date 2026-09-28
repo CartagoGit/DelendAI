@@ -15,6 +15,7 @@
  *     `authoring.tool.ts`; the options + helpers are reused without
  *     re-declaration.
  */
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import { dirname, join } from 'node:path';
 
 import type { ICommitAuthorResolution } from '@delendai/core/public';
@@ -140,6 +141,8 @@ export interface IAuthoringToolOptions {
 	 * extending the same gate to every slice of every proposal kind.
 	 */
 	readonly requirePeerReview?: boolean;
+	/** What makes a reviewer independent (x00718); `model` by default. */
+	readonly reviewIndependence?: IReviewIndependence;
 	/**
 	 * Controls which validation gate applies to `close_slice`.
 	 * `scoped` (the default) validates only the files/scopes owned by the

@@ -1,4 +1,6 @@
 import { mkdir, open } from 'node:fs/promises';
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
+import { isSelfApproval } from './independent-approval';
 import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader, withFileMutex } from '@delendai/core/public';
@@ -244,6 +246,7 @@ export const logHasAnyReviewVerdictFor = async (
 export const hasIndependentApprovalSinceLastReview = async (
 	logPathAbs: string,
 	proposalId: string,
+	independence: IReviewIndependence = 'model',
 ): Promise<boolean> => {
 	const entries = (await readPeerReviewLog(logPathAbs)).filter(
 		(entry) => entry.proposalId === proposalId,
@@ -276,9 +279,12 @@ export const hasIndependentApprovalSinceLastReview = async (
 		if (entry.kind !== 'review') return false;
 		if (entry.verdict !== 'approved') return false;
 		if (reopenedAt !== undefined && entry.ts < reopenedAt) return false;
-		const reviewer = entry.reviewer?.trim().toLowerCase() ?? '';
-		const implementer = entry.implementer?.trim().toLowerCase() ?? '';
+		const reviewer = entry.reviewer?.trim() ?? '';
 		if (reviewer.length === 0) return false;
-		return implementer.length === 0 || reviewer !== implementer;
+		return !isSelfApproval(
+			entry.implementer ?? undefined,
+			reviewer,
+			independence,
+		);
 	});
 };
