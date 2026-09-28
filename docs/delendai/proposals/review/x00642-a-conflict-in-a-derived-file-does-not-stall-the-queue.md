@@ -13,6 +13,7 @@ last-correlation-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
 last-transition-from: in-progress
 shipped-in:
   - "c3e4ce4d93d6fb01d077615c9d2b36f75cfba1b3"
+  - "aaf4740726c2b44d3e666afe7ceb5bca4705ebdf"
 ---
 
 # x00642 — A conflict in a derived file does not stall the queue
@@ -98,7 +99,7 @@ doing the machine's job.
 - review-log: approved by glm-5.3-max — Revisé la entrega real c3e4ce4d9. ref-lifecycle-guard: un candidato que solo confligta con la integración en proyecciones DECLARADAS (ficheros derivados) lo resuelve el hydrator regenerando y empujando; un conflicto en cualquier OTRO fichero deja el candidato intacto y el hydrator pasa al siguiente de la cola; el head del forge es el primer candidato sin conflicto del mismo orden que el hydrator recorre. El conflicto en derivados no detiene la cola. Acceptance cubierta por el spec +16 líneas; gate 43/43 en lote. Sin cambios fuera de alcance.
 ### S2 — A level head nobody armed asks the queue to run
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`,
@@ -113,8 +114,11 @@ pass whose dispatch failed) waited for the hourly schedule, which runs
 main's stale workflow and fails. The hydrator now also asks when the head
 is level and not armed (`shouldAskQueueToRun`); the queue job is
 idempotent and still arms only on a certified integration branch.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé aaf474072. S2 añade shouldAskQueueToRun que dispara cuando (apply ∧ head !== undefined ∧ (refreshed ∨ ¬headArmed)). Sustituye currentQueueOrderBranches por currentQueueOrder en la rama principal y mantiene order = queue.map(e => e.branch) para preservar la API externa. 19/19 verde en el gate; las 4 pruebas nuevas cubren los 4 caminos del predicado. El implementer claude-opus-5-5 != minimax-m3, así que el veredicto es independiente. No toca acceptance de S1 ni non-goals (sigue dejando los conflictos authored al autor).
+
 ### S3 — A stacked work ref is not reported as published
 
 - **Status**: review
