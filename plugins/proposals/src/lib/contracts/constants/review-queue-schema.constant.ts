@@ -86,5 +86,17 @@ export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({
 		total: z.number().int(),
 		next: z.string().optional(),
 	}),
+	/**
+	 * Your unit's pack, when `unit` is given: how many proposals it has
+	 * claimed of the pack it publishes as one pull request.
+	 */
+	pack: z
+		.object({
+			size: z.number().int(),
+			claimed: z.number().int(),
+			full: z.boolean(),
+			next: z.string().optional(),
+		})
+		.optional(),
 	procedure: z.string(),
 });

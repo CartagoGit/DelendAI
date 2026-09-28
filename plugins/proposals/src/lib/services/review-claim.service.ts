@@ -14,7 +14,10 @@
  */
 import { compileWorkRefParser } from '@delendai/core/public';
 
-import { REVIEW_CLAIM_TRAILER } from '../contracts/constants/review-claims.constant';
+import {
+	REVIEW_CLAIM_TRAILER,
+	REVIEW_PACK_SIZE,
+} from '../contracts/constants/review-claims.constant';
 import type {
 	IReviewClaimOutcome,
 	IVerdictClaimRefusal,
@@ -22,6 +25,10 @@ import type {
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
 import { reviewClaims, unitOfRef } from './review-claims.service';
+
+/** What a reviewer with a full pack does next. */
+export const publishPackStep = (namespacePrefix: string): string =>
+	`Publish the pack as its pull request: the \`work\` tool { action: "publish", kind: "review", proposal: "batch", slice: "all", agent } (or \`delendai review finish\`). Then enter a new review unit and ask ${namespacePrefix}_review_queue for the next proposal.`;
 
 /** The unit this checkout is on, and whether it is a review unit. */
 const currentUnit = async (
@@ -76,11 +83,17 @@ export const claimForReview = async (
 		integration,
 		'--',
 	]);
-	if (
-		own.ok &&
-		own.output.split('\n').some((line) => line.trim().toLowerCase() === id)
-	) {
-		return { kind: 'already-claimed' };
+	const held = new Set(
+		own.ok
+			? own.output
+					.split('\n')
+					.map((line) => line.trim().toLowerCase())
+					.filter((line) => line.length > 0)
+			: [],
+	);
+	if (held.has(id)) return { kind: 'already-claimed' };
+	if (held.size >= REVIEW_PACK_SIZE) {
+		return { kind: 'pack-full', size: REVIEW_PACK_SIZE };
 	}
 	const committed = await run([
 		'commit',
@@ -120,6 +133,12 @@ export const verdictClaimRefusal = async (
 		return {
 			reason: `${proposalId} is held by another review unit (${outcome.by.join(', ')}); a verdict here would contradict theirs.`,
 			nextAction: `Leave it to them, and take the next proposal ${namespacePrefix}_review_queue offers you.`,
+		};
+	}
+	if (outcome.kind === 'pack-full') {
+		return {
+			reason: `Your review unit already holds a full pack (${String(outcome.size)} proposals), and ${proposalId} is not one of them.`,
+			nextAction: publishPackStep(namespacePrefix),
 		};
 	}
 	if (outcome.kind === 'failed') {

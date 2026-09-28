@@ -6,6 +6,8 @@ export type IReviewClaimOutcome =
 	| { readonly kind: 'already-claimed' }
 	/** Other review units hold it: the agents working in them. */
 	| { readonly kind: 'held'; readonly by: readonly string[] }
+	/** This unit's pack is full: it is published before it claims more. */
+	| { readonly kind: 'pack-full'; readonly size: number }
 	/** The claim could not be committed. */
 	| { readonly kind: 'failed'; readonly reason: string };
 

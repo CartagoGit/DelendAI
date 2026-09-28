@@ -3,6 +3,7 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 import { REVIEW_BATCH_ID } from '../development-policy/profiles.constant';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
 import { scalarArg } from './command-args.helper';
+import { publicationRefFromWorkRef } from './work-publish.service';
 import { worktreeSession } from './worktree-agent.service';
 
 import {
@@ -29,6 +30,26 @@ export const sessionHolding = (
 		.find((line) => line.startsWith('worktree '))
 		?.slice('worktree '.length);
 	return path === undefined ? undefined : worktreeSession(path);
+};
+
+/** True while a publication of `workRef`'s generation exists, here or on a remote. */
+const publishedUnder = (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	workRef: string,
+): boolean => {
+	const publication = publicationRefFromWorkRef(policy, workRef);
+	if (publication === undefined) return false;
+	const unitDir = publication.slice(0, publication.lastIndexOf('/') + 1);
+	const branchDir = unitDir.replace(/^refs\/heads\//u, '');
+	const found = readGit(root, [
+		'for-each-ref',
+		'--count=1',
+		'--format=%(refname)',
+		`${unitDir}*`,
+		`refs/remotes/*/${branchDir}*`,
+	]);
+	return found !== undefined && found.length > 0;
 };
 
 /** The generation these arguments name; 1 when they name none. */
@@ -74,7 +95,18 @@ export const chooseGeneration = (
 			const holder = sessionHolding(root, ref);
 			return holder !== undefined && holder !== session;
 		});
-		if (other === undefined) return { generation };
+		if (other === undefined) {
+			// A review batch's name is reused by nobody while its pull
+			// request is open: its claims are read back to that name, and a
+			// new unit under it took the published pack's proposals for its
+			// own.
+			if (
+				proposal !== REVIEW_BATCH_ID ||
+				!publishedUnder(root, policy, exact)
+			)
+				return { generation };
+			continue;
+		}
 		if (proposal !== REVIEW_BATCH_ID) {
 			return {
 				refusal: refused(

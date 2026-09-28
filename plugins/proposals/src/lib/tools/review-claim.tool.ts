@@ -19,7 +19,10 @@ import {
 	REVIEW_CLAIM_INPUT_SCHEMA,
 	REVIEW_CLAIM_OUTPUT_SCHEMA,
 } from '../contracts/constants/review-claim-schema.constant';
-import { claimForReview } from '../services/review-claim.service';
+import {
+	claimForReview,
+	publishPackStep,
+} from '../services/review-claim.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
 import type { IAuthoringToolOptions } from './authoring-options';
@@ -57,6 +60,11 @@ export const buildReviewClaimRegistration = (
 						return toolError(
 							`${args.proposalId} is held by another review unit (${outcome.by.join(', ')}).`,
 							`Take the next proposal ${options.namespacePrefix}_review_queue offers you.`,
+						);
+					case 'pack-full':
+						return toolError(
+							`Your review unit already holds a full pack (${String(outcome.size)} proposals).`,
+							publishPackStep(options.namespacePrefix),
 						);
 					case 'failed':
 						return toolError(

@@ -168,6 +168,51 @@ describe('workflow invariants (x00573)', () => {
 		expect(by(root, 'no-remote-work-refs').holds).toBe(false);
 	});
 
+	it('keeps a live unit backed up on the forge, and flags one nobody works on', () => {
+		const { root } = repo();
+		const live = 'delendai/wip/claude-opus-5/x1-S1-g1/live';
+		git(root, 'worktree', 'add', '-q', join(root, 'wt'), '-b', live);
+		git(root, 'push', '-q', 'origin', `${live}:refs/heads/${live}`);
+		expect(by(root, 'no-remote-work-refs').holds).toBe(true);
+
+		git(root, 'worktree', 'remove', '--force', join(root, 'wt'));
+		const result = by(root, 'no-remote-work-refs');
+		expect(result.holds).toBe(false);
+		expect(result.remedy).toContain('publish');
+	});
+
+	it('answers about the shared checkout when a hook in a worktree asks', () => {
+		const { root } = repo();
+		const wt = `${root}-wt`;
+		roots.push(wt);
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			wt,
+			'-b',
+			'delendai/wip/claude-opus-5/x1-S1-g1/live',
+		);
+		writeFileSync(join(wt, 'a.txt'), 'changed in the unit\n');
+		// What git exports to a hook running in the worktree.
+		const saved = {
+			dir: process.env.GIT_DIR,
+			index: process.env.GIT_INDEX_FILE,
+		};
+		process.env.GIT_DIR = git(wt, 'rev-parse', '--absolute-git-dir');
+		process.env.GIT_INDEX_FILE = join(process.env.GIT_DIR, 'index');
+		try {
+			expect(by(root, 'checkout-clean').holds).toBe(true);
+			expect(by(root, 'checkout-anchored').observed).toBe('develop');
+		} finally {
+			if (saved.dir === undefined) delete process.env.GIT_DIR;
+			else process.env.GIT_DIR = saved.dir;
+			if (saved.index === undefined) delete process.env.GIT_INDEX_FILE;
+			else process.env.GIT_INDEX_FILE = saved.index;
+		}
+	});
+
 	it('reports what it observed even when the invariant holds', () => {
 		// A check that only speaks when it fails cannot be trusted to have
 		// looked at anything.

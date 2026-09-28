@@ -329,6 +329,37 @@ describe('guard through real git hooks', () => {
 	const git = (root: string, ...args: string[]) =>
 		spawnSync('git', args, { cwd: root, encoding: 'utf8' });
 
+	it('refuses deleting a unit branch a worktree still works on', () => {
+		const root = repoWith({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		const branch = 'delendai/wip/glm-5/implement/x00001-S1-g1/the-work';
+		const worktree = join(
+			root,
+			'..',
+			`${root.split('/').pop() ?? 'r'}-unit`,
+		);
+		roots.push(worktree);
+		expect(
+			git(root, 'worktree', 'add', '-q', '-b', branch, worktree).status,
+		).toBe(0);
+
+		const deleted = git(root, 'update-ref', '-d', `refs/heads/${branch}`);
+
+		expect(deleted.status).not.toBe(0);
+		expect(deleted.stderr).toContain('a worktree is working on');
+		expect(git(root, 'rev-parse', '--verify', '-q', branch).status).toBe(0);
+		expect(
+			git(root, 'worktree', 'remove', '--force', worktree).status,
+		).toBe(0);
+		expect(
+			git(root, 'update-ref', '-d', `refs/heads/${branch}`).status,
+		).toBe(0);
+	});
+
 	it('warns but never blocks when the shared checkout moves (x00553)', () => {
 		const root = repoWith({
 			development: {

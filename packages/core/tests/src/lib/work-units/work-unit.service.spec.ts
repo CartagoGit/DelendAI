@@ -231,6 +231,55 @@ describe('delendai work (x00553)', () => {
 		expect(git(root, 'for-each-ref', 'refs/heads/delendai')).toBe('');
 	});
 
+	it('resumes the unit the command runs inside, with no --session', async () => {
+		const root = repoWith(PINNED);
+		const review = [
+			'enter',
+			'--kind=review',
+			'--proposal=batch',
+			'--slice=all',
+			'--agent=glm-5',
+		];
+		const first = await command.run(review, contextFor(root));
+		const path = String((first.data as { path?: unknown }).path);
+
+		const again = await command.run(review, contextFor(path));
+		const elsewhere = await command.run(review, contextFor(root));
+
+		expect(again.data).toMatchObject({ path, created: false });
+		// From the shared checkout, with nothing to say whose it is, the
+		// held unit stays its holder's and a new instance gets its own.
+		expect((elsewhere.data as { path?: unknown }).path).not.toBe(path);
+	});
+
+	it('does not reuse a review generation whose pack is still published', async () => {
+		const root = repoWith(PINNED);
+		const review = [
+			'enter',
+			'--kind=review',
+			'--proposal=batch',
+			'--slice=all',
+			'--agent=glm-5',
+		];
+		const first = await command.run(review, contextFor(root));
+		const data = first.data as { path: string; branch: string };
+		// Published: the pull request's ref stands, the unit is gone.
+		git(
+			root,
+			'update-ref',
+			`refs/heads/${data.branch.replace('/wip/', '/pr/')}`,
+			'HEAD',
+		);
+		git(root, 'worktree', 'remove', '--force', data.path);
+		git(root, 'update-ref', '-d', `refs/heads/${data.branch}`);
+
+		const next = await command.run(review, contextFor(root));
+
+		expect((next.data as { branch: string }).branch).toContain(
+			'batch-all-g2',
+		);
+	});
+
 	it('gives an agent its own worktree, and finds it again', async () => {
 		const root = repoWith(PINNED);
 		const created = await command.run(

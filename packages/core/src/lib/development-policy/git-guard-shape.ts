@@ -18,6 +18,7 @@ import {
 	policyNamespaces,
 	shortName,
 } from './git-guard-namespaces';
+import { refuseLiveUnitDeletion } from './git-guard-live-unit';
 import { WORK_KINDS } from './profiles.constant';
 import { isHostApplicationId, kindsInAgentId } from './work-ref-placeholders';
 
@@ -194,6 +195,8 @@ export const judgeNamespaceShape = (
 		const branch = operation.ref.slice('refs/heads/'.length);
 		return refuseUnshapedWorkRef(policy, operation.ref, branch);
 	}
+	if (operation.kind === 'branch-delete')
+		return refuseLiveUnitDeletion(policy, operation);
 	if (operation.kind === 'push' && operation.deleting) {
 		if (!operation.remoteRef.startsWith('refs/heads/')) return undefined;
 		return refuseLosingDeletion(

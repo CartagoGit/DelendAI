@@ -68,6 +68,8 @@ interface IQueueProposal {
 
 interface IQueue {
 	readonly proposals?: readonly IQueueProposal[];
+	/** The unit's pack: published as one pull request once full. */
+	readonly pack?: { readonly full: boolean; readonly size: number };
 }
 
 interface IUnit {
@@ -187,15 +189,13 @@ const queueOf = async (
 	ctx: ICliCommandContext,
 	agent: string,
 	extra: Record<string, unknown> = {},
-): Promise<readonly IQueueProposal[]> =>
-	(
-		await request<IQueue>(ctx, QUEUE_TOOL, {
-			agent,
-			limit: 50,
-			detail: true,
-			...extra,
-		})
-	).proposals ?? [];
+): Promise<IQueue> =>
+	request<IQueue>(ctx, QUEUE_TOOL, {
+		agent,
+		limit: 50,
+		detail: true,
+		...extra,
+	});
 
 /** What the reviewer needs to judge one proposal, and how to answer. */
 const briefFor = (proposal: IQueueProposal, unit: IUnit, agent: string) => {
@@ -243,7 +243,8 @@ const next = async (
 	}
 	// The unit, not only the agent: another instance of this model is
 	// another reviewer, and its claims are not ours.
-	const queue = await queueOf(ctx, agent, { unit: unit.ref });
+	const answer = await queueOf(ctx, agent, { unit: unit.ref });
+	const queue = answer.proposals ?? [];
 	const claimed = claimsOf(unit, policy.branches.integration);
 	// Your own claim first: a review you started is finished before
 	// another is taken.
@@ -264,10 +265,38 @@ const next = async (
 		worktree: unit.path,
 		session: unit.session,
 	};
+	// A pack ends in a pull request: the verdicts reach the integration
+	// branch pack by pack, not when a backlog of a hundred runs dry.
+	// Only a unit that claimed something has a pack to publish: a fresh one
+	// never publishes, whatever the queue says.
+	const packDone =
+		resumed === undefined &&
+		claimed.length > 0 &&
+		answer.pack?.full === true;
+	if (packDone || (chosen === undefined && claimed.length > 0)) {
+		const published = await workOnUnit('publish', agent, unit.session, ctx);
+		if (published.code !== EXIT_CODE.OK || chosen === undefined) {
+			return published.code !== EXIT_CODE.OK
+				? published
+				: data({
+						...session,
+						published: published.data,
+						next: 'Nothing else is waiting for a verdict; your pack is published as its pull request.',
+					});
+		}
+		// The next pack, in a unit of its own.
+		return next(
+			[
+				...args.filter((arg) => !arg.startsWith('--session=')),
+				`--session=${unit.session}`,
+			],
+			ctx,
+		);
+	}
 	if (chosen === undefined) {
 		return data({
 			...session,
-			next: 'Nothing is waiting for your verdict. Publish what you reviewed: delendai review finish',
+			next: 'Nothing is waiting for your verdict.',
 		});
 	}
 	if (resumed === undefined) {

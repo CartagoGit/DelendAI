@@ -28,6 +28,13 @@ export type IGuardedGitOperation =
 			readonly ref: string;
 	  }
 	| {
+			readonly kind: 'branch-delete';
+			/** Fully qualified, e.g. `refs/heads/delendai/wip/…`. */
+			readonly ref: string;
+			/** The worktree that has this branch checked out, if any. */
+			readonly worktree?: string | undefined;
+	  }
+	| {
 			/**
 			 * Something is being written to `refs/stash`: a stash pushed,
 			 * whether it is the first or the tenth.

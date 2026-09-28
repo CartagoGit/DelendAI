@@ -135,6 +135,38 @@ describe('review_claim', () => {
 		).toBe('A  notes.md');
 	});
 
+	it('refuses a sixth proposal until the pack is published', async () => {
+		const mine = unit('glm-5');
+		const claim = await claimTool();
+		for (const id of ['x00001', 'x00002', 'x00003', 'x00004', 'x00005']) {
+			const taken = await claim({
+				proposalId: id,
+				agent: 'glm-5',
+				checkout: mine,
+			});
+			expect(taken.isError).not.toBe(true);
+		}
+
+		const sixth = await claim({
+			proposalId: 'x00006',
+			agent: 'glm-5',
+			checkout: mine,
+		});
+		const again = await claim({
+			proposalId: 'x00005',
+			agent: 'glm-5',
+			checkout: mine,
+		});
+
+		expect(sixth.isError).toBe(true);
+		expect(JSON.stringify(sixth.structuredContent)).toContain('full pack');
+		expect(JSON.stringify(sixth.structuredContent)).toContain(
+			'Publish the pack',
+		);
+		expect(again.structuredContent).toMatchObject({ claimed: false });
+		expect(claimsIn(mine)).toHaveLength(5);
+	});
+
 	it('refuses a proposal another reviewer holds', async () => {
 		const theirs = unit('qwen');
 		execFileSync(

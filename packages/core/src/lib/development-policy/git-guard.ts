@@ -27,6 +27,7 @@ import {
 	refuseUnshapedPublication,
 	refuseUnshapedWorkRef,
 } from './git-guard-shape';
+import { refuseLiveUnitDeletion } from './git-guard-live-unit';
 
 const allow = (reason: string): IGitGuardVerdict => ({
 	refused: false,
@@ -239,5 +240,10 @@ const judgeAgentOperation = (
 			);
 		case 'stash':
 			return judgeStash(policy);
+		case 'branch-delete':
+			return (
+				refuseLiveUnitDeletion(policy, operation) ??
+				allow('no unit is working on this branch.')
+			);
 	}
 };
