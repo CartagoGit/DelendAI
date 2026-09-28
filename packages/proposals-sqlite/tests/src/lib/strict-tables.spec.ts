@@ -11,8 +11,8 @@ import { Database } from 'bun:sqlite';
 import { describe, expect, it } from 'bun:test';
 
 import {
-	MIGRATION_CHECKSUMS,
-	MIGRATION_FILES,
+	migrationChecksums,
+	migrationFiles,
 	applyMigrations,
 	assertStrictTablesSupported,
 	readMigrationSource,
@@ -51,7 +51,7 @@ const atVersion = (version: number): Database => {
 	db.exec(`CREATE TABLE schema_migrations (
 		version INTEGER PRIMARY KEY, name TEXT NOT NULL,
 		checksum TEXT NOT NULL, applied_at INTEGER NOT NULL);`);
-	for (const name of MIGRATION_FILES) {
+	for (const name of migrationFiles()) {
 		const at = Number.parseInt(name.slice(0, 4), 10);
 		if (at >= version) continue;
 		db.exec('PRAGMA foreign_keys = OFF;');
@@ -62,7 +62,7 @@ const atVersion = (version: number): Database => {
 		).run(
 			at,
 			name,
-			MIGRATION_CHECKSUMS[name] ?? '',
+			migrationChecksums()[name] ?? '',
 			1_700_000_000_000 + at,
 		);
 	}
@@ -80,7 +80,7 @@ const atVersion19 = (): Database => {
 	db.exec(`CREATE TABLE schema_migrations (
 		version INTEGER PRIMARY KEY, name TEXT NOT NULL,
 		checksum TEXT NOT NULL, applied_at INTEGER NOT NULL);`);
-	for (const name of MIGRATION_FILES) {
+	for (const name of migrationFiles()) {
 		const version = Number.parseInt(name.slice(0, 4), 10);
 		if (version >= 20) continue;
 		db.exec('PRAGMA foreign_keys = OFF;');
@@ -91,7 +91,7 @@ const atVersion19 = (): Database => {
 		).run(
 			version,
 			name,
-			MIGRATION_CHECKSUMS[name] ?? '',
+			migrationChecksums()[name] ?? '',
 			1_700_000_000_000 + version,
 		);
 	}
@@ -120,8 +120,8 @@ describe('every proposals table is STRICT (q00022 S1)', () => {
 
 		// 0020 and every migration after it: a later one must not undo it.
 		expect(outcome.applied.map((migration) => migration.name)).toEqual(
-			MIGRATION_FILES.slice(
-				MIGRATION_FILES.indexOf('0020_strict_tables.sql'),
+			migrationFiles().slice(
+				migrationFiles().indexOf('0020_strict_tables.sql'),
 			),
 		);
 		expect(nonStrictTables(db)).toEqual([]);
@@ -207,7 +207,7 @@ describe('every proposals table is STRICT (q00022 S1)', () => {
 			expect(
 				outcome.applied.map((migration) => migration.name),
 			).toContain('0020_strict_tables.sql');
-			expect(outcome.applied.at(-1)?.name).toBe(MIGRATION_FILES.at(-1));
+			expect(outcome.applied.at(-1)?.name).toBe(migrationFiles().at(-1));
 			expect(nonStrictTables(db)).toEqual([]);
 			expect(db.query('PRAGMA foreign_key_check').all()).toEqual([]);
 		}
