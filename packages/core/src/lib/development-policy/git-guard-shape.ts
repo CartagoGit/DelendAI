@@ -18,6 +18,7 @@ import {
 	policyNamespaces,
 	shortName,
 } from './git-guard-namespaces';
+import { refuseReviewOutsideScope } from './git-guard-review-scope';
 import { WORK_KINDS } from './profiles.constant';
 import { isHostApplicationId, kindsInAgentId } from './work-ref-placeholders';
 
@@ -188,7 +189,10 @@ export const judgeNamespaceShape = (
 ): IGitGuardVerdict | undefined => {
 	if (!policy.workspace.pinnedCheckout) return undefined;
 	if (operation.kind === 'commit')
-		return refuseBorrowedAuthor(policy, operation);
+		return (
+			refuseBorrowedAuthor(policy, operation) ??
+			refuseReviewOutsideScope(policy, operation)
+		);
 	if (operation.kind === 'branch-create') {
 		if (!operation.ref.startsWith('refs/heads/')) return undefined;
 		const branch = operation.ref.slice('refs/heads/'.length);

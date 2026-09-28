@@ -2,6 +2,7 @@ import { isAbsolute, relative, resolve } from 'node:path';
 
 import { sanitizeRefComponent } from '../wip-engine/index';
 import { holdWorkRef } from '../wip-engine/work-ref-lock';
+import { sharedCheckout } from '../shared/shared-checkout';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -283,9 +284,19 @@ export const enteredHeld = async (
 	// The agent is part of the path, as it is of the unit (x00695): two
 	// reviewers each entering `--proposal=batch --slice=all` were both sent
 	// to `batch-all`, and took turns checking their branches out in it.
+	// Units live beside each other under the SHARED checkout, wherever
+	// `work enter` runs: entered from inside another unit, the default
+	// placed the new worktree inside that one's `.cache`, and installing
+	// dependencies there pointed every hook in the clone at it.
 	const dir =
 		scalarArg(args, 'dir') ??
-		`${scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees'}/${sanitizeRefComponent(`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`)}`;
+		resolve(
+			sharedCheckout(root) ?? root,
+			scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees',
+			sanitizeRefComponent(
+				`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`,
+			),
+		);
 	// A worktree an agent places in the shared checkout's tree is a loose
 	// edit on the integration branch (`?? batch-g5/`) unless git ignores
 	// the path. The default location is delendai's own, self-ignoring.

@@ -26,7 +26,8 @@ import {
 
 const quote = (value: string): string => `'${value.replaceAll("'", `'\\''`)}'`;
 
-const readsStdin = (hook: IGuardHookName): boolean => hook !== 'pre-commit';
+const readsStdin = (hook: IGuardHookName): boolean =>
+	hook !== 'pre-commit' && hook !== 'commit-msg';
 
 /**
  * Find delendai on the machine the hook is RUNNING on.

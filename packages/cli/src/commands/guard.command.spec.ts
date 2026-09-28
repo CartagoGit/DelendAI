@@ -63,6 +63,27 @@ describe('operationsForHook', () => {
 		]);
 	});
 
+	it('commit-msg asks about the same commit, with what it changes', () => {
+		expect(
+			operationsForHook('commit-msg', ['.git/COMMIT_EDITMSG'], '', {
+				branch: 'delendai/wip/glm-5/review/batch-all-g1/pack',
+				isMerge: false,
+				inMainWorktree: false,
+				paths: ['packages/cli/src/index.ts'],
+				docsDir: 'docs/delendai',
+			}),
+		).toEqual([
+			{
+				kind: 'commit',
+				branch: 'delendai/wip/glm-5/review/batch-all-g1/pack',
+				isMerge: false,
+				inMainWorktree: false,
+				paths: ['packages/cli/src/index.ts'],
+				docsDir: 'docs/delendai',
+			},
+		]);
+	});
+
 	it('reference-transaction judges only creations, only when prepared', () => {
 		const stdin = [
 			`${ZERO} ${A} refs/heads/agent/x`,
@@ -328,6 +349,38 @@ describe('guard through real git hooks', () => {
 
 	const git = (root: string, ...args: string[]) =>
 		spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+
+	it('refuses an empty commit on the integration branch where pre-commit never runs', () => {
+		const root = repoWith({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		// A hook manager that skips pre-commit when nothing is staged, as
+		// lefthook does: only commit-msg is left to judge a claim.
+		rmSync(join(root, '.git', 'hooks', 'pre-commit'));
+		const hook = join(root, '.git', 'hooks', 'commit-msg');
+		writeFileSync(
+			hook,
+			`#!/bin/sh\nexec bun "${CLI_ENTRY}" guard commit-msg "$@"\n`,
+		);
+		chmodSync(hook, 0o755);
+
+		const claim = git(
+			root,
+			'commit',
+			'--allow-empty',
+			'-m',
+			'chore(review): claim x00604',
+		);
+
+		expect(claim.status).not.toBe(0);
+		expect(claim.stderr).toContain('guard (commit-msg): refused');
+		expect(git(root, 'log', '-1', '--format=%s').stdout.trim()).toBe(
+			'base',
+		);
+	});
 
 	it('warns but never blocks when the shared checkout moves (x00553)', () => {
 		const root = repoWith({

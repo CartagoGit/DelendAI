@@ -8,7 +8,13 @@
  * paper and false in the working tree.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	realpathSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -229,6 +235,77 @@ describe('delendai work (x00553)', () => {
 		expect(listed.code).not.toBe(0);
 		expect(listed.error).toContain('at most 48');
 		expect(git(root, 'for-each-ref', 'refs/heads/delendai')).toBe('');
+	});
+
+	it('refuses to publish a review unit that changed the product', async () => {
+		const root = repoWith(PINNED);
+		const entered = await command.run(
+			[
+				'enter',
+				'--kind=review',
+				'--proposal=batch',
+				'--slice=all',
+				'--agent=glm-5',
+				'--topic=pack-a',
+			],
+			contextFor(root),
+		);
+		const path = String((entered.data as { path?: unknown }).path);
+		mkdirSync(join(path, 'packages/cli'), { recursive: true });
+		writeFileSync(join(path, 'packages/cli/skip.ts'), 'export {};\n');
+		git(path, 'add', '-A');
+		git(path, 'commit', '-q', '--no-verify', '-m', 'feat: skip review');
+
+		const published = await command.run(
+			[
+				'publish',
+				'--kind=review',
+				'--proposal=batch',
+				'--slice=all',
+				'--agent=glm-5',
+				'--topic=pack-a',
+			],
+			contextFor(root),
+		);
+
+		expect(published.code).not.toBe(0);
+		expect(published.error).toContain('packages/cli/skip.ts');
+	});
+
+	it('places a unit entered from inside another beside it, not in it', async () => {
+		const root = repoWith(PINNED);
+		const first = await command.run(
+			[
+				'enter',
+				'--proposal=x00001',
+				'--slice=S1',
+				'--agent=glm-5',
+				'--topic=one',
+			],
+			contextFor(root),
+		);
+		const inside = String((first.data as { path?: unknown }).path);
+
+		const second = await command.run(
+			[
+				'enter',
+				'--proposal=x00002',
+				'--slice=S1',
+				'--agent=glm-5',
+				'--topic=two',
+			],
+			contextFor(inside),
+		);
+
+		expect(second.code).toBe(0);
+		const path = String((second.data as { path?: unknown }).path);
+		expect(path.startsWith(inside)).toBe(false);
+		expect(path).toBe(
+			join(
+				realpathSync(root),
+				'.cache/delendai/.worktrees/glm-5-x00002-S1',
+			),
+		);
 	});
 
 	it('gives an agent its own worktree, and finds it again', async () => {

@@ -191,6 +191,7 @@ describe('what the report tells a lefthook project', () => {
 		);
 		// Every hook lefthook does not own is guarded the ordinary way.
 		for (const hook of [
+			'commit-msg',
 			'reference-transaction',
 			'pre-push',
 			'post-checkout',

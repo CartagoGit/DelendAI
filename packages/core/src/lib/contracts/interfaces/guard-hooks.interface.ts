@@ -1,6 +1,7 @@
 /** The git hooks the development-policy guard is installed into. */
 export type IGuardHookName =
 	| 'pre-commit'
+	| 'commit-msg'
 	| 'reference-transaction'
 	| 'pre-push'
 	| 'post-checkout'
