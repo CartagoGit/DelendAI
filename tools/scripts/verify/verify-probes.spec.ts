@@ -12,6 +12,7 @@ import {
 	runHappyPathProbe,
 	type IToolHandle,
 } from './verify-probes';
+import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/public';
 
 /**
  * Solid-ISP test helper: build an `IToolHandle` from a stub schema +
@@ -235,6 +236,47 @@ describe('verify-probes (Solid SRP extraction)', async () => {
 			const res = await runHappyPathProbe(handle);
 			expect(res?.outcome).toBe('failed');
 			expect(res?.detail).toContain('handler crashed');
+		});
+
+		it('counts the shared-checkout write refusal as policy, not a broken tool', async () => {
+			const envelope = {
+				ok: false,
+				error: {
+					code: SHARED_CHECKOUT_WRITE_REFUSED,
+					reason: 'shared checkout',
+				},
+			};
+			const handle = makeHandle({
+				toolId: 'fs_write',
+				inputSchema: zImpl.object({
+					path: zImpl.string(),
+					content: zImpl.string(),
+				}),
+				outputSchema: zImpl.object({ written: zImpl.boolean() }),
+				handlerResult: {
+					content: [{ type: 'text', text: JSON.stringify(envelope) }],
+					structuredContent: envelope,
+					isError: true,
+				},
+			});
+			const res = await runHappyPathProbe(handle);
+			expect(res?.outcome).toBe('needs-input');
+			expect(res?.detail).toContain('write guard');
+		});
+
+		it('still fails any other error the handler returns', async () => {
+			const envelope = { ok: false, error: { reason: 'broken' } };
+			const handle = makeHandle({
+				toolId: 'fs_write',
+				inputSchema: zImpl.object({
+					path: zImpl.string(),
+					content: zImpl.string(),
+				}),
+				outputSchema: zImpl.object({ written: zImpl.boolean() }),
+				handlerResult: { structuredContent: envelope, isError: true },
+			});
+			const res = await runHappyPathProbe(handle);
+			expect(res?.outcome).toBe('failed');
 		});
 
 		it('honours a custom probe input builder (OCP test)', async () => {

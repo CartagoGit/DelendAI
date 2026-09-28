@@ -12,6 +12,8 @@ export const REVIEW_QUEUE_INPUT_SCHEMA = z.object({
 	proposalId: z.string().min(1).optional(),
 	/** Proposals returned in full, oldest first. */
 	limit: z.number().int().min(1).max(MAX_QUEUE_PAGE).optional(),
+	/** Skip this many of the listed backlog: the next page is `page.next`. */
+	offset: z.number().int().min(0).optional(),
 	/** Your agent id: proposals other agents hold are listed last. */
 	agent: z.string().min(1).optional(),
 	/**
@@ -72,6 +74,12 @@ export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({
 		waitingOnImplementer: z.number().int(),
 		readyToClose: z.number().int(),
 		claimedByOthers: z.number().int(),
+	}),
+	page: z.object({
+		offset: z.number().int(),
+		returned: z.number().int(),
+		total: z.number().int(),
+		next: z.string().optional(),
 	}),
 	procedure: z.string(),
 });

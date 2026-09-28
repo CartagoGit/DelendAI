@@ -6,7 +6,7 @@
  * whatever host it runs in. Read-only; verdicts go through
  * `proposal_review`.
  */
-import { toolOk, type IToolRegistration } from '@delendai/core/public';
+import { fnv1a, toolOk, type IToolRegistration } from '@delendai/core/public';
 
 import {
 	REVIEW_QUEUE_INPUT_SCHEMA,
@@ -20,6 +20,16 @@ import type { IAuthoringToolOptions } from './authoring-options';
 
 /** Proposals returned in full per call; totals always cover the backlog. */
 const DEFAULT_QUEUE_PAGE = 10;
+
+/**
+ * Where this server's reviewer starts among the free proposals: stable for
+ * the life of the process, different between the processes a swarm runs.
+ */
+/** `fnv1a` answers in hexadecimal. */
+const HEX_RADIX = 16;
+
+const spreadFor = (agent: string | undefined): number =>
+	Number.parseInt(fnv1a(`${String(process.pid)}:${agent ?? ''}`), HEX_RADIX);
 
 export const buildReviewQueueRegistration = (
 	options: IAuthoringToolOptions,
@@ -40,6 +50,7 @@ export const buildReviewQueueRegistration = (
 			async (args: {
 				proposalId?: string | undefined;
 				limit?: number | undefined;
+				offset?: number | undefined;
 				agent?: string | undefined;
 				detail?: boolean | undefined;
 			}) => {
@@ -55,7 +66,13 @@ export const buildReviewQueueRegistration = (
 					refShape: scoped.developmentPolicy?.branches,
 					proposalId: args.proposalId,
 					limit: args.limit ?? DEFAULT_QUEUE_PAGE,
+					offset: args.offset,
 					agent: args.agent,
+					// A reviewer that names itself is one of a swarm; one that
+					// does not reads the backlog oldest first.
+					...(args.agent === undefined
+						? {}
+						: { spread: spreadFor(args.agent) }),
 				});
 				// The list by default; the evidence for the one proposal asked
 				// for, or when asked for explicitly.

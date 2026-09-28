@@ -26,6 +26,7 @@
  *   - **Testability**: each probe is now spec-able without booting
  *     the verify script.
  */
+import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/public';
 import type { z } from 'zod';
 
 import type { IToolEffect, IToolRegistration } from '@delendai/core/public';
@@ -320,6 +321,22 @@ export const runHappyPathProbe = async (
 		};
 	}
 
+	// In the shared checkout on the integration branch a write is refused
+	// by policy: the right answer there, not a broken tool. It is probed
+	// where writes land (a unit's worktree, CI), so this checkout's
+	// `bun run validate` can be green (x00719).
+	if (
+		(result as { isError?: unknown })?.isError === true &&
+		(result as { structuredContent?: { error?: { code?: unknown } } })
+			?.structuredContent?.error?.code === SHARED_CHECKOUT_WRITE_REFUSED
+	) {
+		return {
+			tool: tool.id,
+			outcome: 'needs-input',
+			handlerReturned: true,
+			detail: 'refused by the shared-checkout write guard; probed where writes land',
+		};
+	}
 	try {
 		outputSchema.parse(result);
 		return {

@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-09-25T11:26:47.399Z"
+		"generatedAt": "2026-09-28T01:26:09.989Z"
 	},
 	"tools": [
 		{
@@ -865,9 +865,6 @@
 					},
 					"taskId": {
 						"type": "string"
-					},
-					"skipPeerReview": {
-						"type": "boolean"
 					}
 				},
 				"required": [

@@ -1,4 +1,5 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
+import { isSelfApproval } from '../shared/independent-approval';
 import { dirname, join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
@@ -2170,8 +2171,11 @@ export const buildReviewRegistration = (
 						if (args.action === 'approve') {
 							const sameAgentNameAsImplementer =
 								attribution === undefined &&
-								state.implementer?.trim().toLowerCase() ===
-									args.agent.trim().toLowerCase();
+								isSelfApproval(
+									state.implementer ?? undefined,
+									args.agent,
+									scoped.reviewIndependence,
+								);
 							const approver = buildReviewIdentity(
 								args.agent,
 								scoped.reviewIdentityDeps ?? {
@@ -2190,6 +2194,8 @@ export const buildReviewRegistration = (
 											approver,
 											recordedImplementer:
 												state.implementer ?? undefined,
+											independence:
+												scoped.reviewIndependence,
 											...(scoped.reviewIdentityDeps !==
 											undefined
 												? {
@@ -2200,6 +2206,7 @@ export const buildReviewRegistration = (
 									: checkAttributedApprover(
 											attribution,
 											args.agent,
+											scoped.reviewIndependence,
 										);
 							if (!identityCheck.ok) {
 								if (
