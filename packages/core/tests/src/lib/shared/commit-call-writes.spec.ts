@@ -118,6 +118,35 @@ describe('a write in a unit of work is committed as it happens', () => {
 		expect(git(unit, 'status', '--porcelain')).toBe('');
 	});
 
+	it('commits a file the call renamed, and one it created (x00733)', async () => {
+		const { unit } = project();
+
+		await withCallWritesCommitted(
+			unit,
+			'proposal_review',
+			{ proposalId: 'x00001' },
+			async () => {
+				git(unit, 'mv', 'proposal.md', 'x00001-canonical.md');
+				writeFileSync(join(unit, '.gitkeep'), '');
+				return { content: [{ type: 'text', text: '{"ok":true}' }] };
+			},
+		);
+
+		expect(
+			git(
+				unit,
+				'show',
+				'--no-renames',
+				'--name-status',
+				'--format=',
+				'HEAD',
+			)
+				.split('\n')
+				.sort(),
+		).toEqual(['A\t.gitkeep', 'A\tx00001-canonical.md', 'D\tproposal.md']);
+		expect(git(unit, 'status', '--porcelain')).toBe('');
+	});
+
 	it('commits nothing when the call failed or changed nothing', async () => {
 		const { unit } = project();
 		const head = git(unit, 'rev-parse', 'HEAD');

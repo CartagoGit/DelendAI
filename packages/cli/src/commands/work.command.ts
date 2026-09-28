@@ -28,6 +28,7 @@ import {
 	resolveWorkAgentId,
 	observeAnchor,
 	checkedOutBranch,
+	holdWorkRef,
 	resolveWorkRef,
 	sanitizeRefComponent,
 	validateScopePaths,
@@ -641,7 +642,92 @@ const withBriefing = (
  * ref, if it does not exist, is done with `update-ref` from the
  * integration branch: the shared checkout never moves.
  */
+/** How long an entering instance waits for another entering the same unit. */
+const ENTER_WAIT_MS = 60_000;
+const ENTER_POLL_MS = 200;
+
+/**
+ * `work enter`, one instance at a time per unit (x00731).
+ *
+ * Choosing a generation and creating its ref and worktree is one step.
+ * Two instances of one model entering the same unit at the same moment
+ * both chose g1, both tried to add its worktree, and the one that lost
+ * rolled back the ref the other had just made: neither got a unit. Held
+ * on the unit (its agent, kind, proposal and slice, any generation), the
+ * second waits for the first, then sees g1 held by another session and
+ * takes g2.
+ */
+const entering = new Map<string, Promise<unknown>>();
+
+/**
+ * `work enter` on `unit`, after any other entry on it in this process. The
+ * file lock below holds processes apart; calls in one process share its
+ * pid, so the lock alone would let them through together.
+ */
+const oneEntryAtATime = async <T>(
+	unit: string,
+	enter: () => Promise<T>,
+): Promise<T> => {
+	const previous = entering.get(unit) ?? Promise.resolve();
+	const next = previous.then(enter, enter);
+	const settled = next.catch(() => undefined);
+	entering.set(unit, settled);
+	try {
+		return await next;
+	} finally {
+		if (entering.get(unit) === settled) entering.delete(unit);
+	}
+};
+
 const entered = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const unit = [
+		agentFor(args),
+		scalarArg(args, 'kind') ?? '',
+		scalarArg(args, 'proposal') ?? '',
+		scalarArg(args, 'slice') ?? '',
+	].join('/');
+	return oneEntryAtATime(unit, () => enteredLocked(unit, args, ctx));
+};
+
+const enteredLocked = async (
+	unit: string,
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const root = workspaceOf(ctx);
+	const common = git(root, [
+		'rev-parse',
+		'--path-format=absolute',
+		'--git-common-dir',
+	]);
+	if (common === undefined) return enteredHeld(args, ctx);
+	const deadline = Date.now() + ENTER_WAIT_MS;
+	for (;;) {
+		const held = await holdWorkRef({
+			gitCommonDir: common,
+			ref: `refs/heads/enter/${unit}`,
+		});
+		if (held.kind === 'acquired') {
+			try {
+				return await enteredHeld(args, ctx);
+			} finally {
+				await held.release();
+			}
+		}
+		if (Date.now() >= deadline) {
+			return refused(
+				`Another instance (${held.holder}) is still entering ${unit}.`,
+				'Try again in a moment; it holds the unit only while it creates its worktree.',
+			);
+		}
+		await new Promise((resolve) => setTimeout(resolve, ENTER_POLL_MS));
+	}
+};
+
+const enteredHeld = async (
 	given: readonly string[],
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
@@ -780,11 +866,15 @@ const entered = async (
 	}
 	// Whatever runtime works here is recognised as this agent (x00688),
 	// and this session of it holds the unit (x00699).
-	const claimed = claimWorktree(`${root}/${dir}`, agent, session);
+	// `--dir` may be absolute: joining it onto the root named a path that
+	// does not exist, the session was stamped nowhere, and the next
+	// instance took this unit as free (x00731).
+	const path = resolve(root, dir);
+	const claimed = claimWorktree(path, agent, session);
 	return withBriefing(ctx, root, policy, agent, {
 		ref,
 		branch,
-		path: `${root}/${dir}`,
+		path,
 		created: true,
 		session: claimed,
 	});
