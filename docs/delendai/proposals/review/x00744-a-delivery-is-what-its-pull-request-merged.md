@@ -2,12 +2,15 @@
 id: x00744
 title: "A delivery is what its pull request merged"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00646, x00742]
+last-transition-id: d38b2c71-c462-4db3-a25a-f3fe0c3ba767
+last-correlation-id: d38b2c71-c462-4db3-a25a-f3fe0c3ba767
+last-transition-from: in-progress
 ---
 
 # x00744 — A delivery is what its pull request merged
@@ -63,7 +66,7 @@ to close". The owner could not reconcile those figures.
 
 ### S1 — The merge is the delivery; the backlog says its units
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts plugins/proposals/tests/src/lib/services/review-queue-summary.service.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-attribution.ts`
