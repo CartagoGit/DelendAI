@@ -2,12 +2,15 @@
 id: x00721
 title: "A command refuses a flag it does not read"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00705, x00717, x00720]
+last-transition-id: 2aad1389-ed76-4736-abcb-fbd82bbf726c
+last-correlation-id: 2aad1389-ed76-4736-abcb-fbd82bbf726c
+last-transition-from: in-progress
 ---
 
 # x00721 — A command refuses a flag it does not read
@@ -66,7 +69,7 @@ loads it. Their usage lines had already drifted apart.
 
 ### S1 — Declared flags, refused strangers, per-command help
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run --project @delendai/cli`
 - **Files**:
   - `packages/cli/src/contracts/interfaces/cli-command.interface.ts`

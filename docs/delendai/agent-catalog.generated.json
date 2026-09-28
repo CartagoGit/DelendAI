@@ -1744,14 +1744,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00721",
-				"title": "x00721",
-				"track": "hosts",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
 			}
 		]
 	}
