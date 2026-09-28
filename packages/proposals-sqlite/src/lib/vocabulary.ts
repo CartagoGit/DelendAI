@@ -42,7 +42,7 @@
  * asserts the TS vocabulary and the SQL enum are the same set in both
  * directions, so neither can change alone.
  */
-import { MIGRATION_FILES, readMigrationSource } from './migrations';
+import { migrationFiles, readMigrationSource } from './migrations';
 
 /**
  * Canonical `proposals.kind` vocabulary. Mirrors the proposals
@@ -221,7 +221,7 @@ export const readColumnVocabularyFromMigrations = (
 	column: string,
 ): readonly string[] => {
 	let found: readonly string[] | null = null;
-	for (const name of MIGRATION_FILES) {
+	for (const name of migrationFiles()) {
 		const sql = readMigrationSource(name);
 		CREATE_TABLE_BLOCK.lastIndex = 0;
 		let match = CREATE_TABLE_BLOCK.exec(sql);
