@@ -5,6 +5,7 @@ import { holdWorkRef } from '../wip-engine/work-ref-lock';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { MAX_WORK_TOPIC_LENGTH } from '../contracts/constants/work-topic.constant';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 import type {
 	IWorkUnitContext,
@@ -263,6 +264,13 @@ export const enteredHeld = async (
 	}
 	const createdRef =
 		readGit(root, ['rev-parse', '-q', '--verify', ref]) === undefined;
+	const topic = sanitizeRefComponent(scalarArg(args, 'topic') ?? '');
+	if (createdRef && topic.length > MAX_WORK_TOPIC_LENGTH) {
+		return refused(
+			`The topic is ${String(topic.length)} characters; a unit's topic is at most ${String(MAX_WORK_TOPIC_LENGTH)}.`,
+			'Name the work in a few words (--topic=review-pack-3). A review unit lists what it claims in its commits, not in its name.',
+		);
+	}
 	if (createdRef) {
 		// From the integration branch, by plumbing: no checkout moves.
 		if (readGit(root, ['update-ref', ref, base]) === undefined) {

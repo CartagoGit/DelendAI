@@ -213,6 +213,24 @@ describe('delendai work (x00553)', () => {
 		expect(paths[1]).toContain('minimax-m3-batch-all');
 	});
 
+	it('refuses a new unit whose topic is a list, and creates nothing', async () => {
+		const root = repoWith(PINNED);
+		const listed = await command.run(
+			[
+				'enter',
+				'--kind=review',
+				'--proposal=batch',
+				'--slice=all',
+				'--agent=glm-5',
+				'--topic=approved-review-pack-f00525-S1-S4-x00519-S1-x00520-S1-x00531-S1',
+			],
+			contextFor(root),
+		);
+		expect(listed.code).not.toBe(0);
+		expect(listed.error).toContain('at most 48');
+		expect(git(root, 'for-each-ref', 'refs/heads/delendai')).toBe('');
+	});
+
 	it('gives an agent its own worktree, and finds it again', async () => {
 		const root = repoWith(PINNED);
 		const created = await command.run(
