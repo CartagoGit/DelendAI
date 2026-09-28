@@ -2,15 +2,16 @@
 id: x00651
 title: "A proposal move leaves the shared index alone, and a repeated tombstone is the same fact"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
-last-transition-id: f3a28b0b-a1c3-4e86-8d74-925793f139ee
-last-correlation-id: f3a28b0b-a1c3-4e86-8d74-925793f139ee
-last-transition-from: in-progress
+last-transition-id: 59536629-2b27-4f88-a3b0-78e70a216b0d
+last-correlation-id: 59536629-2b27-4f88-a3b0-78e70a216b0d
+last-transition-from: review
 shipped-in:
   - "9ed67d1ddc316d1d6c66e2e4a3b959f57e87eca2"
+  - "23ed60286f2d614e7421b54ecf5b421d40eadbd1"
 ---
 
 # x00651 — A proposal move leaves the shared index alone, and a repeated tombstone is the same fact
@@ -44,14 +45,17 @@ Seen on 2026-09-25 while delivering x00643–x00646. `proposal_transition` and t
 - review-reviewer: glm-5.3-max
 - review-log: approved by glm-5.3-max — Revisé la entrega real 9ed67d1dd. Bajo política work-ref, proposal_transition y el registry sync mueven el fichero con rename plano vía index-free-git-runner y dejan git diff --cached EXACTO como estaba (el índice compartido no se toca); bajo direct-commit o sin política, el movimiento se stagea como antes (compatibilidad). En proposals-sqlite: promover un candidato con un tombstone que la BD activa ya tiene tiene éxito y deja UNA sola fila por observación; tombstonesApplied cuenta solo las observaciones nuevas. Acceptance cubierta — reconciler-apply-candidate.spec +46, index-free-git-runner.spec 85, proposal-transition-index.spec 102; gate 8/8 en lote. Sin cambios fuera de alcance.
 ### S2 — Promotion keeps one copy of each tombstone observation
-- **Status**: review — shipped in #462 (merge 9ed67d1dd)
+- **Status**: done
 - **Files**: `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`, `packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Promoting a candidate that carries a tombstone the active database already holds succeeds and leaves exactly one row for that observation."
   - "`tombstonesApplied` counts only observations that were new to the active database."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 23ed60286 (x00651 S2, merge 9ed67d1dd = PR #462). reconciler-apply-candidate.ts cambia el INSERT de tombstones a INSERT OR IGNORE (la misma forma que usa el reconciler), de modo que promover un candidato con un tombstone que la BD activa ya tiene tiene éxito y deja UNA sola fila por observación. tombstonesApplied cuenta solo las observaciones nuevas (delta), no el staging. 15/15 verde en reconciler-apply-candidate.spec (bun test en packages/proposals-sqlite); el test específico 'promotes again when the candidate carries a tombstone the active database already holds (x00651)' cubre el acceptance. claude-opus-5-5 != minimax-m3 → veredicto independiente. Sin cambios fuera de alcance.
+
 ## acceptance
 
 - Under a development policy whose work persists through work refs, proposal_transition and the registry sync move the file with a plain rename and leave `git diff --cached` exactly as it was.
