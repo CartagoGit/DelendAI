@@ -58,7 +58,6 @@ export const buildReviewQueueRegistration = (
 				const queue = await buildReviewQueue({
 					namespacePrefix: options.namespacePrefix,
 					proposalsDirAbs: scoped.proposalsDirAbs,
-					indexPathAbs: scoped.indexPathAbs,
 					run: scoped.run ?? createGitRunner(scoped.workspaceRoot),
 					integration:
 						scoped.developmentPolicy?.branches.integration ??

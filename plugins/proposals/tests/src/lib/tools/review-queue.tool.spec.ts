@@ -2,7 +2,7 @@
  * review-queue.tool.spec.ts — one read tells a reviewer what the review
  * backlog needs (x00646 S3), on a real repository.
  */
-import { writeFileSync } from 'node:fs';
+import { rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -269,6 +269,20 @@ describe('review_queue', () => {
 			['x00004', 'x00002', 'x00003'],
 		];
 		expect(rotations).toContainEqual(named);
+	});
+
+	it('reads the proposals in review from their folder, with no index at all (x00732)', async () => {
+		repo.proposalInReview(SLICE_S1('review'), 'x00003', '2026-09-03');
+		repo.proposalInReview(SLICE_S1('review'), 'x00002', '2026-09-02');
+		rmSync(join(repo.root, '.cache/delendai/proposals/index.json'));
+
+		const answer = await queue();
+
+		expect(
+			(answer.body.proposals as readonly { readonly id: string }[]).map(
+				(proposal) => proposal.id,
+			),
+		).toEqual(['x00002', 'x00003']);
 	});
 
 	it('narrows to one proposal on request', async () => {
