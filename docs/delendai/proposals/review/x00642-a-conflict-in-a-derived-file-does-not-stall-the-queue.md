@@ -14,6 +14,7 @@ last-transition-from: in-progress
 shipped-in:
   - "c3e4ce4d93d6fb01d077615c9d2b36f75cfba1b3"
   - "aaf4740726c2b44d3e666afe7ceb5bca4705ebdf"
+  - "a5f1ad22ba579ee48b9c3e7f4b2b7d2e004e1aba"
 ---
 
 # x00642 — A conflict in a derived file does not stall the queue
@@ -121,7 +122,7 @@ idempotent and still arms only on a certified integration branch.
 
 ### S3 — A stacked work ref is not reported as published
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`,
   `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
@@ -138,8 +139,11 @@ proposal and generation, and the same slice or the whole proposal. The
 integration branch and names outside the convention keep the plain
 containment rule. The red certification was re-run in full once the ref
 was gone.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé a5f1ad22b. S3 introduce unitOf() que parsea /<model>/<id>-<slice>-g<gen>/ y couldPublish(work, container) que devuelve true solo si la unidad del contenedor coincide con la del work en (model, id, generation) y slice==all o ==slice del work. Nombres fuera de la convención + integration branch devuelven true (mantiene la regla de contención). 26/26 verde en el gate; las 4 nuevas pruebas cubren exactamente los 4 escenarios descritos en la slice. El gate previo del ref-lifecycle que iba rojo por S3 (work ref apilado en la publicación de otra unidad) ahora pasa. Sin cambios fuera de alcance.
+
 ### S4 — A refused push says why, and does not hold the queue
 
 - **Status**: review
