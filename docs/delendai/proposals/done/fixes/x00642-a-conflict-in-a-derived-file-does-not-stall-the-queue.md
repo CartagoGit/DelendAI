@@ -2,21 +2,22 @@
 id: x00642
 title: "A conflict in a derived file does not stall the queue"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00554, x00565, x00637, f00552]
-last-transition-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
-last-correlation-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
-last-transition-from: in-progress
+last-transition-id: fd83c1a8-6a39-4a51-874f-a3638c384ab5
+last-correlation-id: fd83c1a8-6a39-4a51-874f-a3638c384ab5
+last-transition-from: review
 shipped-in:
   - "c3e4ce4d93d6fb01d077615c9d2b36f75cfba1b3"
   - "aaf4740726c2b44d3e666afe7ceb5bca4705ebdf"
   - "a5f1ad22ba579ee48b9c3e7f4b2b7d2e004e1aba"
   - "4c37a0f5cf4e41776dd0151f2a02610aa5439d03"
   - "530c941c55ade6f7bafd1c165bb09a73b739e555"
+  - "e8a2df52305a23fd94d33ccd03eedd71bf531a45"
 ---
 
 # x00642 — A conflict in a derived file does not stall the queue
@@ -186,7 +187,7 @@ everything — the hydrator's included. `agent-md` now runs after
 
 ### S6 — A published copy does not fail every run
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`,
   `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
@@ -203,8 +204,11 @@ failing. Who re-created the copies is not established: publication
 deletes the remote work ref, and the proposals persistence
 (`commit-and-push`) or commit-policy push on commit may push a work
 tree's branch.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé e8a2df523. S6 introduce blockingRefs(outstanding, reapable) que devuelve outstanding.filter(v => !reapable.some(c => c.name === v.name)). Si blocking.length===0 ahora solo logea cada ref como '(reapable; the queue deletes it)' y termina sin fallar; antes fallaba el gate entero. 26/26 verde; las 2 pruebas nuevas cubren ambos caminos (reapable → [], unpublished → solo el unpublished). Acceptance: 3 PRs + certification de develop que iban rojo por copias de wip/... refs ya publicadas ahora pasan; el --reap del queue las borra. Esta aprobación cierra x00642 (S1 aprobado por glm-5.3-max, S2-S6 por minimax-m3). Sin cambios fuera de alcance.
+
 ## dependency graph
 
 S2 builds on S1's queue order; S3 is independent. It relies on f00552's declarations being
