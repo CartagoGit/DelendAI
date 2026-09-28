@@ -2,12 +2,15 @@
 id: x00746
 title: "A declared directory covers its files"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P2
 related: [x00744, x00745]
+last-transition-id: 5ba8b8e5-c6ea-4f60-99ee-bf79fb68f35c
+last-correlation-id: 5ba8b8e5-c6ea-4f60-99ee-bf79fb68f35c
+last-transition-from: in-progress
 ---
 
 # x00746 — A declared directory covers its files
@@ -54,7 +57,7 @@ None.
 
 ### S1 — Directories match the files under them
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/delivering-merge.service.spec.ts plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/delivering-merge.service.ts`
