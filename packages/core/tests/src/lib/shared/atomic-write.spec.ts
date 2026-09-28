@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	utimesSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -64,5 +71,41 @@ describe('writeFileAtomicSync (durable + atomic)', () => {
 		const target = join(dir, 'a', 'b', 'state.json');
 		writeFileAtomicSync(target, 'ok');
 		expect(readFileSync(target, 'utf8')).toBe('ok');
+	});
+});
+
+describe('a writer that died leaves nothing behind (x00734)', () => {
+	it('fails a write it cannot land and leaves no temporary behind', async () => {
+		const dir = scratch();
+		const target = join(dir, 'taken');
+		mkdirSync(join(target, 'inside'), { recursive: true });
+
+		await expect(writeFileAtomic(target, '{}')).rejects.toThrow();
+		expect(readdirSync(dir)).toEqual(['taken']);
+	});
+
+	it('sweeps the empty temporaries a dead writer left, and keeps the rest', async () => {
+		const dir = scratch();
+		const target = join(dir, 'pricing.json');
+		const old = Date.now() / 1000 - 3600;
+		const dead = `${target}.mukxutts-a9d19a5c5b8b.tmp`;
+		const fresh = `${target}.mukxutts-0123456789ab.tmp`;
+		const written = `${target}.mukxutts-bbbbbbbbbbbb.tmp`;
+		const other = join(dir, 'other.json.mukxutts-a9d19a5c5b8b.tmp');
+		for (const path of [dead, fresh, written, other])
+			writeFileSync(path, '');
+		writeFileSync(written, 'partial');
+		for (const path of [dead, written, other]) utimesSync(path, old, old);
+
+		await writeFileAtomic(target, '{}');
+
+		expect(readdirSync(dir).sort()).toEqual(
+			[
+				'pricing.json',
+				'pricing.json.mukxutts-0123456789ab.tmp',
+				'pricing.json.mukxutts-bbbbbbbbbbbb.tmp',
+				'other.json.mukxutts-a9d19a5c5b8b.tmp',
+			].sort(),
+		);
 	});
 });
