@@ -2,13 +2,16 @@
 id: x00611
 title: "A server that refuses to start says why"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
 shipped-in:
   - "2fdd43da1"
   - "9e17d9fcb"
+last-transition-id: 6e354f00-5b01-4458-bfd2-a9095a86afbe
+last-correlation-id: 6e354f00-5b01-4458-bfd2-a9095a86afbe
+last-transition-from: review
 ---
 
 # x00611 — A server that refuses to start says why
@@ -117,7 +120,7 @@ explain it.
 
 ### S2 — A refusal is a refusal, not a stack trace
 
-- **Status**: done — the serve call keeps its fire-and-forget shape (it
+- **Status**: done
   never returns) and gains a `.catch` that reports one line and sets a
   non-zero exit code; the spawn failure names the entrypoint and the
   workspace, which the server cannot report because it never ran.
@@ -127,6 +130,11 @@ explain it.
 - A server that rejects on start is reported in one line and sets a
   non-zero exit code, without awaiting a call that never returns; the
   spawn failure names the entrypoint and the workspace.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 9e17d9fcb (x00611 S2). fix(cli): el `void serve(...)` gana un `.catch` que reporta una línea y fija exit code ≠ 0; stdio-context.factory.ts nombra el entrypoint spawneado y el workspace, que el server no puede reportar porque nunca arrancó. Un refusal al boot ya no es stack trace con source listing. index.spec.ts 40/40 verde (entre cli + client). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from Merge pull request #351 from CartagoGit/delendai/pr/claude-opus-5/x00611-S1-g1/a-server-that-dies-says-why (refs/heads/delendai/wip/claude-opus-5/x00611-S1-g1/a-server-that-dies-says-why) (9e17d9fcb86cc62e211c89f474ddd0a606bd79ad), opened by minimax-m3
 
 ## acceptance
 
