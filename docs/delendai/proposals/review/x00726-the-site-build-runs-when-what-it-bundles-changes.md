@@ -2,12 +2,15 @@
 id: x00726
 title: "The site build runs when what it bundles changes"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00571, x00725]
+last-transition-id: c099ec61-14ae-44fb-98bb-0a77d0722069
+last-correlation-id: c099ec61-14ae-44fb-98bb-0a77d0722069
+last-transition-from: in-progress
 ---
 
 # x00726 — The site build runs when what it bundles changes
@@ -48,7 +51,7 @@ build since (x00725). While `develop` is red the queue arms nothing.
 
 ### S1 — The site's bound covers what it bundles
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/ci/job-scope.script.spec.ts`
 - **Files**:
   - `tools/scripts/ci/job-scope.constant.ts`
