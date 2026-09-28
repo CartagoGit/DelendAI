@@ -239,6 +239,7 @@ export async function createMcpProject(
 		title: 'DelendAI',
 		version: config.metadata.version,
 	});
+	config.hostServer?.set(server);
 	if (config.onClientInitialized !== undefined) {
 		const notify = config.onClientInitialized;
 		const previous = server.server.oninitialized;
