@@ -101,6 +101,37 @@ describe('planJobs', () => {
  * and every bound carries the reason it is correct. A bound without a
  * reason is a guess that looks like a decision.
  */
+describe('the site build runs when what it bundles changes (x00726)', () => {
+	it('runs for the CLI, core, the proposal store and a plugin, not only apps/web', () => {
+		for (const changed of [
+			'packages/cli/src/lib/validate-run.service.ts',
+			'packages/core/src/public/index.ts',
+			'packages/proposals-sqlite/src/lib/migrations.ts',
+			'plugins/proposals/src/lib/shared/validate-journal.ts',
+			'apps/web/src/pages/index.astro',
+		]) {
+			expect(
+				jobMustRun({
+					job: 'site',
+					changed: [changed],
+					scopes: JOB_SCOPES,
+				}),
+				changed,
+			).toBe(true);
+		}
+	});
+
+	it('still skips it for a change to documentation alone', () => {
+		expect(
+			jobMustRun({
+				job: 'site',
+				changed: ['docs/delendai/proposals/review/x00001-a.md'],
+				scopes: JOB_SCOPES,
+			}),
+		).toBe(false);
+	});
+});
+
 describe('the declarations themselves', () => {
 	it('declares each job exactly once', () => {
 		const ids = JOB_SCOPES.map((scope) => scope.job);
