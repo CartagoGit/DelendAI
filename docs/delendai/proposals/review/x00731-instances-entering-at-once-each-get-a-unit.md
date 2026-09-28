@@ -2,12 +2,15 @@
 id: x00731
 title: "Instances entering at once each get a unit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00714, x00727]
+last-transition-id: 7e64a83c-ba47-49c2-8777-fc8f548dd343
+last-correlation-id: 7e64a83c-ba47-49c2-8777-fc8f548dd343
+last-transition-from: in-progress
 ---
 
 # x00731 — Instances entering at once each get a unit
@@ -54,7 +57,7 @@ None.
 
 ### S1 — One entry at a time per unit, at the right path
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
