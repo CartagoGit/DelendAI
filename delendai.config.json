@@ -204,7 +204,9 @@
 				},
 				"persist": {
 					"mode": "commit-and-push"
-				}
+				},
+				"requirePeerReview": true,
+				"reviewIndependence": "instance"
 			}
 		},
 		"notification": {

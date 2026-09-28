@@ -88,6 +88,13 @@ export interface IReviewQueue {
 	readonly proposals: readonly IReviewQueueProposal[];
 	/** Over the whole backlog, not just the page. */
 	readonly totals: IReviewQueueTotals;
+	/** Where this page sits, and the call for the next one if any. */
+	readonly page: {
+		readonly offset: number;
+		readonly returned: number;
+		readonly total: number;
+		readonly next?: string;
+	};
 	/** The reviewer's procedure, in one paragraph. */
 	readonly procedure: string;
 }
@@ -103,4 +110,11 @@ export interface IBuildReviewQueueInput {
 	readonly limit: number;
 	/** Who is asking; its own claims do not count against it. */
 	readonly agent?: string | undefined;
+	/** Proposals of the listed backlog to skip. */
+	readonly offset?: number | undefined;
+	/**
+	 * Where this reviewer starts among the free proposals. Reviewers that
+	 * ask at the same moment, before any has claimed, start apart.
+	 */
+	readonly spread?: number | undefined;
 }

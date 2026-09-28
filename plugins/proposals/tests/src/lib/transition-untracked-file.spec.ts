@@ -198,7 +198,10 @@ describe('proposal_transition on fresh vs tracked files (x00106 S2)', () => {
 			'',
 			'### S1 — track self',
 			'',
+			'- **Status**: done',
 			'- **Files**: `review/f00004-self.md`',
+			'- review-implementer: implementer-agent',
+			'- review-log: approved by reviewer-agent — checked',
 			'',
 		].join('\n');
 		mkdirSync(join(proposalsDirAbs, 'review'), { recursive: true });
@@ -218,7 +221,8 @@ describe('proposal_transition on fresh vs tracked files (x00106 S2)', () => {
 				id: 'f00004',
 				to: 'done',
 				reason: 'a00069 S3 close',
-				// a00069 S7: this fixture has no peer-review log; force the DFA move.
+				// The slice is independently approved in its document (x00718);
+				// force still stands in for the validate evidence.
 				force: true,
 			}),
 		);

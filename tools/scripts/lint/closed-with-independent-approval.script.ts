@@ -22,43 +22,94 @@
  */
 import { execFileSync } from 'node:child_process';
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import {
+	type IReviewIndependence,
+	unapprovedSlices,
+} from '@delendai/proposals/public';
+
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 
 const DONE_PREFIX = 'docs/delendai/proposals/done/';
 
-/** The finished slices of `markdown` that lack an independent approval. */
-export const unapprovedSlices = (markdown: string): readonly string[] => {
-	// A slice is a `###` block with a Status line; other `###` headings
-	// (notes, measurements) are not judged. A proposal with no slices is
-	// judged as a whole.
-	const statusOf = (block: string) =>
-		block
-			.match(/^[-*]\s*\*\*Status\*\*:\s*([a-z-]+)/imu)?.[1]
-			?.toLowerCase();
-	const slices = markdown
-		.split(/^### /mu)
-		.slice(1)
-		.filter((block) => statusOf(block) !== undefined);
-	const judged =
-		slices.length > 0
-			? slices.filter((block) => statusOf(block) === 'done')
-			: [markdown];
-	return judged.flatMap((block) => {
-		const title =
-			slices.length > 0 ? (block.split('\n')[0] ?? '').trim() : '';
-		const implementer = block
-			.match(/^[-*]\s*review-implementer:\s*(\S+)/imu)?.[1]
-			?.toLowerCase();
-		const approvers = [
-			...block.matchAll(/^[-*]\s*review-log:\s*approved by\s+(\S+)/gimu),
-		].map((match) => (match[1] ?? '').toLowerCase());
-		const independent = approvers.some(
-			(approver) => approver.length > 0 && approver !== implementer,
-		);
-		return independent ? [] : [title.length > 0 ? title : '(the proposal)'];
-	});
+// The rule lives in the proposals plugin, the same one every path to
+// `done` applies (x00718).
+export { unapprovedSlices } from '@delendai/proposals/public';
+
+/**
+ * The project's review policy, read where the proposals plugin reads it:
+ * CI judges with the same rule the tools apply (x00718).
+ */
+const reviewPolicyOf = (
+	root: string,
+): {
+	readonly requirePeerReview: boolean;
+	readonly reviewIndependence: IReviewIndependence;
+} => {
+	let options: Record<string, unknown> = {};
+	try {
+		const config = JSON.parse(
+			readFileSync(join(root, 'delendai.config.json'), 'utf8'),
+		) as {
+			plugins?: { proposals?: { options?: Record<string, unknown> } };
+		};
+		options = config.plugins?.proposals?.options ?? {};
+	} catch {
+		// No config: the plugin's defaults.
+	}
+	return {
+		requirePeerReview: options.requirePeerReview !== false,
+		reviewIndependence:
+			options.reviewIndependence === 'instance' ? 'instance' : 'model',
+	};
 };
+
+/**
+ * The agent a ref belongs to: the segment right after the work-ref or
+ * publication prefix (`delendai/pr/<agent>/…`), or `undefined` for a ref
+ * outside the agents' namespace, a person's own branch.
+ */
+export const agentOfRef = (
+	ref: string,
+	prefixes: readonly string[],
+): string | undefined => {
+	const name = ref.replace(/^(refs\/)?(heads\/)?/u, '');
+	for (const prefix of prefixes) {
+		const bare = prefix.replace(/^(refs\/)?(heads\/)?/u, '');
+		if (bare.length > 0 && name.startsWith(bare)) {
+			const agent = name.slice(bare.length).split('/')[0];
+			return agent !== undefined && agent.length > 0 ? agent : undefined;
+		}
+	}
+	return undefined;
+};
+
+/**
+ * The approvals a diff adds that are not its author's (x00715).
+ *
+ * `reviewer ≠ implementer` compares names an agent declares. An approval
+ * that enters the integration branch through the pull request of its
+ * reviewer's own unit ties the declared name to the unit that did the
+ * review: approving as someone else then means entering, publishing and
+ * approving under that name, and any mismatch between the three is caught
+ * here, on every host.
+ */
+export const approvalsNotBy = (
+	unifiedDiff: string,
+	author: string,
+): readonly string[] =>
+	unifiedDiff.split('\n').flatMap((line) => {
+		const approver = line.match(
+			/^\+[-*]\s*review-log:\s*approved by\s+(\S+)/iu,
+		)?.[1];
+		return approver !== undefined &&
+			approver.toLowerCase() !== author.toLowerCase()
+			? [approver]
+			: [];
+	});
 
 const git = (root: string, args: readonly string[]): string =>
 	execFileSync('git', [...args], { cwd: root, encoding: 'utf8' }).trim();
@@ -86,10 +137,49 @@ const main = (): number => {
 	])
 		.split('\n')
 		.filter((path) => path.endsWith('.md') && !path.endsWith('README.md'));
+	const review = reviewPolicyOf(root);
+	if (!review.requirePeerReview) {
+		console.log(
+			'✓ closed-with-independent-approval: this project does not review proposals (plugins.proposals.options.requirePeerReview: false).',
+		);
+		return 0;
+	}
 	const findings = entered.flatMap((path) => {
-		const missing = unapprovedSlices(git(root, ['show', `HEAD:${path}`]));
+		const missing = unapprovedSlices(
+			git(root, ['show', `HEAD:${path}`]),
+			review.reviewIndependence,
+		);
 		return missing.length === 0 ? [] : [{ path, missing }];
 	});
+	const head =
+		process.env.GITHUB_HEAD_REF ??
+		git(root, ['rev-parse', '--abbrev-ref', 'HEAD']);
+	const branches = declaredBranches(root);
+	const author = agentOfRef(head, [
+		branches.publicationRefPrefix,
+		branches.workRefPrefix,
+	]);
+	const foreign =
+		author === undefined
+			? []
+			: approvalsNotBy(
+					git(root, [
+						'diff',
+						'-U0',
+						'-M',
+						base,
+						'HEAD',
+						'--',
+						'docs/delendai/proposals/',
+					]),
+					author,
+				);
+	if (foreign.length > 0) {
+		console.error(
+			`✖ closed-with-independent-approval: ${head} is ${author ?? ''}'s, and adds approvals by ${[...new Set(foreign)].join(', ')}. An approval enters through the pull request of its reviewer's own unit.`,
+		);
+		return 1;
+	}
 	if (findings.length === 0) {
 		console.log(
 			`✓ closed-with-independent-approval: ${String(entered.length)} proposal(s) closed here, each with an independent approval.`,
