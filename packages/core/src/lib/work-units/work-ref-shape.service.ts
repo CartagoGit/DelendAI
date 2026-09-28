@@ -26,7 +26,7 @@
  * that disagreed with the writer is no longer expressible, and renders it
  * for messages so a refusal cannot teach a spelling nothing produces.
  */
-import { compileWorkRefParser } from '@delendai/core/public';
+import { compileWorkRefParser } from '../startup-reconciler/index';
 
 import type { IWorkRefParts } from '../contracts/interfaces/work-ref-shape.interface';
 

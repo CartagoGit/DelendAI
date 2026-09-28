@@ -30,7 +30,7 @@ import type {
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
-import { readWorkspacePolicy } from '../lib/development-policy.service';
+import { readWorkspacePolicy } from '@delendai/core/cli';
 import { data, request, scalarArg } from '../lib/helpers/cli-command.helper';
 import { usage } from './groups/group-helpers';
 import { evidenceArgs } from './groups/proposals';

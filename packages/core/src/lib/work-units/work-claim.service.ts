@@ -33,12 +33,11 @@
  * the deletion of the old one. If the proof fails, the old ref is still
  * there and nothing is lost — the ordering is the safety.
  */
+import { shortName } from '../development-policy/git-guard-namespaces';
 import { execFileSync } from 'node:child_process';
 
-import {
-	type IResolvedDevelopmentPolicy,
-	resolveWorkRef,
-} from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { resolveWorkRef } from '../wip-engine/ref-name';
 
 import type {
 	IWorkClaim,
@@ -61,9 +60,6 @@ const git = (cwd: string, args: readonly string[]): string =>
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'pipe'],
 	}).trim();
-
-const shortName = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /**
  * What claiming `ref` for `agent` would produce — or why it cannot.

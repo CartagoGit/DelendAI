@@ -39,6 +39,7 @@
  * same reason: recording first would make a half-applied change permanent.
  */
 
+import { readConfigText } from '../work-units/command-args.helper';
 import { lstat, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -249,19 +250,6 @@ export const defaultConfigTransitions = (): readonly IConfigTransition[] => [
 	removedPluginCacheTransition(),
 	docsDirTransition(),
 ];
-
-const readConfigText = async (
-	workspaceRoot: string,
-): Promise<string | undefined> => {
-	try {
-		return await readFile(
-			join(workspaceRoot, DEFAULT_CONFIG_FILENAME),
-			'utf8',
-		);
-	} catch {
-		return undefined;
-	}
-};
 
 export const reconcileConfigTransitions = async (input: {
 	readonly workspaceRoot: string;

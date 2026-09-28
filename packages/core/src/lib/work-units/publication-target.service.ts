@@ -17,12 +17,10 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import {
-	publicationUnitFor,
-	resolveWorkRef,
-	type IResolvedDevelopmentPolicy,
-} from '@delendai/core/public';
-import { REVIEW_BATCH_ID } from '@delendai/core/cli';
+import { publicationUnitFor } from '../development-policy/publication-unit';
+import { resolveWorkRef } from '../wip-engine/ref-name';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { REVIEW_BATCH_ID } from '../development-policy/profiles.constant';
 
 import type {
 	IPublicationTarget,

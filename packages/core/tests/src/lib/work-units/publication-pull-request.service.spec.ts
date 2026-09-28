@@ -3,11 +3,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IPullRequestPorts } from '../contracts/interfaces/publication-pull-request.interface';
+import type { IPullRequestPorts } from '@delendai/core/lib/contracts/interfaces/publication-pull-request.interface';
 import {
 	openPublicationPullRequest,
 	pullRequestText,
-} from './publication-pull-request.service';
+} from '@delendai/core/lib/work-units/publication-pull-request.service';
 
 const INPUT = {
 	remote: 'origin',

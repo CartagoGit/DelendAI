@@ -67,6 +67,30 @@ const DOC_PATH = join(
 
 export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 	{
+		file: 'packages/core/src/lib/work-units/publication-target.service.ts',
+		symbolOrLiteral: "file.includes('/proposals/')",
+		category: 'path',
+		destination: 'adapter',
+		needle: "file.includes('/proposals/') &&",
+		note: 'The unit-of-work engine (x00735) finds the proposal a unit belongs to by its path; the proposals layout belongs behind an adapter the plugin provides.',
+	},
+	{
+		file: 'packages/core/src/lib/work-units/publication-target.service.ts',
+		symbolOrLiteral: "'/proposals/in-progress/'",
+		category: 'path',
+		destination: 'adapter',
+		needle: "?.includes('/proposals/in-progress/') ===",
+		note: 'The unit-of-work engine (x00735) asks whether a proposal is still in progress by its folder; the status belongs behind an adapter the plugin provides.',
+	},
+	{
+		file: 'packages/core/src/lib/work-units/publication-pull-request.service.ts',
+		symbolOrLiteral: 'docs(proposals): … to review',
+		category: 'message',
+		destination: 'adapter',
+		needle: '/^chore\\(review\\): claim\\b|^docs\\(proposals\\): .*\\bto review$/u;',
+		note: 'The unit-of-work engine (x00735) recognises the claim and hand-off commits the proposals workflow writes; the patterns belong to the plugin.',
+	},
+	{
 		file: 'packages/core/src/public/index.ts',
 		symbolOrLiteral: '../lib/proposals/validate-evidence.schema',
 		category: 'path',

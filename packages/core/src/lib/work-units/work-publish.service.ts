@@ -17,10 +17,8 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import {
-	holdWorkRef,
-	type IResolvedDevelopmentPolicy,
-} from '@delendai/core/public';
+import { holdWorkRef } from '../wip-engine/work-ref-lock';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import {
 	WORK_PUBLISH_HOLD_POLL_MS,
@@ -126,7 +124,7 @@ const worktreeFor = (root: string, ref: string): string | undefined => {
  * a caller can tell "published and cleaned up" from "published, and the
  * work ref is still here because the proof did not hold".
  */
-export const publishWorkRef = (
+export const publishWorkUnit = (
 	request: IWorkPublishRequest,
 ): IWorkPublishOutcome => {
 	const steps: IWorkPublishStep[] = [];
@@ -292,7 +290,7 @@ export const publishWorkRef = (
 };
 
 /**
- * `publishWorkRef`, holding the work ref for the whole sequence.
+ * `publishWorkUnit`, holding the work ref for the whole sequence.
  *
  * The host pushes every checked-out work ref on a cadence. A cadence push
  * that started before the publication and finished after it deleted the
@@ -301,7 +299,7 @@ export const publishWorkRef = (
  * the two exclusive: the cadence push either lands first, and this
  * deletes it, or finds the ref gone and pushes nothing.
  */
-export const publishWorkRefExclusively = async (
+export const publishWorkUnitExclusively = async (
 	request: IWorkPublishRequest,
 	options: {
 		readonly hold?: typeof holdWorkRef;
@@ -341,7 +339,7 @@ export const publishWorkRefExclusively = async (
 		);
 	}
 	try {
-		const outcome = publishWorkRef(request);
+		const outcome = publishWorkUnit(request);
 		return {
 			...outcome,
 			steps: [

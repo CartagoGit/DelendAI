@@ -6,8 +6,11 @@ import { describe, expect, it } from 'vitest';
 
 import { fakePartial } from '@delendai/test-kit';
 
-import type { ISwarmUnit } from '../contracts/interfaces/work-swarm.interface';
-import { collisionsWith, describeCollisions } from './scope-collision.service';
+import type { ISwarmUnit } from '@delendai/core/lib/contracts/interfaces/work-swarm.interface';
+import {
+	collisionsWith,
+	describeCollisions,
+} from '@delendai/core/lib/work-units/scope-collision.service';
 
 const unit = (
 	agent: string,

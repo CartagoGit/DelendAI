@@ -26,7 +26,7 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import type {
 	IInvariantReport,

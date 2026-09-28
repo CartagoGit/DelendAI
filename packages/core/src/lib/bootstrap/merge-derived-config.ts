@@ -7,12 +7,10 @@
  * safe to run repeatedly while still letting a first bootstrap fill in a
  * complete, useful baseline.
  */
+import { isRecord } from '../shared/is-record';
 import type { IDelendaiConfigFile } from '../plugins/load-config-file';
 
 type ConfigRecord = Record<string, unknown>;
-
-const isRecord = (value: unknown): value is ConfigRecord =>
-	value !== null && typeof value === 'object' && !Array.isArray(value);
 
 const cloneRecord = (value: ConfigRecord): ConfigRecord =>
 	structuredClone(value);

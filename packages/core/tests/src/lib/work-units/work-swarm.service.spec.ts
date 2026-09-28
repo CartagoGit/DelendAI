@@ -16,7 +16,7 @@ import {
 	listWorkRefs,
 	overlapsOf,
 	readSwarm,
-} from './work-swarm.service';
+} from '@delendai/core/lib/work-units/work-swarm.service';
 
 const roots: string[] = [];
 const policy = resolveDevelopmentPolicy({

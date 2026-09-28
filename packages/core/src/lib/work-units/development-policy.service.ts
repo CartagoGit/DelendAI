@@ -12,16 +12,13 @@
  * become a project with no rules. Absence is a valid answer; illegibility
  * is not.
  */
-import {
-	defaultBranchOf,
-	parseJsonc,
-	resolveDevelopmentPolicy,
-	sharedCheckout,
-} from '@delendai/core/public';
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import { defaultBranchOf } from '../development-policy/default-branch';
+import { parseJsonc } from '../config/jsonc-document';
+import { resolveDevelopmentPolicy } from '../development-policy/resolve';
+import { sharedCheckout } from '../shared/shared-checkout';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
-import { readConfigText } from './config-file.service';
-import { isRecord } from './helpers/cli-command.helper';
+import { isRecord, readConfigText } from './command-args.helper';
 
 export const readWorkspacePolicy = async (
 	root: string,

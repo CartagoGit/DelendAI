@@ -1072,7 +1072,6 @@ export {
 	createOrUpdateWipRef,
 	createWipEngine,
 	observeAnchor,
-	sanitizeRefComponent,
 	UNANCHORED,
 } from '../lib/wip-engine/index';
 // Shared with the plugin surface, so it is routed through it: one value,
@@ -1086,7 +1085,6 @@ export { resolveWorkRef } from '../lib/wip-engine/ref-name';
 export { WORK_REF_NAMING } from '../lib/contracts/constants/work-ref-naming.constant';
 // Publishing a unit and the host's cadence push both write a work ref's
 // remote copy; this is how they keep out of each other's way.
-export { holdWorkRef } from '../lib/wip-engine/work-ref-lock';
 // Work refs reach the remote the same way whoever pushes them: the
 // periodic publisher every server starts (`createMcpProject`), and
 // commit-policy's checkpoints.
@@ -1175,8 +1173,4 @@ export {
 	callerCheckout,
 	sharedCheckout,
 } from '../lib/shared/shared-checkout';
-export { defaultBranchOf } from '../lib/development-policy/default-branch';
-export {
-	checkedOutBranch,
-	projectBranches,
-} from '../lib/development-policy/project-branches';
+export { projectBranches } from '../lib/development-policy/project-branches';

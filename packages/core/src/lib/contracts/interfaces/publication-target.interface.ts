@@ -1,4 +1,4 @@
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from './development-policy.interface';
 
 /** The unit of work being published, and where its work ref points. */
 export interface IPublicationTargetRequest {

@@ -33,6 +33,9 @@
  *     dependency on the call sites.
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
+import { isRecord, scalarArg } from '@delendai/core/cli';
+
+export { isRecord, scalarArg };
 import {
 	type IResolvedCapability,
 	isUnexposedHere,
@@ -51,20 +54,6 @@ export const data = (
 	value: unknown,
 	code: ICliCommandResult['code'] = EXIT_CODE.OK,
 ): ICliCommandResult => ({ code, data: value });
-
-/**
- * Read a `--name=value` (inline) or `--name value` (spaced) scalar flag.
- * Returns `undefined` when the flag is absent.
- */
-export const scalarArg = (
-	args: readonly string[],
-	name: string,
-): string | undefined => {
-	const inline = args.find((arg) => arg.startsWith(`--${name}=`));
-	if (inline !== undefined) return inline.slice(name.length + 3);
-	const index = args.indexOf(`--${name}`);
-	return index >= 0 ? args[index + 1] : undefined;
-};
 
 /** True when a boolean `--name` flag is present. */
 export const hasFlag = (args: readonly string[], name: string): boolean =>
@@ -101,15 +90,3 @@ export const request = async <TOut>(
 		return unwrapResolved<TOut>(qualifiedName, resolved);
 	}
 };
-
-/**
- * Type guard for `Record<string, unknown>`.
- *
- * Used by registry helpers that project `unknown` payloads from MCP
- * tools (e.g. `scaffoldFilesOf` reads a `scaffold` tool result and
- * needs to walk the `files` array). Pulled out of `registry.ts` so
- * every CLI surface that walks an arbitrary `unknown` shape shares
- * one definition.
- */
-export const isRecord = (value: unknown): value is Record<string, unknown> =>
-	value !== null && typeof value === 'object' && !Array.isArray(value);

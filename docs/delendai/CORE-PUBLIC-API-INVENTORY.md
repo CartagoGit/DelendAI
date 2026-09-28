@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 645
+Total exports: 641
 
 | Maturity | Count |
 | --- | --- |
-| stable | 642 |
+| stable | 638 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -64,7 +64,6 @@ Total exports: 645
 | `CapabilityTag` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `CatalogSection` | type | stable | `../lib/catalog/agent-discovery-types` |
 | `checkCapabilityRequirements` | const | stable | `../lib/capabilities/versioning` |
-| `checkedOutBranch` | const | stable | `../lib/development-policy/project-branches` |
 | `classifyPath` | const | stable | `../lib/contracts/file-conventions.contract` |
 | `clearDryRunViolationsForTests` | const | stable | `../lib/dry-run/dry-run-violation-log.service` |
 | `CODE_MAP_SCHEMA_VERSION` | const | stable | `../lib/code-map/generator` |
@@ -118,7 +117,6 @@ Total exports: 645
 | `DEFAULT_MIGRATIONS` | const | stable | `../lib/workspace-migration/migration-registry` |
 | `DEFAULT_MODEL_CATALOG_LIMIT` | const | stable | `../lib/catalog` |
 | `DEFAULT_TS_RULES` | const | stable | `../lib/contracts/file-conventions.contract` |
-| `defaultBranchOf` | const | stable | `../lib/development-policy/default-branch` |
 | `definePlugin` | const | stable | `../plugin` |
 | `definePluginManifest` | const | stable | `../lib/manifest/define-plugin-manifest` |
 | `deriveSourceRoots` | const | stable | `../lib/bootstrap/derive-config` |
@@ -173,7 +171,6 @@ Total exports: 645
 | `hasPhasedLifecycle` | const | stable | `../lib/plugins/lifecycle` |
 | `hasSegment` | const | stable | `../lib/contracts/file-conventions.contract` |
 | `HIGH_CONFIDENCE_SECRET_PATTERNS` | const | stable | `../lib/shared/redact` |
-| `holdWorkRef` | const | stable | `../lib/wip-engine/work-ref-lock` |
 | `hydrateKpis` | const | stable | `../lib/observability/activation-kpis` |
 | `IActivationSources` | type | stable | `../lib/contracts/interfaces/activation-report.interface` |
 | `IAdoptionExtension` | type | stable | `../lib/adopt/adoption-extension-registry` |
@@ -574,7 +571,6 @@ Total exports: 645
 | `SafeToolCategory` | type | stable | `../lib/contracts/interfaces/safe-tool-identity.interface` |
 | `SafeToolId` | type | stable | `../lib/contracts/interfaces/safe-tool-identity.interface` |
 | `SafeWorkspaceReader` | const | stable | `../lib/filesystem/safe-workspace-reader` |
-| `sanitizeRefComponent` | const | stable | `../lib/wip-engine/index` |
 | `scaffoldAgentFile` | const | stable | `../lib/scaffold/scaffold-host` |
 | `scaffoldClaudeAgentFile` | const | stable | `../lib/scaffold/scaffold-host` |
 | `scaffoldClientFiles` | const | stable | `../lib/scaffold/scaffold-host` |

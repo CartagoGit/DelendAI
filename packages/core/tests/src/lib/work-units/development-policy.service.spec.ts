@@ -15,8 +15,8 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { readWorkspacePolicy } from './development-policy.service';
-import { runWorkflowDoctor } from './workflow-doctor.service';
+import { readWorkspacePolicy } from '@delendai/core/lib/work-units/development-policy.service';
+import { runWorkflowDoctor } from '@delendai/core/lib/work-units/workflow-doctor.service';
 
 const roots: string[] = [];
 afterEach(() => {

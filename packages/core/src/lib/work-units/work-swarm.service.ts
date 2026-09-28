@@ -15,9 +15,10 @@
  * Two agents can then decide between themselves, which is what a hive
  * does and a lock does not.
  */
+import { shortName } from '../development-policy/git-guard-namespaces';
 import { execFileSync } from 'node:child_process';
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import type {
 	ISwarmOverlap,
@@ -43,9 +44,6 @@ const git = (cwd: string, args: readonly string[]): string => {
 		return '';
 	}
 };
-
-const shortName = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /**
  * Every work ref this clone can see: its own branches and every remote's

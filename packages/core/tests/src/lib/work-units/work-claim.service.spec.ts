@@ -18,7 +18,7 @@ import {
 	applyWorkClaim,
 	claimableWorkRefs,
 	planWorkClaim,
-} from './work-claim.service';
+} from '@delendai/core/lib/work-units/work-claim.service';
 
 const roots: string[] = [];
 afterEach(() => {

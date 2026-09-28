@@ -9,7 +9,10 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { parsePorcelainZ, reportDirtyPaths } from './work-dirty-paths.service';
+import {
+	parsePorcelainZ,
+	reportDirtyPaths,
+} from '@delendai/core/lib/work-units/work-dirty-paths.service';
 
 const roots: string[] = [];
 

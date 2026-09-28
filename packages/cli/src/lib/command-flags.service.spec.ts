@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -132,17 +132,25 @@ describe('a declaration matches what the command reads', () => {
 	});
 
 	it.each([
-		['work', 'work.command.ts', WORK_COMMAND.flags],
-		['review', 'review.command.ts', REVIEW_COMMAND.flags],
+		// `work` runs the unit-of-work engine in core, one module per
+		// operation.
+		[
+			'work',
+			'../../../core/src/lib/work-units',
+			/^work-unit.*\.ts$/u,
+			WORK_COMMAND.flags,
+		],
+		['review', '.', /^review\.command\.ts$/u, REVIEW_COMMAND.flags],
 	] as const)(
 		'declares every flag `%s` reads anywhere in its module',
-		(_name, file, flags) => {
+		(_name, dir, files, flags) => {
 			// These commands read their flags in the helpers each subcommand
 			// calls, out of sight of their `run`.
-			const source = readFileSync(
-				join(__dirname, '../commands', file),
-				'utf8',
-			);
+			const at = join(__dirname, '../commands', dir);
+			const source = readdirSync(at)
+				.filter((name) => files.test(name))
+				.map((name) => readFileSync(join(at, name), 'utf8'))
+				.join('\n');
 			const read = new Set([
 				...[
 					...source.matchAll(

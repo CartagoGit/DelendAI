@@ -5,16 +5,16 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 110
+- Findings: 113
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 24
 - Regressions (resolved rule still present): 0
 - import: 1
-- path: 3
+- path: 5
 - plugin-name: 11
 - type: 68
-- message: 18
+- message: 19
 - index-access: 9
 
 ## Findings
@@ -125,6 +125,9 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/tools/agent-catalog-tool.ts | snapshot.proposals filter | type | intentional-compat | 1 | La consulta filtrada conserva proposals como clave publica. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | snapshot.proposals.length | type | intentional-compat | 1 | El contador de coincidencias sigue calculando sobre snapshot.proposals. |
 | packages/core/src/lib/tools/overview-tool.ts | tools grouped by plugin proposals | message | intentional-compat | 1 | La documentacion del overview conserva proposals como ejemplo contractual visible. |
+| packages/core/src/lib/work-units/publication-pull-request.service.ts | docs(proposals): … to review | message | adapter | 1 | The unit-of-work engine (x00735) recognises the claim and hand-off commits the proposals workflow writes; the patterns belong to the plugin. |
+| packages/core/src/lib/work-units/publication-target.service.ts | '/proposals/in-progress/' | path | adapter | 1 | The unit-of-work engine (x00735) asks whether a proposal is still in progress by its folder; the status belongs behind an adapter the plugin provides. |
+| packages/core/src/lib/work-units/publication-target.service.ts | file.includes('/proposals/') | path | adapter | 1 | The unit-of-work engine (x00735) finds the proposal a unit belongs to by its path; the proposals layout belongs behind an adapter the plugin provides. |
 | packages/core/src/public/index.ts | ../lib/proposals/validate-evidence.schema | path | contract | 1 | El barrel publico reexporta un schema desde un subpath proposals interno del core. |
 | packages/core/src/public/index.ts | ACTIONABLE_PROPOSAL_STATUSES | type | contract | 1 | El barrel publico reexporta el vocabulario del workflow con nombre proposals. |
 | packages/core/src/public/index.ts | IProposalSummary | type | contract | 1 | Los consumidores externos siguen importando el DTO nominal de proposals desde core/public. |
