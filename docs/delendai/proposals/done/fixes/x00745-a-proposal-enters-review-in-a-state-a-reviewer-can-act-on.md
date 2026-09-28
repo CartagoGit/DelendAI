@@ -2,15 +2,17 @@
 id: x00745
 title: "A proposal enters review in a state a reviewer can act on"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00643, x00696, x00744]
-last-transition-id: 7638b818-99e4-4d1d-8a61-4b45121ce1b8
-last-correlation-id: 7638b818-99e4-4d1d-8a61-4b45121ce1b8
-last-transition-from: in-progress
+last-transition-id: e7877d3c-7255-494c-884a-725076a987af
+last-correlation-id: e7877d3c-7255-494c-884a-725076a987af
+last-transition-from: review
+shipped-in:
+  - "b844c25aa"
 ---
 
 # x00745 — A proposal enters review in a state a reviewer can act on
@@ -75,7 +77,7 @@ were still stuck:
 
 ### S1 — The hand-off records the delivery; a role does not sign
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-entry.service.ts`
@@ -90,6 +92,11 @@ were still stuck:
   - `plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
   - `plugins/proposals/tests/src/lib/review.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/services/projection-follows-every-writer.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé b844c25aa (x00745 S1, merge PR #620). fix(review): a proposal enters review in a state a reviewer can act on. prepareReviewEntry: (a) rehúsa cuando un archivo declarado no existe, con el step que lo arregla; (b) graba por slice el último commit de la rama que cambió sus archivos declarados como shipped-in; (c) rehúsa un slice sin delivery. proposal_review rechaza approve/request_changes firmados por un role canónico (AGENT_CANONICAL_ROLES, cualquier spelling). 111/111 verde entre review-entry.service.spec + proposal-review-claim.spec + proposal-transition.tool.spec. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #620 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00745-S1-g1/a-proposal-enters-review-reviewable (refs/heads/delendai/wip/claude-opus-5-5/implement/x00745-S1-g1/a-proposal-enters-review-reviewable) (b844c25aaeb88d01d9ff65198292d670296a0e21), opened by minimax-m3
 
 ## dependency graph
 
