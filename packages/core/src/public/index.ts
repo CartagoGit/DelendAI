@@ -195,10 +195,7 @@ export {
 	type IMcpToolWireDefinition,
 } from '../lib/surface/bootstrap';
 export { compactOutputSchema } from '../lib/surface/compact-output-schema.helper';
-export {
-	VALIDATE_EVIDENCE_SCHEMA,
-	type IValidateEvidenceInput,
-} from '../lib/proposals/validate-evidence.schema';
+export { VALIDATE_EVIDENCE_SCHEMA } from '../lib/proposals/validate-evidence.schema';
 
 // Shared by every operator-facing boot notice in core AND in the
 // plugins, which is why it is public: four copies of the same
@@ -604,6 +601,9 @@ export {
 	toolOk,
 	truncateIfTooLarge,
 } from '../lib/shared/tool-response';
+// The code a write refused in the shared checkout carries, for a caller
+// that must tell policy from a broken tool (`verify:tools`).
+export { SHARED_CHECKOUT_WRITE_REFUSED } from '../lib/contracts/constants/write-refusal.constant';
 export type {
 	IToolErrorLogHint,
 	IToolTextResult,
@@ -635,7 +635,6 @@ export { TokenBudgetRegistry } from '../lib/budgets/registry';
 export type { IRegistryOptions } from '../lib/budgets/registry';
 export type {
 	IBudgetCeiling,
-	IBudgetForSurface,
 	IBudgetSource,
 	IPerSurfaceMeasurement,
 	ITokenMeasurement,
@@ -857,13 +856,8 @@ export {
 	buildPluginAddRecipe,
 	type IPluginAddRecipe,
 	type IPluginAddStep,
-	type PluginAddKind,
 } from '../lib/registry/plugin-add';
-export type { IPluginAddToolOptions } from '../lib/registry/plugin-add.tool';
-export {
-	buildPluginSearchRegistration,
-	type IPluginSearchToolOptions,
-} from '../lib/registry/plugin-search.tool';
+export { buildPluginSearchRegistration } from '../lib/registry/plugin-search.tool';
 export { resolvePlugins } from '../lib/registry/resolve';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
@@ -1093,6 +1087,15 @@ export { WORK_REF_NAMING } from '../lib/contracts/constants/work-ref-naming.cons
 // Publishing a unit and the host's cadence push both write a work ref's
 // remote copy; this is how they keep out of each other's way.
 export { holdWorkRef } from '../lib/wip-engine/work-ref-lock';
+// Work refs reach the remote the same way whoever pushes them: the
+// periodic publisher every server starts (`createMcpProject`), and
+// commit-policy's checkpoints.
+export { DURABILITY_REMOTE_MISSING } from '../lib/wip-engine/durability-remote.constant';
+export { resolveDurabilityRemote } from '../lib/wip-engine/durability-remote';
+export {
+	localRefHolds,
+	publishWorkRef,
+} from '../lib/wip-engine/work-ref-publication';
 /**
  * x00560: ONE answer to "who is working", reused by the plugin, the CLI
  * and the host. A ref named after a machine is not an answer.

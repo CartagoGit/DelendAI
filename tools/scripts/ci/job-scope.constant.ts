@@ -169,9 +169,17 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	// line names what it reads.
 	{
 		job: 'site',
-		touches: ['apps/web/', 'package.json', 'bun.lock'],
+		touches: [
+			'apps/web/',
+			'packages/',
+			'plugins/',
+			'extensions/',
+			'tools/scripts/',
+			'package.json',
+			'bun.lock',
+		],
 		because:
-			'it runs `bun run site`, an astro build of apps/web. The data the site embeds is CHECKED IN under apps/web/src/data, and `generated-artifacts-check` — which always runs — is what catches those going stale.',
+			'it runs `bun run site`, an astro build of apps/web that BUNDLES source from outside it: `@delendai/cli` (its command registry, and through it every plugin), `@delendai/core`, `@delendai/proposals`, the UI extension and tools/scripts. A change there can break the build without touching apps/web — x00712 did, and develop stayed red (x00726). The data the site embeds is checked in under apps/web/src/data; `generated-artifacts-check`, which always runs, catches it going stale.',
 	},
 	{
 		job: 'sqlite-cutover-ready',

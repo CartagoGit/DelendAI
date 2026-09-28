@@ -40,8 +40,8 @@ export {
 	applyMigrations,
 	readMigrationSource,
 	currentSchemaVersion,
-	MIGRATION_FILES,
-	MIGRATION_CHECKSUMS,
+	migrationFiles,
+	migrationChecksums,
 	MigrationChecksumMismatchError,
 	type IMigrationApplyOutcome,
 } from './lib/migrations';

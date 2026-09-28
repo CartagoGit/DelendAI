@@ -31,6 +31,7 @@
  *   cleanly without needing a feature flag.
  */
 
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import { randomUUID } from 'node:crypto';
 import { access, mkdir, rm } from 'node:fs/promises';
 
@@ -122,6 +123,7 @@ import {
 } from '../services/lifecycle-outcome';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
 import { VALIDATE_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
+import { unapprovedSlices } from '../shared/independent-approval';
 import {
 	PROPOSAL_TRANSITION_INPUT_SCHEMA,
 	type IProposalTransitionArgs,
@@ -230,6 +232,8 @@ export interface IProposalTransitionToolOptions {
 	 * `proposals.options.requirePeerReview: false`.
 	 */
 	readonly requirePeerReview?: boolean;
+	/** What makes a reviewer independent (x00718); `model` by default. */
+	readonly reviewIndependence?: IReviewIndependence;
 	/**
 	 * When true (default), `→ review` and `→ done` require a passing
 	 * `bun run validate` from the last 24h, journalled to
@@ -254,27 +258,10 @@ export interface IProposalTransitionToolOptions {
  * The new gate reads peer-review.jsonl first, but markdown approvals still
  * matter for older diagnostics and for transitional specs.
  */
-export const hasIndependentPeerApproval = (markdown: string): boolean => {
-	// Both spellings are in active use across the corpus — 237 documents
-	// write `- review-implementer:` and 94 write `- **review-implementer**:`
-	// — and the writers never agreed. Reading only the unbolded form made
-	// every review record in those 94 invisible to this check, so a
-	// genuinely peer-approved proposal was refused for lack of the
-	// approval sitting in its own document.
-	const implementers = [
-		...markdown.matchAll(
-			/^[-*]\s*\*{0,2}review-implementer\*{0,2}:\s*(\S+)/gim,
-		),
-	].map((m) => (m[1] ?? '').toLowerCase());
-	const approves = [
-		...markdown.matchAll(
-			/^[-*]\s*\*{0,2}review-log\*{0,2}:\s*approved\s+by\s+(\S+)/gim,
-		),
-	].map((m) => (m[1] ?? '').toLowerCase());
-	if (approves.length === 0) return false;
-	if (implementers.length === 0) return true;
-	return approves.some((agent) => !implementers.includes(agent));
-};
+export const hasIndependentPeerApproval = (
+	markdown: string,
+	independence: IReviewIndependence = 'model',
+): boolean => unapprovedSlices(markdown, independence).length === 0;
 
 const isKnownStatus = (value: string): value is IProposalStatus =>
 	value in PROPOSAL_STATUSES;
@@ -1185,6 +1172,37 @@ export const runProposalTransition = async (
 	// the host disabled requirePeerReview or the caller passed force:true.
 	// a00069 S11: force bypass is audited (reason already required + non-empty).
 	const requirePeer = options.requirePeerReview !== false;
+	// Whatever path leads to `done` and whatever flag is passed, every
+	// finished slice carries an independent approval (x00718). The gate
+	// below judges `review → done`; `force` used to skip it, and a jump to
+	// `done` from any other status never met it. A plan closes when its
+	// proposals have (`close_plan` sets `skipDfaForPlanClosure`).
+	if (
+		requirePeer &&
+		finalTo === 'done' &&
+		args.skipDfaForPlanClosure !== true &&
+		(args.force === true || from !== 'review')
+	) {
+		const unapproved = unapprovedSlices(raw, options.reviewIndependence);
+		if (unapproved.length > 0) {
+			const envelope = {
+				ok: false as const,
+				error: {
+					code: 'peer-review-missing',
+					blockerType: 'missing-peer-review',
+					reason: `peer-review required before ${args.id} reaches done: ${unapproved.join('; ')} ha${unapproved.length === 1 ? 's' : 've'} no approval by someone other than the implementer. No flag skips this.`,
+					nextAction: `A different agent approves each finished slice with ${options.namespacePrefix}_proposal_review { action: "approve" } first. Closing without a review is the owner's decision, made by merging by hand.`,
+				},
+			};
+			return {
+				content: [
+					{ type: 'text' as const, text: JSON.stringify(envelope) },
+				],
+				structuredContent: envelope,
+				isError: true,
+			};
+		}
+	}
 	if (requirePeer && from === 'review' && finalTo === 'done') {
 		if (args.force === true) {
 			recordPeerReviewBypass({
@@ -1221,8 +1239,12 @@ export const runProposalTransition = async (
 					? await hasIndependentApprovalSinceLastReview(
 							options.peerReviewLogPathAbs,
 							args.id,
+							options.reviewIndependence,
 						)
-					: hasIndependentPeerApproval(await readProposalMarkdown());
+					: hasIndependentPeerApproval(
+							await readProposalMarkdown(),
+							options.reviewIndependence,
+						);
 			if (!approved) {
 				const envelope = {
 					ok: false as const,
@@ -1235,7 +1257,7 @@ export const runProposalTransition = async (
 						// to "approve" gets `missing-submit-identity` and
 						// cannot fix it — submitting under its own name would
 						// make it the implementer and bar it from approving.
-						nextAction: `Open a review round, then have a DIFFERENT agent approve it: ${options.namespacePrefix}_proposal_review { action: "submit", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<implementer>", note: "<what was built>" }, then ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>", note: "<what was checked>" }. Then ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }. Emergency bypass: force:true (host-approved only).`,
+						nextAction: `Open a review round, then have a DIFFERENT agent approve it: ${options.namespacePrefix}_proposal_review { action: "submit", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<implementer>", note: "<what was built>" }, then ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>", note: "<what was checked>" }. Then ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }.`,
 					},
 				};
 				return {

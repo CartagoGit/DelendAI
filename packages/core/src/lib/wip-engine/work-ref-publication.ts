@@ -4,13 +4,11 @@
  * Split from the persistence port, which decides WHETHER to publish; this
  * module only knows HOW, and what can go wrong on the way.
  */
-import type {
-	IGitRunner,
-	IResolvedDevelopmentPolicy,
-} from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 
-import { DURABILITY_REMOTE_MISSING } from '../contracts/constants/durability-remote.constant';
-import { resolveDurabilityRemote } from './durability-remote.service';
+import { DURABILITY_REMOTE_MISSING } from './durability-remote.constant';
+import { resolveDurabilityRemote } from './durability-remote';
 
 /** Whether the local work ref exists and points at `commit`. */
 export const localRefHolds = async (

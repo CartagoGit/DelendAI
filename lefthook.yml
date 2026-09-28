@@ -16,6 +16,14 @@
 # (run by `prepare` before `lefthook install`) removes those legacy raw hooks.
 
 min_version: 1.7.0
+
+# Only `prepare`, in the main checkout, installs the hooks every worktree of
+# the clone shares. Left on, lefthook reinstalls them itself whenever a hook
+# runs from a checkout whose copy of this file differs, pointing them at
+# THAT checkout's binary: on 2026-09-28 an agent's review worktree became
+# the path every commit in the clone ran its hooks from, and removing that
+# worktree would have left them to a fallback.
+no_auto_install: true
 no_tty: false
 colors: true
 

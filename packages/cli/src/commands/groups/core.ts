@@ -13,6 +13,7 @@
  *   - `delendai_create_project`  ({ kind, ... })
  */
 import { REVIEW_COMMAND } from '../../contracts/constants/review-command.constant';
+import { WORK_COMMAND } from '../../contracts/constants/work-command.constant';
 import {
 	createWorkspacePathProvider,
 	runCreatePlugin,
@@ -286,9 +287,7 @@ const lazyRepairCommand: ICliCommand = {
  */
 const lazyWorkCommand: ICliCommand = {
 	name: 'work',
-	summary:
-		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|swarm|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
+	...WORK_COMMAND,
 	async run(args, ctx) {
 		const { workCommand: work } = await import('../work.command');
 		return work.run(args, ctx);

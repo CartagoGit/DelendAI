@@ -165,3 +165,28 @@ export const integrationCheckoutRefusal = async (
 	if (branch !== policy.branches.integration) return undefined;
 	return `this call would write into the shared checkout on ${branch}, the integration branch. Under this project's policy work reaches ${branch} only through a work ref and a pull request, so a change written here is committed by nobody and is lost.`;
 };
+
+/**
+ * The work branch `root` has checked out, when `root` is a unit of work's
+ * worktree: a working tree other than the shared checkout, on a branch
+ * under the policy's work-ref prefix. `undefined` anywhere else, and in a
+ * project with no work-ref model.
+ */
+export const unitBranchOf = async (
+	root: string,
+): Promise<string | undefined> => {
+	const development = await declaredDevelopment(root);
+	if (development === undefined) return undefined;
+	const policy = resolveDevelopmentPolicy({ development });
+	if (policy.branches.workRefTemplate.length === 0) return undefined;
+	const prefix = policy.branches.workRefPrefix
+		.replace(/^refs\//u, '')
+		.replace(/^heads\//u, '');
+	if (prefix.length === 0) return undefined;
+	const shared = sharedCheckout(root);
+	if (shared !== undefined && resolve(shared) === resolve(root)) {
+		return undefined;
+	}
+	const branch = checkedOutBranch(root);
+	return branch?.startsWith(prefix) === true ? branch : undefined;
+};

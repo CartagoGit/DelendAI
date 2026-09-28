@@ -3,7 +3,7 @@
  * configuration its clone shares.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -86,5 +86,15 @@ describe('what the main checkout runs', () => {
 			'bun tools/scripts/git/harden-git-hooks.script.ts',
 			'bun packages/cli/src/index.ts --workspace=. guard install --alongside-manager',
 		]);
+	});
+});
+
+describe('who installs the hooks', () => {
+	it('is prepare alone: lefthook never reinstalls them from a worktree', () => {
+		const config = readFileSync(
+			resolve(import.meta.dirname, '../../../lefthook.yml'),
+			'utf8',
+		);
+		expect(config).toMatch(/^no_auto_install: true$/mu);
 	});
 });
