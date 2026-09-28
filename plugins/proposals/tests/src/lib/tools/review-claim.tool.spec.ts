@@ -3,7 +3,7 @@
  * through a tool any host can call (x00737), on a real repository.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -106,6 +106,33 @@ describe('review_claim', () => {
 				encoding: 'utf8',
 			}).trim(),
 		).toBe('chore(review): claim x00001');
+	});
+
+	it('commits the claim alone, leaving what was staged staged', async () => {
+		const mine = unit('glm-5');
+		writeFileSync(join(mine, 'notes.md'), 'draft\n');
+		execFileSync('git', ['add', 'notes.md'], { cwd: mine });
+		const claim = await claimTool();
+
+		const taken = await claim({
+			proposalId: 'x00001',
+			agent: 'glm-5',
+			checkout: mine,
+		});
+
+		expect(taken.structuredContent).toMatchObject({ claimed: true });
+		expect(
+			execFileSync('git', ['show', '--name-only', '--format=', 'HEAD'], {
+				cwd: mine,
+				encoding: 'utf8',
+			}).trim(),
+		).toBe('');
+		expect(
+			execFileSync('git', ['status', '--porcelain'], {
+				cwd: mine,
+				encoding: 'utf8',
+			}).trim(),
+		).toBe('A  notes.md');
 	});
 
 	it('refuses a proposal another reviewer holds', async () => {

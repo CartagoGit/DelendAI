@@ -52,13 +52,6 @@ export const workRefFor = (
 	return undefined;
 };
 
-/** Proposal id (lower case) → the agents holding a review unit on it. */
-/**
- * The refs whose work the integration branch already holds. A review
- * unit whose verdicts merged has ended: its local ref, a spent publication
- * ref not yet reaped, or a remote-tracking copy nobody pruned would
- * otherwise hold the proposal forever.
- */
 /**
  * The unit a ref names, `refs/heads/<work ref>`, whether it is read as a
  * local branch, a remote one or its publication: one identity per unit.
@@ -73,6 +66,12 @@ export const unitOfRef = (
 		bare(shape.publicationRefPrefix),
 	);
 
+/**
+ * The refs whose work the integration branch already holds. A review
+ * unit whose verdicts merged has ended: its local ref, a spent publication
+ * ref not yet reaped, or a remote-tracking copy nobody pruned would
+ * otherwise hold the proposal forever.
+ */
 const endedRefs = async (
 	run: IGitRunner,
 	integration: string | undefined,
@@ -98,6 +97,7 @@ const endedRefs = async (
 	return ended;
 };
 
+/** Proposal id (lower case) → the review units holding it, and their agents. */
 export const reviewClaims = async (
 	run: IGitRunner,
 	shape: IWorkRefShape,

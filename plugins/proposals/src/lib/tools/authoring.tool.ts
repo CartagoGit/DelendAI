@@ -18,6 +18,7 @@ import {
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentNames } from './agent-names.tool';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
+import { verdictClaimRefusal } from '../services/review-claim.service';
 import { toolErrorEnvelope } from '../shared/tool-envelope';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
@@ -49,6 +50,7 @@ import {
 import {
 	parseReviewState,
 	renderReviewLines,
+	withClosingLines,
 	reviewTransition,
 	type IReviewRound,
 } from '../swarm/proposal-review';
@@ -2067,6 +2069,23 @@ export const buildReviewRegistration = (
 					});
 				}
 
+				if (
+					args.action === 'approve' ||
+					args.action === 'request_changes'
+				) {
+					const branches = scoped.developmentPolicy?.branches;
+					const refusal = await verdictClaimRefusal(
+						scoped.run ?? createGitRunner(scoped.workspaceRoot),
+						branches,
+						entry.id,
+						branches?.integration ?? 'HEAD',
+						options.namespacePrefix,
+					);
+					if (refusal !== undefined) {
+						return toolError(refusal.reason, refusal.nextAction);
+					}
+				}
+
 				let nextStatus!:
 					| 'none'
 					| 'in_review'
@@ -2326,10 +2345,21 @@ export const buildReviewRegistration = (
 							/^[-*]\s*review-(?:state|implementer|reviewer|log):.*$\n?/gm,
 							'',
 						);
-						block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
-						if (attribution !== undefined) {
-							block += `${renderAttributionLine(attribution, args.agent)}\n`;
-						}
+						block = withClosingLines(
+							block,
+							[
+								...renderReviewLines(next),
+								...(attribution === undefined
+									? []
+									: [
+											renderAttributionLine(
+												attribution,
+												args.agent,
+											),
+										]),
+							],
+							md.slice((m.index ?? 0) + m[0].length),
+						);
 						const inReview =
 							readFrontmatterField(
 								md,

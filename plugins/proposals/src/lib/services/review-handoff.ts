@@ -24,6 +24,7 @@ import {
 	parseReviewState,
 	renderReviewLines,
 	reviewTransition,
+	withClosingLines,
 } from '../swarm/proposal-review';
 import { parseProposalSlicePlan } from '../swarm/proposal-slice-plan';
 import {
@@ -71,7 +72,11 @@ export const openReviewRounds = async (input: {
 				input.implementer,
 			);
 			if (!submitted.ok || submitted.next === undefined) continue;
-			const block = `${body.replace(REVIEW_LINE_RE, '').replace(/\s*$/u, '')}\n${renderReviewLines(submitted.next).join('\n')}\n`;
+			const block = withClosingLines(
+				body.replace(REVIEW_LINE_RE, ''),
+				renderReviewLines(submitted.next),
+				markdown.slice((match.index ?? 0) + match[0].length),
+			);
 			markdown = markdown.replace(re, `${match[1]}${block}`);
 			opened.push(slice.sliceId);
 		}

@@ -293,6 +293,22 @@ export const renderReviewLines = (state: IReviewState): string[] => {
 };
 
 /**
+ * A slice body with `lines` as its closing lines, and a blank line before
+ * the heading that follows it. Each verdict used to trim the body and end
+ * it with one newline, so the next heading was glued to the review log.
+ * `after` is what follows the slice in the document: the next heading, or
+ * the newlines the document ends with.
+ */
+export const withClosingLines = (
+	body: string,
+	lines: readonly string[],
+	after: string,
+): string => {
+	const end = after.trim().length > 0 ? '\n\n' : after.length > 0 ? '' : '\n';
+	return `${body.replace(/\s*$/u, '')}\n${lines.join('\n')}${end}`;
+};
+
+/**
  * a00069 S7 — true when the proposal markdown has at least one slice with a
  * completed peer review: `review-state: done`, an implementer, a reviewer
  * distinct from the implementer, and an `approved` review-log entry.

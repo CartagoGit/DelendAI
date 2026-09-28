@@ -19,8 +19,7 @@ import {
 	REVIEW_CLAIM_INPUT_SCHEMA,
 	REVIEW_CLAIM_OUTPUT_SCHEMA,
 } from '../contracts/constants/review-claim-schema.constant';
-import { REVIEW_CLAIM_TRAILER } from '../contracts/constants/review-claims.constant';
-import { reviewClaims, unitOfRef } from '../services/review-claims.service';
+import { claimForReview } from '../services/review-claim.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
 import type { IAuthoringToolOptions } from './authoring-options';
@@ -46,74 +45,38 @@ export const buildReviewClaimRegistration = (
 			async (args: { proposalId: string; agent: string }) => {
 				const scoped = scopeToCaller(options);
 				const run = scoped.run ?? createGitRunner(scoped.workspaceRoot);
-				const id = args.proposalId.toLowerCase();
 				const shape = scoped.developmentPolicy?.branches;
-				const integration = shape?.integration ?? 'HEAD';
-				if (shape !== undefined) {
-					// Held by any unit but this one: another instance of the
-					// same model is another reviewer (x00739).
-					const branch = await run(['symbolic-ref', '-q', 'HEAD']);
-					const mine = branch.ok
-						? unitOfRef(branch.output.trim(), shape)
-						: undefined;
-					const others = [
-						...new Set(
-							(
-								(
-									await reviewClaims(run, shape, integration)
-								).get(id) ?? []
-							)
-								.filter((holder) => holder.unit !== mine)
-								.map((holder) => holder.agent),
-						),
-					];
-					if (others.length > 0) {
+				const outcome = await claimForReview(
+					run,
+					shape,
+					args.proposalId,
+					shape?.integration ?? 'HEAD',
+				);
+				switch (outcome.kind) {
+					case 'held':
 						return toolError(
-							`${args.proposalId} is held by another review unit (${others.join(', ')}).`,
+							`${args.proposalId} is held by another review unit (${outcome.by.join(', ')}).`,
 							`Take the next proposal ${options.namespacePrefix}_review_queue offers you.`,
 						);
-					}
+					case 'failed':
+						return toolError(
+							`Could not claim ${args.proposalId}: ${outcome.reason}.`,
+							'Claim it in your review unit: pass the worktree the `work` tool gave you as `checkout`.',
+						);
+					case 'already-claimed':
+						return toolOk({
+							proposalId: args.proposalId,
+							claimed: false,
+						});
+					case 'claimed':
+						return toolOk({
+							proposalId: args.proposalId,
+							claimed: true,
+							...(outcome.commit === undefined
+								? {}
+								: { commit: outcome.commit }),
+						});
 				}
-				const own = await run([
-					'log',
-					`--format=%(trailers:key=${REVIEW_CLAIM_TRAILER},valueonly)`,
-					'HEAD',
-					'--not',
-					integration,
-					'--',
-				]);
-				const claimedHere =
-					own.ok &&
-					own.output
-						.split('\n')
-						.some((line) => line.trim().toLowerCase() === id);
-				if (claimedHere) {
-					return toolOk({
-						proposalId: args.proposalId,
-						claimed: false,
-					});
-				}
-				const committed = await run([
-					'commit',
-					'--allow-empty',
-					'-q',
-					'-m',
-					`chore(review): claim ${args.proposalId}`,
-					'--trailer',
-					`${REVIEW_CLAIM_TRAILER}: ${args.proposalId}`,
-				]);
-				if (!committed.ok) {
-					return toolError(
-						`Could not claim ${args.proposalId}: ${committed.reason ?? 'git refused'}.`,
-						'Claim it in your review unit: pass the worktree the `work` tool gave you as `checkout`.',
-					);
-				}
-				const head = await run(['rev-parse', 'HEAD']);
-				return toolOk({
-					proposalId: args.proposalId,
-					claimed: true,
-					...(head.ok ? { commit: head.output.trim() } : {}),
-				});
 			},
 		);
 	},
