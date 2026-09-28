@@ -19,10 +19,9 @@ import { changedSinceFields } from './review-changed-since.service';
 import { procedureFor } from './review-procedure';
 import {
 	REVIEW_BATCH_ID,
-	REVIEW_PACK_SIZE,
 	REVIEW_UNIT_SLICE,
 } from '../contracts/constants/review-claims.constant';
-import { publishPackStep } from './review-claim.service';
+import { packOf } from './review-pack.service';
 import { proposalsInReview } from './review-backlog.service';
 import { reviewClaims, unitOfRef } from './review-claims.service';
 import { pageOfQueue } from './review-queue-page.service';
@@ -33,7 +32,6 @@ import { SafeWorkspaceReader } from '@delendai/core/public';
 import type {
 	IReviewBacklogEntry,
 	IBuildReviewQueueInput,
-	IReviewPack,
 	IDeliveryCandidate,
 	IReviewQueue,
 	IReviewQueueProposal,
@@ -391,23 +389,5 @@ export const buildReviewQueue = async (
 			? {}
 			: { pack: packOf(claims, ownUnit, input.namespacePrefix) }),
 		procedure: procedureFor(input.namespacePrefix),
-	};
-};
-
-/** How full the caller's pack is: the proposals its unit has claimed. */
-const packOf = (
-	claims: ReadonlyMap<string, readonly IReviewClaimHolder[]>,
-	unit: string,
-	prefix: string,
-): IReviewPack => {
-	const claimed = [...claims.values()].filter((holders) =>
-		holders.some((holder) => holder.unit === unit),
-	).length;
-	const full = claimed >= REVIEW_PACK_SIZE;
-	return {
-		size: REVIEW_PACK_SIZE,
-		claimed,
-		full,
-		...(full ? { next: publishPackStep(prefix) } : {}),
 	};
 };

@@ -215,37 +215,44 @@ export const judgeGitOperation = (
 		: verdict;
 };
 
+/** How an agent's operation is judged: one entry per operation kind. */
+const AGENT_JUDGES: {
+	readonly [K in IGuardedGitOperation['kind']]: (
+		policy: IResolvedDevelopmentPolicy,
+		operation: Extract<IGuardedGitOperation, { kind: K }>,
+	) => IGitGuardVerdict;
+} = {
+	commit: (policy, operation) =>
+		refuseBorrowedAuthor(policy, operation) ??
+		refuseReviewOutsideScope(policy, operation) ??
+		judgeCommit(
+			policy,
+			operation.branch,
+			operation.isMerge,
+			operation.inMainWorktree ?? true,
+		),
+	'branch-create': (policy, operation) =>
+		judgeBranchCreate(policy, operation.ref),
+	push: (policy, operation) =>
+		judgePush(
+			policy,
+			operation.remoteRef,
+			operation.deleting,
+			operation.deletedTipKept,
+		),
+	stash: (policy) => judgeStash(policy),
+	'branch-delete': (policy, operation) =>
+		refuseLiveUnitDeletion(policy, operation) ??
+		allow('no unit is working on this branch.'),
+};
+
 const judgeAgentOperation = (
 	policy: IResolvedDevelopmentPolicy,
 	operation: IGuardedGitOperation,
-): IGitGuardVerdict => {
-	switch (operation.kind) {
-		case 'commit':
-			return (
-				refuseBorrowedAuthor(policy, operation) ??
-				refuseReviewOutsideScope(policy, operation) ??
-				judgeCommit(
-					policy,
-					operation.branch,
-					operation.isMerge,
-					operation.inMainWorktree ?? true,
-				)
-			);
-		case 'branch-create':
-			return judgeBranchCreate(policy, operation.ref);
-		case 'push':
-			return judgePush(
-				policy,
-				operation.remoteRef,
-				operation.deleting,
-				operation.deletedTipKept,
-			);
-		case 'stash':
-			return judgeStash(policy);
-		case 'branch-delete':
-			return (
-				refuseLiveUnitDeletion(policy, operation) ??
-				allow('no unit is working on this branch.')
-			);
-	}
-};
+): IGitGuardVerdict =>
+	(
+		AGENT_JUDGES[operation.kind] as (
+			policy: IResolvedDevelopmentPolicy,
+			operation: IGuardedGitOperation,
+		) => IGitGuardVerdict
+	)(policy, operation);
