@@ -1003,3 +1003,43 @@ describe('delendai work, as a person reads it', () => {
 		expect(out).toContain('anchored         yes');
 	});
 });
+
+describe('instances entering at once each get a unit (x00731)', () => {
+	it('gives two sessions of one model entering the same unit together g1 and g2', async () => {
+		const root = repoWith(PINNED);
+		const enter = (session: string) =>
+			command.run(
+				[
+					'enter',
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					`--session=${session}`,
+					`--dir=${join(root, `wt-${session}`)}`,
+				],
+				contextFor(root),
+			);
+
+		const [first, second] = await Promise.all([
+			enter('aaaa'),
+			enter('bbbb'),
+		]);
+
+		expect([first.code, second.code]).toEqual([0, 0]);
+		const refs = [first, second]
+			.map((result) => (result.data as { ref: string }).ref)
+			.sort();
+		expect(refs).toEqual([
+			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/work',
+			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g2/work',
+		]);
+		// The path it reports is the worktree's own, even for an absolute
+		// --dir, so the session is stamped where the next instance reads it.
+		expect(
+			[first, second]
+				.map((result) => (result.data as { path: string }).path)
+				.sort(),
+		).toEqual([join(root, 'wt-aaaa'), join(root, 'wt-bbbb')]);
+	});
+});
