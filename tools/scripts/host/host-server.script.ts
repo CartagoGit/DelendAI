@@ -6,6 +6,7 @@
  * Equivalent to `cli.ts`'s own `runCli`, minus the `init`/`--check`/`--doctor`
  * branches a long-running server process never needs.
  */
+import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import {
 	assembleCliConfig,
 	createFileSystemJournal,
@@ -311,7 +312,7 @@ const run = async (): Promise<void> => {
 						client: `host@${config.metadata.name}`,
 					}).id,
 					lockPath: config.workspace.resolve(
-						`${config.corePaths?.cacheDir ?? '.cache/delendai'}/startup/reconcile.lock`,
+						`${config.corePaths?.cacheDir ?? '.cache/delendai'}/${STARTUP_CACHE_DIR}/reconcile.lock`,
 					),
 					databasePath: resolveProposalsDbPaths(config.workspace.root)
 						.databasePath,

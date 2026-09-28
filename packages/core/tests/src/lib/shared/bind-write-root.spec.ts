@@ -22,6 +22,7 @@ import type {
 	IMcpPluginContext,
 } from '@delendai/core/lib/plugins/plugin-contract';
 
+import { SHARED_CHECKOUT_WRITE_REFUSED } from '../../../../src/lib/contracts/constants/write-refusal.constant';
 import { bindWriteRoot } from '../../../../src/lib/shared/bind-write-root';
 import {
 	executionRootOr,
@@ -162,6 +163,43 @@ describe('bindWriteRoot', () => {
 		expect(ran).toBe(false);
 		expect(result.isError).toBe(true);
 		expect(result.structuredContent.error.reason).toContain('/elsewhere');
+	});
+
+	it('refuses a write the policy forbids with a stable code, before the handler runs', async () => {
+		let ran = false;
+		const registration: IToolRegistration = {
+			...toolReportingItsRoot('caller-checkout'),
+			register: async (server) => {
+				server.registerTool(
+					'commit',
+					{ inputSchema: z.object({}) },
+					async () => {
+						ran = true;
+						return toolOk();
+					},
+				);
+			},
+		};
+		const { handler } = await registerOn(
+			bindWriteRoot(
+				registration,
+				SERVER,
+				sameRepository,
+				async () => 'this is the shared checkout on develop',
+			),
+		);
+		const result = (await handler({})) as {
+			readonly isError?: boolean;
+			readonly structuredContent: {
+				readonly error: { code?: string; reason: string };
+			};
+		};
+		expect(ran).toBe(false);
+		expect(result.isError).toBe(true);
+		expect(result.structuredContent.error.code).toBe(
+			SHARED_CHECKOUT_WRITE_REFUSED,
+		);
+		expect(result.structuredContent.error.reason).toContain('develop');
 	});
 
 	it('refuses an invalid checkout even for a tool that declared checkout itself', async () => {

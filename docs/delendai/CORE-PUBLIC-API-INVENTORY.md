@@ -196,7 +196,6 @@ Total exports: 645
 | `IBootstrapPatternOverride` | type | stable | `../lib/plugins/load-config-file` |
 | `IBootstrapPatternOverrides` | type | stable | `../lib/plugins/load-config-file` |
 | `IBudgetCeiling` | type | stable | `../lib/budgets/types` |
-| `IBudgetForSurface` | type | stable | `../lib/budgets/types` |
 | `IBudgetSource` | type | stable | `../lib/budgets/types` |
 | `ICacheEvictionRegistry` | type | stable | `../contracts` |
 | `ICacheEvictionReport` | type | stable | `../lib/contracts/interfaces/cache-eviction.interface` |
@@ -588,6 +587,7 @@ Total exports: 645
 | `scaffoldToolFile` | const | stable | `../lib/scaffold/scaffold-host` |
 | `scanLegacyIdentity` | const | stable | `../lib/workspace-migration/scanner/legacy-identity-scanner` |
 | `SCHEMA_VERSION` | const | stable | `../lib/api/stable-manifest` |
+| `SHARED_CHECKOUT_WRITE_REFUSED` | const | stable | `../lib/contracts/constants/write-refusal.constant` |
 | `sharedCheckout` | const | stable | `../lib/shared/shared-checkout` |
 | `shingleBlocks` | const | stable | `../lib/scan` |
 | `shouldUseAnsiColors` | const | stable | `../lib/startup-report` |
