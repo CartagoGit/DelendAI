@@ -35,6 +35,28 @@ afterEach(() => {
 });
 
 describe('a verdict on a slice no round was opened for', () => {
+	it('reads a slice that declares a directory as delivered by a file under it (x00746)', async () => {
+		// A direct commit that cites no proposal: only the path can tie it
+		// to the slice.
+		writeFileSync(join(repo.root, 'src/a.ts'), 'export const a = 1;\n');
+		repo.git('add', 'src/a.ts');
+		repo.git('commit', '-q', '--no-verify', '-m', 'feat: the work');
+		const commit = repo.git('rev-parse', 'HEAD');
+		repo.proposalInReview(`### S1 — the work
+- **Status**: review
+- **Files**: \`src\`
+`);
+
+		const approved = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: commit.slice(0, 9) },
+		});
+
+		expect(approved.isError).toBe(false);
+		expect(approved.body).toMatchObject({ status: 'done' });
+	});
+
 	it('reads a pull request whole when its last commit is the queue refreshing it', async () => {
 		repo.git('switch', '-q', '-c', 'feature');
 		writeFileSync(join(repo.root, 'src/a.ts'), 'export const a = 1;\n');
