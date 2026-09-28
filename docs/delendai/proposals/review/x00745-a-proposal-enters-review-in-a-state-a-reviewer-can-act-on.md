@@ -64,10 +64,10 @@ were still stuck:
 ## architecture
 
 - `plugins/proposals/src/lib/services/review-entry.service.ts` (new),
-  `contracts/interfaces/review-entry.interface.ts` (new),
-  `tools/proposal-transition.tool.ts`.
+  `plugins/proposals/src/lib/contracts/interfaces/review-entry.interface.ts` (new),
+  `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`.
 - `plugins/proposals/src/lib/shared/agent-conventions.ts`,
-  `tools/authoring.tool.ts`.
+  `plugins/proposals/src/lib/tools/authoring.tool.ts`.
 
 ## Slices
 

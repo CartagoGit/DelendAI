@@ -70,9 +70,9 @@ safe answer is that it mutates nothing shared until restarted.
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/tests/src/lib/development-policy/stale-runtime-advisory.spec.ts`
   - `plugins/commit-policy/src/index.ts`
-  - `plugins/commit-policy/src/lib/contracts/interfaces/work-checkout-publisher.interface.ts`
-  - `plugins/commit-policy/src/lib/services/work-checkout-publisher.service.ts`
-  - `plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
+  - `packages/core/src/lib/wip-engine/work-checkout-publisher.interface.ts`
+  - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
+  - `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
 
 ## dependency graph
 

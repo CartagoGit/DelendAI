@@ -63,7 +63,7 @@ had not reviewed.
 ## architecture
 
 - `packages/cli/src/commands/review.command.ts` (new), registered lazily in
-  `groups/core.ts`; `contracts/constants/review-command.constant.ts`.
+  `packages/cli/src/commands/groups/core.ts`; `packages/cli/src/contracts/constants/review-command.constant.ts`.
 - `packages/cli/src/commands/groups/proposals.ts`: `evidenceArgs` shared.
 - `packages/cli/src/contracts/constants/help-translation.constant.ts`,
   `tools/scripts/lint/cli-ui-parity.map.json`.

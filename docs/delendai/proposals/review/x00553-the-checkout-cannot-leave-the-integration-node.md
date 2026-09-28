@@ -87,8 +87,8 @@ adopter project, whatever the integration branch is called.
   core WIP engine with no MCP server and no database, so the rule can be
   obeyed from a console, from Claude, Codex or Copilot alike.
 - **Files**: `packages/cli/src/commands/work.command.ts`,
-  `packages/cli/src/commands/work.command.spec.ts`,
-  `packages/cli/src/lib/development-policy.service.ts`,
+  `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`,
+  `packages/core/src/lib/work-units/development-policy.service.ts`,
   `packages/cli/src/commands/groups/core.ts`,
   `packages/core/src/public/index.ts`
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
@@ -149,9 +149,9 @@ adopter project, whatever the integration branch is called.
   untouched, because until the publication carries it the work ref is
   the only copy. `forge:refresh`, which the queue tells you to run, is
   now a declared script instead of a command that did not exist.
-- **Files**: `packages/cli/src/lib/work-publish.service.ts`,
-  `packages/cli/src/lib/work-publish.service.spec.ts`,
-  `packages/cli/src/contracts/interfaces/work-publish.interface.ts`,
+- **Files**: `packages/core/src/lib/work-units/work-publish.service.ts`,
+  `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`,
+  `packages/core/src/lib/contracts/interfaces/work-publish.interface.ts`,
   `packages/cli/src/commands/work.command.ts`, `package.json`
 - **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts`
 

@@ -48,7 +48,7 @@ could read the same proposal, and the owner could not see who was on what.
 ## architecture
 
 - `plugins/proposals/src/lib/tools/review-claim.tool.ts` (new),
-  `contracts/constants/review-claim-schema.constant.ts` (new), registered in
+  `plugins/proposals/src/lib/contracts/constants/review-claim-schema.constant.ts` (new), registered in
   `src/index.ts`, disclosure in `surface/disclosure.ts`.
 - `plugins/proposals/src/lib/services/review-procedure.ts`.
 - `packages/cli/src/commands/review.command.ts`.

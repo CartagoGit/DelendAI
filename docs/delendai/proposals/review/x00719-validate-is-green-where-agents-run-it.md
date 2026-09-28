@@ -41,7 +41,7 @@ ignore it.
 
 - **The refusal carries a stable code.** `toolError` takes an optional
   `code`, and the guard answers `shared-checkout-write-refused`
-  (`contracts/constants/write-refusal.constant.ts`). The probe reads the
+  (`packages/core/src/lib/contracts/constants/write-refusal.constant.ts`). The probe reads the
   code, not the prose. It reports the tool as `needs-input`: the guard
   answered correctly, and the tool is probed where writes land (a unit's
   worktree, CI). Any other error still fails. The code is public, because
@@ -59,10 +59,10 @@ ignore it.
 ## architecture
 
 - `packages/core/src/lib/contracts/constants/write-refusal.constant.ts`,
-  `shared/tool-response.ts`, `shared/bind-write-root.ts`.
+  `packages/core/src/lib/shared/tool-response.ts`, `packages/core/src/lib/shared/bind-write-root.ts`.
 - `tools/scripts/verify/verify-probes.ts`.
 - `tools/scripts/lib/startup-cache-dir.constant.ts`,
-  `host/host-server.script.ts`, `lint/check-stray-cache-files.script.ts`.
+  `tools/scripts/host/host-server.script.ts`, `tools/scripts/lint/check-stray-cache-files.script.ts`.
 
 ## Slices
 
