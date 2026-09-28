@@ -727,16 +727,8 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		symbolOrLiteral: 'proposal: IProposalSummary',
 		category: 'type',
 		destination: 'contract',
-		needle: 'proposal: IProposalSummary,',
-		note: 'La clonacion del catalogo recibe el tipo nominal IProposalSummary.',
-	},
-	{
-		file: 'packages/core/src/lib/catalog/agent-discovery-catalog.ts',
-		symbolOrLiteral: '): IProposalSummary => ({',
-		category: 'type',
-		destination: 'contract',
-		needle: '): IProposalSummary => ({',
-		note: 'La salida del clonador sigue fijada al DTO de proposal.',
+		needle: 'const cloneProposal = (proposal: IProposalSummary)',
+		note: 'La clonacion del catalogo recibe y devuelve el tipo nominal IProposalSummary (una sola linea desde x00738).',
 	},
 	{
 		file: 'packages/core/src/lib/catalog/agent-discovery-catalog.ts',

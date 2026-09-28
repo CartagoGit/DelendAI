@@ -142,6 +142,11 @@ export const registryEntryFrom = (input: {
 	const isArchived = relPath.startsWith(`legacy${sep}closed${sep}`);
 	const entry: IProposalEntry = {
 		id: typeof parsed.id === 'string' ? parsed.id : buildId(name),
+		// Readers of the index (the agent catalog, the host) show what a
+		// proposal is; without it they showed its id as its title (x00738).
+		...(typeof parsed.title === 'string' && parsed.title.trim().length > 0
+			? { title: parsed.title.trim() }
+			: {}),
 		// proposalsDir-relative, so `join(proposalsDir, file)` stays right
 		// wherever the index itself is stored.
 		file: relPath,
@@ -168,6 +173,7 @@ export const registryEntryFrom = (input: {
  */
 export const toIndexEntry = (entry: IProposalEntry) => ({
 	id: entry.id,
+	...(entry.title === undefined ? {} : { title: entry.title }),
 	file: entry.file,
 	track: entry.track,
 	type: entry.type,

@@ -34,6 +34,8 @@ export interface IProposalExtras {
 
 export interface IProposalEntry {
 	id: string;
+	/** The frontmatter `title`, when the proposal has one. */
+	title?: string;
 	file: string;
 	track: string;
 	type: string;
