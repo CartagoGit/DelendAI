@@ -14,8 +14,8 @@
  * DEFERRED. (x00511.)
  *
  * Public surface:
- *   - `MIGRATION_FILES` — the list of migration files in order.
- *   - `MIGRATION_CHECKSUMS` — sha256 per file, computed at module load.
+ *   - `migrationFiles()` — the list of migration files in order.
+ *   - `migrationChecksums()` — sha256 per file, computed once.
  *   - `applyMigrations(db)` — applies pending migrations; returns
  *     the list of versions applied (empty when the DB is up to date).
  *   - `currentSchemaVersion(db)` — the latest version in
@@ -28,10 +28,19 @@ import { join } from 'node:path';
 
 import type { Database } from 'bun:sqlite';
 
-const MIGRATIONS_DIR = join(__dirname, 'migrations');
+/**
+ * Where the migrations live, resolved when one is first read.
+ *
+ * Importing this module reads nothing: a bundle that only needs the
+ * vocabulary (the CLI, the web site) pulls it in with the rest of the
+ * package, and a directory or a file read at module load broke that
+ * bundle's build — `__dirname` does not exist in an ES module, and the
+ * files are not next to the bundle anyway (x00725).
+ */
+const migrationsDir = (): string => join(import.meta.dirname, 'migrations');
 
 const readMigrationFile = (name: string): string =>
-	readFileSync(join(MIGRATIONS_DIR, name), 'utf8');
+	readFileSync(join(migrationsDir(), name), 'utf8');
 
 const sha256Of = (text: string): string =>
 	createHash('sha256').update(text).digest('hex');
@@ -45,25 +54,31 @@ const sha256Of = (text: string): string =>
 export const readMigrationSource = (name: string): string =>
 	readMigrationFile(name);
 
+let files: readonly string[] | undefined;
+
 /**
- * Reads `./migrations/*.sql` in lexical order. Migration files must
+ * `./migrations/*.sql` in lexical order, read once. Migration files must
  * be named `NNNN_description.sql` where NNNN is a 4+ digit version.
  */
-const collectMigrationFiles = (): readonly string[] =>
-	readdirSync(MIGRATIONS_DIR)
+export const migrationFiles = (): readonly string[] => {
+	files ??= readdirSync(migrationsDir())
 		.filter((name) => /^\d{4,}_.*\.sql$/.test(name))
 		.sort();
+	return files;
+};
 
-export const MIGRATION_FILES = collectMigrationFiles();
+let checksums: Readonly<Record<string, string>> | undefined;
 
-/** SHA-256 per migration file, computed once at module load. */
-export const MIGRATION_CHECKSUMS: Readonly<Record<string, string>> =
-	Object.fromEntries(
-		MIGRATION_FILES.map((name) => [
+/** SHA-256 per migration file, computed once. */
+export const migrationChecksums = (): Readonly<Record<string, string>> => {
+	checksums ??= Object.fromEntries(
+		migrationFiles().map((name) => [
 			name,
 			sha256Of(readMigrationFile(name)),
 		]),
 	);
+	return checksums;
+};
 
 /** Returns the numeric version encoded in the file name. */
 export const parseMigrationVersion = (name: string): number => {
@@ -106,7 +121,7 @@ export const currentSchemaVersion = (db: Database): number => {
  * The migration files this build carries that the database has NOT
  * applied yet, in order.
  *
- * WHY it is derived from the SAME `MIGRATION_FILES` + `schema_migrations`
+ * WHY it is derived from the SAME `migrationFiles()` + `schema_migrations`
  * pair the applier uses, rather than from `user_version` or a count:
  * a second opinion about what is pending is a second migration system,
  * and the two would eventually disagree. A database with no
@@ -118,7 +133,7 @@ export const pendingMigrationFiles = (db: Database): readonly string[] => {
 			"SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'",
 		)
 		.get();
-	if (!table?.name) return MIGRATION_FILES;
+	if (!table?.name) return migrationFiles();
 	const applied = new Set(
 		db
 			.query<{ version: number }, []>(
@@ -127,7 +142,7 @@ export const pendingMigrationFiles = (db: Database): readonly string[] => {
 			.all()
 			.map((row) => row.version),
 	);
-	return MIGRATION_FILES.filter(
+	return migrationFiles().filter(
 		(name) => !applied.has(parseMigrationVersion(name)),
 	);
 };
@@ -179,7 +194,7 @@ const appliedSchemaMatchesFiles = (
 	const SqliteDatabase = db.constructor as new (path: string) => Database;
 	const replay = new SqliteDatabase(':memory:');
 	try {
-		for (const name of MIGRATION_FILES) {
+		for (const name of migrationFiles()) {
 			if (!stored.has(parseMigrationVersion(name))) continue;
 			runSqlScript(replay, readMigrationFile(name));
 		}
@@ -261,9 +276,9 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 
 	const applied: { version: number; name: string }[] = [];
 	const now = Date.now();
-	for (const name of MIGRATION_FILES) {
+	for (const name of migrationFiles()) {
 		const version = parseMigrationVersion(name);
-		const checksum = MIGRATION_CHECKSUMS[name] ?? '';
+		const checksum = migrationChecksums()[name] ?? '';
 		const existing = stored.get(version);
 		if (existing) {
 			if (existing.checksum === checksum) continue;

@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	applyMigrations,
-	MIGRATION_FILES,
+	migrationFiles,
 } from '../../../../src/lib/migrations';
 import { PROPOSALS_SQLITE_SCHEMA_VERSION } from '../../../../src/lib/schema';
 import {
@@ -60,7 +60,7 @@ describe('work model migrations', () => {
 			}
 			expect(driver.schemaVersion).toBe(PROPOSALS_SQLITE_SCHEMA_VERSION);
 			expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(
-				MIGRATION_FILES.length,
+				migrationFiles().length,
 			);
 		} finally {
 			driver.close();
@@ -77,7 +77,7 @@ describe('work model migrations', () => {
 					'SELECT COUNT(*) AS count FROM schema_migrations',
 				)
 				.get();
-			expect(rows?.count).toBe(MIGRATION_FILES.length);
+			expect(rows?.count).toBe(migrationFiles().length);
 		} finally {
 			driver.close();
 		}
