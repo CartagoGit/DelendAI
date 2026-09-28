@@ -2,7 +2,7 @@
 id: x00559
 title: "A generated file is not a merge conflict"
 kind: fix
-status: review
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-19
@@ -13,6 +13,10 @@ tags:
     - swarm
 shipped-in:
   - "bc1054fb9"
+  - "8eb773386"
+last-transition-id: 192de9f9-c986-48f5-8bd8-64c20b858e8b
+last-correlation-id: 192de9f9-c986-48f5-8bd8-64c20b858e8b
+last-transition-from: review
 ---
 
 # x00559 — A generated file is not a merge conflict
@@ -89,7 +93,7 @@ disagrees with what landed, so this cannot hide a real divergence.
 
 ### S2 — The finished tree gets the last word
 
-- **Status**: done — a merge driver runs per file, mid-merge, on an
+- **Status**: done
   incomplete tree, so what it generates can be subtly wrong (measured: a
   spec count computed from half a merge). A `post-merge` hook re-runs the
   generators against what actually landed and commits only the generated
@@ -104,6 +108,11 @@ disagrees with what landed, so this cannot hide a real divergence.
   `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`,
   `lefthook.yml`
 - **Gate**: `npx vitest run packages/cli/src/lib/generated-refresh.service.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 8eb773386 (x00559 S2). fix(git): the merge driver is actually installed. install-merge-drivers.script.ts + guard-hooks-autoinstall.service.ts instalan el driver via config de git (no solo lo escriben en .gitattributes). 274256928 fix(cli): call the merge-driver installer that already exists — hace que el path CLI llame al installer en lugar de duplicarlo. 10/10 verde entre los 2 specs. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from Merge pull request #309 from CartagoGit/delendai/pr/claude-opus-5/x00574-S1-g1/the-merge-driver-is-installed (refs/heads/delendai/wip/claude-opus-5/x00574-S1-g1/the-merge-driver-is-installed) (8eb773386aa8b843266115032a0dd140778a5f10), opened by minimax-m3
 
 ## acceptance
 
