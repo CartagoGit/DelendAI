@@ -11,6 +11,10 @@ related: [x00563, f00642, x00660, x00671]
 last-transition-id: 8218fa5c-6d15-4f4b-afd4-969cdcd6c052
 last-correlation-id: 8218fa5c-6d15-4f4b-afd4-969cdcd6c052
 last-transition-from: in-progress
+shipped-in:
+  - "c91564a24"
+  - "ba17cc410"
+  - "f36a83089"
 ---
 
 # f00644 — A branch names the kind of work
@@ -81,18 +85,21 @@ reviews advance on one work branch and land as one pull request.
 
 ### S1 — The shape carries the kind, stated once, and every reader parses it
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.interface.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/ref-name.interface.ts`, `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/cli.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/lib/work-ref-shape.service.ts`, `packages/cli/src/contracts/interfaces/work-ref-shape.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.ts`, `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/classification.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/work-ref-topic.spec.ts`, `packages/cli/src/lib/work-ref-shape.service.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `packages/core/src/lib/development-policy/git-guard-shape.ts`, `packages/core/src/lib/development-policy/git-guard-namespaces.ts`
 - **Gate**: type
 - acceptance:
   - "`WORK_REF_SHAPE` contains `${kind}`, and the vocabulary is one exported constant next to it."
   - "The template's parser reads a ref of the new shape and a ref of the old one (kind `implement`, or `review` for the old `review`/`close` slices)."
   - "No reader of work or publication refs spells the shape in its own regex."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé c91564a24 (f00644 S1, merge 792db797f = PR #504). profiles.constant.ts tiene WORK_REF_SHAPE con placeholder ${kind} y la constant KIND_VOCABULARY (implement/review/create/revise/audit/retire/repair/reconcile) al lado. work-ref-identity + ref-name.ts cambian al parser del template; los readers que aún usaban su propio regex (ref-lifecycle-guard, commit-branch-discipline, git-guard) se migraron en 77694e37a (follow-up S1/S2). Bun run typecheck exit 0 (gate type). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+
 ### S2 — Writers name the kind
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/proposal-branch.service.ts`, `packages/cli/src/lib/publication-target.service.ts`, `packages/cli/src/contracts/interfaces/publication-target.interface.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `packages/cli/src/commands/work.command.spec.ts`, `packages/cli/src/commands/work-claim.command.spec.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/contracts/constants/work-ref.constant.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`, `tools/scripts/lint/pr-head-shape.script.ts`, `tools/scripts/lint/pr-head-shape.script.spec.ts`, `package.json`, `.github/workflows/ci.yml`, `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/guard.command.ts`
 - **Gate**: type
@@ -102,11 +109,14 @@ reviews advance on one work branch and land as one pull request.
   - "CI refuses a pull request whose head is not a well-shaped publication ref, whatever opened it."
   - "On delendai's branches a commit is authored as the repository's configured identity: `--author`, `-c user.*` and `GIT_AUTHOR_*` overrides are refused; the agent is named by the ref, in lower case."
   - "A review unit is `review`, a proposal published by `create_proposal` is `create`, and review claims recognise the kind instead of the magic slices."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé ba17cc410 (último commit S2 antes del merge 792db797f = PR #504). S2 implementa `work enter --kind=<kind>` con default implement, refusal de kind fuera del vocabulario, guard que rechaza work ref sin kind / agent id que deletrea un kind / publication ref sin shape, CI (pr-head-shape lint) rechaza PRs con head mal formado, configured-author check (4f480e97c) que rechaza --author/-c user.*/GIT_AUTHOR_* en branches de delendai, y review claims leídos por kind (review-claims.service.ts) en lugar de magic slices. Bun run typecheck exit 0 (gate type). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+
 ### S3 — A batch of reviews is one branch and one pull request
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/services/review-procedure.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: type
@@ -114,8 +124,11 @@ reviews advance on one work branch and land as one pull request.
   - "A reviewer enters one `review` batch unit and claims each proposal with a `Claims: <id>` commit before reviewing it."
   - "`review_queue` reports a proposal claimed in another agent's batch as held by that agent, until the batch merges."
   - "The procedure tells the reviewer to commit after each verdict and to publish the batch once, when it is done."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé f36a83089 (último commit S3 antes del merge 792db797f = PR #504). S3 implementa: review unit como kind=review batch, Claims: <id> trailer en commit conventional como claim, review_queue lee los claims de los trailers del batch branch (no de un store aparte), review-procedure.ts lleva el texto del procedimiento (commit per verdict + publish once when done). Esta misma sesión usó este flujo en pack 1 (5 propuestas reclamadas con trailers Claims, publicadas como PR #615). Bun run typecheck exit 0 (gate type). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+
 ## dependency graph
 
 S1 → S2 → S3.
