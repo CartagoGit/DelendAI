@@ -32,17 +32,13 @@ La implementación puede sobrescribir una user_version futura antes de preflight
 - global_gate: type
 
 ### S1 — Fail-closed state-sqlite open and recovery tests
-- **Status**: done
+- **Status**: review
 - **Files**: `packages/state-sqlite/src`
 - **Gate**: type
 - acceptance:
   - "Una DB futura se rechaza antes de escribir user_version."
   - "JSON inválido se transforma en state_store_corrupt."
   - "Tests cubren versión futura y snapshot corrupto."
-- review-state: done
-- review-implementer: orchestrator
-- review-reviewer: delivery_verifier
-- review-log: approved by delivery_verifier — Revisión independiente aprobada. Se verifica rechazo de user_version futura antes de bootstrap y mapeo de snapshot_json corrupto a state_store_corrupt. Commit 4cf896a87; 6/6 tests focalizados del driver verdes y typecheck del paquete correcto. El timeout de parity de 1000 operaciones queda documentado como riesgo separado.
 ## acceptance
 
 - Una DB futura se rechaza antes de escribir user_version.
