@@ -110,7 +110,7 @@ adopter project, whatever the integration branch is called.
 
 ### S2 — A pinned checkout may not commit from a work ref
 
-- **Status**: done — the judge learns which worktree it is in; a commit
+- **Status**: done
   from anywhere but the integration branch in the shared checkout is
   refused, naming the branch the policy declared, and the same commit in
   an agent's own worktree stays allowed.
@@ -124,6 +124,11 @@ adopter project, whatever the integration branch is called.
   not the integration branch) is refused, naming the integration branch
   from the policy and the way back. In a linked worktree under
   `agentWorktrees: true`, it is allowed.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0ccb5461d (x00553 S2). git-guard.ts + guard.command.ts + guard.interface.ts añadidos/movidos. 35/35 verde en git-guard.spec.ts cubre 'integrationCheckoutRefusal' y 'shared checkout refuses work-ref commit'. Acceptance: el guard aprende en qué worktree está y rechaza commits desde el shared checkout si está en work ref (con path declarado), mientras en el worktree del agente permite el commit. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 0ccb5461d8620da32d4982d3b8652805f73ac1df: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S3 — The mistake is reported when it happens, not on the next boot
 
