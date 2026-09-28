@@ -97,7 +97,7 @@ empty the assertion again without failing.
 
 ### S3 — `agent-orchestrator` fits under its preset ceilings
 
-- **Status**: done, over the warning — the plugin measures 10,577 B on `standard` (was 11,167 B): under the 11,000 B hard ceiling and still over the 9,500 B warning. `_budget` is removed. It listed a second schema for figures `_dispatch` already returns, and it invented what it could not know: both token ceilings were always 0, and `exhausted` meant "spent more than nothing". Spend now comes back through `_plan_ref` as `spent`, next to the plan's real `budget` ceilings, and `SpendSchema`/`spendOf` are shared with `_dispatch`. The swarm cost pin moves 161,042 → 160,451 B and 149 → 148 tools. The agent-orchestrator suite passes: 306 tests in 29 files.
+- **Status**: done
 - shipped-in: `4815b2479`
 - **Files**: [`plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts`, `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/dispatch.tool.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/dispatch-output-contract.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/dispatch-port-refusal.spec.ts`, `plugins/agent-orchestrator/tests/src/index.spec.ts`, `packages/core/tests/src/lib/token/catalog-task-context-cost.spec.ts`, `docs/delendai/ADOPTER-SURFACE-MODE.md`]
 
@@ -110,6 +110,11 @@ this fix.
 - **Gate**: `bun run tokens:gate` exits 0 with every preset's largest
   plugin within hard, and `bun run tokens:dashboard:check` reports no
   `over hard` marginal row.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4815b2479 para x00543 S3. agent-orchestrator shrunken de 11,167→10,577 B en standard (bajo 11,000 hard, sobre 9,500 warning). _budget tool eliminado (segundo schema redundante; ceilings siempre 0; 'spent' viene ahora via _plan_ref.spent junto a budget). SpendSchema + spendOf() compartidos con _dispatch. Swarm cost pin 161,042→160,451 B y 149→148 tools. Suite del plugin 306/306 verde en 29 specs. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 4815b247981543efa2793f3f5ba84b04eeb80c48: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S4 — The dashboard and the gate share one verdict
 
