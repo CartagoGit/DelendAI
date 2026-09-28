@@ -2,12 +2,15 @@
 id: x00729
 title: "An approval enters through a review"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00715, x00718, x00727]
+last-transition-id: b6362647-745b-473e-8cf0-ce9fa64fdae6
+last-correlation-id: b6362647-745b-473e-8cf0-ce9fa64fdae6
+last-transition-from: in-progress
 ---
 
 # x00729 — An approval enters through a review
@@ -52,7 +55,7 @@ than the pull request's agent.
 
 ### S1 — Approvals come through review units
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - **Files**:
   - `tools/scripts/lint/closed-with-independent-approval.script.ts`
