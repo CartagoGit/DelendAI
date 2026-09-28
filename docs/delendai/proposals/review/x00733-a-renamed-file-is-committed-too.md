@@ -2,12 +2,15 @@
 id: x00733
 title: "A renamed file is committed too"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00722]
+last-transition-id: 009e5fb8-05dc-43eb-bae5-2af5c200a86b
+last-correlation-id: 009e5fb8-05dc-43eb-bae5-2af5c200a86b
+last-transition-from: in-progress
 ---
 
 # x00733 — A renamed file is committed too
@@ -49,7 +52,7 @@ which `delendai review` does not print, so nothing showed it.
 
 ### S1 — Removed paths leave the index
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
 - **Files**:
   - `packages/core/src/lib/shared/commit-call-writes.ts`
