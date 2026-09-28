@@ -12,6 +12,7 @@
  *   - `delendai_plan_mcp_project`({ serverName?, namespacePrefix?, tests? })
  *   - `delendai_create_project`  ({ kind, ... })
  */
+import { REVIEW_COMMAND } from '../../contracts/constants/review-command.constant';
 import {
 	createWorkspacePathProvider,
 	runCreatePlugin,
@@ -294,6 +295,21 @@ const lazyWorkCommand: ICliCommand = {
 	},
 };
 
+/**
+ * x00727: a review is four commands, over the same unit and tools as
+ * `work` and `proposals review`.
+ */
+const lazyReviewCommand: ICliCommand = {
+	name: 'review',
+	...REVIEW_COMMAND,
+	async run(args, ctx) {
+		const { reviewRoundCommand: review } = await import(
+			'../review.command'
+		);
+		return review.run(args, ctx);
+	},
+};
+
 export const coreExtraCommands: readonly ICliCommand[] = [
 	fsReadCommand,
 	fsWriteCommand,
@@ -306,4 +322,5 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	lazyGuardCommand,
 	lazyRepairCommand,
 	lazyWorkCommand,
+	lazyReviewCommand,
 ];

@@ -1,5 +1,6 @@
 import type { IHelpTranslation } from '../interfaces/help-translation.interface';
 
+import { REVIEW_COMMAND } from './review-command.constant';
 export type { IHelpTranslation };
 
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
@@ -199,6 +200,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	guard: 'Refuse the git operations the project development policy forbids (called from git hooks).',
 	repair: 'List and record the human decisions that close startup repair tasks the reconciler may not close.',
 	work: 'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
+	review: REVIEW_COMMAND.summary,
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
