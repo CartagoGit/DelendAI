@@ -2,12 +2,15 @@
 id: x00724
 title: "Every server publishes work refs on the cadence"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00691, x00722]
+last-transition-id: d5dfa66a-bea5-4871-8e71-15a7f12159f0
+last-correlation-id: d5dfa66a-bea5-4871-8e71-15a7f12159f0
+last-transition-from: in-progress
 ---
 
 # x00724 — Every server publishes work refs on the cadence
@@ -68,7 +71,7 @@ makes those commits visible.
 
 ### S1 — The server publishes; the plugin does not
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/project/create-mcp-project-start.spec.ts packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
