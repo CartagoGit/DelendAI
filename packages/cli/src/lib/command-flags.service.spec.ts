@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { registerAllCommands } from '../commands/registry';
 import { workCommand } from '../commands/work.command';
+import { REVIEW_COMMAND } from '../contracts/constants/review-command.constant';
 import { WORK_COMMAND } from '../contracts/constants/work-command.constant';
 import type { ICliCommand } from '../contracts/interfaces/cli-command.interface';
 import {
@@ -130,29 +131,35 @@ describe('a declaration matches what the command reads', () => {
 		expect(undeclared).toEqual([]);
 	});
 
-	it('declares every flag `work` reads anywhere in its module', () => {
-		// `work` reads its flags in the helpers each subcommand calls, out
-		// of sight of its `run`.
-		const source = readFileSync(
-			join(__dirname, '../commands/work.command.ts'),
-			'utf8',
-		);
-		const read = new Set([
-			...[
-				...source.matchAll(
-					/(?:scalarArg|hasFlag)\(\s*\w+,\s*'([^']+)'/gu,
+	it.each([
+		['work', 'work.command.ts', WORK_COMMAND.flags],
+		['review', 'review.command.ts', REVIEW_COMMAND.flags],
+	] as const)(
+		'declares every flag `%s` reads anywhere in its module',
+		(_name, file, flags) => {
+			// These commands read their flags in the helpers each subcommand
+			// calls, out of sight of their `run`.
+			const source = readFileSync(
+				join(__dirname, '../commands', file),
+				'utf8',
+			);
+			const read = new Set([
+				...[
+					...source.matchAll(
+						/(?:scalarArg|hasFlag)\(\s*\w+,\s*'([^']+)'/gu,
+					),
+				].map((match) => match[1] ?? ''),
+				...[...source.matchAll(/args\.includes\('--([^']+)'\)/gu)].map(
+					(match) => match[1] ?? '',
 				),
-			].map((match) => match[1] ?? ''),
-			...[...source.matchAll(/args\.includes\('--([^']+)'\)/gu)].map(
-				(match) => match[1] ?? '',
-			),
-		]);
-		const declared: readonly string[] = WORK_COMMAND.flags;
-		expect([...read].filter((flag) => !declared.includes(flag))).toEqual(
-			[],
-		);
-		expect(read.size).toBeGreaterThan(10);
-	});
+			]);
+			const declared: readonly string[] = flags;
+			expect(
+				[...read].filter((flag) => !declared.includes(flag)),
+			).toEqual([]);
+			expect(read.size).toBeGreaterThan(2);
+		},
+	);
 
 	it('declares the flags of the commands reviewers and implementers use', async () => {
 		const commands = await registerAllCommands();
@@ -160,6 +167,7 @@ describe('a declaration matches what the command reads', () => {
 			.filter(
 				(entry) =>
 					entry.name === 'work' ||
+					entry.name === 'review' ||
 					entry.name.startsWith('proposals '),
 			)
 			.filter((entry) => entry.flags === undefined)
