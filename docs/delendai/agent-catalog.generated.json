@@ -1735,14 +1735,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-25"
-			},
-			{
-				"id": "x00644",
-				"title": "El presupuesto de exports publicos de core vuelve a verde",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-25"
 			}
 		]
 	}
