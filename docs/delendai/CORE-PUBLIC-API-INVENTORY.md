@@ -141,6 +141,7 @@ Total exports: 645
 | `discoverPluginManifests` | const | stable | `../lib/manifest/discovery` |
 | `DryRunEffectRefusedError` | const | stable | `../lib/dry-run/effect-guard.helper` |
 | `dryRunRequiredFor` | const | stable | `../lib/dry-run/protocol` |
+| `DURABILITY_REMOTE_MISSING` | const | stable | `../lib/wip-engine/durability-remote.constant` |
 | `endsWithBasename` | const | stable | `../lib/contracts/file-conventions.contract` |
 | `enforceDryRunReturnContract` | const | stable | `../lib/dry-run/enforce` |
 | `ensureWorkspaceMigrated` | const | stable | `../lib/workspace-migration/legacy-migration.service` |
@@ -294,7 +295,6 @@ Total exports: 645
 | `IPhasedLifecycle` | type | stable | `../contracts` |
 | `IPluginAddRecipe` | const | stable | `../lib/registry/plugin-add` |
 | `IPluginAddStep` | const | stable | `../lib/registry/plugin-add` |
-| `IPluginAddToolOptions` | type | stable | `../lib/registry/plugin-add.tool` |
 | `IPluginConfigExample` | type | stable | `../contracts` |
 | `IPluginConfigurationIssue` | type | stable | `../lib/plugins/plugin-contract` |
 | `IPluginConfigurationValidationInput` | type | stable | `../lib/plugins/plugin-contract` |
@@ -306,7 +306,6 @@ Total exports: 645
 | `IPluginRegistryEntry` | type | stable | `../lib/contracts/interfaces/plugin-registry.interface` |
 | `IPluginRegistrySource` | type | stable | `../lib/contracts/interfaces/plugin-registry.interface` |
 | `IPluginRuntime` | type | stable | `../lib/contracts/interfaces/plugin-runtime.interface` |
-| `IPluginSearchToolOptions` | const | stable | `../lib/registry/plugin-search.tool` |
 | `IPluginTokenBudget` | type | stable | `../lib/contracts/interfaces/plugin-token-budget.interface` |
 | `IPluginToolPermissions` | type | stable | `../lib/contracts/interfaces/plugin-tool-permissions.interface` |
 | `IPluginWiringFs` | type | stable | `../lib/contracts/interfaces/plugin-wiring.interface` |
@@ -399,7 +398,6 @@ Total exports: 645
 | `ITransactionOutcome` | type | stable | `../lib/workspace-migration/transaction/migration-transaction` |
 | `ITransactionResult` | type | stable | `../lib/transactions/types` |
 | `ITruncatedEnvelope` | type | stable | `../lib/contracts/interfaces/truncation.interface` |
-| `IValidateEvidenceInput` | const | stable | `../lib/proposals/validate-evidence.schema` |
 | `IValidationCommand` | type | stable | `../lib/contracts/interfaces/validation-matrix.interface` |
 | `IValidationMatrix` | type | stable | `../lib/contracts/interfaces/validation-matrix.interface` |
 | `IValidationMatrixConfig` | type | stable | `../lib/plugins/load-config-file` |
@@ -422,6 +420,7 @@ Total exports: 645
 | `loadAllPluginManifests` | const | stable | `../lib/manifest/discovery` |
 | `loadPlugins` | const | stable | `../plugin` |
 | `loadSkills` | const | stable | `../lib/skills/load-skills` |
+| `localRefHolds` | const | stable | `../lib/wip-engine/work-ref-publication` |
 | `LockContentionError` | const | stable | `../lib/shared/with-file-mutex` |
 | `managedPluginEnvironmentRequirements` | const | stable | `../lib/plugins/managed-plugin-environment` |
 | `mapShellIntentToTool` | const | stable | `../lib/agents/shell-fallback` |
@@ -464,7 +463,6 @@ Total exports: 645
 | `plan` | const | stable | `../lib/transactions/plan` |
 | `planDryRun` | const | stable | `../lib/dry-run/enforce` |
 | `planRegistrationOrder` | const | stable | `../lib/project/create-mcp-project` |
-| `PluginAddKind` | const | stable | `../lib/registry/plugin-add` |
 | `pluginDir` | const | stable | `../lib/scaffold/wire-plugin` |
 | `PluginOrigin` | type | stable | `../contracts` |
 | `PluginState` | type | stable | `../lib/plugins/states` |
@@ -484,6 +482,7 @@ Total exports: 645
 | `ProviderState` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `pruneExpiredExec` | const | stable | `../lib/shared/exec-path` |
 | `publicationUnitFor` | const | stable | `../lib/development-policy/publication-unit` |
+| `publishWorkRef` | const | stable | `../lib/wip-engine/work-ref-publication` |
 | `quarantineCorruptFile` | const | stable | `../lib/shared/quarantine-corrupt-file` |
 | `quarantineCorruptFileSync` | const | stable | `../lib/shared/quarantine-corrupt-file` |
 | `rankCandidates` | const | stable | `../lib/routing/utility` |
@@ -524,6 +523,7 @@ Total exports: 645
 | `resolveCapabilityAccess` | const | stable | `../lib/capabilities/inject` |
 | `resolveCapabilityVersion` | const | stable | `../lib/capabilities/versioning` |
 | `resolveDevelopmentPolicy` | const | stable | `../lib/development-policy/resolve` |
+| `resolveDurabilityRemote` | const | stable | `../lib/wip-engine/durability-remote` |
 | `resolveExecPath` | const | stable | `../lib/shared/exec-path` |
 | `resolveExistingWorkspaceContained` | const | stable | `../lib/shared/contain-realpath` |
 | `resolveHostScaffoldDefaults` | const | stable | `../lib/scaffold/detect-existing-install` |

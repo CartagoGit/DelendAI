@@ -33,7 +33,13 @@ import { agentIdOf } from '../services/work-ref-naming.service';
 import { reapIntegratedWorkRefs } from '../services/integrated-work-refs.service';
 import type { IGitRunner } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
-import { resolveWorkRef, WORK_REF_NAMING } from '@delendai/core/public';
+import {
+	localRefHolds,
+	publishWorkRef,
+	resolveDurabilityRemote,
+	resolveWorkRef,
+	WORK_REF_NAMING,
+} from '@delendai/core/public';
 
 import type {
 	ICheckpointReport,
@@ -47,8 +53,6 @@ import { classifyCheckpointIntent } from './checkpoint-intent';
 import { resolvePersistenceRoute } from './persistence-route';
 
 import type { ICreatePolicyPersistenceOptions } from './wip-persistence.interface';
-import { resolveDurabilityRemote } from './durability-remote.service';
-import { localRefHolds, publishWorkRef } from './wip-publication';
 
 export type { ICreatePolicyPersistenceOptions } from './wip-persistence.interface';
 

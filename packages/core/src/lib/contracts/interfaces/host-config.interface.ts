@@ -92,6 +92,14 @@ export interface IHostPaths {
 	 */
 	readonly hostServer?: IHostServerSlot | undefined;
 	/**
+	 * Why this server must stand down from background work, or `undefined`
+	 * when it may go on: it runs older code than its checkout. The CLI
+	 * loader answers it from the checkout's runtime watch.
+	 */
+	readonly runtimeBehindCheckout?:
+		| (() => Promise<string | undefined>)
+		| undefined;
+	/**
 	 * f00082: the resolved commit-author policy, applied by the shared
 	 * git engine to every commit produced by `@delendai/git` and
 	 * `@delendai/proposals#auto_work`. The CLI loader builds this

@@ -101,7 +101,10 @@ import {
 	runAutoStateRepairOnBoot,
 } from './lib/tools/state-tools.tool';
 import { buildSwarmHygieneRegistration } from './lib/tools/swarm-hygiene.tool';
-import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
+import {
+	buildSyncProposalsRegistration,
+	runSyncProposals,
+} from './lib/tools/sync-proposals.tool';
 import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
 
 /**
@@ -457,6 +460,21 @@ export default definePlugin({
 			...DEFAULT_PROPOSAL_FOLDER_POLICY,
 			...parsedOptions.data.folderPolicy,
 		};
+		// One set of sync options: `sync_proposals`, and `auto_work` when
+		// it finds its index behind the files (x00716).
+		const syncOptions = {
+			namespacePrefix: ctx.namespacePrefix,
+			workspaceRoot: ctx.workspace.root,
+			layout: {
+				proposalsDir: layout.proposalsDir,
+				proposalIndexFile: layout.proposalIndexFile,
+			},
+			extraFolders: extraProposalFolders,
+			folderPolicy,
+		};
+		const refreshIndex = async (): Promise<void> => {
+			await runSyncProposals({ ...syncOptions, indexOnly: true });
+		};
 		// Whether proposals are reviewed and what makes a reviewer
 		// independent: the project's decision, stated once and handed to
 		// every tool that judges it (x00718).
@@ -766,16 +784,7 @@ export default definePlugin({
 							workspaceRoot: ctx.workspace.root,
 						},
 					}),
-					buildSyncProposalsRegistration({
-						namespacePrefix: ctx.namespacePrefix,
-						workspaceRoot: ctx.workspace.root,
-						layout: {
-							proposalsDir: layout.proposalsDir,
-							proposalIndexFile: layout.proposalIndexFile,
-						},
-						extraFolders: extraProposalFolders,
-						folderPolicy,
-					}),
+					buildSyncProposalsRegistration(syncOptions),
 					buildGetProposalWorkflowRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						proposalsDir: layout.proposalsDir,
@@ -802,6 +811,7 @@ export default definePlugin({
 						indexPathAbs: abs(layout.proposalIndexFile),
 						proposalsDirAbs: abs(layout.proposalsDir),
 						lockPathAbs: abs(layout.lockFile),
+						refreshIndex,
 					}),
 					buildAutoWorkRegistration({
 						namespacePrefix: ctx.namespacePrefix,
@@ -809,6 +819,7 @@ export default definePlugin({
 						indexPathAbs: abs(layout.proposalIndexFile),
 						proposalsDirAbs: abs(layout.proposalsDir),
 						lockPathAbs: abs(layout.lockFile),
+						refreshIndex,
 						loopDetector,
 						// f00078 S1 + S3: pass the gate flag and the
 						// loop-detector window so the front-hook can run the

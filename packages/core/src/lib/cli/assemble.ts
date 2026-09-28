@@ -1003,6 +1003,7 @@ export const assembleCliConfig = async (
 		agentWorktreeEnabled,
 		developmentPolicy,
 		hostServer,
+		runtimeBehindCheckout: staleRuntime.behind,
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
