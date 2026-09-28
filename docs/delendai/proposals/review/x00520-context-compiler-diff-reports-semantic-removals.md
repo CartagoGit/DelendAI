@@ -31,17 +31,14 @@ La implementación actual solo emite refs presentes en after, por lo que no pued
 - global_gate: type
 
 ### S1 — Represent added changed removed refs
-- **Status**: done
+- **Status**: review
+- shipped-in: `274aa781b`
 - **Files**: `packages/context-compiler/src`, `packages/context-compiler/tests`
 - **Gate**: type
 - acceptance:
   - "diff representa added, changed y removed o tombstones equivalentes."
   - "Las eliminaciones siempre aparecen."
   - "El orden es determinista y no duplica hashes."
-- review-state: done
-- review-implementer: github-copilot
-- review-reviewer: delivery_verifier
-- review-log: approved by delivery_verifier — Revisión independiente aprobada. diff representa added/changed/removed con identidad y orden deterministas; removals conservan tombstone sin contentHash. Commit 274aa781b; 5/5 tests focalizados verdes y typecheck de context-compiler correcto.
 ## acceptance
 
 - diff representa added, changed y removed o tombstones equivalentes.
