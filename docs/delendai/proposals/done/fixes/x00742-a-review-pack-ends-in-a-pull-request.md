@@ -2,15 +2,17 @@
 id: x00742
 title: "A review pack ends in a pull request"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P0
 related: [x00739, x00740, x00741]
-last-transition-id: fab40d83-1599-4c85-9344-d3c8c824bc94
-last-correlation-id: fab40d83-1599-4c85-9344-d3c8c824bc94
-last-transition-from: in-progress
+last-transition-id: 9f1d4b08-75b7-48b0-90e6-945ce93b8471
+last-correlation-id: 9f1d4b08-75b7-48b0-90e6-945ce93b8471
+last-transition-from: review
+shipped-in:
+  - "5eba33120"
 ---
 
 # x00742 — A review pack ends in a pull request
@@ -89,7 +91,7 @@ integration branch.
 
 ### S1 — Packs, resumed units, live branches, an honest doctor
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts packages/core/tests/src/lib/work-units packages/core/tests/src/lib/development-policy packages/cli/src/commands/guard.command.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`
@@ -119,6 +121,11 @@ integration branch.
   - `packages/core/tests/src/lib/development-policy/git-guard-live-unit.spec.ts`
   - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
   - `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 5eba33120 (x00742 S1, merge PR #612). review-claims.constant.ts declara REVIEW_PACK_SIZE=5; una unidad con 5 claims es rechazada para el sexto claim y para un sexto verdict, y la cola (con unit) reporta pack.{size,claimed,full,next}. review next publica un pack lleno y abre una nueva unidad que NO reutiliza la generación publicada. work enter sin --session dentro del worktree retoma esa unidad. git-guard-live-unit.ts en reference-transaction rechaza borrar un work ref con worktree vivo (cualquiera); tras git worktree remove, el delete procede. workflow-invariants.service.ts strip los GIT_* exportados por hooks y considera la unidad viva, no la rama. Esta misma sesión vivió este flujo (pack 1 lleno → publish → nueva unidad → pack 2 lleno → join del PR existente). 334/334 verde en 30 specs. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from commit 5eba33120e0a names refs/heads/delendai/wip/claude-opus-5-5/implement/x00742-S1-g1/a-review-pack-ends-in-a-pull-request (5eba33120e0af58a1ceef01464112450f700c05b), opened by minimax-m3
 
 ## dependency graph
 
