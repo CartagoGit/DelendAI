@@ -25,14 +25,13 @@ import {
 	workingStateChanges,
 } from '@delendai/test-kit/public';
 
-import type { IWorkCheckoutPublication } from '../../../../src/lib/contracts/interfaces/work-checkout-publisher.interface';
+import type { IWorkCheckoutPublication } from '../../../../src/lib/wip-engine/work-checkout-publisher.interface';
 import {
 	publishWorkCheckouts,
 	startWorkCheckoutPublisher,
 	workCheckoutCadenceMinutes,
 	workCheckoutRefs,
-} from '../../../../src/lib/services/work-checkout-publisher.service';
-import { createTempGitRepo } from '../../../integration/_fixtures/git-tmp';
+} from '../../../../src/lib/wip-engine/work-checkout-publisher';
 
 const execFileAsync = promisify(execFile);
 const cleanups: Array<() => Promise<void>> = [];
@@ -53,8 +52,28 @@ const withCheckpoint = (
 	branches: { ...POLICY.branches, ...branches },
 });
 
+/** A repository on `develop` with one commit. */
+const createRepo = async () => {
+	const cwd = await mkdtemp(join(tmpdir(), 'work-checkout-repo-'));
+	const git = async (...args: readonly string[]): Promise<string> =>
+		(
+			await execFileAsync('git', [...args], { cwd, encoding: 'utf8' })
+		).stdout.trim();
+	await git('init', '-q', '-b', 'develop');
+	await git('config', 'user.email', 'ci@delendai');
+	await git('config', 'user.name', 'CI');
+	await writeFile(join(cwd, 'README.md'), '# init\n', 'utf8');
+	await git('add', '--', 'README.md');
+	await git('commit', '-q', '-m', 'chore: init');
+	return {
+		cwd,
+		git,
+		cleanup: () => rm(cwd, { recursive: true, force: true }),
+	};
+};
+
 const setup = async () => {
-	const repo = await createTempGitRepo({ branch: 'develop' });
+	const repo = await createRepo();
 	const remote = await mkdtemp(join(tmpdir(), 'work-checkout-remote-'));
 	const trees = await mkdtemp(join(tmpdir(), 'work-checkout-trees-'));
 	cleanups.push(async () => {

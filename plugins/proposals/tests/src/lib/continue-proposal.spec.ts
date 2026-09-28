@@ -231,6 +231,51 @@ kind: fix
 		expect(out.nextAction).toContain('Run sync_proposals');
 	});
 
+	it('rebuilds a stale index itself instead of sending the agent to sync (x00716)', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }],
+			}),
+		);
+		const dir = join(root, 'proposals');
+		mkdirSync(join(dir, 'ready'), { recursive: true });
+		writeFileSync(join(dir, 'ready', 'x00001-a.md'), '---\n');
+		writeFileSync(join(dir, 'ready', 'x00002-b.md'), '---\n');
+		let refreshed = 0;
+		const out = parse(
+			await runContinueProposal(
+				{},
+				{
+					...options,
+					proposalsDirAbs: dir,
+					refreshIndex: async () => {
+						refreshed += 1;
+						writeFileSync(
+							options.indexPathAbs,
+							JSON.stringify({
+								proposals: [
+									{
+										id: 'x00001',
+										file: 'ready/x00001-a.md',
+										status: 'done',
+									},
+									{
+										id: 'x00002',
+										file: 'ready/x00002-b.md',
+										status: 'done',
+									},
+								],
+							}),
+						);
+					},
+				},
+			),
+		);
+		expect(refreshed).toBe(1);
+		expect(String(out.nextAction)).not.toContain('Run sync_proposals');
+	});
+
 	it('errors clearly when a slice mode is used without a proposalId', async () => {
 		const out = parse(await runContinueProposal({ mode: 'plan' }, options));
 		expect(out.kind).toBe('slice-mode-error');

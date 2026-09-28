@@ -15,20 +15,20 @@
  * that worktree showing its own changes reverted. And it never touches
  * the checkout the host runs in, whose dirty files may be a person's.
  */
-import {
-	holdWorkRef,
-	resolveWorkRef,
-	type IGitRunner,
-	type IResolvedDevelopmentPolicy,
-} from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
+import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
+import { createGitRunner } from '../shared/git-write';
 
+import { resolveDurabilityRemote } from './durability-remote';
+import { resolveWorkRef } from './ref-name';
 import type {
 	IWorkCheckoutPublication,
 	IWorkCheckoutPublisher,
 	IWorkCheckoutPublisherOptions,
-} from '../contracts/interfaces/work-checkout-publisher.interface';
-import { publishWorkRef } from '../persistence/wip-publication';
-import { resolveDurabilityRemote } from '../persistence/durability-remote.service';
+} from './work-checkout-publisher.interface';
+import { holdWorkRef } from './work-ref-lock';
+import { publishWorkRef } from './work-ref-publication';
 
 /**
  * How often to publish, or `undefined` when the policy does not ask for
@@ -307,3 +307,28 @@ export const startWorkCheckoutPublisher = (
 		},
 	};
 };
+
+/**
+ * The publisher a server runs, from its host config: none without a
+ * development policy. Reports go to stderr; stdout is the MCP transport.
+ */
+export const startServerWorkCheckoutPublisher = (
+	config: Pick<
+		IDelendaiHostConfig,
+		'developmentPolicy' | 'runtimeBehindCheckout' | 'workspace'
+	>,
+): IWorkCheckoutPublisher | undefined =>
+	config.developmentPolicy === undefined
+		? undefined
+		: startWorkCheckoutPublisher({
+				run: createGitRunner(config.workspace.root),
+				policy: config.developmentPolicy,
+				...(config.runtimeBehindCheckout === undefined
+					? {}
+					: { standDown: config.runtimeBehindCheckout }),
+				report: (moved) => {
+					process.stderr.write(
+						`${JSON.stringify({ event: 'work-checkouts.published', moved })}\n`,
+					);
+				},
+			});
