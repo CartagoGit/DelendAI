@@ -2,7 +2,7 @@
 id: x00643
 title: "A proposal in review can be reviewed by someone who did not write it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
@@ -10,9 +10,9 @@ tags:
     - review
     - lifecycle
     - independence
-last-transition-id: a098a172-a1fe-457b-8e4f-a4a147df2c9f
-last-correlation-id: a098a172-a1fe-457b-8e4f-a4a147df2c9f
-last-transition-from: in-progress
+last-transition-id: af6b1499-e65e-4033-ac70-d04b4aeb8c68
+last-correlation-id: af6b1499-e65e-4033-ac70-d04b4aeb8c68
+last-transition-from: review
 shipped-in:
   - "07f355f702af5fe98856f7a97851d609223c283b"
   - "6ec4b8fff3beafd128ce9432d1dade5d0e74327c"
@@ -101,14 +101,17 @@ here has the same author.
 
 ### S3 — Handing a proposal to review opens its rounds
 
-- **Status**: review — shipped in #451 (merge 07f355f70)
+- **Status**: done
 - **Gate**: e2e
 - **Files**: `plugins/proposals/src/lib/services/review-handoff.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
 - acceptance:
   - "proposal_transition to review with an agent opens an in_review round under that agent for every slice that has none, and records the submit identity, so the reviewer finds work waiting."
   - "A slice that already has a round keeps it untouched."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 6ec4b8fff para S3. review-handoff.ts (nuevo) + proposal-transition.tool.ts (enrola al pasar a review con agent) abre una ronda in_review bajo el agent que hace el handoff para cada slice sin ronda, y registra la identidad del submitter. Una slice con ronda existente se queda intacta. 119/119 verde en los 3 specs focalizados (auto-transition + proposal-review-attribution + proposal-transition.tool); los tests 'opens a round under the handing agent on every slice without one', 'leaves a slice that already has a round untouched' y 'opens nothing when the hand-off names no agent' cubren los acceptance items. claude-opus-5-5 != minimax-m3 → veredicto independiente. Sin cambios fuera de alcance.
+
 ## acceptance
 
 - A reviewer can approve or reject any slice of a proposal in `review/`
