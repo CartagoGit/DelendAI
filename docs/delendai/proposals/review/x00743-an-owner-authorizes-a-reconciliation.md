@@ -2,12 +2,15 @@
 id: x00743
 title: "An owner authorizes a reconciliation"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00696, x00715, x00741, x00742]
+last-transition-id: fa7b8703-5a9c-4e3a-b157-567352eef300
+last-correlation-id: fa7b8703-5a9c-4e3a-b157-567352eef300
+last-transition-from: in-progress
 ---
 
 # x00743 — An owner authorizes a reconciliation
@@ -67,7 +70,7 @@ short of merging by hand past a red required check.
 
 ### S1 — The reconcile kind, and the owner's label
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts packages/core/tests/src/lib/development-policy/git-guard-review-scope.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/profiles.constant.ts`
