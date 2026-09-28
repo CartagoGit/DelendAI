@@ -80,7 +80,7 @@ there is nothing to compare, and the gate says that rather than reporting
 
 ### S2 — The e2e marginal cases measure the surface they name
 
-- **Status**: done — with the swarm, lean and per-preset marginal cases pinned to `surfaceMode: 'native'`, and `marginalPluginBytes` refusing a surface with no plugin owners, the spec failed exactly once before S3: `standard marginal plugin bytes = 11167B: expected 11167 to be less than or equal to 11000`. The other 16 cases passed, on the same surface as before.
+- **Status**: done
 - shipped-in: `4815b2479`
 - **Files**: [`packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`]
 
@@ -89,6 +89,11 @@ least one plugin owner was measured, so a future change of surface cannot
 empty the assertion again without failing.
 
 - **Gate**: `npx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4815b2479 para x00543 S2. token-budget.e2e.spec.ts 17/17 — cada caso marginal (swarm, lean y per-preset) pin surfaceMode='native' y asserta ≥1 plugin owner measured. La regresión documentada en el slice Status (standard marginal plugin bytes = 11167B: expected ≤11000) ya no puede repetirse porque surfaceMode nativo garantiza owners reales. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 4815b247981543efa2793f3f5ba84b04eeb80c48: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S3 — `agent-orchestrator` fits under its preset ceilings
 
