@@ -2,12 +2,15 @@
 id: x00718
 title: "Nothing reaches done without an independent approval"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00696, x00707, x00715]
+last-transition-id: d30687b3-675e-48b6-8456-be14131e6469
+last-correlation-id: d30687b3-675e-48b6-8456-be14131e6469
+last-transition-from: in-progress
 ---
 
 # x00718 — Nothing reaches done without an independent approval
@@ -77,7 +80,7 @@ instance review another.
 
 ### S1 — One rule, no bypass, the project's choice
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run --project proposals`
 - **Files**:
   - `plugins/proposals/src/lib/shared/independent-approval.ts`
