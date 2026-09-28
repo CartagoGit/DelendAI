@@ -16,6 +16,7 @@ shipped-in:
   - "aaf4740726c2b44d3e666afe7ceb5bca4705ebdf"
   - "a5f1ad22ba579ee48b9c3e7f4b2b7d2e004e1aba"
   - "4c37a0f5cf4e41776dd0151f2a02610aa5439d03"
+  - "530c941c55ade6f7bafd1c165bb09a73b739e555"
 ---
 
 # x00642 — A conflict in a derived file does not stall the queue
@@ -166,7 +167,7 @@ being retried while every candidate behind it waits.
 
 ### S5 — Every AGENT.md is written after the dashboard it quotes
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/gen-all.spec.ts`
 - **Files**: `tools/scripts/gen-all.script.ts`, `tools/scripts/gen-all.spec.ts`
 
@@ -178,8 +179,11 @@ measurement behind; the drift check, which re-derives AGENT.md from the
 committed dashboard, then failed a push that had just regenerated
 everything — the hydrator's included. `agent-md` now runs after
 `token-budget-dashboard`, and a spec pins that dependency.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 530c941c5. S5 mueve el step agent-md después de token-budget-dashboard en STEPS (línea 192 vs 186) y añade un comentario explicativo en el step. El spec 'writes every AGENT.md after the dashboard it quotes' asserta el orden en runtime, así un cambio futuro que los invierta falla el test. 12/12 verde. Acceptance de la propuesta cubierta: AGENT.md ahora se regenera DESPUÉS del dashboard que cita, así no se queda una medición atrás y el drift-check (que re-deriva AGENT.md desde el dashboard comiteado) ya no rompe el push que acaba de regenerar todo. Sin cambios fuera de alcance.
+
 ### S6 — A published copy does not fail every run
 
 - **Status**: review
