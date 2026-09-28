@@ -2,15 +2,17 @@
 id: x00741
 title: "A review changes only documents"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00740]
-last-transition-id: d1c0075a-c85d-4e43-8efa-c42770be5628
-last-correlation-id: d1c0075a-c85d-4e43-8efa-c42770be5628
-last-transition-from: in-progress
+last-transition-id: 64ea53c5-4c52-47f6-8f02-45a0769aecd4
+last-correlation-id: 64ea53c5-4c52-47f6-8f02-45a0769aecd4
+last-transition-from: review
+shipped-in:
+  - "9eef0b087"
 ---
 
 # x00741 — A review changes only documents
@@ -81,7 +83,7 @@ reviewing:
 
 ### S1 — Review scope, commit-msg guard, units beside each other
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy packages/core/tests/src/lib/work-units/work-unit.service.spec.ts packages/cli/src/commands/guard.command.spec.ts packages/cli/src/commands/guard-facts.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/git-guard-review-scope.ts`
@@ -104,6 +106,11 @@ reviewing:
   - `packages/cli/src/contracts/interfaces/guard.interface.ts`
   - `packages/cli/src/contracts/constants/guard-hooks.constant.ts`
   - `lefthook.yml`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 9eef0b087 (x00741 S1, merge PR #610). git-guard-review-scope.ts limita commits en review refs a docs+generated (rechaza packages/cli/... por agente o proceso unmarked, nombra el path). El publish (work-unit-publish.service.ts) re-chequea contra el diff total — un commit con --no-verify no llega a publish. commit-msg hook (lefthook.yml) cubre si pre-commit se salta (un commit vacío en develop es rechazado). work enter resuelve el path del worktree contra sharedCheckout (no contra el tree donde corre). 227/227 verde en 16 specs (development-policy + work-units + guard.command + guard-facts). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from commit 9eef0b087a76 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00741-S1-g2/a-review-changes-only-documents (9eef0b087a766fd1c3f62f8907a84ff123f750b4), opened by minimax-m3
 
 ## dependency graph
 
