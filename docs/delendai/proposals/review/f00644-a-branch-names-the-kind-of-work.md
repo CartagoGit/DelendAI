@@ -13,6 +13,7 @@ last-correlation-id: 8218fa5c-6d15-4f4b-afd4-969cdcd6c052
 last-transition-from: in-progress
 shipped-in:
   - "c91564a24"
+  - "ba17cc410"
 ---
 
 # f00644 — A branch names the kind of work
@@ -97,7 +98,7 @@ reviews advance on one work branch and land as one pull request.
 
 ### S2 — Writers name the kind
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/proposal-branch.service.ts`, `packages/cli/src/lib/publication-target.service.ts`, `packages/cli/src/contracts/interfaces/publication-target.interface.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `packages/cli/src/commands/work.command.spec.ts`, `packages/cli/src/commands/work-claim.command.spec.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/contracts/constants/work-ref.constant.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`, `tools/scripts/lint/pr-head-shape.script.ts`, `tools/scripts/lint/pr-head-shape.script.spec.ts`, `package.json`, `.github/workflows/ci.yml`, `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/guard.command.ts`
 - **Gate**: type
@@ -107,8 +108,11 @@ reviews advance on one work branch and land as one pull request.
   - "CI refuses a pull request whose head is not a well-shaped publication ref, whatever opened it."
   - "On delendai's branches a commit is authored as the repository's configured identity: `--author`, `-c user.*` and `GIT_AUTHOR_*` overrides are refused; the agent is named by the ref, in lower case."
   - "A review unit is `review`, a proposal published by `create_proposal` is `create`, and review claims recognise the kind instead of the magic slices."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé ba17cc410 (último commit S2 antes del merge 792db797f = PR #504). S2 implementa `work enter --kind=<kind>` con default implement, refusal de kind fuera del vocabulario, guard que rechaza work ref sin kind / agent id que deletrea un kind / publication ref sin shape, CI (pr-head-shape lint) rechaza PRs con head mal formado, configured-author check (4f480e97c) que rechaza --author/-c user.*/GIT_AUTHOR_* en branches de delendai, y review claims leídos por kind (review-claims.service.ts) en lugar de magic slices. Bun run typecheck exit 0 (gate type). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+
 ### S3 — A batch of reviews is one branch and one pull request
 
 - **Status**: review
