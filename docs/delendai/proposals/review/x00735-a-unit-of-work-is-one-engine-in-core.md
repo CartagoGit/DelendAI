@@ -2,12 +2,15 @@
 id: x00735
 title: "A unit of work is one engine, in core"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P0
 related: [x00714, x00722, x00727, x00731]
+last-transition-id: 6a7b048d-9ab4-4e07-9521-20fead4b8425
+last-correlation-id: 6a7b048d-9ab4-4e07-9521-20fead4b8425
+last-transition-from: in-progress
 ---
 
 # x00735 — A unit of work is one engine, in core
@@ -79,7 +82,7 @@ host or model drives it. Two findings:
 
 ### S1 — The engine moves to core; one policy reader
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units packages/core/tests/src/lib/development-policy`
 - **Files**:
   - `packages/cli/src/commands/guard.command.ts`
