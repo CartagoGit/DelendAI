@@ -7,6 +7,7 @@
  * and keeps only the selected tool handler/schema in memory. This preserves
  * the existing plugin API while moving activation to first use.
  */
+import { captureServer } from './capture-server';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
@@ -77,6 +78,8 @@ export interface IManagedLazyRuntimeOptions {
 	 * however it was activated (AUD-E01.b).
 	 */
 	readonly registerTimeoutMs?: number | undefined;
+	/** The project's server once it exists: what a plugin's server reaches. */
+	readonly liveServer?: (() => McpServer | undefined) | undefined;
 	/** External cancellation, propagated to every activation's register(). */
 	readonly signal?: AbortSignal | undefined;
 	/** Reconnects plugin-level lifecycle contributions once a module activates. */
@@ -204,14 +207,11 @@ const pluginFromModule = (module: unknown): IMcpPlugin | undefined => {
 
 const captureToolRegistrations = async (
 	registrations: readonly IToolRegistration[],
+	live: (() => McpServer | undefined) | undefined,
 ): Promise<ReadonlyMap<string, ICapturedTool>> => {
 	const captured = new Map<string, ICapturedTool>();
-	const captureServer = {
-		registerTool(
-			name: string,
-			config: ICapturedTool['config'],
-			handler: unknown,
-		) {
+	const server = captureServer(
+		(name: string, config: ICapturedTool['config'], handler: unknown) => {
 			captured.set(name, { name, config, handler });
 			return {
 				enabled: false,
@@ -220,9 +220,10 @@ const captureToolRegistrations = async (
 				handler,
 			};
 		},
-	};
+		live,
+	);
 	for (const registration of registrations) {
-		await registration.register(captureServer as unknown as McpServer);
+		await registration.register(server);
 	}
 	return captured;
 };
@@ -351,6 +352,7 @@ export const createManagedLazyRuntime = (
 			});
 			const captured = await captureToolRegistrations(
 				payload.tools ?? [],
+				options.liveServer,
 			);
 			const namespace = options.namespaces.get(pluginId) ?? pluginId;
 			const tools = new Map<string, IManagedLazyToolBinding>();

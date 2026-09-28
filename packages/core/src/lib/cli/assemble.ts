@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { createHostServerSlot } from '../plugins/capture-server';
 import { resolveProgressiveDisclosure } from '../plugins/preset-catalog';
 import { readFile as readFileAsync } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -241,6 +242,7 @@ export const assembleCliConfig = async (
 	deps: IAssembleCliDeps = {},
 ): Promise<IAssembledCliConfig> => {
 	const workspace = createWorkspacePathProvider(args.workspace);
+	const hostServer = createHostServerSlot();
 	const looseEdits = createLooseEditsAdvisory(workspace.root);
 	const staleRuntime = createStaleRuntimeWatch(workspace.root);
 	const readFile: (absolutePath: string) => Promise<string | undefined> =
@@ -653,6 +655,7 @@ export const assembleCliConfig = async (
 		disposePlugins,
 		disposePlugin,
 	} = await assemblePlugins({
+		liveServer: hostServer.get,
 		args,
 		fileConfig,
 		corePrefix,
@@ -999,6 +1002,7 @@ export const assembleCliConfig = async (
 		keepLegacy,
 		agentWorktreeEnabled,
 		developmentPolicy,
+		hostServer,
 		runtimeBehindCheckout: staleRuntime.behind,
 		validationMatrix,
 		knowledge,
