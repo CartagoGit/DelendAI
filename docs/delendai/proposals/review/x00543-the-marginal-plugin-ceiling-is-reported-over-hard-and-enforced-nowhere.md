@@ -11,6 +11,8 @@ tags:
     - budgets
     - gates
     - test-fidelity
+shipped-in:
+  - "4815b247981543efa2793f3f5ba84b04eeb80c48"
 ---
 
 # x00543 — The marginal plugin ceiling is reported over hard and enforced nowhere
@@ -56,7 +58,7 @@ green harness measuring a different reality from the one it names.
 
 ### S1 — `tokens:gate` enforces the marginal ceiling
 
-- **Status**: done — before the S3 shrink, `bun run tokens:gate -- --preset=standard,swarm,lean` printed `largest plugin (agent-orchestrator): 11,167 B (warning 9,500 / hard 11,000) => HARD BREACH` and exited 1. The same gate over develop's code exited 0. `preset-marginal-ceiling.spec.ts` covers the boundary: 11,001 B breaches, exactly 11,000 B does not, core is never counted, and a core-only surface is `no-plugins`.
+- **Status**: done
 - shipped-in: `4815b2479`
 - **Files**: [`tools/scripts/test/run-actual-preset-budget.script.ts`, `tools/scripts/test/preset-marginal-ceiling.ts`, `tools/scripts/test/preset-marginal-ceiling.interface.ts`, `tools/scripts/test/preset-marginal-ceiling.spec.ts`]
 
@@ -70,6 +72,11 @@ there is nothing to compare, and the gate says that rather than reporting
 - **Gate**: `npx vitest run tools/scripts/test/preset-marginal-ceiling.spec.ts`
 - **Expect**: an owner at `hard + 1` B breaches, an owner at exactly
   `hard` B passes, and core is never counted.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4815b2479 (x00543 S1-S4, ya en develop). S1: preset-marginal-ceiling.ts añade marginalVerdict que mide owners (excluyendo core) vs hard ceiling; preset-marginal-ceiling.spec 6/6 cubre boundary (11,001 breach, 11,000 pass, core excluded). S2: token-budget.e2e.spec.ts 17/17 — cada caso marginal pin surfaceMode=native y asserts ≥1 plugin owner measured. S3: agent-orchestrator shrunken de 11,167→10,577 B en standard; _budget tool eliminado, SpendSchema + spendOf() compartidos con _dispatch; suite 306/306. S4: dashboard usa marginalStatus(row.ownerRows,...) — mismo marginalVerdict que el gate; tokens:dashboard:check exit 0 + tokens:gate exit 0 across 6 presets. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 4815b247981543efa2793f3f5ba84b04eeb80c48: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — The e2e marginal cases measure the surface they name
 
