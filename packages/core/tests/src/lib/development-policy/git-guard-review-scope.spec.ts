@@ -74,6 +74,13 @@ describe('a commit on a review unit', () => {
 describe('the review scope', () => {
 	it('reads the kind from the ref', () => {
 		expect(isReviewUnitBranch(policy, REVIEW)).toBe(true);
+		// A reconciliation carries verdicts too, and changes no more (x00743).
+		expect(
+			isReviewUnitBranch(
+				policy,
+				'delendai/wip/claude-opus-5-5/reconcile/batch-all-g1/swarm',
+			),
+		).toBe(true);
 		expect(isReviewUnitBranch(policy, IMPLEMENT)).toBe(false);
 		expect(isReviewUnitBranch(policy, 'develop')).toBe(false);
 	});

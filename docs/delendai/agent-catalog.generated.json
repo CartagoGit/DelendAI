@@ -1751,6 +1751,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-25"
+			},
+			{
+				"id": "x00743",
+				"title": "An owner authorizes a reconciliation",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-09-28"
 			}
 		]
 	}
