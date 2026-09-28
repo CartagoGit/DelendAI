@@ -745,6 +745,10 @@
 			"plugin": "proposals"
 		},
 		{
+			"name": "delendai_proposals_review_claim",
+			"plugin": "proposals"
+		},
+		{
 			"name": "delendai_proposals_review_queue",
 			"plugin": "proposals"
 		},

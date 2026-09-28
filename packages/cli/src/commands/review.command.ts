@@ -44,6 +44,7 @@ const CLAIM_TRAILER = 'Claims';
 
 const QUEUE_TOOL = 'delendai_proposals_review_queue';
 const VERDICT_TOOL = 'delendai_proposals_proposal_review';
+const CLAIM_TOOL = 'delendai_proposals_review_claim';
 
 interface IQueueSlice {
 	readonly sliceId: string;
@@ -268,21 +269,12 @@ const next = async (
 		});
 	}
 	if (resumed === undefined) {
-		const claim = gitIn(unit.path, [
-			'commit',
-			'--allow-empty',
-			'-q',
-			'-m',
-			`chore(review): claim ${chosen.id}`,
-			'--trailer',
-			`${CLAIM_TRAILER}: ${chosen.id}`,
-		]);
-		if (!claim.ok) {
-			return {
-				code: EXIT_CODE.RUNTIME,
-				error: `could not claim ${chosen.id} in ${unit.path}: ${claim.out}`,
-			};
-		}
+		// One way to claim, whatever host: the tool an MCP host calls too.
+		await request(ctx, CLAIM_TOOL, {
+			proposalId: chosen.id,
+			agent,
+			checkout: unit.path,
+		});
 	}
 	return data({ ...session, ...briefFor(chosen, unit, agent) });
 };

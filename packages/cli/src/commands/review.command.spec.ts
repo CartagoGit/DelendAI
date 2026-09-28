@@ -86,6 +86,25 @@ const contextFor = (root: string, queue: readonly IQueueEntry[]) => {
 					})),
 				} as T;
 			}
+			if (tool.endsWith('_review_claim')) {
+				// The plugin's review_claim, as its own spec pins it: a
+				// claim commit in the checkout the call names.
+				const { proposalId, checkout } = args as {
+					proposalId: string;
+					checkout: string;
+				};
+				git(
+					checkout,
+					'commit',
+					'--allow-empty',
+					'-q',
+					'-m',
+					`chore(review): claim ${proposalId}`,
+					'--trailer',
+					`Claims: ${proposalId}`,
+				);
+				return { ok: true, proposalId, claimed: true } as T;
+			}
 			return { ok: true, status: 'done' } as T;
 		},
 	});
