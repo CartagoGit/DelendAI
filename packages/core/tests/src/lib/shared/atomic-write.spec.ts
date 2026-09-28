@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	mkdirSync,
 	mkdtempSync,
 	readdirSync,
 	readFileSync,
@@ -74,6 +75,15 @@ describe('writeFileAtomicSync (durable + atomic)', () => {
 });
 
 describe('a writer that died leaves nothing behind (x00734)', () => {
+	it('fails a write it cannot land and leaves no temporary behind', async () => {
+		const dir = scratch();
+		const target = join(dir, 'taken');
+		mkdirSync(join(target, 'inside'), { recursive: true });
+
+		await expect(writeFileAtomic(target, '{}')).rejects.toThrow();
+		expect(readdirSync(dir)).toEqual(['taken']);
+	});
+
 	it('sweeps the empty temporaries a dead writer left, and keeps the rest', async () => {
 		const dir = scratch();
 		const target = join(dir, 'pricing.json');

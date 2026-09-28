@@ -52,7 +52,12 @@ const ORPHAN_TMP_AGE_MS = 60_000;
 const sweepOrphanTemporaries = async (absolutePath: string): Promise<void> => {
 	const dir = dirname(absolutePath);
 	const prefix = `${basename(absolutePath)}.`;
-	const names = await readdir(dir).catch(() => [] as string[]);
+	let names: readonly string[];
+	try {
+		names = await readdir(dir);
+	} catch {
+		return;
+	}
 	const cutoff = Date.now() - ORPHAN_TMP_AGE_MS;
 	await Promise.all(
 		names
@@ -71,7 +76,7 @@ const sweepOrphanTemporaries = async (absolutePath: string): Promise<void> => {
 					info.size === 0 &&
 					info.mtimeMs < cutoff
 				) {
-					await rm(path, { force: true }).catch(() => undefined);
+					await rm(path, { force: true });
 				}
 			}),
 	);
@@ -120,10 +125,18 @@ export const writeFileAtomic = async (
 		await rename(tmp, absolutePath);
 		await fsyncDir(dir);
 	} catch (error) {
-		await rm(tmp, { force: true }).catch(() => undefined);
+		try {
+			await rm(tmp, { force: true });
+		} catch {
+			// The original failure is the one to report.
+		}
 		throw error;
 	}
-	await sweepOrphanTemporaries(absolutePath);
+	try {
+		await sweepOrphanTemporaries(absolutePath);
+	} catch {
+		// Best effort: the write already landed.
+	}
 };
 
 /** Flush a directory entry to disk (sync). Best-effort — see {@link fsyncDir}. */
