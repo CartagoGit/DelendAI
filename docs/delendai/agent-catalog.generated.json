@@ -937,6 +937,9 @@
 		{
 			"name": "delendai_usage-tracking_usage_report",
 			"plugin": "usage-tracking"
+		},
+		{
+			"name": "delendai_work"
 		}
 	],
 	"skills": [
