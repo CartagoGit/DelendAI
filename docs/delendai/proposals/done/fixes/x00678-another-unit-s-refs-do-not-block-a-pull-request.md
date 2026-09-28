@@ -2,15 +2,17 @@
 id: x00678
 title: "Another unit's refs do not block a pull request"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00677, x00647]
-last-transition-id: 1e3d8b2c-96eb-4977-8667-ae0ad1feddf1
-last-correlation-id: 1e3d8b2c-96eb-4977-8667-ae0ad1feddf1
-last-transition-from: in-progress
+last-transition-id: c228cf31-1413-4b1a-a9e4-189477d7db8f
+last-correlation-id: c228cf31-1413-4b1a-a9e4-189477d7db8f
+last-transition-from: review
+shipped-in:
+  - "ae53a4a52"
 ---
 
 # x00678 — Another unit's refs do not block a pull request
@@ -61,12 +63,17 @@ and another unit's ref is not part of it.
 
 ### S1 — A pull request run fails only over its own ref
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Files**:
   - `tools/scripts/lint/ref-lifecycle-guard.script.ts`
   - `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
   - `.github/workflows/keep-the-queue-moving.yml`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé ae53a4a52 (x00678 S1, merge PR #513). fix(tools): CI certifies its own tree; the queue job judges the forge. ref-lifecycle-guard.script.ts: `failingFor(outstanding, reapable)` extrae el predicado; en un PR run (scope=head) solo el head bloquea; con REF_LIFECYCLE_SCOPE=repository (queue job) cada ref bloqueante falla. 26/26 verde en ref-lifecycle-guard.script.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #513 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00678-all-g1/another-units-refs-do-not-block-a-pull-request (refs/heads/delendai/wip/claude-opus-5-5/implement/x00678-all-g1/another-units-refs-do-not-block-a-pull-request) (ae53a4a52a57fd1ee2458cfb07112e1e65905c18), opened by minimax-m3
 
 ## dependency graph
 
