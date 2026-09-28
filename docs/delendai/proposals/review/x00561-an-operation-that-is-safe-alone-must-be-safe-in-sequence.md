@@ -11,6 +11,8 @@ tags:
     - release
     - ci
     - isolation
+shipped-in:
+  - "1db4ea316"
 ---
 
 # x00561 — An operation that is safe alone must be safe in sequence
@@ -69,13 +71,18 @@ S3).
 
 ### S1 — Publishing never deletes work it did not publish
 
-- **Status**: done — the worktree is inspected before removal, `--force`
+- **Status**: done
   is gone, and a tree with uncommitted changes keeps both the worktree
   and the work ref, saying what it found and what to do. A state that
   cannot be read is treated the same way.
 - **Files**: `packages/cli/src/lib/work-publish.service.ts`,
   `packages/cli/src/lib/work-publish.service.spec.ts`
 - **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 1db4ea316 (x00561 S1, merge PR #288). fix(workflow): an operation that is safe alone must be safe in sequence — work-publish.service.ts inspecciona el worktree antes del remove y mata `--force`; un tree con cambios sin commit mantiene worktree + work ref y dice qué encontró. Un estado ilegible se trata igual. 16/16 verde en work-publish.service.spec.ts cubre los 4 casos (tree clean, tree dirty, tree illegible, tree ya removido). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 1db4ea316f3a0aa41440d230d264423b83511541: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — A tag release reuses the tag that triggered it
 
