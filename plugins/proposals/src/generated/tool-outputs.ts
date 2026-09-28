@@ -1024,6 +1024,12 @@ export interface DelendaiProposalsReviewQueueOutput {
 		readyToClose: number;
 		claimedByOthers: number;
 	};
+	page: {
+		offset: number;
+		returned: number;
+		total: number;
+		next?: string;
+	};
 	procedure: string;
 }
 

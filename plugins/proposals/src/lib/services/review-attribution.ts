@@ -21,6 +21,8 @@
  * comes from Git, or the review is refused with the datum that is
  * missing.
  */
+import { isSelfApproval } from '../shared/independent-approval';
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import {
 	readFrontmatterField,
 	setFrontmatterBlockField,
@@ -309,6 +311,7 @@ export const renderAttributionLine = (
 export const checkAttributedApprover = (
 	attribution: IReviewAttribution,
 	approver: string,
+	independence: IReviewIndependence = 'model',
 ): IAttributedApproverCheck => {
 	const who = approver.trim().toLowerCase();
 	if (!attribution.recorded) {
@@ -320,7 +323,7 @@ export const checkAttributedApprover = (
 				}
 			: { ok: true };
 	}
-	return attribution.implementer.trim().toLowerCase() === who
+	return isSelfApproval(attribution.implementer, who, independence)
 		? {
 				ok: false,
 				reason: 'self-approve',

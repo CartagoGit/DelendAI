@@ -59,23 +59,105 @@ export const compactDescription = (
 	return `${oneLine.slice(0, MAX_PUBLIC_DESCRIPTION_CHARS - 3)}...`;
 };
 
+interface ISchemaIssue {
+	readonly code?: string;
+	readonly expected?: unknown;
+	readonly path?: readonly PropertyKey[];
+}
+
+type ISafeParse = (value: unknown) => Promise<
+	| { success: true; data: unknown }
+	| {
+			success: false;
+			error: { message?: string; issues?: readonly ISchemaIssue[] };
+	  }
+>;
+
+/** `text`, read as the type the schema expected, or `undefined`. */
+const fromText = (text: string, expected: unknown): unknown => {
+	const trimmed = text.trim();
+	if (expected === 'number' || expected === 'int') {
+		const value = Number(trimmed);
+		return trimmed !== '' && Number.isFinite(value) ? value : undefined;
+	}
+	if (expected === 'boolean') {
+		return trimmed === 'true'
+			? true
+			: trimmed === 'false'
+				? false
+				: undefined;
+	}
+	if (expected === 'array' || expected === 'object') {
+		try {
+			const value: unknown = JSON.parse(trimmed);
+			const isArray = Array.isArray(value);
+			return typeof value === 'object' &&
+				value !== null &&
+				isArray === (expected === 'array')
+				? value
+				: undefined;
+		} catch {
+			return undefined;
+		}
+	}
+	return undefined;
+};
+
+/**
+ * `args` with each value the schema rejected only for arriving as text
+ * converted to the type it expected, or `undefined` when there is none.
+ *
+ * A routed call carries its arguments in a free-form record, and hosts
+ * flatten it: `{ "limit": "50", "detail": "true" }`. The schema already
+ * says what each field is, so it decides; nothing is guessed.
+ */
+const convertTextArgs = (
+	args: unknown,
+	issues: readonly ISchemaIssue[],
+): unknown => {
+	if (typeof args !== 'object' || args === null) return undefined;
+	const converted = structuredClone(args) as Record<PropertyKey, unknown>;
+	let changed = false;
+	for (const issue of issues) {
+		if (issue.code !== 'invalid_type' || issue.path === undefined) continue;
+		const path = issue.path;
+		const key = path.at(-1);
+		if (key === undefined) continue;
+		let parent: unknown = converted;
+		for (const step of path.slice(0, -1)) {
+			parent =
+				typeof parent === 'object' && parent !== null
+					? (parent as Record<PropertyKey, unknown>)[step]
+					: undefined;
+		}
+		if (typeof parent !== 'object' || parent === null) continue;
+		const holder = parent as Record<PropertyKey, unknown>;
+		const text = holder[key];
+		if (typeof text !== 'string') continue;
+		const value = fromText(text, issue.expected);
+		if (value === undefined) continue;
+		holder[key] = value;
+		changed = true;
+	}
+	return changed ? converted : undefined;
+};
+
 export const safeParseSurfaceArgs = async (
 	schema: unknown,
 	args: unknown,
 ): Promise<{ ok: true; value: unknown } | { ok: false; message: string }> => {
 	if (schema === undefined) return { ok: true, value: args };
-	const parser = schema as {
-		safeParseAsync?: (
-			value: unknown,
-		) => Promise<
-			| { success: true; data: unknown }
-			| { success: false; error: { message?: string } }
-		>;
-	};
+	const parser = schema as { safeParseAsync?: ISafeParse };
 	if (typeof parser.safeParseAsync !== 'function') {
 		return { ok: true, value: args };
 	}
-	const parsed = await parser.safeParseAsync(args);
+	let parsed = await parser.safeParseAsync(args);
+	if (!parsed.success) {
+		const converted = convertTextArgs(args, parsed.error.issues ?? []);
+		if (converted !== undefined) {
+			parsed = await parser.safeParseAsync(converted);
+		}
+	}
 	if (parsed.success) return { ok: true, value: parsed.data };
 	return {
 		ok: false,

@@ -211,6 +211,12 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 */
 	requirePeerReview: z.boolean().optional(),
 	/**
+	 * x00718: what makes a reviewer independent of the implementer —
+	 * `model` (a different model; the default) or `instance` (another
+	 * instance of the same model, reviewing from a unit of its own).
+	 */
+	reviewIndependence: z.enum(['model', 'instance']).optional(),
+	/**
 	 * Select the validation scope for authoring operations. `scoped` keeps
 	 * each agent on its declared slice files; `global` is for integration.
 	 */
@@ -469,6 +475,14 @@ export default definePlugin({
 		const refreshIndex = async (): Promise<void> => {
 			await runSyncProposals({ ...syncOptions, indexOnly: true });
 		};
+		// Whether proposals are reviewed and what makes a reviewer
+		// independent: the project's decision, stated once and handed to
+		// every tool that judges it (x00718).
+		const reviewPolicy = {
+			requirePeerReview: parsedOptions.data.requirePeerReview ?? true,
+			reviewIndependence:
+				parsedOptions.data.reviewIndependence ?? 'model',
+		} as const;
 		const commitPolicyOptions = ctx.pluginOptions?.get('commit-policy');
 		const commitPolicyPush = commitPolicyOptions?.push;
 		const protectedBranches =
@@ -595,12 +609,7 @@ export default definePlugin({
 							.validationCommand as string,
 					}
 				: { validationCommand: 'bun run validate' }),
-			...(typeof ctx.options.requirePeerReview === 'boolean'
-				? {
-						requirePeerReview: ctx.options
-							.requirePeerReview as boolean,
-					}
-				: { requirePeerReview: true }),
+			...reviewPolicy,
 			...(typeof ctx.options.requireValidateEvidence === 'boolean'
 				? {
 						requireValidateEvidence: ctx.options
@@ -844,12 +853,7 @@ export default definePlugin({
 										.requireValidateEvidence as boolean,
 								}
 							: { requireValidateEvidence: true }),
-						...(typeof ctx.options.requirePeerReview === 'boolean'
-							? {
-									requirePeerReview: ctx.options
-										.requirePeerReview as boolean,
-								}
-							: { requirePeerReview: true }),
+						...reviewPolicy,
 						...(effectivePersist !== undefined
 							? {
 									persist: effectivePersist as {
@@ -912,12 +916,7 @@ export default definePlugin({
 							ctx.developmentPolicy,
 						),
 						// peer-review gate on review→done (default on).
-						...(typeof ctx.options.requirePeerReview === 'boolean'
-							? {
-									requirePeerReview: ctx.options
-										.requirePeerReview as boolean,
-								}
-							: { requirePeerReview: true }),
+						...reviewPolicy,
 						proposalLifecycleStateReader: {
 							getProposalState:
 								sqlLifecycleReaders.getProposalState,
@@ -1002,12 +1001,7 @@ export default definePlugin({
 						agentRegistryPathAbs: abs(layout.agentRegistryFile),
 						workspaceRoot: ctx.workspace.root,
 						// same peer-review default as proposal_transition.
-						...(typeof ctx.options.requirePeerReview === 'boolean'
-							? {
-									requirePeerReview: ctx.options
-										.requirePeerReview as boolean,
-								}
-							: { requirePeerReview: true }),
+						...reviewPolicy,
 					}),
 					// x00533 S2 — `proposals_db_status`, the first diagnostic an
 					// operator runs against a suspect database (x00510 S3), was

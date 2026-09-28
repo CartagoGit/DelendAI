@@ -46,6 +46,7 @@
  * closes both gaps.
  */
 
+import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
@@ -76,6 +77,8 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	// Per-plugin ephemeral exec dir (f00080)
 	// Per-agent git worktrees — not source code, never stray.
 	'.worktrees',
+	// The host server's startup reconciliation lock.
+	STARTUP_CACHE_DIR,
 ]);
 
 /**
