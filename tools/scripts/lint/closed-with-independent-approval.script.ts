@@ -101,15 +101,40 @@ export const approvalsNotBy = (
 	unifiedDiff: string,
 	author: string,
 ): readonly string[] =>
+	approvalsAdded(unifiedDiff).filter(
+		(approver) => approver.toLowerCase() !== author.toLowerCase(),
+	);
+
+/** Every approval a unified diff adds, by its approver. */
+export const approvalsAdded = (unifiedDiff: string): readonly string[] =>
 	unifiedDiff.split('\n').flatMap((line) => {
 		const approver = line.match(
 			/^\+[-*]\s*review-log:\s*approved by\s+(\S+)/iu,
 		)?.[1];
-		return approver !== undefined &&
-			approver.toLowerCase() !== author.toLowerCase()
-			? [approver]
-			: [];
+		return approver === undefined ? [] : [approver];
 	});
+
+/**
+ * The kind of work a ref names: the segment after its agent
+ * (`delendai/pr/<agent>/<kind>/…`), or `undefined` for a ref outside the
+ * agents' namespace or one written before refs named their kind.
+ */
+export const kindOfRef = (
+	ref: string,
+	prefixes: readonly string[],
+): string | undefined => {
+	const name = ref.replace(/^(refs\/)?(heads\/)?/u, '');
+	for (const prefix of prefixes) {
+		const bare = prefix.replace(/^(refs\/)?(heads\/)?/u, '');
+		if (bare.length === 0 || !name.startsWith(bare)) continue;
+		// <agent>/<kind>/<unit>…: a kind is named only when a unit follows.
+		const [, kind, unit] = name.slice(bare.length).split('/');
+		return kind !== undefined && kind.length > 0 && unit !== undefined
+			? kind
+			: undefined;
+	}
+	return undefined;
+};
 
 const git = (root: string, args: readonly string[]): string =>
 	execFileSync('git', [...args], { cwd: root, encoding: 'utf8' }).trim();
@@ -159,21 +184,32 @@ const main = (): number => {
 		branches.publicationRefPrefix,
 		branches.workRefPrefix,
 	]);
+	const addedHere = git(root, [
+		'diff',
+		'-U0',
+		'-M',
+		base,
+		'HEAD',
+		'--',
+		'docs/delendai/proposals/',
+	]);
 	const foreign =
-		author === undefined
-			? []
-			: approvalsNotBy(
-					git(root, [
-						'diff',
-						'-U0',
-						'-M',
-						base,
-						'HEAD',
-						'--',
-						'docs/delendai/proposals/',
-					]),
-					author,
-				);
+		author === undefined ? [] : approvalsNotBy(addedHere, author);
+	// An approval is a reviewer's: it enters through a review unit. The
+	// implementer's own pull request adding one is the implementer
+	// approving itself, whatever the names say, and under
+	// `reviewIndependence: instance` the names cannot say (x00729).
+	const kind = kindOfRef(head, [
+		branches.publicationRefPrefix,
+		branches.workRefPrefix,
+	]);
+	const approvals = approvalsAdded(addedHere);
+	if (kind !== undefined && kind !== 'review' && approvals.length > 0) {
+		console.error(
+			`✖ closed-with-independent-approval: ${head} is ${kind} work, and adds approvals by ${[...new Set(approvals)].join(', ')}. An approval enters through a review unit: \`delendai review next\`.`,
+		);
+		return 1;
+	}
 	if (foreign.length > 0) {
 		console.error(
 			`✖ closed-with-independent-approval: ${head} is ${author ?? ''}'s, and adds approvals by ${[...new Set(foreign)].join(', ')}. An approval enters through the pull request of its reviewer's own unit.`,
