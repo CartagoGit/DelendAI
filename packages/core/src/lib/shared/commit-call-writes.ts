@@ -124,6 +124,47 @@ const isErrorResult = (result: unknown): boolean =>
 	result !== null &&
 	(result as { isError?: unknown }).isError === true;
 
+/**
+ * Stage and commit exactly `paths`. A path the call removed, or moved
+ * away, is no longer there for `git add` to match: naming it failed the
+ * whole commit ("did not match any files") whenever a tool renamed a
+ * proposal, which the proposals tools do to keep filenames canonical
+ * (x00733). It leaves the index instead.
+ */
+const commitPaths = async (
+	git: IGitRunner,
+	root: string,
+	paths: readonly string[],
+	subject: string,
+): Promise<{ readonly ok: boolean; readonly reason?: string }> => {
+	const exists = await Promise.all(
+		paths.map((path) =>
+			access(join(root, path)).then(
+				() => true,
+				() => false,
+			),
+		),
+	);
+	const present = paths.filter((_, index) => exists[index] === true);
+	const gone = paths.filter((_, index) => exists[index] !== true);
+	if (present.length > 0) {
+		const added = await git(['add', '-A', '--', ...present]);
+		if (!added.ok) return added;
+	}
+	if (gone.length > 0) {
+		const removed = await git([
+			'rm',
+			'-q',
+			'--cached',
+			'--ignore-unmatch',
+			'--',
+			...gone,
+		]);
+		if (!removed.ok) return removed;
+	}
+	return git(['commit', '-q', '-m', subject, '--', ...paths]);
+};
+
 /** Calls in one worktree run one after another, so each commits its own. */
 const inFlight = new Map<string, Promise<unknown>>();
 
@@ -164,14 +205,10 @@ export const withCallWritesCommitted = async (
 		const paths = pathsTheCallChanged(before, after);
 		if (paths.length === 0) return result;
 		const subject = commitSubjectFor(tool, args);
-		const added = await git(['add', '-A', '--', ...paths]);
-		const committed = added.ok
-			? await git(['commit', '-q', '-m', subject, '--', ...paths])
-			: added;
+		const committed = await commitPaths(git, root, paths, subject);
 		if (committed.ok) return result;
-		return withNote(
-			result,
-			`delendai could not commit what this call wrote to ${branch} (${committed.reason ?? 'git refused'}). Commit it yourself before going on: git -C ${root} add -A -- ${paths.join(' ')} && git -C ${root} commit -m "${subject}"`,
-		);
+		const note = `delendai could not commit what this call wrote to ${branch} (${committed.reason ?? 'git refused'}). Commit it yourself before going on: git -C ${root} add -A -- ${paths.join(' ')} && git -C ${root} commit -m "${subject}"`;
+		process.stderr.write(`[delendai] ${note}\n`);
+		return withNote(result, note);
 	});
 };
