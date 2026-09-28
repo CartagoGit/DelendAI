@@ -37,6 +37,8 @@ export interface IGuardFacts {
 	 * `undefined` when the commit is not known here.
 	 */
 	readonly tipKept?: (sha: string, deletedRef: string) => boolean | undefined;
+	/** The worktree that has `ref` checked out, if any. */
+	readonly worktreeOf?: (ref: string) => string | undefined;
 	/** The commit `ref` points at now, if it exists (x00703). */
 	readonly refAt?: (ref: string) => string | undefined;
 	/** The paths the commit being made changes; undefined when unknown. */

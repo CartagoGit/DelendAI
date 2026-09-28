@@ -19,10 +19,62 @@ import {
 	REVIEW_CLAIM_INPUT_SCHEMA,
 	REVIEW_CLAIM_OUTPUT_SCHEMA,
 } from '../contracts/constants/review-claim-schema.constant';
-import { claimForReview } from '../services/review-claim.service';
+import {
+	claimForReview,
+	publishPackStep,
+} from '../services/review-claim.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
 import type { IAuthoringToolOptions } from './authoring-options';
+import type { IReviewClaimOutcome } from '../contracts/interfaces/review-claim-outcome.interface';
+
+type IAnswer = ReturnType<typeof toolOk> | ReturnType<typeof toolError>;
+
+/** What each claim outcome answers: one entry per outcome kind. */
+const ANSWERS: {
+	readonly [K in IReviewClaimOutcome['kind']]: (
+		outcome: Extract<IReviewClaimOutcome, { kind: K }>,
+		proposalId: string,
+		prefix: string,
+	) => IAnswer;
+} = {
+	held: (outcome, proposalId, prefix) =>
+		toolError(
+			`${proposalId} is held by another review unit (${outcome.by.join(', ')}).`,
+			`Take the next proposal ${prefix}_review_queue offers you.`,
+		),
+	'pack-full': (outcome, _proposalId, prefix) =>
+		toolError(
+			`Your review unit already holds a full pack (${String(outcome.size)} proposals).`,
+			publishPackStep(prefix),
+		),
+	failed: (outcome, proposalId) =>
+		toolError(
+			`Could not claim ${proposalId}: ${outcome.reason}.`,
+			'Claim it in your review unit: pass the worktree the `work` tool gave you as `checkout`.',
+		),
+	'already-claimed': (_outcome, proposalId) =>
+		toolOk({ proposalId, claimed: false }),
+	claimed: (outcome, proposalId) =>
+		toolOk({
+			proposalId,
+			claimed: true,
+			...(outcome.commit === undefined ? {} : { commit: outcome.commit }),
+		}),
+};
+
+const answerFor = (
+	outcome: IReviewClaimOutcome,
+	proposalId: string,
+	prefix: string,
+): IAnswer =>
+	(
+		ANSWERS[outcome.kind] as (
+			outcome: IReviewClaimOutcome,
+			proposalId: string,
+			prefix: string,
+		) => IAnswer
+	)(outcome, proposalId, prefix);
 
 export const buildReviewClaimRegistration = (
 	options: IAuthoringToolOptions,
@@ -52,31 +104,11 @@ export const buildReviewClaimRegistration = (
 					args.proposalId,
 					shape?.integration ?? 'HEAD',
 				);
-				switch (outcome.kind) {
-					case 'held':
-						return toolError(
-							`${args.proposalId} is held by another review unit (${outcome.by.join(', ')}).`,
-							`Take the next proposal ${options.namespacePrefix}_review_queue offers you.`,
-						);
-					case 'failed':
-						return toolError(
-							`Could not claim ${args.proposalId}: ${outcome.reason}.`,
-							'Claim it in your review unit: pass the worktree the `work` tool gave you as `checkout`.',
-						);
-					case 'already-claimed':
-						return toolOk({
-							proposalId: args.proposalId,
-							claimed: false,
-						});
-					case 'claimed':
-						return toolOk({
-							proposalId: args.proposalId,
-							claimed: true,
-							...(outcome.commit === undefined
-								? {}
-								: { commit: outcome.commit }),
-						});
-				}
+				return answerFor(
+					outcome,
+					args.proposalId,
+					options.namespacePrefix,
+				);
 			},
 		);
 	},

@@ -73,6 +73,7 @@ export const operationsForHook = (
 		readonly configuredAuthor?: string | undefined;
 		readonly tipKept?: IGuardFacts['tipKept'];
 		readonly refAt?: IGuardFacts['refAt'];
+		readonly worktreeOf?: IGuardFacts['worktreeOf'];
 		readonly paths?: readonly string[] | undefined;
 		readonly docsDir?: string | undefined;
 	},
@@ -98,10 +99,17 @@ export const operationsForHook = (
 				if (
 					oldOid === undefined ||
 					newOid === undefined ||
-					ref === undefined ||
-					ZERO_OID.test(newOid)
-				) {
+					ref === undefined
+				)
 					return [];
+				// A branch being deleted: judged only when a worktree still
+				// works on it, the case `update-ref -d` never asks about.
+				if (ZERO_OID.test(newOid)) {
+					if (!ref.startsWith('refs/heads/')) return [];
+					const worktree = facts.worktreeOf?.(ref);
+					return worktree === undefined
+						? []
+						: [{ kind: 'branch-delete', ref, worktree }];
 				}
 				// Every write to the stash, not only the first: a stash on
 				// top of an existing one updates the ref instead of creating
@@ -192,6 +200,18 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 		git(workspace, ['rev-parse', '--git-common-dir']),
 	worktreeAgent: () => worktreeAgent(workspace),
 	refAt: (ref) => git(workspace, ['rev-parse', '--verify', '--quiet', ref]),
+	worktreeOf: (ref) => {
+		const blocks = (
+			git(workspace, ['worktree', 'list', '--porcelain']) ?? ''
+		).split('\n\n');
+		const block = blocks.find((each) =>
+			each.split('\n').includes(`branch ${ref}`),
+		);
+		return block
+			?.split('\n')
+			.find((line) => line.startsWith('worktree '))
+			?.slice('worktree '.length);
+	},
 	tipKept: (sha, deletedRef) => {
 		if (git(workspace, ['cat-file', '-e', `${sha}^{commit}`]) === undefined)
 			return undefined;
@@ -561,6 +581,9 @@ export const createGuardCommand = (
 					? {}
 					: { tipKept: facts.tipKept }),
 				...(facts.refAt === undefined ? {} : { refAt: facts.refAt }),
+				...(facts.worktreeOf === undefined
+					? {}
+					: { worktreeOf: facts.worktreeOf }),
 				...(commits
 					? {
 							author: facts.author?.(),

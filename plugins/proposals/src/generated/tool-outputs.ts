@@ -1037,6 +1037,12 @@ export interface DelendaiProposalsReviewQueueOutput {
 		total: number;
 		next?: string;
 	};
+	pack?: {
+		size: number;
+		claimed: number;
+		full: boolean;
+		next?: string;
+	};
 	procedure: string;
 }
 

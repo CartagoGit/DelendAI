@@ -73,15 +73,12 @@ describe('a swarm of reviewers', () => {
 		]);
 		expect(proposals[1]?.claimedBy).toEqual(['qwen']);
 		expect(proposals[1]?.claim).toBeUndefined();
+		// A claim is made with the tool, which commits it the one way: no
+		// reviewer is told to type a git command.
 		expect(proposals[0]?.claim).toContain(
-			'work enter --kind=review --proposal=batch --slice=all --agent=glm',
+			'proposals_review_claim { proposalId: "x00003", agent: "glm"',
 		);
-		expect(proposals[0]?.claim).toContain('--trailer "Claims: x00003"');
-		// A claim is an ordinary commit: its message must pass the
-		// project's own commit rules (conventional commits here).
-		expect(proposals[0]?.claim).toContain(
-			'-m "chore(review): claim x00003"',
-		);
+		expect(proposals[0]?.claim).not.toContain('git commit');
 		expect(answer.body.totals).toMatchObject({ claimedByOthers: 1 });
 		expect(answer.body.procedure).toContain('claim it');
 	});
@@ -199,6 +196,35 @@ describe('a swarm of reviewers', () => {
 		expect(
 			proposals.find((proposal) => proposal.id === 'x00003')?.claimedBy,
 		).toBeUndefined();
+	});
+
+	it('tells a unit how full its pack is, and to publish it once full', async () => {
+		const unit = 'refs/heads/delendai/wip/qwen/review/batch-all-g1/sweep';
+		let tip = repo.git('rev-parse', 'HEAD');
+		const claimAll = (ids: readonly string[]): void => {
+			for (const id of ids) {
+				tip = repo.git(
+					'commit-tree',
+					'HEAD^{tree}',
+					'-p',
+					tip,
+					'-m',
+					`chore(review): claim ${id}\n\nClaims: ${id}`,
+				);
+			}
+			repo.git('update-ref', unit, tip);
+		};
+
+		claimAll(['x00002', 'x00003']);
+		const partly = (await queue({ agent: 'qwen', unit })).body.pack;
+		claimAll(['x00004', 'x00005', 'x00006']);
+		const full = (await queue({ agent: 'qwen', unit })).body.pack;
+		const unnamed = (await queue({ agent: 'qwen' })).body.pack;
+
+		expect(partly).toEqual({ size: 5, claimed: 2, full: false });
+		expect(full).toMatchObject({ size: 5, claimed: 5, full: true });
+		expect(String((full as { next?: string }).next)).toContain('publish');
+		expect(unnamed).toBeUndefined();
 	});
 
 	it('does not read an implementation unit as a review claim', async () => {

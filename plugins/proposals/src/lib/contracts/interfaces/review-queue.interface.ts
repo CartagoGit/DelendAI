@@ -95,8 +95,22 @@ export interface IReviewQueue {
 		readonly total: number;
 		readonly next?: string;
 	};
+	/**
+	 * The caller's pack, when it named its unit: proposals claimed of the
+	 * pack it publishes as one pull request.
+	 */
+	readonly pack?: IReviewPack;
 	/** The reviewer's procedure, in one paragraph. */
 	readonly procedure: string;
+}
+
+/** A review unit's pack: it is published once it holds `size` proposals. */
+export interface IReviewPack {
+	readonly size: number;
+	readonly claimed: number;
+	readonly full: boolean;
+	/** What to do now that it is full. */
+	readonly next?: string;
 }
 
 export interface IBuildReviewQueueInput {

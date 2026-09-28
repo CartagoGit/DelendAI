@@ -19,9 +19,9 @@ import { changedSinceFields } from './review-changed-since.service';
 import { procedureFor } from './review-procedure';
 import {
 	REVIEW_BATCH_ID,
-	REVIEW_CLAIM_TRAILER,
 	REVIEW_UNIT_SLICE,
 } from '../contracts/constants/review-claims.constant';
+import { packOf } from './review-pack.service';
 import { proposalsInReview } from './review-backlog.service';
 import { reviewClaims, unitOfRef } from './review-claims.service';
 import { pageOfQueue } from './review-queue-page.service';
@@ -361,7 +361,7 @@ export const buildReviewQueue = async (
 				? { ...proposal, claimedBy: others }
 				: {
 						...proposal,
-						claim: `In your review batch — entered once with \`delendai work enter --kind=review --proposal=${REVIEW_BATCH_ID} --slice=${REVIEW_UNIT_SLICE} --agent=${input.agent ?? '<your agent id>'} --topic=<what-the-batch-covers>\` — claim it before reading: \`git commit --allow-empty -m "chore(review): claim ${proposal.id}" --trailer "${REVIEW_CLAIM_TRAILER}: ${proposal.id}"\``,
+						claim: `Claim it before reading, in your review unit (\`work\` tool { action: "enter", kind: "review", proposal: "${REVIEW_BATCH_ID}", slice: "${REVIEW_UNIT_SLICE}", agent }): ${input.namespacePrefix}_review_claim { proposalId: "${proposal.id}", agent: "${input.agent ?? '<you>'}", checkout: "<your unit's worktree>" }, or \`delendai review next\`, which claims for you.`,
 					},
 		);
 	}
@@ -385,6 +385,9 @@ export const buildReviewQueue = async (
 				(proposal) => proposal.claimedBy !== undefined,
 			).length,
 		},
+		...(ownUnit === undefined
+			? {}
+			: { pack: packOf(claims, ownUnit, input.namespacePrefix) }),
 		procedure: procedureFor(input.namespacePrefix),
 	};
 };
