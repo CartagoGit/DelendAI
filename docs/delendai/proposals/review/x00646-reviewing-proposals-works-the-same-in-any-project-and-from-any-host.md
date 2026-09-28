@@ -12,6 +12,7 @@ last-transition-from: in-progress
 shipped-in:
   - "9b774a2915ab51c60d5f669e245fe475ca8e6340"
   - "1a7be4e0143a276600ab9e66335ab5751f3f4e0b"
+  - "b01987f5f3cb2bb40c908666de2819d5e7c13b08"
 ---
 
 # x00646 — Reviewing proposals works the same in any project and from any host
@@ -73,7 +74,7 @@ x00643 made a review possible where no round was ever opened, but by rules only 
 - review-log: approved by minimax-m3 — Revisé 1a7be4e01 (x00646 S3, merge 9b774a291 = PR #459). review-queue.tool.ts (read-only) lista oldest-first cada propuesta en review con por-slice: estado, implementador (grabado/derivable/faltante), candidatos con origen, gate, acceptance y la llamada exacta (next-action). Las propuestas listas para cerrar (todas las slices revisadas) aparecen con readyToClose y el next-action que propone la transición. El CLI expone la cola vía proposals review-queue; proposals review acepta --commit + --validate-exit + --tests-passing + --tests-total para aprobar desde consola. 16/16 verde en los 2 specs focalizados (review-queue.tool + review-queue-candidates). claude-opus-5-5 != minimax-m3 → veredicto independiente. Sin cambios fuera de alcance.
 
 ### S4 — Every host receives the same review procedure from the server
-- **Status**: review — shipped in #459 (merge 9b774a291)
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`, `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`, `plugins/proposals/tests/src/lib/knowledge/proposal-workflow-review.spec.ts`, `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/review-identity.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -81,8 +82,11 @@ x00643 made a review possible where no round was ever opened, but by rules only 
   - "The overview's proposals snapshot counts the proposals awaiting review and points at the queue."
   - "No product message tells an adopter to run a script that exists only in this repository."
   - "A reviewer in another clone, machine, CI job or cloud agent can approve a round the document records, although the local submit journal is absent there; self-approval is still refused."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé b01987f5f (x00646 S4, merge 9b774a291 = PR #459). knowledge/proposal-workflow.ts añade el texto del procedimiento del reviewer (cola → verificar diff/gate/acceptance → aprobar con evidencia o pedir cambios con what/where/repro/what-must-hold → nunca editar código, nunca submit por el implementer, nunca cerrar sin veredicto). skills/proposals-workflow-contribution.ts lo enrola en el assembly genérico. review-identity.ts + sync-proposals.ts consolidan que un reviewer en otro clone/MCP/CI/cloud aprueba rondas grabadas sin journal local de submit; self-approval sigue siendo rehusada. 13/13 verde en los 3 specs focalizados + bun run typecheck exit 0. claude-opus-5-5 != minimax-m3 → veredicto independiente. Sin cambios fuera de alcance.
+
 ### S5 — A delivery nobody signed is reviewed as unrecorded
 - **Status**: review — shipped in #459 (merge 9b774a291)
 - **Files**: `plugins/proposals/src/lib/contracts/constants/review-attribution.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue-candidates.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
