@@ -2,12 +2,15 @@
 id: x00725
 title: "Importing the proposal store reads no file"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00712]
+last-transition-id: b83b5adb-053a-4e05-ae68-91c00d54bb27
+last-correlation-id: b83b5adb-053a-4e05-ae68-91c00d54bb27
+last-transition-from: in-progress
 ---
 
 # x00725 — Importing the proposal store reads no file
@@ -53,7 +56,7 @@ one of them.
 
 ### S1 — Migrations are read when needed
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `bun run test:sqlite && bun run site`
 - **Files**:
   - `packages/proposals-sqlite/src/lib/migrations.ts`
