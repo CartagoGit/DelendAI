@@ -1,4 +1,5 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import { mkdir } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 
@@ -32,8 +33,6 @@ import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
-import { hasIndependentPeerApproval } from './proposal-transition.tool';
-import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
 import { removeStale, type ILockFile } from '../locks/agent-lock-engine';
 import { guardDoneToReviewRegression } from '../services/proposal-state';
 /** Lock-file schema version written when no lock exists yet. */
@@ -101,6 +100,8 @@ export interface IRecoveryToolOptions {
 	readonly gitRunner?: IGitRunner;
 	/** a00069 S7: peer-review gate default on for force review→done. */
 	readonly requirePeerReview?: boolean;
+	/** What makes a reviewer independent (x00718); `model` by default. */
+	readonly reviewIndependence?: IReviewIndependence;
 	/** Optional paths to the agent queue (used by recovery tools). */
 	readonly queuePathAbs?: string;
 	readonly closedTasksPathAbs?: string;
@@ -172,7 +173,6 @@ export const FORCE_TRANSITION_INPUT_SCHEMA = z.object({
 	reason: z.string().min(1),
 	overrideLockOwner: z.string().optional(),
 	taskId: z.string().optional(),
-	skipPeerReview: z.boolean().optional(),
 });
 
 const RECONCILE_FOLDER_OUTPUT_SCHEMA = z.object({
@@ -506,8 +506,6 @@ export const runProposalForceTransition = async (
 		reason: string;
 		overrideLockOwner?: string | undefined;
 		taskId?: string | undefined;
-		/** a00069 S7: host-approved bypass of the peer-review gate. */
-		skipPeerReview?: boolean | undefined;
 	},
 	options: IRecoveryToolOptions,
 ) => {
@@ -524,26 +522,16 @@ export const runProposalForceTransition = async (
 	if (!found) {
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	}
-	// force_transition without skipPeerReview still needs peer approve
-	// when moving review → done (same gate as proposal_transition).
-	// skipPeerReview bypass is audited (reason already required).
-	const requirePeer = options.requirePeerReview !== false;
-	if (requirePeer && args.to === 'done' && found.status === 'review') {
-		if (args.skipPeerReview === true) {
-			recordPeerReviewBypass({
-				proposalId: args.id,
-				reason: args.reason,
-				via: 'skipPeerReview',
-				...(args.overrideLockOwner
-					? { agent: args.overrideLockOwner }
-					: {}),
-			});
-		} else if (!hasIndependentPeerApproval(found.raw)) {
-			return toolError(
-				`peer-review required before force_transition of "${args.id}" review → done`,
-				`Run ${options.namespacePrefix}_proposal_review { action: "approve", agent: "<reviewer≠implementer>" } first. Closing without an independent approval is the owner's decision, not an agent's: CI refuses a pull request that does it (closed-with-independent-approval).`,
-			);
-		}
+	// A recovery status, never `done`: `done` is reached only through
+	// proposal_transition, which checks the delivery, the validation and
+	// an independent approval of every slice. This tool with
+	// `skipPeerReview` closed about seventy unreviewed proposals on
+	// 2026-09-28 (x00718).
+	if (args.to === 'done') {
+		return toolError(
+			`force_transition does not move a proposal to done`,
+			`Close it with ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }; its refusal names what is missing. Closing without a review is the owner's decision, made by merging by hand.`,
+		);
 	}
 	let lockReleased = false;
 	if (args.overrideLockOwner && args.taskId) {
@@ -795,7 +783,7 @@ export const buildRecoveryToolRegistrations = (
 					`${options.namespacePrefix}_proposal_force_transition`,
 					{
 						description:
-							'Force a proposal to a recovery status with a required reason and optional lock release. a00069 S7: review→done still requires peer approve unless skipPeerReview:true.',
+							'Force a proposal to a recovery status (never done) with a required reason and optional lock release.',
 						outputSchema: FORCE_TRANSITION_OUTPUT_SCHEMA,
 						inputSchema: FORCE_TRANSITION_INPUT_SCHEMA,
 					},

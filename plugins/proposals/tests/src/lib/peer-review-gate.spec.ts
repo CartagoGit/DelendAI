@@ -325,7 +325,7 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 		expect(JSON.stringify(body)).toMatch(/missing-declared-files/);
 	});
 
-	it('allows force:true bypass', async () => {
+	it('does not let force:true skip the approval (x00718)', async () => {
 		writeFileSync(docPath, doc(''), 'utf8');
 		const body = parse(
 			await runProposalTransition(
@@ -333,7 +333,8 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 				opts,
 			),
 		);
-		expect(body.ok).toBe(true);
+		expect(body.ok).toBe(false);
+		expect(JSON.stringify(body)).toMatch(/peer-review required/);
 	});
 
 	it('skips gate when requirePeerReview is false', async () => {

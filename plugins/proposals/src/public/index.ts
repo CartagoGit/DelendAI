@@ -289,5 +289,11 @@ export type {
 } from '../lib/contracts/interfaces/validate-journal.interface';
 export { VALIDATE_LOG_RELATIVE_PATH } from '../lib/contracts/constants/proposal-paths.constant';
 
+export {
+	isSelfApproval,
+	unapprovedSlices,
+} from '../lib/shared/independent-approval';
+export type { IReviewIndependence } from '../lib/contracts/interfaces/review-independence.interface';
+
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

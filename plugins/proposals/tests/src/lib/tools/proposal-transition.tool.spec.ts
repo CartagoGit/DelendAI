@@ -1307,7 +1307,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		expect(body.error.blockerType).toBe('missing-peer-review');
 	});
 
-	it('allows force:true bypass without peer approve', async () => {
+	it('does not let force:true skip the peer approve (x00718)', async () => {
 		await writeProposal(root, 'review', 'f00972-s7.md', {
 			id: 'f00972',
 			status: 'review',
@@ -1318,10 +1318,8 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			{ id: 'f00972', to: 'done', reason: 'emergency', force: true },
 			options,
 		);
-		expect(result.isError).toBeUndefined();
-		const body = JSON.parse(result.content[0]?.text ?? '{}');
-		expect(body.ok).toBe(true);
-		expect(body.to).toBe('done');
+		expect(result.isError).toBe(true);
+		expect(JSON.stringify(result)).toMatch(/peer-review required/);
 	});
 
 	it('skips gate when requirePeerReview is false', async () => {
