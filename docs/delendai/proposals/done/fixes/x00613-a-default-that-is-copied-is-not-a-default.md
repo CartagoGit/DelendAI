@@ -2,11 +2,16 @@
 id: x00613
 title: "A default that is copied is not a default"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
-shipped-in: ["794629862"]
+shipped-in:
+  - "794629862"
+  - "633960d2d"
+last-transition-id: bec3d17d-c1ed-43d2-b31f-88676bf40edf
+last-correlation-id: bec3d17d-c1ed-43d2-b31f-88676bf40edf
+last-transition-from: review
 ---
 
 # x00613 — A default that is copied is not a default
@@ -102,7 +107,7 @@ scanner's expectation list no longer expects them.
 
 ### S1 — One defaults map, and it stamps nothing project-specific
 
-- **Status**: done — verified against a consumer project with
+- **Status**: done
   `docsDir: "documentation"`: the config `init` writes went from 314 lines
   to 230, with no `namePool` and no `docs/delendai…` path, and their own
   `docsDir` untouched. core + cli: 4105 passed. Two assertions had to
@@ -123,6 +128,11 @@ scanner's expectation list no longer expects them.
 - The unused CLI map is deleted; core's stamps no agent-name pool and no
   path built from our docs layout; the boundary inventory records two
   fewer couplings.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 633960d2d (x00613 S1, merge PR #353). fix(init): a default that is copied is not a default. packages/cli/src/contracts/constants/plugin-defaults.constant.ts (la copia CLI, sin consumidores) se borra; core's plugin-defaults.ts queda como única canónica. plugin-defaults.ts deja de estampar paths project-specific (auditDir, docs.roots, namePool) — el plugin las deriva de docsDir o usa DEFAULT_AGENT_NAME_POOL como fallback. Verificado en proyecto adoptador: config 'init' output 314→230 líneas, sin 'namePool' ni 'docs/delendai...' paths. 4/4 verde en plugin-defaults.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from Merge pull request #353 from CartagoGit/delendai/pr/claude-opus-5/x00613-S1-g1/a-copied-default-is-not-a-default (refs/heads/delendai/wip/claude-opus-5/x00613-S1-g1/a-copied-default-is-not-a-default) (633960d2d122c0fa02b28711a856720ea41578ae), opened by minimax-m3
 
 ## acceptance
 

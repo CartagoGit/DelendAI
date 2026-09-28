@@ -2,15 +2,17 @@
 id: x00712
 title: "Validate runs the gates the project declares"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00706, x00692, x00681]
-last-transition-id: 8c9d9a77-0118-471a-8212-7d0fd9aa708d
-last-correlation-id: 8c9d9a77-0118-471a-8212-7d0fd9aa708d
-last-transition-from: in-progress
+last-transition-id: d6ecab32-ab5c-43e2-b221-b2d154e4b0a0
+last-correlation-id: d6ecab32-ab5c-43e2-b221-b2d154e4b0a0
+last-transition-from: review
+shipped-in:
+  - "f372bc990"
 ---
 
 # x00712 — Validate runs the gates the project declares
@@ -64,7 +66,7 @@ proposal. The refusal then told it to run `bun run validate` too.
 
 ### S1 — Evidence in any project
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/lib/validate-run.service.spec.ts packages/cli/src/commands/registry.spec.ts plugins/proposals/tests/src/lib/services/validate-blocker.spec.ts tools/scripts/proposals/record-validate-evidence.script.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/shared/validate-journal.ts`
@@ -82,6 +84,11 @@ proposal. The refusal then told it to run `bun run validate` too.
   - `tools/scripts/proposals/record-validate-evidence.script.ts`
   - `tools/scripts/proposals/record-validate-evidence.script.spec.ts`
   - `plugins/proposals/tests/src/lib/auto-transition.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé f372bc990 (x00712 S1, merge PR #574). fix(cli): validate runs the gates the project declares. validate-summary.script.ts ejecuta exactamente las gates que el proyecto declara (no un set hardcodeado); un proyecto sin gates declaradas corre validate sin fakearlos. 7/7 verde en validate-summary.script.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #574 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00712-S1-g1/validate-runs-the-gates-the-project-declares (refs/heads/delendai/wip/claude-opus-5-5/implement/x00712-S1-g1/validate-runs-the-gates-the-project-declares) (f372bc990b6f07bf44cc5cc0e5e580e518cac70b), opened by minimax-m3
 
 ## dependency graph
 

@@ -2,15 +2,17 @@
 id: x00715
 title: "An approval enters through its reviewer"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00696, x00694, x00714]
-last-transition-id: 39b3e13d-2dec-4730-a779-33034acc2d99
-last-correlation-id: 39b3e13d-2dec-4730-a779-33034acc2d99
-last-transition-from: in-progress
+last-transition-id: 375a3486-8037-480c-a3de-09b63fa09a6e
+last-correlation-id: 375a3486-8037-480c-a3de-09b63fa09a6e
+last-transition-from: review
+shipped-in:
+  - "fda00a68b"
 ---
 
 # x00715 — An approval enters through its reviewer
@@ -57,11 +59,16 @@ the name in an approval to the agent whose work delivered it.
 
 ### S1 — Approvals match their pull request
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - **Files**:
   - `tools/scripts/lint/closed-with-independent-approval.script.ts`
   - `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé fda00a68b (x00715 S1, merge PR #579). fix(ci): an approval enters through its reviewer. Una aprobación de review se registra por el reviewer (no por el implementer). 4/4 verde en independent-approval.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #579 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00715-all-g1/an-approval-enters-through-its-reviewer (refs/heads/delendai/wip/claude-opus-5-5/implement/x00715-all-g1/an-approval-enters-through-its-reviewer) (fda00a68be7e80ac74a9a48e894c47c11aba5d8c), opened by minimax-m3
 
 ## dependency graph
 
