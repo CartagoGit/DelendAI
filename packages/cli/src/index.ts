@@ -8,6 +8,11 @@ import { resolveWorkAgentId } from '@delendai/core/public';
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
 import { ensureMigrated } from './lib/cli/entrypoint';
+import {
+	asksForHelp,
+	renderCommandHelp,
+	unknownFlagRefusal,
+} from './lib/command-flags.service';
 import { renderHelp } from './lib/help.service';
 import { parseCliInvocation } from './lib/parser.service';
 import { createStdioContext } from './lib/stdio-context.factory';
@@ -97,6 +102,20 @@ export const runHumanCli = async (
 		return EXIT_CODE.USAGE;
 	}
 
+	const commandArgs = [
+		...parsed.commandPath.slice(consumedPathParts(command)),
+		...parsed.commandArgs,
+	];
+	if (asksForHelp(command, commandArgs)) {
+		process.stdout.write(renderCommandHelp(command, parsed.globals.lang));
+		return EXIT_CODE.OK;
+	}
+	const refusal = unknownFlagRefusal(command, commandArgs);
+	if (refusal !== undefined) {
+		process.stderr.write(`${refusal}\n`);
+		return EXIT_CODE.USAGE;
+	}
+
 	const extraPlugins = command.name.startsWith('search')
 		? ['search']
 		: command.name.startsWith('docs ')
@@ -129,13 +148,7 @@ export const runHumanCli = async (
 		ctx = isOffline
 			? createNoopContext(parsed.globals.workspace, parsed.globals)
 			: await createStdioContext(cwd, parsed.globals, extraPlugins);
-		const result = await command.run(
-			[
-				...parsed.commandPath.slice(consumedPathParts(command)),
-				...parsed.commandArgs,
-			],
-			ctx,
-		);
+		const result = await command.run(commandArgs, ctx);
 		if (result.error !== undefined)
 			process.stderr.write(`${result.error}\n`);
 		if (result.data !== undefined) {
