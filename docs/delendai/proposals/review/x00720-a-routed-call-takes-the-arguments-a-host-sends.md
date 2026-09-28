@@ -2,12 +2,15 @@
 id: x00720
 title: "A routed call takes the arguments a host sends"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00717]
+last-transition-id: 438aff40-59d5-43e6-8730-cc02334e9c02
+last-correlation-id: 438aff40-59d5-43e6-8730-cc02334e9c02
+last-transition-from: in-progress
 ---
 
 # x00720 — A routed call takes the arguments a host sends
@@ -54,7 +57,7 @@ the queue.
 
 ### S1 — Text read as the type the schema expected
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/project/tool-surface-runtime.args.spec.ts`
 - **Files**:
   - `packages/core/src/lib/project/tool-surface-runtime.helper.ts`
