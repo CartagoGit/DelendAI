@@ -2,12 +2,15 @@
 id: x00739
 title: "A claim belongs to a unit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00737]
+last-transition-id: 43373782-b7e8-4f71-8740-b22713bd38c8
+last-correlation-id: 43373782-b7e8-4f71-8740-b22713bd38c8
+last-transition-from: in-progress
 ---
 
 # x00739 — A claim belongs to a unit
@@ -66,7 +69,7 @@ repository, two server processes, one model name. It found two defects.
 
 ### S1 — Claims by unit, and verdicts that reopen are committed
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/contracts/interfaces/review-claim-holder.interface.ts`
