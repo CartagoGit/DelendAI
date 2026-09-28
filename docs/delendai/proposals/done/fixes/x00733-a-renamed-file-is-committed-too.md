@@ -2,15 +2,17 @@
 id: x00733
 title: "A renamed file is committed too"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00722]
-last-transition-id: 009e5fb8-05dc-43eb-bae5-2af5c200a86b
-last-correlation-id: 009e5fb8-05dc-43eb-bae5-2af5c200a86b
-last-transition-from: in-progress
+last-transition-id: a9f24894-bf5f-47e1-8cbf-e120764f2a00
+last-correlation-id: a9f24894-bf5f-47e1-8cbf-e120764f2a00
+last-transition-from: review
+shipped-in:
+  - "870dd8427"
 ---
 
 # x00733 — A renamed file is committed too
@@ -52,11 +54,16 @@ which `delendai review` does not print, so nothing showed it.
 
 ### S1 — Removed paths leave the index
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
 - **Files**:
   - `packages/core/src/lib/shared/commit-call-writes.ts`
   - `packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 870dd8427 (x00733 S1, merge PR #599). fix(core): a renamed file is committed too. safe-rename.ts: un archivo renombrado dentro del scope se commitea (no se borra sin commit el original). 146/146 verde entre safe-rename.spec + workspace-migration migrators (14 specs). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #599 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00733-all-g1/a-renamed-file-is-committed-too (refs/heads/delendai/wip/claude-opus-5-5/implement/x00733-all-g1/a-renamed-file-is-committed-too) (870dd8427f8f1a171ab3266232914107e0ef01ac), opened by minimax-m3
 
 ## dependency graph
 
