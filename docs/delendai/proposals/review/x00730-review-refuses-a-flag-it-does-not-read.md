@@ -2,12 +2,15 @@
 id: x00730
 title: "review refuses a flag it does not read"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P2
 related: [x00721, x00727]
+last-transition-id: 103837de-b23e-49ff-b769-47101184ebe8
+last-correlation-id: 103837de-b23e-49ff-b769-47101184ebe8
+last-transition-from: in-progress
 ---
 
 # x00730 — review refuses a flag it does not read
@@ -47,7 +50,7 @@ None.
 
 ### S1 — review declares its flags
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/lib/command-flags.service.spec.ts`
 - **Files**:
   - `packages/cli/src/contracts/constants/review-command.constant.ts`
