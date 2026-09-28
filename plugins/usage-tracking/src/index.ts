@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { toolReachedBy } from './lib/routed-tool.helper';
 import {
 	definePlugin,
 	joinRel,
@@ -391,7 +392,7 @@ export default definePlugin({
 					bootSessionId,
 				);
 				const record = buildInvocationRecord({
-					toolName,
+					toolName: toolReachedBy(toolName, result),
 					corePrefix,
 					peerPrefixes,
 					agent,
