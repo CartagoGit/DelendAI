@@ -38,7 +38,7 @@ makes those commits visible.
   `start()` and stops it in `dispose()`, and both launchers (the CLI's
   `__serve` and the repository's host server) go through it. A project
   built but never started, as in most specs, schedules nothing.
-- **It moves into core, unchanged**: `wip-engine/work-checkout-publisher.ts`,
+- **It moves into core, unchanged**: `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`,
   with the push (`work-ref-publication.ts`) and the remote resolution
   (`durability-remote.ts`) it uses. `commit-policy`'s checkpoints use the
   same functions from core, so a work ref reaches the remote one way.

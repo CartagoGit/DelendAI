@@ -48,10 +48,10 @@ other in time. The other 73 went unseen.
 
 ## architecture
 
-- `contracts/constants/review-queue-schema.constant.ts`,
-  `contracts/interfaces/review-queue.interface.ts`,
-  `services/review-queue.service.ts`, `services/review-queue-page.service.ts`,
-  `tools/review-queue.tool.ts`,
+- `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`,
+  `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`,
+  `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/services/review-queue-page.service.ts`,
+  `plugins/proposals/src/lib/tools/review-queue.tool.ts`,
   `generated/tool-outputs.ts`.
 
 ## Slices
