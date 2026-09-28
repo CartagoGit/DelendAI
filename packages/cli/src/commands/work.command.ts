@@ -46,6 +46,7 @@ import {
 } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { WORK_COMMAND } from '../contracts/constants/work-command.constant';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 import type {
 	ICliCommand,
@@ -1183,9 +1184,7 @@ const checkpointed = async (
 
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
-	summary:
-		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|swarm|doctor|claim|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
+	...WORK_COMMAND,
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const sub = args[0];
 		if (sub === 'status' || sub === undefined) return statusOf(ctx);
