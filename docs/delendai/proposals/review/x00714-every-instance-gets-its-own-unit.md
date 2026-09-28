@@ -76,7 +76,7 @@ review batch:
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
-  - `packages/cli/src/commands/work.command.spec.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 
 ## dependency graph
 

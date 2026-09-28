@@ -73,8 +73,8 @@ S3).
   is gone, and a tree with uncommitted changes keeps both the worktree
   and the work ref, saying what it found and what to do. A state that
   cannot be read is treated the same way.
-- **Files**: `packages/cli/src/lib/work-publish.service.ts`,
-  `packages/cli/src/lib/work-publish.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-publish.service.ts`,
+  `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`
 - **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts`
 
 ### S2 — A tag release reuses the tag that triggered it

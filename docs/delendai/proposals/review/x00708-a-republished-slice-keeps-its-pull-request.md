@@ -41,7 +41,7 @@ slice's own publication fell through to the size decision.
 
 ## architecture
 
-- `packages/cli/src/lib/publication-target.service.ts`
+- `packages/core/src/lib/work-units/publication-target.service.ts`
 
 ## Slices
 
@@ -52,8 +52,8 @@ slice's own publication fell through to the size decision.
 - **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/lib/publication-target.service.spec.ts`
 - **Files**:
-  - `packages/cli/src/lib/publication-target.service.ts`
-  - `packages/cli/src/lib/publication-target.service.spec.ts`
+  - `packages/core/src/lib/work-units/publication-target.service.ts`
+  - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
 
 ## dependency graph
 
