@@ -45,6 +45,7 @@ import type {
 } from '../contracts/interfaces/review-attribution.interface';
 import { UNRECORDED_IMPLEMENTER } from '../contracts/constants/review-attribution.constant';
 import { findWorkRefMention } from './work-ref-mention';
+import { deliveredByMerge, deliveringMerge } from './delivering-merge.service';
 
 export type {
 	IAttributeDeliveryInput,
@@ -73,45 +74,6 @@ const read = async (
 ): Promise<string | undefined> => {
 	const result = await run(args);
 	return result.ok ? result.output : undefined;
-};
-
-/**
- * The merge on the integration branch's first-parent line that brought
- * the commit in, or `undefined` when none did (a squash, a rebase, a
- * fast-forward).
- *
- * Containment is monotonic along that line — once a merge has the commit
- * in its history, every later one does too — so the delivering merge is
- * found by bisection rather than by asking about every merge.
- */
-const deliveringMerge = async (
-	run: IGitRunner,
-	commit: string,
-	integration: string,
-): Promise<string | undefined> => {
-	const log = await read(run, [
-		'log',
-		'--first-parent',
-		'--merges',
-		'--reverse',
-		'--format=%H',
-		`${commit}..${integration}`,
-	]);
-	const merges = (log ?? '')
-		.split('\n')
-		.map((line) => line.trim())
-		.filter((line) => line.length > 0);
-	const contains = async (sha: string): Promise<boolean> =>
-		(await run(['merge-base', '--is-ancestor', commit, sha])).ok;
-	let low = 0;
-	let high = merges.length;
-	while (low < high) {
-		const middle = Math.floor((low + high) / 2);
-		const merge = merges[middle];
-		if (merge !== undefined && (await contains(merge))) high = middle;
-		else low = middle + 1;
-	}
-	return merges[low];
 };
 
 /**
@@ -207,10 +169,36 @@ export const attributeDelivery = async (
 	const changed = new Set(
 		(paths ?? '').split('\n').map((path) => path.trim()),
 	);
-	const touchesSlice = input.declaredFiles.some((file) => changed.has(file));
-	const citesProposal = (message ?? '')
-		.toLowerCase()
-		.includes(input.proposalId.toLowerCase());
+	const cites = (text: string | undefined): boolean =>
+		(text ?? '').toLowerCase().includes(input.proposalId.toLowerCase());
+	let touchesSlice = input.declaredFiles.some((file) => changed.has(file));
+	let citesProposal = cites(message);
+	// A pull request is delivered whole: judged by what its merge brought.
+	if (!touchesSlice && !citesProposal) {
+		const merged = await deliveredByMerge(
+			run,
+			commit,
+			input.integration,
+			input.declaredFiles,
+			input.proposalId,
+		);
+		touchesSlice = merged.touchesSlice;
+		citesProposal = merged.citesProposal;
+	}
+	if (!touchesSlice && !citesProposal) {
+		const merge = await deliveringMerge(run, commit, input.integration);
+		if (merge !== undefined) {
+			const [mergedPaths, mergeMessage] = await Promise.all([
+				read(run, ['diff', '--name-only', `${merge}^1`, merge]),
+				read(run, ['show', '-s', '--format=%B', merge]),
+			]);
+			const merged = new Set(
+				(mergedPaths ?? '').split('\n').map((path) => path.trim()),
+			);
+			touchesSlice = input.declaredFiles.some((file) => merged.has(file));
+			citesProposal = cites(mergeMessage);
+		}
+	}
 	if (!touchesSlice && !citesProposal) {
 		return {
 			ok: false,

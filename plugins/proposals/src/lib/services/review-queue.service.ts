@@ -22,6 +22,7 @@ import {
 	REVIEW_UNIT_SLICE,
 } from '../contracts/constants/review-claims.constant';
 import { packOf } from './review-pack.service';
+import { summarizeQueue } from './review-queue-summary.service';
 import { proposalsInReview } from './review-backlog.service';
 import { reviewClaims, unitOfRef } from './review-claims.service';
 import { pageOfQueue } from './review-queue-page.service';
@@ -388,6 +389,7 @@ export const buildReviewQueue = async (
 		...(ownUnit === undefined
 			? {}
 			: { pack: packOf(claims, ownUnit, input.namespacePrefix) }),
+		summary: summarizeQueue(reviewed),
 		procedure: procedureFor(input.namespacePrefix),
 	};
 };
