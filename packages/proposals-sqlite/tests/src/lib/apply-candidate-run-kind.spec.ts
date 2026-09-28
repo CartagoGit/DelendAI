@@ -7,8 +7,8 @@ import { Database } from 'bun:sqlite';
 import { describe, expect, it } from 'bun:test';
 
 import {
-	MIGRATION_CHECKSUMS,
-	MIGRATION_FILES,
+	migrationChecksums,
+	migrationFiles,
 	applyMigrations,
 	readMigrationSource,
 } from '../../../src/lib/migrations';
@@ -19,7 +19,7 @@ const atVersion = (version: number): Database => {
 	db.exec(`CREATE TABLE schema_migrations (
 		version INTEGER PRIMARY KEY, name TEXT NOT NULL,
 		checksum TEXT NOT NULL, applied_at INTEGER NOT NULL);`);
-	for (const name of MIGRATION_FILES) {
+	for (const name of migrationFiles()) {
 		const at = Number.parseInt(name.slice(0, 4), 10);
 		if (at >= version) continue;
 		db.exec('PRAGMA foreign_keys = OFF;');
@@ -30,7 +30,7 @@ const atVersion = (version: number): Database => {
 		).run(
 			at,
 			name,
-			MIGRATION_CHECKSUMS[name] ?? '',
+			migrationChecksums()[name] ?? '',
 			1_700_000_000_000 + at,
 		);
 	}

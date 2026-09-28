@@ -18,7 +18,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
-	MIGRATION_CHECKSUMS,
+	migrationChecksums,
 	MigrationChecksumMismatchError,
 	parseMigrationVersion,
 } from '../../../src/lib/migrations';
@@ -86,7 +86,7 @@ const MIGRATION_0015 = '0015_work_model_identity.sql';
 
 describe('migration checksums', () => {
 	it('pins every migration: an applied one is never edited, only followed by a new one', () => {
-		expect(MIGRATION_CHECKSUMS).toEqual(PINNED);
+		expect(migrationChecksums()).toEqual(PINNED);
 	});
 });
 
