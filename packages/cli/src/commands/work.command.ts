@@ -42,6 +42,7 @@ import {
 	kindsInAgentId,
 	legacyWorkKind,
 	WORK_KINDS,
+	REVIEW_BATCH_ID,
 } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -394,6 +395,77 @@ const workRefFor = (
 			: { topic: scalarArg(args, 'topic') ?? '' }),
 	});
 
+/** Stands for "any generation" while matching a unit's refs. */
+const ANY_GENERATION = '987654321';
+
+/** The session holding the worktree `ref` is checked out in, if any. */
+const sessionHolding = (root: string, ref: string): string | undefined => {
+	const block = (git(root, ['worktree', 'list', '--porcelain']) ?? '')
+		.split('\n\n')
+		.find((each) => each.includes(`branch ${ref}`));
+	const path = block
+		?.split('\n')
+		.find((line) => line.startsWith('worktree '))
+		?.slice('worktree '.length);
+	return path === undefined ? undefined : worktreeSession(path);
+};
+
+/** The generation these arguments name; 1 when they name none. */
+const unitGeneration = (args: readonly string[]): number =>
+	Number(scalarArg(args, 'generation') ?? '1');
+
+/**
+ * The generation this session works in: the first one no other session
+ * holds. Twenty instances of one model are twenty units (x00714): the id
+ * names the model, the generation the instance, so each has its own
+ * branch, worktree and pull request. A proposal's slice is refused
+ * instead, because a second instance on it does the same work twice.
+ */
+const chooseGeneration = (
+	root: string,
+	args: readonly string[],
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	proposal: string,
+	slice: string,
+):
+	| { readonly generation: number }
+	| { readonly refusal: ICliCommandResult } => {
+	const session = sessionFor(args);
+	// Occupancy is by unit, whatever topic another instance chose.
+	const unnamed = args.filter((arg) => !arg.startsWith('--topic='));
+	for (let generation = 1; ; generation += 1) {
+		const inGeneration = [...unnamed, `--generation=${String(generation)}`];
+		const exact = workRefFor(inGeneration, policy, agent, proposal, slice);
+		const refs = new Set([
+			...unitRefsAnyName(
+				root,
+				inGeneration,
+				policy,
+				agent,
+				proposal,
+				slice,
+			),
+			...(git(root, ['rev-parse', '-q', '--verify', exact]) === undefined
+				? []
+				: [exact]),
+		]);
+		const other = [...refs].find((ref) => {
+			const holder = sessionHolding(root, ref);
+			return holder !== undefined && holder !== session;
+		});
+		if (other === undefined) return { generation };
+		if (proposal !== REVIEW_BATCH_ID) {
+			return {
+				refusal: refused(
+					`${proposal} ${slice} is being worked on by another session of \`${agent}\` (\`${other}\`): two instances on one slice would do the same work twice.`,
+					'Take other work, or pass --generation=<n> to start a deliberate second attempt at it.',
+				),
+			};
+		}
+	}
+};
+
 /**
  * The refs of one unit whatever their kind and topic, when those were not
  * asked for. A unit is its agent, proposal, slice and generation; the kind
@@ -412,13 +484,17 @@ const unitRefsAnyName = (
 	const open: Record<string, string> = {};
 	if (scalarArg(args, 'kind') === undefined) open.kind = 'zzanykindzz';
 	if (scalarArg(args, 'topic') === undefined) open.topic = 'zzanytopiczz';
+	// Instances of one model are told apart by generation (x00714): a
+	// unit not asked for by generation is found in any of them.
+	if (scalarArg(args, 'generation') === undefined)
+		open.generation = ANY_GENERATION;
 	if (Object.keys(open).length === 0) return [];
 	const rendered = resolveWorkRef(policy.branches.workRefTemplate, {
 		agent,
 		kind: open.kind ?? kindFor(args, slice),
 		proposal,
 		slice,
-		generation: Number(scalarArg(args, 'generation') ?? '1'),
+		generation: Number(scalarArg(args, 'generation') ?? ANY_GENERATION),
 		...(open.topic === undefined
 			? { topic: scalarArg(args, 'topic') ?? '' }
 			: { topic: open.topic }),
@@ -430,7 +506,8 @@ const unitRefsAnyName = (
 	if (!Number.isFinite(firstOpen)) return [];
 	const prefix = rendered.slice(0, rendered.lastIndexOf('/', firstOpen) + 1);
 	let pattern = rendered.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-	for (const s of sentinels) pattern = pattern.replace(s, '[^/]+');
+	for (const s of sentinels)
+		pattern = pattern.replace(s, s === ANY_GENERATION ? '[0-9]+' : '[^/]+');
 	const shape = new RegExp(`^${pattern}$`, 'u');
 	return (git(root, ['for-each-ref', '--format=%(refname)', prefix]) ?? '')
 		.split('\n')
@@ -455,9 +532,17 @@ const ambiguousUnit = (
 		return undefined;
 	const named = unitRefsAnyName(root, args, policy, agent, proposal, slice);
 	if (named.length < 2) return undefined;
+	const session = sessionFor(args);
+	if (
+		session !== undefined &&
+		named.filter((ref) => sessionHolding(root, ref) === session).length ===
+			1
+	) {
+		return undefined;
+	}
 	return refused(
 		`${proposal} ${slice} of \`${agent}\` has ${named.length} refs: ${named.map((n) => `\`${n}\``).join(', ')}.`,
-		'Name the one meant with --kind=<kind> and --topic=<topic>.',
+		'Name yours: pass the --session `work enter` gave you (or DELENDAI_SESSION_ID), or --generation, --kind and --topic.',
 	);
 };
 
@@ -482,8 +567,13 @@ const existingWorkRef = (
 	const ref = workRefFor(args, policy, agent, proposal, slice);
 	const exists = (name: string): boolean =>
 		git(root, ['rev-parse', '-q', '--verify', name]) !== undefined;
-	if (exists(ref)) return ref;
 	const named = unitRefsAnyName(root, args, policy, agent, proposal, slice);
+	// Another instance of the same model may hold the rendered unit: the
+	// caller's session names its own (x00714).
+	const session = sessionFor(args);
+	const own = named.filter((each) => sessionHolding(root, each) === session);
+	if (session !== undefined && own.length === 1) return own[0] ?? ref;
+	if (exists(ref)) return ref;
 	if (named.length === 1) return named[0] ?? ref;
 	if (scalarArg(args, 'kind') !== undefined) return ref;
 	const template = policy.branches.workRefTemplate;
@@ -551,9 +641,10 @@ const withBriefing = (
  * integration branch: the shared checkout never moves.
  */
 const entered = async (
-	args: readonly string[],
+	given: readonly string[],
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
+	let args = given;
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const { root, policy } = opened;
@@ -574,6 +665,18 @@ const entered = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	if (scalarArg(args, 'generation') === undefined) {
+		const chosen = chooseGeneration(
+			root,
+			args,
+			policy,
+			agent,
+			proposal,
+			slice,
+		);
+		if ('refusal' in chosen) return chosen.refusal;
+		args = [...args, `--generation=${String(chosen.generation)}`];
+	}
 	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
 	if (ambiguous !== undefined) return ambiguous;
 	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);
@@ -630,7 +733,9 @@ const entered = async (
 			session: claimed,
 		});
 	}
-	if (git(root, ['rev-parse', '-q', '--verify', ref]) === undefined) {
+	const createdRef =
+		git(root, ['rev-parse', '-q', '--verify', ref]) === undefined;
+	if (createdRef) {
 		// From the integration branch, by plumbing: no checkout moves.
 		if (git(root, ['update-ref', ref, base]) === undefined) {
 			return refused(
@@ -644,7 +749,7 @@ const entered = async (
 	// to `batch-all`, and took turns checking their branches out in it.
 	const dir =
 		scalarArg(args, 'dir') ??
-		`${scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees'}/${sanitizeRefComponent(`${agent}-${proposal}-${slice}`)}`;
+		`${scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees'}/${sanitizeRefComponent(`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`)}`;
 	// A worktree an agent places in the shared checkout's tree is a loose
 	// edit on the integration branch (`?? batch-g5/`) unless git ignores
 	// the path. The default location is delendai's own, self-ignoring.
@@ -664,6 +769,9 @@ const entered = async (
 	}
 	const added = git(root, ['worktree', 'add', dir, branch]);
 	if (added === undefined) {
+		// A branch made for a worktree that could not be added belongs to
+		// nobody: it went on to sit in the namespace looking alive.
+		if (createdRef) git(root, ['update-ref', '-d', ref]);
 		return refused(
 			`Could not add a worktree for ${branch} at ${dir}.`,
 			'Check that the path is free and that the branch is not already checked out elsewhere.',

@@ -1,4 +1,6 @@
 import { mkdir } from 'node:fs/promises';
+import { isSelfApproval } from '../shared/independent-approval';
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import { hostname as readHostname } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 
@@ -199,12 +201,17 @@ export const checkApproveIdentity = async (input: {
 	 * the `review → done` gate.
 	 */
 	readonly recordedImplementer?: string | undefined;
+	/** What makes the approver independent (x00718); `model` by default. */
+	readonly independence?: IReviewIndependence | undefined;
 	readonly deps?: IReviewIdentityDeps;
 }): Promise<IApproveIdentityCheckResult> => {
 	const submitter = await readLatestSubmitIdentity(input);
 	if (submitter === null && input.recordedImplementer !== undefined) {
-		const recorded = input.recordedImplementer.trim().toLowerCase();
-		return recorded === input.approver.agent.trim().toLowerCase()
+		return isSelfApproval(
+			input.recordedImplementer,
+			input.approver.agent,
+			input.independence,
+		)
 			? {
 					ok: false,
 					reason: 'self-approve',
@@ -235,9 +242,11 @@ export const checkApproveIdentity = async (input: {
 	// single-host orchestration hands the review to a differently-named
 	// agent (a subagent), which must count as a legitimate peer. Only a
 	// self-approval (the same agent that submitted the slice) is refused.
-	const sameAgent =
-		submitter.agent.trim().toLowerCase() ===
-		input.approver.agent.trim().toLowerCase();
+	const sameAgent = isSelfApproval(
+		submitter.agent,
+		input.approver.agent,
+		input.independence,
+	);
 	if (sameAgent) {
 		return {
 			ok: false,
