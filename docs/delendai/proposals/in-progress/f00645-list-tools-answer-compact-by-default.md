@@ -72,19 +72,39 @@ which tools cost the most context is not known.
   - "Every tool call's log entry carries the serialized size of its result." (already true: `responseBytes` in the invocation record)
   - "The usage report ranks tools by largest and by total result size."
 
-### S2 — The largest list tools answer compact by default
+### S2 — A routed call is measured under the tool it reached
+
+- **Status**: review
+- **DependsOn**: [S1]
+- **Files**:
+  - `plugins/usage-tracking/src/lib/routed-tool.helper.ts`
+  - `plugins/usage-tracking/src/lib/record.ts`
+  - `plugins/usage-tracking/tests/src/lib/routed-tool.helper.spec.ts`
+- **Gate**: `npx vitest run plugins/usage-tracking/tests/src/lib/routed-tool.helper.spec.ts`
+- acceptance:
+  - "A call through `resolve_capability` that reached a tool is recorded under that tool; a refused route stays the router's."
+
+Measured on 2026-09-29 from `invocations.jsonl`: `resolve_capability` led the
+ranking with 23 MB over 848 calls (one of 620 KB), ahead of `review_queue`'s
+11.7 MB. The router invokes the tool it resolves and returns that tool's
+whole result, and the inner call leaves no record of its own, so every
+routed result was booked to the router, and S3 would have compacted the
+wrong tools. The record now takes the `qualifiedName` the router answers
+with.
+
+### S3 — The largest list tools answer compact by default
 
 - **Status**: pending
-- **DependsOn**: [S1]
+- **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/services/review-queue-view.service.ts`
 - **Gate**: type
 - acceptance:
   - "Each of the five largest list tools by measured total returns compact entries by default, the full item for its id, and the whole page with `detail: true`."
 
-### S3 — A lint keeps new list tools compact
+### S4 — A lint keeps new list tools compact
 
 - **Status**: pending
-- **DependsOn**: [S2]
+- **DependsOn**: [S3]
 - **Files**: `tools/scripts/lint/compact-list-tools.script.ts`
 - **Gate**: type
 - acceptance:
@@ -92,7 +112,7 @@ which tools cost the most context is not known.
 
 ## dependency graph
 
-S1 → S2 → S3.
+S1 → S2 → S3 → S4.
 
 ## acceptance
 
