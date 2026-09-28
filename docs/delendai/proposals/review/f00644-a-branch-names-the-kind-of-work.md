@@ -11,6 +11,8 @@ related: [x00563, f00642, x00660, x00671]
 last-transition-id: 8218fa5c-6d15-4f4b-afd4-969cdcd6c052
 last-correlation-id: 8218fa5c-6d15-4f4b-afd4-969cdcd6c052
 last-transition-from: in-progress
+shipped-in:
+  - "c91564a24"
 ---
 
 # f00644 — A branch names the kind of work
@@ -81,15 +83,18 @@ reviews advance on one work branch and land as one pull request.
 
 ### S1 — The shape carries the kind, stated once, and every reader parses it
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.interface.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/ref-name.interface.ts`, `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/cli.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/lib/work-ref-shape.service.ts`, `packages/cli/src/contracts/interfaces/work-ref-shape.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.ts`, `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/classification.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/work-ref-topic.spec.ts`, `packages/cli/src/lib/work-ref-shape.service.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `packages/core/src/lib/development-policy/git-guard-shape.ts`, `packages/core/src/lib/development-policy/git-guard-namespaces.ts`
 - **Gate**: type
 - acceptance:
   - "`WORK_REF_SHAPE` contains `${kind}`, and the vocabulary is one exported constant next to it."
   - "The template's parser reads a ref of the new shape and a ref of the old one (kind `implement`, or `review` for the old `review`/`close` slices)."
   - "No reader of work or publication refs spells the shape in its own regex."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé c91564a24 (f00644 S1, merge 792db797f = PR #504). profiles.constant.ts tiene WORK_REF_SHAPE con placeholder ${kind} y la constant KIND_VOCABULARY (implement/review/create/revise/audit/retire/repair/reconcile) al lado. work-ref-identity + ref-name.ts cambian al parser del template; los readers que aún usaban su propio regex (ref-lifecycle-guard, commit-branch-discipline, git-guard) se migraron en 77694e37a (follow-up S1/S2). Bun run typecheck exit 0 (gate type). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+
 ### S2 — Writers name the kind
 
 - **Status**: review
