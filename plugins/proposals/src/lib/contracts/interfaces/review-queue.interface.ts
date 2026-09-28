@@ -102,7 +102,6 @@ export interface IReviewQueue {
 export interface IBuildReviewQueueInput {
 	readonly namespacePrefix: string;
 	readonly proposalsDirAbs: string;
-	readonly indexPathAbs: string;
 	readonly run: IGitRunner;
 	readonly integration: string;
 	readonly refShape?: IWorkRefShape | undefined;
@@ -117,4 +116,13 @@ export interface IBuildReviewQueueInput {
 	 * ask at the same moment, before any has claimed, start apart.
 	 */
 	readonly spread?: number | undefined;
+}
+
+/** A proposal in review, as its file names it. */
+export interface IReviewBacklogEntry {
+	readonly id: string;
+	/** Relative to the proposals directory: `review/<name>.md`. */
+	readonly file: string;
+	readonly status?: string;
+	readonly date?: string;
 }

@@ -21,6 +21,7 @@ import {
 	REVIEW_CLAIM_TRAILER,
 	REVIEW_UNIT_SLICE,
 } from '../contracts/constants/review-claims.constant';
+import { proposalsInReview } from './review-backlog.service';
 import { reviewClaims } from './review-claims.service';
 import { pageOfQueue } from './review-queue-page.service';
 import { basename, dirname, join } from 'node:path';
@@ -28,6 +29,7 @@ import { basename, dirname, join } from 'node:path';
 import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import type {
+	IReviewBacklogEntry,
 	IBuildReviewQueueInput,
 	IDeliveryCandidate,
 	IReviewQueue,
@@ -67,28 +69,6 @@ const readText = async (path: string): Promise<string | undefined> =>
 		.readText(basename(path))
 		.then((value) => value.content)
 		.catch(() => undefined);
-
-interface IIndexEntry {
-	readonly id: string;
-	readonly file: string;
-	readonly status?: string;
-	readonly date?: string;
-}
-
-const proposalsInReview = async (
-	indexPathAbs: string,
-): Promise<readonly IIndexEntry[]> => {
-	const raw = await readText(indexPathAbs);
-	if (raw === undefined) return [];
-	const parsed = JSON.parse(raw) as { proposals?: IIndexEntry[] };
-	return (parsed.proposals ?? [])
-		.filter((entry) => entry.status === 'review')
-		.sort(
-			(left, right) =>
-				(left.date ?? '').localeCompare(right.date ?? '') ||
-				left.id.localeCompare(right.id),
-		);
-};
 
 const dedupe = (
 	candidates: readonly IDeliveryCandidate[],
@@ -265,7 +245,7 @@ const attributed = (
 
 const reviewProposal = async (
 	input: IBuildReviewQueueInput,
-	entry: IIndexEntry,
+	entry: IReviewBacklogEntry,
 	deliveries: ReadonlyMap<string, readonly IDeliveryCandidate[]>,
 	history: readonly IIntegrationRecord[],
 ): Promise<IReviewQueueProposal | undefined> => {
@@ -333,7 +313,7 @@ const reviewProposal = async (
 export const buildReviewQueue = async (
 	input: IBuildReviewQueueInput,
 ): Promise<IReviewQueue> => {
-	const entries = (await proposalsInReview(input.indexPathAbs)).filter(
+	const entries = (await proposalsInReview(input.proposalsDirAbs)).filter(
 		(entry) =>
 			input.proposalId === undefined ||
 			entry.id.toLowerCase() === input.proposalId.toLowerCase(),
