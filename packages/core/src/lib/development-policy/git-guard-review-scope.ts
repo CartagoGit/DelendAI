@@ -20,6 +20,7 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 import type { IGitGuardVerdict } from '../contracts/interfaces/git-guard.interface';
 import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { shortName } from './git-guard-namespaces';
+import { DOCUMENT_ONLY_KINDS } from './profiles.constant';
 
 /** What a review unit may change: the project's documents, and generated files. */
 export const inReviewScope = (path: string, docsDir: string): boolean => {
@@ -30,7 +31,7 @@ export const inReviewScope = (path: string, docsDir: string): boolean => {
 	);
 };
 
-/** True when `branch` is a work ref whose kind is `review`. */
+/** True when `branch` is a work ref whose kind records verdicts only. */
 export const isReviewUnitBranch = (
 	policy: IResolvedDevelopmentPolicy,
 	branch: string,
@@ -41,7 +42,10 @@ export const isReviewUnitBranch = (
 		policy.branches.workRefTemplate,
 		policy.branches.workRefPrefix,
 	)?.parse(`refs/heads/${branch}`);
-	return identity?.kind === 'review';
+	return (
+		identity !== undefined &&
+		(DOCUMENT_ONLY_KINDS as readonly string[]).includes(identity.kind)
+	);
 };
 
 /** The paths of `paths` a review unit may not change. */
@@ -71,7 +75,7 @@ export const refuseReviewOutsideScope = (
 	if (outside.length === 0) return undefined;
 	return {
 		refused: true,
-		reason: `\`${operation.branch}\` is a review unit, and a review records verdicts; it does not change ${outside.map((path) => `\`${path}\``).join(', ')}.`,
+		reason: `\`${operation.branch}\` is a unit that records verdicts, and it does not change ${outside.map((path) => `\`${path}\``).join(', ')}.`,
 		remedy: `Unstage them (\`git restore --staged ${outside.join(' ')}\`). A change the product needs is a proposal of its own, implemented in an \`implement\` unit.`,
 	};
 };

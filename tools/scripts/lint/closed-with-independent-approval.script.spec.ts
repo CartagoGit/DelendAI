@@ -8,6 +8,9 @@ import {
 	approvalsAdded,
 	kindOfRef,
 	approvalsNotBy,
+	labelsInEvent,
+	OWNER_RECONCILE_LABEL,
+	ownerAuthorizedReconcile,
 	unapprovedSlices,
 } from './closed-with-independent-approval.script';
 
@@ -124,5 +127,39 @@ describe('an approval enters through a review unit (x00729)', () => {
 			'+- review-log: requested_changes by qwen — no test',
 		].join('\n');
 		expect(approvalsAdded(diff)).toEqual(['glm-5']);
+	});
+});
+
+describe('the owner authorizes a reconciliation (x00743)', () => {
+	it('reads the labels and the number of the pull request an event is for', () => {
+		expect(
+			labelsInEvent(
+				JSON.stringify({
+					pull_request: {
+						number: 611,
+						labels: [
+							{ name: 'ci' },
+							{ name: OWNER_RECONCILE_LABEL },
+						],
+					},
+				}),
+			),
+		).toEqual({ labels: ['ci', OWNER_RECONCILE_LABEL], number: 611 });
+	});
+
+	it('authorizes nothing without the label, outside CI, or from a broken payload', () => {
+		expect(ownerAuthorizedReconcile([OWNER_RECONCILE_LABEL])).toBe(true);
+		expect(ownerAuthorizedReconcile(['reconcile', 'owner'])).toBe(false);
+		expect(labelsInEvent(undefined)).toEqual({ labels: [] });
+		expect(labelsInEvent('{not json')).toEqual({ labels: [] });
+	});
+
+	it('reads the kind of a reconciliation from its ref', () => {
+		expect(
+			kindOfRef(
+				'delendai/pr/claude-opus-5-5/reconcile/batch-all-g1/swarm',
+				['refs/heads/delendai/pr/'],
+			),
+		).toBe('reconcile');
 	});
 });

@@ -104,7 +104,7 @@ export const published = async (
 		);
 		if (outside.length > 0) {
 			return refused(
-				`\`${workRef}\` is a review unit, and it changes ${outside.join(', ')}: a review records verdicts, it does not change the product.`,
+				`\`${workRef}\` is a unit that records verdicts, and it changes ${outside.join(', ')}: verdicts do not change the product.`,
 				'Take those changes out of the unit (revert the commits that made them). A change the product needs is a proposal of its own, implemented in an `implement` unit.',
 			);
 		}

@@ -342,6 +342,11 @@ jobs:
                   fetch-depth: '0'
 
             - name: Run governance and proposal lints
+              # The job's own read token: `closed-with-independent-approval`
+              # reads the pull request's labels as they are now, so the
+              # owner's reconcile label counts on a re-run (x00743).
+              env:
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   set -euo pipefail
                   bun run lint:proposals

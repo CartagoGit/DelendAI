@@ -69,7 +69,19 @@ export const WORK_KINDS = [
 	'audit',
 	'retire',
 	'repair',
+	// Carries other reviewers' verdicts after something went wrong; its
+	// pull request closes proposals only with the owner's label (x00743).
+	'reconcile',
 ] as const;
+
+/**
+ * The kinds whose units record verdicts and change nothing but documents
+ * and generated files (x00741).
+ */
+export const DOCUMENT_ONLY_KINDS: readonly (typeof WORK_KINDS)[number][] = [
+	'review',
+	'reconcile',
+];
 
 /**
  * The proposal segment of a review batch: one branch reviewing many

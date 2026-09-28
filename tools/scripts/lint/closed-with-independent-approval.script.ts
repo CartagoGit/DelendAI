@@ -136,10 +136,96 @@ export const kindOfRef = (
 	return undefined;
 };
 
+/**
+ * The label the owner puts on a pull request to say "reconcile this"
+ * (x00743). A `reconcile` unit carries verdicts other reviewers recorded
+ * after something went wrong, so its approvals are not its own; only the
+ * owner decides that they may enter together. Agents never apply it.
+ */
+export const OWNER_RECONCILE_LABEL = 'delendai:owner-reconcile';
+
+/** Whether the owner's label is among a pull request's labels. */
+export const ownerAuthorizedReconcile = (labels: readonly string[]): boolean =>
+	labels.includes(OWNER_RECONCILE_LABEL);
+
+/** The labels in a pull request event payload, and the request's number. */
+export const labelsInEvent = (
+	eventJson: string | undefined,
+): { readonly labels: readonly string[]; readonly number?: number } => {
+	if (eventJson === undefined) return { labels: [] };
+	try {
+		const event = JSON.parse(eventJson) as {
+			readonly pull_request?: {
+				readonly number?: unknown;
+				readonly labels?: readonly { readonly name?: unknown }[];
+			};
+		};
+		const pr = event.pull_request;
+		return {
+			labels: (pr?.labels ?? []).flatMap((label) =>
+				typeof label.name === 'string' ? [label.name] : [],
+			),
+			...(typeof pr?.number === 'number' ? { number: pr.number } : {}),
+		};
+	} catch {
+		return { labels: [] };
+	}
+};
+
+/**
+ * The pull request's labels as they are NOW. The event payload is frozen
+ * at the push that started the run, and re-running a job replays it: the
+ * owner labels, re-runs the failed job, and this reads the label live.
+ * Outside CI there is no pull request, and nothing is authorized.
+ */
+const pullRequestLabels = async (): Promise<readonly string[]> => {
+	const path = process.env.GITHUB_EVENT_PATH;
+	let eventJson: string | undefined;
+	try {
+		eventJson =
+			path === undefined || path.length === 0
+				? undefined
+				: readFileSync(path, 'utf8');
+	} catch {
+		eventJson = undefined;
+	}
+	const fromEvent = labelsInEvent(eventJson);
+	const repository = process.env.GITHUB_REPOSITORY;
+	const token = process.env.GH_TOKEN;
+	if (
+		fromEvent.number === undefined ||
+		repository === undefined ||
+		token === undefined
+	) {
+		return fromEvent.labels;
+	}
+	try {
+		const response = await fetch(
+			`https://api.github.com/repos/${repository}/issues/${String(fromEvent.number)}/labels`,
+			{
+				headers: {
+					authorization: `Bearer ${token}`,
+					accept: 'application/vnd.github+json',
+				},
+			},
+		);
+		if (!response.ok) return fromEvent.labels;
+		const live = (await response.json()) as readonly { name?: unknown }[];
+		return [
+			...fromEvent.labels,
+			...live.flatMap((label) =>
+				typeof label.name === 'string' ? [label.name] : [],
+			),
+		];
+	} catch {
+		return fromEvent.labels;
+	}
+};
+
 const git = (root: string, args: readonly string[]): string =>
 	execFileSync('git', [...args], { cwd: root, encoding: 'utf8' }).trim();
 
-const main = (): number => {
+const main = async (): Promise<number> => {
 	const root = repoRoot();
 	const baseArg = process.argv
 		.find((arg) => arg.startsWith('--base='))
@@ -204,13 +290,29 @@ const main = (): number => {
 		branches.workRefPrefix,
 	]);
 	const approvals = approvalsAdded(addedHere);
-	if (kind !== undefined && kind !== 'review' && approvals.length > 0) {
+	// A reconciliation carries other reviewers' approvals, and only the
+	// owner's label lets them in; every closed proposal still needs one.
+	const authorized =
+		kind === 'reconcile' &&
+		ownerAuthorizedReconcile(await pullRequestLabels());
+	if (kind === 'reconcile' && !authorized && approvals.length > 0) {
+		console.error(
+			`✖ closed-with-independent-approval: ${head} is a reconciliation, and adds approvals by ${[...new Set(approvals)].join(', ')}. It closes proposals only once the owner labels its pull request \`${OWNER_RECONCILE_LABEL}\`.`,
+		);
+		return 1;
+	}
+	if (
+		kind !== undefined &&
+		kind !== 'review' &&
+		!authorized &&
+		approvals.length > 0
+	) {
 		console.error(
 			`✖ closed-with-independent-approval: ${head} is ${kind} work, and adds approvals by ${[...new Set(approvals)].join(', ')}. An approval enters through a review unit: \`delendai review next\`.`,
 		);
 		return 1;
 	}
-	if (foreign.length > 0) {
+	if (foreign.length > 0 && !authorized) {
 		console.error(
 			`✖ closed-with-independent-approval: ${head} is ${author ?? ''}'s, and adds approvals by ${[...new Set(foreign)].join(', ')}. An approval enters through the pull request of its reviewer's own unit.`,
 		);
@@ -234,4 +336,4 @@ const main = (): number => {
 	return 1;
 };
 
-if (import.meta.main) process.exit(main());
+if (import.meta.main) process.exit(await main());
