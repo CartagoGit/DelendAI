@@ -2,15 +2,17 @@
 id: x00709
 title: "A server behind its checkout stops pushing"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00701, x00691, x00697]
-last-transition-id: 107136f8-0dc1-4237-a833-3bc8744cdd94
-last-correlation-id: 107136f8-0dc1-4237-a833-3bc8744cdd94
-last-transition-from: in-progress
+last-transition-id: 3c48be69-bc48-4033-bf91-f4c7f6c4a04a
+last-correlation-id: 3c48be69-bc48-4033-bf91-f4c7f6c4a04a
+last-transition-from: review
+shipped-in:
+  - "c10c116b5"
 ---
 
 # x00709 — A server behind its checkout stops pushing
@@ -61,7 +63,7 @@ safe answer is that it mutates nothing shared until restarted.
 
 ### S1 — The publisher stands down on older code
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/stale-runtime-advisory.spec.ts plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/stale-runtime-advisory.ts`
@@ -73,6 +75,11 @@ safe answer is that it mutates nothing shared until restarted.
   - `plugins/commit-policy/src/lib/contracts/interfaces/work-checkout-publisher.interface.ts`
   - `plugins/commit-policy/src/lib/services/work-checkout-publisher.service.ts`
   - `plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé c10c116b5 (x00709 S1, merge PR #566). fix(commit-policy): a server behind its checkout stops pushing. Si el server está detrás de un checkout distinto al integration node, el commit-policy deja de empujar y reporta por qué. 654/654 verde en plugins/commit-policy (72 specs, 1 skipped). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #566 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00709-all-g1/a-server-behind-its-checkout-stops-pushing (refs/heads/delendai/wip/claude-opus-5-5/implement/x00709-all-g1/a-server-behind-its-checkout-stops-pushing) (c10c116b598873733358cb8f92ccf3e98f66f2dd), opened by minimax-m3
 
 ## dependency graph
 
