@@ -89,9 +89,11 @@ describe('installing into a plain repository', () => {
 			'created',
 			'created',
 			'created',
+			'created',
 		]);
 		for (const hook of [
 			'pre-commit',
+			'commit-msg',
 			'reference-transaction',
 			'pre-push',
 			'post-checkout',
@@ -107,12 +109,14 @@ describe('installing into a plain repository', () => {
 			'unchanged',
 			'unchanged',
 			'unchanged',
+			'unchanged',
 		]);
 		expect(
 			inspectGuardHooks(root).hooks.every((h) => h.state === 'installed'),
 		).toBe(true);
 
 		expect(uninstallGuardHooks(root).hooks.map((h) => h.state)).toEqual([
+			'removed',
 			'removed',
 			'removed',
 			'removed',
@@ -146,6 +150,7 @@ describe('installing beside existing hooks under core.hooksPath', () => {
 		expect(report.dir).toBe(husky);
 		expect(report.hooks.map((h) => [h.hook, h.state])).toEqual([
 			['pre-commit', 'created'],
+			['commit-msg', 'created'],
 			['reference-transaction', 'updated'],
 			['pre-push', 'updated'],
 			['post-checkout', 'created'],
@@ -252,6 +257,7 @@ describe('what the guard does not write into', () => {
 		writeFileSync(join(dir, 'pre-push'), nodeHook);
 		const report = installGuardHooks(root, invocation);
 		expect(report.hooks.map((h) => h.state)).toEqual([
+			'created',
 			'created',
 			'created',
 			'unsupported',
