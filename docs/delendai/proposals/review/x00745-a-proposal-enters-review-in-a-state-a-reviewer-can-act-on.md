@@ -2,12 +2,15 @@
 id: x00745
 title: "A proposal enters review in a state a reviewer can act on"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00643, x00696, x00744]
+last-transition-id: 7638b818-99e4-4d1d-8a61-4b45121ce1b8
+last-correlation-id: 7638b818-99e4-4d1d-8a61-4b45121ce1b8
+last-transition-from: in-progress
 ---
 
 # x00745 — A proposal enters review in a state a reviewer can act on
@@ -72,7 +75,7 @@ were still stuck:
 
 ### S1 — The hand-off records the delivery; a role does not sign
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-entry.service.ts`
