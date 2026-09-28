@@ -1370,6 +1370,13 @@ export interface DelendaiUsageTrackingUsageReportOutput {
 	[key: string]: unknown;
 }
 
+export interface DelendaiWorkOutput {
+	ok: boolean;
+	code: number;
+	data?: unknown;
+	error?: string;
+}
+
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface IDelendaiToolOutputs {
 	"delendai_adopt_project": DelendaiAdoptProjectOutput;
@@ -1451,4 +1458,5 @@ export interface IDelendaiToolOutputs {
 	"delendai_usage-tracking_session_hygiene": DelendaiUsageTrackingSessionHygieneOutput;
 	"delendai_usage-tracking_usage_clear": DelendaiUsageTrackingUsageClearOutput;
 	"delendai_usage-tracking_usage_report": DelendaiUsageTrackingUsageReportOutput;
+	"delendai_work": DelendaiWorkOutput;
 }

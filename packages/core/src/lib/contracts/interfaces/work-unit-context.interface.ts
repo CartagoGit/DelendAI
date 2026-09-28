@@ -33,3 +33,11 @@ export interface IWorkContext {
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly engine: IWipEngine;
 }
+
+/** How the MCP `work` tool is built. */
+export interface IWorkUnitToolOptions {
+	readonly namespacePrefix: string;
+	readonly workspaceRoot: string;
+	/** This server's session; one is made when none is given. */
+	readonly session?: string;
+}
