@@ -15,6 +15,7 @@ last-correlation-id: a098a172-a1fe-457b-8e4f-a4a147df2c9f
 last-transition-from: in-progress
 shipped-in:
   - "07f355f702af5fe98856f7a97851d609223c283b"
+  - "6ec4b8fff3beafd128ce9432d1dade5d0e74327c"
 ---
 
 # x00643 — A proposal in review can be reviewed by someone who did not write it
@@ -85,7 +86,7 @@ here has the same author.
 - review-log: approved by glm-5.3-max — Revisé la entrega real 07f355f70. review-attribution (335 líneas) + review-handoff: un reviewer puede aprobar/rechazar cualquier slice de una propuesta en review/ con proposal_review ALONE — incluidos slices entregados antes de que existieran rondas — y el implementador contra el que se comprueba la independencia sale de GIT (no de un registro). La última aprobación deja la propuesta en done/ por la transición normal, o reporta exactamente por qué no pudo (p. ej. validate rojo). Una propuesta entregada a review por el tool llega con sus rondas abiertas. Acceptance cubierta — review-attribution.spec 30/30 verificado junto a review.tool y review-identity en el lote del pack. Este flujo es el que esta misma sesión ejercitó de extremo a extremo. Sin cambios fuera de alcance.
 ### S2 — The approval that ends a proposal closes it
 
-- **Status**: review — shipped in #451 (merge 07f355f70)
+- **Status**: done
 - **Gate**: e2e
 - **Files**: `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-verdict-lifecycle.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/auto-transition.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - acceptance:
@@ -93,8 +94,11 @@ here has the same author.
   - "When every slice of a proposal in review is approved, the approval runs the normal proposal_transition to done: frontmatter, folder and index agree afterwards, with no force and no repair entry."
   - "When that transition is refused (an open dependent, a completeness gate), the approval still stands and the response carries the refusal as proposalCloseBlocker."
   - "Approving one slice does not close a proposal whose other slices carry no approval."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 6ec4b8fff (entrega combinada S1-S3 de x00643, merge 07f355f70 = PR #451). S2 añade review-verdict-lifecycle.ts (recordApproval, closure orchestration) que encola el proposal_transition al aprobar la última slice; el refusal sale como proposalCloseBlocker sin perder la aprobación; approve NO cierra prematuramente. 119/119 verde en los 3 specs focalizados (auto-transition + proposal-review-attribution + proposal-transition.tool); los tests 'moves a review proposal to done when the last slice is approved' (a00074 S3) + 'does not auto-transition before the last slice is done' cubren los 2 acceptance items principales. claude-opus-5-5 != minimax-m3, así que el veredicto es independiente. Sin cambios fuera de alcance.
+
 ### S3 — Handing a proposal to review opens its rounds
 
 - **Status**: review — shipped in #451 (merge 07f355f70)
