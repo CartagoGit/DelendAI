@@ -67,6 +67,50 @@ const reviewPolicyOf = (
 	};
 };
 
+/**
+ * The agent a ref belongs to: the segment right after the work-ref or
+ * publication prefix (`delendai/pr/<agent>/…`), or `undefined` for a ref
+ * outside the agents' namespace, a person's own branch.
+ */
+export const agentOfRef = (
+	ref: string,
+	prefixes: readonly string[],
+): string | undefined => {
+	const name = ref.replace(/^(refs\/)?(heads\/)?/u, '');
+	for (const prefix of prefixes) {
+		const bare = prefix.replace(/^(refs\/)?(heads\/)?/u, '');
+		if (bare.length > 0 && name.startsWith(bare)) {
+			const agent = name.slice(bare.length).split('/')[0];
+			return agent !== undefined && agent.length > 0 ? agent : undefined;
+		}
+	}
+	return undefined;
+};
+
+/**
+ * The approvals a diff adds that are not its author's (x00715).
+ *
+ * `reviewer ≠ implementer` compares names an agent declares. An approval
+ * that enters the integration branch through the pull request of its
+ * reviewer's own unit ties the declared name to the unit that did the
+ * review: approving as someone else then means entering, publishing and
+ * approving under that name, and any mismatch between the three is caught
+ * here, on every host.
+ */
+export const approvalsNotBy = (
+	unifiedDiff: string,
+	author: string,
+): readonly string[] =>
+	unifiedDiff.split('\n').flatMap((line) => {
+		const approver = line.match(
+			/^\+[-*]\s*review-log:\s*approved by\s+(\S+)/iu,
+		)?.[1];
+		return approver !== undefined &&
+			approver.toLowerCase() !== author.toLowerCase()
+			? [approver]
+			: [];
+	});
+
 const git = (root: string, args: readonly string[]): string =>
 	execFileSync('git', [...args], { cwd: root, encoding: 'utf8' }).trim();
 
@@ -107,6 +151,35 @@ const main = (): number => {
 		);
 		return missing.length === 0 ? [] : [{ path, missing }];
 	});
+	const head =
+		process.env.GITHUB_HEAD_REF ??
+		git(root, ['rev-parse', '--abbrev-ref', 'HEAD']);
+	const branches = declaredBranches(root);
+	const author = agentOfRef(head, [
+		branches.publicationRefPrefix,
+		branches.workRefPrefix,
+	]);
+	const foreign =
+		author === undefined
+			? []
+			: approvalsNotBy(
+					git(root, [
+						'diff',
+						'-U0',
+						'-M',
+						base,
+						'HEAD',
+						'--',
+						'docs/delendai/proposals/',
+					]),
+					author,
+				);
+	if (foreign.length > 0) {
+		console.error(
+			`✖ closed-with-independent-approval: ${head} is ${author ?? ''}'s, and adds approvals by ${[...new Set(foreign)].join(', ')}. An approval enters through the pull request of its reviewer's own unit.`,
+		);
+		return 1;
+	}
 	if (findings.length === 0) {
 		console.log(
 			`✓ closed-with-independent-approval: ${String(entered.length)} proposal(s) closed here, each with an independent approval.`,
