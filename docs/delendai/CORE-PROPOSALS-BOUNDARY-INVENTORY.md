@@ -5,7 +5,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 113
+- Findings: 112
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 24
@@ -13,7 +13,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 - import: 1
 - path: 5
 - plugin-name: 11
-- type: 68
+- type: 67
 - message: 19
 - index-access: 9
 
@@ -34,7 +34,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/bootstrap/pattern-catalog.ts | coordinate parallel work with the proposals plugin | message | composition | 1 | La descripcion del patron sigue anclada al plugin proposals. |
 | packages/core/src/lib/bootstrap/pattern-catalog.ts | recommendedPlugins ['proposals', 'rules'] | plugin-name | composition | 2 | El catalogo de patrones sigue recomendando proposals desde el core. |
 | packages/core/src/lib/bootstrap/prompt-artifact-rules.ts | plugins.includes('proposals') prompt rule | plugin-name | composition | 1 | La inclusion de artefactos de prompt depende del nombre del plugin. |
-| packages/core/src/lib/catalog/agent-discovery-catalog.ts | ): IProposalSummary => ({ | type | contract | 1 | La salida del clonador sigue fijada al DTO de proposal. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | ACTIONABLE_PROPOSAL_STATUSES | type | contract | 1 | La politica de accionabilidad del workflow entra en el catalogo desde core. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | ACTIONABLE_PROPOSAL_STATUSES.includes | type | contract | 1 | La logica de visibilidad sigue dependiendo de actionable proposals. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | const proposals = visibleProposals.map | type | contract | 1 | La materializacion del snapshot sigue nombrando proposals como entidad primaria del catalogo. |
@@ -42,7 +41,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | IProposalSummary import | type | contract | 1 | El constructor del catalogo recibe el resumen concreto de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | PROPOSAL_STATUS_VALUES | type | contract | 1 | El catalogo importa la lista nominal de estados de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | PROPOSAL_STATUS_VALUES.map | type | contract | 1 | El recuento de estados itera sobre la constante nominal de proposals. |
-| packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposal: IProposalSummary | type | contract | 1 | La clonacion del catalogo recibe el tipo nominal IProposalSummary. |
+| packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposal: IProposalSummary | type | contract | 1 | La clonacion del catalogo recibe y devuelve el tipo nominal IProposalSummary (una sola linea desde x00738). |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposals result | type | intentional-compat | 1 | La propiedad proposals del snapshot se mantiene por compatibilidad del catalogo. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposalStatusCounts | type | contract | 1 | Los contadores siguen codificados como proposalStatusCounts. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposalStatusCounts result | type | contract | 1 | El snapshot devuelve proposalStatusCounts como parte del contrato publico. |
