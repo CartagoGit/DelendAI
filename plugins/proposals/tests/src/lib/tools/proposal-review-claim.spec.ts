@@ -131,6 +131,25 @@ describe('a verdict in a review unit', () => {
 	});
 });
 
+describe('who signs a verdict', () => {
+	it('refuses a role in place of a reviewer, however it is spelled (x00745)', async () => {
+		repo.proposalInReview(SLICE_S1('review'));
+		for (const agent of [
+			'delivery_verifier',
+			'delivery-verifier',
+			'delendai-delivery-verifier',
+		]) {
+			const refused = await repo.review({
+				action: 'approve',
+				agent,
+				evidence: EVIDENCE,
+			});
+			expect(refused.isError).toBe(true);
+			expect(refused.text).toContain('is a role, not a reviewer');
+		}
+	});
+});
+
 describe('the review lines a verdict writes', () => {
 	it('leave the next heading its blank line', async () => {
 		const path = repo.proposalInReview(
