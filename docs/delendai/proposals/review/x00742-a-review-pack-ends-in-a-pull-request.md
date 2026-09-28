@@ -2,12 +2,15 @@
 id: x00742
 title: "A review pack ends in a pull request"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P0
 related: [x00739, x00740, x00741]
+last-transition-id: fab40d83-1599-4c85-9344-d3c8c824bc94
+last-correlation-id: fab40d83-1599-4c85-9344-d3c8c824bc94
+last-transition-from: in-progress
 ---
 
 # x00742 — A review pack ends in a pull request
@@ -86,7 +89,7 @@ integration branch.
 
 ### S1 — Packs, resumed units, live branches, an honest doctor
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts packages/core/tests/src/lib/work-units packages/core/tests/src/lib/development-policy packages/cli/src/commands/guard.command.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`
