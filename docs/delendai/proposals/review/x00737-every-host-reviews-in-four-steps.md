@@ -2,12 +2,15 @@
 id: x00737
 title: "Every host reviews in four steps"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P0
 related: [x00727, x00736]
+last-transition-id: 42e42ad7-c7bf-4d86-a261-ed23eb50df75
+last-correlation-id: 42e42ad7-c7bf-4d86-a261-ed23eb50df75
+last-transition-from: in-progress
 ---
 
 # x00737 — Every host reviews in four steps
@@ -56,7 +59,7 @@ could read the same proposal, and the owner could not see who was on what.
 
 ### S1 — review_claim, and one way to claim
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts packages/cli/src/commands/review.command.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/tools/review-claim.tool.ts`

@@ -1748,14 +1748,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00737",
-				"title": "x00737",
-				"track": "hosts",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
 			}
 		]
 	}
