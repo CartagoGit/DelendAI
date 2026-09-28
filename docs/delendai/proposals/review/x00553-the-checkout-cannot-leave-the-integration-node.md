@@ -146,11 +146,16 @@ adopter project, whatever the integration branch is called.
 
 ### S4 — The branch model is documented where the branch model is
 
-- **Status**: done — the invariant is no longer a sub-bullet of the
+- **Status**: done
   file-claims rule, states the two commands that implement it, and reads
   the integration branch from the policy instead of naming `develop`.
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: `bun run lint:prompt-size`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0ccb5461d (x00553 S4). docs/delendai/AGENT-BOOTSTRAP.md incluye la sección sobre el invariante 'no work ref from shared checkout', nombrando los dos comandos que lo implementan (work enter/work checkpoint) y leyendo la rama de integración desde la policy en vez de hardcodear 'develop'. bun run lint:prompt-size exit 0 (AGENT-BOOTSTRAP.md 31957B/32000B). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 0ccb5461d8620da32d4982d3b8652805f73ac1df: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S5 — Publishing ends the work ref
 
