@@ -128,25 +128,26 @@ other ref contained. They were first made visible as
 `7033e2905` — per file, whether its patch was already present, portable,
 or conflicting — and its content read against the model this proposal
 ships. Four are discarded, one continues. SHAs are recorded so the
-content stays identifiable after the refs are deleted.
+content stays identifiable after the refs are deleted; they were never
+integrated, so they are written as plain text, not as commit citations.
 
-- `x00545-META-g1` (`80e311ba213345e620be9649365a6421de994172`, 1 file,
+- `x00545-META-g1` (SHA 80e311ba213345e620be9649365a6421de994172, not in history, 1 file,
   +154) — Codex's proposal "shared-checkout-pr must never move HEAD or
   teach agents to branch". **Discarded:** it designs work around hidden
   `refs/wip/*` outside `refs/heads`, which this proposal replaces with
   visible work branches. Dropping it also removes the id collision with
   the `x00545` already on develop.
-- `x00545-S1-g1` (`9421185e4429e7837264b014ad9678cce08f57fc`, 5 files,
+- `x00545-S1-g1` (SHA 9421185e4429e7837264b014ad9678cce08f57fc, not in history, 5 files,
   +503/-75) — proposal publication without mutating the checkout.
   **Discarded:** develop's `publish-proposal` already never touches
   `symbolic-ref`, and the branch adds a new hidden carrier ref
   (`refs/wip/proposal-publication/<id>`).
-- `x00545-S2-g1` (`d4f482ccf841e0eb9b00003c6e8146f970d576c1`, 3 files,
+- `x00545-S2-g1` (SHA d4f482ccf841e0eb9b00003c6e8146f970d576c1, not in history, 3 files,
   +96/-152) — shared-checkout docs. **Discarded:** develop's docs no
   longer teach the hidden model, and this branch would reintroduce it
   ("dirty files visible in the shared checkout are edits", checkpoints on
   `refs/wip/*`).
-- `x00545-S3-g1` (`d02f770ab5dc1b71703d85a18480b6bba438631a`, 6 files,
+- `x00545-S3-g1` (SHA d02f770ab5dc1b71703d85a18480b6bba438631a, not in history, 6 files,
   +290/-128) — integration-branch guardrails. **Discarded after porting
   and measuring:** its specs pass, but its new `regressive-policy-wording`
   rule would flag documentation of visible work branches as regressive,
