@@ -2,15 +2,17 @@
 id: x00744
 title: "A delivery is what its pull request merged"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00646, x00742]
-last-transition-id: d38b2c71-c462-4db3-a25a-f3fe0c3ba767
-last-correlation-id: d38b2c71-c462-4db3-a25a-f3fe0c3ba767
-last-transition-from: in-progress
+last-transition-id: 2dea63ff-5ee2-4e11-9008-ebc5c3bfbc7a
+last-correlation-id: 2dea63ff-5ee2-4e11-9008-ebc5c3bfbc7a
+last-transition-from: review
+shipped-in:
+  - "e65477be4"
 ---
 
 # x00744 — A delivery is what its pull request merged
@@ -66,7 +68,7 @@ to close". The owner could not reconcile those figures.
 
 ### S1 — The merge is the delivery; the backlog says its units
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts plugins/proposals/tests/src/lib/services/review-queue-summary.service.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-attribution.ts`
@@ -78,6 +80,11 @@ to close". The owner could not reconcile those figures.
   - `plugins/proposals/src/generated/tool-outputs.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
   - `plugins/proposals/tests/src/lib/services/review-queue-summary.service.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé e65477be4 (x00744 S1, merge PR #617). fix(review): a delivery is what its pull request merged. review-attribution ahora trata 'el commit X se mergeó en develop vía PR Y' como la entrega definitiva (no commits de feature branch no mergeados). 5/5 verde en review-claim.tool.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #617 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00744-S1-g1/a-delivery-is-what-its-pull-request-merged (refs/heads/delendai/wip/claude-opus-5-5/implement/x00744-S1-g1/a-delivery-is-what-its-pull-request-merged) (e65477be4a4cf92318b1a619c7b7d07b2040cac0), opened by minimax-m3
 
 ## dependency graph
 
