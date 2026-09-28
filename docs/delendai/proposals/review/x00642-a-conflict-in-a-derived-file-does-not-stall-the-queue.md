@@ -15,6 +15,7 @@ shipped-in:
   - "c3e4ce4d93d6fb01d077615c9d2b36f75cfba1b3"
   - "aaf4740726c2b44d3e666afe7ceb5bca4705ebdf"
   - "a5f1ad22ba579ee48b9c3e7f4b2b7d2e004e1aba"
+  - "4c37a0f5cf4e41776dd0151f2a02610aa5439d03"
 ---
 
 # x00642 — A conflict in a derived file does not stall the queue
@@ -146,7 +147,7 @@ was gone.
 
 ### S4 — A refused push says why, and does not hold the queue
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
@@ -158,8 +159,11 @@ hook or the remote marked as failing (`pushRefusalReason`), and a
 candidate that could not be brought forward for any reason (an authored
 conflict, a failed generator, a refused push) is passed over instead of
 being retried while every candidate behind it waits.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4c37a0f5c. S4 añade pushRefusalReason (regex /✖|\berror\b|\bFAIL\b|rejected|refused|denied/iu sobre líneas trim/non-empty; marcadas si las hay, sino las 3 últimas; truncadas a 500 chars) y pushCandidate (devuelve string de razón o undefined). El main loop cambia 'if (conflicted) continue' por 'if (outcome.state !== refreshed) continue', así un authored conflict, un generador que falla o un push rechazado pasan al siguiente candidato sin reintentar. 19/19 verde; las 2 nuevas pruebas cubren ambos paths del parser. Acceptance de la propuesta cubierta (el log ahora dice 'failed: push refused: <reason>'). Sin cambios fuera de alcance.
+
 ### S5 — Every AGENT.md is written after the dashboard it quotes
 
 - **Status**: review
