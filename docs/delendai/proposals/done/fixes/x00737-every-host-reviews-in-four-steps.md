@@ -2,15 +2,17 @@
 id: x00737
 title: "Every host reviews in four steps"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P0
 related: [x00727, x00736]
-last-transition-id: 42e42ad7-c7bf-4d86-a261-ed23eb50df75
-last-correlation-id: 42e42ad7-c7bf-4d86-a261-ed23eb50df75
-last-transition-from: in-progress
+last-transition-id: 8d3b1992-4b88-44b9-a5d8-31fb9ebfc295
+last-correlation-id: 8d3b1992-4b88-44b9-a5d8-31fb9ebfc295
+last-transition-from: review
+shipped-in:
+  - "808e014eb"
 ---
 
 # x00737 — Every host reviews in four steps
@@ -59,7 +61,7 @@ could read the same proposal, and the owner could not see who was on what.
 
 ### S1 — review_claim, and one way to claim
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts packages/cli/src/commands/review.command.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/tools/review-claim.tool.ts`
@@ -72,6 +74,11 @@ could read the same proposal, and the owner could not see who was on what.
   - `plugins/proposals/tests/src/lib/plugin.spec.ts`
   - `packages/cli/src/commands/review.command.ts`
   - `packages/cli/src/commands/review.command.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 808e014eb (x00737 S1, merge PR #605). fix(proposals): every host reviews in four steps. El flujo de review es idéntico en todos los hosts (entrar/claim/approve-or-changes/finish). 15/15 verde en reconcile-before-dispatch.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #605 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00737-S1-g1/every-host-reviews-in-four-steps (refs/heads/delendai/wip/claude-opus-5-5/implement/x00737-S1-g1/every-host-reviews-in-four-steps) (808e014eb460cdcce422d2bc80e0850754c64d2b), opened by minimax-m3
 
 ## dependency graph
 
