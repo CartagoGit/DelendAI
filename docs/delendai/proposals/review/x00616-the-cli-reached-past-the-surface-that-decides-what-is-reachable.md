@@ -6,7 +6,9 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-23
-shipped-in: ["6f0d3f094"]
+shipped-in:
+  - "6f0d3f094"
+  - "0e0fbedf7aa262852d1904da68ce7f5a0efcfca6"
 ---
 
 # x00616 — The CLI reached past the surface that decides what is reachable
@@ -89,7 +91,7 @@ renamed its namespace gets its own resolver rather than ours.
 
 ### S1 — A hidden tool is reached through the router
 
-- **Status**: done — verified by driving the real CLI: `search` returns
+- **Status**: done
   hits here (5,544 files scanned) and in a consumer project (3 hits across
   their 6 files, in `.ts`, `.html` and `.md`), and `metrics` answers where
   it used to fail. The second spelling cost a round of measurement:
@@ -104,6 +106,11 @@ renamed its namespace gets its own resolver rather than ours.
 - `request` retries through `<prefix>_resolve_capability` when, and only
   when, the surface says the tool is not exposed here; a visible tool
   still costs one round trip.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0e0fbedf7 (x00616 S1, merge PR #357). fix(cli): reach a tool the way the surface says to. tool-request.service.ts: `request` reintenta vía `<prefix>_resolve_capability` solo cuando la superficie dice 'not exposed here' (no en -32602 de invalid-params — eso sería esconder un caller mistake). tool-request.service.spec.ts 190 líneas (verifies 'search' hits en este repo + consumer project con layout foráneo). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from commit 0e0fbedf7aa2 names refs/heads/delendai/wip/claude-opus-5/x00616-S1-g1/the-cli-reaches-a-hidden-tool (0e0fbedf7aa262852d1904da68ce7f5a0efcfca6), opened by minimax-m3
 
 ### S2 — A tool error carries the tool's own words
 
