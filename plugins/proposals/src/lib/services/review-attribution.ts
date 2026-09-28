@@ -45,7 +45,11 @@ import type {
 } from '../contracts/interfaces/review-attribution.interface';
 import { UNRECORDED_IMPLEMENTER } from '../contracts/constants/review-attribution.constant';
 import { findWorkRefMention } from './work-ref-mention';
-import { deliveredByMerge, deliveringMerge } from './delivering-merge.service';
+import {
+	deliveredByMerge,
+	deliveringMerge,
+	touchesDeclared,
+} from './delivering-merge.service';
 
 export type {
 	IAttributeDeliveryInput,
@@ -171,7 +175,7 @@ export const attributeDelivery = async (
 	);
 	const cites = (text: string | undefined): boolean =>
 		(text ?? '').toLowerCase().includes(input.proposalId.toLowerCase());
-	let touchesSlice = input.declaredFiles.some((file) => changed.has(file));
+	let touchesSlice = touchesDeclared(input.declaredFiles, changed);
 	let citesProposal = cites(message);
 	// A pull request is delivered whole: judged by what its merge brought.
 	if (!touchesSlice && !citesProposal) {
@@ -184,20 +188,6 @@ export const attributeDelivery = async (
 		);
 		touchesSlice = merged.touchesSlice;
 		citesProposal = merged.citesProposal;
-	}
-	if (!touchesSlice && !citesProposal) {
-		const merge = await deliveringMerge(run, commit, input.integration);
-		if (merge !== undefined) {
-			const [mergedPaths, mergeMessage] = await Promise.all([
-				read(run, ['diff', '--name-only', `${merge}^1`, merge]),
-				read(run, ['show', '-s', '--format=%B', merge]),
-			]);
-			const merged = new Set(
-				(mergedPaths ?? '').split('\n').map((path) => path.trim()),
-			);
-			touchesSlice = input.declaredFiles.some((file) => merged.has(file));
-			citesProposal = cites(mergeMessage);
-		}
 	}
 	if (!touchesSlice && !citesProposal) {
 		return {

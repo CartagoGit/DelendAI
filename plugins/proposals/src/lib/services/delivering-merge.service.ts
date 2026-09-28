@@ -58,6 +58,25 @@ export const deliveringMerge = async (
 };
 
 /**
+ * Whether `paths` change something the slice declares. A declared entry
+ * is a file, or a directory covering every file under it: a slice that
+ * declared `packages/context-compiler/src` was delivered by a commit
+ * changing `packages/context-compiler/src/lib/context-compiler.ts`, and an
+ * exact comparison read it as unrelated (x00746).
+ */
+export const touchesDeclared = (
+	declared: readonly string[],
+	paths: ReadonlySet<string>,
+): boolean =>
+	declared.some((entry) => {
+		const bare = entry.replace(/\/+$/u, '');
+		if (bare.length === 0) return false;
+		if (paths.has(bare)) return true;
+		const under = `${bare}/`;
+		return [...paths].some((path) => path.startsWith(under));
+	});
+
+/**
  * Whether the merge that brought `commit` in changes a declared file of the
  * slice, or cites the proposal. Both false when no merge brought it.
  */
@@ -82,7 +101,7 @@ export const deliveredByMerge = async (
 		(mergedPaths ?? '').split('\n').map((path) => path.trim()),
 	);
 	return {
-		touchesSlice: declaredFiles.some((file) => merged.has(file)),
+		touchesSlice: touchesDeclared(declaredFiles, merged),
 		citesProposal: (mergeMessage ?? '')
 			.toLowerCase()
 			.includes(proposalId.toLowerCase()),
