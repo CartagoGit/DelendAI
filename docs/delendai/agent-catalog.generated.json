@@ -1751,6 +1751,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-25"
+			},
+			{
+				"id": "x00746",
+				"title": "A declared directory covers its files",
+				"track": "hosts",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-09-29"
 			}
 		]
 	}
