@@ -2,12 +2,15 @@
 id: x00715
 title: "An approval enters through its reviewer"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00696, x00694, x00714]
+last-transition-id: 39b3e13d-2dec-4730-a779-33034acc2d99
+last-correlation-id: 39b3e13d-2dec-4730-a779-33034acc2d99
+last-transition-from: in-progress
 ---
 
 # x00715 — An approval enters through its reviewer
@@ -54,7 +57,7 @@ the name in an approval to the agent whose work delivered it.
 
 ### S1 — Approvals match their pull request
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - **Files**:
   - `tools/scripts/lint/closed-with-independent-approval.script.ts`
