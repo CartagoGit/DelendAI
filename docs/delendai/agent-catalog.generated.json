@@ -1382,371 +1382,371 @@
 		"actionable": [
 			{
 				"id": "f00509",
-				"title": "f00509",
+				"title": "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-06"
 			},
 			{
 				"id": "f00510",
-				"title": "f00510",
+				"title": "F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens",
 				"track": "trust",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-06"
 			},
 			{
 				"id": "f00511",
-				"title": "f00511",
+				"title": "F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico",
 				"track": "trust",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-06"
 			},
 			{
 				"id": "f00512",
-				"title": "f00512",
+				"title": "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente",
 				"track": "trust",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-06"
 			},
 			{
 				"id": "f00536",
-				"title": "f00536",
+				"title": "Context frugality as an enforced agent property, and automatic compaction of tool output",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-10"
 			},
 			{
 				"id": "f00537",
-				"title": "f00537",
+				"title": "Archify plugin: architecture diagrams as a projection of the structures the runtime already reads",
 				"track": "surface",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-11"
 			},
 			{
 				"id": "f00538",
-				"title": "f00538",
+				"title": "Forward-sync the release branch back into the integration branch after every promotion",
 				"track": "trust",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-15"
 			},
 			{
 				"id": "f00539",
-				"title": "f00539",
+				"title": "Configurable CI/PR policy with free-tier autodetection",
 				"track": "general",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-15"
 			},
 			{
 				"id": "f00540",
-				"title": "f00540",
+				"title": "Git host provider abstraction with capability flags",
 				"track": "general",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-15"
 			},
 			{
 				"id": "f00541",
-				"title": "f00541",
+				"title": "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec",
 				"track": "general",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-15"
 			},
 			{
 				"id": "f00542",
-				"title": "f00542",
+				"title": "Delendai language-, IDE-, and OS-agnostic",
 				"track": "general",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-15"
 			},
 			{
 				"id": "f00543",
-				"title": "f00543",
+				"title": "Docker plugin as a tool (autodetected, low-risk)",
 				"track": "general",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-15"
 			},
 			{
 				"id": "f00544",
-				"title": "f00544",
+				"title": "WordPress plugin covering self-hosted and WordPress.com SaaS",
 				"track": "general",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-15"
 			},
 			{
 				"id": "f00545",
-				"title": "f00545",
+				"title": "Plugin authoring multi-platform with analyzer (WordPress, Joomla, Drupal, Magento 2, PrestaShop, custom PHP)",
 				"track": "general",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-15"
 			},
 			{
 				"id": "f00546",
-				"title": "f00546",
+				"title": "Extensible repository format adapters (stubs for Bitbucket, Gitea, SourceHut, Gerrit)",
 				"track": "general",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-15"
 			},
 			{
 				"id": "f00547",
-				"title": "f00547",
+				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-16"
 			},
 			{
 				"id": "f00548",
-				"title": "f00548",
+				"title": "Own the style surface: who may define a selector, and what breaks when it changes",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-16"
 			},
 			{
 				"id": "f00550",
-				"title": "f00550",
+				"title": "Put the project's contract between an agent and every external capability",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-16"
 			},
 			{
 				"id": "f00551",
-				"title": "f00551",
+				"title": "DelendAI Batuta — orquestación multicuenta mediante el plugin y MCP existentes",
 				"track": "batuta",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-20"
 			},
 			{
 				"id": "f00640",
-				"title": "f00640",
+				"title": "Review debt is measured: age and drift since the work landed",
 				"track": "governance",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-25"
 			},
 			{
 				"id": "f00641",
-				"title": "f00641",
+				"title": "The proposals database runs on Node as well as Bun",
 				"track": "architecture",
 				"status": "in-progress",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-25"
 			},
 			{
 				"id": "f00643",
-				"title": "f00643",
+				"title": "The startup forge and journal phases run in a real host",
 				"track": "trust",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-26"
 			},
 			{
 				"id": "f00645",
-				"title": "f00645",
+				"title": "List tools answer compact by default",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "feat",
-				"date": ""
+				"date": "2026-09-27"
 			},
 			{
 				"id": "q00009",
-				"title": "q00009",
+				"title": "Plan: Managed Surface + portable Skills + 5-level Startup Report — separar catálogo, superficie LLM, working set y bajo demanda",
 				"track": "managed-surface-portable-skills-startup-report",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-08-26"
 			},
 			{
 				"id": "q00010",
-				"title": "q00010",
+				"title": "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath",
 				"track": "develop-audit-hardening-v4-closeout",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-08-25"
 			},
 			{
 				"id": "q00011",
-				"title": "q00011",
+				"title": "Plan — cerrar los contratos de runtime que el sistema promete y no cumple: ciclo de vida eager/lazy, propiedad del teardown, enforcement de efectos, puertas ciegas de CI y el 66% del coste de tokens que vive en los output schemas",
 				"track": "runtime-contracts-v1",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-08-27"
 			},
 			{
 				"id": "q00014",
-				"title": "q00014",
+				"title": "Plan autoaprendizaje, observabilidad de la salida MCP y economía de comandos: que el enjambre aprenda del proyecto en vez de redescubrirlo cada sesión",
 				"track": "quality",
 				"status": "in-progress",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-09-03"
 			},
 			{
 				"id": "q00015",
-				"title": "q00015",
+				"title": "Plan eventual settlement: commits atómicos con scope exacto sobre develop compartido; develop rojo es estado transitorio válido",
 				"track": "quality",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-09-02"
 			},
 			{
 				"id": "q00018",
-				"title": "q00018",
+				"title": "State Engine foundation: pure deterministic project/swarm scopes, generation rebuild and shadow equivalence",
 				"track": "swarm-scope-v1",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-09-05"
 			},
 			{
 				"id": "q00019",
-				"title": "q00019",
+				"title": "State Engine Phase 1 — SQLite shadow driver + parity sampler (no behaviour change, only shadow verifies legacy)",
 				"track": "swarm-scope-v1",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-09-06"
 			},
 			{
 				"id": "q00020",
-				"title": "q00020",
+				"title": "Plan — Work Telemetry & Progress Runtime: progreso, fase, ETA y observación de agentes en tiempo real, sin LLM, sin coste de tokens, sobre el State Engine ya consolidado en SQLite",
 				"track": "trust",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-09-06"
 			},
 			{
 				"id": "q00021",
-				"title": "q00021",
+				"title": "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)",
 				"track": "trust",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-09-07"
 			},
 			{
 				"id": "q00022",
-				"title": "q00022",
+				"title": "Proposals SQLite schema — replace proposals/INDEX.json as sole source of truth",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-09-07"
 			},
 			{
 				"id": "q00023",
-				"title": "q00023",
+				"title": "Snapshot Git by SHA — reconcile --sha <commit> is deterministic and atomic",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-09-07"
 			},
 			{
 				"id": "q00026",
-				"title": "q00026",
+				"title": "vitest 5 major migration planned after SQLite consolidation",
 				"track": "dependencies",
 				"status": "ready",
 				"kind": "plan",
-				"date": ""
+				"date": "2026-09-07"
 			},
 			{
 				"id": "r00040",
-				"title": "r00040",
+				"title": "Migrar el barrel de 288 exports a los subpaths del core que ya existen",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "refactor",
-				"date": ""
+				"date": "2026-08-29"
 			},
 			{
 				"id": "r00043",
-				"title": "r00043",
+				"title": "`@delendai/core` deja de conocer el dominio `proposals`",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "refactor",
-				"date": ""
+				"date": "2026-08-30"
 			},
 			{
 				"id": "r00048",
-				"title": "r00048",
+				"title": "CAS optimistic concurrency — revision column on proposals, plans, slices",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "refactor",
-				"date": ""
+				"date": "2026-09-07"
 			},
 			{
 				"id": "r00049",
-				"title": "r00049",
+				"title": "INDEX.json becomes a derived view, not an authoritative source",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "refactor",
-				"date": ""
+				"date": "2026-09-07"
 			},
 			{
 				"id": "r00056",
-				"title": "r00056",
+				"title": "SQLite storage modes and canonical proposals DB wiring",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "refactor",
-				"date": ""
+				"date": "2026-09-08"
 			},
 			{
 				"id": "v00127",
-				"title": "v00127",
+				"title": "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas",
 				"track": "governance",
 				"status": "ready",
 				"kind": "perf",
-				"date": ""
+				"date": "2026-08-25"
 			},
 			{
 				"id": "x00541",
-				"title": "x00541",
+				"title": "576 de los 865 exports públicos de core no tienen ningún importador en el repo y 59 no se referencian en ninguna parte fuera del paquete",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "fix",
-				"date": ""
+				"date": "2026-09-10"
 			},
 			{
 				"id": "x00554",
-				"title": "x00554",
+				"title": "A green pull request lands itself and the swarm rebases",
 				"track": "trust",
 				"status": "ready",
 				"kind": "fix",
-				"date": ""
+				"date": "2026-09-19"
 			},
 			{
 				"id": "x00556",
-				"title": "x00556",
+				"title": "A pull request runs the checks its change can break",
 				"track": "efficiency",
 				"status": "ready",
 				"kind": "fix",
-				"date": ""
+				"date": "2026-09-19"
 			},
 			{
 				"id": "x00641",
-				"title": "x00641",
+				"title": "A hung CI run cannot hold the queue",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
-				"date": ""
+				"date": "2026-09-25"
 			},
 			{
 				"id": "x00644",
-				"title": "x00644",
+				"title": "El presupuesto de exports publicos de core vuelve a verde",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
-				"date": ""
+				"date": "2026-09-25"
 			}
 		]
 	}
