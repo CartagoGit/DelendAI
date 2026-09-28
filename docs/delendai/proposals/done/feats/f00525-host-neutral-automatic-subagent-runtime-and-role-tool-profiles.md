@@ -2,7 +2,7 @@
 id: f00525
 title: "Host-neutral automatic subagent runtime and role tool profiles"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07

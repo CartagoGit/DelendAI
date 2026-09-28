@@ -2,7 +2,7 @@
 id: x00531
 title: "El builder ordena por rangos hardcodeados en vez de por el grafo de dependencias declarado en los manifests"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08

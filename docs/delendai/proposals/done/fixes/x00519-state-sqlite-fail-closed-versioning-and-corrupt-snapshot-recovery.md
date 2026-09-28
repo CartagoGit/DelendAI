@@ -2,7 +2,7 @@
 id: x00519
 title: "State SQLite fail-closed versioning and corrupt snapshot recovery"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
