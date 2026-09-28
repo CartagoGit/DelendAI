@@ -2,13 +2,16 @@
 id: f00640
 title: "Review debt is measured: age and drift since the work landed"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: governance
 date: 2026-09-25
 priority: P1
 related:
     - x00637 # the certified integration branch the drift is measured on
+last-transition-id: 671e2c9c-61d6-4653-b6d3-478df6c4d964
+last-correlation-id: 671e2c9c-61d6-4653-b6d3-478df6c4d964
+last-transition-from: in-progress
 ---
 
 # f00640 — Review debt is measured: age and drift since the work landed
