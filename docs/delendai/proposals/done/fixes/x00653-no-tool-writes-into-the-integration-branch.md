@@ -2,18 +2,17 @@
 id: x00653
 title: "No tool writes into the integration branch"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00651, x00636, x00650]
-last-transition-id: 7f99d46c-38a8-4efa-9265-38112ce6f2a6
-last-correlation-id: 7f99d46c-38a8-4efa-9265-38112ce6f2a6
-last-transition-from: in-progress
+last-transition-id: 5bd3ab05-f829-4e30-8918-b0ea0a8eb961
+last-correlation-id: 5bd3ab05-f829-4e30-8918-b0ea0a8eb961
+last-transition-from: review
 shipped-in:
   - "ce61b70d4b12f44ecc1051613b72954a58680fc3"
-  - "239e2b208d3b4e82c44a12b37dd9d8a4acb6e288"
 ---
 
 # x00653 — No tool writes into the integration branch
@@ -107,12 +106,12 @@ The audit of every write tool found no other route:
 - **Gate**: `bun run lint:proposals`
 - **Files**:
   - `docs/delendai/proposals/done/refactors/r00643-proposal-frontmatter-is-parsed-once-as-yaml.md`
-  - `docs/delendai/proposals/review/x00642-a-conflict-in-a-derived-file-does-not-stall-the-queue.md`
-  - `docs/delendai/proposals/review/x00647-a-test-does-not-expire-with-the-calendar.md`
-  - `docs/delendai/proposals/review/x00648-a-published-work-ref-stays-deleted.md`
-  - `docs/delendai/proposals/review/x00649-a-red-integration-branch-can-be-repaired-by-the-queue.md`
-  - `docs/delendai/proposals/review/x00650-a-stale-red-candidate-gets-one-fresh-verdict.md`
-  - `docs/delendai/proposals/review/x00652-an-expiring-exception-warns-before-it-fails.md`
+  - `docs/delendai/proposals/done/fixes/x00642-a-conflict-in-a-derived-file-does-not-stall-the-queue.md`
+  - `docs/delendai/proposals/done/fixes/x00647-a-test-does-not-expire-with-the-calendar.md`
+  - `docs/delendai/proposals/done/fixes/x00648-a-published-work-ref-stays-deleted.md`
+  - `docs/delendai/proposals/done/fixes/x00649-a-red-integration-branch-can-be-repaired-by-the-queue.md`
+  - `docs/delendai/proposals/done/fixes/x00650-a-stale-red-candidate-gets-one-fresh-verdict.md`
+  - `docs/delendai/proposals/done/fixes/x00652-an-expiring-exception-warns-before-it-fails.md`
 
 Moved with `proposal_transition`, which wrote into the shared checkout.
 The moves were then carried onto this work ref, and the shared checkout

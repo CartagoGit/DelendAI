@@ -2,15 +2,15 @@
 id: f00644
 title: "A branch names the kind of work"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00563, f00642, x00660, x00671]
-last-transition-id: 8218fa5c-6d15-4f4b-afd4-969cdcd6c052
-last-correlation-id: 8218fa5c-6d15-4f4b-afd4-969cdcd6c052
-last-transition-from: in-progress
+last-transition-id: a0e1c4e6-2d68-4bde-ae41-d2fc1a626543
+last-correlation-id: a0e1c4e6-2d68-4bde-ae41-d2fc1a626543
+last-transition-from: review
 shipped-in:
   - "c91564a24"
   - "ba17cc410"
@@ -86,7 +86,7 @@ reviews advance on one work branch and land as one pull request.
 ### S1 — The shape carries the kind, stated once, and every reader parses it
 
 - **Status**: done
-- **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.interface.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/ref-name.interface.ts`, `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/cli.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/lib/work-ref-shape.service.ts`, `packages/cli/src/contracts/interfaces/work-ref-shape.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.ts`, `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/classification.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/work-ref-topic.spec.ts`, `packages/cli/src/lib/work-ref-shape.service.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `packages/core/src/lib/development-policy/git-guard-shape.ts`, `packages/core/src/lib/development-policy/git-guard-namespaces.ts`
+- **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.interface.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/ref-name.interface.ts`, `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/cli.ts`, `packages/core/src/public/index.ts`, `packages/core/src/lib/work-units/work-ref-shape.service.ts`, `packages/core/src/lib/contracts/interfaces/work-ref-shape.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.ts`, `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/classification.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/work-ref-topic.spec.ts`, `packages/core/tests/src/lib/work-units/work-ref-shape.service.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `packages/core/src/lib/development-policy/git-guard-shape.ts`, `packages/core/src/lib/development-policy/git-guard-namespaces.ts`
 - **Gate**: type
 - acceptance:
   - "`WORK_REF_SHAPE` contains `${kind}`, and the vocabulary is one exported constant next to it."
@@ -101,7 +101,7 @@ reviews advance on one work branch and land as one pull request.
 
 - **Status**: done
 - **DependsOn**: [S1]
-- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/proposal-branch.service.ts`, `packages/cli/src/lib/publication-target.service.ts`, `packages/cli/src/contracts/interfaces/publication-target.interface.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `packages/cli/src/commands/work.command.spec.ts`, `packages/cli/src/commands/work-claim.command.spec.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/contracts/constants/work-ref.constant.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`, `tools/scripts/lint/pr-head-shape.script.ts`, `tools/scripts/lint/pr-head-shape.script.spec.ts`, `package.json`, `.github/workflows/ci.yml`, `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/guard.command.ts`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/core/src/lib/work-units/work-claim.service.ts`, `packages/core/src/lib/work-units/proposal-branch.service.ts`, `packages/core/src/lib/work-units/publication-target.service.ts`, `packages/core/src/lib/contracts/interfaces/publication-target.interface.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`, `packages/cli/src/commands/work-claim.command.spec.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/contracts/constants/work-ref.constant.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`, `tools/scripts/lint/pr-head-shape.script.ts`, `tools/scripts/lint/pr-head-shape.script.spec.ts`, `package.json`, `.github/workflows/ci.yml`, `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/guard.command.ts`
 - **Gate**: type
 - acceptance:
   - "`work enter --kind=<kind>` names the ref with it, defaults to `implement` (`review` for the old `review`/`close` slices), and refuses a kind outside the vocabulary by naming the vocabulary."
@@ -118,7 +118,7 @@ reviews advance on one work branch and land as one pull request.
 
 - **Status**: done
 - **DependsOn**: [S2]
-- **Files**: `plugins/proposals/src/lib/services/review-procedure.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`
+- **Files**: `plugins/proposals/src/lib/services/review-procedure.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A reviewer enters one `review` batch unit and claims each proposal with a `Claims: <id>` commit before reviewing it."

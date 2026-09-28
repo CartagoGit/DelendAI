@@ -2,13 +2,13 @@
 id: x00645
 title: "Edits no work ref carries are reported, not silent"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
-last-transition-id: 3f6b6bdc-38fc-42bb-b531-5fab485b5f3f
-last-correlation-id: 3f6b6bdc-38fc-42bb-b531-5fab485b5f3f
-last-transition-from: in-progress
+last-transition-id: 0ea704a5-4fad-4942-9bae-5cc44640519f
+last-correlation-id: 0ea704a5-4fad-4942-9bae-5cc44640519f
+last-transition-from: review
 shipped-in:
   - "abdd94bb3d6a27422527cc4b5f1482028e866336"
   - "2c27eec1e689b84671a485c6144ad0bf68e17fa2"
@@ -37,7 +37,7 @@ The same session showed the second way work misses its ref: `create_proposal` pu
 
 ### S1 — work status separates durable from undurable paths
 - **Status**: done
-- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-dirty-paths.service.ts`, `packages/cli/src/lib/work-dirty-paths.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-dirty-paths.interface.ts`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/core/src/lib/work-units/work-dirty-paths.service.ts`, `packages/core/tests/src/lib/work-units/work-dirty-paths.service.spec.ts`, `packages/core/src/lib/contracts/interfaces/work-dirty-paths.interface.ts`
 - **Gate**: type
 - acceptance:
   - "Rename and copy entries of `git status -z` yield both repository paths intact."
