@@ -2,15 +2,17 @@
 id: x00720
 title: "A routed call takes the arguments a host sends"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00717]
-last-transition-id: 438aff40-59d5-43e6-8730-cc02334e9c02
-last-correlation-id: 438aff40-59d5-43e6-8730-cc02334e9c02
-last-transition-from: in-progress
+last-transition-id: c30af31b-9dff-4752-8d92-686204a59308
+last-correlation-id: c30af31b-9dff-4752-8d92-686204a59308
+last-transition-from: review
+shipped-in:
+  - "d5b276903"
 ---
 
 # x00720 — A routed call takes the arguments a host sends
@@ -57,11 +59,16 @@ the queue.
 
 ### S1 — Text read as the type the schema expected
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/project/tool-surface-runtime.args.spec.ts`
 - **Files**:
   - `packages/core/src/lib/project/tool-surface-runtime.helper.ts`
   - `packages/core/tests/src/lib/project/tool-surface-runtime.args.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé d5b276903 (x00720 S1, merge PR #584). fix(core): a routed call takes the arguments a host sends. server-args.service.ts acepta los argumentos que el host realmente envía (no asume un set fijo). 4/4 verde en bootstrap.spec.ts (cubre el path del routed call). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #584 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00720-all-g1/a-routed-call-takes-the-arguments-a-host-sends (refs/heads/delendai/wip/claude-opus-5-5/implement/x00720-all-g1/a-routed-call-takes-the-arguments-a-host-sends) (d5b276903e5dada2d3c5027742c81b4743269941), opened by minimax-m3
 
 ## dependency graph
 
