@@ -80,7 +80,8 @@ const repository = (): string => {
 			'',
 			'- **Status**: done',
 			'- **Gate**: none',
-			`- **Files**: \`${PROPOSALS_DIR}/review/${ID}.md\``,
+			'- **Files**: `README.md`',
+			'- shipped-in: `abc1234def56`',
 			'',
 		].join('\n'),
 		'utf8',
@@ -89,6 +90,7 @@ const repository = (): string => {
 	const git = (args: readonly string[]): void => {
 		execFileSync('git', [...args], { cwd: root, stdio: 'ignore' });
 	};
+	writeFileSync(join(root, 'README.md'), '# delivered\n', 'utf8');
 	git(['init', '-q', '-b', 'main']);
 	git(['config', 'user.email', 'spec@example.test']);
 	git(['config', 'user.name', 'Spec']);

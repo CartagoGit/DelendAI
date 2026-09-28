@@ -89,6 +89,7 @@ were still stuck:
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
   - `plugins/proposals/tests/src/lib/review.tool.spec.ts`
+  - `plugins/proposals/tests/src/lib/services/projection-follows-every-writer.spec.ts`
 
 ## dependency graph
 
