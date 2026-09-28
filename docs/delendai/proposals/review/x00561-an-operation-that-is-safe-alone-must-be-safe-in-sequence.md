@@ -86,11 +86,16 @@ S3).
 
 ### S2 — A tag release reuses the tag that triggered it
 
-- **Status**: done — an existing tag on the same commit is reused; one
+- **Status**: done
   pointing elsewhere fails BEFORE anything is published; a push that
   races is accepted when the remote already carries the same commit.
 - **Files**: `.github/workflows/release.yml`
 - **Gate**: `bun run lint:workflow-yaml`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 1db4ea316 (x00561 S2). .github/workflows/release.yml reusa un tag existente en el mismo commit, falla ANTES de publicar si el tag apunta a otro commit, y acepta push raceado si el remoto ya carga el mismo commit. bun run lint:workflow-yaml exit 0 (16 workflows válidos). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 1db4ea316f3a0aa41440d230d264423b83511541: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S3 — The regenerator commits only what it generated
 
