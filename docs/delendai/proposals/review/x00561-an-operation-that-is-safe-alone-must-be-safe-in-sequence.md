@@ -114,10 +114,15 @@ S3).
 
 ### S4 — The reaper runs even when the report is red
 
-- **Status**: done — `if: always()`, so a stuck queue no longer costs the
+- **Status**: done
   cleanup that keeps the namespace readable.
 - **Files**: `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: `bun run lint:workflow-yaml`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 1db4ea316 (x00561 S4). .github/workflows/keep-the-queue-moving.yml: el reap-step usa `if: always()` (era `if: success()`) — corre incluso cuando el report-job va rojo (x00557 hace que termine rojo en cola atascada). El comentario en el workflow explica el porqué. bun run lint:workflow-yaml exit 0. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 1db4ea316f3a0aa41440d230d264423b83511541: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S5 — The CLI integrates with the same remote the reconciler does
 
