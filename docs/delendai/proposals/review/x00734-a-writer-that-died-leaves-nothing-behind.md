@@ -2,12 +2,15 @@
 id: x00734
 title: "A writer that died leaves nothing behind"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P2
 related: []
+last-transition-id: b8c9ca6f-d14a-4da4-995e-1c1a0bab0dd3
+last-correlation-id: b8c9ca6f-d14a-4da4-995e-1c1a0bab0dd3
+last-transition-from: in-progress
 ---
 
 # x00734 — A writer that died leaves nothing behind
@@ -49,7 +52,7 @@ fails, not when the process dies, and nothing removed it later.
 
 ### S1 — The next write sweeps a dead writer's temporaries
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/atomic-write.spec.ts`
 - **Files**:
   - `packages/core/src/lib/shared/atomic-write.ts`
