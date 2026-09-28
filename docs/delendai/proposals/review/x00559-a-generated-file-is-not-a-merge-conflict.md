@@ -11,6 +11,8 @@ tags:
     - merge
     - generated
     - swarm
+shipped-in:
+  - "bc1054fb9"
 ---
 
 # x00559 — A generated file is not a merge conflict
@@ -65,7 +67,7 @@ disagrees with what landed, so this cannot hide a real divergence.
 
 ### S1 — A conflicted generated file is regenerated, not resolved
 
-- **Status**: done — a git merge driver regenerates the file from the
+- **Status**: done
   merged tree and fails loudly when the generator cannot run, leaving the
   conflict for a human rather than guessing a side. `.gitattributes`
   names it; `delendai guard install` configures it per clone, because git
@@ -79,6 +81,11 @@ disagrees with what landed, so this cannot hide a real divergence.
   `packages/cli/src/contracts/constants/generated-merge-driver.constant.ts`,
   `packages/cli/src/contracts/interfaces/generated-merge-driver.interface.ts`
 - **Gate**: `npx vitest run tools/scripts/git/generated-merge-driver.script.spec.ts`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé bc1054fb9 (x00559 S1, merge PR #281). feat(git): a generated file is merged by regenerating it. generated-merge-driver.script.ts añade un merge driver que regenera el archivo desde el árbol fusionado en vez de resolverlo a mano; falla ruidosamente si el regenerador no puede correr (dejando el conflict intacto). 13/13 verde en generated-merge-driver.script.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered bc1054fb9e72bf438703d5f46071bd622875980e: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — The finished tree gets the last word
 
