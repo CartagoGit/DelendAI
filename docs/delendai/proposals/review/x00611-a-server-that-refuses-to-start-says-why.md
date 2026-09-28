@@ -6,7 +6,9 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-23
-shipped-in: ["2fdd43da1"]
+shipped-in:
+  - "2fdd43da1"
+  - "9e17d9fcb"
 ---
 
 # x00611 — A server that refuses to start says why
@@ -95,7 +97,7 @@ explain it.
 
 ### S1 — The caller hears the server's own words
 
-- **Status**: done — `withServerWords` quotes the child's last 4KB,
+- **Status**: done
   indented, and says "the server exited without saying why" when it was
   silent, so a caller can tell an explanation from a vanishing. stderr is
   piped by default now; `inherit` stays available and costs that caller
@@ -107,6 +109,11 @@ explain it.
   server that said nothing is reported as silent rather than as
   unexplained; a multi-line context puts the transport's own summary on
   its own line instead of gluing it to the last sentence.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 9e17d9fcb (x00611 S1, merge PR #351). fix(client): a server that refuses to start says why. McpStdioClient.connect pipe stderr por default; `withServerWords` cita los últimos 4KB del child, indentados, y reporta 'the server exited without saying why' cuando no hubo output. Quien quiera su log en su terminal pasa `stderr: 'inherit'` (explícito) y pierde la explicación (explícito también). mcp-stdio-client.spec cubre los 3 casos (explicación quoted, silencio, summary en su propia línea). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from Merge pull request #351 from CartagoGit/delendai/pr/claude-opus-5/x00611-S1-g1/a-server-that-dies-says-why (refs/heads/delendai/wip/claude-opus-5/x00611-S1-g1/a-server-that-dies-says-why) (9e17d9fcb86cc62e211c89f474ddd0a606bd79ad), opened by minimax-m3
 
 ### S2 — A refusal is a refusal, not a stack trace
 
