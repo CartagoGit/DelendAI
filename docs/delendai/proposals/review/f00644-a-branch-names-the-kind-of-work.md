@@ -14,6 +14,7 @@ last-transition-from: in-progress
 shipped-in:
   - "c91564a24"
   - "ba17cc410"
+  - "f36a83089"
 ---
 
 # f00644 — A branch names the kind of work
@@ -115,7 +116,7 @@ reviews advance on one work branch and land as one pull request.
 
 ### S3 — A batch of reviews is one branch and one pull request
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/services/review-procedure.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: type
@@ -123,8 +124,11 @@ reviews advance on one work branch and land as one pull request.
   - "A reviewer enters one `review` batch unit and claims each proposal with a `Claims: <id>` commit before reviewing it."
   - "`review_queue` reports a proposal claimed in another agent's batch as held by that agent, until the batch merges."
   - "The procedure tells the reviewer to commit after each verdict and to publish the batch once, when it is done."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé f36a83089 (último commit S3 antes del merge 792db797f = PR #504). S3 implementa: review unit como kind=review batch, Claims: <id> trailer en commit conventional como claim, review_queue lee los claims de los trailers del batch branch (no de un store aparte), review-procedure.ts lleva el texto del procedimiento (commit per verdict + publish once when done). Esta misma sesión usó este flujo en pack 1 (5 propuestas reclamadas con trailers Claims, publicadas como PR #615). Bun run typecheck exit 0 (gate type). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+
 ## dependency graph
 
 S1 → S2 → S3.
