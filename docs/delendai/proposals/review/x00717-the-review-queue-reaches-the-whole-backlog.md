@@ -2,12 +2,15 @@
 id: x00717
 title: "The review queue reaches the whole backlog"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00714]
+last-transition-id: dd731a60-1e85-45c6-a93b-9c5c9397f1a7
+last-correlation-id: dd731a60-1e85-45c6-a93b-9c5c9397f1a7
+last-transition-from: in-progress
 ---
 
 # x00717 — The review queue reaches the whole backlog
@@ -57,7 +60,7 @@ other in time. The other 73 went unseen.
 
 ### S1 — Paging and a per-reviewer start
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`
