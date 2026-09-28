@@ -35,6 +35,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { CHECKOUT_ARG_SCHEMA } from '../contracts/constants/checkout-arg.constant';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { integrationCheckoutRefusal } from '../development-policy/project-branches';
+import { withCallWritesCommitted } from './commit-call-writes';
 import { runInExecutionRoot } from './execution-root';
 import { resolveWriteRoot } from './shared-checkout';
 import { toolError } from './tool-response';
@@ -81,6 +82,7 @@ const WORK_REF_NEXT_STEP =
 
 const boundHandler =
 	(
+		name: string,
 		handler: IHandler,
 		serverRoot: string,
 		checkoutOf: ((from: string) => string | undefined) | undefined,
@@ -106,8 +108,11 @@ const boundHandler =
 					SHARED_CHECKOUT_WRITE_REFUSED,
 				);
 			}
-			return runInExecutionRoot(resolved.root, () =>
-				handler(...callArgs),
+			const root = resolved.root;
+			return runInExecutionRoot(root, () =>
+				withCallWritesCommitted(root, name, callArgs[0], async () =>
+					handler(...callArgs),
+				),
 			);
 		}
 		return toolError(
@@ -151,6 +156,7 @@ export const bindWriteRoot = (
 					name,
 					{ ...config, inputSchema: extended.schema } as never,
 					boundHandler(
+						name,
 						handler,
 						serverRoot,
 						checkoutOf,
