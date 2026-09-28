@@ -6,7 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-23
-shipped-in: ["1de88bd51"]
+shipped-in: ["713104606"]
 ---
 
 # x00609 — A gate asks the forge for what git already knows
