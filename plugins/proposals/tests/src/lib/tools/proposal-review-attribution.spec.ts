@@ -35,6 +35,52 @@ afterEach(() => {
 });
 
 describe('a verdict on a slice no round was opened for', () => {
+	it('reads a pull request whole when its last commit is the queue refreshing it', async () => {
+		repo.git('switch', '-q', '-c', 'feature');
+		writeFileSync(join(repo.root, 'src/a.ts'), 'export const a = 1;\n');
+		repo.git('add', 'src/a.ts');
+		repo.git('commit', '-q', '--no-verify', '-m', 'feat: the work');
+		// The queue brings the candidate level and regenerates: the branch
+		// tip then touches no file the slice declares.
+		writeFileSync(
+			join(repo.root, 'README.md'),
+			'# project\n\nregenerated\n',
+		);
+		repo.git('add', 'README.md');
+		repo.git(
+			'commit',
+			'-q',
+			'--no-verify',
+			'-m',
+			'chore(generated): recompute after refreshing the candidate',
+		);
+		const tip = repo.git('rev-parse', 'HEAD');
+		repo.git('switch', '-q', 'develop');
+		repo.git(
+			'merge',
+			'-q',
+			'--no-ff',
+			'--no-verify',
+			'-m',
+			'Merge pull request #7 from Owner/delendai/pr/agent-a/x00001-S1-g1/the-work',
+			'feature',
+		);
+		repo.git('branch', '-q', '-D', 'feature');
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const approved = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: tip.slice(0, 9) },
+		});
+
+		expect(approved.isError).toBe(false);
+		expect(approved.body).toMatchObject({
+			status: 'done',
+			attributedTo: 'agent-a',
+		});
+	});
+
 	it('opens the round under the agent the pull request names, then approves and closes', async () => {
 		const commit = repo.deliverThroughPullRequest(
 			'src/a.ts',

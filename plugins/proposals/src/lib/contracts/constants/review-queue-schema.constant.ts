@@ -98,5 +98,7 @@ export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({
 			next: z.string().optional(),
 		})
 		.optional(),
+	/** The backlog in one sentence: every figure says whether it counts slices or proposals. */
+	summary: z.string(),
 	procedure: z.string(),
 });

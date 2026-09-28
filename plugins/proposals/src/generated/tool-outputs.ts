@@ -1043,6 +1043,7 @@ export interface DelendaiProposalsReviewQueueOutput {
 		full: boolean;
 		next?: string;
 	};
+	summary: string;
 	procedure: string;
 }
 

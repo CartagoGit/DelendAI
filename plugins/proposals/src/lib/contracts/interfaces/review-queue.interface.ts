@@ -100,6 +100,8 @@ export interface IReviewQueue {
 	 * pack it publishes as one pull request.
 	 */
 	readonly pack?: IReviewPack;
+	/** The backlog in one sentence, naming the unit of every figure. */
+	readonly summary: string;
 	/** The reviewer's procedure, in one paragraph. */
 	readonly procedure: string;
 }
