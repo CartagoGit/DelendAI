@@ -9,6 +9,7 @@ import { entered } from './work-unit-enter.service';
 import { published } from './work-unit-publish.service';
 import { claimed } from './work-unit-claim.service';
 import { checkpointed } from './work-unit-checkpoint.service';
+import { withSessionOfCwd } from './work-unit-shared.service';
 
 /**
  * A unit-of-work operation (`status`, `swarm`, `doctor`, `claim`, `enter`,
@@ -16,10 +17,12 @@ import { checkpointed } from './work-unit-checkpoint.service';
  * `work` command and the MCP `work` tool.
  */
 export const runWorkUnit = async (
-	args: readonly string[],
+	given: readonly string[],
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {
+	let args = given;
 	const sub = args[0];
+	args = withSessionOfCwd(args, ctx.cwd);
 	if (sub === 'status' || sub === undefined) return statusOf(ctx);
 	if (sub === 'checkpoint') return checkpointed(args, ctx);
 	if (sub === 'enter') return entered(args, ctx);

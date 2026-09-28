@@ -26,6 +26,8 @@
  */
 import { execFileSync } from 'node:child_process';
 
+import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
+
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import type {
@@ -40,12 +42,26 @@ export type {
 	IInvariantScope,
 } from '../contracts/interfaces/workflow-invariants.interface';
 
+/**
+ * The environment without what git sets for a hook. Run from a hook in a
+ * linked worktree, `GIT_DIR` and `GIT_INDEX_FILE` point at THAT worktree,
+ * so every question asked of the shared checkout was answered by the
+ * worktree: a unit mid-merge was reported as the shared checkout, off
+ * the integration branch and full of changes.
+ */
+const outsideAHook = (): NodeJS.ProcessEnv => {
+	const env = { ...process.env };
+	for (const key of HOOK_GIT_ENVIRONMENT) delete env[key];
+	return env;
+};
+
 const git = (root: string, args: readonly string[]): string => {
 	try {
 		return execFileSync('git', [...args], {
 			cwd: root,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
+			env: outsideAHook(),
 		}).trim();
 	} catch {
 		return '';
@@ -239,18 +255,23 @@ export const checkWorkflowInvariants = (input: {
 		remedy: 'git worktree remove --force <path>',
 	});
 
-	// 7. No work ref is still on the forge: publishing ends it.
-	const remoteWork = heads.filter((ref) => ref.startsWith(workPrefix));
+	// 7. No work ref is still on the forge once nothing works on it:
+	// publishing ends it. A live unit's ref IS on the forge, on purpose —
+	// the server pushes it so a lost machine loses no work — and calling
+	// that broken told every agent to delete a colleague's backup.
+	const remoteWork = heads.filter(
+		(ref) => ref.startsWith(workPrefix) && !worktreeBranches.has(ref),
+	);
 	add({
 		scope: 'forge',
 		id: 'no-remote-work-refs',
-		claim: 'no work ref outlived its publication on the forge',
+		claim: 'no work ref outlived its unit on the forge',
 		holds: remoteWork.length === 0,
 		observed:
 			remoteWork.length === 0
 				? 'none'
 				: `${String(remoteWork.length)} ref(s)`,
-		remedy: 'prove the content is published, then delete the ref',
+		remedy: 'publish the unit (`delendai work publish`); delete the ref only once its commits are on the integration branch or a publication',
 	});
 
 	return { results, broken: results.filter((r) => !r.holds).length };

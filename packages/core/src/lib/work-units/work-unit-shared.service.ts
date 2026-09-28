@@ -24,7 +24,11 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import { readWorkspacePolicy } from './development-policy.service';
 import { scalarArg } from './command-args.helper';
-import { stampWorktreeAgent, worktreeSession } from './worktree-agent.service';
+import {
+	stampWorktreeAgent,
+	worktreeAgent,
+	worktreeSession,
+} from './worktree-agent.service';
 
 /** Read-only git, for the facts the engine does not already answer. */
 /** The forge's CLI (`gh`), trimmed output or `undefined` on failure. */
@@ -238,6 +242,27 @@ export const sessionFor = (args: readonly string[]): string | undefined => {
 	return given !== undefined && given.trim().length > 0
 		? given.trim()
 		: undefined;
+};
+
+/**
+ * `args`, with the session of the unit the command runs inside when none
+ * is given. Agents lose the `--session` `work enter` printed; each call
+ * without it read as another session, and `work enter` handed out a new
+ * generation every time. One `minimax-3` instance left seven units behind
+ * on 2026-09-28, their verdicts never published. Standing in your own
+ * unit's worktree is proof enough that it is yours.
+ */
+export const withSessionOfCwd = (
+	args: readonly string[],
+	cwd: string,
+): readonly string[] => {
+	if (sessionFor(args) !== undefined) return args;
+	const top = readGit(cwd, ['rev-parse', '--show-toplevel']);
+	if (top === undefined) return args;
+	const stamped = worktreeSession(top);
+	if (stamped === undefined || worktreeAgent(top) !== agentFor(args))
+		return args;
+	return [...args, `--session=${stamped}`];
 };
 
 /** A refusal when another session of this agent holds `path`. */

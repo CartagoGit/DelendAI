@@ -55,7 +55,11 @@ interface IQueueEntry {
 }
 
 /** A context whose tools answer from `queue`, recording every call. */
-const contextFor = (root: string, queue: readonly IQueueEntry[]) => {
+const contextFor = (
+	root: string,
+	queue: readonly IQueueEntry[],
+	pack?: { readonly full: boolean; readonly size: number },
+) => {
 	const calls: { tool: string; args: Record<string, unknown> }[] = [];
 	const ctx = fakePartial<ICliCommandContext, 'cwd' | 'globals' | 'request'>({
 		cwd: root,
@@ -67,6 +71,7 @@ const contextFor = (root: string, queue: readonly IQueueEntry[]) => {
 			calls.push({ tool, args: args as Record<string, unknown> });
 			if (tool.endsWith('_review_queue')) {
 				return {
+					...(pack === undefined ? {} : { pack }),
 					proposals: queue.map((entry) => ({
 						id: entry.id,
 						file: `docs/delendai/proposals/review/${entry.id}-a.md`,
@@ -273,8 +278,37 @@ describe('delendai review', () => {
 
 		expect(result.code).toBe(0);
 		expect((result.data as { next: string }).next).toContain(
-			'delendai review finish',
+			'Nothing is waiting',
 		);
+		expect(JSON.stringify(result.data)).not.toContain('published');
+	});
+
+	it('publishes a full pack and goes on in a new unit', async () => {
+		const root = repo();
+		const remote = mkdtempSync(join(tmpdir(), 'review-remote-'));
+		roots.push(remote);
+		git(remote, 'init', '-q', '--bare', '-b', 'develop');
+		git(root, 'remote', 'add', 'origin', remote);
+		git(root, 'push', '-q', 'origin', 'develop');
+		const first = contextFor(root, [{ id: 'x00002' }]);
+		const started = (await run(first.ctx, 'next', '--agent=minimax-m3'))
+			.data as { session: string; unit: string };
+		const full = contextFor(root, [{ id: 'x00003' }], {
+			full: true,
+			size: 5,
+		});
+
+		const next = await run(
+			full.ctx,
+			'next',
+			'--agent=minimax-m3',
+			`--session=${started.session}`,
+		);
+
+		expect(next.code).toBe(0);
+		const unit = started.unit.replace(/^refs\/heads\//u, '');
+		expect(git(root, 'branch', '--list', unit)).toBe('');
+		expect((next.data as { proposal?: string }).proposal).toBe('x00003');
 	});
 
 	it('publishes the unit through work publish', async () => {
