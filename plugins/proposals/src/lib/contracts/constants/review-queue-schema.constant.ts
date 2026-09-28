@@ -68,6 +68,18 @@ export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({
 			slices: z.array(SLICE_SCHEMA),
 			close: z.string().optional(),
 			claimedBy: z.array(z.string()).optional(),
+			/** Age and drift since the work landed; the queue is ordered by it. */
+			drift: z
+				.object({
+					measured: z.boolean(),
+					reviewAgeDays: z.number().int().optional(),
+					commitsSince: z.number().int().optional(),
+					filesTouchedSince: z.array(z.string()).optional(),
+					files: z.number().int().optional(),
+					driftRatio: z.number().optional(),
+					reason: z.string().optional(),
+				})
+				.optional(),
 			claim: z.string().optional(),
 		}),
 	),

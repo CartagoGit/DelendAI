@@ -1020,6 +1020,15 @@ export interface DelendaiProposalsReviewQueueOutput {
 		}>;
 		close?: string;
 		claimedBy?: string[];
+		drift?: {
+			measured: boolean;
+			reviewAgeDays?: number;
+			commitsSince?: number;
+			filesTouchedSince?: string[];
+			files?: number;
+			driftRatio?: number;
+			reason?: string;
+		};
 		claim?: string;
 	}>;
 	totals: {
