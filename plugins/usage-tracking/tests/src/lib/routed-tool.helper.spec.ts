@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { buildRecord } from '../../../src/lib/record';
 import { toolReachedBy } from '../../../src/lib/routed-tool.helper';
 
 const routed = (structuredContent: unknown) => ({
@@ -41,5 +42,32 @@ describe('toolReachedBy', () => {
 		expect(toolReachedBy('delendai_resolve_capability', undefined)).toBe(
 			'delendai_resolve_capability',
 		);
+	});
+});
+
+describe('a routed call in the usage record', () => {
+	it('is booked to the tool it reached, in the plugin that owns it', () => {
+		const record = buildRecord({
+			toolName: 'delendai_resolve_capability',
+			corePrefix: 'delendai',
+			peerPrefixes: ['proposals'],
+			agent: { id: 'agent-a', kind: 'claude-code', extension: 'cli' },
+			sessionId: 'sess-routed',
+			args: {},
+			result: routed({
+				status: 'ok',
+				qualifiedName: 'delendai_proposals_review_queue',
+				result: {},
+			}),
+			endedAt: 1_752_000_000_000,
+			responseBytes: 620_691,
+			costOf: () => null,
+		});
+
+		expect(record).toMatchObject({
+			plugin: 'proposals',
+			tool: 'review_queue',
+			responseBytes: 620_691,
+		});
 	});
 });

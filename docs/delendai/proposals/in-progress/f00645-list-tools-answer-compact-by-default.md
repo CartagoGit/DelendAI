@@ -78,7 +78,7 @@ which tools cost the most context is not known.
 - **DependsOn**: [S1]
 - **Files**:
   - `plugins/usage-tracking/src/lib/routed-tool.helper.ts`
-  - `plugins/usage-tracking/src/index.ts`
+  - `plugins/usage-tracking/src/lib/record.ts`
   - `plugins/usage-tracking/tests/src/lib/routed-tool.helper.spec.ts`
 - **Gate**: `npx vitest run plugins/usage-tracking/tests/src/lib/routed-tool.helper.spec.ts`
 - acceptance:
