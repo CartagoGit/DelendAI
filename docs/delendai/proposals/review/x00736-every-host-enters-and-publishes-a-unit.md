@@ -2,12 +2,15 @@
 id: x00736
 title: "Every host enters and publishes a unit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P0
 related: [x00714, x00731, x00735]
+last-transition-id: a705ee40-ace2-4180-b609-ec01872a2f65
+last-correlation-id: a705ee40-ace2-4180-b609-ec01872a2f65
+last-transition-from: in-progress
 ---
 
 # x00736 — Every host enters and publishes a unit
@@ -56,7 +59,7 @@ moved the engine into core; this exposes it.
 
 ### S1 — The work tool
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/tools/work-unit.tool.spec.ts`
 - **Files**:
   - `packages/core/src/lib/tools/work-unit.tool.ts`
