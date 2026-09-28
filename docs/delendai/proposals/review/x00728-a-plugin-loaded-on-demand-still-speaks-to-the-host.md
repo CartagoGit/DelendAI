@@ -50,11 +50,11 @@ guard around the same gap.
 ## architecture
 
 - `packages/core/src/lib/plugins/capture-server.ts` (new),
-  `contracts/interfaces/host-server-slot.interface.ts` (new).
-- `plugins/managed-lazy-runtime.ts`, `plugins/router.ts`,
-  `cli/assemble-plugins.ts`, `cli/assemble.ts`,
-  `contracts/interfaces/host-config.interface.ts`,
-  `project/create-mcp-project.ts`.
+  `packages/core/src/lib/contracts/interfaces/host-server-slot.interface.ts` (new).
+- `packages/core/src/lib/plugins/managed-lazy-runtime.ts`, `plugins/router.ts`,
+  `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/cli/assemble.ts`,
+  `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`,
+  `packages/core/src/lib/project/create-mcp-project.ts`.
 
 ## Slices
 
