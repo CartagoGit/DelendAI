@@ -11,6 +11,7 @@ last-correlation-id: 6e14363a-f203-4958-b3ca-2d5871e5d7da
 last-transition-from: in-progress
 shipped-in:
   - "9b774a2915ab51c60d5f669e245fe475ca8e6340"
+  - "1a7be4e0143a276600ab9e66335ab5751f3f4e0b"
 ---
 
 # x00646 — Reviewing proposals works the same in any project and from any host
@@ -58,7 +59,7 @@ x00643 made a review possible where no round was ever opened, but by rules only 
 - review-reviewer: glm-5.3-max
 - review-log: approved by glm-5.3-max — Revisé la entrega real 9b774a291 (S1+S2). S1 (atribución de implementador): cada checkpoint del WIP engine lleva un trailer con el ref para el que se escribió (junto a scope y digest); el trailer sobrevive squash y rebase; el implementador se lee en orden: trailer work-ref del commit entregador → refs nombrados en el mensaje del merge (GitHub/GitLab/Bitbucket/git plano) → Co-Authored-By; el ref se decodifica con el workRefTemplate del proyecto y el publication ref se mapea atrás; squash/rebase/merge-commit y template no-default se testean sobre repo real. S2 (review queue + CLI): tool read-only lista lo pendiente oldest-first con estado, implementador (grabado/derivable/faltante), candidatos con su origen, gate, acceptance y la llamada exacta; el CLI expone la cola y proposals review acepta commit + evidencia; el knowledge del workflow declara el procedimiento del reviewer; el overview cuenta las pendientes y apunta a la cola. Acceptance: 30/30 review-attribution.spec + 43/43 en el lote. Sin cambios fuera de alcance.
 ### S3 — One call tells a reviewer what the review backlog needs
-- **Status**: review — shipped in #459 (merge 9b774a291)
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/surface/disclosure.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/groups/proposals.spec.ts`, `plugins/proposals/src/lib/services/delivery-history.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`, `packages/cli/src/commands/registry.spec.ts`, `plugins/proposals/tests/src/lib/plugin.spec.ts`
 - **Gate**: e2e
@@ -66,8 +67,11 @@ x00643 made a review possible where no round was ever opened, but by rules only 
   - "A read-only tool lists every proposal in review, oldest first, and for each slice: its review state, the implementer (recorded, derivable from Git, or the datum that is missing), the candidate delivering commits with where each came from, its gate and acceptance, and the exact next call."
   - "A proposal whose slices are all reviewed but which is still in review names the transition that closes it, or why it cannot close."
   - "The CLI exposes the queue, and `proposals review` accepts the commit and the evidence an approval needs, so a console-only agent can finish a review."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 1a7be4e01 (x00646 S3, merge 9b774a291 = PR #459). review-queue.tool.ts (read-only) lista oldest-first cada propuesta en review con por-slice: estado, implementador (grabado/derivable/faltante), candidatos con origen, gate, acceptance y la llamada exacta (next-action). Las propuestas listas para cerrar (todas las slices revisadas) aparecen con readyToClose y el next-action que propone la transición. El CLI expone la cola vía proposals review-queue; proposals review acepta --commit + --validate-exit + --tests-passing + --tests-total para aprobar desde consola. 16/16 verde en los 2 specs focalizados (review-queue.tool + review-queue-candidates). claude-opus-5-5 != minimax-m3 → veredicto independiente. Sin cambios fuera de alcance.
+
 ### S4 — Every host receives the same review procedure from the server
 - **Status**: review — shipped in #459 (merge 9b774a291)
 - **Files**: `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`, `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`, `plugins/proposals/tests/src/lib/knowledge/proposal-workflow-review.spec.ts`, `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/review-identity.spec.ts`
