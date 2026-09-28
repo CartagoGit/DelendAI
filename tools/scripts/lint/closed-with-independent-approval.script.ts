@@ -22,42 +22,49 @@
  */
 import { execFileSync } from 'node:child_process';
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import {
+	type IReviewIndependence,
+	unapprovedSlices,
+} from '@delendai/proposals/public';
+
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 
 const DONE_PREFIX = 'docs/delendai/proposals/done/';
 
-/** The finished slices of `markdown` that lack an independent approval. */
-export const unapprovedSlices = (markdown: string): readonly string[] => {
-	// A slice is a `###` block with a Status line; other `###` headings
-	// (notes, measurements) are not judged. A proposal with no slices is
-	// judged as a whole.
-	const statusOf = (block: string) =>
-		block
-			.match(/^[-*]\s*\*\*Status\*\*:\s*([a-z-]+)/imu)?.[1]
-			?.toLowerCase();
-	const slices = markdown
-		.split(/^### /mu)
-		.slice(1)
-		.filter((block) => statusOf(block) !== undefined);
-	const judged =
-		slices.length > 0
-			? slices.filter((block) => statusOf(block) === 'done')
-			: [markdown];
-	return judged.flatMap((block) => {
-		const title =
-			slices.length > 0 ? (block.split('\n')[0] ?? '').trim() : '';
-		const implementer = block
-			.match(/^[-*]\s*review-implementer:\s*(\S+)/imu)?.[1]
-			?.toLowerCase();
-		const approvers = [
-			...block.matchAll(/^[-*]\s*review-log:\s*approved by\s+(\S+)/gimu),
-		].map((match) => (match[1] ?? '').toLowerCase());
-		const independent = approvers.some(
-			(approver) => approver.length > 0 && approver !== implementer,
-		);
-		return independent ? [] : [title.length > 0 ? title : '(the proposal)'];
-	});
+// The rule lives in the proposals plugin, the same one every path to
+// `done` applies (x00718).
+export { unapprovedSlices } from '@delendai/proposals/public';
+
+/**
+ * The project's review policy, read where the proposals plugin reads it:
+ * CI judges with the same rule the tools apply (x00718).
+ */
+const reviewPolicyOf = (
+	root: string,
+): {
+	readonly requirePeerReview: boolean;
+	readonly reviewIndependence: IReviewIndependence;
+} => {
+	let options: Record<string, unknown> = {};
+	try {
+		const config = JSON.parse(
+			readFileSync(join(root, 'delendai.config.json'), 'utf8'),
+		) as {
+			plugins?: { proposals?: { options?: Record<string, unknown> } };
+		};
+		options = config.plugins?.proposals?.options ?? {};
+	} catch {
+		// No config: the plugin's defaults.
+	}
+	return {
+		requirePeerReview: options.requirePeerReview !== false,
+		reviewIndependence:
+			options.reviewIndependence === 'instance' ? 'instance' : 'model',
+	};
 };
 
 /**
@@ -130,8 +137,18 @@ const main = (): number => {
 	])
 		.split('\n')
 		.filter((path) => path.endsWith('.md') && !path.endsWith('README.md'));
+	const review = reviewPolicyOf(root);
+	if (!review.requirePeerReview) {
+		console.log(
+			'✓ closed-with-independent-approval: this project does not review proposals (plugins.proposals.options.requirePeerReview: false).',
+		);
+		return 0;
+	}
 	const findings = entered.flatMap((path) => {
-		const missing = unapprovedSlices(git(root, ['show', `HEAD:${path}`]));
+		const missing = unapprovedSlices(
+			git(root, ['show', `HEAD:${path}`]),
+			review.reviewIndependence,
+		);
 		return missing.length === 0 ? [] : [{ path, missing }];
 	});
 	const head =

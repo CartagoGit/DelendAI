@@ -245,7 +245,8 @@ describe('x00638 S2 — proposals tools act in the caller’s checkout', () => {
 			checkout: worktree,
 		});
 		const said = JSON.stringify(refused);
-		expect(said).toContain('peer-review required');
+		// Never to done (x00718), and never a way around it (x00707).
+		expect(said).toContain('does not move a proposal to done');
 		expect(said).toContain('owner');
 		expect(said).not.toContain('skipPeerReview');
 	});
