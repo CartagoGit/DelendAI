@@ -2,12 +2,15 @@
 id: x00727
 title: "A review is four commands"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00714, x00717, x00718, x00722]
+last-transition-id: 4886e74e-d395-4574-910e-0c216fb349a9
+last-correlation-id: 4886e74e-d395-4574-910e-0c216fb349a9
+last-transition-from: in-progress
 ---
 
 # x00727 — A review is four commands
@@ -72,7 +75,7 @@ had not reviewed.
 
 ### S1 — next, approve, changes, finish
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/review.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/review.command.ts`
