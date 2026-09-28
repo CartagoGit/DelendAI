@@ -2,15 +2,17 @@
 id: x00743
 title: "An owner authorizes a reconciliation"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P1
 related: [x00696, x00715, x00741, x00742]
-last-transition-id: fa7b8703-5a9c-4e3a-b157-567352eef300
-last-correlation-id: fa7b8703-5a9c-4e3a-b157-567352eef300
-last-transition-from: in-progress
+last-transition-id: 8299c9dd-7073-45a5-8c8d-3d63d8fe4ccd
+last-correlation-id: 8299c9dd-7073-45a5-8c8d-3d63d8fe4ccd
+last-transition-from: review
+shipped-in:
+  - "d143d0c94"
 ---
 
 # x00743 — An owner authorizes a reconciliation
@@ -70,7 +72,7 @@ short of merging by hand past a red required check.
 
 ### S1 — The reconcile kind, and the owner's label
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts packages/core/tests/src/lib/development-policy/git-guard-review-scope.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/profiles.constant.ts`
@@ -81,6 +83,11 @@ short of merging by hand past a red required check.
   - `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
   - `.github/workflows/ci.yml`
   - `plugins/proposals/src/lib/services/review-procedure.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé d143d0c94 (x00743 S1, merge PR #613). closed-with-independent-approval.script.ts (lint nuevo) lee la label `delendai:owner-reconcile` del PR con el token del job y permite aprobaciones que no son del autor solo si la lleva. Sin la label, el lint rehúsa y nombra la label; con ella, pasa. profiles.constant.ts añade el kind `reconcile` al vocabulario; git-guard-review-scope.ts aplica el mismo scope que a review (rechaza source files). work-unit-publish.service.ts no añade triggers (un trigger `labeled` re-corre toda la matriz); la label la aplica el owner y re-corre el job. review-procedure.ts dice explícitamente que un agente NUNCA aplica la label (y ningún tool de delendai puede añadir labels). 18/18 verde en los 2 specs focalizados. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from commit d143d0c9484a names refs/heads/delendai/wip/claude-opus-5-5/implement/x00743-all-g1/an-owner-authorizes-a-reconciliation (d143d0c9484acd9b5386a1df04c1a345c91044e7), opened by minimax-m3
 
 ## dependency graph
 
