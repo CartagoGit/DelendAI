@@ -1227,6 +1227,12 @@ export async function syncProposalRegistry(
 	folderPolicy?: IProposalFolderPolicy,
 	// Injectable for tests; the reader-verdict leveller by default.
 	leveller: typeof levelProjection = levelProjection,
+	// Rebuild the index and its projection only: no file is archived,
+	// renamed, moved or unblocked. Those are tracked changes, and a caller
+	// that only needs to read the proposals — `auto_work` finding its
+	// index behind the files, in the shared checkout — must not make them
+	// (x00716).
+	indexOnly = false,
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);
@@ -1240,36 +1246,42 @@ export async function syncProposalRegistry(
 	// Cross-process critical section: a concurrent sync regenerating
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
-		await reconcileAndArchiveCompletedRootProposals(proposalsDir);
-		const canonicalReconciliation = await reconcileCanonicalProposals(
-			proposalsDir,
-			gitRunner,
-			folderPolicy,
-			quarantineContext,
-		);
+		if (!indexOnly) {
+			await reconcileAndArchiveCompletedRootProposals(proposalsDir);
+		}
+		const canonicalReconciliation = indexOnly
+			? undefined
+			: await reconcileCanonicalProposals(
+					proposalsDir,
+					gitRunner,
+					folderPolicy,
+					quarantineContext,
+				);
 		// S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
 		// the scan below so the index reflects the post-reconciliation tree.
-		await reconcileFolders(
-			proposalsDir,
-			gitRunner,
-			folderPolicy,
-			quarantineContext,
-		);
-		await reconcileBlocked(
-			proposalsDir,
-			gitRunner,
-			folderPolicy,
-			quarantineContext,
-		);
+		if (!indexOnly) {
+			await reconcileFolders(
+				proposalsDir,
+				gitRunner,
+				folderPolicy,
+				quarantineContext,
+			);
+			await reconcileBlocked(
+				proposalsDir,
+				gitRunner,
+				folderPolicy,
+				quarantineContext,
+			);
+		}
 		const { index, nextText, semanticHash } = await snapshotRegistry({
 			proposalsDir,
 			indexPath,
 			containedExtraFolders,
 			folderPolicy,
 			quarantineContext,
-			priorErrors: canonicalReconciliation.errors,
+			priorErrors: canonicalReconciliation?.errors ?? [],
 		});
 		let changed = true;
 		try {

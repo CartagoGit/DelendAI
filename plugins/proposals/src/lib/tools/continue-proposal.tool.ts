@@ -65,6 +65,12 @@ export interface IContinueProposalToolOptions {
 	 */
 	readonly cascadeResolver?: ICascadePriorityResolver;
 	/**
+	 * Rebuild the index from the proposal files (`sync_proposals`' own
+	 * engine). Called when the files outnumber the index, so no agent is
+	 * told to run a step first (x00716).
+	 */
+	readonly refreshIndex?: () => Promise<void>;
+	/**
 	 * Engine-internal flag for `mode: "auto"`: when true, if the
 	 * normal cascade finds no actionable proposal (no entries in the
 	 * standard actionable folders, or every actionable entry is
@@ -551,7 +557,7 @@ export const runContinueProposal = async (
 	}
 
 	// mode === 'auto' (serial): next actionable proposal by cascade.
-	const entries = await readProposalIndex(options.indexPathAbs);
+	const entries = await freshEntries(options);
 	const actionable = entries.filter(isActionable);
 	if (actionable.length === 0) {
 		if (options.includePausedFallback === true) {
@@ -814,6 +820,30 @@ export const runContinueProposal = async (
 };
 
 /** Registration for `<prefix>_continue_proposal`. */
+/**
+ * The index entries, rebuilt first when the proposal files outnumber
+ * them. The files are the source of truth and the index derives from
+ * them: `auto_work` answered "run sync_proposals" instead, and in the
+ * shared checkout `sync_proposals` was refused as a loose edit, so an
+ * agent starting there could not get work at all (x00716).
+ */
+const freshEntries = async (
+	options: IContinueProposalToolOptions,
+): Promise<Awaited<ReturnType<typeof readProposalIndex>>> => {
+	const entries = await readProposalIndex(options.indexPathAbs);
+	if (
+		options.refreshIndex === undefined ||
+		options.proposalsDirAbs === undefined
+	) {
+		return entries;
+	}
+	const onDisk = await probeProposalsOnDisk(options.proposalsDirAbs);
+	if (onDisk.status !== 'ok' || onDisk.count <= entries.length)
+		return entries;
+	await options.refreshIndex();
+	return readProposalIndex(options.indexPathAbs);
+};
+
 export const buildContinueProposalRegistration = (
 	options: IContinueProposalToolOptions,
 ): IToolRegistration => ({
