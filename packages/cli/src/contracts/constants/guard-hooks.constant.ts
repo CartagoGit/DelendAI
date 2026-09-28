@@ -3,6 +3,11 @@ import type { IGuardHookName } from '@delendai/core/cli';
 /** The hooks `delendai guard install` writes the policy guard into. */
 export const GUARDED_HOOKS: readonly IGuardHookName[] = [
 	'pre-commit',
+	// Judges the same commit again. Hook managers skip `pre-commit` when
+	// nothing is staged (lefthook does), so an empty commit, a review
+	// claim, reached the integration branch past it; git runs
+	// `commit-msg` for every commit.
+	'commit-msg',
 	'reference-transaction',
 	'pre-push',
 	// Git offers no veto before a checkout, so this one never refuses: it

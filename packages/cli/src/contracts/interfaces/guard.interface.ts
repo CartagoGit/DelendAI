@@ -3,6 +3,7 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 /** The git hooks `delendai guard` answers for. */
 export type IGuardedHook =
 	| 'pre-commit'
+	| 'commit-msg'
 	| 'reference-transaction'
 	| 'pre-push'
 	| 'post-checkout'
@@ -40,6 +41,10 @@ export interface IGuardFacts {
 	readonly worktreeOf?: (ref: string) => string | undefined;
 	/** The commit `ref` points at now, if it exists (x00703). */
 	readonly refAt?: (ref: string) => string | undefined;
+	/** The paths the commit being made changes; undefined when unknown. */
+	readonly stagedPaths?: () => readonly string[] | undefined;
+	/** The project's documents directory (`docsDir`). */
+	readonly docsDir?: (workspace: string) => Promise<string>;
 	/** Everything git wrote to the hook's stdin. */
 	readonly stdin: () => Promise<string>;
 	/**

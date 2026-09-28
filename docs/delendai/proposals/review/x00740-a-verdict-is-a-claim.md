@@ -2,12 +2,15 @@
 id: x00740
 title: "A verdict is a claim"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P1
 related: [x00737, x00739]
+last-transition-id: 5982c2cd-e551-4a34-b88e-715493ed6128
+last-correlation-id: 5982c2cd-e551-4a34-b88e-715493ed6128
+last-transition-from: in-progress
 ---
 
 # x00740 — A verdict is a claim
@@ -70,7 +73,7 @@ A swarm of `minimax-3` and `glm-5.3-max` reviewers, watched on 2026-09-28:
 
 ### S1 — Verdicts claim, claims commit alone, review lines keep the blank line
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/contracts/interfaces/review-claim-outcome.interface.ts`

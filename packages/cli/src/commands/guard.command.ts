@@ -25,7 +25,11 @@ import type {
 	IGuardFacts,
 	IGuardedHook,
 } from '../contracts/interfaces/guard.interface';
-import { readWorkspacePolicy, worktreeAgent } from '@delendai/core/cli';
+import {
+	readWorkspaceDocsDir,
+	readWorkspacePolicy,
+	worktreeAgent,
+} from '@delendai/core/cli';
 import {
 	inspectGuardHooks,
 	installGuardHooks,
@@ -70,9 +74,11 @@ export const operationsForHook = (
 		readonly tipKept?: IGuardFacts['tipKept'];
 		readonly refAt?: IGuardFacts['refAt'];
 		readonly worktreeOf?: IGuardFacts['worktreeOf'];
+		readonly paths?: readonly string[] | undefined;
+		readonly docsDir?: string | undefined;
 	},
 ): IGuardedGitOperation[] => {
-	if (hook === 'pre-commit') {
+	if (hook === 'pre-commit' || hook === 'commit-msg') {
 		return [
 			{
 				kind: 'commit',
@@ -81,6 +87,8 @@ export const operationsForHook = (
 				inMainWorktree: facts.inMainWorktree ?? true,
 				author: facts.author,
 				configuredAuthor: facts.configuredAuthor,
+				paths: facts.paths,
+				docsDir: facts.docsDir,
 			},
 		];
 	}
@@ -268,6 +276,11 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 			? undefined
 			: `${name} <${email}>`;
 	},
+	stagedPaths: () =>
+		git(workspace, ['diff', '--cached', '--name-only', '--no-renames'])
+			?.split('\n')
+			.filter((path) => path.length > 0),
+	docsDir: (root) => readWorkspaceDocsDir(root),
 	stdin: () => readStream(process.stdin),
 	// One reader for every entry point: the guard and `delendai work`
 	// must never disagree about what the project declared.
@@ -276,6 +289,7 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 
 const HOOKS: readonly IGuardedHook[] = [
 	'pre-commit',
+	'commit-msg',
 	'reference-transaction',
 	'pre-push',
 	'post-checkout',
@@ -445,7 +459,7 @@ export const createGuardCommand = (
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|reference-transaction|pre-push|post-checkout> [hook args]',
+	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
 		// A Map, not an object indexed by user input: `delendai guard
@@ -554,10 +568,11 @@ export const createGuardCommand = (
 			}
 			return { code: EXIT_CODE.OK };
 		}
+		const commits = hook === 'pre-commit' || hook === 'commit-msg';
 		const operations = operationsForHook(
 			hook as IGuardedHook,
 			hookArgs,
-			hook === 'pre-commit' ? '' : await facts.stdin(),
+			commits ? '' : await facts.stdin(),
 			{
 				branch: facts.branch(),
 				isMerge: facts.isMerge(),
@@ -569,10 +584,12 @@ export const createGuardCommand = (
 				...(facts.worktreeOf === undefined
 					? {}
 					: { worktreeOf: facts.worktreeOf }),
-				...(hook === 'pre-commit'
+				...(commits
 					? {
 							author: facts.author?.(),
 							configuredAuthor: facts.configuredAuthor?.(),
+							paths: facts.stagedPaths?.(),
+							docsDir: await facts.docsDir?.(workspace),
 						}
 					: {}),
 			},

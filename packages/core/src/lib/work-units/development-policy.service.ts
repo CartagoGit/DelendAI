@@ -17,6 +17,7 @@ import { parseJsonc } from '../config/jsonc-document';
 import { resolveDevelopmentPolicy } from '../development-policy/resolve';
 import { sharedCheckout } from '../shared/shared-checkout';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 
 import { isRecord, readConfigText } from './command-args.helper';
 
@@ -69,4 +70,20 @@ export const readWorkspacePolicy = async (
 				...policy,
 				branches: { ...policy.branches, integration: discovered },
 			};
+};
+
+/**
+ * The project's documents directory, as the assembled server resolves it:
+ * the declared `docsDir`, or the default. Read by the guard, which runs
+ * with no server, so a review unit's scope is the documents the project
+ * actually keeps.
+ */
+export const readWorkspaceDocsDir = async (root: string): Promise<string> => {
+	const text = await readConfigText(root);
+	const parsed = text === undefined ? undefined : parseJsonc(text).value;
+	return isRecord(parsed) &&
+		typeof parsed.docsDir === 'string' &&
+		parsed.docsDir.length > 0
+		? parsed.docsDir
+		: DEFAULT_CORE_PATHS.docsDir;
 };
