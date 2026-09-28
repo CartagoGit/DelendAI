@@ -2,7 +2,7 @@
 id: x00543
 title: "The marginal plugin ceiling is reported over hard and enforced nowhere"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-15
@@ -13,6 +13,9 @@ tags:
     - test-fidelity
 shipped-in:
   - "4815b247981543efa2793f3f5ba84b04eeb80c48"
+last-transition-id: 0a5efc64-2c93-4331-94b1-208da1837023
+last-correlation-id: 0a5efc64-2c93-4331-94b1-208da1837023
+last-transition-from: review
 ---
 
 # x00543 — The marginal plugin ceiling is reported over hard and enforced nowhere
@@ -118,7 +121,7 @@ this fix.
 
 ### S4 — The dashboard and the gate share one verdict
 
-- **Status**: done — the dashboard's marginal column is now `marginalStatus(row.ownerRows, …)`, built on the same `marginalVerdict` the gate enforces, so a surface with no plugin tool reads `n/a` instead of `within hard`. Regenerated on 2026-09-15: `TOKEN-BUDGETS.md` has 0 `over hard` rows, and `standard` reads `over warning (9,500B)` at 10,577 B. `tokens:dashboard:check` passes, and `tokens:gate` exits 0 across all six governed presets.
+- **Status**: done
 - shipped-in: `4815b2479`
 - **Files**: [`tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/test/preset-marginal-ceiling.ts`]
 
@@ -126,6 +129,11 @@ The dashboard's marginal status comes from the same function S1 adds. An
 "over hard" row and a zero exit can no longer coexist.
 
 - **Gate**: `bun run tokens:dashboard:check && bun run tokens:gate`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 4815b2479 para x00543 S4. token-budget-dashboard.script.ts ahora usa marginalStatus(row.ownerRows,...) construido sobre el mismo marginalVerdict del gate. TOKEN-BUDGETS.md regenerado: 0 over-hard rows, standard reads 'over warning (9,500B)' at 10,577 B. tokens:dashboard:check exit 0 + tokens:gate exit 0 across 6 governed presets. Un 'over hard' y exit 0 ya no pueden coexistir (invariante cubierto por el cambio). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 4815b247981543efa2793f3f5ba84b04eeb80c48: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ## acceptance
 
