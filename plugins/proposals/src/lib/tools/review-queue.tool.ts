@@ -52,6 +52,7 @@ export const buildReviewQueueRegistration = (
 				limit?: number | undefined;
 				offset?: number | undefined;
 				agent?: string | undefined;
+				unit?: string | undefined;
 				detail?: boolean | undefined;
 			}) => {
 				const scoped = scopeToCaller(options);
@@ -67,6 +68,7 @@ export const buildReviewQueueRegistration = (
 					limit: args.limit ?? DEFAULT_QUEUE_PAGE,
 					offset: args.offset,
 					agent: args.agent,
+					unit: args.unit,
 					// A reviewer that names itself is one of a swarm; one that
 					// does not reads the backlog oldest first.
 					...(args.agent === undefined

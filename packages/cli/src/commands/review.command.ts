@@ -241,7 +241,9 @@ const next = async (
 			error: 'This project declares no development policy, so it has no review units.',
 		};
 	}
-	const queue = await queueOf(ctx, agent);
+	// The unit, not only the agent: another instance of this model is
+	// another reviewer, and its claims are not ours.
+	const queue = await queueOf(ctx, agent, { unit: unit.ref });
 	const claimed = claimsOf(unit, policy.branches.integration);
 	// Your own claim first: a review you started is finished before
 	// another is taken.

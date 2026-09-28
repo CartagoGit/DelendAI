@@ -162,7 +162,27 @@ const commitPaths = async (
 		]);
 		if (!removed.ok) return removed;
 	}
-	return git(['commit', '-q', '-m', subject, '--', ...paths]);
+	// A path the call both created and removed — a proposal renamed to its
+	// canonical name, then moved to another stage — is known to neither
+	// HEAD nor the index now, and naming it fails the whole commit.
+	const tracked =
+		gone.length === 0
+			? []
+			: (
+					await git([
+						'ls-tree',
+						'-r',
+						'--name-only',
+						'HEAD',
+						'--',
+						...gone,
+					])
+				).output
+					.split('\n')
+					.filter((line) => line.length > 0);
+	const committable = [...present, ...tracked];
+	if (committable.length === 0) return { ok: true };
+	return git(['commit', '-q', '-m', subject, '--', ...committable]);
 };
 
 /** Calls in one worktree run one after another, so each commits its own. */
