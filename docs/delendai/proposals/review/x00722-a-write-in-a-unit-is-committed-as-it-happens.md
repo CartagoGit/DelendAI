@@ -2,12 +2,15 @@
 id: x00722
 title: "A write in a unit is committed as it happens"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00707, x00714]
+last-transition-id: 90508029-2760-4f34-832a-a30d248f196b
+last-correlation-id: 90508029-2760-4f34-832a-a30d248f196b
+last-transition-from: in-progress
 ---
 
 # x00722 — A write in a unit is committed as it happens
@@ -67,7 +70,7 @@ pushes committed work every few minutes; nothing was committed to push.
 
 ### S1 — Commit what the call wrote, in a unit
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
 - **Files**:
   - `packages/core/src/lib/shared/commit-call-writes.ts`
