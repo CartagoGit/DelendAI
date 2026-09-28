@@ -2,15 +2,17 @@
 id: x00698
 title: "The owner's identity comes from the global config"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [f00644, x00688]
-last-transition-id: dfb188ac-775b-4087-ad50-e875f30fdf14
-last-correlation-id: dfb188ac-775b-4087-ad50-e875f30fdf14
-last-transition-from: in-progress
+last-transition-id: 60ab56f8-f725-4734-b6f6-4f3665ef57ff
+last-correlation-id: 60ab56f8-f725-4734-b6f6-4f3665ef57ff
+last-transition-from: review
+shipped-in:
+  - "3272cdeb8"
 ---
 
 # x00698 — The owner's identity comes from the global config
@@ -63,11 +65,16 @@ passed.
 
 ### S1 — The owner's identity is not the repository's to change
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/commands/guard.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/guard.command.ts`
   - `packages/cli/src/commands/guard.command.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 3272cdeb8 (x00698 S1, merge PR #549). fix(guard): the owner's identity comes from the global config. guard.command.ts: `defaultGuardFacts.configuredAuthor` lee user.name/email del global → system → repo. Una identidad repo que difiere del owner es exactamente un borrowed author y en branches de delendai se rechaza con el nombre del owner. El spec usa GIT_CONFIG_GLOBAL hermético (sin system config). 27/27 verde en guard.command.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #549 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00698-S1-g1/the-owner-identity-comes-from-the-global-config (refs/heads/delendai/wip/claude-opus-5-5/implement/x00698-S1-g1/the-owner-identity-comes-from-the-global-config) (3272cdeb89206146ec4bf99efabb57bfdcec9f1a), opened by minimax-m3
 
 ## dependency graph
 
