@@ -2,15 +2,17 @@
 id: x00731
 title: "Instances entering at once each get a unit"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00714, x00727]
-last-transition-id: 7e64a83c-ba47-49c2-8777-fc8f548dd343
-last-correlation-id: 7e64a83c-ba47-49c2-8777-fc8f548dd343
-last-transition-from: in-progress
+last-transition-id: e58ba19e-05fa-46bc-bb83-a3e6c1881fb7
+last-correlation-id: e58ba19e-05fa-46bc-bb83-a3e6c1881fb7
+last-transition-from: review
+shipped-in:
+  - "421459dc0"
 ---
 
 # x00731 — Instances entering at once each get a unit
@@ -57,11 +59,16 @@ None.
 
 ### S1 — One entry at a time per unit, at the right path
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
   - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 421459dc0 (x00731 S1, merge PR #600). fix(cli): instances entering at once each get a unit. work-claim.command garantiza que cada instancia concurrente recibe una unidad distinta (no comparte lock ni work ref). 5/5 verde en work-claim.command.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #600 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00731-all-g1/instances-entering-at-once-each-get-a-unit (refs/heads/delendai/wip/claude-opus-5-5/implement/x00731-all-g1/instances-entering-at-once-each-get-a-unit) (421459dc071f97f6abd2d7a711ace5e4459452c3), opened by minimax-m3
 
 ## dependency graph
 
