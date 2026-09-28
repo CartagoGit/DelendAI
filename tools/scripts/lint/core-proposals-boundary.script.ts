@@ -108,6 +108,14 @@ const TOKEN_RULES: readonly IBoundaryTokenRule[] = [
 export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundaryException[] =
 	[
 		{
+			file: 'packages/core/src/lib/work-units/publication-target.service.ts',
+			needle: '/proposals/',
+			until: '2027-03-31',
+			classification: 'adapter',
+			reason: 'x00735 moved the unit-of-work engine from the CLI into core so every host runs one engine; it finds and reads the proposal a unit belongs to by the proposals layout. r00043 moves that knowledge behind an adapter the proposals plugin provides.',
+			kind: 'path',
+		},
+		{
 			file: 'packages/core/src/public/index.ts',
 			needle: '../lib/cli/read-proposals-index',
 			until: '2027-03-31',
