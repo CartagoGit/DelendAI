@@ -7,8 +7,8 @@ import {
 	rmSync,
 	writeSync,
 } from 'node:fs';
-import { mkdir, open, rename, rm } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { mkdir, open, readdir, rename, rm, stat } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 import { randomBytes } from 'node:crypto';
 
 /**
@@ -33,6 +33,55 @@ const tmpPathFor = (absolutePath: string): string =>
 	`${absolutePath}.${Date.now().toString(36)}-${randomBytes(6).toString('hex')}.tmp`;
 
 /** Flush a directory entry to disk so a rename into it is durable. Best-effort. */
+/**
+ * How old an empty temporary of this writer must be before it counts as a
+ * dead writer's. Opening a temporary and writing it takes milliseconds.
+ */
+const ORPHAN_TMP_AGE_MS = 60_000;
+
+/**
+ * Remove the empty temporaries of `absolutePath` that a writer left when
+ * its process ended between opening and writing one (x00734).
+ *
+ * A short-lived process (a CLI command, a generator) whose plugin refreshes
+ * a cache in the background exits mid-write; nothing ever cleaned up, and
+ * `check-stray-cache-files` failed every gate run in that checkout. The
+ * next successful write of the same file sweeps them. Best effort: it
+ * never fails the write.
+ */
+const sweepOrphanTemporaries = async (absolutePath: string): Promise<void> => {
+	const dir = dirname(absolutePath);
+	const prefix = `${basename(absolutePath)}.`;
+	let names: readonly string[];
+	try {
+		names = await readdir(dir);
+	} catch {
+		return;
+	}
+	const cutoff = Date.now() - ORPHAN_TMP_AGE_MS;
+	await Promise.all(
+		names
+			.filter(
+				(name) =>
+					name.startsWith(prefix) &&
+					/^[0-9a-z]+-[0-9a-f]{12}\.tmp$/u.test(
+						name.slice(prefix.length),
+					),
+			)
+			.map(async (name) => {
+				const path = join(dir, name);
+				const info = await stat(path).catch(() => undefined);
+				if (
+					info !== undefined &&
+					info.size === 0 &&
+					info.mtimeMs < cutoff
+				) {
+					await rm(path, { force: true });
+				}
+			}),
+	);
+};
+
 const fsyncDir = async (dir: string): Promise<void> => {
 	try {
 		const handle = await open(dir, 'r');
@@ -76,8 +125,17 @@ export const writeFileAtomic = async (
 		await rename(tmp, absolutePath);
 		await fsyncDir(dir);
 	} catch (error) {
-		await rm(tmp, { force: true }).catch(() => undefined);
+		try {
+			await rm(tmp, { force: true });
+		} catch {
+			// The original failure is the one to report.
+		}
 		throw error;
+	}
+	try {
+		await sweepOrphanTemporaries(absolutePath);
+	} catch {
+		// Best effort: the write already landed.
 	}
 };
 
