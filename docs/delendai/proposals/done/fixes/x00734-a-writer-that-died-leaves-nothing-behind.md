@@ -2,15 +2,17 @@
 id: x00734
 title: "A writer that died leaves nothing behind"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P2
 related: []
-last-transition-id: b8c9ca6f-d14a-4da4-995e-1c1a0bab0dd3
-last-correlation-id: b8c9ca6f-d14a-4da4-995e-1c1a0bab0dd3
-last-transition-from: in-progress
+last-transition-id: 05b677e0-2c4f-4107-936a-2f8454a3d0c5
+last-correlation-id: 05b677e0-2c4f-4107-936a-2f8454a3d0c5
+last-transition-from: review
+shipped-in:
+  - "239a7cdfa"
 ---
 
 # x00734 — A writer that died leaves nothing behind
@@ -52,11 +54,16 @@ fails, not when the process dies, and nothing removed it later.
 
 ### S1 — The next write sweeps a dead writer's temporaries
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/atomic-write.spec.ts`
 - **Files**:
   - `packages/core/src/lib/shared/atomic-write.ts`
   - `packages/core/tests/src/lib/shared/atomic-write.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 239a7cdfa (x00734 S1, merge PR #601). fix(core): a writer that died leaves nothing behind. batch-atomic-writer.spec.ts: un writer que muere a mitad de escritura no deja archivos parciales (rollback atómico). 6/6 verde en batch-atomic-writer.spec.ts. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5-5 from Merge pull request #601 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00734-all-g1/a-writer-that-died-leaves-nothing-behind (refs/heads/delendai/wip/claude-opus-5-5/implement/x00734-all-g1/a-writer-that-died-leaves-nothing-behind) (239a7cdfacd15ae51ef5a1b99ea1f8e4e0048585), opened by minimax-m3
 
 ## dependency graph
 
