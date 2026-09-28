@@ -1,5 +1,4 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-
+import { captureServer } from './capture-server';
 import type { ILazyPluginDiscovery } from './discovery';
 import type {
 	IFailedPluginEntry,
@@ -139,8 +138,8 @@ const captureToolRegistrations = async (
 	registrations: readonly IToolRegistration[],
 ): Promise<ReadonlyMap<string, ICapturedToolBinding>> => {
 	const captured = new Map<string, ICapturedToolBinding>();
-	const captureServer = {
-		registerTool(
+	const server = captureServer(
+		(
 			name: string,
 			config: {
 				readonly description?: string;
@@ -148,7 +147,7 @@ const captureToolRegistrations = async (
 				readonly outputSchema?: unknown;
 			},
 			handler: unknown,
-		) {
+		) => {
 			captured.set(name, {
 				handler,
 				...(config.description !== undefined
@@ -168,9 +167,9 @@ const captureToolRegistrations = async (
 				handler,
 			};
 		},
-	};
+	);
 	for (const registration of registrations) {
-		await registration.register(captureServer as unknown as McpServer);
+		await registration.register(server);
 	}
 	return captured;
 };

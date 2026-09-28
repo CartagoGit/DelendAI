@@ -7,6 +7,7 @@
  * config consumes, and derives the activation + configuration-center
  * projections.
  */
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type {
@@ -85,6 +86,8 @@ const idempotentDisposePlugins = (
 
 /** Inputs `assemblePlugins` needs from the config-resolution phase. */
 export interface IAssemblePluginsInput {
+	/** The project's server once it exists (`IHostServerSlot.get`). */
+	readonly liveServer?: (() => McpServer | undefined) | undefined;
 	readonly args: IDelendaiCliArgs;
 	readonly fileConfig: IDelendaiConfigFile;
 	readonly corePrefix: string;
@@ -355,6 +358,7 @@ const tryAssembleManagedLazy = async (input: {
 	readonly effectivePlugins: readonly string[];
 	readonly buildContext: IAssemblePluginsInput['buildContext'];
 	readonly importFn: (specifier: string) => Promise<unknown>;
+	readonly liveServer?: IAssemblePluginsInput['liveServer'];
 }): Promise<IAssemblePluginsResult | undefined> => {
 	const loading = input.fileConfig.managedSurface?.loading ?? 'lazy';
 	if (loading !== 'lazy') return undefined;
@@ -462,6 +466,7 @@ const tryAssembleManagedLazy = async (input: {
 	const pendingRegistrations = new Map<string, IMcpPluginRegistrations>();
 	const lazyRuntime = createManagedLazyRuntime({
 		namespacePrefix: input.corePrefix,
+		liveServer: input.liveServer,
 		plugins: definitions,
 		namespaces,
 		buildContext: input.buildContext,
@@ -826,6 +831,7 @@ export const assemblePlugins = async (
 		);
 	});
 	const managedLazy = await tryAssembleManagedLazy({
+		liveServer: input.liveServer,
 		args,
 		fileConfig,
 		corePrefix,

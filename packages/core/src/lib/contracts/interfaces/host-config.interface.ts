@@ -1,4 +1,5 @@
 import type { ICorePaths } from './core-paths.interface';
+import type { IHostServerSlot } from './host-server-slot.interface';
 import type { ICommitAuthorResolution } from './commit-author.interface';
 import type { IKnowledgeEntry, ISkillEntry } from './knowledge.interface';
 import type { IDelendaiProjectMetadata } from './project-metadata.interface';
@@ -85,6 +86,11 @@ export interface IHostPaths {
 	 * config literal without one; the CLI loader always resolves it.
 	 */
 	readonly developmentPolicy?: IResolvedDevelopmentPolicy | undefined;
+	/**
+	 * Filled with the server once `createMcpProject` builds it, so plugins
+	 * assembled before it (and captured by the lazy runtime) reach the host.
+	 */
+	readonly hostServer?: IHostServerSlot | undefined;
 	/**
 	 * Why this server must stand down from background work, or `undefined`
 	 * when it may go on: it runs older code than its checkout. The CLI
