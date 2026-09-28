@@ -64,7 +64,8 @@ Be moved in the worktree that asked, and nowhere else.
 
 - **Status**: done
 - **Gate**: none
-- **Files**: \`docs/delendai/proposals/${PROPOSAL_ID}.md\`
+- **Files**: \`README.md\`
+- shipped-in: \`abc1234def56\`
 `;
 
 /** A repository with a pinned checkout and a worktree on a work ref. */
@@ -94,6 +95,7 @@ const repositoryWithWorktree = (): {
 		'',
 		'utf8',
 	);
+	writeFileSync(join(checkout, 'README.md'), '# delivered\n', 'utf8');
 	git(checkout, ['add', '-A']);
 	git(checkout, ['commit', '-m', 'the proposal in progress']);
 	const worktree = join(parent, 'worktree');

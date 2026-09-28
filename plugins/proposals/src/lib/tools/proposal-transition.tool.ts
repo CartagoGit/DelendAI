@@ -89,6 +89,7 @@ import {
 } from '../proposals/sync-proposal-registry';
 import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
+import { prepareReviewEntry } from '../services/review-entry.service';
 import { resolveIntegrationCertificationEvidence } from '../services/integration-certification-evidence.service';
 import type { IGitRunner } from '../shared/git-runner';
 import { rewriteStaleProposalSelfPaths } from '../proposals/rewrite-stale-self-paths';
@@ -1082,6 +1083,25 @@ export const runProposalTransition = async (
 					`pendingSlices=[${completenessGuard.pendingSlices.join(',')}] ` +
 					`missingFiles=${JSON.stringify(completenessGuard.missingFiles.slice(0, 5))}`,
 			);
+		}
+	}
+
+	// A proposal enters review only in a state a reviewer can act on: its
+	// declared files exist, and each slice names the commit that delivered
+	// it, recorded now from the branch being handed over (x00745).
+	if (finalTo === 'review' && from !== 'done' && args.force !== true) {
+		const entry = await prepareReviewEntry({
+			markdown: raw,
+			workspaceRoot: options.workspaceRoot,
+			run: options.gitRunner ?? createGitRunner(options.workspaceRoot),
+			integration: (await projectBranches(options.workspaceRoot))
+				.integration,
+		});
+		if (!entry.ok) {
+			return buildCodeError(entry.code, entry.reason, entry.nextAction);
+		}
+		if (entry.recorded.length > 0) {
+			await writeFileAtomic(found.absPath, entry.markdown);
 		}
 	}
 
