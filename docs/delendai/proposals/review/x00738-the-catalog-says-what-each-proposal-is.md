@@ -2,12 +2,15 @@
 id: x00738
 title: "The catalog says what each proposal is"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-28
 priority: P2
 related: []
+last-transition-id: 709f4117-d404-4c1d-91d8-011c8ff5ce50
+last-correlation-id: 709f4117-d404-4c1d-91d8-011c8ff5ce50
+last-transition-from: in-progress
 ---
 
 # x00738 — The catalog says what each proposal is
@@ -53,7 +56,7 @@ None.
 
 ### S1 — Title in the index, date in the catalog
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/registry-entry-title.spec.ts packages/core/tests/src/lib/catalog`
 - **Files**:
   - `plugins/proposals/src/lib/proposals/registry-entry.helper.ts`
