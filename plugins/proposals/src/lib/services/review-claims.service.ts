@@ -19,6 +19,7 @@ import {
 	REVIEW_BATCH_ID,
 	REVIEW_CLAIM_TRAILER,
 } from '../contracts/constants/review-claims.constant';
+import type { IReviewClaimHolder } from '../contracts/interfaces/review-claim-holder.interface';
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
 
@@ -58,6 +59,20 @@ export const workRefFor = (
  * ref not yet reaped, or a remote-tracking copy nobody pruned would
  * otherwise hold the proposal forever.
  */
+/**
+ * The unit a ref names, `refs/heads/<work ref>`, whether it is read as a
+ * local branch, a remote one or its publication: one identity per unit.
+ */
+export const unitOfRef = (
+	refName: string,
+	shape: IWorkRefShape,
+): string | undefined =>
+	workRefFor(
+		refName,
+		bare(shape.workRefPrefix),
+		bare(shape.publicationRefPrefix),
+	);
+
 const endedRefs = async (
 	run: IGitRunner,
 	integration: string | undefined,
@@ -87,8 +102,8 @@ export const reviewClaims = async (
 	run: IGitRunner,
 	shape: IWorkRefShape,
 	integration?: string,
-): Promise<ReadonlyMap<string, readonly string[]>> => {
-	const claims = new Map<string, string[]>();
+): Promise<ReadonlyMap<string, readonly IReviewClaimHolder[]>> => {
+	const claims = new Map<string, IReviewClaimHolder[]>();
 	const parser = compileWorkRefParser(
 		shape.workRefTemplate,
 		shape.workRefPrefix,
@@ -131,9 +146,11 @@ export const reviewClaims = async (
 				: [identity.proposal];
 		for (const proposal of held) {
 			const key = proposal.toLowerCase();
-			const agents = claims.get(key) ?? [];
-			if (!agents.includes(identity.agent)) agents.push(identity.agent);
-			claims.set(key, agents);
+			const holders = claims.get(key) ?? [];
+			if (!holders.some((holder) => holder.unit === ref)) {
+				holders.push({ agent: identity.agent, unit: ref });
+			}
+			claims.set(key, holders);
 		}
 	}
 	return claims;

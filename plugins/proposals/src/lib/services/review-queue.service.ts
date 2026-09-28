@@ -14,6 +14,7 @@
  * Read-only by construction: it never opens a round, never records a
  * verdict, never moves a file.
  */
+import type { IReviewClaimHolder } from '../contracts/interfaces/review-claim-holder.interface';
 import { changedSinceFields } from './review-changed-since.service';
 import { procedureFor } from './review-procedure';
 import {
@@ -22,7 +23,7 @@ import {
 	REVIEW_UNIT_SLICE,
 } from '../contracts/constants/review-claims.constant';
 import { proposalsInReview } from './review-backlog.service';
-import { reviewClaims } from './review-claims.service';
+import { reviewClaims, unitOfRef } from './review-claims.service';
 import { pageOfQueue } from './review-queue-page.service';
 import { basename, dirname, join } from 'node:path';
 
@@ -321,12 +322,26 @@ export const buildReviewQueue = async (
 	const history = await readIntegrationHistory(input.run, input.integration);
 	const claims =
 		input.refShape === undefined
-			? new Map<string, readonly string[]>()
+			? new Map<string, readonly IReviewClaimHolder[]>()
 			: await reviewClaims(input.run, input.refShape, input.integration);
-	const heldByOthers = (id: string): readonly string[] =>
-		(claims.get(id.toLowerCase()) ?? []).filter(
-			(agent) => agent !== input.agent,
-		);
+	// Your own claims do not count against you. A unit says who you are
+	// exactly; an agent name is shared by every instance of a model, so it
+	// is only the fallback when no unit is named (x00739).
+	const ownUnit =
+		input.unit === undefined || input.refShape === undefined
+			? undefined
+			: (unitOfRef(input.unit, input.refShape) ?? input.unit);
+	const heldByOthers = (id: string): readonly string[] => [
+		...new Set(
+			(claims.get(id.toLowerCase()) ?? [])
+				.filter((holder) =>
+					ownUnit !== undefined
+						? holder.unit !== ownUnit
+						: holder.agent !== input.agent,
+				)
+				.map((holder) => holder.agent),
+		),
+	];
 	const deliveries =
 		input.refShape === undefined
 			? new Map<string, readonly IDeliveryCandidate[]>()

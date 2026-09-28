@@ -20,7 +20,7 @@ import {
 	REVIEW_CLAIM_OUTPUT_SCHEMA,
 } from '../contracts/constants/review-claim-schema.constant';
 import { REVIEW_CLAIM_TRAILER } from '../contracts/constants/review-claims.constant';
-import { reviewClaims } from '../services/review-claims.service';
+import { reviewClaims, unitOfRef } from '../services/review-claims.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
 import type { IAuthoringToolOptions } from './authoring-options';
@@ -50,13 +50,26 @@ export const buildReviewClaimRegistration = (
 				const shape = scoped.developmentPolicy?.branches;
 				const integration = shape?.integration ?? 'HEAD';
 				if (shape !== undefined) {
-					const others = (
-						(await reviewClaims(run, shape, integration)).get(id) ??
-						[]
-					).filter((agent) => agent !== args.agent);
+					// Held by any unit but this one: another instance of the
+					// same model is another reviewer (x00739).
+					const branch = await run(['symbolic-ref', '-q', 'HEAD']);
+					const mine = branch.ok
+						? unitOfRef(branch.output.trim(), shape)
+						: undefined;
+					const others = [
+						...new Set(
+							(
+								(
+									await reviewClaims(run, shape, integration)
+								).get(id) ?? []
+							)
+								.filter((holder) => holder.unit !== mine)
+								.map((holder) => holder.agent),
+						),
+					];
 					if (others.length > 0) {
 						return toolError(
-							`${args.proposalId} is held by ${others.join(', ')}.`,
+							`${args.proposalId} is held by another review unit (${others.join(', ')}).`,
 							`Take the next proposal ${options.namespacePrefix}_review_queue offers you.`,
 						);
 					}

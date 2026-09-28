@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 /** A reviewer's unit: its own worktree on a review work ref. */
-const unit = (agent: string): string => {
+const unit = (agent: string, generation = 1): string => {
 	const parent = realpathSync(mkdtempSync(join(tmpdir(), 'claim-unit-')));
 	dirs.push(parent);
 	const path = join(parent, 'wt');
@@ -40,7 +40,7 @@ const unit = (agent: string): string => {
 		'add',
 		'-q',
 		'-b',
-		`delendai/wip/${agent}/review/batch-all-g1/backlog`,
+		`delendai/wip/${agent}/review/batch-all-g${String(generation)}/backlog`,
 		path,
 		'develop',
 	);
@@ -135,5 +135,26 @@ describe('review_claim', () => {
 		expect(refused.isError).toBe(true);
 		expect(JSON.stringify(refused.structuredContent)).toContain('qwen');
 		expect(claimsIn(mine)).toEqual([]);
+	});
+
+	it('refuses a proposal another instance of the same model holds (x00739)', async () => {
+		const first = unit('minimax-m3', 1);
+		const second = unit('minimax-m3', 2);
+		const claim = await claimTool();
+
+		const taken = await claim({
+			proposalId: 'x00001',
+			agent: 'minimax-m3',
+			checkout: first,
+		});
+		const refused = await claim({
+			proposalId: 'x00001',
+			agent: 'minimax-m3',
+			checkout: second,
+		});
+
+		expect(taken.structuredContent).toMatchObject({ claimed: true });
+		expect(refused.isError).toBe(true);
+		expect(claimsIn(second)).toEqual([]);
 	});
 });

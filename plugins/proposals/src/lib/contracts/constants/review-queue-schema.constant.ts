@@ -17,6 +17,11 @@ export const REVIEW_QUEUE_INPUT_SCHEMA = z.object({
 	/** Your agent id: proposals other agents hold are listed last. */
 	agent: z.string().min(1).optional(),
 	/**
+	 * Your unit's work ref (the `work` tool gives it): only its claims are
+	 * yours, even beside another instance of your model.
+	 */
+	unit: z.string().min(1).optional(),
+	/**
 	 * Every slice's evidence for every listed proposal. The list shows each
 	 * slice's state; the detail comes with `proposalId`, or with this.
 	 */

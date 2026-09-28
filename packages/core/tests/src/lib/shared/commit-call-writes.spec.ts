@@ -147,6 +147,67 @@ describe('a write in a unit of work is committed as it happens', () => {
 		expect(git(unit, 'status', '--porcelain')).toBe('');
 	});
 
+	it('commits a file the call renamed and then moved on', async () => {
+		const { unit } = project();
+
+		const result = await withCallWritesCommitted(
+			unit,
+			'proposal_review',
+			{ proposalId: 'x00001', action: 'request_changes' },
+			async () => {
+				// Renamed to its canonical name (staged), then reopened
+				// into another stage: the canonical path never lands.
+				git(unit, 'mv', 'proposal.md', 'x00001-canonical.md');
+				rmSync(join(unit, 'x00001-canonical.md'));
+				writeFileSync(
+					join(unit, 'x00001-reopened.md'),
+					'status: open\n',
+				);
+				return { content: [{ type: 'text', text: '{"ok":true}' }] };
+			},
+		);
+
+		expect(result).toEqual({
+			content: [{ type: 'text', text: '{"ok":true}' }],
+		});
+		expect(
+			git(
+				unit,
+				'show',
+				'--no-renames',
+				'--name-status',
+				'--format=',
+				'HEAD',
+			)
+				.split('\n')
+				.sort(),
+		).toEqual(['A\tx00001-reopened.md', 'D\tproposal.md']);
+		expect(git(unit, 'status', '--porcelain')).toBe('');
+	});
+
+	it('commits nothing when all the call wrote it removed again', async () => {
+		const { unit } = project();
+		const head = git(unit, 'rev-parse', 'HEAD');
+
+		const result = await withCallWritesCommitted(
+			unit,
+			'proposal_review',
+			{ proposalId: 'x00001' },
+			async () => {
+				writeFileSync(join(unit, 'draft.md'), 'draft\n');
+				git(unit, 'add', 'draft.md');
+				rmSync(join(unit, 'draft.md'));
+				return { content: [{ type: 'text', text: '{"ok":true}' }] };
+			},
+		);
+
+		expect(result).toEqual({
+			content: [{ type: 'text', text: '{"ok":true}' }],
+		});
+		expect(git(unit, 'rev-parse', 'HEAD')).toBe(head);
+		expect(git(unit, 'status', '--porcelain')).toBe('');
+	});
+
 	it('commits nothing when the call failed or changed nothing', async () => {
 		const { unit } = project();
 		const head = git(unit, 'rev-parse', 'HEAD');

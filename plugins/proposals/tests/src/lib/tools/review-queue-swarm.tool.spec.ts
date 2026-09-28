@@ -86,6 +86,30 @@ describe('a swarm of reviewers', () => {
 		expect(answer.body.procedure).toContain('claim it');
 	});
 
+	it('counts the claim of another instance of the same model, and not its own unit (x00739)', async () => {
+		hold('refs/heads/delendai/wip/qwen/x00002-review-g1/work');
+
+		const sibling = proposalsOf(
+			await queue({
+				agent: 'qwen',
+				unit: 'refs/heads/delendai/wip/qwen/x00003-review-g2/work',
+			}),
+		);
+		const holder = proposalsOf(
+			await queue({
+				agent: 'qwen',
+				unit: 'delendai/pr/qwen/x00002-review-g1/work',
+			}),
+		);
+
+		expect(
+			sibling.find((proposal) => proposal.id === 'x00002')?.claimedBy,
+		).toEqual(['qwen']);
+		expect(
+			holder.find((proposal) => proposal.id === 'x00002')?.claimedBy,
+		).toBeUndefined();
+	});
+
 	it("does not count a reviewer's own claim against it", async () => {
 		hold('refs/heads/delendai/wip/qwen/x00002-review-g1/work');
 

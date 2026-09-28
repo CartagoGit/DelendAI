@@ -109,6 +109,11 @@ export interface IBuildReviewQueueInput {
 	readonly limit: number;
 	/** Who is asking; its own claims do not count against it. */
 	readonly agent?: string | undefined;
+	/**
+	 * The asking reviewer's unit (its work ref): its claims, and only its,
+	 * are its own, even when another instance shares its agent name.
+	 */
+	readonly unit?: string | undefined;
 	/** Proposals of the listed backlog to skip. */
 	readonly offset?: number | undefined;
 	/**
