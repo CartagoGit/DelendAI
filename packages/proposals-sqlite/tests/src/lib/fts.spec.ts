@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
-	MIGRATION_CHECKSUMS,
-	MIGRATION_FILES,
+	migrationChecksums,
+	migrationFiles,
 	ProposalsSqliteDriver,
 	readMigrationSource,
 	resolveProposalsDbPaths,
@@ -88,7 +88,7 @@ describe('proposals FTS5 (f00516 S1)', () => {
 			path: activePath,
 			apply: (db) => {
 				const applied = [] as { version: number; name: string }[];
-				for (const name of MIGRATION_FILES.filter(
+				for (const name of migrationFiles().filter(
 					(migrationName) =>
 						Number.parseInt(migrationName.slice(0, 4), 10) < 10,
 				)) {
@@ -99,7 +99,7 @@ describe('proposals FTS5 (f00516 S1)', () => {
 					).run(
 						version,
 						name,
-						MIGRATION_CHECKSUMS[name] ?? '',
+						migrationChecksums()[name] ?? '',
 						Date.now(),
 					);
 					applied.push({ version, name });
@@ -128,7 +128,7 @@ describe('proposals FTS5 (f00516 S1)', () => {
 				).run(
 					ftsVersion,
 					ftsMigration,
-					MIGRATION_CHECKSUMS[ftsMigration] ?? '',
+					migrationChecksums()[ftsMigration] ?? '',
 					Date.now(),
 				);
 				applied.push({ version: ftsVersion, name: ftsMigration });

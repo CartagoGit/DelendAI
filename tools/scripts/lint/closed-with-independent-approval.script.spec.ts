@@ -3,7 +3,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { unapprovedSlices } from './closed-with-independent-approval.script';
+import {
+	agentOfRef,
+	approvalsNotBy,
+	unapprovedSlices,
+} from './closed-with-independent-approval.script';
 
 const slice = (lines: string) => `### S1 — the work
 
@@ -60,5 +64,36 @@ describe('unapprovedSlices', () => {
 - **Status**: dropped
 `),
 		).toEqual([]);
+	});
+});
+
+describe('an approval enters through its reviewer (x00715)', () => {
+	const prefixes = ['delendai/pr/', 'heads/delendai/wip/'];
+
+	it('reads the agent a ref belongs to, under any spelling of the prefix', () => {
+		expect(
+			agentOfRef('delendai/pr/glm-5/review/batch-all-g2/r', prefixes),
+		).toBe('glm-5');
+		expect(
+			agentOfRef(
+				'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/r',
+				prefixes,
+			),
+		).toBe('minimax-m3');
+		expect(agentOfRef('feature/owner-work', prefixes)).toBeUndefined();
+	});
+
+	it("names the approvals a diff adds that are not its author's", () => {
+		const diff = [
+			'+++ b/docs/delendai/proposals/review/x1.md',
+			'+- review-log: approved by glm-5 — checked',
+			'+- review-log: approved by minimax-m3 — checked',
+			'-- review-log: approved by someone-removed — gone',
+			' - review-log: approved by context-line — unchanged',
+			'+- review-log: requested_changes by claude-opus-5 — no test',
+		].join('\n');
+		expect(approvalsNotBy(diff, 'glm-5')).toEqual(['minimax-m3']);
+		expect(approvalsNotBy(diff, 'GLM-5')).toEqual(['minimax-m3']);
+		expect(approvalsNotBy(diff, 'minimax-m3')).toEqual(['glm-5']);
 	});
 });

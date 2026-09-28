@@ -29,6 +29,7 @@
  * — no input schema, or one that is not an object — fails to register:
  * no call to it could name a checkout, so the declaration would be false.
  */
+import { SHARED_CHECKOUT_WRITE_REFUSED } from '../contracts/constants/write-refusal.constant';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { CHECKOUT_ARG_SCHEMA } from '../contracts/constants/checkout-arg.constant';
@@ -101,7 +102,11 @@ const boundHandler =
 			// working tree: a write there is committed by nobody.
 			const refusal = await refusalFor(resolved.root);
 			if (refusal !== undefined) {
-				return toolError(refusal, WORK_REF_NEXT_STEP);
+				return toolError(
+					refusal,
+					WORK_REF_NEXT_STEP,
+					SHARED_CHECKOUT_WRITE_REFUSED,
+				);
 			}
 			const root = resolved.root;
 			return runInExecutionRoot(root, () =>

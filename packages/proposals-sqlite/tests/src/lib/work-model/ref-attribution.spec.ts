@@ -23,8 +23,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { loadDatabaseClass } from '../../../../src/lib/bun-sqlite.helper';
 import {
-	MIGRATION_CHECKSUMS,
-	MIGRATION_FILES,
+	migrationChecksums,
+	migrationFiles,
 } from '../../../../src/lib/migrations';
 
 import { ClaimsRepo } from '../../../../src/lib/work-model/claims-repo';
@@ -142,7 +142,7 @@ describe('a database written before the attribution columns were freed', () => {
 			checksum TEXT NOT NULL,
 			applied_at INTEGER NOT NULL
 		);`);
-		for (const name of MIGRATION_FILES) {
+		for (const name of migrationFiles()) {
 			const version = Number(name.slice(0, 4));
 			if (version > 18) continue;
 			legacy.exec(readFileSync(join(MIGRATIONS_DIR, name), 'utf8'));
@@ -150,7 +150,7 @@ describe('a database written before the attribution columns were freed', () => {
 				.prepare(
 					'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',
 				)
-				.run(version, name, MIGRATION_CHECKSUMS[name] ?? '', 1_000);
+				.run(version, name, migrationChecksums()[name] ?? '', 1_000);
 		}
 		legacy
 			.prepare(
