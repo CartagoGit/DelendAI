@@ -2,12 +2,15 @@
 id: x00732
 title: "The review queue reads the proposals that exist"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00716, x00717, x00727]
+last-transition-id: e77a38a1-9dbb-473b-b312-b952b6a0e2be
+last-correlation-id: e77a38a1-9dbb-473b-b312-b952b6a0e2be
+last-transition-from: in-progress
 ---
 
 # x00732 — The review queue reads the proposals that exist
@@ -51,7 +54,7 @@ from 2026-09-28 names the same thing: worktrees have no index.
 
 ### S1 — The queue reads the review folder
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-queue.service.ts`
