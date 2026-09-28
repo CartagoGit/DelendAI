@@ -2,13 +2,13 @@
 id: x00644
 title: "El presupuesto de exports publicos de core vuelve a verde"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
-last-transition-id: 45d2346d-f1f3-423d-930c-6e1eb9cd90f5
-last-correlation-id: 45d2346d-f1f3-423d-930c-6e1eb9cd90f5
-last-transition-from: ready
+last-transition-id: 1b180fbb-b66b-45be-8953-637e6b6f478d
+last-correlation-id: 1b180fbb-b66b-45be-8953-637e6b6f478d
+last-transition-from: in-progress
 ---
 
 # x00644 — El presupuesto de exports publicos de core vuelve a verde
@@ -32,7 +32,8 @@ La verificacion de x00567 confirma que el diff de 4bbfd3f8b retiro diez exports 
 - global_gate: type
 
 ### S1 — Auditar los tres exports excedentes y recuperar el limite
-- **Status**: pending
+- **Status**: review
+- shipped-in: `713c8e058`
 - **Files**: `packages/core/src/public/index.ts`, `tools/scripts/lint/core-public-consumers.baseline.json`, `tools/scripts/lint/core-public-surface-budget.script.ts`
 - **Gate**: type
 - acceptance:
