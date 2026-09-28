@@ -67,6 +67,7 @@ same commit, with the same amount of thought.
 ### S1 — The figures live in the generated file only
 
 - **Status**: done — proved in both directions: with the dashboard
+- shipped-in: `57914a5f6`
   reverted to its committed state the spec fails; regenerated, it passes.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/token/catalog-task-context-cost.spec.ts`
 - **Files**: `packages/core/tests/src/lib/token/catalog-task-context-cost.spec.ts`
