@@ -2,12 +2,15 @@
 id: x00716
 title: "Asking for work never needs a sync first"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-28
 priority: P0
 related: [x00638, x00686]
+last-transition-id: 3c9a9ffa-c530-4a68-a39d-ff10d974a00f
+last-correlation-id: 3c9a9ffa-c530-4a68-a39d-ff10d974a00f
+last-transition-from: in-progress
 ---
 
 # x00716 — Asking for work never needs a sync first
@@ -59,7 +62,7 @@ is right, so sending a reader of the proposals there is the mistake.
 
 ### S1 — Work is found from anywhere
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/continue-proposal.spec.ts plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-kind.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
