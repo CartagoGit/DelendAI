@@ -26,6 +26,14 @@
 			"decidedAt": "2026-09-19T12:27:03.041Z"
 		},
 		{
+			"taskId": "4e01795d59ce68b10d6ed333dbc42b79",
+			"evidenceDigest": "1071c02ee8c721aa4d65e9b27687b2e3",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-m3 review unit that closed proposals without an independent review; PR #582 closed unmerged. Commits kept in refs/pull/582/head and in .cache/delendai/evidence/swarm-2026-09-28 (swarm-refs.bundle, verified; MANIFEST.json).",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-28T07:15:17.726Z"
+		},
+		{
 			"taskId": "4eef0c8fe5f1b95e46f526fe8efb865f",
 			"evidenceDigest": "9a67c2a6206813f30d7c12aea6f7b8e7",
 			"decision": "accepted-loss",
@@ -74,12 +82,28 @@
 			"decidedAt": "2026-09-27T09:33:08.700Z"
 		},
 		{
+			"taskId": "da287c6b71db4cb55773767842f03e1d",
+			"evidenceDigest": "c5561a59885568cabcd042b4446c82fb",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 g7 unit that moved 44 proposals to done without review; no PR. Commits kept in .cache/delendai/evidence/swarm-2026-09-28 (swarm-refs.bundle, verified; MANIFEST.json).",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-28T07:15:21.180Z"
+		},
+		{
 			"taskId": "dc2ab703141c51c5a562edf34c9e3bc8",
 			"evidenceDigest": "f3091a9a6ea8e707f365f91da895d794",
 			"decision": "accepted-loss",
 			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-09-27T09:33:11.730Z"
+		},
+		{
+			"taskId": "ea278115e9d2719354dc8712ccb8dada",
+			"evidenceDigest": "04143ba753f9683d188150b1bfc3961b",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 unit that moved all 83 review proposals to done without review; PRs #580/#581 closed unmerged. Commits kept in refs/pull/580/head and in .cache/delendai/evidence/swarm-2026-09-28 (swarm-refs.bundle, verified; MANIFEST.json).",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-28T07:15:24.952Z"
 		}
 	]
 }
