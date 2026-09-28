@@ -2,11 +2,16 @@
 id: x00616
 title: "The CLI reached past the surface that decides what is reachable"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-23
-shipped-in: ["6f0d3f094"]
+shipped-in:
+  - "6f0d3f094"
+  - "0e0fbedf7aa262852d1904da68ce7f5a0efcfca6"
+last-transition-id: 431ec3c5-f01b-4e7a-90e5-ca7d521943b9
+last-correlation-id: 431ec3c5-f01b-4e7a-90e5-ca7d521943b9
+last-transition-from: review
 ---
 
 # x00616 — The CLI reached past the surface that decides what is reachable
@@ -89,7 +94,7 @@ renamed its namespace gets its own resolver rather than ours.
 
 ### S1 — A hidden tool is reached through the router
 
-- **Status**: done — verified by driving the real CLI: `search` returns
+- **Status**: done
   hits here (5,544 files scanned) and in a consumer project (3 hits across
   their 6 files, in `.ts`, `.html` and `.md`), and `metrics` answers where
   it used to fail. The second spelling cost a round of measurement:
@@ -104,16 +109,26 @@ renamed its namespace gets its own resolver rather than ours.
 - `request` retries through `<prefix>_resolve_capability` when, and only
   when, the surface says the tool is not exposed here; a visible tool
   still costs one round trip.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0e0fbedf7 (x00616 S1, merge PR #357). fix(cli): reach a tool the way the surface says to. tool-request.service.ts: `request` reintenta vía `<prefix>_resolve_capability` solo cuando la superficie dice 'not exposed here' (no en -32602 de invalid-params — eso sería esconder un caller mistake). tool-request.service.spec.ts 190 líneas (verifies 'search' hits en este repo + consumer project con layout foráneo). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from commit 0e0fbedf7aa2 names refs/heads/delendai/wip/claude-opus-5/x00616-S1-g1/the-cli-reaches-a-hidden-tool (0e0fbedf7aa262852d1904da68ce7f5a0efcfca6), opened by minimax-m3
 
 ### S2 — A tool error carries the tool's own words
 
-- **Status**: done — the message now reads `… returned an error. The
+- **Status**: done
   server said:` followed by the tool's own text, using the same helper a
   dying server's last words go through.
 - **Gate**: `npx vitest run packages/client`
 - **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`
 - The thrown message quotes `result.content`, which the error already
   carried and nobody read.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0e0fbedf7 (x00616 S2). fix(client): a tool error carries the tool's own words. mcp-stdio-client.ts: el thrown message ahora lee '... returned an error. The server said:' seguido del texto del tool, vía el mismo helper que usa withServerWords. 249/249 verde en packages/client (32 specs). claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: claude-opus-5 from commit 0e0fbedf7aa2 names refs/heads/delendai/wip/claude-opus-5/x00616-S1-g1/the-cli-reaches-a-hidden-tool (0e0fbedf7aa262852d1904da68ce7f5a0efcfca6), opened by minimax-m3
 
 ## acceptance
 
