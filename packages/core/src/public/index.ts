@@ -601,6 +601,9 @@ export {
 	toolOk,
 	truncateIfTooLarge,
 } from '../lib/shared/tool-response';
+// The code a write refused in the shared checkout carries, for a caller
+// that must tell policy from a broken tool (`verify:tools`).
+export { SHARED_CHECKOUT_WRITE_REFUSED } from '../lib/contracts/constants/write-refusal.constant';
 export type {
 	IToolErrorLogHint,
 	IToolTextResult,
@@ -632,7 +635,6 @@ export { TokenBudgetRegistry } from '../lib/budgets/registry';
 export type { IRegistryOptions } from '../lib/budgets/registry';
 export type {
 	IBudgetCeiling,
-	IBudgetForSurface,
 	IBudgetSource,
 	IPerSurfaceMeasurement,
 	ITokenMeasurement,

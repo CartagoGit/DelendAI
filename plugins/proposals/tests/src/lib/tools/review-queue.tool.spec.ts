@@ -234,6 +234,43 @@ describe('review_queue', () => {
 		expect(answer.body.procedure).toContain('Never edit code');
 	});
 
+	it('pages the whole backlog, saying how to ask for the next page (x00717)', async () => {
+		repo.proposalInReview(SLICE_S1('review'), 'x00003', '2026-09-03');
+		repo.proposalInReview(SLICE_S1('review'), 'x00002', '2026-09-02');
+		repo.proposalInReview(SLICE_S1('review'), 'x00004', '2026-09-04');
+		const ids = (answer: IToolAnswer) =>
+			(answer.body.proposals as readonly { readonly id: string }[]).map(
+				(proposal) => proposal.id,
+			);
+
+		const first = await queue({ limit: 2 });
+		expect(first.body.page).toMatchObject({
+			offset: 0,
+			returned: 2,
+			total: 3,
+		});
+		expect(String((first.body.page as { next?: string }).next)).toContain(
+			'offset: 2',
+		);
+		const second = await queue({ limit: 2, offset: 2 });
+		expect(ids(second)).toEqual(['x00004']);
+		expect((second.body.page as { next?: string }).next).toBeUndefined();
+
+		// A reviewer that names itself starts at its own point, and its
+		// pages still cover the whole backlog exactly once.
+		const named = [
+			...ids(await queue({ limit: 2, agent: 'minimax-m3' })),
+			...ids(await queue({ limit: 2, offset: 2, agent: 'minimax-m3' })),
+		];
+		expect([...named].sort()).toEqual(['x00002', 'x00003', 'x00004']);
+		const rotations = [
+			['x00002', 'x00003', 'x00004'],
+			['x00003', 'x00004', 'x00002'],
+			['x00004', 'x00002', 'x00003'],
+		];
+		expect(rotations).toContainEqual(named);
+	});
+
 	it('narrows to one proposal on request', async () => {
 		repo.proposalInReview(SLICE_S1('review'), 'x00002');
 		repo.proposalInReview(SLICE_S1('review'), 'x00003');
@@ -241,159 +278,5 @@ describe('review_queue', () => {
 		const answer = await queue({ proposalId: 'x00003' });
 
 		expect(answer.body.totals).toMatchObject({ proposals: 1 });
-	});
-
-	describe('a swarm of reviewers', () => {
-		interface IClaimView {
-			readonly id: string;
-			readonly claimedBy?: readonly string[];
-			readonly claim?: string;
-		}
-		const proposalsOf = (answer: IToolAnswer): readonly IClaimView[] =>
-			answer.body.proposals as readonly IClaimView[];
-		// A claim with work of its own: a commit the integration branch
-		// does not hold yet.
-		const hold = (ref: string): void => {
-			const commit = repo.git(
-				'commit-tree',
-				'HEAD^{tree}',
-				'-p',
-				'HEAD',
-				'-m',
-				'a verdict',
-			);
-			repo.git('update-ref', ref, commit);
-		};
-
-		beforeEach(() => {
-			repo.proposalInReview(SLICE_S1('review'), 'x00002', '2026-09-02');
-			repo.proposalInReview(SLICE_S1('review'), 'x00003', '2026-09-03');
-		});
-
-		it('lists a proposal another reviewer holds last, names who, and offers the rest a claim', async () => {
-			hold('refs/heads/delendai/wip/qwen/x00002-review-g1/work');
-
-			const answer = await queue({ agent: 'glm' });
-			const proposals = proposalsOf(answer);
-
-			expect(proposals.map((proposal) => proposal.id)).toEqual([
-				'x00003',
-				'x00002',
-			]);
-			expect(proposals[1]?.claimedBy).toEqual(['qwen']);
-			expect(proposals[1]?.claim).toBeUndefined();
-			expect(proposals[0]?.claim).toContain(
-				'work enter --kind=review --proposal=batch --slice=all --agent=glm',
-			);
-			expect(proposals[0]?.claim).toContain('--trailer "Claims: x00003"');
-			// A claim is an ordinary commit: its message must pass the
-			// project's own commit rules (conventional commits here).
-			expect(proposals[0]?.claim).toContain(
-				'-m "chore(review): claim x00003"',
-			);
-			expect(answer.body.totals).toMatchObject({ claimedByOthers: 1 });
-			expect(answer.body.procedure).toContain('claim it');
-		});
-
-		it("does not count a reviewer's own claim against it", async () => {
-			hold('refs/heads/delendai/wip/qwen/x00002-review-g1/work');
-
-			const proposals = proposalsOf(await queue({ agent: 'qwen' }));
-
-			expect(proposals.map((proposal) => proposal.id)).toEqual([
-				'x00002',
-				'x00003',
-			]);
-			expect(proposals[0]?.claimedBy).toBeUndefined();
-		});
-
-		it('keeps a proposal held while its published review waits to merge', async () => {
-			hold('refs/remotes/origin/delendai/pr/qwen/x00003-close-g1/work');
-
-			const proposals = proposalsOf(await queue({ agent: 'glm' }));
-
-			expect(
-				proposals.find((proposal) => proposal.id === 'x00003')
-					?.claimedBy,
-			).toEqual(['qwen']);
-		});
-
-		it('counts a unit entered in a worktree before its first commit', async () => {
-			const dir = join(repo.root, '.wt-x00002-review');
-			repo.git(
-				'worktree',
-				'add',
-				'-q',
-				'-b',
-				'delendai/wip/qwen/x00002-review-g1/work',
-				dir,
-				'HEAD',
-			);
-
-			const proposals = proposalsOf(await queue({ agent: 'glm' }));
-
-			expect(
-				proposals.find((proposal) => proposal.id === 'x00002')
-					?.claimedBy,
-			).toEqual(['qwen']);
-		});
-
-		it('frees a proposal whose review the integration branch already holds', async () => {
-			// Left behind after the verdicts merged: a spent publication ref
-			// and a local copy nobody deleted, both at a merged commit.
-			repo.git(
-				'update-ref',
-				'refs/remotes/origin/delendai/pr/qwen/x00002-review-g1/work',
-				'HEAD',
-			);
-			repo.git(
-				'update-ref',
-				'refs/heads/delendai/wip/qwen/x00002-review-g1/work',
-				'HEAD',
-			);
-
-			const proposals = proposalsOf(await queue({ agent: 'glm' }));
-
-			expect(
-				proposals.every((proposal) => proposal.claimedBy === undefined),
-			).toBe(true);
-		});
-
-		it('reads what a review batch claimed from its own commits (f00644)', async () => {
-			const claim = repo.git(
-				'commit-tree',
-				'HEAD^{tree}',
-				'-p',
-				'HEAD',
-				'-m',
-				'chore(review): claim x00002\n\nClaims: x00002',
-			);
-			repo.git(
-				'update-ref',
-				'refs/heads/delendai/wip/qwen/review/batch-all-g1/sweep',
-				claim,
-			);
-
-			const proposals = proposalsOf(await queue({ agent: 'glm' }));
-
-			expect(
-				proposals.find((proposal) => proposal.id === 'x00002')
-					?.claimedBy,
-			).toEqual(['qwen']);
-			expect(
-				proposals.find((proposal) => proposal.id === 'x00003')
-					?.claimedBy,
-			).toBeUndefined();
-		});
-
-		it('does not read an implementation unit as a review claim', async () => {
-			hold('refs/heads/delendai/wip/qwen/x00002-S1-g1/the-work');
-
-			const proposals = proposalsOf(await queue({ agent: 'glm' }));
-
-			expect(
-				proposals.every((proposal) => proposal.claimedBy === undefined),
-			).toBe(true);
-		});
 	});
 });

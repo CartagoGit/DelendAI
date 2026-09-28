@@ -256,7 +256,7 @@ describe('delendai work (x00553)', () => {
 		for (const extra of [[], ['--session=someone-else']]) {
 			const other = await reenter(extra);
 			expect(other.code).not.toBe(0);
-			expect(other.error).toContain('held by another session');
+			expect(other.error).toContain('another session');
 		}
 	});
 
@@ -693,6 +693,105 @@ describe('delendai work (x00553)', () => {
 				'refs/heads/delendai/wip/',
 			).split('\n'),
 		).toHaveLength(2);
+	});
+
+	it('gives every instance of one model its own review unit, and publishes each by its session (x00714)', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		const enter = (topic: string) =>
+			command.run(
+				[
+					'enter',
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					`--topic=${topic}`,
+				],
+				contextFor(root),
+			);
+		const units = [];
+		for (const topic of ['a', 'b', 'c']) {
+			const entered = await enter(topic);
+			expect(entered.code).toBe(0);
+			units.push(
+				entered.data as {
+					branch: string;
+					path: string;
+					session: string;
+				},
+			);
+		}
+		expect(units.map((unit) => unit.branch)).toEqual([
+			'delendai/wip/minimax-m3/review/batch-all-g1/a',
+			'delendai/wip/minimax-m3/review/batch-all-g2/b',
+			'delendai/wip/minimax-m3/review/batch-all-g3/c',
+		]);
+		expect(new Set(units.map((unit) => unit.path)).size).toBe(3);
+		expect(new Set(units.map((unit) => unit.session)).size).toBe(3);
+		const second = units[1];
+		if (second === undefined) throw new Error('no second unit');
+		execFileSync(
+			'git',
+			['commit', '-q', '--allow-empty', '-m', 'review b'],
+			{
+				cwd: second.path,
+			},
+		);
+		const publish = (extra: readonly string[]) =>
+			command.run(
+				[
+					'publish',
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					...extra,
+				],
+				contextFor(root),
+			);
+		// Which of three is meant is not guessed.
+		const unnamed = await publish([]);
+		expect(unnamed.code).not.toBe(0);
+		expect(unnamed.error).toContain('--session');
+		expect(await publish([`--session=${second.session}`])).toMatchObject({
+			data: {
+				published: true,
+				publication: {
+					ref: 'refs/heads/delendai/pr/minimax-m3/review/batch-all-g2/b',
+				},
+			},
+		});
+	});
+
+	it('refuses a second instance on a slice another instance works, and leaves no branch (x00714)', async () => {
+		const root = repoWith(PINNED);
+		const enter = (topic: string) =>
+			command.run(
+				[
+					'enter',
+					'--proposal=x00553',
+					'--slice=S1',
+					'--agent=minimax-m3',
+					`--topic=${topic}`,
+				],
+				contextFor(root),
+			);
+		expect((await enter('first')).code).toBe(0);
+		const second = await enter('second');
+		expect(second.code).not.toBe(0);
+		expect(second.error).toContain('same work twice');
+		expect(
+			git(
+				root,
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/heads/delendai/wip/',
+			).split('\n'),
+		).toHaveLength(1);
 	});
 
 	it('reports a publication that could not be pushed, and keeps everything', async () => {

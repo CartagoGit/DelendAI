@@ -102,10 +102,13 @@ export const toolOk = (data: Record<string, unknown> = {}): IToolTextResult =>
 export const toolError = (
 	reason: string,
 	nextAction?: string,
+	/** A stable code a caller can branch on instead of the prose. */
+	code?: string,
 ): IToolTextResult => {
 	const envelope = {
 		ok: false as const,
 		error: {
+			...(code !== undefined ? { code } : {}),
 			reason,
 			...(nextAction !== undefined ? { nextAction } : {}),
 		},

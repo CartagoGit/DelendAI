@@ -34,6 +34,11 @@ export interface ISyncProposalsToolOptions {
 	readonly extraFolders?: readonly string[];
 	readonly folderPolicy?: IProposalFolderPolicy;
 	/**
+	 * Rebuild the index and its projection without moving any file
+	 * (x00716): what a reader of the proposals may do anywhere.
+	 */
+	readonly indexOnly?: boolean;
+	/**
 	 * DIP seam for the reconciler, so a test can drive the decision
 	 * without a database. Defaults to the real one, exactly as
 	 * `gitRunner` above defaults to real git.
@@ -147,6 +152,7 @@ export const runSyncProposals = async (
 		gitRunner,
 		options.folderPolicy,
 		levellerFor(options),
+		options.indexOnly === true,
 	);
 	// The engine's own duplicate/drift warnings come first; the
 	// collisions this wrapper absorbed are appended so nothing it

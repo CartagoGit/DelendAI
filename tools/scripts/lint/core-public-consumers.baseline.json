@@ -12,7 +12,6 @@
 		"IBootstrapPatternOverride",
 		"IBootstrapPatternOverrides",
 		"IBudgetCeiling",
-		"IBudgetForSurface",
 		"IBudgetSource",
 		"ICodeMap",
 		"ICommitAuthorIdentity",

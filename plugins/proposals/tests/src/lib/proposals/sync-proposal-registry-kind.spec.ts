@@ -12,6 +12,7 @@ import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { syncProposalRegistry } from '@delendai/proposals/lib/proposals/sync-proposal-registry';
+import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 import { DEFAULT_PATH_LAYOUT } from '@delendai/proposals/lib/contracts/constants/default-path-layout.constant';
 
 const writeReadyProposal = async (
@@ -88,5 +89,37 @@ describe('index entries carry the kind the plugin resolved', () => {
 		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT);
 
 		expect(await indexedKinds(root)).toEqual({ x900: 'fix' });
+	});
+
+	it('rebuilds the index without moving a file, in index-only mode (x00716)', async () => {
+		// `ready/x…` belongs in `ready/fixes/`: a full sync moves it.
+		await writeReadyProposal(root, 'x00900-misplaced.md', [
+			'id: x00900',
+			'status: ready',
+			'kind: fix',
+		]);
+		const misplaced = resolve(
+			root,
+			DEFAULT_PATH_LAYOUT.proposalsDir,
+			'ready',
+			'x00900-misplaced.md',
+		);
+		const moves: string[][] = [];
+		const gitRunner: IGitRunner = async (args) => {
+			if (args[0] === 'mv') moves.push([...args]);
+			return { ok: true, output: '' };
+		};
+		await syncProposalRegistry(
+			root,
+			DEFAULT_PATH_LAYOUT,
+			[],
+			gitRunner,
+			undefined,
+			undefined,
+			true,
+		);
+		expect(moves).toEqual([]);
+		await expect(readFile(misplaced, 'utf8')).resolves.toContain('x00900');
+		expect(await indexedKinds(root)).toMatchObject({ x00900: 'fix' });
 	});
 });

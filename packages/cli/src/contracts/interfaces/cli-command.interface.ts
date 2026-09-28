@@ -71,6 +71,13 @@ export interface ICliCommand {
 	readonly aliases?: readonly string[] | undefined;
 	readonly summary: string;
 	readonly usage?: string | undefined;
+	/**
+	 * The flags this command reads, without `--`. When declared, any other
+	 * flag is refused before the command runs, naming the one it most
+	 * likely meant, and `<command> --help` lists them. A command that
+	 * renders its own help declares `help` among them.
+	 */
+	readonly flags?: readonly string[] | undefined;
 	run(
 		args: readonly string[],
 		ctx: ICliCommandContext,

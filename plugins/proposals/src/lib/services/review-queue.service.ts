@@ -22,6 +22,7 @@ import {
 	REVIEW_UNIT_SLICE,
 } from '../contracts/constants/review-claims.constant';
 import { reviewClaims } from './review-claims.service';
+import { pageOfQueue } from './review-queue-page.service';
 import { basename, dirname, join } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/public';
@@ -369,18 +370,13 @@ export const buildReviewQueue = async (
 					},
 		);
 	}
-	// Free proposals first, oldest first; the ones another reviewer holds
-	// last, so a swarm spreads over the backlog instead of piling up.
-	reviewed.sort(
-		(a, b) =>
-			Number(a.claimedBy !== undefined) -
-			Number(b.claimedBy !== undefined),
-	);
+	const { proposals, page } = pageOfQueue(reviewed, input);
 	const slices = reviewed.flatMap((proposal) => proposal.slices);
 	const count = (verdict: IReviewQueueSlice['verdict']): number =>
 		slices.filter((slice) => slice.verdict === verdict).length;
 	return {
-		proposals: reviewed.slice(0, input.limit),
+		proposals,
+		page,
 		totals: {
 			proposals: reviewed.length,
 			slices: slices.length,
