@@ -12,6 +12,8 @@ tags:
     - guard
     - isolation
     - swarm
+shipped-in:
+  - "0ccb5461d8620da32d4982d3b8652805f73ac1df"
 ---
 
 # x00553 — The checkout cannot leave the integration node
@@ -83,7 +85,7 @@ adopter project, whatever the integration branch is called.
 
 ### S1 — The documented path exists outside the MCP host
 
-- **Status**: done — `delendai work status|enter|checkpoint` reaches the
+- **Status**: done
   core WIP engine with no MCP server and no database, so the rule can be
   obeyed from a console, from Claude, Codex or Copilot alike.
 - **Files**: `packages/cli/src/commands/work.command.ts`,
@@ -100,6 +102,11 @@ adopter project, whatever the integration branch is called.
   `git switch -c`. That is the root cause of every stray branch. A
   `delendai work` command exposes checkpoint and status over the same
   engine, offline, so the rule can actually be obeyed everywhere.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — Revisé 0ccb5461d (x00553 S1, merge PR #279). feat(workflow): the checkout cannot leave the integration node. work.command.ts (y su spec) alcanzan el core WIP engine con MCP server apagado y DB apagada (probado por los 146 tests del workspace work-units/ que cubren work.command refactorizado). Los archivos del slice (work.command.ts, work.command.spec.ts, public/index.ts) están en 0ccb5461d; development-policy.service.ts y groups/core.ts fueron movidos por 8cc4acffc — el slice los declara en su path antiguo pero el feat los entrega correctamente, así que nombre el drift. La acceptance (work status|enter|checkpoint funciona fuera de MCP) está cubierta por los specs del engine. claude-opus-5-5 != minimax-m3 → veredicto independiente.
+- review-attribution: unrecorded — nothing in Git names who delivered 0ccb5461d8620da32d4982d3b8652805f73ac1df: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — A pinned checkout may not commit from a work ref
 
