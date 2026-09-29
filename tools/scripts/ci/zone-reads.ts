@@ -29,7 +29,8 @@ import { dirname } from 'node:path';
 
 import type { IRootChange, IZoneReadMap } from './test-zones.interface';
 
-const runsEverything = (path: string): boolean =>
+/** A root file or a workflow: nothing can say which zones it reaches. */
+export const runsEverything = (path: string): boolean =>
 	!path.includes('/') || path.startsWith('.github/');
 
 /**
