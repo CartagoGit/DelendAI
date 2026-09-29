@@ -29,6 +29,13 @@ export const HISTORY_HUNGRY: readonly RegExp[] = [
 	/\[[^\]]{0,120}?['"]merge['"]\s*,/u,
 	/['"]merge-base['"]/u,
 	/\[[^\]]{0,120}?['"]rebase['"]\s*,/u,
+	// A job handed the pull request's base compares against it, and on a
+	// one-commit clone of the merge ref that commit is not in the object
+	// store at all. This is the signal the patterns above cannot see:
+	// `plan-tests` passed it to `test-zones`, whose diff lives two modules
+	// further down, and the planner ran every zone on every pull request
+	// because that diff failed.
+	/github\.event\.pull_request\.base\.sha/u,
 ];
 
 /** Written in a job that genuinely does not need history, with the reason. */
