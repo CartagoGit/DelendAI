@@ -1,6 +1,9 @@
 import { stat } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
-import { expandDeclaredFiles } from '../proposals/expand-declared-files';
+import {
+	looksLikePath,
+	readDeclaredSliceFiles,
+} from '../proposals/expand-declared-files';
 /**
  * proposal-completeness.ts
  *
@@ -68,7 +71,8 @@ export type ICompletenessResult =
 	  };
 
 const STATUS_TOKEN = /-\s*\*\*Status\*\*:\s*(pending|in-progress|done)\b/i;
-const FILES_LINE = /-\s*\*\*Files\*\*:\s*([^\n]+(?:\n(?!-\s*\*\*)[^\n]+)*)/;
+/** A `## ` section heading ends the slice before it. */
+const SECTION_HEADER = /^##\s/;
 const SLICE_HEADER = /^###\s+(S\d+)\s+—\s*([^\n]+)$/;
 
 // x00158 S1: the brace-aware Files: parser is now owned by
@@ -84,47 +88,43 @@ export { expandDeclaredFiles } from '../proposals/expand-declared-files';
 export const collectSliceStatuses = (
 	markdown: string,
 ): ReadonlyArray<ISliceParse> => {
-	const lines = markdown.split('\n');
 	const slices: ISliceParse[] = [];
-	let current: ISliceParse | null = null;
+	let current: Omit<ISliceParse, 'files'> | null = null;
+	let body: string[] = [];
+	const close = (): void => {
+		if (current === null) return;
+		const files = readDeclaredSliceFiles(body.join('\n')).filter(
+			looksLikePath,
+		);
+		slices.push({ ...current, files });
+		current = null;
+		body = [];
+	};
 
-	for (const line of lines) {
+	for (const line of markdown.split('\n')) {
 		const header = SLICE_HEADER.exec(line);
 		if (header) {
-			if (current !== null) slices.push(current);
+			close();
 			current = {
 				id: header[1] ?? '',
 				title: header[2]?.trim() ?? '',
 				status: 'pending',
-				files: [],
 			};
 			continue;
 		}
 		if (current === null) continue;
+		if (SECTION_HEADER.test(line)) {
+			close();
+			continue;
+		}
+		body.push(line);
 		const statusMatch = STATUS_TOKEN.exec(line);
 		if (statusMatch) {
 			const status = statusMatch[1]?.toLowerCase() ?? '';
-			current = {
-				...current,
-				status:
-					status === 'in-progress'
-						? 'in-progress'
-						: (status as ISliceParse['status']),
-			};
-			continue;
-		}
-		const filesMatch = FILES_LINE.exec(line);
-		if (filesMatch) {
-			const decl = expandDeclaredFiles(filesMatch[1] ?? '');
-			if (decl.length > 0) {
-				current = {
-					...current,
-					files: [...(current?.files ?? []), ...decl],
-				};
-			}
+			current = { ...current, status: status as ISliceParse['status'] };
 		}
 	}
-	if (current !== null) slices.push(current);
+	close();
 	return slices;
 };
 

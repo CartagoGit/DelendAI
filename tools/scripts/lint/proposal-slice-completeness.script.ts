@@ -36,7 +36,7 @@ import {
 	readdirSync,
 	writeFileSync,
 } from 'node:fs';
-import { dirname, extname, join } from 'node:path';
+import { dirname, extname, isAbsolute, join } from 'node:path';
 
 import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
 import { repoRoot } from '../lib/monorepo-paths';
@@ -98,11 +98,14 @@ const gitIgnoredPaths = (
 	root: string,
 	candidates: readonly string[],
 ): ReadonlySet<string> => {
-	if (candidates.length === 0) return new Set();
+	// One path outside the repository makes git refuse the whole batch,
+	// so only repository-relative paths are asked about.
+	const relative = candidates.filter((path) => !isAbsolute(path));
+	if (relative.length === 0) return new Set();
 	try {
 		const stdout = execFileSync('git', ['check-ignore', '--stdin'], {
 			cwd: root,
-			input: `${candidates.join('\n')}\n`,
+			input: `${relative.join('\n')}\n`,
 			encoding: 'utf8',
 			maxBuffer: 16 * 1024 * 1024,
 		});
