@@ -2,12 +2,15 @@
 id: x00641
 title: "A hung CI run cannot hold the queue"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00637, x00636]
+last-transition-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
+last-correlation-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
+last-transition-from: in-progress
 ---
 
 # x00641 — A hung CI run cannot hold the queue
@@ -72,10 +75,11 @@ green full run took about seven minutes.
   `.github/workflows/keep-the-queue-moving.yml`,
   `.github/workflows/pages.yml`, `.github/workflows/release.yml`,
   `.github/workflows/surface-bootstrap.yml`
+- shipped-in: `ed910e0e5c4e`
 
 ### S2 — A run that timed out is re-dispatched, not read as red
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/forge/certify-integration.script.spec.ts`
 - **Files**: `tools/scripts/forge/certify-integration.script.ts`,
   `tools/scripts/forge/certify-integration.interface.ts`,
@@ -103,6 +107,7 @@ pass, for ever. `MAX_CANCELLED_FULL_RUNS` (3) bounds it: after that many
 cancelled full runs and none that finished, `needsCertification` stops
 starting another, the certification is `red`, and the pass says why. A
 run that finishes still decides, whatever was cancelled before it.
+- shipped-in: `144a8768a906`
 
 ## dependency graph
 
