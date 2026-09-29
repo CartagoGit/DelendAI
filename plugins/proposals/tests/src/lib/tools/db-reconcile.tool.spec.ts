@@ -718,6 +718,8 @@ describe('proposals_db_reconcile at a commit (q00023 S1)', () => {
 
 		expect(first.status).toBe('ok');
 		expect(first.sourceCommit).toBe(sha);
+		expect(first.drift).toBeNull();
+		expect(proposalsDbReconcileOutputSchema.parse(first)).toBeTruthy();
 		expect(first.proposals).toBe(1);
 		expect(again.sourceCommit).toBe(sha);
 		expect(again.proposals).toBe(1);

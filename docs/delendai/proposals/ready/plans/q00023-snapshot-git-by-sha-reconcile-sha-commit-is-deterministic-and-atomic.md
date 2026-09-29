@@ -112,26 +112,26 @@ nothing outside the proposals tree is read.
 
 ### S2 — Drift detection: report when the ref moved mid-run
 
-- **Status**: pending
+- **Status**: in-progress
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts`
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/reconciler/drift.ts`
-    (new)
-  - `packages/proposals-sqlite/src/lib/reconciler/reconcile.ts`
-    (modified — appends drift to the response)
-  - `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`
-    (modified — surfaces drift)
-  - `packages/proposals-sqlite/tests/src/lib/reconciler/drift.spec.ts`
-    (new)
-- **Gate**: type
-- acceptance:
-  - After reconcile completes, the tool re-reads the ref and compares
-    it with the captured `source_commit`. If they differ, the response
-    carries `{ drift: { from: '<sha>', to: '<sha>', reason:
-    'branch-moved' | 'detached' } }`.
-  - The drift is reported, NOT acted on. The reconcile run is
-    considered complete; the host decides whether to re-run.
-  - `git status` and `git rev-parse HEAD` are the only external calls
-    in the drift step.
+  - `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/proposal-markdown-at-commit.interface.ts`
+  - `plugins/proposals/src/lib/tools/db-reconcile.tool.ts`
+  - `plugins/proposals/src/generated/tool-outputs.ts`
+  - `plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/sync-proposals-projection.spec.ts`
+
+Rewritten against the tree like S1 (`reconciler/drift.ts` and the sync
+tool do not exist; the reconcile with a `ref` is `proposals_db_reconcile`).
+When the run is done, `refDrift` asks again what `ref` names. The output
+carries `drift: { from, to, reason }` when it no longer names the commit
+the run read: `ref-moved` (a branch that moved) or `ref-gone` (deleted,
+`to: null`). A SHA names itself for ever and never drifts. The drift is
+reported, not acted on: the run is complete for the commit it read, and
+running again is the caller's decision. The only external call is one
+`git rev-parse`.
 
 ## acceptance
 

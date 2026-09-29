@@ -911,6 +911,11 @@ export interface DelendaiProposalsProposalsDbReconcileOutput {
 	reason: string;
 	startedAt: number;
 	durationMs: number;
+	drift: {
+		from: string;
+		to: string;
+		reason: "ref-moved" | "ref-gone";
+	} | null;
 	ok: true;
 }
 
