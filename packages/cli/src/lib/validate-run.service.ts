@@ -14,16 +14,14 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import {
-	packageManagerFrom,
-	validationGateSteps,
-	type IValidationGateStep,
-} from '@delendai/core/cli';
+import { packageManagerFrom, validationGateSteps } from '@delendai/core/cli';
 import {
 	appendValidateJournalEntry,
 	buildValidateJournalEntry,
 	VALIDATE_LOG_RELATIVE_PATH,
 } from '@delendai/proposals/public';
+
+import type { IValidateStep } from '../contracts/interfaces/validate-run.interface';
 
 /** A file of the workspace, or `undefined` when it has none. */
 const workspaceReader =
@@ -45,8 +43,7 @@ export const packageManagerOf = (workspace: string): string =>
  */
 export const declaredValidateSteps = (
 	workspace: string,
-): readonly IValidationGateStep[] =>
-	validationGateSteps(workspaceReader(workspace));
+): readonly IValidateStep[] => validationGateSteps(workspaceReader(workspace));
 
 /** Run the declared steps, each to the end, and journal the outcome. */
 export const runValidate = async (

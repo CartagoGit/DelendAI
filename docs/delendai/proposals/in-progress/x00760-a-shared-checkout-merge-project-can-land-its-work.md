@@ -44,7 +44,7 @@ The served work model (x00759) tells an agent on `shared-checkout-merge` to fini
 - A red certification, a stale head and a conflict each end in a refusal that names the next step; nothing lands uncertified.
 - Under a pull-request profile nothing changes.
 
-## Implementation notes
+## notes
 
 - `work publish` under `integration.strategy: merge` calls `landWorkUnit`: it holds the work ref, runs `runLocalMergeCycle` with a `certify` hook, and ends the work ref with the same `endWorkRef` a publication uses (kept while the proposal is still in progress, as before).
 - `runLocalMergeCycle` certifies inside its critical section: after reading the head it answers a stale base (`staleBase`) and a conflict before any gate runs, builds the merge commit in a throwaway index, and passes that commit to `certify`; the pushed commit is the certified one.
