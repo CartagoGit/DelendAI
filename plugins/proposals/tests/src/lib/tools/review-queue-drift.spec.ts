@@ -59,9 +59,10 @@ describe('the review queue orders by drift', () => {
 		repo.proposalInReview(slice('src/b.ts'), 'x00002', '2026-09-01');
 		repo.proposalInReview(slice('src/a.ts'), 'x00001', '2026-09-02');
 
+		// No agent: a named reviewer starts at a per-process offset.
 		const answer = await (
 			await captureHandler(buildReviewQueueRegistration(repo.options()))
-		)({ agent: 'agent-b' });
+		)({});
 		const proposals = answer.body.proposals as readonly IDriftView[];
 
 		expect(proposals.map((proposal) => proposal.id)).toEqual([
