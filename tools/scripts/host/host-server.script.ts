@@ -6,7 +6,10 @@
  * Equivalent to `cli.ts`'s own `runCli`, minus the `init`/`--check`/`--doctor`
  * branches a long-running server process never needs.
  */
+import { fileURLToPath } from 'node:url';
+
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
+import { runSupervised, shouldSupervise } from './host-supervisor-process';
 import {
 	assembleCliConfig,
 	createFileSystemJournal,
@@ -489,5 +492,11 @@ const handleBootFailure = (err: unknown): void => {
 // Guarded so a spec file can `import { resolveWorkspaceFlag }` from this
 // module (to unit-test the argv parsing) without also booting a real server.
 if (import.meta.main) {
-	run().catch(handleBootFailure);
+	// The process a host starts supervises a server child, which it moves
+	// onto the checkout's current code when that changes (x00756).
+	if (shouldSupervise(process.env)) {
+		runSupervised(fileURLToPath(import.meta.url), process.argv.slice(2));
+	} else {
+		run().catch(handleBootFailure);
+	}
 }

@@ -66,7 +66,9 @@ export const staleRuntimeAdvisoryFor = (
 		message: `This delendai server started at ${reading.bootHead.slice(0, 9)}; the checkout is at ${reading.head.slice(0, 9)}, and ${String(runtime.length)} source file(s) it runs have changed since. It still applies the rules it started with.`,
 		reason: 'Fixes merged since this session started (guards, publishing, reviews) do not apply to calls made through this server.',
 		nextAction:
-			'Restart the delendai MCP server (VS Code: "MCP: List Servers" → DelendAI → Restart; other hosts: start a new session), then continue.',
+			process.env.DELENDAI_SUPERVISED === '1'
+				? 'Nothing to do: this server is supervised and moves onto the current code within a minute, once no call is in flight.'
+				: 'Restart the delendai MCP server (VS Code: "MCP: List Servers" → DelendAI → Restart; other hosts: start a new session), then continue.',
 		dedupeKey: `stale-runtime:${reading.head}`,
 	};
 };

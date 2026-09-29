@@ -1735,6 +1735,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-25"
+			},
+			{
+				"id": "x00756",
+				"title": "A server behind its checkout restarts itself",
+				"track": "hosts",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-09-29"
 			}
 		]
 	}
