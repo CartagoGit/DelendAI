@@ -2,12 +2,15 @@
 id: x00753
 title: "The queue keeps the branch model's own pull requests"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P0
 related: [x00690]
+last-transition-id: bfec1e7e-2940-453a-ab32-d30029a44b42
+last-correlation-id: bfec1e7e-2940-453a-ab32-d30029a44b42
+last-transition-from: in-progress
 ---
 
 # x00753 — The queue keeps the branch model's own pull requests
@@ -59,12 +62,13 @@ closed the same way.
 
 ### S1 — A promotion and a forward sync are not closed
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/forge/close-unpublished-prs.script.spec.ts tools/scripts/lint/pr-head-shape.script.spec.ts`
 - **Files**:
   - `tools/scripts/lint/pr-head-shape.script.ts`
   - `tools/scripts/forge/close-unpublished-prs.script.ts`
   - `tools/scripts/forge/close-unpublished-prs.script.spec.ts`
+- shipped-in: `8cc340e08007`
 
 ## dependency graph
 
