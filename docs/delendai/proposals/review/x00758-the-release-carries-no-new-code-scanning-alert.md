@@ -2,12 +2,15 @@
 id: x00758
 title: "The release carries no new code-scanning alert"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-09-29
 priority: P0
 related: []
+last-transition-id: 6275ffbd-f1e8-44fb-a414-cefaa441d440
+last-correlation-id: 6275ffbd-f1e8-44fb-a414-cefaa441d440
+last-transition-from: in-progress
 ---
 
 # x00758 — The release carries no new code-scanning alert
@@ -75,7 +78,7 @@ written once:
 
 ### S1 — Fix the 35 alerts the release introduces
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lib/read-text-if-present.spec.ts packages/cli plugins/conventions`
 - **Files**:
   - `packages/cli/src/lib/doctor/checks/stale-docs.check.ts`
@@ -114,6 +117,7 @@ written once:
   - `tools/scripts/lint/detail-levels-coverage.script.ts`
   - `tools/scripts/lint/file-conventions.script.spec.ts`
   - `tools/scripts/migrate/rebrand-propagate.script.ts`
+- shipped-in: `f5a6c17ebe6c`
 
 ## dependency graph
 

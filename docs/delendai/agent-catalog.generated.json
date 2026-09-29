@@ -1727,14 +1727,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-25"
-			},
-			{
-				"id": "x00758",
-				"title": "The release carries no new code-scanning alert",
-				"track": "security",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-29"
 			}
 		]
 	}
