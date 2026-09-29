@@ -23,6 +23,7 @@ import { fakePartial } from '@delendai/test-kit';
 
 import {
 	armable,
+	branchModelPulls,
 	type IPullRequest,
 	type IWorkflowRun,
 	parkedRuns,
@@ -250,5 +251,33 @@ describe('armCandidates honours the declared merge method (x00554 S1)', () => {
 
 	it('still passes --merge for a project that declared merge', () => {
 		expect(flagsUsed('merge')).toStrictEqual(['pr merge 7 --auto --merge']);
+	});
+});
+
+describe('branchModelPulls', () => {
+	const BRANCHES = { integration: 'develop', release: 'main' };
+	const open = (
+		number: number,
+		head: string,
+		base: string,
+	): IPullRequest => ({
+		number,
+		title: 't',
+		auto_merge: null,
+		head: { sha: 'abc', ref: head },
+		base: { ref: base },
+	});
+
+	it('finds the promotion and the forward sync, which nobody arms', () => {
+		const found = branchModelPulls(
+			[
+				open(641, 'develop', 'main'),
+				open(642, 'delendai/pr/forward-sync-abc123', 'develop'),
+				open(643, 'delendai/pr/a/implement/x1-S1-g1/t', 'develop'),
+				open(644, 'develop', 'feature'),
+			],
+			BRANCHES,
+		);
+		expect(found.map((pull) => pull.number)).toEqual([641, 642]);
 	});
 });

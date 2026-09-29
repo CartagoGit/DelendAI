@@ -31,6 +31,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { mergeFlagFor } from '../lib/declared-branches';
+import { isBranchModelMove } from '../lint/pr-head-shape.script';
 import {
 	CERTIFYING_WORKFLOW,
 	certificationOf,
@@ -109,8 +110,26 @@ export interface IPullRequest {
 	readonly title: string;
 	readonly auto_merge: unknown;
 	readonly head: { readonly sha: string; readonly ref: string };
+	readonly base?: { readonly ref: string };
 	readonly draft?: boolean;
 }
+
+/**
+ * The branch model's own pull requests: the promotion into the release
+ * branch and the forward sync back. Nobody arms them (a person approves a
+ * promotion), so the loop over armed candidates never reached them. Their
+ * head moves whenever the queue lands a candidate, by the forge's own bot,
+ * and the forge parks every run on a bot's commit: on 2026-09-29 the
+ * promotion (#641) sat with its required checks waiting for an approval
+ * button after each merge into the integration branch.
+ */
+export const branchModelPulls = (
+	open: readonly IPullRequest[],
+	branches: { readonly integration: string; readonly release: string },
+): readonly IPullRequest[] =>
+	open.filter((pull) =>
+		isBranchModelMove(pull.head.ref, pull.base?.ref, branches),
+	);
 
 const gh = (args: readonly string[]): string =>
 	execFileSync('gh', [...args], {
@@ -538,6 +557,19 @@ const main = (): void => {
 			: api<readonly IPullRequest[]>(
 					`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 				);
+	for (const pull of branchModelPulls(open, policy.branches)) {
+		const parked = releaseWaitingRuns(pull.head.sha);
+		if (parked.released > 0) {
+			console.log(
+				`keep-the-queue-moving: released ${String(parked.released)} parked run(s) on #${String(pull.number)}, the branch model's own pull request.`,
+			);
+		}
+		for (const name of parked.refused) {
+			console.log(
+				`keep-the-queue-moving: #${String(pull.number)}'s ${name} run could not be released; approve it on the forge.`,
+			);
+		}
+	}
 	const armed = open.filter((pull) => pull.auto_merge !== null);
 	if (armed.length === 0) {
 		console.log(

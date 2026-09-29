@@ -126,6 +126,10 @@ const SKIP_PATHS = [
 	// artefacts on disk, not references to the product, and rewriting
 	// them would point the baseline at files that do not exist.
 	'proposal-cited-commits.baseline',
+	// The test-zone read map lists every root file a zone read, which
+	// includes the proposals, and so the file names of pre-rebrand audits.
+	// Same category as the two baselines above.
+	'zone-reads.generated.json',
 	'/legacy/',
 	// The migration script documents both names by design — exclude itself
 	// and its spec so the post-migration sweep does not flag the canonical
