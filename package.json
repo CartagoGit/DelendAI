@@ -37,6 +37,7 @@
 		"test": "bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run",
 		"test:context-compiler": "bun test --timeout 30000 packages/context-compiler/",
 		"test:sqlite": "bun tools/scripts/test/bun-owned-specs.script.ts",
+		"test:sqlite:real-tree": "bun test --timeout 30000 packages/proposals-sqlite/tests/e2e/real-tree-projection.spec.ts",
 		"test:failures": "bun tools/scripts/test/read-test-journal.script.ts",
 		"test:failures:json": "bun tools/scripts/test/read-test-journal.script.ts --json",
 		"test:history": "bun tools/scripts/test/read-test-journal.script.ts --history",

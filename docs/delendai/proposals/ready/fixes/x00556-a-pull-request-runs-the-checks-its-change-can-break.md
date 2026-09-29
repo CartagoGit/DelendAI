@@ -54,12 +54,31 @@ answerable, reviewable and testable.
 
 ### S1 — Each job declares the paths it can be broken by
 
-- **Status**: pending
-- **Gate**: `bun run lint:workflow`
-- **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/**`
+- **Status**: in-progress
+- **Gate**: `bun run lint:job-scope && bun run test:sqlite:real-tree`
+- **Files**:
+  - `.github/workflows/ci.yml`
+  - `tools/scripts/ci/job-scope.constant.ts`
+  - `package.json`
 - Every CI job carries an explicit input set. A job with no declared
   inputs always runs. A lint that fails to declare and is then skipped
   is a gate failure, not a saving.
+- **Found 2026-09-29 — `job-scope` already declares inputs, and one of
+  them made a 4-minute job run on every pull request.**
+  `sqlite-cutover-ready` (the second slowest job after the test zones,
+  257 s) listed `docs/delendai/proposals/`, and every pull request edits
+  a proposal. Its reason said the cutover gate reads proposal statuses;
+  it does not (its outstanding list is written in the script). What does
+  read the real tree is one spec of the SQLite suite,
+  `real-tree-projection` (3 s): a proposal edit can break it, as
+  `kind: infra` once did. It now runs as `test:sqlite:real-tree` in
+  `lint-governance`, on every change, and the proposal tree left the
+  cutover job's inputs. A change of a proposal and a script now selects
+  22 jobs instead of 23, without the slow one; a change to the SQLite
+  packages still selects it.
+- Still to do: the jobs declared `always` (the six lint groups,
+  `quality-gate`, `metrics-gate`, the artifact checks) — each needs its
+  inputs measured before it can be narrowed.
 
 ### S2 — A pull request selects, the integration branch does not
 
