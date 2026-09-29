@@ -25,6 +25,7 @@ import { prHeadProblem } from '../lint/pr-head-shape.script';
 interface IOpenPullRequest {
 	readonly number: number;
 	readonly headRefName: string;
+	readonly baseRefName?: string;
 	readonly isCrossRepository: boolean;
 }
 
@@ -36,7 +37,11 @@ export const unpublishedPullRequests = (
 	open.flatMap((pull) => {
 		// A fork's branch is not ours to judge by our namespaces.
 		if (pull.isCrossRepository) return [];
-		const problem = prHeadProblem(pull.headRefName, branches);
+		const problem = prHeadProblem(
+			pull.headRefName,
+			branches,
+			pull.baseRefName,
+		);
 		return problem === undefined ? [] : [{ number: pull.number, problem }];
 	});
 
@@ -61,7 +66,7 @@ const main = (): number => {
 				'--limit',
 				'200',
 				'--json',
-				'number,headRefName,isCrossRepository',
+				'number,headRefName,baseRefName,isCrossRepository',
 			],
 			{ cwd: root, encoding: 'utf8' },
 		),

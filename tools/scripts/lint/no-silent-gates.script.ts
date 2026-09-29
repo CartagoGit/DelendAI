@@ -82,9 +82,12 @@
  *     mode, never as violations.
  */
 import { readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const REPO_ROOT = resolve(import.meta.dir, '../../..');
+// Portable: `import.meta.dir` is Bun's alone, and the spec runs under Node.
+const SELF = fileURLToPath(import.meta.url);
+const REPO_ROOT = resolve(dirname(SELF), '../../..');
 
 /* ───────────────────────── types ───────────────────────── */
 
