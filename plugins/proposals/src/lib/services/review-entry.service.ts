@@ -17,6 +17,12 @@
  * the last commit on it that changed its declared files, and a slice with
  * none, or with declared files that do not exist, keeps the proposal out
  * of review with the step that fixes it.
+ *
+ * A proposal delivered over several pull requests hands over a branch that
+ * holds only its last slice: the earlier ones are already in the
+ * integration branch. Their delivery is the merge of their publication,
+ * whose subject names the unit (`…/<id>-<slice>-g<n>/…`, or `<id>-all-g<n>`
+ * for the whole proposal), and which changed the slice's files.
  */
 import type { IReviewEntry } from '../contracts/interfaces/review-entry.interface';
 import type { IGitRunner } from '../shared/git-runner';
@@ -50,6 +56,50 @@ const baseOf = async (
 	for (const ref of [`refs/remotes/origin/${integration}`, integration]) {
 		if ((await run(['rev-parse', '--verify', '--quiet', ref])).ok)
 			return ref;
+	}
+	return undefined;
+};
+
+/** The id in a proposal's frontmatter. */
+const proposalIdOf = (markdown: string): string | undefined =>
+	/^id:\s*["']?([A-Za-z]\d+)["']?\s*$/mu.exec(markdown)?.[1];
+
+/**
+ * The merge on the integration line that delivered this slice: its subject
+ * names the slice's unit, or the whole proposal's, and it changed the
+ * slice's declared files.
+ */
+const deliveringMergeOf = async (
+	run: IGitRunner,
+	base: string,
+	proposalId: string,
+	sliceId: string,
+	files: readonly string[],
+): Promise<string | undefined> => {
+	const unit = new RegExp(
+		`/${escapeRegExp(proposalId)}-(?:${escapeRegExp(sliceId)}|all)-g\\d+/`,
+		'iu',
+	);
+	const merges = await run([
+		'log',
+		'--merges',
+		'--first-parent',
+		'--format=%H%x09%s',
+		base,
+	]);
+	if (!merges.ok) return undefined;
+	for (const line of merges.output.split('\n')) {
+		const [commit = '', subject = ''] = line.split('\t');
+		if (!unit.test(subject)) continue;
+		const changed = await run([
+			'diff',
+			'--name-only',
+			`${commit}^1`,
+			commit,
+			'--',
+			...files,
+		]);
+		if (changed.ok && changed.output.trim().length > 0) return commit;
 	}
 	return undefined;
 };
@@ -96,7 +146,18 @@ export const prepareReviewEntry = async (input: {
 						'--',
 						...slice.files,
 					]);
-		const commit = last?.ok === true ? last.output.trim() : '';
+		const onBranch = last?.ok === true ? last.output.trim() : '';
+		const id = proposalIdOf(markdown);
+		const commit =
+			onBranch.length > 0 || base === undefined || id === undefined
+				? onBranch
+				: ((await deliveringMergeOf(
+						input.run,
+						base,
+						id,
+						slice.id,
+						slice.files,
+					)) ?? '');
 		if (commit.length === 0) {
 			if (!proposalShipped) undelivered.push(slice.id);
 			continue;
