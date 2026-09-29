@@ -43,6 +43,7 @@ import {
 	PROJECTABLE_PROPOSAL_KINDS,
 	PROJECTABLE_PROPOSAL_STATUSES,
 	buildDbReconcileToolRegistration,
+	classifyCandidate,
 	collectProposalMarkdown,
 	preflightProposalFiles,
 	proposalsDbReconcileOutputSchema,
@@ -597,5 +598,67 @@ describe('proposals_db_reconcile fences its promotion (r00055 S1)', () => {
 		expect(stale.status).toBe('rejected');
 		expect(stale.reason).toContain('active database has moved');
 		expect(readActiveAuthority(paths.databasePath)).toBe('commit-two');
+	});
+});
+
+describe('resolveHeadCommit, the other shapes a checkout takes', () => {
+	it('reads a packed ref, a detached HEAD, and names a ref it cannot find', () => {
+		const { root } = makeWorkspace();
+		mkdirSync(join(root, '.git'), { recursive: true });
+		writeFileSync(join(root, '.git/HEAD'), 'ref: refs/heads/develop\n');
+		writeFileSync(
+			join(root, '.git/packed-refs'),
+			`# pack-refs with: peeled\n${'c'.repeat(40)} refs/heads/develop\n`,
+		);
+		expect(resolveHeadCommit(root)).toBe('c'.repeat(40));
+
+		writeFileSync(join(root, '.git/HEAD'), 'ref: refs/heads/gone\n');
+		expect(resolveHeadCommit(root)).toBe('refs/heads/gone');
+
+		writeFileSync(join(root, '.git/HEAD'), `${'d'.repeat(40)}\n`);
+		expect(resolveHeadCommit(root)).toBe('d'.repeat(40));
+	});
+
+	it('follows a relative gitdir pointer, and ignores a .git file that is not one', () => {
+		const { root: worktree } = makeWorkspace();
+		mkdirSync(join(worktree, 'real-git'), { recursive: true });
+		writeFileSync(join(worktree, 'real-git/HEAD'), `${'e'.repeat(40)}\n`);
+		writeFileSync(join(worktree, '.git'), 'gitdir: real-git\n');
+		expect(resolveHeadCommit(worktree)).toBe('e'.repeat(40));
+
+		writeFileSync(join(worktree, '.git'), 'not a pointer\n');
+		expect(resolveHeadCommit(worktree)).toBe('workspace');
+	});
+});
+
+describe('classifyCandidate', () => {
+	const candidate = (kind: string | null, status: string | null) => ({
+		uid: 'x00001',
+		slug: 'x00001-a',
+		path: 'ready/x00001-a.md',
+		title: 'A',
+		kind,
+		status,
+		type: 'proposal',
+		track: null,
+		date: null,
+		frontmatterJson: '{}',
+		bodyHash: 'h',
+	});
+
+	it('names what keeps a candidate out of the projection', () => {
+		expect(classifyCandidate(candidate(null, 'ready'))?.code).toBe(
+			'missing_kind',
+		);
+		expect(classifyCandidate(candidate('fix', null))?.code).toBe(
+			'missing_status',
+		);
+		expect(classifyCandidate(candidate('nonsense', 'ready'))?.code).toBe(
+			'kind_not_projectable',
+		);
+		expect(classifyCandidate(candidate('fix', 'nonsense'))?.code).toBe(
+			'status_not_projectable',
+		);
+		expect(classifyCandidate(candidate('fix', 'ready'))).toBeNull();
 	});
 });

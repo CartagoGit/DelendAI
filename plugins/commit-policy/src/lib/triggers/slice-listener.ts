@@ -286,7 +286,7 @@ const collectUnpersistedBaseline = async (
 			refusals.push(candidate);
 			continue;
 		}
-		let persisted = true;
+		let persisted: boolean;
 		try {
 			persisted = await isAlreadyPersisted(candidate);
 		} catch {

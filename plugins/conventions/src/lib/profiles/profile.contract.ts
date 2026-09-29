@@ -15,7 +15,7 @@ export interface ILanguageRoleRule {
 	/** Profile-scoped role name (e.g. `module`, `package-marker`). */
 	readonly name: string;
 	/** Pure predicate over a repo-relative POSIX path. */
-	match(rel: string): boolean;
+	matches(rel: string): boolean;
 }
 
 export interface ILanguageProfile {
@@ -36,7 +36,7 @@ export const classifyWithProfile = (
 	rel: string,
 ): string => {
 	for (const rule of profile.rules) {
-		if (rule.match(rel)) return rule.name;
+		if (rule.matches(rel)) return rule.name;
 	}
 	return 'other';
 };

@@ -686,11 +686,14 @@ const handleApi = async (
 		try {
 			return jsonResponse(await fetchConfigurationCenterData(cwd.path));
 		} catch (error) {
+			// The detail stays on the dev server's terminal; the page gets
+			// no error text of the server's (CodeQL stack-trace-exposure).
+			console.error('[dev] configuration center read failed:', error);
 			return jsonResponse(
 				{
 					ok: false,
 					message:
-						error instanceof Error ? error.message : String(error),
+						'The configuration center could not be read; the dev server terminal has the error.',
 				},
 				502,
 			);

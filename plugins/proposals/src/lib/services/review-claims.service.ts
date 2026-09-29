@@ -23,11 +23,19 @@ import type { IReviewClaimHolder } from '../contracts/interfaces/review-claim-ho
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
 
+/** `value` without slashes at either end; a loop, not a backtracking regex. */
+const trimSlashes = (value: string): string => {
+	let start = 0;
+	let end = value.length;
+	while (start < end && value[start] === '/') start += 1;
+	while (end > start && value[end - 1] === '/') end -= 1;
+	return value.slice(start, end);
+};
+
 const bare = (prefix: string): string => {
-	const trimmed = prefix
-		.replace(/^refs\//u, '')
-		.replace(/^heads\//u, '')
-		.replace(/^\/+|\/+$/gu, '');
+	const trimmed = trimSlashes(
+		prefix.replace(/^refs\//u, '').replace(/^heads\//u, ''),
+	);
 	return trimmed.length === 0 ? '' : `${trimmed}/`;
 };
 

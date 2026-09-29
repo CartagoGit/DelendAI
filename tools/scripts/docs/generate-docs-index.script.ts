@@ -103,6 +103,8 @@ export const flattenMarkdown = (value: string): string =>
 	value
 		.replace(/!?\[([^\]]*)\]\([^)]*\)/gu, '$1')
 		.replace(/\*\*/gu, '')
+		// Backslashes first, so an escaped pipe in the source stays one.
+		.replace(/\\/gu, '\\\\')
 		.replace(/\|/gu, '\\|')
 		.replace(/\r?\n/gu, ' ')
 		.trim();

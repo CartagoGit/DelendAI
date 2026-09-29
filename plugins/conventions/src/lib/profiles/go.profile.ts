@@ -15,7 +15,7 @@ import {
 const rule = (
 	name: string,
 	match: (rel: string) => boolean,
-): ILanguageRoleRule => ({ name, match });
+): ILanguageRoleRule => ({ name, matches: match });
 
 export const GO_PROFILE: ILanguageProfile = {
 	id: 'go',

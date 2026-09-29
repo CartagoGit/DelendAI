@@ -329,7 +329,7 @@ const remoteSha = (
 	remote: string,
 	ref: string,
 ): string | undefined => {
-	const listed = git(root, ['ls-remote', remote, `refs/heads/${ref}`]);
+	const listed = git(root, ['ls-remote', '--', remote, `refs/heads/${ref}`]);
 	const sha = listed?.split('\t')[0]?.trim();
 	return sha === undefined || sha.length === 0 ? undefined : sha;
 };

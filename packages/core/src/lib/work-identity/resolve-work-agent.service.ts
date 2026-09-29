@@ -69,14 +69,26 @@ const read = (value: string | (() => string | undefined) | undefined) => {
  * file name both accept, so the same identity names the ref, the
  * worktree and the row in the state.
  */
+/**
+ * `value` without the separators at its end. A loop, not `[-._]+$`: the
+ * regex retried from every separator of a long run, polynomial on input
+ * like `a------…-b`.
+ */
+const withoutTrailingSeparators = (value: string): string => {
+	let end = value.length;
+	while (end > 0 && '-._'.includes(value[end - 1] ?? '')) end -= 1;
+	return value.slice(0, end);
+};
+
 export const normalizeWorkAgentId = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replaceAll(/[^a-z0-9._-]+/gu, '-')
-		.replaceAll(/-{2,}/gu, '-')
-		.replace(/^[-._]+/u, '')
-		.replace(/[-._]+$/u, '');
+	withoutTrailingSeparators(
+		value
+			.trim()
+			.toLowerCase()
+			.replaceAll(/[^a-z0-9._-]+/gu, '-')
+			.replaceAll(/-{2,}/gu, '-')
+			.replace(/^[-._]+/u, ''),
+	);
 
 /**
  * The agent, in the order of how specific each source is about WHO did

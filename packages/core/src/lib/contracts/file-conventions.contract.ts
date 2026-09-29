@@ -22,7 +22,7 @@
  * Architecture (SOLID):
  *   - `Role` — closed union of every role name; the source of truth
  *     that both consumers narrow against.
- *   - `IRoleRule` — one rule: a `name` + a pure `match(path)` predicate.
+ *   - `IRoleRule` — one rule: a `name` + a pure `matches(path)` predicate.
  *     Interface Segregation: callers depend on this shape, not on the
  *     helper constructors.
  *   - `DEFAULT_TS_RULES` — ordered chain. Order matters: more specific
@@ -110,7 +110,7 @@ export interface IRoleRule {
 	/** Canonical role name; must be one of the `Role` literals. */
 	readonly name: Role;
 	/** Pure predicate. Repo-relative POSIX path (`/` separators). */
-	readonly match: (relPath: string) => boolean;
+	readonly matches: (relPath: string) => boolean;
 }
 
 /** True if any segment of the path equals `needle`. */
@@ -122,9 +122,9 @@ export const endsWithBasename = (rel: string, suffix: string): boolean =>
 	basename(rel) === suffix || basename(rel).endsWith(`.${suffix}`);
 
 /** Build a rule in one expression. Local helper, not exported. */
-const rule = (name: Role, match: (rel: string) => boolean): IRoleRule => ({
+const rule = (name: Role, matches: (rel: string) => boolean): IRoleRule => ({
 	name,
-	match,
+	matches,
 });
 
 /** Build a folder-segment rule. Local helper, not exported. */
@@ -543,7 +543,7 @@ export const classifyPath = (
 	if (typeof relPath !== 'string' || relPath === '') return 'other';
 	for (const rule of rules) {
 		try {
-			if (rule.match(relPath)) return rule.name;
+			if (rule.matches(relPath)) return rule.name;
 		} catch {}
 	}
 	return 'other';

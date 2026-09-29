@@ -185,7 +185,9 @@ const collectReferencedConstClosure = (
 	return names;
 };
 
-const escapeName = (name: string): string => name.replace(/\$/g, '\\$');
+/** A name as a literal inside a RegExp: every metacharacter escaped. */
+const escapeName = (name: string): string =>
+	name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const hasNamedReference = (
 	block: string,

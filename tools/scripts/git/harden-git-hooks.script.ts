@@ -29,7 +29,14 @@
  * nothing. It is idempotent: a hook already carrying the preamble is left
  * alone, and running it twice changes nothing.
  */
-import { chmodSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+	closeSync,
+	fchmodSync,
+	ftruncateSync,
+	openSync,
+	readFileSync,
+	writeSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import {
 	HARDENED_MARKER,
@@ -70,15 +77,27 @@ export const hardenGitHooks = (hooksDir: string): IHardenReport => {
 	const skipped: string[] = [];
 	for (const name of MANAGED_HOOKS) {
 		const path = join(hooksDir, name);
-		if (!existsSync(path)) continue;
-		const next = hardenHookText(readFileSync(path, 'utf8'));
-		if (next === undefined) {
-			skipped.push(name);
+		// One descriptor for the read and the rewrite: the hook that is
+		// rewritten is the one that was read.
+		let fd: number;
+		try {
+			fd = openSync(path, 'r+');
+		} catch {
 			continue;
 		}
-		writeFileSync(path, next);
-		chmodSync(path, HOOK_MODE);
-		hardened.push(name);
+		try {
+			const next = hardenHookText(readFileSync(fd, 'utf8'));
+			if (next === undefined) {
+				skipped.push(name);
+				continue;
+			}
+			ftruncateSync(fd, 0);
+			writeSync(fd, next, 0);
+			fchmodSync(fd, HOOK_MODE);
+			hardened.push(name);
+		} finally {
+			closeSync(fd);
+		}
 	}
 	return { hardened, skipped };
 };

@@ -38,6 +38,7 @@ import {
 	type Stats,
 } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
+import { readRegularFile } from '../lib/read-text-if-present';
 
 import { scanLegacyIdentity } from '@delendai/core/public';
 
@@ -318,12 +319,9 @@ const findFilesWith = (
 				const rel = relative(SCAN_ROOT, abs);
 				if (SKIP_PATHS.some((skip) => rel.includes(skip))) continue;
 				if (isIntentionalLegacyPath(rel)) continue;
-				let content: string;
-				try {
-					content = readFileSync(abs, 'utf8');
-				} catch {
-					continue;
-				}
+				// Read through the descriptor it was checked on (no symlink).
+				const content = readRegularFile(abs);
+				if (content === undefined) continue;
 				if (content.includes(needle)) matches.push(rel);
 			}
 		}

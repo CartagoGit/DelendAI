@@ -12,12 +12,12 @@
 import {
 	existsSync,
 	openSync,
-	readFileSync,
 	rmSync,
 	writeFileSync,
 	closeSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { readRegularFile } from '../lib/read-text-if-present';
 
 const LOCK = 'hydrate-candidates.lock';
 const AGAIN = 'hydrate-candidates.again';
@@ -48,7 +48,10 @@ export const acquireHydrationLock = (
 			closeSync(fd);
 			return 'acquired';
 		} catch {
-			const holder = Number(readFileSync(path, 'utf8').trim());
+			// Released between our attempt and this read: try again.
+			const text = readRegularFile(path);
+			if (text === undefined) continue;
+			const holder = Number(text.trim());
 			if (Number.isInteger(holder) && holder > 0 && alive(holder)) {
 				writeFileSync(join(dir, AGAIN), String(pid));
 				return 'busy';

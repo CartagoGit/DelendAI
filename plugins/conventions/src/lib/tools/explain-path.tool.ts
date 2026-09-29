@@ -39,7 +39,7 @@ type IExplainPathArgs = {
 const matchingRuleName = (relPath: string): string | undefined => {
 	for (const rule of DEFAULT_TS_RULES) {
 		try {
-			if (rule.match(relPath)) return rule.name;
+			if (rule.matches(relPath)) return rule.name;
 		} catch {
 			// A rule that throws on an odd path is not a match; the
 			// classifier swallows it the same way.

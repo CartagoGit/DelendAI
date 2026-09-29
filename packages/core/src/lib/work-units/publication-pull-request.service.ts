@@ -21,6 +21,14 @@ const BOOKKEEPING =
 	/^chore\(review\): claim\b|^docs\(proposals\): .*\bto review$/u;
 
 /** A title and body for the pull request, from the unit's commits. */
+/**
+ * A GitHub remote, with the host anchored: `https://github.com/…`,
+ * `ssh://git@github.com/…` or `git@github.com:…`, and not a host that
+ * merely ends in `github.com`.
+ */
+const GITHUB_REMOTE =
+	/^(?:(?:https?|ssh|git):\/\/(?:[^@/]+@)?|[^@/:]+@)github\.com[:/]/u;
+
 export const pullRequestText = (
 	subjects: readonly string[],
 	branch: string,
@@ -52,7 +60,7 @@ export const openPublicationPullRequest = (input: {
 }): IPublicationPullRequest => {
 	const { ports } = input;
 	const url = ports.git(['remote', 'get-url', input.remote]) ?? '';
-	if (!/github\.com[:/]/u.test(url)) {
+	if (!GITHUB_REMOTE.test(url)) {
 		return {
 			status: 'skipped',
 			reason: `\`${input.remote}\` is not a GitHub remote; open the pull request of \`${input.branch}\` into \`${input.base}\` the way this forge does.`,

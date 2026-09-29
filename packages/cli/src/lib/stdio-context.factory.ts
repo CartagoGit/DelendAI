@@ -58,8 +58,12 @@ export const resolveServerEntrypoint = (
  * (the agent markers) and delendai's own settings. Nothing else, and no
  * credential, reaches it this way.
  */
+/** Words that, anywhere in a variable's name, say it holds a secret. */
+const SECRET_WORDS = ['TOKEN', 'SECRET', 'PASSWORD', 'CREDENTIAL'] as const;
+
 /** A variable whose name says it holds a secret is never forwarded. */
-const SECRET_NAME = /TOKEN|SECRET|PASSWORD|CREDENTIAL|_KEY$/u;
+const namesASecret = (name: string): boolean =>
+	SECRET_WORDS.some((word) => name.includes(word)) || name.endsWith('_KEY');
 
 export const forwardedToServer = (
 	env: Readonly<Record<string, string | undefined>>,
@@ -70,7 +74,7 @@ export const forwardedToServer = (
 				entry[1] !== undefined &&
 				(AGENT_ENVIRONMENT_MARKERS.includes(entry[0]) ||
 					(entry[0].startsWith('DELENDAI_') &&
-						!SECRET_NAME.test(entry[0]))),
+						!namesASecret(entry[0]))),
 		),
 	);
 
