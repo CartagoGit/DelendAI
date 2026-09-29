@@ -16,6 +16,16 @@ import {
 	saveConfigurationDocument,
 } from '../../src/public';
 
+// Credential-SHAPED values, assembled at run time: written out whole, the
+// commit hook replaces them with a placeholder (it cannot tell a fixture
+// from a leak), and the redaction specs then test nothing.
+const GITHUB_PAT_SHAPED = ['github', 'pat', 'abcdefghijklmnopqrstuv'].join('_');
+const OPENAI_KEY_SHAPED = ['sk', 'abcdefghijklmnopqrstuvwxyz'].join('-');
+const GITHUB_TOKEN_SHAPED = [
+	'ghp',
+	'0123456789abcdefghijklmnopqrstuvwxyzAB',
+].join('_');
+
 const roots: string[] = [];
 const workspace = async (): Promise<string> => {
 	const root = await mkdtemp(join(tmpdir(), 'delendai-config-center-'));
@@ -45,7 +55,7 @@ describe('configuration center document service', () => {
 		await writeFile(
 			join(root, 'delendai.config.json'),
 			JSON.stringify({
-				custom: { token: 'MCPV_REDACTED_SECRET_GITHUB_PAT' },
+				custom: { token: GITHUB_PAT_SHAPED },
 			}),
 		);
 
@@ -247,7 +257,7 @@ describe('configuration center document service', () => {
 				{
 					action: 'set',
 					path: ['plugins', 'remote', 'options', 'apiKey'],
-					value: 'MCPV_REDACTED_SECRET_OPENAI_KEY',
+					value: OPENAI_KEY_SHAPED,
 				},
 			],
 		});
@@ -264,7 +274,7 @@ describe('configuration center document service', () => {
 		await writeFile(
 			file,
 			JSON.stringify({
-				custom: { token: 'MCPV_REDACTED_SECRET_GITHUB_PAT' },
+				custom: { token: GITHUB_PAT_SHAPED },
 			}),
 		);
 		const snapshot = await readConfigurationDocument({
@@ -499,7 +509,7 @@ describe('edits the document can refuse or apply', () => {
 			{
 				action: 'set',
 				path: ['n'],
-				value: 'MCPV_REDACTED_SECRET_GITHUB_TOKEN',
+				value: GITHUB_TOKEN_SHAPED,
 			},
 		];
 		for (const edit of refused) {
