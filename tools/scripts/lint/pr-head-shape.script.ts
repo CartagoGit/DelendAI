@@ -17,11 +17,29 @@ import {
 	kindsInAgentId,
 } from '@delendai/core/lib/development-policy/work-ref-placeholders';
 
+import { FORWARD_SYNC_REF_PREFIX } from '../forge/forward-sync-release.script';
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 
 const shortRef = (value: string): string =>
 	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+/**
+ * The two pull requests the branch model opens itself, which are nobody's
+ * publication: the promotion of the integration branch into the release
+ * branch, and the forward sync that carries the release branch back. The
+ * queue closed the promotion (#641 on 2026-09-29) because its head,
+ * `develop`, is not a publication.
+ */
+export const isBranchModelMove = (
+	head: string,
+	base: string | undefined,
+	branches: { readonly integration?: string; readonly release?: string },
+): boolean =>
+	base !== undefined &&
+	((head === branches.integration && base === branches.release) ||
+		(base === branches.integration &&
+			head.startsWith(FORWARD_SYNC_REF_PREFIX)));
 
 /** Why `head` is not a well-shaped publication ref, or `undefined`. */
 export const prHeadProblem = (
@@ -30,8 +48,12 @@ export const prHeadProblem = (
 		readonly workRefTemplate: string;
 		readonly workRefPrefix: string;
 		readonly publicationRefPrefix: string;
+		readonly integration?: string;
+		readonly release?: string;
 	},
+	base?: string,
 ): string | undefined => {
+	if (isBranchModelMove(head, base, branches)) return undefined;
 	const publication = shortRef(branches.publicationRefPrefix);
 	const work = shortRef(branches.workRefPrefix);
 	if (publication === '' || branches.workRefTemplate === '') return undefined;
@@ -70,7 +92,11 @@ const main = (): number => {
 		);
 		return 0;
 	}
-	const problem = prHeadProblem(head, declaredBranches(repoRoot()));
+	const problem = prHeadProblem(
+		head,
+		declaredBranches(repoRoot()),
+		process.env.GITHUB_BASE_REF,
+	);
 	if (problem === undefined) {
 		console.log(
 			`✓ pr-head-shape: \`${head}\` is a well-shaped publication.`,
