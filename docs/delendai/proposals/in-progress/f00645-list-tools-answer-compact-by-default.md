@@ -117,12 +117,40 @@ one call, under the tool it reached.
 
 ### S3 — The largest list tools answer compact by default
 
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S5]
-- **Files**: `plugins/proposals/src/lib/services/review-queue-view.service.ts`
-- **Gate**: type
+- **Files**:
+  - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `plugins/proposals/src/lib/tools/agent-names.tool.ts`
+  - `plugins/proposals/src/lib/shared/agent-names-list.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/agent-assignment-brief.interface.ts`
+  - `plugins/proposals/src/index.ts`
+  - `plugins/proposals/src/public/index.ts`
+  - `plugins/proposals/src/generated/tool-outputs.ts`
+  - `plugins/proposals/tests/src/lib/authoring.spec.ts`
+  - `plugins/proposals/tests/src/lib/shared/agent-names-list.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/agent-names.tool.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/authoring.spec.ts plugins/proposals/tests/src/lib/shared/agent-names-list.spec.ts plugins/proposals/tests/src/lib/tools/agent-names.tool.spec.ts`
 - acceptance:
   - "Each of the five largest list tools by measured total returns compact entries by default, the full item for its id, and the whole page with `detail: true`."
+
+Measured on 2026-09-29 from `invocations.jsonl`, without the router's copies
+of routed calls (S5). The largest list tools by total were `review_queue`
+(12.4 MB over 512 calls), `tool_search` (0.38 MB), `proposal_board`
+(0.12 MB, 15 KB a call), `agent_names` (0.12 MB, 8.7 KB a `list`) and
+`agent_catalog` (0.05 MB). `compact_router` and `vertex` rank above some of
+them, but they are routers, not lists.
+
+- `review_queue` (x00673), `agent_catalog` (`mode: "compact"`) and
+  `tool_search` (entries with a `detailsId`) already had the shape.
+- `proposal_board` now lists each proposal with its status, slice count and
+  claimable slices; `proposalId` returns one proposal's slices, and
+  `detail: true` all of them. It moved out of `authoring.tool.ts` into its
+  own module.
+- `agent_names { action: "list" }` now returns the counts and the active
+  agents in brief; `who_uses` is the one agent, and `detail: true` the
+  registry as stored.
 
 ### S4 — A lint keeps new list tools compact
 

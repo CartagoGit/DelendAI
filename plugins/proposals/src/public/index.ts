@@ -261,8 +261,8 @@ export {
 	buildCreateProposalRegistration,
 	buildCloseSliceRegistration,
 	buildReviewRegistration,
-	buildProposalBoardRegistration,
 } from '../lib/tools/authoring.tool';
+export { buildProposalBoardRegistration } from '../lib/tools/proposal-board.tool';
 export type { IAuthoringToolOptions } from '../lib/tools/authoring.tool';
 export { buildAdoptRegistration } from '../lib/tools/adopt.tool';
 export { analyzeProposals, PROPOSALS_LAYOUT } from '../lib/proposals/adopt';
