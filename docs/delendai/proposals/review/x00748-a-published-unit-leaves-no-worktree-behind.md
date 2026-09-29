@@ -2,12 +2,15 @@
 id: x00748
 title: "A published unit leaves no worktree behind"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00742]
+last-transition-id: 44a15381-767f-49eb-8b2c-cf0b00f39a9c
+last-correlation-id: 44a15381-767f-49eb-8b2c-cf0b00f39a9c
+last-transition-from: in-progress
 ---
 
 # x00748 — A published unit leaves no worktree behind
@@ -49,11 +52,12 @@ owner to clean up.
 
 ### S1 — The caller's worktree goes with its unit
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`
 - **Files**:
   - `packages/core/src/lib/work-units/work-publish.service.ts`
   - `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`
+- shipped-in: `4aef4c193d7c`
 
 ## dependency graph
 
