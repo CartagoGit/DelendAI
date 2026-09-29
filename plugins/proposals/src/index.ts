@@ -54,10 +54,10 @@ import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
 import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
-	buildProposalBoardRegistration,
 	buildReviewRegistration,
 	runCloseSliceQualityGate,
 } from './lib/tools/authoring.tool';
+import { buildProposalBoardRegistration } from './lib/tools/proposal-board.tool';
 import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
 import type { IAutoWorkPersistMode } from './lib/tools/auto-work-persist';

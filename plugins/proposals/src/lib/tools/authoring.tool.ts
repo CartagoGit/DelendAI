@@ -1,6 +1,6 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { isSelfApproval } from '../shared/independent-approval';
-import { dirname, join, relative } from 'node:path';
+import { join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import {
@@ -9,7 +9,6 @@ import {
 	redactSecrets,
 	sharedCheckout,
 	toolError,
-	toolJson,
 	toolOk,
 	withFileMutex,
 	writeFileAtomic,
@@ -39,14 +38,12 @@ import {
 	kindMatchesId,
 	newProposalIdSchema,
 } from '../contracts/schemas/proposal-kind.schema';
-import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
+import { readTextOrNull } from '../proposals/index-reader';
 import { appendPeerReviewJsonl } from '../shared/peer-review-log';
 import { escapeRegExp, slugFromTitle } from '../shared/string-helpers';
 import {
-	deriveSliceStatuses,
 	parseProposalSlicePlan,
 	planDisjointnessIssues,
-	validateClaim,
 } from '../swarm/proposal-slice-plan';
 import {
 	parseReviewState,
@@ -93,7 +90,7 @@ import {
 	isEvidenceFresh,
 	type IValidateEvidence,
 } from '../services/transition-evidence';
-import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
+import { resolveIndexedDoc } from './authoring-options';
 import type {
 	IAuthoringToolOptions,
 	ICloseSliceValidationDecision,
@@ -2567,134 +2564,6 @@ export const buildReviewRegistration = (
 								quorumMessage: approvalOutcome.message,
 							}),
 				});
-			},
-		);
-	},
-});
-
-/**
- * `proposal_board` — orchestrator overview: each actionable proposal with
- * its slices (status + owner) and which are claimable now. One low-token
- * call to plan multi-agent work.
- */
-export const buildProposalBoardRegistration = (
-	options: IAuthoringToolOptions & {
-		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
-	},
-): IToolRegistration => ({
-	id: 'proposal_board',
-	summary:
-		'Orchestrator view: actionable proposals × slices (status/owner) + claimable now.',
-	tags: ['proposals', 'orientation'],
-	register: async (server) => {
-		server.registerTool(
-			`${options.namespacePrefix}_proposal_board`,
-			{
-				outputSchema: z.object({
-					proposals: z.array(
-						z.object({
-							id: z.string(),
-							status: z.string(),
-							slices: z.array(
-								z.object({
-									sliceId: z.string(),
-									status: z.string(),
-									owner: z.string().nullable(),
-								}),
-							),
-							claimableSliceIds: z.array(z.string()).optional(),
-							/**
-							 * Why the board could not read this proposal.
-							 *
-							 * Absent on the happy path. Without it, an index
-							 * entry pointing at a moved or deleted file was
-							 * indistinguishable from a proposal that genuinely
-							 * has no slices: both came back as `slices: []`,
-							 * and an orchestrator would report "actionable,
-							 * nothing to claim" and stall.
-							 */
-							unreadable: z.string().optional(),
-						}),
-					),
-				}),
-				description:
-					'Returns each actionable proposal with its slices (status, owner) and the slices claimable right now. Read-only; the orchestrator board for planning multi-agent work. A proposal whose document cannot be read reports `unreadable` instead of an empty slice list.',
-			},
-			async () => {
-				const index = await readJsonOrNull<{
-					proposals: Array<{
-						id: string;
-						file: string;
-						status: string;
-					}>;
-				}>(options.indexPathAbs);
-				if (index === null) {
-					return toolJson({ proposals: [] });
-				}
-				const locks = await readActiveLocks(options.lockPathAbs);
-				// real documents carry the hyphenated status; keep
-				// the underscore spellings for indexes written before the
-				// vocabulary converged.
-				const actionable = index.proposals.filter((p) =>
-					['pending', 'ready', 'in_progress', 'in-progress'].includes(
-						p.status,
-					),
-				);
-				const board = await Promise.all(
-					actionable.map(async (p) => {
-						const docPath = join(
-							options.proposalsDirAbs ??
-								dirname(options.indexPathAbs),
-							p.file,
-						);
-						const md = await readTextOrNull(docPath);
-						if (md === null) {
-							// The index points to a file that no longer exists.
-							// It happens as soon as someone moves a proposal
-							// by hand — archiving it in `done/`, for example —
-							// without going through `sync_proposals`, and in
-							// a repo where the human also touches the files
-							// that is the norm, not the exception.
-							//
-							// Before it returned `slices: []`, which is exactly
-							// what a proposal without slices returns. An
-							// orchestrator saw "actionable, nothing to
-							// claim" and stopped without any clue.
-							return {
-								id: p.id,
-								status: p.status,
-								slices: [],
-								unreadable: `index points at ${p.file}, which does not exist — run sync_proposals`,
-							};
-						}
-						const parsed = parseProposalSlicePlan(p.id, md);
-						if (parsed === null) {
-							return {
-								id: p.id,
-								status: p.status,
-								slices: [],
-								unreadable:
-									'the document has no parseable `## Slices` section',
-							};
-						}
-						const plan = deriveSliceStatuses(parsed, locks);
-						return {
-							id: p.id,
-							status: p.status,
-							slices: plan.slices.map((s) => ({
-								sliceId: s.sliceId,
-								status: s.status,
-								owner: s.owner,
-							})),
-							claimableSliceIds: plan.slices
-								.filter(
-									(s) => validateClaim(plan, s.sliceId).ok,
-								)
-								.map((s) => s.sliceId),
-						};
-					}),
-				);
-				return toolJson({ proposals: board });
 			},
 		);
 	},

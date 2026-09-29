@@ -484,14 +484,16 @@ export interface DelendaiProposalsProposalBoardOutput {
 	proposals: {
 		id: string;
 		status: string;
-		slices: {
+		slices?: {
 			sliceId: string;
 			status: string;
 			owner: string;
 		}[];
+		sliceCount?: number;
 		claimableSliceIds?: string[];
 		unreadable?: string;
 	}[];
+	next?: string;
 }
 
 export interface DelendaiProposalsProposalDiagnoseOutput {
