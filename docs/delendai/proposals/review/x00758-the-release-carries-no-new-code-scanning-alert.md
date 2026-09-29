@@ -130,7 +130,7 @@ line.
 
 ### S2 — Fix the 48 alerts `main` already carried
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/ui-extension plugins/proposals/tests/src/lib/agents packages/core/tests/src/lib/services/shell packages/core/tests/src/lib/shared tools/tests/ci/local-repro.spec.ts`
 - **Files**:
   - `apps/web/scripts/fetch-brand-logos.ts`
