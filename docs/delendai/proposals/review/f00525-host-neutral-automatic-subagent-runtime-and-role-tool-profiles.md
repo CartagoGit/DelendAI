@@ -12,6 +12,7 @@ last-transition-from: in-progress
 shipped-in:
   - "8a965a50db61d2879d67cdb5d821c82317cd6445"
   - "89d257371327a9383f740b765660468caa923559"
+  - "a69ca5d1ee026e033e2e43ea6a738b36a21fbe30"
 ---
 
 # f00525 — Host-neutral automatic subagent runtime and role tool profiles
@@ -69,7 +70,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 - review-attribution: unrecorded — nothing in Git names who delivered 89d257371327a9383f740b765660468caa923559: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S3 — Canonical role tool profiles and generated host adapters
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/agents/agent-tool-profiles.ts`, `packages/core/src/lib/scaffold/scaffold-host.ts`, `packages/core/src/lib/contracts/constants/agent-slots.constant.ts`, `packages/core/tests`
 - **Gate**: type
@@ -80,6 +81,11 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Investigator is read/search/analysis oriented and cannot edit by default."
   - "Verifier can read/search/execute and cannot mutate by default."
   - "Generated Copilot, Claude, and Codex adapters consume the same profile source."
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — f00525 S3 defines AGENT_TOOL_PROFILES with five slots (orchestrator / implementation_runner / technical_investigator / proposal_guardian / delivery_verifier). Orchestrator has canDelegate:true + agent tool; runner is read/edit/execute/MCP; investigator + verifier share read/search/execute/todo with no 'edit'. scaffold-host.ts wires all three host generators (Copilot, Claude, Codex) through agentToolProfile(slot) so they share one source. scaffold-host.spec.ts: 38/38 pass.
+- review-attribution: unrecorded — nothing in Git names who delivered a69ca5d1ee026e033e2e43ea6a738b36a21fbe30: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S4 — Documentation and host integration contract
 - **Status**: review
