@@ -245,7 +245,9 @@ describe('ignored slice files', () => {
 					'',
 					'### S1 — example',
 					'- **Status**: pending',
-					'- **Files**: `.cache/queue.json`',
+					'- **Files**:',
+					'  - `.cache/queue.json`',
+					'  - `/outside/the/repository.ts`',
 					'',
 				].join('\n'),
 			);
