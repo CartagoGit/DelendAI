@@ -75,9 +75,12 @@
  * a diff a reviewer sees, with a written reason — see the array's doc.
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const REPO_ROOT = resolve(import.meta.dir, '../../..');
+// Portable: `import.meta.dir` is Bun's alone, and the spec runs under Node.
+const SELF = fileURLToPath(import.meta.url);
+const REPO_ROOT = resolve(dirname(SELF), '../../..');
 
 /** Roots searched for packages. */
 const DEFAULT_ROOTS = ['packages', 'plugins', 'apps', 'extensions'] as const;
@@ -208,7 +211,7 @@ export const findShadowedExports = (
 			file: shadow.file,
 			line: shadow.line,
 			detail: `\`${name}\` is defined here and also at ${owner.file}:${owner.line}${owner.exported ? ' (exported)' : ''}, in the same package — two implementations of one name, and each one's tests only cover its own copy`,
-			fix: `delete this definition and import \`${name}\` from ${owner.file}. If the two really must differ, rename one so the difference is visible at every call site, or record the pair in ALLOWED_DUPLICATES in ${relative(REPO_ROOT, import.meta.path)} with a reason.`,
+			fix: `delete this definition and import \`${name}\` from ${owner.file}. If the two really must differ, rename one so the difference is visible at every call site, or record the pair in ALLOWED_DUPLICATES in ${relative(REPO_ROOT, SELF)} with a reason.`,
 		});
 	}
 	return violations;
@@ -343,7 +346,7 @@ export const findDuplicatedBodies = (
 					file: first.block.file,
 					line: first.line,
 					detail: `\`${first.block.name}\` shares ${minLines}+ identical consecutive lines with \`${second.block.name}\` at ${second.block.file}:${second.line} — one package, two copies of the same logic, each with its own tests`,
-					fix: `keep ONE implementation, export it, and have the other call it. A fix applied to one copy does not reach the other, and the green suite will not tell you which copy the live path uses. If the duplication is deliberate, record \`${pairKey}\` in ALLOWED_DUPLICATES in ${relative(REPO_ROOT, import.meta.path)} with a reason.`,
+					fix: `keep ONE implementation, export it, and have the other call it. A fix applied to one copy does not reach the other, and the green suite will not tell you which copy the live path uses. If the duplication is deliberate, record \`${pairKey}\` in ALLOWED_DUPLICATES in ${relative(REPO_ROOT, SELF)} with a reason.`,
 				});
 			}
 		}

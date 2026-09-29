@@ -174,8 +174,10 @@ trabajo redundante.
   - `biome.json` — `noUnusedImports` pasa de warning a error. Un import muerto tras un refactor debe romper la build, no quedarse en un aviso que nadie lee.
   - `tools/scripts/lint/no-silent-gates.script.ts` — un gate que sale con código distinto de cero sin escribir NADA es un fallo del gate. Comprueba que cada script de `validate:run` produce salida en su camino de error.
   - `tools/scripts/lint/no-duplicate-implementation.script.ts` — detecta el patrón que causó el P0 de `commit-policy`: dos definiciones del mismo nombre exportado en el mismo paquete, una de ellas sombreando a la otra. Es exactamente la clase de defecto que ningún test encuentra porque cada copia tiene los suyos.
-  - `tools/scripts/lint/tests/no-duplicate-implementation.spec.ts`
+  - `tools/scripts/lint/no-duplicate-implementation.script.spec.ts` — `[shadowed-export]`, más la regla de que toda excepción de `ALLOWED_DUPLICATES` lleva motivo.
+  - `tools/scripts/lint/no-silent-gates.script.spec.ts` — `[silent-exit]` y `[silent-failure-branch]`.
 - **Gate**: lint, types, test
+- **Divergencia**: el spec declarado en `tools/scripts/lint/tests/` no llegó a existir. Los specs viven junto a su script, como el resto de `tools/scripts/lint/*.script.spec.ts`. No existían porque los dos scripts calculaban su raíz con `import.meta.dir`, que solo existe en Bun, y ninguno se podía importar bajo vitest. Ahora usan `fileURLToPath(import.meta.url)`.
 - review-state: changes_requested
 - review-implementer: unrecorded
 - review-reviewer: qwen-3.8-max
