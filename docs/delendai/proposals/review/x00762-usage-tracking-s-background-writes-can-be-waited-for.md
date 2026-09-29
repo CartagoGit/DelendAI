@@ -2,12 +2,15 @@
 id: x00762
 title: "Usage tracking's background writes can be waited for"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-29
 priority: P1
 related: [x00641]
+last-transition-id: 732003be-df5b-46a0-b0f2-57c7539d425d
+last-correlation-id: 732003be-df5b-46a0-b0f2-57c7539d425d
+last-transition-from: in-progress
 ---
 
 # x00762 — Usage tracking's background writes can be waited for
@@ -49,13 +52,14 @@ chance.
 
 ### S1 — Drain waits for the writes the plugin started
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/usage-tracking`
 - **Files**:
   - `plugins/usage-tracking/src/lib/record-buffer.ts`
   - `plugins/usage-tracking/src/index.ts`
   - `plugins/usage-tracking/tests/src/lib/record-buffer.spec.ts`
   - `plugins/usage-tracking/tests/src/lib/plugin.spec.ts`
+- shipped-in: `ec4fc3ebe938`
 
 ## dependency graph
 
