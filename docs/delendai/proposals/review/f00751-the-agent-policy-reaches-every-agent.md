@@ -2,12 +2,15 @@
 id: f00751
 title: "The agent policy reaches every agent"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: []
+last-transition-id: 0161c3e9-2c5e-44b9-a295-02badd85e141
+last-correlation-id: 0161c3e9-2c5e-44b9-a295-02badd85e141
+last-transition-from: in-progress
 ---
 
 # f00751 — The agent policy reaches every agent
@@ -63,7 +66,7 @@ project opted in.
 
 ### S1 — The server tells its agents how to work
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/prompts`
 - **Files**:
   - `packages/core/src/lib/prompts/agent-policy-instructions.helper.ts`
@@ -79,6 +82,7 @@ project opted in.
   - `packages/core/tests/src/lib/prompts/agent-policy-instructions.helper.spec.ts`
   - `packages/core/tests/src/lib/prompts/agent-bootstrap.prompt.spec.ts`
   - `docs/delendai/PLUGIN-CONFIGURATION-GUIDE.md`
+- shipped-in: `53053d1c4de3`
 
 ## dependency graph
 
