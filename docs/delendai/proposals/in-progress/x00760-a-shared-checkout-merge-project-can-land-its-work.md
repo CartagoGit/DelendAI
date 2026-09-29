@@ -2,10 +2,13 @@
 id: x00760
 title: "A shared-checkout-merge project can land its work"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: hosts
 date: 2026-09-29
+last-transition-id: 8d7ef2bc-13a5-4c96-9b66-0e4c2b3355d3
+last-correlation-id: 8d7ef2bc-13a5-4c96-9b66-0e4c2b3355d3
+last-transition-from: ready
 ---
 
 # x00760 — A shared-checkout-merge project can land its work
