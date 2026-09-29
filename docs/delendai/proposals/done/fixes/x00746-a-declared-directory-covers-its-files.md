@@ -2,15 +2,17 @@
 id: x00746
 title: "A declared directory covers its files"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P2
 related: [x00744, x00745]
-last-transition-id: 5ba8b8e5-c6ea-4f60-99ee-bf79fb68f35c
-last-correlation-id: 5ba8b8e5-c6ea-4f60-99ee-bf79fb68f35c
-last-transition-from: in-progress
+last-transition-id: 59b3d7ff-0479-40c6-893a-ed8cca946aa1
+last-correlation-id: 59b3d7ff-0479-40c6-893a-ed8cca946aa1
+last-transition-from: review
+shipped-in:
+  - "7c97176e6794124a0b228474374f3ac761c4b98a"
 ---
 
 # x00746 — A declared directory covers its files
@@ -57,13 +59,18 @@ None.
 
 ### S1 — Directories match the files under them
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/delivering-merge.service.spec.ts plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/delivering-merge.service.ts`
   - `plugins/proposals/src/lib/services/review-attribution.ts`
   - `plugins/proposals/tests/src/lib/services/delivering-merge.service.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — x00746 S1 introduces touchesDeclared(declared, paths) where a declared entry matches an equal path or any path under it (entry/...) with trailing slash ignored and prefix siblings (src vs srcx) not matching. Attribution + the merge check now both use it. The duplicated merge check x00744 left behind is removed. Gate=none: 16/16 spec tests pass across delivering-merge.service.spec.ts + proposal-review-attribution.spec.ts.
+- review-attribution: claude-opus-5-5 from Merge pull request #626 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00746-all-g1/a-declared-directory-covers-its-files (refs/heads/delendai/wip/claude-opus-5-5/implement/x00746-all-g1/a-declared-directory-covers-its-files) (7c97176e6794124a0b228474374f3ac761c4b98a), opened by minimax-m3
 
 ## dependency graph
 
