@@ -2,13 +2,16 @@
 id: f00640
 title: "Review debt is measured: age and drift since the work landed"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: governance
 date: 2026-09-25
 priority: P1
 related:
     - x00637 # the certified integration branch the drift is measured on
+last-transition-id: 671e2c9c-61d6-4653-b6d3-478df6c4d964
+last-correlation-id: 671e2c9c-61d6-4653-b6d3-478df6c4d964
+last-transition-from: in-progress
 ---
 
 # f00640 — Review debt is measured: age and drift since the work landed
@@ -60,7 +63,8 @@ reported as unmeasurable, never as fresh.
 - global_gate: none
 
 ### S1 — Measure review age and drift
-- **Status**: in-progress
+- **Status**: review
+- shipped-in: `e95e4e071`
 - **Gate**: `npx vitest run tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
 - **Files**: `tools/scripts/lint/proposal-ready-to-close.script.ts`, `tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
 The four measures for every review proposal, pure over git facts that
@@ -69,11 +73,20 @@ Measured on develop at 309bbe59d: 79 proposals wait in review; the
 oldest-landed carry 250+ commits since and every slice file touched.
 
 ### S2 — Surface it where reviewers look
-- **Status**: pending
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests`
-- **Files**: the proposals status/review tools — the literal list is recorded when the slice ships
+- **Files**:
+  - `plugins/proposals/src/lib/services/review-drift.service.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/review-drift.interface.ts`
+  - `plugins/proposals/src/lib/services/review-queue.service.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`
+  - `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`
+  - `plugins/proposals/src/generated/tool-outputs.ts`
+  - `plugins/proposals/tests/src/lib/tools/review-queue-drift.spec.ts`
+  - `tools/scripts/lint/proposal-ready-to-close.script.ts`
 The review queue the proposals tools return is ordered by drift, and
-each entry carries its measures.
+each entry carries its measures. The measure moved from the lint into the
+plugin (`review-drift.service.ts`), where both read it: one implementation.
 
 ## acceptance
 
