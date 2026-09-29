@@ -54,7 +54,7 @@ and the test that pins the rule in
 
 ### Symptom
 
-Boot reaches `En ejecución` but reports:
+Boot reaches the running state but reports:
 
 ```text
 [ERROR] startup-reconciliation.state-database.corrupt:
