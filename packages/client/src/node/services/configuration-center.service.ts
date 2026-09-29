@@ -138,9 +138,7 @@ const validatePath = (
 	}
 	for (const segment of path) {
 		if (
-			(typeof segment === 'string' &&
-				(segment.length === 0 ||
-					FORBIDDEN_PATH_SEGMENTS.has(segment))) ||
+			(typeof segment === 'string' && segment.length === 0) ||
 			(typeof segment === 'number' &&
 				(!Number.isInteger(segment) || segment < 0))
 		) {
@@ -247,7 +245,8 @@ const applyEdit = (
 					`path does not address an object key: ${pathLabel(edit.path)}`,
 				);
 			}
-			// Checked here, at the write, as well as by the path validation.
+			// The one check for keys that reach the prototype: here, at the
+			// write, so no path can get past it.
 			if (
 				segment === '__proto__' ||
 				segment === 'constructor' ||

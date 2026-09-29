@@ -142,8 +142,11 @@ const defaultDriver = (): ITerminalProbeDriver => {
 						clearTimeout(timeoutHandle);
 						const stdout =
 							typeof err.stdout === 'string' ? err.stdout : '';
+						// A program that never started (ENOENT) has an empty
+						// stderr; the error message is then the only reason.
 						const stderr =
-							typeof err.stderr === 'string'
+							typeof err.stderr === 'string' &&
+							err.stderr.length > 0
 								? err.stderr
 								: (err.message ?? '');
 						const timedOut =
