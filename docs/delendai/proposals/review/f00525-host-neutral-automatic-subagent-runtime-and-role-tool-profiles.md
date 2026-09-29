@@ -11,6 +11,7 @@ last-correlation-id: f1705cc5-038d-404c-8046-6196b79a930a
 last-transition-from: in-progress
 shipped-in:
   - "8a965a50db61d2879d67cdb5d821c82317cd6445"
+  - "89d257371327a9383f740b765660468caa923559"
 ---
 
 # f00525 — Host-neutral automatic subagent runtime and role tool profiles
@@ -51,7 +52,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 - review-attribution: unrecorded — nothing in Git names who delivered 8a965a50db61d2879d67cdb5d821c82317cd6445: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — Agent orchestrator consumes host runtime automatically
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/agent-orchestrator/src/index.ts`, `plugins/agent-orchestrator/src/lib/dispatch`, `plugins/agent-orchestrator/src/public/index.ts`, `plugins/agent-orchestrator/tests`
 - **Gate**: type
@@ -61,6 +62,11 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Return a structured capability-unavailable error instead of asking projects to configure a function in JSON."
   - "Preserve allowFakeDispatchPort as test-only behavior."
   - "Add tests proving dispatch uses the injected runtime without portFactory."
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — resolveDispatchPort() now reads opts.subagentRuntime first (production), falls back to portFactory (compatibility seam) and finally allowFakeDispatchPort (test-only). Missing runtime + missing portFactory + no test opt-in throws MissingDispatchPortError — a structured error pointing hosts to a subagentRuntime adapter rather than JSON portFactory. port-resolution.helper.spec.ts: 11/11 pass.
+- review-attribution: unrecorded — nothing in Git names who delivered 89d257371327a9383f740b765660468caa923559: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S3 — Canonical role tool profiles and generated host adapters
 - **Status**: review
