@@ -1735,14 +1735,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-25"
-			},
-			{
-				"id": "x00752",
-				"title": "A slice delivered earlier is found at review entry",
-				"track": "hosts",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-29"
 			}
 		]
 	}

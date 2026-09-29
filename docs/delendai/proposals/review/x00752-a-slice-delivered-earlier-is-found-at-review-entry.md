@@ -2,12 +2,15 @@
 id: x00752
 title: "A slice delivered earlier is found at review entry"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00745, x00747]
+last-transition-id: 3ba41f3e-6ac9-476a-9e5b-47138821fc1e
+last-correlation-id: 3ba41f3e-6ac9-476a-9e5b-47138821fc1e
+last-transition-from: in-progress
 ---
 
 # x00752 — A slice delivered earlier is found at review entry
@@ -53,11 +56,12 @@ None.
 
 ### S1 — The merge that landed a slice is its delivery
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-entry.service.ts`
   - `plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
+- shipped-in: `8a63df3be824`
 
 ## dependency graph
 
