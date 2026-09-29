@@ -77,30 +77,38 @@ response. It does NOT silently re-run.
 
 ### S1 — Resolve Git refs at call time and freeze the SHA for the entire reconcile
 
-- **Status**: pending
+- **Status**: review
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts && bun test --timeout 30000 plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/reconciler/git-resolver.ts`
-    (new — `resolveSha({ ref?, sha? }) → string`)
-  - `packages/proposals-sqlite/src/lib/reconciler/reconcile.ts`
-    (modified — accepts `{ sha?: string; ref?: string }`,
-    always works against `sha`)
-  - `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`
-    (modified — exposes the new options)
-  - `packages/proposals-sqlite/tests/src/lib/reconciler/git-resolver.spec.ts`
-    (new)
-  - `packages/proposals-sqlite/tests/src/lib/reconciler/reconcile.spec.ts`
-    (modified)
-- **Gate**: type
-- acceptance:
-  - `reconcile({ ref: 'develop' })` calls `git rev-parse develop`,
-    captures `resolvedSha`, and uses it for every subsequent file read.
-  - `reconcile({ sha: '<sha>' })` skips the rev-parse call and uses
-    the SHA directly (no network, no worktree access).
-  - The reconciliation run writes `source_commit = resolvedSha` to
-    `reconciliation_runs`.
-  - Two calls with the same SHA against the same DB produce the same
-    `logical_digest`.
-  - `bun run typecheck` is green and `bunx vitest run packages/proposals-sqlite` is green.
+  - `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts`
+  - `plugins/proposals/src/lib/tools/db-reconcile.tool.ts`
+  - `plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
+
+**Rewritten 2026-09-29 against the tree.** The files this slice first
+named (`reconciler/git-resolver.ts`, `reconciler/reconcile.ts`,
+`sync-proposals.tool.ts`) do not exist. The reconciler already takes
+`{ sourceCommit, files }` and never reads the disk, and it already
+records `source_commit` in `reconciliation_runs`. What read the worktree
+was its production caller, `proposals_db_reconcile`, and its
+`sourceCommit` input was only a label: a run given a commit still read
+the live worktree and attributed it to that commit.
+
+`proposals_db_reconcile` now takes `ref` (a branch, tag or SHA). It is
+resolved once, `git rev-parse --verify --end-of-options <ref>^{commit}`,
+and the tree is read out of the object store at that SHA (`git ls-tree`
+plus one `git cat-file --batch`), never from the worktree. The run is
+attributed to the resolved SHA. A ref that reads as an option is refused.
+
+Without `ref` the worktree stays the source, on purpose: the markdown is
+the authority (q00022, `AUTHORITIES.md`) and a person's uncommitted edit
+of a proposal is what the next reconcile must see. The SHA snapshot is
+for a caller that wants the projection a commit held.
+
+Proven: two runs at one commit give one logical digest after the
+worktree gained a proposal nobody committed, while a worktree run sees
+it; the files are the committed bytes (multi-byte text included) and
+nothing outside the proposals tree is read.
 
 ### S2 — Drift detection: report when the ref moved mid-run
 
