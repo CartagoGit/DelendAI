@@ -23,6 +23,7 @@ import { join, resolve } from 'node:path';
 import { sharedCheckout } from '../shared/shared-checkout';
 import { agentEnvironmentMarker } from '../work-identity/agent-environment.helper';
 
+import { workModelNextStep } from './declare-workflow';
 import { resolveDevelopmentPolicy } from './resolve';
 
 /** The project's declared development block, or nothing. */
@@ -188,7 +189,10 @@ export const integrationCheckoutRefusal = async (
 	}
 	const branch = checkedOutBranch(root);
 	if (branch !== policy.branches.integration) return undefined;
-	return `this call would write into the shared checkout on ${branch}, the integration branch. Under this project's policy work reaches ${branch} only through a work ref and a pull request, so a change written here is committed by nobody and is lost.`;
+	// How work DOES reach the branch is the profile's, not this
+	// sentence's: it once said "a work ref and a pull request" to a
+	// project that merges, and the agent followed a pull-request flow.
+	return `this call would write into the shared checkout on ${branch}, the integration branch, where nothing commits: a change written here is committed by nobody and is lost. ${workModelNextStep(policy)}`;
 };
 
 /**

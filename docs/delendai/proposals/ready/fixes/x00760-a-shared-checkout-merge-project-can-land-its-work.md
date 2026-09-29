@@ -1,0 +1,42 @@
+---
+id: x00760
+title: "A shared-checkout-merge project can land its work"
+kind: fix
+status: ready
+type: proposal
+track: hosts
+date: 2026-09-29
+---
+
+# x00760 — A shared-checkout-merge project can land its work
+
+## Goal
+
+Under a profile whose integration strategy is `merge`, a shipped command (CLI and the `work` tool) lands a published unit on the integration branch through `runLocalMergeCycle`, after the local validation gate certifies it against the current integration head.
+
+## why
+
+The served work model (x00759) tells an agent on `shared-checkout-merge` to finish with `delendai work publish` and that delendai's integration engine merges it after the local gate. Nothing shipped calls the engine: `runLocalMergeCycle` and `createIntegrationEngine` have no caller outside their specs, and `work publish` under this profile pushes a publication ref and stops. The declared route is not runnable, so work on such a project stalls on its publication ref, or an agent improvises a hand-made merge.
+
+## non-goals
+
+- Changing how pull-request profiles land work.
+
+## Slices
+
+- global_gate: type
+
+### S1 — The unit lands by local merge after its certification
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/integration-engine/local-merge-cycle.ts`
+- **Gate**: type
+- acceptance:
+  - "Under `integration.strategy: merge`, publishing a unit runs the project's validation gate against the current integration head and merges the work ref with `runLocalMergeCycle`, never in the shared checkout."
+  - "A red certification, a stale head and a conflict each end in a refusal that names the next step; nothing lands uncertified."
+  - "Under a pull-request profile nothing changes."
+
+## acceptance
+
+- Under `integration.strategy: merge`, publishing a unit runs the project's validation gate against the current integration head and merges the work ref with `runLocalMergeCycle`, never in the shared checkout.
+- A red certification, a stale head and a conflict each end in a refusal that names the next step; nothing lands uncertified.
+- Under a pull-request profile nothing changes.

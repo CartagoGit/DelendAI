@@ -11,8 +11,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	briefWorkModel,
 	declareWorkflow,
 	renderWorkflowDeclaration,
+	workModelInstructionLines,
+	workModelNextStep,
+	workModelSummary,
 } from '@delendai/core/lib/development-policy/declare-workflow';
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
 import { deriveCapabilities } from '@delendai/core/lib/development-policy/derive';
@@ -120,6 +124,78 @@ describe('declareWorkflow', () => {
 		).toBe(true);
 		expect(text).toContain('work model: shared-checkout-pr');
 	});
+	it('gives every built-in profile a way to persist work', () => {
+		// `worktree-pr` persists on a branch, which the route table did
+		// not know, so its own declaration told its agents to STOP.
+		for (const profile of DEVELOPMENT_PROFILES) {
+			expect(
+				renderWorkflowDeclaration(declareWorkflow(policyFor(profile))),
+			).not.toContain('STOP');
+		}
+	});
+
+	it('does not forbid committing to the branch a direct profile commits to', () => {
+		const text = renderWorkflowDeclaration(
+			declareWorkflow(policyFor('shared-direct')),
+		);
+
+		expect(text).toContain('Commit your work directly to develop');
+		expect(text).not.toContain('never commit to it');
+	});
+
+	it('states how work starts and lands, per profile', () => {
+		const merge = briefWorkModel(policyFor('shared-checkout-merge'));
+		const pr = briefWorkModel(policyFor('shared-checkout-pr'));
+		const direct = briefWorkModel(policyFor('shared-direct'));
+
+		expect(merge.start).toContain('delendai work enter');
+		expect(merge.start).toContain('delendai work checkpoint');
+		expect(merge.land).toContain('MERGING it into develop');
+		expect(merge.land).toContain('opens no pull request');
+		expect(merge.land).toContain('local validation gate');
+
+		expect(pr.start).toBe(merge.start);
+		expect(pr.land).toContain('opens a pull request into develop');
+		expect(pr.land).toContain('delendai work publish');
+
+		expect(direct.start).not.toContain('work enter');
+		expect(direct.land).toContain('no pull request');
+	});
+
+	it('summarises each profile in one line, from the same axes', () => {
+		expect(workModelSummary(policyFor('shared-checkout-merge'))).toBe(
+			'shared-checkout-merge: start with `delendai work enter`; land by merge into develop after the local gate, no pull request.',
+		);
+		expect(workModelSummary(policyFor('shared-checkout-pr'))).toContain(
+			'land by pull request into develop',
+		);
+		expect(workModelSummary(policyFor('shared-direct'))).toContain(
+			'commit on develop',
+		);
+		expect(workModelSummary(policyFor('worktree-pr'))).toContain(
+			'worktree branch',
+		);
+	});
+
+	it('names the profile in the next step a refusal gives', () => {
+		const next = workModelNextStep(policyFor('shared-checkout-merge'));
+
+		expect(next).toContain('`shared-checkout-merge`');
+		expect(next).toContain('MERGING');
+	});
+
+	it('renders the instruction lines from the same declaration', () => {
+		const policy = policyFor('shared-checkout-pr');
+		const lines = workModelInstructionLines(policy);
+
+		expect(lines[0]).toContain('overrides any document');
+		expect(lines.slice(1)).toEqual(
+			declareWorkflow(policy).steps.map(
+				(step) => `${step.order}. ${step.instruction}`,
+			),
+		);
+	});
+
 	it('separates following the branch from performing a merge in it', () => {
 		// The first wording said "never switch, merge, rebase or reset",
 		// which reads as "merging is discouraged" — and merging is the

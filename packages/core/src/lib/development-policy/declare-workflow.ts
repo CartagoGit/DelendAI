@@ -14,46 +14,103 @@
  * of a project that forbids it. Declaring it removes the guess.
  */
 
+import { shortName } from './git-guard-namespaces';
 import { persistenceRouteKind } from './resolve';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type {
+	ILandRoute,
+	IStartRoute,
 	IWorkflowDeclaration,
 	IWorkflowStep,
+	IWorkModelBrief,
 } from './declare-workflow.interface';
 
 export type {
 	IWorkflowDeclaration,
 	IWorkflowStep,
+	IWorkModelBrief,
 } from './declare-workflow.interface';
 
 /** Where the agent edits, and what it must not do to that checkout. */
 const workspaceStep = (policy: IResolvedDevelopmentPolicy): string => {
 	if (policy.workspace.strategy === 'agent-worktree')
 		return 'Edit in your own worktree; it is yours alone.';
+	if (
+		policy.workspace.pinnedCheckout &&
+		policy.persistence.allowsDirectIntegrationCommit
+	)
+		return `Edit in the shared checkout on ${policy.branches.integration}. Never switch it, rebase it or reset it: other agents are editing these same files.`;
 	if (policy.workspace.pinnedCheckout)
-		return 'Edit in the shared checkout. It only ever FOLLOWS the integration branch, by fast-forward: never commit to it, switch it, rebase it or reset it, because other agents are editing these same files. Merging is how work lands and is not restricted — the integration engine performs it in a throwaway index, never in this tree, so the tree never learns an integration happened.';
+		return `The shared checkout only ever FOLLOWS ${policy.branches.integration}, by fast-forward: never commit to it, switch it, rebase it or reset it, because other agents are editing these same files. Merging is how work lands and is not restricted — the integration engine performs it in a throwaway index, never in this tree, so the tree never learns an integration happened.`;
 	return 'Edit in the shared checkout.';
 };
 
-/** Where a checkpoint goes. `none` is a real answer, not an omission. */
-const persistenceStep = (policy: IResolvedDevelopmentPolicy): string => {
-	const route = persistenceRouteKind(policy);
-	if (route === 'direct-commit')
-		return `Commit your work directly to ${policy.branches.integration}.`;
-	if (route === 'wip-ref')
-		return `Checkpoint your work to ${policy.branches.workRefTemplate}, and never commit to ${policy.branches.integration}.`;
-	return 'STOP: this configuration declares no way to persist work. Fix the policy before working.';
+/** How a unit of work starts, from the persistence axis. */
+const startRouteOf = (policy: IResolvedDevelopmentPolicy): IStartRoute =>
+	policy.persistence.strategy === 'branch'
+		? 'branch'
+		: persistenceRouteKind(policy);
+
+/** How finished work lands, from the integration axis. */
+const landRouteOf = (policy: IResolvedDevelopmentPolicy): ILandRoute => {
+	if (policy.integration.requiresPullRequest) return 'pull-request';
+	return policy.integration.strategy === 'merge' ? 'merge' : 'direct';
+};
+
+/**
+ * How a unit of work starts and where its commits go. `none` is a real
+ * answer, not an omission.
+ */
+const START_STEPS: Readonly<
+	Record<IStartRoute, (policy: IResolvedDevelopmentPolicy) => string>
+> = {
+	branch: (policy) =>
+		`Commit on your worktree's own branch (${shortName(policy.branches.workRefTemplate)}), never on ${policy.branches.integration}.`,
+	'wip-ref': (policy) =>
+		`Start each unit of work with \`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>\` (or the \`work\` tool, action enter) and edit and commit in the worktree it prints, passing it as \`checkout\` to delendai's tools; from the shared checkout, \`delendai work checkpoint --proposal=<id> --slice=<slice> --paths=<a,b> --message=<text>\` writes the same ref without moving HEAD. Your work ref is ${shortName(policy.branches.workRefTemplate)}; never commit to ${policy.branches.integration}.`,
+	'direct-commit': (policy) =>
+		`Commit your work directly to ${policy.branches.integration}; there is no unit of work to enter.`,
+	none: () =>
+		'STOP: this configuration declares no way to persist work. Fix the policy before working.',
 };
 
 /** How work reaches the integration branch. */
-const integrationStep = (policy: IResolvedDevelopmentPolicy): string => {
-	if (policy.integration.requiresPullRequest)
-		return `Publish to ${policy.branches.publicationRefPrefix}<name> and open a pull request into ${policy.branches.integration}.`;
-	if (policy.integration.strategy === 'merge')
-		return `Merge your work ref into ${policy.branches.integration} through the integration engine, never by hand.`;
-	return `Your commits reach ${policy.branches.integration} directly; there is no review boundary.`;
+const LAND_STEPS: Readonly<
+	Record<ILandRoute, (policy: IResolvedDevelopmentPolicy) => string>
+> = {
+	'pull-request': ({ branches }) =>
+		`Land finished work through a pull request: \`delendai work publish\` (or the \`work\` tool, action publish) pushes ${shortName(branches.publicationRefPrefix)}<name> and opens a pull request into ${branches.integration}. Never push to ${branches.integration} directly.`,
+	merge: ({ branches }) =>
+		`Land finished work by MERGING it into ${branches.integration}; this profile opens no pull request. Finish the unit with \`delendai work publish\`: the merge is delendai's integration engine, never a hand-made merge, and it takes only a candidate the local validation gate passed against the current ${branches.integration} head.`,
+	direct: ({ branches }) =>
+		`Your commits reach ${branches.integration} directly; there is no review boundary and no pull request.`,
 };
+
+/** The same two answers, in the fewest words a budgeted payload allows. */
+const START_SUMMARIES: Readonly<
+	Record<IStartRoute, (integration: string) => string>
+> = {
+	branch: () => 'commit on your worktree branch',
+	'wip-ref': () => 'start with `delendai work enter`',
+	'direct-commit': (integration) => `commit on ${integration}`,
+	none: () => 'no way to persist work: fix the policy',
+};
+
+const LAND_SUMMARIES: Readonly<
+	Record<ILandRoute, (integration: string) => string>
+> = {
+	'pull-request': (integration) => `land by pull request into ${integration}`,
+	merge: (integration) =>
+		`land by merge into ${integration} after the local gate, no pull request`,
+	direct: (integration) => `commits land on ${integration} directly`,
+};
+
+const persistenceStep = (policy: IResolvedDevelopmentPolicy): string =>
+	START_STEPS[startRouteOf(policy)](policy);
+
+const integrationStep = (policy: IResolvedDevelopmentPolicy): string =>
+	LAND_STEPS[landRouteOf(policy)](policy);
 
 /** What the integration branch demands before it accepts anything. */
 const gateStep = (policy: IResolvedDevelopmentPolicy): string => {
@@ -142,3 +199,58 @@ export const renderWorkflowDeclaration = (
 			(step) => `[delendai]   ${step.order}. ${step.instruction}`,
 		),
 	].join('\n');
+
+/**
+ * The two sentences an agent needs at the moment it is stopped: how work
+ * starts and how it lands, in this profile. A refusal that says only
+ * "not here" leaves the agent to guess the route, and it guesses the one
+ * it read somewhere else.
+ */
+export const briefWorkModel = (
+	policy: IResolvedDevelopmentPolicy,
+): IWorkModelBrief => ({
+	profile: policy.profile,
+	integrationBranch: policy.branches.integration,
+	start: persistenceStep(policy),
+	land: integrationStep(policy),
+});
+
+/** The brief as one remedy sentence, naming the profile it comes from. */
+export const workModelNextStep = (
+	policy: IResolvedDevelopmentPolicy,
+): string => {
+	const brief = briefWorkModel(policy);
+	return `Under the \`${brief.profile}\` profile: ${brief.start} ${brief.land}`;
+};
+
+/**
+ * The work model in one line, for a payload with a token budget (the
+ * compact overview). Same axes as the declaration, fewer words; the full
+ * declaration is in the server instructions and the bootstrap prompt.
+ */
+export const workModelSummary = (
+	policy: IResolvedDevelopmentPolicy,
+): string => {
+	const integration = policy.branches.integration;
+	const start = START_SUMMARIES[startRouteOf(policy)](integration);
+	const land = LAND_SUMMARIES[landRouteOf(policy)](integration);
+	return `${policy.profile}: ${start}; ${land}.`;
+};
+
+/**
+ * The declaration as the lines a host puts in its model's instructions
+ * when it connects, and the bootstrap prompt repeats. Headed by where the
+ * model comes from, because an agent that has read a document describing
+ * another workflow must know which of the two wins.
+ */
+export const workModelInstructionLines = (
+	policy: IResolvedDevelopmentPolicy,
+): readonly string[] => {
+	const declaration = declareWorkflow(policy);
+	return [
+		`Work model: \`${declaration.profile}\` (integration branch ${declaration.integrationBranch}, release branch ${declaration.releaseBranch}), resolved from this project's configuration. It overrides any document that describes another workflow:`,
+		...declaration.steps.map(
+			(step) => `${step.order}. ${step.instruction}`,
+		),
+	];
+};

@@ -117,6 +117,32 @@ describe('integrationCheckoutRefusal', () => {
 		);
 	});
 
+	it('says how THIS profile lands work, never a pull request by default', async () => {
+		// The refusal once said "only through a work ref and a pull
+		// request" to a project on shared-checkout-merge, whose agent then
+		// followed a pull-request flow.
+		const merge = await integrationCheckoutRefusal(
+			repoOn(
+				'develop',
+				'{ "development": { "profile": "shared-checkout-merge" } }',
+			),
+			{},
+		);
+		const pr = await integrationCheckoutRefusal(
+			repoOn(
+				'develop',
+				'{ "development": { "profile": "shared-checkout-pr" } }',
+			),
+			{},
+		);
+
+		expect(merge).toContain('`shared-checkout-merge`');
+		expect(merge).toContain('MERGING it into develop');
+		expect(merge).not.toContain('opens a pull request');
+		expect(pr).toContain('`shared-checkout-pr`');
+		expect(pr).toContain('opens a pull request into develop');
+	});
+
 	it("reads the project's policy the way every reader does: comments allowed, trunk discovered (x00735)", async () => {
 		// A project whose trunk is `main`, with a comment in its config and
 		// no declared integration branch. Read with JSON.parse and the
