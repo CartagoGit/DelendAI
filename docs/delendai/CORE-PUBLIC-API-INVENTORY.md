@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 641
+Total exports: 642
 
 | Maturity | Count |
 | --- | --- |
-| stable | 638 |
+| stable | 639 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -102,6 +102,7 @@ Total exports: 641
 | `createOrUpdateWipRef` | const | stable | `../lib/wip-engine/index` |
 | `createPluginMetrics` | const | stable | `../lib/observability/plugin-metrics` |
 | `createPluginStateMachine` | const | stable | `../lib/plugins/states` |
+| `createStaleRuntimeWatch` | const | stable | `../lib/development-policy/stale-runtime-advisory` |
 | `createStartupGovernanceSeam` | const | stable | `../lib/startup-gate/index` |
 | `createWipEngine` | const | stable | `../lib/wip-engine/index` |
 | `createWorkspaceFileReader` | const | stable | `../lib/bootstrap/index` |

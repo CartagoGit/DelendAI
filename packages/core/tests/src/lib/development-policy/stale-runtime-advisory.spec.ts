@@ -1,7 +1,12 @@
 /**
  * A server running older code than its checkout says so (x00701).
  */
-import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { waitUntil } from '@delendai/test-kit';
 
@@ -88,5 +93,55 @@ describe('createStaleRuntimeWatch (x00709)', () => {
 		expect(await watch.behind()).toContain('source file(s) it runs');
 		changed = ['docs/delendai/x.md'];
 		expect(await watch.behind()).toBeUndefined();
+	});
+});
+
+describe('the watch on a real checkout', () => {
+	const roots: string[] = [];
+	afterEach(() => {
+		for (const root of roots.splice(0)) {
+			rmSync(root, { recursive: true, force: true });
+		}
+		delete process.env.DELENDAI_SUPERVISED;
+	});
+
+	const git = (cwd: string, ...args: string[]): void => {
+		execFileSync('git', args, { cwd, stdio: 'ignore' });
+	};
+
+	const checkout = (): string => {
+		const root = mkdtempSync(join(tmpdir(), 'stale-runtime-'));
+		roots.push(root);
+		git(root, 'init', '-q', '-b', 'develop');
+		git(root, 'config', 'user.email', 'stale@example.test');
+		git(root, 'config', 'user.name', 'Stale');
+		git(root, 'config', 'commit.gpgsign', 'false');
+		mkdirSync(join(root, 'packages/core/src'), { recursive: true });
+		writeFileSync(join(root, 'packages/core/src/a.ts'), 'export {};\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'boot');
+		return root;
+	};
+
+	it('reads the commits and the changed sources with git itself', async () => {
+		const root = checkout();
+		const watch = createStaleRuntimeWatch(root);
+		expect(await watch.behind()).toBeUndefined();
+		writeFileSync(
+			join(root, 'packages/core/src/a.ts'),
+			'export const a = 1;\n',
+		);
+		git(root, 'commit', '-q', '-am', 'moved on');
+		expect(await watch.behind()).toContain('1 source file(s) it runs');
+	});
+
+	it('tells a supervised server it moves on by itself', () => {
+		process.env.DELENDAI_SUPERVISED = '1';
+		const advisory = staleRuntimeAdvisoryFor({
+			bootHead: BOOT,
+			head: NOW,
+			changed: ['packages/core/src/a.ts'],
+		});
+		expect(advisory?.nextAction).toContain('supervised');
 	});
 });
