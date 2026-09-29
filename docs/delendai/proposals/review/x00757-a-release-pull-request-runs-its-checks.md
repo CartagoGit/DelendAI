@@ -2,12 +2,15 @@
 id: x00757
 title: "A release pull request runs its checks"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P0
 related: [x00753]
+last-transition-id: 8afb7e76-3d5c-46ad-85d7-a018e12fe076
+last-correlation-id: 8afb7e76-3d5c-46ad-85d7-a018e12fe076
+last-transition-from: in-progress
 ---
 
 # x00757 — A release pull request runs its checks
@@ -47,11 +50,12 @@ None.
 
 ### S1 — The queue releases the branch model's parked runs
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/keep-the-queue-moving.script.ts`
   - `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
+- shipped-in: `b28c3883ac9e`
 
 ## dependency graph
 
