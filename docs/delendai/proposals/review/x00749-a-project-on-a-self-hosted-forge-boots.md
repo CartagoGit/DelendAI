@@ -2,12 +2,15 @@
 id: x00749
 title: "A project on a self-hosted forge boots"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P0
 related: [q00022]
+last-transition-id: a6712ed6-b789-421a-ae3f-2706476aa7f2
+last-correlation-id: a6712ed6-b789-421a-ae3f-2706476aa7f2
+last-transition-from: in-progress
 ---
 
 # x00749 — A project on a self-hosted forge boots
@@ -56,7 +59,7 @@ could not start, Bitbucket included, although the seam names it.
 
 ### S1 — The repositories table takes any forge
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/any-forge-host.spec.ts`
 - **Files**:
   - `packages/proposals-sqlite/src/lib/migrations/0024_any_forge_host.sql`
@@ -64,6 +67,7 @@ could not start, Bitbucket included, although the seam names it.
   - `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
   - `packages/proposals-sqlite/tests/src/lib/any-forge-host.spec.ts`
   - `packages/proposals-sqlite/tests/src/lib/migration-checksums.spec.ts`
+- shipped-in: `195d1a537e0e`
 
 ## dependency graph
 
