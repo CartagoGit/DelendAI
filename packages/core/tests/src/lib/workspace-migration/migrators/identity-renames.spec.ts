@@ -52,8 +52,35 @@ describe('IDENTITY_RENAMES', () => {
 			{ from: 'mcp_vertex', to: 'delendai' },
 			{ from: 'mcpvertex', to: 'delendai' },
 			{ from: 'mcp-vertex', to: 'delendai' },
+			{ from: 'MCPVERTEX', to: 'DELENDAI' },
+			{ from: 'McpVertex', to: 'Delendai' },
+			{ from: 'mcpVertex', to: 'delendai' },
+			{ from: 'MCPV', to: 'DELENDAI' },
+			{ from: 'Mcpv', to: 'Delendai' },
 			{ from: 'mcpv', to: 'delendai' },
 		]);
+	});
+});
+
+describe('rewriteIdentityInString — the code spellings of the abbreviation', () => {
+	it('renames the upper-case globals, the PascalCase types and the placeholders', () => {
+		expect(
+			rewriteIdentityInString(
+				'window.__MCPV_CONFIGURATION_HOST__ = host',
+			),
+		).toBe('window.__DELENDAI_CONFIGURATION_HOST__ = host');
+		expect(rewriteIdentityInString('IMcpVertexHostConfig')).toBe(
+			'IDelendaiHostConfig',
+		);
+		expect(rewriteIdentityInString('mcpVertexVersion')).toBe(
+			'delendaiVersion',
+		);
+		expect(
+			rewriteIdentityInString('token: MCPV_REDACTED_SECRET_GITHUB_PAT'),
+		).toBe('token: DELENDAI_REDACTED_SECRET_GITHUB_PAT');
+		expect(rewriteIdentityInString('complete -F _mcpv_complete')).toBe(
+			'complete -F _delendai_complete',
+		);
 	});
 });
 
