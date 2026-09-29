@@ -1735,6 +1735,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-25"
+			},
+			{
+				"id": "x00750",
+				"title": "A user plugin runs against the host's core",
+				"track": "hosts",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-09-29"
 			}
 		]
 	}
