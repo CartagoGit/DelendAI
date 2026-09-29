@@ -12,7 +12,7 @@ import z from 'zod';
 import { deriveCorePrefix } from './lib/attribute';
 import { cleanupStaleTmpFiles } from './lib/cleanup-stale-tmp';
 import { detectAgent } from './lib/detect-agent';
-import { RecordBuffer } from './lib/record-buffer';
+import { RecordBuffer, trackBackgroundWork } from './lib/record-buffer';
 import {
 	installSessionSurfaceBytesObserver,
 	SessionSurfaceBytesService,
@@ -202,16 +202,18 @@ export default definePlugin({
 		// best-effort and never throws — boot hygiene must never
 		// fail the plugin.
 		const pluginCacheDirAbs = ctx.workspace.resolve(ctx.pluginCacheDir);
-		void cleanupStaleTmpFiles({ cacheDirAbs: pluginCacheDirAbs })
-			.then((result) => {
-				if (result.removed > 0) {
-					// Debug-only — the lint is the source of truth.
-					console.debug(
-						`[usage-tracking] boot sweep: removed ${result.removed} stale tmp file(s)`,
-					);
-				}
-			})
-			.catch(() => undefined);
+		trackBackgroundWork(
+			cleanupStaleTmpFiles({ cacheDirAbs: pluginCacheDirAbs }).then(
+				(result) => {
+					if (result.removed > 0) {
+						// Debug-only — the lint is the source of truth.
+						console.debug(
+							`[usage-tracking] boot sweep: removed ${result.removed} stale tmp file(s)`,
+						);
+					}
+				},
+			),
+		);
 
 		const buffer = new RecordBuffer(invocationsPath, {
 			maxBatch,
@@ -252,11 +254,11 @@ export default definePlugin({
 		// (cost = null) and swap in the stale-while-revalidate result when
 		// it lands. A pricing miss never blocks or fails a tool call (I6).
 		let pricingTable: IPricingTable = EMPTY_PRICING;
-		void resolvePricing(pricingPath)
-			.then((table) => {
+		trackBackgroundWork(
+			resolvePricing(pricingPath).then((table) => {
 				pricingTable = table;
-			})
-			.catch(() => undefined);
+			}),
+		);
 
 		const costOf = (
 			model: IModelDescriptor | null,
@@ -269,13 +271,15 @@ export default definePlugin({
 
 		// Prime the summary once at boot so `limitsStatus` (S7) is available
 		// to the orchestrator's spend guard well before the first 5-min tick.
-		void regenerateUsageSummary(
-			invocationsPath,
-			summaryPath,
-			windowDays,
-			Date.now(),
-			limits,
-		).catch(() => undefined);
+		trackBackgroundWork(
+			regenerateUsageSummary(
+				invocationsPath,
+				summaryPath,
+				windowDays,
+				Date.now(),
+				limits,
+			),
+		);
 
 		// Periodic 5-min rollup regeneration from the log (unref'd so it
 		// never keeps the process alive).
@@ -296,13 +300,15 @@ export default definePlugin({
 		// was added here since no test in this repo currently re-registers
 		// the plugin without a fresh process.
 		const summaryTimer = setInterval(() => {
-			void regenerateUsageSummary(
-				invocationsPath,
-				summaryPath,
-				windowDays,
-				Date.now(),
-				limits,
-			).catch(() => undefined);
+			trackBackgroundWork(
+				regenerateUsageSummary(
+					invocationsPath,
+					summaryPath,
+					windowDays,
+					Date.now(),
+					limits,
+				),
+			);
 		}, summaryIntervalMs);
 		summaryTimer.unref?.();
 

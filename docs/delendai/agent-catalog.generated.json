@@ -1727,6 +1727,14 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-29"
+			},
+			{
+				"id": "x00762",
+				"title": "Usage tracking's background writes can be waited for",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-09-29"
 			}
 		]
 	}
