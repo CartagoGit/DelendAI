@@ -503,12 +503,21 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The planner diffs the change against the pull request's
+                  # base. On the default one-commit clone the base is not in
+                  # the object store, the diff fails, and the planner runs
+                  # every zone: every pull request ran all eleven.
+                  fetch-depth: '0'
 
             - name: Plan the test zones
               id: plan
               run: |
                   set -euo pipefail
-                  bun tools/scripts/ci/test-zones.script.ts
+                  # The report is for the same base as the matrix, so the log
+                  # says what was selected and why.
+                  bun tools/scripts/ci/test-zones.script.ts \
+                    --base=${{ github.event.pull_request.base.sha || '' }}
                   {
                     printf 'zones='
                     bun tools/scripts/ci/test-zones.script.ts --matrix \
