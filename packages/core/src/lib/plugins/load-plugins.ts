@@ -9,10 +9,11 @@ import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-li
 import { registerResolvedPluginsWithLifecycle } from './load-plugins-lifecycle.helper';
 import { normalizePluginOptions } from './plugin-activation-session';
 import { validatePluginConfiguration } from './configuration-compatibility';
-import { join, resolve as resolvePath } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { isAbsolute, join, resolve as resolvePath } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
 import { resolveWorkspaceContained } from '../shared/contain-path';
+import { shareHostPackages } from './host-packages.helper';
 import { basename } from 'node:path';
 
 const fileExists = async (path: string): Promise<boolean> => {
@@ -124,6 +125,10 @@ export const nodeDynamicImport = async (
 			: undefined;
 	const runtimeSpecifier = localSource ?? specifier;
 	const normalized = normalizeImportSpecifier(runtimeSpecifier);
+	// A plugin the project keeps in its own tree runs against this host's
+	// `@delendai/*` packages, installed in the project or not.
+	const userFile = userPluginFile(specifier);
+	if (userFile !== undefined) await shareHostPackages(userFile);
 	// Use `Function` to hide `import()` from the static analyser, but
 	// fall back to the direct form on sandbox failures so callers
 	// (and the test suite) keep working in restricted runtimes.
@@ -218,6 +223,12 @@ const resolveLocalFirstPartySource = async (
 		if (await fileExists(candidate)) return candidate;
 	}
 	return undefined;
+};
+
+/** The file a path or `file:` specifier names; undefined for a package. */
+const userPluginFile = (specifier: string): string | undefined => {
+	if (specifier.startsWith('file:')) return fileURLToPath(specifier);
+	return isAbsolute(specifier) ? specifier : undefined;
 };
 
 const normalizeImportSpecifier = (specifier: string): string => {
