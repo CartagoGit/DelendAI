@@ -49,9 +49,36 @@ const DEFAULT_MAX_BATCH = 64;
 const liveBuffers = new Set<RecordBuffer>();
 let exitHookInstalled = false;
 
-/** Drain every live buffer to disk (wired to `beforeExit`; test seam). */
+/**
+ * Writes the plugin starts without awaiting them (the boot-time sweep, the
+ * pricing refresh, the summary rollup). Nobody waits for them on the hot
+ * path, but something has to be able to: a caller that removes the cache
+ * directory while one of them is still creating files there gets
+ * `ENOTEMPTY`, and the suite did, at random.
+ */
+const liveBackgroundWork = new Set<Promise<unknown>>();
+
+/** Start `work` in the background, where {@link drainLiveBuffers} can wait for it. */
+export const trackBackgroundWork = (work: Promise<unknown>): void => {
+	const tracked = work.then(
+		() => undefined,
+		() => undefined,
+	);
+	liveBackgroundWork.add(tracked);
+	void tracked.then(() => liveBackgroundWork.delete(tracked));
+};
+
+/**
+ * Drain every live buffer to disk and wait for the background writes the
+ * plugin started (wired to `beforeExit`; test seam).
+ */
 export const drainLiveBuffers = async (): Promise<void> => {
 	await Promise.all([...liveBuffers].map((buffer) => buffer.close()));
+	// A write that finishes may start another (a rollup after a refresh),
+	// so wait until none is left.
+	while (liveBackgroundWork.size > 0) {
+		await Promise.all([...liveBackgroundWork]);
+	}
 };
 
 const installExitHook = (): void => {

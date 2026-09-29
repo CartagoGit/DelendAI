@@ -188,12 +188,11 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'packages/proposals-sqlite/',
 			'plugins/proposals/',
 			'plugins/database/',
-			'docs/delendai/proposals/',
 			'package.json',
 			'bun.lock',
 		],
 		because:
-			'it runs the bun-only SQLite suite and the cutover gate, which reads the SQLite packages and the proposal statuses that declare the cutover slices.',
+			'it runs the bun-only SQLite suite and the cutover gate over the SQLite packages and their fixtures. The one spec that reads the real proposal tree also runs in lint-governance on every change, so a proposal edit alone does not need this job; every pull request edits a proposal, and this job ran on all of them.',
 	},
 	{
 		job: 'delendai-rebuild-digest',
