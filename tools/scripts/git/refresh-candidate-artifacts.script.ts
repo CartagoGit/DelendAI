@@ -38,6 +38,7 @@ import {
 	currentQueueFacts,
 	currentQueueOrder,
 } from '../forge/keep-the-queue-moving.script';
+import { branchesLandingAsTheyAre } from '../forge/queue-acceptance';
 import { repoRoot } from '../lib/repo-root';
 import {
 	GENERATED_REFRESH_COMMANDS,
@@ -318,7 +319,28 @@ const main = (): void => {
 		return;
 	}
 	const order = queue.map((entry) => entry.branch);
-	const behind = new Set(staleCandidates(root, policy, remote));
+	// A candidate the queue lands as it is (nothing the integration branch
+	// gained reaches it, f00755) is not brought forward: a merge commit
+	// would only send it back through its checks.
+	const landing = branchesLandingAsTheyAre({
+		root,
+		remote,
+		integration: policy.branches.integration,
+		queue: queue.map((entry) => ({
+			number: entry.number,
+			branch: entry.branch,
+		})),
+	});
+	for (const branch of landing) {
+		console.log(
+			`refresh-candidate-artifacts: ${branch} lands as it is; not brought forward.`,
+		);
+	}
+	const behind = new Set(
+		staleCandidates(root, policy, remote).filter(
+			(branch) => !landing.has(branch),
+		),
+	);
 	let head: string | undefined;
 	const stale: string[] = [];
 	for (const candidate of order) {
