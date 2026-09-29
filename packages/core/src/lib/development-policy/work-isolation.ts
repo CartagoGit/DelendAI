@@ -11,6 +11,7 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IWorkIsolation } from '../contracts/interfaces/work-isolation.interface';
+import { briefWorkModel } from './declare-workflow';
 
 const HOST_DISABLED_REFUSAL =
 	'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in delendai.config.json to enable.';
@@ -42,9 +43,12 @@ export const describeWorkIsolation = (
 	// enter` makes for it, and delendai's writes are refused in the shared
 	// checkout on the integration branch. Telling an agent "do not create
 	// worktrees" without naming that command sent it to write where
-	// nothing commits; what is forbidden is making them by hand.
+	// nothing commits; and naming the command without saying how the work
+	// LANDS sent an agent on a merging project down a pull-request flow.
+	// Both sentences come from the renderer every other surface uses.
+	const brief = briefWorkModel(policy);
 	const route = policy.persistence.usesWipRefs
-		? ` Start each unit of work with \`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>\`: it creates the unit's worktree and work ref. Work there, pass that worktree as \`checkout\` to delendai's tools, and finish with \`delendai work publish\`.`
+		? ` ${brief.start} ${brief.land}`
 		: '';
 	const rule = `This project uses the \`${policy.profile}\` development profile: the shared checkout stays on \`${policy.branches.integration}\`. Do not create worktrees or branches by hand (no \`git worktree add\`, \`git switch\`, \`git checkout -b\`), and do not call agent_worktree.${route} Claim the files you edit with agent_lock so agents never touch the same file; ${persistence}.`;
 	return {

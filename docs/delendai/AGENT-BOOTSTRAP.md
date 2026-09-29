@@ -325,19 +325,13 @@ interactions.
   violations (x00080). The check is a lefthook-installed TypeScript hook
   (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
   per rule #10 below.
-- **Agents own work, not branches — git enforces it.** The shared
-  checkout stays on `development.branches.integration` (read the policy;
-  never assume `develop`). No `switch`, no `checkout -b`: a commit from
-  anywhere else there is REFUSED, and the move is reported at once.
-  `delendai work checkpoint --proposal --slice --paths --message` writes
-  your ref from the working tree (HEAD never moves; other agents' dirty
-  files are neither captured nor in the way), `delendai work enter` gives
-  you your own worktree instead — work and commit there, not in an
-  anonymous worktree: at the policy's checkpoint cadence your commits
-  appear on your work ref on the remote — and `delendai work status` says
-  where the checkout stands. A publication ref is never checked out: publish with
-  `forge:publish --from-work-branch` (`lint:ref-lifecycle` fails on
-  leftovers). See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md).
+- **Agents own work, not branches — git enforces it.** How work starts
+  and lands (unit of work, pull request, merge or direct commit) is the
+  project's `development` profile, and the server states it: in its
+  connect-time instructions, `agent_bootstrap`, `overview` (`workModel`)
+  and every refusal. Follow that, never this file or a design doc. The
+  shared checkout never moves; `delendai work status` says where it
+  stands.
 - **No orphaned branches or stashes — always reconcile (this repo).**
   Before closing a session run `bun run reclaim:orphans` and resolve
   every orphan: merge it if valuable (fixing it until it works), delete

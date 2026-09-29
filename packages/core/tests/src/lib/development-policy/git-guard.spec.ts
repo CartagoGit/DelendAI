@@ -51,6 +51,39 @@ describe('shared-checkout-merge — the observed project', () => {
 		expect(verdict.remedy).toContain('Do not create worktrees or branches');
 	});
 
+	it('says how work lands in THIS profile, and it is not a pull request', () => {
+		// The refusal the observed agent got said "not here" and nothing
+		// about the route, so it took the one a document described: pull
+		// requests, in a project that merges.
+		const merge = judgeGitOperation(policy, commit('develop'), AGENT);
+		const pr = judgeGitOperation(
+			expandProfile('shared-checkout-pr'),
+			commit('develop'),
+			AGENT,
+		);
+
+		expect(merge.remedy).toContain('delendai work enter');
+		expect(merge.remedy).toContain('MERGING it into develop');
+		expect(merge.remedy).toContain('opens no pull request');
+		expect(merge.remedy).not.toContain('opens a pull request');
+		expect(pr.remedy).toContain('opens a pull request into develop');
+		expect(pr.remedy).not.toContain('MERGING');
+	});
+
+	it('names the landing route when the checkout left the integration branch', () => {
+		const work = 'wip/gpt-5-codex/implement/x00056-S1-g1/tetris-mock';
+		const merge = judgeGitOperation(policy, commit(work), AGENT);
+		const pr = judgeGitOperation(
+			expandProfile('shared-checkout-pr'),
+			commit(work),
+			AGENT,
+		);
+
+		expect(merge.refused).toBe(true);
+		expect(merge.remedy).toContain('MERGING it into develop');
+		expect(pr.remedy).toContain('opens a pull request into develop');
+	});
+
 	it('allows the merge commit that moves the integration branch', () => {
 		expect(
 			judgeGitOperation(policy, commit('develop', true), AGENT).refused,

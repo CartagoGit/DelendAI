@@ -1,13 +1,19 @@
 ---
 id: devstrat-2026-09-10
-title: 'Development strategies: why shared-checkout-pr is the default'
+title: 'Development strategies: why this repository uses shared-checkout-pr'
 ---
 
 # Development strategies
 
 This is the canonical explanation of how work reaches the integration
-branch in DelendAI, and why the default is what it is. It explains the
-model; it does not restate its parameters.
+branch in THIS repository, and why it chose `shared-checkout-pr`. It
+explains the model; it does not restate its parameters.
+
+**Not an instruction for any other project.** A project that uses
+delendai follows the profile its own `development` block resolves to —
+`shared-checkout-merge` when it declares none, which lands work by merge,
+not by pull request. The server states that project's work model to
+every agent when it connects; an agent follows the server, not this page.
 
 **Where the values live.** Branch names, required checks, approval
 counts and every other knob are resolved from the `development` block of

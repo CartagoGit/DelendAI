@@ -14,6 +14,7 @@ import type {
 	IGitGuardVerdict,
 	IGuardedGitOperation,
 } from '../contracts/interfaces/git-guard.interface';
+import { briefWorkModel } from './declare-workflow';
 import { describeWorkIsolation } from './work-isolation';
 import {
 	insideNamespaces,
@@ -82,7 +83,7 @@ const judgeCommit = (
 		return {
 			refused: true,
 			reason: `the shared checkout is on \`${branch}\`, but the \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`.`,
-			remedy: `Return it with \`git switch ${policy.branches.integration}\` — your edits stay in the working tree — then persist the work with \`delendai work checkpoint\`, which writes your ref without moving HEAD.`,
+			remedy: `Return it with \`git switch ${policy.branches.integration}\` — your edits stay in the working tree — then persist the work with \`delendai work checkpoint\`, which writes your ref without moving HEAD. ${briefWorkModel(policy).land}`,
 		};
 	}
 	return allow(`\`${branch}\` is a branch the policy uses.`);

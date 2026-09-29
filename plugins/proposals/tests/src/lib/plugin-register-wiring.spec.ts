@@ -178,7 +178,8 @@ describe('register() wires the project’s publish step into create_proposal', (
 
 		const created = await authorProposal(handler, 'Merge profile step');
 
-		expect(created.nextAction).not.toContain('pull request');
+		expect(created.nextAction).not.toMatch(/opens? a pull request/iu);
+		expect(created.nextAction).toContain('opens no pull request');
 		expect(created.nextAction).toContain('untracked');
 	});
 
