@@ -203,19 +203,14 @@ export const publishWorkUnit = (
 	// the agent in a directory whose branch no longer exists.
 	const worktree = worktreeFor(root, workRef);
 	if (worktree !== undefined) {
-		if (worktree === request.cwd) {
-			step(
-				'remove-worktree',
-				false,
-				`${worktree} is the current directory; leave it before publishing, or pass --keep-work-ref.`,
-			);
-			return {
-				published: true,
-				workRefRemoved: false,
-				steps,
-				tip: tip.out,
-			};
-		}
+		// The caller's own directory goes too. `review next` publishes from
+		// the reviewer's worktree; refusing it left every published pack's
+		// worktree and work ref behind for good, since nothing came back
+		// for them. The caller is told where to continue instead.
+		const leaving =
+			worktree === request.cwd
+				? ` It was the current directory: continue from ${root}.`
+				: '';
 		// `--force` would delete a worktree with uncommitted files in it.
 		// Proving that the PUBLISHED commit reached the remote proves
 		// nothing about edits made after the checkpoint: an agent that
@@ -254,7 +249,7 @@ export const publishWorkUnit = (
 		step(
 			'remove-worktree',
 			removed.ok,
-			removed.ok ? `removed ${worktree}.` : removed.out,
+			removed.ok ? `removed ${worktree}.${leaving}` : removed.out,
 		);
 		if (!removed.ok) {
 			return {
