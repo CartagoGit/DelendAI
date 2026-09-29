@@ -11,6 +11,8 @@ related: [x00742]
 last-transition-id: 44a15381-767f-49eb-8b2c-cf0b00f39a9c
 last-correlation-id: 44a15381-767f-49eb-8b2c-cf0b00f39a9c
 last-transition-from: in-progress
+shipped-in:
+  - "4aef4c193d7c65adea568f0c8542e37f3768d8c0"
 ---
 
 # x00748 — A published unit leaves no worktree behind
@@ -52,12 +54,17 @@ owner to clean up.
 
 ### S1 — The caller's worktree goes with its unit
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`
 - **Files**:
   - `packages/core/src/lib/work-units/work-publish.service.ts`
   - `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`
 - shipped-in: `4aef4c193d7c`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — x00748 S1 (shipped-in 4aef4c193d7c, merged via PR #635 to develop) makes the publishWorkUnit publisher remove the unit's own worktree when clean, even the one it's being called from, and tells the caller where to continue ('It was the current directory: continue from ${root}'). A dirty tree (uncommitted changes OR work after checkpoint) keeps both the worktree and the work ref, with a step that names the count. Spec covers all four branches: clean caller's worktree, clean other worktree, dirty caller's, post-checkpoint: 17/17 pass.
+- review-attribution: unrecorded — nothing in Git names who delivered 4aef4c193d7c65adea568f0c8542e37f3768d8c0: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ## dependency graph
 
