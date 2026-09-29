@@ -36,6 +36,14 @@ import {
 	parseFrontmatterBlock,
 } from '../../../plugins/proposals/src/lib/proposals/frontmatter-parser';
 import { repoRoot } from '../lib/monorepo-paths';
+import type {
+	IReviewDrift,
+	IReviewGitFacts,
+} from '../../../plugins/proposals/src/lib/contracts/interfaces/review-drift.interface';
+import {
+	byDrift,
+	measureReviewDrift,
+} from '../../../plugins/proposals/src/lib/services/review-drift.service';
 
 const _PROPOSALS_ROOT = 'docs/delendai/proposals';
 const BASELINE_REL = 'tools/scripts/lint/proposal-ready-to-close.baseline.json';
@@ -160,75 +168,14 @@ const nextActionFor = (
 	}
 };
 
-/** How far the repository moved under a proposal waiting for review. */
-export type IReviewDrift =
-	| {
-			readonly measured: true;
-			readonly reviewAgeDays: number;
-			readonly commitsSince: number;
-			readonly filesTouchedSince: readonly string[];
-			readonly files: number;
-			readonly driftRatio: number;
-	  }
-	| { readonly measured: false; readonly reason: string };
-
-/** The git facts a drift measure needs, injectable for tests. */
-export interface IReviewGitFacts {
-	/** Commit time in ms, or `undefined` when the commit is unknown here. */
-	readonly commitTimeMs: (sha: string) => number | undefined;
-	readonly commitsSince: (sha: string) => number;
-	/** The given files that later commits touched, even if reverted. */
-	readonly filesTouchedSince: (
-		sha: string,
-		files: readonly string[],
-	) => readonly string[];
-}
-
-/**
- * Age and drift of a review, from the latest `shipped-in` commit git
- * knows. A review of work that landed long ago, under files rewritten
- * since, is a different job from one that landed minutes ago; this is
- * what tells them apart. Never "fresh" when it cannot be measured.
- */
-export const measureReviewDrift = (input: {
-	readonly shippedIn: readonly string[];
-	readonly files: readonly string[];
-	readonly nowMs: number;
-	readonly git: IReviewGitFacts;
-}): IReviewDrift => {
-	const landed = input.shippedIn
-		.map((sha) => ({ sha, at: input.git.commitTimeMs(sha) }))
-		.filter((c): c is { sha: string; at: number } => c.at !== undefined)
-		.sort((a, b) => b.at - a.at)[0];
-	if (landed === undefined) {
-		return {
-			measured: false,
-			reason: 'no shipped-in commit is known to this clone',
-		};
-	}
-	const touched = [...input.git.filesTouchedSince(landed.sha, input.files)];
-	return {
-		measured: true,
-		reviewAgeDays: Math.floor((input.nowMs - landed.at) / 86_400_000),
-		commitsSince: input.git.commitsSince(landed.sha),
-		filesTouchedSince: touched,
-		files: input.files.length,
-		driftRatio:
-			input.files.length === 0 ? 0 : touched.length / input.files.length,
-	};
-};
-
-/** Largest drift first, then oldest; unmeasurable last. */
-export const byDrift = (a: IReviewDrift, b: IReviewDrift): number => {
-	if (!a.measured || !b.measured) {
-		return Number(!a.measured) - Number(!b.measured);
-	}
-	return (
-		b.driftRatio - a.driftRatio ||
-		b.commitsSince - a.commitsSince ||
-		b.reviewAgeDays - a.reviewAgeDays
-	);
-};
+export type {
+	IReviewDrift,
+	IReviewGitFacts,
+} from '../../../plugins/proposals/src/lib/contracts/interfaces/review-drift.interface';
+export {
+	byDrift,
+	measureReviewDrift,
+} from '../../../plugins/proposals/src/lib/services/review-drift.service';
 
 /** Every file the proposal's slices declare, once each. */
 const sliceFilesOf = (
