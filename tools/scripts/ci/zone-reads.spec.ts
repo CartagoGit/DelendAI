@@ -4,72 +4,87 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IZoneReadMap } from './test-zones.interface';
+import type { IRootChange, IZoneReadMap } from './test-zones.interface';
 import { parseZoneReadMap, zonesReadingRootFiles } from './zone-reads';
 
 const MAP: IZoneReadMap = {
 	zones: {
 		proposals: {
-			readIn: ['docs/delendai/proposals/ready/fixes'],
-			listed: ['docs/delendai/proposals'],
+			read: ['docs/delendai/proposals/ready/fixes/x00001-a.md'],
+			listed: ['docs/delendai/proposals/ready/feats', 'docs/delendai'],
 		},
 		core: {
-			readIn: ['docs/delendai'],
-			listed: [],
+			read: ['docs/delendai/AGENT-BOOTSTRAP.md'],
+			listed: ['docs', 'docs/delendai/proposals', 'tools'],
 		},
-		apps: { readIn: [], listed: [] },
+		apps: { read: [], listed: [] },
 	},
 };
 
+const edited = (path: string): IRootChange => ({ path, listing: false });
+const added = (path: string): IRootChange => ({ path, listing: true });
+
 describe('zonesReadingRootFiles', () => {
 	it('runs everything without a map', () => {
-		expect(zonesReadingRootFiles(['docs/x.md'], undefined)).toBeUndefined();
-	});
-
-	it('runs everything for a file at the repository root or under .github', () => {
-		expect(zonesReadingRootFiles(['package.json'], MAP)).toBeUndefined();
 		expect(
-			zonesReadingRootFiles(['.github/workflows/ci.yml'], MAP),
+			zonesReadingRootFiles([edited('docs/x.md')], undefined),
 		).toBeUndefined();
 	});
 
-	it('reaches only the zone that reads the proposals, for a proposal edit', () => {
+	it('runs everything for a file at the repository root or under .github', () => {
+		expect(
+			zonesReadingRootFiles([edited('package.json')], MAP),
+		).toBeUndefined();
+		expect(
+			zonesReadingRootFiles([edited('.github/workflows/ci.yml')], MAP),
+		).toBeUndefined();
+	});
+
+	it('sends an edited file to the zones that read it', () => {
 		expect(
 			zonesReadingRootFiles(
-				['docs/delendai/proposals/ready/fixes/x00001-a.md'],
+				[edited('docs/delendai/proposals/ready/fixes/x00001-a.md')],
 				MAP,
 			),
 		).toEqual(new Set(['proposals']));
 	});
 
-	it('reaches a zone that lists a folder, for a file new in it', () => {
-		// A new proposal was never read, but its folder was scanned.
+	it('does not send an edited file to a zone that only listed a folder above it', () => {
+		// Listing depends on which files a folder holds, not on what they
+		// say. `core` lists `docs` and `docs/delendai/proposals`: an edit
+		// deep inside reached it anyway, and every zone ran (#648).
 		expect(
 			zonesReadingRootFiles(
-				['docs/delendai/proposals/ready/feats/f00999-new.md'],
+				[edited('docs/delendai/proposals/review/q00014-x.md')],
+				MAP,
+			),
+		).toEqual(new Set());
+	});
+
+	it('sends a file added to, or removed from, a listed folder to the zones that listed it', () => {
+		expect(
+			zonesReadingRootFiles(
+				[added('docs/delendai/proposals/ready/feats/f00999-new.md')],
 				MAP,
 			),
 		).toEqual(new Set(['proposals']));
 	});
 
-	it('reaches a zone that read another file in the same directory', () => {
+	it('sends a file under a zone’s own paths to that zone', () => {
 		expect(
-			zonesReadingRootFiles(['docs/delendai/NEW-GUIDE.md'], MAP),
-		).toEqual(new Set(['core']));
-	});
-
-	it('reaches no zone for a file no test reads', () => {
-		expect(zonesReadingRootFiles(['docs/unread/notes.md'], MAP)).toEqual(
-			new Set(),
-		);
+			zonesReadingRootFiles([edited('tests/e2e/run.spec.ts')], MAP, {
+				tools: ['tools', 'tests/e2e'],
+				core: ['packages/core'],
+			}),
+		).toEqual(new Set(['tools']));
 	});
 
 	it('unions the zones of several files', () => {
 		expect(
 			zonesReadingRootFiles(
 				[
-					'docs/delendai/AGENT-BOOTSTRAP.md',
-					'docs/delendai/proposals/review/x00002.md',
+					edited('docs/delendai/AGENT-BOOTSTRAP.md'),
+					edited('docs/delendai/proposals/ready/fixes/x00001-a.md'),
 				],
 				MAP,
 			),
@@ -86,8 +101,9 @@ describe('parseZoneReadMap', () => {
 		expect(parseZoneReadMap(undefined)).toBeUndefined();
 		expect(parseZoneReadMap('{ not json')).toBeUndefined();
 		expect(parseZoneReadMap('null')).toBeUndefined();
+		expect(parseZoneReadMap('{"zones":{"a":{"read":[]}}}')).toBeUndefined();
 		expect(
-			parseZoneReadMap('{"zones":{"a":{"readIn":[]}}}'),
+			parseZoneReadMap('{"zones":{"a":{"readIn":[],"listed":[]}}}'),
 		).toBeUndefined();
 	});
 });

@@ -28,7 +28,7 @@ import { join } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
 
-import { buildGraph, computeAffected, gitDiffNames } from './affected.script';
+import { buildGraph, computeAffected, gitDiffChanges } from './affected.script';
 import {
 	TARGET_SPECS_PER_JOB,
 	ZONE_READ_MAP_PATH,
@@ -158,35 +158,45 @@ export const reachableZones = (
 	deps: {
 		readonly buildGraph: typeof buildGraph;
 		readonly computeAffected: typeof computeAffected;
-		readonly diff: typeof gitDiffNames;
+		readonly diff: typeof gitDiffChanges;
 		/** The observed read map; `undefined` means none is available. */
 		readonly readMap?: () => IZoneReadMap | undefined;
 	} = {
 		buildGraph,
 		computeAffected,
-		diff: gitDiffNames,
+		diff: gitDiffChanges,
 		readMap: () => committedReadMap(input.rootDir),
 	},
 ): ReadonlySet<string> | undefined => {
 	let affected: ReturnType<typeof computeAffected>;
 	let graph: ReturnType<typeof buildGraph>;
+	let changes: ReturnType<typeof gitDiffChanges>;
 	try {
 		graph = deps.buildGraph(input.rootDir);
-		affected = deps.computeAffected(deps.diff(input.base, 'HEAD'), graph);
+		changes = deps.diff(input.base, 'HEAD');
+		affected = deps.computeAffected(
+			changes.map((change) => change.path),
+			graph,
+		);
 	} catch {
 		return undefined;
 	}
+	const rules = input.rules ?? ZONE_RULES;
 	// A change outside every workspace reaches only the zones observed to
 	// read it. It used to reach everything, so a pull request that
 	// edited one proposal ran all eleven shards. Without a usable map, or
 	// for a root-level configuration file, it still runs everything.
+	const roots = new Set(affected.rootFiles);
 	const rootReached =
-		affected.rootFiles.length === 0
+		roots.size === 0
 			? new Set<string>()
-			: zonesReadingRootFiles(affected.rootFiles, deps.readMap?.());
+			: zonesReadingRootFiles(
+					changes.filter((change) => roots.has(change.path)),
+					deps.readMap?.(),
+					ownPathsOf(rules, [...graph.dirToName.keys()]),
+				);
 	if (rootReached === undefined) return undefined;
 
-	const rules = input.rules ?? ZONE_RULES;
 	// DOWNSTREAM plus what changed directly — never upstream. `affected`
 	// unions both because it answers a build-ordering question: to build
 	// X you first build what X depends on. Test selection asks the
@@ -210,6 +220,15 @@ export const reachableZones = (
 	for (const zone of rootReached) zones.add(zone);
 	return zones;
 };
+
+/** The paths each zone's own specs live under, per rule. */
+const ownPathsOf = (
+	rules: readonly IZoneRule[],
+	workspaceDirs: readonly string[],
+): Readonly<Record<string, readonly string[]>> =>
+	Object.fromEntries(
+		rules.map((rule) => [rule.id, rule.paths(workspaceDirs)]),
+	);
 
 const committedReadMap = (rootDir: string): IZoneReadMap | undefined => {
 	try {
@@ -265,9 +284,17 @@ const main = (): number => {
 		return 0;
 	}
 
+	// Which zones the change reaches, stated, so a wrong selection is
+	// visible in the log rather than silent.
 	for (const job of jobs) {
+		const verdict =
+			reach === undefined
+				? 'runs (every zone: no base, or a change that can reach anything)'
+				: reach.has(job.zone)
+					? 'runs (the change reaches it)'
+					: 'skipped (the change reaches none of its specs or reads)';
 		console.log(
-			`${job.name.padEnd(16)} ${String(job.specs).padStart(5)} spec(s) in the zone, ${job.shards} job(s)`,
+			`${job.name.padEnd(16)} ${String(job.specs).padStart(5)} spec(s) in the zone, ${job.shards} job(s) — ${verdict}`,
 		);
 	}
 	return 0;
