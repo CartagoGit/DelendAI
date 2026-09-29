@@ -83,6 +83,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0021_registry_fields.sql',
 			'0022_apply_candidate_run_kind.sql',
 			'0023_frontmatter_json.sql',
+			'0024_any_forge_host.sql',
 		]);
 		expect(migrationChecksums()).toBeDefined();
 		for (const name of migrationFiles()) {
