@@ -2,12 +2,15 @@
 id: x00761
 title: "The release branch validates what it merged"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-29
 priority: P1
 related: [x00757, x00758]
+last-transition-id: 3eacaac1-39c9-4a2c-88c7-afa2c100b028
+last-correlation-id: 3eacaac1-39c9-4a2c-88c7-afa2c100b028
+last-transition-from: in-progress
 ---
 
 # x00761 — The release branch validates what it merged
@@ -49,11 +52,12 @@ end red on the release branch, for a commit nobody made.
 
 ### S1 — A CI checkout of the release branch is not a commit
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 - **Files**:
   - `tools/scripts/lint/commit-branch-discipline.script.ts`
   - `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
+- shipped-in: `abb55b856b3c`
 
 ## dependency graph
 
