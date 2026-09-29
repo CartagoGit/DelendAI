@@ -92,6 +92,7 @@ project, and its commits say nothing about the code the server runs.
   - `tools/scripts/host/host-supervisor-process.spec.ts`
   - `tools/scripts/host/host-server.script.ts`
   - `packages/core/src/lib/development-policy/stale-runtime-advisory.ts`
+  - `packages/core/src/public/index.ts`
   - `packages/core/tests/src/lib/development-policy/stale-runtime-advisory.spec.ts`
 - shipped-in: `1b4aeb82fe60`
 
