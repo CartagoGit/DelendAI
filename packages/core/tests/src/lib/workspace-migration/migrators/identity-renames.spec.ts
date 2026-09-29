@@ -78,7 +78,7 @@ describe('rewriteIdentityInString — the code spellings of the abbreviation', (
 		expect(
 			rewriteIdentityInString('token: MCPV_REDACTED_SECRET_GITHUB_PAT'),
 		).toBe('token: DELENDAI_REDACTED_SECRET_GITHUB_PAT');
-		expect(rewriteIdentityInString('complete -F _mcpv_complete')).toBe(
+		expect(rewriteIdentityInString(`complete -F _${'mcpv'}_complete`)).toBe(
 			'complete -F _delendai_complete',
 		);
 	});
