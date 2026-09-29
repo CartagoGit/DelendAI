@@ -78,6 +78,7 @@ pages. Find yourself below; each row is a complete path, in order.
 | --- | --- |
 | [Pages Audit](../PAGES-AUDIT.md) | This audit covers 44 tracked Astro page files under apps/web/src pages by enumerating both root files and nested routes. |
 | [Attribution policy](../PRIVACY.md) | This document describes the rules this repository follows to keep LLM |
+| [Adopter config footguns](ADOPTER-CONFIG-FOOTGUNS.md) | Two `delendai.config.json` shapes that look right at first read and then refuse |
 | [Adopting `delendai` from another workspace](ADOPTER-SURFACE-MODE.md) | Quick reference for someone wiring `delendai` into a project |
 | [Universal agent bootstrap — `@delendai/core`](AGENT-BOOTSTRAP.md) | This file is the only place agent rules live. Every host instruction |
 | [Architecture — `@delendai/core`](ARCHITECTURE.md) | How the monorepo fits together, what the boundaries are, and which invariants hold |

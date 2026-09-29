@@ -77,6 +77,8 @@ export interface IWorkRefMention {
 
 /** One commit on the integration branch's first-parent line. */
 export interface IIntegrationRecord {
+	/** The commit on the integration line itself. */
+	readonly commit?: string;
 	/** What the record delivered: a merge's second parent, else itself. */
 	readonly delivered: string;
 	readonly subject: string;
