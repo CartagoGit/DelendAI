@@ -2,15 +2,17 @@
 id: x00747
 title: "Bulleted file lists are read at review entry"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00745, x00746]
-last-transition-id: b085145e-698a-4421-9470-c8e120c4ee94
-last-correlation-id: b085145e-698a-4421-9470-c8e120c4ee94
-last-transition-from: in-progress
+last-transition-id: f370cdd5-48de-4930-9c16-c9f97b6becca
+last-correlation-id: f370cdd5-48de-4930-9c16-c9f97b6becca
+last-transition-from: review
+shipped-in:
+  - "0153237b81f882cebafd6fad8708235d004243aa"
 ---
 
 # x00747 — Bulleted file lists are read at review entry
@@ -70,7 +72,7 @@ None.
 
 ### S1 — One reader for a slice's files
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/proposals/expand-declared-files.ts`
@@ -81,6 +83,11 @@ None.
   - `tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
   - `tools/scripts/lint/proposal-slice-completeness.baseline.json`
 - shipped-in: `0153237b81f8`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — x00747 S1 introduces readDeclaredSliceFiles(body) in expand-declared-files.ts as the single reader: the slice-plan reader moved there unchanged and collectSliceStatuses now gathers each slice body and calls it. Placeholders that are not paths are skipped; a `## ` heading ends the last slice. proposal-slice-completeness lint now uses git check-ignore on repo-relative paths only, so absolute paths no longer blind the ignored-file check. Baseline accepts the 847 findings now visible (done proposals are frozen). Gate=none: 17/17 spec tests pass.
+- review-attribution: claude-opus-5-5 from Merge pull request #630 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00747-S1-g1/bulleted-file-lists-are-read (refs/heads/delendai/wip/claude-opus-5-5/implement/x00747-S1-g1/bulleted-file-lists-are-read) (0153237b81f882cebafd6fad8708235d004243aa), opened by minimax-m3
 
 ## dependency graph
 
