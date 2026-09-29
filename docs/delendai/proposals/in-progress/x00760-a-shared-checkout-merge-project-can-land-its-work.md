@@ -31,7 +31,7 @@ The served work model (x00759) tells an agent on `shared-checkout-merge` to fini
 
 ### S1 — The unit lands by local merge after its certification
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/integration-engine/local-merge-cycle.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-land.service.ts`, `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/validation-gate-steps.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/src/lib/contracts/interfaces/local-certification.interface.ts`, `packages/core/src/lib/contracts/interfaces/work-publish.interface.ts`, `packages/core/src/lib/integration-engine/local-merge-cycle.ts`, `packages/core/src/lib/integration-engine/local-merge-cycle.interface.ts`, `packages/core/src/lib/integration-engine/local-merge-gate.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/validate-run.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-land.service.spec.ts`, `packages/core/tests/src/lib/work-units/local-certification.service.spec.ts`, `packages/core/tests/src/lib/integration-engine/local-merge-cycle.spec.ts`, `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Under `integration.strategy: merge`, publishing a unit runs the project's validation gate against the current integration head and merges the work ref with `runLocalMergeCycle`, never in the shared checkout."
@@ -43,3 +43,12 @@ The served work model (x00759) tells an agent on `shared-checkout-merge` to fini
 - Under `integration.strategy: merge`, publishing a unit runs the project's validation gate against the current integration head and merges the work ref with `runLocalMergeCycle`, never in the shared checkout.
 - A red certification, a stale head and a conflict each end in a refusal that names the next step; nothing lands uncertified.
 - Under a pull-request profile nothing changes.
+
+## Implementation notes
+
+- `work publish` under `integration.strategy: merge` calls `landWorkUnit`: it holds the work ref, runs `runLocalMergeCycle` with a `certify` hook, and ends the work ref with the same `endWorkRef` a publication uses (kept while the proposal is still in progress, as before).
+- `runLocalMergeCycle` certifies inside its critical section: after reading the head it answers a stale base (`staleBase`) and a conflict before any gate runs, builds the merge commit in a throwaway index, and passes that commit to `certify`; the pushed commit is the certified one.
+- The gate is the one the integration head declares (`validationMatrix.scopes`, else a `validate` script), read from that commit with `git show`, so a unit cannot land by weakening the gate it carries. It runs in a detached worktree under the git directory, output captured; no gate declared, a candidate that cannot be put on disk, or a failed step all land nothing.
+- `delendai validate` and the certification share one declaration reader (`validationGateSteps`).
+- The served instructions name the command (`delendai work publish --proposal=<id> --slice=<slice> --agent=<you>`), who certifies, and when the work ref ends, per strategy.
+- Known limit: the certification worktree is a fresh checkout; a gate that needs installed dependencies must install them itself (e.g. declare the install as the first matrix step).

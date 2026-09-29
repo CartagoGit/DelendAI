@@ -1724,7 +1724,7 @@
 				"id": "x00760",
 				"title": "A shared-checkout-merge project can land its work",
 				"track": "hosts",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-29"
 			}
