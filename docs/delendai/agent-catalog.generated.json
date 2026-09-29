@@ -1385,6 +1385,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "d00416",
+				"title": "Document the push.branch × shared-checkout-merge adopter trip-up and the fresh-clone SQLite projection bootstrap",
+				"track": "adopter-experience",
+				"status": "ready",
+				"kind": "docs",
+				"date": "2026-09-29"
+			},
+			{
 				"id": "f00509",
 				"title": "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease",
 				"track": "trust",
@@ -1551,14 +1559,6 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-09-26"
-			},
-			{
-				"id": "f00645",
-				"title": "List tools answer compact by default",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-27"
 			},
 			{
 				"id": "q00009",
