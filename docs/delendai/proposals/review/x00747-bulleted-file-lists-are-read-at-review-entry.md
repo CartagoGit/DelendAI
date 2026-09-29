@@ -2,12 +2,15 @@
 id: x00747
 title: "Bulleted file lists are read at review entry"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00745, x00746]
+last-transition-id: b085145e-698a-4421-9470-c8e120c4ee94
+last-correlation-id: b085145e-698a-4421-9470-c8e120c4ee94
+last-transition-from: in-progress
 ---
 
 # x00747 — Bulleted file lists are read at review entry
@@ -67,7 +70,7 @@ None.
 
 ### S1 — One reader for a slice's files
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/proposals/expand-declared-files.ts`
@@ -77,6 +80,7 @@ None.
   - `tools/scripts/lint/proposal-slice-completeness.script.ts`
   - `tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
   - `tools/scripts/lint/proposal-slice-completeness.baseline.json`
+- shipped-in: `0153237b81f8`
 
 ## dependency graph
 
