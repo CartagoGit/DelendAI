@@ -38,6 +38,7 @@ import {
 	type ICertificationRun,
 	type IIntegrationCertification,
 } from './certify-integration.script';
+import { queueAcceptance } from './queue-acceptance';
 import {
 	queueHead,
 	queueOrder,
@@ -368,11 +369,13 @@ export const currentQueueHeadBranch = (): string | undefined => {
  * with whether auto-merge is armed on it.
  */
 export const currentQueueOrder = (): readonly {
+	readonly number: number;
 	readonly branch: string;
 	readonly armed: boolean;
 }[] => {
 	const { facts, publicationPrefix, armed } = currentQueueFacts();
 	return queueOrder(facts, publicationPrefix).map((candidate) => ({
+		number: candidate.number,
 		branch: candidate.headRef,
 		armed: armed.has(candidate.headRef),
 	}));
@@ -466,43 +469,65 @@ const main = (): void => {
 	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
-	// One candidate moves at a time. Only the head of the queue is armed,
-	// and only once it is level with the integration branch: arming a
-	// candidate that is behind lets the forge merge it on a green check
-	// computed against an integration branch that no longer exists.
+	// Every candidate that can land as it is moves at once: a level one, or
+	// one that touches nothing the integration branch gained since it left,
+	// and nothing an earlier accepted candidate touches (f00755). The others
+	// are brought forward by the owner machine and tested again. It used to
+	// be one candidate at a time, each brought forward and re-tested after
+	// every merge, twenty minutes a candidate.
 	const candidates = opened
 		.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
 		.map((pull) => candidateFacts(pull));
-	const head = queueHead(candidates, publicationPrefix);
 	const integration = policy.branches.integration;
 	const certification = integrationCertification(integration);
-	const certified = certification.state === 'certified';
+	const red = certification.state === 'red';
 	const shaOf = (number: number): string =>
 		opened.find((pull) => pull.number === number)?.head.sha ?? '';
 	// A red integration branch arms nothing, except the candidate proven
 	// to repair it.
-	const repair: IRepairStep =
-		certification.state === 'red'
-			? repairStep(
-					candidates,
-					publicationPrefix,
-					(candidate) =>
-						levelWith(integration, shaOf(candidate.number)),
-					(candidate) => fullRunAt(shaOf(candidate.number)),
-				)
-			: { kind: 'none' };
+	const repair: IRepairStep = red
+		? repairStep(
+				candidates,
+				publicationPrefix,
+				(candidate) => levelWith(integration, shaOf(candidate.number)),
+				(candidate) => fullRunAt(shaOf(candidate.number)),
+			)
+		: { kind: 'none' };
 	const repairing = repair.kind === 'arm' ? repair.number : undefined;
-	if (!certified) {
+	if (red) {
 		console.log(
-			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, not certified by a green full run; nothing is armed until it is, except a candidate proven to repair it.`,
+			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is red; nothing is armed except a candidate proven to repair it.`,
 		);
-		if (certification.state === 'red') reportRepair(repair, integration);
+		reportRepair(repair, integration);
 	}
+	const acceptance = red
+		? []
+		: queueAcceptance({
+				root: process.cwd(),
+				remote: 'origin',
+				integration,
+				integrationSha: certification.sha,
+				candidates: queueOrder(candidates, publicationPrefix)
+					.filter((candidate) => !candidate.conflicting)
+					.map((candidate) => ({
+						number: candidate.number,
+						headRef: candidate.headRef,
+						headSha: shaOf(candidate.number),
+					})),
+			});
+	for (const verdict of acceptance) {
+		console.log(
+			`keep-the-queue-moving: #${String(verdict.number)} ${verdict.accepted ? 'lands as it is' : 'is brought forward first'} — ${verdict.why}.`,
+		);
+	}
+	const landing = new Set(
+		acceptance.filter((verdict) => verdict.accepted).map((v) => v.number),
+	);
+	if (repairing !== undefined) landing.add(repairing);
 	for (const pull of opened) {
 		if (
 			pull.auto_merge === null ||
-			(certified && pull.number === head?.number) ||
-			pull.number === repairing ||
+			landing.has(pull.number) ||
 			!pull.head.ref.startsWith(publicationPrefix)
 		) {
 			continue;
@@ -510,37 +535,17 @@ const main = (): void => {
 		try {
 			gh(['pr', 'merge', String(pull.number), '--disable-auto']);
 			console.log(
-				pull.number === head?.number
-					? `keep-the-queue-moving: #${String(pull.number)} is the head of the queue, but the integration branch is not certified; auto-merge disarmed until it is.`
-					: `keep-the-queue-moving: #${String(pull.number)} is not the head of the queue; auto-merge disarmed until it is.`,
+				`keep-the-queue-moving: #${String(pull.number)} does not land now; auto-merge disarmed until it can.`,
 			);
 		} catch {
 			// Reported by its still-armed state on the next run.
 		}
 	}
-	const headPull = opened.find((pull) => pull.number === head?.number);
-	const headBehind =
-		headPull !== undefined && mergeState(headPull.number) === 'behind';
-	if (headPull !== undefined && headBehind) {
-		console.log(
-			`keep-the-queue-moving: #${String(headPull.number)} is the head of the queue and behind the integration branch; the owner machine brings it forward, then it is armed.`,
-		);
-	}
-	const repairPull = opened.find((pull) => pull.number === repairing);
-	const justArmed =
-		repairPull !== undefined
-			? armCandidates(
-					[repairPull],
-					publicationPrefix,
-					policy.integration.mergeMethod,
-				)
-			: headPull === undefined || headBehind || !certified
-				? []
-				: armCandidates(
-						[headPull],
-						publicationPrefix,
-						policy.integration.mergeMethod,
-					);
+	const justArmed = armCandidates(
+		opened.filter((pull) => landing.has(pull.number)),
+		publicationPrefix,
+		policy.integration.mergeMethod,
+	);
 	if (justArmed.length > 0) {
 		console.log(
 			`keep-the-queue-moving: armed auto-merge on ${String(justArmed.length)} candidate(s): ${justArmed.map((n) => `#${String(n)}`).join(', ')}.`,
