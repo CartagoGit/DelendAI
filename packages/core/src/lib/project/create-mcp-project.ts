@@ -236,11 +236,16 @@ export function planRegistrationOrder(
 export async function createMcpProject(
 	config: IDelendaiHostConfig,
 ): Promise<IDelendaiProject> {
-	const server = new McpServer({
-		name: config.metadata.name,
-		title: 'DelendAI',
-		version: config.metadata.version,
-	});
+	const server = new McpServer(
+		{
+			name: config.metadata.name,
+			title: 'DelendAI',
+			version: config.metadata.version,
+		},
+		config.instructions === undefined
+			? undefined
+			: { instructions: config.instructions },
+	);
 	config.hostServer?.set(server);
 	if (config.onClientInitialized !== undefined) {
 		const notify = config.onClientInitialized;

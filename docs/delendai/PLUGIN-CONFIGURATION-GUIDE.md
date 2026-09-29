@@ -68,9 +68,22 @@ finished work uncommitted.
 ### 3.1 Global agent policy
 
 The root `core` section contains the core's own configuration. Its
-`core.agentPolicy` block defines the work mode and engineering principles that
-the core includes in the canonical bootstrap prompt. Every host consuming
-that prompt receives the same effective policy:
+`core.agentPolicy` block defines the work mode and engineering principles the
+project's agents work under. The server states them in the instructions every
+MCP client receives when it connects, and in the `agent_bootstrap` prompt, so
+every host (Claude Code, Copilot, Cursor, …) tells its model the same thing.
+
+`autonomous` decides whether agents stop for the user:
+
+- `false` (the default): an agent asks before an action the user did not
+  request and whenever a decision is theirs, waits for the answer, and never
+  answers a question in the user's place.
+- `true`: an agent decides and carries on, and stops only for a decision that
+  is the user's alone or before a destructive action.
+
+delendai tells the agents; it does not control the host. A host that answers
+its own questions (for example an editor set to approve tools automatically)
+has to be configured in that host.
 
 ```jsonc
 {
@@ -88,10 +101,10 @@ that prompt receives the same effective policy:
 }
 ```
 
-If `core` or `core.agentPolicy` is omitted, the core uses those same values by
-default. Each configured field only replaces its default: for example,
-`{"core":{"agentPolicy":{"autonomous":false}}}` preserves the four
-principles and asks the agent not to run autonomous work without confirmation.
+If `core` or `core.agentPolicy` is omitted, the core asks (`autonomous:
+false`) and uses the four principles above. Each configured field only
+replaces its default: for example, `{"core":{"agentPolicy":{"autonomous":true}}}`
+keeps the four principles and lets agents decide.
 Projects can define their own principles under `principles`; they must
 describe project rules, not depend on a specific plugin.
 
