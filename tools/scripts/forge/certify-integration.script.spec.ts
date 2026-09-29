@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	MAX_CANCELLED_FULL_RUNS,
 	certificationOf,
 	needsCertification,
 	type ICertificationRun,
@@ -54,6 +55,43 @@ describe('needsCertification', () => {
 		expect(needsCertification([run({ head_sha: 'other' })], SHA)).toBe(
 			true,
 		);
+	});
+});
+
+describe('a run whose job timed out (x00641 S2)', () => {
+	// What the forge reported for a job over its `timeout-minutes`
+	// (run 36590926775): the job and the run both end `cancelled`.
+	const timedOut = (): ICertificationRun =>
+		run({ event: 'workflow_dispatch', conclusion: 'cancelled' });
+
+	it('is run again, not read as red', () => {
+		expect(needsCertification([timedOut()], SHA)).toBe(true);
+		expect(certificationOf([timedOut()], SHA)).toBe('uncertified');
+	});
+
+	it('stops being started once the commit was cancelled the bounded number of times', () => {
+		const runs = Array.from({ length: MAX_CANCELLED_FULL_RUNS }, timedOut);
+		expect(needsCertification(runs.slice(1), SHA)).toBe(true);
+		expect(needsCertification(runs, SHA)).toBe(false);
+		expect(certificationOf(runs, SHA)).toBe('red');
+	});
+
+	it('lets a run that finished decide, whatever was cancelled before it', () => {
+		const cancelled = Array.from(
+			{ length: MAX_CANCELLED_FULL_RUNS },
+			timedOut,
+		);
+		expect(certificationOf([...cancelled, run({})], SHA)).toBe('certified');
+		expect(
+			certificationOf(
+				[
+					...cancelled,
+					run({ status: 'in_progress', conclusion: null }),
+				],
+				SHA,
+			),
+		).toBe('pending');
+		expect(needsCertification([timedOut(), run({})], SHA)).toBe(false);
 	});
 });
 
