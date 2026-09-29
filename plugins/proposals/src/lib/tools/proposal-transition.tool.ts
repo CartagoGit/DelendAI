@@ -1090,12 +1090,13 @@ export const runProposalTransition = async (
 	// declared files exist, and each slice names the commit that delivered
 	// it, recorded now from the branch being handed over (x00745).
 	if (finalTo === 'review' && from !== 'done' && args.force !== true) {
+		const branches = await projectBranches(options.workspaceRoot);
 		const entry = await prepareReviewEntry({
 			markdown: raw,
 			workspaceRoot: options.workspaceRoot,
 			run: options.gitRunner ?? createGitRunner(options.workspaceRoot),
-			integration: (await projectBranches(options.workspaceRoot))
-				.integration,
+			integration: branches.integration,
+			refShape: branches,
 		});
 		if (!entry.ok) {
 			return buildCodeError(entry.code, entry.reason, entry.nextAction);

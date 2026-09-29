@@ -11,6 +11,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { prepareReviewEntry } from '@delendai/proposals/lib/services/review-entry.service';
 import { createGitRunner } from '@delendai/proposals/lib/shared/git-runner';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+
+const POLICY = resolveDevelopmentPolicy({
+	development: {
+		profile: 'shared-checkout-pr',
+		branches: { integration: 'develop' },
+	},
+});
 
 const roots: string[] = [];
 afterEach(() => {
@@ -81,6 +89,7 @@ const entry = (root: string, markdown: string) =>
 		workspaceRoot: root,
 		run: createGitRunner(root),
 		integration: 'develop',
+		refShape: POLICY.branches,
 	});
 
 describe('handing a proposal to review', () => {
