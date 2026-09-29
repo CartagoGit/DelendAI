@@ -2,7 +2,7 @@
 id: q00023
 title: "Snapshot Git by SHA — reconcile --sha <commit> is deterministic and atomic"
 kind: plan
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -14,6 +14,9 @@ audit-source:
 related:
   - q00022
   - q00024
+last-transition-id: 1bd969fe-207f-4fd4-afb3-6c33eae26eae
+last-correlation-id: 1bd969fe-207f-4fd4-afb3-6c33eae26eae
+last-transition-from: in-progress
 ---
 
 # q00023 — Snapshot Git by SHA
@@ -109,10 +112,11 @@ Proven: two runs at one commit give one logical digest after the
 worktree gained a proposal nobody committed, while a worktree run sees
 it; the files are the committed bytes (multi-byte text included) and
 nothing outside the proposals tree is read.
+- shipped-in: `4385f41e6bd9`
 
 ### S2 — Drift detection: report when the ref moved mid-run
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts`
@@ -132,6 +136,7 @@ the run read: `ref-moved` (a branch that moved) or `ref-gone` (deleted,
 reported, not acted on: the run is complete for the commit it read, and
 running again is the caller's decision. The only external call is one
 `git rev-parse`.
+- shipped-in: `4385f41e6bd9`
 
 ## acceptance
 
