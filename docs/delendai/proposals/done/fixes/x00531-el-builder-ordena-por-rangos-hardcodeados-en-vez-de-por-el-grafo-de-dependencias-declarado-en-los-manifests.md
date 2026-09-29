@@ -2,13 +2,15 @@
 id: x00531
 title: "El builder ordena por rangos hardcodeados en vez de por el grafo de dependencias declarado en los manifests"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
-last-transition-id: 60f73d07-4762-4e43-9a3f-371510b20d7b
-last-correlation-id: 60f73d07-4762-4e43-9a3f-371510b20d7b
-last-transition-from: in-progress
+last-transition-id: d5dd89d4-f3a0-4912-b714-fc1c3e3d7e65
+last-correlation-id: d5dd89d4-f3a0-4912-b714-fc1c3e3d7e65
+last-transition-from: review
+shipped-in:
+  - "4408dc2b876c200663dfbe41993b3d4ce410147c"
 ---
 
 # x00531 — El builder ordena por rangos hardcodeados en vez de por el grafo de dependencias declarado en los manifests
@@ -31,7 +33,7 @@ Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank 
 - global_gate: type
 
 ### S1 — grafo topologico derivado de los package.json, con deteccion de ciclos
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/compile/build-graph.ts`, `tools/scripts/compile/build-graph.spec.ts`, `tools/scripts/compile/build.script.ts`
 - **Gate**: type
 - acceptance:
@@ -39,8 +41,14 @@ Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank 
   - "buildRank desaparece; no queda ningun nombre de paquete hardcodeado en la logica de orden."
   - "Un ciclo de dependencias falla de forma explicita nombrando el ciclo, en vez de producir un orden arbitrario."
   - "El orden resultante situa contracts y state antes que core, y los plugins de los que depende cli antes que cli."
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — build-graph.ts derives the build order from manifest dependencies (deps, peerDependencies, optionalDependencies) and runs a deterministic topological sort with alphabetical tiebreak. buildRank() is fully removed from build.script.ts. The cycle detector names the cycle through BuildGraphCycleError. Verified end-to-end: computed order over real repo manifests places contracts/state before core, state before context-compiler/state-telemetry, and the plugins of cli depend on before cli (6/6 ordering checks). Spec covers synthetic + real manifests + cycle policy: 15/15 tests pass.
+- review-attribution: unrecorded — nothing in Git names who delivered 4408dc2b876c200663dfbe41993b3d4ce410147c: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
+
 ### S2 — build:clean y gate de CI sobre arbol vacio
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `package.json`, `tools/scripts/compile/build-clean.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: e2e
@@ -49,6 +57,12 @@ Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank 
   - "Existe un job de CI que ejecuta build:clean sobre un checkout limpio y falla si cualquier paquete no compila."
   - "packages/state-telemetry entra en el grafo y produce dist."
   - "El job es obligatorio en la lista de required checks agregada de ci.yml."
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — build:clean script removes every dist/ under packages/* and plugins/*, then calls the build. CI job 'Build from an empty output tree' executes it from a clean checkout. packages/state-telemetry joins the graph and produces dist (index.js + index.d.ts + dist/lib/). delendai-validate job has '- build-clean' in its `needs:` list, so the gate is a required check. E2E: 68 packages built clean in this worktree; specs: 19/19 pass.
+- review-attribution: unrecorded — nothing in Git names who delivered 4408dc2b876c200663dfbe41993b3d4ce410147c: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
+
 ## acceptance
 
 - El orden de compilacion se deriva leyendo dependencies, peerDependencies y optionalDependencies de cada workspace y aplicando un sort topologico determinista (desempate alfabetico dentro del mismo nivel).
