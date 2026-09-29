@@ -248,7 +248,7 @@ describe('reachableZones', () => {
 				buildGraph: () => graph as never,
 				computeAffected: () =>
 					result({ rootFiles: ['package.json'] }) as never,
-				diff: () => ['package.json'],
+				diff: () => [{ path: 'package.json', listing: false }],
 			},
 		);
 
@@ -292,7 +292,7 @@ describe('reachableZones', () => {
 							'@delendai/proposals',
 						],
 					}) as never,
-				diff: () => ['tools/a.ts'],
+				diff: () => [{ path: 'tools/a.ts', listing: false }],
 			},
 		);
 
@@ -311,11 +311,43 @@ describe('reachableZones', () => {
 						]),
 						downstream: ['@delendai/proposals'],
 					}) as never,
-				diff: () => ['packages/core/a.ts'],
+				diff: () => [{ path: 'packages/core/a.ts', listing: false }],
 			},
 		);
 
 		expect([...(reach ?? [])].sort()).toEqual(['core', 'proposals']);
+	});
+
+	it('sends an edited root file to the zones that read it, and a file under a zone\u2019s own paths to that zone', () => {
+		const reach = reachableZones(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => graph as never,
+				computeAffected: () =>
+					result({
+						rootFiles: [
+							'docs/delendai/guide.md',
+							'tests/e2e/a.spec.ts',
+						],
+					}) as never,
+				diff: () => [
+					{ path: 'docs/delendai/guide.md', listing: false },
+					{ path: 'tests/e2e/a.spec.ts', listing: false },
+				],
+				readMap: () => ({
+					zones: {
+						core: {
+							read: ['docs/delendai/guide.md'],
+							listed: ['docs'],
+						},
+						plugins: { read: [], listed: ['docs/delendai'] },
+						tools: { read: [], listed: [] },
+					},
+				}),
+			},
+		);
+
+		expect([...(reach ?? [])].sort()).toEqual(['core', 'tools']);
 	});
 });
 

@@ -14,20 +14,20 @@ const KINDS: Record<string, 'file' | 'dir'> = {
 const kindOf = (path: string) => KINDS[path];
 
 describe('buildZoneReadMap', () => {
-	it('keeps the directory a file was read in, apart from listed ones', () => {
+	it('keeps each file read, apart from the directories listed', () => {
 		const map = buildZoneReadMap(
 			{ core: ['docs/b.md', 'docs', 'docs/a.md', 'guide/c.md'] },
 			(path) => (path === 'guide/c.md' ? 'file' : kindOf(path)),
 		);
 		expect(map.zones.core).toEqual({
-			readIn: ['docs', 'guide'],
+			read: ['docs/a.md', 'docs/b.md', 'guide/c.md'],
 			listed: ['docs'],
 		});
 	});
 
 	it('drops paths the resolver only probed, which never existed', () => {
 		const map = buildZoneReadMap({ core: ['zod.ts', 'docs/a.md'] }, kindOf);
-		expect(map.zones.core?.readIn).toEqual(['docs']);
+		expect(map.zones.core?.read).toEqual(['docs/a.md']);
 	});
 
 	it('orders the zones so the file does not churn between runs', () => {

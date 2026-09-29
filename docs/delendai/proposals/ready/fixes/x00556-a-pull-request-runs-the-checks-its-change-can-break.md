@@ -118,6 +118,40 @@ answerable, reviewable and testable.
   still runs every zone, which is where such a miss is caught, as it is
   for the module-graph filter today.
 
+### S5 — An edited file reaches only the zones that read it
+
+- **Status**: done — see the measurements below.
+- **Gate**: `npx vitest run tools/scripts/ci/zone-reads.spec.ts tools/scripts/ci/zone-reads.script.spec.ts tools/scripts/ci/test-zones.script.spec.ts`
+- **Files**:
+  - `tools/scripts/ci/zone-reads.ts`
+  - `tools/scripts/ci/zone-reads.script.ts`
+  - `tools/scripts/ci/zone-reads.generated.json`
+  - `tools/scripts/ci/test-zones.script.ts`
+  - `tools/scripts/ci/test-zones.interface.ts`
+  - `tools/scripts/ci/affected.script.ts`
+  - `tools/scripts/ci/zone-reads.spec.ts`
+  - `tools/scripts/ci/zone-reads.script.spec.ts`
+  - `tools/scripts/ci/test-zones.script.spec.ts`
+  - `tools/tests/ci/affected.spec.ts`
+- S4 sent a changed root file to every zone that had listed ANY directory
+  above it. Listing a directory depends on which files it holds, not on
+  what they say, and `core`, `plugins` and `tools` list `docs/` and
+  `tools/`: #648 (two lint scripts, their specs and a proposal moved to
+  review) ran all eleven shards on 2026-09-29.
+- The map now records the root FILES each zone read, not their
+  directories. An edited file reaches the zones that read it; a file added
+  or deleted also reaches the zones that listed its own directory; a file
+  under a zone's own paths (`tests/e2e`, `scripts/`, …) reaches that zone.
+  The diff is `base...head` with `--name-status --no-renames`, so a rename
+  is a deletion and an addition, and a candidate behind its base does not
+  count the base's later changes as its own.
+- The planner prints, per zone, whether it runs and why (S3's report, for
+  the test matrix).
+- Re-recorded on 2026-09-29: apps reads 2 root files, core 11, packages 5,
+  plugins 19, proposals 1,144, tools 51. #648 replayed against it runs
+  proposals, plugins, apps and tools, and skips core and packages; a
+  proposal edit that moves nothing runs proposals alone.
+
 ## acceptance
 
 - A change that touches only documentation runs strictly fewer jobs than
