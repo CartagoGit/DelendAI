@@ -363,22 +363,22 @@ export async function gcZombies(
 								// is gone (purge happened and rewrite
 								// failed). Treat as released.
 								releasedLock = true;
-								continue;
+							} else {
+								const parsedAfter = JSON.parse(rawAfter) as {
+									in_flight?: unknown;
+								};
+								const inflightAfter = Array.isArray(
+									parsedAfter?.in_flight,
+								)
+									? (parsedAfter.in_flight as unknown[])
+									: [];
+								const stillInFlight = inflightAfter.some(
+									(entry) =>
+										(entry as { task_id?: string })
+											?.task_id === orphan.taskId,
+								);
+								releasedLock = !stillInFlight;
 							}
-							const parsedAfter = JSON.parse(rawAfter) as {
-								in_flight?: unknown;
-							};
-							const inflightAfter = Array.isArray(
-								parsedAfter?.in_flight,
-							)
-								? (parsedAfter.in_flight as unknown[])
-								: [];
-							const stillInFlight = inflightAfter.some(
-								(entry) =>
-									(entry as { task_id?: string })?.task_id ===
-									orphan.taskId,
-							);
-							releasedLock = !stillInFlight;
 						} catch {
 							// Lock file unreadable → assume the entry
 							// is gone (purge happened and rewrite

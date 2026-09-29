@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { lstat, readFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { open } from 'node:fs/promises';
 import { basename, isAbsolute, join } from 'node:path';
 
 import {
@@ -54,26 +55,28 @@ const configFileOf = (input: IConfigurationDocumentInput): string => {
 };
 
 const readDocument = async (configFile: string): Promise<IReadDocument> => {
+	// One open that refuses a symbolic link, and the text read from it: a
+	// check (lstat) and a later read could see two different files.
+	let raw: string;
 	try {
-		const info = await lstat(configFile);
-		if (info.isSymbolicLink()) {
+		const handle = await open(
+			configFile,
+			constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0),
+		);
+		try {
+			raw = await handle.readFile('utf8');
+		} finally {
+			await handle.close();
+		}
+	} catch (error) {
+		const code = (error as NodeJS.ErrnoException).code;
+		if (code === 'ENOENT') {
+			return { raw: '', exists: false, value: {} };
+		}
+		if (code === 'ELOOP') {
 			throw new Error(
 				`Config file "${configFile}" must not be a symbolic link`,
 			);
-		}
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-			return { raw: '', exists: false, value: {} };
-		}
-		throw error;
-	}
-
-	let raw: string;
-	try {
-		raw = await readFile(configFile, 'utf8');
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-			return { raw: '', exists: false, value: {} };
 		}
 		throw new Error(`Unable to read config file "${configFile}"`, {
 			cause: error,
@@ -244,6 +247,16 @@ const applyEdit = (
 					`path does not address an object key: ${pathLabel(edit.path)}`,
 				);
 			}
+			// Checked here, at the write, as well as by the path validation.
+			if (
+				segment === '__proto__' ||
+				segment === 'constructor' ||
+				segment === 'prototype'
+			) {
+				throw new Error(
+					`path names a forbidden key: ${pathLabel(edit.path)}`,
+				);
+			}
 			if (cursor[segment] === undefined && edit.action === 'delete')
 				return;
 			if (cursor[segment] === undefined) {
@@ -279,6 +292,13 @@ const applyEdit = (
 		throw new Error(
 			`path does not address an object key: ${pathLabel(edit.path)}`,
 		);
+	}
+	if (
+		leaf === '__proto__' ||
+		leaf === 'constructor' ||
+		leaf === 'prototype'
+	) {
+		throw new Error(`path names a forbidden key: ${pathLabel(edit.path)}`);
 	}
 	if (edit.action === 'delete') delete cursor[leaf];
 	else cursor[leaf] = edit.value;

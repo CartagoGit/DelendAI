@@ -180,6 +180,25 @@ describe('TerminalProbeService.detectShell', () => {
 		});
 	});
 
+	it('reports an unrecognised $SHELL but only ever runs a known shell', async () => {
+		await withShell('/tmp/not-a-shell', async () => {
+			const driver = new FakeDriver(() => ok('__PROBE__'));
+			const service = new TerminalProbeService(driver);
+			const descriptor = await service.detectShell();
+			expect(descriptor.path).toBe('/tmp/not-a-shell');
+			expect(
+				driver.calls.some((call) =>
+					call.startsWith('/tmp/not-a-shell'),
+				),
+			).toBe(false);
+			expect(driver.calls).toContain(
+				argvOf('/bin/bash', '-i', '-c', 'echo __PROBE__').join(
+					'\u0001',
+				),
+			);
+		});
+	});
+
 	it('marks every signal inferred when the driver times out', async () => {
 		await withShell('/bin/bash', async () => {
 			const timeoutDriver = new FakeDriver(() => timedOut());

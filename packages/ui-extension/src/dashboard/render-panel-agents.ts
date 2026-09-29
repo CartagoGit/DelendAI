@@ -36,7 +36,7 @@ export const renderPanelAgents = (
 				? `<code>${escapeHtml(a.currentSlice)}</code>`
 				: '<span class="delendai-fg-muted">—</span>';
 			const heartbeat = a.lastHeartbeat
-				? formatRelativeTime(a.lastHeartbeat)
+				? escapeHtml(formatRelativeTime(a.lastHeartbeat))
 				: '<span class="delendai-fg-muted">—</span>';
 			return `<tr>
 				<td><strong>${escapeHtml(a.name)}</strong></td>
