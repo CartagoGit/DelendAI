@@ -178,7 +178,7 @@ export const publishWorkUnit = (
 
 	// The proof. Without it, "deleted the work ref" rests on a push whose
 	// success was reported by the same command that did it.
-	const remoteTip = git(root, ['ls-remote', remote, publicationRef]);
+	const remoteTip = git(root, ['ls-remote', '--', remote, publicationRef]);
 	const carried = remoteTip.ok && remoteTip.out.startsWith(tip.out);
 	if (!carried) {
 		step(

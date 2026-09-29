@@ -470,11 +470,16 @@ export const writeAffectedArtifacts = (
 		rootFiles: result.rootFiles,
 		directByWorkspace: Object.fromEntries(result.directByWorkspace),
 	};
-	writeFileSync(options.outputPath, `${JSON.stringify(payload, null, 2)}\n`);
+	// Private: callers point these at the OS temp dir as often as at the repo.
+	writeFileSync(options.outputPath, `${JSON.stringify(payload, null, 2)}\n`, {
+		mode: 0o600,
+	});
 
 	const setDir = dirname(options.setPath);
 	if (!existsSync(setDir)) mkdirSync(setDir, { recursive: true });
-	writeFileSync(options.setPath, `${result.affected.join('\n')}\n`);
+	writeFileSync(options.setPath, `${result.affected.join('\n')}\n`, {
+		mode: 0o600,
+	});
 
 	if (options.vitestSetPath !== undefined) {
 		const vitestSetDir = dirname(options.vitestSetPath);
@@ -484,6 +489,7 @@ export const writeAffectedArtifacts = (
 		writeFileSync(
 			options.vitestSetPath,
 			`${result.vitestProjects.join('\n')}\n`,
+			{ mode: 0o600 },
 		);
 	}
 };

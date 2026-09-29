@@ -213,7 +213,7 @@ describe('file-conventions.ts (pure classifier)', async () => {
 
 	it('accepts a custom rule chain (Dependency Inversion)', async () => {
 		const customRules: readonly IRoleRule[] = [
-			{ name: 'tool', match: (p) => p.endsWith('.special.ts') },
+			{ name: 'tool', matches: (p) => p.endsWith('.special.ts') },
 		];
 		expect(classifyPath('anywhere/foo.special.ts', customRules)).toBe(
 			'tool',
@@ -225,11 +225,11 @@ describe('file-conventions.ts (pure classifier)', async () => {
 		const buggyRules: readonly IRoleRule[] = [
 			{
 				name: 'tool',
-				match: () => {
+				matches: () => {
 					throw new Error('boom');
 				},
 			},
-			{ name: 'service', match: (p) => p.endsWith('.service.ts') },
+			{ name: 'service', matches: (p) => p.endsWith('.service.ts') },
 		];
 		expect(classifyPath('foo.service.ts', buggyRules)).toBe('service');
 	});

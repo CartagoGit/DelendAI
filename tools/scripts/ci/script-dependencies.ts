@@ -62,7 +62,10 @@ export const aliasTarget = (
 			best = { prefix, target };
 	}
 	if (best === undefined) return undefined;
-	return clean(best.target.replace('*', specifier.slice(best.prefix.length)));
+	// Every `*` of the target stands for the matched rest.
+	return clean(
+		best.target.replaceAll('*', specifier.slice(best.prefix.length)),
+	);
 };
 
 /** Specifiers the runtime ships: never a reason to install. */

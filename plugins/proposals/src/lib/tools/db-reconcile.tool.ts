@@ -53,13 +53,7 @@
 // the bytes to the reconciler, which owns every SQLite write. There is
 // no ctx.effects adapter for SQLite promotion and inventing one here
 // would only add a layer around `@delendai/proposals-sqlite`.
-import {
-	existsSync,
-	readFileSync,
-	readdirSync,
-	rmSync,
-	statSync,
-} from 'node:fs';
+import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { isAbsolute, join, relative } from 'node:path';
 
 import z from 'zod';
@@ -381,18 +375,29 @@ export const preflightProposalFiles = (
  */
 const gitDirOf = (workspaceRoot: string): string => {
 	const dotGit = join(workspaceRoot, '.git');
+	// Read once: a directory (EISDIR) or nothing at all is the git dir
+	// itself; a file is a worktree's pointer to it.
+	let pointer: string;
 	try {
-		if (statSync(dotGit).isDirectory()) return dotGit;
+		pointer = readFileSync(dotGit, 'utf8').trim();
 	} catch {
 		return dotGit;
 	}
-	const pointer = readFileSync(dotGit, 'utf8').trim();
 	const target = /^gitdir:\s*(.+)$/u.exec(pointer)?.[1];
 	return target === undefined
 		? dotGit
 		: isAbsolute(target)
 			? target
 			: join(workspaceRoot, target);
+};
+
+/** A loose ref's sha, read once; `undefined` when it is packed or absent. */
+const readLooseRef = (path: string): string | undefined => {
+	try {
+		return readFileSync(path, 'utf8').trim();
+	} catch {
+		return undefined;
+	}
 };
 
 /** The shared git directory: `commondir` when there is one, else itself. */
@@ -422,10 +427,8 @@ export const resolveHeadCommit = (workspaceRoot: string): string => {
 		const head = readFileSync(join(gitDir, 'HEAD'), 'utf8').trim();
 		if (!head.startsWith('ref:')) return head;
 		const ref = head.slice(4).trim();
-		const looseRef = join(commonDir, ref);
-		if (existsSync(looseRef)) {
-			return readFileSync(looseRef, 'utf8').trim();
-		}
+		const loose = readLooseRef(join(commonDir, ref));
+		if (loose !== undefined) return loose;
 		const packed = readFileSync(join(commonDir, 'packed-refs'), 'utf8');
 		for (const line of packed.split('\n')) {
 			const [sha, name] = line.trim().split(' ');

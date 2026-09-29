@@ -61,7 +61,8 @@ export type {
 
 /** `Claude Opus 5.5 <noreply@…>` → `claude-opus-5-5`. */
 export const agentFromTrailer = (trailer: string): string | undefined => {
-	const name = trailer.replace(/<[^>]*>/u, '').trim();
+	// The name is what precedes the address.
+	const name = (trailer.split('<')[0] ?? '').trim();
 	const slug = name
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/gu, '-')

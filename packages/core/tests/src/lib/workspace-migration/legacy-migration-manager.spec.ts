@@ -28,7 +28,14 @@
  * depends on and the only way to verify acceptance #4 by hash.
  */
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+	mkdir,
+	mkdtemp,
+	open,
+	readFile,
+	rm,
+	writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 
@@ -59,7 +66,7 @@ import type { IMigrationJournal } from '@delendai/core/lib/contracts/interfaces/
 const hashWorkspace = async (root: string): Promise<string> => {
 	const files: { readonly path: string; readonly contents: string }[] = [];
 	const walk = async (dir: string): Promise<void> => {
-		const { readdir, stat } = await import('node:fs/promises');
+		const { readdir } = await import('node:fs/promises');
 		for (const entry of await readdir(dir, { withFileTypes: true })) {
 			const child = join(dir, entry.name);
 			if (entry.isDirectory()) {
@@ -69,12 +76,17 @@ const hashWorkspace = async (root: string): Promise<string> => {
 				continue;
 			}
 			if (entry.isFile()) {
-				const s = await stat(child);
-				if (!s.isFile()) continue;
-				files.push({
-					path: relative(root, child),
-					contents: await readFile(child, 'utf8'),
-				});
+				// One handle for the check and the read.
+				const handle = await open(child, 'r');
+				try {
+					if (!(await handle.stat()).isFile()) continue;
+					files.push({
+						path: relative(root, child),
+						contents: await handle.readFile('utf8'),
+					});
+				} finally {
+					await handle.close();
+				}
 			}
 		}
 	};

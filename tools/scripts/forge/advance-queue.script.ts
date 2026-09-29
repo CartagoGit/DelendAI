@@ -21,7 +21,8 @@
  * aside for as long.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { readTextIfPresent } from '../lib/read-text-if-present';
 import { dirname, join } from 'node:path';
 
 import { declaredBranches } from '../lib/declared-branches';
@@ -66,9 +67,7 @@ const main = (): number => {
 		)[0] ?? '';
 	if (tip === '') return 0;
 	const recordPath = join(root, ADVANCED_FOR_PATH);
-	const advancedFor = existsSync(recordPath)
-		? readFileSync(recordPath, 'utf8').trim()
-		: undefined;
+	const advancedFor = readTextIfPresent(recordPath)?.trim();
 	const runs = JSON.parse(
 		run('gh', [
 			'api',

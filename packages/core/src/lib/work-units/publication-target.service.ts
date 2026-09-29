@@ -95,9 +95,11 @@ const remotePublications = (
 	const prefix = policy.branches.publicationRefPrefix
 		.replace(/^refs\//u, '')
 		.replace(/^heads\//u, '');
+	// `--` first: a remote named like an option is never read as one.
 	const listed = git(root, [
 		'ls-remote',
 		'--heads',
+		'--',
 		remote,
 		`refs/heads/${prefix}*`,
 	]);

@@ -110,8 +110,16 @@ export const writeFileAtomic = async (
 	const dir = dirname(absolutePath);
 	await mkdir(dir, { recursive: true });
 	const tmp = tmpPathFor(absolutePath);
+	// The mode the file ends with: the one it had, or a new file's.
+	const finalMode = await stat(absolutePath).then(
+		(info) => info.mode & 0o777,
+		() => 0o666 & ~process.umask(),
+	);
 	try {
-		const handle = await open(tmp, 'w');
+		// Created exclusively and private: a temporary in a shared directory
+		// (the OS temp dir) can be neither pre-planted as a symlink nor read
+		// while it is being written. It takes the final mode before the rename.
+		const handle = await open(tmp, 'wx', 0o600);
 		try {
 			if (typeof content === 'string') {
 				await handle.writeFile(content, 'utf8');
@@ -119,6 +127,7 @@ export const writeFileAtomic = async (
 				await handle.writeFile(content);
 			}
 			await handle.sync(); // fsync data before it becomes visible
+			await handle.chmod(finalMode);
 		} finally {
 			await handle.close();
 		}

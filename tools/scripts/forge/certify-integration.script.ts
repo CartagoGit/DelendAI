@@ -17,7 +17,8 @@
  *   bun tools/scripts/forge/certify-integration.script.ts [--apply]
  */
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { readTextIfPresent } from '../lib/read-text-if-present';
 import { dirname, join } from 'node:path';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
@@ -101,7 +102,7 @@ const recordCertification = (
 	state: IIntegrationCertification,
 ): void => {
 	const path = join(root, INTEGRATION_CERTIFICATION_LOG_RELATIVE_PATH);
-	const existing = existsSync(path) ? readFileSync(path, 'utf8') : '';
+	const existing = readTextIfPresent(path) ?? '';
 	const line = certificationRecord(existing, sha, state, new Date());
 	if (line === undefined) return;
 	mkdirSync(dirname(path), { recursive: true });

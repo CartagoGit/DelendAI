@@ -15,6 +15,13 @@ import type {
 	IYamlValue,
 } from './contracts/interfaces/frontmatter.interface';
 
+/**
+ * A frontmatter line: a key, a colon, and the rest of the line, which every
+ * caller trims. The rest is taken whole: `\s*(.*?)$` after the colon let
+ * the two quantifiers trade whitespace, polynomial on a long line.
+ */
+const KEY_VALUE_LINE = /^([A-Za-z_][A-Za-z0-9_-]*)[ \t]*:(.*)$/;
+
 export type { IYamlValue } from './contracts/interfaces/frontmatter.interface';
 
 // ---------------------------------------------------------------------------
@@ -57,7 +64,7 @@ const parseBlockObject = (
 	const obj: Record<string, IYamlValue> = {};
 	for (const line of childLines) {
 		if (line.trim() === '') continue;
-		const m = line.trim().match(/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*?)$/);
+		const m = line.trim().match(KEY_VALUE_LINE);
 		if (!m) continue;
 		obj[m[1] ?? ''] = parseScalar((m[2] ?? '').trim());
 	}
@@ -110,9 +117,7 @@ const parseBlockArray = (childLines: readonly string[]): IYamlValue[] => {
 			arr.push(parseBlockObject(objLines));
 		} else if (itemContent.includes(':')) {
 			// Possible key: value item, possibly with sibling keys.
-			const m = itemContent.match(
-				/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*?)$/,
-			);
+			const m = itemContent.match(KEY_VALUE_LINE);
 			if (m) {
 				const obj: Record<string, IYamlValue> = {};
 				obj[m[1] ?? ''] = parseScalar((m[2] ?? '').trim());
@@ -128,9 +133,7 @@ const parseBlockArray = (childLines: readonly string[]): IYamlValue[] => {
 					// A new array item at the same indent ends this item.
 					if (sib.trim().startsWith('- ')) break;
 					if (sibIndent <= itemIndent) break;
-					const sm = sib
-						.trim()
-						.match(/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*?)$/);
+					const sm = sib.trim().match(KEY_VALUE_LINE);
 					if (sm) {
 						obj[sm[1] ?? ''] = parseScalar((sm[2] ?? '').trim());
 					}
@@ -217,7 +220,7 @@ export const parseLooseFrontmatter = (
 			continue;
 		}
 
-		const m = line.match(/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*)?$/);
+		const m = line.match(KEY_VALUE_LINE);
 		if (!m) {
 			i++;
 			continue;
