@@ -141,9 +141,6 @@ export type {
 	DiagnosticResult,
 	ResourceResult,
 } from '../lib/contracts/envelopes.contract';
-// The working mode an agent is told, for hosts that build the prompt
-// themselves (the client): pure, and the words the server uses.
-export { agentPolicyLines } from '../lib/prompts/agent-policy-instructions.helper';
 export type { IDelendaiAgentPolicyConfig } from '../lib/contracts/interfaces/agent-policy.interface';
 export {
 	isOperationSuccess,

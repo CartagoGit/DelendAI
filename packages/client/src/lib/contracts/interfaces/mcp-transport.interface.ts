@@ -34,6 +34,8 @@ export interface IMcpTransport {
 		readonly arguments?: object;
 	}): Promise<IMcpToolCallResult>;
 	listTools?(): Promise<{ readonly tools: readonly IMcpToolDescriptor[] }>;
+	/** What the server told its agents when the client connected. */
+	getInstructions?(): string | undefined;
 	close?(): Promise<void>;
 }
 

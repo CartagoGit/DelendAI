@@ -39,8 +39,10 @@ project opted in.
   connects and gives them to its model. The server now states the working
   mode and principles there, so the setting reaches any host.
 - **One source of the words.** `agentPolicyLines` produces the text; the
-  server instructions, the prompt and the client use it. The default and
-  its type live in contracts, where the client can import them.
+  server instructions and the prompt use it. The client may import no value
+  from core, so its bootstrap prompt carries the instructions the server
+  sent when it connected (`McpStdioClient.instructions()`), and states no
+  policy of its own when there are none.
 - **Ask by default.** `autonomous` defaults to `false`: an agent asks
   before an action the user did not request, waits for the answer, and
   never answers in the user's place. A project that wants autonomy sets
@@ -79,6 +81,9 @@ project opted in.
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/src/contracts/index.ts`
   - `packages/client/src/lib/services/agent-catalog-service.ts`
+  - `packages/client/src/lib/transport/mcp-stdio-client.ts`
+  - `packages/client/src/lib/contracts/interfaces/mcp-transport.interface.ts`
+  - `packages/client/tests/services/agent-catalog-prompt.spec.ts`
   - `packages/core/tests/src/lib/prompts/agent-policy-instructions.helper.spec.ts`
   - `packages/core/tests/src/lib/prompts/agent-bootstrap.prompt.spec.ts`
   - `docs/delendai/PLUGIN-CONFIGURATION-GUIDE.md`
@@ -94,4 +99,5 @@ None.
   policy text in its instructions.
 - Without `core.agentPolicy`, the text says to ask the user; with
   `autonomous: true`, to decide and carry on.
-- The prompt and the client state the same words.
+- The prompt states the same words, and the client's prompt carries the
+  server's instructions.

@@ -5,7 +5,6 @@ import type {
 	IToolSummary,
 	IDelendaiToolOutputs,
 } from '@delendai/core/contracts';
-import { agentPolicyLines } from '@delendai/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { formatToolName } from './_namespace';
@@ -162,7 +161,10 @@ const filterProposals = (
 	);
 };
 
-const promptTextOf = async (snapshot: ICatalogSnapshot): Promise<string> => {
+const promptTextOf = async (
+	snapshot: ICatalogSnapshot,
+	instructions: string | undefined,
+): Promise<string> => {
 	const actionable =
 		snapshot.proposals.length === 0
 			? 'none'
@@ -173,9 +175,11 @@ const promptTextOf = async (snapshot: ICatalogSnapshot): Promise<string> => {
 				content: {
 					type: 'text',
 					text: [
-						// The client cannot read the project's config: it states
-						// the default the server applies without one.
-						...agentPolicyLines(undefined),
+						// How to work is the server's to say: it reads the
+						// project's config, and the client does not.
+						...(instructions === undefined || instructions === ''
+							? []
+							: [instructions]),
 						'1. Call `delendai_overview` first to map the server and confirm the loaded plugin surface.',
 						'2. Call `delendai_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
 						'3. Narrow with `section` or `query` before doing work, then pick the matching proposal or skill instead of rereading docs broadly.',
@@ -233,7 +237,10 @@ export class AgentCatalogService {
 	}
 
 	async getBootstrapPrompt(): Promise<string> {
-		return promptTextOf(await this.getSnapshot());
+		return promptTextOf(
+			await this.getSnapshot(),
+			this.client.instructions(),
+		);
 	}
 
 	async getSkillBody(id: string): Promise<string> {
