@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { runArgv, runCommand } from '../../../../src/lib/shared/run-command';
 
@@ -78,12 +78,16 @@ describeUnixOnly('runCommand abort handling (x00239)', () => {
 			"const { spawn } = require('node:child_process');",
 			"const { writeFileSync } = require('node:fs');",
 			"const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });",
-			`writeFileSync(${JSON.stringify(pidFile)}, String(child.pid));`,
+			'writeFileSync(process.env.RUN_COMMAND_SPEC_PID_FILE, String(child.pid));',
 			'process.stdout.write(String(child.pid));',
 			'setInterval(() => {}, 1000);',
 		].join(' ');
+		// The interpreter and the pid file reach the shell through the
+		// environment, so the command line itself is a constant.
+		vi.stubEnv('RUN_COMMAND_SPEC_RUNTIME', process.execPath);
+		vi.stubEnv('RUN_COMMAND_SPEC_PID_FILE', pidFile);
 		const pending = runCommand(
-			`${process.execPath} -e ${JSON.stringify(leaderScript)}`,
+			`"$RUN_COMMAND_SPEC_RUNTIME" -e ${JSON.stringify(leaderScript)}`,
 			{
 				cwd: process.cwd(),
 				signal: controller.signal,
@@ -116,6 +120,7 @@ describeUnixOnly('runCommand abort handling (x00239)', () => {
 			expect(await waitForPidExit(descendantPid)).toBe(true);
 			trackedPids.delete(descendantPid);
 		} finally {
+			vi.unstubAllEnvs();
 			rmSync(dir, { recursive: true, force: true });
 		}
 	});

@@ -17,7 +17,10 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ITerminalProbeResult } from '@delendai/core/lib/contracts/interfaces/terminal-capabilities.interface';
-import { TerminalProbeService } from '@delendai/core/lib/services/shell/terminal-probe.service';
+import {
+	probeTerminalCapabilities,
+	TerminalProbeService,
+} from '@delendai/core/lib/services/shell/terminal-probe.service';
 
 const ok = (stdout: string, stderr = ''): ITerminalProbeResult => ({
 	stdout,
@@ -180,6 +183,25 @@ describe('TerminalProbeService.detectShell', () => {
 		});
 	});
 
+	it('reports an unrecognised $SHELL but only ever runs a known shell', async () => {
+		await withShell('/tmp/not-a-shell', async () => {
+			const driver = new FakeDriver(() => ok('__PROBE__'));
+			const service = new TerminalProbeService(driver);
+			const descriptor = await service.detectShell();
+			expect(descriptor.path).toBe('/tmp/not-a-shell');
+			expect(
+				driver.calls.some((call) =>
+					call.startsWith('/tmp/not-a-shell'),
+				),
+			).toBe(false);
+			expect(driver.calls).toContain(
+				argvOf('/bin/bash', '-i', '-c', 'echo __PROBE__').join(
+					'\u0001',
+				),
+			);
+		});
+	});
+
 	it('marks every signal inferred when the driver times out', async () => {
 		await withShell('/bin/bash', async () => {
 			const timeoutDriver = new FakeDriver(() => timedOut());
@@ -310,3 +332,75 @@ describe('TerminalProbeService.probe', () => {
 		});
 	});
 });
+
+describe('TerminalProbeService.detectShell — naming the shell', () => {
+	for (const [path, name] of [
+		['/bin/dash', 'dash'],
+		['/usr/bin/fish', 'fish'],
+		['/usr/bin/pwsh', 'pwsh'],
+		['C:/Windows/System32/cmd.exe', 'cmd'],
+		['/bin/sh', 'sh'],
+		['/opt/odd/shell', 'unknown'],
+	] as const) {
+		it(`names ${path} as ${name}`, async () => {
+			await withShell(path, async () => {
+				const service = new TerminalProbeService(
+					new FakeDriver(() => ok('')),
+				);
+				expect((await service.detectShell()).name).toBe(name);
+			});
+		});
+	}
+});
+
+const describeUnixOnly =
+	process.platform === 'win32' ? describe.skip : describe;
+
+describeUnixOnly(
+	'TerminalProbeService — the default driver runs real programs',
+	() => {
+		const service = new TerminalProbeService(undefined, 1_500);
+
+		it('returns what a program printed and its success', async () => {
+			const result = await service.run(['/bin/sh', '-c', 'printf hi']);
+			expect(result).toEqual({
+				stdout: 'hi',
+				stderr: '',
+				exitCode: 0,
+				timedOut: false,
+			});
+		});
+
+		it('returns a failing exit code with what was printed', async () => {
+			const result = await service.run([
+				'/bin/sh',
+				'-c',
+				'printf out; printf err >&2; exit 3',
+			]);
+			expect(result).toMatchObject({
+				stdout: 'out',
+				stderr: 'err',
+				exitCode: 3,
+				timedOut: false,
+			});
+		});
+
+		it('reports a program that does not exist without an exit code', async () => {
+			const result = await service.run(['/nonexistent/delendai-probe']);
+			expect(result.exitCode).toBeNull();
+			expect(result.stderr).toMatch(/./u);
+		});
+
+		it('marks a program that outlives the budget as timed out', async () => {
+			const quick = new TerminalProbeService(undefined, 50);
+			const result = await quick.run(['/bin/sh', '-c', 'sleep 5']);
+			expect(result.timedOut).toBe(true);
+		});
+
+		it('probes this machine end to end', async () => {
+			const capabilities = await probeTerminalCapabilities();
+			expect(capabilities.shell.path.length).toBeGreaterThan(0);
+			expect(capabilities.probeMs).toBeGreaterThanOrEqual(0);
+		}, 30_000);
+	},
+);
