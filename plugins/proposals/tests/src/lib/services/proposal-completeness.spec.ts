@@ -87,6 +87,30 @@ describe('proposal-completeness — proposal-completeness', () => {
 			expect(slices).toHaveLength(1);
 			expect(slices[0]!.status).toBe('pending');
 		});
+
+		it('reads a Files field written as indented sub-bullets', () => {
+			const md = `
+### S1 — bulleted files
+- **Status**: done
+- **Files**:
+  - \`src/a.ts\`
+  - \`tests/a.spec.ts\` (new)
+
+## acceptance
+
+- **Files**: \`not/a/slice.ts\`
+`;
+			const slices = collectSliceStatuses(md);
+			expect(slices[0]!.files).toEqual(['src/a.ts', 'tests/a.spec.ts']);
+		});
+
+		it('drops tokens that are not paths', () => {
+			const md = `
+### S1 — undecided
+- **Files**: TBD
+`;
+			expect(collectSliceStatuses(md)[0]!.files).toEqual([]);
+		});
 	});
 
 	describe('guardSlicesComplete', () => {

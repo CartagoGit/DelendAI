@@ -15,8 +15,8 @@ import { CAPABILITY_TAGS, type CapabilityTag } from '@delendai/core/public';
 
 import { evaluateWorktreeImpactPolicy } from '../agents/worktree-impact-policy';
 import {
-	expandDeclaredFiles,
-	looksLikePath,
+	normalizeFileToken,
+	readDeclaredSliceFiles,
 } from '../proposals/expand-declared-files';
 import { DECIMAL_RADIX } from '../shared/branch-tool-helpers';
 import { evaluateContractMigrationPolicy } from './contract-migration-policy';
@@ -89,10 +89,6 @@ const CAPABILITY_TAG_SET: ReadonlySet<string> = new Set(CAPABILITY_TAGS);
 const CONTRACT_MIGRATION_PHASE_SET: ReadonlySet<string> = new Set(
 	CONTRACT_MIGRATION_PHASES,
 );
-
-const FILES_FIELD_RE = /^[-*]\s*(?:files|\*\*Files\*\*):[ \t]*(.*)$/u;
-
-const FILES_CONTINUATION_RE = /^[ \t]+.*$/u;
 
 /**
  * Read a single slice-body field's raw right-hand side. Accepts both the
@@ -216,26 +212,6 @@ const attachMigrationGuidance = (
 		};
 	});
 
-const readRawFilesBlocks = (body: string): readonly string[] => {
-	const blocks: string[] = [];
-	const lines = body.split('\n');
-	for (let index = 0; index < lines.length; index += 1) {
-		const line = lines[index] ?? '';
-		const match = line.match(FILES_FIELD_RE);
-		if (match === null) continue;
-		let raw = match[1] ?? '';
-		while (
-			index + 1 < lines.length &&
-			FILES_CONTINUATION_RE.test(lines[index + 1] ?? '')
-		) {
-			index += 1;
-			raw = `${raw}\n${lines[index] ?? ''}`;
-		}
-		blocks.push(raw);
-	}
-	return blocks;
-};
-
 /**
  * Parse the `## Slices` section of a proposal markdown. Returns null
  * when the section is absent — the proposal is then a legacy
@@ -282,42 +258,7 @@ export const parseProposalSlicePlan = (
 		const sliceId = block[1] ?? '';
 		const title = (block[2] ?? '').trim();
 		const body = block[3] ?? '';
-		// x00098 S1: a Files line may carry ONE path (`- files: a.ts`) or
-		// the canonical list every real proposal uses
-		// (`- **Files**: \`a.ts\`, \`b.ts\`` / `- **Files**: [a.ts, b.ts]`).
-		// Capture the whole rest of the line, strip an optional [] wrapper
-		// and split on commas — the single-path form degenerates to a
-		// one-element split, so legacy lines parse byte-identically.
-		//
-		// x00158 S1: the continuation group used to require a literal TAB
-		// (`\n\t+`), but every real proposal indents sub-bullets with
-		// spaces (`- **Files**:\n  - \`a\`\n  - \`b\``) — so the tab-only
-		// check silently dropped every continuation line past the first,
-		// which fed only a fragment of the declared files into the
-		// (also buggy) comma split below. `[ \t]+` accepts either.
-		const files = readRawFilesBlocks(body)
-			.flatMap((rawBlock) => {
-				const raw = rawBlock.trim();
-				const withoutDescription = raw.replace(/\s+\([^)]*\)\s*$/u, '');
-				// x00158 S1: prefer the shared brace-aware parser (handles
-				// backticked `{a,b,c}` expansion correctly). Also lift
-				// `file://` markdown links so a truncated `[path](file://…)`
-				// citation is not lost when a leftover backtick token (`[`)
-				// already satisfied expandDeclaredFiles.
-				const expanded = expandDeclaredFiles(withoutDescription);
-				const fileUris = [
-					...withoutDescription.matchAll(/file:\/\/(\/[^)\s#]+)/gu),
-				].map((match) => match[1] ?? '');
-				const tokens = [...expanded, ...fileUris];
-				if (tokens.length > 0) return tokens;
-				const unwrapped =
-					raw.startsWith('[') && raw.endsWith(']')
-						? raw.slice(1, -1)
-						: raw;
-				return unwrapped.split(',');
-			})
-			.map((token) => normalizeFileToken(token.trim()))
-			.filter((f) => f.length > 0);
+		const files = readDeclaredSliceFiles(body);
 		const dependsRaw =
 			body.match(
 				/^[-*]\s*(?:depends_on|\*\*DependsOn\*\*):\s*\[([^\]]*)\]/m,
@@ -405,9 +346,6 @@ export interface ILockSnapshotEntry {
 	readonly ownership?: readonly string[];
 }
 
-const WORKSPACE_PATH_RE =
-	/(?:^|\/)((?:packages|plugins|extensions|apps|tools|docs|scripts|src|lib)\/.+)$/;
-
 /**
  * The shared path test, plus the one thing this module additionally
  * accepts: a bare name with no separator and no extension (`README`),
@@ -416,31 +354,6 @@ const WORKSPACE_PATH_RE =
  * different answers is what the duplicate-implementation lint exists to
  * stop (x00562).
  */
-const looksLikeSliceToken = (value: string): boolean => {
-	if (value.length < 2) return false;
-	if (/^[[\]()]+$/.test(value)) return false;
-	if (looksLikePath(value)) return true;
-	return /^[A-Za-z][A-Za-z0-9._-]*$/.test(value);
-};
-
-const normalizeFileToken = (value: string): string => {
-	const fileUri = value.match(/file:\/\/(\/[^)\s#]+)/u)?.[1];
-	const linked = value.match(/\[[^\]]*\]\(([^)]+)\)/u)?.[1];
-	let raw = fileUri ?? linked ?? value;
-	raw = raw
-		.replace(/^\s*[-*]\s+/gu, '')
-		.replace(/`/gu, '')
-		.replace(/\s*\(.*$/u, '')
-		.replace(/\s*—.*$/u, '')
-		.replace(/[),.;:]+$/gu, '')
-		.replace(/^\[|\]$/gu, '')
-		.replace(/#L[\w-]+$/u, '')
-		.trim();
-	const workspace = raw.match(WORKSPACE_PATH_RE)?.[1];
-	if (workspace !== undefined) raw = workspace;
-	return looksLikeSliceToken(raw) ? raw : '';
-};
-
 const lockCoversSlice = (
 	taskId: string,
 	proposalId: string,
