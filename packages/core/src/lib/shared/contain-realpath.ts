@@ -22,6 +22,7 @@ import {
 	join,
 	relative,
 	resolve,
+	sep,
 } from 'node:path';
 
 import { resolveAgainstRoots, type IContainedPath } from './contain-path';
@@ -44,6 +45,21 @@ export const realResolvePath = async (abs: string): Promise<string> => {
 };
 
 /**
+ * True when the real `target` sits at or under the real `root`. A child
+ * directory whose name merely starts with `..` (`..cache`) is inside.
+ */
+export const isInsideRealRoot = (
+	realTarget: string,
+	realRoot: string,
+): boolean => {
+	const rel = relative(realRoot, realTarget);
+	return (
+		rel === '' ||
+		(rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel))
+	);
+};
+
+/**
  * True when `absTarget`'s REAL (symlink-resolved) location stays inside
  * the real path of one of `roots` (the workspace root plus any authorized
  * roots). Both sides are `realpath`-resolved, so a workspace legitimately
@@ -62,10 +78,7 @@ export const realpathContained = async (
 		} catch {
 			realRoot = resolve(root);
 		}
-		const rel = relative(realRoot, realTarget);
-		if (rel === '' || (!rel.startsWith('..') && !isAbsolute(rel))) {
-			return true;
-		}
+		if (isInsideRealRoot(realTarget, realRoot)) return true;
 	}
 	return false;
 };

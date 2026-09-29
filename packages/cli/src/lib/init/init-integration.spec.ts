@@ -93,8 +93,12 @@ describe('init integration (f00084 S10)', () => {
 
 		if ('audit' in parsedConfig.plugins) {
 			const audit = parsedConfig.plugins.audit?.options;
-			expect(audit.auditDir).toBeDefined();
+			// A neutral number is a default worth writing; a path built
+			// from OUR docs layout is not, and this used to require it
+			// (x00613). The plugin derives `auditDir` from the host's
+			// resolved docsDir when the option is absent.
 			expect(audit.topActions).toBeDefined();
+			expect(audit.auditDir).toBeUndefined();
 		}
 
 		if ('memory' in parsedConfig.plugins) {

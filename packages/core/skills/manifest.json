@@ -177,7 +177,7 @@
 			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
 			"bodyPath": "packages/core/skills/tabs-component/SKILL.md",
 			"tags": ["tabs", "brand-logo", "iconography", "f00069"],
-			"appliesTo": ["@delendai/*"]
+			"appliesTo": ["@delendai/web"]
 		},
 		{
 			"id": "delendai-external-mcps",

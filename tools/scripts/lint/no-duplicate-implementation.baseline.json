@@ -27,7 +27,6 @@
 	"packages/core/src/lib/handles/artifact-handle.ts": 1,
 	"packages/core/src/lib/mutations/idempotency.ts": 1,
 	"packages/core/src/lib/routing/utility.ts": 1,
-	"packages/core/src/lib/scaffold/author-external-plugin.ts": 6,
 	"packages/core/src/lib/scaffold/create-plugin-writer.service.ts": 1,
 	"packages/core/src/lib/scaffold/project-plugins.ts": 7,
 	"packages/core/src/lib/scaffold/scaffold-host.ts": 2,

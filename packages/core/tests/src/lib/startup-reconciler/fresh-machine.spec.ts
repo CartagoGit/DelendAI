@@ -40,6 +40,15 @@ import {
 // template moves — which is exactly how it went stale.
 const WORK_REF = `refs/${testPolicy().branches.workRefPrefix}agent-a/f1-s1-g1`;
 
+/**
+ * Where startup keeps another machine's work ref. It mirrors them into
+ * remote-tracking refs rather than creating local branches, because a
+ * pruned mirror in `refs/heads/` deleted work nobody had published
+ * (x00551).
+ */
+const mirrorOf = (ref: string): string =>
+	ref.replace(/^refs\/heads\//u, 'refs/remotes/origin/');
+
 describe('reconcileStartup on a fresh machine', () => {
 	let origin: IStartupOrigin;
 	let laptop: IStartupClone;
@@ -130,7 +139,7 @@ describe('reconcileStartup on a fresh machine', () => {
 		expect(countRows(db, 'pull_requests')).toBe(1);
 		expect(countRows(db, 'ci_runs')).toBe(1);
 		// The office machine fetched the ref it had never seen.
-		expect(office.git('rev-parse', WORK_REF)).toBe(wipSha);
+		expect(office.git('rev-parse', mirrorOf(WORK_REF))).toBe(wipSha);
 		database.close();
 	});
 

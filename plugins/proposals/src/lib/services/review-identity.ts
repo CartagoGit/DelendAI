@@ -1,4 +1,6 @@
 import { mkdir } from 'node:fs/promises';
+import { isSelfApproval } from '../shared/independent-approval';
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import { hostname as readHostname } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 
@@ -35,7 +37,8 @@ export interface IReviewIdentityDeps {
 }
 
 export type IApproveIdentityCheckResult =
-	| { ok: true; submitter: IReviewIdentityRecord }
+	/** `submitter` is null when the round is known only from the document. */
+	| { ok: true; submitter: IReviewIdentityRecord | null }
 	| {
 			ok: false;
 			reason: 'missing-submit-identity' | 'self-approve';
@@ -189,9 +192,33 @@ export const checkApproveIdentity = async (input: {
 	readonly proposalId: string;
 	readonly sliceId: string;
 	readonly approver: IReviewIdentity;
+	/**
+	 * The implementer the proposal document records for the open round.
+	 * The journal read below lives in a local, disposable cache: a
+	 * reviewer in another clone, on another machine, in CI or in a cloud
+	 * agent never has it, although the round is committed in the
+	 * document. The document is then the record, as it already is for
+	 * the `review → done` gate.
+	 */
+	readonly recordedImplementer?: string | undefined;
+	/** What makes the approver independent (x00718); `model` by default. */
+	readonly independence?: IReviewIndependence | undefined;
 	readonly deps?: IReviewIdentityDeps;
 }): Promise<IApproveIdentityCheckResult> => {
 	const submitter = await readLatestSubmitIdentity(input);
+	if (submitter === null && input.recordedImplementer !== undefined) {
+		return isSelfApproval(
+			input.recordedImplementer,
+			input.approver.agent,
+			input.independence,
+		)
+			? {
+					ok: false,
+					reason: 'self-approve',
+					nextAction: `"${input.approver.agent}" is the implementer this round records, so it cannot also approve it. A DIFFERENT agent must run approve for ${input.proposalId} ${input.sliceId}.`,
+				}
+			: { ok: true, submitter: null };
+	}
 	if (submitter === null) {
 		// Moving a proposal into `review/` does not by itself open a
 		// review round, so a reviewer arriving straight afterwards finds
@@ -204,19 +231,22 @@ export const checkApproveIdentity = async (input: {
 			ok: false,
 			reason: 'missing-submit-identity',
 			nextAction:
-				`no review round is open for ${input.proposalId} ${input.sliceId}. The IMPLEMENTER (not you, the reviewer) must open it first: ` +
-				`delendai_proposal_review { action: "submit", proposalId: "${input.proposalId}", sliceId: "${input.sliceId}", agent: "<implementer>", note: "<what was built>" } ` +
-				`— or from a terminal: bun tools/scripts/review/proposal-review.script.ts --id=${input.proposalId} --slice=${input.sliceId} --agent=<implementer> --action=submit --note="<what was built>". ` +
-				'Then retry this approve as a different agent.',
+				`no review round is open for ${input.proposalId} ${input.sliceId}. ` +
+				'If the proposal is in review, name the commit that delivered the slice (commitHash, or evidence.commitHash on approve): the implementer is then derived from Git and the round opened for you. ' +
+				`Otherwise the IMPLEMENTER (not you) opens it: proposal_review { action: "submit", proposalId: "${input.proposalId}", sliceId: "${input.sliceId}", agent: "<implementer>", note: "<what was built>" } ` +
+				`— from a terminal: delendai proposals review ${input.proposalId} ${input.sliceId} --action=submit --agent=<implementer> --note="<what was built>". ` +
+				'Never submit on the implementer\u2019s behalf.',
 		};
 	}
 	// f00157-fix: independence is keyed on the AGENT, not the process. A
 	// single-host orchestration hands the review to a differently-named
 	// agent (a subagent), which must count as a legitimate peer. Only a
 	// self-approval (the same agent that submitted the slice) is refused.
-	const sameAgent =
-		submitter.agent.trim().toLowerCase() ===
-		input.approver.agent.trim().toLowerCase();
+	const sameAgent = isSelfApproval(
+		submitter.agent,
+		input.approver.agent,
+		input.independence,
+	);
 	if (sameAgent) {
 		return {
 			ok: false,

@@ -90,4 +90,11 @@ export interface IObservationStoreOptions {
 	 * a cache and starts being a liability.
 	 */
 	readonly maxObservations?: number;
+	/**
+	 * Absolute workspace root, used as the PHYSICAL containment root for
+	 * the store rewrite (x00544 S3). Rooting at the store file's own
+	 * directory would be vacuous: realpath-ing a symlinked directory
+	 * makes the escape destination its own root.
+	 */
+	readonly workspaceRoot?: string;
 }

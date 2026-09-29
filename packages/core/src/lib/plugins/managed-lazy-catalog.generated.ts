@@ -22,6 +22,20 @@ export interface IManagedLazyPluginCatalogEntry {
 	readonly toolDisclosure?:
 		| Readonly<Record<string, IToolDisclosureLevel>>
 		| undefined;
+	/**
+	 * The environment variables the plugin declares in its options schema
+	 * (`env:VAR` markers), read at generation time so `init` can warn about
+	 * them without importing the plugin. Absent when it declares none.
+	 */
+	readonly environmentRequirements?:
+		| readonly {
+				readonly var: string;
+				readonly plugin: string;
+				readonly capability: string;
+				readonly provider?: string;
+				readonly required: boolean;
+		  }[]
+		| undefined;
 }
 
 const tools = (
@@ -35,7 +49,11 @@ const tools = (
 	dependencies: readonly string[],
 	metadata: Pick<
 		IManagedLazyPluginCatalogEntry,
-		'summary' | 'tags' | 'startupActivation' | 'toolDisclosure'
+		| 'summary'
+		| 'tags'
+		| 'startupActivation'
+		| 'toolDisclosure'
+		| 'environmentRequirements'
 	> = {},
 ): IManagedLazyPluginCatalogEntry => ({
 	id,
@@ -212,6 +230,8 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'commit_policy_push',
 				'commit_policy_run',
 				'commit_policy_storms',
+				'commit_policy_settlement',
+				'commit_policy_work_ref',
 			],
 			[],
 			[],
@@ -222,6 +242,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 				tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
+				toolDisclosure: {
+					commit_policy_settlement: 'administrative',
+					commit_policy_work_ref: 'contextual',
+				},
 			},
 		),
 		tools(
@@ -282,7 +306,13 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'conventions',
 			'@delendai/conventions',
-			['conventions_classify', 'conventions_check'],
+			[
+				'conventions_classify',
+				'conventions_suggest_path',
+				'conventions_explain_path',
+				'conventions_check_architecture',
+				'conventions_check',
+			],
 			[],
 			[],
 			[],
@@ -307,6 +337,15 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Database schema/introspection tools (read-only, offline).',
 				tags: ['database', 'schema'],
+				environmentRequirements: [
+					{
+						var: 'DATABASE_URL',
+						plugin: 'database',
+						capability: 'Database DSN',
+						provider: 'database',
+						required: true,
+					},
+				],
 			},
 		),
 		tools(
@@ -392,7 +431,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			[],
 			{
 				summary:
-					'Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.',
+					'Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off.',
 				tags: ['error-reporting', 'github', 'issues'],
 				startupActivation: true,
 			},
@@ -582,6 +621,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			{
 				summary: 'Structured logs reader (tail, query, redact).',
 				tags: ['logs', 'observability'],
+				startupActivation: true,
 			},
 		),
 		tools(
@@ -607,6 +647,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Persistent memory store (BM25 + recall, save, search).',
 				tags: ['memory', 'persistence'],
+				startupActivation: true,
 			},
 		),
 		tools(
@@ -773,6 +814,8 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'create_proposal',
 				'close_slice',
 				'proposal_review',
+				'review_queue',
+				'review_claim',
 				'proposal_board',
 				'proposal_adopt',
 				'inherit_host_instructions',
@@ -810,6 +853,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Proposals workflow + multi-agent (swarm) orchestration.',
 				tags: ['proposals', 'swarm', 'orchestration'],
+				startupActivation: true,
 				toolDisclosure: {
 					agents_lock_diagnose: 'administrative',
 					agent_worktree: 'contextual',
@@ -826,6 +870,8 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					proposal_transition: 'contextual',
 					proposals_close_plan: 'contextual',
 					proposal_review: 'contextual',
+					review_queue: 'contextual',
+					review_claim: 'contextual',
 					proposal_board: 'contextual',
 					inherit_host_instructions: 'administrative',
 					incident_proposals: 'contextual',
@@ -1071,6 +1117,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			{
 				summary: 'Per-token/per-call usage tracking (spend, budget).',
 				tags: ['usage', 'spend'],
+				startupActivation: true,
 			},
 		),
 		tools(

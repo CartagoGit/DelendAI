@@ -24,15 +24,8 @@ import {
 	type IQuarantineEntry,
 	type TQuarantineReason,
 } from './quarantine';
-import type {
-	IAcceptanceCriterion,
-	IProposalBudget,
-} from './proposal-document';
-import type { IContinuityPolicy, ISwarmBudget } from '../swarm/swarm-types';
-import {
-	isProposalContinuityPolicy,
-	isProposalSwarmBudget,
-} from './proposal-policy-guards';
+import { registryEntryFrom, toIndexEntry } from './registry-entry.helper';
+import type { IProposalEntry } from '../contracts/interfaces/registry-entry.interface';
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import {
@@ -59,6 +52,10 @@ import {
 } from '../shared/string-helpers';
 import { canonicalStateHash } from '@delendai/state';
 
+import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
+import type { IProposalRegistryIndex } from '../contracts/interfaces/registry-snapshot.interface';
+import { levelProjection } from '../services/projection-refresh';
+
 // The legacy 8-status union, PLUS the 2 new-only f00016 statuses
 // (`in-progress` hyphenated, `review`) that the legacy union never had —
 // additive only, so a proposal already on the new state machine (f00016
@@ -66,54 +63,12 @@ import { canonicalStateHash } from '@delendai/state';
 // `pending` with a spurious "missing or invalid status" warning. The
 // other 5 new statuses (`ready`, `done`, `paused`, `blocked`, `retired`)
 // already happen to share their spelling with the legacy union.
-type IProposalStatus =
-	| 'pending'
-	| 'in_progress'
-	| 'ready'
-	| 'blocked'
-	| 'done'
-	| 'retired'
-	| 'paused'
-	| 'deferred'
-	| 'in-progress'
-	| 'review';
-
 interface IProposalFrontmatter {
 	type?: string;
 	status?: string;
 	date?: string;
 	track?: string;
 	id?: string;
-}
-
-interface IProposalExtras {
-	budget?: IProposalBudget;
-	acceptanceCriteria?: IAcceptanceCriterion[];
-	ownership?: string[];
-	reservedFiles?: string[];
-	agentClosureReportPath?: string;
-	swarmBudget?: ISwarmBudget;
-	continuityPolicy?: IContinuityPolicy;
-	taskQueue?: boolean;
-}
-
-interface IProposalEntry {
-	id: string;
-	file: string;
-	track: string;
-	type: string;
-	status: IProposalStatus;
-	date: string;
-	extras?: IProposalExtras;
-	/**
-	 * `true` when the proposal lives under `legacy/closed/` — the f00076
-	 * archive folder — rather than the active `done/<kind>/` subtree. The
-	 * status field still reflects the original workflow status (today always
-	 * `done`); `archived` is a *location* marker, not a workflow state, so the
-	 * existing DFA stays untouched and downstream consumers that ignore the
-	 * flag keep their semantics.
-	 */
-	archived?: boolean;
 }
 
 export interface IProposalRegistrySyncResult {
@@ -124,26 +79,18 @@ export interface IProposalRegistrySyncResult {
 	quarantine: readonly IQuarantineEntry[];
 	changed: boolean;
 	indexPath: string;
+	/**
+	 * What happened to the OTHER projection of the same markdown, the
+	 * SQLite database: `skipped` when it was already level with this
+	 * registry, `refreshed` when it was brought level, `failed` when it
+	 * could not be — a stale cache the reader falls back from, never a
+	 * lost proposal.
+	 */
+	projection: IProjectionRefresh;
 }
-
-const VALID_STATUSES: ReadonlySet<IProposalStatus> = new Set([
-	'pending',
-	'in_progress',
-	'ready',
-	'blocked',
-	'done',
-	'retired',
-	'paused',
-	'deferred',
-	'in-progress',
-	'review',
-]);
 
 const isGlossaryStatus = (s: string): s is IGlossaryStatus =>
 	s in PROPOSAL_STATUSES;
-
-const isProposalStatus = (s: string | undefined): s is IProposalStatus =>
-	s !== undefined && VALID_STATUSES.has(s as IProposalStatus);
 
 const CANONICAL_MARKDOWN_FILENAME_RE = /^[a-z]\d+[a-z]?-.+\.md$/iu;
 
@@ -155,19 +102,22 @@ type IKnownKey = (typeof KNOWN_KEYS)[number];
 const isKnownKey = (k: string): k is IKnownKey =>
 	(KNOWN_KEYS as readonly string[]).includes(k.toLowerCase() as IKnownKey);
 
+/**
+ * The known keys of a proposal's frontmatter. A YAML block is read by the
+ * one frontmatter parser, like every other reader of a proposal; only a
+ * legacy file with no block, whose header is written `**Status**: done`,
+ * is read line by line.
+ */
 const parseFrontmatter = (raw: string): IProposalFrontmatter => {
-	const yamlMatch = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-	const block = yamlMatch ? (yamlMatch[1] ?? '') : '';
 	const out: IProposalFrontmatter = {};
-	const apply = (rawKey: string, value: string): void => {
-		const k = rawKey.toLowerCase() as IKnownKey;
-		if (isKnownKey(k)) out[k] = value;
-	};
-	if (block) {
-		for (const line of block.split(/\r?\n/)) {
-			const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*?)\s*$/);
-			if (!m) continue;
-			apply(m[1] ?? '', (m[2] ?? '').replace(/^['"]|['"]$/g, '').trim());
+	const block = extractYamlBlock(raw);
+	if (block !== null) {
+		const parsed = parseFrontmatterBlock(block);
+		for (const key of KNOWN_KEYS) {
+			const value = parsed[key];
+			if (typeof value === 'string' || typeof value === 'number') {
+				out[key] = String(value);
+			}
 		}
 		return out;
 	}
@@ -176,12 +126,13 @@ const parseFrontmatter = (raw: string): IProposalFrontmatter => {
 			/^\*\*([A-Za-z_][A-Za-z0-9_]*)\*\*\s*:\s*(.*?)\s*$/,
 		);
 		if (!m) continue;
-		apply(m[1] ?? '', (m[2] ?? '').replace(/^['"]|['"]$/g, '').trim());
+		const key = (m[1] ?? '').toLowerCase();
+		if (isKnownKey(key)) {
+			out[key] = (m[2] ?? '').replace(/^['"]|['"]$/g, '').trim();
+		}
 	}
 	return out;
 };
-
-const buildId = (filename: string): string => filename.replace(/\.md$/, '');
 
 interface IQuarantineContext {
 	readonly root: string;
@@ -226,15 +177,43 @@ const recordQuarantine = async (
 	);
 };
 
+/**
+ * A proposal file's text, or why there is none. Missing and unreadable
+ * are different answers: a file that vanished between the listing and
+ * the read is simply not there any more, while one that exists and
+ * cannot be read (EACCES, EIO) is a fault to surface. Both used to come
+ * back as an empty string, which the callers then filed as "no
+ * frontmatter": a permissions problem quarantined as a malformed
+ * proposal.
+ */
+type IProposalText =
+	| { readonly state: 'read'; readonly text: string }
+	| { readonly state: 'missing' }
+	| { readonly state: 'unreadable'; readonly reason: string };
+
 const readProposalText = async (
 	proposalsDir: string,
 	absPath: string,
-): Promise<string> =>
-	(
-		await new SafeWorkspaceReader(proposalsDir)
-			.readText(relative(proposalsDir, absPath).split('\\').join('/'))
-			.catch(() => ({ content: '' }))
-	).content;
+): Promise<IProposalText> => {
+	try {
+		const read = await new SafeWorkspaceReader(proposalsDir).readText(
+			relative(proposalsDir, absPath).split('\\').join('/'),
+		);
+		return { state: 'read', text: read.content };
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException | undefined)?.code === 'ENOENT') {
+			return { state: 'missing' };
+		}
+		return {
+			state: 'unreadable',
+			reason: error instanceof Error ? error.message : String(error),
+		};
+	}
+};
+
+/** The text for a diagnostic, empty when there is none to show. */
+const textOrEmpty = (read: IProposalText): string =>
+	read.state === 'read' ? read.text : '';
 
 const resolveSourceCommitSha = async (
 	gitRunner: IGitRunner,
@@ -247,69 +226,10 @@ const resolveSourceCommitSha = async (
 	return sha.length > 0 ? sha : 'unknown';
 };
 
-const extractExtras = (
-	parsed: Record<string, unknown>,
-): IProposalExtras | undefined => {
-	const rawBudget = parsed.budget;
-	const budget =
-		rawBudget !== null &&
-		typeof rawBudget === 'object' &&
-		!Array.isArray(rawBudget)
-			? (rawBudget as IProposalBudget)
-			: undefined;
-	const rawAC = parsed.acceptanceCriteria;
-	const acceptanceCriteria = Array.isArray(rawAC)
-		? (rawAC as IAcceptanceCriterion[])
-		: undefined;
-	const rawOwnership = parsed.ownership;
-	const ownership = Array.isArray(rawOwnership)
-		? rawOwnership.filter((v): v is string => typeof v === 'string')
-		: undefined;
-	const rawReserved = parsed.reservedFiles;
-	const reservedFiles = Array.isArray(rawReserved)
-		? rawReserved.filter((v): v is string => typeof v === 'string')
-		: undefined;
-	const rawAgentClosureReportPath = parsed.agentClosureReportPath;
-	const agentClosureReportPath =
-		typeof rawAgentClosureReportPath === 'string'
-			? rawAgentClosureReportPath
-			: undefined;
-	const rawSwarmBudget = parsed.swarmBudget;
-	const swarmBudget = isProposalSwarmBudget(rawSwarmBudget)
-		? (rawSwarmBudget as ISwarmBudget)
-		: undefined;
-	const rawContinuityPolicy = parsed.continuityPolicy;
-	const continuityPolicy = isProposalContinuityPolicy(rawContinuityPolicy)
-		? (rawContinuityPolicy as IContinuityPolicy)
-		: undefined;
-	const rawTaskQueue = parsed.taskQueue;
-	const taskQueue = rawTaskQueue === true;
-	if (
-		!budget &&
-		!acceptanceCriteria &&
-		!ownership &&
-		!reservedFiles &&
-		!agentClosureReportPath &&
-		!swarmBudget &&
-		!continuityPolicy &&
-		!taskQueue
-	) {
-		return undefined;
-	}
-	return {
-		...(budget ? { budget } : {}),
-		...(acceptanceCriteria ? { acceptanceCriteria } : {}),
-		...(ownership ? { ownership } : {}),
-		...(reservedFiles ? { reservedFiles } : {}),
-		...(agentClosureReportPath ? { agentClosureReportPath } : {}),
-		...(swarmBudget ? { swarmBudget } : {}),
-		...(continuityPolicy ? { continuityPolicy } : {}),
-		...(taskQueue ? { taskQueue } : {}),
-	};
-};
-
 type IReadProposalFileResult =
 	| { ok: true; entry: IProposalEntry }
+	| { ok: false; reason: 'missing'; detail: string }
+	| { ok: false; reason: 'unreadable'; detail: string }
 	| {
 			ok: false;
 			reason: Exclude<TQuarantineReason, 'invalid_canonical_filename'>;
@@ -328,8 +248,23 @@ const readProposalFile = async (
 	_indexPath: string,
 	proposalsDir: string,
 ): Promise<IReadProposalFileResult> => {
-	const rawStr = await readProposalText(proposalsDir, absFilepath);
+	const read = await readProposalText(proposalsDir, absFilepath);
 	const name = absFilepath.split('/').pop() ?? absFilepath;
+	if (read.state === 'missing') {
+		return {
+			ok: false,
+			reason: 'missing',
+			detail: `${name}: disappeared before it could be read`,
+		};
+	}
+	if (read.state === 'unreadable') {
+		return {
+			ok: false,
+			reason: 'unreadable',
+			detail: `${name}: could not be read: ${read.reason}`,
+		};
+	}
+	const rawStr = read.text;
 	const yamlBlock = extractYamlBlock(rawStr);
 	if (yamlBlock === null) {
 		return {
@@ -342,53 +277,12 @@ const readProposalFile = async (
 	}
 	const parsed = parseFrontmatterBlock(yamlBlock);
 	const rawMetadata = serializeRawMetadata(parsed);
-	if (typeof parsed.status !== 'string') {
-		return {
-			ok: false,
-			reason: 'invalid_frontmatter_shape',
-			detail: `${name}: missing string 'status' frontmatter key`,
-			rawMetadata,
-			rawStr,
-		};
-	}
-	if (!isProposalStatus(parsed.status)) {
-		return {
-			ok: false,
-			reason: 'invalid_status',
-			detail: `${name}: invalid 'status' frontmatter value '${parsed.status}'`,
-			rawMetadata,
-			rawStr,
-		};
-	}
-	const id = typeof parsed.id === 'string' ? parsed.id : buildId(name);
-	const status = parsed.status;
-	const extras = extractExtras(parsed);
-	// f00076: a proposal under `legacy/closed/` is archived. We tag the entry
-	// with `archived: true` so consumers (the index dashboard, the closed
-	// frozen guard lint, `proposal_diagnose`) can recognise it without
-	// having to compare paths. `file` keeps its proposalsDir-relative form
-	// (e.g. `legacy/closed/feats/f00001-...md`), and `status` is preserved
-	// verbatim — the archive is a *location*, not a workflow status.
-	const relPath = relative(proposalsDir, absFilepath);
-	const isArchived = relPath.startsWith(`legacy${sep}closed${sep}`);
-	const entry: IProposalEntry = {
-		id,
-		// x00052: `file` is `proposalsDir`-relative (was implicitly
-		// `dirname(indexPath)`-relative, which used to be the same
-		// directory but is no longer now that the index lives under
-		// `cacheDir`). Keeping the field anchored to the *content* root
-		// (where the proposal files live) means every downstream
-		// `join(proposalsDir, entry.file)` and `folderOf(entry.file)`
-		// stays correct regardless of where the index itself is stored.
-		file: relPath,
-		track: typeof parsed.track === 'string' ? parsed.track : 'unspecified',
-		type: typeof parsed.type === 'string' ? parsed.type : 'unspecified',
-		status,
-		date: typeof parsed.date === 'string' ? parsed.date : 'unknown',
-		...(extras ? { extras } : {}),
-		...(isArchived ? { archived: true } : {}),
-	};
-	return { ok: true, entry };
+	const built = registryEntryFrom({
+		name,
+		relPath: relative(proposalsDir, absFilepath),
+		parsed,
+	});
+	return built.ok ? built : { ...built, rawMetadata, rawStr };
 };
 
 const scanSubtree = async (
@@ -435,7 +329,9 @@ const scanSubtree = async (
 		if (!isCanonicalMarkdownFilename(name)) {
 			await recordQuarantine(quarantineContext, {
 				absPath,
-				rawStr: await readProposalText(proposalsDir, absPath),
+				rawStr: textOrEmpty(
+					await readProposalText(proposalsDir, absPath),
+				),
 				reason: 'invalid_canonical_filename',
 				detail: `file name '${name}' does not match ${String(CANONICAL_MARKDOWN_FILENAME_RE)}`,
 				rawMetadata: '',
@@ -448,6 +344,13 @@ const scanSubtree = async (
 			proposalsDir,
 		);
 		if (!proposal.ok) {
+			if (proposal.reason === 'missing') continue;
+			if (proposal.reason === 'unreadable') {
+				// Not malformed: unreadable. A warning the operator sees,
+				// never a quarantine entry that calls it a bad proposal.
+				warnings.push(`scanSubtree: ${proposal.detail}`);
+				continue;
+			}
 			await recordQuarantine(quarantineContext, {
 				absPath,
 				rawStr: proposal.rawStr,
@@ -516,16 +419,10 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 	// ENOENT (fresh install) returns empty → no-op; a real read
 	// failure throws and propagates so the operator sees the
 	// subtree as unreadable in `state_health`.
-	try {
-		dirents = (await safeListDirRequired(
-			proposalsDir,
-		)) as unknown as Array<{
-			isFile(): boolean;
-			name: string;
-		}>;
-	} catch {
-		return;
-	}
+	dirents = (await safeListDirRequired(proposalsDir)) as unknown as Array<{
+		isFile(): boolean;
+		name: string;
+	}>;
 
 	const historicalDir = join(proposalsDir, 'historical');
 	for (const dirent of dirents) {
@@ -540,14 +437,17 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 			// existence INSIDE the mutex: a parallel archival that
 			// already renamed the source leaves the directory empty
 			// for the next pass, so we bail before doing any work.
-			let raw: string;
-			try {
-				raw = (
-					await new SafeWorkspaceReader(proposalsDir).readText(name)
-				).content;
-			} catch {
-				return;
+			// Gone already (a parallel archival moved it): nothing to do.
+			// Present and unreadable: that is a fault, and it propagates.
+			const read = await readProposalText(
+				proposalsDir,
+				join(proposalsDir, name),
+			);
+			if (read.state === 'missing') return;
+			if (read.state === 'unreadable') {
+				throw new Error(`${name} could not be read: ${read.reason}`);
 			}
+			const raw = read.text;
 			const reconciled = reconcileCompletedProposalMarkdown(raw);
 			if (
 				reconciled === raw ||
@@ -707,7 +607,11 @@ const scanNewSystemFiles = async (
 			if (!isCanonicalMarkdownFilename(dirent.name)) continue;
 			if (!isNewSystemFilename(dirent.name)) continue;
 			const absPath = join(dirAbs, dirent.name);
-			const raw = await readProposalText(proposalsDirAbs, absPath);
+			const read = await readProposalText(proposalsDirAbs, absPath);
+			// A file this pass cannot read is left where it is: it is not
+			// moved, and not filed as a proposal without frontmatter.
+			if (read.state !== 'read') continue;
+			const raw = read.text;
 			const block = extractYamlBlock(raw);
 			if (block === null) {
 				await recordQuarantine(quarantineContext, {
@@ -848,12 +752,16 @@ const scanAllProposalIds = async (
 				dirent.name === 'README.md'
 			)
 				continue;
-			const raw = await new SafeWorkspaceReader(proposalsDirAbs)
-				.readText(
-					relative(proposalsDirAbs, childAbs).split('\\').join('/'),
-				)
-				.then((value) => value.content)
-				.catch(() => '');
+			// An unreadable file could be the duplicate this scan exists to
+			// find, so it fails the scan instead of being skipped.
+			const read = await readProposalText(proposalsDirAbs, childAbs);
+			if (read.state === 'missing') continue;
+			if (read.state === 'unreadable') {
+				throw new Error(
+					`${relative(proposalsDirAbs, childAbs)} could not be read: ${read.reason}`,
+				);
+			}
+			const raw = read.text;
 			if (raw.length === 0) continue;
 			const block = extractYamlBlock(raw);
 			// A `.md` with no frontmatter block at all is not a proposal (an
@@ -1087,6 +995,207 @@ export const reconcileBlocked = async (
 	return { resolved };
 };
 
+/** Host proposal subfolders, each proved to stay inside the proposals dir. */
+const containedFolders = (
+	proposalsDir: string,
+	extraFolders: readonly string[],
+): readonly string[] =>
+	extraFolders.map((folder) => {
+		const absolute = resolve(proposalsDir, folder);
+		const rel = relative(proposalsDir, absolute);
+		if (rel === '..' || rel.startsWith(`..${sep}`)) {
+			throw new Error(`proposal folder escapes proposalsDir: ${folder}`);
+		}
+		return absolute;
+	});
+
+/**
+ * The registry, as the markdown on disk describes it right now. Reads only.
+ *
+ * Split out of `syncProposalRegistry` (x00629) so that a caller that only
+ * needs to know what the registry WOULD be — a generator, a check — can
+ * ask without reconciling folders, archiving, unblocking, rewriting the
+ * index or levelling SQLite. `quarantineContext` is `undefined` for such a
+ * caller, which also keeps the quarantine journal untouched.
+ */
+const snapshotRegistry = async (input: {
+	readonly proposalsDir: string;
+	readonly indexPath: string;
+	readonly containedExtraFolders: readonly string[];
+	readonly folderPolicy: IProposalFolderPolicy | undefined;
+	readonly quarantineContext: IQuarantineContext | undefined;
+	readonly priorErrors: readonly string[];
+}): Promise<{
+	readonly index: IProposalRegistryIndex;
+	readonly nextText: string;
+	readonly semanticHash: string;
+}> => {
+	const {
+		proposalsDir,
+		indexPath,
+		containedExtraFolders,
+		folderPolicy,
+		quarantineContext,
+	} = input;
+	const unresolvedFolderDrift = await findProposalFolderDrift(
+		proposalsDir,
+		folderPolicy,
+		quarantineContext,
+	);
+	// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
+	// arrive via `extraFolders`.
+	// f00016's 7 status folders (S5) overlap with the legacy list (`paused`
+	// is in both) — dedupe by absolute path so a folder is never scanned
+	// (and its entries never double-counted) twice.
+	const subtreeAbsolutes = [
+		proposalsDir,
+		join(proposalsDir, 'historical'),
+		join(proposalsDir, 'revised'),
+		join(proposalsDir, 'revised', 'audits'),
+		join(proposalsDir, 'revised', 'retired'),
+		// Top-level kind sub-folders (legacy f00001 layout: `fixes/`,
+		// `audits/`, `feats/` as siblings of the 7 status folders).
+		join(proposalsDir, 'audits'),
+		join(proposalsDir, 'feats'),
+		join(proposalsDir, 'fixes'),
+		join(proposalsDir, 'resumes'),
+		...NEW_SYSTEM_FOLDERS.map((folder) => join(proposalsDir, folder)),
+		// (done folder mirror): kind sub-folders inside the
+		// `done/` status folder (`done/audits/`, `done/feats/`,
+		// `done/fixes/`, `done/resumes/`). Same files as the
+		// top-level entries above when a project uses the canonical
+		// `done/<kind>/` layout; the `new Set(subtreeAbsolutes)`
+		// dedup absorbs any overlap.
+		...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+			join(proposalsDir, 'done', sub),
+		),
+		...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+			join(proposalsDir, 'ready', sub),
+		),
+		...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+			join(proposalsDir, 'review', sub),
+		),
+		...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+			join(proposalsDir, 'in-progress', sub),
+		),
+		// S1: archive sub-folders under `legacy/closed/<kind>/`
+		// mirror the `done/<kind>/` layout so reaped proposals stay
+		// indexed (with `archived: true`) without living in the active
+		// `done/` tree. `reconcileFolders` will not touch these because
+		// an archived proposal's frontmatter still says `status: done`,
+		// and the reconciler never moves *into* `legacy/closed/` — only
+		// out of it (the reaper script in S2 handles moves into it).
+		...Object.values(KIND_TO_DONE_SUBFOLDER)
+			.filter((sub): sub is string => sub !== undefined)
+			.map((sub) => join(proposalsDir, 'legacy', 'closed', sub)),
+		...containedExtraFolders,
+	];
+	const subtrees: ReadonlyArray<{ absolute: string }> = [
+		...new Set(subtreeAbsolutes),
+	].map((absolute) => ({ absolute }));
+	const entries: IProposalEntry[] = [];
+	const warnings: string[] = [];
+	warnings.push(...input.priorErrors);
+	for (const subtree of subtrees) {
+		const result = await scanSubtree(
+			subtree.absolute,
+			indexPath,
+			proposalsDir,
+			quarantineContext,
+		);
+		result.entries.sort((a, b) => a.id.localeCompare(b.id));
+		entries.push(...result.entries);
+		warnings.push(...result.warnings);
+	}
+	// S3 / F7 — surface twin files that share an id (e.g. a
+	// half-applied transition left both ready/ and done/feats/).
+	// Detection only: we still write the index so agents can see both
+	// paths, but the error list is non-empty so lint/CI can fail.
+	// A file the duplicate scan cannot read could be the duplicate, so an
+	// incomplete scan says so instead of reporting "no duplicates".
+	let duplicates: Awaited<ReturnType<typeof findDuplicateProposalIds>> = [];
+	try {
+		duplicates = await findDuplicateProposalIds(proposalsDir);
+	} catch (error) {
+		warnings.push(
+			`duplicate-id check incomplete: ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
+	for (const drift of unresolvedFolderDrift) {
+		warnings.push(
+			`folder drift: ${drift.id} at ${drift.path} is in ${drift.folder} but status ${drift.status} expects ${drift.expectedFolder}`,
+		);
+	}
+	for (const dup of duplicates) {
+		warnings.push(
+			`duplicate proposal id "${dup.id}" on disk: ${dup.paths.join(' and ')}`,
+		);
+	}
+	// Separate the SEMANTIC payload (which determines
+	// `changed`) from the OBSERVATIONAL metadata (which must not
+	// invalidate the cache). `generated_at` is included in the
+	// index for human observability but excluded from the
+	// canonical hash via `LOCAL_METADATA_KEYS` in
+	// `@delendai/state/hash`.
+	//
+	// The payload is plain JSON-shaped (`CanonicalJsonValue`)
+	// rather than the domain `IProposalEntry[]` interface so the
+	// hash function (which is generic over JSON) can consume it
+	// without structural coupling. A future change to
+	// `IProposalEntry`'s field set does NOT change the hash
+	// unless the field set is also reflected here — by
+	// construction, the semantic hash is the contract.
+	const semanticPayload = {
+		count: entries.length,
+		proposals: entries.map(toIndexEntry),
+		errors: [...warnings],
+	};
+	const semanticHash = canonicalStateHash(semanticPayload);
+	const index = {
+		semantic_hash: semanticHash,
+		generated_at: new Date().toISOString(),
+		...semanticPayload,
+	};
+	// The registry index moved under
+	// `<cacheDir>/proposals/index.json` (it is a regenerable cache
+	// artefact, not a human-edited source file). The JSON is still
+	// formatted with 4-space indent to match the pre-x00052 wire
+	// format — a host that diffs two regenerations would notice a
+	// tab vs space drift otherwise.
+	const nextText = `${JSON.stringify(index, null, 4)}\n`;
+	return { index, nextText, semanticHash };
+};
+
+/**
+ * What the registry index would contain, derived from the markdown, with
+ * nothing written: no reconciliation, no index file, no SQLite, no
+ * quarantine journal. For a check or a generator that must observe the
+ * proposals without repairing them (x00629).
+ */
+export const scanProposalRegistry = async (
+	root: string,
+	layout: Pick<
+		IHostPathLayout,
+		'proposalsDir' | 'proposalIndexFile'
+	> = DEFAULT_PATH_LAYOUT,
+	extraFolders: readonly string[] = [],
+	folderPolicy?: IProposalFolderPolicy,
+): Promise<{
+	readonly index: IProposalRegistryIndex;
+	readonly text: string;
+}> => {
+	const proposalsDir = resolve(root, layout.proposalsDir);
+	const snapshot = await snapshotRegistry({
+		proposalsDir,
+		indexPath: resolve(root, layout.proposalIndexFile),
+		containedExtraFolders: containedFolders(proposalsDir, extraFolders),
+		folderPolicy,
+		quarantineContext: undefined,
+		priorErrors: [],
+	});
+	return { index: snapshot.index, text: snapshot.nextText };
+};
+
 /**
  * Find new-system proposals that declare `proposalId` as a dependency.
  * Their `blocked-by` metadata remains useful after they become ready: it
@@ -1116,6 +1225,14 @@ export async function syncProposalRegistry(
 	// S5: injectable for tests; defaults to a real `git mv` in `root`.
 	gitRunner: IGitRunner = createGitRunner(root),
 	folderPolicy?: IProposalFolderPolicy,
+	// Injectable for tests; the reader-verdict leveller by default.
+	leveller: typeof levelProjection = levelProjection,
+	// Rebuild the index and its projection only: no file is archived,
+	// renamed, moved or unblocked. Those are tracked changes, and a caller
+	// that only needs to read the proposals — `auto_work` finding its
+	// index behind the files, in the shared checkout — must not make them
+	// (x00716).
+	indexOnly = false,
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);
@@ -1125,172 +1242,47 @@ export async function syncProposalRegistry(
 		seen: new Set<string>(),
 		entries: [],
 	};
-	const containedExtraFolders = extraFolders.map((folder) => {
-		const absolute = resolve(proposalsDir, folder);
-		const rel = relative(proposalsDir, absolute);
-		if (rel === '..' || rel.startsWith(`..${sep}`)) {
-			throw new Error(`proposal folder escapes proposalsDir: ${folder}`);
-		}
-		return absolute;
-	});
+	const containedExtraFolders = containedFolders(proposalsDir, extraFolders);
 	// Cross-process critical section: a concurrent sync regenerating
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
-		await reconcileAndArchiveCompletedRootProposals(proposalsDir);
-		const canonicalReconciliation = await reconcileCanonicalProposals(
-			proposalsDir,
-			gitRunner,
-			folderPolicy,
-			quarantineContext,
-		);
+		if (!indexOnly) {
+			await reconcileAndArchiveCompletedRootProposals(proposalsDir);
+		}
+		const canonicalReconciliation = indexOnly
+			? undefined
+			: await reconcileCanonicalProposals(
+					proposalsDir,
+					gitRunner,
+					folderPolicy,
+					quarantineContext,
+				);
 		// S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
 		// the scan below so the index reflects the post-reconciliation tree.
-		await reconcileFolders(
-			proposalsDir,
-			gitRunner,
-			folderPolicy,
-			quarantineContext,
-		);
-		await reconcileBlocked(
-			proposalsDir,
-			gitRunner,
-			folderPolicy,
-			quarantineContext,
-		);
-		const unresolvedFolderDrift = await findProposalFolderDrift(
-			proposalsDir,
-			folderPolicy,
-			quarantineContext,
-		);
-		// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
-		// arrive via `extraFolders`.
-		// f00016's 7 status folders (S5) overlap with the legacy list (`paused`
-		// is in both) — dedupe by absolute path so a folder is never scanned
-		// (and its entries never double-counted) twice.
-		const subtreeAbsolutes = [
-			proposalsDir,
-			join(proposalsDir, 'historical'),
-			join(proposalsDir, 'revised'),
-			join(proposalsDir, 'revised', 'audits'),
-			join(proposalsDir, 'revised', 'retired'),
-			// Top-level kind sub-folders (legacy f00001 layout: `fixes/`,
-			// `audits/`, `feats/` as siblings of the 7 status folders).
-			join(proposalsDir, 'audits'),
-			join(proposalsDir, 'feats'),
-			join(proposalsDir, 'fixes'),
-			join(proposalsDir, 'resumes'),
-			...NEW_SYSTEM_FOLDERS.map((folder) => join(proposalsDir, folder)),
-			// (done folder mirror): kind sub-folders inside the
-			// `done/` status folder (`done/audits/`, `done/feats/`,
-			// `done/fixes/`, `done/resumes/`). Same files as the
-			// top-level entries above when a project uses the canonical
-			// `done/<kind>/` layout; the `new Set(subtreeAbsolutes)`
-			// dedup absorbs any overlap.
-			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
-				join(proposalsDir, 'done', sub),
-			),
-			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
-				join(proposalsDir, 'ready', sub),
-			),
-			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
-				join(proposalsDir, 'review', sub),
-			),
-			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
-				join(proposalsDir, 'in-progress', sub),
-			),
-			// S1: archive sub-folders under `legacy/closed/<kind>/`
-			// mirror the `done/<kind>/` layout so reaped proposals stay
-			// indexed (with `archived: true`) without living in the active
-			// `done/` tree. `reconcileFolders` will not touch these because
-			// an archived proposal's frontmatter still says `status: done`,
-			// and the reconciler never moves *into* `legacy/closed/` — only
-			// out of it (the reaper script in S2 handles moves into it).
-			...Object.values(KIND_TO_DONE_SUBFOLDER)
-				.filter((sub): sub is string => sub !== undefined)
-				.map((sub) => join(proposalsDir, 'legacy', 'closed', sub)),
-			...containedExtraFolders,
-		];
-		const subtrees: ReadonlyArray<{ absolute: string }> = [
-			...new Set(subtreeAbsolutes),
-		].map((absolute) => ({ absolute }));
-		const entries: IProposalEntry[] = [];
-		const warnings: string[] = [];
-		warnings.push(...canonicalReconciliation.errors);
-		for (const subtree of subtrees) {
-			const result = await scanSubtree(
-				subtree.absolute,
-				indexPath,
+		if (!indexOnly) {
+			await reconcileFolders(
 				proposalsDir,
+				gitRunner,
+				folderPolicy,
 				quarantineContext,
 			);
-			result.entries.sort((a, b) => a.id.localeCompare(b.id));
-			entries.push(...result.entries);
-			warnings.push(...result.warnings);
-		}
-		// S3 / F7 — surface twin files that share an id (e.g. a
-		// half-applied transition left both ready/ and done/feats/).
-		// Detection only: we still write the index so agents can see both
-		// paths, but the error list is non-empty so lint/CI can fail.
-		const duplicates = await findDuplicateProposalIds(proposalsDir);
-		for (const drift of unresolvedFolderDrift) {
-			warnings.push(
-				`folder drift: ${drift.id} at ${drift.path} is in ${drift.folder} but status ${drift.status} expects ${drift.expectedFolder}`,
+			await reconcileBlocked(
+				proposalsDir,
+				gitRunner,
+				folderPolicy,
+				quarantineContext,
 			);
 		}
-		for (const dup of duplicates) {
-			warnings.push(
-				`duplicate proposal id "${dup.id}" on disk: ${dup.paths.join(' and ')}`,
-			);
-		}
-		// Separate the SEMANTIC payload (which determines
-		// `changed`) from the OBSERVATIONAL metadata (which must not
-		// invalidate the cache). `generated_at` is included in the
-		// index for human observability but excluded from the
-		// canonical hash via `LOCAL_METADATA_KEYS` in
-		// `@delendai/state/hash`.
-		//
-		// The payload is plain JSON-shaped (`CanonicalJsonValue`)
-		// rather than the domain `IProposalEntry[]` interface so the
-		// hash function (which is generic over JSON) can consume it
-		// without structural coupling. A future change to
-		// `IProposalEntry`'s field set does NOT change the hash
-		// unless the field set is also reflected here — by
-		// construction, the semantic hash is the contract.
-		const semanticPayload = {
-			count: entries.length,
-			proposals: entries.map((entry) => ({
-				id: entry.id,
-				file: entry.file,
-				track: entry.track,
-				type: entry.type,
-				status: entry.status,
-				date: entry.date,
-				...(entry.extras !== undefined
-					? Object.fromEntries(
-							Object.entries(
-								entry.extras as Record<string, unknown>,
-							),
-						)
-					: {}),
-				...(entry.archived === true ? { archived: true } : {}),
-			})),
-			errors: [...warnings],
-		};
-		const semanticHash = canonicalStateHash(semanticPayload);
-		const index = {
-			semantic_hash: semanticHash,
-			generated_at: new Date().toISOString(),
-			...semanticPayload,
-		};
-		// The registry index moved under
-		// `<cacheDir>/proposals/index.json` (it is a regenerable cache
-		// artefact, not a human-edited source file). The JSON is still
-		// formatted with 4-space indent to match the pre-x00052 wire
-		// format — a host that diffs two regenerations would notice a
-		// tab vs space drift otherwise.
-		const nextText = `${JSON.stringify(index, null, 4)}\n`;
+		const { index, nextText, semanticHash } = await snapshotRegistry({
+			proposalsDir,
+			indexPath,
+			containedExtraFolders,
+			folderPolicy,
+			quarantineContext,
+			priorErrors: canonicalReconciliation?.errors ?? [],
+		});
 		let changed = true;
 		try {
 			const current = (
@@ -1311,11 +1303,22 @@ export async function syncProposalRegistry(
 			// Missing or unreadable index means the generated file will be new.
 		}
 		await writeFileAtomic(indexPath, nextText);
+		// One act, both projections. Every tool that changes a proposal
+		// ends here, so the database cannot be left behind by any of them.
+		// Inside the index lock, so the two views are taken from the same
+		// tree; after the registry, so a failed refresh still leaves the
+		// reader something correct to fall back to.
+		const projection = await leveller({
+			root,
+			indexPathAbs: indexPath,
+			proposalsDir: layout.proposalsDir,
+		});
 		return {
 			...index,
 			quarantine: quarantineContext.entries,
 			changed,
 			indexPath,
+			projection,
 		};
 	});
 }

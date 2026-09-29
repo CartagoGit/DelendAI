@@ -3,7 +3,7 @@ id: container
 package: @delendai/container
 version: 0.1.1
 maturity: stable
-generated: 2026-09-06T13:56:14.827Z
+generated: 2026-09-26T12:23:14.459Z
 ---
 
 # Container
@@ -38,7 +38,6 @@ Container inspection + lint (docker ps/images, k8s, Dockerfile rules).
 ## Dependencies
 
 - @delendai/core
-- @modelcontextprotocol/sdk
 - zod
 
 ## Capabilities

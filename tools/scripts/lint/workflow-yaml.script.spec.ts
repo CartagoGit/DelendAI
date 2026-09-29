@@ -13,6 +13,7 @@ import {
 	WORKFLOWS_DIR,
 	type IWorkflowSource,
 } from './workflow-yaml.script';
+import { MAX_JOB_TIMEOUT_MINUTES } from './workflow-yaml.constant';
 
 const VALID = `name: ci
 on:
@@ -21,6 +22,7 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        timeout-minutes: 5
         steps:
             - uses: actions/checkout@v4
             - name: Build
@@ -48,6 +50,7 @@ on:
 jobs:
     gate:
         runs-on: ubuntu-latest
+        timeout-minutes: 5
         steps:
             - name: Run integrated quality gate
                             env:
@@ -61,7 +64,7 @@ jobs:
 		const first = findings[0];
 		expect(first?.kind).toBe('syntax');
 		expect(first?.relPath).toBe(`${WORKFLOWS_DIR}/quality-gate.yml`);
-		expect(first?.line).toBe(9);
+		expect(first?.line).toBe(10);
 		expect(first?.column).toBeGreaterThan(0);
 		expect(first?.message).toContain('invalid YAML');
 	});
@@ -105,6 +108,7 @@ on: push
 jobs:
     good:
         runs-on: ubuntu-latest
+        timeout-minutes: 5
         steps:
             - run: echo ok
     bad:
@@ -115,8 +119,8 @@ jobs:
 			'job `bad` is missing `runs-on`',
 			'job `bad` is missing `steps`',
 		]);
-		// Line 8 is `    bad:` — the position must be the job, not line 1.
-		expect(findings.every((f) => f.line === 8)).toBe(true);
+		// Line 9 is `    bad:` — the position must be the job, not line 1.
+		expect(findings.every((f) => f.line === 9)).toBe(true);
 		expect(findings.every((f) => f.kind === 'shape')).toBe(true);
 	});
 
@@ -144,6 +148,7 @@ on: push
 jobs:
     a:
         runs-on: ubuntu-latest
+        timeout-minutes: 5
         steps: nope
 `;
 		expect(
@@ -257,6 +262,7 @@ on: push
 jobs:
     zone:
         runs-on: ubuntu-latest
+        timeout-minutes: 5
         if: ${condition}
         strategy:
             matrix:
@@ -290,5 +296,63 @@ jobs:
 		expect(checkWorkflowSource(withJobIf('env.matrixed == true'))).toEqual(
 			[],
 		);
+	});
+});
+
+describe('every job declares a bounded timeout', () => {
+	const withJob = (job: string): string => `name: ci
+on: push
+jobs:
+    build:
+${job}`;
+
+	it('refuses a job without timeout-minutes, pointing at the job', () => {
+		const findings = checkWorkflowSource(
+			source(
+				withJob(`        runs-on: ubuntu-latest
+        steps:
+            - run: echo ok
+`),
+			),
+		);
+
+		expect(findings).toEqual([
+			expect.objectContaining({
+				line: 4,
+				kind: 'shape',
+				message: expect.stringContaining(
+					'job `build` must declare `timeout-minutes`',
+				),
+			}),
+		]);
+	});
+
+	it.each([0, MAX_JOB_TIMEOUT_MINUTES + 1, 2.5, '"${{ inputs.minutes }}"'])(
+		'refuses timeout-minutes: %s',
+		(value) => {
+			const findings = checkWorkflowSource(
+				source(
+					withJob(`        runs-on: ubuntu-latest
+        timeout-minutes: ${value}
+        steps:
+            - run: echo ok
+`),
+				),
+			);
+
+			expect(findings).toHaveLength(1);
+		},
+	);
+
+	it('leaves a reusable-workflow job alone; the called jobs declare their own', () => {
+		expect(
+			checkWorkflowSource(
+				source(
+					withJob(
+						'        uses: ./.github/workflows/setup-bun.yml\n',
+					),
+				),
+			).filter((finding) => finding.message.includes('timeout-minutes')),
+		).toEqual([]);
 	});
 });

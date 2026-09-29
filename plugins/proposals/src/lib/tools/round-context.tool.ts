@@ -157,6 +157,7 @@ export const buildRoundContextRegistration = (
 ): IToolRegistration => ({
 	id: 'round_context',
 	effects: ['write'],
+	writeRoot: 'host-state',
 	// a00083 F33: summary is the cold-path token surface. Description
 	// already covers persistence + staleness + forceRefresh in detail
 	// (see below); keep the summary to the *purpose* only.

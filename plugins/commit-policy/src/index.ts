@@ -2,18 +2,23 @@
  * index.ts — the `@delendai/commit-policy` plugin entry point.
  */
 
+import { resolve as resolvePath } from 'node:path';
 import {
 	createWriteGitRunner,
 	definePlugin,
 	type IPluginConfigurationIssue,
 	type IPluginConfigurationValidationInput,
 	type IPluginRuntime,
+	type IToolRegistration,
+	joinRel,
 } from '@delendai/core/public';
 
 import { hostname } from 'node:os';
 
 import { DEFAULT_AGENT_LOCK_STALE_MINUTES } from './lib/contracts/constants/agent-lock.constant';
 import { CommitPolicyOptionsSchema } from './lib/contracts/options';
+import { createSettlementGate } from './lib/settlement/settlement-gate.helper';
+import { createWorkerRegistry } from './lib/settlement/worker.registry';
 import {
 	createCommitPolicyEngine,
 	type IEngineEvent,
@@ -30,9 +35,8 @@ import {
 } from './lib/services/agent-lock-foreign-locks';
 import { deriveProtectedBranches } from './lib/persistence/derive-branch-policy';
 import { createPolicyPersistence } from './lib/persistence/wip-persistence';
-import { anchorFromPolicy } from '@delendai/core/public';
+import { anchorFromPolicy, createWipEngine } from '@delendai/core/public';
 
-import { bindWipCheckpointPort } from './lib/persistence/wip-binding';
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
 import { fileRepairProposals } from './lib/services/repair-proposer';
@@ -43,6 +47,13 @@ import { buildBranchProtectionToolRegistration } from './lib/tools/branch-protec
 import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
+import { buildCommitPolicySettlementToolRegistration } from './lib/tools/settlement-tool';
+import { buildWorkRefToolRegistration } from './lib/tools/work-ref.tool';
+import { sliceFilesAreCommitted } from './lib/services/slice-persisted.service';
+import {
+	createSliceTopicResolver,
+	workRefAgent,
+} from './lib/services/work-ref-naming.service';
 import { createIntervalTimer } from './lib/triggers/interval-timer';
 import {
 	computeSliceTriggerEventId,
@@ -174,6 +185,7 @@ export default definePlugin({
 	version: '0.1.0',
 	legacyCachePaths: [
 		{ source: '.commit-policy/processed-events.jsonl' },
+		{ source: '.commit-policy/settlement.json' },
 		{ source: '.cache/delendai/commit-policy', destination: '.' },
 	],
 	describe:
@@ -357,7 +369,12 @@ export default definePlugin({
 			maxSamplesPerStorm: 5,
 		});
 		const stormLog = new StormLog({
-			cacheDir: ctx.pluginCacheDir,
+			// Resolved against the workspace, like every other context path:
+			// the context may hand it over relative, and a relative dir
+			// resolved against the process's cwd wrote storms wherever the
+			// server or the suite happened to start (`plugins/commit-policy/
+			// .cache` under validate, which lint:cache refuses).
+			cacheDir: resolvePath(ctx.workspace.root, ctx.pluginCacheDir),
 		});
 		// No `ensureDir()` here. Registration is not a write, and creating
 		// the directory at boot meant every host that merely LOADED this
@@ -407,7 +424,7 @@ export default definePlugin({
 			}
 		}
 
-		const tools = [
+		const tools: IToolRegistration[] = [
 			buildBranchProtectionToolRegistration({
 				namespacePrefix: ctx.namespacePrefix,
 				adapter: branchProtectionAdapter,
@@ -450,6 +467,11 @@ export default definePlugin({
 				detector: stormDetector,
 				stormLog,
 			}),
+			buildCommitPolicySettlementToolRegistration({
+				namespacePrefix: ctx.namespacePrefix,
+				workspaceRoot: ctx.workspace.root,
+				fileRel: `${ctx.pluginCacheDir}/settlement.json`,
+			}),
 		];
 
 		// The idempotency store lives at
@@ -471,26 +493,68 @@ export default definePlugin({
 		// policy that allows direct integration commits — and for an
 		// absent policy — so the historical stage/commit/push path is
 		// reached by there being no port at all, not by a branch.
-		const wipPort =
+		// The exact model first, then what the environment declares, then
+		// the name the MCP client reported. NEVER the machine: a ref named
+		// `DESKTOP-9CTQRS7` says who owns the hardware, and every agent on
+		// that machine would share it. Resolved in core (x00560).
+		const workRefAgentId = workRefAgent({
+			model: identityCtx.hostIdentity?.model,
+			host: identityCtx.hostIdentity?.host,
+			clientName: () => ctx.clientIdentity?.name(),
+		});
+		const wipEngine =
 			ctx.developmentPolicy !== undefined &&
 			!ctx.developmentPolicy.persistence.allowsDirectIntegrationCommit
-				? await bindWipCheckpointPort(
+				? await createWipEngine(
 						ctx.workspace.root,
 						anchorFromPolicy(ctx.developmentPolicy),
 						policy.gitTimeoutMs,
 					)
 				: undefined;
+		tools.push(
+			buildWorkRefToolRegistration({
+				namespacePrefix: ctx.namespacePrefix,
+				policy: ctx.developmentPolicy,
+				wip: wipEngine,
+				agentId: workRefAgentId,
+				...(policy.push.remote !== undefined
+					? { remote: policy.push.remote }
+					: {}),
+			}),
+		);
 		const persistence = createPolicyPersistence({
 			...(ctx.developmentPolicy !== undefined
 				? { policy: ctx.developmentPolicy }
 				: {}),
 			run,
-			...(wipPort !== undefined ? { wip: wipPort } : {}),
-			agentId: identityCtx.hostIdentity?.host ?? hostname(),
+			...(wipEngine !== undefined ? { wip: wipEngine } : {}),
+			agentId: workRefAgentId,
+			resolveTopic: createSliceTopicResolver({
+				run,
+				workspaceRoot: ctx.workspace.root,
+				proposalsDir: joinRel(ctx.docsDir, 'proposals'),
+			}),
+			...(policy.push.remote !== undefined
+				? { remote: policy.push.remote }
+				: {}),
+		});
+
+		// The settlement barrier. The registry lives beside the
+		// idempotency store; with no state file it reads `active`, so a
+		// project that never enters settlement is never gated.
+		const settlementFileRel = `${ctx.pluginCacheDir}/settlement.json`;
+		const settlementGate = createSettlementGate({
+			registry: createWorkerRegistry({
+				workspaceRoot: ctx.workspace.root,
+				fileRel: settlementFileRel,
+			}),
+			exemptProposalIdPrefixes:
+				policy.settlement?.exemptProposalIdPrefixes,
 		});
 
 		const engine = createCommitPolicyEngine({
 			driver: sharedDriver,
+			...settlementGate,
 			...(persistence !== undefined ? { persistence } : {}),
 			branchPolicy: {
 				// Derived, not copied. The configured list is a floor:
@@ -638,18 +702,34 @@ export default definePlugin({
 					) {
 						return true;
 					}
-					return await processedEvents.has(
-						computeIdempotencyKey({
-							kind: 'slice',
-							proposalId: event.proposalId,
-							sliceId: event.sliceId,
-							files: event.files?.paths ?? [],
-							eventId: computeSliceTriggerEventId(event),
-						}),
+					if (
+						await processedEvents.has(
+							computeIdempotencyKey({
+								kind: 'slice',
+								proposalId: event.proposalId,
+								sliceId: event.sliceId,
+								files: event.files?.paths ?? [],
+								eventId: computeSliceTriggerEventId(event),
+							}),
+						)
+					) {
+						return true;
+					}
+					// An empty store is not evidence: a slice committed
+					// before this cache existed has clean files.
+					return await sliceFilesAreCommitted(
+						run,
+						event.files?.paths ?? [],
 					);
 				},
 			);
-			sliceListener.start();
+			// Deliberately not awaited: registration must not block the
+			// host on a filesystem-and-git check. `start` returns the
+			// priming so a caller that owns the listener directly can
+			// wait for it; the plugin runtime contract has no field to
+			// carry it, and widening a contract every plugin implements
+			// is not this change's business.
+			void sliceListener.start();
 		}
 
 		if (configuredInterval !== undefined && intervalTimer !== undefined) {

@@ -3,6 +3,39 @@
 import type { IJobScope } from './job-scope.interface';
 
 /**
+ * Everything that can change what `tsc` concludes or what a test does.
+ *
+ * Used by `typecheck` and the three test jobs, which move together: a
+ * coverage verdict computed over a suite that did not run is the
+ * "gate passes over an empty scan root" failure, so they are scoped
+ * identically and skip as a set or not at all.
+ *
+ * Deliberately generous, per the asymmetry above — it names every
+ * directory that can hold a `.ts` file and every root file that can
+ * change how one is compiled or run. What it leaves out is only what
+ * cannot reach a compiler or a test runner at all: `docs/`, `.github/`,
+ * `config/`, `.vscode/` and the root markdown. Measured before this
+ * existed: a change touching one proposal markdown file ran 20 of the 25
+ * jobs, including the whole test matrix, for about 30 machine-minutes.
+ */
+export const SOURCE_PREFIXES = [
+	'packages/',
+	'plugins/',
+	'apps/',
+	'extensions/',
+	'tools/',
+	'tests/',
+	'scripts/',
+	'package.json',
+	'bun.lock',
+	'bunfig.toml',
+	'tsconfig',
+	'vitest.',
+	'biome.json',
+	'delendai.config.json',
+] as const;
+
+/**
  * Which files each CI job's verdict can depend on.
  *
  * THE ASYMMETRY THAT GOVERNS THIS FILE: a job that runs when it did not
@@ -57,9 +90,9 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	},
 	{
 		job: 'typecheck',
-		touches: 'always',
+		touches: SOURCE_PREFIXES,
 		because:
-			'a type error surfaces in the file that CONSUMES the change, which is by definition not one of the changed files.',
+			'a type error surfaces in the file that CONSUMES the change, so the bound is every directory that can hold a .ts file and every root file that changes how one compiles — not the changed files themselves. A change that touches none of them cannot move what tsc concludes.',
 	},
 	{
 		job: 'plan-scope',
@@ -69,21 +102,21 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	},
 	{
 		job: 'plan-tests',
-		touches: 'always',
+		touches: SOURCE_PREFIXES,
 		because:
-			'it decides what the test jobs are; skipping it leaves them with no matrix at all.',
+			'it decides what the test jobs are, so it skips only when they do — on a change that touches no source at all.',
 	},
 	{
 		job: 'tests-zone',
-		touches: 'always',
+		touches: SOURCE_PREFIXES,
 		because:
-			'the zones themselves already filter to what the change can reach — filtering the filter would drop the run that decides.',
+			'the zones already filter to what the change can reach, so this bound only answers the prior question: whether there is any source for a zone to reach. Filtering further would drop the run that decides.',
 	},
 	{
 		job: 'tests',
-		touches: 'always',
+		touches: SOURCE_PREFIXES,
 		because:
-			'the coverage verdict for a change is exactly what must not be skipped on the change that lowers it.',
+			'the coverage verdict is exactly what must not be skipped on a change that lowers it — and a change touching no source lowers nothing. It shares the bound with tests-zone deliberately: a coverage verdict computed over a suite that did not run is a gate passing over an empty scan root.',
 	},
 	{
 		job: 'quality-gate',
@@ -101,6 +134,12 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		touches: 'always',
 		because:
 			'it judges the refs on the forge, which change without any file changing.',
+	},
+	{
+		job: 'release-the-queue',
+		touches: 'always',
+		because:
+			'it wakes the queue after a green certification of the integration branch, which no file change describes.',
 	},
 	{
 		job: 'develop-protection-live',
@@ -130,9 +169,17 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	// line names what it reads.
 	{
 		job: 'site',
-		touches: ['apps/web/', 'package.json', 'bun.lock'],
+		touches: [
+			'apps/web/',
+			'packages/',
+			'plugins/',
+			'extensions/',
+			'tools/scripts/',
+			'package.json',
+			'bun.lock',
+		],
 		because:
-			'it runs `bun run site`, an astro build of apps/web. The data the site embeds is CHECKED IN under apps/web/src/data, and `generated-artifacts-check` — which always runs — is what catches those going stale.',
+			'it runs `bun run site`, an astro build of apps/web that BUNDLES source from outside it: `@delendai/cli` (its command registry, and through it every plugin), `@delendai/core`, `@delendai/proposals`, the UI extension and tools/scripts. A change there can break the build without touching apps/web — x00712 did, and develop stayed red (x00726). The data the site embeds is checked in under apps/web/src/data; `generated-artifacts-check`, which always runs, catches it going stale.',
 	},
 	{
 		job: 'sqlite-cutover-ready',

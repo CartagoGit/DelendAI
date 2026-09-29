@@ -207,4 +207,32 @@ describe('MCP metadata envelope compatibility', async () => {
 			await close();
 		}
 	});
+
+	it('keeps a schema-modelled error envelope for a client that listed tools first', async () => {
+		// A client that lists tools validates structuredContent even on
+		// error results, so a kept envelope must pass the client's own check.
+		const { client, close } = await connect(
+			hostConfig([
+				registerTool('failure', ERROR_SCHEMA, () =>
+					toolError('boom', 'retry-later'),
+				),
+			]),
+		);
+		try {
+			await client.listTools();
+
+			const result = await client.callTool({
+				name: 'spec_failure',
+				arguments: {},
+			});
+
+			expect(result.isError).toBe(true);
+			expect(result.structuredContent).toEqual({
+				ok: false,
+				error: { reason: 'boom', nextAction: 'retry-later' },
+			});
+		} finally {
+			await close();
+		}
+	});
 });

@@ -174,3 +174,50 @@ describe('helper role (f00093)', async () => {
 		).not.toBe('engine');
 	});
 });
+
+describe('roles the repository already used (r00052)', () => {
+	it.each([
+		[
+			'packages/proposals-sqlite/src/lib/repository/proposals-repo.ts',
+			'repository',
+		],
+		[
+			'packages/proposals-sqlite/src/lib/repository/slices-repo.ts',
+			'repository',
+		],
+		['packages/core/src/lib/evidence/evidence-repo.ts', 'repository'],
+		['packages/core/src/lib/api/stable-facade.ts', 'facade'],
+		['packages/core/src/lib/evidence/evidence-store.facade.ts', 'facade'],
+		['packages/state-sqlite/src/lib/registry-facade.ts', 'facade'],
+		['packages/proposals-sqlite/src/lib/sqlite-driver.ts', 'driver'],
+		['packages/state-sqlite/src/lib/sqlite-driver.ts', 'driver'],
+		['plugins/database/src/lib/query/sqlite-query-driver.ts', 'driver'],
+		['packages/core/src/lib/evidence/evidence-store.ts', 'store'],
+		[
+			'plugins/auto-agent-selector/src/lib/discovery/roster-store.ts',
+			'store',
+		],
+		['plugins/test-policy/src/lib/policy-store.ts', 'store'],
+		[
+			'packages/core/src/lib/workspace-migration/host-scope/global-config.migrator.ts',
+			'migration',
+		],
+	] as const)('classifies %s as %s', (path, role) => {
+		expect(classifyPath(path)).toBe(role);
+	});
+
+	it('never takes a file an earlier rule already classifies', () => {
+		const indexOf = (name: string) =>
+			DEFAULT_TS_RULES.findIndex((entry) => entry.name === name);
+		const last = DEFAULT_TS_RULES.length - 1;
+		expect(
+			['repository', 'facade', 'driver', 'store'].map(indexOf),
+		).toEqual([last - 3, last - 2, last - 1, last]);
+		// An `engine`-classified repository keeps its role.
+		expect(
+			classifyPath(
+				'packages/proposals-sqlite/src/lib/work-model/claims-repo.ts',
+			),
+		).toBe('engine');
+	});
+});

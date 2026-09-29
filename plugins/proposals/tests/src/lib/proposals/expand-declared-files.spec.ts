@@ -59,8 +59,12 @@ describe('expandDeclaredFiles', () => {
 		// brace is treated as one opaque choice list, not recursively
 		// expanded. This pins the current (non-goal: "no new glob engine")
 		// behavior rather than silently breaking on unexpected input.
+		//
+		// x00562 improved one half of it: the fragment `a{b` is neither a
+		// path nor a glob — no separator, no extension — so it is dropped
+		// instead of being claimed. The remaining two are still the
+		// documented limitation.
 		expect(expandDeclaredFiles('`a{b,{c,d}}.ts`')).toEqual([
-			'a{b',
 			'c}.ts',
 			'd}.ts',
 		]);

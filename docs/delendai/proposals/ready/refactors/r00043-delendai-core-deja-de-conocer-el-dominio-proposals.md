@@ -184,16 +184,21 @@ packages/core/                         plugins/proposals/
 - review-log: approved by delendai-review-r00043-s1-20260907 — Independent verification approved. Contracts remain proposals-agnostic, provider contracts cover workflow and adoption contributions generically, and safe empty fallbacks pass the slice gate.
 ### S2 — Extraer la adopción específica de proposals a un adaptador
 
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**:
-    - `packages/core/src/lib/adopt/adopt-project.tool.ts`
-    - `packages/core/src/lib/adopt/adoption-extension-registry.ts` (nuevo)
-    - `plugins/proposals/src/lib/adoption/proposals-adoption-extension.ts` (nuevo)
-    - `plugins/proposals/src/index.ts`
-    - `packages/core/tests/src/lib/adopt/adopt-project.tool.spec.ts`
-    - `plugins/proposals/tests/src/lib/adoption/proposals-adoption-extension.spec.ts` (nuevo)
-- **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/adopt-project.tool.spec.ts plugins/proposals/tests/src/lib/adoption/proposals-adoption-extension.spec.ts`
+    - `packages/core/src/lib/adopt/adopt-project-write-estimate.ts`
+    - `packages/core/src/lib/adopt/adoption-assessment.service.ts`
+    - `packages/core/src/lib/adopt/adoption-extension-registry.ts`
+    - `packages/core/src/lib/cli/assemble-core-tools.ts`
+    - `packages/core/src/lib/contracts/interfaces/adoption-extension.interface.ts`
+    - `packages/core/src/lib/contracts/interfaces/adoption-assessment.interface.ts`
+    - `packages/core/src/lib/contracts/constants/adoption-assessment-schema.constant.ts`
+    - `packages/core/tests/src/lib/adopt/adoption-assessment.spec.ts`
+    - `plugins/proposals/tests/src/lib/adoption/proposals-adoption-extension.spec.ts`
+    - `tools/scripts/inspect/core-proposals-boundary.script.ts`
+    - `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
+- **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/adoption-assessment.spec.ts plugins/proposals/tests/src/lib/adoption/proposals-adoption-extension.spec.ts`
 - **Acceptance**:
     - `adopt_project` puede generar una adopción válida sin que
       `packages/core/src` contenga `proposals` hardcodeado.
@@ -204,9 +209,22 @@ packages/core/                         plugins/proposals/
     - El comportamiento de `issues` queda expresado como una extensión
       explícita del host/plugin, no como una dependencia asumida por el core.
 
+Delivered 2026-09-25. The adapter (`proposals-adoption-extension.ts`,
+registered by the plugin) already bootstrapped the store; what kept
+`packages/core/src` knowing proposals was a second copy of it. The
+adoption write estimate built its own proposals-store file list and
+README and counted those eight files whether or not the plugin was
+loaded. The estimate now counts what each loaded adoption extension adds
+to the same plan `adopt_project` builds (`countAdoptionFileContributions`,
+breakdown kind `plugin`), so it is exact with the plugin and adds nothing
+without it; a spec asserts it equals the files the real plan writes. The
+assessment summary and the `adopt_project` help name no plugin. Nine
+inventory findings are resolved by S2. The `issues` acceptance item is
+not part of this delivery; it moves to S6.
+
 ### S3 — Convertir stable-facade en un registro de contribuciones
 
-- **Status**: pending
+- **Status**: done — verified 2026-09-25 by an evidence pass (a second agent; delivered in `7c861d2f9`). `stable-facade.ts` names no plugin: `stable-facade-registry.ts` holds contributions and the proposals plugin registers its tools through `registerProposalsStableTools`. The gate passes 14/14, and the boundary inventory lists `plugin: 'proposals'` in the facade as resolved by S3.
 - **DependsOn**: [S1]
 - **Files**:
     - `packages/core/src/lib/api/stable-facade.ts`
@@ -227,7 +245,7 @@ packages/core/                         plugins/proposals/
 
 ### S4 — Hacer agnóstico el ensamblado de skills y recommendedNextAction
 
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1, S2]
 - **Files**:
     - `packages/core/src/lib/cli/assemble-skills.ts`
@@ -246,9 +264,18 @@ packages/core/                         plugins/proposals/
     - Sin `proposals`, el core ofrece una acción genérica y válida basada en
       las capacidades realmente disponibles.
 
+Delivered 2026-09-25. The contribution assembly (`workflow-contribution-assembly.ts`,
+`proposals-workflow-contribution.ts`) was already in the tree and meets
+the first three acceptance items: `assemble-skills.ts` neither reads the
+index nor checks `isLoaded('proposals')`, and the gate passes. What was
+left were two messages that still named the proposals store and
+proposal files; they now speak of what loaded plugins contribute and of
+workflow files. Both inventory findings are resolved by S4.
+
+
 ### S5 — Lint de frontera y documentación de compatibilidad
 
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2, S3, S4]
 - **Files**:
     - `tools/scripts/lint/core-proposals-boundary.script.ts`
@@ -266,6 +293,74 @@ packages/core/                         plugins/proposals/
       `core contracts → plugin adapters → host composition`.
     - La documentación explica cómo añadir un nuevo plugin de workflow sin
       editar el núcleo.
+
+Progress 2026-09-25: the lint now also fails on a **stale** exception —
+one for a file under the scan root that no match uses any more. Eighteen
+such exceptions had outlived the couplings they excused (five already on
+develop, the rest removed by S2 and S4) and would have silently excused
+those couplings again had they come back. They are removed.
+
+Delivered 2026-09-25. The lint, its registration and its spec were in
+place (S0 onward, stale exceptions added with S4), and
+`docs/delendai/adr/d00014-core-plugin-boundary.md` already stated the
+direction `core contracts → plugin adapters → host composition`. What was
+missing is the guide: `ARCHITECTURE.md` now says how a workflow plugin
+plugs in without editing the core, through the three registries the
+proposals plugin uses (adoption extensions, workflow contribution, stable
+tool descriptors), with its files as the reference.
+
+### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
+
+- **Status**: review
+- **DependsOn**: [S2]
+- **Files**:
+    - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
+    - `packages/core/src/lib/contracts/interfaces/plugin-registry.interface.ts`
+    - `packages/core/src/lib/contracts/interfaces/adopt-project.interface.ts`
+    - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+    - `packages/core/src/lib/adopt/declared-adoptions.service.ts`
+    - `packages/core/src/lib/adopt/adopt-project.tool.ts`
+    - `packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts`
+    - `tools/scripts/generate/from-manifests.script.ts`
+    - `plugins/issues/plugin.manifest.ts`
+    - `plugins/proposals/src/lib/adoption/proposals-adoption-extension.ts`
+    - `packages/core/tests/src/lib/adopt/adopt-project.spec.ts`
+    - `packages/core/tests/src/lib/adopt/declared-adoptions.spec.ts`
+    - `packages/core/tests/src/lib/manifest/define-plugin-manifest.spec.ts`
+    - `plugins/proposals/tests/src/lib/adoption/proposals-adoption-extension.spec.ts`
+- **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt packages/core/tests/src/lib/manifest plugins/proposals/tests/src/lib/adoption`
+
+`adopt_project` still wrote `(Optional) Wire GitHub issues later: run
+setup_github, then set plugins.issues.options.repo …` from the core, and
+the proposals extension wired `plugins.issues` when `repo` was given. The
+issues plugin cannot contribute this itself the way proposals does: the
+point of `repo` is to wire issues for a later launch, and during adoption
+the plugin is usually not loaded. So the hint and the wiring now live in
+something the issues plugin declares without being loaded: its manifest,
+read through the first-party index. The core and the proposals adapter
+no longer name it.
+
+Delivered:
+
+- `IPluginAdoption` in the manifest. It declares which request field
+  wires the plugin (`repo`), which option it sets, the launch preset, and
+  the texts for the wired and not-wired cases. `launchPreset` is checked
+  against the manifest's own `presets`, so a declaration cannot launch a
+  preset that leaves the plugin out.
+- `from-manifests` carries the declaration into the first-party index.
+  `declaredAdoptions` applies every declaration. The core names no plugin,
+  and its spec drives the function with a fictional one.
+- The adoption stage is respected. A plugin the stage defers is not
+  wired, launched or verified, and it gets its "wire it later" step. At
+  the default stage (`core`), the old path through the proposals
+  extension promised `--preset full` and "Verify GitHub issues" for an
+  `issues` plugin the stage filter had just removed.
+- The steps keep their wording. The rationale line no longer mentions
+  proposals: "GitHub issues wired for {repo}; launch with --preset full
+  (or add issues to --plugins)."
+- Without `proposals` loaded, a `repo` at a stage that includes issues
+  now wires issues. Before, it did nothing. That is the point of the
+  slice: the wiring belongs to issues, not to proposals.
 
 ## Dependency graph
 

@@ -727,7 +727,7 @@ describe('renderInitBundle end-to-end (f00084 S6)', () => {
 });
 
 describe('plugin defaults (f00087 S1 preview)', () => {
-	it('audit initialises with auditDir and topActions', async () => {
+	it('initialises audit with its neutral default and NOT with our docs path', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers(
 				{
@@ -745,10 +745,14 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 				audit: { options: { auditDir?: string; topActions?: number } };
 			};
 		}>(configFile?.content);
-		expect(parsed.plugins.audit.options.auditDir).toBe(
-			'docs/delendai/proposals/done/audits',
-		);
+		// `topActions` means the same thing in every project, so writing
+		// it is what a default is for.
 		expect(parsed.plugins.audit.options.topActions).toBe(5);
+		// `auditDir` does not. The audit plugin documents its default as
+		// `<docsDir>/proposals/done/audits`, computed from the host's
+		// resolved docsDir; stamping a literal froze a path computed for
+		// nobody — and this assertion used to require that (x00613).
+		expect(parsed.plugins.audit.options.auditDir).toBeUndefined();
 	});
 
 	it('memory initialises with bm25 defaults', async () => {

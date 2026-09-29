@@ -23,6 +23,10 @@ import {
 	DEFAULT_ALLOCATOR_FS,
 	type IAllocatorFs,
 } from './proposal-id-allocator-fs';
+import {
+	createGitProposalIdSources,
+	type IProposalIdSources,
+} from './proposal-id-sources';
 
 type ICounters = Record<string, number>;
 
@@ -74,6 +78,12 @@ const readCounters = async (
 export interface IProposalIdAllocatorOptions {
 	readonly proposalsDirAbs: string;
 	readonly counterPathAbs: string;
+	/**
+	 * Where else this clone holds proposals: sibling worktrees, remote
+	 * refs, and the counter they all share. Defaults to reading them
+	 * through git; a spec injects them.
+	 */
+	readonly sources?: IProposalIdSources;
 }
 
 /**
@@ -99,24 +109,45 @@ export interface IProposalIdAllocatorOptions {
 export const allocateNextProposalId = async (
 	prefix: string,
 	options: IProposalIdAllocatorOptions,
-): Promise<string> =>
-	withFileMutex(options.counterPathAbs, async () => {
-		const stored = await readCounters(options.counterPathAbs);
-		const onDisk = await seedFromDisk(options.proposalsDirAbs);
+): Promise<string> => {
+	const sources =
+		options.sources ?? createGitProposalIdSources(options.proposalsDirAbs);
+	// One mutex for the whole clone, not one per checkout: a counter under
+	// each worktree's `.cache/` serialised agents that shared a checkout and
+	// let agents in two worktrees allocate the same id at the same moment.
+	const shared = await sources.sharedCounterPath();
+	const lockPath = shared ?? options.counterPathAbs;
+	return withFileMutex(lockPath, async () => {
 		// Disk always participates, not only when the counter file is missing.
 		// A present-but-stale counter (hand-written proposal, merge, other
 		// agent) used to reissue an id that was already on disk — reproduced
 		// as two `r00005` files, and again as `create_proposal` reissuing
-		// `a00084` during a00085.
-		const counters: ICounters = { ...onDisk };
-		for (const [key, value] of Object.entries(stored ?? {})) {
-			counters[key] = Math.max(counters[key] ?? 0, value);
+		// `a00084` during a00085. Other worktrees and remote refs participate
+		// for the same reason: that is where another agent's new proposal is
+		// before it reaches this tree.
+		const counters: ICounters = {
+			...(await seedFromDisk(options.proposalsDirAbs)),
+		};
+		const known = [
+			await readCounters(options.counterPathAbs),
+			shared === null ? null : await readCounters(shared),
+			await sources.elsewhere(),
+		];
+		for (const source of known) {
+			for (const [key, value] of Object.entries(source ?? {})) {
+				counters[key] = Math.max(counters[key] ?? 0, value);
+			}
 		}
 		const next = (counters[prefix] ?? 0) + 1;
 		counters[prefix] = next;
-		await writeFileAtomic(options.counterPathAbs, JSON.stringify(counters));
+		const serialised = JSON.stringify(counters);
+		// The checkout-local file stays current for `lint:proposal-id-drift`
+		// and `sync:counters`, which read it.
+		await writeFileAtomic(options.counterPathAbs, serialised);
+		if (shared !== null) await writeFileAtomic(shared, serialised);
 		return `${prefix}${String(next).padStart(5, '0')}`;
 	});
+};
 
 /** Resolves a kind name (`'feat'`, `'fix'`, …) to its single-letter prefix, or `null` if unknown. */
 export const prefixForKind = (kind: string): string | null =>

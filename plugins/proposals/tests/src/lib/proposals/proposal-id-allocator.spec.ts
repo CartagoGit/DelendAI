@@ -110,6 +110,67 @@ describe('allocateNextProposalId (f00016 S13)', async () => {
 	});
 });
 
+/**
+ * Two agents in two worktrees of one clone: each checkout had its own
+ * counter and could not see the other's new file, so both were handed
+ * the same id.
+ */
+describe('ids are unique across the clone, not only this checkout', async () => {
+	let root = '';
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'id-allocator-clone-'));
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	const checkout = async (name: string) => {
+		const proposalsDirAbs = join(root, name, 'proposals');
+		await mkdir(join(proposalsDirAbs, 'ready'), { recursive: true });
+		return {
+			proposalsDirAbs,
+			counterPathAbs: join(root, name, 'proposal-id-counters.json'),
+		};
+	};
+
+	it('skips an id another worktree or a remote ref already holds', async () => {
+		const mine = await checkout('work-a');
+		const id = await allocateNextProposalId('f', {
+			...mine,
+			sources: {
+				sharedCounterPath: async () => null,
+				elsewhere: async () => ({ f: 546 }),
+			},
+		});
+
+		expect(id).toBe('f00547');
+	});
+
+	it('hands two worktrees sharing one counter different ids, even concurrently', async () => {
+		const a = await checkout('work-a');
+		const b = await checkout('work-b');
+		const shared = {
+			sharedCounterPath: async () =>
+				join(
+					root,
+					'git-common',
+					'delendai',
+					'proposal-id-counters.json',
+				),
+			elsewhere: async () => ({}),
+		};
+
+		const ids = await Promise.all([
+			allocateNextProposalId('x', { ...a, sources: shared }),
+			allocateNextProposalId('x', { ...b, sources: shared }),
+			allocateNextProposalId('x', { ...a, sources: shared }),
+		]);
+
+		expect(new Set(ids).size).toBe(3);
+		expect([...ids].sort()).toEqual(['x00001', 'x00002', 'x00003']);
+	});
+});
+
 describe('prefixForKind', async () => {
 	it('resolves a known kind to its prefix', async () => {
 		expect(prefixForKind('feat')).toBe('f');

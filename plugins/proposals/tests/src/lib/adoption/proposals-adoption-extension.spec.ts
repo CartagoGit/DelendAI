@@ -1,4 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import {
+	buildAdoptionAssessment,
+	buildAdoptProjectPlan,
+	registerAdoptionExtensions,
+} from '@delendai/core/public';
+import { resetAdoptionExtensionsForTests } from '@delendai/core/lib/adopt/adoption-extension-registry';
 
 import { buildProposalsAdoptionExtension } from '@delendai/proposals/lib/adoption/proposals-adoption-extension';
 
@@ -75,8 +82,13 @@ describe('buildProposalsAdoptionExtension', () => {
 		).toBe(true);
 	});
 
-	it('wires proposals + issues and upgrades the launch step when repo is provided', () => {
+	it('adds proposals and leaves the issues wiring the core applied from its manifest as it found it', () => {
 		const extension = buildProposalsAdoptionExtension();
+		const issuesWiring = { options: { repo: 'acme/widgets' } };
+		const residual = [
+			'Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset full',
+			'Verify GitHub issues: run `delendai_setup_github` and confirm the acme/widgets tier resolves.',
+		];
 		const result = extension.applyAdoptionPlan?.({
 			derived: {
 				preset: 'standard',
@@ -93,13 +105,10 @@ describe('buildProposalsAdoptionExtension', () => {
 				repo: 'acme/widgets',
 			},
 			plan: {
-				config: { plugins: {} },
+				config: { plugins: { issues: issuesWiring } },
 				rationale: ['derived rationale'],
 				files: [],
-				residual: [
-					'Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset standard',
-					'GitHub repo provided (acme/widgets). Wire plugin-specific adoption explicitly if you want issue ingestion during adoption.',
-				],
+				residual,
 			},
 		});
 
@@ -107,19 +116,45 @@ describe('buildProposalsAdoptionExtension', () => {
 			plugins: Record<string, unknown>;
 		};
 		expect(plugins.plugins.proposals).toBeDefined();
-		expect(plugins.plugins.issues).toEqual({
-			options: { repo: 'acme/widgets' },
-		});
-		expect(result?.rationale).toContain(
-			'GitHub issues wired for acme/widgets — the config loads the proposals + issues plugins; launch with --preset full (or --plugins proposals,issues).',
+		expect(plugins.plugins.issues).toEqual(issuesWiring);
+		expect(result?.rationale).toEqual(['derived rationale']);
+		expect(result?.residual.slice(0, residual.length)).toEqual(residual);
+	});
+});
+
+describe('the adoption write estimate with the proposals extension loaded', () => {
+	afterEach(() => {
+		resetAdoptionExtensionsForTests();
+	});
+
+	it('counts exactly the store files the adoption plan writes', () => {
+		registerAdoptionExtensions('proposals', [
+			buildProposalsAdoptionExtension(),
+		]);
+		const request = {
+			analysis,
+			topLevelDirs: [],
+			projectName: 'Workspace',
+			namespacePrefix: 'delendai',
+			mcpServerName: 'delendai',
+			docsDir: 'docs/delendai',
+		};
+
+		const plan = buildAdoptProjectPlan(request);
+		const estimate = buildAdoptionAssessment(analysis, [], {
+			projectName: 'Workspace',
+			namespacePrefix: 'delendai',
+			mcpServerName: 'delendai',
+			docsDir: 'docs/delendai',
+		}).conflicts.find((conflict) => conflict.kind === 'write-estimate');
+		const storeFiles = plan.files.filter((file) =>
+			file.path.startsWith('docs/delendai/proposals/'),
 		);
-		expect(result?.residual[0]).toContain('--preset full');
+
+		expect(storeFiles.length).toBeGreaterThan(0);
 		expect(
-			result?.residual.some((line) =>
-				line.includes(
-					'Verify GitHub issues: run `delendai_setup_github`',
-				),
-			),
-		).toBe(true);
+			estimate?.breakdown?.find((entry) => entry.kind === 'plugin'),
+		).toMatchObject({ count: storeFiles.length, exact: true });
+		expect(estimate?.count).toBe(plan.files.length + 1);
 	});
 });

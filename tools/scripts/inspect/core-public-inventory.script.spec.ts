@@ -24,6 +24,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	classify,
 	parseBarrel,
+	parseBarrelText,
 	renderJson,
 	renderMd,
 } from './core-public-inventory.script';
@@ -140,5 +141,63 @@ describe('renderJson + renderMd (r00027 S1)', () => {
 				counts.internal +
 				counts.deprecated,
 		).toBe(exports.length);
+	});
+});
+
+/**
+ * A comment may not change the count.
+ *
+ * Two gates read this inventory — `lint:core-public-surface-budget` and
+ * `lint:core-public-consumers` — so anything that makes an export
+ * invisible here makes it invisible to both. It happened twice: first
+ * with a JSDoc block (fixed, and the fix is pinned below), then with an
+ * ordinary `//` line, which was explicitly believed to be safe. Prose
+ * containing a single `;` split the statement in two, neither half
+ * started with `export`, and every name in the block left the inventory.
+ * Documenting an export was enough to move the number a gate refuses on.
+ */
+describe('parseBarrelText — prose cannot change the inventory', () => {
+	const NAMES = ['alpha', 'beta', 'gamma'] as const;
+	const plain = `export { alpha, beta, gamma } from '../lib/x/index';`;
+
+	const namesIn = (text: string): readonly string[] =>
+		parseBarrelText(text).map((item) => item.name);
+
+	it('reads the names with no comment at all', () => {
+		expect(namesIn(plain)).toEqual([...NAMES]);
+	});
+
+	it('is unchanged by a JSDoc block above the statement', () => {
+		expect(namesIn(`/**\n * Why these exist.\n */\n${plain}`)).toEqual([
+			...NAMES,
+		]);
+	});
+
+	it('is unchanged by a line comment inside the block', () => {
+		expect(
+			namesIn(
+				`export {\n\talpha,\n\t// beta is here for a reason\n\tbeta,\n\tgamma,\n} from '../lib/x/index';`,
+			),
+		).toEqual([...NAMES]);
+	});
+
+	it('is unchanged by a semicolon written in prose — the case that bit', () => {
+		expect(
+			namesIn(
+				`export {\n\talpha,\n\t// A boot happens once; pull requests land all day.\n\tbeta,\n\tgamma,\n} from '../lib/x/index';`,
+			),
+		).toEqual([...NAMES]);
+	});
+
+	it('still lets a line comment mark an export deprecated', () => {
+		// The tags survive because `classify` reads them off this text.
+		// Only the tags do: prose cannot influence the count, and can
+		// still say what an export's status is.
+		const parsed = parseBarrelText(
+			`export {\n\t// @deprecated use beta\n\talpha,\n} from '../lib/x/index';`,
+		);
+
+		expect(parsed.map((item) => item.name)).toEqual(['alpha']);
+		expect(parsed[0]?.deprecatedTag).toBe(true);
 	});
 });

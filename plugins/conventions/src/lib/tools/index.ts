@@ -6,9 +6,15 @@
  */
 import type { IToolRegistration } from '@delendai/core/public';
 
-import { createFsDirReader } from '../services/fs-dir-reader.service';
+import {
+	createFsArchitectureReader,
+	createFsDirReader,
+} from '../services/fs-dir-reader.service';
+import { buildCheckArchitectureRegistration } from './check-architecture.tool';
 import { buildCheckConventionsRegistration } from './check-conventions.tool';
 import { buildClassifyPathsRegistration } from './classify-paths.tool';
+import { buildExplainPathRegistration } from './explain-path.tool';
+import { buildSuggestPathRegistration } from './suggest-path.tool';
 
 export interface IConventionsToolsOptions {
 	readonly namespacePrefix: string;
@@ -22,6 +28,12 @@ export const buildConventionsToolRegistrations = async (
 	options: IConventionsToolsOptions,
 ): Promise<readonly IToolRegistration[]> => [
 	buildClassifyPathsRegistration(options.namespacePrefix),
+	buildSuggestPathRegistration(options.namespacePrefix),
+	buildExplainPathRegistration(options.namespacePrefix),
+	buildCheckArchitectureRegistration({
+		namespacePrefix: options.namespacePrefix,
+		reader: await createFsArchitectureReader(options.workspaceRoot),
+	}),
 	buildCheckConventionsRegistration({
 		namespacePrefix: options.namespacePrefix,
 		reader: await createFsDirReader(options.workspaceRoot),

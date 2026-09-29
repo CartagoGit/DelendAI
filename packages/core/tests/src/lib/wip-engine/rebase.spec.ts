@@ -91,6 +91,13 @@ describe('rebaseWipOntoNewBase', () => {
 			'export const other = 2;',
 		);
 		expect(repo.git('show', `${REF}:src/alpha.ts`)).toContain('// agent a');
+		// The replay still names its ref, exactly once.
+		expect(
+			repo
+				.git('show', '-s', '--format=%B', REF)
+				.split('\n')
+				.filter((line) => line.startsWith('Delendai-Wip-Ref:')),
+		).toEqual([`Delendai-Wip-Ref: ${REF}`]);
 		expect(headState(repo)).toEqual(before);
 		expect(repo.indexBytes().equals(indexBefore)).toBe(true);
 	});

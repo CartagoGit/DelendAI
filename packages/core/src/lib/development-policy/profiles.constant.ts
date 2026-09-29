@@ -30,4 +30,119 @@ export const DEVELOPMENT_PROFILES = [
  * deliberately the historical model: installing a newer delendai must not
  * silently change how an existing project integrates work.
  */
-export const DEFAULT_DEVELOPMENT_PROFILE: IDevelopmentProfile = 'shared-direct';
+/**
+ * What a workspace gets when nothing is configured.
+ *
+ * It was `shared-direct`: no work ref at all, every agent committing
+ * straight onto the integration branch in the shared tree. So a project
+ * that adopted delendai without choosing a profile gave its agents
+ * nowhere to work but the shared checkout — while every guard built for
+ * the work-ref model refused them with "this profile has no work-ref
+ * model". The whole model applied only to the two `shared-checkout-*`
+ * profiles: in practice, only to projects whose forge has pull requests
+ * AND whose integration branch is protected by them.
+ *
+ * `shared-checkout-merge` is the one that asks nothing of the forge. Every
+ * agent gets a ref of its own, the checkout stays on the integration
+ * branch, and the work is certified by the LOCAL gate before it lands —
+ * no pull request, no review object, no branch protection, nothing that a
+ * plain git remote cannot do. Projects that want a pull request say so;
+ * projects that want nothing between an edit and the branch still have
+ * `shared-direct`.
+ *
+ * Choosing the weakest model as the default made the strongest guarantees
+ * opt-in, which is backwards for a default.
+ */
+export const DEFAULT_DEVELOPMENT_PROFILE: IDevelopmentProfile =
+	'shared-checkout-merge';
+
+/**
+ * The kinds of work a unit can carry, named in its ref (f00644). Closed
+ * on purpose: a kind outside this list is refused, so a typo never
+ * becomes a new kind, and a new kind is added here and nowhere else.
+ */
+export const WORK_KINDS = [
+	'implement',
+	'review',
+	'create',
+	'revise',
+	'audit',
+	'retire',
+	'repair',
+	// Carries other reviewers' verdicts after something went wrong; its
+	// pull request closes proposals only with the owner's label (x00743).
+	'reconcile',
+] as const;
+
+/**
+ * The kinds whose units record verdicts and change nothing but documents
+ * and generated files (x00741).
+ */
+export const DOCUMENT_ONLY_KINDS: readonly (typeof WORK_KINDS)[number][] = [
+	'review',
+	'reconcile',
+];
+
+/**
+ * The proposal segment of a review batch: one branch reviewing many
+ * proposals, each claimed with a `Claims: <id>` commit (f00644).
+ */
+export const REVIEW_BATCH_ID = 'batch';
+
+/** The kind a unit has when nothing names one. */
+export const DEFAULT_WORK_KIND = 'implement';
+
+/** The placeholders a work-ref template may use, in one list. */
+export const WORK_REF_PLACEHOLDERS = [
+	'agent',
+	'kind',
+	'proposal',
+	'slice',
+	'generation',
+	'topic',
+] as const;
+
+/**
+ * The shape of a work ref, after its namespace: who, what kind of work,
+ * on what, and what it is about. Stated ONCE — `resolve.ts` used to
+ * re-spell it when a project set a namespace prefix, so the two disagreed
+ * the moment either changed, and a project with a prefix silently got
+ * the other shape (x00563). Change the scheme here and every writer and
+ * reader follows.
+ */
+export const WORK_REF_SHAPE =
+	'${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
+
+/**
+ * Programs an agent runs inside, which are not agents (x00694). The agent
+ * segment of a work ref names the model that does the work: GLM or
+ * MiniMax driven through the Copilot extension is `glm-…` or `minimax-…`,
+ * never `copilot`. On 2026-09-27 an agent entered
+ * `delendai/wip/copilot/review/…`, and nothing could tell which model it
+ * was. Compared as whole names, so a model such as `gpt-5-codex` is not
+ * mistaken for the `codex` program.
+ */
+export const HOST_APPLICATION_IDS: readonly string[] = [
+	'copilot',
+	'github-copilot',
+	'vscode',
+	'visual-studio-code',
+	'code',
+	'claude-code',
+	'cursor',
+	'windsurf',
+	'cline',
+	'roo',
+	'roo-code',
+	'kilo',
+	'kilo-code',
+	'continue',
+	'aider',
+	'opencode',
+	'codex',
+	'codex-cli',
+	'codex-mcp-client',
+	'gemini-cli',
+	'zed',
+	'mcp-inspector',
+];

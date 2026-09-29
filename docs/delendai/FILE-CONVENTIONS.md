@@ -135,6 +135,28 @@ These categories are exempt from the role-suffix rule:
    subagent discovery. Only the scaffolder (`scaffoldAgentFile`,
    `scaffoldClaudeAgentFile`, `scaffoldCodexAgentFile`) emits them.
 
+### Test support
+
+Fakes and test helpers belong in `@delendai/test-kit`. A fake that two
+packages need goes into the kit instead of being copied next to one of
+them; `lint:test-unsafe-casts` already pushes specs toward it.
+
+- **Specs may import test support**: the kit, `tests/`, `testing/`,
+  `__tests__/` and `fixtures/` directories.
+- **Production source may not.** Every `.ts`/`.tsx`/`.mts`/`.cts` file
+  under `packages/*/src` or `plugins/*/src` ships, unless it is a spec,
+  sits in one of those directories, or belongs to the test-kit package.
+  Such a file may not import `@delendai/test-kit` or reach any of the
+  above by a relative path. Otherwise a test dependency becomes a runtime
+  one.
+- A helper that only specs use, such as
+  `plugins/<name>/src/lib/testing/*.helper.ts`, is test support and may
+  import the kit.
+
+`lint:no-test-support-in-production` enforces this inside
+`lint:architecture`, and `conventions_check_architecture` reports it
+with the other layer rules.
+
 ## The classifier
 
 `tools/scripts/lint/file-conventions.ts` exports a pure

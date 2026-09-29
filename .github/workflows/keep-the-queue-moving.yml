@@ -11,7 +11,16 @@ name: keep-the-queue-moving
 # stays stopped until a human notices — which defeats the point of arming
 # auto-merge at all.
 #
-# So the merge itself refreshes the rest.
+# Refreshing a candidate is NOT done here, and deliberately so: a branch
+# updated by this workflow's own token produces a bot commit, and the
+# forge parks the runs it triggers as `action_required` — the candidate
+# then sits permanently unmergeable with nothing red on it (#99, measured:
+# twenty-one parked runs across five pull requests). The push that the
+# forge will build has to come from the machine that owns the work.
+#
+# So this job REPORTS: which candidates are stale, which armed ones are
+# red, and it ends non-zero when the queue is stuck, because a stuck queue
+# that reports success is a stuck queue nobody sees (x00557).
 
 on:
     push:
@@ -40,22 +49,39 @@ permissions:
     actions: write
 
 jobs:
-    update-stale-candidates:
-        name: update-stale-candidates
+    report-stale-candidates:
+        name: report-stale-candidates
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
-            - name: Checkout (the script lives in this repo)
+            # Checkout + Bun + INSTALL. This job used to stop at Bun, which
+            # was enough for the queue script and not for the reaper: the
+            # reaper resolves the development policy through core, and core
+            # reaches `@modelcontextprotocol/sdk`. Every run after that
+            # import landed died on `Cannot find module`, so a merged ref
+            # (#193's) was never deleted and lingered in every clone.
+            # `lint:workflow-runner-bootstrap` now reads a step's import
+            # graph and refuses a job like the old one.
+            - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@v7
 
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
               with:
-                  bun-version: 1.4.2
+                  # FULL history. This job MERGES candidate refs against
+                  # the integration head, and the action's default is a
+                  # depth-1 clone — one commit, no common ancestor in the
+                  # object store. Every refresh in it therefore died on
+                  # `fatal: refusing to merge unrelated histories` and was
+                  # reported as "does not merge trivially, that is the
+                  # author's call", which sent a person to resolve a
+                  # conflict that did not exist.
+                  fetch-depth: '0'
 
-            - name: Update candidates that are behind, and report the red ones
+            - name: Report candidates that are behind, and the armed ones that are red
               env:
                   GH_TOKEN: ${{ github.token }}
-              run: bun tools/scripts/forge/keep-the-queue-moving.script.ts --apply
+              run: bun tools/scripts/forge/keep-the-queue-moving.script.ts
 
             # The other half of keeping the queue moving: a ref whose
             # pull request is finished has delivered whatever it was
@@ -76,7 +102,74 @@ jobs:
             # branch provably contains; a ref with no pull request is
             # never touched, since it may be the only copy of somebody's
             # work.
+            # `if: always()` because the step above now ends red when the
+            # queue is stuck (x00557) — and a stuck queue is exactly when
+            # finished refs pile up. Skipping the cleanup then would make
+            # the report cost the thing it was reporting about (x00561).
+            # Reaped FIRST, before anything is brought forward. It used to
+            # run last, so a ref whose pull request had just merged was
+            # handed to the refresh ("push refused"), then reported by
+            # the doctor as a broken invariant, and only then deleted:
+            # wasted work and a red signal about something that was
+            # already finished (x00622). Finished refs go first; the
+            # refresh and the doctor then see only live candidates.
             - name: Reap the refs whose pull requests are finished
+              if: always()
               env:
+                  # The queue job judges the whole forge (x00678).
+                  REF_LIFECYCLE_SCOPE: repository
                   GH_TOKEN: ${{ github.token }}
               run: bun run lint:ref-lifecycle -- --reap
+
+            # A pull request not opened from a publication fails
+            # `pr-head-shape` and is neither brought forward nor armed, so
+            # it stayed open and red until somebody noticed (#514, from a
+            # work ref, x00690). It is closed with the reason and the way to
+            # publish; its branch is never touched.
+            - name: Close the pull requests not opened from a publication
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun tools/scripts/forge/close-unpublished-prs.script.ts --apply
+
+            # CI reports the candidates that are behind; it does not bring
+            # them forward (x00628, as x00557 S2 decided).
+            #
+            # This step applied, was taken back, and applied again, each
+            # time with a written reason, so two sources disagreed about who
+            # owns the transition. Measured on 2026-09-24: each time the
+            # integration branch moved, this step merged it into every open
+            # candidate as `delendai-queue`, and each of those merges left a
+            # generated file stale. #362, #366 and #368 went red on `drift`
+            # after it, repeatedly, while the same transition was also being
+            # made on the owner machine as the owner. That is two writers
+            # for one transition, and the one here is the wrong one: a bot's
+            # commit starts no workflows, and it merges generated files as
+            # text.
+            #
+            # Nothing is lost by stopping. The integration branch does not
+            # require a candidate to be up to date (`strict: false`), and
+            # every candidate is validated on the forge's merge ref, which
+            # already contains the integration branch. When a candidate does
+            # need to be brought forward, the owner machine does it and
+            # regenerates what it merges.
+            - name: Report the candidates that are behind (the owner machine brings them forward)
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run forge:refresh || true
+
+            # Say, in one screen, whether the promises the work-ref
+            # model makes are actually holding on the forge. Until this
+            # existed the answer came from a person reading a Git graph
+            # and noticing something wrong — which found the same broken
+            # promise three separate times, hours late, and started the
+            # diagnosis from scratch each time.
+            #
+            # `--forge` because the checkout-shaped invariants are
+            # meaningless on a runner, whose checkout is always clean and
+            # always detached. Read-only, and never blocking: it reports
+            # what is true, and the steps above are what change it.
+            - name: Report whether the workflow invariants hold
+              if: always()
+              run: bun run work:doctor -- --forge || true

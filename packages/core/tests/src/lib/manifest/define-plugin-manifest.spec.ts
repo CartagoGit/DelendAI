@@ -26,6 +26,58 @@ describe('definePluginManifest', () => {
 		expect(manifest.package).toBe('@delendai/search');
 	});
 
+	describe('adoption', () => {
+		const base = {
+			id: 'tracker' as const,
+			package: '@delendai/tracker' as const,
+			version: '0.1.1',
+			visibility: 'public' as const,
+			summary: 'A tracker.',
+			tags: ['tracker'],
+			maturity: 'beta' as const,
+			permissions: ['network' as const],
+			presets: ['full'],
+			tokenBudget: 1024,
+			dependencies: ['@delendai/core'],
+			capabilities: ['track'],
+		};
+		const adoption = {
+			from: 'repo' as const,
+			option: 'repo',
+			launchPreset: 'full',
+			rationale: 'Wired for {value}.',
+			whenWired: 'Verify {value}.',
+			whenNotWired: 'Wire it later.',
+		};
+
+		it('accepts a declaration whose launch preset loads the plugin', () => {
+			expect(
+				definePluginManifest({ ...base, adoption }).adoption
+					?.launchPreset,
+			).toBe('full');
+		});
+
+		it('refuses a launch preset that would leave the plugin out', () => {
+			expect(() =>
+				definePluginManifest({
+					...base,
+					adoption: { ...adoption, launchPreset: 'lean' },
+				}),
+			).toThrow(
+				/adoption\.launchPreset .*lean.* is not one of this plugin's presets/u,
+			);
+		});
+
+		it('refuses a blank step', () => {
+			expect(() =>
+				definePluginManifest({
+					...base,
+					adoption: { ...adoption, whenNotWired: '  ' },
+				}),
+			).toThrow(/adoption\.whenNotWired must not be empty/u);
+		});
+	});
+
 	describe('configDocs (f00502 S3)', () => {
 		const base = {
 			id: 'browser' as const,

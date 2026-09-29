@@ -151,6 +151,10 @@ export const CONFIG_FILE_SCHEMA = z
 		managedSurface: z
 			.object({
 				loading: z.enum(['lazy', 'eager']).optional(),
+				// Read by `assemble.ts` and typed in `load-config-file.ts`, but
+				// missing here — so a workspace that set it got a config
+				// diagnostic for an option the runtime honours.
+				progressiveDisclosure: z.boolean().optional(),
 				idleTtlMs: z.number().int().nonnegative().nullable().optional(),
 				maxWarmPlugins: z
 					.number()
@@ -158,6 +162,7 @@ export const CONFIG_FILE_SCHEMA = z
 					.nonnegative()
 					.nullable()
 					.optional(),
+				minWarmMs: z.number().int().nonnegative().nullable().optional(),
 			})
 			.strict()
 			.optional(),

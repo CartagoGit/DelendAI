@@ -1,11 +1,14 @@
-import { dirname, join } from 'node:path';
+import { scopeToCaller } from '../services/scope-to-caller.service';
+import { isSelfApproval } from '../shared/independent-approval';
+import { join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import {
-	redactSecrets,
 	VALIDATE_EVIDENCE_SCHEMA,
+	callerCheckout,
+	redactSecrets,
+	sharedCheckout,
 	toolError,
-	toolJson,
 	toolOk,
 	withFileMutex,
 	writeFileAtomic,
@@ -13,7 +16,9 @@ import {
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentNames } from './agent-names.tool';
-import type { IGitRunner } from '../shared/git-runner';
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
+import { verdictClaimRefusal } from '../services/review-claim.service';
+import { canonicalRoleOf } from '../shared/agent-conventions';
 import { toolErrorEnvelope } from '../shared/tool-envelope';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
@@ -33,18 +38,17 @@ import {
 	kindMatchesId,
 	newProposalIdSchema,
 } from '../contracts/schemas/proposal-kind.schema';
-import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
+import { readTextOrNull } from '../proposals/index-reader';
 import { appendPeerReviewJsonl } from '../shared/peer-review-log';
 import { escapeRegExp, slugFromTitle } from '../shared/string-helpers';
 import {
-	deriveSliceStatuses,
 	parseProposalSlicePlan,
 	planDisjointnessIssues,
-	validateClaim,
 } from '../swarm/proposal-slice-plan';
 import {
 	parseReviewState,
 	renderReviewLines,
+	withClosingLines,
 	reviewTransition,
 	type IReviewRound,
 } from '../swarm/proposal-review';
@@ -61,22 +65,32 @@ import {
 	checkApproveIdentity,
 	recordReviewSubmitIdentity,
 } from '../services/review-identity';
-import {
-	markProposalDoneForAutoTransition,
-	recordAutoTransitionRepair,
-} from '../services/auto-transition';
+import { markProposalDoneForAutoTransition } from '../services/auto-transition';
 import {
 	buildCloseSliceAlreadyClosedResult,
 	buildCloseSliceClosedResult,
 } from '../services/close-slice.service';
 import type { IValidateEvidenceDeps } from './proposal-transition.tool';
-import { locateProposal } from '../proposals/locate';
+import {
+	attributeDelivery,
+	checkAttributedApprover,
+	everySliceReviewed,
+	needsAttributedRound,
+	openAttributedRound,
+	renderAttributionLine,
+	unrecordedAttribution,
+	withShippedIn,
+	type IReviewAttribution,
+} from '../services/review-attribution';
+import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
+import { moveProposalAfterVerdict } from './review-verdict-lifecycle';
+import { movesStayOutOfTheIndex } from '../shared/index-free-git-runner';
 import { buildCloseBlockerGuidance } from '../services/close-blocker';
 import {
 	isEvidenceFresh,
 	type IValidateEvidence,
 } from '../services/transition-evidence';
-import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
+import { resolveIndexedDoc } from './authoring-options';
 import type {
 	IAuthoringToolOptions,
 	ICloseSliceValidationDecision,
@@ -85,6 +99,12 @@ import {
 	maybePersistAfterSlice,
 	type IPersistResult,
 } from './auto-work-persist';
+import { proposalPublishNextAction } from './proposal-publish-next-action';
+import {
+	createPrivateIndexCommitPort,
+	publicationRefFor,
+	publishProposalOnRef,
+} from './publish-proposal';
 
 type ICloseSlicePersistConfig = {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
@@ -201,6 +221,13 @@ export const REVIEW_INPUT_SCHEMA = z.object({
 	agent: z.string().min(1),
 	note: z.string().optional(),
 	evidence: REVIEW_EVIDENCE_SCHEMA.optional(),
+	/**
+	 * The commit that delivered the slice. Needed only when no review
+	 * round was ever opened for it: the implementer is then derived from
+	 * the pull request that merged this commit, never named by the
+	 * reviewer. On approve, `evidence.commitHash` serves the same purpose.
+	 */
+	commitHash: z.string().optional(),
 });
 
 export const REVIEW_OUTPUT_SCHEMA = z.object({
@@ -232,6 +259,14 @@ export const REVIEW_OUTPUT_SCHEMA = z.object({
 	quorum: z.number().int().positive().optional(),
 	approvalsStanding: z.array(z.string()).optional(),
 	quorumMessage: z.string().optional(),
+	/** Present when the round was opened from Git for this verdict. */
+	attributedTo: z.string().optional(),
+	/** The approval ended the proposal and `review → done` ran. */
+	proposalClosed: z.boolean().optional(),
+	/** Why that transition was refused, when it was. */
+	proposalCloseBlocker: z.string().optional(),
+	/** A change request sent the proposal back to `in-progress`. */
+	proposalReopened: z.boolean().optional(),
 });
 
 const toApproveEvidenceError = (reason: string): IToolTextResult =>
@@ -480,6 +515,7 @@ export const CREATE_PROPOSAL_INPUT_SCHEMA = z.object({
 	nonGoals: z.array(z.string()).optional(),
 	globalGate: z.enum(['lint', 'type', 'e2e', 'none']).optional(),
 	slices: z.array(SLICE_IN).optional(),
+	checkout: callerCheckout.arg.optional(),
 });
 
 export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
@@ -495,6 +531,22 @@ export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	),
 	indexCount: z.number(),
 	redactedSecrets: z.number().int().nonnegative().optional(),
+	/** How to publish the file just written; never optional, see the helper. */
+	nextAction: z.string(),
+	/**
+	 * Whether the tool itself got the proposal onto its publication ref.
+	 *
+	 * `nextAction` alone was advice, and advice is what an agent skips —
+	 * twice in one week a proposal was left untracked in a shared
+	 * checkout. When this is `true` the work already reached the remote
+	 * and `publishedRef` names where; when it is `false`,
+	 * `publishReason` says why, and `nextAction` is still owed.
+	 */
+	published: z.boolean(),
+	/** The ref the proposal was published on, when one was derived. */
+	publishedRef: z.string().optional(),
+	/** Why publication did not happen, when it did not. */
+	publishReason: z.string().optional(),
 });
 
 // emit the canonical slice shape the repo linter validates
@@ -612,6 +664,14 @@ interface ICreateProposalRequest {
 
 interface ICreateProposalWriteResult {
 	readonly ok: true;
+	/**
+	 * The allocated (or supplied) proposal id.
+	 *
+	 * Carried explicitly because callers need it to name the publication
+	 * ref, and re-deriving it by slicing the filename is a regex that
+	 * silently breaks the first time the naming convention moves.
+	 */
+	readonly id: string;
 	readonly file: string;
 	readonly path: string;
 	readonly disjointnessIssues: readonly {
@@ -815,6 +875,7 @@ export const createProposalDocument = async (
 		: absPath;
 	return {
 		ok: true,
+		id,
 		file: finalFileRel,
 		path: finalAbsPath,
 		disjointnessIssues: issues,
@@ -841,6 +902,12 @@ const flipSliceStatusDone = (block: string): string => {
 	}
 	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
 };
+
+/** A slice a reviewer sent back is open work again, whatever it claimed. */
+const flipSliceStatusInProgress = (block: string): string =>
+	block
+		.replace(/^([-*]\s*\*\*Status\*\*:).*$/m, '$1 in-progress')
+		.replace(/^([-*]\s*status:).*$/m, '$1 in-progress');
 
 const isSliceStatusDone = (block: string): boolean =>
 	/^[-*]\s*\*\*Status\*\*:\s*done\s*$/im.test(block) ||
@@ -959,6 +1026,7 @@ export const buildCreateProposalRegistration = (
 ): IToolRegistration => ({
 	id: 'create_proposal',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.',
 	tags: ['proposals'],
@@ -982,7 +1050,31 @@ export const buildCreateProposalRegistration = (
 				nonGoals?: string[] | undefined;
 				globalGate?: string | undefined;
 				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
+				checkout?: string | undefined;
 			}) => {
+				// The document belongs in the caller's working
+				// tree. The content tree and its per-tree derivatives move
+				// with the checkout; the id counter and the lock do not —
+				// those are facts about the repository, and a per-worktree
+				// copy of either would hand out the same id twice.
+				const forCheckout = callerCheckout.writeRoot({
+					root: 'caller-checkout',
+					serverRoot: options.workspaceRoot,
+					requested: args.checkout,
+				});
+				if (!forCheckout.ok) {
+					return toolError(
+						forCheckout.refusal,
+						'Pass the absolute path of a working tree of this repository, or omit `checkout` to write in the server\u2019s own root.',
+					);
+				}
+				const scoped =
+					forCheckout.source === 'request'
+						? callerCheckout.scopePaths(options, forCheckout.root, [
+								'proposalsDirAbs',
+								'indexPathAbs',
+							])
+						: options;
 				const created = await createProposalDocument(
 					{
 						...args,
@@ -992,22 +1084,149 @@ export const buildCreateProposalRegistration = (
 							| 'e2e'
 							| 'none',
 					},
-					options,
+					scoped,
 				);
 				if (!created.ok) {
 					return toolError(created.reason, created.nextAction);
 				}
+				// Publication is the tool's job, not an instruction the
+				// caller may skip: a proposal only in someone's working
+				// copy is invisible to every other agent. Failures are
+				// reported, never thrown — the document exists either way.
+				// A runner the server built for its own root would commit
+				// in the wrong tree. When the caller named a checkout, the
+				// commit belongs there; when it did not, nothing changes.
+				const serverGit = options.run ?? options.persistGit;
+				const git =
+					serverGit !== undefined && forCheckout.source === 'request'
+						? createGitRunner(forCheckout.root)
+						: serverGit;
+				// Written into a unit's worktree, the proposal travels with
+				// that unit's publication. Publishing it on a ref of its own
+				// as well put the same file on two refs, the second one a
+				// pull request nobody opened.
+				const unitBranch =
+					git === undefined || forCheckout.source !== 'request'
+						? undefined
+						: await workUnitBranch(
+								git,
+								options.developmentPolicy?.branches
+									.workRefPrefix,
+							);
+				const publication =
+					unitBranch !== undefined
+						? {
+								published: false,
+								reason: `written in the unit on ${unitBranch}: commit it there, and it is published with the unit (\`delendai work publish\`)`,
+							}
+						: git === undefined
+							? {
+									published: false,
+									reason: 'no git runner is available to this host, so the file must be published by the step in nextAction',
+								}
+							: await publishProposalOnRef({
+									proposalId: created.id,
+									title: args.title,
+									relativePath: relative(
+										scoped.workspaceRoot,
+										created.path,
+									),
+									message: `docs(proposals): add ${created.id}`,
+									git,
+									commit: createPrivateIndexCommitPort(
+										forCheckout.source === 'request'
+											? forCheckout.root
+											: scoped.workspaceRoot,
+									),
+									...(options.developmentPolicy === undefined
+										? {}
+										: {
+												policy: {
+													requiresPullRequest:
+														options
+															.developmentPolicy
+															.integration
+															.requiresPullRequest,
+													publicationRefPrefix:
+														options
+															.developmentPolicy
+															.branches
+															.publicationRefPrefix,
+													workRefTemplate:
+														options
+															.developmentPolicy
+															.branches
+															.workRefTemplate,
+													integration:
+														options
+															.developmentPolicy
+															.branches
+															.integration,
+													release:
+														options
+															.developmentPolicy
+															.branches.release,
+												},
+											}),
+								});
 				return toolOk({
 					file: created.file,
 					path: created.path,
 					disjointnessIssues: created.disjointnessIssues,
 					indexCount: created.indexCount,
 					redactedSecrets: created.redactedSecrets,
+					nextAction:
+						unitBranch !== undefined
+							? `Commit ${relative(scoped.workspaceRoot, created.path)} in the unit on ${unitBranch} (run \`bun run gen:all\` first if the project derives files from proposals), then publish the unit with \`delendai work publish\`.`
+							: proposalPublishNextAction({
+									template: options.publishCommand,
+									policy: options.developmentPolicy,
+									workspaceRoot: scoped.workspaceRoot,
+									absPath: created.path,
+									ref: publicationRefFor(
+										options.developmentPolicy?.branches
+											.publicationRefPrefix ??
+											'delendai/pr/',
+										created.id,
+										{
+											title: args.title,
+											template:
+												options.developmentPolicy
+													?.branches.workRefTemplate,
+										},
+									),
+								}),
+					published: publication.published,
+					...(publication.ref === undefined
+						? {}
+						: { publishedRef: publication.ref }),
+					...(publication.reason === undefined
+						? {}
+						: { publishReason: publication.reason }),
 				});
 			},
 		);
 	},
 });
+
+/**
+ * The branch a checkout is on when it is a unit of work: under the
+ * policy's work-ref prefix. `undefined` for anything else, or when the
+ * policy names no work refs.
+ */
+const workUnitBranch = async (
+	run: IGitRunner,
+	workRefPrefix: string | undefined,
+): Promise<string | undefined> => {
+	const prefix = (workRefPrefix ?? '')
+		.replace(/^refs\/heads\//u, '')
+		.replace(/^heads\//u, '');
+	if (prefix.length === 0) return undefined;
+	const result = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+	if (!result.ok) return undefined;
+	const branch = result.output.trim();
+	return branch.startsWith(prefix) ? branch : undefined;
+};
 
 /**
  * f00091 S2: resolve the current branch and, if it is an `agent/*`
@@ -1124,6 +1343,7 @@ export const buildCloseSliceRegistration = (
 ): IToolRegistration => ({
 	id: 'close_slice',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Mark a slice done in its proposal + release its agent lock, then re-sync.',
 	tags: ['proposals'],
@@ -1133,6 +1353,9 @@ export const buildCloseSliceRegistration = (
 			{
 				outputSchema: z.object({
 					ok: z.boolean(),
+					// Every top-level kind the handler returns, blocked closes
+					// included: a client that listed tools validates error
+					// results against this schema too.
 					kind: z
 						.enum([
 							'closed',
@@ -1141,6 +1364,9 @@ export const buildCloseSliceRegistration = (
 							'invalid_transition',
 							'quarantined',
 							'unknown',
+							'validation-error',
+							'quality-failed',
+							'peer-review-required',
 						])
 						.optional(),
 					already_closed: z.boolean().optional(),
@@ -1232,6 +1458,7 @@ export const buildCloseSliceRegistration = (
 				validationScope?: 'scoped' | 'global' | undefined;
 				idempotencyKey?: string | undefined;
 			}) => {
+				const scoped = scopeToCaller(options);
 				// Zod parses exitCode as number and logPath as string|undefined;
 				// the internal contract is stricter (exitCode literal 0, logPath required).
 				// The runtime gate in transition-evidence.ts rejects anything that
@@ -1250,14 +1477,14 @@ export const buildCloseSliceRegistration = (
 				// transitions move files and leave the index pointing at
 				// the pre-move path until the next sync.
 				const resolved = await resolveIndexedDoc(
-					options,
+					scoped,
 					args.proposalId,
 				);
 				if (!resolved.ok) {
 					return toolError(resolved.reason, resolved.nextAction);
 				}
 				const { entry, docPath } = resolved;
-				const closeSliceOptions = options as ICloseSliceValidateOptions;
+				const closeSliceOptions = scoped as ICloseSliceValidateOptions;
 				const canonicalId = canonicalSliceId(args.sliceId);
 				const explicitSliceState =
 					(await closeSliceOptions.sliceLifecycleStateReader?.getSliceState(
@@ -1301,7 +1528,7 @@ export const buildCloseSliceRegistration = (
 				// holds the lock yet.
 				if (
 					args.force !== true &&
-					options.requireValidateEvidence !== false
+					scoped.requireValidateEvidence !== false
 				) {
 					const gateProbe = await readTextOrNull(docPath);
 					if (gateProbe !== null) {
@@ -1318,7 +1545,7 @@ export const buildCloseSliceRegistration = (
 							inlineEvidence !== undefined &&
 							isFreshValidateEvidence(inlineEvidence);
 						const diskEvidence = gateDemands
-							? await readValidateEvidenceFromDisk(options)
+							? await readValidateEvidenceFromDisk(scoped)
 							: null;
 						const diskOk = diskEvidence !== null;
 						// Reject when the gate demands validate AND no fresh
@@ -1329,7 +1556,7 @@ export const buildCloseSliceRegistration = (
 								kind: 'validation-error' as const,
 								blockerType: 'validate-required' as const,
 								error: {
-									reason: `slice "${args.sliceId}" requires recent validate evidence before close_slice may flip it (gate requires \`bun run validate\`). Pass { validateEvidence: { timestamp, exitCode: 0, logPath } } or run \`bun run validate\` first, then retry.`,
+									reason: `slice "${args.sliceId}" requires recent validate evidence before close_slice may flip it (gate requires \`delendai validate\`). Pass { validateEvidence: { timestamp, exitCode: 0, logPath } } or run \`bun run validate\` first, then retry.`,
 									nextAction:
 										'Pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path-to-validate.jsonl> } } or set `force: true` to skip the gate.',
 									kind: 'validation-error' as const,
@@ -1439,8 +1666,8 @@ export const buildCloseSliceRegistration = (
 						// If the probe is wired and reports severity=error,
 						// refuse the close. Hosts that do not wire the quality
 						// plugin skip this check entirely.
-						if (typeof options.runQuality === 'function') {
-							const quality = await options.runQuality(
+						if (typeof scoped.runQuality === 'function') {
+							const quality = await scoped.runQuality(
 								validationDecision !== undefined
 									? {
 											scopes: validationDecision.resolvedScopes,
@@ -1467,7 +1694,7 @@ export const buildCloseSliceRegistration = (
 							}
 						}
 						if (
-							options.requirePeerReview !== false &&
+							scoped.requirePeerReview !== false &&
 							args.force !== true
 						) {
 							const review = parseReviewState(rawBlock);
@@ -1493,13 +1720,13 @@ export const buildCloseSliceRegistration = (
 							canonicalSliceId(args.sliceId),
 							{
 								...configuredPersist,
-								...(options.agentWorktreeEnabled !== undefined
+								...(scoped.agentWorktreeEnabled !== undefined
 									? {
 											agentWorktreeEnabled:
-												options.agentWorktreeEnabled,
+												scoped.agentWorktreeEnabled,
 										}
 									: {}),
-								cwd: options.workspaceRoot,
+								cwd: scoped.workspaceRoot,
 								...(configuredPersist.allowForeignChanges ===
 								true
 									? { allowForeignChanges: true }
@@ -1559,11 +1786,11 @@ export const buildCloseSliceRegistration = (
 						const nextContent = markProposalDoneForAutoTransition(
 							entry.id,
 							sliceClosedContent,
-							options.requirePeerReview === undefined
+							scoped.requirePeerReview === undefined
 								? {}
 								: {
 										requirePeerReview:
-											options.requirePeerReview,
+											scoped.requirePeerReview,
 									},
 						).markdown;
 						await writeFileAtomic(docPath, nextContent);
@@ -1677,17 +1904,17 @@ export const buildCloseSliceRegistration = (
 				// entry. When the gate is off it is a no-op (byte-identical).
 				let pendingIntegrationBranch: string | null = null;
 				if (
-					options.agentWorktreeEnabled === true &&
-					options.pendingIntegrationPathAbs !== undefined &&
-					options.run !== undefined
+					scoped.agentWorktreeEnabled === true &&
+					scoped.pendingIntegrationPathAbs !== undefined &&
+					scoped.run !== undefined
 				) {
-					const branch = await resolveAgentBranch(options.run);
+					const branch = await resolveAgentBranch(scoped.run);
 					if (branch !== null) {
 						const worktreePath = await resolveWorktreeTopLevel(
-							options.run,
+							scoped.run,
 						);
 						await createPendingIntegrationStore(
-							options.pendingIntegrationPathAbs,
+							scoped.pendingIntegrationPathAbs,
 						).record({
 							branch,
 							worktreePath,
@@ -1703,20 +1930,20 @@ export const buildCloseSliceRegistration = (
 				let assignmentReleased = false;
 				if (args.releaseLock !== false) {
 					lockReleased = await releaseSliceLock(
-						options,
+						scoped,
 						entry.id,
 						args.sliceId,
 					);
 					assignmentReleased = await releaseSliceAssignment(
-						options,
+						scoped,
 						entry.id,
 						args.sliceId,
 					);
 				}
 				await syncProposalRegistry(
-					options.workspaceRoot,
-					options.layout,
-					options.extraFolders ?? [],
+					scoped.workspaceRoot,
+					scoped.layout,
+					scoped.extraFolders ?? [],
 				);
 				if (alreadyClosedPayload !== undefined) {
 					return toolOk({
@@ -1771,6 +1998,7 @@ export const buildReviewRegistration = (
 ): IToolRegistration => ({
 	id: 'proposal_review',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.',
 	tags: ['proposals'],
@@ -1790,17 +2018,19 @@ export const buildReviewRegistration = (
 				agent: string;
 				note?: string | undefined;
 				evidence?: IProposalReviewEvidence | undefined;
+				commitHash?: string | undefined;
 			}) => {
+				const scoped = scopeToCaller(options);
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
-					options,
+					scoped,
 					args.proposalId,
 				);
 				if (!resolved.ok) {
 					return toolError(resolved.reason, resolved.nextAction);
 				}
 				const { entry, docPath } = resolved;
-				const missingSliceNextAction = `Call ${options.namespacePrefix}_proposal_get { view: "slices", proposalId: "${entry.id}" } and retry with a declared sliceId. If this historical proposal is already done, do not submit a review: run ${options.namespacePrefix}_proposal_reconcile_folder { id: "${entry.id}", reason: "repair historical proposal state" }; if the done state still needs an audited repair, ask the host to approve ${options.namespacePrefix}_proposal_force_transition { id: "${entry.id}", to: "done", reason: "repair historical proposal state", skipPeerReview: true }.`;
+				const missingSliceNextAction = `Call ${options.namespacePrefix}_proposal_get { view: "slices", proposalId: "${entry.id}" } and retry with a declared sliceId. If this historical proposal is already done, do not submit a review: run ${options.namespacePrefix}_proposal_reconcile_folder { id: "${entry.id}", reason: "repair historical proposal state" }. If the done state still needs repair after that, report it to the owner; closing without a review is not a reviewer's step.`;
 				// redact the reviewer note...
 				const redactedNote = args.note
 					? redactSecrets(args.note)
@@ -1837,6 +2067,30 @@ export const buildReviewRegistration = (
 					});
 				}
 
+				if (
+					args.action === 'approve' ||
+					args.action === 'request_changes'
+				) {
+					const role = canonicalRoleOf(args.agent);
+					if (role !== undefined) {
+						return toolError(
+							`"${args.agent}" is a role, not a reviewer: a verdict is signed by the model that reached it.`,
+							'Record the verdict under the model id you run as (for example `glm-5.3-max`), the same one your review unit is named after.',
+						);
+					}
+					const branches = scoped.developmentPolicy?.branches;
+					const refusal = await verdictClaimRefusal(
+						scoped.run ?? createGitRunner(scoped.workspaceRoot),
+						branches,
+						entry.id,
+						branches?.integration ?? 'HEAD',
+						options.namespacePrefix,
+					);
+					if (refusal !== undefined) {
+						return toolError(refusal.reason, refusal.nextAction);
+					}
+				}
+
 				let nextStatus!:
 					| 'none'
 					| 'in_review'
@@ -1846,9 +2100,13 @@ export const buildReviewRegistration = (
 				let nextReviewer!: string | null;
 				let nextRounds!: readonly IReviewRound[];
 				let autoTransitionRequested = false;
+				let reopenRequested = false;
+				let attribution: IReviewAttribution | undefined;
 				let approvalOutcome: IApprovalOutcome | undefined;
+				// One journal per repository, whichever worktree reviews.
 				const peerReviewLogPathAbs = join(
-					options.workspaceRoot,
+					sharedCheckout(scoped.workspaceRoot) ??
+						scoped.workspaceRoot,
 					PEER_REVIEW_LOG_RELATIVE_PATH,
 				);
 
@@ -1871,44 +2129,109 @@ export const buildReviewRegistration = (
 							);
 						}
 						const body = m[2] ?? '';
-						const state = parseReviewState(body);
+						const slicePlan = parseProposalSlicePlan(
+							entry.id,
+							md,
+						)?.slices.find((slice) => {
+							const parsedSliceId = slice.sliceId.toLowerCase();
+							const requestedSliceId = args.sliceId.toLowerCase();
+							return (
+								parsedSliceId === requestedSliceId ||
+								parsedSliceId.endsWith(`.${requestedSliceId}`)
+							);
+						});
 						const acceptanceCriteria =
-							parseProposalSlicePlan(entry.id, md)?.slices.find(
-								(slice) => {
-									const parsedSliceId =
-										slice.sliceId.toLowerCase();
-									const requestedSliceId =
-										args.sliceId.toLowerCase();
-									return (
-										parsedSliceId === requestedSliceId ||
-										parsedSliceId.endsWith(
-											`.${requestedSliceId}`,
-										)
-									);
-								},
-							)?.acceptanceCriteria ?? [];
+							slicePlan?.acceptanceCriteria ?? [];
+						let state = parseReviewState(body);
+						// A proposal handed to review with no round open for
+						// this slice: the implementer never submitted and is
+						// gone. Open the round under the name Git gives the
+						// delivery — the reviewer names a commit, not a person.
+						if (
+							args.action !== 'submit' &&
+							needsAttributedRound(state, md)
+						) {
+							const derived = await attributeDelivery({
+								run:
+									scoped.run ??
+									createGitRunner(scoped.workspaceRoot),
+								proposalId: entry.id,
+								declaredFiles: slicePlan?.files ?? [],
+								commitHash:
+									args.commitHash ??
+									args.evidence?.commitHash ??
+									'',
+								integration:
+									scoped.developmentPolicy?.branches
+										.integration ?? 'HEAD',
+								refShape: scoped.developmentPolicy?.branches,
+							});
+							const namedNoCommit =
+								args.commitHash === undefined &&
+								args.evidence?.commitHash === undefined;
+							if (
+								!derived.ok &&
+								args.action === 'request_changes' &&
+								namedNoCommit
+							) {
+								// Sending work back needs no delivering commit —
+								// the objection may be that nothing was delivered.
+								attribution = unrecordedAttribution(
+									'',
+									`no delivering commit was named for ${entry.id} ${args.sliceId}`,
+								);
+							} else if (!derived.ok) {
+								throw Object.assign(new Error(derived.reason), {
+									toolError: toolError(
+										`no review round is open for ${entry.id} ${args.sliceId}, and ${derived.reason}`,
+										`Pass commitHash: the commit that delivered the slice, so the implementer is derived from Git. Missing: ${derived.missing}. Never submit on the implementer's behalf.`,
+									),
+								});
+							} else {
+								attribution = derived.attribution;
+							}
+							state = openAttributedRound(state, attribution);
+						}
 						if (args.action === 'approve') {
 							const sameAgentNameAsImplementer =
-								state.implementer?.trim().toLowerCase() ===
-								args.agent.trim().toLowerCase();
+								attribution === undefined &&
+								isSelfApproval(
+									state.implementer ?? undefined,
+									args.agent,
+									scoped.reviewIndependence,
+								);
 							const approver = buildReviewIdentity(
 								args.agent,
-								options.reviewIdentityDeps ?? {
+								scoped.reviewIdentityDeps ?? {
 									hostname: () =>
 										require('node:os').hostname(),
 									pid: () => process.pid,
 									envHost: () => process.env.MCP_HOST,
 								},
 							);
-							const identityCheck = await checkApproveIdentity({
-								workspaceRoot: options.workspaceRoot,
-								proposalId: entry.id,
-								sliceId: args.sliceId,
-								approver,
-								...(options.reviewIdentityDeps !== undefined
-									? { deps: options.reviewIdentityDeps }
-									: {}),
-							});
+							const identityCheck =
+								attribution === undefined
+									? await checkApproveIdentity({
+											workspaceRoot: scoped.workspaceRoot,
+											proposalId: entry.id,
+											sliceId: args.sliceId,
+											approver,
+											recordedImplementer:
+												state.implementer ?? undefined,
+											independence:
+												scoped.reviewIndependence,
+											...(scoped.reviewIdentityDeps !==
+											undefined
+												? {
+														deps: scoped.reviewIdentityDeps,
+													}
+												: {}),
+										})
+									: checkAttributedApprover(
+											attribution,
+											args.agent,
+											scoped.reviewIndependence,
+										);
 							if (!identityCheck.ok) {
 								if (
 									sameAgentNameAsImplementer &&
@@ -1967,7 +2290,7 @@ export const buildReviewRegistration = (
 						// not the implicit 1 this call used to pass. With
 						// nothing configured it IS 1, so the pre-panel flow
 						// is the same code path rather than a parallel one.
-						const quorum = quorumForReview(options.reviewPanel);
+						const quorum = quorumForReview(scoped.reviewPanel);
 						const result = reviewTransition(
 							state,
 							args.action,
@@ -2027,28 +2350,62 @@ export const buildReviewRegistration = (
 							/^[-*]\s*review-(?:state|implementer|reviewer|log):.*$\n?/gm,
 							'',
 						);
-						block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
+						block = withClosingLines(
+							block,
+							[
+								...renderReviewLines(next),
+								...(attribution === undefined
+									? []
+									: [
+											renderAttributionLine(
+												attribution,
+												args.agent,
+											),
+										]),
+							],
+							md.slice((m.index ?? 0) + m[0].length),
+						);
+						const inReview =
+							readFrontmatterField(
+								md,
+								'status',
+							)?.toLowerCase() === 'review';
 						if (next.status === 'done') {
 							block = flipSliceStatusDone(block);
+						} else if (
+							next.status === 'changes_requested' &&
+							inReview
+						) {
+							// The work goes back to its author: the slice is
+							// open again, and so is the proposal.
+							block = flipSliceStatusInProgress(block);
+							reopenRequested = true;
 						}
 						let updated = md.replace(blockRe, `${m[1]}${block}`);
+						const verifiedCommit =
+							args.action === 'approve'
+								? (args.evidence?.commitHash ??
+									attribution?.commit)
+								: undefined;
+						if (verifiedCommit !== undefined) {
+							updated = withShippedIn(updated, verifiedCommit);
+						}
 						// Only an approval that actually CLOSED the slice may
 						// transition the proposal. This ran on every approval,
 						// which was indistinguishable while a quorum could
 						// only be 1; with a panel, the first of two approvals
 						// would have marked the whole proposal done while the
 						// slice was still waiting for its second reviewer.
-						if (
+						//
+						// The close itself is the normal transition, run once
+						// the document is written: frontmatter, folder and
+						// index move together, under the same gates as any
+						// other `review → done`.
+						autoTransitionRequested =
 							args.action === 'approve' &&
-							shouldAutoTransitionOnReviewState(next)
-						) {
-							const prepared = markProposalDoneForAutoTransition(
-								entry.id,
-								updated,
-							);
-							autoTransitionRequested = prepared.changed;
-							updated = prepared.markdown;
-						}
+							inReview &&
+							shouldAutoTransitionOnReviewState(next) &&
+							everySliceReviewed(entry.id, updated);
 						if (args.action === 'approve') {
 							approvalOutcome = describeApprovalOutcome(
 								next,
@@ -2058,12 +2415,12 @@ export const buildReviewRegistration = (
 						await writeFileAtomic(docPath, updated);
 						if (args.action === 'submit') {
 							await recordReviewSubmitIdentity({
-								workspaceRoot: options.workspaceRoot,
+								workspaceRoot: scoped.workspaceRoot,
 								proposalId: entry.id,
 								sliceId: args.sliceId,
 								agent: args.agent,
-								...(options.reviewIdentityDeps !== undefined
-									? { deps: options.reviewIdentityDeps }
+								...(scoped.reviewIdentityDeps !== undefined
+									? { deps: scoped.reviewIdentityDeps }
 									: {}),
 							});
 						}
@@ -2105,38 +2462,26 @@ export const buildReviewRegistration = (
 					nextStatus === 'changes_requested'
 				) {
 					lockReleased = await releaseSliceLock(
-						options,
+						scoped,
 						entry.id,
 						args.sliceId,
 					);
 					assignmentReleased = await releaseSliceAssignment(
-						options,
+						scoped,
 						entry.id,
 						args.sliceId,
 					);
 				}
 				await syncProposalRegistry(
-					options.workspaceRoot,
-					options.layout,
-					options.extraFolders ?? [],
+					scoped.workspaceRoot,
+					scoped.layout,
+					scoped.extraFolders ?? [],
 				);
-				if (autoTransitionRequested) {
-					const located = await locateProposal(entry.id, {
-						indexPathAbs: options.indexPathAbs,
-						proposalsDirAbs: options.proposalsDirAbs,
-					});
-					if (located === null || located.status !== 'done') {
-						await recordAutoTransitionRepair({
-							workspaceRoot: options.workspaceRoot,
-							proposalId: entry.id,
-							path: entry.file,
-							reason: 'auto-transition did not leave the proposal in done after approve',
-						});
-					}
-				}
-				if (options.peerReviewLogPathAbs !== undefined) {
+				// Recorded BEFORE the close below: `review → done` reads this
+				// log for the independent approval it requires.
+				if (scoped.peerReviewLogPathAbs !== undefined) {
 					await recordProposalReviewAction({
-						logPathAbs: options.peerReviewLogPathAbs,
+						logPathAbs: scoped.peerReviewLogPathAbs,
 						proposalId: entry.id,
 						sliceId: args.sliceId,
 						action: args.action,
@@ -2149,6 +2494,49 @@ export const buildReviewRegistration = (
 								: {}),
 					}).catch(() => undefined);
 				}
+				const lifecycle = await moveProposalAfterVerdict({
+					close: autoTransitionRequested,
+					reopen: reopenRequested,
+					proposalId: entry.id,
+					sliceId: args.sliceId,
+					agent: args.agent,
+					options: {
+						namespacePrefix: scoped.namespacePrefix,
+						workspaceRoot: scoped.workspaceRoot,
+						proposalsDirAbs: scoped.proposalsDirAbs,
+						indexPathAbs: scoped.indexPathAbs,
+						indexFreeMoves: movesStayOutOfTheIndex(
+							scoped.developmentPolicy,
+						),
+						...(scoped.run === undefined
+							? {}
+							: { gitRunner: scoped.run }),
+						...(scoped.peerReviewLogPathAbs === undefined
+							? {}
+							: {
+									peerReviewLogPathAbs:
+										scoped.peerReviewLogPathAbs,
+								}),
+						...(scoped.requirePeerReview === undefined
+							? {}
+							: { requirePeerReview: scoped.requirePeerReview }),
+						...(scoped.requireValidateEvidence === undefined
+							? {}
+							: {
+									requireValidateEvidence:
+										scoped.requireValidateEvidence,
+								}),
+						...(scoped.folderPolicy === undefined
+							? {}
+							: { folderPolicy: scoped.folderPolicy }),
+						...(options.validateEvidenceDeps === undefined
+							? {}
+							: {
+									validateEvidenceDeps:
+										options.validateEvidenceDeps,
+								}),
+					},
+				});
 				return toolOk({
 					proposalId: entry.id,
 					sliceId: args.sliceId,
@@ -2160,6 +2548,10 @@ export const buildReviewRegistration = (
 					lockReleased,
 					assignmentReleased,
 					redactedSecrets: redactedNote.redactions,
+					...(attribution === undefined
+						? {}
+						: { attributedTo: attribution.implementer }),
+					...lifecycle,
 					// Only present on approve, and only ever says "done"
 					// when the slice actually closed. An approval that
 					// completes nothing must not read like one that does,
@@ -2172,134 +2564,6 @@ export const buildReviewRegistration = (
 								quorumMessage: approvalOutcome.message,
 							}),
 				});
-			},
-		);
-	},
-});
-
-/**
- * `proposal_board` — orchestrator overview: each actionable proposal with
- * its slices (status + owner) and which are claimable now. One low-token
- * call to plan multi-agent work.
- */
-export const buildProposalBoardRegistration = (
-	options: IAuthoringToolOptions & {
-		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
-	},
-): IToolRegistration => ({
-	id: 'proposal_board',
-	summary:
-		'Orchestrator view: actionable proposals × slices (status/owner) + claimable now.',
-	tags: ['proposals', 'orientation'],
-	register: async (server) => {
-		server.registerTool(
-			`${options.namespacePrefix}_proposal_board`,
-			{
-				outputSchema: z.object({
-					proposals: z.array(
-						z.object({
-							id: z.string(),
-							status: z.string(),
-							slices: z.array(
-								z.object({
-									sliceId: z.string(),
-									status: z.string(),
-									owner: z.string().nullable(),
-								}),
-							),
-							claimableSliceIds: z.array(z.string()).optional(),
-							/**
-							 * Why the board could not read this proposal.
-							 *
-							 * Absent on the happy path. Without it, an index
-							 * entry pointing at a moved or deleted file was
-							 * indistinguishable from a proposal that genuinely
-							 * has no slices: both came back as `slices: []`,
-							 * and an orchestrator would report "actionable,
-							 * nothing to claim" and stall.
-							 */
-							unreadable: z.string().optional(),
-						}),
-					),
-				}),
-				description:
-					'Returns each actionable proposal with its slices (status, owner) and the slices claimable right now. Read-only; the orchestrator board for planning multi-agent work. A proposal whose document cannot be read reports `unreadable` instead of an empty slice list.',
-			},
-			async () => {
-				const index = await readJsonOrNull<{
-					proposals: Array<{
-						id: string;
-						file: string;
-						status: string;
-					}>;
-				}>(options.indexPathAbs);
-				if (index === null) {
-					return toolJson({ proposals: [] });
-				}
-				const locks = await readActiveLocks(options.lockPathAbs);
-				// real documents carry the hyphenated status; keep
-				// the underscore spellings for indexes written before the
-				// vocabulary converged.
-				const actionable = index.proposals.filter((p) =>
-					['pending', 'ready', 'in_progress', 'in-progress'].includes(
-						p.status,
-					),
-				);
-				const board = await Promise.all(
-					actionable.map(async (p) => {
-						const docPath = join(
-							options.proposalsDirAbs ??
-								dirname(options.indexPathAbs),
-							p.file,
-						);
-						const md = await readTextOrNull(docPath);
-						if (md === null) {
-							// The index points to a file that no longer exists.
-							// It happens as soon as someone moves a proposal
-							// by hand — archiving it in `done/`, for example —
-							// without going through `sync_proposals`, and in
-							// a repo where the human also touches the files
-							// that is the norm, not the exception.
-							//
-							// Before it returned `slices: []`, which is exactly
-							// what a proposal without slices returns. An
-							// orchestrator saw "actionable, nothing to
-							// claim" and stopped without any clue.
-							return {
-								id: p.id,
-								status: p.status,
-								slices: [],
-								unreadable: `index points at ${p.file}, which does not exist — run sync_proposals`,
-							};
-						}
-						const parsed = parseProposalSlicePlan(p.id, md);
-						if (parsed === null) {
-							return {
-								id: p.id,
-								status: p.status,
-								slices: [],
-								unreadable:
-									'the document has no parseable `## Slices` section',
-							};
-						}
-						const plan = deriveSliceStatuses(parsed, locks);
-						return {
-							id: p.id,
-							status: p.status,
-							slices: plan.slices.map((s) => ({
-								sliceId: s.sliceId,
-								status: s.status,
-								owner: s.owner,
-							})),
-							claimableSliceIds: plan.slices
-								.filter(
-									(s) => validateClaim(plan, s.sliceId).ok,
-								)
-								.map((s) => s.sliceId),
-						};
-					}),
-				);
-				return toolJson({ proposals: board });
 			},
 		);
 	},

@@ -12,16 +12,49 @@
  *  - it must stop at the first failure rather than stack the next
  *    migration on top of an unfinished one.
  */
-import { describe, expect, it, vi } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
 import {
 	ensureWorkspaceMigrated,
+	hasAdopted,
 	runPendingMigrations,
 	type IMigration,
 	type IMigrationJournal,
 } from '@delendai/core/lib/workspace-migration/legacy-migration.service';
+import {
+	DEFAULT_MIGRATIONS,
+	createFileSystemJournal,
+} from '@delendai/core/lib/workspace-migration/migration-registry';
 
 const ROOT = '/workspace';
+
+const roots: string[] = [];
+afterAll(() => {
+	for (const root of roots) rmSync(root, { recursive: true, force: true });
+});
+
+/** Every file under a directory, with its bytes — the whole tree, exactly. */
+const snapshotOf = (root: string): string =>
+	execFileSync(
+		'sh',
+		[
+			'-c',
+			`find . -type f -exec sha256sum {} + 2>/dev/null | sort || true`,
+		],
+		{ cwd: root, encoding: 'utf8' },
+	);
 
 const journalOver = (applied: string[] = []): IMigrationJournal => ({
 	read: async () => applied,
@@ -214,13 +247,316 @@ describe('ensureWorkspaceMigrated', () => {
 	});
 
 	it('reports once when a migration ran', async () => {
+		// A real adopted workspace, because healing one that never adopted
+		// delendai is what this guard exists to stop.
+		const root = mkdtempSync(join(tmpdir(), 'adopted-'));
+		roots.push(root);
+		writeFileSync(join(root, 'delendai.config.json'), '{}');
 		const report = vi.fn();
 		await ensureWorkspaceMigrated({
 			migrations: [migration('v1')],
 			journal: journalOver(),
-			workspaceRoot: ROOT,
+			workspaceRoot: root,
 			report,
 		});
 		expect(report).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('a workspace that did not adopt delendai is not touched', () => {
+	it('writes nothing, reads nothing, and says nothing', async () => {
+		// Observed: opening an unrelated project with the MCP configured
+		// created and modified a great many files. The migrations behind
+		// this rename identity strings inside .vscode/*.json,
+		// package.json, host configuration and agent files, and move
+		// directories — correct for a workspace carrying this product's
+		// old name, and an intrusion anywhere else.
+		const root = mkdtempSync(join(tmpdir(), 'stranger-'));
+		roots.push(root);
+		writeFileSync(join(root, 'package.json'), '{"name":"theirs"}');
+		mkdirSync(join(root, '.vscode'), { recursive: true });
+		writeFileSync(join(root, '.vscode', 'settings.json'), '{"a":1}');
+		const before = snapshotOf(root);
+
+		const apply = vi.fn();
+		const record = vi.fn();
+		const result = await ensureWorkspaceMigrated({
+			migrations: [migration('v1', { apply })],
+			journal: { read: async () => [], record },
+			workspaceRoot: root,
+		});
+
+		expect(result.acted).toBe(false);
+		expect(apply).not.toHaveBeenCalled();
+		expect(record).not.toHaveBeenCalled();
+		// Not one byte, and no `.delendai/` conjured into their project.
+		expect(snapshotOf(root)).toEqual(before);
+		expect(existsSync(join(root, '.delendai'))).toBe(false);
+	});
+
+	it('heals a workspace that has adopted it', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'adopted-'));
+		roots.push(root);
+		writeFileSync(join(root, 'delendai.config.json'), '{}');
+		const apply = vi.fn();
+		await ensureWorkspaceMigrated({
+			migrations: [migration('v1', { apply })],
+			journal: { read: async () => [], record: vi.fn() },
+			workspaceRoot: root,
+		});
+		expect(apply).toHaveBeenCalled();
+	});
+
+	it('counts a previous adoption, so a momentarily missing config is not a stranger', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'healed-'));
+		roots.push(root);
+		mkdirSync(join(root, '.delendai'), { recursive: true });
+		expect(await hasAdopted(root)).toBe(true);
+	});
+});
+
+describe('a migration means there was something to migrate (x00592)', () => {
+	// Observed in an adopted project that had nothing legacy in it: six
+	// migrators reported `migrated:` on every boot, and the journal they
+	// wrote conjured `.delendai/` into the tree.
+	//
+	// The cause is that `detect` answers a question one step short of the
+	// one that matters. Every migrator here probes for the file it OWNS —
+	// `pathExists(delendai.config.json)`, `pathExists(.vscode/mcp.json)` —
+	// and an adopted project has those files by definition. "The file I
+	// rewrite exists" is not "the file needs rewriting".
+	//
+	// `plan` already answers the real question, for every migrator, and it
+	// is what `--dry-run` has always trusted. So the engine asks it: a
+	// migration that plans nothing does nothing, records nothing, and is
+	// not reported.
+	it('does not apply, record or report a migration that plans no steps', async () => {
+		const apply = vi.fn();
+		const record = vi.fn();
+		const result = await runPendingMigrations({
+			migrations: [
+				migration('nothing-to-do', { plan: async () => [], apply }),
+			],
+			journal: { read: async () => [], record },
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+
+		expect(apply).not.toHaveBeenCalled();
+		expect(record).not.toHaveBeenCalled();
+		expect(result.acted).toBe(false);
+		expect(result.outcomes).toEqual([{ status: 'not-needed' }]);
+	});
+
+	it('still applies the one that does, and skips only the empty one', async () => {
+		const idle = vi.fn();
+		const busy = vi.fn();
+		const result = await runPendingMigrations({
+			migrations: [
+				migration('idle', { plan: async () => [], apply: idle }),
+				migration('busy', { apply: busy }),
+			],
+			journal: journalOver(),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+
+		expect(idle).not.toHaveBeenCalled();
+		expect(busy).toHaveBeenCalled();
+		expect(result.outcomes).toEqual([{ status: 'migrated', id: 'busy' }]);
+	});
+
+	it('leaves a dry run listing everything it would do, including nothing', async () => {
+		// `--dry-run` reports the plan; an empty plan is a legitimate
+		// answer to "what would you do?" and the operator asked.
+		const result = await runPendingMigrations({
+			migrations: [migration('idle', { plan: async () => [] })],
+			journal: journalOver(),
+			ctx: { workspaceRoot: ROOT, dryRun: true },
+		});
+		expect(result.outcomes).toEqual([
+			{ status: 'planned', id: 'idle', steps: [] },
+		]);
+	});
+});
+
+describe('the real registry against a project that has nothing legacy (x00592)', () => {
+	// The end of the chain, measured rather than reasoned about: the
+	// migrations that actually ship, the journal that actually writes,
+	// and a sha256 of every file before and after.
+	it('leaves an adopted project byte-identical, and writes no journal', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'adopted-modern-'));
+		roots.push(root);
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "development": { "profile": "shared-checkout-merge" } }\n',
+		);
+		writeFileSync(
+			join(root, 'package.json'),
+			'{ "name": "somebody-elses-app", "version": "1.0.0" }\n',
+		);
+		mkdirSync(join(root, '.vscode'), { recursive: true });
+		writeFileSync(
+			join(root, '.vscode', 'mcp.json'),
+			'{ "servers": { "DelendAI": { "command": "delendai" } } }\n',
+		);
+		const before = snapshotOf(root);
+
+		const reported = vi.fn();
+		const result = await ensureWorkspaceMigrated({
+			migrations: DEFAULT_MIGRATIONS,
+			journal: createFileSystemJournal(),
+			workspaceRoot: root,
+			report: reported,
+		});
+
+		// No migration was needed, which is what "nothing legacy" means.
+		expect(result.outcomes).toEqual([{ status: 'not-needed' }]);
+		// One file IS created — the record of the configuration this
+		// workspace now reflects, which is how a later edit to it gets
+		// noticed. This used to assert `acted: false` and "not reported",
+		// while the file appeared anyway (x00607): delendai wrote in
+		// somebody's repository and said nothing had happened. It is now
+		// pinned the other way round — the write is admitted, reported,
+		// and is the ONLY new path.
+		expect(result.acted).toBe(true);
+		expect(result.transitions?.recorded).toBe('written');
+		expect(reported).toHaveBeenCalledTimes(1);
+		const pathsOf = (snapshot: string): readonly string[] =>
+			snapshot
+				.split('\n')
+				.filter((line) => line.includes('./'))
+				.map((line) => line.slice(line.indexOf('./')))
+				.sort();
+		const wasThere = new Set(pathsOf(before));
+		const added = pathsOf(snapshotOf(root)).filter(
+			(path) => !wasThere.has(path),
+		);
+		// Positively: this exact path appeared, and nothing else did.
+		expect(added).toStrictEqual([
+			'./.delendai/.gitignore',
+			'./.delendai/applied-config.json',
+		]);
+		// Their own files, untouched: the config, the manifest, the host
+		// configuration. Before this, six migrators rewrote-in-place and
+		// reported `migrated:` on every one of these.
+		for (const file of [
+			'delendai.config.json',
+			'package.json',
+			'.vscode/mcp.json',
+		]) {
+			expect(before).toContain(file);
+			expect(snapshotOf(root)).toContain(
+				before
+					.split('\n')
+					.filter((line) => line.endsWith(file))
+					.join(''),
+			);
+		}
+	});
+});
+
+describe('a project still on mcp-vertex is actually migrated (x00592)', () => {
+	// The case the whole engine exists for, and the one it had never
+	// handled. Two independent reasons it could not:
+	//
+	//  - the rename table's `from` had been flattened to the NEW
+	//    spelling, so there was no `mcp-vertex` path it knew about;
+	//  - and the adoption gate listed only `delendai.config.json` and
+	//    `.delendai`, neither of which such a project has, so it was
+	//    read as a stranger and skipped before any of that mattered.
+	//
+	// Each one alone was enough. Together they meant the migration ran
+	// on every project except the ones it was written for.
+	it('renames its config, cache and docs, and records the run', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'still-mcp-vertex-'));
+		roots.push(root);
+		writeFileSync(
+			join(root, 'mcp-vertex.config.json'),
+			'{ "cacheDir": ".cache/mcp-vertex" }\n',
+		);
+		mkdirSync(join(root, '.cache', 'mcp-vertex'), { recursive: true });
+		writeFileSync(
+			join(root, '.cache', 'mcp-vertex', 'index.json'),
+			'{"kept":true}\n',
+		);
+		mkdirSync(join(root, 'docs', 'mcp-vertex'), { recursive: true });
+		writeFileSync(join(root, 'docs', 'mcp-vertex', 'index.md'), '# kept\n');
+
+		expect(await hasAdopted(root)).toBe(true);
+
+		const result = await ensureWorkspaceMigrated({
+			migrations: DEFAULT_MIGRATIONS,
+			journal: createFileSystemJournal(),
+			workspaceRoot: root,
+		});
+
+		expect(result.acted).toBe(true);
+		// Moved, not copied: the old spellings are gone.
+		expect(existsSync(join(root, 'mcp-vertex.config.json'))).toBe(false);
+		expect(existsSync(join(root, '.cache', 'mcp-vertex'))).toBe(false);
+		expect(existsSync(join(root, 'docs', 'mcp-vertex'))).toBe(false);
+		// And their contents arrived intact under the new names.
+		expect(existsSync(join(root, 'delendai.config.json'))).toBe(true);
+		expect(
+			readFileSync(
+				join(root, '.cache', 'delendai', 'index.json'),
+				'utf8',
+			),
+		).toBe('{"kept":true}\n');
+		expect(
+			readFileSync(join(root, 'docs', 'delendai', 'index.md'), 'utf8'),
+		).toBe('# kept\n');
+	});
+
+	it('is a stranger only when it is really a stranger', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'stranger-'));
+		roots.push(root);
+		writeFileSync(join(root, 'package.json'), '{ "name": "theirs" }\n');
+		expect(await hasAdopted(root)).toBe(false);
+	});
+});
+
+describe('what delendai writes, git never shows (x00596)', () => {
+	// The end of the report: opening a folder produced a handful of
+	// unexplained files, one of them a hidden directory with the tool's
+	// name on it. x00592 stopped the migrators writing when there is
+	// nothing to migrate; this is about what is left when there IS.
+	it('migrates a legacy workspace and leaves git status naming only the migration', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'legacy-visible-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });
+		writeFileSync(join(root, 'mcp-vertex.config.json'), '{}\n');
+		mkdirSync(join(root, 'docs', 'mcp-vertex'), { recursive: true });
+		writeFileSync(join(root, 'docs', 'mcp-vertex', 'index.md'), '# kept\n');
+		execFileSync('git', ['add', '-A'], { cwd: root });
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.email=t@t',
+				'-c',
+				'user.name=t',
+				'commit',
+				'-q',
+				'-m',
+				'their project',
+			],
+			{ cwd: root },
+		);
+
+		await ensureWorkspaceMigrated({
+			migrations: DEFAULT_MIGRATIONS,
+			journal: createFileSystemJournal(),
+			workspaceRoot: root,
+		});
+
+		const status = execFileSync('git', ['status', '--porcelain'], {
+			cwd: root,
+			encoding: 'utf8',
+		});
+		// The renames are theirs to review — that is the migration they
+		// asked for. The journal delendai keeps to avoid doing it twice
+		// is not, and must not appear.
+		expect(status).not.toContain('.delendai');
+		expect(existsSync(join(root, '.delendai', '.gitignore'))).toBe(true);
 	});
 });

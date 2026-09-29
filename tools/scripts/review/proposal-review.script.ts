@@ -18,6 +18,10 @@
  *     [--commit=<sha>] [--tests-passing=N --tests-total=N] \
  *     [--validate-exit=0]
  *
+ * `--commit` also opens the round when the proposal reached review
+ * without one: the implementer is then read from the pull request that
+ * merged that commit.
+ *
  * `--action` accepts the verdicts the review tool accepts (approve,
  * request_changes, submit …); it defaults to `approve`.
  *
@@ -158,6 +162,11 @@ const main = async (argv = process.argv.slice(2)): Promise<number> => {
 		action: parsed.action,
 		agent: parsed.agent,
 		note: parsed.note,
+		// Names the delivering commit for a slice no round was opened for,
+		// so the implementer is derived from Git (x00643).
+		...(parsed.commitHash !== undefined
+			? { commitHash: parsed.commitHash }
+			: {}),
 		...(Object.keys(evidence).length > 0 ? { evidence } : {}),
 	});
 	const text = result.content?.[0]?.text ?? '';

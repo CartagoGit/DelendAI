@@ -46,6 +46,7 @@ export const buildBootstrapProvidersRegistration = (
 	id: 'bootstrap_providers',
 	tags: ['orchestrator-runner', 'lazy', 'bootstrap'],
 	effects: ['spawn', 'write'],
+	writeRoot: 'host-state',
 	summary:
 		'Run the provider bootstrap wizard: probe, draft a roster, and return a prose brief + config patch.',
 	descriptionKey: 'delendai_orchestrator-runner_bootstrap_providers',

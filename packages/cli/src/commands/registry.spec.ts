@@ -1,3 +1,7 @@
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
@@ -113,6 +117,10 @@ const EXPECTED_COMMANDS = [
 	'project plan',
 	'project create',
 	'plugin new',
+	'guard',
+	'repair',
+	'work',
+	'review',
 	'docs search',
 	'proposals auto-work',
 	'proposals continue',
@@ -135,6 +143,7 @@ const EXPECTED_COMMANDS = [
 	'proposals state-repair',
 	'proposals release-orphan',
 	'proposals review',
+	'proposals review-queue',
 	'proposals sync',
 	'proposals task-queue',
 	'proposals delegate',
@@ -255,5 +264,156 @@ describe('dataOrText fallback (a00087)', async () => {
 		expect(result.data).toBeUndefined();
 		expect(result.text).toBeDefined();
 		expect(result.text?.trim().length).toBeGreaterThan(0);
+	});
+});
+
+describe('validate runs what the project declares (x00712)', () => {
+	const inProject = async (config: object | undefined) => {
+		const dir = mkdtempSync(join(tmpdir(), 'registry-validate-'));
+		try {
+			if (config !== undefined) {
+				writeFileSync(
+					join(dir, 'delendai.config.json'),
+					JSON.stringify(config),
+				);
+			}
+			const validate = (await registerAllCommands()).find(
+				(command) => command.name === 'validate',
+			);
+			return await validate?.run([], fakeOverviewCtx({ workspace: dir }));
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	};
+	const gates = (command: string) => ({
+		validationMatrix: { scopes: { gates: [{ command, expect: 'exit0' }] } },
+	});
+
+	it('says what to declare when the project declares nothing', async () => {
+		const result = await inProject(undefined);
+		expect(result?.code).not.toBe(0);
+		expect(result?.error).toContain('validationMatrix');
+	});
+
+	it('fails naming the gate that failed', async () => {
+		const result = await inProject(gates('false'));
+		expect(result?.code).not.toBe(0);
+		expect(result?.error).toContain('gates: false');
+	});
+
+	it('passes when every declared gate does', async () => {
+		expect((await inProject(gates('true')))?.code).toBe(0);
+	});
+});
+
+describe('the commands that delegate or read the config', () => {
+	const run = async (
+		name: string,
+		args: readonly string[],
+		workspace = '/workspace',
+	) => {
+		const command = (await registerAllCommands()).find(
+			(each) => each.name === name,
+		);
+		if (command === undefined) throw new Error(`no command ${name}`);
+		return command.run([...args], fakeOverviewCtx({ workspace }));
+	};
+
+	it.each([
+		['status', []],
+		['overview', []],
+		['overview', ['--full']],
+		['metrics', ['--reset']],
+		['validate-matrix', []],
+		['docs list', ['--limit=5']],
+		['docs read', ['README.md']],
+		['search', ['needle', '--max=3']],
+	] as const)('%s answers through its tool', async (name, args) => {
+		expect((await run(name, args)).code).toBe(0);
+	});
+
+	it('lists the loaded plugins, as rows or as JSON', async () => {
+		const command = (await registerAllCommands()).find(
+			(each) => each.name === 'plugin list',
+		);
+		expect(
+			(await command?.run([], fakeOverviewCtx({ json: false })))?.code,
+		).toBe(0);
+		expect((await command?.run([], fakeOverviewCtx()))?.data).toEqual([
+			{ name: 'core' },
+			{ name: 'proposals' },
+			{ name: 'search' },
+		]);
+	});
+
+	it('reports a script that does not exist as a failed run', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'registry-schema-'));
+		try {
+			const result = await run('config schema', [], dir);
+			expect(result.code).not.toBe(0);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	it.each([
+		['docs read', []],
+		['search', []],
+		['config get', []],
+	] as const)(
+		'%s without what it needs is a usage error',
+		async (name, args) => {
+			expect((await run(name, args)).code).not.toBe(0);
+		},
+	);
+
+	it('reads the config on disk, and says when there is none', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'registry-config-'));
+		try {
+			expect((await run('config show', [], dir)).code).not.toBe(0);
+			expect((await run('config get', ['a.b'], dir)).code).not.toBe(0);
+			writeFileSync(
+				join(dir, 'delendai.config.json'),
+				'{ // jsonc\n "docsDir": "docs" }',
+			);
+			const shown = await run('config show', [], dir);
+			expect(shown.code).toBe(0);
+			expect(await run('config get', ['docsDir'], dir)).toMatchObject({
+				code: 0,
+				data: 'docs',
+			});
+			expect((await run('config doctor', [], dir)).code).toBe(0);
+			// `config set` edits in place and keeps the user's comment.
+			expect(
+				(await run('config set', ['agentWorktree=true'], dir)).code,
+			).toBe(0);
+			expect(
+				readFileSync(join(dir, 'delendai.config.json'), 'utf8'),
+			).toContain('// jsonc');
+			expect(
+				await run('config get', ['agentWorktree'], dir),
+			).toMatchObject({
+				code: 0,
+				data: true,
+			});
+			expect((await run('config set', [], dir)).code).not.toBe(0);
+			writeFileSync(join(dir, 'delendai.config.json'), '{ "a": ');
+			expect((await run('config get', ['docsDir'], dir)).code).not.toBe(
+				0,
+			);
+			expect(
+				(await run('config set', ['docsDir="d"'], dir)).code,
+			).not.toBe(0);
+			rmSync(join(dir, 'delendai.config.json'));
+			// With no config, `config set` creates it.
+			expect((await run('config set', ['cacheDir=".c"'], dir)).code).toBe(
+				0,
+			);
+			expect(await run('config get', ['cacheDir'], dir)).toMatchObject({
+				data: '.c',
+			});
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });

@@ -19,12 +19,14 @@ import {
 } from '../contracts/interfaces/development-policy.interface';
 
 import type { IDevelopmentProfile } from './profiles.interface';
-import { DEVELOPMENT_PROFILES } from './profiles.constant';
+import { DEVELOPMENT_PROFILES, WORK_REF_SHAPE } from './profiles.constant';
+import { DEFAULT_PUBLICATION } from '../contracts/constants/publication-granularity.constant';
 
 export type { IDevelopmentProfile } from './profiles.interface';
 export {
 	DEVELOPMENT_PROFILES,
 	DEFAULT_DEVELOPMENT_PROFILE,
+	WORK_REF_SHAPE,
 } from './profiles.constant';
 
 export const isDevelopmentProfile = (
@@ -41,9 +43,22 @@ export const isDevelopmentProfile = (
 const DEFAULT_BRANCHES = {
 	integration: 'develop',
 	release: 'main',
-	workRefTemplate: 'wip/${agent}/${proposal}-${slice}-g${generation}',
-	workRefPrefix: 'wip/',
-	publicationRefPrefix: 'delendai/pr/',
+	// Empty by default: a project adopting delendai should not inherit
+	// the tool's name in its refs. `delendai.config.json` sets it here.
+	namespacePrefix: '',
+	// The documented shape, component by component:
+	//
+	//   <ns>/wip/<model>/<proposal>-<slice>-g<generation>/<what it is>
+	//
+	// `${agent}` is the exact model (`claude-opus-5`), never the machine
+	// and never the editor. The unit of work and its generation form one
+	// component so a client groups them; the explanation is its OWN
+	// component, which is what makes a long description readable in a Git
+	// client instead of a 90-character dash-run (x00563).
+	workRefTemplate: `heads/wip/${WORK_REF_SHAPE}`,
+	workRefPrefix: 'heads/wip/',
+	workRefVisibility: 'visible',
+	publicationRefPrefix: 'pr/',
 	// `dependabot/*` is the forge's, not ours. A reaper that cannot tell
 	// "not mine" from "abandoned" is a reaper nobody can safely enable.
 	foreignRefPrefixes: ['dependabot/', 'renovate/', 'revert-'],
@@ -54,63 +69,6 @@ const DEFAULT_BRANCHES = {
  * Preserved verbatim so a project that chooses it keeps its historical
  * behaviour rather than being quietly migrated to something else.
  */
-const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
-	version: DEVELOPMENT_POLICY_VERSION,
-	profile: 'shared-direct',
-	source: 'profile',
-	branches: { ...DEFAULT_BRANCHES, workRefTemplate: '', workRefPrefix: '' },
-	workspace: {
-		strategy: 'shared-checkout',
-		shared: true,
-		agentWorktrees: false,
-		pinnedCheckout: true,
-		anchoredToIntegrationBranch: true,
-	},
-	persistence: {
-		strategy: 'direct-commit',
-		usesWipRefs: false,
-		exactScope: false,
-		allowsDirectIntegrationCommit: true,
-		autoCommitOnTask: true,
-		autoPushAfterCommit: true,
-	},
-	checkpoint: {
-		strategy: 'continuous',
-		intervalMinutes: 5,
-		durableWip: false,
-	},
-	integration: {
-		strategy: 'direct',
-		requiresPullRequest: false,
-		requiredChecks: [],
-		requireLatestIntegration: false,
-		mergeGreenProgressContinuously: false,
-		requiredApprovals: 0,
-		releaseRequiredApprovals: 0,
-		releaseRequiredChecks: [],
-		requiresLocalCertification: false,
-		mergeMethod: 'squash',
-		deleteMergedWorkRef: false,
-		linearHistory: true,
-		allowForcePush: false,
-		allowDeleteIntegrationBranch: false,
-	},
-	coordination: {
-		strategy: 'file-locks',
-		requiresClaims: true,
-		leaseTtlMinutes: 30,
-	},
-	recovery: {
-		strategy: 'none',
-		resumeExistingWork: false,
-		neverDiscardUnmergedWork: true,
-	},
-	governance: {
-		strategy: 'observed',
-		enforced: false,
-		failClosedOnUnverifiable: false,
-	},
-};
 
 /**
  * `shared-checkout-pr` — the model delendai and tanit migrate to. The
@@ -145,6 +103,7 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 	integration: {
 		strategy: 'pull-request',
 		requiresPullRequest: true,
+		publication: DEFAULT_PUBLICATION,
 		// Deliberately EMPTY. A profile cannot know what this
 		// project's CI calls its checks, and inventing a name is the
 		// exact failure this repo already lived through: `main`
@@ -220,6 +179,71 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 };
 
 /**
+ * Shared tree, no work ref, committed straight onto the integration
+ * branch. The oldest model, and still a legitimate choice for a solo
+ * project that wants nothing between an edit and the branch.
+ *
+ * It is NOT the default any more: see `DEFAULT_DEVELOPMENT_PROFILE`.
+ */
+const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
+	...SHARED_CHECKOUT_PR,
+	profile: 'shared-direct',
+	branches: { ...DEFAULT_BRANCHES, workRefTemplate: '', workRefPrefix: '' },
+	workspace: {
+		strategy: 'shared-checkout',
+		shared: true,
+		agentWorktrees: false,
+		pinnedCheckout: true,
+		anchoredToIntegrationBranch: true,
+	},
+	persistence: {
+		strategy: 'direct-commit',
+		usesWipRefs: false,
+		exactScope: false,
+		allowsDirectIntegrationCommit: true,
+		autoCommitOnTask: true,
+		autoPushAfterCommit: true,
+	},
+	checkpoint: {
+		strategy: 'continuous',
+		intervalMinutes: 5,
+		durableWip: false,
+	},
+	integration: {
+		strategy: 'direct',
+		requiresPullRequest: false,
+		publication: DEFAULT_PUBLICATION,
+		requiredChecks: [],
+		requireLatestIntegration: false,
+		mergeGreenProgressContinuously: false,
+		requiredApprovals: 0,
+		releaseRequiredApprovals: 0,
+		releaseRequiredChecks: [],
+		requiresLocalCertification: false,
+		mergeMethod: 'squash',
+		deleteMergedWorkRef: false,
+		linearHistory: true,
+		allowForcePush: false,
+		allowDeleteIntegrationBranch: false,
+	},
+	coordination: {
+		strategy: 'file-locks',
+		requiresClaims: true,
+		leaseTtlMinutes: 30,
+	},
+	recovery: {
+		strategy: 'none',
+		resumeExistingWork: false,
+		neverDiscardUnmergedWork: true,
+	},
+	governance: {
+		strategy: 'observed',
+		enforced: false,
+		failClosedOnUnverifiable: false,
+	},
+};
+
+/**
  * `worktree-pr` — one worktree per agent. HEAD movement is legitimate
  * here, so the checkout is not pinned and the agent tool surface keeps
  * the branch-switching capabilities the shared profiles withhold.
@@ -228,10 +252,17 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 	version: DEVELOPMENT_POLICY_VERSION,
 	profile: 'worktree-pr',
 	source: 'profile',
+	// The SAME shape as every other profile. It used to spell its own —
+	// `agent/${agent}/${proposal}-${slice}` — with no namespace, no
+	// generation and no topic, so the canon this project states once in
+	// `WORK_REF_SHAPE` was true for three profiles out of four, and a
+	// project on this one produced refs the reader attributes
+	// differently. Where an agent works (a worktree of its own) is not
+	// the same question as what its ref is called.
 	branches: {
 		...DEFAULT_BRANCHES,
-		workRefTemplate: 'agent/${agent}/${proposal}-${slice}',
-		workRefPrefix: 'agent/',
+		workRefTemplate: `heads/wip/${WORK_REF_SHAPE}`,
+		workRefPrefix: 'heads/wip/',
 	},
 	workspace: {
 		strategy: 'agent-worktree',
@@ -256,6 +287,7 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 	integration: {
 		strategy: 'pull-request',
 		requiresPullRequest: true,
+		publication: DEFAULT_PUBLICATION,
 		// Empty for the same reason as `shared-checkout-pr` above.
 		requiredChecks: [],
 		requireLatestIntegration: true,

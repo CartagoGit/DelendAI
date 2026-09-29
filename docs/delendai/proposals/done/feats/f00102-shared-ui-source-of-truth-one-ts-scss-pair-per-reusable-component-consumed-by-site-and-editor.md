@@ -36,7 +36,7 @@ globalGate: validate
 acceptance:
     - { command: bunx tsc --noEmit -p tsconfig.json, expect: exit0 }
     - { command: bun run check (in apps/web), expect: exit0 }
-    - { command: curl -s -o /dev/null -w '%{http_code}' http://localhost:5200/__entry.js, expect: '200' }
+    - "{ command: curl -s -o /dev/null -w '%{http_code}' http://localhost:5200/__entry.js, expect: '200' }"
     - { command: grep -c cross-spawn /tmp/b.js, expect: '0' }
 ---
 

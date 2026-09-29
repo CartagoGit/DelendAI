@@ -28,15 +28,17 @@
  *     additional commit branch; arbitrary working branches are blocked.
  *
  * Default behaviour: **block only `agent/*`** when the worktree gate
- * is off. The agent switches back to `develop` (or a `wip/*` branch)
+ * is off. The agent commits on a work branch in its own worktree instead
  * and re-commits there.
  */
 import { spawnSync } from 'node:child_process';
 
+import { declaredBranches } from '../lib/declared-branches';
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
 import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
-const DEVELOP_BRANCH = 'develop';
+/** Used only when no development policy can be read. */
+const DEFAULT_INTEGRATION_BRANCH = 'develop';
 const RELEASE_BRANCH_PREFIX = 'release/';
 const _AGENT_BRANCH_PREFIX = 'agent/';
 
@@ -46,7 +48,49 @@ export interface ICommitBranchInput {
 	readonly currentBranch: string | null;
 	/** Resolved `delendai.config.json#agentWorktree` (default false). */
 	readonly agentWorktreeEnabled?: boolean;
+	/** Policy integration branch (`branches.integration`); defaults to develop. */
+	readonly integrationBranch?: string;
+	/** Policy work namespace (`branches.workRefPrefix`), e.g. `heads/delendai/wip/`. */
+	readonly workRefPrefix?: string;
+	/**
+	 * Policy work-ref shape (`branches.workRefTemplate`), so the refusal
+	 * teaches the spelling the engine actually writes. It used to restate
+	 * one by hand — with a dash where the engine puts a slash — and an
+	 * agent that complied named a branch nothing could read.
+	 */
+	readonly workRefTemplate?: string;
+	/** Policy publication namespace (`branches.publicationRefPrefix`). */
+	readonly publicationRefPrefix?: string;
 }
+
+/** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
+const shortRef = (value: string): string =>
+	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+/**
+ * The work-ref shape in words, rendered from the template the policy
+ * resolved.
+ *
+ * NEVER written out by hand here again: this message used to say
+ * `<proposal>-<slice>-g<n>-<topic>` while the engine wrote
+ * `…-g<n>/<topic>`, so an agent that followed the refusal produced a ref
+ * that sits in the right namespace and can never be claimed, renamed or
+ * published. One statement of the shape, or the guard teaches litter.
+ */
+const shapeInWords = (template: string | undefined, prefix: string): string =>
+	template === undefined || template === ''
+		? `${prefix}<the shape branches.workRefTemplate declares>`
+		: `${prefix}${template
+				.replace(/^.*\$\{agent\}/u, '${agent}')
+				.replaceAll(
+					/\$\{([a-z]+)\}/gu,
+					(_match, name: string) => `<${name}>`,
+				)}`;
+
+const inNamespace = (branch: string, prefix: string | undefined): boolean =>
+	prefix !== undefined &&
+	prefix !== '' &&
+	branch.startsWith(shortRef(prefix));
 
 export type CommitBranchResult =
 	| { readonly ok: true }
@@ -56,7 +100,14 @@ export type CommitBranchResult =
 export const lintCommitBranch = (
 	input: ICommitBranchInput,
 ): CommitBranchResult => {
-	const { currentBranch, agentWorktreeEnabled = false } = input;
+	const {
+		currentBranch,
+		agentWorktreeEnabled = false,
+		integrationBranch = DEFAULT_INTEGRATION_BRANCH,
+		workRefPrefix,
+		workRefTemplate,
+		publicationRefPrefix,
+	} = input;
 	const blockers: string[] = [];
 
 	// Detached HEAD / non-git cwd: fail-open. Release engineers may
@@ -67,7 +118,10 @@ export const lintCommitBranch = (
 	}
 
 	// The shared branch. Committing here is the whole point.
-	if (currentBranch === DEVELOP_BRANCH) {
+	// The configured integration branch, not a hardcoded name: a project
+	// that integrates into `trunk` must not have `develop` treated as its
+	// shared branch.
+	if (currentBranch === integrationBranch) {
 		return { ok: true };
 	}
 
@@ -83,13 +137,34 @@ export const lintCommitBranch = (
 		return { ok: true };
 	}
 
+	// The policy's own namespaces. Under shared-checkout-pr an agent
+	// develops on a visible work branch in its own worktree and opens its
+	// pull request from a publication branch; refusing both left the model
+	// unusable, and the old remedy (`git switch develop`) sent agents back
+	// to committing on the integration branch.
+	if (
+		inNamespace(currentBranch, workRefPrefix) ||
+		inNamespace(currentBranch, publicationRefPrefix)
+	) {
+		return { ok: true };
+	}
+
+	const workShape =
+		workRefPrefix === undefined || workRefPrefix === ''
+			? 'the policy work namespace'
+			: shapeInWords(workRefTemplate, shortRef(workRefPrefix));
+	const publicationShape =
+		publicationRefPrefix === undefined || publicationRefPrefix === ''
+			? 'the policy publication namespace'
+			: `${shortRef(publicationRefPrefix)}<name>`;
+
 	blockers.push(
-		`committing on \`${currentBranch}\` — temporary working branches are disabled (agentWorktree: false).`,
+		`committing on \`${currentBranch}\` — outside every branch namespace the development policy declares.`,
 		'',
 		'next-action:',
-		`  switch back:  git switch ${DEVELOP_BRANCH}`,
-		'  or use a release/<version> branch for the release PR flow.',
-		'  only the operator creates the release branch; agents never branch on their own.',
+		`  commit on a work branch, in its own worktree: ${workShape}`,
+		`  open the pull request from ${publicationShape}; never switch the shared checkout.`,
+		'  release/<version> branches are created by the operator only.',
 		'',
 		'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git commit ...',
 	);
@@ -211,11 +286,31 @@ const main = async (): Promise<number> => {
 		process.stdout.write(`${staged.join('\n')}\n`);
 		return 0;
 	}
+	// A fixture or foreign directory may have no delendai.config.json; the
+	// namespaces are then simply unknown and only develop/release pass.
+	let namespaces: {
+		integrationBranch?: string;
+		workRefPrefix?: string;
+		workRefTemplate?: string;
+		publicationRefPrefix?: string;
+	} = {};
+	try {
+		const branches = declaredBranches(args.cwd);
+		namespaces = {
+			integrationBranch: branches.integration,
+			workRefPrefix: branches.workRefPrefix,
+			workRefTemplate: branches.workRefTemplate,
+			publicationRefPrefix: branches.publicationRefPrefix,
+		};
+	} catch {
+		namespaces = {};
+	}
 	const result = lintCommitBranch({
 		cwd: args.cwd,
 		stagedFiles: staged,
 		currentBranch: branch,
 		agentWorktreeEnabled,
+		...namespaces,
 	});
 	const report = formatReport(result);
 	if (result.ok) {

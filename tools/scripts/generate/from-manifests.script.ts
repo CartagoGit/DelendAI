@@ -342,6 +342,9 @@ export const buildGeneratedFirstPartyEntries = (
 			...(manifest.configDocs === undefined
 				? {}
 				: { configDocs: manifest.configDocs }),
+			...(manifest.adoption === undefined
+				? {}
+				: { adoption: manifest.adoption }),
 			...(resolveExample(plugin) === undefined
 				? {}
 				: { example: resolveExample(plugin) }),
@@ -460,6 +463,11 @@ const renderRegistryEntry = (entry: IPluginRegistryEntry): string => {
 	if (entry.configDocs !== undefined) {
 		lines.push(
 			`\t\t\tconfigDocs: ${JSON.stringify(entry.configDocs, null, '\t').replaceAll('\n', '\n\t\t\t')},`,
+		);
+	}
+	if (entry.adoption !== undefined) {
+		lines.push(
+			`\t\t\tadoption: ${JSON.stringify(entry.adoption, null, '\t').replaceAll('\n', '\n\t\t\t')},`,
 		);
 	}
 	if (entry.example !== undefined) {

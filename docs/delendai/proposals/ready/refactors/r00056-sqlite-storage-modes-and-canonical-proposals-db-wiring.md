@@ -64,8 +64,8 @@ hay paridad. Por eso el doctor forma parte de esta slice y no de una posterior.
 - global_gate: none
 
 ### S1 — Resolver única de rutas, storage modes y doctor
-- **Status**: in_progress — la mitad de la RUTA ya esta hecha; la de los MODOS necesita una decision antes de escribir codigo (ver la nota al final)
-- **Files**: `packages/proposals-sqlite/src/lib/paths.ts`, `plugins/proposals/src/lib/storage-mode.ts`, `plugins/proposals/src/lib/services/sql-lifecycle-readers.ts`, `plugins/proposals/src/lib/services/reconciler-service.ts`, `plugins/proposals/src/lib/services/db-doctor/checks/storage-mode.ts`, `packages/proposals-sqlite/tests/src/lib/paths.spec.ts`, `plugins/proposals/tests/src/lib/storage-mode.spec.ts`, `plugins/proposals/tests/src/lib/services/db-doctor.spec.ts`
+- **Status**: in-progress — ruta y modos resueltos; la decision de vocabulario esta registrada abajo (2026-09-25)
+- **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`, `packages/proposals-sqlite/src/lib/db-path.ts`, `plugins/proposals/tests/src/lib/services/db-doctor/storage-mode.spec.ts`, `plugins/proposals/tests/src/lib/services/db-doctor.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Plugin, reconciler, CLI, doctor, exporter y tests usan la misma resolución de DB activa/staging."
@@ -120,3 +120,58 @@ sino del que decide la superficie:
 
 Mientras (1) no se responda, implementar S1 tal como esta escrito
 anadiria el problema que dice venir a resolver.
+
+### Punto 3 entregado y correccion del punto 2 (2026-09-15)
+
+**Punto 3 — doctor.** `proposals_db_doctor` anade ahora el check
+`storage_mode` al final de su informe. Informa:
+- el modo configurado (`DELENDAI_PROPOSAL_INDEX_SOURCE`, resuelto con el
+  mismo `resolveProposalIndexSource` que usa el lector);
+- la ruta canonica (`resolveProposalsDbPaths`);
+- el conteo de fallbacks de este proceso;
+- el estado de paridad observado en la ultima lectura: `parity`,
+  `divergent`, `unverified`, `not-compared` o `not-observed`.
+
+Los contadores viven en `index-read-stats.ts`. `readProposalIndex`
+registra el desenlace de cada lectura; el log solo avisa una vez por
+ruta, asi que no podia dar el numero. El check no necesita la base
+abierta, de modo que aparece tambien cuando falta, que es cuando mas
+importa el modo. Un fallback o una divergencia lo marcan como
+`warning`.
+
+Evidencia:
+- `storage-mode.spec.ts` (vitest) recorre los siete desenlaces a traves
+  de `readProposalIndex` real con un lector SQL inyectado, y fija el
+  mensaje y la severidad del check.
+- `db-doctor.spec.ts` (`bun test`, base real) fija que el doctor lo
+  incluye con base presente y ausente, y que respeta el entorno.
+
+**Correccion del punto 2.** La nota anterior esta desfasada en dos
+cosas:
+- El modo por defecto ya es `auto`, no `sql`.
+- `sql` ya no cae al JSON: si la proyeccion no puede servir, o no esta
+  sellada, lanza `ProposalIndexSqlUnavailableError`. Ademas, sirve SQL
+  aunque el JSON difiera e informa de la divergencia.
+
+Es decir, el `sql-only` que pedia este documento existe hoy con el
+nombre `sql`. El `shadow` existe como `auto`.
+
+Queda solo la pregunta (1) de vocabulario: renombrar o documentar, no
+anadir un segundo interruptor. Por eso S1 sigue `in_progress`.
+
+### Decision de vocabulario (2026-09-25)
+
+Documentar, no renombrar ni anadir. `DELENDAI_PROPOSAL_INDEX_SOURCE`
+(`json` / `auto` / `sql`) es el unico interruptor; los nombres de este
+documento son descripciones de sus valores:
+
+| Este documento | Interruptor | Comportamiento |
+| --- | --- | --- |
+| `shadow` | `auto` | sirve SQLite y cae al JSON cuando SQL no puede servir o discrepa |
+| `sql-primary-compare` | `sql` | sirve SQLite, compara paridad e informa la divergencia |
+| `sql-only` | `sql` | base ausente o ilegible es un error explicito; nunca cae al JSON |
+
+Renombrar romperia la configuracion de todo consumidor sin ganar
+comportamiento, y un segundo interruptor es el defecto que la ADR 0020
+existe para cerrar. La correspondencia queda escrita junto al
+interruptor, en `proposal-index-source.constant.ts`.

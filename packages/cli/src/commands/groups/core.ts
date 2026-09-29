@@ -12,6 +12,8 @@
  *   - `delendai_plan_mcp_project`({ serverName?, namespacePrefix?, tests? })
  *   - `delendai_create_project`  ({ kind, ... })
  */
+import { REVIEW_COMMAND } from '../../contracts/constants/review-command.constant';
+import { WORK_COMMAND } from '../../contracts/constants/work-command.constant';
 import {
 	createWorkspacePathProvider,
 	runCreatePlugin,
@@ -249,6 +251,64 @@ export const buildPluginNewCommand = (
 	},
 });
 
+/**
+ * x00549: git hooks call this for every commit, branch creation and push.
+ * Lazy, so no other command pays for loading it.
+ */
+const lazyGuardCommand: ICliCommand = {
+	name: 'guard',
+	summary:
+		'Refuse the git operations the project development policy forbids (called from git hooks).',
+	usage: 'guard <install|uninstall|status|pre-commit|reference-transaction|pre-push> [hook args]',
+	async run(args, ctx) {
+		const { guardCommand: guard } = await import('../guard.command');
+		return guard.run(args, ctx);
+	},
+};
+
+/**
+ * x00552: records the human decision that closes a startup repair task.
+ * Lazy for the same reason as the guard: nobody else pays for it.
+ */
+const lazyRepairCommand: ICliCommand = {
+	name: 'repair',
+	summary:
+		'List and record the human decisions that close startup repair tasks the reconciler may not close.',
+	usage: 'repair <list|resolve|forget> [task-id] [--evidence=<digest>] [--decision=<kind>] [--reason=<text>] [--by=<who>] [--workspace=<path>]',
+	async run(args, ctx) {
+		const { repairCommand: repair } = await import('../repair.command');
+		return repair.run(args, ctx);
+	},
+};
+
+/**
+ * x00553: persists work to its own ref without moving the shared
+ * checkout — the path the policy demands, reachable with no MCP host.
+ */
+const lazyWorkCommand: ICliCommand = {
+	name: 'work',
+	...WORK_COMMAND,
+	async run(args, ctx) {
+		const { workCommand: work } = await import('../work.command');
+		return work.run(args, ctx);
+	},
+};
+
+/**
+ * x00727: a review is four commands, over the same unit and tools as
+ * `work` and `proposals review`.
+ */
+const lazyReviewCommand: ICliCommand = {
+	name: 'review',
+	...REVIEW_COMMAND,
+	async run(args, ctx) {
+		const { reviewRoundCommand: review } = await import(
+			'../review.command'
+		);
+		return review.run(args, ctx);
+	},
+};
+
 export const coreExtraCommands: readonly ICliCommand[] = [
 	fsReadCommand,
 	fsWriteCommand,
@@ -258,4 +318,8 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	projectPlanCommand,
 	projectCreateCommand,
 	buildPluginNewCommand(),
+	lazyGuardCommand,
+	lazyRepairCommand,
+	lazyWorkCommand,
+	lazyReviewCommand,
 ];

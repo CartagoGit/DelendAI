@@ -3,7 +3,7 @@
 > Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
-- Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.
+- Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off.
 
 ## Public API
 
@@ -43,11 +43,11 @@
 - plugins/error-reporting/tests/frame-extractor.spec.ts
 - plugins/error-reporting/tests/funnel-counter-store.spec.ts
 - plugins/error-reporting/tests/funnel-reconciliation.spec.ts
-- plugins/error-reporting/tests/index.spec.ts
+- plugins/error-reporting/tests/in-flight-reports.service.spec.ts
 
 ## Do not
 
-- Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
+- An agent does not run `git stash`: git refuses it for agents (`delendai guard`, reference-transaction), because every worktree shares one stash and stashed work is invisible to the work model. Commit, or checkpoint to your work ref, instead.
 - Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
 - Do not import `@delendai/core/lib/...`; use `@delendai/core/public`.
 - Do not run user-facing shell or destructive tools without `dryRunSupported: true`.

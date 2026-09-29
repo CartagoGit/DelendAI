@@ -43,6 +43,7 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
+		"@delendai/test-kit": "workspace:*",
 		"@delendai/proposals": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",

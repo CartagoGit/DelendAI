@@ -46,6 +46,7 @@ import {
 	readRefScope,
 	validateScopePaths,
 	withScopeTrailers,
+	expandGlobDeclarations,
 } from './scope';
 import type {
 	IWipCheckpointRequest,
@@ -102,6 +103,7 @@ const stageExactly = async (
 		// modified file needs neither — one call therefore captures all
 		// three transitions for the claimed scope and nothing else.
 		const result = await indexRun([
+			'--literal-pathspecs',
 			'update-index',
 			'--add',
 			'--remove',
@@ -139,7 +141,11 @@ export const createOrUpdateWipRef = async (
 	const refusal = anchorRefusal(await observeAnchor(run, context.anchor));
 	if (refusal !== undefined) return failed(request.ref, refusal);
 
-	const { valid, invalid } = validateScopePaths(request.paths);
+	// A declaration may legitimately name `dir/**`; pathspec magic is
+	// resolved against the working tree HERE, and what comes out is
+	// validated like any other path (x00562).
+	const declared = await expandGlobDeclarations(context.root, request.paths);
+	const { valid, invalid } = validateScopePaths(declared);
 	if (invalid.length > 0) {
 		const detail = invalid
 			.map((entry) => `${entry.path} (${entry.reason})`)
@@ -208,6 +214,7 @@ export const createOrUpdateWipRef = async (
 			scope.length === 0
 				? ''
 				: ((await gitOutput(indexRun, [
+						'--literal-pathspecs',
 						'ls-files',
 						'-s',
 						'--',
@@ -223,26 +230,43 @@ export const createOrUpdateWipRef = async (
 			return failed(request.ref, 'git write-tree failed', scope);
 		}
 
-		if (refExisted) {
-			const parentTree = await treeOf(run, parentSha);
-			if (parentTree === tree) {
-				return {
-					status: 'unchanged',
-					ref: request.ref,
-					commit: parentSha,
-					parent: parentSha,
-					tree,
-					patchDigest,
-					scope,
-					dropped: [],
-				};
-			}
+		// Nothing to record is nothing to record, whether or not this ref
+		// already exists.
+		//
+		// This used to be guarded by `refExisted`, so it protected the
+		// SECOND checkpoint and never the first — and the first is the one
+		// that creates the branch. A slice whose scope already matched the
+		// base therefore minted a ref plus an empty commit, every time.
+		// Measured on this repository: 135 refs in 42 minutes, each one
+		// commit deep, each commit's tree identical to its parent's. They
+		// cannot be published (nothing to publish), they cannot be claimed,
+		// and they tell the proposals engine a slice shipped while carrying
+		// not one changed byte — the failure `no-empty-commits` was written
+		// to catch at push time, arriving by a door that never reached a
+		// push.
+		const parentTree = await treeOf(run, parentSha);
+		if (parentTree === tree) {
+			return {
+				status: 'unchanged',
+				ref: request.ref,
+				commit: parentSha,
+				parent: parentSha,
+				tree,
+				patchDigest,
+				scope,
+				dropped: [],
+			};
 		}
 
 		const commit = await createCommit(run, {
 			tree,
 			parents: [parentSha],
-			message: withScopeTrailers(request.message, scope, patchDigest),
+			message: withScopeTrailers(
+				request.message,
+				scope,
+				patchDigest,
+				request.ref,
+			),
 			...(request.author !== undefined ? { author: request.author } : {}),
 		});
 		if (commit === undefined) {

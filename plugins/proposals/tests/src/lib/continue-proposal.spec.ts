@@ -188,6 +188,94 @@ kind: fix
 		expect(out.kind).toBe('no-proposal');
 	});
 
+	it('never says "create a proposal" when the proposals dir cannot be read', async () => {
+		// "There is no work" and "I could not look" are different answers.
+		// An unreadable directory used to count as zero proposals on disk,
+		// and zero is what makes the tool say to create one.
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }],
+			}),
+		);
+		const notADirectory = join(root, 'proposals');
+		writeFileSync(
+			notADirectory,
+			'a file where the proposals dir should be',
+		);
+		const out = parse(
+			await runContinueProposal(
+				{},
+				{ ...options, proposalsDirAbs: notADirectory },
+			),
+		);
+		expect(out.kind).toBe('no-proposal');
+		expect(out.reason).toContain(notADirectory);
+		expect(out.nextAction).toContain('Do NOT create a proposal');
+	});
+
+	it('says to sync when the dir holds more proposals than the index knows', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }],
+			}),
+		);
+		const dir = join(root, 'proposals');
+		mkdirSync(join(dir, 'ready'), { recursive: true });
+		writeFileSync(join(dir, 'ready', 'x00001-a.md'), '---\n');
+		writeFileSync(join(dir, 'ready', 'x00002-b.md'), '---\n');
+		const out = parse(
+			await runContinueProposal({}, { ...options, proposalsDirAbs: dir }),
+		);
+		expect(out.nextAction).toContain('Run sync_proposals');
+	});
+
+	it('rebuilds a stale index itself instead of sending the agent to sync (x00716)', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }],
+			}),
+		);
+		const dir = join(root, 'proposals');
+		mkdirSync(join(dir, 'ready'), { recursive: true });
+		writeFileSync(join(dir, 'ready', 'x00001-a.md'), '---\n');
+		writeFileSync(join(dir, 'ready', 'x00002-b.md'), '---\n');
+		let refreshed = 0;
+		const out = parse(
+			await runContinueProposal(
+				{},
+				{
+					...options,
+					proposalsDirAbs: dir,
+					refreshIndex: async () => {
+						refreshed += 1;
+						writeFileSync(
+							options.indexPathAbs,
+							JSON.stringify({
+								proposals: [
+									{
+										id: 'x00001',
+										file: 'ready/x00001-a.md',
+										status: 'done',
+									},
+									{
+										id: 'x00002',
+										file: 'ready/x00002-b.md',
+										status: 'done',
+									},
+								],
+							}),
+						);
+					},
+				},
+			),
+		);
+		expect(refreshed).toBe(1);
+		expect(String(out.nextAction)).not.toContain('Run sync_proposals');
+	});
+
 	it('errors clearly when a slice mode is used without a proposalId', async () => {
 		const out = parse(await runContinueProposal({ mode: 'plan' }, options));
 		expect(out.kind).toBe('slice-mode-error');
@@ -662,5 +750,68 @@ describe('nextClosureHop — the cascade may only recommend legal DFA edges', ()
 				].has(hop.to),
 			).toBe(true);
 		}
+	});
+});
+
+describe('a stale index is not an empty backlog (x00606)', () => {
+	let root: string;
+	let options: IContinueProposalToolOptions;
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'stale-index-'));
+		const indexPath = join(root, 'index.json');
+		writeFileSync(indexPath, JSON.stringify({ proposals: [] }));
+		mkdirSync(join(root, 'proposals', 'ready', 'fixes'), {
+			recursive: true,
+		});
+		options = {
+			namespacePrefix: 'proposals',
+			indexPathAbs: indexPath,
+			lockPathAbs: join(root, 'lock.json'),
+			proposalsDirAbs: join(root, 'proposals'),
+		};
+	});
+
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	it('tells an agent to sync, never to write a second proposal', async () => {
+		// Measured in a consumer project holding one `ready` proposal with
+		// a pending slice, whose index had simply never been built:
+		//
+		//   {"state":"idle","reason":"no actionable proposal in the index",
+		//    "nextAction":"Create a proposal under the proposals dir …"}
+		//
+		// An agent that follows that creates a SECOND proposal for work
+		// that already exists, and a duplicate id is a documented way to
+		// freeze this repository's whole index.
+		writeFileSync(
+			join(root, 'proposals', 'ready', 'fixes', 'x00001-theirs.md'),
+			'---\nid: x00001\n---\n',
+		);
+
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+
+		expect(out.kind).toBe('no-proposal');
+		expect(out.reason).toContain('the proposals dir holds 1 file');
+		expect(out.nextAction).toContain('sync_proposals');
+		expect(out.nextAction).toContain('Do NOT create a proposal');
+	});
+
+	it('still says to create one when there is genuinely nothing', async () => {
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+		expect(out.kind).toBe('no-proposal');
+		expect(out.nextAction).toContain('Create a proposal');
+	});
+
+	it('keeps the old answer when it cannot see the proposals dir', async () => {
+		// Without `proposalsDirAbs` there is nothing to compare against,
+		// and inventing a count would be a guess.
+		const { proposalsDirAbs: _omitted, ...blind } = options;
+		writeFileSync(
+			join(root, 'proposals', 'ready', 'fixes', 'x00001-theirs.md'),
+			'---\nid: x00001\n---\n',
+		);
+		const out = parse(await runContinueProposal({ mode: 'auto' }, blind));
+		expect(out.nextAction).toContain('Create a proposal');
 	});
 });

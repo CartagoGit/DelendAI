@@ -111,6 +111,20 @@ interface SwarmClaimRecord {
 	readonly generationId: IGenerationId;
 }
 
+const projectionFailure = (
+	producer: IStateProducer,
+	result: IProjectionResult,
+): IHydrateResult | undefined => {
+	if (!producer.validateProjection) return undefined;
+	const v = producer.validateProjection(result.canonical);
+	if (v.issues.length === 0) return undefined;
+	return {
+		ok: false,
+		reason: 'projection_invalid',
+		detail: `${producer.id}: ${v.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
+	};
+};
+
 export class InMemoryStateRegistry implements IStateRegistry {
 	private readonly producers = new Map<string, IStateProducer>();
 	private readonly scopeStates = new Map<string, IScopeState>();
@@ -155,22 +169,8 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	hydrate(input: IHydrateInput): IHydrateResult {
 		const state = this.ensureScopeState(input.scope);
 		const snapshot = this.materialiseSnapshot(input.snapshot);
-		const issues = [
-			...this.validateSnapshotIntegrity(snapshot),
-			...this.validateSnapshotAgainstRegistry(snapshot, input.scope),
-		];
-		if (issues.length > 0) {
-			return {
-				ok: false,
-				reason: 'snapshot_invalid',
-				detail: issues
-					.map(
-						(i) =>
-							`${i.kind}${i.producerId ? `(${i.producerId})` : ''}${i.key ? `[${i.key}]` : ''}${i.detail ? `: ${i.detail}` : ''}`,
-					)
-					.join('; '),
-			};
-		}
+		const invalidSnapshot = this.snapshotFailure(snapshot, input.scope);
+		if (invalidSnapshot) return invalidSnapshot;
 		const projections = new Map<string, IProjectionResult>();
 		for (const producer of this.producers.values()) {
 			if (!producer.serves.includes(input.scope.kind)) continue;
@@ -189,16 +189,8 @@ export class InMemoryStateRegistry implements IStateRegistry {
 					detail: err instanceof Error ? err.message : String(err),
 				};
 			}
-			if (producer.validateProjection) {
-				const v = producer.validateProjection(result.canonical);
-				if (v.issues.length > 0) {
-					return {
-						ok: false,
-						reason: 'projection_invalid',
-						detail: `${producer.id}: ${v.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
-					};
-				}
-			}
+			const invalidProjection = projectionFailure(producer, result);
+			if (invalidProjection) return invalidProjection;
 			projections.set(producer.id, result);
 		}
 		const gen = this.publishInternal(
@@ -214,22 +206,8 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	incremental(input: IHydrateInput, change: IStateChange): IHydrateResult {
 		const state = this.ensureScopeState(input.scope);
 		const snapshot = this.materialiseSnapshot(input.snapshot);
-		const issues = [
-			...this.validateSnapshotIntegrity(snapshot),
-			...this.validateSnapshotAgainstRegistry(snapshot, input.scope),
-		];
-		if (issues.length > 0) {
-			return {
-				ok: false,
-				reason: 'snapshot_invalid',
-				detail: issues
-					.map(
-						(i) =>
-							`${i.kind}${i.producerId ? `(${i.producerId})` : ''}${i.key ? `[${i.key}]` : ''}${i.detail ? `: ${i.detail}` : ''}`,
-					)
-					.join('; '),
-			};
-		}
+		const invalidSnapshot = this.snapshotFailure(snapshot, input.scope);
+		if (invalidSnapshot) return invalidSnapshot;
 		const active = state.activeId
 			? state.generations.get(state.activeId)
 			: undefined;
@@ -259,16 +237,8 @@ export class InMemoryStateRegistry implements IStateRegistry {
 					detail: err instanceof Error ? err.message : String(err),
 				};
 			}
-			if (producer.validateProjection) {
-				const v = producer.validateProjection(result.canonical);
-				if (v.issues.length > 0) {
-					return {
-						ok: false,
-						reason: 'projection_invalid',
-						detail: `${producer.id}: ${v.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
-					};
-				}
-			}
+			const invalidProjection = projectionFailure(producer, result);
+			if (invalidProjection) return invalidProjection;
 			projections.set(producer.id, result);
 		}
 		const gen = this.publishInternal(
@@ -277,6 +247,52 @@ export class InMemoryStateRegistry implements IStateRegistry {
 			snapshot,
 			projections,
 			active.generation.id,
+		);
+		return { ok: true, generation: gen };
+	}
+
+	/**
+	 * Re-publish a generation whose projections were already computed and
+	 * stored by a durable driver, without running `rebuild` again.
+	 *
+	 * `hydrate` recomputes every projection from the input snapshot, which
+	 * is right for a fresh build and wrong for a restart: an `incremental`
+	 * over unchanged inputs carries state that no rebuild can recover. The
+	 * snapshot is validated exactly as `hydrate` validates it, every serving
+	 * producer must have a stored projection, and each one passes the
+	 * producer's own `validateProjection` — a store that cannot satisfy
+	 * that is refused, never half-restored.
+	 */
+	restore(
+		input: IHydrateInput,
+		projections: ReadonlyMap<string, CanonicalProjection>,
+	): IHydrateResult {
+		const state = this.ensureScopeState(input.scope);
+		const snapshot = this.materialiseSnapshot(input.snapshot);
+		const invalidSnapshot = this.snapshotFailure(snapshot, input.scope);
+		if (invalidSnapshot) return invalidSnapshot;
+		const restored = new Map<string, IProjectionResult>();
+		for (const producer of this.producers.values()) {
+			if (!producer.serves.includes(input.scope.kind)) continue;
+			const canonical = projections.get(producer.id);
+			if (canonical === undefined) {
+				return {
+					ok: false,
+					reason: 'projection_invalid',
+					detail: `${producer.id}: no stored projection to restore`,
+				};
+			}
+			const result: IProjectionResult = { canonical };
+			const invalidProjection = projectionFailure(producer, result);
+			if (invalidProjection) return invalidProjection;
+			restored.set(producer.id, result);
+		}
+		const gen = this.publishInternal(
+			state,
+			input,
+			snapshot,
+			restored,
+			undefined,
 		);
 		return { ok: true, generation: gen };
 	}
@@ -875,6 +891,27 @@ export class InMemoryStateRegistry implements IStateRegistry {
 			return sha256Hex(content);
 		}
 		return sha256BytesHex(content);
+	}
+
+	private snapshotFailure(
+		snapshot: import('./producer').IStateInputSnapshot,
+		scope: StateScope,
+	): IHydrateResult | undefined {
+		const issues = [
+			...this.validateSnapshotIntegrity(snapshot),
+			...this.validateSnapshotAgainstRegistry(snapshot, scope),
+		];
+		if (issues.length === 0) return undefined;
+		return {
+			ok: false,
+			reason: 'snapshot_invalid',
+			detail: issues
+				.map(
+					(i) =>
+						`${i.kind}${i.producerId ? `(${i.producerId})` : ''}${i.key ? `[${i.key}]` : ''}${i.detail ? `: ${i.detail}` : ''}`,
+				)
+				.join('; '),
+		};
 	}
 
 	private ensureScopeState(scope: StateScope): IScopeState {

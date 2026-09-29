@@ -37,7 +37,8 @@
 		"test:watch": "vitest"
 	},
 	"dependencies": {
-		"@delendai/core": "workspace:*"
+		"@delendai/core": "workspace:*",
+		"yaml": "2.9.0"
 	},
 	"devDependencies": {
 		"@delendai/state": "workspace:*",

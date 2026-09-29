@@ -40,14 +40,6 @@ const failed = (ref: string, reason: string): IWipRebaseResult => ({
 	reason,
 });
 
-/** Drop the engine's own trailers so a replay does not accumulate them. */
-const stripTrailers = (message: string): string =>
-	message
-		.split('\n')
-		.filter((line) => !/^Delendai-Wip-(Scope|Digest):/u.test(line.trim()))
-		.join('\n')
-		.trimEnd();
-
 /** Digest of a commit's recorded scope, read straight from its tree. */
 const digestOfScope = async (
 	run: IWipEngineContext['run'],
@@ -55,7 +47,14 @@ const digestOfScope = async (
 	scope: readonly string[],
 ): Promise<string> => {
 	const listing =
-		(await gitOutput(run, ['ls-tree', '-r', commit, '--', ...scope])) ?? '';
+		(await gitOutput(run, [
+			'--literal-pathspecs',
+			'ls-tree',
+			'-r',
+			commit,
+			'--',
+			...scope,
+		])) ?? '';
 	return computePatchDigest(scope, parseObjectListing(listing));
 };
 
@@ -139,8 +138,13 @@ export const rebaseWipOntoNewBase = async (
 		}
 
 		const listing =
-			(await gitOutput(indexRun, ['ls-files', '-s', '--', ...scope])) ??
-			'';
+			(await gitOutput(indexRun, [
+				'--literal-pathspecs',
+				'ls-files',
+				'-s',
+				'--',
+				...scope,
+			])) ?? '';
 		const patchDigest = computePatchDigest(
 			scope,
 			parseObjectListing(listing),
@@ -154,9 +158,12 @@ export const rebaseWipOntoNewBase = async (
 			tree,
 			parents: [newBase],
 			message: withScopeTrailers(
-				stripTrailers(request.message ?? message),
+				// `withScopeTrailers` drops the engine's own trailers first,
+				// so a replay does not accumulate them.
+				request.message ?? message,
 				scope,
 				patchDigest,
+				request.ref,
 			),
 			...(request.author !== undefined ? { author: request.author } : {}),
 		});

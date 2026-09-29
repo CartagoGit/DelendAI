@@ -19,7 +19,7 @@ import type {
 	IDelendaiConfigFile,
 	IDelendaiPluginConfig,
 	IScaffoldedFile,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import {
 	writeScaffoldedFiles,

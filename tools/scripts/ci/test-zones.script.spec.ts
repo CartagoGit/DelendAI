@@ -15,7 +15,12 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { planZones, reachableZones, zoneOf } from './test-zones.script';
+import {
+	planZones,
+	reachableZones,
+	reachForBase,
+	zoneOf,
+} from './test-zones.script';
 
 const repoRoot = join(__dirname, '..', '..', '..');
 
@@ -243,7 +248,7 @@ describe('reachableZones', () => {
 				buildGraph: () => graph as never,
 				computeAffected: () =>
 					result({ rootFiles: ['package.json'] }) as never,
-				diff: () => ['package.json'],
+				diff: () => [{ path: 'package.json', listing: false }],
 			},
 		);
 
@@ -287,7 +292,7 @@ describe('reachableZones', () => {
 							'@delendai/proposals',
 						],
 					}) as never,
-				diff: () => ['tools/a.ts'],
+				diff: () => [{ path: 'tools/a.ts', listing: false }],
 			},
 		);
 
@@ -306,10 +311,83 @@ describe('reachableZones', () => {
 						]),
 						downstream: ['@delendai/proposals'],
 					}) as never,
-				diff: () => ['packages/core/a.ts'],
+				diff: () => [{ path: 'packages/core/a.ts', listing: false }],
 			},
 		);
 
 		expect([...(reach ?? [])].sort()).toEqual(['core', 'proposals']);
+	});
+
+	it('sends an edited root file to the zones that read it, and a file under a zone\u2019s own paths to that zone', () => {
+		const reach = reachableZones(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => graph as never,
+				computeAffected: () =>
+					result({
+						rootFiles: [
+							'docs/delendai/guide.md',
+							'tests/e2e/a.spec.ts',
+						],
+					}) as never,
+				diff: () => [
+					{ path: 'docs/delendai/guide.md', listing: false },
+					{ path: 'tests/e2e/a.spec.ts', listing: false },
+				],
+				readMap: () => ({
+					zones: {
+						core: {
+							read: ['docs/delendai/guide.md'],
+							listed: ['docs'],
+						},
+						plugins: { read: [], listed: ['docs/delendai'] },
+						tools: { read: [], listed: [] },
+					},
+				}),
+			},
+		);
+
+		expect([...(reach ?? [])].sort()).toEqual(['core', 'tools']);
+	});
+});
+
+describe('reachForBase', () => {
+	const asked: string[] = [];
+	const reach = (base: string): ReadonlySet<string> => {
+		asked.push(base);
+		return new Set(['core']);
+	};
+
+	it('runs every zone when the run has no base, as a dispatch or a push does', () => {
+		expect(reachForBase(undefined, reach)).toBeUndefined();
+		expect(reachForBase('', reach)).toBeUndefined();
+		expect(reachForBase('  ', reach)).toBeUndefined();
+		expect(asked).toEqual([]);
+	});
+
+	it("filters by a pull request's base", () => {
+		expect(reachForBase('abc123', reach)).toEqual(new Set(['core']));
+		expect(asked).toEqual(['abc123']);
+	});
+});
+
+describe('the workflow plans zones from a pull request base only', () => {
+	it('never hands the planner a push base, so the integration branch runs the full matrix', async () => {
+		const { readFileSync } = await import('node:fs');
+		const workflow = readFileSync(
+			join(import.meta.dirname, '../../../.github/workflows/ci.yml'),
+			'utf8',
+		);
+		const planner = workflow.slice(
+			workflow.indexOf('test-zones.script.ts --matrix'),
+		);
+		const base = planner.slice(
+			0,
+			planner.indexOf('\n', planner.indexOf('--base=')),
+		);
+		expect(base).toContain(
+			"--base=${{ github.event.pull_request.base.sha || '' }}",
+		);
+		expect(base).not.toContain('github.event.before');
 	});
 });

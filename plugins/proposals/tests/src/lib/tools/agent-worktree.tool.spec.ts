@@ -19,6 +19,8 @@ import type {
 	IGitRunResult,
 } from '@delendai/proposals/lib/shared/git-runner';
 import { createFakeToolServer } from '@delendai/test-kit/public';
+import { describeWorkIsolation } from '@delendai/core/plugin';
+import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
 
 interface IHandlerResult {
 	readonly structuredContent?: Record<string, unknown>;
@@ -136,5 +138,53 @@ describe('buildAgentWorktreeRegistration — host gate (f00052 S7)', async () =>
 			'/ws/.cache/delendai/.worktrees/agent-a',
 			'HEAD',
 		]);
+	});
+});
+
+describe('buildAgentWorktreeRegistration — under a shared-checkout profile', () => {
+	const isolation = describeWorkIsolation(
+		expandProfile('shared-checkout-merge'),
+	);
+
+	it('refuses by explaining the profile, never by inviting the caller to enable worktrees', async () => {
+		let calls = 0;
+		const run: IGitRunner = async (): Promise<IGitRunResult> => {
+			calls += 1;
+			return { ok: true, output: '' };
+		};
+		const registration = buildAgentWorktreeRegistration({
+			namespacePrefix: 'proposals',
+			workspaceRoot: '/ws',
+			run,
+			enabled: false,
+			isolation,
+		});
+		let handler: ToolHandler | undefined;
+		let description = '';
+		await registration.register(
+			createFakeToolServer({
+				onRegisterTool: (call) => {
+					handler = call.handler as ToolHandler;
+					description = String(
+						(call.config as { description?: string }).description ??
+							'',
+					);
+				},
+			}),
+		);
+		if (handler === undefined)
+			throw new Error('handler was not registered');
+		const result = await handler({ action: 'create', agent: 'runner' });
+
+		expect(calls).toBe(0);
+		expect(result.structuredContent?.reason).toBe(
+			isolation.worktreeRefusal,
+		);
+		expect(String(result.structuredContent?.reason)).not.toContain(
+			'--agent-worktree=true',
+		);
+		expect(description).toContain('Not used under this project');
+		expect(description).toContain('Do not create worktrees or branches');
+		expect(registration.summary).toContain('Not used');
 	});
 });

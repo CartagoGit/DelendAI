@@ -30,21 +30,22 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { REPOSITORY_SLUG } from '@delendai/core/lib/contracts/constants/repository-identity.constant';
-import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import {
 	reconcileRefs,
 	type IObservedPullRequest,
 } from '@delendai/core/lib/ref-lifecycle/reconcile.service';
+import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
 
 // `monorepo-paths` rather than a hardcoded path: the layout convention
 // is that every consumer of these paths imports the path module. This
 // guard needs `node_modules` regardless — it resolves the policy through
 // core — so the import-lean constraint that applies to
 // `branch-protection-guard` does not apply here.
+import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 
 const REAP = process.argv.includes('--reap');
@@ -65,15 +66,174 @@ const gh = (path: string): unknown => {
 		.map((line) => JSON.parse(line) as unknown);
 };
 
-const policyBranches = () => {
-	const config = JSON.parse(
-		readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
-	return resolveDevelopmentPolicy({
-		...(config.development === undefined
-			? {}
-			: { development: config.development }),
-	}).branches;
+/** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
+const shortRef = (value: string): string =>
+	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+export interface IBranchTip {
+	readonly name: string;
+	readonly sha: string;
+}
+
+/**
+ * The branch that already carries a work ref's tip, if any: a publication
+ * ref, or the integration branch once the work merged. Equal tips need no
+ * lookup; otherwise `contains(base, head)` asks whether `head` is an
+ * ancestor of `base`. Pure apart from that injected check, so the rule
+ * can be specified without a forge.
+ */
+export const publishedInFor = (
+	work: IBranchTip,
+	containers: readonly IBranchTip[],
+	contains: (baseSha: string, headSha: string) => boolean,
+): string | undefined =>
+	containers.find(
+		(container) =>
+			couldPublish(work.name, container.name) &&
+			(container.sha === work.sha || contains(container.sha, work.sha)),
+	)?.name;
+
+/** The unit a work or publication ref belongs to. */
+interface IRefUnit {
+	readonly model: string;
+	readonly id: string;
+	readonly slice: string;
+	readonly generation: string;
+}
+
+/**
+ * A reader of the unit a ref names, with core's parser for the project's
+ * own template — the same one the guard and the reconciler use (f00644).
+ * A publication ref is read as the work it publishes. It used to be a
+ * regex spelled here, which would have read a kind segment as the model.
+ */
+export const unitReader = (branches: {
+	readonly workRefTemplate: string;
+	readonly workRefPrefix: string;
+	readonly publicationRefPrefix: string;
+}): ((name: string) => IRefUnit | undefined) => {
+	const parser = compileWorkRefParser(
+		branches.workRefTemplate,
+		branches.workRefPrefix,
+	);
+	const work = shortRef(branches.workRefPrefix);
+	const publication = shortRef(branches.publicationRefPrefix);
+	return (name) => {
+		const short = shortRef(name);
+		const asWork =
+			publication !== '' && short.startsWith(publication)
+				? `${work}${short.slice(publication.length)}`
+				: short;
+		const identity = parser?.parse(`refs/heads/${asWork}`);
+		return identity === undefined
+			? undefined
+			: {
+					model: identity.agent,
+					id: identity.proposal,
+					slice: identity.slice,
+					generation: String(identity.generation),
+				};
+	};
+};
+
+let projectReader: ((name: string) => IRefUnit | undefined) | undefined;
+
+/** The unit a ref names, under this project's declared branches. */
+const unitOf = (name: string): IRefUnit | undefined => {
+	projectReader ??= unitReader(declaredBranches(repoRoot()));
+	return projectReader(name);
+};
+
+/**
+ * Whether a work ref belongs to a proposal the checkout has in progress.
+ * A proposal keeps one work branch while it is in progress and publishes
+ * its slices from it, so a published tip does not end that branch.
+ */
+export const proposalInProgressFor = (
+	name: string,
+	inProgress: ReadonlySet<string>,
+): boolean => {
+	const unit = unitOf(name);
+	return unit !== undefined && inProgress.has(unit.id);
+};
+
+/** The ids of the proposals in progress in the checkout at `root`. */
+const inProgressIds = (root: string): ReadonlySet<string> => {
+	const dir = join(root, 'docs/delendai/proposals/in-progress');
+	if (!existsSync(dir)) return new Set();
+	return new Set(
+		readdirSync(dir)
+			.map((entry) => /^([a-z]\d{5})-/u.exec(entry)?.[1])
+			.filter((id): id is string => id !== undefined),
+	);
+};
+
+/**
+ * Whether `container` can be where `work` was published. A work ref
+ * stacked on another unit's publication starts at that publication's tip,
+ * so it is contained in it without having been published anywhere: it was
+ * reported as a stale copy, failing the gate on every pull request and on
+ * the integration branch's certification until the unit published. Only
+ * the same unit's publication (the same slice, or the whole proposal)
+ * publishes it. A name outside the convention, and the integration
+ * branch, keep the plain containment rule.
+ */
+const couldPublish = (work: string, container: string): boolean => {
+	const from = unitOf(work);
+	const into = unitOf(container);
+	if (from === undefined || into === undefined) return true;
+	return (
+		from.model === into.model &&
+		from.id === into.id &&
+		from.generation === into.generation &&
+		(from.slice === into.slice || into.slice === 'all')
+	);
+};
+
+/**
+ * The refs that fail the check: those not reapable. A reapable ref is a
+ * copy whose content a publication or the integration branch already
+ * holds, so it cannot be anybody's only copy of their work.
+ */
+export const blockingRefs = <TVerdict extends { readonly name: string }>(
+	outstanding: readonly TVerdict[],
+	reapable: readonly { readonly name: string }[],
+): readonly TVerdict[] =>
+	outstanding.filter(
+		(verdict) => !reapable.some((copy) => copy.name === verdict.name),
+	);
+
+/**
+ * What a run is allowed to fail for (x00678).
+ *
+ * CI certifies a tree — a pull request's, or the integration branch's —
+ * and a ref of another unit is not part of that tree. When it failed CI,
+ * one agent's publications with no pull request turned every other pull
+ * request red and left the integration branch uncertified, and the queue,
+ * which arms only on a certified integration branch, stopped for
+ * everyone: three times in two days. So CI fails only over a pull
+ * request's own ref, and reports the rest. The queue job, which exists to
+ * keep the forge tidy, judges the whole repository and fails on any of it
+ * (`REF_LIFECYCLE_SCOPE=repository`).
+ */
+export const failingFor = <TVerdict extends { readonly name: string }>(
+	blocking: readonly TVerdict[],
+	run: {
+		readonly scope: string | undefined;
+		readonly event: string | undefined;
+		readonly head: string | undefined;
+	},
+): {
+	readonly failing: readonly TVerdict[];
+	readonly reported: readonly TVerdict[];
+} => {
+	if (run.scope === 'repository') return { failing: blocking, reported: [] };
+	const own = (verdict: TVerdict): boolean =>
+		run.event === 'pull_request' && verdict.name === run.head;
+	return {
+		failing: blocking.filter(own),
+		reported: blocking.filter((verdict) => !own(verdict)),
+	};
 };
 
 const pullRequestState = (request: {
@@ -84,15 +244,121 @@ const pullRequestState = (request: {
 	return request.merged_at === null ? 'closed' : 'merged';
 };
 
+/**
+ * Does `base` already contain `head`? Asked of git, in this clone.
+ *
+ * WHY git first, which is the whole of this change: this was one forge
+ * `compare` call per work ref per container. On a repository carrying
+ * eighty unpublished work refs that is hundreds of calls in one job, and
+ * the forge's secondary rate limit ended the run with an unhandled
+ * `Command failed` — a required check that read as a code defect, on
+ * every open pull request at once, over nothing that was wrong with any
+ * of them.
+ *
+ * The answer was never the forge's to give. Containment is a fact about
+ * commits, and `merge-base --is-ancestor` states it locally with no
+ * network at all. `undefined` means this clone cannot tell — a shallow
+ * checkout, a ref never fetched — and only then is the forge asked.
+ */
+export const containedInGit = (
+	baseSha: string,
+	headSha: string,
+	run: (args: readonly string[]) => void = (args) => {
+		execFileSync('git', [...args], { stdio: 'ignore' });
+	},
+): boolean | undefined => {
+	for (const sha of [baseSha, headSha]) {
+		try {
+			run(['cat-file', '-e', `${sha}^{commit}`]);
+		} catch {
+			// Not in this clone; the forge is the only one who knows.
+			return undefined;
+		}
+	}
+	try {
+		run(['merge-base', '--is-ancestor', headSha, baseSha]);
+		return true;
+	} catch (error) {
+		// Exit 1 is git's answer "no"; anything else is git failing to
+		// answer, which must not be read as "no".
+		return (error as { readonly status?: number }).status === 1
+			? false
+			: undefined;
+	}
+};
+
+/**
+ * Containment, preferring the answer that costs nothing.
+ *
+ * Kept separate from both sources so a test can drive every combination —
+ * git says yes, git says no, git cannot tell and the forge answers, git
+ * cannot tell and the forge fails — without a repository or a network.
+ */
+export const containsWith = (
+	baseSha: string,
+	headSha: string,
+	deps: {
+		readonly inGit: (base: string, head: string) => boolean | undefined;
+		readonly viaForge: (base: string, head: string) => boolean;
+	},
+): boolean => {
+	const local = deps.inGit(baseSha, headSha);
+	if (local !== undefined) return local;
+	try {
+		return deps.viaForge(baseSha, headSha);
+	} catch (error) {
+		// A gate that cannot check must say which ref it could not check.
+		// Crashing here reported a code defect for a rate limit.
+		throw new Error(
+			`ref-lifecycle: could not tell whether ${baseSha.slice(0, 9)} contains ${headSha.slice(0, 9)} — neither this clone nor the forge answered (${error instanceof Error ? error.message.split('\n')[0] : String(error)}).`,
+		);
+	}
+};
+
 const main = (): void => {
-	const branches = policyBranches();
+	const branches = declaredBranches(repoRoot());
 	const observed = (
 		gh(`repos/${REPOSITORY_SLUG}/branches?per_page=100`) as readonly {
 			readonly name: string;
 			readonly commit: { readonly sha: string };
 		}[]
 	).map((branch) => ({ name: branch.name, sha: branch.commit.sha }));
-	const refs = observed.map((branch) => ({ name: branch.name }));
+	// A work branch ends when it is published. Find, for each one, the
+	// publication ref or integration branch that already contains its tip;
+	// reconcile then reports it as reapable and fails the gate until the
+	// copy is gone.
+	const workPrefix = shortRef(branches.workRefPrefix);
+	const publicationPrefix = shortRef(branches.publicationRefPrefix);
+	const containers = observed.filter(
+		(branch) =>
+			branch.name === branches.integration ||
+			(publicationPrefix !== '' &&
+				branch.name.startsWith(publicationPrefix)),
+	);
+	const contains = (baseSha: string, headSha: string): boolean =>
+		containsWith(baseSha, headSha, {
+			inGit: containedInGit,
+			viaForge: (base, head) => {
+				const status = ghScalar(
+					`repos/${REPOSITORY_SLUG}/compare/${base}...${head}`,
+					'.status',
+				);
+				return status === 'behind' || status === 'identical';
+			},
+		});
+	// Read from the checkout this runs on: the integration branch, or a
+	// pull request merged onto it.
+	const inProgress = inProgressIds(repoRoot());
+	const refs = observed.map((branch) => {
+		if (workPrefix === '' || !branch.name.startsWith(workPrefix)) {
+			return { name: branch.name };
+		}
+		const publishedIn = publishedInFor(branch, containers, contains);
+		if (publishedIn === undefined) return { name: branch.name };
+		return proposalInProgressFor(branch.name, inProgress)
+			? { name: branch.name, publishedIn, proposalInProgress: true }
+			: { name: branch.name, publishedIn };
+	});
 	const pullRequests = (
 		gh(
 			`repos/${REPOSITORY_SLUG}/pulls?state=all&per_page=100`,
@@ -129,14 +395,23 @@ const main = (): void => {
 	});
 	const result = reconcileRefs(dated, pullRequests, branches);
 
+	for (const verdict of result.active) {
+		console.log(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
+	}
+
 	for (const verdict of result.awaiting) {
 		console.log(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
 	}
 
+	const deleted = new Set<string>();
 	for (const verdict of result.reapable) {
+		const evidence =
+			verdict.pullRequest === undefined
+				? verdict.reason
+				: `#${verdict.pullRequest} ${verdict.reason}`;
 		if (!REAP) {
 			console.log(
-				`ref-lifecycle: ${verdict.name} is reapable (#${verdict.pullRequest ?? '?'} ${verdict.reason}) — run with --reap to delete it.`,
+				`ref-lifecycle: ${verdict.name} is reapable (${evidence}) — run with --reap to delete it.`,
 			);
 			continue;
 		}
@@ -146,25 +421,63 @@ const main = (): void => {
 			'DELETE',
 			`repos/${REPOSITORY_SLUG}/git/refs/heads/${verdict.name}`,
 		]);
-		console.log(
-			`ref-lifecycle: deleted ${verdict.name} (#${verdict.pullRequest ?? '?'}).`,
-		);
+		deleted.add(verdict.name);
+		console.log(`ref-lifecycle: deleted ${verdict.name} (${evidence}).`);
 	}
 
-	if (result.needsAttention.length === 0) {
+	// A ref this pass just reaped is resolved, not outstanding: reporting it
+	// as needing attention — and exiting 1 — right after deleting it told
+	// the operator the opposite of what happened.
+	const outstanding = result.needsAttention.filter(
+		(verdict) => !deleted.has(verdict.name),
+	);
+	if (outstanding.length === 0) {
 		console.log(
-			`ref-lifecycle: ${result.verdicts.length} ref(s); every one of them belongs to somebody ✓`,
+			`ref-lifecycle: ${result.verdicts.length - deleted.size} ref(s); every one of them belongs to somebody ✓`,
 		);
 		return;
 	}
 
-	for (const verdict of result.needsAttention) {
+	const judged = failingFor(blockingRefs(outstanding, result.reapable), {
+		scope: process.env.REF_LIFECYCLE_SCOPE,
+		event: process.env.GITHUB_EVENT_NAME,
+		head: process.env.GITHUB_HEAD_REF,
+	});
+	for (const verdict of judged.reported) {
+		console.log(
+			`ref-lifecycle: ${verdict.name} — ${verdict.reason} (not this tree's: reported here, judged by the queue job)`,
+		);
+	}
+	const blocking = judged.failing;
+	if (blocking.length === 0) {
+		// Every ref left is a copy of work already published: nothing can
+		// be lost, and the queue's own `--reap` pass deletes it. Failing
+		// here failed every pull request and the integration branch's
+		// certification over a ref none of them owned.
+		for (const verdict of outstanding) {
+			console.log(
+				`ref-lifecycle: ${verdict.name} — ${verdict.reason} (reapable; the queue deletes it)`,
+			);
+		}
+		console.log(
+			`ref-lifecycle: ${String(outstanding.length)} published copy(ies) left to reap; nothing holds unpublished work ✓`,
+		);
+		return;
+	}
+	for (const verdict of outstanding) {
 		console.error(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
 	}
+	const reapableLeft = outstanding.some((verdict) =>
+		result.reapable.some((reapable) => reapable.name === verdict.name),
+	);
 	console.error(
-		`\nNothing was deleted: a ref with no finished pull request may be the only copy of work somebody is holding. Open a pull request for it from \`${branches.publicationRefPrefix}…\`, or delete it deliberately once you have checked it carries nothing.`,
+		reapableLeft
+			? '\nRun with --reap to delete the refs reported as reapable above: their content is already published, so nothing is lost.'
+			: `\nNothing was deleted: a ref with no finished pull request may be the only copy of work somebody is holding. Open a pull request for it from \`${branches.publicationRefPrefix}…\`, or delete it deliberately once you have checked it carries nothing.`,
 	);
 	process.exit(1);
 };
 
-main();
+if (import.meta.main) {
+	main();
+}

@@ -9,6 +9,8 @@ export interface IObservationsToolOptions {
 	/** Absolute path of the test failure journal this project writes. */
 	readonly testJournalPathAbs: string;
 	readonly maxObservations?: number;
+	/** Absolute workspace root — the containment root for store writes. */
+	readonly workspaceRootAbs?: string;
 	/** Every read this tool makes goes through it. */
 	readonly readText: IWorkspaceTextReader;
 }

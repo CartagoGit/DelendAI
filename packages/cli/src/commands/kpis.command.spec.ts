@@ -353,11 +353,13 @@ const usageSummary = {
 	},
 } as const;
 
-const buildStubContext = (): ICliCommandContext => ({
+// `--json` is global: the parser takes it out of the arguments into
+// `globals.json`.
+const buildStubContext = (json = false): ICliCommandContext => ({
 	cwd: '/workspace',
 	globals: {
 		workspace: '/workspace',
-		json: false,
+		json,
 		format: 'text',
 		lang: 'en',
 		noColor: true,
@@ -407,9 +409,9 @@ describe('kpis command', () => {
 	});
 
 	it('returns stable structured data in json mode', async () => {
-		const ctx = buildStubContext();
+		const ctx = buildStubContext(true);
 		const result = await runKpisCommandBody(
-			['--json', '--view=plugins'],
+			['--view=plugins'],
 			ctx,
 			runtime,
 		);
@@ -423,17 +425,9 @@ describe('kpis command', () => {
 	});
 
 	it('projects telemetry-backed model and error views without recomputing raw logs', async () => {
-		const ctx = buildStubContext();
-		const models = await runKpisCommandBody(
-			['--json', 'models'],
-			ctx,
-			runtime,
-		);
-		const errors = await runKpisCommandBody(
-			['--json', 'errors'],
-			ctx,
-			runtime,
-		);
+		const ctx = buildStubContext(true);
+		const models = await runKpisCommandBody(['models'], ctx, runtime);
+		const errors = await runKpisCommandBody(['errors'], ctx, runtime);
 		const modelsReport = models.data as {
 			payload: { tables: { rows: { key: string }[] }[] };
 		};
@@ -453,9 +447,9 @@ describe('kpis command', () => {
 	});
 
 	it('fails validation when a configured threshold is breached', async () => {
-		const ctx = buildStubContext();
+		const ctx = buildStubContext(true);
 		const result = await runKpisCommandBody(
-			['--json', '--threshold=health.score>=90'],
+			['--threshold=health.score>=90'],
 			ctx,
 			runtime,
 		);
@@ -468,10 +462,10 @@ describe('kpis command', () => {
 	});
 
 	it('streams repeated watch frames and suppresses default printing when watch ends', async () => {
-		const ctx = buildStubContext();
+		const ctx = buildStubContext(true);
 		const writes: string[] = [];
 		const result = await runKpisCommandBody(
-			['--watch', '--json', '--watch-interval-ms=1'],
+			['--watch', '--watch-interval-ms=1'],
 			ctx,
 			{
 				...runtime,

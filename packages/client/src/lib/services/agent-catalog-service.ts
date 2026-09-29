@@ -4,7 +4,7 @@ import type {
 	ISkillSummary,
 	IToolSummary,
 	IDelendaiToolOutputs,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { formatToolName } from './_namespace';
@@ -15,15 +15,6 @@ const ACTIONABLE_PROPOSAL_STATUSES = new Set<IProposalSummary['status']>([
 	'in-progress',
 	'paused',
 ]);
-const DEFAULT_AGENT_POLICY = {
-	autonomous: true,
-	principles: [
-		'Apply SOLID architecture where it improves ownership and changeability.',
-		'Use good engineering practices and keep the code clear and maintainable.',
-		'Reuse existing code and abstractions before introducing duplication.',
-		'Keep naming, files, and folders homogeneous with the surrounding project.',
-	],
-} as const;
 
 /**
  * v00129 S1 (AUD-B01): `agent_catalog`'s WIRE-DECLARED `outputSchema` is
@@ -170,7 +161,10 @@ const filterProposals = (
 	);
 };
 
-const promptTextOf = async (snapshot: ICatalogSnapshot): Promise<string> => {
+const promptTextOf = async (
+	snapshot: ICatalogSnapshot,
+	instructions: string | undefined,
+): Promise<string> => {
 	const actionable =
 		snapshot.proposals.length === 0
 			? 'none'
@@ -181,11 +175,11 @@ const promptTextOf = async (snapshot: ICatalogSnapshot): Promise<string> => {
 				content: {
 					type: 'text',
 					text: [
-						`Working mode: ${DEFAULT_AGENT_POLICY.autonomous ? 'autonomous by default' : 'collaborative / ask before autonomous execution'}.`,
-						'Engineering principles:',
-						...DEFAULT_AGENT_POLICY.principles.map(
-							(principle) => `- ${principle}`,
-						),
+						// How to work is the server's to say: it reads the
+						// project's config, and the client does not.
+						...(instructions === undefined || instructions === ''
+							? []
+							: [instructions]),
 						'1. Call `delendai_overview` first to map the server and confirm the loaded plugin surface.',
 						'2. Call `delendai_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
 						'3. Narrow with `section` or `query` before doing work, then pick the matching proposal or skill instead of rereading docs broadly.',
@@ -243,7 +237,10 @@ export class AgentCatalogService {
 	}
 
 	async getBootstrapPrompt(): Promise<string> {
-		return promptTextOf(await this.getSnapshot());
+		return promptTextOf(
+			await this.getSnapshot(),
+			this.client.instructions(),
+		);
 	}
 
 	async getSkillBody(id: string): Promise<string> {

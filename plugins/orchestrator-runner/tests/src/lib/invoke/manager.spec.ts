@@ -66,12 +66,18 @@ const makeManager = (opts: {
 		targetProvider: { id: string };
 	}) => SpendCheckOutcome;
 	fallbackStrategy?: 'rerank' | 'tier-down';
+	/** Record starts for every kind, so a test can see which ones ran. */
+	recordAllKinds?: boolean;
 }): InvocationManager => {
 	const invokers: Record<ProviderKind, IKindInvoker> = {
 		cli: recordingInvoker(opts.startedIds),
 		api: recordingInvoker(opts.startedIds),
-		'mcp-server': failingInvoker,
-		subscription: failingInvoker,
+		'mcp-server': opts.recordAllKinds
+			? recordingInvoker(opts.startedIds)
+			: failingInvoker,
+		subscription: opts.recordAllKinds
+			? recordingInvoker(opts.startedIds)
+			: failingInvoker,
 	};
 	return new InvocationManager({
 		providers: opts.providers,
@@ -157,5 +163,83 @@ describe('InvocationManager spend guard (S7)', () => {
 		const out = await manager.invoke({ task: 'do it' });
 		expect(out.error).toBeUndefined();
 		expect(startedIds).toEqual(['solo']);
+	});
+});
+
+const mcpServerProvider = (id: string): IProviderCapabilities => ({
+	...provider(id, 3),
+	kind: 'mcp-server',
+	invoke: { kind: 'mcp-server', server: id, tool: 'run', args: {} },
+});
+
+const subscriptionProvider = (id: string): IProviderCapabilities => ({
+	...provider(id, 3),
+	kind: 'subscription',
+	invoke: { kind: 'subscription', tool: id },
+});
+
+const breached: SpendCheckOutcome = {
+	outcome: 'block',
+	error: {
+		scope: 'monthly',
+		limitUsd: 50,
+		observedUsd: 55,
+		message: 'over the monthly cap',
+	},
+};
+
+describe('InvocationManager — spend that cannot be checked, and every kind that can spend', () => {
+	it('refuses as spend-unverifiable before any invoker starts', async () => {
+		const startedIds: string[] = [];
+		const manager = makeManager({
+			providers: [provider('pricey', 3)],
+			startedIds,
+			checkSpend: () => ({
+				outcome: 'unverifiable',
+				reason: 'A spend cap is configured, but the spend against it cannot be checked.',
+			}),
+		});
+		const out = await manager.invoke({ task: 'do it' });
+		expect(out.error?.code).toBe('spend-unverifiable');
+		expect(out.userMessage).toContain('cannot be checked');
+		expect(startedIds).toEqual([]);
+	});
+
+	it('guards an mcp-server hop: a breached cap spawns nothing', async () => {
+		// The defect: the guarded kinds were a list (api, cli), and
+		// mcp-server was not on it, so a server that can call a paid model
+		// ran with no spend check at all.
+		const startedIds: string[] = [];
+		let consulted = 0;
+		const manager = makeManager({
+			providers: [mcpServerProvider('codex-mcp')],
+			startedIds,
+			recordAllKinds: true,
+			checkSpend: () => {
+				consulted += 1;
+				return breached;
+			},
+		});
+		const out = await manager.invoke({ task: 'do it' });
+		expect(consulted).toBe(1);
+		expect(out.error?.code).toBe('spend-limit-exceeded');
+		expect(startedIds).toEqual([]);
+	});
+
+	it('does not consult the guard for a kind declared unable to spend', async () => {
+		const startedIds: string[] = [];
+		let consulted = 0;
+		const manager = makeManager({
+			providers: [subscriptionProvider('claude-code')],
+			startedIds,
+			recordAllKinds: true,
+			checkSpend: () => {
+				consulted += 1;
+				return breached;
+			},
+		});
+		await manager.invoke({ task: 'do it' });
+		expect(consulted).toBe(0);
+		expect(startedIds).toEqual(['claude-code']);
 	});
 });

@@ -172,3 +172,117 @@ describe('tool-surface-runtime searchTools ranking (f00273-S1)', () => {
 		).toEqual(['alpha_tool', 'beta_tool', 'gamma_tool']);
 	});
 });
+
+describe('a search that narrows as you say more (x00604)', () => {
+	const runtime = () =>
+		buildRuntime([
+			{
+				registrationId: 'delendai_proposals_sync_proposals',
+				name: 'delendai_proposals_sync_proposals',
+				toolId: 'sync_proposals',
+				pluginId: 'proposals',
+				namespace: 'proposals',
+				summary: 'Regenerate the proposal index from the .md files.',
+				tags: ['proposals'],
+			},
+			{
+				registrationId: 'delendai_logs_query',
+				name: 'delendai_logs_query',
+				toolId: 'query',
+				pluginId: 'logs',
+				namespace: 'logs',
+				summary: 'Query the structured log index.',
+				tags: ['logs'],
+			},
+		]);
+
+	it('finds a tool described in words, not only by its exact name', () => {
+		// Measured live through the MCP surface, against a consumer
+		// project: `tool_search('sync_proposals')` answered, and
+		// `tool_search('sync proposals index')` — every word of which
+		// appears in that tool's own name and summary — answered
+		// `{"entries":[]}`.
+		//
+		// With 148 tools behind a lazy surface, the tool an agent is told
+		// to use to FIND tools was telling it the capability does not
+		// exist.
+		const found = runtime().searchTools({
+			query: 'sync proposals index',
+		});
+		expect(found.map((entry) => entry.toolId)).toEqual(['sync_proposals']);
+	});
+
+	it('still answers an exact name, which is what already worked', () => {
+		expect(
+			runtime()
+				.searchTools({ query: 'sync_proposals' })
+				.map((entry) => entry.toolId),
+		).toEqual(['sync_proposals']);
+	});
+
+	it('narrows as words are added, rather than widening', () => {
+		// Every token must appear. Matching ANY token would make a third
+		// word widen the answer, and "sync proposals index" would return
+		// everything that mentions an index — including the log query.
+		const one = runtime().searchTools({ query: 'index' });
+		expect(one.length).toBe(2);
+		const two = runtime().searchTools({ query: 'index proposal' });
+		expect(two.map((entry) => entry.toolId)).toEqual(['sync_proposals']);
+	});
+
+	it('is unbothered by the spacing somebody types', () => {
+		expect(
+			runtime()
+				.searchTools({ query: '  proposals   index  ' })
+				.map((entry) => entry.toolId),
+		).toEqual(['sync_proposals']);
+	});
+
+	it('returns everything for an empty query, as before', () => {
+		expect(runtime().searchTools({ query: '   ' }).length).toBe(2);
+		expect(runtime().searchTools({}).length).toBe(2);
+	});
+});
+
+describe('ranking reads the query the way the filter does (x00622)', () => {
+	const runtime = () =>
+		buildRuntime([
+			{
+				// Alphabetically first, and only a loose match: both words
+				// appear, but in different fields.
+				registrationId: 'delendai_aaa_archive',
+				name: 'delendai_aaa_archive',
+				toolId: 'archive',
+				pluginId: 'aaa',
+				namespace: 'aaa',
+				summary: 'Archive old entries; see the proposal board.',
+				tags: ['close'],
+			},
+			{
+				// Alphabetically last, and the tool the words describe.
+				registrationId: 'delendai_zzz_close_proposal',
+				name: 'delendai_zzz_close_proposal',
+				toolId: 'close_proposal',
+				pluginId: 'zzz',
+				namespace: 'zzz',
+				summary: 'Close a proposal once every slice is done.',
+				tags: ['proposals'],
+			},
+		]);
+
+	it('ranks the tool whose own name holds every word first, not the alphabetical one', () => {
+		// Before, a multi-word query scored 0 for every candidate, because
+		// the score compared the whole phrase while the filter matched
+		// word by word, so the answer came back sorted by name.
+		const found = runtime().searchTools({ query: 'close proposal' });
+		expect(found.map((entry) => entry.toolId)).toEqual([
+			'close_proposal',
+			'archive',
+		]);
+	});
+
+	it('still puts an exact tool id first for a one-word query', () => {
+		const found = runtime().searchTools({ query: 'archive' });
+		expect(found[0]?.toolId).toBe('archive');
+	});
+});

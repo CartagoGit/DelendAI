@@ -34,20 +34,34 @@ const asBreach = (value: unknown): SpendBreachScope | null =>
 /** Project a raw `limitsStatus` object onto the guard's view (tolerant). */
 export const normalizeLimitsView = (raw: unknown): ISpendLimitsView => {
 	const rec = asRecord(raw);
-	if (!rec) return emptySpendLimitsView();
+	if (!rec) {
+		return emptySpendLimitsView(
+			'the usage summary carries no limitsStatus block',
+		);
+	}
 	return {
 		sessionSpendUsd: asFinite(rec.sessionSpendUsd),
 		sessionLimitUsd: asFiniteOrNull(rec.sessionLimitUsd),
 		monthlySpendUsd: asFinite(rec.monthlySpendUsd),
 		monthlyLimitUsd: asFiniteOrNull(rec.monthlyLimitUsd),
 		breached: asBreach(rec.breached),
+		observed: 'known',
 	};
 };
 
 /**
  * A refreshable, read-cheap mirror of `usage-summary.json#limitsStatus`.
- * A missing/corrupt summary leaves the neutral view (nothing breached), so
- * the runner degrades gracefully to "no cap" rather than blocking spuriously.
+ *
+ * A summary that cannot be read, or cannot be parsed, leaves the view
+ * `unknown`, with the reason. It used to keep a "neutral" view instead,
+ * reading as "nothing breached", so a project with a monthly cap got no cap
+ * at all whenever the file that records spend could not be read. Whether
+ * `unknown` blocks is the guard's decision: it does under a configured cap,
+ * and does not when no cap is configured.
+ *
+ * `usage-tracking` writes the summary when it starts and on every rollup,
+ * atomically, so in a healthy project this is `unknown` only until the
+ * first load. After that, `unknown` means something is actually wrong.
  */
 export class SpendLimitsStore {
 	private view: ISpendLimitsView = emptySpendLimitsView();
@@ -62,14 +76,19 @@ export class SpendLimitsStore {
 		this.view = view;
 	}
 
-	/** Best-effort hydrate from the summary file; failures keep the prior view. */
+	/** Hydrate from the summary file; a failure makes the view `unknown`, with why. */
 	async loadFrom(summaryPath: string): Promise<void> {
 		try {
 			const raw = await readFile(summaryPath, 'utf8');
 			const doc = asRecord(JSON.parse(raw));
 			this.view = normalizeLimitsView(doc?.limitsStatus);
-		} catch {
-			// Keep the last-known (or neutral) view.
+		} catch (error) {
+			// Not the last-known view: spend may have grown since it was read,
+			// and a file that was readable and no longer is has not become
+			// evidence of a budget.
+			this.view = emptySpendLimitsView(
+				`could not read ${summaryPath} (${error instanceof Error ? error.message : String(error)})`,
+			);
 		}
 	}
 

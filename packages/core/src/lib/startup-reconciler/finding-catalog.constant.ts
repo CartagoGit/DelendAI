@@ -26,6 +26,11 @@ export const SAFE_FINDING_CODES = [
 	'work-refs.generation-recorded',
 	/** A ref was unchanged since the last run and was not re-read. */
 	'work-refs.unchanged',
+	/**
+	 * A ref carries new work on a checkpoint already recorded as
+	 * integrated; the record stands and the ref is left as it is.
+	 */
+	'work-refs.work-after-integration',
 	/** A pull request's state was mirrored from the forge. */
 	'forge.pull-request-reconciled',
 	/** A CI verdict was mirrored from the forge. */
@@ -36,6 +41,8 @@ export const SAFE_FINDING_CODES = [
 	'integration-evidence.checkpoint-integrated',
 	/** A work ref is gone AND its content is proven merged. */
 	'integration-evidence.merged-ref-absent',
+	/** A work ref gone because it was published; its publication holds it. */
+	'integration-evidence.checkpoint-published',
 	/** A lease whose TTL elapsed was reaped. */
 	'leases.expired-reaped',
 	/** Claims held by a reaped lease were released. */
@@ -76,6 +83,8 @@ export const AMBIGUOUS_FINDING_CODES = [
 	'governance.destructive-mismatch',
 	/** HEAD is not on the integration branch (never fixed by resetting). */
 	'checkout.head-moved',
+	/** The policy's integration branch exists neither locally nor on origin. */
+	'checkout.integration-missing',
 	/** The policy itself does not resolve to a coherent model. */
 	'environment.policy-invalid',
 	/** The repository identity could not be determined. */
@@ -93,4 +102,6 @@ export const UNVERIFIED_FINDING_CODES = [
 	'governance.unverifiable',
 	'governance.drift',
 	'mutex.busy',
+	/** A ref's checkpoint could not be written to the state database. */
+	'work-refs.record-failed',
 ] as const;

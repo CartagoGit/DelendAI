@@ -39,6 +39,7 @@
  */
 import { readFileSync, readdirSync, readlinkSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { agentEnvironmentMarker } from '../../../packages/core/src/lib/work-identity/agent-environment.helper';
 
 /** Exact reflog subject lefthook uses for its partial-staging backup. */
 export const LEFTHOOK_BACKUP_SUBJECT = 'lefthook auto backup';
@@ -247,4 +248,14 @@ export const runNoStashesCheck = (
 	return status;
 };
 
-if (import.meta.main) process.exit(runNoStashesCheck());
+// A person's stashes are their own; this report is about agents, whose
+// stashes git now refuses outright (x00626). So it speaks only when an
+// agent is running it, and a person is never told their stash is a
+// violation.
+if (import.meta.main) {
+	process.exit(
+		agentEnvironmentMarker(process.env) === undefined
+			? 0
+			: runNoStashesCheck(),
+	);
+}

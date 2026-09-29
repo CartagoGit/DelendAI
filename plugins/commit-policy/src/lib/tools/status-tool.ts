@@ -17,6 +17,9 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import { toolError, toolOk } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
+
+import { STATUS_OUTPUT_SCHEMA } from '../contracts/constants/status-tool.constant';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { isBranchProtected } from '../contracts/branch';
@@ -38,88 +41,6 @@ export interface IStatusToolOptions {
 	/** BCP-47 locale tag (`en`, `es`, …). Defaults to English. */
 	readonly locale?: string | undefined;
 }
-
-const OutputSchema = z.object({
-	commit: z.object({
-		enabled: z.boolean(),
-		requireConventional: z.boolean(),
-		autoScopeFromProposal: z.boolean(),
-		refuseWhenDisabled: z.boolean(),
-	}),
-	identity: z.object({
-		mode: z.string(),
-		effective: z
-			.object({
-				authorFlag: z.string(),
-				displayName: z.string(),
-				email: z.string(),
-				label: z.string(),
-			})
-			.nullable(),
-		resolutionError: z.string().nullable(),
-	}),
-	audit: z.object({
-		trailer: z.string(),
-		agentFormat: z.string(),
-	}),
-	cadence: z.object({
-		triggerCount: z.number(),
-		triggers: z.array(
-			z.object({
-				kind: z.string(),
-				files: z.number().optional(),
-				minutes: z.number().optional(),
-				onStatuses: z.array(z.string()).optional(),
-			}),
-		),
-		sliceScoping: z.boolean(),
-		allowForeignChanges: z.boolean(),
-	}),
-	push: z.object({
-		enabled: z.boolean(),
-		onCommit: z.boolean(),
-		everyNCommits: z.number().optional(),
-		everyNMinutes: z.number().optional(),
-		force: z.string(),
-		protectedBranches: z.array(z.string()),
-		remote: z.string().optional(),
-		branch: z.string().optional(),
-		/**
-		 * x00427 S3: live reconciliation state — does the branch
-		 * have commits that the upstream doesn't? `null` when no
-		 * upstream is configured (the branch is local-only and
-		 * reconciliation is N/A). `needsAttention` is true when
-		 * push is enabled AND there are unpushed commits AND the
-		 * branch isn't protected — i.e. the silent-stale-state
-		 * condition that S1+S2 fixed.
-		 */
-		ahead: z.object({
-			count: z.number().nullable(),
-			upstream: z.string().nullable(),
-			needsAttention: z.boolean(),
-			reason: z.string().nullable(),
-		}),
-	}),
-	branchPolicy: z.object({
-		current: z.string().nullable(),
-		protectedBranches: z.array(z.string()),
-		protectedPrefixes: z.array(z.string()),
-		directCommitPushAllowed: z.boolean(),
-		remote: z
-			.object({
-				ok: z.boolean(),
-				state: z.enum(['fresh', 'stale', 'unsupported', 'error']),
-				provider: z.enum(['github', 'gitlab', 'unknown']).optional(),
-				remoteName: z.string().optional(),
-				remoteHost: z.string().optional(),
-				remoteBranches: z.array(z.string()),
-				effectiveBranches: z.array(z.string()),
-				reason: z.string().optional(),
-			})
-			.nullable(),
-	}),
-	locale: z.string(),
-});
 
 export const runCommitPolicyStatus = async (
 	options: IStatusToolOptions,
@@ -166,7 +87,16 @@ export const runCommitPolicyStatus = async (
 		options.options.push.enabled &&
 		!currentBranchProtected;
 
+	const summary = localizedString(options.locale, (catalog) =>
+		catalog.tools.status.summary({
+			commitEnabled: options.options.commit.enabled,
+			pushEnabled: options.options.push.enabled,
+			triggerCount: options.options.cadence.triggers.length,
+		}),
+	);
+
 	const payload = {
+		summary,
 		commit: {
 			enabled: options.options.commit.enabled,
 			requireConventional: options.options.commit.requireConventional,
@@ -277,7 +207,7 @@ export const runCommitPolicyStatus = async (
 		locale: options.locale ?? 'en',
 	};
 
-	const parseResult = OutputSchema.safeParse(payload);
+	const parseResult = STATUS_OUTPUT_SCHEMA.safeParse(payload);
 	if (!parseResult.success) {
 		return toolError(
 			`commit_policy_status output schema mismatch: ${parseResult.error.message}`,
@@ -285,19 +215,7 @@ export const runCommitPolicyStatus = async (
 		);
 	}
 
-	const summary = localizedString(options.locale, (catalog) =>
-		catalog.tools.status.summary({
-			commitEnabled: options.options.commit.enabled,
-			pushEnabled: options.options.push.enabled,
-			triggerCount: options.options.cadence.triggers.length,
-		}),
-	);
-
-	return toolOk({
-		ok: true,
-		summary,
-		...payload,
-	});
+	return toolOk({ ...payload });
 };
 
 export const buildStatusToolRegistration = (
@@ -313,7 +231,7 @@ export const buildStatusToolRegistration = (
 			{
 				description:
 					'Read-only snapshot of commit-policy. Inspect branchPolicy before committing or pushing: protected branches refuse direct automation; other branches allow direct commit/push when enabled.',
-				outputSchema: OutputSchema,
+				outputSchema: withOkEnvelope(STATUS_OUTPUT_SCHEMA),
 				inputSchema: z.object({}),
 			},
 			async () => runCommitPolicyStatus(options),

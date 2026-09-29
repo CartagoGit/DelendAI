@@ -3,7 +3,7 @@ id: error-reporting
 package: @delendai/error-reporting
 version: 0.1.0
 maturity: stable
-generated: 2026-09-06T13:56:14.827Z
+generated: 2026-09-24T09:44:51.994Z
 ---
 
 # Error Reporting
@@ -12,7 +12,7 @@ generated: 2026-09-06T13:56:14.827Z
 
 ## Summary
 
-Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.
+Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off.
 
 ## Tags
 

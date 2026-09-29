@@ -32,6 +32,6 @@ export default definePluginManifest({
 		measuredAt: '2026-08-25',
 		source: 'token-budget-real',
 	},
-	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
+	dependencies: ['@delendai/core', 'zod'],
 	capabilities: ['container', 'docker', 'kubernetes'],
 });

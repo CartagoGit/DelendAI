@@ -109,9 +109,11 @@ describe('agent-orchestrator output contracts', () => {
 			},
 			override: 'linear',
 		});
-		const budget = structuredOf(
-			await handlers.ns_budget!({ taskId: 'steps-task' }),
-		) as { steps: number; consumedSubagents: Record<string, number> };
+		const { spent: budget } = structuredOf(
+			await handlers.ns_plan_ref!({ taskId: 'steps-task' }),
+		) as {
+			spent: { steps: number; consumedSubagents: Record<string, number> };
+		};
 
 		// The step counter used to live inside `recordOrchestrator`, so a
 		// plan made only of `spawn` steps reported 0 while its subagents
@@ -120,15 +122,16 @@ describe('agent-orchestrator output contracts', () => {
 		expect(Object.keys(budget.consumedSubagents).length).toBeGreaterThan(0);
 	});
 
-	it('the budget snapshot validates against its own outputSchema', async () => {
+	it('the plan read-back, spend included, validates against its own outputSchema', async () => {
 		const { handlers, outputSchemas } = await capture();
 
 		await handlers.ns_dispatch!({
 			task: { id: 'budget-task', description: 'Fix typo.', tags: [] },
 		});
-		const res = await handlers.ns_budget!({ taskId: 'budget-task' });
+		const res = await handlers.ns_plan_ref!({ taskId: 'budget-task' });
 
-		const parsed = outputSchemas.ns_budget!.safeParse(structuredOf(res));
+		expect(structuredOf(res)).toHaveProperty('spent');
+		const parsed = outputSchemas.ns_plan_ref!.safeParse(structuredOf(res));
 		expect(
 			parsed.success ? null : JSON.stringify(parsed.error.issues),
 		).toBeNull();

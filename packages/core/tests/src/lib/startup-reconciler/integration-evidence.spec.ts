@@ -34,6 +34,21 @@ import {
 // is a second copy of the naming that goes stale the moment the
 // template moves — which is exactly how it went stale.
 const REF = `refs/${testPolicy().branches.workRefPrefix}agent-a/f1-s1-g1`;
+// Same reason as REF above: a ref that matches no work identity still
+// has to LIVE in the namespace the engine scans, or the case proves
+// nothing. Hardcoding `refs/wip/mystery` made it silently fall outside
+// that namespace the moment work refs became visible under `heads/`,
+// and the assertion passed through a scan that never saw it.
+const MYSTERY = `refs/${testPolicy().branches.workRefPrefix}mystery`;
+
+/**
+ * Where startup keeps another machine's work ref. It mirrors them into
+ * remote-tracking refs rather than creating local branches, because a
+ * pruned mirror in `refs/heads/` deleted work nobody had published
+ * (x00551).
+ */
+const mirrorOf = (ref: string): string =>
+	ref.replace(/^refs\/heads\//u, 'refs/remotes/origin/');
 
 describe('integration evidence', () => {
 	let origin: IStartupOrigin;
@@ -136,9 +151,80 @@ describe('integration evidence', () => {
 		expect(row?.integrated_sha).toBeNull();
 	});
 
+	it('records a checkpoint whose content reached the integration branch by a squash', async () => {
+		expect((await boot()).status).toBe('READY');
+
+		// The same content lands without the commit: not an ancestor.
+		const integrator = origin.clone('integrator');
+		integrator.write('src/alpha.ts', 'export const alpha = 2;\n');
+		integrator.git('add', '-A');
+		integrator.git('commit', '--quiet', '--no-verify', '-m', 'squash a');
+		integrator.push(INTEGRATION_BRANCH);
+		integrator.git('push', '--quiet', 'origin', `:${REF}`);
+
+		const report = await boot();
+		expect(report.blockers.map((item) => item.code)).toEqual([]);
+		expect(report.status).toBe('READY');
+		expect(report.counters.generationsIntegrated).toBe(1);
+	});
+
+	it('still degrades when the integration branch changed that path again after the squash', async () => {
+		expect((await boot()).status).toBe('READY');
+
+		const integrator = origin.clone('integrator');
+		integrator.write('src/alpha.ts', 'export const alpha = 2;\n');
+		integrator.git('add', '-A');
+		integrator.git('commit', '--quiet', '--no-verify', '-m', 'squash a');
+		integrator.write('src/alpha.ts', 'export const alpha = 3;\n');
+		integrator.git('add', '-A');
+		integrator.git('commit', '--quiet', '--no-verify', '-m', 'later');
+		integrator.push(INTEGRATION_BRANCH);
+		integrator.git('push', '--quiet', 'origin', `:${REF}`);
+
+		const report = await boot();
+		expect(report.status).toBe('DEGRADED');
+		expect(
+			report.blockers.some(
+				(item) => item.code === 'integration-evidence.ref-vanished',
+			),
+		).toBe(true);
+	});
+
+	it('records an empty checkpoint as integrated: it carries nothing to lose', async () => {
+		// An empty checkpoint on the integration tip, the shape nine
+		// "commit via slice" checkpoints had on 2026-09-26.
+		const empty = laptop.git(
+			'commit-tree',
+			`origin/${INTEGRATION_BRANCH}^{tree}`,
+			'-p',
+			`origin/${INTEGRATION_BRANCH}`,
+			'-m',
+			'commit via slice',
+		);
+		laptop.git('update-ref', REF, empty);
+		laptop.git('push', '--quiet', '--force', 'origin', `${REF}:${REF}`);
+		expect((await boot()).status).toBe('READY');
+
+		// Keep the integration branch moving so the checkpoint is no
+		// ancestor of it, then delete the ref.
+		const integrator = origin.clone('integrator');
+		integrator.write(
+			'src/unrelated-change.ts',
+			'export const unrelated = true;\n',
+		);
+		integrator.git('add', '-A');
+		integrator.git('commit', '--quiet', '--no-verify', '-m', 'unrelated');
+		integrator.push(INTEGRATION_BRANCH);
+		laptop.git('push', '--quiet', 'origin', `:${REF}`);
+
+		const report = await boot();
+		expect(report.blockers.map((item) => item.code)).toEqual([]);
+		expect(report.status).toBe('READY');
+	});
+
 	it('refuses to attribute a ref that matches no work identity', async () => {
-		laptop.git('update-ref', 'refs/wip/mystery', wipSha);
-		laptop.push('refs/wip/mystery:refs/wip/mystery');
+		laptop.git('update-ref', MYSTERY, wipSha);
+		laptop.push(`${MYSTERY}:${MYSTERY}`);
 
 		const report = await boot();
 		expect(report.status).toBe('DEGRADED');
@@ -146,11 +232,11 @@ describe('integration evidence', () => {
 			(item) => item.code === 'work-refs.unattributable',
 		);
 		expect(blocker).toBeDefined();
-		expect(blocker?.subject).toBe('refs/wip/mystery');
+		expect(blocker?.subject).toBe(MYSTERY);
 		expect(report.repairTasks.some((task) => task.blocksMutation)).toBe(
 			true,
 		);
 		// The mystery ref is still on the machine, untouched.
-		expect(office.git('rev-parse', 'refs/wip/mystery')).toBe(wipSha);
+		expect(office.git('rev-parse', mirrorOf(MYSTERY))).toBe(wipSha);
 	});
 });

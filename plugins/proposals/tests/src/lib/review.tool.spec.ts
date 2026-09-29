@@ -104,13 +104,13 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				proposalId: 'f00086',
 				sliceId: 's1',
 				action: 'approve',
-				agent: 'delivery_verifier',
+				agent: 'glm-5',
 				evidence: APPROVE_EVIDENCE,
 			}),
 		);
 		expect(approved.ok).toBe(true);
 		expect(approved.status).toBe('done');
-		expect(approved.reviewer).toBe('delivery_verifier');
+		expect(approved.reviewer).toBe('glm-5');
 	});
 
 	it('requires evidence for every declared acceptance criterion', async () => {
@@ -143,7 +143,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				proposalId: 't00032',
 				sliceId: 's1',
 				action: 'approve',
-				agent: 'delivery_verifier',
+				agent: 'glm-5',
 				evidence: {
 					...ACCEPTANCE_EVIDENCE,
 					acceptanceCriteria: [
@@ -166,7 +166,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				proposalId: 't00032',
 				sliceId: 's1',
 				action: 'approve',
-				agent: 'delivery_verifier-2',
+				agent: 'glm-5-2',
 				evidence: ACCEPTANCE_EVIDENCE,
 			}),
 		);
@@ -198,7 +198,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				proposalId: 'f00090',
 				sliceId: 's1',
 				action: 'approve',
-				agent: 'delivery_verifier',
+				agent: 'glm-5',
 			}),
 		);
 		expect(approved.ok).toBe(false);
@@ -256,7 +256,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				proposalId: 'f00087',
 				sliceId: 's1',
 				action: 'approve',
-				agent: 'delivery_verifier',
+				agent: 'glm-5',
 				evidence: APPROVE_EVIDENCE,
 			}),
 		);
@@ -290,7 +290,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				proposalId: 'f00091',
 				sliceId: 's1',
 				action: 'request_changes',
-				agent: 'delivery_verifier',
+				agent: 'glm-5',
 				note: 'add coverage',
 			}),
 		);
@@ -340,7 +340,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				proposalId: 'f00093',
 				sliceId: 's1',
 				action: 'status',
-				agent: 'delivery_verifier',
+				agent: 'glm-5',
 			}),
 		);
 
@@ -366,7 +366,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				proposalId: 'f00092',
 				sliceId: 'stale-slice',
 				action: 'status',
-				agent: 'delivery_verifier',
+				agent: 'glm-5',
 			}),
 		);
 
@@ -377,8 +377,8 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		expect(result.error.nextAction).toContain(
 			'proposal_reconcile_folder { id: "f00092"',
 		);
-		expect(result.error.nextAction).toContain(
-			'proposal_force_transition { id: "f00092", to: "done"',
-		);
+		// Never a way around the review (x00707).
+		expect(result.error.nextAction).not.toContain('force_transition');
+		expect(result.error.nextAction).not.toContain('skipPeerReview');
 	});
 });

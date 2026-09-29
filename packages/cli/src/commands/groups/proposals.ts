@@ -17,9 +17,13 @@ import {
 	usage,
 } from './group-helpers';
 
-/** Parse an optional `--json=<payload>` flag into a value, or undefined. */
-const jsonArg = (args: readonly string[]): unknown => {
-	const raw = scalarArg(args, 'json');
+/**
+ * Parse an optional JSON-valued flag into a value, or undefined. Never
+ * `--json`: that is the global output switch, which the parser consumes
+ * before a command sees its arguments.
+ */
+const jsonArg = (args: readonly string[], flag: string): unknown => {
+	const raw = scalarArg(args, flag);
 	if (raw === undefined) return undefined;
 	try {
 		return JSON.parse(raw) as unknown;
@@ -30,6 +34,7 @@ const jsonArg = (args: readonly string[]): unknown => {
 
 const autoWorkCommand: ICliCommand = {
 	name: 'proposals auto-work',
+	flags: ['persist', 'mode'],
 	summary: 'Resolve the next proposal and return a compact action plan.',
 	async run(args, ctx) {
 		const persist = scalarArg(args, 'persist') ?? scalarArg(args, 'mode');
@@ -43,6 +48,7 @@ const autoWorkCommand: ICliCommand = {
 
 const continueCommand: ICliCommand = {
 	name: 'proposals continue',
+	flags: ['id', 'mode', 'slice', 'sliceId'],
 	summary: 'Resolve / plan / claim the next proposal slice.',
 	async run(args, ctx) {
 		const proposalId = positionalArg(args) ?? scalarArg(args, 'id');
@@ -60,18 +66,19 @@ const continueCommand: ICliCommand = {
 
 const createCommand: ICliCommand = {
 	name: 'proposals create',
+	flags: ['title', 'kind', 'goal', 'track', 'slices'],
 	summary: 'Create a proposal document with a parseable Slices section.',
 	async run(args, ctx) {
 		const title = scalarArg(args, 'title');
 		if (title === undefined) {
 			return usage(
-				'proposals create --title=<t> [--kind=feat] [--goal=<g>] [--track=<t>] [--json=<slices>]',
+				'proposals create --title=<t> [--kind=feat] [--goal=<g>] [--track=<t>] [--slices=<json>]',
 			);
 		}
 		const kind = scalarArg(args, 'kind');
 		const goal = scalarArg(args, 'goal');
 		const track = scalarArg(args, 'track');
-		const slices = jsonArg(args);
+		const slices = jsonArg(args, 'slices');
 		return data(
 			await request(ctx, 'delendai_proposals_create_proposal', {
 				title,
@@ -86,6 +93,7 @@ const createCommand: ICliCommand = {
 
 const closeSliceCommand: ICliCommand = {
 	name: 'proposals close-slice',
+	flags: [],
 	summary: 'Mark a slice done + release its lock atomically, then re-sync.',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
@@ -105,6 +113,7 @@ const closeSliceCommand: ICliCommand = {
 
 const transitionCommand: ICliCommand = {
 	name: 'proposals transition',
+	flags: ['reason'],
 	summary:
 		'Move a proposal to a new status (DFA-validated; requires reason).',
 	async run(args, ctx) {
@@ -127,6 +136,7 @@ const transitionCommand: ICliCommand = {
 
 const boardCommand: ICliCommand = {
 	name: 'proposals board',
+	flags: [],
 	summary: 'Show each actionable proposal with its slices (verbose).',
 	async run(_args, ctx) {
 		return data(
@@ -137,6 +147,7 @@ const boardCommand: ICliCommand = {
 
 const statusCommand: ICliCommand = {
 	name: 'proposals status',
+	flags: ['fields'],
 	summary: 'Compact proposals state: locks, queue backpressure, counts.',
 	async run(args, ctx) {
 		const fields = listArg(args, 'fields');
@@ -150,6 +161,7 @@ const statusCommand: ICliCommand = {
 
 const healthCommand: ICliCommand = {
 	name: 'proposals health',
+	flags: [],
 	summary:
 		'Diagnose swarm state (locks, queue, registry) without changing it.',
 	async run(_args, ctx) {
@@ -159,6 +171,7 @@ const healthCommand: ICliCommand = {
 
 const agentNamesCommand: ICliCommand = {
 	name: 'proposals agent-names',
+	flags: ['action', 'agent', 'task', 'taskId'],
 	summary: 'Agent name registry: assign/release/list/tree/gc/reconcile.',
 	async run(args, ctx) {
 		const action = scalarArg(args, 'action') ?? positionalArg(args);
@@ -179,6 +192,7 @@ const agentNamesCommand: ICliCommand = {
 
 const lockCommand: ICliCommand = {
 	name: 'proposals lock',
+	flags: ['action', 'agent', 'task', 'taskId', 'files'],
 	summary: 'File write-ownership lock: claim/release/status/gc.',
 	async run(args, ctx) {
 		const action = scalarArg(args, 'action') ?? positionalArg(args);
@@ -201,6 +215,7 @@ const lockCommand: ICliCommand = {
 
 const worktreeCommand: ICliCommand = {
 	name: 'proposals worktree',
+	flags: ['action', 'agent', 'base-branch', 'force'],
 	summary: 'Per-agent git worktree: create/list/remove (git isolation).',
 	async run(args, ctx) {
 		const action = scalarArg(args, 'action') ?? positionalArg(args);
@@ -224,6 +239,7 @@ const worktreeCommand: ICliCommand = {
 
 const staleListCommand: ICliCommand = {
 	name: 'proposals stale-list',
+	flags: [],
 	summary: 'List proposals whose owner emitted agent-dead.',
 	async run(_args, ctx) {
 		return data(
@@ -234,6 +250,7 @@ const staleListCommand: ICliCommand = {
 
 const roundContextCommand: ICliCommand = {
 	name: 'proposals round-context',
+	flags: ['force'],
 	summary: 'Return the persisted multi-agent round context (+ staleness).',
 	async run(args, ctx) {
 		return data(
@@ -246,6 +263,7 @@ const roundContextCommand: ICliCommand = {
 
 const workflowCommand: ICliCommand = {
 	name: 'proposals workflow',
+	flags: [],
 	summary: 'Return the proposal workflow (families, locations, template).',
 	async run(_args, ctx) {
 		return data(
@@ -256,6 +274,7 @@ const workflowCommand: ICliCommand = {
 
 const diagnoseCommand: ICliCommand = {
 	name: 'proposals diagnose',
+	flags: [],
 	summary: 'Diagnose a proposal: folder, status, lock owners, recovery.',
 	async run(args, ctx) {
 		const id = positionalArg(args);
@@ -270,6 +289,7 @@ const diagnoseCommand: ICliCommand = {
 
 const adoptCommand: ICliCommand = {
 	name: 'proposals adopt',
+	flags: ['dir'],
 	summary: 'Make a proposals folder followable (read-only plan).',
 	async run(args, ctx) {
 		const dir = scalarArg(args, 'dir');
@@ -283,6 +303,7 @@ const adoptCommand: ICliCommand = {
 
 const forceTransitionCommand: ICliCommand = {
 	name: 'proposals force-transition',
+	flags: ['reason'],
 	summary: 'Force a proposal to a recovery status (requires reason).',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
@@ -304,6 +325,7 @@ const forceTransitionCommand: ICliCommand = {
 
 const reconcileFolderCommand: ICliCommand = {
 	name: 'proposals reconcile-folder',
+	flags: ['dry-run'],
 	summary: 'Move a proposal file to the folder matching its status.',
 	async run(args, ctx) {
 		const id = positionalArg(args);
@@ -320,6 +342,7 @@ const reconcileFolderCommand: ICliCommand = {
 
 const stateRepairCommand: ICliCommand = {
 	name: 'proposals state-repair',
+	flags: ['execute'],
 	summary: 'Auto-heal stale swarm state (dry-run unless --execute).',
 	async run(args, ctx) {
 		return data(
@@ -332,6 +355,7 @@ const stateRepairCommand: ICliCommand = {
 
 const releaseOrphanCommand: ICliCommand = {
 	name: 'proposals release-orphan',
+	flags: ['reason'],
 	summary: 'Release an orphan task lock (only with an agent-dead event).',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
@@ -357,9 +381,57 @@ const releaseOrphanCommand: ICliCommand = {
 	},
 };
 
+/** A non-negative integer flag, or undefined when absent or malformed. */
+const integerArg = (
+	args: readonly string[],
+	name: string,
+): number | undefined => {
+	const raw = scalarArg(args, name);
+	if (raw === undefined || !/^\d+$/u.test(raw)) return undefined;
+	return Number.parseInt(raw, 10);
+};
+
+/**
+ * The evidence an approval carries, from flags. Absent unless at least
+ * one evidence flag was given, so a submit or a status call sends none.
+ */
+export const evidenceArgs = (
+	args: readonly string[],
+): Record<string, unknown> | undefined => {
+	const evidence = {
+		...(scalarArg(args, 'commit') === undefined
+			? {}
+			: { commitHash: scalarArg(args, 'commit') }),
+		...(integerArg(args, 'validate-exit') === undefined
+			? {}
+			: { validateExitCode: integerArg(args, 'validate-exit') }),
+		...(integerArg(args, 'tests-passing') === undefined
+			? {}
+			: { testsPassing: integerArg(args, 'tests-passing') }),
+		...(integerArg(args, 'tests-total') === undefined
+			? {}
+			: { testsTotal: integerArg(args, 'tests-total') }),
+	};
+	return Object.keys(evidence).length === 0 ? undefined : evidence;
+};
+
+const REVIEW_USAGE =
+	'proposals review <proposalId> <sliceId> --action=<submit|approve|request_changes|status> --agent=<who> [--note=<n>] [--commit=<sha>] [--validate-exit=0 --tests-passing=<n> --tests-total=<n>]';
+
 const reviewCommand: ICliCommand = {
 	name: 'proposals review',
-	summary: 'Peer-review a slice: submit/approve/request_changes/status.',
+	usage: REVIEW_USAGE,
+	flags: [
+		'action',
+		'agent',
+		'note',
+		'commit',
+		'validate-exit',
+		'tests-passing',
+		'tests-total',
+	],
+	summary:
+		'Peer-review a slice: submit/approve/request_changes/status. --commit names the delivering commit (and opens the round a delivery never opened); approve also needs --validate-exit, --tests-passing and --tests-total.',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
 		const proposalId = positionals[0];
@@ -372,11 +444,11 @@ const reviewCommand: ICliCommand = {
 			action === undefined ||
 			agent === undefined
 		) {
-			return usage(
-				'proposals review <proposalId> <sliceId> --action=<a> --agent=<who> [--note=<n>]',
-			);
+			return usage(REVIEW_USAGE);
 		}
 		const note = scalarArg(args, 'note');
+		const commit = scalarArg(args, 'commit');
+		const evidence = action === 'approve' ? evidenceArgs(args) : undefined;
 		return data(
 			await request(ctx, 'delendai_proposals_proposal_review', {
 				proposalId,
@@ -384,6 +456,31 @@ const reviewCommand: ICliCommand = {
 				action,
 				agent,
 				...(note !== undefined ? { note } : {}),
+				...(commit !== undefined ? { commitHash: commit } : {}),
+				...(evidence !== undefined ? { evidence } : {}),
+			}),
+		);
+	},
+};
+
+const reviewQueueCommand: ICliCommand = {
+	name: 'proposals review-queue',
+	usage: 'proposals review-queue [--proposal=<id>] [--limit=<n>] [--offset=<n>] [--agent=<you>] [--detail]',
+	flags: ['proposal', 'limit', 'offset', 'agent', 'detail'],
+	summary:
+		'The proposals waiting in review, oldest first, with what each slice needs from a reviewer. Start here when asked to review proposals.',
+	async run(args, ctx) {
+		const proposalId = scalarArg(args, 'proposal');
+		const limit = integerArg(args, 'limit');
+		const offset = integerArg(args, 'offset');
+		const agent = scalarArg(args, 'agent');
+		return data(
+			await request(ctx, 'delendai_proposals_review_queue', {
+				...(proposalId !== undefined ? { proposalId } : {}),
+				...(limit !== undefined ? { limit } : {}),
+				...(offset !== undefined ? { offset } : {}),
+				...(agent !== undefined ? { agent } : {}),
+				...(hasFlag(args, 'detail') ? { detail: true } : {}),
 			}),
 		);
 	},
@@ -391,6 +488,7 @@ const reviewCommand: ICliCommand = {
 
 const syncCommand: ICliCommand = {
 	name: 'proposals sync',
+	flags: [],
 	summary: 'Regenerate the proposal index from the proposals tree.',
 	async run(_args, ctx) {
 		return data(
@@ -401,15 +499,16 @@ const syncCommand: ICliCommand = {
 
 const taskQueueCommand: ICliCommand = {
 	name: 'proposals task-queue',
+	flags: ['action', 'params'],
 	summary: 'Swarm coordination queue: enqueue/dequeue/subscribe/report.',
 	async run(args, ctx) {
 		const action = scalarArg(args, 'action') ?? positionalArg(args);
 		if (action === undefined) {
 			return usage(
-				'proposals task-queue --action=enqueue|dequeue|subscribe|report [--json=<params>]',
+				'proposals task-queue --action=enqueue|dequeue|subscribe|report [--params=<json>]',
 			);
 		}
-		const params = jsonArg(args);
+		const params = jsonArg(args, 'params');
 		return data(
 			await request(ctx, 'delendai_proposals_task_queue', {
 				action,
@@ -423,6 +522,7 @@ const taskQueueCommand: ICliCommand = {
 
 const delegateCommand: ICliCommand = {
 	name: 'proposals delegate',
+	flags: ['task', 'slot', 'files', 'topic', 'agent'],
 	summary: 'Delegate a slice to a subagent (assign name + claim files).',
 	async run(args, ctx) {
 		const taskId = positionalArg(args) ?? scalarArg(args, 'task');
@@ -449,13 +549,14 @@ const delegateCommand: ICliCommand = {
 
 const planCommand: ICliCommand = {
 	name: 'proposals plan',
+	flags: ['slices', 'proposal'],
 	summary: 'Validate proposed slices into a parallel plan (disjointness).',
 	async run(args, ctx) {
-		const slices = jsonArg(args);
+		const slices = jsonArg(args, 'slices');
 		if (!Array.isArray(slices)) {
 			return {
 				code: EXIT_CODE.USAGE,
-				error: 'usage: proposals plan --json=\'[{"sliceId":"S1","files":[...]}]\' [--proposal=<id>]',
+				error: 'usage: proposals plan --slices=\'[{"sliceId":"S1","files":[...]}]\' [--proposal=<id>]',
 			};
 		}
 		const proposalId = scalarArg(args, 'proposal');
@@ -490,6 +591,7 @@ export const proposalsCommands: readonly ICliCommand[] = [
 	stateRepairCommand,
 	releaseOrphanCommand,
 	reviewCommand,
+	reviewQueueCommand,
 	syncCommand,
 	taskQueueCommand,
 	delegateCommand,

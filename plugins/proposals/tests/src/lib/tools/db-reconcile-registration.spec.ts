@@ -20,6 +20,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
+import type { ZodObject } from 'zod';
 
 import type { IMcpPluginContext } from '@delendai/core/public';
 import plugin from '@delendai/proposals';
@@ -127,9 +128,15 @@ describe('proposals_db_reconcile registration (f00534 S2)', () => {
 			args: Record<string, unknown>,
 		) => Promise<{ structuredContent?: Record<string, unknown> }>;
 		let handler: THandler | undefined;
+		let outputSchema: ZodObject | undefined;
 		await entry?.register({
-			registerTool: (_name: string, _schema: unknown, fn: THandler) => {
+			registerTool: (
+				_name: string,
+				config: { outputSchema?: ZodObject },
+				fn: THandler,
+			) => {
 				handler = fn;
+				outputSchema = config.outputSchema;
 			},
 		} as never);
 		expect(handler).toBeDefined();
@@ -144,5 +151,15 @@ describe('proposals_db_reconcile registration (f00534 S2)', () => {
 		expect(output?.created).toBe(true);
 		expect(output?.databasePath).toBe(paths.databasePath);
 		expect(existsSync(paths.databasePath)).toBe(true);
+		// Held to the rule a client that listed tools applies: no key the
+		// registered schema does not declare. `toolOk` adds `ok`, and the
+		// schema used to omit it, so every successful answer was rejected
+		// with `-32602 ... must NOT have additional properties`.
+		const wire = outputSchema
+			?.strict()
+			.safeParse(result?.structuredContent);
+		expect(
+			wire?.success === true ? null : JSON.stringify(wire?.error?.issues),
+		).toBeNull();
 	});
 });

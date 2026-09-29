@@ -22,6 +22,17 @@ const countActionableProposals = (
 			summary.status === 'paused',
 	).length;
 
+/**
+ * Proposals handed to review and waiting for a second agent. Counted
+ * apart from the actionable ones because the work they need is a
+ * verdict, not an implementation — and an agent asked to review has to
+ * learn from the first overview that there is a backlog and where it is.
+ */
+const countAwaitingReview = (
+	proposalSummaries: readonly IProposalSummary[],
+): number =>
+	proposalSummaries.filter((summary) => summary.status === 'review').length;
+
 export const buildProposalsWorkflowContribution = async (
 	input: IAssembleWorkflowContributionsInput,
 ): Promise<TProposalWorkflowContribution> => {
@@ -31,16 +42,22 @@ export const buildProposalsWorkflowContribution = async (
 		input.readWorkspaceFile,
 	);
 	const actionableCount = countActionableProposals(proposalSummaries);
+	const awaitingReview = countAwaitingReview(proposalSummaries);
+	const reviewClause =
+		awaitingReview === 0
+			? ''
+			: ` ${awaitingReview} await independent review — a reviewer starts with ${input.corePrefix}_proposals_review_queue.`;
 	return {
 		summary: {
 			title: 'Proposal workflow snapshot',
 			detail:
 				proposalSummaries.length === 0
 					? 'No proposals are indexed yet.'
-					: `${proposalSummaries.length} proposals indexed; ${actionableCount} actionable.`,
+					: `${proposalSummaries.length} proposals indexed; ${actionableCount} actionable.${reviewClause}`,
 			metrics: [
 				{ label: 'totalProposals', value: proposalSummaries.length },
 				{ label: 'actionableProposals', value: actionableCount },
+				{ label: 'awaitingReview', value: awaitingReview },
 			],
 		},
 		stableTools: PROPOSALS_STABLE_TOOLS.map((descriptor) => ({

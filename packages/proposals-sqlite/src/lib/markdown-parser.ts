@@ -1,10 +1,14 @@
 import { createHash } from 'node:crypto';
 
-type TScalar = string | number | boolean | null;
-type TYamlValue =
-	| TScalar
-	| readonly TYamlValue[]
-	| { readonly [key: string]: TYamlValue };
+import {
+	extractYamlBlock,
+	parseFrontmatterBlock,
+	type IYamlValue,
+} from './frontmatter.helper';
+
+export { extractYamlBlock, parseFrontmatterBlock } from './frontmatter.helper';
+
+type TYamlValue = IYamlValue;
 
 export interface IParsedProposalMarkdown {
 	readonly path: string;
@@ -17,78 +21,6 @@ export interface IParsedProposalMarkdown {
 
 const sha256 = (text: string): string =>
 	createHash('sha256').update(text).digest('hex');
-
-/** A frontmatter key, tested against a slice that holds no colon. */
-const KEY_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
-
-const countIndent = (line: string): number => {
-	let count = 0;
-	while (count < line.length && line[count] === ' ') count += 1;
-	return count;
-};
-
-const parseScalar = (raw: string): TScalar => {
-	const value = raw.trim();
-	if (value === '' || value === 'null') return null;
-	if (value === 'true') return true;
-	if (value === 'false') return false;
-	if (/^-?\d+$/.test(value)) return Number.parseInt(value, 10);
-	return value.replace(/^['"]|['"]$/g, '');
-};
-
-const parseArray = (lines: readonly string[]): readonly TYamlValue[] =>
-	lines
-		.map((line) => line.trim())
-		.filter((line) => line.startsWith('- '))
-		.map((line) => parseScalar(line.slice(2)));
-
-export const extractYamlBlock = (raw: string): string | null => {
-	const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-	return match ? (match[1] ?? '') : null;
-};
-
-export const parseFrontmatterBlock = (
-	block: string,
-): Readonly<Record<string, TYamlValue>> => {
-	const lines = block.split('\n');
-	const parsed: Record<string, TYamlValue> = {};
-	for (let index = 0; index < lines.length; index += 1) {
-		const line = lines[index] ?? '';
-		if (line.trim() === '' || countIndent(line) > 0) continue;
-		// Split at the first colon rather than matching the whole line.
-		// The pattern this replaces — `^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*)?$`
-		// — backtracks polynomially on a long line of whitespace, and
-		// frontmatter reaches this parser from any file the workspace
-		// happens to contain. One scan for the colon is linear whatever
-		// arrives; the key is then validated on its own, bounded, slice.
-		const colon = line.indexOf(':');
-		if (colon <= 0) continue;
-		const key = line.slice(0, colon).trimEnd();
-		if (!KEY_RE.test(key)) continue;
-		const inline = line.slice(colon + 1).trim();
-		if (inline === '') {
-			const childLines: string[] = [];
-			for (let child = index + 1; child < lines.length; child += 1) {
-				const childLine = lines[child] ?? '';
-				if (childLine.trim() === '') {
-					childLines.push(childLine);
-					continue;
-				}
-				if (countIndent(childLine) === 0) break;
-				childLines.push(childLine);
-				index = child;
-			}
-			parsed[key] = parseArray(childLines);
-			continue;
-		}
-		if (inline === '[]') {
-			parsed[key] = [];
-			continue;
-		}
-		parsed[key] = parseScalar(inline);
-	}
-	return parsed;
-};
 
 const readTitle = (
 	raw: string,

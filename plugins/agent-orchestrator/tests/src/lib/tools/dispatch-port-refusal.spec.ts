@@ -5,7 +5,7 @@
  * The original defect was that a missing port silently fell back to
  * `FakeDispatchPort`, whose canned clean response made the dispatcher
  * report fabricated success. Resolving the port at call time keeps the
- * port-independent tools (`_plan`, `_budget`) available while an actual
+ * port-independent tools (`_plan`, `_plan_ref`) available while an actual
  * `_dispatch` refuses loudly.
  */
 import { describe, expect, it } from 'vitest';

@@ -9,6 +9,7 @@
  * extract those opportunistically so cost accounting lights up without a
  * new contract. Everything here is metadata only — never message content.
  */
+import { toolReachedBy } from './routed-tool.helper';
 import type { ProviderKind } from '@delendai/core/public';
 
 import { attributeTool } from './attribute';
@@ -224,8 +225,9 @@ export interface IBuildRecordInput {
 
 /** Assemble one durable invocation record. Pure — no I/O, metadata only. */
 export const buildRecord = (input: IBuildRecordInput): IInvocationRecord => {
+	// A call through the capability router is the tool it reached (f00645).
 	const { plugin, tool } = attributeTool(
-		input.toolName,
+		toolReachedBy(input.toolName, input.result),
 		input.corePrefix,
 		input.peerPrefixes,
 	);

@@ -24,8 +24,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
-	MIGRATION_CHECKSUMS,
-	MIGRATION_FILES,
+	migrationChecksums,
+	migrationFiles,
 	MigrationChecksumMismatchError,
 	applyMigrations,
 	currentSchemaVersion,
@@ -58,8 +58,8 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		rmSync(tmpDir, { recursive: true, force: true });
 	});
 
-	it('MIGRATION_FILES lists the migrations in order', () => {
-		expect(MIGRATION_FILES).toEqual([
+	it('migrationFiles() lists the migrations in order', () => {
+		expect(migrationFiles()).toEqual([
 			'0001_initial.sql',
 			'0002_reconciliation_runs.sql',
 			'0003_lifecycle_events.sql',
@@ -78,10 +78,16 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0016_work_units_generations.sql',
 			'0017_coordination_journal.sql',
 			'0018_revision_step_guards.sql',
+			'0019_ref_attribution_is_not_a_local_agent.sql',
+			'0020_strict_tables.sql',
+			'0021_registry_fields.sql',
+			'0022_apply_candidate_run_kind.sql',
+			'0023_frontmatter_json.sql',
+			'0024_any_forge_host.sql',
 		]);
-		expect(MIGRATION_CHECKSUMS).toBeDefined();
-		for (const name of MIGRATION_FILES) {
-			expect(MIGRATION_CHECKSUMS[name]).toMatch(/^[0-9a-f]{64}$/);
+		expect(migrationChecksums()).toBeDefined();
+		for (const name of migrationFiles()) {
+			expect(migrationChecksums()[name]).toMatch(/^[0-9a-f]{64}$/);
 		}
 	});
 
@@ -108,7 +114,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		// `0010_fts5.sql` without bumping the constant, and a hardcoded
 		// `toBe(9)` here turned every future migration into a failing test
 		// in a spec that is not about migration counts at all.
-		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(MIGRATION_FILES.length);
+		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(migrationFiles().length);
 		expect(
 			SQLITE_BOOT_PRAGMAS.some((p) =>
 				p.startsWith('PRAGMA user_version'),
@@ -263,9 +269,15 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		}
 	});
 
-	it('refuses to apply a migration whose stored checksum differs from the file', () => {
+	it('refuses a stored checksum that differs from the file when the schema differs too', () => {
+		// A mismatch alone no longer refuses: when the current files still
+		// build this exact schema, the edit changed nothing and the record is
+		// healed (see migration-checksums.spec.ts). An edited migration that
+		// changed what was built is still refused, and that is what this
+		// drift stands in for.
 		const driver = new ProposalsSqliteDriver({ path: dbPath });
 		try {
+			driver.handle.exec('CREATE TABLE drifted_by_hand (id INTEGER)');
 			driver.handle
 				.prepare(
 					"UPDATE schema_migrations SET checksum = '0000000000000000000000000000000000000000000000000000000000000000' WHERE version = 1",

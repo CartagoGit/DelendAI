@@ -252,6 +252,16 @@ export const buildFakeRuntime = (): {
 					detailsId: record.detailsId,
 				}));
 		},
+		rankTools(input) {
+			const entries = this.searchTools(input);
+			return entries.length > 0
+				? { entries, found: true }
+				: {
+						entries,
+						found: false,
+						suggestion: 'No loaded tool matches.',
+					};
+		},
 		measureSchemaBytes: () => ({}),
 		activatePlugin(identifier: string): IPluginSurfaceChange | null {
 			const plugin =

@@ -34,6 +34,7 @@ export interface ICoreProposalsBoundaryScanResult {
 	}[];
 	readonly violations: readonly ICoreProposalsBoundaryViolation[];
 	readonly expired: readonly ICoreProposalsBoundaryViolation[];
+	readonly stale?: readonly ICoreProposalsBoundaryException[];
 }
 export declare const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundaryException[];
 export declare const collectBoundaryMatches: (
@@ -57,7 +58,17 @@ export declare const scanCoreProposalsBoundaryLint: (
 export declare const formatReport: (
 	result: Pick<
 		ICoreProposalsBoundaryScanResult,
-		'scannedFiles' | 'allowed' | 'violations' | 'expired'
+		'scannedFiles' | 'allowed' | 'violations' | 'expired' | 'stale'
 	>,
 ) => string;
 export declare const main: () => Promise<number>;
+export declare const EXPIRY_WARNING_DAYS = 30;
+export declare const expiringSoon: (
+	allowed: ICoreProposalsBoundaryScanResult['allowed'],
+	now: Date,
+	days?: number,
+) => readonly { readonly until: string; readonly count: number }[];
+export declare const formatExpiryWarnings: (
+	expiring: readonly { readonly until: string; readonly count: number }[],
+	annotate: boolean,
+) => readonly string[];

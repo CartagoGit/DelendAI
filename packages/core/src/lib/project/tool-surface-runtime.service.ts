@@ -2,6 +2,10 @@ import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type {
+	IToolSearchInput,
+	IToolSearchResult,
+} from '../contracts/interfaces/tool-search-result.interface';
+import type {
 	IPluginSurfaceChange,
 	IProjectContextSnapshot,
 	IToolAccessState,
@@ -29,7 +33,9 @@ import {
 	withVisibilityIntent,
 } from './tool-surface-runtime.helper';
 import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.constant';
+import { DEFAULT_WORKING_SET_POLICY } from '../contracts/constants/working-set-policy.constant';
 import { measureToolWireBytes } from '../surface/bootstrap';
+import { stripWireJsonSchemaNoise } from '../surface/wire-json-schema.helper';
 import { enforceDryRunReturnContract } from '../dry-run/enforce';
 import { runWithDryRunScope } from '../dry-run/dry-run-scope.helper';
 import { recordDryRunViolation } from '../dry-run/dry-run-violation-log.service';
@@ -40,11 +46,22 @@ const SEARCH_SCORE = {
 	namePrefix: 80,
 	tagExact: 60,
 	summarySubstring: 30,
+	/** Per query token found in the tool's id or name. */
+	tokenInName: 8,
+	/** Per query token equal to one of the tool's tags. */
+	tokenIsTag: 6,
+	/** Per query token found in the summary. */
+	tokenInSummary: 3,
+	/** Every token found within one field, rather than spread across several. */
+	allTokensInOneField: 10,
 } as const;
-const DEFAULT_WORKING_SET_POLICY = {
-	idleTtlMs: 5 * 60_000,
-	maxWarmPlugins: 8,
-} as const;
+/**
+ * The best match of a query must score this much to count as found: at
+ * least one query word in the tool's id or name, or the whole query in a
+ * tag or its summary. Below it every match only shares letters with the
+ * query, spread across fields or inside the plugin's name.
+ */
+const DEFAULT_SEARCH_MIN_SCORE = SEARCH_SCORE.tokenInName;
 
 const warnUnknownToolExposure = (name: string): void => {
 	process.stderr.write(
@@ -97,6 +114,51 @@ const syncHandleVisibility = (record: IBoundToolRecord): boolean => {
 	return true;
 };
 
+/**
+ * Everything about a tool a search may match, lowercased and joined.
+ *
+ * Joined with a space rather than concatenated: `namespace` ending where
+ * `summary` begins would otherwise make a token out of two halves that
+ * belong to different fields.
+ */
+const searchableText = (record: IBoundToolRecord): string =>
+	[
+		record.name,
+		record.toolId,
+		record.pluginId,
+		record.namespace,
+		record.summary,
+		...(record.tags ?? []),
+	]
+		.filter((value): value is string => typeof value === 'string')
+		.join(' ')
+		.toLowerCase();
+
+/**
+ * The words a query is asking about.
+ *
+ * The query used to be matched as ONE substring, so a tool was found
+ * only by somebody who already knew its exact wording.
+ * `tool_search('sync_proposals')` answered; `tool_search('sync proposals
+ * index')` — every word of which appears in that tool's own name and
+ * summary — answered `{"entries":[]}`.
+ *
+ * With 148 tools behind a lazy surface, the tool an agent is told to use
+ * to FIND tools was telling it the capability does not exist. Measured
+ * live against a consumer project, through the MCP surface.
+ *
+ * Every token must appear, so adding a word narrows the answer, which is
+ * what a search is for. Matching any token would make a third word widen
+ * it, and "sync proposals index" would return everything that mentions
+ * an index.
+ */
+const queryTokens = (query: string): readonly string[] =>
+	query
+		.trim()
+		.toLowerCase()
+		.split(/\s+/u)
+		.filter((token) => token.length > 0);
+
 const matchesFilter = (
 	record: IBoundToolRecord,
 	input: Parameters<IToolSurfaceRuntime['searchTools']>[0],
@@ -121,41 +183,95 @@ const matchesFilter = (
 	if (input?.query === undefined || input.query.trim().length === 0) {
 		return true;
 	}
-	const needle = input.query.trim().toLowerCase();
-	return [
-		record.name,
-		record.toolId,
-		record.pluginId,
-		record.namespace,
-		record.summary,
-		...(record.tags ?? []),
-	]
-		.filter((value): value is string => typeof value === 'string')
-		.some((value) => value.toLowerCase().includes(needle));
+	return searchableText(record).length === 0
+		? false
+		: queryTokens(input.query).every((token) =>
+				searchableText(record).includes(token),
+			);
 };
 
+/**
+ * How well a tool answers the query, from the same tokens the filter uses.
+ *
+ * Filtering and ranking used to read the query differently. The filter
+ * required every token; the score compared the whole phrase against the
+ * id, name, tags and summary. So a multi-word query that the filter
+ * correctly answered scored 0 for every candidate and came back sorted
+ * alphabetically: one query, two definitions.
+ *
+ * The whole-phrase signals keep their weights, so a query that IS a tool
+ * id still wins outright, and a one-word query ranks as it did. On top of
+ * them, each token scores where it is found, and a tool whose single
+ * field holds every token ranks above one that only collects them across
+ * fields.
+ */
 const scoreCandidate = (
 	record: IBoundToolRecord,
 	query: string | undefined,
 ): number => {
 	if (query === undefined) return 0;
-	const needle = query.trim().toLowerCase();
-	if (needle.length === 0) return 0;
+	const tokens = queryTokens(query);
+	if (tokens.length === 0) return 0;
+	const phrase = tokens.join(' ');
+	const toolId = record.toolId.toLowerCase();
+	const name = record.name.toLowerCase();
+	const tags = (record.tags ?? []).map((tag) => tag.toLowerCase());
+	const summary = record.summary?.toLowerCase() ?? '';
 
-	let score = 0;
-	if (record.toolId.toLowerCase() === needle) {
-		score = SEARCH_SCORE.exactToolId;
+	let phraseScore = 0;
+	if (toolId === phrase) phraseScore = SEARCH_SCORE.exactToolId;
+	if (name.startsWith(phrase)) {
+		phraseScore = Math.max(phraseScore, SEARCH_SCORE.namePrefix);
 	}
-	if (record.name.toLowerCase().startsWith(needle)) {
-		score = Math.max(score, SEARCH_SCORE.namePrefix);
+	if (tags.includes(phrase)) {
+		phraseScore = Math.max(phraseScore, SEARCH_SCORE.tagExact);
 	}
-	if ((record.tags ?? []).some((tag) => tag.toLowerCase() === needle)) {
-		score = Math.max(score, SEARCH_SCORE.tagExact);
+	if (summary.includes(phrase)) {
+		phraseScore = Math.max(phraseScore, SEARCH_SCORE.summarySubstring);
 	}
-	if (record.summary?.toLowerCase().includes(needle) === true) {
-		score = Math.max(score, SEARCH_SCORE.summarySubstring);
+
+	let tokenScore = 0;
+	for (const token of tokens) {
+		if (toolId.includes(token) || name.includes(token)) {
+			tokenScore += SEARCH_SCORE.tokenInName;
+		}
+		if (tags.includes(token)) tokenScore += SEARCH_SCORE.tokenIsTag;
+		if (summary.includes(token)) tokenScore += SEARCH_SCORE.tokenInSummary;
 	}
-	return score;
+	const inOneField = [`${toolId} ${name}`, summary, ...tags].some((field) =>
+		tokens.every((token) => field.includes(token)),
+	);
+	const cohesion =
+		tokens.length > 1 && inOneField ? SEARCH_SCORE.allTokensInOneField : 0;
+
+	return phraseScore + tokenScore + cohesion;
+};
+
+/**
+ * What to try after a search found nothing worth returning. Weak matches
+ * are not returned, but the plugins they live in are named, so the next
+ * search can be scoped instead of guessed.
+ */
+const suggestAfterMiss = (
+	query: string | undefined,
+	weakMatches: readonly IBoundToolRecord[],
+): string => {
+	const plugins = [
+		...new Set(
+			weakMatches.flatMap((record) =>
+				record.namespace !== undefined ? [record.namespace] : [],
+			),
+		),
+	]
+		.sort(comparePortableStrings)
+		.slice(0, 5);
+	const subject =
+		query === undefined || query.trim().length === 0
+			? 'No loaded tool matches these filters.'
+			: `No loaded tool matches "${query.trim()}" with confidence.`;
+	return plugins.length > 0
+		? `${subject} Weak matches are in: ${plugins.join(', ')}. Search with plugin=<one of them>, or with minScore=0 to see every weak match.`
+		: `${subject} Try other words, a plugin, or a tag; an empty query lists the catalog.`;
 };
 
 const comparePortableStrings = (left: string, right: string): number => {
@@ -196,6 +312,8 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		}
 	>();
 	private readonly warmAtByPlugin = new Map<string, number>();
+	/** When each warm plugin last entered the warm set (`minWarmMs`). */
+	private readonly activatedAtByPlugin = new Map<string, number>();
 	private readonly inFlightByPlugin = new Map<string, number>();
 	private readonly loadedPluginIds = new Set<string>();
 	private readonly workingSetPolicy: IToolSurfaceWorkingSetPolicy;
@@ -317,7 +435,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		if (this.currentMode === 'native') {
 			const now = Date.now();
 			for (const plugin of this.plan.plugins) {
-				this.warmAtByPlugin.set(plugin.id, now);
+				this.markWarm(plugin.id, now);
 			}
 		}
 	}
@@ -435,37 +553,50 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		return this.buildKnowledgeEntry(record);
 	}
 
-	searchTools(input?: {
-		readonly query?: string | undefined;
-		readonly activeOnly?: boolean | undefined;
-		readonly plugin?: string | undefined;
-		readonly tag?: string | undefined;
-		readonly limit?: number | undefined;
-	}): readonly IToolSurfaceSearchEntry[] {
+	searchTools(input?: IToolSearchInput): readonly IToolSurfaceSearchEntry[] {
+		return this.rankTools({ ...input, minScore: 0 }).entries;
+	}
+
+	rankTools(input?: IToolSearchInput): IToolSearchResult {
 		const limit = input?.limit ?? DEFAULT_SEARCH_LIMIT;
 		const query = input?.query;
-		return [...this.recordsByName.values()]
+		const ranked = [...this.recordsByName.values()]
 			.filter((record) => matchesFilter(record, input))
 			.map((record) => ({ record, score: scoreCandidate(record, query) }))
-			.sort(compareSearchCandidates)
-			.slice(0, limit)
-			.map(({ record }) => ({
-				registrationId: record.registrationId,
-				name: record.name,
-				toolId: record.toolId,
-				...(record.pluginId !== undefined
-					? { pluginId: record.pluginId }
-					: {}),
-				...(record.namespace !== undefined
-					? { namespace: record.namespace }
-					: {}),
-				...(record.summary !== undefined
-					? { summary: record.summary }
-					: {}),
-				...(record.tags !== undefined ? { tags: record.tags } : {}),
-				active: isToolVisible(record.access),
-				detailsId: record.detailsId,
-			}));
+			.sort(compareSearchCandidates);
+		const hasQuery = query !== undefined && query.trim().length > 0;
+		const minScore = hasQuery
+			? (input?.minScore ?? DEFAULT_SEARCH_MIN_SCORE)
+			: 0;
+		const best = ranked[0]?.score;
+		if (best === undefined || best < minScore) {
+			return {
+				entries: [],
+				found: false,
+				suggestion: suggestAfterMiss(
+					query,
+					ranked.map(({ record }) => record),
+				),
+			};
+		}
+		const entries = ranked.slice(0, limit).map(({ record }) => ({
+			registrationId: record.registrationId,
+			name: record.name,
+			toolId: record.toolId,
+			...(record.pluginId !== undefined
+				? { pluginId: record.pluginId }
+				: {}),
+			...(record.namespace !== undefined
+				? { namespace: record.namespace }
+				: {}),
+			...(record.summary !== undefined
+				? { summary: record.summary }
+				: {}),
+			...(record.tags !== undefined ? { tags: record.tags } : {}),
+			active: isToolVisible(record.access),
+			detailsId: record.detailsId,
+		}));
+		return { entries, found: true };
 	}
 
 	/**
@@ -779,8 +910,8 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	): IPluginSurfaceChange | null {
 		const plugin = this.pluginIndex.get(identifier);
 		if (plugin === undefined) return null;
-		if (active) this.warmAtByPlugin.set(plugin.id, Date.now());
-		else this.warmAtByPlugin.delete(plugin.id);
+		if (active) this.markWarm(plugin.id, Date.now());
+		else this.markCold(plugin.id);
 		const changedToolNames: string[] = [];
 		const visibleToolNames: string[] = [];
 		for (const registrationId of plugin.toolRegistrationIds) {
@@ -928,8 +1059,9 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			for (const [pluginId, touchedAt] of this.warmAtByPlugin) {
 				if ((this.inFlightByPlugin.get(pluginId) ?? 0) > 0) continue;
 				if (!this.isPluginEvictable(pluginId)) continue;
+				if (this.isWithinMinWarm(pluginId, nowMs)) continue;
 				if (nowMs - touchedAt >= ttl) {
-					this.warmAtByPlugin.delete(pluginId);
+					this.markCold(pluginId);
 					evicted.push(pluginId);
 					reasonByPluginId.set(pluginId, 'idle-ttl');
 				}
@@ -948,12 +1080,13 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				.filter(
 					([pluginId]) =>
 						(this.inFlightByPlugin.get(pluginId) ?? 0) === 0 &&
-						this.isPluginEvictable(pluginId),
+						this.isPluginEvictable(pluginId) &&
+						!this.isWithinMinWarm(pluginId, nowMs),
 				)
 				.sort((a, b) => a[1] - b[1])
 				.slice(0, this.warmAtByPlugin.size - max);
 			for (const [pluginId] of candidates) {
-				this.warmAtByPlugin.delete(pluginId);
+				this.markCold(pluginId);
 				if (!evicted.includes(pluginId)) evicted.push(pluginId);
 				if (!reasonByPluginId.has(pluginId)) {
 					reasonByPluginId.set(pluginId, 'max-warm-plugins');
@@ -975,8 +1108,33 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 
 	private touchPlugin(record: IBoundToolRecord): void {
 		if (record.pluginId === undefined) return;
-		this.warmAtByPlugin.set(record.pluginId, Date.now());
+		this.markWarm(record.pluginId, Date.now());
 		this.evictIdlePlugins();
+	}
+
+	/** Records a use; a plugin entering the warm set starts its `minWarmMs`. */
+	private markWarm(pluginId: string, nowMs: number): void {
+		if (!this.warmAtByPlugin.has(pluginId)) {
+			this.activatedAtByPlugin.set(pluginId, nowMs);
+		}
+		this.warmAtByPlugin.set(pluginId, nowMs);
+	}
+
+	private markCold(pluginId: string): void {
+		this.warmAtByPlugin.delete(pluginId);
+		this.activatedAtByPlugin.delete(pluginId);
+	}
+
+	/**
+	 * Whether `pluginId` became warm less than `minWarmMs` ago, so no
+	 * automatic eviction may undo that activation yet. An explicit
+	 * deactivation is the caller's decision and ignores it.
+	 */
+	private isWithinMinWarm(pluginId: string, nowMs: number): boolean {
+		const minWarm = this.workingSetPolicy.minWarmMs ?? null;
+		if (minWarm === null || minWarm <= 0) return false;
+		const activatedAt = this.activatedAtByPlugin.get(pluginId);
+		return activatedAt !== undefined && nowMs - activatedAt < minWarm;
 	}
 
 	/**
@@ -1071,9 +1229,10 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}
 }
 
-/** Convert Zod 4 schemas to the JSON shape sent over MCP. Raw shapes and
- * already-serialisable schemas are retained as-is for compatibility with
- * programmatic hosts. */
+/** Convert Zod 4 schemas to the JSON shape sent over MCP — including the
+ * noise `tools/list` strips (`stripWireJsonSchemaNoise`), so a measurement
+ * here equals the wire. Raw shapes and already-serialisable schemas are
+ * retained as-is for compatibility with programmatic hosts. */
 const toJsonSchema = (schema: unknown): unknown => {
 	if (schema === undefined) return undefined;
 	if (
@@ -1083,7 +1242,7 @@ const toJsonSchema = (schema: unknown): unknown => {
 		typeof schema.toJSONSchema === 'function'
 	) {
 		try {
-			return schema.toJSONSchema();
+			return stripWireJsonSchemaNoise(schema.toJSONSchema());
 		} catch {
 			return schema;
 		}

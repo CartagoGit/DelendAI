@@ -169,6 +169,75 @@ describe('slice listener first-poll baseline', () => {
 	});
 });
 
+describe('slice listener later polls', () => {
+	let workspace = '';
+	const writeStatus = async (status: string): Promise<void> => {
+		const dir = join(workspace, '.cache', 'delendai', 'proposals');
+		await mkdir(dir, { recursive: true });
+		await writeFile(
+			join(dir, 'index.json'),
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'p1',
+						slices: [{ id: 'S1', status, files: ['a.ts'] }],
+					},
+				],
+			}),
+			'utf8',
+		);
+	};
+	/** Baseline over `ready`, flip to `done`, and report what was emitted. */
+	const flip = async (
+		isAlreadyPersisted: (event: ITriggerEvent) => Promise<boolean>,
+	): Promise<readonly ITriggerEvent[]> => {
+		const seen: ITriggerEvent[] = [];
+		const listener = createSliceListener(
+			workspace,
+			join('.cache', 'delendai'),
+			SLICE_TRIGGER,
+			async (event) => {
+				seen.push(event);
+				return { ack: 'OK' };
+			},
+			undefined,
+			join('.cache', 'delendai'),
+			isAlreadyPersisted,
+		);
+		await writeStatus('ready');
+		await listener.check();
+		await writeStatus('done');
+		await listener.check();
+		listener.stop();
+		return seen;
+	};
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'slice-later-'));
+	});
+	afterEach(async () => {
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('does not emit a close that is already persisted, such as one a merge brought in', async () => {
+		expect(await flip(async () => true)).toHaveLength(0);
+	});
+
+	it('emits a close that still has something to persist', async () => {
+		expect(await flip(async () => false)).toHaveLength(1);
+	});
+
+	it('emits when the question cannot be answered, unlike the first poll', async () => {
+		// The first poll falls to silence because a replay of the whole
+		// history is the worse failure there. A later poll judges one
+		// close, and losing it silently is the worse failure here.
+		const seen = await flip(async () => {
+			throw new Error('store unreadable');
+		});
+		expect(seen).toHaveLength(1);
+	});
+});
+
 describe('slice listener delivery bounds', () => {
 	let workspace = '';
 

@@ -8,16 +8,16 @@ track: trust
 date: 2026-09-07
 parent-plan: q00021
 related:
-	- f00513
-	- f00514
-	- f00517
-	- r00010
-	- f00065
-	- f00080
-	- x00052
-	- b00239
-	- q00019
-	- q00020
+    - "f00513"
+    - f00514
+    - f00517
+    - r00010
+    - f00065
+    - f00080
+    - x00052
+    - b00239
+    - q00019
+    - q00020
 ---
 
 # c00527 — inventario histórico de cache layout

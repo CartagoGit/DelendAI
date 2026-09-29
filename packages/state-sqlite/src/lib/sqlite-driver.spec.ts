@@ -19,6 +19,7 @@ import {
 } from '@delendai/state';
 
 import { SqliteStateRegistry } from './sqlite-driver';
+import { STATE_SQLITE_OLDEST_MIGRATABLE_SCHEMA_VERSION } from './contracts/constants/state-sqlite-migrations.constant';
 import { STATE_SQLITE_SCHEMA_VERSION, SQLITE_BOOT_PRAGMAS } from './schema';
 
 const scope: StateScope = {
@@ -160,7 +161,10 @@ describe('SqliteStateRegistry', () => {
 		expect(failure).toMatchObject({
 			pragma: '99',
 			observedSchemaVersion: 99,
-			supportedSchemaRange: { min: 1, max: 1 },
+			supportedSchemaRange: {
+				min: STATE_SQLITE_OLDEST_MIGRATABLE_SCHEMA_VERSION,
+				max: STATE_SQLITE_SCHEMA_VERSION,
+			},
 		});
 
 		const reopened = new Database(path);
@@ -188,6 +192,110 @@ describe('SqliteStateRegistry', () => {
 		if (!read.ok) return;
 		expect(read.projection).toEqual({ entries: [['a', 1]] });
 		reader.close();
+	});
+
+	it('persists an incremental over unchanged inputs and keeps it across instances', () => {
+		// The change arrives as an event, so the generation keeps its
+		// predecessor's input fingerprint. Schema v1 keyed rows by that
+		// fingerprint and this second write failed SQLITE_CONSTRAINT_UNIQUE.
+		const path = tmpDbPath();
+		const producer = makeProducer();
+		const writer = new SqliteStateRegistry({ path, clock: () => 0 });
+		writer.defineProducer(producer);
+		const first = writer.hydrate(input());
+		expect(first.ok).toBe(true);
+		const second = writer.incremental(input(), {
+			kind: 'set',
+			key: 'a',
+			value: 1,
+		});
+		expect(second).toMatchObject({ ok: true });
+		if (!first.ok || !second.ok) return;
+		const stale = writer.acquireProjectLease({
+			scope,
+			generationId: first.generation.id,
+			token: first.generation.projectLeaseToken,
+		});
+		expect(stale).toMatchObject({
+			ok: false,
+			reason: 'STALE_PROJECT_GENERATION',
+			currentGenerationId: second.generation.id,
+		});
+		writer.close();
+
+		const reader = new SqliteStateRegistry({ path, clock: () => 1 });
+		reader.defineProducer(producer);
+		const read = reader.lookup({ scope, producerId: 'kv' });
+		expect(read).toMatchObject({
+			ok: true,
+			projection: { entries: [['a', 1]] },
+		});
+		reader.close();
+	});
+
+	it('migrates a v1 store in place and then accepts incremental builds', () => {
+		const path = tmpDbPath();
+		const producer = makeProducer();
+		const seeded = new SqliteStateRegistry({ path, clock: () => 0 });
+		seeded.defineProducer(producer);
+		expect(seeded.hydrate(input([['a', 1]])).ok).toBe(true);
+		seeded.close();
+
+		// Rewind the store to exactly what the v1 driver wrote.
+		const legacy = new Database(path);
+		legacy.exec(`
+			CREATE TABLE generations_v1 (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				scope_kind TEXT NOT NULL,
+				scope_locator_json TEXT NOT NULL,
+				snapshot_json TEXT NOT NULL,
+				fingerprint TEXT NOT NULL UNIQUE,
+				reconciled_commit_sha TEXT,
+				schema_version INTEGER NOT NULL,
+				created_at INTEGER NOT NULL,
+				updated_at INTEGER NOT NULL
+			);
+			INSERT INTO generations_v1 (id, scope_kind, scope_locator_json, snapshot_json, fingerprint, reconciled_commit_sha, schema_version, created_at, updated_at)
+				SELECT id, scope_kind, scope_locator_json, snapshot_json, fingerprint, reconciled_commit_sha, 1, created_at, updated_at FROM generations;
+			DROP TABLE generations;
+			ALTER TABLE generations_v1 RENAME TO generations;
+			PRAGMA user_version = 1;
+		`);
+		legacy.close(false);
+
+		const migrated = new SqliteStateRegistry({ path, clock: () => 1 });
+		try {
+			migrated.defineProducer(producer);
+			const inspector = new Database(path, { readonly: true });
+			try {
+				const version = inspector
+					.query('PRAGMA user_version;')
+					.get() as Record<string, number> | null;
+				expect(version?.user_version ?? version?.userVersion).toBe(
+					STATE_SQLITE_SCHEMA_VERSION,
+				);
+				expect(
+					inspector
+						.query('SELECT generation_id FROM generations;')
+						.all(),
+				).toHaveLength(1);
+			} finally {
+				inspector.close(false);
+			}
+			expect(migrated.lookup({ scope, producerId: 'kv' })).toMatchObject({
+				ok: true,
+				projection: { entries: [['a', 1]] },
+			});
+			expect(
+				migrated.incremental(input([['a', 1]]), {
+					kind: 'set',
+					key: 'b',
+					value: 2,
+				}),
+			).toMatchObject({ ok: true });
+		} finally {
+			migrated.close();
+		}
 	});
 
 	it('incremental converges on the same active state', () => {

@@ -1,4 +1,5 @@
 import { DEFAULT_MAX_RESPONSE_BYTES } from '../contracts/constants/response-byte-budget.constant';
+import { elideKeepingOutput } from '../context-budget/elide-tool-result.service';
 import type {
 	ITruncatedEnvelope,
 	ITruncationResult,
@@ -101,10 +102,13 @@ export const toolOk = (data: Record<string, unknown> = {}): IToolTextResult =>
 export const toolError = (
 	reason: string,
 	nextAction?: string,
+	/** A stable code a caller can branch on instead of the prose. */
+	code?: string,
 ): IToolTextResult => {
 	const envelope = {
 		ok: false as const,
 		error: {
+			...(code !== undefined ? { code } : {}),
 			reason,
 			...(nextAction !== undefined ? { nextAction } : {}),
 		},
@@ -386,7 +390,5 @@ export const truncateIfTooLarge = <T>(
 export const toolJsonBounded = (
 	value: unknown,
 	maxBytes: number = DEFAULT_MAX_RESPONSE_BYTES,
-): IToolTextResult => {
-	const { value: bounded } = truncateIfTooLarge(value, maxBytes);
-	return toolJson(bounded);
-};
+): IToolTextResult =>
+	toolJson(elideKeepingOutput(value, maxBytes, truncateIfTooLarge));

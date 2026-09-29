@@ -15,6 +15,7 @@ import {
 } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { marginalVerdict } from '../test/preset-marginal-ceiling';
 import {
 	measureCatalogAndTaskContextCost,
 	renderCatalogAndTaskContextMarkdown,
@@ -142,6 +143,24 @@ const budgetStatus = (
 		return `over warning (${formatInt(budget.warning)}B)`;
 	}
 	return 'within hard';
+};
+
+/**
+ * The marginal column, from the same verdict `tokens:gate` enforces.
+ *
+ * It used to be `budgetStatus` over the largest owner's bytes, computed
+ * here and nowhere else — which is how `standard` read `over hard` for as
+ * long as the gate exited 0. A surface that lists no plugin tool is
+ * `n/a`, not `within hard`: nothing was measured there.
+ */
+const marginalStatus = (
+	ownerRows: readonly IToolOwnerMetrics[],
+	budget: { readonly hard: number; readonly warning: number } | undefined,
+): string => {
+	if (budget === undefined) return 'n/a';
+	const verdict = marginalVerdict(ownerRows, budget);
+	if (verdict.kind === 'no-plugins') return 'n/a';
+	return budgetStatus(verdict.bytes, verdict.ceiling);
 };
 
 const presetToolsBudget = (
@@ -731,7 +750,7 @@ const renderGeneratedMarkdown = (
 			? 'n/a'
 			: formatInt(row.roundContextBytes),
 		budgetStatus(row.toolsListBytes, presetToolsBudget(row.presetId)),
-		budgetStatus(row.maxPluginBytes, presetMarginalBudget(row.presetId)),
+		marginalStatus(row.ownerRows, presetMarginalBudget(row.presetId)),
 		row.loadErrors.length === 0 ? 'none' : row.loadErrors.join('<br>'),
 	]);
 

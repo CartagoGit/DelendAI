@@ -3,6 +3,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
+import { projectBranches } from '@delendai/core/public';
 import {
 	parseBranchList,
 	runBranchStatusEngine,
@@ -24,7 +25,7 @@ export interface IBranchStatusToolOptions {
 	readonly workspaceRoot: string;
 	/** Override the git runner (tests). Defaults to `createGitRunner(workspaceRoot)`. */
 	readonly run?: IGitRunner;
-	/** Default base branch. Default `develop`. */
+	/** Default base branch. Defaults to the project's own. */
 	readonly defaultBaseBranch?: string;
 	/** Default agent-branch prefix. Default `agent/`. */
 	readonly defaultAgentPrefix?: string;
@@ -102,15 +103,21 @@ const parseWorktreeBranchPaths = (raw: string): ReadonlyMap<string, string> => {
 export const listAgentBranchesWithGit = async (
 	run: IGitRunner,
 	cwd: string,
-	baseBranch = 'develop',
-	agentPrefix = 'agent/',
+	// Both used to default to literals — `'develop'` and the retired
+	// `'agent/'` prefix — so this answered about a branch and a namespace
+	// that may not exist in the project it was called for.
+	baseBranch?: string,
+	agentPrefix?: string,
 ): Promise<readonly IStrandedBranch[]> => {
+	const project = await projectBranches(cwd);
+	const base = baseBranch ?? project.integration;
+	const prefix = agentPrefix ?? project.workRefPrefix;
 	const branchListResult = await run([
 		'-C',
 		cwd,
 		'branch',
 		'--list',
-		`${agentPrefix}*`,
+		`${prefix}*`,
 	]);
 	if (!branchListResult.ok) return [];
 
@@ -125,8 +132,7 @@ export const listAgentBranchesWithGit = async (
 		? parseWorktreeBranchPaths(worktreeListResult.output)
 		: new Map<string, string>();
 	const branchNames = parseBranchList(branchListResult.output).filter(
-		(name) =>
-			agentPrefix.length === 0 ? true : name.startsWith(agentPrefix),
+		(name) => (prefix.length === 0 ? true : name.startsWith(prefix)),
 	);
 	const branches: IStrandedBranch[] = [];
 	for (const branch of branchNames) {
@@ -137,7 +143,7 @@ export const listAgentBranchesWithGit = async (
 				'rev-list',
 				'--left-right',
 				'--count',
-				`${baseBranch}...${branch}`,
+				`${base}...${branch}`,
 			]),
 			run(['-C', cwd, 'log', '-1', '--format=%cI', branch]),
 		]);
@@ -171,7 +177,7 @@ export const detectStrandedBranches = async (
 };
 
 /**
- * Read-only snapshot of every `agent/*` branch and every worktree in
+ * Read-only snapshot of every work-ref branch and every worktree in
  * the workspace. Lets any agent answer "what is everyone else doing
  * right now?" without grep. See `branch-status-engine.ts` for the
  * engine and `f00073` for the rationale.
@@ -192,7 +198,7 @@ export const buildBranchStatusRegistration = (
 				{
 					outputSchema: BRANCH_STATUS_OUTPUT_SCHEMA,
 					description:
-						'Read-only snapshot of every `agent/*` branch and every worktree in the workspace. Reports ahead/behind counts vs baseBranch (default develop), last-commit age, merged flag, and per-worktree dirty + untracked file counts. Worktrees whose path lives outside <cacheDir>/delendai/.worktrees are flagged `outOfCache: true`. Use this before merging, before pushing, or whenever the orchestrator needs to know what other agents are doing.',
+						'Read-only snapshot of every work-ref branch and every worktree in the workspace. Reports ahead/behind counts vs baseBranch (default: the integration branch this project declares), last-commit age, merged flag, and per-worktree dirty + untracked file counts. Worktrees whose path lives outside <cacheDir>/delendai/.worktrees are flagged `outOfCache: true`. Use this before merging, before pushing, or whenever the orchestrator needs to know what other agents are doing.',
 					inputSchema: z.object({
 						baseBranch: z.string().optional(),
 						agentPrefix: z.string().optional(),
@@ -202,14 +208,20 @@ export const buildBranchStatusRegistration = (
 					baseBranch?: string | undefined;
 					agentPrefix?: string | undefined;
 				}) => {
+					// The chain used to end in `'develop'` and `'agent/'` —
+					// facts about ONE repository. It now ends in the
+					// project's own policy, which answers both.
+					const project = await projectBranches(
+						options.workspaceRoot,
+					);
 					const resolvedBaseBranch =
 						args.baseBranch ??
 						options.defaultBaseBranch ??
-						'develop';
+						project.integration;
 					const resolvedAgentPrefix =
 						args.agentPrefix ??
 						options.defaultAgentPrefix ??
-						'agent/';
+						project.workRefPrefix;
 					const engineOptions = {
 						run,
 						workspaceRoot: options.workspaceRoot,

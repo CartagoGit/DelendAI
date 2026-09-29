@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import type {
+	IPluginAdoption,
 	IPluginConfigDocs,
 	IPluginManifest,
 	IPluginManifestTokenBudget,
@@ -8,6 +9,7 @@ import type {
 	PluginManifestVisibility,
 } from '../contracts/interfaces/plugin-manifest.interface';
 import type { IPluginTokenBudget } from '../contracts/interfaces/plugin-token-budget.interface';
+import type { IAuthorityDeclaration } from '../contracts/interfaces/authority.interface';
 import {
 	permissionListSchema,
 	toolPermissionsSchema,
@@ -130,6 +132,98 @@ const CONFIG_DOCS_SCHEMA = z.object({
 		.optional(),
 }) satisfies z.ZodType<IPluginConfigDocs>;
 
+const nonBlank = (field: string) =>
+	z.string().trim().min(1, `adoption.${field} must not be empty`);
+
+/** An adoption contribution; `launchPreset` is checked against `presets` below. */
+const ADOPTION_SCHEMA = z.object({
+	from: z.literal('repo'),
+	option: nonBlank('option'),
+	launchPreset: nonBlank('launchPreset'),
+	rationale: nonBlank('rationale'),
+	whenWired: nonBlank('whenWired'),
+	whenNotWired: nonBlank('whenNotWired'),
+}) satisfies z.ZodType<IPluginAdoption>;
+
+/**
+ * f00552 S1. A declaration that cannot be checked is prose, so the
+ * schema refuses the shapes that would make one meaningless: no
+ * projections (then there is no second copy), a projection that is the
+ * authority itself, the same projection twice, and a drift gate that is
+ * not a script name.
+ */
+const AUTHORITY_SCHEMA = z
+	.object({
+		domain: z
+			.string()
+			.regex(PLUGIN_ID_PATTERN, 'domain must be kebab-case'),
+		authority: z.string().trim().min(1, 'authority must not be empty'),
+		projections: z
+			.array(
+				z.object({
+					path: z
+						.string()
+						.trim()
+						.min(1, 'projection path must not be empty')
+						.refine(
+							isValidRelativeRepoPath,
+							'projection path must be a relative repo path',
+						),
+					producer: z
+						.string()
+						.trim()
+						.min(1, 'projection producer must not be empty'),
+				}),
+			)
+			.min(1, 'a fact with no projection has no copy to declare'),
+		reconciler: z.string().trim().min(1).optional(),
+		digest: z.string().trim().min(1).optional(),
+		rebuild: z.string().trim().min(1).optional(),
+		driftGate: z
+			.string()
+			.regex(
+				/^[a-z][a-z0-9-]*(?::[a-z0-9-]+)*$/u,
+				'driftGate must be a package.json script name',
+			)
+			.optional(),
+	})
+	.superRefine((declaration, ctx) => {
+		const seen = new Set<string>();
+		declaration.projections.forEach((projection, index) => {
+			if (projection.path === declaration.authority) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ['projections', index, 'path'],
+					message: 'a projection cannot be the authority itself',
+				});
+			}
+			if (seen.has(projection.path)) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ['projections', index, 'path'],
+					message: `projection "${projection.path}" is declared twice`,
+				});
+			}
+			seen.add(projection.path);
+		});
+	}) satisfies z.ZodType<IAuthorityDeclaration>;
+
+const AUTHORITIES_SCHEMA = z
+	.array(AUTHORITY_SCHEMA)
+	.superRefine((declarations, ctx) => {
+		const seen = new Set<string>();
+		declarations.forEach((declaration, index) => {
+			if (seen.has(declaration.domain)) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: [index, 'domain'],
+					message: `domain "${declaration.domain}" is declared twice`,
+				});
+			}
+			seen.add(declaration.domain);
+		});
+	});
+
 const PLUGIN_MANIFEST_SCHEMA = z
 	.object({
 		id: z.string().regex(PLUGIN_ID_PATTERN, 'id must be kebab-case'),
@@ -151,8 +245,22 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		capabilities: nonEmptyList('capabilities'),
 		startupActivation: z.boolean().optional(),
 		configDocs: CONFIG_DOCS_SCHEMA.optional(),
+		adoption: ADOPTION_SCHEMA.optional(),
+		authorities: AUTHORITIES_SCHEMA.optional(),
 	})
 	.superRefine((manifest, ctx) => {
+		// Launching with a preset that does not load the plugin would wire
+		// it and then leave it out.
+		if (
+			manifest.adoption !== undefined &&
+			!manifest.presets.includes(manifest.adoption.launchPreset)
+		) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ['adoption', 'launchPreset'],
+				message: `adoption.launchPreset "${manifest.adoption.launchPreset}" is not one of this plugin's presets (${manifest.presets.join(', ')})`,
+			});
+		}
 		const expectedPackage = `@delendai/${manifest.id}`;
 		if (manifest.package !== expectedPackage) {
 			ctx.addIssue({
@@ -177,6 +285,14 @@ const PLUGIN_MANIFEST_SCHEMA = z
 			});
 		}
 	}) satisfies z.ZodType<IPluginManifest>;
+
+/**
+ * Authority declarations kept outside a plugin manifest — a repository's
+ * own build facts — held to the same rules as the manifest field.
+ */
+export const parseAuthorityDeclarations = (
+	declarations: unknown,
+): readonly IAuthorityDeclaration[] => AUTHORITIES_SCHEMA.parse(declarations);
 
 export const parsePluginManifest = (manifest: unknown): IPluginManifest =>
 	PLUGIN_MANIFEST_SCHEMA.parse(manifest);

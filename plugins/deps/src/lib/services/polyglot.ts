@@ -1,5 +1,5 @@
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	SafeWorkspaceReader,
 } from '@delendai/core/public';
 
@@ -302,7 +302,10 @@ export const listPolyglotDeps = async (
 	const reader = new SafeWorkspaceReader(rootAbs);
 	const out: IPolyglotManifest[] = [];
 	for (const { ecosystem, file, parse } of MANIFESTS) {
-		const contained = resolveWorkspaceContained(rootAbs, file);
+		const contained = await resolveExistingWorkspaceContained(
+			rootAbs,
+			file,
+		);
 		if (!contained.ok) continue;
 		let raw: string;
 		try {

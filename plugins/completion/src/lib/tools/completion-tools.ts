@@ -16,6 +16,12 @@ export interface ICompletionToolOptions {
 	readonly recordsDir: string;
 	/** Fallback agent identity when the caller does not pass `agent`. */
 	readonly defaultAgent?: string;
+	/**
+	 * Absolute workspace root, used as the PHYSICAL containment root for
+	 * record writes (x00544 S3). Optional so older hosts keep working;
+	 * without it the store falls back to `recordsDir`.
+	 */
+	readonly workspaceRoot?: string;
 }
 
 const recordSchema = z.object({
@@ -50,13 +56,17 @@ const errorMessage = (error: unknown): string =>
 export const buildReportCompleteRegistration = (
 	options: ICompletionToolOptions,
 ): IToolRegistration => {
-	const store = createCompletionStore(options.recordsDir);
+	const store = createCompletionStore(
+		options.recordsDir,
+		options.workspaceRoot,
+	);
 	return {
 		id: 'report_complete',
 		summary:
 			'Declare the original task fully done and reviewed; records it durably and pushes a notification so the human knows the agent is idle awaiting explicit instruction.',
 		tags: ['coordination', 'notification'],
 		effects: ['write'],
+		writeRoot: 'host-state',
 		register: async (server) => {
 			server.registerTool(
 				`${options.namespacePrefix}_report_complete`,
@@ -121,7 +131,10 @@ export const buildReportCompleteRegistration = (
 export const buildStatusRegistration = (
 	options: ICompletionToolOptions,
 ): IToolRegistration => {
-	const store = createCompletionStore(options.recordsDir);
+	const store = createCompletionStore(
+		options.recordsDir,
+		options.workspaceRoot,
+	);
 	return {
 		id: 'status',
 		summary:
@@ -177,13 +190,17 @@ export const buildStatusRegistration = (
 export const buildClearRegistration = (
 	options: ICompletionToolOptions,
 ): IToolRegistration => {
-	const store = createCompletionStore(options.recordsDir);
+	const store = createCompletionStore(
+		options.recordsDir,
+		options.workspaceRoot,
+	);
 	return {
 		id: 'clear',
 		summary:
 			'Delete a task-completion record by taskId (the operator acknowledges the completion and clears it from the idle list).',
 		tags: ['coordination'],
 		effects: ['write', 'destructive'],
+		writeRoot: 'host-state',
 		register: async (server) => {
 			server.registerTool(
 				`${options.namespacePrefix}_clear`,

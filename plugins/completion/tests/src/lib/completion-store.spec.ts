@@ -1,4 +1,12 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -119,6 +127,32 @@ describe('completion store', () => {
 			JSON.stringify({ taskId: 1 }),
 		);
 		expect(await store.list()).toEqual([]);
+	});
+
+	/**
+	 * x00544 S3. The record file name is sanitised, so no LEXICAL
+	 * traversal can leave `recordsDir` — but a records dir that is a
+	 * symlink into another tree still names that tree, and only realpath
+	 * can see it. The guard sits immediately before the write.
+	 */
+	it('refuses to upsert through a records dir symlinked out of its root', async () => {
+		const parent = mkdtempSync(join(tmpdir(), 'completion-escape-'));
+		const root = join(parent, 'root');
+		const outside = join(parent, 'outside');
+		mkdirSync(root, { recursive: true });
+		mkdirSync(outside, { recursive: true });
+		symlinkSync(outside, join(root, 'linked'), 'dir');
+
+		try {
+			const store = createCompletionStore(join(root, 'linked'), root);
+			await expect(
+				store.upsert(record({ taskId: 't1' })),
+			).rejects.toThrow(/outside the records dir/);
+			// Nothing may have landed in the outside tree.
+			expect(readdirSync(outside)).toEqual([]);
+		} finally {
+			rmSync(parent, { recursive: true, force: true });
+		}
 	});
 
 	it('remove deletes the record and is a no-op for unknown ids', async () => {

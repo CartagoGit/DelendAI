@@ -38,6 +38,7 @@ import {
 	type Stats,
 } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
+import { readRegularFile } from '../lib/read-text-if-present';
 
 import { scanLegacyIdentity } from '@delendai/core/public';
 
@@ -126,6 +127,10 @@ const SKIP_PATHS = [
 	// artefacts on disk, not references to the product, and rewriting
 	// them would point the baseline at files that do not exist.
 	'proposal-cited-commits.baseline',
+	// The test-zone read map lists every root file a zone read, which
+	// includes the proposals, and so the file names of pre-rebrand audits.
+	// Same category as the two baselines above.
+	'zone-reads.generated.json',
 	'/legacy/',
 	// The migration script documents both names by design — exclude itself
 	// and its spec so the post-migration sweep does not flag the canonical
@@ -142,6 +147,24 @@ const SKIP_PATHS = [
 // They are not brand leaks in the current product surface; they are the
 // compatibility and migration corpus that teaches DelendAI how to rewrite
 // a legacy workspace safely.
+//
+// ## Read this before adding a file here, and before running the sweep
+//
+// This list is the difference between a stale reference and a PAYLOAD.
+// Everywhere else in the repository `mcp-vertex` is a leftover to be
+// rewritten; here it is the thing being migrated FROM, and rewriting it
+// destroys the migration.
+//
+// That has already happened once. A sweep rewrote the migrator's own
+// rename table to read `from: 'delendai.config.json', to:
+// 'delendai.config.json'` — source identical to destination — so the
+// migrator detected the NEW name, planned a rename of a path onto
+// itself, and reported `migrated:` on every boot of every adopted
+// project while a real `mcp-vertex` workspace went untouched. It shipped
+// that way from the commit that introduced it, and the specs did not
+// catch it because the sweep had rewritten their fixtures too.
+//
+// So: a file lands here when the old name is what it is ABOUT.
 const INTENTIONAL_LEGACY_PATHS = [
 	'packages/cli/src/contracts/constants/bridge.constant.ts',
 	'packages/cli/src/lib/bridge/',
@@ -151,6 +174,11 @@ const INTENTIONAL_LEGACY_PATHS = [
 	'packages/core/dist/lib/contracts/constants/legacy-identity.constant.d.ts',
 	'packages/core/dist/lib/workspace-migration/',
 	'packages/core/tests/src/lib/workspace-migration/',
+	// Proves that `delendai guard` does NOT migrate: git holds its locks
+	// while a hook runs, so a migration there writes to the workspace
+	// mid-commit. The fixture has to be a genuine legacy workspace, which
+	// means the old spelling is the assertion.
+	'packages/cli/src/index.spec.ts',
 	'packages/test-kit/src/lib/fixtures/legacy-workspace/',
 	'packages/test-kit/dist/',
 	'build/packages/cli/',
@@ -291,12 +319,9 @@ const findFilesWith = (
 				const rel = relative(SCAN_ROOT, abs);
 				if (SKIP_PATHS.some((skip) => rel.includes(skip))) continue;
 				if (isIntentionalLegacyPath(rel)) continue;
-				let content: string;
-				try {
-					content = readFileSync(abs, 'utf8');
-				} catch {
-					continue;
-				}
+				// Read through the descriptor it was checked on (no symlink).
+				const content = readRegularFile(abs);
+				if (content === undefined) continue;
 				if (content.includes(needle)) matches.push(rel);
 			}
 		}

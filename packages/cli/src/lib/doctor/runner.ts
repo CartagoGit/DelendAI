@@ -10,6 +10,11 @@
  * reads files, never opens sockets, never throws (a misbehaving check
  * is reported as an `error` section, not propagated up).
  */
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
+import { safeListDirNames, safePathExists } from '@delendai/core/public';
+
 import {
 	checkGitStatus,
 	checkManifests,
@@ -60,40 +65,50 @@ export const defaultChecks: readonly DoctorCheck[] = [
 	checkNetworkDependentSurfaces,
 ];
 
-const realFs: IDoctorFs = {
-	fileExists: async (rel) => {
-		try {
-			const proc = Bun.spawn(['test', '-e', rel], { stdout: 'pipe' });
-			const exit = await proc.exited;
-			return exit === 0;
-		} catch {
-			return false;
-		}
-	},
+/**
+ * The filesystem, asked directly.
+ *
+ * `fileExists` spawned `test -e` and `listDirs` spawned `ls -1`, with the
+ * child's stderr inherited. Both already treat absence as an ANSWER — a
+ * missing directory returns `[]` — but `ls` printed
+ * `ls: cannot access 'plugins': No such file or directory` into the
+ * caller's terminal on its way to being handled. Run in a project that is
+ * not laid out like this repository, the doctor emitted four such lines
+ * before reporting a health score, and none of them was a finding.
+ *
+ * Two shells per check also made every probe a process, and `test`/`ls`
+ * are not a contract any host is obliged to provide.
+ *
+ * `safeListDirNames` is this repository's one answer to "list a
+ * directory, tolerating absence"; using it means the doctor cannot
+ * disagree with the rest of the codebase about what a missing directory
+ * means.
+ */
+/**
+ * The filesystem the doctor uses when the caller injects none.
+ *
+ * Exported so it can be driven directly: it is the seam that decides
+ * what "missing" means, and it used to answer by spawning `test -e` and
+ * `ls -1` with their stderr inherited.
+ */
+export const realFs: IDoctorFs = {
+	// `test -e` answered for a directory as well as a file, and the checks
+	// rely on that; `Bun.file(...).exists()` does not, so the helper has to
+	// be the one that stats. Paths arrive relative to the process, exactly
+	// as the shells resolved them.
+	fileExists: async (rel) => (await safePathExists(resolve(rel))).exists,
+	// `node:fs`, like the other two: `Bun.file` is only defined when the
+	// runtime is bun, so this answered `undefined` for every readable file
+	// under any other host — including the test runner, which is how the
+	// gap showed up at all.
 	readFile: async (rel) => {
 		try {
-			const file = Bun.file(rel);
-			return await file.text();
+			return await readFile(resolve(rel), 'utf8');
 		} catch {
 			return undefined;
 		}
 	},
-	listDirs: async (rel) => {
-		try {
-			const proc = Bun.spawn(['ls', '-1', rel], { stdout: 'pipe' });
-			const exit = await proc.exited;
-			if (exit !== 0) return [];
-			const stdout = proc.stdout;
-			if (stdout === undefined || typeof stdout === 'number') return [];
-			const out = await new Response(stdout).text();
-			return out
-				.split('\n')
-				.map((entry) => entry.trim())
-				.filter((entry) => entry.length > 0);
-		} catch {
-			return [];
-		}
-	},
+	listDirs: async (rel) => (await safeListDirNames(resolve(rel))).names,
 };
 
 /**

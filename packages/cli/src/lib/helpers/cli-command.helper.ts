@@ -33,6 +33,17 @@
  *     dependency on the call sites.
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
+import { isRecord, scalarArg } from '@delendai/core/cli';
+
+export { isRecord, scalarArg };
+import {
+	type IResolvedCapability,
+	isUnexposedHere,
+	requalify,
+	resolverFor,
+	serverPrefix,
+	unwrapResolved,
+} from './tool-request.service';
 import type {
 	ICliCommandContext,
 	ICliCommandResult,
@@ -44,39 +55,38 @@ export const data = (
 	code: ICliCommandResult['code'] = EXIT_CODE.OK,
 ): ICliCommandResult => ({ code, data: value });
 
-/**
- * Read a `--name=value` (inline) or `--name value` (spaced) scalar flag.
- * Returns `undefined` when the flag is absent.
- */
-export const scalarArg = (
-	args: readonly string[],
-	name: string,
-): string | undefined => {
-	const inline = args.find((arg) => arg.startsWith(`--${name}=`));
-	if (inline !== undefined) return inline.slice(name.length + 3);
-	const index = args.indexOf(`--${name}`);
-	return index >= 0 ? args[index + 1] : undefined;
-};
-
 /** True when a boolean `--name` flag is present. */
 export const hasFlag = (args: readonly string[], name: string): boolean =>
 	args.includes(`--${name}`);
 
-/** Delegate to a registered MCP tool through the CLI transport. */
-export const request = <TOut>(
+/**
+ * Delegate to a registered MCP tool through the CLI transport.
+ *
+ * A tool the managed surface keeps hidden is not exposed to `tools/call`,
+ * and every CLI command whose tool is hidden used to fail with
+ * `returned an error` and no cause. The direct call stays first — a
+ * visible tool costs one round trip — and a `not found` means "this one
+ * lives behind the resolver", which is what the resolver is for.
+ */
+export const request = async <TOut>(
 	ctx: ICliCommandContext,
 	tool: string,
 	args: object = {},
-): Promise<TOut> => ctx.request<TOut>(tool, args);
-
-/**
- * Type guard for `Record<string, unknown>`.
- *
- * Used by registry helpers that project `unknown` payloads from MCP
- * tools (e.g. `scaffoldFilesOf` reads a `scaffold` tool result and
- * needs to walk the `files` array). Pulled out of `registry.ts` so
- * every CLI surface that walks an arbitrary `unknown` shape shares
- * one definition.
- */
-export const isRecord = (value: unknown): value is Record<string, unknown> =>
-	value !== null && typeof value === 'object' && !Array.isArray(value);
+): Promise<TOut> => {
+	try {
+		return await ctx.request<TOut>(tool, args);
+	} catch (error) {
+		if (!isUnexposedHere(error)) throw error;
+		// The namespace comes from the server's own surface, not from the
+		// name this caller happened to write: a project that renamed its
+		// namespace has a server whose tools no call site can spell.
+		const prefix = await serverPrefix(ctx);
+		if (prefix === undefined) throw error;
+		const qualifiedName = requalify(tool, prefix);
+		const resolved = await ctx.request<IResolvedCapability>(
+			resolverFor(prefix),
+			{ qualifiedName, args },
+		);
+		return unwrapResolved<TOut>(qualifiedName, resolved);
+	}
+};

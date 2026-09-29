@@ -17,6 +17,8 @@
 
 import { z } from 'zod';
 
+import { PUBLICATION_GRANULARITIES } from '../contracts/constants/publication-granularity.constant';
+
 const strategy = () => z.string().min(1).optional();
 const wholeNumber = () => z.number().int().nonnegative().optional();
 
@@ -38,8 +40,21 @@ const wholeNumber = () => z.number().int().nonnegative().optional();
 export const DEVELOPMENT_CONFIG_SCHEMA = z
 	.object({
 		profile: z.string().min(1).optional(),
+		/**
+		 * What the server does about the git hooks that enforce this
+		 * policy: install or update them on start (the default), only
+		 * report whether they are there, or leave the repository alone.
+		 */
+		guardHooks: z.enum(['install', 'report', 'off']).optional(),
+		workRefs: z
+			.object({
+				visibility: z.enum(['visible', 'hidden']).optional(),
+			})
+			.strict()
+			.optional(),
 		branches: z
 			.object({
+				namespacePrefix: z.string().optional(),
 				integration: z.string().min(1).optional(),
 				publicationRefPrefix: z.string().optional(),
 				foreignRefPrefixes: z.array(z.string()).optional(),
@@ -75,6 +90,21 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 				requiredChecks: z.array(z.string().min(1)).optional(),
 				requireLatestIntegration: z.boolean().optional(),
 				mergeGreenProgressContinuously: z.boolean().optional(),
+				publication: z
+					.object({
+						granularity: z
+							.enum(PUBLICATION_GRANULARITIES)
+							.optional(),
+						adaptive: z
+							.object({
+								maxSlices: wholeNumber(),
+								maxChangedLines: wholeNumber(),
+							})
+							.strict()
+							.optional(),
+					})
+					.strict()
+					.optional(),
 				requiredApprovals: wholeNumber(),
 				releaseRequiredApprovals: wholeNumber(),
 				releaseRequiredChecks: z.array(z.string().min(1)).optional(),

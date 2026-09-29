@@ -1,5 +1,6 @@
 import type { IHelpTranslation } from '../interfaces/help-translation.interface';
 
+import { REVIEW_COMMAND } from './review-command.constant';
 export type { IHelpTranslation };
 
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
@@ -155,6 +156,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Release an orphan task lock (only with an agent-dead event).',
 	'proposals review':
 		'Peer-review a slice: submit/approve/request_changes/status.',
+	'proposals review-queue':
+		'The proposals waiting in review, oldest first, with what each slice needs from a reviewer.',
 	'proposals sync': 'Regenerate the proposal index from the proposals tree.',
 	'proposals task-queue':
 		'Swarm coordination queue: enqueue/dequeue/subscribe/report.',
@@ -194,6 +197,10 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	bridge: 'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
 	migrate:
 		'Run the transactional rebrand migration with explicit backup, validation, and rollback.',
+	guard: 'Refuse the git operations the project development policy forbids (called from git hooks).',
+	repair: 'List and record the human decisions that close startup repair tasks the reconciler may not close.',
+	work: 'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
+	review: REVIEW_COMMAND.summary,
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {

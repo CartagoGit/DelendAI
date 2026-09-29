@@ -31,8 +31,11 @@
  *   cleanly without needing a feature flag.
  */
 
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import { randomUUID } from 'node:crypto';
 import { access, mkdir, rm } from 'node:fs/promises';
+
+import { landedPath } from '../services/transition-landing.service';
 import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
@@ -40,6 +43,8 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
+	callerCheckout,
+	projectBranches,
 	safeRename,
 	toolError,
 	toolOk,
@@ -84,6 +89,8 @@ import {
 } from '../proposals/sync-proposal-registry';
 import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
+import { prepareReviewEntry } from '../services/review-entry.service';
+import { resolveIntegrationCertificationEvidence } from '../services/integration-certification-evidence.service';
 import type { IGitRunner } from '../shared/git-runner';
 import { rewriteStaleProposalSelfPaths } from '../proposals/rewrite-stale-self-paths';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
@@ -104,6 +111,8 @@ import {
 	type IValidateEvidence,
 } from '../services/transition-evidence';
 import { guardTransitionToDone } from '../services/proposal-completeness';
+import { openReviewRounds } from '../services/review-handoff';
+import { createIndexFreeGitRunner } from '../shared/index-free-git-runner';
 import {
 	alreadyClosedOutcome,
 	closedOutcome,
@@ -115,6 +124,7 @@ import {
 } from '../services/lifecycle-outcome';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
 import { VALIDATE_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
+import { unapprovedSlices } from '../shared/independent-approval';
 import {
 	PROPOSAL_TRANSITION_INPUT_SCHEMA,
 	type IProposalTransitionArgs,
@@ -208,6 +218,12 @@ export interface IProposalTransitionToolOptions {
 	readonly indexPathAbs?: string;
 	/** Injectable for tests; defaults to a real `git mv` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
+	/**
+	 * Move files without staging them (x00651): set when the project's
+	 * work reaches integration through work refs, where the checkout's
+	 * index belongs to nobody.
+	 */
+	readonly indexFreeMoves?: boolean;
 	/** Absolute path to the append-only peer-review journal. */
 	readonly peerReviewLogPathAbs?: string;
 	/**
@@ -217,6 +233,8 @@ export interface IProposalTransitionToolOptions {
 	 * `proposals.options.requirePeerReview: false`.
 	 */
 	readonly requirePeerReview?: boolean;
+	/** What makes a reviewer independent (x00718); `model` by default. */
+	readonly reviewIndependence?: IReviewIndependence;
 	/**
 	 * When true (default), `→ review` and `→ done` require a passing
 	 * `bun run validate` from the last 24h, journalled to
@@ -241,27 +259,10 @@ export interface IProposalTransitionToolOptions {
  * The new gate reads peer-review.jsonl first, but markdown approvals still
  * matter for older diagnostics and for transitional specs.
  */
-export const hasIndependentPeerApproval = (markdown: string): boolean => {
-	// Both spellings are in active use across the corpus — 237 documents
-	// write `- review-implementer:` and 94 write `- **review-implementer**:`
-	// — and the writers never agreed. Reading only the unbolded form made
-	// every review record in those 94 invisible to this check, so a
-	// genuinely peer-approved proposal was refused for lack of the
-	// approval sitting in its own document.
-	const implementers = [
-		...markdown.matchAll(
-			/^[-*]\s*\*{0,2}review-implementer\*{0,2}:\s*(\S+)/gim,
-		),
-	].map((m) => (m[1] ?? '').toLowerCase());
-	const approves = [
-		...markdown.matchAll(
-			/^[-*]\s*\*{0,2}review-log\*{0,2}:\s*approved\s+by\s+(\S+)/gim,
-		),
-	].map((m) => (m[1] ?? '').toLowerCase());
-	if (approves.length === 0) return false;
-	if (implementers.length === 0) return true;
-	return approves.some((agent) => !implementers.includes(agent));
-};
+export const hasIndependentPeerApproval = (
+	markdown: string,
+	independence: IReviewIndependence = 'model',
+): boolean => unapprovedSlices(markdown, independence).length === 0;
 
 const isKnownStatus = (value: string): value is IProposalStatus =>
 	value in PROPOSAL_STATUSES;
@@ -732,12 +733,62 @@ const hasExactCiCommitEvidence = (raw: string): boolean => {
 	return readProposalCiEvidenceCommit(raw) === currentSha;
 };
 
+/** Certification evidence for the commits the proposal shipped in. */
+const certifiedDelivery = async (
+	raw: string,
+	workspaceRoot: string,
+	gitRunner: IGitRunner | undefined,
+): Promise<IValidateEvidence | null> => {
+	const yamlBlock = extractYamlBlock(raw);
+	if (yamlBlock === null) return null;
+	const shipped = guardShippedInPresent(
+		parseFrontmatterBlock(yamlBlock) as Record<string, unknown>,
+	);
+	if (!shipped.ok) return null;
+	const git = gitRunner ?? createGitRunner(workspaceRoot);
+	// The same ref the owner machine certifies: the remote-tracking tip.
+	const integration = (await projectBranches(workspaceRoot)).integration;
+	const tip = await git([
+		'rev-parse',
+		'--verify',
+		'--quiet',
+		`refs/remotes/origin/${integration}`,
+	]);
+	return resolveIntegrationCertificationEvidence({
+		workspaceRoot,
+		shas: shipped.shas,
+		git,
+		integrationTip: tip.ok ? tip.output.trim() || undefined : undefined,
+	});
+};
+
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
-	options: IProposalTransitionToolOptions,
+	serverOptions: IProposalTransitionToolOptions,
 ) => {
 	const rejection = validateTransitionArgs(args);
 	if (rejection !== null) return rejection;
+	// The move belongs in the caller's working tree, not in the
+	// one the server was started from. Everything below reads `options`,
+	// so resolving the checkout here is the only place that has to know.
+	const forCheckout = callerCheckout.writeRoot({
+		root: 'caller-checkout',
+		serverRoot: serverOptions.workspaceRoot,
+		requested: args.checkout,
+	});
+	if (!forCheckout.ok) {
+		return toolError(
+			forCheckout.refusal,
+			'Pass the absolute path of a working tree of this repository, or omit `checkout` to write in the server\u2019s own root.',
+		);
+	}
+	const options =
+		forCheckout.source === 'request'
+			? callerCheckout.scopePaths(serverOptions, forCheckout.root, [
+					'proposalsDirAbs',
+					'indexPathAbs',
+				])
+			: serverOptions;
 	// After `validateTransitionArgs` succeeded, `args.to` is one of
 	// the 7 known statuses. The `as IProposalStatus` cast is the
 	// explicit narrow — TypeScript cannot infer the type narrowing
@@ -1035,6 +1086,26 @@ export const runProposalTransition = async (
 		}
 	}
 
+	// A proposal enters review only in a state a reviewer can act on: its
+	// declared files exist, and each slice names the commit that delivered
+	// it, recorded now from the branch being handed over (x00745).
+	if (finalTo === 'review' && from !== 'done' && args.force !== true) {
+		const branches = await projectBranches(options.workspaceRoot);
+		const entry = await prepareReviewEntry({
+			markdown: raw,
+			workspaceRoot: options.workspaceRoot,
+			run: options.gitRunner ?? createGitRunner(options.workspaceRoot),
+			integration: branches.integration,
+			refShape: branches,
+		});
+		if (!entry.ok) {
+			return buildCodeError(entry.code, entry.reason, entry.nextAction);
+		}
+		if (entry.recorded.length > 0) {
+			await writeFileAtomic(found.absPath, entry.markdown);
+		}
+	}
+
 	if (
 		!isZeroWorkShortcut &&
 		args.force !== true &&
@@ -1042,11 +1113,19 @@ export const runProposalTransition = async (
 		options.requireValidateEvidence !== false &&
 		finalTo === 'done'
 	) {
-		const validateEvidence = await resolveRecentValidateEvidence({
-			workspaceRoot: options.workspaceRoot,
-			validateEvidence: args.validateEvidence,
-			deps: options.validateEvidenceDeps,
-		});
+		// A green local validate, or the integration branch's certified
+		// full run containing every commit the proposal shipped in.
+		const validateEvidence =
+			(await resolveRecentValidateEvidence({
+				workspaceRoot: options.workspaceRoot,
+				validateEvidence: args.validateEvidence,
+				deps: options.validateEvidenceDeps,
+			})) ??
+			(await certifiedDelivery(
+				raw,
+				options.workspaceRoot,
+				options.gitRunner,
+			));
 		if (validateEvidence === null) {
 			const envelope = buildValidateRequiredEnvelope(
 				await diagnoseValidateEvidence({
@@ -1114,6 +1193,37 @@ export const runProposalTransition = async (
 	// the host disabled requirePeerReview or the caller passed force:true.
 	// a00069 S11: force bypass is audited (reason already required + non-empty).
 	const requirePeer = options.requirePeerReview !== false;
+	// Whatever path leads to `done` and whatever flag is passed, every
+	// finished slice carries an independent approval (x00718). The gate
+	// below judges `review → done`; `force` used to skip it, and a jump to
+	// `done` from any other status never met it. A plan closes when its
+	// proposals have (`close_plan` sets `skipDfaForPlanClosure`).
+	if (
+		requirePeer &&
+		finalTo === 'done' &&
+		args.skipDfaForPlanClosure !== true &&
+		(args.force === true || from !== 'review')
+	) {
+		const unapproved = unapprovedSlices(raw, options.reviewIndependence);
+		if (unapproved.length > 0) {
+			const envelope = {
+				ok: false as const,
+				error: {
+					code: 'peer-review-missing',
+					blockerType: 'missing-peer-review',
+					reason: `peer-review required before ${args.id} reaches done: ${unapproved.join('; ')} ha${unapproved.length === 1 ? 's' : 've'} no approval by someone other than the implementer. No flag skips this.`,
+					nextAction: `A different agent approves each finished slice with ${options.namespacePrefix}_proposal_review { action: "approve" } first. Closing without a review is the owner's decision, made by merging by hand.`,
+				},
+			};
+			return {
+				content: [
+					{ type: 'text' as const, text: JSON.stringify(envelope) },
+				],
+				structuredContent: envelope,
+				isError: true,
+			};
+		}
+	}
 	if (requirePeer && from === 'review' && finalTo === 'done') {
 		if (args.force === true) {
 			recordPeerReviewBypass({
@@ -1150,8 +1260,12 @@ export const runProposalTransition = async (
 					? await hasIndependentApprovalSinceLastReview(
 							options.peerReviewLogPathAbs,
 							args.id,
+							options.reviewIndependence,
 						)
-					: hasIndependentPeerApproval(await readProposalMarkdown());
+					: hasIndependentPeerApproval(
+							await readProposalMarkdown(),
+							options.reviewIndependence,
+						);
 			if (!approved) {
 				const envelope = {
 					ok: false as const,
@@ -1164,7 +1278,7 @@ export const runProposalTransition = async (
 						// to "approve" gets `missing-submit-identity` and
 						// cannot fix it — submitting under its own name would
 						// make it the implementer and bar it from approving.
-						nextAction: `Open a review round, then have a DIFFERENT agent approve it: ${options.namespacePrefix}_proposal_review { action: "submit", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<implementer>", note: "<what was built>" }, then ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>", note: "<what was checked>" }. Then ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }. Emergency bypass: force:true (host-approved only).`,
+						nextAction: `Open a review round, then have a DIFFERENT agent approve it: ${options.namespacePrefix}_proposal_review { action: "submit", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<implementer>", note: "<what was built>" }, then ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>", note: "<what was checked>" }. Then ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }.`,
 					},
 				};
 				return {
@@ -1249,7 +1363,67 @@ export const runProposalTransition = async (
 			from,
 		}).catch(() => undefined);
 	}
-	return result;
+	// The sync after the move may have renamed the file to its canonical
+	// slug (x00676): everything after this point, and the answer, use the
+	// file that exists.
+	const reported = movedPathOf(result);
+	const landed =
+		result.isError === true || reported === undefined
+			? reported
+			: await landedPath(options.proposalsDirAbs, reported, args.id);
+	// x00643: the hand-off is the one moment the implementer is certainly
+	// present, so it opens the rounds the reviewer will act on.
+	if (
+		result.isError !== true &&
+		finalTo === 'review' &&
+		options.requirePeerReview !== false &&
+		args.agent !== undefined &&
+		landed !== undefined
+	) {
+		await openReviewRounds({
+			docPathAbs: join(options.proposalsDirAbs, landed),
+			proposalId: args.id,
+			implementer: args.agent,
+			workspaceRoot: options.workspaceRoot,
+		});
+	}
+	return landed === reported || landed === undefined
+		? result
+		: withLandedPath(result, landed);
+};
+
+/** The same answer, reporting where the document actually is. */
+const withLandedPath = <TResult extends object>(
+	result: TResult,
+	landed: string,
+): TResult => {
+	if (!('structuredContent' in result)) return result;
+	const structured = result.structuredContent as Record<string, unknown>;
+	const entity = structured.entity as Record<string, unknown> | undefined;
+	const patched = {
+		...structured,
+		...(entity === undefined
+			? {}
+			: { entity: { ...entity, path: landed } }),
+		...('movedTo' in structured ? { movedTo: landed } : {}),
+	};
+	return {
+		...result,
+		structuredContent: patched,
+		content: [{ type: 'text', text: JSON.stringify(patched) }],
+	};
+};
+
+/** Where a successful transition left the document, relative to the tree. */
+const movedPathOf = (result: object): string | undefined => {
+	const structured =
+		'structuredContent' in result
+			? (result.structuredContent as
+					| { readonly entity?: { readonly path?: unknown } }
+					| undefined)
+			: undefined;
+	const path = structured?.entity?.path;
+	return typeof path === 'string' && path.length > 0 ? path : undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -1519,8 +1693,12 @@ const applyTransition = async (
 	options: IProposalTransitionToolOptions,
 	depId?: string,
 ) => {
-	const gitRunner =
+	const baseRunner =
 		options.gitRunner ?? createGitRunner(options.workspaceRoot);
+	const gitRunner =
+		options.indexFreeMoves === true
+			? createIndexFreeGitRunner(baseRunner)
+			: baseRunner;
 	const newFolder = await resolveTargetFolder(
 		args.to,
 		found,
@@ -1720,7 +1898,7 @@ const applyTransition = async (
 		if (args.to === 'blocked' && depId) {
 			updated = setFrontmatterField(updated, 'blocked-by', `[${depId}]`);
 		}
-		// a00069 S3: rewrite stale self-paths in `**Files**` / `files:` so
+		// Rewrite stale self-paths in `**Files**` / `files:` so
 		// slice plans do not keep pointing at the pre-transition location
 		// (e.g. ready/… after a move to done/feats/…).
 		if (moved) {
@@ -1903,6 +2081,7 @@ export const buildProposalTransitionRegistration = (
 ): IToolRegistration => ({
 	id: 'proposal_transition',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Move a proposal to a new status; validated, folder+frontmatter kept in sync.',
 	tags: ['work'],

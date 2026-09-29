@@ -42,8 +42,7 @@ delendai_agent_catalog { mode: "compact" }
 - `mode: "compact"` (default) returns the actionable proposal list plus
   counts per status, plus lean skill ids. Tool names are NOT repeated
   here — `delendai_overview { compact: true }` already lists them all,
-  grouped by plugin. Measured ~2.3 KB against this repo (was 14 KB
-  before the orientation projection).
+  grouped by plugin. Measured ~2.3 KB against this repo.
 - `mode: "full"` returns the whole catalog.
 - `section: "tools" | "skills" | "proposals"` narrows to one slice.
 - `query: "..."` filters by id / name / tag / title.
@@ -108,17 +107,22 @@ the equivalent and equally cheap.
   `proposals_continue_proposal { mode: "auto" }` or by reading
   `proposals_compact_status` — do NOT re-call `auto_work` until you
   have made progress (a slice closed, a lock released, a file edited).
-- **Re-read discipline.** Do not re-read a file whose digest hasn't
-  changed. `round_context` and the docs tools expose digests for exactly
-  this. Re-reading unchanged content is the #1 token waste.
+- **Read what you need, once.** Filter output (`grep … | head`,
+  `--jq`), read a line range instead of the whole file, take the one
+  failing assertion from a CI log, keep commit bodies short, and do not
+  re-read a file you just wrote or re-run a check that passed while
+  nothing has changed since. Your own
+  transcript is the #1 token waste.
+
+- **`create_proposal` publishes it.** If it reports
+  `published: false`, do its `nextAction`. Never move another's.
 
 - **Archived proposals are frozen.** `legacy/closed/<kind>/` is the
   reaper's destination (f00076). Reaped proposals stay indexed
   (`archived: true`), keep `status: done`, and must not be transitioned,
   edited, or have slice statuses changed — `lint:closed-frozen-guard`
   enforces it in `bun run validate`. Reaper:
-  `bun run archive:proposals:reap` (dry-run; `--apply` on
-  `tools/scripts/lint/reap-legacy-proposals.script.ts` moves files).
+  `bun run archive:proposals:reap` (dry-run; `--apply` moves files).
 
 - **Proposal filenames follow one canonical shape — no exceptions.**
   `<prefix><NNNNN>-<kebab-slug>.md` where `<prefix>` is the kind's
@@ -282,12 +286,10 @@ interactions.
   uncommitted waiting for a reminder.
 
 - **Delegated agents follow the configured workspace policy.** With
-  `agentWorktree: false` (the default), agents edit the shared checkout and
-  never move it (§6); `commit-policy` owns the automatic commit and push
-  after each completed slice. With `agentWorktree: true`,
-  `proposals_delegate` creates the branch and worktree before claiming files
-  and returns both `worktree.path` and `cwd`; the host must launch or continue
-  the delegated agent in that directory. The host must never infer a different
+  `agentWorktree: false`, agents edit the shared checkout and never move
+  it (§6). With `agentWorktree: true`, `proposals_delegate` creates the
+  worktree before claiming files and returns `worktree.path` and `cwd`;
+  the host launches the agent there. A host never infers a different
   workspace policy from a tool handoff.
 - Touched a tool? Kept its `outputSchema`. Added a tool? Added its
   output to the catalog generator (if it isn't picked up automatically).
@@ -323,20 +325,24 @@ interactions.
   violations (x00080). The check is a lefthook-installed TypeScript hook
   (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
   per rule #10 below.
-  - **Agents own work, not branches.** The shared checkout MUST stay on
-    `development.branches.integration` — read it from the policy, never
-    assume `develop`. No `switch`, no `checkout -b`. Isolation comes from
-    the WIP engine (private index, claimed paths only, stable HEAD), not
-    from a branch. A ref carrying a pull request is built from a
-    checkpoint, is publication only, and is never checked out.
-    See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md); values
-    live in the `development` block of `delendai.config.json`.
+- **Agents own work, not branches — git enforces it.** The shared
+  checkout stays on `development.branches.integration` (read the policy;
+  never assume `develop`). No `switch`, no `checkout -b`: a commit from
+  anywhere else there is REFUSED, and the move is reported at once.
+  `delendai work checkpoint --proposal --slice --paths --message` writes
+  your ref from the working tree (HEAD never moves; other agents' dirty
+  files are neither captured nor in the way), `delendai work enter` gives
+  you your own worktree instead — work and commit there, not in an
+  anonymous worktree: at the policy's checkpoint cadence your commits
+  appear on your work ref on the remote — and `delendai work status` says
+  where the checkout stands. A publication ref is never checked out: publish with
+  `forge:publish --from-work-branch` (`lint:ref-lifecycle` fails on
+  leftovers). See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md).
 - **No orphaned branches or stashes — always reconcile (this repo).**
-  Before closing any session run `bun run reclaim:orphans` and resolve
-  every orphan: merge into `develop` if valuable (fixing it until it
-  works), delete if not. `--apply` removes only lossless branches
-  (`ahead === 0`); stashes and unique-commit branches are never
-  auto-deleted. Repo policy, not plugin behaviour.
+  Before closing a session run `bun run reclaim:orphans` and resolve
+  every orphan: merge it if valuable (fixing it until it works), delete
+  if not. `--apply` removes only lossless branches (`ahead === 0`);
+  stashes and unique-commit branches are never auto-deleted.
 - **Slice commits are causally bounded (f00417).** A slice commit is
   only valid if the staged paths are a subset of the **machine-resolved
   scope** at the moment the transition was emitted. The resolver
@@ -581,17 +587,3 @@ newcomer's attention before they re-litigate a closed decision.
 
 - [ADR 0007 — `@delendai/core/contracts` (subpath) vs a separate package](adr/0007-core-contracts-subpath-vs-package.md)
 - [ADR 0019 — Branch model: `develop` is the lab, `main` is release](adr/0019-branch-model-develop-lab-main-release.md)
-
-## Quantitative facts
-
-<!-- delendai:begin quantitative -->
-```
-Generated at: 2026-09-14T17:05:54.336Z
-
-Plugins: 57
-Tools: 245
-Test specs: 763 (≈6327 cases)
-Workspaces: 11 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 659 on disk (ready=35, done=624)
-```
-<!-- delendai:end quantitative -->

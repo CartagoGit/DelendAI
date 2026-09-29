@@ -146,3 +146,57 @@ describe('the refresher itself', () => {
 		expect(code).not.toContain("'.worktrees'");
 	});
 });
+
+describe('a shallow clone is not a conflict (x00578)', () => {
+	const ours = {
+		number: 1,
+		ref: 'delendai/pr/claude-opus-5/x1-S1-g1/t',
+		ours: true,
+		behind: 3,
+		conflicted: false,
+	};
+
+	it('reports a missing common ancestor as what it is, and how to fix it', () => {
+		// The message a person acts on. Reported as "does not merge
+		// trivially", it sent somebody to resolve a disagreement that did
+		// not exist — the clone was one commit deep.
+		const verdict = planRefresh({ ...ours, sharesHistory: false });
+		expect(verdict.action).toBe('report');
+		expect(verdict.reason).toContain('shares no history');
+		expect(verdict.reason).toContain('fetch-depth');
+		expect(verdict.reason).not.toContain("author's call");
+	});
+
+	it('answers the ancestor question before judging the content', () => {
+		// Even if something upstream called it conflicted, no common
+		// ancestor means the merge never got far enough to have an
+		// opinion about the content.
+		const verdict = planRefresh({
+			...ours,
+			conflicted: true,
+			sharesHistory: false,
+		});
+		expect(verdict.reason).toContain('shares no history');
+	});
+
+	it('still calls a real conflict the author’s call', () => {
+		const verdict = planRefresh({
+			...ours,
+			conflicted: true,
+			sharesHistory: true,
+		});
+		expect(verdict.action).toBe('report');
+		expect(verdict.reason).toContain("author's call");
+	});
+
+	it('refreshes a candidate that shares history and merges cleanly', () => {
+		const verdict = planRefresh({ ...ours, sharesHistory: true });
+		expect(verdict.action).toBe('refresh');
+	});
+
+	it('says nothing new about a clone that never answered the question', () => {
+		// `sharesHistory` is optional: an older caller that does not probe
+		// must behave exactly as before.
+		expect(planRefresh(ours).action).toBe('refresh');
+	});
+});

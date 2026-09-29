@@ -7,7 +7,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	summarizeFindings,
 	toolError,
 	toolJson,
@@ -98,7 +98,9 @@ export const buildPerfProfileRegistration = (
 			}) => {
 				let cwd = options.workspaceRootAbs;
 				if (args.cwd !== undefined) {
-					const contained = resolveWorkspaceContained(
+					// Physical: profiling a `cwd` reached through a symlink
+					// that leaves the workspace would run somewhere else.
+					const contained = await resolveExistingWorkspaceContained(
 						options.workspaceRootAbs,
 						args.cwd,
 					);

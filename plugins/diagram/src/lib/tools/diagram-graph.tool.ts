@@ -16,7 +16,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
 } from '@delendai/core/public';
@@ -162,10 +162,14 @@ export const buildDiagramGraphToolRegistrations = (
 						let runtimeDeps = moduleDeps;
 						let effectiveRoot = modulePackageRootAbs;
 						if (explicitRoot !== undefined && explicitRoot !== '') {
-							const contained = resolveWorkspaceContained(
-								options.workspaceRootAbs,
-								explicitRoot,
-							);
+							// Physical: a packageRoot reached through a
+							// symlink out of the workspace would graph
+							// another tree entirely.
+							const contained =
+								await resolveExistingWorkspaceContained(
+									options.workspaceRootAbs,
+									explicitRoot,
+								);
 							if (!contained.ok) {
 								return toolError(
 									`packageRoot "${explicitRoot}" is not allowed`,

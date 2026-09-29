@@ -41,6 +41,14 @@ on:
     # A queue tests the combination instead of the members, which is the
     # thing the requirement was always about.
     merge_group:
+    # A run on request, for a candidate no other event will build. A
+    # workflow token's push and pull request start no workflow at all, so
+    # the forward-sync that `forward-sync-release.yml` opens would sit with
+    # its required check absent for good; a dispatch is the one event such
+    # a token may start. The forge resolves a dispatch against the default
+    # branch's copy of this file, so it takes effect from the next
+    # promotion.
+    workflow_dispatch:
 
 # Pull requests may be superseded, but pushes to develop are never cancelled:
 # a cancelled required job is not evidence of a green branch.
@@ -52,6 +60,7 @@ jobs:
     lint-biome:
         name: lint-biome
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # A `uses: ./path` step can only be resolved once the repo holding
             # that path is on disk, and setup-bun-repo's own first internal step
@@ -75,6 +84,7 @@ jobs:
     lint-architecture:
         name: lint-architecture
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -93,6 +103,7 @@ jobs:
     lint-presets:
         name: lint-presets
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -123,6 +134,10 @@ jobs:
                   # only go down.)
                   bun run lint:core-contracts-library-safe
                   bun run lint:no-node-imports-in-contracts
+                  # q00019 S5: the state package's own purity lint existed and
+                  # passed, but nothing ran it, so a regression would land
+                  # silently. `state-engine-purity` covers persistence only.
+                  bun run lint:no-node-imports-in-state
                   bun run lint:no-core-public-types-in-client
                   bun run lint:no-build-imports-from-src
                   bun run lint:no-absolute-local-imports
@@ -138,6 +153,8 @@ jobs:
                   bun run lint:core-runtime-deps
                   bun run lint:plugin-cache-paths
                   bun run lint:tool-schema-shape
+                  bun run lint:compact-list-tools
+                  bun run lint:tool-ok-envelope
                   bun run lint:plugin-permissions-declared
                   bun run lint:capabilities
                   # Green again since #155 declared `@delendai/test-kit`
@@ -160,6 +177,7 @@ jobs:
     lint-docs:
         name: lint-docs
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -180,10 +198,12 @@ jobs:
                   bun run lint:skills
                   bun run lint:host-instructions
                   bun run lint:prompt-size
+                  bun run lint:docs-index
 
     lint-security:
         name: lint-security
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -191,6 +211,12 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # `candidate-delivers` runs `git diff base...head`, which
+                  # needs a common ancestor. The default depth-1 clone has
+                  # none, so the gate answered on a diff it could not
+                  # compute. Found by `lint:workflow-history-depth`.
+                  fetch-depth: '0'
 
             - name: Run security and hygiene lints
               # `lint:candidate-delivers` asks the FORGE how many files
@@ -302,6 +328,7 @@ jobs:
     lint-governance:
         name: lint-governance
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Full history: this job verifies that commits cited by proposals
             # actually exist. The default shallow checkout has none of them, so
@@ -316,6 +343,11 @@ jobs:
                   fetch-depth: '0'
 
             - name: Run governance and proposal lints
+              # The job's own read token: `closed-with-independent-approval`
+              # reads the pull request's labels as they are now, so the
+              # owner's reconcile label counts on a re-run (x00743).
+              env:
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   set -euo pipefail
                   bun run lint:proposals
@@ -340,15 +372,21 @@ jobs:
                   bun run lint:proposal-already-implemented
                   bun run lint:proposal-ready-to-close
                   bun run lint:closed-frozen-guard
+                  # x00696 — a close carries an independent approval.
+                  bun run lint:closed-with-independent-approval
                   bun run lint:user-markers
                   bun run lint:proposal-slice-completeness
                   bun run lint:commit-branch
                   bun run lint:push-to-develop
                   bun run lint:agent-branch-naming
+                  # f00644: a pull request is opened from a well-shaped
+                  # publication, whatever host opened it.
+                  bun run lint:pr-head-shape
 
     typecheck:
         name: typecheck
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -474,7 +512,7 @@ jobs:
                   {
                     printf 'zones='
                     bun tools/scripts/ci/test-zones.script.ts --matrix \
-                      --base=${{ github.event.pull_request.base.sha || github.event.before || '' }}
+                      --base=${{ github.event.pull_request.base.sha || '' }}
                   } >> "$GITHUB_OUTPUT"
 
     tests-zone:
@@ -485,6 +523,7 @@ jobs:
         name: 'tests: ${{ matrix.zone.name }}'
         needs: plan-tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         strategy:
             # One zone's failure must not cancel the others: the point is
             # to see every failure in one round, not the first one.
@@ -557,6 +596,27 @@ jobs:
                   CHANGED=""
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
+                    # ...unless the change touches something a module
+                    # graph cannot see. `--changed` selects a spec when
+                    # its IMPORTS reach a changed file, and several specs
+                    # here assert things about files they READ instead:
+                    # the workflows, `.gitattributes`, `lefthook.yml`.
+                    #
+                    # Measured: a change to this very workflow file
+                    # merged while breaking the spec that asserts the
+                    # workflow and its script agree, because no import
+                    # anywhere reaches a `.yml`. The filter was not
+                    # wrong; it was blind by construction, and the fix
+                    # is to stop filtering when the subject is one of
+                    # the things it cannot see.
+                    UNIMPORTABLE="$(git diff --name-only \
+                      "${{ github.event.pull_request.base.sha }}...HEAD" \
+                      -- '.github/**' '*.yml' '*.yaml' '.gitattributes' \
+                         '.gitignore' 'lefthook.yml' | head -1)"
+                    if [ -n "$UNIMPORTABLE" ]; then
+                      echo "zone: running unfiltered — the change touches ${UNIMPORTABLE}, which no module graph reaches."
+                      CHANGED=""
+                    fi
                   fi
                   # The blob name has to survive a zone name with a slash
                   # or a space in it (`core 1/2`), or the upload below
@@ -588,6 +648,7 @@ jobs:
     tests:
         name: tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         permissions:
             contents: read
             # Deleting this run's own shard blobs once they are merged.
@@ -687,6 +748,7 @@ jobs:
     quality-gate:
         name: quality-gate
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -706,6 +768,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['verify-runtime']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -733,6 +796,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['tokens-budget-real']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -750,6 +814,7 @@ jobs:
     manifests-check:
         name: manifests-check
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -769,6 +834,7 @@ jobs:
     generated-artifacts-check:
         name: generated-artifacts-check
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -792,6 +858,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['site']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -811,6 +878,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['pack-smoke']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -866,6 +934,7 @@ jobs:
     metrics-gate:
         name: metrics longitudinal regression gate (f00027)
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         needs: typecheck
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -916,6 +985,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['delendai-rebuild-digest']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout
               uses: actions/checkout@v7
@@ -939,6 +1009,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['sqlite-cutover-ready']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout
               uses: actions/checkout@v7
@@ -965,6 +1036,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['build-clean']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout
               uses: actions/checkout@v7
@@ -1022,6 +1094,7 @@ jobs:
             - develop-protection-live
             - ref-lifecycle
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # This job runs `bun`, so it needs a checkout (to have the scripts
             # on disk at all) and a Bun toolchain (to run them). It had neither
@@ -1088,12 +1161,20 @@ jobs:
     ref-lifecycle:
         name: ref-lifecycle
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@v7
 
+            # Full history: the guard now reads containment from the
+            # commits (`merge-base --is-ancestor`) instead of asking the
+            # forge once per ref. On a shallow clone it could not answer
+            # and would fall back to the API for every ref — silently
+            # restoring the rate-limit failure this replaced.
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
 
             # Read-only: it classifies refs and reports. Reaping a spent
             # ref is a separate, deliberate `--reap` that CI never passes.
@@ -1113,6 +1194,7 @@ jobs:
     develop-protection-live:
         name: develop-protection-live
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout (required to run the guard)
               uses: actions/checkout@v7
@@ -1176,3 +1258,38 @@ jobs:
                     exit 1
                   fi
                   bun tools/scripts/lint/branch-protection-guard.script.ts --live
+
+    # A certified integration branch releases the queue. The queue arms
+    # nothing until the integration branch's tip has a green full run
+    # (keep-the-queue-moving), and that run finishes long after the merge
+    # that started it — so without this hand-off a green certification
+    # woke nobody, and the next candidate waited for the hourly schedule,
+    # which runs main's copy of the workflow. A dispatch is the one event
+    # the workflow token may start another workflow with.
+    #
+    # Only a non-PR run, and whatever it concluded. A red certification
+    # wakes the queue too: the queue then looks for the candidate that
+    # repairs the branch and dispatches a full run on it, and that run,
+    # on a publication branch, wakes the queue again when it ends. Without
+    # it a red integration branch held every candidate, the fix included,
+    # until a person merged by hand. The queue always runs on the
+    # integration branch. A failed dispatch warns instead of failing:
+    # turning a green certification red because the queue could not be
+    # woken would block the very merge it tried to release.
+    release-the-queue:
+        name: release-the-queue
+        needs: [delendai-validate]
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/delendai/pr/'))) }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        permissions:
+            actions: write
+            contents: read
+        steps:
+            - name: Dispatch the queue on the integration branch
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh workflow run keep-the-queue-moving.yml \
+                    --ref develop --repo "${GITHUB_REPOSITORY}" \
+                    || echo "::warning::could not dispatch keep-the-queue-moving; the hourly schedule will pick it up"

@@ -44,6 +44,7 @@ export const buildHealthcheckProvidersRegistration = (
 	id: 'healthcheck_providers',
 	tags: ['orchestrator-runner', 'lazy', 'healthcheck'],
 	effects: ['spawn', 'write'],
+	writeRoot: 'host-state',
 	summary:
 		'Probe each configured provider CLI on PATH and report install/auth/model availability.',
 	descriptionKey: 'delendai_orchestrator-runner_healthcheck_providers',

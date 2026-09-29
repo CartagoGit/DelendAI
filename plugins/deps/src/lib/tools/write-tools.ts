@@ -4,7 +4,8 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import {
-	resolveWorkspaceContained,
+	callerCheckout,
+	resolveExistingWorkspaceContained,
 	SafeWorkspaceReader,
 	runCommand,
 	toolError,
@@ -219,7 +220,10 @@ export const packageRunScript = async (
 	}
 
 	const cwdRel = options.cwd ?? '.';
-	const contained = resolveWorkspaceContained(workspaceRootAbs, cwdRel);
+	const contained = await resolveExistingWorkspaceContained(
+		workspaceRootAbs,
+		cwdRel,
+	);
 	if (!contained.ok) {
 		return rejected(
 			contained.reason ?? `rejected: cwd "${cwdRel}" escapes workspace`,
@@ -264,6 +268,7 @@ export const buildDepsWriteToolRegistrations = (
 		{
 			id: 'package_install',
 			effects: ['write', 'spawn', 'network'],
+			writeRoot: 'caller-checkout',
 			summary:
 				'Install a dependency via bun/npm into package.json (opt-in, mutates the workspace).',
 			tags: ['deps', 'write'],
@@ -301,7 +306,9 @@ export const buildDepsWriteToolRegistrations = (
 						ecosystem?: IPackageEcosystem | undefined;
 					}) => {
 						const result = await packageInstall(
-							options.workspaceRootAbs,
+							callerCheckout.executionRootOr(
+								options.workspaceRootAbs,
+							),
 							{
 								name: args.name,
 								...(args.range !== undefined
@@ -326,6 +333,7 @@ export const buildDepsWriteToolRegistrations = (
 		{
 			id: 'package_run_script',
 			effects: ['write', 'spawn'],
+			writeRoot: 'caller-checkout',
 			summary:
 				'Run a package.json script via bun run (opt-in; the script itself may write/network).',
 			tags: ['deps', 'write'],
@@ -355,7 +363,9 @@ export const buildDepsWriteToolRegistrations = (
 						cwd?: string | undefined;
 					}) => {
 						const result = await packageRunScript(
-							options.workspaceRootAbs,
+							callerCheckout.executionRootOr(
+								options.workspaceRootAbs,
+							),
 							{
 								script: args.script,
 								...(args.args !== undefined

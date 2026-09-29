@@ -21,6 +21,7 @@ import type { IReportStore } from './lib/contracts/interfaces/report-store.inter
 import type { IFunnelCounterStore } from './lib/contracts/interfaces/funnel-counters.interface';
 import { registerInternalRuntimePaths } from './lib/frame-extractor.helper';
 import { createFunnelCounterStore } from './lib/funnel-counter-store.service';
+import { createInFlightReports } from './lib/in-flight-reports.service';
 import { buildErrorReportingKnowledge } from './lib/knowledge/error-reporting';
 import {
 	validateSafeReport,
@@ -429,24 +430,35 @@ export default definePlugin({
 			};
 		}
 
+		// The hooks fire and return; `dispose` waits for what they fired.
+		const inFlight = createInFlightReports();
 		return {
-			tools: [statusTool, diagnoseLogTool],
-			knowledge,
-			onToolCall: async (toolName, _args, result, error) => {
-				void reportObservedFailure(toolName, result, error);
+			registrations: {
+				tools: [statusTool, diagnoseLogTool],
+				knowledge,
+				onToolCall: async (toolName, _args, result, error) => {
+					inFlight.track(
+						reportObservedFailure(toolName, result, error),
+					);
+				},
+				onRegisterError: async (info) => {
+					inFlight.track(
+						reportLifecycleFailure(
+							`plugin:${info.pluginName}:register`,
+							info,
+						),
+					);
+				},
+				onHookError: async (info) => {
+					inFlight.track(
+						reportLifecycleFailure(
+							`plugin:${info.pluginName}:${info.hookName}`,
+							info,
+						),
+					);
+				},
 			},
-			onRegisterError: async (info) => {
-				void reportLifecycleFailure(
-					`plugin:${info.pluginName}:register`,
-					info,
-				);
-			},
-			onHookError: async (info) => {
-				void reportLifecycleFailure(
-					`plugin:${info.pluginName}:${info.hookName}`,
-					info,
-				);
-			},
+			dispose: () => inFlight.settle(),
 		};
 	},
 });

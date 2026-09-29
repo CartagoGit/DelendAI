@@ -1,19 +1,14 @@
 import { resolve } from 'node:path';
 
+import {
+	CONSUMED_GLOBAL_FLAGS,
+	GLOBAL_FLAGS_WITH_VALUE,
+} from '../contracts/constants/cli-global-flags.constant';
 import type {
 	ICliGlobalOptions,
 	IParsedCliInvocation,
 } from '../contracts/interfaces/cli-command.interface';
 
-const GLOBAL_FLAGS_WITH_VALUE = new Set([
-	'workspace',
-	'remote',
-	'format',
-	'lang',
-	'plugins',
-	'preset',
-	'config',
-]);
 const VALUE_FLAGS = GLOBAL_FLAGS_WITH_VALUE;
 // Fallback set of command groups whose names are two words. The real CLI
 // derives this from the live command registry (see `index.ts`) so every
@@ -69,6 +64,31 @@ const OPTIONS_FLAG_PREFIX = 'options-';
  */
 const UNSAFE_OPTION_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 
+/**
+ * Records one `--options-<plugin>=<key>=<value>` flag. Both levels are
+ * prototype-less objects, and an unsafe name is dropped here too, so no
+ * key typed on a command line can write to `Object.prototype`.
+ */
+const setExtraOption = (
+	extraOptions: Record<string, Record<string, unknown>>,
+	option: {
+		readonly pluginId: string;
+		readonly key: string;
+		readonly value: string;
+	},
+): void => {
+	if (
+		UNSAFE_OPTION_KEYS.has(option.pluginId) ||
+		UNSAFE_OPTION_KEYS.has(option.key)
+	) {
+		return;
+	}
+	const pluginOptions: Record<string, unknown> =
+		extraOptions[option.pluginId] ?? Object.create(null);
+	pluginOptions[option.key] = option.value;
+	extraOptions[option.pluginId] = pluginOptions;
+};
+
 const parseExtraOptionFlag = (
 	body: string,
 ): {
@@ -101,7 +121,10 @@ export const parseCliInvocation = (
 	twoPartCommands: ReadonlySet<string> = DEFAULT_TWO_PART_COMMANDS,
 ): IParsedCliInvocation => {
 	const tokens: Record<string, string> = {};
-	const extraOptions: Record<string, Record<string, unknown>> = {};
+	// No prototype: a key a user typed can never reach Object.prototype.
+	const extraOptions: Record<string, Record<string, unknown>> = Object.create(
+		null,
+	);
 	const command: string[] = [];
 	const commandArgs: string[] = [];
 	let readingCommand = false;
@@ -113,11 +136,7 @@ export const parseCliInvocation = (
 			const body = token.slice(2);
 			const optionOverride = parseExtraOptionFlag(body);
 			if (optionOverride !== null) {
-				if (extraOptions[optionOverride.pluginId] === undefined) {
-					extraOptions[optionOverride.pluginId] = {};
-				}
-				const pluginOptions = extraOptions[optionOverride.pluginId]!;
-				pluginOptions[optionOverride.key] = optionOverride.value;
+				setExtraOption(extraOptions, optionOverride);
 				index += 1;
 				continue;
 			}
@@ -160,11 +179,7 @@ export const parseCliInvocation = (
 		const body = token.slice(2);
 		const optionOverride = parseExtraOptionFlag(body);
 		if (optionOverride !== null) {
-			if (extraOptions[optionOverride.pluginId] === undefined) {
-				extraOptions[optionOverride.pluginId] = {};
-			}
-			const pluginOptions = extraOptions[optionOverride.pluginId]!;
-			pluginOptions[optionOverride.key] = optionOverride.value;
+			setExtraOption(extraOptions, optionOverride);
 			commandArgs.splice(index, 1);
 			index -= 1;
 			continue;
@@ -172,11 +187,7 @@ export const parseCliInvocation = (
 		const key = body.includes('=')
 			? body.slice(0, body.indexOf('='))
 			: body;
-		if (
-			!GLOBAL_FLAGS_WITH_VALUE.has(key) &&
-			key !== 'json' &&
-			key !== 'no-color'
-		) {
+		if (!CONSUMED_GLOBAL_FLAGS.has(key)) {
 			continue;
 		}
 		const parsed = takeFlagValue(commandArgs, index, body);

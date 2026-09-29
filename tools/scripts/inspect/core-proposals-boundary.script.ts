@@ -67,6 +67,30 @@ const DOC_PATH = join(
 
 export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 	{
+		file: 'packages/core/src/lib/work-units/publication-target.service.ts',
+		symbolOrLiteral: "file.includes('/proposals/')",
+		category: 'path',
+		destination: 'adapter',
+		needle: "file.includes('/proposals/') &&",
+		note: 'The unit-of-work engine (x00735) finds the proposal a unit belongs to by its path; the proposals layout belongs behind an adapter the plugin provides.',
+	},
+	{
+		file: 'packages/core/src/lib/work-units/publication-target.service.ts',
+		symbolOrLiteral: "'/proposals/in-progress/'",
+		category: 'path',
+		destination: 'adapter',
+		needle: "?.includes('/proposals/in-progress/') ===",
+		note: 'The unit-of-work engine (x00735) asks whether a proposal is still in progress by its folder; the status belongs behind an adapter the plugin provides.',
+	},
+	{
+		file: 'packages/core/src/lib/work-units/publication-pull-request.service.ts',
+		symbolOrLiteral: 'docs(proposals): … to review',
+		category: 'message',
+		destination: 'adapter',
+		needle: '/^chore\\(review\\): claim\\b|^docs\\(proposals\\): .*\\bto review$/u;',
+		note: 'The unit-of-work engine (x00735) recognises the claim and hand-off commits the proposals workflow writes; the patterns belong to the plugin.',
+	},
+	{
 		file: 'packages/core/src/public/index.ts',
 		symbolOrLiteral: '../lib/proposals/validate-evidence.schema',
 		category: 'path',
@@ -99,6 +123,14 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		note: 'Los consumidores externos siguen importando el DTO nominal de proposals desde core/public.',
 	},
 	{
+		file: 'packages/core/src/contracts/index.ts',
+		symbolOrLiteral: 'IProposalSummary',
+		category: 'type',
+		destination: 'contract',
+		needle: 'IProposalSummary,',
+		note: 'El barrel de contracts reexporta el mismo DTO nominal que core/public ya expone. `lint:no-core-public-types-in-client` prohibe que packages/client tome tipos de core/public, y hasta ahora nombraba una alternativa que no existia: sin esta reexportacion la regla no tenia destino alcanzable. Mismo acoplamiento que la fila de public/index.ts, no uno nuevo.',
+	},
+	{
 		file: 'packages/core/src/public/index.ts',
 		symbolOrLiteral: 'ProposalStatus',
 		category: 'type',
@@ -121,6 +153,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'This folder is the proposals store managed by the delendai',
+		resolvedBy: 'S2',
 		note: 'El estimador de escritura documenta el store de proposals como estructura propia.',
 	},
 	{
@@ -129,6 +162,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'plugin-name',
 		destination: 'adapter',
 		needle: '`proposals` plugin. Each proposal is one markdown file with',
+		resolvedBy: 'S2',
 		note: 'La ayuda bootstrap del store sigue nombrando el plugin concreto.',
 	},
 	{
@@ -137,6 +171,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'Create proposals with the `create_proposal` tool (it allocates the',
+		resolvedBy: 'S2',
 		note: 'La ayuda del store remite a una tool de proposals concreta.',
 	},
 	{
@@ -145,6 +180,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'index is regenerated at any time via `sync_proposals`.',
+		resolvedBy: 'S2',
 		note: 'La ayuda del store referencia el regenerado del indice del plugin.',
 	},
 	{
@@ -153,6 +189,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'path',
 		destination: 'adapter',
 		needle: 'path: `${docsDir}/proposals/${folder}/.gitkeep`,',
+		resolvedBy: 'S2',
 		note: 'El layout concreto del store de proposals se materializa en el core.',
 	},
 	{
@@ -161,6 +198,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'path',
 		destination: 'adapter',
 		needle: '{ path: `${docsDir}/proposals/README.md`, content: PROPOSALS_README },',
+		resolvedBy: 'S2',
 		note: 'El README del store sigue generado por una ruta hardcodeada de proposals.',
 	},
 	{
@@ -169,6 +207,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'Bootstrapped proposals store files (.gitkeep per status + README).',
+		resolvedBy: 'S2',
 		note: 'El resumen de escritura expone el store de proposals como artefacto del core.',
 	},
 	{
@@ -232,6 +271,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'Estimated adopt_project write surface (config + agents/instructions + proposals store).',
+		resolvedBy: 'S2',
 		note: 'La evaluacion de adopcion sigue contabilizando proposals store como responsabilidad del core.',
 	},
 	{
@@ -276,6 +316,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'config + agents + proposals store',
+		resolvedBy: 'S4',
 		note: 'El mensaje de adopcion expone el bootstrap del store como detalle del core.',
 	},
 	{
@@ -293,6 +334,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'composition',
 		needle: 'do not hand-create proposals or docs outside the server workflow.',
+		resolvedBy: 'S4',
 		note: 'El mensaje de mismatch sigue mencionando el layout de proposals desde el core.',
 	},
 	{
@@ -445,6 +487,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'bootstraps the proposals',
+		resolvedBy: 'S2',
 		note: 'La ayuda de adopt_project describe todavia el bootstrap de proposals desde el core.',
 	},
 	{
@@ -684,16 +727,8 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		symbolOrLiteral: 'proposal: IProposalSummary',
 		category: 'type',
 		destination: 'contract',
-		needle: 'proposal: IProposalSummary,',
-		note: 'La clonacion del catalogo recibe el tipo nominal IProposalSummary.',
-	},
-	{
-		file: 'packages/core/src/lib/catalog/agent-discovery-catalog.ts',
-		symbolOrLiteral: '): IProposalSummary => ({',
-		category: 'type',
-		destination: 'contract',
-		needle: '): IProposalSummary => ({',
-		note: 'La salida del clonador sigue fijada al DTO de proposal.',
+		needle: 'const cloneProposal = (proposal: IProposalSummary)',
+		note: 'La clonacion del catalogo recibe y devuelve el tipo nominal IProposalSummary (una sola linea desde x00738).',
 	},
 	{
 		file: 'packages/core/src/lib/catalog/agent-discovery-catalog.ts',
@@ -943,22 +978,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		needle: 'proposals: {',
 		note: 'Los defaults de plugins reservan un bloque nominal para proposals.',
 	},
-	{
-		file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
-		symbolOrLiteral: 'docs/proposals/retired/issues',
-		category: 'path',
-		destination: 'adapter',
-		needle: "scaffoldDir: 'docs/proposals/retired/issues',",
-		note: 'Los defaults de issues apuntan a un layout proposals concreto.',
-	},
-	{
-		file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
-		symbolOrLiteral: 'docs/delendai/proposals/done/audits',
-		category: 'path',
-		destination: 'adapter',
-		needle: "auditDir: 'docs/delendai/proposals/done/audits',",
-		note: 'La ruta por defecto de auditorias sigue anclada al arbol proposals.',
-	},
+
 	{
 		file: 'packages/core/src/lib/contracts/interfaces/agent-session.interface.ts',
 		symbolOrLiteral: 'proposals: readonly IAgentSessionProposalSummary[]',

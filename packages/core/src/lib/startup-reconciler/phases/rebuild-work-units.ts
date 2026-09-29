@@ -41,9 +41,21 @@ export type {
 	IWorkRefPhaseResult,
 	IWorkRefPhaseInput,
 } from './rebuild-work-units.interface';
+import { REVIEW_BATCH_ID } from '../../development-policy/profiles.constant';
 
 const identityKey = (proposal: string, slice: string, generation: number) =>
 	`${proposal}/${slice}@${String(generation)}`;
+
+/**
+ * The proposal a unit is recorded under. A review batch is not a
+ * proposal: every reviewer enters its own (`batch`/`all`), so two agents'
+ * batches of the same generation are two units, never a duplicate
+ * (x00702). Recorded as `batch-<agent>`.
+ */
+const unitProposal = (identity: { proposal: string; agent: string }) =>
+	identity.proposal === REVIEW_BATCH_ID
+		? `${REVIEW_BATCH_ID}-${identity.agent}`
+		: identity.proposal;
 
 export const runWorkRefPhase = async (
 	input: IWorkRefPhaseInput,
@@ -89,7 +101,7 @@ export const runWorkRefPhase = async (
 		}
 		attributed.set(ref.name, identity);
 		const key = identityKey(
-			identity.proposal,
+			unitProposal(identity),
 			identity.slice,
 			identity.generation,
 		);
@@ -128,12 +140,12 @@ export const runWorkRefPhase = async (
 		const identity = attributed.get(ref.name);
 		if (identity === undefined || conflicted.has(ref.name)) continue;
 
-		const unitKey = `${identity.proposal}/${identity.slice}`;
+		const unitKey = `${unitProposal(identity)}/${identity.slice}`;
 		const isNewUnit = !knownUnits.has(unitKey);
 		const unit = input.ports.workUnits.ensure({
 			repositoryId: input.repositoryId,
 			repository: input.repository,
-			proposalUid: identity.proposal,
+			proposalUid: unitProposal(identity),
 			sliceUid: identity.slice,
 			createdByAgentId: identity.agent,
 			now: input.now,
@@ -197,6 +209,32 @@ export const runWorkRefPhase = async (
 			}
 		}
 
+		// An integrated checkpoint stays integrated: that fact is never
+		// un-observed. A ref that moved on from one (a unit entered at the
+		// integration tip is integrated before its first commit) carries
+		// work of a new generation under the old name; recording it over
+		// the integrated row broke the schema and stopped the boot.
+		if (
+			existing !== null &&
+			existing.integratedSha !== null &&
+			existing.wipHeadSha !== ref.sha
+		) {
+			findings.push(
+				finding({
+					code: 'work-refs.work-after-integration',
+					phase: 'work-refs',
+					kind: 'note',
+					subject: ref.name,
+					message: `${ref.name} moved past checkpoint ${existing.wipHeadSha}, which is already integrated; its new work was not recorded. Continue it as the next generation (g${String(identity.generation + 1)}).`,
+					detail: {
+						integrated: existing.wipHeadSha,
+						live: ref.sha,
+					},
+				}),
+			);
+			continue;
+		}
+
 		const snapshot = await input.git.describeRef(
 			ref.name,
 			input.integrationRef,
@@ -220,22 +258,37 @@ export const runWorkRefPhase = async (
 		const contained =
 			input.integrationSha.length > 0 &&
 			(await input.git.isAncestor(snapshot.sha, input.integrationSha));
-		input.ports.generations.record({
-			workUnitId: unit.id,
-			generation: identity.generation,
-			baseIntegrationSha:
-				snapshot.baseSha.length > 0
-					? snapshot.baseSha
-					: input.integrationSha,
-			wipRef: snapshot.name,
-			wipHeadSha: snapshot.sha,
-			patchDigest: snapshot.patchDigest,
-			fileScope: snapshot.fileScope,
-			checkpointKind: contained ? 'merge-candidate' : 'durability',
-			authorAgentId: identity.agent,
-			machineId: input.machineId,
-			now: input.now,
-		});
+		try {
+			input.ports.generations.record({
+				workUnitId: unit.id,
+				generation: identity.generation,
+				baseIntegrationSha:
+					snapshot.baseSha.length > 0
+						? snapshot.baseSha
+						: input.integrationSha,
+				wipRef: snapshot.name,
+				wipHeadSha: snapshot.sha,
+				patchDigest: snapshot.patchDigest,
+				fileScope: snapshot.fileScope,
+				checkpointKind: contained ? 'merge-candidate' : 'durability',
+				authorAgentId: identity.agent,
+				machineId: input.machineId,
+				now: input.now,
+			});
+		} catch (error) {
+			// One ref the database refuses must not stop the boot for every
+			// agent on the machine: it is reported and the rest proceed.
+			findings.push(
+				finding({
+					code: 'work-refs.record-failed',
+					phase: 'work-refs',
+					kind: 'blocker',
+					subject: ref.name,
+					message: `The checkpoint ${snapshot.sha} of ${ref.name} could not be recorded: ${error instanceof Error ? error.message : String(error)}. The ref was left untouched.`,
+				}),
+			);
+			continue;
+		}
 		generationsRecorded += 1;
 		findings.push(
 			finding({

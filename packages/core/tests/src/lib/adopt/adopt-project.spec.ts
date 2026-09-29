@@ -176,20 +176,56 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(Object.keys(written.plugins).length).toBeGreaterThan(0);
 	});
 
-	it('repo wiring stays generic when no plugin-owned adoption extension is loaded', async () => {
-		const result = parse(await adopt({ repo: 'acme/widgets' }));
+	it('a repo wires what the issues manifest declares, with no plugin loaded', async () => {
+		const result = parse(
+			await adopt({ repo: 'acme/widgets', stage: 'specialized' }),
+		);
 		expect(result.ok).toBe(true);
-		expect(result.config.plugins.issues).toBeUndefined();
+		expect(result.config.plugins.issues).toEqual({
+			options: { repo: 'acme/widgets' },
+		});
 		expect(result.config.plugins.proposals).toBeUndefined();
+		const launch = result.residual.find((r: string) =>
+			r.includes('__serve'),
+		);
+		expect(launch).toContain('--preset full');
+		expect(result.residual).toContain(
+			'Verify GitHub issues: run `delendai_setup_github` and confirm the acme/widgets tier resolves.',
+		);
+		expect(
+			result.residual.some((r: string) =>
+				r.includes('GitHub repo provided'),
+			),
+		).toBe(false);
+	});
+
+	it('a stage that defers issues does not wire it, launch it or ask to verify it, even with a repo', async () => {
+		const result = parse(await adopt({ repo: 'acme/widgets' }));
+		expect(result.config.plugins.issues).toBeUndefined();
 		const launch = result.residual.find((r: string) =>
 			r.includes('__serve'),
 		);
 		expect(launch).not.toContain('--preset full');
 		expect(
-			result.residual.find((r: string) =>
-				r.includes('GitHub repo provided (acme/widgets)'),
+			result.residual.some((r: string) =>
+				r.startsWith('Verify GitHub issues'),
 			),
-		).toBeDefined();
+		).toBe(false);
+		expect(result.residual).toContain(
+			'(Optional) Wire GitHub issues later: run `delendai_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug.',
+		);
+	});
+
+	it('without a repo, the issues manifest leaves its step for later and the launch keeps the derived preset', async () => {
+		const result = parse(await adopt({}));
+		expect(result.config.plugins.issues).toBeUndefined();
+		const launch = result.residual.find((r: string) =>
+			r.includes('__serve'),
+		);
+		expect(launch).not.toContain('--preset full');
+		expect(result.residual).toContain(
+			'(Optional) Wire GitHub issues later: run `delendai_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug.',
+		);
 	});
 
 	it('repo wiring keeps proposals + issues behavior when the proposals extension is loaded', async () => {

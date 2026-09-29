@@ -53,6 +53,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
+import { BUN_OWNED_SPECS } from '../../../vitest.shared';
+
 export const SUMMARY_PATH = '.cache/coverage/coverage-summary.json';
 export const BASELINE_PATH = 'tools/scripts/lint/no-dead-modules.baseline.json';
 
@@ -86,8 +88,8 @@ export interface IDeadModule {
  *
  * That mistake was already made twice tonight, in the coverage
  * denominator and here, which is why the source of this list is the
- * `test:sqlite` script itself rather than a hand-kept copy. Add a spec
- * to that script and this follows; remove one and the module becomes
+ * one list `test:sqlite` runs (`BUN_OWNED_SPECS`) rather than a hand-kept
+ * copy. Add a spec to that list and this follows; remove one and the module becomes
  * judgeable again the same day.
  *
  * The mapping is deliberately coarse — a spec path implies its package
@@ -95,11 +97,8 @@ export interface IDeadModule {
  * file a spec exercises, and a wrong guess here EXEMPTS code that is
  * genuinely dead.
  */
-const sqliteRunnerPrefixes = (root: string): readonly string[] => {
-	const manifest = readJson<{
-		readonly scripts?: Readonly<Record<string, string>>;
-	}>(join(root, 'package.json'));
-	const script = manifest?.scripts?.['test:sqlite'] ?? '';
+const sqliteRunnerPrefixes = (): readonly string[] => {
+	const script = BUN_OWNED_SPECS.join(' ');
 	const prefixes = new Set<string>();
 	for (const token of script.split(/\s+/u)) {
 		if (!token.includes('/')) continue;
@@ -132,7 +131,7 @@ export const withoutModulesTheOtherRunnerCovers = (
 	summary: Readonly<Record<string, ICoverageEntry>>,
 	root: string,
 ): IJudgedSummary => {
-	const prefixes = sqliteRunnerPrefixes(root);
+	const prefixes = sqliteRunnerPrefixes();
 	const judged: Record<string, ICoverageEntry> = {};
 	const unjudged: string[] = [];
 	for (const [file, entry] of Object.entries(summary)) {

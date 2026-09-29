@@ -4,7 +4,7 @@ import z from 'zod';
 
 import {
 	SafeWorkspaceReader,
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	safeListDir,
 	toolError,
 	toolJson,
@@ -82,7 +82,10 @@ export const buildQualityComplexityToolRegistration = (
 					);
 				}
 				const threshold = parsed.data.threshold ?? 10;
-				const contained = resolveWorkspaceContained(
+				// Physical: a `cwd` reached through a symlink that leaves
+				// the workspace would scan someone else's sources, and the
+				// lexical check cannot see it.
+				const contained = await resolveExistingWorkspaceContained(
 					options.workspaceRoot,
 					parsed.data.cwd ?? '.',
 				);

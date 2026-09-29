@@ -23,9 +23,15 @@ import type {
 	IObservedRef,
 	IStartupGitSeam,
 	IWorkRefSnapshot,
+	IWorktreeDirtiness,
 } from './seams.interface';
 import { trimTrailingChar } from '../shared/string-normalize';
-import { qualifyRef, workRefNamespace } from './work-ref-identity';
+import {
+	logicalWorkRefName,
+	qualifyRef,
+	remoteTrackingNamespace,
+	workRefNamespace,
+} from './work-ref-identity';
 
 const lines = (output: string): readonly string[] =>
 	output
@@ -56,6 +62,38 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		return result.ok;
 	};
 
+	const contentContained = async (
+		sha: string,
+		integration: string,
+	): Promise<boolean> => {
+		if (sha.length === 0 || integration.length === 0) return false;
+		const base = await run(['merge-base', sha, integration]);
+		if (!base.ok) return false;
+		const changed = await run([
+			'diff',
+			'--name-only',
+			base.output.trim(),
+			sha,
+		]);
+		if (!changed.ok) return false;
+		const paths = changed.output
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
+		// Nothing changed since the fork: an empty checkpoint carries
+		// nothing the integration branch could be missing.
+		if (paths.length === 0) return true;
+		const same = await run([
+			'diff',
+			'--quiet',
+			sha,
+			integration,
+			'--',
+			...paths,
+		]);
+		return same.ok;
+	};
+
 	const fetch = async (request: {
 		readonly integrationBranch: string;
 		readonly workRefPrefix: string;
@@ -65,7 +103,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		if (!remotes.ok) {
 			return { ok: false, reason: remotes.reason ?? 'git remote failed' };
 		}
-		const remote = lines(remotes.output)[0];
+		const remote = await integrationRemote(request.integrationBranch);
 		if (remote === undefined) {
 			// A repository with no remote is fully local: there is nothing
 			// to fetch, and calling that a failure would make every purely
@@ -75,7 +113,6 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		const namespace = workRefNamespace(request.workRefPrefix);
 		const refspecs = [
 			`+refs/heads/${request.integrationBranch}:refs/remotes/${remote}/${request.integrationBranch}`,
-			...(namespace.length > 0 ? [`+${namespace}/*:${namespace}/*`] : []),
 			// The publication namespace, so that `--prune` reaches it.
 			//
 			// `--prune` only prunes INSIDE the refspecs it is given, and
@@ -93,9 +130,68 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 				: []),
 		];
 		const result = await run(['fetch', '--prune', remote, ...refspecs]);
-		return result.ok
+		if (!result.ok) {
+			return { ok: false, reason: result.reason ?? 'git fetch failed' };
+		}
+		if (namespace.length === 0) return { ok: true };
+		// The work namespace, mirrored into REMOTE-TRACKING refs.
+		//
+		// It used to be mirrored onto local refs of the same name in the
+		// pruned fetch above, and `--prune` deletes every ref in a mirrored
+		// namespace the remote does not have — a work branch nobody has
+		// published yet is exactly that. Starting the server deleted one
+		// carrying five commits (x00551). In remote-tracking refs the prune
+		// still removes the copy of a ref the remote dropped (that is how a
+		// merged or abandoned ref stops being observed) and can never reach
+		// a local branch.
+		const mirror = await run([
+			'fetch',
+			'--prune',
+			remote,
+			`+${namespace}/*:${remoteTrackingNamespace(remote, namespace)}/*`,
+		]);
+		return mirror.ok
 			? { ok: true }
-			: { ok: false, reason: result.reason ?? 'git fetch failed' };
+			: { ok: false, reason: mirror.reason ?? 'git fetch failed' };
+	};
+
+	/**
+	 * The ONE remote this workspace integrates with.
+	 *
+	 * The fetch used to take whatever `git remote` listed first while
+	 * every currency check looked up `refs/remotes/origin/...`, so a
+	 * project whose remote is called `upstream` fetched from one place
+	 * and judged itself against another — and was told its integration
+	 * branch did not exist. Resolved once, here, in the order a person
+	 * would: what the integration branch actually tracks, then `origin`,
+	 * then the only remote there is.
+	 */
+	const integrationRemote = async (
+		integrationBranch: string,
+	): Promise<string | undefined> => {
+		const tracked = await run([
+			'config',
+			'--get',
+			`branch.${integrationBranch}.remote`,
+		]);
+		if (tracked.ok && tracked.output.trim().length > 0) {
+			return tracked.output.trim();
+		}
+		const remotes = await run(['remote']);
+		if (!remotes.ok) return undefined;
+		const names = lines(remotes.output);
+		if (names.includes('origin')) return 'origin';
+		return names[0];
+	};
+
+	/** Every remote's mirror of one work namespace. */
+	const mirrorNamespaces = async (
+		namespace: string,
+	): Promise<readonly string[]> => {
+		const remotes = await run(['remote']);
+		return (remotes.ok ? lines(remotes.output) : []).map((remote) =>
+			remoteTrackingNamespace(remote, namespace),
+		);
 	};
 
 	const listRefs = async (
@@ -103,28 +199,59 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 	): Promise<readonly IObservedRef[]> => {
 		const namespace = workRefNamespace(prefix);
 		if (namespace.length === 0) return [];
+		// This machine's own work refs AND the mirrors of what other
+		// machines published. Both are units of work; only where git keeps
+		// them differs, and each is reported once, under its own name.
+		const mirrors = await mirrorNamespaces(namespace);
 		const result = await run([
 			'for-each-ref',
 			'--format=%(refname) %(objectname)',
 			`${namespace}/`,
+			...mirrors.map((mirror) => `${mirror}/`),
 		]);
 		if (!result.ok) return [];
-		const refs: IObservedRef[] = [];
+		const byName = new Map<string, IObservedRef>();
 		for (const line of lines(result.output)) {
 			const [name, sha] = line.split(' ');
 			if (name === undefined || sha === undefined) continue;
-			refs.push({ name, sha });
+			const logical = logicalWorkRefName(name, namespace, mirrors);
+			if (logical === undefined) continue;
+			// A ref held both locally and on a remote is one unit of work,
+			// and the local copy is the one this machine can act on.
+			if (name === logical || !byName.has(logical)) {
+				byName.set(logical, { name: logical, sha });
+			}
 		}
-		return refs.sort((left, right) =>
+		return [...byName.values()].sort((left, right) =>
 			left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
 		);
+	};
+
+	/**
+	 * A work ref by its logical name, wherever git holds it: this
+	 * machine's own branch, or a mirror of another machine's.
+	 */
+	const resolveWorkRef = async (
+		name: string,
+	): Promise<string | undefined> => {
+		const qualified = qualifyRef(name);
+		const direct = await resolveRef(qualified);
+		if (direct !== undefined) return direct;
+		const namespace = qualified.slice(0, qualified.lastIndexOf('/'));
+		for (const mirror of await mirrorNamespaces(namespace)) {
+			const sha = await resolveRef(
+				`${mirror}/${qualified.slice(namespace.length + 1)}`,
+			);
+			if (sha !== undefined) return sha;
+		}
+		return undefined;
 	};
 
 	const describeRef = async (
 		name: string,
 		integrationRef: string,
 	): Promise<IWorkRefSnapshot | undefined> => {
-		const sha = await resolveRef(qualifyRef(name));
+		const sha = await resolveWorkRef(name);
 		if (sha === undefined) return undefined;
 		const mergeBase = await run(['merge-base', sha, integrationRef]);
 		const baseSha = mergeBase.ok ? mergeBase.output.trim() : '';
@@ -164,9 +291,27 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 	 * newline, and reconstructing git's quoting by hand is a bug class
 	 * this repository has already paid for once.
 	 */
-	const dirtyPaths = async (): Promise<readonly string[]> => {
+	/**
+	 * Three answers, not two.
+	 *
+	 * This used to return `[]` when `git status` failed, and a caller
+	 * reading an empty list cannot tell "the tree is clean" from "nobody
+	 * could look". `verify-checkout` then treated the silence as a clean
+	 * tree and went on to fast-forward the shared checkout — asserting a
+	 * precondition it never verified. Git has its own protections, so no
+	 * loss was measured; the reasoning was wrong anyway, and that is the
+	 * same reasoning that cost five commits in x00551.
+	 */
+	const dirtyState = async (): Promise<IWorktreeDirtiness> => {
 		const result = await run(['status', '--porcelain=v1', '-z']);
-		if (!result.ok) return [];
+		if (!result.ok) {
+			return {
+				kind: 'unknown',
+				reason:
+					result.reason ??
+					'git status did not answer; the tree was not inspected',
+			};
+		}
 		const fields = result.output.split('\0').filter((f) => f.length > 0);
 		const paths: string[] = [];
 		for (let i = 0; i < fields.length; i += 1) {
@@ -178,7 +323,15 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 			// the old name is not reported as a change of its own.
 			if (status.includes('R') || status.includes('C')) i += 1;
 		}
-		return paths;
+		return paths.length === 0
+			? { kind: 'clean' }
+			: { kind: 'dirty', paths };
+	};
+
+	/** The paths, for callers that already handled `unknown`. */
+	const dirtyPaths = async (): Promise<readonly string[]> => {
+		const state = await dirtyState();
+		return state.kind === 'dirty' ? state.paths : [];
 	};
 
 	/**
@@ -201,14 +354,30 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 				};
 	};
 
+	const pathsChangedBetween = async (
+		base: string,
+		target: string,
+	): Promise<readonly string[] | undefined> => {
+		const result = await run(['diff', '--name-only', base, target]);
+		if (!result.ok) return undefined;
+		return result.output
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
+	};
+
 	return {
+		pathsChangedBetween,
 		fetch,
 		listRefs,
 		resolveRef,
 		describeRef,
 		isAncestor,
+		contentContained,
 		currentBranch,
 		dirtyPaths,
+		dirtyState,
+		integrationRemote,
 		headSha: () => resolveRef('HEAD'),
 		fastForward,
 	};

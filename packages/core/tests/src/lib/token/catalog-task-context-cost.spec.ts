@@ -1,4 +1,6 @@
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
@@ -74,15 +76,38 @@ describe('catalog-task-context-cost measurement', () => {
 	it('measures catalog payloads and a reproducible swarm task-context corpus', () => {
 		const output = runMeasurementScript();
 
-		expect(output).toContain(
-			'| agent_catalog compact | native | 745 | 187 |',
+		// x00608: the figures are NOT restated here. They were, and that made
+		// this spec a second source of truth for one measurement: the
+		// dashboard was regenerated, the literal in this file was not, and
+		// the break landed on the integration branch. The script measures,
+		// `docs/delendai/TOKEN-BUDGETS.md` records what it measured, and this
+		// asserts the two agree.
+		//
+		// The ratchet is not weakened by that. The dashboard is written by
+		// `gen:all` and `drift-check` refuses a push whose generated files
+		// are stale, so a surface change still has to be regenerated
+		// deliberately, and it then shows up in the diff as the byte figures
+		// it is — which is what the ledger below has always been for. What
+		// is gone is the third copy that had to be edited by hand.
+		const dashboard = readFileSync(
+			join(WORKSPACE_ROOT, 'docs', 'delendai', 'TOKEN-BUDGETS.md'),
+			'utf8',
 		);
-		expect(output).toContain(
-			'| agent_catalog full | native | 10,018 | 2,505 |',
-		);
-		expect(output).toContain(
-			'| native core catalog | 30 | 47,120 | 39,194 | 12,111 | 27,083 | 0 |',
-		);
+		expect(dashboard).toContain(output.trim());
+
+		// The ledger — why each figure above moved, kept because the reason
+		// is the part a regenerated table cannot carry.
+		// 10,020, not 10,018: `delendai-tabs-component` now declares
+		// `@delendai/web` instead of `@delendai/*`, and the catalog
+		// carries the declaration. Two characters, and this tripwire
+		// is here precisely so a payload change is noticed rather
+		// than absorbed.
+		// 2026-09-15 — core catalog 43,836 -> 44,752 B, tool count unchanged.
+		// The 916 B are output schemas declaring what their tools already
+		// returned: plugin_search entries (permissions, configDocs,
+		// tokenBudgetBytes, toolPermissions, startupActivation, example) and
+		// adopt_project's cost.surfaceMode. A client that listed tools
+		// rejected both answers for the undeclared keys.
 		// 2026-09-10 — core catalog 47,031 -> 47,120 B and swarm 235,431 ->
 		// 235,640 B, with the tool COUNT unchanged in both. This is the
 		// `title` field becoming visible: the wire has always carried one
@@ -131,17 +156,80 @@ describe('catalog-task-context-cost measurement', () => {
 		// which is what makes an automatic compaction refusable. Every
 		// preset carrying the memory plugin pays it, and the entry is
 		// here so the next person can see what it bought.
-		expect(output).toContain(
-			'| swarm native preset | 188 | 236,166 | 189,580 | 54,414 | 135,166 | 75,771 |',
-		);
+		// v00135 (2026-09-15): `swarm` lists only essential tools by
+		// default. Was `| 188 | 236,166 | 189,580 | 54,414 | 135,166 |
+		// 75,771 |`; the 39 contextual and administrative tools are still
+		// callable through the router, and `proposals` drops from 75,771 B
+		// to 15,949 B of static surface.
+		// 2026-09-15 — swarm 160,067 -> 160,126 B, tool count unchanged.
+		// The 59 B are `close_slice`'s outputSchema `kind` enum gaining the
+		// three kinds its handler already returned (validation-error,
+		// quality-failed, peer-review-required). Without them a client that
+		// listed tools rejected every blocked close with -32602.
+		// 2026-09-15 — swarm 160,126 -> 161,042 B, tool count unchanged: the
+		// same 916 B of core output schemas as the core catalog row above.
+		// 2026-09-15 — swarm 161,042 -> 160,451 B, 149 -> 148 tools, a
+		// 591-byte REDUCTION. `agent-orchestrator_budget` is gone: it
+		// listed a second schema for figures `_dispatch` already returns
+		// and answered 0 for both token ceilings on every call. What it
+		// spent now comes back through `_plan_ref`, beside the real
+		// ceilings. Done because `standard` was over its 11,000 B
+		// marginal ceiling while no gate enforced it.
+		// 2026-09-16 — swarm 160,451 -> 160,495 B, tool count unchanged: the
+		// 44 B are `create_proposal`'s new required `nextAction`, the step
+		// that publishes a written proposal. Without it an agent stopped at
+		// the file and left eight proposals untracked in a shared checkout.
+		// 2026-09-16 (later) — swarm 160,495 -> 160,605 B, tool count still
+		// 148. The 110 B are `create_proposal`'s `published`,
+		// `publishedRef` and `publishReason`: the tool now PERFORMS the
+		// publication instead of returning instructions, so it reports what
+		// it did and what is still owed. The delta lands entirely in output
+		// schemas (88,766 -> 88,876) with inputs untouched at 35,815, and
+		// the whole 110 B shows up in the max-plugin column
+		// (15,111 -> 15,221) because proposals is the heaviest plugin —
+		// which is what an output-only change to one of its tools looks
+		// like. Advice that an agent could skip was worth 44 B; the machinery
+		// that makes skipping impossible costs 110 more.
+		// 2026-09-16 (later still) — swarm 160,605 -> 161,396 B, 148 -> 149
+		// tools. The 791 B are `conventions_suggest_path` (f00549 S2): the
+		// tool that answers where a new file belongs, verified against
+		// `classifyPath` before it answers so it can never suggest a path
+		// its own classifier calls `other`. The delta splits 147 B of input
+		// schema (35,815 -> 35,962) and 383 B of output schema
+		// (88,876 -> 89,259), together the 530 B of schema growth
+		// (124,691 -> 125,221); the remaining 261 B are the tool's name,
+		// description and envelope. The max-plugin column is unchanged at
+		// 15,221 because `conventions` carries three tools totalling under
+		// 3 KB and `proposals` is still the heaviest plugin — which is what
+		// a new tool in a small plugin looks like.
+		// 2026-09-16 (S3) — swarm 161,396 -> 162,377 B, 149 -> 150 tools. The
+		// 981 B are `conventions_explain_path` (f00549 S3): given a path it
+		// answers the role, WHICH rule assigned it, the layer it sits in and
+		// what that layer may not import, each rule naming the `lint:*`
+		// script that enforces it. The delta splits 77 B of input schema
+		// (35,962 -> 36,039) and 628 B of output schema (89,259 -> 89,887),
+		// together the 705 B of schema growth (125,221 -> 125,926); the
+		// remaining 276 B are the tool's name, description and envelope. The
+		// output schema carries most of it because the answer is structured
+		// — an array of {forbids, enforcedBy, because} rather than a string.
+		// Max-plugin is unchanged at 15,221: `conventions` now has four
+		// tools and is still far below `proposals`.
+		// 2026-09-17 (S4) — swarm 162,377 -> 163,859 B, 150 -> 151 tools. The
+		// 1,482 B are `conventions_check_architecture` (f00549 S4): it
+		// reports forbidden imports per layer rule exactly as the enforcing
+		// lint would, and says how many files each detector read so a green
+		// report over nothing cannot pass for a clean tree. The delta splits
+		// 137 B of input schema (36,039 -> 36,176) and 1,078 B of output
+		// schema (89,887 -> 90,965), together 1,215 B of schema growth
+		// (125,926 -> 127,141); the remaining 267 B are the tool's name,
+		// description and envelope. Output carries most of it because each
+		// finding is structured (file, line, specifier, rule, enforcer,
+		// baseline key) and the per-detector sample is part of the answer.
+		// Max-plugin is unchanged at 15,221: `conventions` has five tools
+		// and `proposals` is still the heaviest plugin.
+
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
 		}
-		expect(output).toContain('| cold start | 672 | 168 |');
-		expect(output).toContain('| after search.search | 728 | 182 |');
-		expect(output).toContain('| after docs.docs_list | 776 | 194 |');
-		expect(output).toContain('| after logs.tail | 826 | 207 |');
-		expect(output).toContain('| p50 | 728 | 182 |');
-		expect(output).toContain('| p95 | 826 | 207 |');
 	});
 });

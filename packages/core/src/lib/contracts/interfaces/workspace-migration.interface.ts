@@ -7,6 +7,8 @@
  */
 
 /** A migration's stable identity. Recorded, so completion is a fact. */
+import type { IConfigTransitionRunResult } from './config-transition.interface';
+
 export type IMigrationId = string;
 
 export interface IMigrationContext {
@@ -61,6 +63,12 @@ export interface IMigrationRunResult {
 	readonly outcomes: readonly IMigrationOutcome[];
 	/** True when at least one migration ran or would run. */
 	readonly acted: boolean;
+	/**
+	 * What changed because the configuration changed since it was last
+	 * applied. Absent when transitions were not run (for instance, a
+	 * migration failed first).
+	 */
+	readonly transitions?: IConfigTransitionRunResult | undefined;
 }
 
 /**

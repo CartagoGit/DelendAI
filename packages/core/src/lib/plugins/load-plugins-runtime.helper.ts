@@ -1,3 +1,4 @@
+import { bindWriteRoot } from '../shared/bind-write-root';
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 import type {
 	IMcpPlugin,
@@ -125,6 +126,28 @@ export const disposeLoadedPlugins = async (
 	}
 };
 
+/**
+ * The plugin's tools, each acting where its `writeRoot` says. Every
+ * plugin comes through here, eager and lazy, so this is the one place a
+ * declared root becomes behaviour (`bindWriteRoot`). A context without a
+ * workspace has no server root to fall back to and is left unbound.
+ */
+const withWriteRootsBound = (
+	runtime: IPluginRuntime<IMcpPluginRegistrations>,
+	ctx: IMcpPluginContext,
+): IPluginRuntime<IMcpPluginRegistrations> => {
+	const serverRoot = ctx.workspace?.root;
+	const tools = runtime.registrations.tools;
+	if (serverRoot === undefined || tools === undefined) return runtime;
+	return {
+		...runtime,
+		registrations: {
+			...runtime.registrations,
+			tools: tools.map((tool) => bindWriteRoot(tool, serverRoot)),
+		},
+	};
+};
+
 export const registerPluginWithLifecycle = async (input: {
 	readonly plugin: IMcpPlugin;
 	readonly ctx: IMcpPluginContext;
@@ -143,7 +166,9 @@ export const registerPluginWithLifecycle = async (input: {
 	let cancelReason: 'timeout' | 'signal' | undefined;
 	const registerPromise = Promise.resolve(
 		plugin.register(ctx, controller.signal),
-	).then((result) => normalizePluginRuntimeInternal(result));
+	).then((result) =>
+		withWriteRootsBound(normalizePluginRuntimeInternal(result), ctx),
+	);
 	void registerPromise.catch(() => undefined);
 	const cleanupHandlers: Array<() => void> = [];
 	const cancellationPromise = new Promise<never>((_resolve, reject) => {

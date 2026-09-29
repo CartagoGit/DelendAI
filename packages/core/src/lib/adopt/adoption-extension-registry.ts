@@ -1,6 +1,9 @@
 import type { IDerivedConfig } from '../bootstrap/derive-config';
 export type { IAdoptionExtension } from '../contracts/interfaces/adoption-extension.interface';
-import type { IAdoptionExtension } from '../contracts/interfaces/adoption-extension.interface';
+import type {
+	IAdoptionExtension,
+	IAdoptionFileContribution,
+} from '../contracts/interfaces/adoption-extension.interface';
 import type { IBuildAdoptProjectPlanInput } from '../contracts/interfaces/adopt-project.interface';
 import type { IScaffoldedFile } from '../scaffold/scaffold-host';
 
@@ -84,6 +87,36 @@ export const applyAdoptionExtensions = (
 		}
 	}
 	return plan;
+};
+
+/** Whether any loaded plugin contributes to adoption. */
+export const hasAdoptionExtensions = (): boolean =>
+	[...adoptionExtensions.values()].some((set) => set.length > 0);
+
+/**
+ * The files each loaded extension adds to `input.plan`, applied in the
+ * order `applyAdoptionExtensions` applies them. Extensions that add no
+ * file are left out.
+ */
+export const countAdoptionFileContributions = (
+	input: IApplyAdoptionExtensionInput,
+): readonly IAdoptionFileContribution[] => {
+	const contributions: IAdoptionFileContribution[] = [];
+	let plan = input.plan;
+	for (const extensions of adoptionExtensions.values()) {
+		for (const extension of extensions) {
+			const next = applyOneExtension(plan, extension, {
+				derived: input.derived,
+				request: input.request,
+			});
+			const added = next.files.length - plan.files.length;
+			if (added > 0) {
+				contributions.push({ title: extension.title, count: added });
+			}
+			plan = next;
+		}
+	}
+	return contributions;
 };
 
 export const resetAdoptionExtensionsForTests = (): void => {

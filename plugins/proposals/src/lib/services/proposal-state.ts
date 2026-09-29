@@ -47,7 +47,7 @@ export const guardDoneToReviewRegression = (input: {
 };
 
 export type IShippedInGuardResult =
-	| { ok: true }
+	| { ok: true; readonly shas: readonly string[] }
 	| {
 			ok: false;
 			code: 'missing-shipped-in';
@@ -190,7 +190,7 @@ export const guardShippedInPresent = (
 			fix: SHIPPED_IN_MISSING_FIX,
 		};
 	}
-	return { ok: true };
+	return { ok: true, shas: candidates };
 };
 
 export interface IForcedRegressionCaller {

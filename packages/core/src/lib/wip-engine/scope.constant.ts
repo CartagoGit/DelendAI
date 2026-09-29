@@ -12,3 +12,11 @@ export const SCOPE_TRAILER = 'Delendai-Wip-Scope';
 
 /** Trailer carrying the checkpoint's patch digest. */
 export const DIGEST_TRAILER = 'Delendai-Wip-Digest';
+
+/**
+ * Trailer naming the work ref a checkpoint was written for. The ref is
+ * the unit's identity — its template says who owns it and what it is —
+ * so a commit that carries it stays attributable after a squash or a
+ * rebase has dropped the ref and the merge that would have named it.
+ */
+export const REF_TRAILER = 'Delendai-Wip-Ref';

@@ -1,8 +1,5 @@
-import {
-	definePlugin,
-	joinRel,
-	resolveWorkspaceContained,
-} from '@delendai/core/public';
+import { definePlugin, joinRel } from '@delendai/core/public';
+import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
 import z from 'zod';
 
 import {
@@ -45,7 +42,7 @@ export default definePlugin({
 			typeof ctx.options.recordsDir === 'string'
 				? (ctx.options.recordsDir as string)
 				: joinRel(ctx.pluginCacheDir, 'records');
-		const resolved = resolveWorkspaceContained(
+		const resolved = resolveWorkspaceContainedPhysicalSync(
 			ctx.workspace.root,
 			recordsRel,
 		);
@@ -59,6 +56,7 @@ export default definePlugin({
 		const toolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			recordsDir: resolved.abs,
+			workspaceRoot: ctx.workspace.root,
 			...(defaultAgent !== undefined ? { defaultAgent } : {}),
 		};
 

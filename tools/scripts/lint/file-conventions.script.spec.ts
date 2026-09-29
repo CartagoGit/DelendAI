@@ -213,7 +213,7 @@ describe('file-conventions.ts (pure classifier)', async () => {
 
 	it('accepts a custom rule chain (Dependency Inversion)', async () => {
 		const customRules: readonly IRoleRule[] = [
-			{ name: 'tool', match: (p) => p.endsWith('.special.ts') },
+			{ name: 'tool', matches: (p) => p.endsWith('.special.ts') },
 		];
 		expect(classifyPath('anywhere/foo.special.ts', customRules)).toBe(
 			'tool',
@@ -225,11 +225,11 @@ describe('file-conventions.ts (pure classifier)', async () => {
 		const buggyRules: readonly IRoleRule[] = [
 			{
 				name: 'tool',
-				match: () => {
+				matches: () => {
 					throw new Error('boom');
 				},
 			},
-			{ name: 'service', match: (p) => p.endsWith('.service.ts') },
+			{ name: 'service', matches: (p) => p.endsWith('.service.ts') },
 		];
 		expect(classifyPath('foo.service.ts', buggyRules)).toBe('service');
 	});
@@ -568,9 +568,13 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'view',
 			'webview',
 			'workspace',
+			'repository',
+			'facade',
+			'driver',
+			'store',
 		].sort();
 		expect(names).toEqual(expected);
-		expect(names.length).toBe(59);
+		expect(names.length).toBe(63);
 	});
 
 	it('lists generated first, then tests, config, scripts and commands (priority order)', async () => {

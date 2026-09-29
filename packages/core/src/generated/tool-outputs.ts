@@ -33,7 +33,7 @@ export interface DelendaiAdoptProjectOutput {
 			count?: number;
 			exact: boolean;
 			breakdown?: Array<{
-				kind: "config" | "proposal-store" | "generated";
+				kind: "config" | "proposal-store" | "generated" | "plugin";
 				description: string;
 				count?: number;
 				exact: boolean;
@@ -46,6 +46,7 @@ export interface DelendaiAdoptProjectOutput {
 			recommendedPluginCount: number;
 			source: "preset-budget" | "fallback-budget" | "plugin-budget";
 			runtimeSurface?: "managed" | "native" | "adaptive" | "compact";
+			surfaceMode: "native" | "adaptive" | "estimated";
 			note: string;
 		};
 		summary: {
@@ -647,6 +648,25 @@ export interface DelendaiMetricsOutput {
 			};
 		};
 	}>;
+	surface?: {
+		listsServed: number;
+		servedBytes: number;
+		usefulBytes: number;
+		usefulTokensRatio?: number;
+	};
+	attribution?: {
+		totalBytes: number;
+		parts: {
+			source: string;
+			bytes: number;
+			share: number;
+		}[];
+		largestResponses: {
+			tool: string;
+			bytes: number;
+			at: string;
+		}[];
+	};
 	totals: {
 		calls: number;
 		errors: number;
@@ -868,6 +888,15 @@ export interface DelendaiPluginSearchOutput {
 		tags: string[];
 		origin: "first-party" | "community";
 		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "dogfood" | "web-app" | "backend-api" | "cli-tool" | "vertex";
+		permissions?: Array<"filesystem-read" | "filesystem-write" | "process" | "network" | "git-read" | "git-write" | "forge-read" | "forge-write" | "env-read" | "secrets" | "browser" | "container" | "database">;
+		configDocs?: {
+			summary?: string;
+			docsPath?: string;
+		};
+		tokenBudgetBytes?: number;
+		toolPermissions?: Record<string, Array<"filesystem-read" | "filesystem-write" | "process" | "network" | "git-read" | "git-write" | "forge-read" | "forge-write" | "env-read" | "secrets" | "browser" | "container" | "database">>;
+		startupActivation?: boolean;
+		example?: Record<string, unknown>;
 	}>;
 	total: number;
 	truncated: boolean;
@@ -1322,6 +1351,8 @@ export interface DelendaiToolSearchOutput {
 		active: boolean;
 		detailsId: string;
 	}[];
+	found: boolean;
+	suggestion?: string;
 }
 
 export interface DelendaiUsageTrackingSessionHygieneOutput {
@@ -1337,6 +1368,13 @@ export interface DelendaiUsageTrackingUsageClearOutput {
 export interface DelendaiUsageTrackingUsageReportOutput {
 	ok?: boolean;
 	[key: string]: unknown;
+}
+
+export interface DelendaiWorkOutput {
+	ok: boolean;
+	code: number;
+	data?: unknown;
+	error?: string;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
@@ -1420,4 +1458,5 @@ export interface IDelendaiToolOutputs {
 	"delendai_usage-tracking_session_hygiene": DelendaiUsageTrackingSessionHygieneOutput;
 	"delendai_usage-tracking_usage_clear": DelendaiUsageTrackingUsageClearOutput;
 	"delendai_usage-tracking_usage_report": DelendaiUsageTrackingUsageReportOutput;
+	"delendai_work": DelendaiWorkOutput;
 }

@@ -17,9 +17,23 @@
  *  - **already-shipped**: every file exists AND is in the git index AND
  *    has a non-empty `shipped-in:` in the frontmatter → the slice is
  *    fully closed; flip `**Status**:` to `done`.
- *  - **files-already-tracked**: every file exists and is tracked but
- *    the proposal is missing `shipped-in:` → add it (find the SHA with
- *    `git log --oneline -- <file>`).
+ *  - **files-already-tracked**: every file exists, is tracked, and was
+ *    CREATED on or after the proposal's date, but the proposal is missing
+ *    `shipped-in:` → add the creating commit(s), which the finding names.
+ *  - **modifies-existing**: every file exists, but at least one was
+ *    already in the repository BEFORE the proposal was written. The slice
+ *    modifies those files, so their presence proves nothing about whether
+ *    it is done. Reported apart, never with advice to close, and never
+ *    blocking under `--strict`.
+ *
+ * WHY that last kind exists. Every file being tracked used to be read as
+ * "implemented", and the advice was to add `shipped-in` and mark the
+ * slice done. Measured on 2026-09-14: of the 29 pending slices whose
+ * files were all present, 20 named files that predated their own
+ * proposal. v00137 is the clearest — a perf change to three files created
+ * in June and August, proposed in September, not started, and told to
+ * close. Acting on that advice would have recorded unimplemented work as
+ * shipped.
  *  - **partial**: only some files are tracked → the proposal is mid-
  *    implementation; review the slice and either finish the missing
  *    files or pivot the slice to a different `**Files**:` set.
@@ -49,6 +63,7 @@ import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
 } from '../../../plugins/proposals/src/lib/proposals/frontmatter-parser';
+import { gitFileOrigin, type IGitFileOrigin } from '../lib/git-file-origin';
 import { repoRoot } from '../lib/monorepo-paths';
 
 const _PROPOSALS_ROOT = 'docs/delendai/proposals';
@@ -82,6 +97,18 @@ export type Finding =
 			readonly status: 'pending';
 			readonly kind: 'files-already-tracked';
 			readonly missing: 'shipped-in' | 'slice-status';
+			/** The commits that created the slice's files, oldest first. */
+			readonly evidence: readonly string[];
+			readonly nextAction: string;
+	  }
+	| {
+			readonly relPath: string;
+			readonly proposalId: string;
+			readonly sliceId: string;
+			readonly status: 'pending';
+			readonly kind: 'modifies-existing';
+			/** Files that already existed before the proposal was written. */
+			readonly preExisting: readonly string[];
 			readonly nextAction: string;
 	  }
 	| {
@@ -184,6 +211,65 @@ export const collectPendingSlices = (
 	return slices;
 };
 
+/**
+ * Whether a slice whose files are ALL tracked has evidence of being done.
+ *
+ * Pure, so the rule is pinned by cases rather than by a repository. A
+ * file created before the proposal's date is something the slice
+ * modifies; its presence is not evidence. Without a proposal date nothing
+ * can be proven either way, and the previous classification is kept —
+ * hiding the finding would be the quieter failure.
+ */
+export const classifyFullyTracked = (
+	proposalDate: string | undefined,
+	origins: readonly {
+		readonly file: string;
+		readonly origin: IGitFileOrigin | undefined;
+	}[],
+):
+	| {
+			readonly kind: 'modifies-existing';
+			readonly preExisting: readonly string[];
+	  }
+	| {
+			readonly kind: 'files-already-tracked';
+			readonly evidence: readonly string[];
+	  } => {
+	const preExisting =
+		proposalDate === undefined
+			? []
+			: origins
+					.filter(
+						({ origin }) =>
+							origin !== undefined && origin.date < proposalDate,
+					)
+					.map(({ file }) => file);
+	if (preExisting.length > 0)
+		return { kind: 'modifies-existing', preExisting };
+	const evidence = [
+		...new Set(
+			origins
+				.flatMap(({ origin }) => (origin === undefined ? [] : [origin]))
+				.sort((left, right) => left.iso.localeCompare(right.iso))
+				.map((origin) => origin.sha),
+		),
+	];
+	return { kind: 'files-already-tracked', evidence };
+};
+
+const proposalDateOf = (fm: Record<string, unknown>): string | undefined => {
+	const value = fm.date;
+	const text =
+		typeof value === 'string'
+			? value
+			: value instanceof Date
+				? value.toISOString()
+				: undefined;
+	return text !== undefined && /^\d{4}-\d{2}-\d{2}/u.test(text)
+		? text.slice(0, 10)
+		: undefined;
+};
+
 export const scanAlreadyImplemented = (
 	proposalsDirAbs: string,
 	options: { readonly proposalId?: string } = {},
@@ -215,7 +301,30 @@ export const scanAlreadyImplemented = (
 					(_f, idx) => !trackedFlags[idx],
 				);
 				const hasShippedIn = shippedInOk(fm);
-				if (allTracked && hasShippedIn) {
+				const classified = allTracked
+					? classifyFullyTracked(
+							proposalDateOf(fm),
+							slice.files.map((file) => ({
+								file,
+								origin: gitFileOrigin(root, file, {
+									follow: true,
+								}),
+							})),
+						)
+					: undefined;
+				if (classified?.kind === 'modifies-existing') {
+					findings.push({
+						relPath: rel,
+						proposalId,
+						sliceId: slice.sliceId,
+						status: 'pending',
+						kind: 'modifies-existing',
+						preExisting: classified.preExisting,
+						nextAction:
+							`${slice.sliceId} names ${classified.preExisting.length} file(s) that existed before this proposal was written (${classified.preExisting.join(', ')}). ` +
+							`Their presence is not evidence the slice is done — check its acceptance and gate before closing it.`,
+					});
+				} else if (allTracked && hasShippedIn) {
 					findings.push({
 						relPath: rel,
 						proposalId,
@@ -228,6 +337,10 @@ export const scanAlreadyImplemented = (
 							`The slice is implemented; flip **Status**: pending → done and close the proposal with proposals_proposal_transition { id, to: "done", reason }.`,
 					});
 				} else if (allTracked && !hasShippedIn) {
+					const evidence =
+						classified?.kind === 'files-already-tracked'
+							? classified.evidence
+							: [];
 					findings.push({
 						relPath: rel,
 						proposalId,
@@ -235,9 +348,10 @@ export const scanAlreadyImplemented = (
 						status: 'pending',
 						kind: 'files-already-tracked',
 						missing: 'shipped-in',
+						evidence,
 						nextAction:
-							`${slice.sliceId} files are all tracked but the proposal frontmatter has no shipped-in: [...sha] entry. ` +
-							`Add shipped-in: [<sha>] (find the SHA with \`git log --oneline -- <file>\`) and then mark the slice done.`,
+							`${slice.sliceId} files were all created on or after this proposal's date and are tracked, but the frontmatter has no shipped-in entry. ` +
+							`Confirm the acceptance holds, then add shipped-in: [${evidence.map((sha) => sha.slice(0, 9)).join(', ')}] and mark the slice done.`,
 					});
 				} else if (someTracked) {
 					findings.push({
@@ -263,20 +377,38 @@ export const scanAlreadyImplemented = (
 	return findings;
 };
 
+/** Findings that say something may be done, as opposed to merely touched. */
+const isStuck = (finding: Finding): boolean =>
+	finding.kind !== 'modifies-existing';
+
 const render = (findings: readonly Finding[]): string => {
-	if (findings.length === 0) {
+	const stuck = findings.filter(isStuck);
+	const touched = findings.filter((finding) => !isStuck(finding));
+	if (stuck.length === 0 && touched.length === 0) {
 		return '✓ proposal-already-implemented: no slices with already-tracked files in ready/ or in-progress/.';
 	}
-	const lines: string[] = [
-		`✖ proposal-already-implemented: ${findings.length} slice(s) reference files that are already tracked in git. auto_work refuses to re-claim those slices and the proposal stays stuck until they are closed or pivoted.\n`,
-	];
-	for (const f of findings) {
+	const lines: string[] =
+		stuck.length === 0
+			? [
+					'✓ proposal-already-implemented: no slice has evidence of being done while still pending.',
+				]
+			: [
+					`✖ proposal-already-implemented: ${stuck.length} slice(s) reference files that are already tracked in git. auto_work refuses to re-claim those slices and the proposal stays stuck until they are closed or pivoted.\n`,
+				];
+	for (const f of stuck) {
 		lines.push(`  ${f.relPath} :: ${f.sliceId} :: ${f.kind}`);
 		lines.push(`    ${f.nextAction}`);
 	}
-	lines.push(
-		`\n  Fix each finding with proposals_proposal_transition (when fully shipped) or by editing the **Files**: list to match the actually-delivered scope.`,
-	);
+	if (stuck.length > 0)
+		lines.push(
+			`\n  Fix each finding with proposals_proposal_transition (when fully shipped) or by editing the **Files**: list to match the actually-delivered scope.`,
+		);
+	if (touched.length > 0) {
+		lines.push(
+			`\n  ${touched.length} more slice(s) only MODIFY files that predate their proposal. That is not evidence of completion, so they are listed for information and never counted as stuck:`,
+		);
+		for (const f of touched) lines.push(`  ${f.relPath} :: ${f.sliceId}`);
+	}
 	return lines.join('\n');
 };
 
@@ -295,7 +427,9 @@ const main = (): number => {
 	if (!strict) return 0;
 	// In strict mode only block on `ready/` findings — those are
 	// the proposals that genuinely block the swarm.
-	const blocking = findings.filter((f) => f.relPath.startsWith('ready/'));
+	const blocking = findings.filter(
+		(f) => isStuck(f) && f.relPath.startsWith('ready/'),
+	);
 	if (blocking.length > 0) {
 		process.stderr.write(
 			`� proposal-already-implemented (strict): ${blocking.length} ready/ proposal(s) are stuck.\n`,

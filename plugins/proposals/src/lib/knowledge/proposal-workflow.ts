@@ -1,4 +1,8 @@
 import {
+	describeWorkIsolation,
+	type IWorkIsolation,
+} from '@delendai/core/plugin';
+import {
 	buildKindOrder,
 	DEFAULT_KIND_ORDER,
 	LEGACY_ALIAS_PREFIX,
@@ -59,6 +63,7 @@ const buildProposalFamilies = (): IProposalWorkflow['families'] => {
 export const buildProposalWorkflow = (
 	proposalsDir: string,
 	indexFile: string,
+	isolation: IWorkIsolation = describeWorkIsolation(undefined),
 ): IProposalWorkflow => ({
 	families: buildProposalFamilies(),
 	locations: {
@@ -76,11 +81,13 @@ export const buildProposalWorkflow = (
 		'Claim files with agent_lock before editing; send agent_lock heartbeat while working; release when the slice closes.',
 		'A proposal may declare a `## Slices` section to parallelise disjoint work; each slice lists its files (`- **Files**: `a`, `b``), a gate and a status.',
 		'Adopting a project that already has a proposals folder? Call proposal_adopt — it returns the canonical layout, scans the folder and gives a plan to organize it; then you run the steps.',
-		'2+ agents sharing this repo? Each must call agent_worktree (action: create) once at the start of its session — it isolates the agent into its own git worktree + branch (agent/<name>) so concurrent git add/commit never race on a shared .git/index. List active worktrees with action: list; clean up with action: remove.',
+		isolation.rule,
 		'If the work needs more than 3 tool calls, touches multiple files, or requires repeated MCP reads, delegate it instead of keeping it on the main thread.',
 		'Run sync_proposals only after the last open slice of that proposal is closed; do not sync mid-flight while peer slices are still open.',
 		'Finish a slice with proposal_review action=submit (it stays NOT done). close_slice may flip `- **Status**: done` only when requirePeerReview is false or the slice already has review-state: done; move finished proposals with proposal_transition, never by hand.',
 		'Peer review: instead of closing your own slice, proposal_review action=submit (it stays NOT done). A DIFFERENT agent reviews: action=approve → done + lock released, or action=request_changes (with a note) → reworkable. The fixer re-submits and another agent reviews the fix. Loop until a reviewer has no objection. Reviewer must differ from the implementer.',
+		'Handing a finished proposal to review: proposal_transition to=review with agent=<implementer> opens a review round on every slice under that agent; list the delivering commits in shipped-in first. Never move a proposal into review by hand.',
+		'Reviewing proposals — whatever host you run in, when asked to review: call review_queue first and work oldest first. For each slice marked needs-verdict read the diff of its delivering commit, run its gate, check every acceptance item and the non-goals, then record the verdict with proposal_review only: approve with evidence (commitHash, validateExitCode, testsPassing, testsTotal), or request_changes with a note naming what is wrong, where, how to reproduce it and what must hold. A slice no round was opened for takes the delivering commit as commitHash; the implementer is derived from Git, never named by you; a delivery nobody signed is reviewed as unrecorded, and says independence could not be verified. Report blocked slices with their missing datum and move on; close a proposal whose slices are all approved with the call in its close field. Never edit code, never submit for the implementer, never move files by hand.',
 	],
 	template: [
 		'---',

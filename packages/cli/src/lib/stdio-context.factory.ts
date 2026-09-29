@@ -1,10 +1,10 @@
 import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-import { McpStdioClient } from '@delendai/client/public';
+import { McpStdioClient, serverEnvironment } from '@delendai/client/public';
+import { AGENT_ENVIRONMENT_MARKERS } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import type { IConnectToServer } from '../contracts/interfaces/stdio-context.interface';
 import type {
 	ICliCommandContext,
 	ICliGlobalOptions,
@@ -12,47 +12,79 @@ import type {
 import { buildServerArgs } from './server-args.service';
 
 /**
- * Resolve the path to `packages/cli/src/index.ts` (the in-process server
- * entrypoint that the CLI spawns back over stdio).
+ * The file to spawn as the server.
  *
- * Why this is non-trivial: `cwd` is the **consumer workspace** (e.g.
- * logistics-app), NOT the delendai repo. Naively `join(cwd, 'packages/cli/src/index.ts')`
- * resolves to a non-existent path and the spawned server dies with
- * `MCP error -32000: Connection closed` against the stdio client.
+ * ## The server is the binary already running
  *
- * Resolution order:
- *   1. `DELENDAI_SERVER_BIN` env override (escape hatch).
- *   2. Relative to `cwd` (works when the CLI happens to be run from
- *      inside the delendai repo itself).
- *   3. Relative to the location of THIS file (`import.meta.url`). This
- *      file lives at `<delendai>/packages/cli/src/lib/`, so the
- *      server entrypoint `<delendai>/packages/cli/src/index.ts` is
- *      one level up: `../index.ts`.
- *   4. Last-resort dist path: `../../dist/index.js`.
+ * This used to be a ladder of four guesses — `<cwd>/packages/cli/src/index.ts`,
+ * then two paths relative to this module, then `<cwd>/packages/cli/dist/index.js`
+ * — and every rung described the DEVELOPMENT layout. Driven from the built
+ * bundle in a consumer project, all four were missing, the spawn failed,
+ * and every command that needs a server answered `Connection closed`. The
+ * shipped CLI could not start its own server, which is every consumer.
+ *
+ * The answer was never a search. `__serve` is handled by this same
+ * entrypoint (see `runEntry`), in both layouts: running from source,
+ * `process.argv[1]` is `packages/cli/src/index.ts`; installed, it is the
+ * published bundle. So the server is whatever file is executing, and one
+ * statement replaces four guesses that could each be wrong somewhere.
+ *
+ * `DELENDAI_SERVER_BIN` stays as the deliberate override — a host that
+ * embeds the CLI differently needs a way to say so, and an explicit answer
+ * beats an inferred one.
  */
-const resolveServerEntrypoint = (cwd: string): string => {
-	if (process.env.DELENDAI_SERVER_BIN) return process.env.DELENDAI_SERVER_BIN;
-	const localSource = join(cwd, 'packages/cli/src/index.ts');
-	if (existsSync(localSource)) return localSource;
-	const here = dirname(fileURLToPath(import.meta.url));
-	// this file lives at <delendai>/packages/cli/src/lib/stdio-context.factory.ts,
-	// so the server entrypoint <delendai>/packages/cli/src/index.ts is one
-	// level up: `../index.ts`.
-	const sourceFromHere = join(here, '..', 'index.ts');
-	if (existsSync(sourceFromHere)) return sourceFromHere;
-	// Last-resort dist path: <delendai>/packages/cli/dist/index.js requires
-	// two levels up: `../../dist/index.js`.
-	const distFromHere = join(here, '..', '..', 'dist', 'index.js');
-	if (existsSync(distFromHere)) return distFromHere;
-	// Fall back to the original behaviour so the error message still surfaces
-	// the candidate path the caller would have expected.
-	return join(cwd, 'packages/cli/dist/index.js');
+export const resolveServerEntrypoint = (
+	env: NodeJS.ProcessEnv = process.env,
+	argv: readonly string[] = process.argv,
+): string => {
+	const override = env.DELENDAI_SERVER_BIN;
+	if (override !== undefined && override !== '') return override;
+	const running = argv[1];
+	if (running !== undefined && running !== '' && existsSync(running)) {
+		return running;
+	}
+	// A host that hid argv[1] must say which file to spawn: guessing here
+	// is what produced four wrong answers.
+	throw Object.assign(
+		new Error(
+			'Cannot tell which file to run as the delendai server: this process does not expose its own entrypoint. Set DELENDAI_SERVER_BIN to the delendai binary.',
+		),
+		{ code: EXIT_CODE.USAGE },
+	);
 };
+
+/**
+ * What the server must see of the caller's environment: who is working
+ * (the agent markers) and delendai's own settings. Nothing else, and no
+ * credential, reaches it this way.
+ */
+/** Words that, anywhere in a variable's name, say it holds a secret. */
+const SECRET_WORDS = ['TOKEN', 'SECRET', 'PASSWORD', 'CREDENTIAL'] as const;
+
+/** A variable whose name says it holds a secret is never forwarded. */
+const namesASecret = (name: string): boolean =>
+	SECRET_WORDS.some((word) => name.includes(word)) || name.endsWith('_KEY');
+
+export const forwardedToServer = (
+	env: Readonly<Record<string, string | undefined>>,
+): Record<string, string> =>
+	Object.fromEntries(
+		Object.entries(env).filter(
+			(entry): entry is [string, string] =>
+				entry[1] !== undefined &&
+				(AGENT_ENVIRONMENT_MARKERS.includes(entry[0]) ||
+					(entry[0].startsWith('DELENDAI_') &&
+						!namesASecret(entry[0]))),
+		),
+	);
 
 export const createStdioContext = async (
 	cwd: string,
 	globals: ICliGlobalOptions,
 	extraPlugins: readonly string[] = [],
+	// The method itself, not a wrapper around it: an arrow here is a
+	// function nothing ever calls in a test, and wrapping bought nothing.
+	connect: IConnectToServer = McpStdioClient.connect,
 ): Promise<ICliCommandContext> => {
 	if (
 		globals.remote !== undefined &&
@@ -72,12 +104,24 @@ export const createStdioContext = async (
 			{ code: EXIT_CODE.USAGE },
 		);
 	}
-	const entrypoint = resolveServerEntrypoint(cwd);
-	const client = await McpStdioClient.connect({
+	const entrypoint = resolveServerEntrypoint();
+	// Name the entrypoint in the failure. Which file was spawned is the
+	// half the server cannot tell you — it never ran — and without it a
+	// reader cannot tell "the server refused" from "we spawned the wrong
+	// path", which are opposite problems with opposite fixes.
+	const client = await connect({
 		command: 'bun',
 		args: [entrypoint, ...buildServerArgs(globals, extraPlugins)],
 		cwd,
+		env: serverEnvironment(forwardedToServer(process.env)),
 		stderr: 'pipe',
+	}).catch((error: unknown) => {
+		throw Object.assign(
+			new Error(
+				`${error instanceof Error ? error.message : String(error)}\n\n  server entrypoint: ${entrypoint}\n  workspace: ${cwd}`,
+			),
+			{ code: EXIT_CODE.REMOTE },
+		);
 	});
 	return {
 		cwd,
@@ -88,3 +132,5 @@ export const createStdioContext = async (
 		close: () => client.close(),
 	};
 };
+
+export type { IConnectToServer } from '../contracts/interfaces/stdio-context.interface';

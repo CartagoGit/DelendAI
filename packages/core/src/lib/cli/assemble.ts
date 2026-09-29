@@ -1,8 +1,12 @@
 import { existsSync } from 'node:fs';
+import { agentPolicyInstructions } from '../prompts/agent-policy-instructions.helper';
+import { createHostServerSlot } from '../plugins/capture-server';
+import { resolveProgressiveDisclosure } from '../plugins/preset-catalog';
 import { readFile as readFileAsync } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import type { IClientIdentity } from '../contracts/interfaces/client-identity.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type {
@@ -18,6 +22,8 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 } from '../plugins/load-config-file';
+import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
+import { createStaleRuntimeWatch } from '../development-policy/stale-runtime-advisory';
 import { resolveDevelopmentPolicy } from '../development-policy/resolve';
 import {
 	validateDevelopmentPolicy,
@@ -68,6 +74,7 @@ import {
 	type IEvidenceStoreWithCleanup,
 } from '../evidence/evidence-store';
 import { BOOTSTRAP_CORE_TOOL_IDS } from '../contracts/constants/bootstrap-core-tool-ids.constant';
+import { DEFAULT_WORKING_SET_POLICY } from '../contracts/constants/working-set-policy.constant';
 import {
 	resolveExplicitSurfaceMode,
 	resolveInitialSurfaceMode,
@@ -236,6 +243,9 @@ export const assembleCliConfig = async (
 	deps: IAssembleCliDeps = {},
 ): Promise<IAssembledCliConfig> => {
 	const workspace = createWorkspacePathProvider(args.workspace);
+	const hostServer = createHostServerSlot();
+	const looseEdits = createLooseEditsAdvisory(workspace.root);
+	const staleRuntime = createStaleRuntimeWatch(workspace.root);
 	const readFile: (absolutePath: string) => Promise<string | undefined> =
 		deps.readFile ??
 		(async (absolutePath: string) => {
@@ -315,7 +325,11 @@ export const assembleCliConfig = async (
 			...layoutIssues,
 		],
 	};
-	const corePrefix = args.namespacePrefix ?? 'delendai';
+	// The project's own declaration, not only a flag nothing passes: this
+	// read `args.namespacePrefix ?? 'delendai'`, and no shipped entry point
+	// ever supplied that argument.
+	const corePrefix =
+		args.namespacePrefix ?? fileConfig.namespacePrefix ?? 'delendai';
 	const keepLegacy = fileConfig.keepLegacy ?? false;
 	// U5: native authorized-roots filesystem allowlist. The config
 	// lists absolute roots the operator authorizes for `fs_read`/`fs_write`
@@ -496,6 +510,13 @@ export const assembleCliConfig = async (
 				}
 			: undefined;
 
+	// Filled at the MCP handshake, which every client performs, so a host
+	// that declared nothing is still identifiable by the name it reports.
+	let handshakeClientName: string | undefined;
+	const clientIdentity: IClientIdentity = {
+		name: () => handshakeClientName,
+	};
+
 	const commitAuthorIdentity = {
 		clientName: providedHost ?? 'agent',
 		modelName: providedModel ?? 'unknown-model',
@@ -572,6 +593,7 @@ export const assembleCliConfig = async (
 			...(deps.hostSubagentRuntime !== undefined
 				? { subagentRuntime: deps.hostSubagentRuntime }
 				: {}),
+			runtimeBehindCheckout: staleRuntime.behind,
 			workspace,
 			corePaths,
 			cacheDir: corePaths.cacheDir,
@@ -581,6 +603,7 @@ export const assembleCliConfig = async (
 			developmentPolicy,
 			commitAuthor: commitAuthorResolution,
 			...(hostIdentity !== undefined ? { hostIdentity } : {}),
+			clientIdentity,
 			pluginCacheDir,
 			cachePath,
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
@@ -633,6 +656,7 @@ export const assembleCliConfig = async (
 		disposePlugins,
 		disposePlugin,
 	} = await assemblePlugins({
+		liveServer: hostServer.get,
 		args,
 		fileConfig,
 		corePrefix,
@@ -896,7 +920,10 @@ export const assembleCliConfig = async (
 			? { explicitMode: explicitSurfaceMode }
 			: {}),
 		bootstrapToolIds: [...BOOTSTRAP_CORE_TOOL_IDS],
-		...(fileConfig.managedSurface?.progressiveDisclosure === true
+		...(resolveProgressiveDisclosure(
+			fileConfig.managedSurface?.progressiveDisclosure,
+			args.tokens.preset,
+		)
 			? { progressiveDisclosure: true }
 			: {}),
 		// The compact-router is ALWAYS registered as a tool
@@ -918,11 +945,15 @@ export const assembleCliConfig = async (
 			idleTtlMs:
 				fileConfig.managedSurface?.idleTtlMs !== undefined
 					? fileConfig.managedSurface.idleTtlMs
-					: 5 * 60_000,
+					: DEFAULT_WORKING_SET_POLICY.idleTtlMs,
 			maxWarmPlugins:
 				fileConfig.managedSurface?.maxWarmPlugins !== undefined
 					? fileConfig.managedSurface.maxWarmPlugins
-					: 8,
+					: DEFAULT_WORKING_SET_POLICY.maxWarmPlugins,
+			minWarmMs:
+				fileConfig.managedSurface?.minWarmMs !== undefined
+					? fileConfig.managedSurface.minWarmMs
+					: DEFAULT_WORKING_SET_POLICY.minWarmMs,
 		},
 		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
 		plugins: [...pluginDescriptorsByPlugin.entries()].map(
@@ -958,6 +989,10 @@ export const assembleCliConfig = async (
 	};
 
 	const config: IDelendaiHostConfig = {
+		instructions: agentPolicyInstructions(fileConfig.core?.agentPolicy),
+		onClientInitialized: (client) => {
+			handshakeClientName = client.name;
+		},
 		metadata: {
 			name: args.serverName,
 			version: args.serverVersion,
@@ -969,6 +1004,8 @@ export const assembleCliConfig = async (
 		keepLegacy,
 		agentWorktreeEnabled,
 		developmentPolicy,
+		hostServer,
+		runtimeBehindCheckout: staleRuntime.behind,
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
@@ -1123,14 +1160,15 @@ export const assembleCliConfig = async (
 						isAgentStuckFn?.(toolName, toolArgs) ?? null,
 				}
 			: {}),
-		...(moduleLoading === 'lazy' || getCheckpointAdvisoryFns.length > 0
-			? {
-					getCheckpointAdvisory: (context) =>
-						selectCheckpointAdvisory(
-							getCheckpointAdvisoryFns.map((fn) => fn(context)),
-						),
-				}
-			: {}),
+		// Core's own advisory joins the plugins': changes left in the
+		// shared checkout on the integration branch are announced on every
+		// tool result, whoever made them.
+		getCheckpointAdvisory: (context) =>
+			selectCheckpointAdvisory([
+				...getCheckpointAdvisoryFns.map((fn) => fn(context)),
+				looseEdits(context),
+				staleRuntime.advisory(context),
+			]),
 		...(moduleLoading === 'lazy' || beforeToolCallFns.length > 0
 			? {
 					beforeToolCall: (context) =>

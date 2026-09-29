@@ -60,13 +60,15 @@ export const buildKnowledgeToolRegistration = (
 									.get()
 									?.listToolKnowledgeEntries() ?? [])
 							: [];
+					// Listing is ids and titles only, as documented and as the
+					// output schema declares. Spreading whole entries leaked
+					// every body into the list, and a client that listed tools
+					// rejected the answer for the undeclared `body` key.
 					return toolJson({
-						entries: [
-							...entries.map((entry) => ({
-								...withBrandTitle(entry),
-							})),
-							...toolDocs.map(withBrandTitle),
-						],
+						entries: [...entries, ...toolDocs].map((entry) => {
+							const branded = withBrandTitle(entry);
+							return { id: branded.id, title: branded.title };
+						}),
 					});
 				}
 				const found = entries.find((entry) => entry.id === args.id);

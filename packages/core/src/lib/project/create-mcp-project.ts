@@ -1,14 +1,22 @@
 import type { IDelendaiProject } from '../contracts/interfaces/delendai-project.interface';
+import type { IWorkCheckoutPublisher } from '../wip-engine/work-checkout-publisher.interface';
+import { startServerWorkCheckoutPublisher } from '../wip-engine/work-checkout-publisher';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+	ListToolsRequestSchema,
+	type ListToolsResult,
+} from '@modelcontextprotocol/sdk/types.js';
 import { setMaxListeners } from 'node:events';
 
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { decideSurfaceModeFromCapabilities } from '../surface/decide-mode';
+import { stripWireJsonSchemaNoise } from '../surface/wire-json-schema.helper';
 import { instrumentToolHandlers } from './instrument-tool-handlers.helper';
 import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
+import type { IMetricsRegistry } from '../metrics/metrics-registry';
 
 /**
  * Bound on how long `dispose()` waits for an in-flight lazily-activated
@@ -17,6 +25,67 @@ import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resource
  */
 const DISPOSE_DRAIN_TIMEOUT_MS = 5_000;
 const DISPOSE_DRAIN_POLL_MS = 25;
+
+/**
+ * Route every `tools/list` response through `stripWireJsonSchemaNoise`.
+ * The SDK installs its list handler lazily, on the first `registerTool`,
+ * through `server.server.setRequestHandler`; wrapping that one entry
+ * point catches it whenever it happens, and leaves every other method —
+ * and the SDK's own zod validation of tool calls — untouched.
+ */
+const compactToolListWire = (listed: ListToolsResult): ListToolsResult => ({
+	...listed,
+	tools: listed.tools.map((tool) => ({
+		...tool,
+		inputSchema: stripWireJsonSchemaNoise(
+			tool.inputSchema,
+		) as ListToolsResult['tools'][number]['inputSchema'],
+		...(tool.outputSchema !== undefined
+			? {
+					outputSchema: stripWireJsonSchemaNoise(
+						tool.outputSchema,
+					) as ListToolsResult['tools'][number]['outputSchema'],
+				}
+			: {}),
+	})),
+});
+
+type IRequestHandlerRegistrar = {
+	setRequestHandler(
+		schema: unknown,
+		handler: (request: unknown, extra: unknown) => unknown,
+	): void;
+};
+
+const installToolListWireCompaction = (
+	server: McpServer,
+	metrics?: IMetricsRegistry,
+): void => {
+	// The SDK's overloads are generic over every request schema; this
+	// wrapper only needs to recognise one of them by identity.
+	const protocol = server.server as unknown as IRequestHandlerRegistrar;
+	const setRequestHandler = protocol.setRequestHandler.bind(protocol);
+	protocol.setRequestHandler = (schema, handler) => {
+		if (schema !== ListToolsRequestSchema) {
+			setRequestHandler(schema, handler);
+			return;
+		}
+		setRequestHandler(schema, async (request, extra) => {
+			const served = compactToolListWire(
+				(await handler(request, extra)) as ListToolsResult,
+			);
+			// What each served definition costs the client's context, so
+			// the session can report how much of it was ever used.
+			metrics?.recordToolListServed(
+				served.tools.map((tool) => ({
+					name: tool.name,
+					bytes: Buffer.byteLength(JSON.stringify(tool), 'utf8'),
+				})),
+			);
+			return served;
+		});
+	};
+};
 
 const installListChangeBatching = (
 	server: McpServer,
@@ -97,13 +166,30 @@ export type { IDelendaiProject };
  * (in declared order), then each extra appended at the end — or, when
  * `registerAfter` names an anchor, inserted immediately after it.
  * Multiple extras anchored to the same id keep declaration order.
- * Pure and deterministic; throws on duplicate ids and unknown anchors
+ * Pure and deterministic; throws on duplicate ids, unknown anchors and
+ * write tools that declare no write root,
  * so a misconfigured host fails fast instead of drifting silently.
  */
 export function planRegistrationOrder(
 	core: readonly IToolRegistration[],
 	extras: readonly IToolRegistration[],
 ): readonly IToolRegistration[] {
+	// A tool that writes must say where: an omitted root is the
+	// defect that sent a proposal rename into the integration branch's
+	// checkout. Refused here, at planning, so it fails at start-up and not
+	// in review.
+	const unrooted = [...core, ...extras]
+		.filter(
+			(registration) =>
+				registration.effects?.includes('write') === true &&
+				registration.writeRoot === undefined,
+		)
+		.map((registration) => registration.id);
+	if (unrooted.length > 0) {
+		throw new Error(
+			`[delendai] tool(s) with a write effect declare no writeRoot: ${unrooted.join(', ')}. Declare where the writes land: 'caller-checkout', 'repository', 'host-state', 'server' or 'remote'.`,
+		);
+	}
 	const sequence: IToolRegistration[] = [...core];
 	const seen = new Set(core.map((registration) => registration.id));
 	if (seen.size !== core.length) {
@@ -150,12 +236,30 @@ export function planRegistrationOrder(
 export async function createMcpProject(
 	config: IDelendaiHostConfig,
 ): Promise<IDelendaiProject> {
-	const server = new McpServer({
-		name: config.metadata.name,
-		title: 'DelendAI',
-		version: config.metadata.version,
-	});
+	const server = new McpServer(
+		{
+			name: config.metadata.name,
+			title: 'DelendAI',
+			version: config.metadata.version,
+		},
+		config.instructions === undefined
+			? undefined
+			: { instructions: config.instructions },
+	);
+	config.hostServer?.set(server);
+	if (config.onClientInitialized !== undefined) {
+		const notify = config.onClientInitialized;
+		const previous = server.server.oninitialized;
+		server.server.oninitialized = () => {
+			previous?.();
+			const client = server.server.getClientVersion();
+			if (client !== undefined) {
+				notify({ name: client.name, version: client.version });
+			}
+		};
+	}
 	const withListChangeBatch = installListChangeBatching(server);
+	installToolListWireCompaction(server, config.metricsRegistry);
 	// Instrument BEFORE registering tools so every handler is wrapped.
 	instrumentToolHandlers(server, config);
 	const toolSurfaceRuntime =
@@ -473,10 +577,16 @@ export async function createMcpProject(
 		await resource.register(server);
 	}
 	let disposed = false;
+	let workCheckouts: IWorkCheckoutPublisher | undefined;
 	return {
 		server,
 		registrationOrder: ordered.map((registration) => registration.id),
 		async start(): Promise<void> {
+			// Agents' committed work reaches its work ref on the remote at
+			// the cadence the policy declares, for as long as this server
+			// runs, whichever launcher started it and whichever plugins are
+			// loaded. It never commits, and never touches this checkout.
+			workCheckouts = startServerWorkCheckoutPublisher(config);
 			const transport = new StdioServerTransport();
 			// The MCP SDK attaches one `drain` listener per pending stdio
 			// write. Startup can legitimately publish more than ten frames
@@ -497,6 +607,7 @@ export async function createMcpProject(
 					);
 				}
 			}
+			workCheckouts?.stop();
 			await config.disposePlugins?.();
 		},
 	};

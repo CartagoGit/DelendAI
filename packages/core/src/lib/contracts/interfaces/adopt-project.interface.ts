@@ -27,6 +27,12 @@ export interface IBuildAdoptProjectPlanInput {
 	readonly defaultModel?: string;
 	/** Optional `owner/name` slug — consent-gated issues wiring. */
 	readonly repo?: string;
+	/**
+	 * The plugins the chosen adoption stage leaves out. A plugin's declared
+	 * adoption is not applied to one of them: wiring it, and launching or
+	 * verifying it, would promise what the stage just deferred.
+	 */
+	readonly deferredPluginIds?: ReadonlySet<string>;
 }
 
 export interface IAdoptProjectPlan {
@@ -44,4 +50,16 @@ export interface IAdoptProjectToolDeps {
 	readonly workspace: IWorkspacePathProvider;
 	readonly corePaths: ICorePaths;
 	readonly reader: IFileReader;
+}
+
+/** What the plugins' declared adoption contributions add to a plan. */
+export interface IDeclaredAdoptions {
+	/** `plugins.<id>.options` to merge into the config, per plugin wired. */
+	readonly plugins: Readonly<
+		Record<string, { readonly options: Readonly<Record<string, string>> }>
+	>;
+	readonly rationale: readonly string[];
+	readonly residual: readonly string[];
+	/** The preset a wired plugin needs to be launched with, if any. */
+	readonly launchPreset: string | undefined;
 }

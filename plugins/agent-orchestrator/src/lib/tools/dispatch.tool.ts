@@ -58,14 +58,17 @@ const StepOutcomeSchema = z.object({
 	ok: z.boolean(),
 });
 
+/** What a dispatch spent. `_dispatch` returns it; `_plan_ref` reads it back. */
+const SpendSchema = z.object({
+	consumedOrchestrator: z.number().int().nonnegative(),
+	consumedSubagents: z.record(z.string(), z.number().int().nonnegative()),
+	steps: z.number().int().nonnegative(),
+});
+
 const PlanOutcomeSchema = z.object({
 	mode: OrchestrationModeSchema,
 	steps: z.array(StepOutcomeSchema),
-	budget: z.object({
-		consumedOrchestrator: z.number().int().nonnegative(),
-		consumedSubagents: z.record(z.string(), z.number().int().nonnegative()),
-		steps: z.number().int().nonnegative(),
-	}),
+	budget: SpendSchema,
 	ok: z.boolean(),
 	error: z.string().optional(),
 	receipt: z.object({
@@ -123,25 +126,49 @@ const INPUT_SCHEMA = z
 	})
 	.strict();
 
-const BudgetOutputSchema = BudgetPolicySchema.omit({ timeoutMs: true }).extend({
-	consumedOrchestrator: z.number().int().nonnegative(),
-	consumedSubagents: z.record(z.string(), z.number().int().nonnegative()),
-	steps: z.number().int().nonnegative(),
-	exhausted: z.boolean(),
-});
-
-const _RotationOutputSchema = RotationPolicySchema;
-
+/**
+ * The plan a dispatch used and, once it has run, what it spent.
+ *
+ * `spent` replaces the separate `_budget` tool. That tool listed a second
+ * schema for figures `_dispatch` already returns, and filled in what it
+ * could not know: `maxTokensOrchestrator` and `maxTokensPerSubagent` were
+ * always 0, and `exhausted` meant "spent more than nothing". The real
+ * ceilings are `budget` here, beside the spend they bound.
+ */
 const PlanRefSchema = z.object({
 	mode: OrchestrationModeSchema,
 	rationale: z.string(),
 	steps: z.array(PlanStepSchema),
 	budget: BudgetPolicySchema,
 	rotation: RotationPolicySchema,
+	spent: SpendSchema.optional(),
 });
 
 type IDispatchArgs = z.infer<typeof INPUT_SCHEMA>;
-type IBudgetArgs = { taskId?: string };
+type IPlanRefArgs = { taskId?: string };
+
+/** The answer for a taskId with no plan on record: says so, invents nothing. */
+const noPlan = (rationale: string) => ({
+	mode: 'single' as const,
+	rationale,
+	steps: [],
+	budget: { maxTokensOrchestrator: 0, maxTokensPerSubagent: 0, timeoutMs: 0 },
+	rotation: {
+		maxIterationsPerSubagent: 1,
+		allow: ['error-storm' as const],
+	},
+});
+
+/**
+ * A dispatch's spend as the wire carries it. `consumedSubagents` is a Map
+ * in the engine and a record in `SpendSchema`: a Map serialises to `{}`,
+ * and the SDK once rejected every successful dispatch for exactly that.
+ */
+const spendOf = (outcome: IPlanOutcome): z.infer<typeof SpendSchema> => ({
+	consumedOrchestrator: outcome.budget.consumedOrchestrator,
+	consumedSubagents: Object.fromEntries(outcome.budget.consumedSubagents),
+	steps: outcome.budget.steps,
+});
 
 /**
  * Map a dispatch-port failure to the tool-error envelope, or `undefined`
@@ -176,7 +203,7 @@ export interface IDispatchToolDeps {
 	readonly engine: () => OrchestratorEngine;
 	/**
 	 * Resolved lazily, at call time. A host that never dispatches still
-	 * gets the port-independent tools (`_plan`, `_budget`); only an
+	 * gets the port-independent tools (`_plan`, `_plan_ref`); only an
 	 * actual `_dispatch` call has to have a real dispatch capability,
 	 * and it fails loudly rather than fabricating success.
 	 */
@@ -216,11 +243,7 @@ export function buildDispatchRegistration(
 		// is a Map in the engine and a record in `PlanOutcomeSchema`.
 	}): Promise<
 		Omit<IPlanOutcome, 'budget'> & {
-			budget: {
-				readonly consumedOrchestrator: number;
-				readonly consumedSubagents: Readonly<Record<string, number>>;
-				readonly steps: number;
-			};
+			budget: z.infer<typeof SpendSchema>;
 			receipt: ReturnType<typeof closeReceipt>;
 		}
 	> => {
@@ -330,17 +353,7 @@ export function buildDispatchRegistration(
 		// with `-32602 ... expected record, received Map`, so no
 		// successful dispatch could ever be delivered to a client.
 		lastOutcomeCache.set(task.id, { plan, outcome });
-		return {
-			...outcome,
-			budget: {
-				consumedOrchestrator: outcome.budget.consumedOrchestrator,
-				consumedSubagents: Object.fromEntries(
-					outcome.budget.consumedSubagents,
-				),
-				steps: outcome.budget.steps,
-			},
-			receipt,
-		};
+		return { ...outcome, budget: spendOf(outcome), receipt };
 	};
 
 	const lastOutcomeCache = new Map<
@@ -391,110 +404,36 @@ export function buildDispatchRegistration(
 			);
 
 			server.registerTool(
-				`${namespacePrefix}_budget`,
-				{
-					description:
-						'Read the current orchestrator budget snapshot. Requires a `_dispatch` call with the same taskId first.',
-					inputSchema: z
-						.object({ taskId: z.string().min(1) })
-						.strict(),
-					outputSchema: BudgetOutputSchema,
-				},
-				async (args: IBudgetArgs) => {
-					if (!args.taskId) {
-						return toolJson({
-							consumedOrchestrator: 0,
-							consumedSubagents: {},
-							steps: 0,
-							exhausted: false,
-							maxTokensOrchestrator: 0,
-							maxTokensPerSubagent: 0,
-						});
-					}
-					const cached = lastOutcomeCache.get(args.taskId);
-					if (lastOutcome !== undefined && cached === undefined) {
-						const fallback = lastOutcome(args.taskId);
-						if (fallback !== undefined) {
-							return toolJson(mapBudget(fallback));
-						}
-					}
-					if (cached === undefined) {
-						return toolJson({
-							consumedOrchestrator: 0,
-							consumedSubagents: {},
-							steps: 0,
-							exhausted: false,
-							maxTokensOrchestrator: 0,
-							maxTokensPerSubagent: 0,
-						});
-					}
-					return toolJson(mapBudget(cached.outcome));
-				},
-			);
-
-			server.registerTool(
 				`${namespacePrefix}_plan_ref`,
 				{
 					description:
-						'Read the plan that `_dispatch` used for a taskId. Companion to `_budget`.',
+						'Read the plan `_dispatch` used for a taskId and, once it has run, what it spent.',
 					inputSchema: z
 						.object({ taskId: z.string().min(1) })
 						.strict(),
 					outputSchema: PlanRefSchema,
 				},
-				async (args: IBudgetArgs) => {
-					if (!args.taskId) {
-						return toolJson({
-							mode: 'single',
-							rationale: 'no plan',
-							steps: [],
-							budget: {
-								maxTokensOrchestrator: 0,
-								maxTokensPerSubagent: 0,
-								timeoutMs: 0,
-							},
-							rotation: {
-								maxIterationsPerSubagent: 1,
-								allow: ['error-storm'],
-							},
-						});
-					}
+				async (args: IPlanRefArgs) => {
+					if (!args.taskId) return toolJson(noPlan('no plan'));
 					const cached = lastOutcomeCache.get(args.taskId);
-					if (cached === undefined) {
+					if (cached !== undefined) {
 						return toolJson({
-							mode: 'single',
-							rationale: 'no plan for that taskId',
-							steps: [],
-							budget: {
-								maxTokensOrchestrator: 0,
-								maxTokensPerSubagent: 0,
-								timeoutMs: 0,
-							},
-							rotation: {
-								maxIterationsPerSubagent: 1,
-								allow: ['error-storm'],
-							},
+							...cached.plan,
+							spent: spendOf(cached.outcome),
 						});
 					}
-					return toolJson(cached.plan);
+					// A host that persists outcomes can still answer what a
+					// dispatch spent after this process forgot its plan.
+					const recovered = lastOutcome?.(args.taskId);
+					return toolJson({
+						...noPlan('no plan for that taskId'),
+						...(recovered !== undefined
+							? { spent: spendOf(recovered) }
+							: {}),
+					});
 				},
 			);
 		},
-	};
-}
-
-function mapBudget(outcome: IPlanOutcome): Record<string, unknown> {
-	const consumedSubagents: Record<string, number> = {};
-	for (const [k, v] of outcome.budget.consumedSubagents) {
-		consumedSubagents[k] = v;
-	}
-	return {
-		consumedOrchestrator: outcome.budget.consumedOrchestrator,
-		consumedSubagents,
-		steps: outcome.budget.steps,
-		exhausted: outcome.budget.consumedOrchestrator > 0,
-		maxTokensOrchestrator: 0,
-		maxTokensPerSubagent: 0,
 	};
 }
 

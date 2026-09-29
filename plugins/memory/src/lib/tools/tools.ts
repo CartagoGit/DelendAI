@@ -113,6 +113,7 @@ export const buildMemoryToolRegistrations = (
 		{
 			id: 'save',
 			effects: ['write'],
+			writeRoot: 'host-state',
 			summary: 'Save (or update) a titled note with optional tags.',
 			descriptionKey: 'memory_save',
 			tags: ['memory'],
@@ -352,6 +353,7 @@ export const buildMemoryToolRegistrations = (
 		{
 			id: 'forget',
 			effects: ['write', 'destructive'],
+			writeRoot: 'host-state',
 			summary: 'Delete a note by id.',
 			tags: ['memory'],
 			register: async (server) => {
@@ -428,6 +430,7 @@ export const buildMemoryToolRegistrations = (
 		{
 			id: 'import',
 			effects: ['write', 'destructive'],
+			writeRoot: 'host-state',
 			summary:
 				'Import a previously exported snapshot (replace or merge).',
 			tags: ['memory'],

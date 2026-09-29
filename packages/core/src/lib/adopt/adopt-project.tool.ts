@@ -37,6 +37,8 @@ import { ADOPTION_ASSESSMENT_SCHEMA } from '../contracts/constants/adoption-asse
 import { deriveConfig } from '../bootstrap/derive-config';
 import { mergeDerivedConfig } from '../bootstrap/merge-derived-config';
 import { applyAdoptionExtensions } from './adoption-extension-registry';
+import { declaredAdoptions } from './declared-adoptions.service';
+import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
 import type {
 	IAdoptProjectPlan,
 	IAdoptProjectToolDeps,
@@ -78,18 +80,34 @@ export const buildAdoptProjectPlan = (
 			: {}),
 	};
 
+	// What the plugins declare they contribute, applied from the index:
+	// the core names none of them.
+	const declared = declaredAdoptions(FIRST_PARTY_PLUGIN_INDEX.entries, input);
+	const derivedConfig = derived.config as unknown as Record<string, unknown>;
 	const plan = applyAdoptionExtensions({
 		derived,
 		request: input,
 		plan: {
-			config: derived.config as unknown as Record<string, unknown>,
-			rationale: derived.rationale,
+			config: {
+				...derivedConfig,
+				plugins: {
+					...((derivedConfig.plugins as Record<string, unknown>) ??
+						{}),
+					...declared.plugins,
+				},
+			},
+			rationale: [...derived.rationale, ...declared.rationale],
 			files: [...buildAgentFiles(hostOptions)],
 			residual: [
-				`Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset ${derived.preset}`,
-				input.repo !== undefined
-					? `GitHub repo provided (${input.repo}). Wire plugin-specific adoption explicitly if you want issue ingestion during adoption.`
-					: `(Optional) Wire GitHub issues later: run \`${input.namespacePrefix}_setup_github\`, then set \`plugins.issues.options.repo\` to your \`owner/name\` slug.`,
+				`Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset ${declared.launchPreset ?? derived.preset}`,
+				...declared.residual,
+				// A repo no plugin declares anything for still deserves to
+				// be acknowledged rather than silently dropped.
+				...(input.repo !== undefined && declared.residual.length === 0
+					? [
+							`GitHub repo provided (${input.repo}). Wire plugin-specific adoption explicitly if you want issue ingestion during adoption.`,
+						]
+					: []),
 			],
 		},
 	});
@@ -122,6 +140,19 @@ const ADOPT_PROJECT_OUTPUT_SCHEMA = z.object({
  * leaves the plan intact. The rationale note explains the cap so users
  * see why plugins were dropped.
  */
+/** The first-party plugins a stage leaves out; none at `specialized`. */
+const deferredAtStage = (
+	stage: (typeof ADOPTION_STAGES)[number],
+): ReadonlySet<string> => {
+	if (stage === 'specialized') return new Set();
+	const allowed = new Set(resolveStagePluginIds(stage));
+	return new Set(
+		FIRST_PARTY_PLUGIN_INDEX.entries
+			.map((entry) => entry.id)
+			.filter((id) => !allowed.has(id)),
+	);
+};
+
 const applyStageFilter = (
 	plan: IAdoptProjectPlan,
 	stage: (typeof ADOPTION_STAGES)[number],
@@ -424,6 +455,7 @@ export const buildAdoptProjectToolRegistration = (
 							? { defaultModel: args.defaultModel }
 							: {}),
 						...(args.repo !== undefined ? { repo: args.repo } : {}),
+						deferredPluginIds: deferredAtStage(stage),
 					}),
 					stage,
 				);

@@ -8,10 +8,12 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import { levelProjection } from '../services/projection-refresh';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { scopeToCaller } from '../services/scope-to-caller.service';
 
 export interface ISyncProposalsToolOptions {
 	readonly namespacePrefix: string;
@@ -31,11 +33,31 @@ export interface ISyncProposalsToolOptions {
 	 */
 	readonly extraFolders?: readonly string[];
 	readonly folderPolicy?: IProposalFolderPolicy;
+	/**
+	 * Rebuild the index and its projection without moving any file
+	 * (x00716): what a reader of the proposals may do anywhere.
+	 */
+	readonly indexOnly?: boolean;
+	/**
+	 * DIP seam for the reconciler, so a test can drive the decision
+	 * without a database. Defaults to the real one, exactly as
+	 * `gitRunner` above defaults to real git.
+	 */
+	readonly reconcile?: Parameters<typeof levelProjection>[0]['reconcile'];
+	/** Injected in tests; the reader's own parity verdict by default. */
+	readonly parity?: Parameters<typeof levelProjection>[0]['parity'];
 	/** Injectable for tests; defaults to a real `git` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
 }
 
 export interface ISyncProposalsPayload {
+	/**
+	 * What happened to the OTHER projection of the same markdown:
+	 * `refreshed` when the SQLite database was reconciled from this same
+	 * rebuild, `skipped` when the tree was unchanged so it was already
+	 * level, `failed` when it could not be.
+	 */
+	readonly projection: 'refreshed' | 'skipped' | 'failed';
 	readonly changed: boolean;
 	readonly count: number;
 	readonly indexPath: string;
@@ -85,13 +107,27 @@ export const createCollisionTolerantGitRunner = (
 		if (from === undefined || to === undefined) return inner(args);
 		if (!(await exists(to)) || !(await exists(from))) return inner(args);
 		onCollision(
-			`duplicate proposal on disk: refusing to move ${from} onto the existing ${to}. Both files claim the same slot; the index was rebuilt from the rest of the tree. Resolve with \`bun tools/scripts/lint/proposal-uniqueness.script.ts\`, keep the copy furthest along ready < in-progress < review < done, delete the other, then re-run sync_proposals.`,
+			`duplicate proposal on disk: refusing to move ${from} onto the existing ${to}. Both files claim the same slot; the index was rebuilt from the rest of the tree. Keep the copy furthest along ready < in-progress < review < done, delete the other, then re-run sync_proposals.`,
 		);
 		// Report success WITHOUT moving: the engine then skips its
 		// `safeRename` fallback (which is what used to throw) and
 		// carries on reconciling and indexing the rest of the tree.
 		return { ok: true, output: '' };
 	};
+};
+
+/** The leveller to run, with whatever seams a test injected. */
+const levellerFor = (
+	options: Pick<ISyncProposalsToolOptions, 'reconcile' | 'parity'>,
+): typeof levelProjection | undefined => {
+	const { reconcile, parity } = options;
+	if (reconcile === undefined && parity === undefined) return undefined;
+	return (input) =>
+		levelProjection({
+			...input,
+			...(reconcile === undefined ? {} : { reconcile }),
+			...(parity === undefined ? {} : { parity }),
+		});
 };
 
 /**
@@ -115,6 +151,8 @@ export const runSyncProposals = async (
 		options.extraFolders ?? [],
 		gitRunner,
 		options.folderPolicy,
+		levellerFor(options),
+		options.indexOnly === true,
 	);
 	// The engine's own duplicate/drift warnings come first; the
 	// collisions this wrapper absorbed are appended so nothing it
@@ -123,7 +161,11 @@ export const runSyncProposals = async (
 		...result.errors,
 		...collisions.filter((message) => !result.errors.includes(message)),
 	];
+	// The OTHER projection is levelled by the same act that wrote the
+	// registry, so this tool reports it rather than repeating it.
+	const projection = result.projection;
 	return {
+		projection: projection.status,
 		changed: result.changed,
 		// `count` is the number of entities actually indexed — with a
 		// duplicate present that is still every readable proposal, which
@@ -145,6 +187,7 @@ export const buildSyncProposalsRegistration = (
 ): IToolRegistration => ({
 	id: 'sync_proposals',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Rebuild the proposal index from the .md files (run after creating/renaming proposals).',
 	tags: ['lazy'],
@@ -154,17 +197,19 @@ export const buildSyncProposalsRegistration = (
 			{
 				inputSchema: z.object({}),
 				outputSchema: z.object({
+					projection: z.enum(['refreshed', 'skipped', 'failed']),
 					changed: z.boolean(),
 					count: z.number(),
 					indexPath: z.string(),
 					errors: z.array(z.string()),
 				}),
 				description:
-					'Regenerate the proposal index from the .md files under the proposals dir. Idempotent. Invoke after any create or rename under the proposals dir. Returns { changed, count, indexPath, errors }. A duplicate proposal id degrades to an entry in errors[] instead of aborting the sweep.',
+					'Regenerate the proposal index from the .md files under the proposals dir, and reconcile the SQLite projection from the same rebuild. Idempotent. Invoke after any create or rename under the proposals dir. Returns { projection, changed, count, indexPath, errors }. A duplicate proposal id degrades to an entry in errors[] instead of aborting the sweep.',
 			},
 			async () => {
-				const result = await runSyncProposals(options);
+				const result = await runSyncProposals(scopeToCaller(options));
 				const payload = {
+					projection: result.projection,
 					changed: result.changed,
 					count: result.count,
 					indexPath: result.indexPath,

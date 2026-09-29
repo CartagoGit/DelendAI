@@ -16,9 +16,10 @@ import type { IProposalIndexEntry } from '@delendai/proposals/lib/proposals/inde
  *
  *   - the four early-return paths (non-plan / missing file /
  *     unparseable frontmatter / no `contains:` block),
- *   - the documented parser-gap (the current custom YAML parser
- *     does NOT produce the nested `{ contains: { proposals, plans } }`
- *     shape that the production code reads — see KNOWN_GAPS),
+ *   - a flat `contains:` list, which is not the shape it reads, and
+ *     the nested `{ contains: { proposals, plans } }` mapping it does
+ *     read (parsed as YAML since r00643; the hand parser read it as
+ *     `null`),
  *   - the defaults path (Partial<IBlockedByReaders> defaults to the
  *     module-level readers).
  *
@@ -27,9 +28,8 @@ import type { IProposalIndexEntry } from '@delendai/proposals/lib/proposals/inde
  *          `Partial<IBlockedByReaders>`, so the spec exercises the
  *          projection logic without touching the filesystem.
  *   - SRP — each `describe` block covers exactly one concern.
- *   - OCP — once the frontmatter parser gains nested-mapping
- *          support, this spec's "parser-gap" block collapses into
- *          the happy path; no production-code change needed.
+ *   - OCP — the nested-mapping case needed no production change once
+ *          the frontmatter parser read YAML (r00643).
  */
 
 const ENTRY: IProposalIndexEntry = {
@@ -115,14 +115,11 @@ describe('blockedByFor — early-return paths', async () => {
 });
 
 describe('blockedByFor — happy path (flat-array frontmatter)', async () => {
-	// The current `parseFrontmatterBlock` (custom YAML parser) does NOT
-	// produce a nested `{ contains: { proposals: [...], plans: [...] } }`
-	// shape — it produces a flat array `contains: [a, b, c]` (or nothing).
-	// `blockedByFor` reads `fm.contains.proposals` (nested), so with the
-	// current parser it always returns []. We pin that behaviour here so
-	// the gap is visible in CI; see KNOWN_GAPS for the follow-up.
+	// `blockedByFor` reads the nested `contains.proposals` / `.plans`
+	// mapping; a flat `contains: [a, b, c]` list is not that shape and
+	// declares no children it can read.
 
-	it('returns [] when the parser produces a flat-array `contains:` (parser-gap today)', async () => {
+	it('returns [] for a flat `contains:` list, which is not the shape it reads', async () => {
 		const PLAN = wrap(
 			'id: q00001\nstatus: in-progress\ntype: plan\ncontains: [f00049, f00050, q00002]\n',
 		);
@@ -157,24 +154,14 @@ describe('blockedByFor — defaults (DIP sanity)', async () => {
 });
 
 /**
- * KNOWN_GAPS — frontmatter parser does not produce nested mappings.
- *
- * Discovered while writing this spec on 2026-06-23. The custom
- * YAML parser in `plugins/proposals/src/lib/proposals/frontmatter-parser.ts`
- * does NOT support nested mappings with array values:
- *
- *   - `contains: [a, b, c]`            → `fm.contains` is `[a, b, c]`
- *   - `contains:\n  proposals:\n    - a` → `fm.contains` is `{ proposals: null, plans: null }`
- *
- * `blockedByFor` reads `fm.contains.proposals` (nested). With the
- * current parser, that path is always `undefined` and the projection
- * always returns []. Fixing this is orthogonal to q00001's S1
- * (this module's extraction) and should be filed against the
- * `frontmatter-parser` module's owner — or by switching to the `yaml`
- * npm package, which already handles nested mappings.
+ * Recorded as a known gap on 2026-06-23: the hand-written frontmatter
+ * parser read `contains:\n  proposals:\n    - a` as
+ * `{ proposals: null, plans: null }`, so this projection always returned
+ * [] and the gap note suggested the `yaml` package. r00643 made that the
+ * one parser.
  */
-describe('KNOWN_GAPS — frontmatter-parser nested-mapping support', async () => {
-	it('parser returns `contains: { proposals: null, plans: null }` for nested YAML with arrays', async () => {
+describe('a nested `contains` mapping (read since r00643 as YAML)', async () => {
+	it('reports the children the plan still waits on', async () => {
 		const PLAN = wrap(
 			'id: q00001\ntype: plan\ncontains:\n  proposals:\n    - f00049\n    - f00050\n  plans:\n    - q00002\n',
 		);
@@ -184,7 +171,9 @@ describe('KNOWN_GAPS — frontmatter-parser nested-mapping support', async () =>
 				{ id: 'f00049', file: 'f00049-...md', status: 'in-progress' },
 			],
 		});
-		// Today: empty (see KNOWN_GAPS above).
-		expect(result).toEqual([]);
+		// The hand-written parser read this block as
+		// `contains: { proposals: null, plans: null }`, so a plan never saw
+		// its children; YAML reads the lists the block declares.
+		expect(result).toContain('f00049');
 	});
 });

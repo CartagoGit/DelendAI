@@ -232,6 +232,7 @@ describe('kpi history + trends', async () => {
 		await persistKpiSnapshotHistory({
 			workspaceRootAbs: workspaceRoot,
 			cacheDir: CACHE_DIR,
+			now: new Date('2026-08-26T12:00:00.000Z'),
 			snapshot: buildSnapshot({
 				generatedAt: '2026-08-26T12:00:00.000Z',
 				score: 80,
@@ -246,6 +247,7 @@ describe('kpi history + trends', async () => {
 		await persistKpiSnapshotHistory({
 			workspaceRootAbs: workspaceRoot,
 			cacheDir: CACHE_DIR,
+			now: new Date('2026-08-27T12:00:00.000Z'),
 			snapshot: buildSnapshot({
 				generatedAt: '2026-08-27T12:00:00.000Z',
 				score: 81,
@@ -270,6 +272,7 @@ describe('kpi history + trends', async () => {
 		await persistKpiSnapshotHistory({
 			workspaceRootAbs: workspaceRoot,
 			cacheDir: CACHE_DIR,
+			now: new Date('2026-08-28T12:00:00.000Z'),
 			snapshot: buildSnapshot({
 				generatedAt: '2026-08-28T12:00:00.000Z',
 				score: 82,
@@ -292,6 +295,7 @@ describe('kpi history + trends', async () => {
 		await persistKpiSnapshotHistory({
 			workspaceRootAbs: workspaceRoot,
 			cacheDir: CACHE_DIR,
+			now: new Date('2026-08-29T12:00:00.000Z'),
 			snapshot: buildSnapshot({
 				generatedAt: '2026-08-29T12:00:00.000Z',
 				score: 83,

@@ -271,6 +271,7 @@ export const buildDelegateRegistration = (
 ): IToolRegistration => ({
 	id: 'delegate',
 	effects: ['write'],
+	writeRoot: 'host-state',
 	summary:
 		'Hand a slice to a subagent: assign a name + claim its files, returning a handoff packet.',
 	tags: ['orchestration', 'coordination'],

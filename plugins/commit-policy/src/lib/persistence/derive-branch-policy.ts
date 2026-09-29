@@ -21,8 +21,6 @@
 
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import type { IDerivedBranchPolicy } from './derive-branch-policy.interface';
-
 export type { IDerivedBranchPolicy } from './derive-branch-policy.interface';
 
 /**

@@ -50,6 +50,7 @@
 		"typescript": ">=5.0.0"
 	},
 	"devDependencies": {
+		"@delendai/test-kit": "workspace:*",
 		"typescript": "7.0.2"
 	}
 }

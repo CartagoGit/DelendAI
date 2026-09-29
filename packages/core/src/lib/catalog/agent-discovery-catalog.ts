@@ -56,16 +56,16 @@ const cloneProvider = (provider: IProviderSummary): IProviderSummary => ({
 	strengths: [...provider.strengths],
 });
 
-const cloneProposal = (
-	proposal: IProposalSummary,
-	mode: 'compact' | 'full',
-): IProposalSummary => ({
+const cloneProposal = (proposal: IProposalSummary): IProposalSummary => ({
 	id: proposal.id,
 	title: proposal.title,
 	track: proposal.track,
 	status: proposal.status,
 	kind: proposal.kind,
-	...(mode === 'full' && proposal.date !== undefined
+	// The date orders a backlog and says how old it is, in either mode;
+	// dropped in compact mode, the committed catalog wrote "" for every
+	// proposal (x00738).
+	...(proposal.date !== undefined && proposal.date.length > 0
 		? { date: proposal.date }
 		: {}),
 });
@@ -97,7 +97,7 @@ export const buildCatalog = (
 	);
 	const skills = allSkills.map(cloneSkill);
 	const proposals = visibleProposals.map((proposal) =>
-		cloneProposal(proposal, opts.mode),
+		cloneProposal(proposal),
 	);
 
 	// Providers: omitted (not `[]`) when the roster is absent or empty so

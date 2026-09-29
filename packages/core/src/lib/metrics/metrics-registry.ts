@@ -1,3 +1,9 @@
+import type {
+	IContextAttribution,
+	ILargestResponse,
+} from '../contracts/interfaces/context-attribution.interface';
+import type { ISurfaceUse } from '../contracts/interfaces/surface-use.interface';
+import { attributeContext, keepLargest } from './context-attribution.helper';
 /**
  * In-process per-tool metrics.
  *
@@ -31,6 +37,9 @@ export interface IToolMetric {
 export interface IMetricsSnapshot {
 	/** Per-tool metrics, keyed by the registered tool name. */
 	readonly tools: Record<string, IToolMetric>;
+	readonly surface: ISurfaceUse;
+	/** Where this session's context bytes went (listing + responses). */
+	readonly attribution?: IContextAttribution;
 	readonly totals: {
 		readonly calls: number;
 		readonly errors: number;
@@ -65,6 +74,10 @@ export interface IMetricRecord {
 
 export interface IMetricsRegistry {
 	record(tool: string, record: IMetricRecord): void;
+	/** One `tools/list` response: each served tool's definition size. */
+	recordToolListServed(
+		tools: readonly { readonly name: string; readonly bytes: number }[],
+	): void;
 	snapshot(): IMetricsSnapshot;
 	reset(): void;
 }
@@ -176,7 +189,20 @@ const extractSafeTypedErrorText = (error: unknown): string | null => {
 /** Create a fresh metrics registry. */
 export const createMetricsRegistry = (): IMetricsRegistry => {
 	const map = new Map<string, IMutableMetric>();
+	/** Bytes each tool's definition took, summed over every list served. */
+	const servedBytesByTool = new Map<string, number>();
+	let largestResponses: readonly ILargestResponse[] = [];
+	let listsServed = 0;
 	return {
+		recordToolListServed(tools) {
+			listsServed += 1;
+			for (const tool of tools) {
+				servedBytesByTool.set(
+					tool.name,
+					(servedBytesByTool.get(tool.name) ?? 0) + tool.bytes,
+				);
+			}
+		},
 		record(tool, rec) {
 			const cost = recordCostOrFallback(rec);
 			const m = map.get(tool) ?? {
@@ -198,6 +224,11 @@ export const createMetricsRegistry = (): IMetricsRegistry => {
 			m.totalMs += rec.ms;
 			m.maxMs = Math.max(m.maxMs, rec.ms);
 			m.totalBytes += cost.wireEstimateBytes;
+			largestResponses = keepLargest(largestResponses, {
+				tool,
+				bytes: cost.wireEstimateBytes,
+				at: new Date().toISOString(),
+			});
 			m.cost.contentTextBytes += cost.contentTextBytes;
 			m.cost.structuredJsonBytes += cost.structuredJsonBytes;
 			m.cost.wireEstimateBytes += cost.wireEstimateBytes;
@@ -247,8 +278,38 @@ export const createMetricsRegistry = (): IMetricsRegistry => {
 						m.cost.actualModelTokens;
 				}
 			}
+			let servedBytes = 0;
+			let usefulBytes = 0;
+			for (const [name, bytes] of servedBytesByTool) {
+				servedBytes += bytes;
+				if ((map.get(name)?.calls ?? 0) > 0) usefulBytes += bytes;
+			}
+			const attribution = attributeContext({
+				listingBytes: servedBytes,
+				bytesByTool: new Map(
+					[...map.entries()].map(([name, m]) => [
+						name,
+						m.cost.wireEstimateBytes,
+					]),
+				),
+				largestResponses,
+			});
 			return {
 				tools,
+				attribution,
+				surface: {
+					listsServed,
+					servedBytes,
+					usefulBytes,
+					...(servedBytes > 0
+						? {
+								usefulTokensRatio:
+									Math.round(
+										(usefulBytes / servedBytes) * 10_000,
+									) / 10_000,
+							}
+						: {}),
+				},
 				totals: {
 					calls,
 					errors,
@@ -260,6 +321,9 @@ export const createMetricsRegistry = (): IMetricsRegistry => {
 		},
 		reset() {
 			map.clear();
+			servedBytesByTool.clear();
+			listsServed = 0;
+			largestResponses = [];
 		},
 	};
 };

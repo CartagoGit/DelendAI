@@ -52,7 +52,11 @@ const SCAFFOLD_PLACEHOLDERS = [
 
 export interface IProposalHygieneFinding {
 	readonly file: string;
-	readonly rule: 'unfilled-scaffold' | 'heading-id-mismatch' | 'duplicate';
+	readonly rule:
+		| 'unfilled-scaffold'
+		| 'heading-id-mismatch'
+		| 'duplicate'
+		| 'delivered-in-progress';
 	readonly detail: string;
 }
 
@@ -77,10 +81,46 @@ const headingId = (text: string): string | undefined =>
  * the same files in exactly the same slice shape, which is what x00420 and
  * x00422 did.
  */
-export const fingerprintProposal = (text: string): string | undefined => {
-	const files = [...text.matchAll(/^- \*\*Files\*\*:\s*(.+)$/gmu)].map(
-		(match) => (match[1] ?? '').trim(),
+/**
+ * Each slice's declared files, whether written on the `Files` line or as
+ * the indented list under it. Reading only the text after `Files:` let
+ * `\s*` run across the line break and capture just the FIRST item of a
+ * list, so two proposals whose lists merely started with the same file
+ * were reported as the same work.
+ */
+const sliceFileLists = (text: string): readonly string[] => {
+	const lines = text.split('\n');
+	const lists: string[] = [];
+	lines.forEach((line, index) => {
+		const marker = /^- \*\*Files\*\*:[ \t]*(.*)$/u.exec(line);
+		if (marker === null) return;
+		const inline = (marker[1] ?? '').trim();
+		if (inline.length > 0) {
+			lists.push(inline);
+			return;
+		}
+		const items: string[] = [];
+		for (const next of lines.slice(index + 1)) {
+			const item = /^\s+- (.+)$/u.exec(next);
+			if (item === null) break;
+			items.push((item[1] ?? '').trim());
+		}
+		lists.push(items.join(', '));
+	});
+	return lists;
+};
+
+/** Slice statuses that mean the slice's work has been delivered. */
+const DELIVERED_STATUSES: ReadonlySet<string> = new Set(['review', 'done']);
+
+/** The first word of each slice's `Status` line, lower case. */
+export const sliceStatuses = (text: string): readonly string[] =>
+	[...text.matchAll(/^- \*\*Status\*\*:\s*([A-Za-z-]+)/gmu)].map((match) =>
+		(match[1] ?? '').toLowerCase(),
 	);
+
+export const fingerprintProposal = (text: string): string | undefined => {
+	const files = sliceFileLists(text);
 	if (files.length === 0) return undefined;
 	return files.join(' | ');
 };
@@ -121,6 +161,24 @@ export const checkProposal = (
 			file,
 			rule: 'heading-id-mismatch',
 			detail: `frontmatter says ${declared}, the H1 says ${heading}`,
+		});
+	}
+
+	// Every slice delivered, and the proposal still in progress: the
+	// hand-off to review was never made, so no reviewer is ever handed it.
+	// On 2026-09-26 eleven proposals sat like that, their pull requests
+	// merged for a day; a one-off sweep (x00654) had fixed the same state
+	// the day before, and nothing stopped it from coming back.
+	const statuses = sliceStatuses(text);
+	if (
+		file.split(/[\\/]/u).includes('in-progress') &&
+		statuses.length > 0 &&
+		statuses.every((status) => DELIVERED_STATUSES.has(status))
+	) {
+		findings.push({
+			file,
+			rule: 'delivered-in-progress',
+			detail: `every slice is ${[...new Set(statuses)].join(' or ')}, but the proposal is still in progress — hand it to review with proposal_transition`,
 		});
 	}
 

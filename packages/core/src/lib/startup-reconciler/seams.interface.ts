@@ -22,6 +22,16 @@ import type {
 	ILiveForgeState,
 } from '../forge-governance/index';
 
+/**
+ * A working tree, as far as git could be asked. `unknown` is a real
+ * answer: it is what a failed `git status` means, and reading it as
+ * `clean` is how a precondition gets asserted without being checked.
+ */
+export type IWorktreeDirtiness =
+	| { readonly kind: 'clean' }
+	| { readonly kind: 'dirty'; readonly paths: readonly string[] }
+	| { readonly kind: 'unknown'; readonly reason: string };
+
 /** Injectable clock: a boot report must be reproducible in a test. */
 export interface IStartupClock {
 	now(): number;
@@ -105,6 +115,14 @@ export interface IStartupGitSeam {
 	): Promise<IWorkRefSnapshot | undefined>;
 	/** True when `ancestor` is contained in `descendant`. */
 	isAncestor(ancestor: string, descendant: string): Promise<boolean>;
+	/**
+	 * True when every path `sha` changed since it forked from `integration`
+	 * holds identical content in `integration`: the work is there even if
+	 * the commit is not (an empty checkpoint, a squash, a rewritten
+	 * branch). Optional: a seam without it proves containment by ancestry
+	 * alone.
+	 */
+	contentContained?(sha: string, integration: string): Promise<boolean>;
 	/** The branch HEAD points at, or undefined when detached. */
 	currentBranch(): Promise<string | undefined>;
 	/**
@@ -119,6 +137,19 @@ export interface IStartupGitSeam {
 	 * failure mode.
 	 */
 	dirtyPaths(): Promise<readonly string[]>;
+	/**
+	 * What the working tree is, including the case nobody can answer.
+	 * Optional so an existing seam implementation stays valid; a caller
+	 * that must not guess treats its absence as `unknown`.
+	 */
+	dirtyState?(): Promise<IWorktreeDirtiness>;
+	/**
+	 * The one remote this workspace integrates with, resolved from what
+	 * the integration branch tracks. Optional so an existing seam stays
+	 * valid; a caller without it falls back to `origin`, which is what
+	 * every call site hard-coded before.
+	 */
+	integrationRemote?(integrationBranch: string): Promise<string | undefined>;
 	/** The commit HEAD points at. */
 	headSha(): Promise<string | undefined>;
 	/**
@@ -142,6 +173,15 @@ export interface IStartupGitSeam {
 	 * building on a tree that old.
 	 */
 	fastForward(target: string): Promise<IGitOutcome>;
+	/**
+	 * The paths `target` changes relative to `base`, or `undefined` when
+	 * git could not say. A fast-forward that changes none of the paths
+	 * somebody is editing leaves their edit exactly as it is.
+	 */
+	pathsChangedBetween?(
+		base: string,
+		target: string,
+	): Promise<readonly string[] | undefined>;
 }
 
 /** One pull request as the forge reports it. */

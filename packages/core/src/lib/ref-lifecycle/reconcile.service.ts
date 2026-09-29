@@ -84,6 +84,23 @@ const byHeadRef = (
 	return index;
 };
 
+/**
+ * Compare a forge-reported branch name against a configured prefix.
+ *
+ * The forge reports short names (`delendai/wip/agent/slice-g1`), while a
+ * prefix may be declared fully qualified (`heads/delendai/wip/`) because
+ * the same value also expands a work-ref template that `update-ref` has
+ * to accept. Two spellings of one namespace made the work prefix
+ * unmatchable, so every work ref fell through to `unmanaged`. Strip the
+ * qualification from both sides and the two spellings mean the same
+ * thing.
+ */
+const shortenRef = (value: string): string =>
+	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+const inNamespace = (name: string, prefix: string): boolean =>
+	prefix !== '' && shortenRef(name).startsWith(shortenRef(prefix));
+
 const roleOf = (
 	ref: IObservedRef,
 	branches: IPolicyBranches,
@@ -103,10 +120,25 @@ const roleOf = (
 			reason: 'created by automation delendai does not own — reported, never reaped',
 		};
 	}
-	if (
-		branches.publicationRefPrefix !== '' &&
-		name.startsWith(branches.publicationRefPrefix)
-	) {
+	if (inNamespace(name, branches.workRefPrefix)) {
+		if (ref.publishedIn !== undefined && ref.proposalInProgress === true) {
+			return {
+				role: 'work',
+				reason: `the branch of a proposal still in progress: what it has published is in \`${ref.publishedIn}\`, and it goes on with the next slices — it ends when the proposal leaves in-progress`,
+			};
+		}
+		if (ref.publishedIn !== undefined) {
+			return {
+				role: 'work-published',
+				reason: `its content is already in \`${ref.publishedIn}\`: a work branch ends when it is published, so this copy should be deleted — only the publication ref remains`,
+			};
+		}
+		return {
+			role: 'work',
+			reason: 'a work ref an agent is developing on: visible before publication on purpose, and never reaped here because no pull request has had the chance to prove it spent',
+		};
+	}
+	if (inNamespace(name, branches.publicationRefPrefix)) {
 		if (request === undefined) {
 			if (
 				ref.updatedAt !== undefined &&
@@ -122,19 +154,28 @@ const roleOf = (
 				reason: 'a publication ref with no pull request: it carries work nothing is reviewing, and nothing will clean it up',
 			};
 		}
-		return request.state === 'open'
+		if (request.state === 'open') {
+			return {
+				role: 'publication-open',
+				reason: 'carrying an open pull request',
+			};
+		}
+		// Only a merge delivered the work. A pull request closed without
+		// merging leaves the ref as the only copy of what it carried; it
+		// was reaped all the same until 2026-09-27 (x00697).
+		return request.state === 'merged'
 			? {
-					role: 'publication-open',
-					reason: 'carrying an open pull request',
+					role: 'publication-spent',
+					reason: 'its pull request merged, so the ref has delivered its work',
 				}
 			: {
-					role: 'publication-spent',
-					reason: `its pull request is ${request.state}, so the ref has delivered whatever it was going to`,
+					role: 'publication-closed',
+					reason: 'its pull request was closed without merging: the ref may be the only copy of its work, so it is kept for its author to reopen or end',
 				};
 	}
 	return {
 		role: 'unmanaged',
-		reason: `outside every namespace the policy knows: under a shared checkout an agent owns work, not a branch. Work belongs in a wip ref, and a ref that exists to carry a pull request belongs under \`${branches.publicationRefPrefix}\``,
+		reason: `outside every namespace the policy knows: under a shared checkout an agent owns work, not a branch. Work belongs under \`${branches.workRefPrefix}\`, and a ref that exists to carry a pull request belongs under \`${branches.publicationRefPrefix}\``,
 	};
 };
 
@@ -172,10 +213,20 @@ export const reconcileRefs = (
 		verdicts,
 		// Only a delivered pull request is evidence that deleting the ref
 		// loses nothing.
-		reapable: verdicts.filter((v) => v.role === 'publication-spent'),
+		reapable: verdicts.filter(
+			(v) =>
+				v.role === 'publication-spent' || v.role === 'work-published',
+		),
+		// A published work branch is also a violation until removed: the
+		// flow is "publish, then delete the work branch", and a copy left
+		// behind is what agents then keep developing on.
 		needsAttention: verdicts.filter(
-			(v) => v.role === 'unmanaged' || v.role === 'publication-unclaimed',
+			(v) =>
+				v.role === 'unmanaged' ||
+				v.role === 'publication-unclaimed' ||
+				v.role === 'work-published',
 		),
 		awaiting: verdicts.filter((v) => v.role === 'publication-awaiting'),
+		active: verdicts.filter((v) => v.role === 'work'),
 	};
 };

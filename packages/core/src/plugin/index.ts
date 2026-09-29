@@ -7,6 +7,14 @@
  * surface from a host).
  */
 
+// A plugin that persists work refs has to reject an unsafe pathspec
+// before git ever sees it. The validator belongs with the plugin author
+// toolkit rather than the host surface: only plugin code calls it.
+export { validateScopePaths } from '../lib/wip-engine/scope';
+export type {
+	IInvalidScopePath,
+	IScopeValidation,
+} from '../lib/wip-engine/scope.interface';
 export { definePlugin } from '../lib/plugins/plugin-contract';
 export type {
 	IMcpPlugin,
@@ -25,3 +33,13 @@ export { nodeDynamicImport } from '../lib/plugins/load-plugins';
 export { assemblePlugins } from '../lib/cli/assemble-plugins';
 export type { IDelendaiCliArgs } from '../lib/plugins/parse-cli-args';
 export { parseCliArgs } from '../lib/plugins/parse-cli-args';
+// Authoring a tool that answers through `toolOk`: declare the payload,
+// wrap it at registration, and the `ok` envelope can never be forgotten.
+export { withOkEnvelope } from '../lib/shared/with-ok-envelope.helper';
+// A synchronous `register(ctx)` resolving a configured path that may not
+// exist yet still needs to refuse a symlink out of the workspace.
+export { resolveWorkspaceContainedPhysicalSync } from '../lib/shared/contain-realpath-boot';
+// Every place that tells an agent how to isolate its work derives the
+// advice from the resolved policy, so it cannot contradict it.
+export { describeWorkIsolation } from '../lib/development-policy/work-isolation';
+export type { IWorkIsolation } from '../lib/contracts/interfaces/work-isolation.interface';

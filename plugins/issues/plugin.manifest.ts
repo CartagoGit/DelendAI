@@ -41,4 +41,17 @@ export default definePluginManifest({
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['issues', 'forge', 'triage'],
+	// Adoption wires this plugin for a later launch, usually before it was
+	// ever loaded, so the core applies this declaration from the manifest.
+	adoption: {
+		from: 'repo',
+		option: 'repo',
+		launchPreset: 'full',
+		rationale:
+			'GitHub issues wired for {value}; launch with --preset full (or add issues to --plugins).',
+		whenWired:
+			'Verify GitHub issues: run `{namespacePrefix}_setup_github` and confirm the {value} tier resolves.',
+		whenNotWired:
+			'(Optional) Wire GitHub issues later: run `{namespacePrefix}_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug.',
+	},
 });

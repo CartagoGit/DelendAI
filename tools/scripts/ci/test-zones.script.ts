@@ -23,12 +23,19 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
 
-import { buildGraph, computeAffected, gitDiffNames } from './affected.script';
-import { TARGET_SPECS_PER_JOB, ZONE_RULES } from './test-zones.constant';
-import type { IZoneJob, IZoneRule } from './test-zones.interface';
+import { buildGraph, computeAffected, gitDiffChanges } from './affected.script';
+import {
+	TARGET_SPECS_PER_JOB,
+	ZONE_READ_MAP_PATH,
+	ZONE_RULES,
+} from './test-zones.constant';
+import type { IZoneJob, IZoneReadMap, IZoneRule } from './test-zones.interface';
+import { parseZoneReadMap, zonesReadingRootFiles } from './zone-reads';
 
 export { TARGET_SPECS_PER_JOB, ZONE_RULES } from './test-zones.constant';
 export type { IZoneJob, IZoneRule } from './test-zones.interface';
@@ -117,6 +124,22 @@ const arg = (name: string): string | undefined => {
 };
 
 /**
+ * Which zones to run for `base`, or `undefined` for all of them.
+ *
+ * Only a pull request has a base to filter against. A dispatched run and
+ * a push arrive with none — the workflow passes an empty `--base=` — and
+ * an empty base used to be taken as a real one: the diff against it was
+ * empty, every zone reported `skipped`, and the run went green having
+ * tested nothing. That run is the integration branch's full validation,
+ * so no base means the full matrix.
+ */
+export const reachForBase = (
+	base: string | undefined,
+	reach: (base: string) => ReadonlySet<string> | undefined,
+): ReadonlySet<string> | undefined =>
+	base === undefined || base.trim() === '' ? undefined : reach(base);
+
+/**
  * Which zones a change can actually reach, through the workspace
  * dependency graph rather than by guessing from paths.
  *
@@ -129,28 +152,53 @@ const arg = (name: string): string | undefined => {
 export const reachableZones = (
 	input: {
 		readonly base: string;
+		/** The end of the change; `HEAD` when omitted. */
+		readonly head?: string;
 		readonly rootDir: string;
 		readonly rules?: readonly IZoneRule[];
 	},
 	deps: {
 		readonly buildGraph: typeof buildGraph;
 		readonly computeAffected: typeof computeAffected;
-		readonly diff: typeof gitDiffNames;
-	} = { buildGraph, computeAffected, diff: gitDiffNames },
+		readonly diff: typeof gitDiffChanges;
+		/** The observed read map; `undefined` means none is available. */
+		readonly readMap?: () => IZoneReadMap | undefined;
+	} = {
+		buildGraph,
+		computeAffected,
+		diff: gitDiffChanges,
+		readMap: () => committedReadMap(input.rootDir),
+	},
 ): ReadonlySet<string> | undefined => {
 	let affected: ReturnType<typeof computeAffected>;
 	let graph: ReturnType<typeof buildGraph>;
+	let changes: ReturnType<typeof gitDiffChanges>;
 	try {
 		graph = deps.buildGraph(input.rootDir);
-		affected = deps.computeAffected(deps.diff(input.base, 'HEAD'), graph);
+		changes = deps.diff(input.base, input.head ?? 'HEAD', input.rootDir);
+		affected = deps.computeAffected(
+			changes.map((change) => change.path),
+			graph,
+		);
 	} catch {
 		return undefined;
 	}
-	// A root-level change is outside every workspace, so nothing can say
-	// what it reaches.
-	if (affected.rootFiles.length > 0) return undefined;
-
 	const rules = input.rules ?? ZONE_RULES;
+	// A change outside every workspace reaches only the zones observed to
+	// read it. It used to reach everything, so a pull request that
+	// edited one proposal ran all eleven shards. Without a usable map, or
+	// for a root-level configuration file, it still runs everything.
+	const roots = new Set(affected.rootFiles);
+	const rootReached =
+		roots.size === 0
+			? new Set<string>()
+			: zonesReadingRootFiles(
+					changes.filter((change) => roots.has(change.path)),
+					deps.readMap?.(),
+					ownPathsOf(rules, [...graph.dirToName.keys()]),
+				);
+	if (rootReached === undefined) return undefined;
+
 	// DOWNSTREAM plus what changed directly — never upstream. `affected`
 	// unions both because it answers a build-ordering question: to build
 	// X you first build what X depends on. Test selection asks the
@@ -171,7 +219,27 @@ export const reachableZones = (
 		const id = zoneOf(`${dir}/x.spec.ts`, rules);
 		if (id !== undefined) zones.add(id);
 	}
+	for (const zone of rootReached) zones.add(zone);
 	return zones;
+};
+
+/** The paths each zone's own specs live under, per rule. */
+const ownPathsOf = (
+	rules: readonly IZoneRule[],
+	workspaceDirs: readonly string[],
+): Readonly<Record<string, readonly string[]>> =>
+	Object.fromEntries(
+		rules.map((rule) => [rule.id, rule.paths(workspaceDirs)]),
+	);
+
+const committedReadMap = (rootDir: string): IZoneReadMap | undefined => {
+	try {
+		return parseZoneReadMap(
+			readFileSync(join(rootDir, ZONE_READ_MAP_PATH), 'utf8'),
+		);
+	} catch {
+		return undefined;
+	}
 };
 
 const main = (): number => {
@@ -194,11 +262,9 @@ const main = (): number => {
 		return 0;
 	}
 
-	const baseRef = arg('base');
-	const reach =
-		baseRef === undefined
-			? undefined
-			: reachableZones({ base: baseRef, rootDir: repoRoot() });
+	const reach = reachForBase(arg('base'), (base) =>
+		reachableZones({ base, rootDir: repoRoot() }),
+	);
 
 	if (process.argv.includes('--matrix')) {
 		console.log(
@@ -220,9 +286,17 @@ const main = (): number => {
 		return 0;
 	}
 
+	// Which zones the change reaches, stated, so a wrong selection is
+	// visible in the log rather than silent.
 	for (const job of jobs) {
+		const verdict =
+			reach === undefined
+				? 'runs (every zone: no base, or a change that can reach anything)'
+				: reach.has(job.zone)
+					? 'runs (the change reaches it)'
+					: 'skipped (the change reaches none of its specs or reads)';
 		console.log(
-			`${job.name.padEnd(16)} ${String(job.specs).padStart(5)} spec(s) in the zone, ${job.shards} job(s)`,
+			`${job.name.padEnd(16)} ${String(job.specs).padStart(5)} spec(s) in the zone, ${job.shards} job(s) — ${verdict}`,
 		);
 	}
 	return 0;

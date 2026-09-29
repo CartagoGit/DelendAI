@@ -8,7 +8,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	summarizeFindings,
 	toolError,
 	toolJson,
@@ -70,7 +70,7 @@ export const buildEnvCheckRegistration = (
 			async (args) => {
 				const path = args.path ?? '.env';
 				if (options.deps === undefined) {
-					const contained = resolveWorkspaceContained(
+					const contained = await resolveExistingWorkspaceContained(
 						options.workspaceRootAbs,
 						path,
 					);

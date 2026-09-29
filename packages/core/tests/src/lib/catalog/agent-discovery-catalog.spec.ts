@@ -198,9 +198,11 @@ describe('buildCatalog', async () => {
 			'c00002',
 			'f00056',
 		]);
-		expect(
-			compact.proposals.every((entry) => entry.date === undefined),
-		).toBe(true);
+		// The date says how old each is, in compact mode too (x00738).
+		expect(compact.proposals.map((entry) => entry.date)).toEqual([
+			'2026-06-21',
+			'2026-06-25',
+		]);
 		expect(compact.tools).toEqual([
 			{ name: 'delendai_agent_catalog' },
 			{ name: 'delendai_search_search', plugin: 'search' },

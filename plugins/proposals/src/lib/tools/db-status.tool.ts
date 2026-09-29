@@ -35,6 +35,7 @@ import { join } from 'node:path';
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
 import { toolOk } from '@delendai/core/public';
 import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
 
@@ -81,6 +82,7 @@ export const proposalsDbStatusInputSchema = z.object({
 	includeQuarantine: z.boolean().optional(),
 });
 
+/** The payload; the registered schema adds the `ok` envelope `toolOk` writes. */
 export const proposalsDbStatusOutputSchema = z.object({
 	exists: z.boolean(),
 	proposals: z.number().int().nonnegative(),
@@ -175,7 +177,7 @@ export const buildDbStatusToolRegistration = (
 					description:
 						'Read-only diagnostic of the proposals operational DB. Returns counts, last sync, quarantine size, and the existence of both the runtime index (.cache/delendai/proposals/index.json) and the legacy docs INDEX.json files. Never writes.',
 					inputSchema: proposalsDbStatusInputSchema,
-					outputSchema: proposalsDbStatusOutputSchema,
+					outputSchema: withOkEnvelope(proposalsDbStatusOutputSchema),
 				},
 				async (args) => {
 					const includeQuarantine =

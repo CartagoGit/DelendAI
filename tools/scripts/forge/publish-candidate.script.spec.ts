@@ -5,20 +5,145 @@
  * Every case here is a property the shared-checkout model depends on,
  * and each one is cheap to break by accident later.
  */
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
+	planWorkBranchPublication,
 	isPublicationRef,
 	modeOf,
 	parseStatusPaths,
+	pullRequestCommands,
 	runPreflight,
 	splitContent,
 	stalePaths,
+	readTreeObjectId,
 } from './publish-candidate.script';
 import { repoRoot } from '../lib/monorepo-paths';
+
+describe('publication tree lookup', () => {
+	let directory: string;
+	let emptyTree: string;
+	let populatedTree: string;
+	let blob: string;
+	const run = (args: readonly string[], input?: string): string =>
+		execFileSync('git', [...args], {
+			cwd: directory,
+			encoding: 'utf8',
+			stdio: ['pipe', 'pipe', 'pipe'],
+			...(input === undefined ? {} : { input }),
+		});
+
+	beforeAll(() => {
+		directory = mkdtempSync(join(tmpdir(), 'publication-tree-'));
+		run(['init', '--quiet']);
+		emptyTree = run(['mktree'], '').trim();
+		blob = run(['hash-object', '-w', '--stdin'], 'existing content').trim();
+		const nestedTree = run(
+			['mktree'],
+			`100644 blob ${blob}\treconciliation.md\n`,
+		).trim();
+		populatedTree = run(
+			['mktree'],
+			`100644 blob ${blob}\texisting file.txt\n100644 blob ${blob}\t[literal].txt\n040000 tree ${nestedTree}\tdocs\n`,
+		).trim();
+	});
+	afterAll(() => rmSync(directory, { recursive: true, force: true }));
+
+	it('treats a new file absent from both base trees as an addition', () => {
+		expect(readTreeObjectId(emptyTree, 'new.txt', run)).toBeUndefined();
+		expect(
+			stalePaths(
+				['new.txt'],
+				(path) => readTreeObjectId(emptyTree, path, run),
+				(path) => readTreeObjectId(populatedTree, path, run),
+				() => blob,
+			),
+		).toEqual([]);
+	});
+
+	it.each(['existing file.txt', '[literal].txt', 'docs/reconciliation.md'])(
+		'reads the exact existing path %s',
+		(path) => {
+			expect(readTreeObjectId(populatedTree, path, run)).toBe(blob);
+		},
+	);
+
+	it('rejects overwriting a file independently added upstream', () => {
+		expect(
+			stalePaths(
+				['existing file.txt'],
+				(path) => readTreeObjectId(emptyTree, path, run),
+				(path) => readTreeObjectId(populatedTree, path, run),
+				() => 'different-content',
+			),
+		).toEqual(['existing file.txt']);
+	});
+
+	it('propagates an invalid revision instead of treating it as a missing file', () => {
+		expect(() =>
+			readTreeObjectId('missing-revision', 'new.txt', run),
+		).toThrow();
+	});
+});
+
+describe('pullRequestCommands', () => {
+	const commands = pullRequestCommands({
+		ref: 'delendai/pr/proposal-f00547',
+		base: 'develop',
+		message: 'docs(proposals): add f00547\n\nWhy it exists.',
+	});
+
+	it('looks for an open pull request on the ref before opening one', () => {
+		expect(commands.find).toEqual(
+			expect.arrayContaining([
+				'list',
+				'--head',
+				'delendai/pr/proposal-f00547',
+				'open',
+			]),
+		);
+	});
+
+	it('titles the pull request with the first line and uses the rest as its body', () => {
+		expect(commands.create).toEqual([
+			'pr',
+			'create',
+			'--base',
+			'develop',
+			'--head',
+			'delendai/pr/proposal-f00547',
+			'--title',
+			'docs(proposals): add f00547',
+			'--body',
+			'Why it exists.',
+		]);
+	});
+
+	it('arms auto-merge with a merge commit, the method the policy keeps lineage with', () => {
+		expect(commands.arm).toEqual([
+			'pr',
+			'merge',
+			'delendai/pr/proposal-f00547',
+			'--auto',
+			'--merge',
+		]);
+	});
+
+	it('reuses the title as the body when the message is one line', () => {
+		const one = pullRequestCommands({
+			ref: 'delendai/pr/x',
+			base: 'develop',
+			message: 'fix: one line',
+		});
+
+		expect(one.create.slice(-2)).toEqual(['--body', 'fix: one line']);
+	});
+});
 
 describe('isPublicationRef', () => {
 	it('accepts a ref inside the publication namespace', () => {
@@ -267,6 +392,18 @@ describe('the publication path itself', () => {
 		expect(code).toContain("'commit-tree'");
 	});
 
+	it('proves a work branch before pushing it, and removes it only after the forge confirms', () => {
+		const flow = code.slice(code.indexOf('const publishWorkBranch'));
+		const proveAt = flow.indexOf('proveCommit(tipSha');
+		const pushAt = flow.indexOf("'push', 'origin', `${tipSha}");
+		const verifyAt = flow.indexOf('`refs/heads/${ref}`');
+		const deleteAt = flow.indexOf("'--delete'");
+		expect(proveAt).toBeGreaterThan(-1);
+		expect(pushAt).toBeGreaterThan(proveAt);
+		expect(verifyAt).toBeGreaterThan(pushAt);
+		expect(deleteAt).toBeGreaterThan(verifyAt);
+	});
+
 	it('never force-pushes', () => {
 		// A candidate is somebody's work. Losing a push race must fail
 		// loudly, not overwrite whatever arrived first.
@@ -361,5 +498,72 @@ describe('stalePaths — a candidate may not revert what landed', () => {
 				blobs({ 'a.ts': 'm', 'b.ts': 'm', 'c.ts': 'm' }),
 			),
 		).toEqual(['a.ts', 'c.ts']);
+	});
+});
+
+describe('planWorkBranchPublication', () => {
+	const base = {
+		workBranch: 'delendai/wip/claude-opus-5/x1-S1-g1-topic',
+		workRefPrefix: 'heads/delendai/wip/',
+		tipSha: 'aaa',
+		tipTree: 'tree-work',
+		integrationTree: 'tree-develop',
+		remoteWorkSha: 'aaa',
+		remoteWorkContained: true,
+	} as const;
+
+	it('publishes and removes the remote work branch: only the PR ref remains', () => {
+		expect(planWorkBranchPublication(base)).toEqual({
+			kind: 'publish',
+			deleteRemoteWork: true,
+		});
+	});
+
+	it('publishes a purely local work branch with nothing remote to remove', () => {
+		expect(
+			planWorkBranchPublication({ ...base, remoteWorkSha: undefined }),
+		).toEqual({ kind: 'publish', deleteRemoteWork: false });
+	});
+
+	it('refuses a branch outside the work namespace', () => {
+		const plan = planWorkBranchPublication({
+			...base,
+			workBranch: 'feat/somebodys-branch',
+		});
+		expect(plan.kind === 'refused' && plan.refusal.code).toBe(
+			'NOT_A_WORK_BRANCH',
+		);
+	});
+
+	it('refuses a work branch that does not exist', () => {
+		const plan = planWorkBranchPublication({
+			...base,
+			tipSha: undefined,
+			tipTree: undefined,
+		});
+		expect(plan.kind === 'refused' && plan.refusal.code).toBe(
+			'UNKNOWN_WORK_BRANCH',
+		);
+	});
+
+	it('refuses a work branch that changes nothing', () => {
+		const plan = planWorkBranchPublication({
+			...base,
+			tipTree: 'tree-develop',
+		});
+		expect(plan.kind === 'refused' && plan.refusal.code).toBe(
+			'EMPTY_CANDIDATE',
+		);
+	});
+
+	it('refuses, and deletes nothing, when the remote work branch is ahead', () => {
+		const plan = planWorkBranchPublication({
+			...base,
+			remoteWorkSha: 'bbb',
+			remoteWorkContained: false,
+		});
+		expect(plan.kind === 'refused' && plan.refusal.code).toBe(
+			'WORK_BRANCH_AHEAD',
+		);
 	});
 });

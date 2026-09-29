@@ -8,7 +8,12 @@
  */
 import { readdir } from 'node:fs/promises';
 
-import { resolveWorkspaceContained } from '@delendai/core/public';
+import {
+	resolveExistingWorkspaceContained,
+	SafeWorkspaceReader,
+} from '@delendai/core/public';
+
+import type { IArchitectureReader } from '../contracts/interfaces/check-architecture.interface';
 
 import type {
 	IDirEntry,
@@ -20,7 +25,14 @@ export const createFsDirReader = async (
 	rootDir: string,
 ): Promise<IDirReader> => ({
 	async list(relDir: string): Promise<readonly IDirEntry[]> {
-		const contained = resolveWorkspaceContained(rootDir, relDir || '.');
+		// PHYSICAL containment: the lexical check never touches the disk,
+		// so `rootDir/link` passed it while `link` pointed at somewhere
+		// outside the workspace entirely. This resolves the real path
+		// before the directory is ever listed.
+		const contained = await resolveExistingWorkspaceContained(
+			rootDir,
+			relDir || '.',
+		);
 		if (!contained.ok) {
 			throw new Error(
 				`conventions scan root "${relDir}" is not allowed: ${contained.reason}`,
@@ -33,3 +45,26 @@ export const createFsDirReader = async (
 		}));
 	},
 });
+
+/**
+ * The architecture report's reader: the same containment-checked listing,
+ * plus text reads through `SafeWorkspaceReader` so a symlink can never
+ * lead a scan outside the workspace. A file that cannot be read is
+ * skipped rather than failing the whole report.
+ */
+export const createFsArchitectureReader = async (
+	rootDir: string,
+): Promise<IArchitectureReader> => {
+	const lister = await createFsDirReader(rootDir);
+	const safe = new SafeWorkspaceReader(rootDir);
+	return {
+		list: (relDir) => lister.list(relDir),
+		async readText(relPath: string): Promise<string | undefined> {
+			try {
+				return (await safe.readText(relPath)).content;
+			} catch {
+				return undefined;
+			}
+		},
+	};
+};

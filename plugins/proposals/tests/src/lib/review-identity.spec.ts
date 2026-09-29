@@ -168,7 +168,9 @@ describe('review identity service (a00074 S2)', () => {
 			expect(out.nextAction).toContain('IMPLEMENTER');
 			expect(out.nextAction).toContain('action: "submit"');
 			expect(out.nextAction).toContain('a00074');
-			expect(out.nextAction).toContain('proposal-review.script.ts');
+			expect(out.nextAction).toContain(
+				'delendai proposals review a00074 S2',
+			);
 		}
 	});
 

@@ -5,30 +5,23 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 122
+- Findings: 112
 - Unclassified candidates: 0
 - Missing expected findings: 0
-- Resolved by slices: 13
+- Resolved by slices: 24
 - Regressions (resolved rule still present): 0
 - import: 1
-- path: 7
-- plugin-name: 12
+- path: 5
+- plugin-name: 11
 - type: 67
-- message: 26
+- message: 19
 - index-access: 9
 
 ## Findings
 
 | File | Symbol or literal | Category | Proposed destination | Occurrences | Notes |
 | --- | --- | --- | --- | ---: | --- |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | `proposals` plugin | plugin-name | adapter | 1 | La ayuda bootstrap del store sigue nombrando el plugin concreto. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | Bootstrapped proposals store files | message | adapter | 1 | El resumen de escritura expone el store de proposals como artefacto del core. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | create_proposal | message | adapter | 1 | La ayuda del store remite a una tool de proposals concreta. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | docsDir/proposals/.gitkeep | path | adapter | 1 | El layout concreto del store de proposals se materializa en el core. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | docsDir/proposals/README.md | path | adapter | 1 | El README del store sigue generado por una ruta hardcodeada de proposals. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | proposals store managed by the delendai | message | adapter | 1 | El estimador de escritura documenta el store de proposals como estructura propia. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | sync_proposals inventory message | message | adapter | 1 | La ayuda del store referencia el regenerado del indice del plugin. |
-| packages/core/src/lib/adopt/adoption-assessment.service.ts | Estimated adopt_project write surface ... proposals store | message | adapter | 1 | La evaluacion de adopcion sigue contabilizando proposals store como responsabilidad del core. |
+| packages/core/src/contracts/index.ts | IProposalSummary | type | contract | 1 | El barrel de contracts reexporta el mismo DTO nominal que core/public ya expone. `lint:no-core-public-types-in-client` prohibe que packages/client tome tipos de core/public, y hasta ahora nombraba una alternativa que no existia: sin esta reexportacion la regla no tenia destino alcanzable. Mismo acoplamiento que la fila de public/index.ts, no uno nuevo. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | pluginIds: proposals, agent-orchestrator | plugin-name | composition | 1 | La etapa agents del flujo de adopcion activa el plugin proposals por composicion declarativa. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | title: proposals+agents | message | composition | 1 | La etapa agents del flujo de adopcion enumera el workflow de proposals en su titulo visible. |
 | packages/core/src/lib/agents/derive-agent-sessions.service.ts | const exact = proposals.find | index-access | adapter | 1 | La resolucion de taskId consulta directamente el arreglo de proposals. |
@@ -41,7 +34,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/bootstrap/pattern-catalog.ts | coordinate parallel work with the proposals plugin | message | composition | 1 | La descripcion del patron sigue anclada al plugin proposals. |
 | packages/core/src/lib/bootstrap/pattern-catalog.ts | recommendedPlugins ['proposals', 'rules'] | plugin-name | composition | 2 | El catalogo de patrones sigue recomendando proposals desde el core. |
 | packages/core/src/lib/bootstrap/prompt-artifact-rules.ts | plugins.includes('proposals') prompt rule | plugin-name | composition | 1 | La inclusion de artefactos de prompt depende del nombre del plugin. |
-| packages/core/src/lib/catalog/agent-discovery-catalog.ts | ): IProposalSummary => ({ | type | contract | 1 | La salida del clonador sigue fijada al DTO de proposal. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | ACTIONABLE_PROPOSAL_STATUSES | type | contract | 1 | La politica de accionabilidad del workflow entra en el catalogo desde core. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | ACTIONABLE_PROPOSAL_STATUSES.includes | type | contract | 1 | La logica de visibilidad sigue dependiendo de actionable proposals. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | const proposals = visibleProposals.map | type | contract | 1 | La materializacion del snapshot sigue nombrando proposals como entidad primaria del catalogo. |
@@ -49,7 +41,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | IProposalSummary import | type | contract | 1 | El constructor del catalogo recibe el resumen concreto de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | PROPOSAL_STATUS_VALUES | type | contract | 1 | El catalogo importa la lista nominal de estados de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | PROPOSAL_STATUS_VALUES.map | type | contract | 1 | El recuento de estados itera sobre la constante nominal de proposals. |
-| packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposal: IProposalSummary | type | contract | 1 | La clonacion del catalogo recibe el tipo nominal IProposalSummary. |
+| packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposal: IProposalSummary | type | contract | 1 | La clonacion del catalogo recibe y devuelve el tipo nominal IProposalSummary (una sola linea desde x00738). |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposals result | type | intentional-compat | 1 | La propiedad proposals del snapshot se mantiene por compatibilidad del catalogo. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposalStatusCounts | type | contract | 1 | Los contadores siguen codificados como proposalStatusCounts. |
 | packages/core/src/lib/catalog/agent-discovery-catalog.ts | proposalStatusCounts result | type | contract | 1 | El snapshot devuelve proposalStatusCounts como parte del contrato publico. |
@@ -67,12 +59,9 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/catalog/agent-discovery-types.ts | ProposalStatus | type | contract | 1 | El resumen publico del workflow fija el vocabulario de estados de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-types.ts | proposalStatusCounts | type | contract | 1 | El snapshot compacto expone contadores del workflow con nombre de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-types.ts | readonly status: ProposalStatus | type | contract | 1 | El DTO del workflow sigue exponiendo ProposalStatus en el core. |
-| packages/core/src/lib/cli/assemble-core-tools.ts | bootstraps the proposals | message | adapter | 1 | La ayuda de adopt_project describe todavia el bootstrap de proposals desde el core. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | proposals: () => proposalSummaries | type | composition | 1 | La fuente del catalogo sigue cableada con el nombre proposals. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | proposalSummaries | type | composition | 1 | La composicion del catalogo inyecta proposalSummaries de forma nominal. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | TSkillsPhase['proposalSummaries'] | type | composition | 1 | La fase de ensamblado superior todavia transporta proposalSummaries. |
-| packages/core/src/lib/cli/assemble-skills.ts | config + agents + proposals store | message | adapter | 2 | El mensaje de adopcion expone el bootstrap del store como detalle del core. |
-| packages/core/src/lib/cli/assemble-skills.ts | do not hand-create proposals | message | composition | 1 | El mensaje de mismatch sigue mencionando el layout de proposals desde el core. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries assignment | type | intentional-compat | 1 | La lectura de proposalSummaries queda en el borde del ensamblado para conservar la API publica. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries compat via workflow state | type | intentional-compat | 1 | El resultado del ensamblado conserva proposalSummaries como compatibilidad de borde hacia la API publica. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries value | type | composition | 1 | La composicion sigue propagando proposalSummaries a la capa superior. |
@@ -110,8 +99,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/contracts/release/index.ts | release metadata proposals must be non-empty strings | message | adapter | 1 | La validacion de metadata de release nombra el dominio proposals en su mensaje de error. |
 | packages/core/src/lib/knowledge/host-onboarding.knowledge.ts | docs/delendai/proposals/ | path | adapter | 1 | La knowledge base de onboarding sigue senalando la ruta concreta del store proposals. |
 | packages/core/src/lib/plugins/diagnose-workspace-layout.ts | proposals layout resolve under docsDir | message | composition | 1 | El diagnostico del workspace sigue asumiendo el layout proposals desde el core. |
-| packages/core/src/lib/plugins/plugin-defaults.ts | docs/delendai/proposals/done/audits | path | adapter | 1 | La ruta por defecto de auditorias sigue anclada al arbol proposals. |
-| packages/core/src/lib/plugins/plugin-defaults.ts | docs/proposals/retired/issues | path | adapter | 1 | Los defaults de issues apuntan a un layout proposals concreto. |
 | packages/core/src/lib/plugins/plugin-defaults.ts | pluginDefaults.proposals | plugin-name | composition | 1 | Los defaults de plugins reservan un bloque nominal para proposals. |
 | packages/core/src/lib/plugins/preset-catalog.ts | { plugin: proposals } | plugin-name | composition | 2 | El catalogo de presets describe proposals como plugin concreto de composicion. |
 | packages/core/src/lib/plugins/preset-derived.ts | preset includes proposals | plugin-name | composition | 1 | El preset derivado materializa proposals en la composicion por defecto. |
@@ -137,6 +124,9 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/tools/agent-catalog-tool.ts | snapshot.proposals filter | type | intentional-compat | 1 | La consulta filtrada conserva proposals como clave publica. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | snapshot.proposals.length | type | intentional-compat | 1 | El contador de coincidencias sigue calculando sobre snapshot.proposals. |
 | packages/core/src/lib/tools/overview-tool.ts | tools grouped by plugin proposals | message | intentional-compat | 1 | La documentacion del overview conserva proposals como ejemplo contractual visible. |
+| packages/core/src/lib/work-units/publication-pull-request.service.ts | docs(proposals): … to review | message | adapter | 1 | The unit-of-work engine (x00735) recognises the claim and hand-off commits the proposals workflow writes; the patterns belong to the plugin. |
+| packages/core/src/lib/work-units/publication-target.service.ts | '/proposals/in-progress/' | path | adapter | 1 | The unit-of-work engine (x00735) asks whether a proposal is still in progress by its folder; the status belongs behind an adapter the plugin provides. |
+| packages/core/src/lib/work-units/publication-target.service.ts | file.includes('/proposals/') | path | adapter | 1 | The unit-of-work engine (x00735) finds the proposal a unit belongs to by its path; the proposals layout belongs behind an adapter the plugin provides. |
 | packages/core/src/public/index.ts | ../lib/proposals/validate-evidence.schema | path | contract | 1 | El barrel publico reexporta un schema desde un subpath proposals interno del core. |
 | packages/core/src/public/index.ts | ACTIONABLE_PROPOSAL_STATUSES | type | contract | 1 | El barrel publico reexporta el vocabulario del workflow con nombre proposals. |
 | packages/core/src/public/index.ts | IProposalSummary | type | contract | 1 | Los consumidores externos siguen importando el DTO nominal de proposals desde core/public. |
@@ -150,16 +140,27 @@ Acoplamientos eliminados de packages/core/src por una slice de la propuesta.
 
 | File | Symbol or literal | Category | Resolved by |
 | --- | --- | --- | --- |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | proposals store managed by the delendai | message | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | `proposals` plugin | plugin-name | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | create_proposal | message | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | sync_proposals inventory message | message | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | docsDir/proposals/.gitkeep | path | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | docsDir/proposals/README.md | path | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | Bootstrapped proposals store files | message | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | buildProposalsStoreFiles | import | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | config.plugins.proposals | plugin-name | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | proposals + issues plugins | message | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | sync_proposals | message | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | bootstrap the proposals store | message | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | proposals-store bootstrap | message | S2 |
+| packages/core/src/lib/adopt/adoption-assessment.service.ts | Estimated adopt_project write surface ... proposals store | message | S2 |
 | packages/core/src/lib/cli/assemble-skills.ts | readProposalsIndex | import | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries type | type | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | readProposalsIndex() | index-access | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | isLoaded proposals | plugin-name | S4 |
+| packages/core/src/lib/cli/assemble-skills.ts | config + agents + proposals store | message | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | proposals_auto_work | message | S4 |
+| packages/core/src/lib/cli/assemble-skills.ts | do not hand-create proposals | message | S4 |
+| packages/core/src/lib/cli/assemble-core-tools.ts | bootstraps the proposals | message | S2 |
 | packages/core/src/lib/plugins/plugin-defaults.ts | docs/handoffs | path | S2 |
 | packages/core/src/lib/api/stable-facade.ts | plugin: 'proposals' | plugin-name | S3 |

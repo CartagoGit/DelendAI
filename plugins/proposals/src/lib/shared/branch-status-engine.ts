@@ -26,6 +26,7 @@
 import { join, relative, resolve } from 'node:path';
 
 import type { IGitRunner } from './git-runner';
+import { projectBranches } from '@delendai/core/public';
 
 /** Result type for one branch (always local, agent/* by default). */
 export interface IBranchStatusEntry {
@@ -297,7 +298,13 @@ export const runBranchStatusEngine = async (
 	options: IBranchStatusEngineOptions,
 ): Promise<IBranchStatusOutcome> => {
 	const run = options.run;
-	const baseBranch = options.baseBranch ?? 'develop';
+	// Not `'develop'`. That is this repository's integration branch, and
+	// an engine that DELETES branches must never guess one: a project on
+	// `main` or `trunk` would have every judgement made against a branch
+	// that does not exist.
+	const baseBranch =
+		options.baseBranch ??
+		(await projectBranches(options.workspaceRoot)).integration;
 	const agentPrefix = options.agentPrefix ?? 'agent/';
 	const now = options.now ?? Date.now();
 	const generatedAt = new Date(now).toISOString();

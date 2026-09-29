@@ -13,9 +13,10 @@
  * behaviour would have been wrong under a WIP policy:
  *
  *  1. `.git/index` is never opened and HEAD never moves. Staging goes
- *     through the core WIP engine's temporary index; this file issues no
- *     `add`, no `commit`, no `push`. The only git this file runs itself
- *     is a `rev-parse` to read the integration head.
+ *     through the core WIP engine's temporary index. When the resolved
+ *     policy promises `autoPushAfterCommit`, the verified checkpoint SHA
+ *     is pushed to the same non-head ref before success is reported; no
+ *     integration branch is ever pushed by this route.
  *  2. The claim is passed WHOLE. The engine's slice-scope resolver
  *     narrows a declared list down to what is dirty and owned, which is
  *     right for a commit and wrong for a checkpoint: a narrower claim
@@ -28,9 +29,17 @@
  *     requires pull requests.
  */
 
+import { agentIdOf } from '../services/work-ref-naming.service';
+import { reapIntegratedWorkRefs } from '../services/integrated-work-refs.service';
 import type { IGitRunner } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
-import { resolveWorkRef } from '@delendai/core/public';
+import {
+	localRefHolds,
+	publishWorkRef,
+	resolveDurabilityRemote,
+	resolveWorkRef,
+	WORK_REF_NAMING,
+} from '@delendai/core/public';
 
 import type {
 	ICheckpointReport,
@@ -155,16 +164,23 @@ export const createPolicyPersistence = (
 						proposalId: request.proposalId,
 						sliceId: request.sliceId,
 					});
+		const topic = await options.resolveTopic?.({
+			proposalId: request.proposalId,
+			sliceId: request.sliceId,
+		});
+		const slice =
+			request.sliceId.length > 0 ? request.sliceId : request.triggerKind;
 		const ref = resolveWorkRef(policy.branches.workRefTemplate, {
-			agent: options.agentId,
+			agent: agentIdOf(options.agentId),
+			// A checkpoint of a claimed slice is implementation work; a
+			// review unit keeps its kind through its old slice names.
+			kind: WORK_REF_NAMING.legacyKind(slice),
+			...(topic === undefined ? {} : { topic }),
 			proposal:
 				request.proposalId.length > 0
 					? request.proposalId
 					: 'workspace',
-			slice:
-				request.sliceId.length > 0
-					? request.sliceId
-					: request.triggerKind,
+			slice,
 			generation,
 		});
 		const result = await wip.createOrUpdateWipRef({
@@ -193,6 +209,66 @@ export const createPolicyPersistence = (
 				remedy: 'Inspect the claimed paths; nothing was written and the work ref was not moved.',
 			};
 		}
+		// Nothing new was recorded. The engine answers `unchanged` with the
+		// commit it would have built on and, for a first checkpoint, no
+		// local ref at all. This used to be published regardless, so a
+		// slice with nothing to record put a remote work ref at the
+		// integration branch's tip, carrying no commit of its own, named
+		// after whoever the host thought was working. It is published only
+		// when a local ref really holds that commit (a durability retry for
+		// work checkpointed earlier); otherwise nothing is pushed, reaped
+		// or handed off.
+		if (
+			result.status === 'unchanged' &&
+			!(await localRefHolds(options.run, ref, result.commit))
+		) {
+			return {
+				handled: true,
+				status: 'unchanged',
+				report: {
+					ref,
+					commit: result.commit,
+					tree: result.tree,
+					patchDigest: result.patchDigest,
+					baseSha,
+					scope: result.scope,
+					classification,
+					handoff: {
+						...NO_HANDOFF,
+						reason: 'nothing new to checkpoint; nothing published',
+					},
+				},
+			};
+		}
+		const published = await publishWorkRef(
+			options.run,
+			policy,
+			options.remote,
+			ref,
+			result.commit,
+			result.status === 'created' ? result.parent : result.commit,
+		);
+		if (!published.ok) {
+			return {
+				handled: true,
+				status: 'refused',
+				code: 'WIP_CHECKPOINT_FAILED',
+				reason: `WIP_CHECKPOINT_FAILED: the local checkpoint exists at ${result.commit}, but remote durability failed: ${published.reason}`,
+				remedy: 'Restore remote connectivity or configure a repository remote, then retry. The integration branch was not changed.',
+			};
+		}
+		// The new checkpoint is durable; now remove the work refs whose
+		// work already reached the integration branch. Best effort: a
+		// failure here is reported, never turned into a failed checkpoint.
+		const reaped = await reapIntegratedWorkRefs({
+			run: options.run,
+			workRefPrefix: policy.branches.workRefPrefix,
+			integrationSha: baseSha,
+			remote: policy.persistence.autoPushAfterCommit
+				? await resolveDurabilityRemote(options.run, options.remote)
+				: undefined,
+			keep: [ref],
+		});
 		const handoff = await handOff({
 			classification,
 			policy,
@@ -211,6 +287,7 @@ export const createPolicyPersistence = (
 			scope: result.scope,
 			classification,
 			handoff,
+			reaped,
 		};
 		return {
 			handled: true,

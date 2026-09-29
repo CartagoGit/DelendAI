@@ -1,5 +1,5 @@
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	SafeWorkspaceReader,
 	walkAllowedFiles,
 } from '@delendai/core/public';
@@ -155,8 +155,15 @@ export const listDocs = async (
 	for (const root of roots) {
 		if (truncated) break;
 		// Containment: `docs_list` must apply the same guard as `docs_read` — a
-		// root that escapes the workspace (`..`, absolute) is skipped.
-		const contained = resolveWorkspaceContained(workspaceRootAbs, root);
+		// root that escapes the workspace (`..`, absolute) is skipped. The
+		// check is PHYSICAL, so a root reached through a symlink pointing
+		// out of the workspace is rejected too; a root that does not exist
+		// is rejected here rather than by the `stat` below, and lands in
+		// `rejectedRoots` instead of `missingRoots`.
+		const contained = await resolveExistingWorkspaceContained(
+			workspaceRootAbs,
+			root,
+		);
 		if (!contained.ok) {
 			rejectedRoots.push(root);
 			continue;
@@ -341,7 +348,13 @@ export const readDoc = async (
 		found: false,
 		...(reason !== undefined ? { reason } : {}),
 	});
-	const contained = resolveWorkspaceContained(workspaceRootAbs, relPath);
+	// Physical: a markdown file reached through a symlink that leaves the
+	// workspace is refused before it is opened. An absent file already
+	// answered `found: false`, and still does.
+	const contained = await resolveExistingWorkspaceContained(
+		workspaceRootAbs,
+		relPath,
+	);
 	if (!contained.ok) return miss(contained.reason);
 	const abs = contained.abs;
 	if (!DEFAULT_EXTENSIONS.includes(extOf(abs))) {

@@ -16,6 +16,7 @@ import {
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
 import {
+	createAutoTransitionRepairDeps,
 	markProposalDoneForAutoTransition,
 	shouldAutoTransitionProposal,
 } from '@delendai/proposals/lib/services/auto-transition';
@@ -73,7 +74,7 @@ describe('auto transition after approve (a00074 S3)', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('marks a review proposal done in frontmatter when the last slice is approved', async () => {
+	it('moves a review proposal to done when the last slice is approved', async () => {
 		const reviewPath = join(
 			root,
 			'docs/delendai/proposals/review/f00089-auto-move.md',
@@ -112,7 +113,14 @@ shipped-in: [30551533]
 			})}\n`,
 			'utf8',
 		);
-		const review = await capture(buildReviewRegistration(opts));
+		// The close is the normal `review → done`, gates included; this
+		// case is about the move, so the validate gate is not in play.
+		const review = await capture(
+			buildReviewRegistration({
+				...opts,
+				requireValidateEvidence: false,
+			}),
+		);
 		process.env.MCP_HOST = 'implementer-host';
 		await review({
 			proposalId: 'f00089',
@@ -205,5 +213,23 @@ type: plan
 				requirePeerReview: false,
 			}),
 		).toBe(false);
+	});
+});
+
+describe('the journal file adapter (x00712)', () => {
+	it('reads a journal that does not exist yet as empty, and writes one', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'journal-deps-'));
+		try {
+			const deps = createAutoTransitionRepairDeps();
+			const path = join(dir, 'logs', 'j.jsonl');
+			expect(await deps.readText(path)).toBe('');
+			await deps.ensureDir(join(dir, 'logs'));
+			expect(deps.withLock).toBeDefined();
+			await deps.withLock?.(path, () => deps.writeText(path, 'x\n'));
+			expect(await deps.readText(path)).toBe('x\n');
+			expect(Number.isNaN(Date.parse(deps.now()))).toBe(false);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });

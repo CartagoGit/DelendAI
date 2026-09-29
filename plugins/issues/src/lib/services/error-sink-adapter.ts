@@ -17,7 +17,7 @@
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { writeFileAtomic } from '@delendai/core/public';
+import { realpathContained, writeFileAtomic } from '@delendai/core/public';
 import type { ICapturedError, IErrorSink } from '@delendai/core/public';
 
 import type { IIssueCreateInput, IIssueCreateResult } from '../contracts';
@@ -53,6 +53,13 @@ export interface ICreateIssuesErrorSinkAdapterOptions {
 	readonly githubClient: IGithubClient | undefined;
 	/** Absolute, workspace-contained path. Drafts land in `<scaffoldDir>/_errors/`. */
 	readonly scaffoldDir: string;
+	/**
+	 * Absolute workspace root, used as the PHYSICAL containment root for
+	 * draft writes (x00544 S3). Rooting at `scaffoldDir` instead would be
+	 * vacuous: realpath-ing a symlinked scaffold dir makes the escape
+	 * destination its own root. Optional so older hosts keep working.
+	 */
+	readonly workspaceRoot?: string;
 	readonly clock?: (() => Date) | undefined;
 	/** Default `false` — safe-mode, drafts only. */
 	readonly autoReport: boolean;
@@ -65,6 +72,13 @@ export interface IIssuesErrorSinkAdapterStats {
 	readonly liveIssuesOpened: number;
 	readonly liveIssuesDropped: number;
 	readonly githubFailures: number;
+	/**
+	 * Draft writes refused because the resolved `_errors` dir physically
+	 * left the workspace. Counted rather than silent: this adapter must
+	 * never throw, and a refusal nobody can see is indistinguishable
+	 * from a sink that quietly stopped working.
+	 */
+	readonly containmentRefusals: number;
 }
 
 export interface IIssuesErrorSinkAdapter {
@@ -163,6 +177,7 @@ export const createIssuesErrorSinkAdapter = (
 	let liveIssuesOpened = 0;
 	let liveIssuesDropped = 0;
 	let githubFailures = 0;
+	let containmentRefusals = 0;
 
 	/** `fingerprint → timestamp of last successful live-create` */
 	const fingerprintLastSeen = new Map<string, number>();
@@ -174,6 +189,20 @@ export const createIssuesErrorSinkAdapter = (
 
 	const record = async (event: ICapturedError): Promise<void> => {
 		try {
+			// PHYSICAL containment immediately before the write.
+			// `scaffoldDir` is lexically contained at register time, but a
+			// symlinked scaffold dir still names another tree and only
+			// realpath can see that. This adapter's contract is that it
+			// NEVER throws, so a refusal is a counted, logged skip.
+			const containmentRoot =
+				options.workspaceRoot ?? options.scaffoldDir;
+			if (!(await realpathContained(errorsDir, [containmentRoot]))) {
+				containmentRefusals++;
+				process.stderr.write(
+					'[issues-error] refusing to write a draft outside the workspace\n',
+				);
+				return;
+			}
 			// Always write a draft first.
 			await mkdir(errorsDir, { recursive: true });
 			const draftPath = join(errorsDir, `${event.fingerprint}.md`);
@@ -242,6 +271,7 @@ export const createIssuesErrorSinkAdapter = (
 		liveIssuesOpened,
 		liveIssuesDropped,
 		githubFailures,
+		containmentRefusals,
 	});
 
 	return { sink, getStats };

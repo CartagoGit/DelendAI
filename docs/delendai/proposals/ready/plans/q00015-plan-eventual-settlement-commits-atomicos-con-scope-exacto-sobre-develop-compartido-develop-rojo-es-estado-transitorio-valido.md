@@ -10,6 +10,19 @@ date: 2026-09-02
 
 # q00015 — Plan eventual settlement sobre develop compartido
 
+> **Premisa superada (2026-09-23).** Este plan asume «shared checkout +
+> commits directos a `develop`». La política vigente del repositorio es el
+> perfil `shared-checkout-pr`: el checkout compartido no recibe commits de
+> integración (`refuse-integration-commit`), y el trabajo vive en work refs
+> (`delendai/wip/…`) que se publican como publication refs y pull requests.
+> Por eso `develop` ya no se pone rojo por commits de agentes en curso:
+> cada cambio llega verificado por su PR. El concepto de *settlement* sigue
+> siendo válido, pero su mecánica hay que reescribirla contra este modelo
+> antes de ejecutar S1, S3, S4 y S5. El avance registrado en S2 (barrera
+> en `commit-policy`, `commit_policy_settlement`, conteo de workers vivos)
+> es real y se conserva. Lo que no se sostiene es la premisa de los commits
+> directos.
+
 ## Goal
 
 Formalizar el modelo operativo que ya está implícito en la decisión de `f00417`:
@@ -73,7 +86,7 @@ Es la diferencia entre **eventually consistent** y **strongly consistent**: el s
 
 ### S2 — Hook de barrera en `commit-policy` (settlement gate)
 
-- **Status**: pending
+- **Status**: pending — progress 2026-09-15 at `ccd79561b`: the engine accepts a host-supplied `settlementExempt(slice)` predicate, so repair slices can commit while the round is `settling` instead of deadlocking it; absent, every slice is refused as before. The gate now has a spec (`engine-settlement-gate.spec.ts`) reading the runner's call log. Since `256f82e4a` the commit-policy plugin supplies both: it reads the phase from a worker registry at `<pluginCacheDir>/settlement.json` and exempts `settlement.exemptProposalIdPrefixes` (default `e`), so the barrier runs whenever that registry says `settling`. Since `0ba769bcb` the phase can also be steered through the administrative tool `commit_policy_settlement` (`status`, `enter` refused while workers are active, `complete` with the validate result, dry runs supported), over the same registry file. Since 2026-09-15 the worker count no longer depends on hosts registering workers. `commit_policy_settlement` also counts agents holding live claims in the shared agent lock, the file the proposals plugin writes and commit-policy already reads for foreign locks. It uses core's `isLockEntryExpired` rule and reports the larger of the two counts. A lock that exists but cannot be read makes the count unknown, and `enter` refuses rather than treating it as zero. The count lives in `agent-lock-live-workers.ts` with its own spec. `settlement-tool-live-workers.spec.ts` pins status, enter and the dry run against an injected source. `settlement-tool.spec.ts` shows over MCP that the registered tool reads a real `agents.lock.json` in the workspace by default. Still missing for this slice's cycle: nothing enters `settling` on its own. `enter` remains an explicit call, and no host calls it when the last live claim is released.
 - **Files**:
   - `plugins/commit-policy/src/lib/settlement/index.ts` (nuevo) — `ISettlementState { phase: 'active'|'settling'|'stable', activeWorkers: number, lastValidateAt?: number, lastGreenHead?: string }`.
   - `plugins/commit-policy/src/lib/settlement/worker-registry.ts` (nuevo) — `registerWorker(agentId, taskId): () => void` (returns disposer). Memoria + persistencia ligera (`.commit-policy/settlement-state.json`).
@@ -88,6 +101,16 @@ Es la diferencia entre **eventually consistent** y **strongly consistent**: el s
   - `packages/quality-policy/src/lib/settlement-runner.ts` (nuevo) — corre full validate (`bun run validate` + e2e smoke). Loop bounded (max 3 retries). Reporta green HEAD o lista de repair slices necesarias.
   - `packages/quality-policy/src/lib/settlement-state.ts` — consuma el estado del settlement via `commit-policy:settlement_status`.
 - **Gate**: lint, types, test
+- **Reality (2026-09-15), checked on `develop` at `5a69dee52`: why nothing enters `settling` on its own yet.**
+  - **What exists.** The runner is `plugins/quality-policy/src/lib/services/settlement-runner.ts`, exposed as `quality_policy_run_settlement`. It runs validate with bounded retries and returns `{ green, headSha }` or the failing files. It calls nothing afterwards: its own header says hosts are *expected* to call `settlement_complete` on green and dispatch repairs on red, and no code does either.
+  - **Why an automatic `enter` alone would stall the swarm.** Once the registry says `settling`, the engine refuses every slice whose proposal id is not exempt (`SETTLEMENT_IN_PROGRESS`). Nothing releases that phase except an explicit `complete`: there is no timeout. `lastZeroAt` is written when the last registered worker leaves, but no decision reads it. Wiring `enter` to "no live claims" without the rest would refuse every normal slice until someone ran validate and called `complete` by hand.
+  - **What a safe automatic cycle needs, owned in one place.**
+    1. Enter only when there are no registered workers, the agent lock is readable with no live claims, and there are commits since `lastGreenHead`. Entering on an already-green head only blocks the queue.
+    2. Start the runner right after entering.
+    3. Call `complete` with its result. On red, file the repair slices (S4) so the exempt prefix has something to commit.
+    4. Cap how long a round may stay `settling`. Past the cap, return to `active` and report it, rather than holding commits indefinitely.
+    5. Keep it opt-in behind a `settlement` option, because it changes when every host may commit.
+  - **Status.** Until those pieces exist together, `enter` stays an explicit call.
 
 ### S4 — Repair agent (autoriza slices para arreglar lo que el validate encontró)
 
@@ -110,6 +133,7 @@ Es la diferencia entre **eventually consistent** y **strongly consistent**: el s
     5. settlement retry → verde.
     6. round 2: 2 workers commitean D/E.
 - **Gate**: test
+- **Reality (2026-09-15)**: the pieces exist but the cycle does not, so this end-to-end test cannot be written against a real path yet — only glued together inside a test. Verified on develop: the commit-policy engine's settlement gate (`settlementRead`) has no caller, so no host refuses commits during `settling`; `runSettlement` is reachable only through the manual `quality_policy_run_settlement` tool, so nothing starts settlement when the last worker disposes; `buildRepairDraft` has no caller outside its own spec, so a failed run never becomes a repair proposal, and no `repair` proposal has ever been filed (the kind does own the `e` id prefix in `PROPOSAL_KINDS`; an earlier version of this note said it had none); `settlement.completed` is emitted nowhere. Wiring the gate as it stands would deadlock the loop this slice describes: it refuses every slice in `settling` and a slice event carries no proposal kind, so the repair slice would receive `SETTLEMENT_IN_PROGRESS` and the round could never complete. `tests/e2e/eventual-settlement.spec.ts` exists but belongs to q00013 and uses a validate command that cannot fail. Stays pending until settlement, repair authoring and completion are wired; the gate can exempt repair slices since `ccd79561b`.
 
 ## acceptance
 

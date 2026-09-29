@@ -121,8 +121,41 @@ const git = (args: string[], cwd: string): string => {
 // git separates each commit body with a NUL byte (`%x00`); split on it.
 const NUL = String.fromCharCode(0);
 
+/**
+ * The version a tag names, when this run was triggered BY that tag.
+ *
+ * WHY this is a separate mode and not another input to the derivation:
+ * the derivation answers "what should the next version be, given what
+ * happened since the last tag". On a tag push the checkout sits ON the
+ * tag, so that range is empty and the honest answer is `none` — which is
+ * why `release.yml` advertised a tag trigger that could never publish
+ * anything. A tag is not a question about the next version; it is an
+ * instruction to publish THIS one.
+ */
+export const versionFromTagRef = (ref: string | undefined): string | null => {
+	const match =
+		/^(?:refs\/tags\/)?v(\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?)$/u.exec(
+			(ref ?? '').trim(),
+		);
+	return match?.[1] ?? null;
+};
+
 /** Compute the release decision for the repo at `root`. */
-export const decideVersion = (root: string): IVersionDecision => {
+export const decideVersion = (
+	root: string,
+	options: { readonly tagRef?: string | undefined } = {},
+): IVersionDecision => {
+	// Triggered by a tag: publish exactly what the tag names. Nothing is
+	// derived, so nothing can silently decide there is nothing to do.
+	const tagged = versionFromTagRef(options.tagRef);
+	if (tagged !== null) {
+		return {
+			release: true,
+			version: tagged,
+			bump: 'none',
+			lastTag: `v${tagged}`,
+		};
+	}
 	const corePkg = JSON.parse(
 		readFileSync(join(root, 'packages/core/package.json'), 'utf8'),
 	) as { version: string };
@@ -161,7 +194,11 @@ export const decideVersion = (root: string): IVersionDecision => {
 // CLI ------------------------------------------------------------------------
 if (import.meta.main) {
 	const root = join(dirname(fileURLToPath(import.meta.url)), '../../..');
-	const decision = decideVersion(root);
+	const decision = decideVersion(root, {
+		// `GITHUB_REF` is `refs/tags/vX.Y.Z` exactly when a tag push
+		// started this run; anything else leaves the derivation alone.
+		tagRef: process.env.GITHUB_REF,
+	});
 	console.log(JSON.stringify(decision));
 	if (process.argv.includes('--github-output') && process.env.GITHUB_OUTPUT) {
 		appendFileSync(

@@ -143,7 +143,10 @@ const validateBranches = (
 				path: 'branches.workRefTemplate',
 				message:
 					'The wip-ref persistence strategy needs a template to name each unit of work.',
-				remedy: 'Set `development.branches.workRefTemplate`, e.g. "wip/${agent}/${proposal}-${slice}-g${generation}".',
+				// No example shape here on purpose: this used to carry one that
+				// omitted `${topic}`, and an operator who copied it lost what
+				// each ref is about. The profiles state the shape once.
+				remedy: 'Set `development.branches.workRefTemplate`, or adopt a profile that declares one.',
 			});
 		} else if (!workRefTemplate.includes('${generation}')) {
 			out.push({
@@ -152,6 +155,31 @@ const validateBranches = (
 				message:
 					'The work-ref template has no `${generation}` placeholder, so successive checkpoints of one slice would collide on the same ref.',
 				remedy: 'Add `${generation}` to the template — a slice integrates as several generations, not as one long-lived branch.',
+			});
+		}
+		const qualifiedTemplate = workRefTemplate.startsWith('refs/')
+			? workRefTemplate
+			: `refs/${workRefTemplate}`;
+		if (
+			policy.branches.workRefVisibility === 'visible' &&
+			!qualifiedTemplate.startsWith('refs/heads/')
+		) {
+			out.push({
+				rule: 'visible-work-ref-must-be-head',
+				path: 'workRefs.visibility',
+				message: 'Visible work refs must resolve below `refs/heads/`.',
+				remedy: 'Use the visible default `heads/delendai/wip/...` or set `development.workRefs.visibility` to `hidden`.',
+			});
+		}
+		if (
+			policy.branches.workRefVisibility === 'hidden' &&
+			qualifiedTemplate.startsWith('refs/heads/')
+		) {
+			out.push({
+				rule: 'hidden-work-ref-must-not-be-head',
+				path: 'workRefs.visibility',
+				message: 'Hidden work refs cannot resolve below `refs/heads/`.',
+				remedy: 'Use a hidden template below `refs/wip/` or set `development.workRefs.visibility` to `visible`.',
 			});
 		}
 	}

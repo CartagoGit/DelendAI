@@ -46,6 +46,47 @@ const expectWithinBudget = (
 	expect(value, `${label} = ${value}B`).toBeLessThanOrEqual(budget.hard);
 };
 
+/**
+ * v00136: the verdict for a payload with one row per tool. The absolute
+ * pair is a safety net against unbounded growth; when a surface declares
+ * per-item ceilings, bytes per item decide. Pure, so the acceptance —
+ * more tools does not flip it, fatter rows do — is pinned by arithmetic.
+ */
+const itemBudgetVerdict = (
+	bytes: number,
+	items: number,
+	budget: {
+		readonly hard: number;
+		readonly warning: number;
+		readonly hardPerItem?: number;
+		readonly warningPerItem?: number;
+	},
+): 'ok' | 'warning' | 'hard' => {
+	const perItem = items > 0 ? bytes / items : Number.POSITIVE_INFINITY;
+	if (bytes > budget.hard) return 'hard';
+	if (budget.hardPerItem !== undefined && perItem > budget.hardPerItem)
+		return 'hard';
+	if (bytes > budget.warning) return 'warning';
+	if (budget.warningPerItem !== undefined && perItem > budget.warningPerItem)
+		return 'warning';
+	return 'ok';
+};
+
+const expectWithinItemBudget = (
+	label: string,
+	bytes: number,
+	items: number,
+	budget: Parameters<typeof itemBudgetVerdict>[2],
+): void => {
+	// v00136 S2: the count travels with the bytes, so a later reading can
+	// tell "more tools" from "fatter rows" without reconstructing it.
+	const reading = `${label} = ${bytes}B over ${items} tools (${(bytes / items).toFixed(1)} B/tool)`;
+	const verdict = itemBudgetVerdict(bytes, items, budget);
+	if (verdict === 'warning')
+		console.warn(`[token-budget warning] ${reading}`);
+	expect(verdict, reading).not.toBe('hard');
+};
+
 const jsonBytes = (value: unknown): number =>
 	Buffer.byteLength(JSON.stringify(value), 'utf8');
 
@@ -97,7 +138,15 @@ const marginalPluginBytes = (
 		}
 		totals.set(owner, (totals.get(owner) ?? 0) + jsonBytes(tool));
 	}
-	return Math.max(0, ...totals.values());
+	// A surface that lists no plugin tool has nothing to measure. Every
+	// marginal case used to connect with the dynamic-surface capability,
+	// got the 7-tool adaptive surface, and asserted `Math.max(0)` against
+	// the ceiling — green by construction, while `standard` sat over hard.
+	expect(
+		totals.size,
+		'the marginal ceiling needs a surface that lists plugin tools',
+	).toBeGreaterThan(0);
+	return Math.max(...totals.values());
 };
 
 describe('e2e: token budget (cold-start payloads)', async () => {
@@ -276,18 +325,31 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	 * `managed` ones.
 	 */
 	it('native overview listing stays under its own dedicated budget', async () => {
+		const listed = await client.callTool({
+			name: 'delendai_overview',
+			arguments: {},
+		});
+		const tools =
+			(
+				listed.structuredContent as {
+					readonly tools?: readonly unknown[];
+				}
+			)?.tools?.length ?? 0;
+		expect(tools).toBeGreaterThan(0);
 		const full = await textBytes('delendai_overview', {});
 		const compact = await textBytes('delendai_overview', {
 			compact: true,
 		});
-		expectWithinBudget(
+		expectWithinItemBudget(
 			'overview full (native)',
 			full,
+			tools,
 			TOKEN_BUDGETS.toolPayloads.overviewFullNative,
 		);
-		expectWithinBudget(
+		expectWithinItemBudget(
 			'overview compact (native)',
 			compact,
+			tools,
 			TOKEN_BUDGETS.toolPayloads.overviewCompactNative,
 		);
 		expect(compact).toBeLessThan(full);
@@ -356,7 +418,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		expect(swarmRoundContextBudget).toBeDefined();
 		const swarm = await connectClient('swarm', true, {
 			clientInfo: modernClientInfo,
-			capabilities: dynamicSurfaceCapabilities,
+			surfaceMode: 'native',
 		});
 		try {
 			const toolList = await swarm.client.listTools();
@@ -418,7 +480,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	it('lean preset remains materially smaller than the collaboration surface', async () => {
 		const lean = await connectClient('lean', true, {
 			clientInfo: modernClientInfo,
-			capabilities: dynamicSurfaceCapabilities,
+			surfaceMode: 'native',
 		});
 		try {
 			const toolList = await lean.client.listTools();
@@ -466,9 +528,11 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	it.each(['minimal', 'standard', 'full', 'dogfood'] as const)(
 		'%s preset keeps its marginal plugin ceiling honest',
 		async (presetId) => {
+			// Native, pinned: the marginal ceiling governs the static
+			// surface, the only one on which plugin tools are listed.
 			const connection = await connectClient(presetId, true, {
 				clientInfo: modernClientInfo,
-				capabilities: dynamicSurfaceCapabilities,
+				surfaceMode: 'native',
 			});
 			try {
 				const toolList = await connection.client.listTools();
@@ -734,5 +798,39 @@ title: token budget fixture
 				nativeWithManagedCapabilities.close(),
 			]);
 		}
+	});
+});
+
+describe('overview native ceilings measure rows, not roster size (v00136)', () => {
+	const full = TOKEN_BUDGETS.toolPayloads.overviewFullNative;
+	const compact = TOKEN_BUDGETS.toolPayloads.overviewCompactNative;
+
+	it("passes today's measurement", () => {
+		expect(itemBudgetVerdict(13_786, 87, full)).toBe('ok');
+		expect(itemBudgetVerdict(2_185, 87, compact)).toBe('ok');
+	});
+
+	it('does not flip when the roster grows at the same row cost', () => {
+		// 120 tools at today's 158.5 B/tool: a flat 14,475 B ceiling would
+		// have failed here, and the only fix would have been another bump.
+		expect(itemBudgetVerdict(Math.round(120 * 158.5), 120, full)).toBe(
+			'ok',
+		);
+		expect(itemBudgetVerdict(Math.round(120 * 25.1), 120, compact)).toBe(
+			'ok',
+		);
+	});
+
+	it('fails when every row grows by 40 B', () => {
+		expect(itemBudgetVerdict(Math.round(87 * 198.5), 87, full)).toBe(
+			'hard',
+		);
+		expect(itemBudgetVerdict(Math.round(87 * 65.1), 87, compact)).toBe(
+			'hard',
+		);
+	});
+
+	it('still stops unbounded growth through the absolute safety net', () => {
+		expect(itemBudgetVerdict(full.hard + 1, 1_000, full)).toBe('hard');
 	});
 });

@@ -109,6 +109,29 @@ describe('duplicates', () => {
 		expect(findings.map((f) => f.file)).toEqual(['b.md']);
 	});
 
+	it('reads a file list written under the Files line, not just its first item', () => {
+		const listed = (...files: string[]) =>
+			proposal(
+				`## Slices\n\n### S1 — x\n- **Status**: review\n- **Files**:\n${files.map((file) => `  - \`${file}\``).join('\n')}\n- **Gate**: x\n`,
+			);
+		expect(
+			findDuplicates(
+				new Map([
+					['a.md', listed('src/shared.ts', 'src/a.ts')],
+					['b.md', listed('src/shared.ts', 'src/b.ts')],
+				]),
+			),
+		).toEqual([]);
+		expect(
+			findDuplicates(
+				new Map([
+					['a.md', listed('src/shared.ts', 'src/a.ts')],
+					['b.md', listed('src/shared.ts', 'src/a.ts')],
+				]),
+			),
+		).toHaveLength(1);
+	});
+
 	it('does not flag two proposals that merely touch one file each', () => {
 		const findings = findDuplicates(
 			new Map([
@@ -130,6 +153,53 @@ describe('duplicates', () => {
 					['a.md', proposal('## Goal\n\nx\n')],
 					['b.md', proposal('## Goal\n\ny\n')],
 				]),
+			),
+		).toEqual([]);
+	});
+});
+
+describe('delivered but still in progress', () => {
+	const withSlices = (...statuses: readonly string[]): string =>
+		[
+			'---',
+			'id: x00001',
+			'---',
+			'',
+			'# x00001 — A change',
+			'',
+			...statuses.flatMap((status, index) => [
+				`### S${String(index + 1)} — slice`,
+				'',
+				`- **Status**: ${status}`,
+				'',
+			]),
+		].join('\n');
+	const IN_PROGRESS = 'docs/delendai/proposals/in-progress/x00001-a.md';
+
+	it('flags a proposal in progress whose every slice is delivered', () => {
+		const findings = checkProposal(
+			IN_PROGRESS,
+			withSlices('review — shipped in #1', 'done'),
+		);
+		expect(findings).toEqual([
+			expect.objectContaining({
+				rule: 'delivered-in-progress',
+				detail: expect.stringContaining('proposal_transition'),
+			}),
+		]);
+	});
+
+	it('leaves one with a slice still to deliver', () => {
+		expect(
+			checkProposal(IN_PROGRESS, withSlices('review', 'pending')),
+		).toEqual([]);
+	});
+
+	it('leaves the same proposal once it is in review', () => {
+		expect(
+			checkProposal(
+				'docs/delendai/proposals/review/x00001-a.md',
+				withSlices('review', 'review'),
 			),
 		).toEqual([]);
 	});

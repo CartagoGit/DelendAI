@@ -262,6 +262,7 @@ export const buildCommitToolRegistration = (
 		'Commit through the policy engine: resolves identity, appends audit trail, refuses protected branches + disabled commit.',
 	tags: ['commit-policy', 'commit', 'write'],
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	register: async (server: McpServer) => {
 		server.registerTool(
 			`${options.namespacePrefix}_commit_policy_commit`,

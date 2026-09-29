@@ -40,8 +40,8 @@ export {
 	applyMigrations,
 	readMigrationSource,
 	currentSchemaVersion,
-	MIGRATION_FILES,
-	MIGRATION_CHECKSUMS,
+	migrationFiles,
+	migrationChecksums,
 	MigrationChecksumMismatchError,
 	type IMigrationApplyOutcome,
 } from './lib/migrations';
@@ -159,3 +159,10 @@ export {
 	type ISummaryBackfillResult,
 } from './lib/summary/backfill';
 export * from './lib/work-model/index';
+export {
+	extractYamlBlock,
+	parseFrontmatterBlock,
+	parseProposalFrontmatter,
+	type IParsedFrontmatter,
+	type IYamlValue,
+} from './lib/frontmatter.helper';

@@ -78,7 +78,7 @@ jobs:
           fetch-depth: '0'
 
       - name: Drift check
-        run: bun tools/scripts/gen-all.script.ts --check
+        run: bun run gen:all:check
 
   web-pages-drift:
     name: web-pages-drift (c00142)

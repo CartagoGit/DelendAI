@@ -3,43 +3,13 @@ import type {
 	IScaffoldHostOptions,
 	IScaffoldedFile,
 } from '../scaffold/scaffold-host';
+import type { IAdoptionFileContribution } from '../contracts/interfaces/adoption-extension.interface';
 import {
 	scaffoldAgentFile,
 	scaffoldClaudeAgentFile,
 	scaffoldCodexAgentFile,
 	scaffoldInstructionsFile,
 } from '../scaffold/scaffold-host';
-
-const PROPOSAL_STATUS_FOLDERS = [
-	'ready',
-	'in-progress',
-	'review',
-	'done',
-	'paused',
-	'blocked',
-	'retired',
-] as const;
-
-const PROPOSALS_README = [
-	'# Proposals',
-	'',
-	'This folder is the proposals store managed by the delendai',
-	'`proposals` plugin. Each proposal is one markdown file with',
-	'frontmatter (`id`, `kind`, `status`, `type`, `track`) and lives in',
-	'the folder matching its status:',
-	'',
-	'- `ready/` — executable now',
-	'- `in-progress/` — someone is on it',
-	'- `review/` — done, awaiting review',
-	'- `done/` — completed (terminal)',
-	'- `paused/`, `blocked/`, `retired/` — parked states',
-	'',
-	'Create proposals with the `create_proposal` tool (it allocates the',
-	'id and validates slices), move them with `proposal_transition`, and',
-	'ask `get_proposal_workflow` for the full convention. The registry',
-	'index is regenerated at any time via `sync_proposals`.',
-	'',
-].join('\n');
 
 const SUBAGENT_SLOTS: readonly IScaffoldAgentSlot[] = [
 	'proposal_guardian',
@@ -49,7 +19,7 @@ const SUBAGENT_SLOTS: readonly IScaffoldAgentSlot[] = [
 ];
 
 export interface IAdoptProjectWriteEstimateBreakdownEntry {
-	readonly kind: 'config' | 'proposal-store' | 'generated';
+	readonly kind: 'config' | 'generated' | 'plugin';
 	readonly description: string;
 	readonly count?: number;
 	readonly exact: boolean;
@@ -60,16 +30,6 @@ export interface IAdoptProjectWriteEstimate {
 	readonly exact: boolean;
 	readonly breakdown: readonly IAdoptProjectWriteEstimateBreakdownEntry[];
 }
-
-export const buildProposalsStoreFiles = (
-	docsDir: string,
-): IScaffoldedFile[] => [
-	...PROPOSAL_STATUS_FOLDERS.map((folder) => ({
-		path: `${docsDir}/proposals/${folder}/.gitkeep`,
-		content: '',
-	})),
-	{ path: `${docsDir}/proposals/README.md`, content: PROPOSALS_README },
-];
 
 export const buildAgentFiles = (
 	options: IScaffoldHostOptions,
@@ -83,9 +43,16 @@ export const buildAgentFiles = (
 	scaffoldInstructionsFile(options),
 ];
 
+/**
+ * What `adopt_project` would write: the config, the generated host files,
+ * and what each loaded plugin's adoption extension adds. `contributions`
+ * is `undefined` when plugins contribute but their files could not be
+ * counted (no docsDir), which makes the estimate inexact rather than
+ * silently smaller.
+ */
 export const buildAdoptProjectWriteEstimate = (input: {
 	hostOptions: IScaffoldHostOptions;
-	docsDir?: string;
+	contributions: readonly IAdoptionFileContribution[] | undefined;
 }): IAdoptProjectWriteEstimate => {
 	const breakdown: IAdoptProjectWriteEstimateBreakdownEntry[] = [
 		{
@@ -101,23 +68,22 @@ export const buildAdoptProjectWriteEstimate = (input: {
 			count: buildAgentFiles(input.hostOptions).length,
 			exact: true,
 		},
+		...(input.contributions === undefined
+			? [
+					{
+						kind: 'plugin' as const,
+						description:
+							'Files loaded plugins add depend on docsDir; omitted when the assessment lacks that path.',
+						exact: false,
+					},
+				]
+			: input.contributions.map((contribution) => ({
+					kind: 'plugin' as const,
+					description: `${contribution.title}: files the plugin adds.`,
+					count: contribution.count,
+					exact: true,
+				}))),
 	];
-	if (input.docsDir !== undefined) {
-		breakdown.push({
-			kind: 'proposal-store',
-			description:
-				'Bootstrapped proposals store files (.gitkeep per status + README).',
-			count: buildProposalsStoreFiles(input.docsDir).length,
-			exact: true,
-		});
-	} else {
-		breakdown.push({
-			kind: 'proposal-store',
-			description:
-				'Proposal-store files depend on docsDir; omitted when the assessment lacks that path.',
-			exact: false,
-		});
-	}
 	return {
 		count: breakdown.reduce(
 			(total, entry) => total + (entry.count ?? 0),

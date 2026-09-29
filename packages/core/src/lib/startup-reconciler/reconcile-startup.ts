@@ -19,6 +19,7 @@
  * work to be done.
  */
 
+import { acquireWaiting } from './mutex-wait';
 import { buildReconciliationReport as finish } from './build-report';
 import type {
 	IStartupPhaseResult,
@@ -67,9 +68,16 @@ export const reconcileStartup = async (
 	const startedAt = input.clock.now();
 	const phases: IStartupPhaseResult[] = [];
 	const allowCreate = input.allowCreate ?? true;
+	// Read once, before any phase runs: a decision a human already
+	// recorded is an input to the verdict, never a consequence of it.
+	const resolutions = input.repairResolutions?.read() ?? [];
 
-	const lock = await input.mutex.acquire();
+	const lock = await acquireWaiting(input);
 	if (lock.kind === 'busy') {
+		// Another live boot is reconciling this workspace right now; its
+		// report is the one that counts. Not a blocker: nothing here is
+		// wrong, and reporting DEGRADED for it read as a broken workspace
+		// every time an editor and a second client started together.
 		collect(phases, {
 			phase: 'mutex',
 			ran: true,
@@ -78,9 +86,9 @@ export const reconcileStartup = async (
 				finding({
 					code: 'mutex.busy',
 					phase: 'mutex',
-					kind: 'blocker',
+					kind: 'note',
 					subject: lock.holder,
-					message: `Another startup reconciliation is already running (${lock.holder}); this boot did not reconcile in parallel.`,
+					message: `Another startup reconciliation is running (${lock.holder}) and did not finish while this boot waited; this boot relies on it and did not reconcile in parallel.`,
 				}),
 			],
 		});
@@ -91,6 +99,7 @@ export const reconcileStartup = async (
 			machineId: 'unknown',
 			mode: 'skipped',
 			fingerprint: '',
+			resolutions,
 		});
 	}
 	collect(phases, {
@@ -120,6 +129,7 @@ const reconcileUnderLock = async (args: {
 }): Promise<IStartupReconciliationReport> => {
 	const { input, phases, startedAt } = args;
 	const { policy } = input;
+	const resolutions = input.repairResolutions?.read() ?? [];
 
 	const environment = await runEnvironmentPhase({
 		seam: input.environmentSeam,
@@ -140,6 +150,7 @@ const reconcileUnderLock = async (args: {
 			machineId: environment.environment.machineId,
 			mode: 'skipped',
 			fingerprint: '',
+			resolutions,
 		});
 	}
 
@@ -168,6 +179,7 @@ const reconcileUnderLock = async (args: {
 			machineId: environment.environment.machineId,
 			mode: 'skipped',
 			fingerprint: '',
+			resolutions,
 		});
 	}
 	const repositoryId = state.repositoryId;
@@ -266,6 +278,18 @@ const reconcileUnderLock = async (args: {
 		repositoryId,
 		integrationSha: fetched.integrationSha,
 		liveRefs: new Set(fetched.refs.map((ref) => ref.name)),
+		// Every ref that can hold a checkpoint once its work ref is gone:
+		// the work refs themselves and their publications (x00702).
+		keptBy: [
+			...fetched.refs.map((ref) => ref.sha),
+			...(policy.branches.publicationRefPrefix.length > 0
+				? (
+						await input.git.listRefs(
+							policy.branches.publicationRefPrefix,
+						)
+					).map((ref) => ref.sha)
+				: []),
+		],
 		now,
 	});
 	collect(phases, {
@@ -329,6 +353,7 @@ const reconcileUnderLock = async (args: {
 		machineId: environment.environment.machineId,
 		mode,
 		fingerprint,
+		resolutions,
 	});
 
 	// The fingerprint is written only when it MOVED. A boot that changed

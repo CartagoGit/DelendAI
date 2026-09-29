@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, renameSync } from 'node:fs';
 import { dirname } from 'node:path';
 
+import { loadDatabaseClass } from './bun-sqlite.helper';
 import { ProposalsSqliteDriver } from './sqlite-driver';
 
 export interface IApplyValidatedCandidateInput {
@@ -74,6 +75,10 @@ interface IProposalRow {
 	readonly created_at: number;
 	readonly updated_at: number;
 	readonly closed_at: number | null;
+	readonly track: string | null;
+	readonly type: string | null;
+	readonly proposal_date: string | null;
+	readonly frontmatter_json: string | null;
 }
 
 /**
@@ -126,13 +131,36 @@ interface IRunRow {
 	readonly entities_quarantined: number | null;
 }
 
-const checkIntegrity = (driver: ProposalsSqliteDriver): readonly string[] =>
-	driver.handle
-		.query<{ readonly integrity_check: string }, []>(
-			'PRAGMA integrity_check;',
-		)
-		.all()
-		.map((row) => row.integrity_check);
+/**
+ * `PRAGMA integrity_check` of the staging file, through a connection that
+ * is not opened read-only but refuses every write (`query_only`).
+ *
+ * On a read-only connection SQLite's integrity_check does not verify
+ * CHECK constraints (measured: a staging row whose status the CHECK
+ * forbids reported `ok` read-only and `CHECK constraint failed` on a
+ * writable connection). The CHECKs are the domain invariants — the
+ * status, kind and vocabulary each column accepts — so the guard checked
+ * everything but them, and a corrupt row was only stopped by the active
+ * database refusing it half-way through the copy.
+ */
+const checkIntegrity = (stagingPath: string): readonly string[] => {
+	const DatabaseClass = loadDatabaseClass('applyValidatedCandidate');
+	const db = new DatabaseClass(stagingPath, {
+		readwrite: true,
+		create: false,
+	});
+	try {
+		db.exec('PRAGMA query_only = 1;');
+		return db
+			.query<{ readonly integrity_check: string }, []>(
+				'PRAGMA integrity_check;',
+			)
+			.all()
+			.map((row) => row.integrity_check);
+	} finally {
+		db.close();
+	}
+};
 
 const checkForeignKeys = (driver: ProposalsSqliteDriver): readonly string[] =>
 	driver.handle
@@ -169,7 +197,8 @@ const readProposals = (
 		.query<IProposalRow, []>(
 			`SELECT uid, slug, kind, status, title, source_path,
 					source_blob_sha, revision, content_hash, created_at,
-					updated_at, closed_at
+					updated_at, closed_at, track, type, proposal_date,
+					frontmatter_json
 			 FROM proposals
 			 ORDER BY uid`,
 		)
@@ -303,14 +332,14 @@ const rejected = (
  * ACCEPTED, or `null` when it holds none.
  *
  * Every run row an active database carries describes a write to it:
- * `promote` (a staging copy applied), `incremental` (the files a change
+ * `apply_candidate` (a staging copy applied), `incremental` (the files a change
  * touched, applied directly), and — for a database created by renaming
  * a staging file into place, which is how a full rebuild lands — the
  * `shadow` run that built it. So the newest row, whatever its kind, is
  * the authority.
  *
- * It deliberately does NOT filter on `kind = 'promote'`, which is what
- * it did when the fence was introduced. An incremental pass advances the
+ * It deliberately does NOT filter on the apply kind (`apply_candidate`,
+ * `promote` before 0022), which is what it did when the fence was introduced. An incremental pass advances the
  * active database without promoting anything, so a fence that only saw
  * promotions would let a staging copy built BEFORE that pass overwrite
  * it and report success — the very lost update the fence exists to
@@ -368,7 +397,7 @@ export const applyValidatedCandidate = (
 			path: input.stagingPath,
 			readonly: true,
 		});
-		const integrity = checkIntegrity(staging);
+		const integrity = checkIntegrity(input.stagingPath);
 		const foreignKeyViolations = checkForeignKeys(staging);
 		const stagingRun = readStagingRun(staging);
 		const logicalDigest = stagingRun?.logical_digest ?? null;
@@ -432,6 +461,7 @@ export const applyValidatedCandidate = (
 		let proposalsApplied = 0;
 		let plansApplied = 0;
 		let slicesApplied = 0;
+		let tombstonesApplied = 0;
 
 		// One IMMEDIATE transaction for the three Git-derived tables. The
 		// operational ledgers (lifecycle_events, outbox, mutation_commands,
@@ -460,7 +490,7 @@ export const applyValidatedCandidate = (
 						files_seen, files_changed, entities_created,
 						entities_updated, entities_deleted, entities_quarantined,
 						logical_digest, kind, error
-					) VALUES (?, ?, 'x00539-s2', ?, ?, ?, ?, 0, 0, 0, 0, 0, ?, ?, 'promote', NULL)`,
+					) VALUES (?, ?, 'x00539-s2', ?, ?, ?, ?, 0, 0, 0, 0, 0, ?, ?, 'apply_candidate', NULL)`,
 				)
 				.run(
 					input.sourceCommit,
@@ -504,9 +534,13 @@ export const applyValidatedCandidate = (
 			// exist while the proposal it refers to still reads as live,
 			// which is a record of a decision nobody acted on.
 			for (const stone of tombstones) {
-				handle
+				// A candidate carries every observation it inherited from the
+				// active database. Seeing the same disappearance again is the
+				// same fact: keep one row (the reconciler writes it the same
+				// way) and count only what is new here.
+				const inserted = handle
 					.prepare(
-						`INSERT INTO tombstones (
+						`INSERT OR IGNORE INTO tombstones (
 							entity_type, entity_uid, reason,
 							deleted_at, last_seen_at, last_seen_commit
 						) VALUES (?, ?, ?, ?, ?, ?)`,
@@ -519,6 +553,7 @@ export const applyValidatedCandidate = (
 						stone.last_seen_at,
 						stone.last_seen_commit,
 					);
+				if (inserted.changes > 0) tombstonesApplied += 1;
 				const table =
 					stone.entity_type === 'proposal'
 						? 'proposals'
@@ -553,8 +588,9 @@ export const applyValidatedCandidate = (
 							`INSERT INTO proposals (
 								uid, slug, kind, status, title, source_path,
 								source_blob_sha, revision, content_hash,
-								created_at, updated_at, closed_at
-							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+								created_at, updated_at, closed_at,
+								track, type, proposal_date, frontmatter_json
+							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)`,
 						)
 						.run(
 							proposal.uid,
@@ -568,6 +604,10 @@ export const applyValidatedCandidate = (
 							proposal.created_at,
 							proposal.updated_at,
 							proposal.closed_at,
+							proposal.track,
+							proposal.type,
+							proposal.proposal_date,
+							proposal.frontmatter_json,
 						);
 				} else {
 					handle
@@ -576,7 +616,9 @@ export const applyValidatedCandidate = (
 							 SET slug = ?, kind = ?, status = ?, title = ?,
 								 source_path = ?, source_blob_sha = ?,
 								 content_hash = ?, revision = revision + 1,
-								 updated_at = ?, closed_at = ?
+								 updated_at = ?, closed_at = ?,
+								 track = ?, type = ?, proposal_date = ?,
+								 frontmatter_json = ?
 							 WHERE uid = ?`,
 						)
 						.run(
@@ -589,6 +631,10 @@ export const applyValidatedCandidate = (
 							proposal.content_hash,
 							now,
 							proposal.closed_at,
+							proposal.track,
+							proposal.type,
+							proposal.proposal_date,
+							proposal.frontmatter_json,
 							proposal.uid,
 						);
 				}
@@ -736,7 +782,7 @@ export const applyValidatedCandidate = (
 			proposalsApplied,
 			plansApplied,
 			slicesApplied,
-			tombstonesApplied: tombstones.length,
+			tombstonesApplied,
 			quarantinedEntries,
 			stagingStatus:
 				stagingStatus === 'failed' || stagingStatus === null

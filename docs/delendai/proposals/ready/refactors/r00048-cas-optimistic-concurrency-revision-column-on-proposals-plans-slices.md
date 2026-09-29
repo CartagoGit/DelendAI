@@ -6,6 +6,9 @@ status: ready
 type: proposal
 track: architecture
 date: 2026-09-07
+shipped-in:
+  - "e0ddbbb60"
+  - "91d45c00d"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -88,7 +91,7 @@ the policy in the host.
 
 ### S1 — Schema guards + repo primitives on the existing `revision` columns
 
-- **Status**: pending
+- **Status**: done — `e0ddbbb60`, `91d45c00d`. every revision-carrying table is guarded by a `*_revision_steps_by_one` trigger (migration 0018, asserted for each table), and writes go through `casUpdate`, whose losing writer receives `{ kind: 'conflict', currentRevision }` — asserted by the two-connection race and by the proposals and slices repositories. The acceptance names per-entity `update*` functions; the shipped entry point is the shared `casUpdate` with that same outcome shape. Verified 2026-09-15.
 - **Files**:
   - `packages/proposals-sqlite/src/lib/migrations/0001_initial.sql`
     (existing baseline — `revision` already exists there)

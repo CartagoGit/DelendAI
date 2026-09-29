@@ -357,7 +357,11 @@ const buildEntry = async (entryAbs: string): Promise<Response> => {
 		const message = err instanceof Error ? err.message : String(err);
 		const body = details === '' ? message : `${message}\n${details}`;
 		console.error(`[dev] entry bundle failed:\n${body}`);
-		return new Response(body, { status: 500 });
+		// The diagnostics are on the terminal above; the page is told where.
+		return new Response(
+			'The dev bundle failed to build; the dev server terminal has the errors.',
+			{ status: 500 },
+		);
 	}
 	const entry = bundleCache.get('entry.js');
 	if (!entry) {
@@ -686,11 +690,14 @@ const handleApi = async (
 		try {
 			return jsonResponse(await fetchConfigurationCenterData(cwd.path));
 		} catch (error) {
+			// The detail stays on the dev server's terminal; the page gets
+			// no error text of the server's (CodeQL stack-trace-exposure).
+			console.error('[dev] configuration center read failed:', error);
 			return jsonResponse(
 				{
 					ok: false,
 					message:
-						error instanceof Error ? error.message : String(error),
+						'The configuration center could not be read; the dev server terminal has the error.',
 				},
 				502,
 			);

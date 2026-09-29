@@ -103,6 +103,45 @@ const createSliceEvent = (
 	};
 };
 
+/** One entry of a `Files` list, without list markers, brackets or backticks. */
+const cleanFileEntry = (entry: string): string =>
+	entry
+		.trim()
+		.replace(/^[-*]\s+/u, '')
+		.replace(/^\[|\]$/gu, '')
+		.trim()
+		.replace(/^`|`$/gu, '')
+		.trim();
+
+/**
+ * The paths a slice's `Files` field names, in every shape proposals use:
+ * inline (`- **Files**: a, b`), bracketed (`[`a`, `b`]`) or a nested list
+ * on the following lines. The match stays on the field's own line: a
+ * pattern that let whitespace cross the newline read only the first
+ * nested bullet, with its `- \`` prefix, and dropped the rest.
+ */
+export const parseSliceFilesField = (body: string): string[] => {
+	const lines = body.split('\n');
+	const files: string[] = [];
+	for (let index = 0; index < lines.length; index += 1) {
+		const field = /^[-*][ \t]*(?:files|\*\*Files\*\*):[ \t]*(.*)$/iu.exec(
+			lines[index] ?? '',
+		);
+		if (field === null) continue;
+		const inline = (field[1] ?? '').trim();
+		if (inline.length > 0) {
+			files.push(...inline.split(',').map(cleanFileEntry));
+			continue;
+		}
+		for (let next = index + 1; next < lines.length; next += 1) {
+			const bullet = /^[ \t]+[-*][ \t]+(.+)$/u.exec(lines[next] ?? '');
+			if (bullet === null) break;
+			files.push(cleanFileEntry(bullet[1] ?? ''));
+		}
+	}
+	return files.filter((file) => file.length > 0);
+};
+
 const parseIndex = async (
 	raw: string,
 	reader: SafeWorkspaceReader,
@@ -143,18 +182,7 @@ const parseIndex = async (
 						),
 					].map((match) => {
 						const body = match[2] ?? '';
-						const files = [
-							...body.matchAll(
-								/^[-*]\s*(?:files|\*\*Files\*\*):\s*(.+)$/gmu,
-							),
-						].flatMap((fileMatch) =>
-							(fileMatch[1] ?? '')
-								.split(',')
-								.map((file) =>
-									file.trim().replace(/^`|`$/gu, '').trim(),
-								)
-								.filter((file) => file.length > 0),
-						);
+						const files = parseSliceFilesField(body);
 						return {
 							id: match[1] ?? '',
 							status:
@@ -258,7 +286,7 @@ const collectUnpersistedBaseline = async (
 			refusals.push(candidate);
 			continue;
 		}
-		let persisted = true;
+		let persisted: boolean;
 		try {
 			persisted = await isAlreadyPersisted(candidate);
 		} catch {
@@ -296,7 +324,18 @@ export interface ISliceListener {
 	 * underlying slice did not change (it is still missing files).
 	 */
 	drainRefusals(): readonly ISliceRefusal[];
-	start(): void;
+	/**
+	 * Begin polling, and hand back the FIRST check.
+	 *
+	 * `start` primes immediately so a transition made just before startup
+	 * is not held until the first interval — and it used to discard that
+	 * promise, so nothing could tell when the priming had finished. A
+	 * test could only sleep and hope, which is how `slice-replay` came to
+	 * wait 400 ms and then fail on a loaded runner. Returning it makes
+	 * the first check observable; production callers ignore it exactly as
+	 * they did.
+	 */
+	start(): Promise<void>;
 	stop(): void;
 }
 
@@ -434,6 +473,41 @@ export const createSliceListener = (
 		}
 	};
 
+	/**
+	 * The index is a projection. A slice turns `done` in it when this host
+	 * closes it, and also when a merge brings in someone else's finished
+	 * work. Only the first is an act with something to persist; emitting
+	 * the second published empty work refs under this host's name. The
+	 * question that tells them apart is the one the first poll already
+	 * asks, so every later poll asks it too. If it cannot be answered the
+	 * event is emitted, as before: a later poll never goes silent on a
+	 * close that might need persisting.
+	 */
+	const withoutPersisted = async (
+		events: readonly ITriggerEvent[],
+	): Promise<ITriggerEvent[]> => {
+		if (isAlreadyPersisted === undefined) return [...events];
+		const kept: ITriggerEvent[] = [];
+		for (const event of events) {
+			const persisted = await isAlreadyPersisted(event).catch(
+				() => false,
+			);
+			if (!persisted) {
+				kept.push(event);
+				continue;
+			}
+			console.debug(
+				JSON.stringify({
+					event: 'slice.skipped',
+					proposalId: event.proposalId,
+					sliceId: event.sliceId,
+					reason: 'already persisted',
+				}),
+			);
+		}
+		return kept;
+	};
+
 	const checkImpl = async (): Promise<readonly ITriggerEvent[]> => {
 		let raw = '';
 		try {
@@ -488,10 +562,11 @@ export const createSliceListener = (
 		}
 
 		const drainedBaseline = baselineQueue.splice(0, BASELINE_EMIT_LIMIT);
-		const { events: diffedEvents, refusals: newRefusals } =
+		const { events: flipped, refusals: newRefusals } =
 			initialized && baselineQueue.length === 0
 				? diffSlices(prev, curr, config.onStatuses)
 				: { events: [], refusals: [] };
+		const diffedEvents = await withoutPersisted(flipped);
 		const newEvents = [...drainedBaseline, ...diffedEvents];
 		prev = curr;
 		initialized = true;
@@ -534,14 +609,15 @@ export const createSliceListener = (
 			return out;
 		},
 		start() {
-			if (timer !== undefined) return;
+			if (timer !== undefined) return Promise.resolve();
 			// Prime immediately so a transition made after startup does
 			// not wait for the first polling interval.
-			void check();
+			const primed = check().then(() => undefined);
 			timer = setInterval(() => {
 				void check();
 			}, pollMs);
 			if (typeof timer.unref === 'function') timer.unref();
+			return primed;
 		},
 		stop() {
 			if (timer !== undefined) {

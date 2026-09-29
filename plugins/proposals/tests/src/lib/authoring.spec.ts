@@ -22,11 +22,11 @@ import { runAgentNames } from '@delendai/proposals/lib/tools/agent-names.tool';
 import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
-	buildProposalBoardRegistration,
 	buildReviewRegistration,
 	type IAuthoringToolOptions,
 	REVIEW_OUTPUT_SCHEMA,
 } from '@delendai/proposals/lib/tools/authoring.tool';
+import { buildProposalBoardRegistration } from '@delendai/proposals/lib/tools/proposal-board.tool';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -163,10 +163,18 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(created.file).toBe('ready/feats/f00081-add-login.md');
 
 		const board = await capture(buildProposalBoardRegistration(opts));
-		const view = parse(await board({}));
-		const p1 = view.proposals.find(
+		// The list counts the slices and names the claimable ones.
+		const listed = parse(await board({})).proposals.find(
 			(p: { id: string }) => p.id === 'f00081',
 		);
+		expect(listed.slices).toBeUndefined();
+		expect(listed.sliceCount).toBe(2);
+		expect(listed.claimableSliceIds).toContain('S1');
+		// The proposal asked for comes with its slices, and so does every
+		// proposal with `detail`.
+		const view = parse(await board({ proposalId: 'f00081' }));
+		expect(view.proposals).toHaveLength(1);
+		const p1 = view.proposals[0];
 		// The generator canonicalises slice ids to uppercase (`S1`), while
 		// close_slice below still accepts the caller's lowercase spelling.
 		expect(p1.slices.map((s: { sliceId: string }) => s.sliceId)).toEqual([
@@ -174,6 +182,10 @@ describe('proposal authoring (create → board → close)', async () => {
 			'S2',
 		]);
 		expect(p1.claimableSliceIds).toContain('S1');
+		const detailed = parse(await board({ detail: true })).proposals.find(
+			(p: { id: string }) => p.id === 'f00081',
+		);
+		expect(detailed.slices).toHaveLength(2);
 
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const closed = parse(
@@ -693,7 +705,7 @@ describe('proposal_board — index points to a file that does not exist', () => 
 		const view = parse(await board({}));
 		const p = view.proposals.find((x: { id: string }) => x.id === 'x00001');
 
-		expect(p.slices).toEqual([]);
+		expect(p.sliceCount).toBe(0);
 		// EL test: sin esto, indistinguible de una propuesta sin slices.
 		expect(p.unreadable).toContain('does not exist');
 		expect(p.unreadable).toContain('sync_proposals');
@@ -727,7 +739,7 @@ describe('proposal_board — index points to a file that does not exist', () => 
 		const view = parse(await board({}));
 		const p = view.proposals.find((x: { id: string }) => x.id === 'x00002');
 
-		expect(p.slices).toEqual([]);
+		expect(p.sliceCount).toBe(0);
 		expect(p.unreadable).toContain('Slices');
 		// Y no se confunde con el caso de arriba.
 		expect(p.unreadable).not.toContain('does not exist');

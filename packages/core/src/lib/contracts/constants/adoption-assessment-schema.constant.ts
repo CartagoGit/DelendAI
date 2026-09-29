@@ -1,7 +1,7 @@
 import z from 'zod';
 
 const WriteEstimateBreakdownEntrySchema = z.object({
-	kind: z.enum(['config', 'proposal-store', 'generated']),
+	kind: z.enum(['config', 'proposal-store', 'generated', 'plugin']),
 	description: z.string(),
 	count: z.number().optional(),
 	exact: z.boolean(),
@@ -36,6 +36,9 @@ export const ADOPTION_ASSESSMENT_SCHEMA = z.object({
 		runtimeSurface: z
 			.enum(['managed', 'native', 'adaptive', 'compact'])
 			.optional(),
+		// Always set by buildAdoptionAssessment; undeclared, it made a client
+		// that listed tools reject every adopt_project answer.
+		surfaceMode: z.enum(['native', 'adaptive', 'estimated']),
 		note: z.string(),
 	}),
 	summary: z.object({

@@ -71,7 +71,9 @@ export const defaultStaleDocsProbe: IStaleDocsProbe = {
 export const checkStaleDocs = (
 	probe: IStaleDocsProbe = defaultStaleDocsProbe,
 ): DoctorCheck => {
-	return async () => {
+	// The context is part of the check's contract even though this one needs
+	// nothing from it.
+	return async (_ctx) => {
 		const stale = await probe.staleFiles();
 		if (stale.length === 0) {
 			return {

@@ -8,7 +8,12 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
-import { buildDryRunResult, toolError, toolOk } from '@delendai/core/public';
+import {
+	buildDryRunResult,
+	callerCheckout,
+	toolError,
+	toolOk,
+} from '@delendai/core/public';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
@@ -597,6 +602,7 @@ export const buildRunToolRegistration = (
 	// so it MUST declare `dryRunSupported: true` and accept
 	// `args.dryRun` to honour the transversal dry-run protocol.
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	dryRunSupported: true,
 	register: async (server: McpServer) => {
 		server.registerTool(
@@ -607,7 +613,13 @@ export const buildRunToolRegistration = (
 				outputSchema: OutputSchema,
 				inputSchema: InputSchema,
 			},
-			async (args) => runCommitPolicyRun(args, options),
+			// The slice snapshot is read from the checkout the call is
+			// bound to, where the commit it triggers lands too.
+			async (args) =>
+				runCommitPolicyRun(
+					args,
+					callerCheckout.scopeToCall(options, []),
+				),
 		);
 	},
 });

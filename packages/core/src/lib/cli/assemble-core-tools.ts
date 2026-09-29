@@ -58,7 +58,10 @@ import {
 } from '../scaffold/project-plugins';
 import { buildPluginAddRegistration } from '../registry/plugin-add.tool';
 import { buildPluginSearchRegistration } from '../registry/plugin-search.tool';
+import { configureToolOutputArtifacts } from '../context-budget/elide-tool-result.service';
+import { bindWriteRoot } from '../shared/bind-write-root';
 import { buildFsToolRegistrations } from '../shared/fs-tools';
+import { workspaceForCall } from '../shared/shared-checkout';
 import { joinRel } from '../shared/paths';
 import type { buildSkillCatalog } from '../skills/skill-catalog';
 import { buildAgentCatalogToolRegistration } from '../tools/agent-catalog-tool';
@@ -74,6 +77,7 @@ import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
 import { buildShellStatusToolRegistration } from '../tools/shell-status.tool';
+import { buildWorkUnitToolRegistration } from '../tools/work-unit.tool';
 import { buildResolveCapabilityToolRegistration } from '../tools/resolve-capability.tool';
 import {
 	buildPluginActivateToolRegistration,
@@ -175,6 +179,9 @@ export const assembleCoreTools = (
 		resources,
 		cacheReconcile,
 	} = input;
+	// Resolves paths in the checkout a bound call names, and in the
+	// server's root everywhere else.
+	const callWorkspace = workspaceForCall(workspace);
 	// Core meta-tools. `overview` first so it is the obvious entry point.
 	// `let` so the (lazily called) snapshot closure can read the final list.
 	let coreTools: IToolRegistration[] = [];
@@ -224,8 +231,8 @@ export const assembleCoreTools = (
 				'',
 				'This workspace has no config file. Call',
 				`\`${corePrefix}_adopt_project\` to self-configure the project`,
-				'in ONE call: it derives the config, bootstraps the proposals',
-				'store and generates the orchestrator + subagent files (dry-run',
+				'in ONE call: it derives the config, applies what loaded plugins',
+				'contribute and generates the orchestrator + subagent files (dry-run',
 				'by default; pass `write: true` to persist — no CLI required).',
 				'For just the config, `init_config` is the granular alternative.',
 			].join('\n'),
@@ -353,6 +360,11 @@ export const assembleCoreTools = (
 	const metricsDirAbs = workspace.resolve(
 		joinRel(corePaths.cacheDir, 'metrics'),
 	);
+	// A tool result elided over its byte cap keeps its full output here,
+	// and the elision carries the path (f00536).
+	configureToolOutputArtifacts(
+		workspace.resolve(joinRel(corePaths.cacheDir, 'results/tool-output')),
+	);
 	// Dynamic surface tools are ALWAYS registered.
 	const dynamicSurfaceTools = [
 		buildProjectContextToolRegistration({
@@ -407,6 +419,10 @@ export const assembleCoreTools = (
 		),
 		buildStatusToolRegistration(corePrefix, [coreCollector]),
 		buildShellStatusToolRegistration({ namespacePrefix: corePrefix }),
+		buildWorkUnitToolRegistration({
+			namespacePrefix: corePrefix,
+			workspaceRoot: workspace.root,
+		}),
 		buildMetricsToolRegistration(
 			corePrefix,
 			metricsRegistry,
@@ -427,7 +443,7 @@ export const assembleCoreTools = (
 		}),
 		buildScaffoldToolRegistration({
 			namespacePrefix: corePrefix,
-			workspace,
+			workspace: callWorkspace,
 			keepLegacy,
 			projectName: args.serverName,
 			projectPackageName: '@delendai/core',
@@ -439,19 +455,19 @@ export const assembleCoreTools = (
 		// `scaffold` schemas and break `bun run verify:tools`.
 		buildCreatePluginToolRegistration({
 			namespacePrefix: corePrefix,
-			workspace,
+			workspace: callWorkspace,
 		}),
 		buildProjectPluginsCreateToolRegistration({
 			namespacePrefix: corePrefix,
-			workspace,
+			workspace: callWorkspace,
 		}),
 		buildProjectPluginsInspectToolRegistration({
 			namespacePrefix: corePrefix,
-			workspace,
+			workspace: callWorkspace,
 		}),
 		buildProjectPluginsRepairToolRegistration({
 			namespacePrefix: corePrefix,
-			workspace,
+			workspace: callWorkspace,
 		}),
 		// S2: `plugin_add` MCP tool. Returns the install + wire + config
 		// recipe for the agent to execute; the recipe is data so the tool
@@ -503,7 +519,13 @@ export const assembleCoreTools = (
 
 	// Core tools keep their bare id (single namespace); plugin tools are
 	// already qualified above so the uniqueness check is per-namespace.
-	const tools: IToolRegistration[] = [...coreTools, ...qualifiedPluginTools];
+	// A core `caller-checkout` tool acts in the checkout each call names,
+	// as a plugin's does; the plugins' tools were bound when they loaded
+	// (`registerPluginWithLifecycle`).
+	const tools: IToolRegistration[] = [
+		...coreTools.map((tool) => bindWriteRoot(tool, workspace.root)),
+		...qualifiedPluginTools,
+	];
 	// The discovery catalog reuses the SAME name+plugin the overview snapshot
 	// carries, rather than re-deriving them from the qualified id string. The
 	// old parse-the-name approach was doubly wrong: `id.includes('_')` treated

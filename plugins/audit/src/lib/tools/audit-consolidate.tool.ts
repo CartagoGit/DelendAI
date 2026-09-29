@@ -8,7 +8,8 @@ import {
 	DETAIL_LEVELS,
 	projectDetail,
 	SafeWorkspaceReader,
-	resolveWorkspaceContained,
+	// Read path: physical. Write path (proposals dir): lexical until S3.
+	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
 	type Detail,
@@ -27,6 +28,7 @@ import {
 import {
 	canonicalAuditPathMessage,
 	isCanonicalAuditDir,
+	resolveProposalsDir,
 } from '../services/audit-path-policy.service';
 import { parseAuditFiles } from '../services/parse-audit.service';
 
@@ -234,7 +236,8 @@ export const buildConsolidateRegistration = (
 							canonicalAuditPathMessage,
 						);
 					}
-					const contained = resolveWorkspaceContained(
+					// Physical: a symlinked audit dir would read another tree.
+					const contained = await resolveExistingWorkspaceContained(
 						options.workspaceRoot,
 						relDir,
 					);
@@ -289,13 +292,9 @@ export const buildConsolidateRegistration = (
 						args.autoScaffoldProposals ??
 						options.autoScaffoldProposals ??
 						true;
-					const proposalsDir =
-						args.proposalsDir ??
-						options.defaultProposalsDir ??
-						'docs/delendai/proposals/ready';
-					const proposalsDirContained = resolveWorkspaceContained(
+					const proposalsDirContained = await resolveProposalsDir(
 						options.workspaceRoot,
-						proposalsDir,
+						args.proposalsDir ?? options.defaultProposalsDir,
 					);
 					let proposalsSummary:
 						| {

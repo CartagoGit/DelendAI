@@ -261,8 +261,8 @@ export {
 	buildCreateProposalRegistration,
 	buildCloseSliceRegistration,
 	buildReviewRegistration,
-	buildProposalBoardRegistration,
 } from '../lib/tools/authoring.tool';
+export { buildProposalBoardRegistration } from '../lib/tools/proposal-board.tool';
 export type { IAuthoringToolOptions } from '../lib/tools/authoring.tool';
 export { buildAdoptRegistration } from '../lib/tools/adopt.tool';
 export { analyzeProposals, PROPOSALS_LAYOUT } from '../lib/proposals/adopt';
@@ -278,6 +278,22 @@ export {
 	proposalKindSchema,
 } from '../lib/contracts/schemas/proposal-kind.schema';
 export type { IKindIdMatch } from '../lib/contracts/schemas/proposal-kind.schema';
+
+export {
+	appendValidateJournalEntry,
+	buildValidateJournalEntry,
+} from '../lib/shared/validate-journal';
+export type {
+	IValidateJournalDeps,
+	IValidateJournalEntry,
+} from '../lib/contracts/interfaces/validate-journal.interface';
+export { VALIDATE_LOG_RELATIVE_PATH } from '../lib/contracts/constants/proposal-paths.constant';
+
+export {
+	isSelfApproval,
+	unapprovedSlices,
+} from '../lib/shared/independent-approval';
+export type { IReviewIndependence } from '../lib/contracts/interfaces/review-independence.interface';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

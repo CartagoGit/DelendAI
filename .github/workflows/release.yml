@@ -56,6 +56,7 @@ jobs:
     release:
         name: publish + tag + release
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         steps:
             - uses: actions/checkout@v7
               with:
@@ -66,7 +67,24 @@ jobs:
               with:
                   bun-version: 1.4.2
 
-            - name: Derive next version from Conventional Commits
+            # A tag push and a manual run are NOT the same decision, and
+            # sharing one derivation made the advertised tag trigger
+            # unable to publish: the checkout sits on the tag, so the
+            # range the derivation reads is empty and every publish step
+            # below was skipped (x00557 S3). A tag run publishes exactly
+            # the version its tag names — after proving the tag points at
+            # the commit being built, so a tag moved after the fact
+            # cannot publish a different tree than the one it labels.
+            - name: A release tag must point at the commit being built
+              if: startsWith(github.ref, 'refs/tags/v')
+              run: |
+                  tagged="$(git rev-list -n 1 "${GITHUB_REF#refs/tags/}")"
+                  if [ "$tagged" != "$GITHUB_SHA" ]; then
+                      echo "release: ${GITHUB_REF#refs/tags/} points at $tagged, not at $GITHUB_SHA." >&2
+                      exit 1
+                  fi
+
+            - name: Decide the version to publish
               id: decide
               run: bun tools/scripts/release/derive-version.script.ts --github-output
 
@@ -92,14 +110,37 @@ jobs:
               # `--write` (see scripts/release.ts header for the full rationale).
               run: bun run release --set="$VERSION" --write --publish --tool=npm --provenance
 
+            # A tag run is triggered BY the tag it would create. `git tag`
+            # then fails on an existing name and `set -e` kills the job
+            # AFTER npm has published — a half-completed release that ends
+            # red (x00561). The tag that started the run is reused; only a
+            # manual run creates one.
             - name: Tag the release commit
               if: steps.decide.outputs.release == 'true'
               env:
                   VERSION: ${{ steps.decide.outputs.version }}
               run: |
                   set -euo pipefail
-                  git tag "v$VERSION"
-                  git push origin "v$VERSION"
+                  if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+                      tagged="$(git rev-list -n 1 "v$VERSION")"
+                      if [ "$tagged" != "$GITHUB_SHA" ]; then
+                          echo "release: v$VERSION already exists and points at $tagged, not at $GITHUB_SHA." >&2
+                          exit 1
+                      fi
+                      echo "release: v$VERSION already exists on this commit; reusing it."
+                  else
+                      git tag "v$VERSION"
+                  fi
+                  git push origin "v$VERSION" || {
+                      remote="$(git ls-remote origin "refs/tags/v$VERSION" | cut -f1)"
+                      if [ "$remote" = "$(git rev-parse "v$VERSION^{commit}")" ] ||
+                         [ "$remote" = "$(git rev-parse "v$VERSION")" ]; then
+                          echo "release: v$VERSION is already on the remote at this commit."
+                      else
+                          echo "release: could not push v$VERSION." >&2
+                          exit 1
+                      fi
+                  }
 
             - name: Create GitHub Release
               if: steps.decide.outputs.release == 'true'

@@ -321,10 +321,26 @@ const publicReadFailure = (
 	}
 };
 
-const resolveEventDetail = (args: {
-	detail?: Detail | undefined;
-	includeMeta?: boolean | undefined;
-}): Detail => args.detail ?? (args.includeMeta === true ? 'full' : 'normal');
+/**
+ * The level a read returns. An explicit `detail` wins; the legacy
+ * `includeMeta` flag still maps to `full`/`normal`; with neither, each
+ * tool keeps the shape it returned before detail levels existed —
+ * `query`, `subscribe`, `correlate` and `search` returned the stored
+ * event with its metadata, `tail` and `errors_tail` stripped `meta`.
+ */
+const resolveEventDetail = (
+	args: {
+		detail?: Detail | undefined;
+		includeMeta?: boolean | undefined;
+	},
+	whenOmitted: Detail,
+): Detail =>
+	args.detail ??
+	(args.includeMeta === true
+		? 'full'
+		: args.includeMeta === false
+			? 'normal'
+			: whenOmitted);
 
 const correlateOptionsFrom = (args: {
 	taskId?: string | undefined;
@@ -359,7 +375,7 @@ export const buildLogToolRegistrations = (
 					`${prefix}_query`,
 					{
 						description:
-							'Query redacted append-only MCP log events. Filters: since, until, kind, agent, taskId, outcome; supports cursor pagination. `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged.',
+							'Query redacted append-only MCP log events. Filters: since, until, kind, agent, taskId, outcome; supports cursor pagination. `detail` defaults to `full` (the stored event with its summary and metadata redacted); `normal` empties meta and `compact` keeps only the incident summary envelope.',
 						inputSchema: QueryInputSchema.extend({
 							detail: DetailSchema.optional(),
 						}),
@@ -381,7 +397,7 @@ export const buildLogToolRegistrations = (
 								Math.min(args.limit ?? 100, 1000),
 							);
 							const offset = parseCursor(args.cursor);
-							const detail = resolveEventDetail(args);
+							const detail = resolveEventDetail(args, 'full');
 							const events = await store.readRange(
 								queryFilterFrom(args),
 							);
@@ -410,7 +426,7 @@ export const buildLogToolRegistrations = (
 					`${prefix}_tail`,
 					{
 						description:
-							'Return the newest redacted MCP log events, optionally filtered by outcome or kind. `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged. Legacy `includeMeta:true` remains supported and resolves to `detail: full` when `detail` is omitted.',
+							'Return the newest redacted MCP log events, optionally filtered by outcome or kind. `detail` defaults to `normal` (the stored event with empty meta); `full` returns it with its summary and metadata redacted and `compact` keeps only the incident summary envelope. Legacy `includeMeta:true` remains supported and resolves to `detail: full` when `detail` is omitted.',
 						inputSchema: z.object({
 							limit: z.number().optional(),
 							outcomeFilter: LogOutcomeSchema.optional(),
@@ -433,7 +449,7 @@ export const buildLogToolRegistrations = (
 						includeMeta?: boolean | undefined;
 					}) => {
 						try {
-							const detail = resolveEventDetail(args);
+							const detail = resolveEventDetail(args, 'normal');
 							const storedEvents = await store.tail(
 								tailOptionsFrom(args),
 							);
@@ -466,7 +482,7 @@ export const buildLogToolRegistrations = (
 					`${prefix}_errors_tail`,
 					{
 						description:
-							'Return the newest events from the curated error stream (outcome not ok/idle: failed, timed-out, dead, cancelled, unknown). `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged. Legacy `includeMeta:true` remains supported and resolves to `detail: full` when `detail` is omitted. Read this BEFORE reading source when auditing or debugging: it points at exactly where execution did not reach the expected state.',
+							'Return the newest events from the curated error stream (outcome not ok/idle: failed, timed-out, dead, cancelled, unknown). `detail` defaults to `normal` (the stored event with empty meta); `full` returns it with its summary and metadata redacted and `compact` keeps only the incident summary envelope. Legacy `includeMeta:true` remains supported and resolves to `detail: full` when `detail` is omitted. Read this BEFORE reading source when auditing or debugging: it points at exactly where execution did not reach the expected state.',
 						inputSchema: z.object({
 							limit: z.number().optional(),
 							kindFilter: z.string().optional(),
@@ -487,7 +503,7 @@ export const buildLogToolRegistrations = (
 						includeMeta?: boolean | undefined;
 					}) => {
 						try {
-							const detail = resolveEventDetail(args);
+							const detail = resolveEventDetail(args, 'normal');
 							const storedEvents = await stores.errors.tail(
 								tailOptionsFrom({
 									limit: args.limit,
@@ -518,7 +534,7 @@ export const buildLogToolRegistrations = (
 					`${prefix}_subscribe`,
 					{
 						description:
-							'Return recent redacted log events matching optional outcome/kind filters. `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged.',
+							'Return recent redacted log events matching optional outcome/kind filters. `detail` defaults to `full` (the stored event with its summary and metadata redacted); `normal` empties meta and `compact` keeps only the incident summary envelope.',
 						inputSchema: z.object({
 							outcomeFilter: LogOutcomeSchema.optional(),
 							kindFilter: z.string().optional(),
@@ -538,7 +554,7 @@ export const buildLogToolRegistrations = (
 						detail?: Detail | undefined;
 					}) => {
 						try {
-							const detail = resolveEventDetail(args);
+							const detail = resolveEventDetail(args, 'full');
 							const storedEvents = await store.tail(
 								tailOptionsFrom({
 									...args,
@@ -568,7 +584,7 @@ export const buildLogToolRegistrations = (
 					`${prefix}_correlate`,
 					{
 						description:
-							'Build a chronological chain for exactly one taskId or agent and return gap detection. `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged.',
+							'Build a chronological chain for exactly one taskId or agent and return gap detection. `detail` defaults to `full` (the stored event with its summary and metadata redacted); `normal` empties meta and `compact` keeps only the incident summary envelope.',
 						inputSchema: z.object({
 							taskId: z.string().optional(),
 							agent: z.string().optional(),
@@ -596,7 +612,7 @@ export const buildLogToolRegistrations = (
 						detail?: Detail | undefined;
 					}) => {
 						try {
-							const detail = resolveEventDetail(args);
+							const detail = resolveEventDetail(args, 'full');
 							const correlation = await correlateEvents(
 								store,
 								correlateOptionsFrom(args),
@@ -725,7 +741,7 @@ export const buildLogToolRegistrations = (
 					`${prefix}_search`,
 					{
 						description:
-							'Search the redacted event log. `pattern` is a substring by default; pass `isRegex:true` for a JavaScript regular expression. `scope` narrows the surface (`summary` | `error` | `args` | `result` | `all`; default `all`). `detail` defaults to `normal`, `compact` keeps only the incident summary envelope, and `full` returns the public sanitized event projection. Returns the matched events with `matched` count and `hasMore` pagination.',
+							'Search the redacted event log. `pattern` is a substring by default; pass `isRegex:true` for a JavaScript regular expression. `scope` narrows the surface (`summary` | `error` | `args` | `result` | `all`; default `all`). `detail` defaults to `full` (the stored event with its summary and metadata redacted); `normal` empties meta and `compact` keeps only the incident summary envelope. Returns the matched events with `matched` count and `hasMore` pagination.',
 						inputSchema: z.object({
 							pattern: z.string().min(1),
 							caseSensitive: z.boolean().optional(),
@@ -768,7 +784,7 @@ export const buildLogToolRegistrations = (
 						detail?: Detail | undefined;
 					}) => {
 						try {
-							const detail = resolveEventDetail(args);
+							const detail = resolveEventDetail(args, 'full');
 							// f00153 S2: search both streams in parallel so a
 							// string appearing in either the main timeline or
 							// the curated error stream is found. Dedupe by

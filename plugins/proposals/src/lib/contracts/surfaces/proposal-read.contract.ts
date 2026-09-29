@@ -210,6 +210,10 @@ export type IProposalReadOutput = z.infer<typeof proposalReadViewSchemas>;
  * injected fields (cursor pagination, etc.).
  */
 export const proposalReadOutputSchema = z.object({
+	// Every view answer carries its discriminator. The listed JSON schema
+	// forbids undeclared keys, so leaving `view` out made a client that
+	// listed tools reject every proposal_get answer.
+	view: proposalReadViewSchema.optional(),
 	// One field per discriminated view; exactly one pair is present and
 	// validated by proposalReadViewSchemas in the handler return.
 	proposals: z.array(proposalSummarySchema).optional(),

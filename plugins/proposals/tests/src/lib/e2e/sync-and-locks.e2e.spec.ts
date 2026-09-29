@@ -237,10 +237,12 @@ Seed for the sync e2e.
 		}
 	});
 
-	it('agent_worktree is disabled by default and returns the documented error (host not enabled)', async () => {
+	it('agent_worktree is disabled by default and explains the profile instead of inviting to enable it', async () => {
 		// f00052: the default harness does NOT enable the capability, so the
 		// tool stays registered but refuses with a structured ok:false error
-		// and never shells out to git.
+		// and never shells out to git. x00548 S4: the harness resolves the
+		// default `shared-direct` profile, which does not use worktrees, so
+		// the refusal says how to work there rather than how to enable them.
 		const res = await harness.callTool<{
 			ok: boolean;
 			action: string;
@@ -252,9 +254,10 @@ Seed for the sync e2e.
 		expect(res.ok).toBe(false);
 		expect(res.structured.ok).toBe(false);
 		expect(res.structured.action).toBe('create');
-		expect(res.structured.reason).toBe(
-			'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in delendai.config.json to enable.',
+		expect(res.structured.reason).toContain(
+			'agent_worktree is not used under the `shared-direct` development profile.',
 		);
+		expect(res.structured.reason).not.toContain('agentWorktree: true');
 	});
 
 	it('task_queue enqueue returns queued; re-enqueueing the same taskId is idempotent', async () => {

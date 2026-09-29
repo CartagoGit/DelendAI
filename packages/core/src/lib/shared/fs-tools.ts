@@ -36,6 +36,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import { executionRootOr } from './execution-root';
 import { toolError, toolJson } from './tool-response';
 import { fsRead } from './fs-read';
 import { fsWrite } from './fs-write';
@@ -166,6 +167,7 @@ export const buildFsToolRegistrations = (
 		{
 			id: 'fs_write',
 			effects: ['write'],
+			writeRoot: 'caller-checkout',
 			summary:
 				'Write a workspace-contained file (path containment + optional atomic+create-dirs).',
 			tags: ['fs'],
@@ -213,7 +215,7 @@ export const buildFsToolRegistrations = (
 						}
 						return toolJson(
 							await fsWrite(
-								options.workspaceRootAbs,
+								executionRootOr(options.workspaceRootAbs),
 								args.path,
 								args.content,
 								{

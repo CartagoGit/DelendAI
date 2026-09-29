@@ -46,3 +46,31 @@ export interface IZoneJob {
 	/** Spec files the zone holds — what the split was decided from. */
 	readonly specs: number;
 }
+
+/** What each zone touched outside the workspaces, during a full run. */
+export interface IZoneReadMap {
+	readonly zones: Readonly<
+		Record<
+			string,
+			{
+				/**
+				 * Root files the zone read. A change to one of them reaches
+				 * the zone; a change to a file it never read does not.
+				 */
+				readonly read: readonly string[];
+				/**
+				 * Root directories the zone listed or stat-ed. A file added to
+				 * or removed from one of them changes what the zone sees.
+				 */
+				readonly listed: readonly string[];
+			}
+		>
+	>;
+}
+
+/** A changed path, and whether its directory's listing changed with it. */
+export interface IRootChange {
+	readonly path: string;
+	/** Added or deleted (a rename is both): the directory now lists differently. */
+	readonly listing: boolean;
+}

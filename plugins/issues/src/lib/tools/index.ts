@@ -5,6 +5,7 @@
  * dedicated `*.tool.ts` file.
  */
 import type { IToolRegistration } from '@delendai/core/public';
+import { callerCheckout } from '@delendai/core/public';
 
 import { buildAnalyzeIssueRegistration } from './analyze-issue.tool';
 import { buildFetchIssueRegistration } from './fetch-issue.tool';
@@ -35,43 +36,56 @@ export interface IBuildIssuesToolRegistrationsOptions {
 /** Builds the 9 `<namespacePrefix>_issues_*` tool registrations. */
 export const buildIssuesToolRegistrations = (
 	options: IBuildIssuesToolRegistrationsOptions,
-): readonly IToolRegistration[] => [
-	buildListIssuesRegistration({
-		namespacePrefix: options.namespacePrefix,
-		githubClient: options.githubClient,
-	}),
-	buildListDependabotRegistration({
-		namespacePrefix: options.namespacePrefix,
-		githubClient: options.githubClient,
-	}),
-	buildListCodeScanningRegistration({
-		namespacePrefix: options.namespacePrefix,
-		githubClient: options.githubClient,
-	}),
-	buildListSecretScanningRegistration({
-		namespacePrefix: options.namespacePrefix,
-		githubClient: options.githubClient,
-	}),
-	buildListAdvisoriesRegistration({
-		namespacePrefix: options.namespacePrefix,
-		githubClient: options.githubClient,
-	}),
-	buildFetchIssueRegistration({
-		namespacePrefix: options.namespacePrefix,
-		githubClient: options.githubClient,
-	}),
-	buildIngestIssueRegistration({
-		namespacePrefix: options.namespacePrefix,
-		githubClient: options.githubClient,
-		scaffoldDirAbs: options.scaffoldDirAbs,
-	}),
-	buildAnalyzeIssueRegistration({
-		namespacePrefix: options.namespacePrefix,
-		githubClient: options.githubClient,
-		scaffoldDirAbs: options.scaffoldDirAbs,
-	}),
-	buildResolveIssueRegistration({
-		namespacePrefix: options.namespacePrefix,
-		scaffoldDirAbs: options.scaffoldDirAbs,
-	}),
-];
+): readonly IToolRegistration[] => {
+	// The scaffold directory was resolved against the server's root; a
+	// call bound to another checkout reads and writes its own. Read per
+	// call through the getters below, never once at registration.
+	const scaffoldDirForCall = (): string =>
+		callerCheckout.pathForCall(options.scaffoldDirAbs, options.repoRoot);
+	return [
+		buildListIssuesRegistration({
+			namespacePrefix: options.namespacePrefix,
+			githubClient: options.githubClient,
+		}),
+		buildListDependabotRegistration({
+			namespacePrefix: options.namespacePrefix,
+			githubClient: options.githubClient,
+		}),
+		buildListCodeScanningRegistration({
+			namespacePrefix: options.namespacePrefix,
+			githubClient: options.githubClient,
+		}),
+		buildListSecretScanningRegistration({
+			namespacePrefix: options.namespacePrefix,
+			githubClient: options.githubClient,
+		}),
+		buildListAdvisoriesRegistration({
+			namespacePrefix: options.namespacePrefix,
+			githubClient: options.githubClient,
+		}),
+		buildFetchIssueRegistration({
+			namespacePrefix: options.namespacePrefix,
+			githubClient: options.githubClient,
+		}),
+		buildIngestIssueRegistration({
+			namespacePrefix: options.namespacePrefix,
+			githubClient: options.githubClient,
+			get scaffoldDirAbs() {
+				return scaffoldDirForCall();
+			},
+		}),
+		buildAnalyzeIssueRegistration({
+			namespacePrefix: options.namespacePrefix,
+			githubClient: options.githubClient,
+			get scaffoldDirAbs() {
+				return scaffoldDirForCall();
+			},
+		}),
+		buildResolveIssueRegistration({
+			namespacePrefix: options.namespacePrefix,
+			get scaffoldDirAbs() {
+				return scaffoldDirForCall();
+			},
+		}),
+	];
+};

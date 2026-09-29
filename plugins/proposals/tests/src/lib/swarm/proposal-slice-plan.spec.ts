@@ -554,7 +554,7 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 		expect(validateClaim(verified, 'S6')).toEqual({
 			ok: false,
 			blockerType: 'isolation-required',
-			reason: 'slice "S6" is contract with high fan-out and requires agent-worktree isolation before claim. Use an isolated orchestration path (delegate or create an agent/<name> worktree) instead of the shared checkout.',
+			reason: 'slice "S6" is contract with high fan-out and needs isolation before claim. Under a worktree development profile, claim it from an agent worktree (agent_worktree action: create). Under a shared-checkout profile, split the slice or delegate it; never create a worktree or branch by hand.',
 		});
 	});
 
@@ -566,7 +566,7 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 		expect(validateClaim(plan, 'S5')).toEqual({
 			ok: false,
 			blockerType: 'isolation-required',
-			reason: 'slice "S5" is verify with high fan-out and requires agent-worktree isolation before claim. Use an isolated orchestration path (delegate or create an agent/<name> worktree) instead of the shared checkout.',
+			reason: 'slice "S5" is verify with high fan-out and needs isolation before claim. Under a worktree development profile, claim it from an agent worktree (agent_worktree action: create). Under a shared-checkout profile, split the slice or delegate it; never create a worktree or branch by hand.',
 		});
 	});
 });

@@ -15,6 +15,7 @@
  *     `authoring.tool.ts`; the options + helpers are reused without
  *     re-declaration.
  */
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import { dirname, join } from 'node:path';
 
 import type { ICommitAuthorResolution } from '@delendai/core/public';
@@ -97,6 +98,20 @@ export interface IAuthoringToolOptions {
 	/** f00016 S13: absolute path of the per-kind id counter file. */
 	readonly counterPathAbs: string;
 	/**
+	 * The project's command for publishing a new proposal (`{id}`,
+	 * `{path}` substituted), returned by `create_proposal` as its next
+	 * action. Absent: the next action follows `developmentPolicy`.
+	 */
+	readonly publishCommand?: string;
+	/**
+	 * The project's resolved development policy. Decides what landing a
+	 * new proposal means here — pull request, engine merge or direct
+	 * commit — when no `publishCommand` is declared.
+	 */
+	readonly developmentPolicy?:
+		| import('@delendai/core/public').IResolvedDevelopmentPolicy
+		| undefined;
+	/**
 	 * Workspace-relative layout (proposals dir + index) the post-create
 	 * sync uses, so a relocated store stays coherent. Defaults to
 	 * `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
@@ -126,6 +141,8 @@ export interface IAuthoringToolOptions {
 	 * extending the same gate to every slice of every proposal kind.
 	 */
 	readonly requirePeerReview?: boolean;
+	/** What makes a reviewer independent (x00718); `model` by default. */
+	readonly reviewIndependence?: IReviewIndependence;
 	/**
 	 * Controls which validation gate applies to `close_slice`.
 	 * `scoped` (the default) validates only the files/scopes owned by the

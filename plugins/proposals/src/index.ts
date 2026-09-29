@@ -1,26 +1,28 @@
-// effect-boundary-authorized: access-only probe for SQLite path and proposals dir; uses node:fs/promises access for existence checks — no mutations
+// effect-boundary-authorized: access-only probe for the proposals dir; uses node:fs/promises access to decide whether the store is bootstrapped — no mutations. The SQLite probe moved to lib/sql/lifecycle-readers.ts, which carries its own marker.
+import { describeWorkIsolation } from '@delendai/core/plugin';
 import { registerAdoptionExtensions } from '@delendai/core/public';
 import {
-	PlanRepo,
-	ProposalRepo,
 	ProposalsSqliteDriver,
 	SummaryRepo,
 	CompileRunsRepo,
-	SliceRepo,
 	resolveProposalsDbPaths,
 } from '@delendai/proposals-sqlite';
 import type {
 	IPluginConfigurationIssue,
 	IPluginConfigurationValidationInput,
 } from '@delendai/core/public';
-import { createWorkspaceFileReader, definePlugin } from '@delendai/core/public';
+import {
+	callerCheckout,
+	createWorkspaceFileReader,
+	definePlugin,
+} from '@delendai/core/public';
 import { createLogStore, logIncidents } from '@delendai/logs/public';
 import {
 	announceSlicePersistence,
 	resolveSlicePersistence,
 } from './lib/slice-persistence-owner';
 import { access } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 
 import z from 'zod';
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
@@ -52,10 +54,10 @@ import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
 import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
-	buildProposalBoardRegistration,
 	buildReviewRegistration,
 	runCloseSliceQualityGate,
 } from './lib/tools/authoring.tool';
+import { buildProposalBoardRegistration } from './lib/tools/proposal-board.tool';
 import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
 import type { IAutoWorkPersistMode } from './lib/tools/auto-work-persist';
@@ -89,6 +91,9 @@ import {
 import { buildProposalGetRegistration } from './lib/tools/proposal-get.tool';
 import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
 import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
+import { movesStayOutOfTheIndex } from './lib/shared/index-free-git-runner';
+import { buildReviewClaimRegistration } from './lib/tools/review-claim.tool';
+import { buildReviewQueueRegistration } from './lib/tools/review-queue.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import {
@@ -97,7 +102,10 @@ import {
 	runAutoStateRepairOnBoot,
 } from './lib/tools/state-tools.tool';
 import { buildSwarmHygieneRegistration } from './lib/tools/swarm-hygiene.tool';
-import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
+import {
+	buildSyncProposalsRegistration,
+	runSyncProposals,
+} from './lib/tools/sync-proposals.tool';
 import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
 
 /**
@@ -130,6 +138,13 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	validationCommand: z.string().optional(),
 	/** Privacy toggle: omit host/model from newly composed agent branch ids. */
 	redactIdentity: z.boolean().optional(),
+	/**
+	 * How this project publishes a newly written proposal, as a command
+	 * template (`{id}` and `{path}` are substituted). `create_proposal`
+	 * returns it as the next action, so an agent never leaves a proposal
+	 * untracked in a shared checkout where no other agent can see it.
+	 */
+	publishCommand: z.string().min(1).optional(),
 	persist: z
 		.object({
 			mode: z.enum(['none', 'commit', 'commit-and-push']).default('none'),
@@ -196,6 +211,12 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 * Default true when omitted (wired at register time).
 	 */
 	requirePeerReview: z.boolean().optional(),
+	/**
+	 * x00718: what makes a reviewer independent of the implementer —
+	 * `model` (a different model; the default) or `instance` (another
+	 * instance of the same model, reviewing from a unit of its own).
+	 */
+	reviewIndependence: z.enum(['model', 'instance']).optional(),
 	/**
 	 * Select the validation scope for authoring operations. `scoped` keeps
 	 * each agent on its declared slice files; `global` is for integration.
@@ -298,257 +319,14 @@ export const validateProposalConfiguration = (
 	return [];
 };
 
-type TSqlLifecycleRow = {
-	readonly uid: string;
-	readonly source_path: string | null;
-	readonly status: string;
-	readonly closed_at: number | null;
-};
-
-const EXPECTED_SQL_LIFECYCLE_ERRORS = [
-	/unable to open database file/i,
-	/attempt to write a readonly database/i,
-	/no such table: (proposals|plans|slices)\b/i,
-	/file is not a database/i,
-	/database disk image is malformed/i,
-];
-
-const toLifecycleState = (row: TSqlLifecycleRow) => ({
-	status: row.status,
-	sourcePath: row.source_path,
-	closedAt: row.closed_at,
-});
-
-const toExplicitLifecycleState = (row: {
-	readonly status: string;
-	readonly sourcePath: string | null;
-	readonly closedAt: number | null;
-}) => ({
-	status: row.status,
-	sourcePath: row.sourcePath,
-	closedAt: row.closedAt,
-});
-
-const isExpectedSqlLifecycleError = (error: unknown): boolean =>
-	error instanceof Error &&
-	EXPECTED_SQL_LIFECYCLE_ERRORS.some((pattern) =>
-		pattern.test(error.message),
-	);
-
-const normalizeSqlPath = (path: string): string => path.replaceAll('\\', '/');
-
-const buildSqlPathCandidates = (
-	workspaceRoot: string,
-	path: string | undefined,
-): readonly string[] => {
-	if (path === undefined || path.length === 0) return [];
-	const normalizedPath = normalizeSqlPath(path);
-	const normalizedRoot = normalizeSqlPath(workspaceRoot);
-	const candidates = new Set<string>([normalizedPath]);
-	const relativeToWorkspace = normalizeSqlPath(relative(workspaceRoot, path));
-	if (
-		relativeToWorkspace.length > 0 &&
-		relativeToWorkspace !== '.' &&
-		!relativeToWorkspace.startsWith('../')
-	) {
-		candidates.add(relativeToWorkspace);
-	}
-	const rootPrefix = `${normalizedRoot}/`;
-	if (normalizedPath.startsWith(rootPrefix)) {
-		candidates.add(normalizedPath.slice(rootPrefix.length));
-	}
-	const proposalsMarker = '/proposals/';
-	const proposalsIndex = normalizedPath.lastIndexOf(proposalsMarker);
-	if (proposalsIndex !== -1) {
-		candidates.add(
-			normalizedPath.slice(proposalsIndex + proposalsMarker.length),
-		);
-	}
-	return [...candidates];
-};
-
-const readPathScopedLifecycleRow = (
-	driver: ProposalsSqliteDriver,
-	input: {
-		table: 'proposals' | 'plans' | 'slices';
-		pathCandidates: readonly string[];
-		exactUid: string;
-		prefixUid?: string;
-		uidColumn?: 'uid';
-	},
-): TSqlLifecycleRow | null => {
-	if (input.pathCandidates.length === 0) return null;
-	const placeholders = input.pathCandidates.map(() => '?').join(', ');
-	const whereParts = [`source_path IN (${placeholders})`, 'uid = ?'];
-	const params: string[] = [...input.pathCandidates, input.exactUid];
-	if (input.prefixUid !== undefined) {
-		whereParts.push('uid GLOB ?');
-		params.push(input.prefixUid);
-	}
-	params.push(input.exactUid);
-	const rows = driver.handle
-		.query<TSqlLifecycleRow, string[]>(
-			`SELECT uid, source_path, status, closed_at
-			 FROM ${input.table}
-			 WHERE ${whereParts.join(' AND (').includes('uid GLOB ?') ? `source_path IN (${placeholders}) AND (uid = ? OR uid GLOB ?)` : `source_path IN (${placeholders}) AND uid = ?`}
-			 ORDER BY CASE WHEN uid = ? THEN 0 ELSE 1 END, uid
-			 LIMIT 2`,
-		)
-		.all(...params);
-	const exact = rows.find(
-		(row: TSqlLifecycleRow) => row.uid === input.exactUid,
-	);
-	if (exact) return exact;
-	return rows.length === 1 ? (rows[0] ?? null) : null;
-};
-
-const withReadonlySqlDriver = async <T>(
-	sqlitePath: string,
-	read: (driver: ProposalsSqliteDriver) => T,
-): Promise<T | null> => {
-	try {
-		await access(sqlitePath);
-	} catch {
-		return null;
-	}
-	let driver: ProposalsSqliteDriver | null = null;
-	try {
-		driver = new ProposalsSqliteDriver({
-			path: sqlitePath,
-			readonly: true,
-		});
-		return read(driver);
-	} catch (error) {
-		if (isExpectedSqlLifecycleError(error)) return null;
-		throw error;
-	} finally {
-		driver?.close();
-	}
-};
-
-export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
-	const sqlitePath = resolveProposalsDbPaths(workspaceRoot).databasePath;
-	return {
-		count: async (): Promise<{
-			readonly proposals: number;
-			readonly plans: number;
-			readonly slices: number;
-		}> =>
-			(await withReadonlySqlDriver(sqlitePath, (driver) => ({
-				proposals:
-					driver.handle
-						.query<{ readonly total: number }, []>(
-							'SELECT COUNT(*) AS total FROM proposals',
-						)
-						.get()?.total ?? 0,
-				plans:
-					driver.handle
-						.query<{ readonly total: number }, []>(
-							'SELECT COUNT(*) AS total FROM plans',
-						)
-						.get()?.total ?? 0,
-				slices:
-					driver.handle
-						.query<{ readonly total: number }, []>(
-							'SELECT COUNT(*) AS total FROM slices',
-						)
-						.get()?.total ?? 0,
-			}))) ?? { proposals: 0, plans: 0, slices: 0 },
-		lastSync: async (): Promise<{
-			readonly at: number | undefined;
-			readonly sourceCommit: string | undefined;
-		}> => {
-			const row = await withReadonlySqlDriver(sqlitePath, (driver) =>
-				driver.handle
-					.query<
-						{
-							readonly completed_at: number | null;
-							readonly source_commit: string | null;
-						},
-						[]
-					>(
-						`SELECT completed_at, source_commit
-						 FROM reconciliation_runs
-						 WHERE completed_at IS NOT NULL
-						 ORDER BY id DESC
-						 LIMIT 1`,
-					)
-					.get(),
-			);
-			return {
-				at: row?.completed_at ?? undefined,
-				sourceCommit: row?.source_commit ?? undefined,
-			};
-		},
-		getProposalState: async ({
-			proposalId,
-			path,
-		}: {
-			readonly proposalId: string;
-			readonly path?: string | undefined;
-		}) => {
-			const pathCandidates = buildSqlPathCandidates(workspaceRoot, path);
-			return withReadonlySqlDriver(sqlitePath, (driver) => {
-				const direct = new ProposalRepo(driver.handle).getByUid(
-					proposalId,
-				);
-				if (direct) return toExplicitLifecycleState(direct);
-				const byPath = readPathScopedLifecycleRow(driver, {
-					table: 'proposals',
-					pathCandidates,
-					exactUid: proposalId,
-					prefixUid: `${proposalId}.*`,
-				});
-				return byPath ? toLifecycleState(byPath) : null;
-			});
-		},
-		getPlanState: async ({
-			planId,
-			path,
-		}: {
-			readonly planId: string;
-			readonly path?: string | undefined;
-		}) => {
-			const pathCandidates = buildSqlPathCandidates(workspaceRoot, path);
-			return withReadonlySqlDriver(sqlitePath, (driver) => {
-				const direct = new PlanRepo(driver.handle).getByUid(planId);
-				if (direct) return toExplicitLifecycleState(direct);
-				const byPath = readPathScopedLifecycleRow(driver, {
-					table: 'plans',
-					pathCandidates,
-					exactUid: planId,
-					prefixUid: `${planId}.*`,
-				});
-				return byPath ? toLifecycleState(byPath) : null;
-			});
-		},
-		getSliceState: async (input: {
-			readonly proposalId: string;
-			readonly sliceId: string;
-			readonly path?: string | undefined;
-		}) => {
-			const exactUid = `${input.proposalId}.${input.sliceId}`;
-			const pathCandidates = buildSqlPathCandidates(
-				workspaceRoot,
-				input.path,
-			);
-			return withReadonlySqlDriver(sqlitePath, (driver) => {
-				const direct = new SliceRepo(driver.handle).getByUid(exactUid);
-				if (direct) return toExplicitLifecycleState(direct);
-				const byPath = readPathScopedLifecycleRow(driver, {
-					table: 'slices',
-					pathCandidates,
-					exactUid,
-					// Some persisted slice UIDs are nested under a plan-owned UID
-					// (for example `<proposal>.<slice>.<child>`), so path scope keeps
-					// the compatibility fallback explicit instead of guessing globally.
-					prefixUid: `${exactUid}.*`,
-				});
-				return byPath ? toLifecycleState(byPath) : null;
-			});
-		},
-	};
-};
+/**
+ * The lifecycle readers live in their own module because they open a
+ * real `bun:sqlite` handle — see `./lib/sql/lifecycle-readers.ts`. They
+ * are re-exported here because that is where hosts and specs already
+ * import them from.
+ */
+export { buildSqlLifecycleReaders } from './lib/sql/lifecycle-readers';
+import { buildSqlLifecycleReaders } from './lib/sql/lifecycle-readers';
 
 export default definePlugin({
 	name: 'proposals',
@@ -636,6 +414,9 @@ export default definePlugin({
 		},
 	},
 	async register(ctx) {
+		// How this project's development policy isolates agents. Every piece
+		// of guidance about worktrees reads it, so none can contradict it.
+		const workIsolation = describeWorkIsolation(ctx.developmentPolicy);
 		registerAdoptionExtensions('proposals', [
 			buildProposalsAdoptionExtension(),
 		]);
@@ -680,6 +461,29 @@ export default definePlugin({
 			...DEFAULT_PROPOSAL_FOLDER_POLICY,
 			...parsedOptions.data.folderPolicy,
 		};
+		// One set of sync options: `sync_proposals`, and `auto_work` when
+		// it finds its index behind the files (x00716).
+		const syncOptions = {
+			namespacePrefix: ctx.namespacePrefix,
+			workspaceRoot: ctx.workspace.root,
+			layout: {
+				proposalsDir: layout.proposalsDir,
+				proposalIndexFile: layout.proposalIndexFile,
+			},
+			extraFolders: extraProposalFolders,
+			folderPolicy,
+		};
+		const refreshIndex = async (): Promise<void> => {
+			await runSyncProposals({ ...syncOptions, indexOnly: true });
+		};
+		// Whether proposals are reviewed and what makes a reviewer
+		// independent: the project's decision, stated once and handed to
+		// every tool that judges it (x00718).
+		const reviewPolicy = {
+			requirePeerReview: parsedOptions.data.requirePeerReview ?? true,
+			reviewIndependence:
+				parsedOptions.data.reviewIndependence ?? 'model',
+		} as const;
 		const commitPolicyOptions = ctx.pluginOptions?.get('commit-policy');
 		const commitPolicyPush = commitPolicyOptions?.push;
 		const protectedBranches =
@@ -793,6 +597,12 @@ export default definePlugin({
 			},
 			extraFolders: extraProposalFolders,
 			folderPolicy,
+			...(typeof ctx.options.publishCommand === 'string'
+				? { publishCommand: ctx.options.publishCommand }
+				: {}),
+			...(ctx.developmentPolicy !== undefined
+				? { developmentPolicy: ctx.developmentPolicy }
+				: {}),
 			// host validation command for close_slice gate.
 			...(typeof ctx.options.validationCommand === 'string'
 				? {
@@ -800,12 +610,7 @@ export default definePlugin({
 							.validationCommand as string,
 					}
 				: { validationCommand: 'bun run validate' }),
-			...(typeof ctx.options.requirePeerReview === 'boolean'
-				? {
-						requirePeerReview: ctx.options
-							.requirePeerReview as boolean,
-					}
-				: { requirePeerReview: true }),
+			...reviewPolicy,
 			...(typeof ctx.options.requireValidateEvidence === 'boolean'
 				? {
 						requireValidateEvidence: ctx.options
@@ -932,6 +737,7 @@ export default definePlugin({
 							? { redactIdentity: true }
 							: {}),
 						enabled: ctx.agentWorktreeEnabled === true,
+						isolation: workIsolation,
 					}),
 					// read-only branch + worktree snapshot. Lets every
 					// agent answer "what is everyone else doing right now?"
@@ -979,20 +785,12 @@ export default definePlugin({
 							workspaceRoot: ctx.workspace.root,
 						},
 					}),
-					buildSyncProposalsRegistration({
-						namespacePrefix: ctx.namespacePrefix,
-						workspaceRoot: ctx.workspace.root,
-						layout: {
-							proposalsDir: layout.proposalsDir,
-							proposalIndexFile: layout.proposalIndexFile,
-						},
-						extraFolders: extraProposalFolders,
-						folderPolicy,
-					}),
+					buildSyncProposalsRegistration(syncOptions),
 					buildGetProposalWorkflowRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						proposalsDir: layout.proposalsDir,
 						indexFile: layout.proposalIndexFile,
+						isolation: workIsolation,
 					}),
 					// `proposal_get` — compact | normal | full.
 					buildProposalGetRegistration({
@@ -1014,6 +812,7 @@ export default definePlugin({
 						indexPathAbs: abs(layout.proposalIndexFile),
 						proposalsDirAbs: abs(layout.proposalsDir),
 						lockPathAbs: abs(layout.lockFile),
+						refreshIndex,
 					}),
 					buildAutoWorkRegistration({
 						namespacePrefix: ctx.namespacePrefix,
@@ -1021,6 +820,7 @@ export default definePlugin({
 						indexPathAbs: abs(layout.proposalIndexFile),
 						proposalsDirAbs: abs(layout.proposalsDir),
 						lockPathAbs: abs(layout.lockFile),
+						refreshIndex,
 						loopDetector,
 						// f00078 S1 + S3: pass the gate flag and the
 						// loop-detector window so the front-hook can run the
@@ -1054,12 +854,7 @@ export default definePlugin({
 										.requireValidateEvidence as boolean,
 								}
 							: { requireValidateEvidence: true }),
-						...(typeof ctx.options.requirePeerReview === 'boolean'
-							? {
-									requirePeerReview: ctx.options
-										.requirePeerReview as boolean,
-								}
-							: { requirePeerReview: true }),
+						...reviewPolicy,
 						...(effectivePersist !== undefined
 							? {
 									persist: effectivePersist as {
@@ -1118,13 +913,11 @@ export default definePlugin({
 						indexPathAbs: abs(layout.proposalIndexFile),
 						peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
 						folderPolicy,
+						indexFreeMoves: movesStayOutOfTheIndex(
+							ctx.developmentPolicy,
+						),
 						// peer-review gate on review→done (default on).
-						...(typeof ctx.options.requirePeerReview === 'boolean'
-							? {
-									requirePeerReview: ctx.options
-										.requirePeerReview as boolean,
-								}
-							: { requirePeerReview: true }),
+						...reviewPolicy,
 						proposalLifecycleStateReader: {
 							getProposalState:
 								sqlLifecycleReaders.getProposalState,
@@ -1142,6 +935,8 @@ export default definePlugin({
 					buildCreateProposalRegistration(authoringOptions),
 					buildCloseSliceRegistration(authoringOptions),
 					buildReviewRegistration(authoringOptions),
+					buildReviewQueueRegistration(authoringOptions),
+					buildReviewClaimRegistration(authoringOptions),
 					buildProposalBoardRegistration(authoringOptions),
 					buildAdoptRegistration(authoringOptions),
 					// on-demand audit of the host-instruction files
@@ -1151,7 +946,9 @@ export default definePlugin({
 					buildInheritHostInstructionsRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						reader: createWorkspaceFileReader(ctx.workspace),
+						reader: createWorkspaceFileReader(
+							callerCheckout.workspaceForCall(ctx.workspace),
+						),
 						proposalsDirAbs: abs(layout.proposalsDir),
 						counterPathAbs: abs(layout.proposalIdCountersFile),
 						layout: {
@@ -1206,12 +1003,7 @@ export default definePlugin({
 						agentRegistryPathAbs: abs(layout.agentRegistryFile),
 						workspaceRoot: ctx.workspace.root,
 						// same peer-review default as proposal_transition.
-						...(typeof ctx.options.requirePeerReview === 'boolean'
-							? {
-									requirePeerReview: ctx.options
-										.requirePeerReview as boolean,
-								}
-							: { requirePeerReview: true }),
+						...reviewPolicy,
 					}),
 					// x00533 S2 — `proposals_db_status`, the first diagnostic an
 					// operator runs against a suspect database (x00510 S3), was
@@ -1403,6 +1195,7 @@ export default definePlugin({
 				buildProposalTemplatesResourceRegistration({
 					proposalsDir: layout.proposalsDir,
 					indexFile: layout.proposalIndexFile,
+					isolation: workIsolation,
 				}),
 			],
 			prompts: [

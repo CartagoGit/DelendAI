@@ -1,0 +1,116 @@
+/**
+ * review-queue-schema.constant.ts — the input and output of `review_queue`
+ * (x00646), kept with the other tool contracts.
+ */
+import z from 'zod';
+
+/** The most proposals one call returns in full. */
+const MAX_QUEUE_PAGE = 50;
+
+export const REVIEW_QUEUE_INPUT_SCHEMA = z.object({
+	/** Only this proposal; the whole backlog when absent. */
+	proposalId: z.string().min(1).optional(),
+	/** Proposals returned in full, oldest first. */
+	limit: z.number().int().min(1).max(MAX_QUEUE_PAGE).optional(),
+	/** Skip this many of the listed backlog: the next page is `page.next`. */
+	offset: z.number().int().min(0).optional(),
+	/** Your agent id: proposals other agents hold are listed last. */
+	agent: z.string().min(1).optional(),
+	/**
+	 * Your unit's work ref (the `work` tool gives it): only its claims are
+	 * yours, even beside another instance of your model.
+	 */
+	unit: z.string().min(1).optional(),
+	/**
+	 * Every slice's evidence for every listed proposal. The list shows each
+	 * slice's state; the detail comes with `proposalId`, or with this.
+	 */
+	detail: z.boolean().optional(),
+});
+
+const CANDIDATE_SCHEMA = z.object({
+	commit: z.string(),
+	source: z.string(),
+});
+
+const SLICE_SCHEMA = z.object({
+	sliceId: z.string(),
+	title: z.string(),
+	status: z.string(),
+	reviewState: z.string(),
+	implementer: z.string().optional(),
+	implementerSource: z.enum(['round', 'git', 'unrecorded']).optional(),
+	candidates: z.array(CANDIDATE_SCHEMA).optional(),
+	gate: z.string().optional(),
+	files: z.array(z.string()).optional(),
+	acceptance: z.array(z.string()).optional(),
+	verdict: z.enum([
+		'needs-verdict',
+		'blocked',
+		'waiting-on-implementer',
+		'approved',
+	]),
+	nextAction: z.string().optional(),
+	missing: z.string().optional(),
+	changedSince: z
+		.array(z.object({ commit: z.string(), subject: z.string() }))
+		.optional(),
+	changedSinceTruncated: z.boolean().optional(),
+});
+
+export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({
+	ok: z.literal(true),
+	proposals: z.array(
+		z.object({
+			id: z.string(),
+			file: z.string(),
+			date: z.string().optional(),
+			slices: z.array(SLICE_SCHEMA),
+			close: z.string().optional(),
+			claimedBy: z.array(z.string()).optional(),
+			/** Age and drift since the work landed; the queue is ordered by it. */
+			drift: z
+				.object({
+					measured: z.boolean(),
+					reviewAgeDays: z.number().int().optional(),
+					commitsSince: z.number().int().optional(),
+					filesTouchedSince: z.array(z.string()).optional(),
+					files: z.number().int().optional(),
+					driftRatio: z.number().optional(),
+					reason: z.string().optional(),
+				})
+				.optional(),
+			claim: z.string().optional(),
+		}),
+	),
+	totals: z.object({
+		proposals: z.number().int(),
+		slices: z.number().int(),
+		needsVerdict: z.number().int(),
+		blocked: z.number().int(),
+		waitingOnImplementer: z.number().int(),
+		readyToClose: z.number().int(),
+		claimedByOthers: z.number().int(),
+	}),
+	page: z.object({
+		offset: z.number().int(),
+		returned: z.number().int(),
+		total: z.number().int(),
+		next: z.string().optional(),
+	}),
+	/**
+	 * Your unit's pack, when `unit` is given: how many proposals it has
+	 * claimed of the pack it publishes as one pull request.
+	 */
+	pack: z
+		.object({
+			size: z.number().int(),
+			claimed: z.number().int(),
+			full: z.boolean(),
+			next: z.string().optional(),
+		})
+		.optional(),
+	/** The backlog in one sentence: every figure says whether it counts slices or proposals. */
+	summary: z.string(),
+	procedure: z.string(),
+});

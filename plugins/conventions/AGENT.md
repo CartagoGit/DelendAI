@@ -33,14 +33,14 @@
 
 ## Tests
 
+- plugins/conventions/tests/src/lib/layers/layer-graph.spec.ts
 - plugins/conventions/tests/src/lib/plugin.spec.ts
 - plugins/conventions/tests/src/lib/profiles/language-profiles.spec.ts
 - plugins/conventions/tests/src/lib/profiles/profile-registry.spec.ts
-- plugins/conventions/tests/src/lib/services/conventions-scan.service.spec.ts
 
 ## Do not
 
-- Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
+- An agent does not run `git stash`: git refuses it for agents (`delendai guard`, reference-transaction), because every worktree shares one stash and stashed work is invisible to the work model. Commit, or checkpoint to your work ref, instead.
 - Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
 - Do not import `@delendai/core/lib/...`; use `@delendai/core/public`.
 - Do not run user-facing shell or destructive tools without `dryRunSupported: true`.

@@ -26,6 +26,7 @@
  *   - **Testability**: each probe is now spec-able without booting
  *     the verify script.
  */
+import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/public';
 import type { z } from 'zod';
 
 import type { IToolEffect, IToolRegistration } from '@delendai/core/public';
@@ -184,17 +185,19 @@ export const runEmptyInputProbe = async (
 		handlerReturned = true;
 	}
 
-	// x00107: SDK-faithful semantics — validateToolOutput SKIPS schema
-	// validation for isError results, so a structured `toolError` on
-	// empty input is a graceful, spec-conformant answer, not a failure.
-	// (The pre-x00107 probe validated the error envelope against the
-	// SUCCESS schema and misread 3 correct tools as drift.)
+	// x00107: server-side semantics — the SDK server's validateToolOutput
+	// SKIPS schema validation for isError results, so a structured
+	// `toolError` on empty input is a graceful answer, not drift. (The
+	// pre-x00107 probe validated the error envelope against the SUCCESS
+	// schema and misread 3 correct tools as drift.) This probe calls the
+	// handler directly, so it does not see the client side: an SDK client
+	// that listed tools validates structuredContent even on errors.
 	if (isError && invocationError === undefined) {
 		return {
 			tool: tool.id,
 			outcome: 'ok',
 			handlerReturned,
-			detail: 'returned a structured error (SDK skips outputSchema validation on isError)',
+			detail: 'returned a structured error (the SDK server skips output validation on isError)',
 		};
 	}
 
@@ -318,6 +321,22 @@ export const runHappyPathProbe = async (
 		};
 	}
 
+	// In the shared checkout on the integration branch a write is refused
+	// by policy: the right answer there, not a broken tool. It is probed
+	// where writes land (a unit's worktree, CI), so this checkout's
+	// `bun run validate` can be green (x00719).
+	if (
+		(result as { isError?: unknown })?.isError === true &&
+		(result as { structuredContent?: { error?: { code?: unknown } } })
+			?.structuredContent?.error?.code === SHARED_CHECKOUT_WRITE_REFUSED
+	) {
+		return {
+			tool: tool.id,
+			outcome: 'needs-input',
+			handlerReturned: true,
+			detail: 'refused by the shared-checkout write guard; probed where writes land',
+		};
+	}
 	try {
 		outputSchema.parse(result);
 		return {

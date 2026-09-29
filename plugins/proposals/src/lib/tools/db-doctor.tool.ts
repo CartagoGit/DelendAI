@@ -11,6 +11,7 @@ import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
 
 import {
 	runDbDoctor,
+	type IDbDoctorOptions,
 	type IDbDoctorResult,
 	type IDoctorCheckFn,
 } from '../services/db-doctor';
@@ -28,6 +29,9 @@ import { checkOutboxBacklog } from '../services/db-doctor/checks/outbox-backlog'
 import { checkQuarantinedImports } from '../services/db-doctor/checks/quarantined-imports';
 import { checkRevisionInconsistencies } from '../services/db-doctor/checks/revision-inconsistencies';
 import { checkStaleReconciliation } from '../services/db-doctor/checks/stale-reconciliation';
+import { buildStorageModeCheck } from '../services/db-doctor/checks/storage-mode';
+import { getProposalIndexReadStats } from '../proposals/index-read-stats';
+import { resolveProposalIndexSource } from '../proposals/index-reader';
 
 export const dbDoctorInputSchema = z.object({});
 
@@ -67,15 +71,39 @@ export interface IDbDoctorToolOptions {
 	readonly workspaceRoot: string;
 	readonly namespacePrefix?: string;
 	readonly checks?: readonly IDoctorCheckFn[];
+	/** Environment the index source switch is read from; defaults to `process.env`. */
+	readonly env?: Readonly<Record<string, string | undefined>>;
+	/** DIP seam for the SQL checks runner; defaults to the real one, which needs `bun:sqlite`. */
+	readonly runDoctor?: (options: IDbDoctorOptions) => IDbDoctorResult;
 }
 
+/**
+ * Runs the SQL checks, then appends the storage-mode report. That report
+ * needs no open database, so it is present even when the database is
+ * missing, which is exactly when the configured mode matters most.
+ */
 export const runDbDoctorTool = (
 	options: IDbDoctorToolOptions,
-): IDbDoctorResult =>
-	runDbDoctor({
+): IDbDoctorResult => {
+	const databasePath = resolveProposalsDbPaths(
+		options.workspaceRoot,
+	).databasePath;
+	const result = (options.runDoctor ?? runDbDoctor)({
 		workspaceRoot: options.workspaceRoot,
+		sqlitePath: databasePath,
 		checks: options.checks ?? DEFAULT_DOCTOR_CHECKS,
 	});
+	const storage = buildStorageModeCheck({
+		mode: resolveProposalIndexSource({ env: options.env ?? process.env }),
+		databasePath,
+		stats: getProposalIndexReadStats(),
+	});
+	return {
+		...result,
+		checks: [...result.checks, storage],
+		healthy: result.healthy && storage.severity === 'ok',
+	};
+};
 
 export const buildDbDoctorToolRegistration = (
 	options: IDbDoctorToolOptions,

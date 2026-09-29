@@ -22,7 +22,7 @@
  * Architecture (SOLID):
  *   - `Role` — closed union of every role name; the source of truth
  *     that both consumers narrow against.
- *   - `IRoleRule` — one rule: a `name` + a pure `match(path)` predicate.
+ *   - `IRoleRule` — one rule: a `name` + a pure `matches(path)` predicate.
  *     Interface Segregation: callers depend on this shape, not on the
  *     helper constructors.
  *   - `DEFAULT_TS_RULES` — ordered chain. Order matters: more specific
@@ -99,6 +99,10 @@ export type Role =
 	| 'resource'
 	| 'strings'
 	| 'engine'
+	| 'repository'
+	| 'facade'
+	| 'driver'
+	| 'store'
 	| 'other';
 
 /** A single rule in the classification chain. */
@@ -106,7 +110,7 @@ export interface IRoleRule {
 	/** Canonical role name; must be one of the `Role` literals. */
 	readonly name: Role;
 	/** Pure predicate. Repo-relative POSIX path (`/` separators). */
-	readonly match: (relPath: string) => boolean;
+	readonly matches: (relPath: string) => boolean;
 }
 
 /** True if any segment of the path equals `needle`. */
@@ -118,9 +122,9 @@ export const endsWithBasename = (rel: string, suffix: string): boolean =>
 	basename(rel) === suffix || basename(rel).endsWith(`.${suffix}`);
 
 /** Build a rule in one expression. Local helper, not exported. */
-const rule = (name: Role, match: (rel: string) => boolean): IRoleRule => ({
+const rule = (name: Role, matches: (rel: string) => boolean): IRoleRule => ({
 	name,
-	match,
+	matches,
 });
 
 /** Build a folder-segment rule. Local helper, not exported. */
@@ -276,7 +280,13 @@ const MetricRule = folderRule('metric', 'metrics');
 // entry reads as a duplicate somebody forgot to delete.
 const MigrationRule = rule(
 	'migration',
-	(rel) => hasSegment(rel, 'migrations') || hasSegment(rel, 'migrators'),
+	(rel) =>
+		hasSegment(rel, 'migrations') ||
+		hasSegment(rel, 'migrators') ||
+		// A migrator is migration code wherever it lives:
+		// `workspace-migration/host-scope/global-config.migrator.ts` is
+		// the one that sits outside `migrators/`.
+		/\.migrator\.ts$/.test(rel),
 );
 const ScaffoldRule = folderRule('scaffold', 'scaffold');
 const SetupRule = folderRule('setup', 'setup');
@@ -421,6 +431,27 @@ const BuilderRule: IRoleRule = rule(
 		endsWithBasename(rel, 'builder.ts'),
 );
 
+/* ------------------------------------------------------------------ *
+ *  Roles the repository already used deliberately, named after the
+ *  files that motivated them (r00052). Each needs at least three real
+ *  files that no other rule classified; `adapter` was proposed too, but
+ *  every `*-adapter.ts` in the tree is already classified by a folder
+ *  or suffix rule, so a rule for it would classify nothing.
+ *
+ *  They sit at the END of the chain on purpose: they only name files
+ *  nothing earlier claimed, so no file that already has a role changes
+ *  it (an `engine/` folder's `*-repo.ts` stays `engine`).
+ * ------------------------------------------------------------------ */
+
+/** `repository/<entity>-repo.ts` in proposals-sqlite, `evidence-repo.ts` in core. */
+const RepositoryRule = rule('repository', (rel) => /[-.]repo\.ts$/.test(rel));
+/** `stable-facade.ts`, `evidence-store.facade.ts`, `registry-facade.ts`, … */
+const FacadeRule = rule('facade', (rel) => /[-.]facade\.ts$/.test(rel));
+/** The SQLite drivers of proposals-sqlite, state-sqlite and plugins/database. */
+const DriverRule = rule('driver', (rel) => /[-.]driver\.ts$/.test(rel));
+/** `evidence-store.ts`, `roster-store.ts`, `limits-store.ts`, `policy-store.ts`, … */
+const StoreRule = rule('store', (rel) => /[-.]store\.ts$/.test(rel));
+
 /**
  * Default rule chain for TypeScript monorepos. Order matters: more
  * specific rules first (`generated`, `barrel`); suffix-based role
@@ -487,6 +518,10 @@ export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	IssueRule,
 	MarkerRule,
 	ConventionRule,
+	RepositoryRule,
+	FacadeRule,
+	DriverRule,
+	StoreRule,
 ];
 
 /**
@@ -508,7 +543,7 @@ export const classifyPath = (
 	if (typeof relPath !== 'string' || relPath === '') return 'other';
 	for (const rule of rules) {
 		try {
-			if (rule.match(relPath)) return rule.name;
+			if (rule.matches(relPath)) return rule.name;
 		} catch {}
 	}
 	return 'other';

@@ -1,4 +1,5 @@
 import type { ICorePaths } from './core-paths.interface';
+import type { IHostServerSlot } from './host-server-slot.interface';
 import type { ICommitAuthorResolution } from './commit-author.interface';
 import type { IKnowledgeEntry, ISkillEntry } from './knowledge.interface';
 import type { IDelendaiProjectMetadata } from './project-metadata.interface';
@@ -85,6 +86,19 @@ export interface IHostPaths {
 	 * config literal without one; the CLI loader always resolves it.
 	 */
 	readonly developmentPolicy?: IResolvedDevelopmentPolicy | undefined;
+	/**
+	 * Filled with the server once `createMcpProject` builds it, so plugins
+	 * assembled before it (and captured by the lazy runtime) reach the host.
+	 */
+	readonly hostServer?: IHostServerSlot | undefined;
+	/**
+	 * Why this server must stand down from background work, or `undefined`
+	 * when it may go on: it runs older code than its checkout. The CLI
+	 * loader answers it from the checkout's runtime watch.
+	 */
+	readonly runtimeBehindCheckout?:
+		| (() => Promise<string | undefined>)
+		| undefined;
 	/**
 	 * f00082: the resolved commit-author policy, applied by the shared
 	 * git engine to every commit produced by `@delendai/git` and
@@ -199,6 +213,22 @@ export interface IHostRegistrations {
 	readonly extraResources?: readonly IResourceRegistration[] | undefined;
 	/** Optional runtime plan/access pair for adaptive/compact tool surfaces. */
 	readonly toolSurfacePlan?: IToolSurfacePlan | undefined;
+	/**
+	 * Called once the MCP handshake completes, with the client's reported
+	 * name and version. The CLI assembler uses it to fill the
+	 * `clientIdentity` every plugin context carries.
+	 */
+	readonly onClientInitialized?:
+		| ((client: {
+				readonly name: string;
+				readonly version: string;
+		  }) => void)
+		| undefined;
+	/**
+	 * The instructions every MCP client receives when it connects: how the
+	 * project wants its agents to work (`core.agentPolicy`).
+	 */
+	readonly instructions?: string | undefined;
 	readonly toolSurfaceRuntime?: IToolSurfaceRuntimeAccess | undefined;
 	/** Managed-only tool activators keyed by their stable registration id. */
 	readonly lazyToolActivators?: ReadonlyMap<

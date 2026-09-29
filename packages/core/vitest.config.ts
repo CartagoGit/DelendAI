@@ -2,7 +2,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import {
+	bunOwnedExcludes,
+	sharedSetupFiles,
+	workspaceAliases,
+} from '../../vitest.shared';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
@@ -34,14 +38,9 @@ export default defineConfig({
 		exclude: [
 			'**/node_modules/**',
 			'**/dist/**',
-			// The evidence store's SQLite backend needs `bun:sqlite`, a Bun
-			// builtin with no node resolution. `evidence-repo.spec.ts`
-			// imports it directly and the other two open a real database,
-			// so all three run under `bun run test:sqlite`, a CI step of
-			// its own. The file-backend and facade specs stay here.
-			'tests/src/lib/evidence/evidence-repo.spec.ts',
-			'tests/src/lib/evidence/evidence-migrate.spec.ts',
-			'tests/src/lib/evidence/evidence-store.spec.ts',
+			// Specs that open a real `bun:sqlite` database run under
+			// `bun run test:sqlite` instead; the list lives in one place.
+			...bunOwnedExcludes('packages/core'),
 		],
 		environment: 'node',
 		globals: false,

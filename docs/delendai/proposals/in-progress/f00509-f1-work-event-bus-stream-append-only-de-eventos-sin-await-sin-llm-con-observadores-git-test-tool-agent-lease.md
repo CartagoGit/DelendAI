@@ -54,17 +54,19 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - review-implementer: Persia
 ### S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
 - **Status**: pending
+- **Blocked by**: a consumer. Nothing in production reads `state-telemetry` events yet (f00510 is pending). Emitting them first is work nobody can see. The write boundary exists: every `caller-checkout` write passes `bindWriteRoot` (core), which is where a `git_change` would hook.
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/git-observer.ts`, `packages/state-telemetry/src/lib/observers/git-observer.spec.ts`, `packages/state-telemetry/src/lib/observers/index.ts`
 - **Gate**: type
 - acceptance:
   - "`GitObserver` ingiere `git status --porcelain` cada vez que el agente hace `write_file` o ejecuta `git commit`; emite eventos `kind: 'git_change'` con `payload_hash` del `git diff --stat`."
-  - "No hace `await` dentro de su bucle principal: usa `spawnSync('git', [...])` con `timeout: 250ms` y degrada a `kind: 'git_change_stale'` si el timeout se dispara."
+  - "No bloquea al agente ni al servidor: lanza `git` con `spawn` asíncrono que la herramienta nunca espera (fire-and-forget), con como mucho una ejecución en vuelo (las peticiones que llegan mientras tanto se funden en una sola repetición al terminar), y si pasan 250 ms mata el proceso y emite `kind: 'git_change_stale'`. Corregido el 2026-09-24: la versión anterior decía `spawnSync` con `timeout: 250ms` y lo llamaba no bloqueante por no hacer `await`; `spawnSync` detiene el event loop de todo el servidor durante esos 250 ms en cada escritura."
   - "Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso."
   - "Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`)."
 
 ### S3 — `TestObserver` — enganche a `bun test` / `vitest` (start, finish, failure_hash)
 - **Status**: pending
+- **Blocked by**: a consumer (see S2). The "tool boundary" is `withIncidentLogging` / `bindWriteRoot` in core; there is no `preExec`/`postExec` hook by that name.
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/test-observer.ts`, `packages/state-telemetry/src/lib/observers/test-observer.spec.ts`
 - **Gate**: type
@@ -76,6 +78,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 
 ### S4 — `ToolObserver` — observador del MCP request log (tool_called, tool_finished, tool_error)
 - **Status**: pending
+- **Blocked by**: its premise. `IMcpHostSession.events.on('tool_called' | …)` does not exist, and nothing emits `tool_called`, `tool_finished` or `tool_error`. Those kinds exist only in S1's `WORK_EVENT_KINDS`. The real hook is the metrics registry: every instrumented tool call already passes `record(tool, record)` (`packages/core/src/lib/metrics/metrics-registry.ts`), and errors pass `withIncidentLogging`. Rewrite the slice against those before implementing it.
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/tool-observer.ts`, `packages/state-telemetry/src/lib/observers/tool-observer.spec.ts`
 - **Gate**: type
@@ -87,6 +90,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 
 ### S5 — `AgentLeaseObserver` — enganche al lock engine (claim, release, heartbeat)
 - **Status**: pending
+- **Blocked by**: its premise. The agent-lock engine emits no `lease_claimed`, `lease_released` or `lease_heartbeat` events; those kinds exist only in S1's `WORK_EVENT_KINDS`. The engine would have to emit them first.
 - **DependsOn**: [F1-S1, F1-S4]
 - **Files**: `packages/state-telemetry/src/lib/observers/agent-lease-observer.ts`, `packages/state-telemetry/src/lib/observers/agent-lease-observer.spec.ts`
 - **Gate**: type
@@ -104,7 +108,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - `work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada.
 - La lint de pureza para `packages/state-telemetry/src/**` la crea `f00510` S1 (única slice responsable de `tools/scripts/lint/state-telemetry-purity.script.ts`); esta slice no la introduce.
 - `GitObserver` ingiere `git status --porcelain` cada vez que el agente hace `write_file` o ejecuta `git commit`; emite eventos `kind: 'git_change'` con `payload_hash` del `git diff --stat`.
-- No hace `await` dentro de su bucle principal: usa `spawnSync('git', [...])` con `timeout: 250ms` y degrada a `kind: 'git_change_stale'` si el timeout se dispara.
+- No bloquea al agente ni al servidor: `git` se lanza con `spawn` asíncrono que la herramienta nunca espera, con una sola ejecución en vuelo (las peticiones intermedias se funden en una repetición), y a los 250 ms se mata el proceso y se emite `kind: 'git_change_stale'`. "Sin `await`" no es "no bloqueante": `spawnSync` detendría el event loop de todo el servidor.
 - Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso.
 - Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`).
 - `TestObserver` envuelve `bun test` y `vitest run` con un wrapper que emite `kind: 'test_started'` antes y `kind: 'test_finished'` después; el payload incluye `passed`, `failed`, `failure_hash` (sha256 del primer failure path + mensaje normalizado).
@@ -119,3 +123,10 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - El emparejamiento `lease_claimed → lease_released` se materializa en `work_assignments.released_at` cuando llega el release.
 - Si el release no llega (kill -9), el observer emite `lease_heartbeat_missed` cuando han pasado 3 heartbeats sin release; usa el heartbeat interval del lock engine.
 - Test: simular claim → 4 heartbeats → release produce 6 eventos; claim → 5 heartbeats → kill produce 5 eventos más `lease_heartbeat_missed`.
+
+**Checked against the tree on 2026-09-26.** S2–S5 had stood still since
+2026-09-08. S4 and S5 hook into events their text says "already exist";
+they do not. No production code reads the events S2–S5 would emit, and
+the projector that would (f00510) is itself pending. Each slice now
+names its real hook point and what blocks it. S2 and S3 wait for a
+consumer; S4 and S5 wait for their premise.

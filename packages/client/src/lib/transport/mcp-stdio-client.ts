@@ -1,5 +1,8 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import {
+	getDefaultEnvironment,
+	StdioClientTransport,
+} from '@modelcontextprotocol/sdk/client/stdio.js';
 import type { ZodType } from 'zod';
 
 import {
@@ -30,6 +33,19 @@ const defaultSdkBindings = (): IMcpSdkBindings => ({
 });
 
 let sdkBindings: IMcpSdkBindings = defaultSdkBindings();
+
+/**
+ * The environment to start a delendai server with: what the SDK passes
+ * any server (`PATH`, `HOME`, …), plus `extra`.
+ *
+ * The SDK passes nothing else unless told to, which is right for a
+ * stranger's server and wrong for ours: a server the CLI started never
+ * saw `DELENDAI_AGENT_ID`, named every agent `unknown-agent`, and could
+ * not tell an agent from a person (x00713).
+ */
+export const serverEnvironment = (
+	extra: Readonly<Record<string, string>>,
+): Record<string, string> => ({ ...getDefaultEnvironment(), ...extra });
 
 export const __setMcpSdkBindingsForTests = (
 	overrides: Partial<IMcpSdkBindings>,
@@ -149,8 +165,12 @@ const classifyTransportErrorKind = (
 
 const describeTransportError = (context: string, error: unknown): string => {
 	const detail = textFromUnknown(error);
-	return detail === undefined || detail.length === 0
-		? context
+	if (detail === undefined || detail.length === 0) return context;
+	// `context: detail` reads well for one line and badly for many: when
+	// the context is the server's own last words, a colon glues the
+	// transport's summary onto whatever sentence happened to be last.
+	return context.includes('\n')
+		? `${context}\n\n  transport: ${detail}`
 		: `${context}: ${detail}`;
 };
 
@@ -205,6 +225,31 @@ export const logHintFromResult = (result: {
 	}
 };
 
+/** How much of a dying server's last words to keep, in bytes. */
+const STDERR_KEPT_BYTES = 4096;
+
+/**
+ * Put the server's own words into the failure.
+ *
+ * Its sentence, not ours: the client cannot know why a server refused to
+ * start, and inventing a guess would be a second source of truth for a
+ * question only the server can answer.
+ */
+export const withServerWords = (headline: string, stderr: string): string => {
+	const said = stderr
+		.split('\n')
+		.map((line) => line.trimEnd())
+		.filter((line) => line.trim().length > 0);
+	if (said.length === 0) {
+		return `${headline} — the server exited without saying why.`;
+	}
+	return [
+		`${headline}. The server said:`,
+		'',
+		...said.slice(-20).map((line) => `  ${line}`),
+	].join('\n');
+};
+
 export class McpStdioClient {
 	private operationTail: Promise<void> = Promise.resolve();
 	private closePromise: Promise<void> | undefined;
@@ -233,21 +278,43 @@ export class McpStdioClient {
 			// The MCP SDK defaults stderr to 'inherit'. We forward the
 			// caller's override (or fall back to 'inherit' so prod is
 			// unchanged) so tests can silence the child server.
+			// Piped by default so a failure can be explained. `inherit`
+			// stays available for a caller that wants the child's log on
+			// its own terminal, and it costs that caller the explanation.
 			stderr:
 				options.onStderr === undefined
-					? (options.stderr ?? 'inherit')
+					? (options.stderr ?? 'pipe')
 					: 'pipe',
 		};
 		const transport = new sdkBindings.StdioClientTransportCtor(
 			transportOptions,
 		);
-		if (options.onStderr !== undefined) {
+		// What the server said before it died.
+		//
+		// A server that refuses to start says why on stderr — a policy it
+		// cannot honour, a module it cannot find, a port it cannot bind —
+		// and that sentence is the only thing a person can act on. It was
+		// piped into a stream nobody read, so every failure arrived as
+		// `Failed to connect to MCP server: Connection closed`, which names
+		// no cause and no remedy. Driven against a consumer project whose
+		// config declared a policy with no required check, the server
+		// printed a diagnosis with a concrete fix and the caller saw eight
+		// words of nothing.
+		//
+		// Bounded: a server that dies mid-flood must not be re-reported in
+		// full, and the last words are the ones that explain it.
+		let saidBeforeDying = '';
+		if (transport.stderr !== undefined && transport.stderr !== null) {
 			// `unknown`, not `Buffer | string`: the ambient `Buffer` type is a
 			// Node global, and r00041 S3 compiles this directory without
 			// `@types/node`. `String(chunk)` is what the body does anyway, so
 			// the narrower annotation bought nothing and cost library-safety.
-			transport.stderr?.on('data', (chunk: unknown) => {
-				options.onStderr?.(String(chunk));
+			transport.stderr.on('data', (chunk: unknown) => {
+				const text = String(chunk);
+				options.onStderr?.(text);
+				saidBeforeDying = `${saidBeforeDying}${text}`.slice(
+					-STDERR_KEPT_BYTES,
+				);
 			});
 		}
 		try {
@@ -256,7 +323,10 @@ export class McpStdioClient {
 			await transport.close().catch(() => undefined);
 			throw normalizeTransportError(
 				error,
-				'Failed to connect to MCP server',
+				withServerWords(
+					'Failed to connect to MCP server',
+					saidBeforeDying,
+				),
 			);
 		}
 		return new McpStdioClient(client as unknown as IMcpTransport);
@@ -292,8 +362,17 @@ export class McpStdioClient {
 				);
 			}
 			if (result.isError) {
+				// The tool's own words, not just that it failed. `returned
+				// an error` sent a caller looking for a cause that was
+				// sitting in `result.content` the whole time — the same
+				// shape as a server that died without saying why.
 				throw new McpToolError(
-					`MCP tool "${tool}" returned an error`,
+					withServerWords(
+						`MCP tool "${tool}" returned an error`,
+						(result.content ?? [])
+							.map((part) => part.text ?? '')
+							.join('\n'),
+					),
 					result,
 					logHintFromResult(result),
 				);
@@ -307,6 +386,14 @@ export class McpStdioClient {
 			const listed = await this.transport.listTools?.();
 			return listed?.tools ?? [];
 		});
+	}
+
+	/**
+	 * The instructions the server sent when this client connected: how the
+	 * project wants its agents to work (`core.agentPolicy`).
+	 */
+	instructions(): string | undefined {
+		return this.transport.getInstructions?.();
 	}
 
 	async close(): Promise<void> {

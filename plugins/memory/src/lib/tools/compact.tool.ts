@@ -84,6 +84,7 @@ export const buildCompactToolRegistration = (
 	return {
 		id: 'compact',
 		effects: ['write'],
+		writeRoot: 'host-state',
 		summary:
 			'Distil carried working-state into a compact session digest; drop the noisy tail.',
 		tags: ['memory', 'token-efficiency'],

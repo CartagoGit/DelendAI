@@ -4,12 +4,15 @@ import {
 	mkdtempSync,
 	readFileSync,
 	rmSync,
+	symlinkSync,
 	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { fakePartial } from '@delendai/test-kit';
 
 import {
 	watchAgentHeartbeat,
@@ -266,5 +269,126 @@ describe('agent heartbeat events (f00016 S8)', async () => {
 		expect(fileLocksState.locks).toEqual({});
 		expect(leaseState.leases).toEqual([]);
 		expect(existsSync(leaseFile)).toBe(true);
+	});
+});
+
+/**
+ * x00544 S3. Four of the bridge's writes are SIBLINGS reached through
+ * `dirname(...)` of a path that was only checked lexically at register
+ * time. `ws/linked` never leaves the workspace as a STRING, which is
+ * exactly why that check accepted it while it named another tree.
+ *
+ * The bridge is a background watcher with no return channel, so a
+ * refusal is reported on stderr rather than thrown — an exception here
+ * would kill the heartbeat handler for every later event.
+ */
+describe('bridge physical containment (x00544 S3)', async () => {
+	let parent = '';
+
+	beforeEach(() => {
+		parent = mkdtempSync(join(tmpdir(), 'agent-events-escape-'));
+	});
+
+	afterEach(() => rmSync(parent, { recursive: true, force: true }));
+
+	it('refuses every release write when the watched tree is symlinked out of the workspace', async () => {
+		const ws = join(parent, 'ws');
+		const outside = join(parent, 'outside');
+		mkdirSync(ws, { recursive: true });
+		mkdirSync(join(outside, 'agent-queue'), { recursive: true });
+		symlinkSync(outside, join(ws, 'linked'), 'dir');
+
+		const lockFileAbs = join(ws, 'linked', 'agents.lock.json');
+		const registryFile = join(ws, 'linked', 'subagent-registry.json');
+		const queueFile = join(ws, 'linked', 'agent-queue', 'queue.json');
+		const fileLocksFile = join(ws, 'linked', 'file-locks.json');
+		const leaseFile = join(
+			ws,
+			'linked',
+			'agent-queue',
+			'.subscribe-leases.json',
+		);
+
+		writeFileSync(lockFileAbs, lock());
+		writeFileSync(
+			registryFile,
+			JSON.stringify({
+				assignments: [
+					{
+						task_id: 't1',
+						agent_name: 'falcon',
+						parent_task_id: null,
+					},
+				],
+			}),
+		);
+		writeFileSync(
+			fileLocksFile,
+			JSON.stringify({ locks: { 'src/a.ts': { taskId: 't1' } } }),
+		);
+		writeFileSync(
+			leaseFile,
+			JSON.stringify({
+				leases: [
+					{
+						taskId: 't1',
+						subscriberId: 'falcon',
+						subscriptionId: 'sub-1',
+						leaseUntil: '2026-09-01T00:00:00.000Z',
+					},
+				],
+			}),
+		);
+
+		const stderrChunks: string[] = [];
+		const spy = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation((chunk: unknown) => {
+				stderrChunks.push(String(chunk));
+				return true;
+			});
+
+		const bridge = startAgentEventsBridge(
+			fakePartial<Parameters<typeof startAgentEventsBridge>[0]>({
+				sendLoggingMessage: async () => undefined,
+			}),
+			{
+				namespacePrefix: 'proposals',
+				lockFileAbs,
+				agentRegistryFileAbs: registryFile,
+				queueFileAbs: queueFile,
+				workspaceRootAbs: ws,
+				heartbeatMs: 1_000,
+				intervalMs: 60_000,
+			},
+		);
+		bridge.watcher.stop();
+		await bridge.watcher.check(new Date('2026-06-20T00:00:00Z'));
+		await bridge.watcher.check(new Date('2026-06-20T00:00:03Z'));
+		bridge.close();
+		spy.mockRestore();
+
+		// The agent did die — the bridge saw it.
+		expect(bridge.events.map((event) => event.kind)).toEqual([
+			'agent-alive',
+			'agent-dead',
+		]);
+
+		// ...but every release write was refused, so nothing changed.
+		const lockState = JSON.parse(readFileSync(lockFileAbs, 'utf8')) as {
+			in_flight: unknown[];
+		};
+		const fileLocksState = JSON.parse(
+			readFileSync(fileLocksFile, 'utf8'),
+		) as { locks: Record<string, unknown> };
+		const leaseState = JSON.parse(readFileSync(leaseFile, 'utf8')) as {
+			leases: unknown[];
+		};
+		expect(lockState.in_flight).toHaveLength(1);
+		expect(fileLocksState.locks).toEqual({ 'src/a.ts': { taskId: 't1' } });
+		expect(leaseState.leases).toHaveLength(1);
+		expect(stderrChunks.some((c) => c.includes('refusing to write'))).toBe(
+			true,
+		);
 	});
 });

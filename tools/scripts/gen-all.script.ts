@@ -84,21 +84,119 @@ export const STEPS: readonly IStep[] = [
 		],
 		description: 'Regenerate plugin manifests and derived registries.',
 	},
+	// These were generated only by hand, so a merge that changed their
+	// inputs left them stale until some later push failed on them (the
+	// README plugin table had drifted from the manifests for months).
+	{
+		name: 'preset-metadata',
+		cmd: ['bun', 'tools/scripts/generate/preset-metadata.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/generate/preset-metadata.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the preset metadata the plugins declare.',
+	},
+	{
+		name: 'config-schema',
+		cmd: ['bun', 'tools/scripts/types/generate-config-schema.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/types/generate-config-schema.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the JSON schema of delendai.config.json.',
+	},
+	{
+		name: 'stable-manifest',
+		cmd: ['bun', 'tools/scripts/build/stable-manifest.script.ts'],
+		description: 'Regenerate the stable facade manifest.',
+	},
+	{
+		name: 'managed-lazy-catalog',
+		cmd: ['bun', 'tools/scripts/generate/managed-lazy-catalog.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/generate/managed-lazy-catalog.script.ts',
+			'--check',
+		],
+		description:
+			'Regenerate the compact catalog the runtime loads plugins from.',
+	},
+	{
+		name: 'plugin-catalog-docs',
+		cmd: ['bun', 'tools/scripts/docs/generate-catalog.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/docs/generate-catalog.script.ts',
+			'--check',
+		],
+		description:
+			'Regenerate the plugin catalog page and the README plugin table.',
+	},
+	{
+		name: 'core-public-inventory',
+		cmd: [
+			'bun',
+			'tools/scripts/inspect/core-public-inventory.script.ts',
+			'--write',
+		],
+		checkCmd: [
+			'bun',
+			'tools/scripts/inspect/core-public-inventory.script.ts',
+			'--check',
+		],
+		description:
+			'Regenerate the public API inventory from the barrel parser the surface budget reads.',
+	},
+	{
+		name: 'provenance-truth',
+		cmd: ['bun', 'tools/scripts/gen/provenance-truth.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/gen/provenance-truth.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the observability provenance page.',
+	},
+	{
+		name: 'init-skill-inventory',
+		cmd: ['bun', 'tools/scripts/gen/init-skill-inventory.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/gen/init-skill-inventory.script.ts',
+			'--check',
+		],
+		description:
+			"Regenerate the adoption plan's skill table from the skill manifest.",
+	},
+	{
+		name: 'authorities',
+		cmd: ['bun', 'tools/scripts/gen/authorities.script.ts'],
+		checkCmd: ['bun', 'tools/scripts/gen/authorities.script.ts', '--check'],
+		description:
+			'Regenerate AUTHORITIES.md from the declared authorities of every fact.',
+	},
 	{
 		name: 'capability-matrix',
 		cmd: ['bun', 'tools/scripts/gen/capability-matrix.script.ts'],
 		description: 'Regenerate the capability matrix documentation.',
 	},
 	{
-		name: 'agent-md',
-		cmd: ['bun', 'tools/scripts/gen/agent-md.script.ts'],
-		description: 'Regenerate per-package and per-plugin AGENT.md files.',
-	},
-	{
 		name: 'token-budget-dashboard',
 		cmd: ['bun', 'tools/scripts/report/token-budget-dashboard.script.ts'],
 		description: 'Regenerate the token budget dashboard.',
 		measured: true,
+	},
+	{
+		name: 'agent-md',
+		cmd: ['bun', 'tools/scripts/gen/agent-md.script.ts'],
+		description: 'Regenerate per-package and per-plugin AGENT.md files.',
+		// After the dashboard: every AGENT.md quotes its token hotspots
+		// from TOKEN-BUDGETS.md. Before it, a change that moved a tool's
+		// size left each AGENT.md one measurement behind, and the drift
+		// check (which re-derives AGENT.md from the committed dashboard)
+		// failed the push that had just regenerated everything.
 	},
 	{
 		name: 'host-hints',

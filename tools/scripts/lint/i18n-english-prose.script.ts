@@ -55,7 +55,8 @@
  *     - markers.spec.ts / close-tools.spec.ts (bilingual marker test)
  *     - gitlab/tests/src/lib/tools.spec.ts (unicode payload fixture)
  *     - run-command-bytes.spec.ts (unicode payload fixture)
- *     - memory.spec.ts / preserve-rules.spec.ts (bilingual detection)
+ *     - memory.spec.ts / preserve-rules.spec.ts / compaction-corpus.spec.ts
+ *       (bilingual detection)
  *     - scope.spec.ts (test data)
  *     - parse-audit.service.ts / .spec.ts (legacy Spanish rubric detection)
  *     - audit.interface.ts / audit.interface.d.ts (rubric identifiers)
@@ -312,6 +313,12 @@ const EXCLUDED_PATHS: readonly IExcludedPath[] = [
 	{
 		match: (p) => p.includes('preserve-rules.spec.ts'),
 		reason: 'bilingual preserve-rules fixture',
+	},
+	{
+		// Constraints worded as users actually give them, in both languages
+		// the project is conducted in; the Spanish lines are the data.
+		match: (p) => p.includes('compaction/compaction-corpus.spec.ts'),
+		reason: 'bilingual compaction corpus fixture',
 	},
 	{
 		match: (p) => p.includes('preserve-rules.helper.ts'),

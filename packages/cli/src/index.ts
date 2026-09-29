@@ -3,9 +3,16 @@ import { runCli as runServerCli } from '@delendai/core/public';
 
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
+import { resolveWorkAgentId } from '@delendai/core/public';
+
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
 import { ensureMigrated } from './lib/cli/entrypoint';
+import {
+	asksForHelp,
+	renderCommandHelp,
+	unknownFlagRefusal,
+} from './lib/command-flags.service';
 import { renderHelp } from './lib/help.service';
 import { parseCliInvocation } from './lib/parser.service';
 import { createStdioContext } from './lib/stdio-context.factory';
@@ -22,6 +29,26 @@ export type {
 	ICanonicalLaunchOptions,
 } from './contracts/interfaces/canonical-launch.interface';
 export { buildCanonicalLaunch } from './lib/server-args.service';
+// A host entry that is not this CLI reports the state of the hooks a
+// project's development policy declares. It does not install them:
+// starting a server is not consent to edit the repository (x00591).
+export { reportGuardHooks } from './lib/guard-hooks-autoinstall.service';
+// The one way a publication becomes a pull request (x00677): the CLI's
+// publish and the local hydrator both go through it.
+export {
+	checkWorkflowInvariants,
+	openPublicationPullRequest,
+	policyOf,
+	renderInvariantReport,
+	runWorkflowDoctor,
+	sharedCheckoutOf,
+} from '@delendai/core/cli';
+export type {
+	IInvariantReport,
+	IInvariantResult,
+	IInvariantScope,
+} from '@delendai/core/cli';
+export type { IGuardAutoinstallOutcome } from './contracts/interfaces/guard-hooks-autoinstall.interface';
 
 const commandMatches = (
 	command: ICliCommand,
@@ -73,6 +100,20 @@ export const runHumanCli = async (
 		return EXIT_CODE.USAGE;
 	}
 
+	const commandArgs = [
+		...parsed.commandPath.slice(consumedPathParts(command)),
+		...parsed.commandArgs,
+	];
+	if (asksForHelp(command, commandArgs)) {
+		process.stdout.write(renderCommandHelp(command, parsed.globals.lang));
+		return EXIT_CODE.OK;
+	}
+	const refusal = unknownFlagRefusal(command, commandArgs);
+	if (refusal !== undefined) {
+		process.stderr.write(`${refusal}\n`);
+		return EXIT_CODE.USAGE;
+	}
+
 	const extraPlugins = command.name.startsWith('search')
 		? ['search']
 		: command.name.startsWith('docs ')
@@ -83,8 +124,12 @@ export const runHumanCli = async (
 	// into the MCP server. They run with a noop context to avoid
 	// spawning an stdio server for what is essentially a copy-paste
 	// pipeline.
+	// `guard` runs from git hooks on every commit and push: it reads git and
+	// the project's configuration only, and must never start a server.
 	const isOffline =
-		command.name === 'init' || command.name === 'init:default';
+		command.name === 'init' ||
+		command.name === 'init:default' ||
+		command.name === 'guard';
 	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
 	try {
 		// a00061: `init`/`init:default` read ONLY `ctx.cwd` to resolve
@@ -101,13 +146,7 @@ export const runHumanCli = async (
 		ctx = isOffline
 			? createNoopContext(parsed.globals.workspace, parsed.globals)
 			: await createStdioContext(cwd, parsed.globals, extraPlugins);
-		const result = await command.run(
-			[
-				...parsed.commandPath.slice(consumedPathParts(command)),
-				...parsed.commandArgs,
-			],
-			ctx,
-		);
+		const result = await command.run(commandArgs, ctx);
 		if (result.error !== undefined)
 			process.stderr.write(`${result.error}\n`);
 		if (result.data !== undefined) {
@@ -158,28 +197,150 @@ export const runHumanCli = async (
 	}
 };
 
-if (import.meta.main) {
-	const argv = process.argv.slice(2);
-	const workspaceRoot = process.cwd();
-	// S2: every project-aware entrypoint consults the legacy
-	// migration guard before loading the server and the plugins. The
-	// guard is silent on a workspace with nothing to migrate (the
-	// common case), and runs the registered migrations otherwise.
-	//
-	// S3: workspaces whose own scripts / CI invoke a legacy
-	// bin name (`delendai` or `delendai`) get the same migration
-	// guard via the workspace-local shim produced by
-	// `delendai bridge install`; the shim re-execs into this exact
-	// `delendai` binary, so the guard runs once per invocation no
-	// matter which entrypoint the user typed. The package's `bin`
-	// table keeps a single canonical name (`delendai`) because S1
-	// forbids the legacy names from claiming bin entries (a name
-	// collision would break the install for unrelated projects).
-	await ensureMigrated(workspaceRoot);
-	if (argv[0] === '__serve') {
-		void runServerCli(argv.slice(1), workspaceRoot);
-	} else {
-		const code = await runHumanCli(argv, workspaceRoot);
-		process.exitCode = code;
+/**
+ * The invariants that do NOT hold, as lines, or nothing at all.
+ *
+ * Never throws and never writes: a workspace that cannot be judged still
+ * gets its server.
+ */
+/**
+ * Say, once, when work refs will not carry a model.
+ *
+ * A ref named `client-claude-code` or `unknown-agent` is honest, and an
+ * operator can only act on it if somebody says so — by the time it shows
+ * up in the graph the branch already exists. The remedy is one variable.
+ */
+const unnamedAgentNotice = (
+	env: NodeJS.ProcessEnv = process.env,
+): readonly string[] => {
+	const identity = resolveWorkAgentId({
+		environment: env.DELENDAI_AGENT_ID,
+	});
+	if (identity.source === 'environment') return [];
+	return [
+		`work refs will be named \`${identity.id}\` — no model or agent is declared here.`,
+		'      fix: set DELENDAI_AGENT_ID to the exact model doing the work (e.g. claude-opus-5).',
+	];
+};
+
+const brokenInvariants = async (
+	workspaceRoot: string,
+): Promise<readonly string[]> => {
+	try {
+		const { runWorkflowDoctor } = await import('@delendai/core/cli');
+		const report = await runWorkflowDoctor({
+			from: workspaceRoot,
+			scopes: ['checkout'],
+		});
+		if (report === undefined || report.broken === 0) return [];
+		return [
+			`work doctor: ${String(report.broken)} of ${String(report.results.length)} workflow invariant(s) do not hold — run \`delendai work doctor\``,
+			...report.results
+				.filter((result) => !result.holds)
+				.flatMap((result) => [
+					`  ✗ ${result.id}: ${result.observed}`,
+					...(result.remedy === undefined
+						? []
+						: [`      fix: ${result.remedy}`]),
+				]),
+		];
+	} catch {
+		return [];
 	}
+};
+
+/**
+ * What the binary does, as a function rather than as a top-level `if`.
+ *
+ * The boot sequence — migrate, report the guard, then either serve or
+ * run a command — used to live inside `if (import.meta.main)`, where no
+ * test can reach it. That is precisely the code whose mistakes are
+ * expensive: it is the first thing that runs in somebody else's project,
+ * and x00591 exists because one of its steps was writing to that project.
+ *
+ * The seams are parameters so a test can say what happened without a
+ * process: `serve` is the stdio server, `report` is where the guard's
+ * lines go.
+ */
+export const runEntry = async (
+	argv: readonly string[],
+	workspaceRoot: string,
+	options: {
+		readonly serve?: (args: readonly string[], root: string) => unknown;
+		readonly report?: (line: string) => void;
+	} = {},
+): Promise<number | undefined> => {
+	const serve = options.serve ?? runServerCli;
+	const report =
+		options.report ??
+		((line: string): void => {
+			process.stderr.write(`${line}\n`);
+		});
+	// Every project-aware entrypoint consults the legacy migration guard
+	// before loading the server and the plugins. The guard is silent on a
+	// workspace with nothing to migrate (the common case), and runs the
+	// registered migrations otherwise.
+	//
+	// Workspaces whose own scripts / CI invoke a legacy bin name get the
+	// same guard via the workspace-local shim produced by `delendai bridge
+	// install`; the shim re-execs into this exact binary, so the guard
+	// runs once per invocation no matter which entrypoint was typed.
+	//
+	// `guard` runs inside git hooks on every commit and push: it must not
+	// migrate (and so write to) the workspace while git holds its locks.
+	if (argv[0] !== 'guard') await ensureMigrated(workspaceRoot);
+	if (argv[0] === '__serve') {
+		// Report the guard a project declares; never install it. Starting
+		// a server is not consent to edit the repository it was started
+		// in — `delendai guard install` is.
+		const { reportGuardHooks } = await import(
+			'./lib/guard-hooks-autoinstall.service'
+		);
+		for (const line of (await reportGuardHooks({ workspaceRoot })).lines) {
+			report(`[delendai] ${line}`);
+		}
+		// What the work-ref model promises, and whether it is holding.
+		//
+		// The checks existed, in this repository's toolbox, reachable as
+		// `bun run work:doctor` by somebody who already knew to run it.
+		// Nobody ran it, which is why every one of the last dozen
+		// breakages was found by a person noticing a git graph.
+		//
+		// Reported on boot, and ONLY what does not hold: the promises
+		// that are kept are not news, and a server that recites its own
+		// health on every start is a server whose output gets ignored.
+		// Read-only, like everything else here — x00591.
+		for (const line of unnamedAgentNotice()) {
+			report(`[delendai] ${line}`);
+		}
+		for (const line of await brokenInvariants(workspaceRoot)) {
+			report(`[delendai] ${line}`);
+		}
+		// A server that cannot start says so in one sentence, not as an
+		// unhandled rejection.
+		//
+		// `void` was fire-and-forget, so a refusal that `assemble` raises —
+		// a configuration that cannot be honoured, and the diagnosis names
+		// the rule and its remedy — surfaced as a stack trace with the
+		// runtime's source listing wrapped around it. The sentence a person
+		// can act on was in there, under twenty lines that nobody can.
+		// Still not awaited: serving does not return, and awaiting it would
+		// hold the entrypoint open forever.
+		void Promise.resolve(serve(argv.slice(1), workspaceRoot)).catch(
+			(error: unknown) => {
+				report(
+					`[delendai] cannot start in this workspace: ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				);
+				process.exitCode = EXIT_CODE.VALIDATION;
+			},
+		);
+		return undefined;
+	}
+	return runHumanCli(argv, workspaceRoot);
+};
+
+if (import.meta.main) {
+	process.exitCode = await runEntry(process.argv.slice(2), process.cwd());
 }

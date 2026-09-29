@@ -16,7 +16,7 @@ import {
 const rule = (
 	name: string,
 	match: (rel: string) => boolean,
-): ILanguageRoleRule => ({ name, match });
+): ILanguageRoleRule => ({ name, matches: match });
 
 export const RUST_PROFILE: ILanguageProfile = {
 	id: 'rust',

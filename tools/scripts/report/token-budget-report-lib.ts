@@ -321,6 +321,21 @@ export const connectTokenBudgetClient = async (
 		close: async () => {
 			await client.close();
 			await assembledProject.server.close();
+			// Dispose the PLUGINS, not just the transport.
+			//
+			// Closing the server ends the conversation; it does not stop
+			// the work the plugins started. Their listeners and interval
+			// timers keep running, and several of them write into the
+			// fixture's `.cache/delendai` — which the caller deletes the
+			// moment the last measurement returns.
+			//
+			// CI saw the result as `ENOTEMPTY: directory not empty, rmdir
+			// '/tmp/tok-report-XXXX/.cache/delendai'`: a recursive delete
+			// losing a race with a timer nobody had stopped. It reads as
+			// a flake and it is not one — it is a measurement harness
+			// leaking a running server per connection, four times per
+			// preset.
+			await assembledProject.dispose();
 		},
 	};
 };

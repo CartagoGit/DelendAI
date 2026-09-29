@@ -54,7 +54,7 @@ jobs:
             - name: Run drift check
               id: drift_check
               continue-on-error: true
-              run: bun run gen:all --check
+              run: bun run gen:all:check
 
             - name: Capture drift diff
               if: steps.drift_check.outcome == 'failure'

@@ -93,6 +93,8 @@ export {
 	SpendLimitsStore,
 	normalizeLimitsView,
 } from '../lib/invoke/limits-store';
+export { spendCapsFrom } from '../lib/invoke/spend-caps.helper';
+export type { ISpendCaps } from '../lib/contracts/interfaces/spend-caps.interface';
 export {
 	buildAdviseSpendRegistration,
 	buildSpendAdvice,

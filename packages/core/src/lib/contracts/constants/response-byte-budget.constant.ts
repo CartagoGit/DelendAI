@@ -10,3 +10,6 @@ export const DEFAULT_COMPACT_RESPONSE_BYTES = 8 * 1024;
 export const MAX_RESPONSE_BYTES_CEILING = 64 * 1024;
 
 export const DEFAULT_MAX_RESPONSE_BYTES = MAX_RESPONSE_BYTES_CEILING;
+
+/** Room kept inside the cap for the artefact path an elided result carries. */
+export const ARTIFACT_PATH_RESERVE_BYTES = 512;

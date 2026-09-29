@@ -45,6 +45,7 @@ const refFiles = async (
 ): Promise<ReadonlySet<string>> => {
 	if (scope.length === 0) return new Set<string>();
 	const listing = await gitOutput(run, [
+		'--literal-pathspecs',
 		'ls-tree',
 		'-r',
 		'--name-only',
@@ -153,6 +154,7 @@ export const restorePathsFromRef = async (
 				await mkdir(dirname(join(root, file)), { recursive: true });
 			}
 			const written = await indexRun([
+				'--literal-pathspecs',
 				'checkout-index',
 				'-f',
 				'--',

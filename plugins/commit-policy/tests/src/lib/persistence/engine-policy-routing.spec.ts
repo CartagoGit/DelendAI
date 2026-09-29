@@ -16,9 +16,11 @@
  */
 
 import { createHash } from 'node:crypto';
+import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -41,6 +43,7 @@ import { createPolicyPersistence } from '../../../../src/lib/persistence/wip-per
 import { createTempGitRepo } from '../../../integration/_fixtures/git-tmp';
 
 const cleanups: Array<() => Promise<void>> = [];
+const execFileAsync = promisify(execFile);
 
 afterEach(async () => {
 	while (cleanups.length > 0) await cleanups.pop()?.();
@@ -129,6 +132,13 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		overrides: Partial<IResolvedDevelopmentPolicy> = {},
 	) => {
 		const h = await harness('develop');
+		const remote = await mkdtemp(
+			join(tmpdir(), 'commit-policy-wip-remote-'),
+		);
+		await execFileAsync('git', ['init', '--bare'], { cwd: remote });
+		await h.repo.git('remote', 'add', 'origin', remote);
+		await h.repo.git('push', '--quiet', '-u', 'origin', 'develop');
+		cleanups.push(() => rm(remote, { recursive: true, force: true }));
 		const wip = await bindWipCheckpointPort(h.repo.cwd, UNANCHORED);
 		if (wip === undefined) throw new Error('wip engine did not bind');
 		const submit = vi.fn(async (_candidate: IMergeCandidateHandoff) => ({
@@ -148,7 +158,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		return { h, submit, persistence };
 	};
 
-	it('does not commit to develop, does not push, and never touches .git/index', async () => {
+	it('does not commit or push to develop, publishes the WIP ref, and never touches .git/index', async () => {
 		const { h, submit, persistence } = await wipHarness();
 		await writeFile(join(h.repo.cwd, 'src.ts'), 'export const a = 1;\n');
 		const headBefore = await h.repo.readHead();
@@ -178,8 +188,17 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		expect(result.headMoved).toBe(false);
 		// The work ref exists and carries the checkpoint.
 		const ref = result.checkpoint?.ref ?? '';
-		expect(ref).toMatch(/^refs\/wip\/agent-a\//u);
+		// Derived from the policy: the work namespace is configuration, and a
+		// literal `refs/wip/` stopped matching once work refs became visible.
+		expect(
+			ref.startsWith(
+				`refs/${expandProfile('shared-checkout-pr').branches.workRefPrefix}agent-a/`,
+			),
+		).toBe(true);
 		expect(await h.repo.git('rev-parse', ref)).toBe(
+			result.checkpoint?.commit,
+		);
+		expect(await h.repo.git('ls-remote', 'origin', ref)).toContain(
 			result.checkpoint?.commit,
 		);
 		expect(result.checkpoint?.scope).toEqual(['src.ts']);

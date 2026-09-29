@@ -43,6 +43,7 @@ import {
 	PROJECTABLE_PROPOSAL_KINDS,
 	PROJECTABLE_PROPOSAL_STATUSES,
 	buildDbReconcileToolRegistration,
+	classifyCandidate,
 	collectProposalMarkdown,
 	preflightProposalFiles,
 	proposalsDbReconcileOutputSchema,
@@ -512,6 +513,40 @@ describe('proposals_db_reconcile — registration shape (f00534 S1)', () => {
 		);
 		expect(resolveHeadCommit(root)).toBe('a'.repeat(40));
 	});
+
+	it('resolves HEAD from inside a git WORKTREE, where `.git` is a file (x00601)', () => {
+		// Every agent works in a worktree — that is the whole point of the
+		// work-ref model — and there `.git` is a FILE pointing at
+		// `<common>/.git/worktrees/<name>`. Reading a directory there
+		// failed, so this fell through to `workspace` and the run record
+		// could not say which commit the projection described. For the
+		// normal case. Forever.
+		const { root: shared } = makeWorkspace();
+		mkdirSync(join(shared, '.git/refs/heads'), { recursive: true });
+		writeFileSync(
+			join(shared, '.git/refs/heads/develop'),
+			`${'b'.repeat(40)}\n`,
+		);
+		// The worktree's own git directory: its own HEAD, and a
+		// `commondir` pointing at the shared one where the refs live.
+		const worktreeGitDir = join(shared, '.git/worktrees/w1');
+		mkdirSync(worktreeGitDir, { recursive: true });
+		writeFileSync(
+			join(worktreeGitDir, 'HEAD'),
+			'ref: refs/heads/develop\n',
+		);
+		writeFileSync(join(worktreeGitDir, 'commondir'), '../..\n');
+
+		const { root: worktree } = makeWorkspace();
+		writeFileSync(join(worktree, '.git'), `gitdir: ${worktreeGitDir}\n`);
+
+		expect(resolveHeadCommit(worktree)).toBe('b'.repeat(40));
+	});
+
+	it('still says "workspace" for a directory that is not a checkout at all', () => {
+		const { root } = makeWorkspace();
+		expect(resolveHeadCommit(root)).toBe('workspace');
+	});
 });
 
 describe('proposals_db_reconcile fences its promotion (r00055 S1)', () => {
@@ -563,5 +598,67 @@ describe('proposals_db_reconcile fences its promotion (r00055 S1)', () => {
 		expect(stale.status).toBe('rejected');
 		expect(stale.reason).toContain('active database has moved');
 		expect(readActiveAuthority(paths.databasePath)).toBe('commit-two');
+	});
+});
+
+describe('resolveHeadCommit, the other shapes a checkout takes', () => {
+	it('reads a packed ref, a detached HEAD, and names a ref it cannot find', () => {
+		const { root } = makeWorkspace();
+		mkdirSync(join(root, '.git'), { recursive: true });
+		writeFileSync(join(root, '.git/HEAD'), 'ref: refs/heads/develop\n');
+		writeFileSync(
+			join(root, '.git/packed-refs'),
+			`# pack-refs with: peeled\n${'c'.repeat(40)} refs/heads/develop\n`,
+		);
+		expect(resolveHeadCommit(root)).toBe('c'.repeat(40));
+
+		writeFileSync(join(root, '.git/HEAD'), 'ref: refs/heads/gone\n');
+		expect(resolveHeadCommit(root)).toBe('refs/heads/gone');
+
+		writeFileSync(join(root, '.git/HEAD'), `${'d'.repeat(40)}\n`);
+		expect(resolveHeadCommit(root)).toBe('d'.repeat(40));
+	});
+
+	it('follows a relative gitdir pointer, and ignores a .git file that is not one', () => {
+		const { root: worktree } = makeWorkspace();
+		mkdirSync(join(worktree, 'real-git'), { recursive: true });
+		writeFileSync(join(worktree, 'real-git/HEAD'), `${'e'.repeat(40)}\n`);
+		writeFileSync(join(worktree, '.git'), 'gitdir: real-git\n');
+		expect(resolveHeadCommit(worktree)).toBe('e'.repeat(40));
+
+		writeFileSync(join(worktree, '.git'), 'not a pointer\n');
+		expect(resolveHeadCommit(worktree)).toBe('workspace');
+	});
+});
+
+describe('classifyCandidate', () => {
+	const candidate = (kind: string | null, status: string | null) => ({
+		uid: 'x00001',
+		slug: 'x00001-a',
+		path: 'ready/x00001-a.md',
+		title: 'A',
+		kind,
+		status,
+		type: 'proposal',
+		track: null,
+		date: null,
+		frontmatterJson: '{}',
+		bodyHash: 'h',
+	});
+
+	it('names what keeps a candidate out of the projection', () => {
+		expect(classifyCandidate(candidate(null, 'ready'))?.code).toBe(
+			'missing_kind',
+		);
+		expect(classifyCandidate(candidate('fix', null))?.code).toBe(
+			'missing_status',
+		);
+		expect(classifyCandidate(candidate('nonsense', 'ready'))?.code).toBe(
+			'kind_not_projectable',
+		);
+		expect(classifyCandidate(candidate('fix', 'nonsense'))?.code).toBe(
+			'status_not_projectable',
+		);
+		expect(classifyCandidate(candidate('fix', 'ready'))).toBeNull();
 	});
 });

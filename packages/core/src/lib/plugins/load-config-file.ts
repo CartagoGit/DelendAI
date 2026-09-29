@@ -76,6 +76,8 @@ export interface IManagedSurfaceConfig {
 	readonly loading?: 'lazy' | 'eager';
 	readonly idleTtlMs?: number | null;
 	readonly maxWarmPlugins?: number | null;
+	/** Floor before a newly warm plugin may be evicted; null disables it. */
+	readonly minWarmMs?: number | null;
 	/**
 	 * Let `native` mode honour per-tool `disclosure` levels (q00016 S8).
 	 *
@@ -269,6 +271,15 @@ export interface IDelendaiCachePolicyConfig {
 export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	/** Optional editor hint pointing at the published JSON Schema. */
 	readonly $schema?: string;
+	/**
+	 * Prefix for this project's tool names, e.g. `acme` → `acme_*`.
+	 *
+	 * The host config has always declared this — "delendai never invents
+	 * tool names outside a declared namespace" — and nothing could set
+	 * it: no flag, no config key, so `corePrefix` was always `delendai`
+	 * and the promise could not be exercised by anybody.
+	 */
+	readonly namespacePrefix?: string;
 	/** Optional explicit surface override. Omitted => managed. */
 	readonly surfaceMode?: IMcpToolSurfaceMode;
 	/** Optional operator-facing startup report configuration. */
@@ -352,25 +363,15 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	readonly coreVersion?: string;
 }
 
+import type { IDelendaiAgentPolicyConfig } from '../contracts/interfaces/agent-policy.interface';
+
 export interface IDelendaiCoreConfig {
 	/** Global agent execution mode and engineering principles. */
 	readonly agentPolicy?: IDelendaiAgentPolicyConfig;
 }
 
-export interface IDelendaiAgentPolicyConfig {
-	readonly autonomous?: boolean;
-	readonly principles?: ReadonlyArray<string>;
-}
-
-export const DEFAULT_AGENT_POLICY: Required<IDelendaiAgentPolicyConfig> = {
-	autonomous: true,
-	principles: [
-		'Apply SOLID architecture where it improves ownership and changeability.',
-		'Use good engineering practices and keep the code clear and maintainable.',
-		'Reuse existing code and abstractions before introducing duplication.',
-		'Keep naming, files, and folders homogeneous with the surrounding project.',
-	],
-};
+export type { IDelendaiAgentPolicyConfig } from '../contracts/interfaces/agent-policy.interface';
+export { DEFAULT_AGENT_POLICY } from '../contracts/constants/agent-policy.constant';
 
 /** Default config file name looked up at the workspace root. */
 export const DEFAULT_CONFIG_FILENAME = 'delendai.config.json';

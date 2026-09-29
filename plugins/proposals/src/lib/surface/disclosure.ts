@@ -65,6 +65,8 @@ export type IProposalsToolId =
 	| 'create_proposal'
 	| 'close_slice'
 	| 'proposal_review'
+	| 'review_queue'
+	| 'review_claim'
 	| 'proposal_board'
 	| 'branch_gc'
 	| 'auto_fix_queue'
@@ -117,6 +119,8 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 
 	// --- contextual (15): relevant once a proposal is active ---
 	proposal_review: 'contextual',
+	review_queue: 'contextual',
+	review_claim: 'contextual',
 	proposal_board: 'contextual',
 	agent_worktree: 'contextual',
 	proposals_close_plan: 'contextual',

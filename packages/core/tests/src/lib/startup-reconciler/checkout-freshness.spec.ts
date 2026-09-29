@@ -100,7 +100,7 @@ describe('checkout freshness', () => {
 		expect(result.findings.every((f) => f.kind === 'note')).toBe(true);
 	});
 
-	it('refuses to advance a tree somebody is working in', async () => {
+	it('advances past uncommitted edits the advance does not touch, keeping them byte for byte', async () => {
 		origin = createStartupOrigin();
 		const behind = origin.clone('behind-dirty');
 
@@ -110,11 +110,11 @@ describe('checkout freshness', () => {
 		ahead.git('commit', '--quiet', '--no-verify', '-m', 'advance');
 		ahead.push(INTEGRATION_BRANCH);
 
-		// Uncommitted work by somebody who is not here to agree to the
-		// ground moving under it.
+		// Uncommitted work by somebody who is not here: the advance
+		// touches none of it, so holding the checkout back would only
+		// leave every agent on an older tree (x00675).
 		behind.write('src/in-progress.ts', 'export const wip = 1;\n');
 		behind.git('add', '-A');
-		const stale = behind.git('rev-parse', 'HEAD').trim();
 		behind.git('fetch', '--quiet', 'origin');
 
 		const result = await runCheckoutPhase({
@@ -124,8 +124,44 @@ describe('checkout freshness', () => {
 		});
 		const codes = result.findings.map((finding) => finding.code);
 
-		expect(codes).toContain('checkout.behind-integration');
-		expect(codes).not.toContain('checkout.hydrated');
+		expect(codes).toContain('checkout.hydrated');
+		expect(behind.git('rev-parse', 'HEAD').trim()).toBe(
+			behind
+				.git('rev-parse', `refs/remotes/origin/${INTEGRATION_BRANCH}`)
+				.trim(),
+		);
+		expect(behind.git('status', '--porcelain').trim()).toBe(
+			'A  src/in-progress.ts',
+		);
+	});
+
+	it('leaves the tree alone when the advance would change an edited path, and names it', async () => {
+		origin = createStartupOrigin();
+		const behind = origin.clone('behind-overlap');
+
+		const ahead = origin.clone('ahead-overlap');
+		ahead.write('src/alpha.ts', 'export const alpha = 4;\n');
+		ahead.git('add', '-A');
+		ahead.git('commit', '--quiet', '--no-verify', '-m', 'advance');
+		ahead.push(INTEGRATION_BRANCH);
+
+		behind.write('src/alpha.ts', 'export const alpha = 99;\n');
+		const stale = behind.git('rev-parse', 'HEAD').trim();
+		behind.git('fetch', '--quiet', 'origin');
+
+		const result = await runCheckoutPhase({
+			git: behind.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const behindNote = result.findings.find(
+			(finding) => finding.code === 'checkout.behind-integration',
+		);
+
+		expect(behindNote?.message).toContain('src/alpha.ts');
+		expect(result.findings.map((f) => f.code)).not.toContain(
+			'checkout.hydrated',
+		);
 		// Left exactly as found.
 		expect(behind.git('rev-parse', 'HEAD').trim()).toBe(stale);
 	});
@@ -434,5 +470,46 @@ describe('checkout freshness', () => {
 		expect(moved).toBeDefined();
 		expect(moved?.message).toContain('detached commit');
 		expect(moved?.kind).toBe('blocker');
+	});
+
+	it('does not advance a checkout whose cleanliness it could not check (x00558)', async () => {
+		origin = createStartupOrigin();
+		const behind = origin.clone('unknown-dirtiness');
+
+		const ahead = origin.clone('ahead-unknown');
+		ahead.write('src/alpha.ts', 'export const alpha = 3;\n');
+		ahead.git('add', '-A');
+		ahead.git('commit', '--quiet', '--no-verify', '-m', 'advance');
+		ahead.push(INTEGRATION_BRANCH);
+		behind.git('fetch', '--quiet', 'origin');
+
+		const before = behind.git('rev-parse', 'HEAD').trim();
+		// A seam whose `git status` cannot answer. Before x00558 this
+		// read as a clean tree and the phase went on to fast-forward the
+		// shared checkout on a precondition nobody had verified.
+		const blind = {
+			...behind.seam,
+			dirtyPaths: async () => [],
+			dirtyState: async () =>
+				({
+					kind: 'unknown',
+					reason: 'git status exploded',
+				}) as const,
+		};
+		const result = await runCheckoutPhase({
+			git: blind,
+			policy: testPolicy(),
+			refs: [],
+		});
+		expect(result.findings.map((f) => f.code)).toContain(
+			'checkout.behind-integration',
+		);
+		expect(
+			result.findings.some((f) =>
+				f.message.includes('could NOT be determined'),
+			),
+		).toBe(true);
+		// The tree is exactly where it was.
+		expect(behind.git('rev-parse', 'HEAD').trim()).toBe(before);
 	});
 });

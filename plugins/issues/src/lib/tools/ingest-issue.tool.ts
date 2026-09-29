@@ -228,6 +228,7 @@ export const buildIngestIssueRegistration = (
 ): IToolRegistration => ({
 	id: 'issues_ingest',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	tags: ['issues'],
 	summary: 'Idempotently persist a GitHub issue as a durable scaffold file.',
 	register: async (server) => {

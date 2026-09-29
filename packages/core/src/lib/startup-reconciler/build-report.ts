@@ -23,6 +23,7 @@ import {
 	STARTUP_RECONCILER_VERSION,
 } from './contracts';
 import { needsRepairTask, repairTaskFor } from './finding-catalog';
+import { applyRepairResolutions } from './repair-resolutions';
 
 import type { IBuildReportInput } from './build-report.interface';
 
@@ -37,14 +38,33 @@ export const buildReconciliationReport = (
 		...input.phases,
 		{ phase: 'verdict', ran: true, counters: {}, findings: [] },
 	];
-	const findings = phases.flatMap((phase) => phase.findings);
-	const blockers = findings.filter((item) => item.kind === 'blocker');
+	const raised = phases.flatMap((phase) => phase.findings);
 	const tasks = new Map<string, IStartupRepairTask>();
-	for (const item of blockers) {
+	for (const item of raised) {
+		if (item.kind !== 'blocker') continue;
 		if (!needsRepairTask(item.code)) continue;
 		const task = repairTaskFor(item);
 		tasks.set(task.id, task);
 	}
+	// A recorded human decision is the ONLY thing that can close a
+	// blocker the reconciler is not allowed to close. It answers one
+	// task against the exact evidence it read (x00552); anything else
+	// still blocks, and every decision stays visible as a note.
+	const resolved = applyRepairResolutions({
+		blockers: raised.filter((item) => item.kind === 'blocker'),
+		tasks,
+		resolutions: input.resolutions ?? [],
+	});
+	const blockers = resolved.blockers;
+	for (const id of resolved.answeredTaskIds) tasks.delete(id);
+	const stillBlocking = new Set(blockers);
+	const findings = [
+		...raised.filter(
+			(item) => item.kind !== 'blocker' || stillBlocking.has(item),
+		),
+		...resolved.answered,
+		...resolved.notes,
+	];
 	const counters = phases.reduce(
 		(total, phase) => addCounters(total, phase.counters),
 		emptyCounters(),

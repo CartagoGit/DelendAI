@@ -66,6 +66,7 @@ const degradedReport = (): IStartupReconciliationReport => ({
 	repairTasks: [
 		{
 			id: 'state-database.absent:proposals',
+			evidenceDigest: 'digest-of-the-absent-database',
 			code: 'state-database.absent',
 			phase: 'state-database',
 			subject: 'proposals',

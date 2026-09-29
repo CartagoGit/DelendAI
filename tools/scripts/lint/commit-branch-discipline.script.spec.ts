@@ -5,10 +5,12 @@
  *
  *   1. Detached HEAD / non-git cwd → fail-open (release engineers
  *      can check out a tag and commit a hotfix without a branch).
- *   2. `develop` → always allowed (the shared branch).
+ *   2. The policy's integration branch (default `develop`) → allowed.
  *   3. With `agentWorktree` on → every branch allowed.
  *   4. With `agentWorktree` off → arbitrary working branches are blocked;
  *      `release/*` remains allowed for the release PR flow.
+ *   5. Branches inside the policy's work or publication namespace are
+ *      allowed: that is where shared-checkout-pr agents commit.
  *
  * Imports the script as a module so the test never invokes
  * `process.exit` — the `if (import.meta.main)` guard at the bottom
@@ -84,7 +86,10 @@ describe('lintCommitBranch', () => {
 			expect(result.blockers.join('\n')).toContain(
 				'agent/copilot-minimax-m3',
 			);
-			expect(result.blockers.join('\n')).toContain('git switch develop');
+			// The remedy is the work-branch flow, never switching the shared
+			// checkout back to develop to commit there.
+			expect(result.blockers.join('\n')).not.toContain('git switch');
+			expect(result.blockers.join('\n')).toContain('work branch');
 		}
 	});
 
@@ -108,5 +113,136 @@ describe('lintCommitBranch', () => {
 		if (!result.ok) {
 			expect(result.blockers.join('\n')).toContain('LEFTHOOK_BYPASS=1');
 		}
+	});
+	describe('policy namespaces (x00546 model: visible work branches)', () => {
+		const namespaces = {
+			workRefPrefix: 'heads/delendai/wip/',
+			// The template the policy resolves, so the refusal is rendered
+			// from it rather than restated. It used to be written out here
+			// AND in the script, with a dash where the engine puts a slash.
+			workRefTemplate:
+				'delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic}',
+			publicationRefPrefix: 'delendai/pr/',
+		} as const;
+
+		it('allows a work branch inside the policy work namespace', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch:
+					'delendai/wip/claude-opus-5/x00546-notes-g1-codex-branch-disposition',
+				...namespaces,
+			});
+			expect(result.ok).toBe(true);
+		});
+
+		it('allows a publication branch', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'delendai/pr/x00546-codex-branch-disposition',
+				...namespaces,
+			});
+			expect(result.ok).toBe(true);
+		});
+
+		it('still blocks a branch outside both namespaces', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'feat/somebodys-branch',
+				...namespaces,
+			});
+			expect(result.ok).toBe(false);
+		});
+
+		it('never tells an agent to switch the shared checkout back to develop', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'feat/somebodys-branch',
+				...namespaces,
+			});
+			if (result.ok) throw new Error('expected a block');
+			const text = result.blockers.join('\n');
+			expect(text).not.toContain('git switch develop');
+			// Exactly what the engine writes — a slash before the topic.
+			// The old expectation pinned a dash, and an agent that complied
+			// produced a ref nothing could claim, rename or publish.
+			expect(text).toContain(
+				'delendai/wip/<agent>/<proposal>-<slice>-g<generation>/<topic>',
+			);
+			expect(text).toContain('delendai/pr/<name>');
+		});
+
+		it('renders the shape from the template, never from a literal', () => {
+			// An operator who declares another shape must be told THEIRS.
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'feat/somebodys-branch',
+				...namespaces,
+				workRefTemplate:
+					'wip/${agent}/${slice}.${proposal}.g${generation}',
+			});
+			if (result.ok) throw new Error('expected a block');
+			const text = result.blockers.join('\n');
+			expect(text).toContain('<slice>.<proposal>.g<generation>');
+			expect(text).not.toContain('<proposal>-<slice>');
+		});
+
+		it('says which setting decides the shape when none is declared', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'feat/somebodys-branch',
+				...namespaces,
+				workRefTemplate: '',
+			});
+			if (result.ok) throw new Error('expected a block');
+			expect(result.blockers.join('\n')).toContain(
+				'branches.workRefTemplate',
+			);
+		});
+
+		it('does not treat a lookalike prefix as the work namespace', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'delendai/wipe/x',
+				...namespaces,
+			});
+			expect(result.ok).toBe(false);
+		});
+	});
+	describe('integration branch from the development policy', () => {
+		it('allows the configured integration branch', () => {
+			const result = lintCommitBranch({
+				...baseInput,
+				stagedFiles: ['README.md'],
+				currentBranch: 'trunk',
+				integrationBranch: 'trunk',
+			});
+			expect(result.ok).toBe(true);
+		});
+
+		it('does not treat develop as shared when the policy integrates elsewhere', () => {
+			const result = lintCommitBranch({
+				...baseInput,
+				stagedFiles: ['README.md'],
+				currentBranch: 'develop',
+				integrationBranch: 'trunk',
+			});
+			expect(result.ok).toBe(false);
+		});
+
+		it('keeps develop as the default when no policy was read', () => {
+			const result = lintCommitBranch({
+				...baseInput,
+				stagedFiles: ['README.md'],
+				currentBranch: 'develop',
+			});
+			expect(result.ok).toBe(true);
+		});
 	});
 });

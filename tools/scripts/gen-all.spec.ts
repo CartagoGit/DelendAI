@@ -55,16 +55,52 @@ describe('gen-all.script', () => {
 				cmd: 'bun tools/scripts/generate/from-manifests.script.ts',
 			},
 			{
+				name: 'preset-metadata',
+				cmd: 'bun tools/scripts/generate/preset-metadata.script.ts',
+			},
+			{
+				name: 'config-schema',
+				cmd: 'bun tools/scripts/types/generate-config-schema.script.ts',
+			},
+			{
+				name: 'stable-manifest',
+				cmd: 'bun tools/scripts/build/stable-manifest.script.ts',
+			},
+			{
+				name: 'managed-lazy-catalog',
+				cmd: 'bun tools/scripts/generate/managed-lazy-catalog.script.ts',
+			},
+			{
+				name: 'plugin-catalog-docs',
+				cmd: 'bun tools/scripts/docs/generate-catalog.script.ts',
+			},
+			{
+				name: 'core-public-inventory',
+				cmd: 'bun tools/scripts/inspect/core-public-inventory.script.ts --write',
+			},
+			{
+				name: 'provenance-truth',
+				cmd: 'bun tools/scripts/gen/provenance-truth.script.ts',
+			},
+			{
+				name: 'init-skill-inventory',
+				cmd: 'bun tools/scripts/gen/init-skill-inventory.script.ts',
+			},
+			{
+				name: 'authorities',
+				cmd: 'bun tools/scripts/gen/authorities.script.ts',
+			},
+			{
 				name: 'capability-matrix',
 				cmd: 'bun tools/scripts/gen/capability-matrix.script.ts',
 			},
 			{
-				name: 'agent-md',
-				cmd: 'bun tools/scripts/gen/agent-md.script.ts',
-			},
-			{
 				name: 'token-budget-dashboard',
 				cmd: 'bun tools/scripts/report/token-budget-dashboard.script.ts',
+			},
+			{
+				name: 'agent-md',
+				cmd: 'bun tools/scripts/gen/agent-md.script.ts',
 			},
 			{
 				name: 'host-hints',
@@ -93,6 +129,8 @@ describe('gen-all.script', () => {
 		const { io, commands } = createIo({
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts': 0,
 			'bun tools/scripts/generate/from-manifests.script.ts --check': 0,
+			'bun tools/scripts/gen/init-skill-inventory.script.ts --check': 0,
+			'bun tools/scripts/gen/authorities.script.ts --check': 0,
 			'bun tools/scripts/gen/capability-matrix.script.ts': 0,
 			'bun tools/scripts/gen/agent-md.script.ts': 0,
 			'bun tools/scripts/report/token-budget-dashboard.script.ts': 0,
@@ -106,6 +144,15 @@ describe('gen-all.script', () => {
 		expect(commands).toEqual([
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts',
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
+			'bun tools/scripts/generate/preset-metadata.script.ts --check',
+			'bun tools/scripts/types/generate-config-schema.script.ts --check',
+			'bun tools/scripts/build/stable-manifest.script.ts',
+			'bun tools/scripts/generate/managed-lazy-catalog.script.ts --check',
+			'bun tools/scripts/docs/generate-catalog.script.ts --check',
+			'bun tools/scripts/inspect/core-public-inventory.script.ts --check',
+			'bun tools/scripts/gen/provenance-truth.script.ts --check',
+			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
+			'bun tools/scripts/gen/authorities.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
 			// The token dashboard is NOT here: it measures rather than
@@ -168,6 +215,15 @@ describe('gen-all.script', () => {
 		expect(commands).toEqual([
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts',
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
+			'bun tools/scripts/generate/preset-metadata.script.ts --check',
+			'bun tools/scripts/types/generate-config-schema.script.ts --check',
+			'bun tools/scripts/build/stable-manifest.script.ts',
+			'bun tools/scripts/generate/managed-lazy-catalog.script.ts --check',
+			'bun tools/scripts/docs/generate-catalog.script.ts --check',
+			'bun tools/scripts/inspect/core-public-inventory.script.ts --check',
+			'bun tools/scripts/gen/provenance-truth.script.ts --check',
+			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
+			'bun tools/scripts/gen/authorities.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
 			// The measured step is absent here too — see the case above.
@@ -220,5 +276,12 @@ describe('drift attribution', () => {
 				new Set(['packages/core/src/lib/x.generated.ts']),
 			),
 		).toEqual(['packages/core/src/lib/x.generated.ts']);
+	});
+
+	it('writes every AGENT.md after the dashboard it quotes', () => {
+		const names = STEPS.map((step) => step.name);
+		expect(names.indexOf('agent-md')).toBeGreaterThan(
+			names.indexOf('token-budget-dashboard'),
+		);
 	});
 });

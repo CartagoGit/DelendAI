@@ -82,6 +82,7 @@ export const buildForgeWriteToolRegistrations = (
 		id: 'pr_create',
 		tags: ['forge', 'pull-request', 'network', 'write'],
 		effects: ['write', 'network'],
+		writeRoot: 'remote',
 		summary:
 			'Create a pull request or merge request with explicit confirmation.',
 		register: async (server) => {
@@ -102,6 +103,7 @@ export const buildForgeWriteToolRegistrations = (
 		id: 'pr_comment',
 		tags: ['forge', 'pull-request', 'network', 'write'],
 		effects: ['write', 'network'],
+		writeRoot: 'remote',
 		summary:
 			'Comment on a pull request or merge request with explicit confirmation.',
 		register: async (server) => {
@@ -122,6 +124,7 @@ export const buildForgeWriteToolRegistrations = (
 		id: 'issue_create',
 		tags: ['forge', 'issues', 'network', 'write'],
 		effects: ['write', 'network'],
+		writeRoot: 'remote',
 		summary: 'Create a remote issue with explicit confirmation.',
 		register: async (server) => {
 			server.registerTool(
@@ -141,6 +144,7 @@ export const buildForgeWriteToolRegistrations = (
 		id: 'delendai_issue_create',
 		tags: ['forge', 'issues', 'delendai', 'network', 'write'],
 		effects: ['write', 'network'],
+		writeRoot: 'remote',
 		summary:
 			'Create an internal delendai issue in the canonical delendai repository.',
 		register: async (server) => {

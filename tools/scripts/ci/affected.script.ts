@@ -411,6 +411,40 @@ export const gitDiffNames = (base: string, head: string): readonly string[] => {
 	}
 };
 
+/**
+ * The files `head` changed since it left `base`, each with whether it was
+ * added or deleted. Three dots: a candidate that is behind its base does
+ * not count the base's own later changes as its own. No rename detection:
+ * a rename is a deletion and an addition, both listing changes.
+ */
+export const gitDiffChanges = (
+	base: string,
+	head: string,
+	cwd: string = process.cwd(),
+): readonly { readonly path: string; readonly listing: boolean }[] => {
+	try {
+		const stdout = execFileSync(
+			'git',
+			['diff', '--name-status', '--no-renames', `${base}...${head}`],
+			{ encoding: 'utf8', cwd },
+		);
+		return stdout
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0)
+			.map((line) => {
+				const [status = '', ...rest] = line.split('\t');
+				return {
+					path: rest.join('\t'),
+					listing: status === 'A' || status === 'D',
+				};
+			});
+	} catch (cause) {
+		const reason = cause instanceof Error ? cause.message : String(cause);
+		throw new Error(`git diff failed for ${base}...${head}: ${reason}`);
+	}
+};
+
 export interface IWriteArtifactsOptions {
 	readonly outputPath: string;
 	readonly setPath: string;
@@ -436,11 +470,16 @@ export const writeAffectedArtifacts = (
 		rootFiles: result.rootFiles,
 		directByWorkspace: Object.fromEntries(result.directByWorkspace),
 	};
-	writeFileSync(options.outputPath, `${JSON.stringify(payload, null, 2)}\n`);
+	// Private: callers point these at the OS temp dir as often as at the repo.
+	writeFileSync(options.outputPath, `${JSON.stringify(payload, null, 2)}\n`, {
+		mode: 0o600,
+	});
 
 	const setDir = dirname(options.setPath);
 	if (!existsSync(setDir)) mkdirSync(setDir, { recursive: true });
-	writeFileSync(options.setPath, `${result.affected.join('\n')}\n`);
+	writeFileSync(options.setPath, `${result.affected.join('\n')}\n`, {
+		mode: 0o600,
+	});
 
 	if (options.vitestSetPath !== undefined) {
 		const vitestSetDir = dirname(options.vitestSetPath);
@@ -450,6 +489,7 @@ export const writeAffectedArtifacts = (
 		writeFileSync(
 			options.vitestSetPath,
 			`${result.vitestProjects.join('\n')}\n`,
+			{ mode: 0o600 },
 		);
 	}
 };

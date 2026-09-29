@@ -1,4 +1,11 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import {
+	mkdir,
+	mkdtemp,
+	readFile,
+	readdir,
+	rm,
+	symlink,
+} from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -198,6 +205,59 @@ describe('resolveAutoScaffold — proposals availability', async () => {
 		expect(outcome.kind).toBe('skipped');
 		if (outcome.kind === 'skipped') {
 			expect(outcome.reason).toBe('proposals-not-loaded');
+		}
+	});
+
+	/**
+	 * x00544 S3. This helper WRITES, and its output directory need not
+	 * exist yet — so the existing-path primitive cannot guard it. The
+	 * check is `realpathContained` immediately before the `mkdir`, which
+	 * is the last point where the real destination is known.
+	 *
+	 * `workspace/linked` never leaves the workspace as a string, which is
+	 * exactly why a lexical check accepted it while it named another tree.
+	 */
+	it('refuses to scaffold through a proposals dir symlinked out of the workspace', async () => {
+		const parent = await mkTmp();
+		const workspaceRoot = path.join(parent, 'workspace');
+		const outside = path.join(parent, 'outside');
+		await mkdir(workspaceRoot, { recursive: true });
+		await mkdir(outside, { recursive: true });
+		await symlink(outside, path.join(workspaceRoot, 'linked'), 'dir');
+
+		try {
+			const outcome = await resolveAutoScaffold(
+				{
+					auditsFound: 1,
+					skipped: [],
+					consensus: [],
+					findings: [
+						{
+							id: 'fatal-1',
+							titles: ['Titles persistences'],
+							worstSeverity: 'FATAL',
+							files: ['packages/core/src/x.ts'],
+							seenBy: ['gpt-4o'],
+						},
+					],
+					topActions: [],
+				},
+				{
+					enabled: true,
+					peerPlugins: makeRegistry(['proposals', 'audit']),
+					proposalsDir: 'linked',
+					workspaceRoot,
+				},
+			);
+
+			expect(outcome.kind).toBe('skipped');
+			if (outcome.kind === 'skipped') {
+				expect(outcome.reason).toBe('proposals-dir-escapes-workspace');
+			}
+			// Nothing may have been written into the outside tree.
+			expect(await readdir(outside)).toEqual([]);
+		} finally {
+			await rm(parent, { recursive: true, force: true });
 		}
 	});
 });

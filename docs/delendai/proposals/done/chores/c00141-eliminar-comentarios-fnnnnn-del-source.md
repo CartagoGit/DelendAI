@@ -10,10 +10,10 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
-shipped-in:
-    - f5836e9 # S1 lint + spec + baseline
     section: "Track H / c00141"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
+shipped-in:
+    - f5836e9 # S1 lint + spec + baseline
 related:
     - q00006
     - c00140 # generar datos cuantitativos (también limpia fuente)

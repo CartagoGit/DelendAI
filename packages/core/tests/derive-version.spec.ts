@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	applyBump,
 	classifyBump,
+	versionFromTagRef,
 } from '../../../tools/scripts/release/derive-version.script';
 
 describe('classifyBump (Conventional Commits → bump)', async () => {
@@ -67,5 +68,32 @@ describe('applyBump', async () => {
 
 	it('rejects a non-semver version', async () => {
 		expect(() => applyBump('latest', 'patch')).toThrow();
+	});
+});
+
+/**
+ * x00557 S3 — `release.yml` advertised a tag trigger that could never
+ * publish: on a tag push the checkout sits ON the tag, so the derivation
+ * range `lastTag..HEAD` is empty, the bump is `none`, and every publish
+ * step is skipped. A tag is not a question about the next version.
+ */
+describe('versionFromTagRef (publishing exactly the tag that triggered the run)', () => {
+	it('reads the version a release tag names', () => {
+		expect(versionFromTagRef('refs/tags/v1.2.3')).toBe('1.2.3');
+		expect(versionFromTagRef('v1.2.3')).toBe('1.2.3');
+		expect(versionFromTagRef('refs/tags/v10.0.0-rc.1')).toBe('10.0.0-rc.1');
+	});
+
+	it('answers nothing for anything that is not a release tag', () => {
+		for (const ref of [
+			'refs/heads/main',
+			'refs/tags/nightly',
+			'refs/tags/v1.2',
+			'refs/tags/1.2.3',
+			'',
+			undefined,
+		]) {
+			expect(versionFromTagRef(ref)).toBeNull();
+		}
 	});
 });

@@ -154,7 +154,10 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 	try {
 		const registered = (
 			assembled.server as unknown as {
-				_registeredTools: Record<string, { outputSchema?: z.ZodType }>;
+				_registeredTools: Record<
+					string,
+					{ outputSchema?: z.ZodType; inputSchema?: z.ZodType }
+				>;
 			}
 		)._registeredTools;
 		const tools: IHarvestedTool[] = [];
@@ -163,7 +166,17 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 			const schema = z.toJSONSchema(def.outputSchema, {
 				unrepresentable: 'any',
 			}) as IHarvestedTool['schema'];
-			tools.push({ name, schema });
+			tools.push({
+				name,
+				schema,
+				...(def.inputSchema === undefined
+					? {}
+					: {
+							input: z.toJSONSchema(def.inputSchema, {
+								unrepresentable: 'any',
+							}) as IHarvestedTool['schema'],
+						}),
+			});
 		}
 		tools.sort((a, b) => a.name.localeCompare(b.name));
 		return tools;

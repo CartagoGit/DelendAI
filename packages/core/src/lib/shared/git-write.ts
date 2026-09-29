@@ -25,6 +25,7 @@ export type {
 	ICommitAndPushResult,
 };
 import { execFile } from 'node:child_process';
+import { executionRootOr } from './execution-root';
 
 const ANSI_ESCAPE = String.fromCodePoint(0x1b);
 const ANSI_CSI_PATTERN = new RegExp(
@@ -59,7 +60,8 @@ import type {
 } from '../contracts/interfaces/force-push-authorization.interface';
 
 /**
- * Default runner: invoke the real `git` in `cwd` via async `execFile`, so
+ * Default runner: invoke the real `git` in `cwd` — or in the checkout the
+ * current call is bound to (`bind-write-root.ts`) — via async `execFile`, so
  * a slow/hanging git never blocks the MCP server's event loop. Never
  * throws: failures come back as `{ ok: false, reason }`.
  */
@@ -130,7 +132,7 @@ export const createGitRunner =
 				'git',
 				[...args],
 				{
-					cwd,
+					cwd: executionRootOr(cwd),
 					encoding: 'utf8',
 					timeout: timeoutMs,
 					maxBuffer: 8 * 1024 * 1024,

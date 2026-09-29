@@ -12,6 +12,9 @@
 - asArray
 - createLegacyWorkspaceFixture
 - hashWorkspaceTree
+- waitUntil
+- captureWorkingState
+- workingStateChanges
 
 ## Depends on
 
@@ -30,10 +33,11 @@ _(none)_
 - packages/test-kit/tests/src/lib/as-array.spec.ts
 - packages/test-kit/tests/src/lib/fake-partial.spec.ts
 - packages/test-kit/tests/src/lib/fake-tool-server.spec.ts
+- packages/test-kit/tests/src/lib/wait-until.helper.spec.ts
 
 ## Do not
 
-- Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
+- An agent does not run `git stash`: git refuses it for agents (`delendai guard`, reference-transaction), because every worktree shares one stash and stashed work is invisible to the work model. Commit, or checkpoint to your work ref, instead.
 - Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
 
 ## Token hotspots

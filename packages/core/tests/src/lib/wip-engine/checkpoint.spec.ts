@@ -84,6 +84,28 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
+	it('names the ref it was written for, once, whatever the caller wrote', async () => {
+		// x00646: the ref is the unit's identity. Recording it on the
+		// commit keeps the delivery attributable after a squash or a
+		// rebase has dropped both the ref and the merge that named it.
+		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
+
+		const result = await engine.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['src/alpha.ts'],
+			ref: AGENT_A_REF,
+			message:
+				'wip: agent a\n\nDelendai-Wip-Ref: refs/wip/someone-else/x-s1-g1',
+		});
+
+		const message = repo.git('show', '-s', '--format=%B', result.commit);
+		expect(
+			message
+				.split('\n')
+				.filter((line) => line.startsWith('Delendai-Wip-Ref:')),
+		).toEqual([`Delendai-Wip-Ref: ${AGENT_A_REF}`]);
+	});
+
 	it('captures only its own half of a rename that crosses a claim', async () => {
 		// A rename is a delete plus an add, and the two halves can fall
 		// under different owners. The engine records the half it owns
@@ -196,6 +218,29 @@ describe('createOrUpdateWipRef', () => {
 		expect(treePaths(repo, result.commit)).not.toContain(
 			'src/nested/gamma.ts',
 		);
+	});
+
+	it('creates no ref and no commit when the first checkpoint would be empty', async () => {
+		// The empty-tree guard used to sit behind `refExisted`, so it
+		// protected the SECOND checkpoint and never the first — and the
+		// first is the one that creates the branch. On this repository that
+		// minted 135 refs in 42 minutes, each one empty commit deep: they
+		// cannot be published, cannot be claimed, and tell the proposals
+		// engine a slice shipped while carrying not one changed byte.
+		const result = await engine.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['src/alpha.ts'],
+			ref: AGENT_A_REF,
+			message: 'feat(x00000): commit via slice S1',
+		});
+
+		expect(result.status).toBe('unchanged');
+		expect(result.commit).toBe(base);
+		// The ref itself must not exist: a branch nobody can publish and
+		// nobody can claim is litter that outlives whatever made it.
+		expect(
+			repo.git('for-each-ref', '--format=%(refname)', AGENT_A_REF),
+		).toBe('');
 	});
 
 	it('is idempotent: an unchanged scope keeps its digest and its commit', async () => {
@@ -390,5 +435,42 @@ describe('createOrUpdateWipRef', () => {
 		expect(
 			repo.git('for-each-ref', '--format=%(refname)', 'refs/wip'),
 		).toBe('');
+	});
+
+	it('claims a glob declaration by resolving it against the tree (x00562)', async () => {
+		// A proposal legitimately declares `src/**`. Refusing pathspec
+		// magic outright made every automatic checkpoint of such a slice
+		// fail with `unclaimable paths`, and no work ref moved at all.
+		repo.write('src/alpha.ts', 'export const alpha = 9;\n');
+		repo.write('src/beta.ts', 'export const beta = 9;\n');
+		repo.write('docs/readme.md', '# not claimed\n');
+		const result = await engine.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['src/**'],
+			ref: AGENT_A_REF,
+			message: 'wip: glob scope',
+		});
+		expect(result.status).toBe('created');
+		expect([...result.scope].sort()).toEqual([
+			'src/alpha.ts',
+			'src/beta.ts',
+		]);
+		// The checkpoint is "base, plus exactly my paths": the file
+		// outside the glob is the BASE version, not the dirty one.
+		expect(changedPaths(repo, AGENT_A_REF)).toEqual([
+			'src/alpha.ts',
+			'src/beta.ts',
+		]);
+	});
+
+	it('still refuses magic that resolves to nothing, rather than claiming everything', async () => {
+		const result = await engine.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['does-not-exist/**'],
+			ref: AGENT_A_REF,
+			message: 'wip: empty glob',
+		});
+		expect(result.status).toBe('failed');
+		expect(result.reason).toContain('no paths claimed');
 	});
 });

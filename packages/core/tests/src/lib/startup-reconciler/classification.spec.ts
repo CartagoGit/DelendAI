@@ -64,7 +64,7 @@ describe('finding classification', () => {
 
 describe('work ref parsing', () => {
 	const parser = compileWorkRefParser(
-		'wip/${agent}/${proposal}-${slice}-g${generation}',
+		'wip/${agent}/${proposal}-${slice}-g${generation}', // work-ref-shape: alternative
 		'wip/',
 	);
 
@@ -72,6 +72,7 @@ describe('work ref parsing', () => {
 		expect(parser?.namespace).toBe('refs/wip');
 		expect(parser?.parse('refs/wip/agent-a/f00065-s3-g7')).toEqual({
 			agent: 'agent-a',
+			kind: 'implement',
 			proposal: 'f00065',
 			slice: 's3',
 			generation: 7,
@@ -109,6 +110,7 @@ describe('work ref parsing', () => {
 
 			expect(dotted?.parse('refs/wip/a-1.f00065.s3.g7')).toEqual({
 				agent: 'a-1',
+				kind: 'implement',
 				proposal: 'f00065',
 				slice: 's3',
 				generation: 7,
@@ -123,6 +125,7 @@ describe('work ref parsing', () => {
 
 			expect(scored?.parse('refs/wip/a.1_f00065_s3_g7')).toEqual({
 				agent: 'a.1',
+				kind: 'implement',
 				proposal: 'f00065',
 				slice: 's3',
 				generation: 7,
@@ -137,6 +140,7 @@ describe('work ref parsing', () => {
 
 			expect(trailing?.parse('refs/wip/g7/agent-a.1_x')).toEqual({
 				agent: 'agent-a.1_x',
+				kind: 'implement',
 				proposal: '',
 				slice: '',
 				generation: 7,

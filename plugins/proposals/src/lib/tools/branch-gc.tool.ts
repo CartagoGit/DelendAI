@@ -79,6 +79,7 @@ export const buildBranchGcRegistration = (
 	return {
 		id: 'branch_gc',
 		effects: ['write'],
+		writeRoot: 'repository',
 		summary:
 			'Remove worktrees whose branch is merged into base, clean, and idle (dry-run default; unmerged branches are sacred).',
 		tags: ['coordination'],

@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-09-09T03:01:13.937Z"
+		"generatedAt": "2026-09-28T01:26:09.989Z"
 	},
 	"tools": [
 		{
@@ -756,6 +756,11 @@
 							],
 							"additionalProperties": false
 						}
+					},
+					"checkout": {
+						"type": "string",
+						"minLength": 1,
+						"description": "Absolute path to the working tree this write belongs in. Pass your own worktree, or the write lands in the server’s checkout — on the integration branch. Must be a working tree of this same repository. Omit for the server’s root."
 					}
 				},
 				"required": [
@@ -807,6 +812,18 @@
 						"type": "integer",
 						"minimum": 0,
 						"maximum": 9007199254740991
+					},
+					"nextAction": {
+						"type": "string"
+					},
+					"published": {
+						"type": "boolean"
+					},
+					"publishedRef": {
+						"type": "string"
+					},
+					"publishReason": {
+						"type": "string"
 					}
 				},
 				"required": [
@@ -814,7 +831,9 @@
 					"file",
 					"path",
 					"disjointnessIssues",
-					"indexCount"
+					"indexCount",
+					"nextAction",
+					"published"
 				],
 				"additionalProperties": false
 			}
@@ -846,9 +865,6 @@
 					},
 					"taskId": {
 						"type": "string"
-					},
-					"skipPeerReview": {
-						"type": "boolean"
 					}
 				},
 				"required": [
@@ -982,6 +998,9 @@
 							"testsTotal"
 						],
 						"additionalProperties": false
+					},
+					"commitHash": {
+						"type": "string"
 					}
 				},
 				"required": [
@@ -1082,6 +1101,18 @@
 					},
 					"quorumMessage": {
 						"type": "string"
+					},
+					"attributedTo": {
+						"type": "string"
+					},
+					"proposalClosed": {
+						"type": "boolean"
+					},
+					"proposalCloseBlocker": {
+						"type": "string"
+					},
+					"proposalReopened": {
+						"type": "boolean"
 					}
 				},
 				"required": [
@@ -1180,6 +1211,11 @@
 							"scoped",
 							"global"
 						]
+					},
+					"checkout": {
+						"type": "string",
+						"minLength": 1,
+						"description": "Absolute path to the working tree this write belongs in. Pass your own worktree, or the write lands in the server’s checkout — on the integration branch. Must be a working tree of this same repository. Omit for the server’s root."
 					}
 				},
 				"required": [

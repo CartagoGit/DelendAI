@@ -18,8 +18,13 @@
 
 import type { IResolvedDevelopmentPolicy } from '../../contracts/interfaces/development-policy.interface';
 import type { IStartupFinding } from '../contracts';
+import { overlapWith } from './checkout-overlap';
 import { finding } from '../finding-catalog';
-import type { IObservedRef, IStartupGitSeam } from '../seams.interface';
+import type {
+	IObservedRef,
+	IStartupGitSeam,
+	IWorktreeDirtiness,
+} from '../seams.interface';
 
 import type { ICheckoutPhaseResult } from './verify-checkout.interface';
 
@@ -46,7 +51,10 @@ const freshnessFindings = async (
 	expected: string,
 	head: string | undefined,
 ): Promise<readonly IStartupFinding[]> => {
-	const remote = await git.resolveRef(`refs/remotes/origin/${expected}`);
+	const remoteName = await remoteOf(git, expected);
+	const remote = await git.resolveRef(
+		`refs/remotes/${remoteName}/${expected}`,
+	);
 	if (remote === undefined || head === undefined)
 		return [
 			finding({
@@ -115,27 +123,108 @@ const freshnessFindings = async (
  *     with something blunter: the reason git refuses a fast-forward is
  *     always that it would not have been one.
  */
+/**
+ * The tree's state, from a seam that may not implement the tri-state
+ * answer yet. An absent `dirtyState` is treated as unknown-safe: the
+ * paths are still read, but a failure there cannot masquerade as clean.
+ */
+/**
+ * Which remote to judge currency against. Hard-coding `origin` while the
+ * fetch picked the first remote it found is how a project whose remote
+ * is `upstream` fetched from one repository and compared itself to
+ * another (x00558 S3).
+ */
+const remoteOf = async (
+	git: IStartupGitSeam,
+	integrationBranch: string,
+): Promise<string> =>
+	(git.integrationRemote === undefined
+		? undefined
+		: await git.integrationRemote(integrationBranch)) ?? 'origin';
+
+const dirtinessOf = async (
+	git: IStartupGitSeam,
+): Promise<IWorktreeDirtiness> => {
+	if (git.dirtyState !== undefined) return git.dirtyState();
+	const paths = await git.dirtyPaths();
+	return paths.length === 0 ? { kind: 'clean' } : { kind: 'dirty', paths };
+};
+
+/** How many overlapping paths a refusal names. */
+const OVERLAP_SHOWN = 5;
+
 const hydrate = async (
 	git: IStartupGitSeam,
 	expected: string,
 	head: string,
 	remote: string,
 ): Promise<readonly IStartupFinding[]> => {
-	const dirty = await git.dirtyPaths();
-	if (dirty.length > 0) {
+	// "Could not check" is not "clean". A fast-forward here is the only
+	// repair this phase performs on the tree, and performing it on
+	// evidence nobody gathered is the mistake — not the fast-forward,
+	// which git itself would refuse, but asserting a precondition that
+	// was never verified (x00558).
+	const state = await dirtinessOf(git);
+	if (state.kind === 'unknown') {
 		return [
 			finding({
 				code: 'checkout.behind-integration',
 				phase: 'checkout',
 				kind: 'note',
 				subject: expected,
-				message: `HEAD is on ${expected} but BEHIND its remote, and the tree has ${String(dirty.length)} uncommitted change(s), so it was left alone. Publishing from here would revert whatever landed in between: commit or set aside the changes, then boot again to advance it.`,
-				detail: { expected, head, remote, dirty: dirty.length },
+				message: `HEAD is on ${expected} but BEHIND its remote, and whether the tree is clean could NOT be determined (${state.reason}), so it was left alone. Nothing was advanced on an unchecked precondition.`,
+				detail: { expected, head, remote },
+			}),
+		];
+	}
+	const target = `refs/remotes/${await remoteOf(git, expected)}/${expected}`;
+	// Uncommitted edits hold the checkout back only where the advance
+	// would touch them. A fast-forward that changes none of the edited
+	// paths keeps every edit byte for byte (and git refuses one that
+	// would not); refusing it anyway froze the shared checkout for every
+	// agent over one stray edit — 20 commits behind on 2026-09-27, every
+	// agent running tools that old.
+	const overlap =
+		state.kind === 'dirty'
+			? await overlapWith(git, state.paths, target)
+			: [];
+	if (state.kind === 'dirty' && overlap !== undefined && overlap.length > 0) {
+		return [
+			finding({
+				code: 'checkout.behind-integration',
+				phase: 'checkout',
+				kind: 'note',
+				subject: expected,
+				message: `HEAD is on ${expected} but BEHIND its remote, and the advance would change ${String(overlap.length)} path(s) that carry uncommitted edits (${overlap.slice(0, OVERLAP_SHOWN).join(', ')}), so it was left alone. Commit or set aside those edits, then boot again to advance it.`,
+				detail: {
+					expected,
+					head,
+					remote,
+					dirty: state.paths.length,
+					overlapping: overlap.length,
+				},
+			}),
+		];
+	}
+	if (state.kind === 'dirty' && overlap === undefined) {
+		return [
+			finding({
+				code: 'checkout.behind-integration',
+				phase: 'checkout',
+				kind: 'note',
+				subject: expected,
+				message: `HEAD is on ${expected} but BEHIND its remote, and the tree has ${String(state.paths.length)} uncommitted change(s), so it was left alone. Publishing from here would revert whatever landed in between: commit or set aside the changes, then boot again to advance it.`,
+				detail: {
+					expected,
+					head,
+					remote,
+					dirty: state.paths.length,
+				},
 			}),
 		];
 	}
 
-	const advanced = await git.fastForward(`refs/remotes/origin/${expected}`);
+	const advanced = await git.fastForward(target);
 	if (!advanced.ok) {
 		return [
 			finding({
@@ -225,6 +314,34 @@ export const runCheckoutPhase = async (input: {
 			findings: [
 				...(await freshnessFindings(input.git, expected, head)),
 				...(await dirtinessFindings(input.git)),
+			],
+		};
+	}
+
+	// A branch that exists neither here nor on the remote is not one HEAD
+	// wandered away from: the policy names a branch that is gone, typically
+	// merged and deleted. Saying "HEAD moved" would send an agent to find a
+	// branch it cannot check out.
+	const integrationExists =
+		(await input.git.resolveRef(`refs/heads/${expected}`)) !== undefined ||
+		(await input.git.resolveRef(
+			`refs/remotes/${await remoteOf(input.git, expected)}/${expected}`,
+		)) !== undefined;
+	if (!integrationExists) {
+		return {
+			findings: [
+				finding({
+					code: 'checkout.integration-missing',
+					phase: 'checkout',
+					kind: 'blocker',
+					subject: expected,
+					message: `The development policy's integration branch \`${expected}\` does not exist locally or on its remote; it was probably merged and deleted. HEAD is on ${branch ?? `the detached commit ${head ?? 'unknown'}`}, and nothing was moved. Set \`development.branches.integration\` in delendai.config.json to the branch work now integrates into${branch === undefined ? '' : ` (the checkout is on \`${branch}\`)`}.`,
+					detail: {
+						expected,
+						...(branch === undefined ? {} : { branch }),
+						...(head === undefined ? {} : { head }),
+					},
+				}),
 			],
 		};
 	}

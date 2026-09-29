@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
 import { toolOk } from '@delendai/core/public';
 
 import {
@@ -88,7 +89,7 @@ export const buildDbRebuildToolRegistration = (
 				description:
 					'Preview a proposals database rebuild, or apply it only when --apply and --confirm match the proposed source SHA.',
 				inputSchema: dbRebuildInputSchema,
-				outputSchema: dbRebuildOutputSchema,
+				outputSchema: withOkEnvelope(dbRebuildOutputSchema),
 			},
 			async (args) => {
 				const parsed = dbRebuildInputSchema.parse(args ?? {});

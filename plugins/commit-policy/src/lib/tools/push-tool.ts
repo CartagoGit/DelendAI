@@ -187,6 +187,7 @@ export const buildPushToolRegistration = (
 		'Push through the policy engine: respects protectedBranches, force policy (with-lease|allow|never), and push.enabled master switch.',
 	tags: ['commit-policy', 'push', 'write'],
 	effects: ['write'],
+	writeRoot: 'remote',
 	register: async (server: McpServer) => {
 		server.registerTool(
 			`${options.namespacePrefix}_commit_policy_push`,

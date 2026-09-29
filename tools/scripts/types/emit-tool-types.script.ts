@@ -30,6 +30,8 @@ export interface IJsonSchemaNode {
 export interface IHarvestedTool {
 	readonly name: string;
 	readonly schema: IJsonSchemaNode;
+	/** The tool's input schema, when it declares one. */
+	readonly input?: IJsonSchemaNode;
 }
 
 /** Where each namespace prefix's generated module is written, and its label. */

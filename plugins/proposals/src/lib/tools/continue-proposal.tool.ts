@@ -6,6 +6,7 @@ import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 
+import { probeProposalsOnDisk } from '../proposals/backlog-on-disk';
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import {
 	deriveSliceStatuses,
@@ -63,6 +64,12 @@ export interface IContinueProposalToolOptions {
 	 * and never touch the real glossary or disk.
 	 */
 	readonly cascadeResolver?: ICascadePriorityResolver;
+	/**
+	 * Rebuild the index from the proposal files (`sync_proposals`' own
+	 * engine). Called when the files outnumber the index, so no agent is
+	 * told to run a step first (x00716).
+	 */
+	readonly refreshIndex?: () => Promise<void>;
 	/**
 	 * Engine-internal flag for `mode: "auto"`: when true, if the
 	 * normal cascade finds no actionable proposal (no entries in the
@@ -550,19 +557,49 @@ export const runContinueProposal = async (
 	}
 
 	// mode === 'auto' (serial): next actionable proposal by cascade.
-	const entries = await readProposalIndex(options.indexPathAbs);
+	const entries = await freshEntries(options);
 	const actionable = entries.filter(isActionable);
 	if (actionable.length === 0) {
 		if (options.includePausedFallback === true) {
 			const pausedPick = await pickFromPausedFallback(entries, options);
 			if (pausedPick !== null) return pausedPick;
 		}
-		return json({
-			kind: 'no-proposal',
-			reason: 'no actionable proposal in the index',
-			nextAction:
-				'Create a proposal under the proposals dir and run sync_proposals.',
-		});
+		// "There is no work" and "I have not looked properly" are
+		// different answers, and only one of them means create something.
+		//
+		// This said `Create a proposal…` to a project holding a `ready`
+		// proposal with a pending slice whose index had never been built.
+		// An agent that follows that creates a SECOND proposal for work
+		// that already exists, and a duplicate id is a documented way to
+		// freeze this repository's whole index.
+		const onDisk =
+			options.proposalsDirAbs === undefined
+				? ({ status: 'missing' } as const)
+				: await probeProposalsOnDisk(options.proposalsDirAbs);
+		if (onDisk.status === 'unreadable') {
+			return json({
+				kind: 'no-proposal',
+				reason: `the index knows ${String(entries.length)} proposal(s), and ${onDisk.dir} could not be read (${onDisk.reason}), so whether more exist is unknown`,
+				nextAction:
+					'Fix access to the proposals dir and run sync_proposals. Do NOT create a proposal while the dir cannot be read — the work may already be written.',
+			});
+		}
+		const counted = onDisk.status === 'ok' ? onDisk.count : 0;
+		return json(
+			counted > entries.length
+				? {
+						kind: 'no-proposal',
+						reason: `the index knows ${String(entries.length)} proposal(s); the proposals dir holds ${String(counted)} file(s)`,
+						nextAction:
+							'Run sync_proposals: the index is behind the proposals on disk. Do NOT create a proposal — the work may already be written.',
+					}
+				: {
+						kind: 'no-proposal',
+						reason: 'no actionable proposal in the index',
+						nextAction:
+							'Create a proposal under the proposals dir and run sync_proposals.',
+					},
+		);
 	}
 	// Anti-loop: an `in_progress`/`in-progress` proposal already covered
 	// by an active lock is being worked by someone. Selecting it again only
@@ -783,11 +820,36 @@ export const runContinueProposal = async (
 };
 
 /** Registration for `<prefix>_continue_proposal`. */
+/**
+ * The index entries, rebuilt first when the proposal files outnumber
+ * them. The files are the source of truth and the index derives from
+ * them: `auto_work` answered "run sync_proposals" instead, and in the
+ * shared checkout `sync_proposals` was refused as a loose edit, so an
+ * agent starting there could not get work at all (x00716).
+ */
+const freshEntries = async (
+	options: IContinueProposalToolOptions,
+): Promise<Awaited<ReturnType<typeof readProposalIndex>>> => {
+	const entries = await readProposalIndex(options.indexPathAbs);
+	if (
+		options.refreshIndex === undefined ||
+		options.proposalsDirAbs === undefined
+	) {
+		return entries;
+	}
+	const onDisk = await probeProposalsOnDisk(options.proposalsDirAbs);
+	if (onDisk.status !== 'ok' || onDisk.count <= entries.length)
+		return entries;
+	await options.refreshIndex();
+	return readProposalIndex(options.indexPathAbs);
+};
+
 export const buildContinueProposalRegistration = (
 	options: IContinueProposalToolOptions,
 ): IToolRegistration => ({
 	id: 'continue_proposal',
 	effects: ['write'],
+	writeRoot: 'repository',
 	summary:
 		'Next proposal by cascade (mode auto), or a parallel slice plan/claim (modes plan/claim).',
 	tags: ['work'],

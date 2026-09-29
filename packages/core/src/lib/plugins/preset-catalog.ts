@@ -100,6 +100,21 @@ export interface IPresetDefinition {
 	 * overwrite or shadow the chain presets above them.
 	 */
 	readonly independent?: boolean;
+	/**
+	 * Whether this preset lists only its `essential` tools in `tools/list`
+	 * by default, keeping `contextual` and `administrative` ones hidden but
+	 * callable through the router, `searchTools` and `resolveRoute`. A
+	 * workspace's `managedSurface.progressiveDisclosure` still wins.
+	 *
+	 * On for `swarm` and `full` (v00135): both ship `proposals`, whose 48
+	 * tools are a third of their static surface and whose 29
+	 * administrative tools are repair and diagnosis an agent rarely needs
+	 * as its next step. Measured on the native surface it saves 58,827 B
+	 * in each preset — swarm 236,176 -> 177,349 B, full 269,627 ->
+	 * 210,800 B — which brings both back under the hard ceilings their
+	 * temporary budget exceptions had raised.
+	 */
+	readonly progressiveDisclosure?: boolean;
 }
 
 type IPresetSeed = Omit<IPresetDefinition, 'summary' | 'budget'>;
@@ -170,6 +185,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 		id: 'swarm',
 		title: 'swarm',
 		role: PRESET_ROLES.swarm!,
+		progressiveDisclosure: true,
 		members: [
 			{ plugin: 'proposals' },
 			{ plugin: 'notification' },
@@ -186,6 +202,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 		id: 'full',
 		title: 'full',
 		role: PRESET_ROLES.full!,
+		progressiveDisclosure: true,
 		members: [
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'issues', hostOnly: true },
@@ -515,3 +532,17 @@ export const normalizePresetInput = (
 export const isPresetKind = (value: string | undefined): value is IPresetKind =>
 	typeof value === 'string' &&
 	(PRESET_KIND as readonly string[]).includes(value);
+
+/**
+ * Whether a surface hides `contextual` and `administrative` tools from
+ * `tools/list`: the workspace's explicit setting when it has one, the
+ * preset's default otherwise. An explicit `false` is an opt-out and is
+ * honoured, which is why the config value is not merely OR-ed in.
+ */
+export const resolveProgressiveDisclosure = (
+	configured: boolean | undefined,
+	presetId: string | undefined,
+): boolean =>
+	configured ??
+	PRESET_CATALOG.find((preset) => preset.id === presetId)
+		?.progressiveDisclosure === true;

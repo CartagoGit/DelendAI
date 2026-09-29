@@ -103,7 +103,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
 			permissions: ['filesystem-read', 'filesystem-write', 'process', 'network', 'git-read', 'git-write', 'env-read'],
 			tokenBudgetBytes: 4200,
-			toolPermissions: { 'commit_policy_status': ['git-read'], 'commit_policy_commit': ['git-write'], 'commit_policy_push': ['git-write'], 'commit_policy_run': ['git-write'], 'commit_policy_refresh_branch_protection': ['network', 'process'] },
+			toolPermissions: { 'commit_policy_status': ['git-read'], 'commit_policy_commit': ['git-write'], 'commit_policy_push': ['git-write'], 'commit_policy_run': ['git-write'], 'commit_policy_work_ref': ['git-write'], 'commit_policy_refresh_branch_protection': ['network', 'process'] },
 		},
 		{
 			origin: 'first-party',
@@ -191,7 +191,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'error-reporting',
 			package: '@delendai/error-reporting',
-			summary: 'Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.',
+			summary: 'Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off.',
 			tags: ['error-reporting', 'github', 'issues'],
 			permissions: ['filesystem-read', 'filesystem-write', 'network', 'forge-write'],
 			tokenBudgetBytes: 3500,
@@ -290,6 +290,14 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['issues', 'forge', 'triage'],
 			permissions: ['filesystem-read', 'filesystem-write', 'process', 'network', 'forge-read', 'forge-write', 'env-read'],
 			tokenBudgetBytes: 4900,
+			adoption: {
+				"from": "repo",
+				"option": "repo",
+				"launchPreset": "full",
+				"rationale": "GitHub issues wired for {value}; launch with --preset full (or add issues to --plugins).",
+				"whenWired": "Verify GitHub issues: run `{namespacePrefix}_setup_github` and confirm the {value} tier resolves.",
+				"whenNotWired": "(Optional) Wire GitHub issues later: run `{namespacePrefix}_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug."
+			},
 			toolPermissions: { 'issues_list': ['forge-read', 'network'], 'issues_fetch': ['forge-read', 'network'], 'issues_analyze': ['forge-read'], 'issues_ingest': ['forge-read', 'network'], 'issues_resolve': ['forge-write', 'network'], 'setup_github': ['forge-write', 'network', 'secrets'] },
 		},
 		{

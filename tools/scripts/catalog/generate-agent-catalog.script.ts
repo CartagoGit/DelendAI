@@ -26,12 +26,12 @@ import { mkdir, rm } from 'node:fs/promises';
 
 import {
 	ACTIONABLE_PROPOSAL_STATUSES,
-	PROPOSAL_STATUS_VALUES,
 	assembleCliConfig,
 	buildCatalog,
 	parseCliArgs,
+	readProposalsIndex,
 } from '@delendai/core/public';
-import { syncProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
+import { scanProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import type {
 	ICatalogSources,
@@ -63,18 +63,8 @@ export interface ISkillManifestFile {
 	readonly skills: readonly IManifestSkillEntry[];
 }
 
-interface IProposalIndexEntry {
-	readonly id?: string;
-	readonly title?: string;
-	readonly track?: string;
-	readonly status?: string;
-	readonly kind?: string;
-	readonly date?: string;
-}
-
 interface IProposalIndexFile {
 	readonly generated_at?: string;
-	readonly proposals?: readonly IProposalIndexEntry[];
 }
 
 export interface IArtifactSkill {
@@ -100,9 +90,25 @@ export interface IGeneratedAgentCatalogArtifact {
 	readonly mode: CatalogMode;
 	readonly tools: readonly IToolSummary[];
 	readonly skills: readonly IArtifactSkill[];
+	/**
+	 * There is deliberately no `byStatus` roll-up here.
+	 *
+	 * A count over every proposal in the repository is a property of the
+	 * REPOSITORY, not of a branch, and this artifact is checked in and
+	 * compared against its generator on the PR's **merge ref**. With N
+	 * candidates open, each one's merge ref sees a different total, so the
+	 * committed number can be right for at most one of them and every
+	 * merge invalidates the rest. Measured here: that single field —
+	 * `review: 36` against `review: 38` — was the whole content of the
+	 * drift diff on six consecutive candidates, and refreshing them only
+	 * moved the failure to whichever one merged last.
+	 *
+	 * Per-proposal entries below are branch-local facts and merge fine.
+	 * Anything that needs totals counts them at read time, which is what
+	 * `proposals_compact_status` already does.
+	 */
 	readonly proposals: {
 		readonly actionable: readonly IArtifactProposalSummary[];
-		readonly byStatus: Readonly<Record<IProposalSummary['status'], number>>;
 		readonly all?: readonly IArtifactProposalSummary[];
 	};
 }
@@ -124,6 +130,13 @@ export interface IGeneratorIo {
 	readonly now?: () => Date;
 	readonly fixedGeneratedAt?: string;
 	readonly loadTools?: (root: string) => Promise<readonly IToolSummary[]>;
+	/**
+	 * The proposal registry as the markdown describes it now, as index
+	 * JSON text, computed without writing anything. Defaults to the real
+	 * read-only scan. A test that feeds the registry file directly as its
+	 * input answers `undefined`, meaning "read the file as it is".
+	 */
+	readonly scanRegistry?: (root: string) => Promise<string | undefined>;
 }
 
 export interface IGenerationResult {
@@ -140,6 +153,11 @@ export interface ICliResult {
 	readonly exitCode: number;
 	readonly generation?: IGenerationResult;
 }
+
+const scanRegistryFromMarkdown = async (
+	root: string,
+): Promise<string | undefined> =>
+	(await scanProposalRegistry(root, DEFAULT_PATH_LAYOUT)).text;
 
 const defaultIo = (): IGeneratorIo => ({
 	readText: async (absPath) => {
@@ -194,25 +212,6 @@ const parseJsonFile = async <T>(
 		);
 	}
 };
-
-const proposalKindFromId = (id: string): IProposalSummary['kind'] => {
-	const prefix = id[0]?.toLowerCase();
-	if (prefix === 'f') return 'feat';
-	if (prefix === 'r') return 'refactor';
-	if (prefix === 'c') return 'chore';
-	if (prefix === 'd') return 'docs';
-	if (prefix === 'q') return 'plan';
-	if (prefix === 'a') return 'audit';
-	if (prefix === 'x') return 'fix';
-	return 'unspecified';
-};
-
-const normalizeProposalStatus = (
-	status: string | undefined,
-): IProposalSummary['status'] =>
-	PROPOSAL_STATUS_VALUES.includes(status as IProposalSummary['status'])
-		? (status as IProposalSummary['status'])
-		: 'unspecified';
 
 const readSkillSummaries = async (
 	root: string,
@@ -275,46 +274,32 @@ const readProposalSummaries = async (
 	readonly generatedAt: string;
 }> => {
 	const proposalIndexPath = join(root, DEFAULT_PROPOSALS_INDEX_PATH);
-	// The index is a gitignored cache artifact (x00052): the MCP server
-	// rebuilds it lazily on the next `auto_work` / `continue_proposal`
-	// call, but a fresh checkout — like the CI runner behind the `drift`
-	// workflow — has no server and no cache, only the checked-in proposal
-	// markdown under `docs/delendai/proposals/`. Without this self-heal
-	// the generator threw "proposal index not found" on every CI run
-	// (the artifact was never actually stale, the cache was just absent),
-	// which gen-all reported as a generator crash rather than real drift.
-	if ((await io.readText(proposalIndexPath)) === undefined) {
-		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT);
-	}
+	// The catalog is derived from the proposals that exist (x00625), and
+	// it is read, never repaired (x00629). x00625 got the first half by
+	// running the registry SYNC before reading, and the sync reconciles:
+	// it can move misfiled proposals, archive, unblock, rewrite the index
+	// and level SQLite. This generator is what `catalog:check` and
+	// `gen:all --check` run, so checking whether the catalog was stale
+	// could change the proposals it was checking. Now the registry is
+	// scanned in memory and read from there; nothing is written, and the
+	// index file on disk is left as it was.
+	const scanned = await (io.scanRegistry ?? scanRegistryFromMarkdown)(root);
+	const readText = (absolutePath: string): Promise<string | undefined> =>
+		scanned !== undefined && absolutePath === proposalIndexPath
+			? Promise.resolve(scanned)
+			: io.readText(absolutePath);
 	const parsed = await parseJsonFile<IProposalIndexFile>(
 		proposalIndexPath,
-		io.readText,
+		readText,
 		'proposal index',
 	);
-	const proposals = (parsed.proposals ?? [])
-		.filter(
-			(
-				entry,
-			): entry is Required<Pick<IProposalIndexEntry, 'id'>> &
-				IProposalIndexEntry => typeof entry.id === 'string',
-		)
-		.map((entry) => ({
-			id: entry.id,
-			title: entry.title ?? entry.id,
-			track: entry.track ?? 'unspecified',
-			status: normalizeProposalStatus(entry.status),
-			kind:
-				entry.kind === 'feat' ||
-				entry.kind === 'fix' ||
-				entry.kind === 'refactor' ||
-				entry.kind === 'chore' ||
-				entry.kind === 'docs' ||
-				entry.kind === 'plan' ||
-				entry.kind === 'audit'
-					? entry.kind
-					: proposalKindFromId(entry.id),
-			date: entry.date ?? '',
-		}));
+	// The host's own reader, so the catalog and the running server cannot
+	// disagree about a proposal's kind or status.
+	const proposals = await readProposalsIndex(
+		root,
+		dirname(dirname(DEFAULT_PROPOSALS_INDEX_PATH)),
+		(absolutePath) => readText(absolutePath),
+	);
 	return {
 		proposals,
 		generatedAt: parsed.generated_at ?? '1970-01-01T00:00:00.000Z',
@@ -392,12 +377,6 @@ const buildArtifact = (
 		skills: snapshot.skills,
 		proposals: {
 			actionable,
-			byStatus: Object.fromEntries(
-				PROPOSAL_STATUS_VALUES.map((status) => [
-					status,
-					snapshot.proposalStatusCounts[status],
-				]),
-			) as Record<IProposalSummary['status'], number>,
 			...(snapshot.mode === 'full' ? { all: artifactProposals } : {}),
 		},
 	};

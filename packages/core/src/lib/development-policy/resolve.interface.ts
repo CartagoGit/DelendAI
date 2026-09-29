@@ -10,8 +10,12 @@
 /** The `development` block, exactly as it may appear in the config file. */
 export interface IDevelopmentConfigInput {
 	readonly profile?: string | undefined;
+	readonly workRefs?:
+		| { readonly visibility?: string | undefined }
+		| undefined;
 	readonly branches?:
 		| {
+				readonly namespacePrefix?: string | undefined;
 				readonly integration?: string | undefined;
 				readonly release?: string | undefined;
 				readonly workRefTemplate?: string | undefined;
@@ -41,6 +45,19 @@ export interface IDevelopmentConfigInput {
 				readonly requiredChecks?: readonly string[] | undefined;
 				readonly requireLatestIntegration?: boolean | undefined;
 				readonly mergeGreenProgressContinuously?: boolean | undefined;
+				readonly publication?:
+					| {
+							readonly granularity?: string | undefined;
+							readonly adaptive?:
+								| {
+										readonly maxSlices?: number | undefined;
+										readonly maxChangedLines?:
+											| number
+											| undefined;
+								  }
+								| undefined;
+					  }
+					| undefined;
 				readonly requiredApprovals?: number | undefined;
 				readonly releaseRequiredApprovals?: number | undefined;
 				readonly releaseRequiredChecks?: readonly string[] | undefined;

@@ -32,6 +32,23 @@ runs:
           with:
               fetch-depth: ${{ inputs.fetch-depth }}
 
+        # A pull request's run checks out a detached merge commit, while the
+        # run after it merges has the integration branch checked out BY
+        # NAME. Anything that depends on the checked-out branch was green on
+        # the pull request and red on the integration branch (#465 turned
+        # develop red for five merges that way). The merge commit is what
+        # the integration branch will hold, so the run puts it on a local
+        # branch of that name: the same tree, on the same branch, as the
+        # run the merge triggers. Only the local checkout changes; nothing
+        # is pushed, and no base resolution reads a local branch (they pass
+        # the base commit, or origin/<base>).
+        - name: check out the merge on the branch it merges into
+          if: ${{ github.event_name == 'pull_request' && github.base_ref != '' }}
+          shell: bash
+          env:
+              BASE_REF: ${{ github.base_ref }}
+          run: git checkout -q -B "$BASE_REF"
+
         - name: setup-bun
           uses: oven-sh/setup-bun@v2
           with:

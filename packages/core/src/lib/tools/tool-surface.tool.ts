@@ -102,24 +102,27 @@ export const buildToolSearchToolRegistration = (input: {
 			{
 				title: 'DelendAI Search Tools',
 				description:
-					'Search the loaded tool catalog by query, plugin/namespace, tag, or active state. Returns callable names plus the knowledge id for the long description.',
+					'Search the loaded tool catalog by query, plugin/namespace, tag, or active state. Returns callable names ranked by relevance plus the knowledge id for the long description; found=false with a suggestion when nothing matches with confidence.',
 				inputSchema: z.object({
 					query: z.string().optional(),
 					activeOnly: z.boolean().optional(),
 					plugin: z.string().optional(),
 					tag: z.string().optional(),
 					limit: z.number().int().min(1).max(100).optional(),
+					minScore: z.number().int().min(0).optional(),
 				}),
 				outputSchema: z.object({
 					entries: z.array(SEARCH_ENTRY),
+					found: z.boolean(),
+					suggestion: z.string().optional(),
 				}),
 			},
 			async (args) =>
-				toolJson({
-					entries: requireToolSurfaceRuntime(
-						input.runtimeAccess,
-					).searchTools(args),
-				}),
+				toolJson(
+					requireToolSurfaceRuntime(input.runtimeAccess).rankTools(
+						args,
+					),
+				),
 		);
 	},
 });

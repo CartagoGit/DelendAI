@@ -70,6 +70,11 @@ const main = async (): Promise<void> => {
 			2,
 		)}\n`,
 	);
+	// The OTHER projection is levelled by the same act that wrote the
+	// registry; this script reports what that act did.
+	if (result.projection.lines.length > 0) {
+		process.stderr.write(`${result.projection.lines.join('\n')}\n`);
+	}
 	if (result.errors.length > 0) {
 		// The JSON above goes to stdout, and EVERY caller of this script
 		// redirects stdout to /dev/null (`bun run sync:proposals >/dev/null`

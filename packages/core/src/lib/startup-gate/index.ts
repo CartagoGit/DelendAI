@@ -43,3 +43,7 @@ export {
 	createStartupGovernanceSeam,
 	type IGovernanceSeamOptions,
 } from './governance-seam';
+export {
+	type IStartCheckoutHydrationInput,
+	startCheckoutHydration,
+} from './start-checkout-hydration';

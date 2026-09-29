@@ -1,11 +1,9 @@
-import { randomBytes } from 'node:crypto';
-import { mkdir, open, rename, rm } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
-import { toolJson } from '@delendai/core/public';
+import { toolJson, writeFileAtomic } from '@delendai/core/public';
 
 import {
 	PLAYWRIGHT_INSTALL_HINT,
@@ -106,29 +104,9 @@ const screenshotPathFor = (
 	timestamp = Date.now(),
 ): string => join(pluginCacheDir, 'browser', `${timestamp}.png`);
 
-const writeScreenshotAtomic = async (
-	path: string,
-	data: Uint8Array,
-): Promise<void> => {
-	await mkdir(dirname(path), { recursive: true });
-	// `randomBytes`, not `Math.random`: the temp name is a file another
-	// process could predict and pre-create as a symlink, and the cost of
-	// guessing right here is a screenshot written somewhere else.
-	const tempPath = `${path}.${Date.now().toString(36)}-${randomBytes(6).toString('hex')}.tmp`;
-	try {
-		const handle = await open(tempPath, 'w');
-		try {
-			await handle.write(data);
-			await handle.sync();
-		} finally {
-			await handle.close();
-		}
-		await rename(tempPath, path);
-	} catch (error) {
-		await rm(tempPath, { force: true }).catch(() => undefined);
-		throw error;
-	}
-};
+/** The screenshot lands whole or not at all: the core's atomic writer. */
+const writeScreenshotAtomic = (path: string, data: Uint8Array): Promise<void> =>
+	writeFileAtomic(path, data);
 
 const defaultProbeTool = async (): Promise<{
 	readonly unavailable?: boolean;
@@ -229,6 +207,7 @@ export const buildBrowserInspectToolRegistrations = (
 		id: 'browser_screenshot',
 		tags: ['browser', 'page', 'screenshot', 'network'],
 		effects: ['network', 'write'],
+		writeRoot: 'host-state',
 		summary: 'Capture a page screenshot into the private plugin cache.',
 		register: async (server) => {
 			server.registerTool(

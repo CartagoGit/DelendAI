@@ -19,7 +19,16 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { type IWorkflowRun, parkedRuns } from './keep-the-queue-moving.script';
+import { fakePartial } from '@delendai/test-kit';
+
+import {
+	armable,
+	branchModelPulls,
+	type IPullRequest,
+	type IWorkflowRun,
+	parkedRuns,
+	armCandidates,
+} from './keep-the-queue-moving.script';
 
 const run = (name: string, conclusion: string | null): IWorkflowRun => ({
 	id: name.length,
@@ -103,5 +112,172 @@ describe('what the summary is allowed to claim', () => {
 	// and needs its owner to push.
 	it('says which candidates are waiting on a refresh', () => {
 		expect(source).toMatch(/behind\.push\(/u);
+	});
+
+	// x00557: a stuck queue reported success. Run #216 was green while
+	// every candidate sat behind the integration branch, so the one part
+	// of a run anybody reads at a glance said the opposite of the truth.
+	it('ends red when the queue is stuck', () => {
+		expect(source).toMatch(/process\.exitCode\s*=\s*1/u);
+		expect(source).toMatch(/stuckExit\(behind\.length, failing\.length\)/u);
+	});
+
+	it('stays green when nothing is behind and nothing is red', () => {
+		expect(source).toMatch(/if \(behind === 0 && red === 0\) return;/u);
+	});
+});
+
+describe('the workflow and the script agree (x00557)', () => {
+	const workflow = readFileSync(
+		join(
+			__dirname,
+			'..',
+			'..',
+			'..',
+			'.github',
+			'workflows',
+			'keep-the-queue-moving.yml',
+		),
+		'utf8',
+	);
+
+	// The workflow said "the merge itself refreshes the rest" and passed
+	// `--apply` long after the script stopped refreshing anything. A
+	// promise a job cannot keep is worse than no promise: it is what made
+	// a green run mean "the queue is moving".
+	//
+	// Stated as "not on THIS script's line" rather than "nowhere in the
+	// file". The blunt version was true only while this script was the
+	// only command here; the moment the job gained steps that DO read
+	// `--apply` — `forge:refresh`, `forge:artifacts` — it began failing
+	// for a correct workflow, which is a test asserting something it was
+	// never trying to say.
+	it('does not pass a flag the script does not read', () => {
+		const ours = workflow
+			.split('\n')
+			.filter((line) => line.includes('keep-the-queue-moving.script.ts'));
+		expect(ours.length).toBeGreaterThan(0);
+		for (const line of ours) expect(line).not.toContain('--apply');
+	});
+
+	it('does not claim to refresh candidates', () => {
+		expect(workflow).not.toMatch(/merge itself refreshes/u);
+	});
+});
+
+describe('a candidate arms itself (x00575)', () => {
+	const pull = (over: Partial<IPullRequest> = {}): IPullRequest => ({
+		number: 1,
+		title: 'a candidate',
+		auto_merge: null,
+		head: { sha: 'abc', ref: 'delendai/pr/claude-opus-5/x1-S1-g1/t' },
+		...over,
+	});
+
+	it('arms a candidate this model produced', () => {
+		expect(armable([pull()], 'delendai/pr/')).toHaveLength(1);
+	});
+
+	it('leaves one that is already armed alone', () => {
+		expect(
+			armable(
+				[pull({ auto_merge: { merge_method: 'merge' } })],
+				'delendai/pr/',
+			),
+		).toHaveLength(0);
+	});
+
+	it('never speaks for a pull request from outside the namespace', () => {
+		// Somebody else's branch is somebody else's decision.
+		expect(
+			armable(
+				[pull({ head: { sha: 'a', ref: 'feature/theirs' } })],
+				'delendai/pr/',
+			),
+		).toHaveLength(0);
+	});
+
+	it('leaves a draft alone, because a draft says it is not ready', () => {
+		expect(armable([pull({ draft: true })], 'delendai/pr/')).toHaveLength(
+			0,
+		);
+	});
+
+	it('follows the namespace the project configured, not a hard-coded one', () => {
+		const theirs = pull({
+			head: { sha: 'a', ref: 'acme/pr/claude-opus-5/x1-S1-g1/t' },
+		});
+		expect(armable([theirs], 'acme/pr/')).toHaveLength(1);
+		expect(armable([theirs], 'delendai/pr/')).toHaveLength(0);
+	});
+});
+
+/**
+ * x00554 S1 — arm with the method the project declared.
+ *
+ * The flag used to be a literal `--merge`, which is right only for
+ * projects shaped like this one. `worktree-pr` — the profile recommended
+ * for a swarm — declares `squash`.
+ */
+describe('armCandidates honours the declared merge method (x00554 S1)', () => {
+	const candidate = (number: number) =>
+		fakePartial<IPullRequest, 'number' | 'auto_merge' | 'draft' | 'head'>({
+			number,
+			auto_merge: null,
+			draft: false,
+			head: { ref: 'delendai/pr/claude/x1-S1-g1/topic', sha: 'abc1234' },
+		});
+
+	const flagsUsed = (method: 'merge' | 'squash' | 'rebase'): string[] => {
+		const seen: string[] = [];
+		armCandidates([candidate(7)], 'delendai/pr/', method, (args) => {
+			seen.push([...args].join(' '));
+			return '';
+		});
+		return seen;
+	};
+
+	it('passes --squash for a project that declared squash', () => {
+		expect(flagsUsed('squash')).toStrictEqual([
+			'pr merge 7 --auto --squash',
+		]);
+	});
+
+	it('passes --rebase for a project that declared rebase', () => {
+		expect(flagsUsed('rebase')).toStrictEqual([
+			'pr merge 7 --auto --rebase',
+		]);
+	});
+
+	it('still passes --merge for a project that declared merge', () => {
+		expect(flagsUsed('merge')).toStrictEqual(['pr merge 7 --auto --merge']);
+	});
+});
+
+describe('branchModelPulls', () => {
+	const BRANCHES = { integration: 'develop', release: 'main' };
+	const open = (
+		number: number,
+		head: string,
+		base: string,
+	): IPullRequest => ({
+		number,
+		title: 't',
+		auto_merge: null,
+		head: { sha: 'abc', ref: head },
+		base: { ref: base },
+	});
+
+	it('finds the promotion and the forward sync, which nobody arms', () => {
+		const found = branchModelPulls(
+			[
+				open(641, 'develop', 'main'),
+				open(642, 'delendai/pr/forward-sync-abc123', 'develop'),
+				open(643, 'delendai/pr/a/implement/x1-S1-g1/t', 'develop'),
+				open(644, 'develop', 'feature'),
+			],
+			BRANCHES,
+		);
+		expect(found.map((pull) => pull.number)).toEqual([641, 642]);
 	});
 });

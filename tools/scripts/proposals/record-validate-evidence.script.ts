@@ -34,137 +34,29 @@
  * lefthook, humans).
  */
 import { spawn } from 'node:child_process';
-import { mkdir } from 'node:fs/promises';
-import { basename, dirname, join } from 'node:path';
+import { join } from 'node:path';
 
+import { SafeWorkspaceReader } from '@delendai/core/public';
 import {
-	SafeWorkspaceReader,
-	withFileMutex,
-	writeFileAtomic,
-} from '@delendai/core/public';
-
-/**
- * Kept byte-identical to `VALIDATE_LOG_RELATIVE_PATH` in
- * `plugins/proposals/src/lib/contracts/constants/proposal-paths.constant.ts`.
- * `record-validate-evidence.script.spec.ts` asserts the two agree, so a
- * move of the reader's constant fails the suite instead of silently
- * orphaning the writer again.
- */
-export const VALIDATE_JOURNAL_RELATIVE_PATH = join(
-	'.cache',
-	'delendai',
-	'results',
-	'logs',
-	'validate.jsonl',
-);
+	appendValidateJournalEntry,
+	buildValidateJournalEntry,
+	VALIDATE_LOG_RELATIVE_PATH as VALIDATE_JOURNAL_RELATIVE_PATH,
+} from '@delendai/proposals/public';
 
 /** The chain this wrapper delegates to. */
 export const VALIDATE_RUN_SCRIPT = 'validate:run';
 
-export interface IValidateJournalEntry {
-	readonly result: 'pass' | 'fail';
-	readonly timestamp: string;
-	readonly exitCode: number;
-	readonly logPath: string;
-	readonly command: string;
-	/**
-	 * The steps that failed, on a failing run only.
-	 *
-	 * Without these the journal records *that* validate is red and
-	 * nothing about *why*, so the closing tools could only answer an
-	 * agent with "run validate" — which it had just done. The agent then
-	 * runs it again, gets the same refusal, and loops. The names are the
-	 * cheapest possible thing that turns that refusal into work.
-	 */
-	readonly failedSteps?: readonly string[];
-}
-
-export interface IValidateJournalDeps {
-	readonly ensureDir: (path: string) => Promise<void>;
-	readonly readText: (path: string) => Promise<string>;
-	readonly writeText: (path: string, text: string) => Promise<void>;
-	readonly withLock?: <T>(path: string, work: () => Promise<T>) => Promise<T>;
-}
-
-/**
- * Derive the journal entry for a finished run. Pure, so the spec can
- * assert the exit-code → `result` mapping without touching the disk.
- */
-export const buildValidateJournalEntry = (input: {
-	readonly exitCode: number;
-	readonly timestamp: string;
-	readonly logPath: string;
-	readonly command?: string;
-	readonly failedSteps?: readonly string[];
-}): IValidateJournalEntry => ({
-	result: input.exitCode === 0 ? 'pass' : 'fail',
-	timestamp: input.timestamp,
-	exitCode: input.exitCode,
-	logPath: input.logPath,
-	command: input.command ?? `bun run ${VALIDATE_RUN_SCRIPT}`,
-	// Only on a failing run, and only when there is something to name: a
-	// passing entry has no blockers, and an empty array would read as
-	// "red for no reason".
-	...(input.exitCode !== 0 &&
-	input.failedSteps !== undefined &&
-	input.failedSteps.length > 0
-		? { failedSteps: [...input.failedSteps] }
-		: {}),
-});
-
-const createDeps = (): IValidateJournalDeps => ({
-	ensureDir: async (path) => {
-		await mkdir(path, { recursive: true });
-	},
-	readText: async (path) =>
-		new SafeWorkspaceReader(dirname(path))
-			.readText(basename(path))
-			.then((value) => value.content)
-			.catch((error: unknown) => {
-				if (
-					error &&
-					typeof error === 'object' &&
-					'code' in error &&
-					error.code === 'ENOENT'
-				) {
-					return '';
-				}
-				throw error;
-			}),
-	writeText: async (path, text) => {
-		await writeFileAtomic(path, text);
-	},
-	withLock: async (path, work) => withFileMutex(path, work),
-});
-
-/**
- * Append one entry to the journal. Read-modify-write under the same file
- * mutex the proposals plugin uses, so a concurrent agent's run cannot
- * truncate another's line.
- */
-export const appendValidateJournalEntry = async (input: {
-	readonly workspaceRoot: string;
-	readonly entry: IValidateJournalEntry;
-	readonly deps?: IValidateJournalDeps;
-}): Promise<string> => {
-	const deps = input.deps ?? createDeps();
-	const path = join(input.workspaceRoot, VALIDATE_JOURNAL_RELATIVE_PATH);
-	const write = async () => {
-		const existing = await deps.readText(path);
-		const prefix =
-			existing === '' || existing.endsWith('\n')
-				? existing
-				: `${existing}\n`;
-		await deps.writeText(path, `${prefix}${JSON.stringify(input.entry)}\n`);
-	};
-	await deps.ensureDir(dirname(path));
-	if (deps.withLock !== undefined) {
-		await deps.withLock(path, write);
-	} else {
-		await write();
-	}
-	return path;
-};
+// The journal has one writer, beside its reader in the proposals plugin,
+// so a project without this script journals the same way (x00712).
+export {
+	appendValidateJournalEntry,
+	buildValidateJournalEntry,
+	VALIDATE_LOG_RELATIVE_PATH as VALIDATE_JOURNAL_RELATIVE_PATH,
+} from '@delendai/proposals/public';
+export type {
+	IValidateJournalDeps,
+	IValidateJournalEntry,
+} from '@delendai/proposals/public';
 
 export interface IValidateStepResult {
 	readonly step: string;
@@ -290,6 +182,7 @@ export const main = async (
 			exitCode,
 			timestamp: new Date().toISOString(),
 			logPath: join(workspaceRoot, VALIDATE_JOURNAL_RELATIVE_PATH),
+			command: `bun run ${VALIDATE_RUN_SCRIPT}`,
 			failedSteps: results
 				.filter((entry) => entry.exitCode !== 0)
 				.map((entry) => entry.step),

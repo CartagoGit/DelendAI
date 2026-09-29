@@ -294,6 +294,7 @@ export const buildGitWriteToolRegistrations = (
 				'Stage and commit files with a Conventional Commit message.',
 			tags: ['git', 'write'],
 			effects: ['write'],
+			writeRoot: 'caller-checkout',
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_commit`,
@@ -323,6 +324,7 @@ export const buildGitWriteToolRegistrations = (
 				'Push the current branch, optionally with --force-with-lease.',
 			tags: ['git', 'write'],
 			effects: ['write'],
+			writeRoot: 'remote',
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_push`,

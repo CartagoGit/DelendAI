@@ -16,4 +16,10 @@ export interface IStartupMutexOptions {
 	readonly clock: IStartupClock;
 	readonly pid?: number | undefined;
 	readonly ttlMs?: number | undefined;
+	/**
+	 * Whether a process on THIS machine is alive. A holder on this machine
+	 * whose process is gone is abandoned now, not when the TTL runs out.
+	 * Injectable for tests.
+	 */
+	readonly isAlive?: ((pid: number) => boolean) | undefined;
 }

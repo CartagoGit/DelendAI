@@ -1,4 +1,6 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -13,7 +15,13 @@ import {
 	buildScaffoldFileName,
 	serializeScaffold,
 } from '../../../../src/lib/issue-scaffold';
-import type { IGithubIssueDetail } from '../../../../src/lib/contracts';
+import type {
+	IGithubClient,
+	IGithubIssueDetail,
+} from '../../../../src/lib/contracts';
+import { buildIssuesToolRegistrations } from '../../../../src/lib/tools';
+import { bindWriteRoot } from '@delendai/core/lib/shared/bind-write-root';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
 
 /** Create a scaffold file for issue #n in the given dir. Returns the file name. */
 const seedScaffold = async (
@@ -206,5 +214,61 @@ describe('issues_resolve', async () => {
 
 		const written = await readFile(join(scaffoldDirAbs, fileName), 'utf8');
 		expect(written).not.toContain('dismiss_reason:');
+	});
+});
+
+describe('issues_resolve acts in the checkout the call names (x00638 S4)', () => {
+	it("resolves a scaffold only the worktree has, and leaves the server's tree alone", async () => {
+		const parent = await mkdtemp(join(tmpdir(), 'issues-x638-'));
+		try {
+			const server = join(parent, 'checkout');
+			const worktree = join(parent, 'worktree');
+			const git = (cwd: string, ...args: string[]) =>
+				execFileSync('git', args, { cwd, encoding: 'utf8' });
+			git(parent, 'init', '-q', '-b', 'develop', 'checkout');
+			git(
+				server,
+				'-c',
+				'user.email=s@e.t',
+				'-c',
+				'user.name=S',
+				'commit',
+				'-q',
+				'--allow-empty',
+				'-m',
+				'base',
+			);
+			git(server, 'worktree', 'add', '-q', '-b', 'work', worktree);
+			const scaffoldRel = '.cache/delendai/issues';
+			await mkdir(join(worktree, scaffoldRel), { recursive: true });
+			await seedScaffold(join(worktree, scaffoldRel), 7, 'Only here');
+
+			const resolve = buildIssuesToolRegistrations({
+				namespacePrefix: 'issues',
+				repo: 'o/r',
+				scaffoldDirAbs: join(server, scaffoldRel),
+				repoRoot: server,
+				githubClient: fakePartial<IGithubClient>({}),
+			}).find((tool) => tool.id === 'issues_resolve');
+			if (resolve === undefined) throw new Error('no issues_resolve');
+			let handler: ((args: unknown) => unknown) | undefined;
+			await bindWriteRoot(resolve, server).register(
+				createFakeToolServer({
+					onRegisterTool: ({ handler: registered }) => {
+						handler = registered;
+					},
+				}),
+			);
+			const result = (await handler?.({
+				number: 7,
+				resolution: 'dismissed',
+				dismissReason: 'duplicate',
+				checkout: worktree,
+			})) as { readonly isError?: boolean };
+			expect(result.isError).toBeFalsy();
+			expect(existsSync(join(server, scaffoldRel))).toBe(false);
+		} finally {
+			await rm(parent, { recursive: true, force: true });
+		}
 	});
 });

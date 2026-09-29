@@ -55,6 +55,9 @@
 						"eager"
 					]
 				},
+				"progressiveDisclosure": {
+					"type": "boolean"
+				},
 				"idleTtlMs": {
 					"anyOf": [
 						{
@@ -68,6 +71,18 @@
 					]
 				},
 				"maxWarmPlugins": {
+					"anyOf": [
+						{
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 9007199254740991
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"minWarmMs": {
 					"anyOf": [
 						{
 							"type": "integer",
@@ -114,9 +129,33 @@
 					"type": "string",
 					"minLength": 1
 				},
+				"guardHooks": {
+					"type": "string",
+					"enum": [
+						"install",
+						"report",
+						"off"
+					]
+				},
+				"workRefs": {
+					"type": "object",
+					"properties": {
+						"visibility": {
+							"type": "string",
+							"enum": [
+								"visible",
+								"hidden"
+							]
+						}
+					},
+					"additionalProperties": false
+				},
 				"branches": {
 					"type": "object",
 					"properties": {
+						"namespacePrefix": {
+							"type": "string"
+						},
 						"integration": {
 							"type": "string",
 							"minLength": 1
@@ -206,6 +245,36 @@
 						},
 						"mergeGreenProgressContinuously": {
 							"type": "boolean"
+						},
+						"publication": {
+							"type": "object",
+							"properties": {
+								"granularity": {
+									"type": "string",
+									"enum": [
+										"slice",
+										"proposal",
+										"adaptive"
+									]
+								},
+								"adaptive": {
+									"type": "object",
+									"properties": {
+										"maxSlices": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 9007199254740991
+										},
+										"maxChangedLines": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 9007199254740991
+										}
+									},
+									"additionalProperties": false
+								}
+							},
+							"additionalProperties": false
 						},
 						"requiredApprovals": {
 							"type": "integer",

@@ -54,11 +54,12 @@
 // no ctx.effects adapter for SQLite promotion and inventing one here
 // would only add a layer around `@delendai/proposals-sqlite`.
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
 
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
 import { toolOk } from '@delendai/core/public';
 import {
 	applyValidatedCandidate,
@@ -362,21 +363,73 @@ export const preflightProposalFiles = (
 };
 
 /**
+ * The git directory for a workspace root, whether it is a checkout or a
+ * worktree.
+ *
+ * In a worktree `.git` is a FILE — `gitdir: /abs/path/.git/worktrees/x`
+ * — not a directory, so every read under it failed and the caller
+ * silently attributed the projection to `workspace` instead of to a
+ * commit. Every agent works in a worktree, which is the whole point of
+ * the work-ref model, so that was the normal case: the run record could
+ * not say which commit the projection described.
+ */
+const gitDirOf = (workspaceRoot: string): string => {
+	const dotGit = join(workspaceRoot, '.git');
+	// Read once: a directory (EISDIR) or nothing at all is the git dir
+	// itself; a file is a worktree's pointer to it.
+	let pointer: string;
+	try {
+		pointer = readFileSync(dotGit, 'utf8').trim();
+	} catch {
+		return dotGit;
+	}
+	const target = /^gitdir:\s*(.+)$/u.exec(pointer)?.[1];
+	return target === undefined
+		? dotGit
+		: isAbsolute(target)
+			? target
+			: join(workspaceRoot, target);
+};
+
+/** A loose ref's sha, read once; `undefined` when it is packed or absent. */
+const readLooseRef = (path: string): string | undefined => {
+	try {
+		return readFileSync(path, 'utf8').trim();
+	} catch {
+		return undefined;
+	}
+};
+
+/** The shared git directory: `commondir` when there is one, else itself. */
+const commonDirOf = (gitDir: string): string => {
+	try {
+		const target = readFileSync(join(gitDir, 'commondir'), 'utf8').trim();
+		return isAbsolute(target) ? target : join(gitDir, target);
+	} catch {
+		return gitDir;
+	}
+};
+
+/**
  * Resolve the commit the projection is attributed to by reading the git
  * plumbing directly — no subprocess, and a workspace that is not a git
  * checkout still reconciles (attributed to `workspace`).
  */
 export const resolveHeadCommit = (workspaceRoot: string): string => {
-	const gitDir = join(workspaceRoot, '.git');
+	const gitDir = gitDirOf(workspaceRoot);
+	// HEAD is PER-WORKTREE; the refs it names are not. A worktree's git
+	// directory holds its own HEAD and a `commondir` pointing at the
+	// shared one, where `refs/` and `packed-refs` actually live. Reading
+	// both from the same place found HEAD and then no ref, which is how
+	// this fell through to `workspace` for every agent.
+	const commonDir = commonDirOf(gitDir);
 	try {
 		const head = readFileSync(join(gitDir, 'HEAD'), 'utf8').trim();
 		if (!head.startsWith('ref:')) return head;
 		const ref = head.slice(4).trim();
-		const looseRef = join(gitDir, ref);
-		if (existsSync(looseRef)) {
-			return readFileSync(looseRef, 'utf8').trim();
-		}
-		const packed = readFileSync(join(gitDir, 'packed-refs'), 'utf8');
+		const loose = readLooseRef(join(commonDir, ref));
+		if (loose !== undefined) return loose;
+		const packed = readFileSync(join(commonDir, 'packed-refs'), 'utf8');
 		for (const line of packed.split('\n')) {
 			const [sha, name] = line.trim().split(' ');
 			if (name === ref && sha !== undefined) return sha;
@@ -541,7 +594,9 @@ export const buildDbReconcileToolRegistration = (
 					description:
 						'Projects the proposal markdown tree into the operational SQLite database (.cache/delendai/state/proposals.sqlite) through the shadow -> validate -> promote pipeline. Markdown stays the source of truth; the database is a derived, deterministically rebuildable projection. Creates the database when it does not exist, updates it when it does, and is idempotent: two runs over the same tree yield the same logical digest and duplicate no rows. When staging validation fails the active database is left untouched and the reason is returned.',
 					inputSchema: proposalsDbReconcileInputSchema,
-					outputSchema: proposalsDbReconcileOutputSchema,
+					outputSchema: withOkEnvelope(
+						proposalsDbReconcileOutputSchema,
+					),
 				},
 				async (args) => {
 					const parsed = proposalsDbReconcileInputSchema.parse(

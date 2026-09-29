@@ -32,7 +32,12 @@ const COMMUNITY_SOURCE: IPluginRegistrySource = {
 	],
 };
 
-const buildHandler = async () => {
+const buildHandler = async (
+	options: {
+		readonly sources?: readonly IPluginRegistrySource[];
+		readonly defaultLimit?: number;
+	} = { sources: [COMMUNITY_SOURCE] },
+) => {
 	let handler:
 		| ((args: {
 				query?: string;
@@ -43,7 +48,10 @@ const buildHandler = async () => {
 		| undefined;
 	const registration = buildPluginSearchRegistration({
 		namespacePrefix: 'delendai',
-		sources: [COMMUNITY_SOURCE],
+		...(options.sources !== undefined ? { sources: options.sources } : {}),
+		...(options.defaultLimit !== undefined
+			? { defaultLimit: options.defaultLimit }
+			: {}),
 	});
 	await registration.register({
 		registerTool: (
@@ -78,5 +86,38 @@ describe('buildPluginSearchRegistration (registry)', () => {
 		expect(result.entries.some((entry) => entry.id === 'search')).toBe(
 			true,
 		);
+	});
+
+	it('filters by tags', async () => {
+		const handler = await buildHandler();
+		const result = parseToolResult(
+			await handler({ origin: 'community', tags: ['demo'] }),
+		);
+
+		expect(result.entries.map((entry) => entry.id)).toEqual([
+			'community-demo',
+		]);
+	});
+
+	it('caps the answer at the requested limit and says it truncated', async () => {
+		const handler = await buildHandler();
+		const result = parseToolResult(await handler({ limit: 1 }));
+
+		expect(result.entries).toHaveLength(1);
+		expect(result.truncated).toBe(true);
+	});
+
+	it('applies the host default limit when the caller gives none', async () => {
+		const handler = await buildHandler({ defaultLimit: 2 });
+		const result = parseToolResult(await handler({}));
+
+		expect(result.entries).toHaveLength(2);
+	});
+
+	it('finds no community entries when no community source is configured', async () => {
+		const handler = await buildHandler({});
+		const result = parseToolResult(await handler({ origin: 'community' }));
+
+		expect(result.total).toBe(0);
 	});
 });

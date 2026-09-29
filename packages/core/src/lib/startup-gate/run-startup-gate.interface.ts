@@ -31,6 +31,11 @@ export type IStartupGateOutcome =
 			readonly report: IStartupReconciliationReport;
 			/** Optional phases with no collaborator bound this boot. */
 			readonly notExecutedPhases: readonly IStartupPhase[];
+			/**
+			 * Why recorded repair resolutions were ignored, if any were.
+			 * Empty when the workspace file is clean or absent.
+			 */
+			readonly resolutionErrors: readonly string[];
 	  };
 
 export interface IRunStartupGateInput {

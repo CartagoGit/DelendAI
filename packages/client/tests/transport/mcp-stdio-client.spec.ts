@@ -1,6 +1,8 @@
 import z from 'zod';
 import { describe, expect, it } from 'vitest';
 
+import { withServerWords } from '../../src/lib/transport/mcp-stdio-client';
+
 import {
 	McpStdioClient,
 	McpToolError,
@@ -375,5 +377,48 @@ describe('payloadFromResult', async () => {
 		expect(() => payloadFromResult({ content: [] })).toThrow(
 			'MCP tool returned no structured or text payload',
 		);
+	});
+});
+
+/**
+ * What a caller is told when the server it spawned refuses to start.
+ *
+ * `Connection closed` with no cause was the whole of it: the server's own
+ * diagnosis was piped into a stream nobody read.
+ */
+describe('withServerWords (x00611)', () => {
+	it('carries the server own sentence, which is the only actionable part', () => {
+		const said = withServerWords(
+			'Failed to connect to MCP server',
+			'delendai.config.json declares a policy that cannot be honoured:\n  - [enforced-governance-needs-checks] name a required check\n',
+		);
+
+		expect(said).toContain('The server said:');
+		expect(said).toContain('enforced-governance-needs-checks');
+		expect(said).toContain('name a required check');
+	});
+
+	it('says the server was silent rather than implying it said nothing useful', () => {
+		// A caller must be able to tell "it explained itself" from "it
+		// vanished": those are different problems.
+		expect(withServerWords('Failed to connect', '   \n\n')).toContain(
+			'exited without saying why',
+		);
+	});
+
+	it('keeps the last words, not the first, when a server dies mid-flood', () => {
+		const flood = Array.from(
+			{ length: 200 },
+			(_unused, index) => `line ${String(index)}`,
+		).join('\n');
+
+		const said = withServerWords('Failed', flood);
+
+		expect(said).toContain('line 199');
+		expect(said).not.toContain('line 100');
+	});
+
+	it('indents what the server said, so it reads as a quotation', () => {
+		expect(withServerWords('Failed', 'boom')).toContain('\n  boom');
 	});
 });

@@ -60,6 +60,12 @@ export interface ICoreProposalsBoundaryScanResult {
 	}[];
 	readonly violations: readonly ICoreProposalsBoundaryViolation[];
 	readonly expired: readonly ICoreProposalsBoundaryViolation[];
+	/**
+	 * Exceptions for a file under the scan root that no match used: the
+	 * coupling they excused is gone, and an exception left behind would
+	 * silently excuse it again if it came back.
+	 */
+	readonly stale?: readonly ICoreProposalsBoundaryException[];
 }
 
 interface IBoundaryTokenRule {
@@ -102,6 +108,14 @@ const TOKEN_RULES: readonly IBoundaryTokenRule[] = [
 export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundaryException[] =
 	[
 		{
+			file: 'packages/core/src/lib/work-units/publication-target.service.ts',
+			needle: '/proposals/',
+			until: '2027-03-31',
+			classification: 'adapter',
+			reason: 'x00735 moved the unit-of-work engine from the CLI into core so every host runs one engine; it finds and reads the proposal a unit belongs to by the proposals layout. r00043 moves that knowledge behind an adapter the proposals plugin provides.',
+			kind: 'path',
+		},
+		{
 			file: 'packages/core/src/public/index.ts',
 			needle: '../lib/cli/read-proposals-index',
 			until: '2027-03-31',
@@ -115,94 +129,6 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 			classification: 'compatibility',
 			reason: 'Public compatibility re-export keeps the validate-evidence schema on its historic subpath while downstream consumers migrate.',
 			kind: 'import',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: '# Proposals',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'Adoption copy still documents the proposals store layout until the workflow store bootstrap moves fully behind plugin-owned adapters.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: 'This folder is the proposals store managed by the delendai',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'Bootstrap prose still explains the proposals store to adopters.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: '`proposals` plugin. Each proposal is one markdown file with',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'The adoption adapter still names the proposals plugin explicitly.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: 'Create proposals with the `create_proposal` tool (it allocates the',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'Bootstrap guidance still points at the current proposals authoring tool ids.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: 'index is regenerated at any time via `sync_proposals`.',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'Bootstrap guidance still references the plugin-owned index refresh command.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: '${docsDir}/proposals/${folder}/.gitkeep',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'The adoption adapter still materializes the proposals store layout under docsDir.',
-			kind: 'path',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: '${docsDir}/proposals/README.md',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'The adoption adapter still materializes the proposals README path under docsDir.',
-			kind: 'path',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: 'Bootstrapped proposals store files (.gitkeep per status + README).',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'The write estimate still reports the proposals store as an adapter-owned artifact.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adoption-assessment.service.ts',
-			needle: 'Estimated adopt_project write surface (config + agents/instructions + proposals store).',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'The assessment summary still reports the plugin-backed proposals store write surface.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: 'move them with `proposal_transition`',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'Bootstrap guidance still points at the current proposals workflow tool ids.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: 'ask `get_proposal_workflow` for the full convention.',
-			until: '2027-03-31',
-			classification: 'adapter',
-			reason: 'Bootstrap guidance still points at the current proposals workflow tool ids.',
-			kind: 'literal',
 		},
 		{
 			file: 'packages/core/src/lib/bootstrap/body-content/prompt-bodies.ts',
@@ -250,30 +176,6 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 			until: '2027-03-31',
 			classification: 'host-composition',
 			reason: 'The discovery snapshot still exposes a dedicated proposals section to hosts.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/cli/assemble-core-tools.ts',
-			needle: 'bootstraps the proposals',
-			until: '2027-03-31',
-			classification: 'host-composition',
-			reason: 'The no-config onboarding message still describes the proposals store bootstrap explicitly.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/cli/assemble-skills.ts',
-			needle: 'do not hand-create proposals or docs outside the server workflow.',
-			until: '2027-03-31',
-			classification: 'host-composition',
-			reason: 'The config-mismatch guidance still names proposals as part of the docs workflow boundary.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/cli/assemble-skills.ts',
-			needle: 'config + agents + proposals store',
-			until: '2027-03-31',
-			classification: 'host-composition',
-			reason: 'First-run guidance still refers to the proposals store as part of host composition.',
 			kind: 'literal',
 		},
 		{
@@ -333,22 +235,6 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 			kind: 'literal',
 		},
 		{
-			file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
-			needle: 'docs/proposals/retired/issues',
-			until: '2027-03-31',
-			classification: 'compatibility',
-			reason: 'Plugin defaults still point issues scaffolding at the historical proposals docs tree.',
-			kind: 'path',
-		},
-		{
-			file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
-			needle: 'docs/delendai/proposals/done/audits',
-			until: '2027-03-31',
-			classification: 'compatibility',
-			reason: 'Plugin defaults still point audits at the historical proposals docs tree.',
-			kind: 'path',
-		},
-		{
 			file: 'packages/core/src/lib/prompts/agent-bootstrap.prompt.ts',
 			needle: 'tools/skills/proposals',
 			until: '2027-03-31',
@@ -381,27 +267,11 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 			kind: 'literal',
 		},
 		{
-			file: 'packages/core/src/lib/resources/agent-catalog-resource.ts',
-			needle: 'proposal registry.',
-			until: '2027-03-31',
-			classification: 'host-composition',
-			reason: 'The catalog resource still documents the full proposal registry view for hosts.',
-			kind: 'literal',
-		},
-		{
 			file: 'packages/core/src/lib/scaffold/scaffold-host.ts',
 			needle: 'proposals',
 			until: '2027-03-31',
 			classification: 'host-composition',
 			reason: 'Generated host instructions still describe the proposals workflow when that plugin is loaded.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/scaffold/scaffold-host.ts',
-			needle: 'delendai --plugins=proposals',
-			until: '2027-03-31',
-			classification: 'host-composition',
-			reason: 'Generated host instructions still show the proposals plugin launch example explicitly.',
 			kind: 'literal',
 		},
 		{
@@ -655,22 +525,35 @@ export const scanCoreProposalsBoundaryLint = async (
 		matches.push(...collectBoundaryMatches(content, abs, relPath));
 	}
 	const classified = applyBoundaryExceptions(matches, undefined, now);
+	const used = new Set<ICoreProposalsBoundaryException>([
+		...classified.allowed.map((entry) => entry.exception),
+		...classified.expired.flatMap((entry) =>
+			entry.exception !== undefined ? [entry.exception] : [],
+		),
+	]);
+	const scanPrefix = `${relative(root, absRoot).split('\\').join('/')}/`;
+	const stale = CORE_PROPOSALS_BOUNDARY_EXCEPTIONS.filter(
+		(exception) =>
+			exception.file.startsWith(scanPrefix) && !used.has(exception),
+	);
 	return {
 		scannedFiles: files.length,
 		matches,
 		allowed: classified.allowed,
 		violations: classified.violations,
 		expired: classified.expired,
+		stale,
 	};
 };
 
 export const formatReport = (
 	result: Pick<
 		ICoreProposalsBoundaryScanResult,
-		'scannedFiles' | 'allowed' | 'violations' | 'expired'
+		'scannedFiles' | 'allowed' | 'violations' | 'expired' | 'stale'
 	>,
 ): string => {
-	if (result.violations.length === 0) {
+	const stale = result.stale ?? [];
+	if (result.violations.length === 0 && stale.length === 0) {
 		return (
 			`core-proposals-boundary: ok. ` +
 			`${result.scannedFiles} file(s) scanned; ` +
@@ -679,9 +562,14 @@ export const formatReport = (
 		);
 	}
 	const lines: string[] = [
-		`core-proposals-boundary: ${result.violations.length} violation(s); ${result.allowed.length} explicit exception(s) active; ${result.expired.length} expired.`,
+		`core-proposals-boundary: ${result.violations.length} violation(s); ${result.allowed.length} explicit exception(s) active; ${result.expired.length} expired; ${stale.length} stale.`,
 		'',
 	];
+	for (const exception of stale) {
+		lines.push(
+			`  ${exception.file} stale-exception: nothing matches ${JSON.stringify(exception.needle)} any more; remove the exception.`,
+		);
+	}
 	for (const violation of result.violations) {
 		lines.push(
 			`  ${violation.relPath}:${violation.line} [${violation.kind}] ${violation.code}`,
@@ -701,10 +589,57 @@ export const formatReport = (
 	return `${lines.join('\n')}\n`;
 };
 
+/**
+ * How long before an exception expires the gate starts saying so.
+ *
+ * An expired exception fails the gate on every pull request at once, the
+ * day it expires, whatever the pull request changed: the date is the
+ * deadline, and nothing announced it. A month of warnings on every run
+ * is enough time to retire the coupling or extend the exception on
+ * purpose.
+ */
+export const EXPIRY_WARNING_DAYS = 30;
+
+/** The dates on which active exceptions expire within the warning window, with how many expire on each. */
+export const expiringSoon = (
+	allowed: ICoreProposalsBoundaryScanResult['allowed'],
+	now: Date,
+	days: number = EXPIRY_WARNING_DAYS,
+): readonly { readonly until: string; readonly count: number }[] => {
+	const horizon = now.getTime() + days * 86_400_000;
+	const counts = new Map<string, number>();
+	for (const { exception } of allowed) {
+		const expiry = Date.parse(`${exception.until}T23:59:59.999Z`);
+		if (Number.isNaN(expiry) || expiry > horizon) continue;
+		counts.set(exception.until, (counts.get(exception.until) ?? 0) + 1);
+	}
+	return [...counts.entries()]
+		.sort(([a], [b]) => a.localeCompare(b))
+		.map(([until, count]) => ({ until, count }));
+};
+
+/** The warning lines, plain or as forge annotations. */
+export const formatExpiryWarnings = (
+	expiring: readonly { readonly until: string; readonly count: number }[],
+	annotate: boolean,
+): readonly string[] =>
+	expiring.map(({ until, count }) => {
+		const text = `${String(count)} core-proposals-boundary exception(s) expire on ${until}; from then on this gate fails every run. Retire the coupling, or extend the exception on purpose.`;
+		return annotate
+			? `::warning title=core-proposals-boundary::${text}`
+			: `core-proposals-boundary: warning: ${text}`;
+	});
+
 export const main = async (): Promise<number> => {
 	const result = await scanCoreProposalsBoundaryLint();
+	for (const line of formatExpiryWarnings(
+		expiringSoon(result.allowed, new Date()),
+		process.env.GITHUB_ACTIONS === 'true',
+	)) {
+		process.stdout.write(`${line}\n`);
+	}
 	const report = formatReport(result);
-	if (result.violations.length === 0) {
+	if (result.violations.length === 0 && (result.stale ?? []).length === 0) {
 		process.stdout.write(report);
 		return 0;
 	}

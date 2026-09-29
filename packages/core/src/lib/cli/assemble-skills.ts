@@ -378,17 +378,18 @@ export const assembleSkills = async (
 		? ' ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.'
 		: '';
 	// S1: when the config file's docsDir points nowhere, sending the
-	// agent into auto_work would have it "work" an empty proposals layout —
-	// the exact silent failure this diagnostic exists to prevent. Route it
-	// to fixing the config first instead.
+	// agent to work would have it work an empty layout — the exact silent
+	// failure this diagnostic exists to prevent. Route it to fixing the
+	// config first instead.
 	// When there is NO config file at all, the very first action is
-	// the one-call self-config (`adopt_project`) — before auto_work, before
+	// the one-call self-config (`adopt_project`) — before any work, before
 	// analyze_project. That is the "delendai self-configures on first use"
-	// contract: one call writes config + agents + proposals store.
+	// contract: one call writes the config, the agents and whatever the
+	// loaded plugins contribute.
 	const recommendedNextAction = docsDirMissing
-		? `Config mismatch: docsDir "${docsDir}" does not exist in this workspace (see configIssues). Fix delendai.config.json or scaffold the layout (delendai init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.`
+		? `Config mismatch: docsDir "${docsDir}" does not exist in this workspace (see configIssues). Fix delendai.config.json or scaffold the layout (delendai init) BEFORE starting work; do not hand-create workflow files or docs outside the server tools.`
 		: !configPresent
-			? `Call ${corePrefix}_overview, then ${corePrefix}_adopt_project to self-configure this project (config + agents + proposals store) in one call before starting work.`
+			? `Call ${corePrefix}_overview, then ${corePrefix}_adopt_project to self-configure this project (config, agents and what the loaded plugins contribute) in one call before starting work.`
 			: workflowState.recommendedNextActionText + rulesClause;
 
 	return {

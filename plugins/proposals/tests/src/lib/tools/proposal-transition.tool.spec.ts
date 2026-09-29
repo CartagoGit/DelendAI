@@ -934,6 +934,172 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		expect(body.to).toBe('done');
 	});
 
+	describe('the integration branch certification vouches for a close', () => {
+		const approvedSlice = [
+			'## Slices',
+			'',
+			'### S1 — work',
+			'- **Status**: done',
+			'- review-state: done',
+			'- review-implementer: alice',
+			'- review-reviewer: bob',
+			'- review-log: approved by bob',
+			'',
+		].join('\n');
+		const certify = async (...lines: readonly [string, string][]) => {
+			const path = join(
+				root,
+				'.cache',
+				'delendai',
+				'results',
+				'logs',
+				'integration-certification.jsonl',
+			);
+			await mkdir(dirname(path), { recursive: true });
+			await writeFile(
+				path,
+				lines
+					.map(
+						([sha, state]) =>
+							`${JSON.stringify({ sha, state, timestamp: '2026-09-26T10:00:00.000Z' })}\n`,
+					)
+					.join(''),
+			);
+		};
+		/**
+		 * The integration branch: the shipped commit, then the certified
+		 * one, then a later merge. `offtip` was never on it.
+		 */
+		const line = ['30551533', 'certtip', 'newtip'];
+		const isAncestor = (a = '', b = '') =>
+			line.includes(a) &&
+			line.includes(b) &&
+			line.indexOf(a) <= line.indexOf(b);
+		const containing: IGitRunner = async (args) =>
+			args[0] === 'merge-base'
+				? { ok: isAncestor(args[2], args[3]), output: '' }
+				: args[0] === 'rev-parse'
+					? // The integration tip is the certified commit.
+						{ ok: true, output: 'certtip\n' }
+					: FAKE_GIT_MV(args);
+
+		const close = async (id: string) => {
+			await writeProposal(
+				root,
+				'review',
+				`${id}-cert.md`,
+				{
+					id,
+					status: 'review',
+					type: 'feat',
+					'shipped-in': '[30551533]',
+				},
+				approvedSlice,
+			);
+			await writePeerReviewLog(options.peerReviewLogPathAbs!, [
+				{
+					kind: 'transition',
+					ts: '2026-07-25T10:00:00.000Z',
+					proposalId: id,
+					from: 'in-progress',
+					to: 'review',
+				},
+				{
+					kind: 'review',
+					ts: '2026-07-25T10:01:00.000Z',
+					proposalId: id,
+					sliceId: 'S1',
+					action: 'approve',
+					implementer: 'alice',
+					reviewer: 'bob',
+					verdict: 'approved',
+				},
+			]);
+			return runProposalTransition(
+				{ id, to: 'done', reason: 'every slice approved' },
+				{
+					...options,
+					gitRunner: containing,
+					validateEvidenceDeps: { readValidateLog: async () => [] },
+				},
+			);
+		};
+
+		it('closes with no local validate when the newest certified run contains the shipped commit', async () => {
+			await certify(['certtip', 'certified']);
+			const result = await close('f00975');
+			expect(result.isError).toBeUndefined();
+			expect(JSON.parse(result.content[0]?.text ?? '{}').to).toBe('done');
+		});
+
+		it('refuses when the certified commit was never on the integration branch', async () => {
+			await certify(['offtip', 'certified']);
+			const result = await close('f00978');
+			expect(result.isError).toBe(true);
+			expect(JSON.parse(result.content[0]?.text ?? '{}').error).toBe(
+				'validate required',
+			);
+		});
+
+		it('closes while the integration branch has moved past the certified commit (x00706)', async () => {
+			await certify(['certtip', 'certified']);
+			const moved: IGitRunner = async (args) =>
+				args[0] === 'rev-parse'
+					? { ok: true, output: 'newtip\n' }
+					: containing(args);
+			await writeProposal(
+				root,
+				'review',
+				'f00977-cert.md',
+				{
+					id: 'f00977',
+					status: 'review',
+					type: 'feat',
+					'shipped-in': '[30551533]',
+				},
+				approvedSlice,
+			);
+			await writePeerReviewLog(options.peerReviewLogPathAbs!, [
+				{
+					kind: 'transition',
+					ts: '2026-07-25T10:00:00.000Z',
+					proposalId: 'f00977',
+					from: 'in-progress',
+					to: 'review',
+				},
+				{
+					kind: 'review',
+					ts: '2026-07-25T10:01:00.000Z',
+					proposalId: 'f00977',
+					sliceId: 'S1',
+					action: 'approve',
+					implementer: 'alice',
+					reviewer: 'bob',
+					verdict: 'approved',
+				},
+			]);
+			const result = await runProposalTransition(
+				{ id: 'f00977', to: 'done', reason: 'every slice approved' },
+				{
+					...options,
+					gitRunner: moved,
+					validateEvidenceDeps: { readValidateLog: async () => [] },
+				},
+			);
+			expect(result.isError).toBeUndefined();
+			expect(JSON.parse(result.content[0]?.text ?? '{}').to).toBe('done');
+		});
+
+		it('still refuses when the newest verdict is red', async () => {
+			await certify(['certtip', 'certified'], ['certtip', 'red']);
+			const result = await close('f00976');
+			expect(result.isError).toBe(true);
+			expect(JSON.parse(result.content[0]?.text ?? '{}').error).toBe(
+				'validate required',
+			);
+		});
+	});
+
 	it('requires attached CI evidence before in-progress → review in CI', async () => {
 		const previousCi = process.env.CI;
 		const previousSha = process.env.GITHUB_SHA;
@@ -1141,7 +1307,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		expect(body.error.blockerType).toBe('missing-peer-review');
 	});
 
-	it('allows force:true bypass without peer approve', async () => {
+	it('does not let force:true skip the peer approve (x00718)', async () => {
 		await writeProposal(root, 'review', 'f00972-s7.md', {
 			id: 'f00972',
 			status: 'review',
@@ -1152,10 +1318,8 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			{ id: 'f00972', to: 'done', reason: 'emergency', force: true },
 			options,
 		);
-		expect(result.isError).toBeUndefined();
-		const body = JSON.parse(result.content[0]?.text ?? '{}');
-		expect(body.ok).toBe(true);
-		expect(body.to).toBe('done');
+		expect(result.isError).toBe(true);
+		expect(JSON.stringify(result)).toMatch(/peer-review required/);
 	});
 
 	it('skips gate when requirePeerReview is false', async () => {
@@ -1395,5 +1559,183 @@ describe('a00072 S4 — plan-closure DFA shortcut', () => {
 		// it MUST appear in the log.
 		expect(getPlanClosureBypassCount()).toBe(1);
 		guardSpy.mockRestore();
+	});
+});
+
+describe('x00643: handing a proposal to review opens its rounds', () => {
+	let root = '';
+	let options: IProposalTransitionToolOptions;
+	const BODY = `## Slices
+
+### S1 — finished work
+- **Status**: done
+- **Files**: \`src/a.ts\`
+
+### S2 — already under review
+- **Status**: done
+- **Files**: \`src/b.ts\`
+- review-state: in_review
+- review-implementer: earlier-agent
+
+### S3 — reworked after a change request
+- **Status**: done
+- **Files**: \`src/c.ts\`
+- review-state: changes_requested
+- review-implementer: agent-impl
+- review-log: requested_changes by agent-rev — the guard passes when git cannot run
+`;
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'transition-handoff-'));
+		// A hand-off is of delivered work (x00745): the declared files
+		// exist, and a commit on the branch changed them.
+		await mkdir(join(root, 'src'), { recursive: true });
+		for (const file of ['a.ts', 'b.ts', 'c.ts']) {
+			await writeFile(join(root, 'src', file), 'export {};\n');
+		}
+		options = {
+			namespacePrefix: 'proposals',
+			proposalsDirAbs: root,
+			workspaceRoot: root,
+			gitRunner: async (args) =>
+				args[0] === 'log'
+					? { ok: true, output: 'abc1234def567890\n' }
+					: FAKE_GIT_MV(args),
+		};
+		await writeProposal(
+			root,
+			'in-progress',
+			'f92001-handoff.md',
+			{ id: 'f92001', status: 'in-progress', kind: 'feat' },
+			BODY,
+		);
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	it('opens a round under the handing agent on every slice without one', async () => {
+		const result = await runProposalTransition(
+			{
+				id: 'f92001',
+				to: 'review',
+				reason: 'all slices merged',
+				agent: 'agent-impl',
+			},
+			options,
+		);
+		expect(isErrorResult(result)).toBe(false);
+		const moved = await readFile(
+			join(root, 'review', 'f92001-handoff.md'),
+			'utf8',
+		);
+		const s1 = moved.slice(
+			moved.indexOf('### S1'),
+			moved.indexOf('### S2'),
+		);
+		expect(s1).toContain('- review-state: in_review');
+		expect(s1).toContain('- review-implementer: agent-impl');
+		const identities = await readFile(
+			join(root, '.cache', 'delendai', 'review-identity.jsonl'),
+			'utf8',
+		);
+		expect(identities).toContain('"sliceId":"S1"');
+		expect(identities).toContain('"agent":"agent-impl"');
+	});
+
+	it('opens the rounds on the file that exists when the move lands it under its canonical name (x00676)', async () => {
+		// The index sync after a move may rename the file to the slug of
+		// its title; this runner does the same, landing it under another
+		// name than the move reports.
+		const renaming: IGitRunner = async (args) => {
+			if (args[0] === 'log')
+				return { ok: true, output: 'abc1234def567890\n' };
+			if (args[0] === 'mv') {
+				const [, from, to] = args;
+				if (from && to)
+					await rename(
+						from,
+						to.replace(
+							/f92001-handoff\.md$/u,
+							'f92001-hand-off.md',
+						),
+					);
+			}
+			return { ok: true, output: '' };
+		};
+		const result = await runProposalTransition(
+			{
+				id: 'f92001',
+				to: 'review',
+				reason: 'all slices merged',
+				agent: 'agent-impl',
+			},
+			{ ...options, gitRunner: renaming },
+		);
+		expect(isErrorResult(result)).toBe(false);
+		const landed = await readFile(
+			join(root, 'review', 'f92001-hand-off.md'),
+			'utf8',
+		);
+		expect(landed).toContain('- review-state: in_review');
+		expect(JSON.stringify(result)).toContain('review/f92001-hand-off.md');
+	});
+
+	it('leaves a slice that already has a round untouched', async () => {
+		await runProposalTransition(
+			{
+				id: 'f92001',
+				to: 'review',
+				reason: 'all slices merged',
+				agent: 'agent-impl',
+			},
+			options,
+		);
+		const moved = await readFile(
+			join(root, 'review', 'f92001-handoff.md'),
+			'utf8',
+		);
+		const s2 = moved.slice(
+			moved.indexOf('### S2'),
+			moved.indexOf('### S3'),
+		);
+		expect(s2).toContain('- review-implementer: earlier-agent');
+		expect(s2).not.toContain('agent-impl');
+	});
+
+	it('hands a reworked slice back for review, keeping its objection on record', async () => {
+		await runProposalTransition(
+			{
+				id: 'f92001',
+				to: 'review',
+				reason: 'the fix is in',
+				agent: 'agent-impl',
+			},
+			options,
+		);
+		const moved = await readFile(
+			join(root, 'review', 'f92001-handoff.md'),
+			'utf8',
+		);
+		const s3 = moved.slice(moved.indexOf('### S3'));
+		expect(s3).toContain('- review-state: in_review');
+		expect(s3).toContain(
+			'- review-log: requested_changes by agent-rev — the guard passes when git cannot run',
+		);
+	});
+
+	it('opens nothing when the hand-off names no agent', async () => {
+		await runProposalTransition(
+			{ id: 'f92001', to: 'review', reason: 'all slices merged' },
+			options,
+		);
+		const moved = await readFile(
+			join(root, 'review', 'f92001-handoff.md'),
+			'utf8',
+		);
+		const s1 = moved.slice(
+			moved.indexOf('### S1'),
+			moved.indexOf('### S2'),
+		);
+		expect(s1).not.toContain('review-state');
 	});
 });

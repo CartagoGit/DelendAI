@@ -168,8 +168,14 @@ describe('e2e: routing full pipeline smoke', () => {
 								invokeTimeoutMs: 5_000,
 								maxFallbackDepth: 1,
 								fallbackStrategy: 'rerank',
-								executeApi: false,
-								confirmBeforeExecute: true,
+								// An mcp-server hop can spend: the server it
+								// starts may call a paid model, so since x00624
+								// it needs the same authorisation as any other
+								// spending hop. This smoke authorises it the way
+								// a real project would.
+								executeApi: true,
+								confirmBeforeExecute: false,
+								autoBypassConfirmed: true,
 							},
 						},
 					},
@@ -351,24 +357,22 @@ describe('e2e: routing full pipeline smoke', () => {
 			expect.any(Object),
 		);
 
-		const dispatchBudget = (await client.callTool({
-			name: 'delendai_agent-orchestrator_budget',
-			arguments: { taskId: pipelineId },
-		})) as TStructuredResult<{
-			steps: number;
-		}>;
-		expect(dispatchBudget.structuredContent.steps).toBeGreaterThan(0);
-
+		// The plan read-back carries what the dispatch spent; the separate
+		// `_budget` tool that used to answer this is gone.
 		const dispatchPlanRef = (await client.callTool({
 			name: 'delendai_agent-orchestrator_plan_ref',
 			arguments: { taskId: pipelineId },
 		})) as TStructuredResult<{
 			mode: string;
 			rationale: string;
+			spent?: { steps: number };
 		}>;
 		expect(dispatchPlanRef.structuredContent.mode).toBe('linear');
 		expect(dispatchPlanRef.structuredContent.rationale).not.toContain(
 			'no plan',
+		);
+		expect(dispatchPlanRef.structuredContent.spent?.steps).toBeGreaterThan(
+			0,
 		);
 
 		const invoke = (await client.callTool({

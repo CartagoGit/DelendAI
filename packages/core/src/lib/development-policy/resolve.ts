@@ -22,11 +22,13 @@ import {
 	type IResolvedDevelopmentPolicy,
 	type IMergeMethod,
 } from '../contracts/interfaces/development-policy.interface';
+import type { IPublicationGranularity } from '../contracts/interfaces/publication-unit.interface';
 import { deriveCapabilities } from './derive';
 import {
 	DEFAULT_DEVELOPMENT_PROFILE,
 	expandProfile,
 	isDevelopmentProfile,
+	WORK_REF_SHAPE,
 } from './profiles';
 
 import type {
@@ -93,7 +95,15 @@ const readCadence = (
 const fromLegacy = (
 	legacy: ILegacyDevelopmentInput,
 ): IResolvedDevelopmentPolicy => {
-	const base = expandProfile(DEFAULT_DEVELOPMENT_PROFILE);
+	// `shared-direct` BY NAME, not the default profile.
+	//
+	// The historical model is what a legacy configuration actually
+	// described: a shared tree, no work ref, commits straight onto the
+	// branch. Reading it from the default meant that changing the default
+	// silently migrated every legacy project to a model they never chose
+	// — which is the one thing this compatibility path exists to prevent,
+	// and exactly what happened the day the default moved.
+	const base = expandProfile('shared-direct');
 	const options = legacy.commitPolicyOptions;
 	const push = asRecord(options?.push);
 	const cadence = readCadence(options);
@@ -106,7 +116,7 @@ const fromLegacy = (
 	return {
 		...base,
 		source: 'legacy-compat',
-		profile: worktrees ? 'custom' : DEFAULT_DEVELOPMENT_PROFILE,
+		profile: worktrees ? 'custom' : 'shared-direct',
 		branches: {
 			...base.branches,
 			integration: asString(push?.branch) ?? base.branches.integration,
@@ -137,110 +147,166 @@ const fromLegacy = (
 const applyOverrides = (
 	base: IResolvedDevelopmentPolicy,
 	input: IDevelopmentConfigInput,
-): IResolvedDevelopmentPolicy => ({
-	...base,
-	branches: {
-		integration: input.branches?.integration ?? base.branches.integration,
-		release: input.branches?.release ?? base.branches.release,
-		workRefTemplate:
-			input.branches?.workRefTemplate ?? base.branches.workRefTemplate,
-		workRefPrefix:
-			input.branches?.workRefPrefix ?? base.branches.workRefPrefix,
-		publicationRefPrefix:
-			input.branches?.publicationRefPrefix ??
-			base.branches.publicationRefPrefix,
-		foreignRefPrefixes: [
-			...(input.branches?.foreignRefPrefixes ??
-				base.branches.foreignRefPrefixes),
-		],
-	},
-	workspace: {
-		...base.workspace,
-		strategy: (input.workspace?.strategy ??
-			base.workspace.strategy) as typeof base.workspace.strategy,
-	},
-	persistence: {
-		...base.persistence,
-		strategy: (input.persistence?.strategy ??
-			base.persistence.strategy) as typeof base.persistence.strategy,
-		autoCommitOnTask:
-			input.persistence?.autoCommitOnTask ??
-			base.persistence.autoCommitOnTask,
-		autoPushAfterCommit:
-			input.persistence?.autoPushAfterCommit ??
-			base.persistence.autoPushAfterCommit,
-	},
-	checkpoint: {
-		...base.checkpoint,
-		strategy: (input.checkpoint?.strategy ??
-			base.checkpoint.strategy) as typeof base.checkpoint.strategy,
-		intervalMinutes:
-			input.checkpoint?.intervalMinutes ??
-			base.checkpoint.intervalMinutes,
-		durableWip: input.checkpoint?.durableWip ?? base.checkpoint.durableWip,
-	},
-	integration: {
-		...base.integration,
-		strategy: (input.integration?.strategy ??
-			base.integration.strategy) as typeof base.integration.strategy,
-		requiredChecks:
-			input.integration?.requiredChecks ??
-			base.integration.requiredChecks,
-		requireLatestIntegration:
-			input.integration?.requireLatestIntegration ??
-			base.integration.requireLatestIntegration,
-		mergeGreenProgressContinuously:
-			input.integration?.mergeGreenProgressContinuously ??
-			base.integration.mergeGreenProgressContinuously,
-		requiredApprovals:
-			input.integration?.requiredApprovals ??
-			base.integration.requiredApprovals,
-		releaseRequiredApprovals:
-			input.integration?.releaseRequiredApprovals ??
-			base.integration.releaseRequiredApprovals,
-		releaseRequiredChecks: [
-			...(input.integration?.releaseRequiredChecks ??
-				base.integration.releaseRequiredChecks),
-		],
-		mergeMethod: (input.integration?.mergeMethod ??
-			base.integration.mergeMethod) as IMergeMethod,
-		deleteMergedWorkRef:
-			input.integration?.deleteMergedWorkRef ??
-			base.integration.deleteMergedWorkRef,
-		linearHistory:
-			input.integration?.linearHistory ?? base.integration.linearHistory,
-		allowForcePush:
-			input.integration?.allowForcePush ??
-			base.integration.allowForcePush,
-		allowDeleteIntegrationBranch:
-			input.integration?.allowDeleteIntegrationBranch ??
-			base.integration.allowDeleteIntegrationBranch,
-	},
-	coordination: {
-		...base.coordination,
-		strategy: (input.coordination?.strategy ??
-			base.coordination.strategy) as typeof base.coordination.strategy,
-		leaseTtlMinutes:
-			input.coordination?.leaseTtlMinutes ??
-			base.coordination.leaseTtlMinutes,
-	},
-	recovery: {
-		...base.recovery,
-		strategy: (input.recovery?.strategy ??
-			base.recovery.strategy) as typeof base.recovery.strategy,
-		neverDiscardUnmergedWork:
-			input.recovery?.neverDiscardUnmergedWork ??
-			base.recovery.neverDiscardUnmergedWork,
-	},
-	governance: {
-		...base.governance,
-		strategy: (input.governance?.strategy ??
-			base.governance.strategy) as typeof base.governance.strategy,
-		failClosedOnUnverifiable:
-			input.governance?.failClosedOnUnverifiable ??
-			base.governance.failClosedOnUnverifiable,
-	},
-});
+): IResolvedDevelopmentPolicy => {
+	const explicitTemplate = input.branches?.workRefTemplate;
+	const requestedVisibility = input.workRefs?.visibility;
+	const workRefVisibility = (requestedVisibility ??
+		(explicitTemplate === undefined
+			? base.branches.workRefVisibility
+			: explicitTemplate.startsWith('refs/heads/') ||
+					explicitTemplate.startsWith('heads/')
+				? 'visible'
+				: 'hidden')) as typeof base.branches.workRefVisibility;
+	// One knob moves both namespaces together. Composing them here, from
+	// a prefix that defaults to empty, is what lets a project pick its
+	// own namespace without editing two settings that must agree.
+	const namespacePrefix =
+		input.branches?.namespacePrefix ?? base.branches.namespacePrefix;
+	const ns = namespacePrefix === '' ? '' : `${namespacePrefix}/`;
+	// The SHAPE comes from one place; only the namespace is composed here.
+	const defaultWorkRefTemplate =
+		workRefVisibility === 'visible'
+			? `heads/${ns}wip/${WORK_REF_SHAPE}`
+			: `${ns}wip/${WORK_REF_SHAPE}`;
+	const defaultWorkRefPrefix =
+		workRefVisibility === 'visible' ? `heads/${ns}wip/` : `${ns}wip/`;
+	const defaultPublicationRefPrefix = `${ns}pr/`;
+
+	return {
+		...base,
+		branches: {
+			namespacePrefix,
+			integration:
+				input.branches?.integration ?? base.branches.integration,
+			release: input.branches?.release ?? base.branches.release,
+			workRefTemplate:
+				input.branches?.workRefTemplate ??
+				(requestedVisibility === undefined &&
+				input.branches?.namespacePrefix === undefined
+					? base.branches.workRefTemplate
+					: defaultWorkRefTemplate),
+			workRefPrefix:
+				input.branches?.workRefPrefix ??
+				(requestedVisibility === undefined &&
+				input.branches?.namespacePrefix === undefined
+					? base.branches.workRefPrefix
+					: defaultWorkRefPrefix),
+			workRefVisibility,
+			publicationRefPrefix:
+				input.branches?.publicationRefPrefix ??
+				(input.branches?.namespacePrefix === undefined
+					? base.branches.publicationRefPrefix
+					: defaultPublicationRefPrefix),
+			foreignRefPrefixes: [
+				...(input.branches?.foreignRefPrefixes ??
+					base.branches.foreignRefPrefixes),
+			],
+		},
+		workspace: {
+			...base.workspace,
+			strategy: (input.workspace?.strategy ??
+				base.workspace.strategy) as typeof base.workspace.strategy,
+		},
+		persistence: {
+			...base.persistence,
+			strategy: (input.persistence?.strategy ??
+				base.persistence.strategy) as typeof base.persistence.strategy,
+			autoCommitOnTask:
+				input.persistence?.autoCommitOnTask ??
+				base.persistence.autoCommitOnTask,
+			autoPushAfterCommit:
+				input.persistence?.autoPushAfterCommit ??
+				base.persistence.autoPushAfterCommit,
+		},
+		checkpoint: {
+			...base.checkpoint,
+			strategy: (input.checkpoint?.strategy ??
+				base.checkpoint.strategy) as typeof base.checkpoint.strategy,
+			intervalMinutes:
+				input.checkpoint?.intervalMinutes ??
+				base.checkpoint.intervalMinutes,
+			durableWip:
+				input.checkpoint?.durableWip ?? base.checkpoint.durableWip,
+		},
+		integration: {
+			...base.integration,
+			strategy: (input.integration?.strategy ??
+				base.integration.strategy) as typeof base.integration.strategy,
+			requiredChecks:
+				input.integration?.requiredChecks ??
+				base.integration.requiredChecks,
+			requireLatestIntegration:
+				input.integration?.requireLatestIntegration ??
+				base.integration.requireLatestIntegration,
+			mergeGreenProgressContinuously:
+				input.integration?.mergeGreenProgressContinuously ??
+				base.integration.mergeGreenProgressContinuously,
+			requiredApprovals:
+				input.integration?.requiredApprovals ??
+				base.integration.requiredApprovals,
+			releaseRequiredApprovals:
+				input.integration?.releaseRequiredApprovals ??
+				base.integration.releaseRequiredApprovals,
+			releaseRequiredChecks: [
+				...(input.integration?.releaseRequiredChecks ??
+					base.integration.releaseRequiredChecks),
+			],
+			mergeMethod: (input.integration?.mergeMethod ??
+				base.integration.mergeMethod) as IMergeMethod,
+			publication: {
+				granularity: (input.integration?.publication?.granularity ??
+					base.integration.publication
+						.granularity) as IPublicationGranularity,
+				adaptive: {
+					maxSlices:
+						input.integration?.publication?.adaptive?.maxSlices ??
+						base.integration.publication.adaptive.maxSlices,
+					maxChangedLines:
+						input.integration?.publication?.adaptive
+							?.maxChangedLines ??
+						base.integration.publication.adaptive.maxChangedLines,
+				},
+			},
+			deleteMergedWorkRef:
+				input.integration?.deleteMergedWorkRef ??
+				base.integration.deleteMergedWorkRef,
+			linearHistory:
+				input.integration?.linearHistory ??
+				base.integration.linearHistory,
+			allowForcePush:
+				input.integration?.allowForcePush ??
+				base.integration.allowForcePush,
+			allowDeleteIntegrationBranch:
+				input.integration?.allowDeleteIntegrationBranch ??
+				base.integration.allowDeleteIntegrationBranch,
+		},
+		coordination: {
+			...base.coordination,
+			strategy: (input.coordination?.strategy ??
+				base.coordination
+					.strategy) as typeof base.coordination.strategy,
+			leaseTtlMinutes:
+				input.coordination?.leaseTtlMinutes ??
+				base.coordination.leaseTtlMinutes,
+		},
+		recovery: {
+			...base.recovery,
+			strategy: (input.recovery?.strategy ??
+				base.recovery.strategy) as typeof base.recovery.strategy,
+			neverDiscardUnmergedWork:
+				input.recovery?.neverDiscardUnmergedWork ??
+				base.recovery.neverDiscardUnmergedWork,
+		},
+		governance: {
+			...base.governance,
+			strategy: (input.governance?.strategy ??
+				base.governance.strategy) as typeof base.governance.strategy,
+			failClosedOnUnverifiable:
+				input.governance?.failClosedOnUnverifiable ??
+				base.governance.failClosedOnUnverifiable,
+		},
+	};
+};
 
 /**
  * Resolves the canonical development policy for a workspace.

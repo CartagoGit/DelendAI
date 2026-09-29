@@ -250,7 +250,7 @@ export interface DelendaiProposalsBranchStatusOutput {
 
 export interface DelendaiProposalsCloseSliceOutput {
 	ok: boolean;
-	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown";
+	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown" | "validation-error" | "quality-failed" | "peer-review-required";
 	already_closed?: boolean;
 	entity?: {
 		id: string;
@@ -351,6 +351,10 @@ export interface DelendaiProposalsCreateProposalOutput {
 	}[];
 	indexCount: number;
 	redactedSecrets?: number;
+	nextAction: string;
+	published: boolean;
+	publishedRef?: string;
+	publishReason?: string;
 }
 
 export interface DelendaiProposalsDelegateOutput {
@@ -480,14 +484,16 @@ export interface DelendaiProposalsProposalBoardOutput {
 	proposals: {
 		id: string;
 		status: string;
-		slices: {
+		slices?: {
 			sliceId: string;
 			status: string;
 			owner: string;
 		}[];
+		sliceCount?: number;
 		claimableSliceIds?: string[];
 		unreadable?: string;
 	}[];
+	next?: string;
 }
 
 export interface DelendaiProposalsProposalDiagnoseOutput {
@@ -526,6 +532,7 @@ export interface DelendaiProposalsProposalForceTransitionOutput {
 }
 
 export interface DelendaiProposalsProposalGetOutput {
+	view?: "list" | "detail" | "history" | "slices" | "review";
 	proposals?: {
 		id: string;
 		status: string;
@@ -622,6 +629,10 @@ export interface DelendaiProposalsProposalReviewOutput {
 	quorum?: number;
 	approvalsStanding?: string[];
 	quorumMessage?: string;
+	attributedTo?: string;
+	proposalClosed?: boolean;
+	proposalCloseBlocker?: string;
+	proposalReopened?: boolean;
 }
 
 export interface DelendaiProposalsProposalStaleListOutput {
@@ -766,6 +777,7 @@ export interface DelendaiProposalsProposalsConflictsOutput {
 		expectedRevision: number;
 	}>;
 	checkedAt: number;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbDiffOutput {
@@ -777,6 +789,7 @@ export interface DelendaiProposalsProposalsDbDiffOutput {
 		untilDigest: string;
 		change: "added" | "removed" | "changed" | "unchanged";
 	}>;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbDoctorOutput {
@@ -865,6 +878,7 @@ export interface DelendaiProposalsProposalsDbRebuildOutput {
 	applied: boolean;
 	proposedSha: string;
 	confirmationRequired: boolean;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbReconcileOutput {
@@ -897,6 +911,7 @@ export interface DelendaiProposalsProposalsDbReconcileOutput {
 	reason: string;
 	startedAt: number;
 	durationMs: number;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbResurrectOutput {
@@ -925,6 +940,7 @@ export interface DelendaiProposalsProposalsDbStatusOutput {
 	databasePath: string;
 	databaseSizeBytes: number;
 	checkedAt: number;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbTombstonesOutput {
@@ -946,6 +962,7 @@ export interface DelendaiProposalsProposalsDbVerifyOutput {
 	match: boolean;
 	durationMs: number;
 	sourceCommit: string;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsSearchOutput {
@@ -965,6 +982,80 @@ export interface DelendaiProposalsProposalsSummaryBackfillOutput {
 	considered: number;
 	created: number;
 	skipped: number;
+}
+
+export interface DelendaiProposalsReviewClaimOutput {
+	ok: true;
+	proposalId: string;
+	claimed: boolean;
+	commit?: string;
+}
+
+export interface DelendaiProposalsReviewQueueOutput {
+	ok: true;
+	proposals: Array<{
+		id: string;
+		file: string;
+		date?: string;
+		slices: Array<{
+			sliceId: string;
+			title: string;
+			status: string;
+			reviewState: string;
+			implementer?: string;
+			implementerSource?: "round" | "git" | "unrecorded";
+			candidates?: {
+				commit: string;
+				source: string;
+			}[];
+			gate?: string;
+			files?: string[];
+			acceptance?: string[];
+			verdict: "needs-verdict" | "blocked" | "waiting-on-implementer" | "approved";
+			nextAction?: string;
+			missing?: string;
+			changedSince?: {
+				commit: string;
+				subject: string;
+			}[];
+			changedSinceTruncated?: boolean;
+		}>;
+		close?: string;
+		claimedBy?: string[];
+		drift?: {
+			measured: boolean;
+			reviewAgeDays?: number;
+			commitsSince?: number;
+			filesTouchedSince?: string[];
+			files?: number;
+			driftRatio?: number;
+			reason?: string;
+		};
+		claim?: string;
+	}>;
+	totals: {
+		proposals: number;
+		slices: number;
+		needsVerdict: number;
+		blocked: number;
+		waitingOnImplementer: number;
+		readyToClose: number;
+		claimedByOthers: number;
+	};
+	page: {
+		offset: number;
+		returned: number;
+		total: number;
+		next?: string;
+	};
+	pack?: {
+		size: number;
+		claimed: number;
+		full: boolean;
+		next?: string;
+	};
+	summary: string;
+	procedure: string;
 }
 
 export interface DelendaiProposalsRoundContextOutput {
@@ -1055,6 +1146,7 @@ export interface DelendaiProposalsSwarmHygieneOutput {
 }
 
 export interface DelendaiProposalsSyncProposalsOutput {
+	projection: "refreshed" | "skipped" | "failed";
 	changed: boolean;
 	count: number;
 	indexPath: string;
@@ -1144,6 +1236,8 @@ export interface IProposalsToolOutputs {
 	"delendai_proposals_proposals_db_verify": DelendaiProposalsProposalsDbVerifyOutput;
 	"delendai_proposals_proposals_search": DelendaiProposalsProposalsSearchOutput;
 	"delendai_proposals_proposals_summary_backfill": DelendaiProposalsProposalsSummaryBackfillOutput;
+	"delendai_proposals_review_claim": DelendaiProposalsReviewClaimOutput;
+	"delendai_proposals_review_queue": DelendaiProposalsReviewQueueOutput;
 	"delendai_proposals_round_context": DelendaiProposalsRoundContextOutput;
 	"delendai_proposals_state_health": DelendaiProposalsStateHealthOutput;
 	"delendai_proposals_state_repair": DelendaiProposalsStateRepairOutput;

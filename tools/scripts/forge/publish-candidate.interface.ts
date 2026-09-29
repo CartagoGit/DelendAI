@@ -36,7 +36,18 @@ export interface IPublicationRefusal {
 		 * by comparing object ids, which is what makes a stale publication
 		 * impossible rather than merely discouraged.
 		 */
-		| 'STALE_PATH';
+		| 'STALE_PATH'
+		/** `--from-work-branch` named a branch outside the work namespace. */
+		| 'NOT_A_WORK_BRANCH'
+		/** The work branch does not exist locally or on the remote. */
+		| 'UNKNOWN_WORK_BRANCH'
+		/**
+		 * The remote work branch has commits the local tip does not. Deleting
+		 * it after publishing would lose them, so nothing is published.
+		 */
+		| 'WORK_BRANCH_AHEAD'
+		/** The publication ref did not end up at the published commit. */
+		| 'PUBLICATION_UNVERIFIED';
 	readonly detail: readonly string[];
 }
 
@@ -49,3 +60,29 @@ export type IPublicationOutcome =
 			readonly content: ICandidateContent;
 	  }
 	| { readonly kind: 'refused'; readonly refusal: IPublicationRefusal };
+
+/** One step of removing a published work branch. */
+export interface ICleanupStep {
+	/** What the step removes, for the report. */
+	readonly label: string;
+	/** Printed when the step is done. */
+	readonly doneMessage: string;
+	/** Performs the step; may throw. */
+	readonly run: () => void;
+	/**
+	 * Whether the step's effect is in place, asked only when `run` threw:
+	 * a delete can succeed on the remote and still exit non-zero.
+	 */
+	readonly isDone: () => boolean;
+	/** The exact command that finishes the step by hand. */
+	readonly remedy: string;
+}
+
+export interface ICleanupOutcome {
+	readonly done: readonly string[];
+	readonly remaining: ReadonlyArray<{
+		readonly label: string;
+		readonly reason: string;
+		readonly remedy: string;
+	}>;
+}

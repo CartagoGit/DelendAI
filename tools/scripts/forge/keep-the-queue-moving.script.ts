@@ -25,7 +25,35 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
+
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+
+import { mergeFlagFor } from '../lib/declared-branches';
+import { isBranchModelMove } from '../lint/pr-head-shape.script';
+import {
+	CERTIFYING_WORKFLOW,
+	certificationOf,
+	type ICertificationRun,
+	type IIntegrationCertification,
+} from './certify-integration.script';
+import { queueAcceptance } from './queue-acceptance';
+import {
+	queueHead,
+	queueOrder,
+	repairStep,
+	type IQueueCandidateFacts,
+	type IRepairStep,
+} from './queue-order';
+
+/**
+ * The merge method as the policy states it. Read off the resolved policy
+ * rather than restated, so a new method cannot be added to the vocabulary
+ * without this script's types noticing.
+ */
+type IDeclaredMergeMethod =
+	IResolvedDevelopmentPolicy['integration']['mergeMethod'];
 
 /**
  * Which repository this is, WITHOUT importing core.
@@ -54,12 +82,54 @@ const repositorySlug = (): string => {
 
 const REPOSITORY_SLUG = repositorySlug();
 
-interface IPullRequest {
+/**
+ * The project's declared development policy, or the defaults.
+ *
+ * Read rather than assumed: the publication namespace is configurable,
+ * and a queue that armed `delendai/pr/**` on a project that renamed it
+ * would arm nothing at all and say it armed everything.
+ */
+const readDevelopmentConfig = (): {
+	readonly development?: Record<string, unknown>;
+} => {
+	try {
+		const parsed = JSON.parse(
+			readFileSync('delendai.config.json', 'utf8'),
+		) as Record<string, unknown>;
+		const development = parsed.development;
+		return development === null || typeof development !== 'object'
+			? {}
+			: { development: development as Record<string, unknown> };
+	} catch {
+		return {};
+	}
+};
+
+export interface IPullRequest {
 	readonly number: number;
 	readonly title: string;
 	readonly auto_merge: unknown;
-	readonly head: { readonly sha: string };
+	readonly head: { readonly sha: string; readonly ref: string };
+	readonly base?: { readonly ref: string };
+	readonly draft?: boolean;
 }
+
+/**
+ * The branch model's own pull requests: the promotion into the release
+ * branch and the forward sync back. Nobody arms them (a person approves a
+ * promotion), so the loop over armed candidates never reached them. Their
+ * head moves whenever the queue lands a candidate, by the forge's own bot,
+ * and the forge parks every run on a bot's commit: on 2026-09-29 the
+ * promotion (#641) sat with its required checks waiting for an approval
+ * button after each merge into the integration branch.
+ */
+export const branchModelPulls = (
+	open: readonly IPullRequest[],
+	branches: { readonly integration: string; readonly release: string },
+): readonly IPullRequest[] =>
+	open.filter((pull) =>
+		isBranchModelMove(pull.head.ref, pull.base?.ref, branches),
+	);
 
 const gh = (args: readonly string[]): string =>
 	execFileSync('gh', [...args], {
@@ -192,10 +262,314 @@ const releaseWaitingRuns = (
 	return { released: approved, refused };
 };
 
-const main = (): void => {
-	const open = api<readonly IPullRequest[]>(
+/**
+ * Arm auto-merge on a candidate that is not armed yet.
+ *
+ * This job read `auto_merge !== null` and kept moving whatever it found
+ * armed — and NOTHING armed anything. Arming was a thing a person
+ * remembered to do, which makes "a green candidate merges itself" true
+ * only for candidates somebody remembered. Measured: five open
+ * candidates, all five armed by hand, one at a time.
+ *
+ * Only refs under the publication namespace are armed, because those are
+ * the ones this model produced and therefore the ones it may speak for.
+ * A pull request opened from anywhere else is somebody else's, and a
+ * draft is explicitly not ready. Arming changes nothing about what
+ * merges: the required check still decides, and auto-merge simply stops
+ * requiring a human to be watching at the moment it goes green.
+ */
+export const armable = (
+	open: readonly IPullRequest[],
+	publicationPrefix: string,
+): readonly IPullRequest[] =>
+	open.filter(
+		(pull) =>
+			pull.auto_merge === null &&
+			pull.draft !== true &&
+			pull.head.ref.startsWith(publicationPrefix),
+	);
+
+export const armCandidates = (
+	open: readonly IPullRequest[],
+	publicationPrefix: string,
+	mergeMethod: IDeclaredMergeMethod,
+	// Injected so a test can ask which flag was passed, without a forge.
+	run: (args: readonly string[]) => string = gh,
+): readonly number[] => {
+	const armable_ = armable(open, publicationPrefix);
+	const armed: number[] = [];
+	for (const pull of armable_) {
+		try {
+			run([
+				'pr',
+				'merge',
+				String(pull.number),
+				'--auto',
+				mergeFlagFor(mergeMethod),
+			]);
+			armed.push(pull.number);
+		} catch {
+			// A candidate that cannot be armed — a forge that disallows
+			// auto-merge, a branch rule in the way — is reported below as
+			// unarmed rather than failing the queue for everyone else.
+		}
+	}
+	return armed;
+};
+
+/** What ordering the queue needs to know, asked of the forge. */
+const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => {
+	const failing = failuresOf(checksOf(pull.head.sha));
+	return {
+		number: pull.number,
+		headRef: pull.head.ref,
+		draft: pull.draft === true,
+		red: failing.length > 0,
+		failing,
+		conflicting: mergeState(pull.number) === 'dirty',
+	};
+};
+
+/**
+ * The branch of the candidate that moves next, for the machine that
+ * brings candidates forward: the same head this job arms.
+ */
+export const currentQueueFacts = (): {
+	readonly facts: readonly IQueueCandidateFacts[];
+	readonly publicationPrefix: string;
+	readonly armed: ReadonlySet<string>;
+} => {
+	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
+	const publicationPrefix = policy.branches.publicationRefPrefix
+		.replace(/^refs\//u, '')
+		.replace(/^heads\//u, '');
+	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
+	return {
+		facts: opened
+			.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
+			.map((pull) => candidateFacts(pull)),
+		publicationPrefix,
+		armed: new Set(
+			opened
+				.filter((pull) => pull.auto_merge !== null)
+				.map((pull) => pull.head.ref),
+		),
+	};
+};
+
+export const currentQueueHeadBranch = (): string | undefined => {
+	const { facts, publicationPrefix } = currentQueueFacts();
+	return queueHead(facts, publicationPrefix)?.headRef;
+};
+
+/**
+ * The queue's branches, oldest first, conflicting ones included, each
+ * with whether auto-merge is armed on it.
+ */
+export const currentQueueOrder = (): readonly {
+	readonly number: number;
+	readonly branch: string;
+	readonly armed: boolean;
+}[] => {
+	const { facts, publicationPrefix, armed } = currentQueueFacts();
+	return queueOrder(facts, publicationPrefix).map((candidate) => ({
+		number: candidate.number,
+		branch: candidate.headRef,
+		armed: armed.has(candidate.headRef),
+	}));
+};
+
+/**
+ * Where the integration branch's tip stands, asked of the forge.
+ *
+ * The next candidate lands on top of this commit, so it may only be
+ * armed once this commit has passed its own full run. Otherwise a red
+ * integration branch collects more merges before anyone sees it is red —
+ * and once pull requests run only what their change reaches, the full
+ * run on the integration branch is the only thing that sees the rest.
+ */
+const integrationCertification = (
+	integration: string,
+): { readonly sha: string; readonly state: IIntegrationCertification } => {
+	const sha = api<{ readonly sha: string }>(
+		`repos/${REPOSITORY_SLUG}/commits/${integration}`,
+	).sha;
+	const runs = api<{ readonly workflow_runs: readonly ICertificationRun[] }>(
+		`repos/${REPOSITORY_SLUG}/actions/workflows/${CERTIFYING_WORKFLOW}/runs?head_sha=${sha}&per_page=50`,
+	).workflow_runs;
+	return { sha, state: certificationOf(runs, sha) };
+};
+
+/** Every full run of the certifying workflow at one commit, judged. */
+const fullRunAt = (sha: string): IIntegrationCertification =>
+	certificationOf(
+		api<{ readonly workflow_runs: readonly ICertificationRun[] }>(
+			`repos/${REPOSITORY_SLUG}/actions/workflows/${CERTIFYING_WORKFLOW}/runs?head_sha=${sha}&per_page=50`,
+		).workflow_runs,
+		sha,
+	);
+
+/**
+ * Whether a candidate carries the integration branch's tip. Asked of the
+ * commits, not of `mergeable_state`: with up-to-date not required, the
+ * forge never reports `behind`.
+ */
+const levelWith = (integration: string, sha: string): boolean =>
+	api<{ readonly behind_by: number }>(
+		`repos/${REPOSITORY_SLUG}/compare/${integration}...${sha}`,
+	).behind_by === 0;
+
+/** Act on the repair step: dispatch a full run, or report. */
+const reportRepair = (step: IRepairStep, integration: string): void => {
+	if (step.kind === 'none') {
+		console.log(
+			`keep-the-queue-moving: ${integration} is red and no level candidate has a green full run that would repair it.`,
+		);
+		return;
+	}
+	if (step.kind === 'wait') {
+		console.log(
+			`keep-the-queue-moving: #${String(step.number)}'s full run is in progress; it is armed if it proves ${integration} green.`,
+		);
+		return;
+	}
+	if (step.kind === 'arm') {
+		console.log(
+			`keep-the-queue-moving: #${String(step.number)} is level and its full run is green, so landing it repairs ${integration}; it is armed.`,
+		);
+		return;
+	}
+	try {
+		gh([
+			'workflow',
+			'run',
+			CERTIFYING_WORKFLOW,
+			'--ref',
+			step.headRef,
+			'--repo',
+			REPOSITORY_SLUG,
+		]);
+		console.log(
+			`keep-the-queue-moving: dispatched a full run on #${String(step.number)}; if it is green, landing it repairs ${integration}.`,
+		);
+	} catch {
+		console.log(
+			`keep-the-queue-moving: could not dispatch a full run on #${String(step.number)}; the next run tries again.`,
+		);
+	}
+};
+
+const main = (): void => {
+	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
+	const publicationPrefix = policy.branches.publicationRefPrefix
+		.replace(/^refs\//u, '')
+		.replace(/^heads\//u, '');
+	const opened = api<readonly IPullRequest[]>(
+		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
+	);
+	// Every candidate that can land as it is moves at once: a level one, or
+	// one that touches nothing the integration branch gained since it left,
+	// and nothing an earlier accepted candidate touches (f00755). The others
+	// are brought forward by the owner machine and tested again. It used to
+	// be one candidate at a time, each brought forward and re-tested after
+	// every merge, twenty minutes a candidate.
+	const candidates = opened
+		.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
+		.map((pull) => candidateFacts(pull));
+	const integration = policy.branches.integration;
+	const certification = integrationCertification(integration);
+	const red = certification.state === 'red';
+	const shaOf = (number: number): string =>
+		opened.find((pull) => pull.number === number)?.head.sha ?? '';
+	// A red integration branch arms nothing, except the candidate proven
+	// to repair it.
+	const repair: IRepairStep = red
+		? repairStep(
+				candidates,
+				publicationPrefix,
+				(candidate) => levelWith(integration, shaOf(candidate.number)),
+				(candidate) => fullRunAt(shaOf(candidate.number)),
+			)
+		: { kind: 'none' };
+	const repairing = repair.kind === 'arm' ? repair.number : undefined;
+	if (red) {
+		console.log(
+			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is red; nothing is armed except a candidate proven to repair it.`,
+		);
+		reportRepair(repair, integration);
+	}
+	const acceptance = red
+		? []
+		: queueAcceptance({
+				root: process.cwd(),
+				remote: 'origin',
+				integration,
+				integrationSha: certification.sha,
+				candidates: queueOrder(candidates, publicationPrefix)
+					.filter((candidate) => !candidate.conflicting)
+					.map((candidate) => ({
+						number: candidate.number,
+						headRef: candidate.headRef,
+						headSha: shaOf(candidate.number),
+					})),
+			});
+	for (const verdict of acceptance) {
+		console.log(
+			`keep-the-queue-moving: #${String(verdict.number)} ${verdict.accepted ? 'lands as it is' : 'is brought forward first'} — ${verdict.why}.`,
+		);
+	}
+	const landing = new Set(
+		acceptance.filter((verdict) => verdict.accepted).map((v) => v.number),
+	);
+	if (repairing !== undefined) landing.add(repairing);
+	for (const pull of opened) {
+		if (
+			pull.auto_merge === null ||
+			landing.has(pull.number) ||
+			!pull.head.ref.startsWith(publicationPrefix)
+		) {
+			continue;
+		}
+		try {
+			gh(['pr', 'merge', String(pull.number), '--disable-auto']);
+			console.log(
+				`keep-the-queue-moving: #${String(pull.number)} does not land now; auto-merge disarmed until it can.`,
+			);
+		} catch {
+			// Reported by its still-armed state on the next run.
+		}
+	}
+	const justArmed = armCandidates(
+		opened.filter((pull) => landing.has(pull.number)),
+		publicationPrefix,
+		policy.integration.mergeMethod,
+	);
+	if (justArmed.length > 0) {
+		console.log(
+			`keep-the-queue-moving: armed auto-merge on ${String(justArmed.length)} candidate(s): ${justArmed.map((n) => `#${String(n)}`).join(', ')}.`,
+		);
+	}
+	const open =
+		justArmed.length === 0
+			? opened
+			: api<readonly IPullRequest[]>(
+					`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
+				);
+	for (const pull of branchModelPulls(open, policy.branches)) {
+		const parked = releaseWaitingRuns(pull.head.sha);
+		if (parked.released > 0) {
+			console.log(
+				`keep-the-queue-moving: released ${String(parked.released)} parked run(s) on #${String(pull.number)}, the branch model's own pull request.`,
+			);
+		}
+		for (const name of parked.refused) {
+			console.log(
+				`keep-the-queue-moving: #${String(pull.number)}'s ${name} run could not be released; approve it on the forge.`,
+			);
+		}
+	}
 	const armed = open.filter((pull) => pull.auto_merge !== null);
 	if (armed.length === 0) {
 		console.log(
@@ -286,6 +660,7 @@ const main = (): void => {
 
 	if (failing.length === 0) {
 		console.log('keep-the-queue-moving: no armed candidate is red.');
+		stuckExit(behind.length, 0);
 		return;
 	}
 	// Stdout, not a failed exit. This job runs on the integration branch
@@ -297,6 +672,29 @@ const main = (): void => {
 	);
 	for (const line of failing) console.log(line);
 	writeSummary(failing);
+	stuckExit(behind.length, failing.length);
+};
+
+/**
+ * A stuck queue ends RED.
+ *
+ * This job cannot refresh a candidate itself — a branch it updated would
+ * carry a bot commit, whose runs the forge parks — so the only thing it
+ * can do about a stale or permanently-blocked candidate is say so. Saying
+ * so inside the log of a green run is the same as not saying it: run #216
+ * succeeded while the whole queue sat behind. The exit code is the only
+ * part of a run anybody reads at a glance, so it carries the fact.
+ */
+const stuckExit = (behind: number, red: number): void => {
+	if (behind === 0 && red === 0) return;
+	const reasons = [
+		behind > 0 ? `${String(behind)} behind the integration branch` : '',
+		red > 0 ? `${String(red)} armed and red` : '',
+	].filter((reason) => reason.length > 0);
+	console.error(
+		`keep-the-queue-moving: the queue is stuck — ${reasons.join(', ')}. Nothing merges until these are refreshed or fixed; this job does not push, because a commit it writes would park the forge's runs.`,
+	);
+	process.exitCode = 1;
 };
 
 /**

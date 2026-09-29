@@ -88,7 +88,7 @@ const escapeCell = (value: string): string =>
 const compareContent = (left: string | undefined, right: string): boolean =>
 	(left ?? '') === right;
 
-const renderMarkdownTable = (
+export const renderMarkdownTable = (
 	headers: readonly string[],
 	rows: readonly (readonly string[])[],
 ): string => {
@@ -98,7 +98,7 @@ const renderMarkdownTable = (
 	return [head, separator, body].filter((part) => part.length > 0).join('\n');
 };
 
-const injectGeneratedBlock = (
+export const injectGeneratedBlock = (
 	text: string,
 	startMarker: string,
 	endMarker: string,

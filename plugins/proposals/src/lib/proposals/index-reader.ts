@@ -26,7 +26,16 @@
 import { basename, dirname } from 'node:path';
 
 import { DEFAULT_INDEX_FS, type IIndexFs } from './index-reader-fs';
-import { decideIndexSource } from './index-source-policy';
+import { compareIndexEntries, decideIndexSource } from './index-source-policy';
+import {
+	DEFAULT_PROPOSAL_INDEX_SOURCE,
+	PROPOSAL_INDEX_DB_PATH_ENV_VAR,
+	PROPOSAL_INDEX_SOURCE_ENV_VAR,
+} from '../contracts/constants/proposal-index-source.constant';
+import type { IProposalIndexSource } from '../contracts/interfaces/proposal-index-source.interface';
+import { recordProposalIndexRead } from './index-read-stats';
+import { defaultLog, noticeOnce } from './index-reader-notice';
+import { ProposalIndexSqlUnavailableError } from './proposal-errors';
 
 /**
  * Read a file and parse it as JSON. Returns `null` when:
@@ -104,49 +113,16 @@ export interface IProposalIndexFile {
 	readonly generated_at?: string;
 }
 
-// ---------------------------------------------------------------------------
-// S2 — source selection.
-//
-// `readProposalIndex` keeps its exact signature; what changes is where
-// the entries come from. Two sources exist:
-//
-//   'json' — `<cacheDir>/proposals/index.json`, the behaviour of every
-//            release so far, and the DEFAULT until f00535 S3 flips it.
-//   'sql'  — the SQLite projection, via `readProposalIndexFromSql`.
-//
-// plus 'auto', which prefers SQL and falls back to JSON whenever the
-// SQL reader says it cannot serve (`null`). The fallback is logged ONCE
-// per database path, not once per call: this function is on the hot read
-// path of 9 call sites and a per-call warning would drown the log.
-//
-// This slice ships the MECHANISM, not the change of default.
-// `DEFAULT_PROPOSAL_INDEX_SOURCE` stays `'json'`; S3 owns flipping it
-// behind a parity policy.
-// ---------------------------------------------------------------------------
-
-/** Where `readProposalIndex` reads from. */
-export type TProposalIndexSource = 'json' | 'sql' | 'auto';
-
-/**
- * The source used when neither the caller nor the environment says
- * otherwise. **Deliberately `'json'`** — today's behaviour, unchanged.
- * f00535 S3 is the slice that moves this to a SQL-preferring policy;
- * changing it here would ship the cutover without the parity check S3
- * requires.
- */
-export const DEFAULT_PROPOSAL_INDEX_SOURCE: TProposalIndexSource = 'sql';
-
-/**
- * Environment switch: the one-line rollback / roll-forward.
- *
- *   DELENDAI_PROPOSAL_INDEX_SOURCE=json   force the JSON index
- *   DELENDAI_PROPOSAL_INDEX_SOURCE=sql    force the SQLite projection
- *   DELENDAI_PROPOSAL_INDEX_SOURCE=auto   prefer SQL, fall back to JSON
- */
-export const PROPOSAL_INDEX_SOURCE_ENV_VAR = 'DELENDAI_PROPOSAL_INDEX_SOURCE';
-
-/** Environment override for the database path (tests, odd layouts). */
-export const PROPOSAL_INDEX_DB_PATH_ENV_VAR = 'DELENDAI_PROPOSALS_DB_PATH';
+// The source vocabulary — `json` / `auto` / `sql`, the default and the
+// environment switches — lives in `contracts/constants/proposal-index-source`
+// and is re-exported here, so every import site keeps working.
+/** Where `readProposalIndex` reads from. Kept under its historical name. */
+export type TProposalIndexSource = IProposalIndexSource;
+export {
+	DEFAULT_PROPOSAL_INDEX_SOURCE,
+	PROPOSAL_INDEX_DB_PATH_ENV_VAR,
+	PROPOSAL_INDEX_SOURCE_ENV_VAR,
+} from '../contracts/constants/proposal-index-source.constant';
 
 const isProposalIndexSource = (
 	value: string | undefined,
@@ -175,30 +151,7 @@ export interface IProposalIndexReadOptions {
 	} | null>;
 }
 
-/** Database paths already warned about, so the notice is emitted once. */
-const fallbackNoticeEmitted = new Set<string>();
-
-/**
- * Clears the one-time fallback notice bookkeeping. For tests that assert
- * "logged once" across several reads; never needed in production.
- */
-export const resetProposalIndexFallbackNotice = (): void => {
-	fallbackNoticeEmitted.clear();
-};
-
-const defaultLog = (message: string): void => {
-	console.warn(`[delendai] ${message}`);
-};
-
-const noticeOnce = (
-	key: string,
-	message: string,
-	log: (message: string) => void,
-): void => {
-	if (fallbackNoticeEmitted.has(key)) return;
-	fallbackNoticeEmitted.add(key);
-	log(message);
-};
+export { resetProposalIndexFallbackNotice } from './index-reader-notice';
 
 /**
  * Resolve the effective source: explicit option, then environment, then
@@ -291,7 +244,7 @@ const resolveDatabasePath = async (
 	}
 };
 
-const readFromJson = async (
+export const readFromJson = async (
 	indexPathAbs: string,
 	fs?: IIndexFs,
 ): Promise<readonly IProposalIndexEntry[]> => {
@@ -299,7 +252,7 @@ const readFromJson = async (
 	return parsed?.proposals ?? [];
 };
 
-const readFromSqlSource = async (
+export const readFromSqlSource = async (
 	indexPathAbs: string,
 	options: IProposalIndexReadOptions | undefined,
 ): Promise<{
@@ -336,19 +289,62 @@ const readFromSqlSource = async (
  * Callers MUST be prepared for an empty result — the index can lag
  * behind the filesystem by one `sync_proposals` call.
  *
- * f00535 S2 — the signature is unchanged (`indexPathAbs`, optional
- * `fs`); the optional third argument only exists for callers that want
- * to pin a source or a database path. With no third argument and no
- * environment override the behaviour is exactly what it was before:
- * read `index.json`, return `proposals ?? []`.
+ * The signature is unchanged (`indexPathAbs`, optional `fs`); the
+ * optional third argument only exists for callers that pin a source or a
+ * database path. With neither, the source is `auto`.
+ *
+ * @throws ProposalIndexSqlUnavailableError only when the source is `sql`
+ * and the projection cannot serve. `auto` and `json` never throw for a
+ * missing or unstamped database.
  */
+/**
+ * `sql`: the projection answers, or the read fails.
+ *
+ * Divergence from JSON is REPORTED, not obeyed: under `sql` the database
+ * is the authority and `index.json` is the legacy copy, so letting the
+ * copy override the authority would be the silent fallback again under a
+ * different name. The JSON is read only to say how they differ.
+ */
+const serveStrictSql = async (
+	indexPathAbs: string,
+	fs: IIndexFs | undefined,
+	fromSql: Awaited<ReturnType<typeof readFromSqlSource>>,
+	log: (message: string) => void,
+): Promise<readonly IProposalIndexEntry[]> => {
+	if (fromSql === null || fromSql.sourceCommit === null) {
+		recordProposalIndexRead('sql-refused');
+		throw new ProposalIndexSqlUnavailableError(
+			fromSql === null ? 'unavailable' : 'unstamped',
+			indexPathAbs,
+		);
+	}
+	const divergence = compareIndexEntries(
+		fromSql.entries,
+		await readFromJson(indexPathAbs, fs),
+	);
+	recordProposalIndexRead(
+		divergence.length > 0 ? 'sql-divergence-reported' : 'sql-parity',
+		divergence.length,
+	);
+	if (divergence.length > 0)
+		noticeOnce(
+			`sql-strict-divergence:${indexPathAbs}`,
+			`proposal index: serving the SQLite projection (source pinned to "sql"); ${indexPathAbs} differs on ${divergence.join(', ')}`,
+			log,
+		);
+	return fromSql.entries;
+};
+
 export const readProposalIndex = async (
 	indexPathAbs: string,
 	fs?: IIndexFs,
 	options?: IProposalIndexReadOptions,
 ): Promise<readonly IProposalIndexEntry[]> => {
 	const source = resolveProposalIndexSource(options);
-	if (source === 'json') return readFromJson(indexPathAbs, fs);
+	if (source === 'json') {
+		recordProposalIndexRead('json-pinned');
+		return readFromJson(indexPathAbs, fs);
+	}
 
 	const fromSql = await readFromSqlSource(indexPathAbs, options);
 	// `null` means "the SQL source cannot serve"; an EMPTY ARRAY means
@@ -358,6 +354,7 @@ export const readProposalIndex = async (
 	// hand every consumer an empty repository when the database is
 	// simply absent.
 	const log = options?.log ?? defaultLog;
+	if (source === 'sql') return serveStrictSql(indexPathAbs, fs, fromSql, log);
 	if (fromSql !== null) {
 		const fromJson = await readFromJson(indexPathAbs, fs);
 		const decision = decideIndexSource({
@@ -368,7 +365,16 @@ export const readProposalIndex = async (
 				logicalDigest: fromSql.logicalDigest,
 			},
 		});
-		if (decision.source === 'sql') return decision.entries;
+		if (decision.source === 'sql') {
+			recordProposalIndexRead('sql-parity');
+			return decision.entries;
+		}
+		recordProposalIndexRead(
+			decision.reason === 'metadata-missing'
+				? 'fallback-metadata-missing'
+				: 'fallback-divergence',
+			decision.divergence.length,
+		);
 		noticeOnce(
 			`sql-divergence:${indexPathAbs}`,
 			`proposal index: SQLite projection diverges from ${indexPathAbs}; serving JSON instead (${decision.divergence.join(', ') || decision.reason})`,
@@ -376,14 +382,7 @@ export const readProposalIndex = async (
 		);
 		return fromJson;
 	}
-	if (source === 'sql') {
-		noticeOnce(
-			`sql-unavailable:${indexPathAbs}`,
-			`proposal index source is pinned to "sql" but the SQLite projection cannot be served; falling back to JSON for safety`,
-			log,
-		);
-		return readFromJson(indexPathAbs, fs);
-	}
+	recordProposalIndexRead('fallback-unavailable');
 	noticeOnce(
 		`auto-fallback:${indexPathAbs}`,
 		`proposal index: SQLite projection unavailable, falling back to ${indexPathAbs} (this notice is emitted once per index path)`,

@@ -22,10 +22,31 @@ import {
 	parseCliArgs,
 	writeFileAtomic,
 } from '@delendai/core/public';
+import { extractRequirements } from '@delendai/env/public';
+
 import { repoRoot } from '../lib/monorepo-paths';
 
 export const GENERATED_MANAGED_LAZY_CATALOG_PATH =
 	'packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts';
+
+/**
+ * Whether a plugin watches calls it does not own: tool-call observers or
+ * the logs sink. Under lazy loading a plugin registers its hooks only when
+ * it activates, and until then every call goes unobserved. usage-tracking,
+ * activated only by its own tools, recorded nothing from 2026-09-07 on.
+ * Such a plugin activates at startup; the registrations decide, so a new
+ * observer cannot forget to say so.
+ */
+export const observesOtherPlugins = (registrations: {
+	readonly onToolStart?: unknown;
+	readonly onToolCall?: unknown;
+	readonly onToolCancel?: unknown;
+	readonly logsSink?: unknown;
+}): boolean =>
+	registrations.onToolStart !== undefined ||
+	registrations.onToolCall !== undefined ||
+	registrations.onToolCancel !== undefined ||
+	registrations.logsSink !== undefined;
 
 const quote = (value: string): string => `'${value.replaceAll("'", "\\'")}'`;
 
@@ -48,6 +69,40 @@ const renderTools = (ids: readonly string[]): string => {
 	const inline = `[${ids.map(quote).join(', ')}]`;
 	if (inline.length <= 70) return inline;
 	return ['[', ...ids.map((id) => `\t\t${quote(id)},`), '\t]'].join('\n');
+};
+
+/**
+ * The `env:VAR` requirements a plugin's options schema declares, as a
+ * catalog metadata field — or nothing when it declares none.
+ *
+ * WHY here: `init` needs these to warn about missing variables, and it
+ * used to import every enabled plugin's runtime to read them — 37 module
+ * graphs for a list that is almost always empty (v00137). This generator
+ * already imports every plugin, so it reads the schema once, with the
+ * same `extractRequirements` the runtime path uses, and the answer ships
+ * in the catalog.
+ */
+const renderEnvironmentRequirements = (
+	id: string,
+	optionsSchema: unknown,
+): readonly string[] => {
+	if (optionsSchema === undefined) return [];
+	const requirements = extractRequirements(id, optionsSchema as never);
+	if (requirements.length === 0) return [];
+	const rendered = requirements.map((requirement) =>
+		[
+			`var: ${quote(requirement.var)}`,
+			`plugin: ${quote(requirement.plugin)}`,
+			`capability: ${quote(requirement.capability)}`,
+			...(requirement.provider === undefined
+				? []
+				: [`provider: ${quote(requirement.provider)}`]),
+			`required: ${String(requirement.required)}`,
+		].join(', '),
+	);
+	return [
+		`environmentRequirements: [${rendered.map((fields) => `{ ${fields} }`).join(', ')}]`,
+	];
 };
 
 export const buildManagedLazyCatalogSource = async (): Promise<string> => {
@@ -81,7 +136,10 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => [entry.id, entry]),
 	);
 	const entries = assembled.loadResult.loaded
-		.map((entry) => [entry.plugin.name, entry.registrations] as const)
+		.map(
+			(entry) =>
+				[entry.plugin.name, entry.registrations, entry.plugin] as const,
+		)
 		.sort(([a], [b]) => a.localeCompare(b));
 	const source = [
 		'/**',
@@ -106,6 +164,18 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\treadonly tags?: readonly string[] | undefined;',
 		'\treadonly startupActivation?: boolean | undefined;',
 		'\treadonly toolDisclosure?: Readonly<Record<string, IToolDisclosureLevel>> | undefined;',
+		'\t/**',
+		'\t * The environment variables the plugin declares in its options schema',
+		'\t * (`env:VAR` markers), read at generation time so `init` can warn about',
+		'\t * them without importing the plugin. Absent when it declares none.',
+		'\t */',
+		'\treadonly environmentRequirements?: readonly {',
+		'\t\treadonly var: string;',
+		'\t\treadonly plugin: string;',
+		'\t\treadonly capability: string;',
+		'\t\treadonly provider?: string;',
+		'\t\treadonly required: boolean;',
+		'\t}[] | undefined;',
 		'}',
 		'',
 		'const tools = (',
@@ -117,7 +187,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\tknowledgeIds: readonly string[],',
 		'\tskillIds: readonly string[],',
 		'\tdependencies: readonly string[],',
-		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags' | 'startupActivation' | 'toolDisclosure'> = {},",
+		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags' | 'startupActivation' | 'toolDisclosure' | 'environmentRequirements'> = {},",
 		'): IManagedLazyPluginCatalogEntry => ({',
 		'\tid,',
 		'\tpackageSpecifier,',
@@ -132,7 +202,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'',
 		'export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntry[] =',
 		'\t[',
-		...entries.flatMap(([id, registrations]) => {
+		...entries.flatMap(([id, registrations, plugin]) => {
 			const metadata = packageById.get(id);
 			const disclosureEntries = (registrations.tools ?? []).flatMap(
 				(tool) =>
@@ -140,19 +210,21 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 						? []
 						: [`${quote(tool.id)}: ${quote(tool.disclosure)}`],
 			);
+			const startupActivation =
+				metadata?.startupActivation === true ||
+				observesOtherPlugins(registrations);
 			const metadataFields = [
 				...(metadata === undefined
 					? []
 					: [
 							`summary: ${quote(metadata.summary)}`,
 							`tags: ${renderTools(metadata.tags)}`,
-							...(metadata.startupActivation === true
-								? ['startupActivation: true']
-								: []),
 						]),
+				...(startupActivation ? ['startupActivation: true'] : []),
 				...(disclosureEntries.length === 0
 					? []
 					: [`toolDisclosure: { ${disclosureEntries.join(', ')} }`]),
+				...renderEnvironmentRequirements(id, plugin.optionsSchema),
 			];
 			const metadataLiteral = `{ ${metadataFields.join(', ')} }`;
 			return [

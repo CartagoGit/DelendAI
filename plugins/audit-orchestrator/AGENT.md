@@ -15,6 +15,7 @@
 
 ## Depends on
 
+- zod
 - @delendai/core
 - @delendai/agent-orchestrator
 
@@ -30,11 +31,12 @@
 ## Tests
 
 - plugins/audit-orchestrator/tests/src/lib/orchestrate.tool.spec.ts
+- plugins/audit-orchestrator/tests/src/lib/plan-reader-containment.spec.ts
 - plugins/audit-orchestrator/tests/src/lib/plan-reader.spec.ts
 
 ## Do not
 
-- Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
+- An agent does not run `git stash`: git refuses it for agents (`delendai guard`, reference-transaction), because every worktree shares one stash and stashed work is invisible to the work model. Commit, or checkpoint to your work ref, instead.
 - Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
 - Do not import `@delendai/core/lib/...`; use `@delendai/core/public`.
 - Do not run user-facing shell or destructive tools without `dryRunSupported: true`.

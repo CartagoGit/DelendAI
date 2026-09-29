@@ -82,6 +82,26 @@ The practical reading is strict:
 - Host composition may still mention a plugin by name when it is describing what a loaded host can do, but that coupling must be explicit, time-boxed and reviewable.
 
 `tools/scripts/inspect/core-proposals-boundary.script.ts` remains the inventory/audit view. The permanent regression guard is `tools/scripts/lint/core-proposals-boundary.script.ts`, which scans `packages/core/src` and rejects any new `proposals` imports, paths or workflow literals unless they are covered by an explicit exception with `until` + reason.
+The lint also fails on a stale exception, one no match uses any more, so a
+coupling that was removed cannot come back already excused.
+
+### Adding a workflow plugin without editing the core
+
+A plugin that brings its own workflow (a store, a lifecycle, adoption
+steps) plugs into three registries from `@delendai/core/public`, called
+from its `setup`; the core never names it:
+
+| What the plugin contributes | Registry | Reference in the proposals plugin |
+| --- | --- | --- |
+| Adoption: config, files and steps `adopt_project` writes, and the write estimate counts | `registerAdoptionExtensions` | `lib/adoption/proposals-adoption-extension.ts` |
+| Orientation: summaries and the recommended next action | `registerWorkflowContribution` | `lib/skills/proposals-workflow-contribution.ts` |
+| Stable facade: the tools it guarantees across releases | `registerStableToolDescriptors` | `lib/api/proposals-stable-tools.ts` |
+
+Facts the plugin keeps a copy of (an index, a database) are declared in its
+manifest's `authorities`, which `lint:authorities` checks. When the plugin
+is not loaded, nothing it contributes appears: the adoption estimate
+counts no file for it, the next action does not mention it, and the
+stable facade lists none of its tools.
 
 ## Core boundary
 

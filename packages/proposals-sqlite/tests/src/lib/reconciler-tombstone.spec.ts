@@ -331,3 +331,176 @@ describe('reconcileShadowToStaging tombstones (f00519 S1)', () => {
 		}
 	});
 });
+
+describe('a moved proposal is counted once (x00599)', () => {
+	let root: string;
+	let workspacePath: string;
+	let statePath: string;
+	let databasePath: string;
+
+	beforeEach(() => {
+		root = makeRoot();
+		workspacePath = join(root, 'workspace');
+		const paths = resolveProposalsDbPaths(workspacePath);
+		statePath = paths.stateDir;
+		databasePath = paths.databasePath;
+	});
+
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+	});
+
+	const seedOne = (): void => {
+		const active = new ProposalsSqliteDriver({ path: databasePath });
+		try {
+			active.handle
+				.prepare(
+					`INSERT INTO proposals (
+					uid, slug, kind, status, title, source_path, source_blob_sha,
+					revision, content_hash, created_at, updated_at, closed_at,
+					deleted_at, last_seen_at, last_seen_commit, tombstone_reason
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				)
+				.run(
+					'x00001',
+					'x00001',
+					'fix',
+					'ready',
+					'One',
+					'ready/fixes/x00001.md',
+					null,
+					0,
+					null,
+					100,
+					100,
+					null,
+					null,
+					null,
+					null,
+					null,
+				);
+		} finally {
+			active.close();
+		}
+	};
+
+	it('reports the move as one update, and filesChanged counts it once', () => {
+		// `relocated` is assigned in reconciler-staging and never read,
+		// which reads like a term missing from `filesChanged`. It is not.
+		//
+		// `countAgainstAuthority` compares a content digest that INCLUDES
+		// `source_path`, so a file that moved already differs and is
+		// already counted as an update. Adding `relocated` to
+		// `filesChanged` would count the same move twice.
+		//
+		// This test is the evidence for that reading, so the next person
+		// to see the unused variable does not "fix" it into a
+		// double-count.
+		seedOne();
+
+		const run = reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath,
+			statePath,
+			sourceCommit: 'second-commit',
+			sha: 'tree-second',
+			files: [
+				{
+					path: 'ready/refactors/x00001.md',
+					sha: 'blob-x00001-moved',
+					raw: [
+						'---',
+						'id: x00001',
+						'title: "One"',
+						'kind: fix',
+						'status: ready',
+						'type: proposal',
+						'track: general',
+						'---',
+						'',
+						'# x00001 — One',
+						'',
+						'## goal',
+						'',
+						'Move, and be counted once.',
+					].join('\n'),
+				},
+			],
+			now: 200,
+		});
+
+		// One file moved, so exactly one entity changed — and the move is
+		// reported separately rather than added on top.
+		expect(run.relocated).toBe(1);
+
+		const staged = new ProposalsSqliteDriver({
+			path: run.stagingPath,
+			readonly: true,
+		});
+		try {
+			const row = staged.handle
+				.query<
+					{
+						readonly files_changed: number;
+						readonly entities_created: number;
+						readonly entities_updated: number;
+						readonly entities_deleted: number;
+					},
+					[]
+				>(
+					`SELECT files_changed, entities_created, entities_updated,
+					        entities_deleted
+					 FROM reconciliation_runs ORDER BY id DESC LIMIT 1`,
+				)
+				.get();
+			expect(row).toEqual({
+				files_changed: 1,
+				entities_created: 0,
+				entities_updated: 1,
+				entities_deleted: 0,
+			});
+		} finally {
+			staged.close();
+		}
+	});
+
+	it('reports no relocation when a file changed where it stands', () => {
+		// The other half of the breakdown: an edit in place is an update
+		// and not a move, so a caller can tell a reorganisation from real
+		// work.
+		seedOne();
+
+		const run = reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath,
+			statePath,
+			sourceCommit: 'second-commit',
+			sha: 'tree-second',
+			files: [
+				{
+					path: 'ready/fixes/x00001.md',
+					sha: 'blob-x00001-edited',
+					raw: [
+						'---',
+						'id: x00001',
+						'title: "One, edited"',
+						'kind: fix',
+						'status: ready',
+						'type: proposal',
+						'track: general',
+						'---',
+						'',
+						'# x00001 — One, edited',
+						'',
+						'## goal',
+						'',
+						'Change in place.',
+					].join('\n'),
+				},
+			],
+			now: 200,
+		});
+
+		expect(run.relocated).toBe(0);
+	});
+});

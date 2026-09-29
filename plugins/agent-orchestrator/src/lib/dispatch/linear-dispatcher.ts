@@ -82,7 +82,7 @@ export class LinearDispatcher {
 		this.#detector.setBudgetCap(plan.budget.maxTokensPerSubagent);
 	}
 
-	/** Snapshot the budget at any time (for the `_budget` tool). */
+	/** Snapshot the budget at any time. */
 	budget(): BudgetTracker {
 		return this.#budget;
 	}
@@ -147,8 +147,8 @@ export class LinearDispatcher {
 		// Count the step first, whatever its kind. `recordOrchestrator`
 		// below also bumps the counter, so only non-orchestrator kinds
 		// need it here — a `spawn`-only plan reported `budget.steps: 0`
-		// while its subagents were charged for real work, and `_budget`
-		// then answered 0 for a task that had just run.
+		// while its subagents were charged for real work, and the budget
+		// read-back then answered 0 for a task that had just run.
 		if (step.kind !== 'orchestrate' && step.kind !== 'verify') {
 			this.#budget.recordStep();
 		}

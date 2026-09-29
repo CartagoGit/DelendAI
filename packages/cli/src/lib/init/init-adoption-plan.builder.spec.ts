@@ -157,13 +157,57 @@ describe('buildToolUnification (f00089 U2)', () => {
 	});
 });
 
+describe('buildToolUnification — the plugins the project already declares (x00622)', () => {
+	it('counts an enabled declared plugin as ours, once', async () => {
+		const u = await buildToolUnification(
+			dirReader({
+				'delendai.config.json': JSON.stringify({
+					plugins: {
+						git: { enabled: true },
+						database: {},
+						logs: true,
+					},
+				}),
+			}),
+			{ ourPlugins: ['git', 'search'] },
+		);
+		expect(u.ours.map((n) => n.plugin)).toEqual([
+			'database',
+			'git',
+			'logs',
+			'search',
+		]);
+	});
+
+	it('does not count a plugin the config lists but switches off', async () => {
+		// The generated config lists every catalog plugin, enabled or not.
+		const u = await buildToolUnification(
+			dirReader({
+				'delendai.config.json': JSON.stringify({
+					plugins: {
+						'adaptive-optimizer': { enabled: false },
+						memory: false,
+					},
+				}),
+			}),
+			{ ourPlugins: ['git'] },
+		);
+		expect(u.ours.map((n) => n.plugin)).toEqual(['git']);
+	});
+});
+
 describe('renderSkillMigrationSection (f00089 U2)', () => {
 	it('renders the S3 heading, our skills, and the absorb branch (no skills)', async () => {
 		const inv = await detectSkillInventory(dirReader({ 'src/a.ts': '' }));
 		const md = renderSkillMigrationSection(inv);
 		expect(md).toContain('### S3 — skill migration');
 		expect(md).toContain('- **Status**: pending');
-		expect(md).toContain('advisory');
+		// The plan says what init actually does: it writes the bundled core
+		// skills, and leaves the project's own skills where they are. It
+		// used to say init never writes a skill, while it wrote eight.
+		expect(md).toContain('writes the bundled core skills');
+		expect(md).toContain('never moves, deletes or');
+		expect(md).not.toContain('never writes, deletes, or moves a skill');
 		expect(md).toContain('delendai-operator');
 		expect(md).toContain('No existing skills were detected');
 		expect(md).not.toContain('_Pending');

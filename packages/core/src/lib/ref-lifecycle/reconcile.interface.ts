@@ -19,6 +19,20 @@ export interface IObservedRef {
 	readonly name: string;
 	/** Seconds since the epoch of its tip, when the forge reports one. */
 	readonly updatedAt?: number | undefined;
+	/**
+	 * For a work ref: the branch that already contains its tip — a
+	 * publication ref, or the integration branch once it merged. The
+	 * caller measures containment (the forge can); reconcile stays pure.
+	 */
+	readonly publishedIn?: string | undefined;
+	/**
+	 * For a work ref: its proposal is still in progress on the integration
+	 * branch. A proposal keeps one work branch while it is in progress and
+	 * publishes its slices from it, so a published tip is not the end of
+	 * that branch. The caller reads the proposal state; reconcile stays
+	 * pure.
+	 */
+	readonly proposalInProgress?: boolean | undefined;
 }
 
 /** A pull request as the forge reports it, reduced to what matters here. */
@@ -34,8 +48,14 @@ export const REF_ROLES = [
 	'protected',
 	/** A publication ref with an open pull request — doing its job. */
 	'publication-open',
-	/** A publication ref whose pull request is finished. Reapable. */
+	/** A publication ref whose pull request merged. Reapable. */
 	'publication-spent',
+	/**
+	 * A publication ref whose pull request was closed without merging.
+	 * Its commits may exist nowhere else, so it is kept for its author to
+	 * reopen or to end (x00697); deleting it was a loss nothing recorded.
+	 */
+	'publication-closed',
 	/** A publication ref with no pull request at all. */
 	'publication-unclaimed',
 	/**
@@ -46,6 +66,20 @@ export const REF_ROLES = [
 	 * reporting a healthy candidate as abandoned.
 	 */
 	'publication-awaiting',
+	/**
+	 * A ref an agent is developing on, inside the policy's work
+	 * namespace. Visible so ordinary Git clients list it before there is
+	 * anything to review, and never reaped here: the pull request that
+	 * would prove it spent has not been opened yet.
+	 */
+	'work',
+	/**
+	 * A work ref whose content is already in a publication ref or the
+	 * integration branch. A work branch ends when it is published: past
+	 * that point it is a stale second copy that invites developing on the
+	 * wrong ref. Reapable, because nothing is lost by deleting it.
+	 */
+	'work-published',
 	/** Not ours: the forge's own automation. Reported, never reaped. */
 	'foreign',
 	/**
@@ -93,4 +127,10 @@ export interface IRefReconciliation {
 	 * `needsAttention` so a race does not fail a gate.
 	 */
 	readonly awaiting: readonly IRefVerdict[];
+	/**
+	 * Refs that are doing exactly what the policy asks: work refs an
+	 * agent is developing on. Reported rather than omitted, so a pass
+	 * never goes silent about a ref it chose not to act on.
+	 */
+	readonly active: readonly IRefVerdict[];
 }
