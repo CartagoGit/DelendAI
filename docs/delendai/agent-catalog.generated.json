@@ -1721,14 +1721,6 @@
 				"date": "2026-09-19"
 			},
 			{
-				"id": "x00641",
-				"title": "A hung CI run cannot hold the queue",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-25"
-			},
-			{
 				"id": "x00760",
 				"title": "A shared-checkout-merge project can land its work",
 				"track": "hosts",

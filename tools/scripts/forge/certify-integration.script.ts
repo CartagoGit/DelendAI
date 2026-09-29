@@ -39,38 +39,59 @@ export type {
 export const CERTIFYING_WORKFLOW = 'ci.yml';
 
 /**
+ * How many full runs of one commit may end cancelled before a pass stops
+ * starting another. A job over its `timeout-minutes` ends its run
+ * `cancelled` (measured on 2026-09-29: job and run both report
+ * `cancelled`, and only the annotation "The job has exceeded the maximum
+ * execution time" tells it from a person's cancel), so a cancelled run is
+ * run again. One that is cancelled every time would otherwise be started
+ * on every pass for ever; after this many it is a failure a person reads.
+ */
+export const MAX_CANCELLED_FULL_RUNS = 3;
+
+/** Runs that validate `sha` in full: a push or a dispatch run everything. */
+const fullRunsOf = (
+	runs: readonly ICertificationRun[],
+	sha: string,
+): readonly ICertificationRun[] =>
+	runs.filter(
+		(run) =>
+			run.head_sha === sha &&
+			(run.event === 'push' || run.event === 'workflow_dispatch'),
+	);
+
+const isCancelled = (run: ICertificationRun): boolean =>
+	run.conclusion === 'cancelled';
+
+/**
  * Whether `sha` still needs a full run: none that was started by a push
- * or a dispatch (both run everything) is running or finished for it.
+ * or a dispatch is running or finished for it, other than cancelled ones,
+ * and fewer than {@link MAX_CANCELLED_FULL_RUNS} were cancelled.
  */
 export const needsCertification = (
 	runs: readonly ICertificationRun[],
 	sha: string,
-): boolean =>
-	!runs.some(
-		(run) =>
-			run.head_sha === sha &&
-			(run.event === 'push' || run.event === 'workflow_dispatch') &&
-			run.conclusion !== 'cancelled',
-	);
+): boolean => {
+	const full = fullRunsOf(runs, sha);
+	return full.every(isCancelled) && full.length < MAX_CANCELLED_FULL_RUNS;
+};
 
 /**
  * Whether `sha` has passed its full validation. Only a push or a
- * dispatched run counts — a pull-request run may have run only part —
- * and a cancelled one says nothing either way.
+ * dispatched run counts — a pull-request run may have run only part — and
+ * a cancelled one says nothing either way, until
+ * {@link MAX_CANCELLED_FULL_RUNS} of them say the commit does not finish.
  */
 export const certificationOf = (
 	runs: readonly ICertificationRun[],
 	sha: string,
 ): IIntegrationCertification => {
-	const full = runs.filter(
-		(run) =>
-			run.head_sha === sha &&
-			(run.event === 'push' || run.event === 'workflow_dispatch') &&
-			run.conclusion !== 'cancelled',
-	);
+	const all = fullRunsOf(runs, sha);
+	const full = all.filter((run) => !isCancelled(run));
 	if (full.some((run) => run.conclusion === 'success')) return 'certified';
 	if (full.some((run) => run.status !== 'completed')) return 'pending';
-	return full.length > 0 ? 'red' : 'uncertified';
+	if (full.length > 0) return 'red';
+	return all.length >= MAX_CANCELLED_FULL_RUNS ? 'red' : 'uncertified';
 };
 
 /**
@@ -138,8 +159,12 @@ const main = (): void => {
 	) as readonly ICertificationRun[];
 	recordCertification(root, sha, certificationOf(runs, sha));
 	if (!needsCertification(runs, sha)) {
+		const cancelled = fullRunsOf(runs, sha).filter(isCancelled).length;
 		console.log(
-			`certify-integration: ${integration} at ${sha.slice(0, 9)} already has its full run.`,
+			cancelled >= MAX_CANCELLED_FULL_RUNS &&
+				fullRunsOf(runs, sha).every(isCancelled)
+				? `certify-integration: ${integration} at ${sha.slice(0, 9)} had ${cancelled} full runs cancelled (a job over its timeout, or by hand); not starting another — read the runs.`
+				: `certify-integration: ${integration} at ${sha.slice(0, 9)} already has its full run.`,
 		);
 		return;
 	}
