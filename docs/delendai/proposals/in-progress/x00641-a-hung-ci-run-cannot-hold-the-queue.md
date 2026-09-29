@@ -75,9 +75,10 @@ green full run took about seven minutes.
 
 ### S2 — A run that timed out is re-dispatched, not read as red
 
-- **Status**: pending
+- **Status**: in-progress
 - **Gate**: `npx vitest run tools/scripts/forge/certify-integration.script.spec.ts`
 - **Files**: `tools/scripts/forge/certify-integration.script.ts`,
+  `tools/scripts/forge/certify-integration.interface.ts`,
   `tools/scripts/forge/certify-integration.script.spec.ts`
 
 With S1 a hung job ends, but the run it belongs to then ends
@@ -87,6 +88,21 @@ run whose only failures are timed-out or cancelled jobs from a run where
 a check failed, and dispatch a fresh run for the first. Before writing
 it, capture how the forge reports a job timeout (job `conclusion`, the
 run's `conclusion`) from a real timed-out run instead of assuming it.
+
+**Measured 2026-09-29.** Two `quality-gate (collect)` jobs reached their
+30-minute bound (runs `36590926775` and `36574889186`). For each, the
+job's check run and the workflow run both report `conclusion: cancelled`;
+the only difference from a person's cancel is the annotation "The job has
+exceeded the maximum execution time of 30m0s". So a timed-out run is not
+read as red: `certificationOf` and `needsCertification` already ignore a
+cancelled run, and the next pass dispatches a fresh one.
+
+What was missing is the other side: a commit whose full run is cancelled
+every time (a job that always hangs) would be dispatched again on every
+pass, for ever. `MAX_CANCELLED_FULL_RUNS` (3) bounds it: after that many
+cancelled full runs and none that finished, `needsCertification` stops
+starting another, the certification is `red`, and the pass says why. A
+run that finishes still decides, whatever was cancelled before it.
 
 ## dependency graph
 
