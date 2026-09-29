@@ -129,6 +129,32 @@ describe('workflow-history-depth (x00583)', () => {
 		expect(historyCommandsIn('git diff --name-only')).toEqual([]);
 	});
 
+	it('refuses a job handed the pull request base on the default shallow clone', () => {
+		// `plan-tests`: the diff against the base happened two modules
+		// below the script the job runs, where no command pattern reaches.
+		const planner = (setup: string): string =>
+			workflow(
+				job(
+					'plan-tests',
+					`${setup}\n            - run: bun tools/scripts/ci/test-zones.script.ts --matrix --base=\${{ github.event.pull_request.base.sha || '' }}`,
+				),
+			);
+		const shallow = planner(
+			'            - uses: ./.github/actions/setup-bun-repo',
+		);
+		expect(
+			findShallowHistoryJobs([{ file: 'ci.yml', source: shallow }]).map(
+				(each) => each.job,
+			),
+		).toEqual(['plan-tests']);
+		const deep = planner(
+			"            - uses: ./.github/actions/setup-bun-repo\n              with:\n                  fetch-depth: '0'",
+		);
+		expect(
+			findShallowHistoryJobs([{ file: 'ci.yml', source: deep }]),
+		).toEqual([]);
+	});
+
 	it('reads a depth of zero however it is quoted', () => {
 		for (const spelling of [
 			'fetch-depth: 0',
