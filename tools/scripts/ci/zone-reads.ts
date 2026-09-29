@@ -10,27 +10,24 @@
  * files it read and the root directories it listed during a full run, and
  * a change reaches a zone only through something that zone touched.
  *
- * Conservative in every direction where it could be wrong:
+ * Conservative where it could be wrong:
  * - no map, or an unreadable one: run everything;
  * - a file at the repository root, or under `.github/`: run everything
  *   (configuration can affect any zone in ways no read shows);
- * - a changed file reaches a zone that read it, read anything else in the
- *   same directory, or listed any directory above it, so a new file in a
- *   folder a zone scans still reaches that zone.
+ * - a changed file reaches a zone that read it;
+ * - a file added or removed reaches a zone that listed its directory, so a
+ *   new file in a folder a zone scans still reaches that zone;
+ * - a file under a zone's own paths reaches that zone.
+ *
+ * Listing a directory depends on which files it holds, not on what they
+ * say. The first map also sent every change to any zone that listed a
+ * directory ABOVE it, and `core`, `plugins` and `tools` list `docs/` and
+ * `tools/`: a pull request that edited two lint scripts and a proposal ran
+ * all eleven shards (#648, 2026-09-29).
  */
 import { dirname } from 'node:path';
 
-import type { IZoneReadMap } from './test-zones.interface';
-
-const ancestorsOf = (path: string): string[] => {
-	const out: string[] = [];
-	let dir = dirname(path);
-	while (dir !== '.' && dir !== '/' && dir !== '') {
-		out.push(dir);
-		dir = dirname(dir);
-	}
-	return out;
-};
+import type { IRootChange, IZoneReadMap } from './test-zones.interface';
 
 const runsEverything = (path: string): boolean =>
 	!path.includes('/') || path.startsWith('.github/');
@@ -40,20 +37,25 @@ const runsEverything = (path: string): boolean =>
  * everything".
  */
 export const zonesReadingRootFiles = (
-	rootFiles: readonly string[],
+	changes: readonly IRootChange[],
 	map: IZoneReadMap | undefined,
+	ownPaths: Readonly<Record<string, readonly string[]>> = {},
 ): ReadonlySet<string> | undefined => {
 	if (map === undefined) return undefined;
 	const zones = new Set<string>();
-	for (const file of rootFiles) {
-		if (runsEverything(file)) return undefined;
-		const parent = dirname(file);
-		const ancestors = ancestorsOf(file);
+	for (const change of changes) {
+		if (runsEverything(change.path)) return undefined;
+		const parent = dirname(change.path);
 		for (const [zone, touched] of Object.entries(map.zones)) {
 			if (
-				touched.readIn.includes(parent) ||
-				ancestors.some((dir) => touched.listed.includes(dir))
+				touched.read.includes(change.path) ||
+				(change.listing && touched.listed.includes(parent))
 			) {
+				zones.add(zone);
+			}
+		}
+		for (const [zone, paths] of Object.entries(ownPaths)) {
+			if (paths.some((dir) => change.path.startsWith(`${dir}/`))) {
 				zones.add(zone);
 			}
 		}
@@ -76,7 +78,7 @@ export const parseZoneReadMap = (
 			return undefined;
 		}
 		for (const entry of Object.values(parsed.zones)) {
-			if (!Array.isArray(entry.readIn) || !Array.isArray(entry.listed))
+			if (!Array.isArray(entry.read) || !Array.isArray(entry.listed))
 				return undefined;
 		}
 		return parsed;

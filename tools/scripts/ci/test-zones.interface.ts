@@ -54,14 +54,23 @@ export interface IZoneReadMap {
 			string,
 			{
 				/**
-				 * Root directories the zone read a file in. A change reaches
-				 * the zone through any file in them, including a new one, so
-				 * the map need not name each file nor churn when one is added.
+				 * Root files the zone read. A change to one of them reaches
+				 * the zone; a change to a file it never read does not.
 				 */
-				readonly readIn: readonly string[];
-				/** Root directories the zone listed or stat-ed. */
+				readonly read: readonly string[];
+				/**
+				 * Root directories the zone listed or stat-ed. A file added to
+				 * or removed from one of them changes what the zone sees.
+				 */
 				readonly listed: readonly string[];
 			}
 		>
 	>;
+}
+
+/** A changed path, and whether its directory's listing changed with it. */
+export interface IRootChange {
+	readonly path: string;
+	/** Added or deleted (a rename is both): the directory now lists differently. */
+	readonly listing: boolean;
 }

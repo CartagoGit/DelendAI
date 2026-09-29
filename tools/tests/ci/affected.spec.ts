@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	computeAffected,
 	fileToWorkspace,
+	gitDiffChanges,
 	gitDiffNames,
 	main,
 	type IPackageGraph,
@@ -187,6 +188,47 @@ describe('affected (c00138) — CLI', () => {
 });
 
 describe('affected (c00138) — git wrapper', () => {
+	it('gitDiffChanges says which files a branch added, deleted or edited since it left its base', async () => {
+		const { execFileSync } = await import('node:child_process');
+		const { mkdtempSync, rmSync, writeFileSync } = await import('node:fs');
+		const { tmpdir } = await import('node:os');
+		const { join } = await import('node:path');
+		const root = mkdtempSync(join(tmpdir(), 'diff-changes-'));
+		const git = (...args: string[]) =>
+			execFileSync('git', args, { cwd: root, stdio: 'ignore' });
+		try {
+			git('init', '-q', '-b', 'develop');
+			git('config', 'user.email', 'd@example.test');
+			git('config', 'user.name', 'D');
+			git('config', 'commit.gpgsign', 'false');
+			writeFileSync(join(root, 'keep.md'), 'a\n');
+			writeFileSync(join(root, 'gone.md'), 'a\n');
+			git('add', '-A');
+			git('commit', '-q', '-m', 'base');
+			git('switch', '-q', '-c', 'work');
+			writeFileSync(join(root, 'keep.md'), 'b\n');
+			writeFileSync(join(root, 'new.md'), 'a\n');
+			git('rm', '-q', 'gone.md');
+			git('add', '-A');
+			git('commit', '-q', '-m', 'work');
+			// The base moves on; its change is not the branch's.
+			git('switch', '-q', 'develop');
+			writeFileSync(join(root, 'later.md'), 'a\n');
+			git('add', '-A');
+			git('commit', '-q', '-m', 'later');
+			expect(gitDiffChanges('develop', 'work', root)).toEqual([
+				{ path: 'gone.md', listing: true },
+				{ path: 'keep.md', listing: false },
+				{ path: 'new.md', listing: true },
+			]);
+			expect(() => gitDiffChanges('nope', 'work', root)).toThrow(
+				/git diff/,
+			);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
 	it('gitDiffNames surfaces a qualified error on bad refs', () => {
 		expect(() => gitDiffNames('definitely-not-a-ref-xyz', 'HEAD')).toThrow(
 			/git diff/,

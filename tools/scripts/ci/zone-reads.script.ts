@@ -12,7 +12,7 @@
  * Only paths that exist in the repository are kept: the recorder also
  * sees the module resolver probing names that never existed (`zod.ts`,
  * `node:util.js`), which are not reads of anything. A path that is a
- * directory counts as listed; a file as a read in its directory.
+ * directory counts as listed; a file as read.
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -24,7 +24,7 @@ import {
 	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
 import { ZONE_READ_MAP_PATH } from './test-zones.constant';
@@ -35,19 +35,19 @@ export const buildZoneReadMap = (
 	raw: Readonly<Record<string, readonly string[]>>,
 	kindOf: (path: string) => 'file' | 'dir' | undefined,
 ): IZoneReadMap => {
-	const zones: Record<string, { readIn: string[]; listed: string[] }> = {};
+	const zones: Record<string, { read: string[]; listed: string[] }> = {};
 	for (const [zone, paths] of Object.entries(raw).sort(([a], [b]) =>
 		a.localeCompare(b),
 	)) {
-		const readIn = new Set<string>();
+		const read = new Set<string>();
 		const listed = new Set<string>();
 		for (const path of paths) {
 			const kind = kindOf(path);
-			if (kind === 'file') readIn.add(dirname(path));
+			if (kind === 'file') read.add(path);
 			else if (kind === 'dir') listed.add(path);
 		}
 		zones[zone] = {
-			readIn: [...readIn].sort(),
+			read: [...read].sort(),
 			listed: [...listed].sort(),
 		};
 	}
@@ -121,7 +121,7 @@ if (import.meta.main) {
 	);
 	for (const [zone, touched] of Object.entries(map.zones)) {
 		console.log(
-			`${zone}: read in ${touched.readIn.length} root dir(s), listed ${touched.listed.length}`,
+			`${zone}: read ${touched.read.length} root file(s), listed ${touched.listed.length} dir(s)`,
 		);
 	}
 }
