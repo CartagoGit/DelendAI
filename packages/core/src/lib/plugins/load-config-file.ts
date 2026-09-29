@@ -363,25 +363,15 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	readonly coreVersion?: string;
 }
 
+import type { IDelendaiAgentPolicyConfig } from '../contracts/interfaces/agent-policy.interface';
+
 export interface IDelendaiCoreConfig {
 	/** Global agent execution mode and engineering principles. */
 	readonly agentPolicy?: IDelendaiAgentPolicyConfig;
 }
 
-export interface IDelendaiAgentPolicyConfig {
-	readonly autonomous?: boolean;
-	readonly principles?: ReadonlyArray<string>;
-}
-
-export const DEFAULT_AGENT_POLICY: Required<IDelendaiAgentPolicyConfig> = {
-	autonomous: true,
-	principles: [
-		'Apply SOLID architecture where it improves ownership and changeability.',
-		'Use good engineering practices and keep the code clear and maintainable.',
-		'Reuse existing code and abstractions before introducing duplication.',
-		'Keep naming, files, and folders homogeneous with the surrounding project.',
-	],
-};
+export type { IDelendaiAgentPolicyConfig } from '../contracts/interfaces/agent-policy.interface';
+export { DEFAULT_AGENT_POLICY } from '../contracts/constants/agent-policy.constant';
 
 /** Default config file name looked up at the workspace root. */
 export const DEFAULT_CONFIG_FILENAME = 'delendai.config.json';

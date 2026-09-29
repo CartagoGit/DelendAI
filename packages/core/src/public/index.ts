@@ -147,6 +147,7 @@ export type { PermissionCategory } from '../lib/contracts/interfaces/permission.
 export { isFirstPartySpecifier } from '../lib/plugins/classify-origin';
 export { resolvePublicToolIdentity } from '../lib/contracts/resolvers/safe-tool-identity.resolver';
 export { managedPluginEnvironmentRequirements } from '../lib/plugins/managed-plugin-environment';
+// @adopter-api a host that assembles its own agent prompt reads the policy the server applies when a project states none
 export {
 	CONFIG_FILE_SCHEMA,
 	DEFAULT_AGENT_POLICY,

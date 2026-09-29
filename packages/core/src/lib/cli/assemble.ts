@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { agentPolicyInstructions } from '../prompts/agent-policy-instructions.helper';
 import { createHostServerSlot } from '../plugins/capture-server';
 import { resolveProgressiveDisclosure } from '../plugins/preset-catalog';
 import { readFile as readFileAsync } from 'node:fs/promises';
@@ -988,6 +989,7 @@ export const assembleCliConfig = async (
 	};
 
 	const config: IDelendaiHostConfig = {
+		instructions: agentPolicyInstructions(fileConfig.core?.agentPolicy),
 		onClientInitialized: (client) => {
 			handshakeClientName = client.name;
 		},

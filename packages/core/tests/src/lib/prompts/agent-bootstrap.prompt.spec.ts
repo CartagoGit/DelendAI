@@ -1,25 +1,31 @@
+import type {
+	McpServer,
+	RegisteredPrompt,
+} from '@modelcontextprotocol/sdk/server/mcp.js';
+import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
 import { buildAgentBootstrapPromptRegistration } from '@delendai/core/lib/prompts/agent-bootstrap.prompt';
 
+interface IPromptResult {
+	readonly messages: ReadonlyArray<{
+		readonly content: { readonly text: string };
+	}>;
+}
+
 const fakeServer = () => {
-	let handler:
-		| (() => Promise<{ messages: Array<{ content: { text: string } }> }>)
-		| undefined;
+	let handler: ((...args: never[]) => unknown) | undefined;
 	return {
-		server: {
-			registerPrompt: (
-				_name: string,
-				_definition: unknown,
-				value: unknown,
-			) => {
-				handler = value as typeof handler;
+		server: fakePartial<McpServer>({
+			registerPrompt: (_name, _definition, callback) => {
+				handler = callback;
+				return fakePartial<RegisteredPrompt>({});
 			},
-		},
-		invoke: async () => {
+		}),
+		invoke: async (): Promise<IPromptResult> => {
 			if (handler === undefined)
 				throw new Error('prompt was not registered');
-			return handler();
+			return (await handler()) as IPromptResult;
 		},
 	};
 };
@@ -40,21 +46,19 @@ describe('agent bootstrap prompt', () => {
 				namespacePrefix: 'delendai',
 			},
 			agentPolicy: {
-				autonomous: false,
+				autonomous: true,
 				principles: ['Prefer existing abstractions.'],
 			},
 		});
 		const fake = fakeServer();
-		await registration.register(fake.server as never);
+		await registration.register(fake.server);
 		const result = await fake.invoke();
 		const text = result.messages[0]?.content.text ?? '';
-		expect(text).toContain(
-			'collaborative / ask before autonomous execution',
-		);
+		expect(text).toContain('Working mode: autonomous.');
 		expect(text).toContain('- Prefer existing abstractions.');
 	});
 
-	it('uses the autonomous engineering defaults when omitted', async () => {
+	it('asks the user by default when the project states no policy', async () => {
 		const registration = buildAgentBootstrapPromptRegistration('delendai', {
 			sources: emptySources,
 			server: {
@@ -64,9 +68,37 @@ describe('agent bootstrap prompt', () => {
 			},
 		});
 		const fake = fakeServer();
-		await registration.register(fake.server as never);
+		await registration.register(fake.server);
 		const text = (await fake.invoke()).messages[0]?.content.text ?? '';
-		expect(text).toContain('autonomous by default');
+		expect(text).toContain('Working mode: collaborative.');
+		expect(text).toContain('never answer a question in their place');
 		expect(text).toContain('Apply SOLID architecture');
+	});
+
+	it('names the proposals an agent can act on now', async () => {
+		const registration = buildAgentBootstrapPromptRegistration('delendai', {
+			sources: {
+				...emptySources,
+				proposals: () => [
+					{
+						id: 'f00001',
+						title: 'Ready work',
+						track: 'hosts',
+						status: 'ready',
+						kind: 'feat',
+					},
+				],
+			},
+			server: {
+				name: 'test',
+				version: '1.0.0',
+				namespacePrefix: 'delendai',
+			},
+			now: () => new Date('2026-09-29T00:00:00Z'),
+		});
+		const fake = fakeServer();
+		await registration.register(fake.server);
+		const text = (await fake.invoke()).messages[0]?.content.text ?? '';
+		expect(text).toContain('Actionable proposals: f00001');
 	});
 });

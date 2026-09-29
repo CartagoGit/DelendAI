@@ -5,6 +5,7 @@ import type {
 	IToolSummary,
 	IDelendaiToolOutputs,
 } from '@delendai/core/contracts';
+import { agentPolicyLines } from '@delendai/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { formatToolName } from './_namespace';
@@ -15,15 +16,6 @@ const ACTIONABLE_PROPOSAL_STATUSES = new Set<IProposalSummary['status']>([
 	'in-progress',
 	'paused',
 ]);
-const DEFAULT_AGENT_POLICY = {
-	autonomous: true,
-	principles: [
-		'Apply SOLID architecture where it improves ownership and changeability.',
-		'Use good engineering practices and keep the code clear and maintainable.',
-		'Reuse existing code and abstractions before introducing duplication.',
-		'Keep naming, files, and folders homogeneous with the surrounding project.',
-	],
-} as const;
 
 /**
  * v00129 S1 (AUD-B01): `agent_catalog`'s WIRE-DECLARED `outputSchema` is
@@ -181,11 +173,9 @@ const promptTextOf = async (snapshot: ICatalogSnapshot): Promise<string> => {
 				content: {
 					type: 'text',
 					text: [
-						`Working mode: ${DEFAULT_AGENT_POLICY.autonomous ? 'autonomous by default' : 'collaborative / ask before autonomous execution'}.`,
-						'Engineering principles:',
-						...DEFAULT_AGENT_POLICY.principles.map(
-							(principle) => `- ${principle}`,
-						),
+						// The client cannot read the project's config: it states
+						// the default the server applies without one.
+						...agentPolicyLines(undefined),
 						'1. Call `delendai_overview` first to map the server and confirm the loaded plugin surface.',
 						'2. Call `delendai_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
 						'3. Narrow with `section` or `query` before doing work, then pick the matching proposal or skill instead of rereading docs broadly.',
