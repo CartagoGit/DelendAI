@@ -2,7 +2,7 @@
 id: r00049
 title: "INDEX.json becomes a derived view, not an authoritative source"
 kind: refactor
-status: ready
+status: retired
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -11,12 +11,30 @@ audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
   finding: AUD-INDEX-AUTHORITY-015
   snapshot: 91bbbff76ce35452c8c8b6e3bf2129a490bf7c94
+superseded-by: q00022
 related:
   - q00022
   - f00514
+last-transition-id: 2f87a930-554f-4bd7-bbfd-ff240269b1a9
+last-correlation-id: 2f87a930-554f-4bd7-bbfd-ff240269b1a9
+last-transition-from: ready
 ---
 
 # r00049 — INDEX.json as derived view
+
+> **SUPERSEDED by `q00022` S4 (checked against the tree 2026-09-29).**
+> The three files this proposal demotes —
+> `docs/delendai/proposals/INDEX.json`, `plans/INDEX.json` and
+> `slices/INDEX.json` — no longer exist: x00052 moved the registry to
+> `.cache/delendai/proposals/index.json`, a regenerable cache. Its
+> premise that "the DB is the truth" was decided the other way:
+> `AUTHORITIES.md` declares the markdown under `docs/delendai/proposals`
+> the authority of `proposal-status`, with the registry and the SQLite
+> database as its two projections, and q00022 S4 records why the
+> authority stays there (a person's direct edit must be what the next
+> read returns). No JSON file is an authority today. What is left of
+> this proposal — the registry leaving the read path, SQLite as the one
+> projection readers use — is q00022 S4 phases 2 and 3, which own it.
 
 ## Goal
 
