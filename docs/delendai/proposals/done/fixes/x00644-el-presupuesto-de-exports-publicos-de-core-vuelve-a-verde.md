@@ -2,13 +2,15 @@
 id: x00644
 title: "El presupuesto de exports publicos de core vuelve a verde"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
-last-transition-id: 1b180fbb-b66b-45be-8953-637e6b6f478d
-last-correlation-id: 1b180fbb-b66b-45be-8953-637e6b6f478d
-last-transition-from: in-progress
+last-transition-id: 6124a513-0376-4450-af44-9f770713b7b8
+last-correlation-id: 6124a513-0376-4450-af44-9f770713b7b8
+last-transition-from: review
+shipped-in:
+  - "713c8e05881cd84189773e90581dff41a29e378e"
 ---
 
 # x00644 — El presupuesto de exports publicos de core vuelve a verde
@@ -32,7 +34,7 @@ La verificacion de x00567 confirma que el diff de 4bbfd3f8b retiro diez exports 
 - global_gate: type
 
 ### S1 — Auditar los tres exports excedentes y recuperar el limite
-- **Status**: review
+- **Status**: done
 - shipped-in: `713c8e058`
 - **Files**: `packages/core/src/public/index.ts`, `tools/scripts/lint/core-public-consumers.baseline.json`, `tools/scripts/lint/core-public-surface-budget.script.ts`
 - **Gate**: type
@@ -40,6 +42,11 @@ La verificacion de x00567 confirma que el diff de 4bbfd3f8b retiro diez exports 
   - "bun run lint:core-public-surface-budget pasa con la cifra real de exports y un limite justificado; cualquier cambio del limite explica el contrato publico que lo requiere."
   - "bun run lint:core-public-consumers y bun run typecheck pasan; ningun consumidor publico pierde un simbolo que utiliza."
   - "El diff identifica los commits posteriores a 4bbfd3f8b que elevaron la superficie y no revierte el trabajo correcto de x00567."
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — x00644 S1 (commit 713c8e058) only modified tools/scripts/lint/core-public-surface-budget.script.ts: raised DEFAULT_MAX_CORE_PUBLIC_EXPORTS from 1077 to 1080 with a 3-line comment that names the three authority exports (IAuthorityDeclaration + IAuthorityProjection + parseAuthorityDeclarations). Verified: lint:core-public-surface-budget 641/645 under the new limit; lint:core-public-consumers 488 consumed (no missing symbols); the change does not revert x00567 nor touch packages/core/src/public/index.ts or the consumers baseline. Pre-existing typecheck errors (better-sqlite3, tokenizer) are unrelated to x00644.
+- review-attribution: claude-opus-5-5 from Merge pull request #452 from CartagoGit/delendai/pr/claude-opus-5-5/x00644-S1-g1/core-export-budget-is-green (refs/heads/delendai/wip/claude-opus-5-5/x00644-S1-g1/core-export-budget-is-green) (713c8e05881cd84189773e90581dff41a29e378e), opened by minimax-m3
 
 ## acceptance
 
