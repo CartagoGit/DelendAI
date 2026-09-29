@@ -61,6 +61,13 @@ export interface ICommitBranchInput {
 	readonly workRefTemplate?: string;
 	/** Policy publication namespace (`branches.publicationRefPrefix`). */
 	readonly publicationRefPrefix?: string;
+	/** Policy release branch (`branches.release`). */
+	readonly releaseBranch?: string;
+	/**
+	 * A CI run's checkout with nothing staged: the branch is what the forge
+	 * merged, not a commit being made here.
+	 */
+	readonly ciCheckout?: boolean;
 }
 
 /** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
@@ -93,7 +100,7 @@ const inNamespace = (branch: string, prefix: string | undefined): boolean =>
 	branch.startsWith(shortRef(prefix));
 
 export type CommitBranchResult =
-	| { readonly ok: true }
+	| { readonly ok: true; readonly note?: string }
 	| { readonly ok: false; readonly blockers: readonly string[] };
 
 /** Pure decision engine. No I/O, no side effects. */
@@ -123,6 +130,22 @@ export const lintCommitBranch = (
 	// shared branch.
 	if (currentBranch === integrationBranch) {
 		return { ok: true };
+	}
+
+	// The release branch only ever receives merged pull requests, and a
+	// push run checks it out by name to validate what was merged. The
+	// question this guard answers — may a commit be made here — has no
+	// commit to ask about there, and refusing it turned the release's own
+	// validation red on every promotion. Locally it is still refused.
+	if (
+		input.ciCheckout === true &&
+		input.releaseBranch !== undefined &&
+		currentBranch === input.releaseBranch
+	) {
+		return {
+			ok: true,
+			note: `NOT_APPLICABLE — a CI checkout of the release branch \`${currentBranch}\` with nothing staged is a merged pull request, not a commit`,
+		};
 	}
 
 	// With the worktree gate on, `agent/*` branches are the expected
@@ -255,7 +278,9 @@ const readStagedFiles = (cwd: string): string[] => {
 
 const formatReport = (result: CommitBranchResult): string => {
 	if (result.ok) {
-		return '✓ commit-branch-discipline: ok\n';
+		return result.note === undefined
+			? '✓ commit-branch-discipline: ok\n'
+			: `✓ commit-branch-discipline: ${result.note}\n`;
 	}
 	return [
 		'✗ commit-branch-discipline: blocked',
@@ -289,6 +314,7 @@ const main = async (): Promise<number> => {
 	// A fixture or foreign directory may have no delendai.config.json; the
 	// namespaces are then simply unknown and only develop/release pass.
 	let namespaces: {
+		releaseBranch?: string;
 		integrationBranch?: string;
 		workRefPrefix?: string;
 		workRefTemplate?: string;
@@ -301,6 +327,7 @@ const main = async (): Promise<number> => {
 			workRefPrefix: branches.workRefPrefix,
 			workRefTemplate: branches.workRefTemplate,
 			publicationRefPrefix: branches.publicationRefPrefix,
+			releaseBranch: branches.release,
 		};
 	} catch {
 		namespaces = {};
@@ -311,6 +338,7 @@ const main = async (): Promise<number> => {
 		currentBranch: branch,
 		agentWorktreeEnabled,
 		...namespaces,
+		ciCheckout: process.env.CI === 'true' && staged.length === 0,
 	});
 	const report = formatReport(result);
 	if (result.ok) {

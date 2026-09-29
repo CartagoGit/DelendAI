@@ -16,7 +16,11 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { IPluginLogInput } from '@delendai/core/public';
-import { RecordBuffer } from '../../../src/lib/record-buffer';
+import {
+	drainLiveBuffers,
+	RecordBuffer,
+	trackBackgroundWork,
+} from '../../../src/lib/record-buffer';
 
 const readLines = (path: string): string[] =>
 	readFileSync(path, 'utf8')
@@ -184,5 +188,33 @@ describe('RecordBuffer (CRITICAL C2 buffered append)', () => {
 			await buf.flush();
 			expect(overrideSpy).toHaveBeenCalledTimes(1);
 		});
+	});
+});
+
+describe('drainLiveBuffers waits for the background writes', () => {
+	it('returns only once tracked work, and the work it starts, has settled', async () => {
+		const done: string[] = [];
+		let release: () => void = () => undefined;
+		const gate = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		trackBackgroundWork(
+			gate.then(() => {
+				done.push('first');
+				trackBackgroundWork(
+					Promise.resolve().then(() => {
+						done.push('second');
+					}),
+				);
+			}),
+		);
+		trackBackgroundWork(Promise.reject(new Error('ignored')));
+
+		const drained = drainLiveBuffers().then(() => done.push('drained'));
+		await Promise.resolve();
+		expect(done).toEqual([]);
+		release();
+		await drained;
+		expect(done).toEqual(['first', 'second', 'drained']);
 	});
 });
