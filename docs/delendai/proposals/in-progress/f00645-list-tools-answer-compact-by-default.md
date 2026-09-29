@@ -154,12 +154,27 @@ them, but they are routers, not lists.
 
 ### S4 — A lint keeps new list tools compact
 
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S3]
-- **Files**: `tools/scripts/lint/compact-list-tools.script.ts`
-- **Gate**: type
+- **Files**:
+  - `tools/scripts/lint/compact-list-tools.script.ts`
+  - `tools/scripts/lint/compact-list-tools.script.spec.ts`
+  - `tools/scripts/lint/compact-list-tools.baseline.json`
+  - `tools/scripts/types/generate-tool-types.script.ts`
+  - `tools/scripts/types/emit-tool-types.script.ts`
+  - `tools/scripts/types/emit-tool-types.script.d.ts`
+  - `package.json`
+  - `.github/workflows/ci.yml`
+- **Gate**: `npx vitest run tools/scripts/lint/compact-list-tools.script.spec.ts`
 - acceptance:
   - "A tool whose output is an array of objects with more than five fields, and whose input takes neither an item id nor `detail`, is a finding."
+
+`lint:compact-list-tools` reads every registered tool's output and input
+schema from the server `types:generate` assembles (the harvest now keeps
+the input too). An entry that carries its own `detailsId` counts as
+compact. On 2026-09-29 it measured 205 tools; the 28 that already list full
+items by default are baselined by name, and a new one fails. It runs in the
+`lint-presets` CI job and in `validate:run`.
 
 ## dependency graph
 
