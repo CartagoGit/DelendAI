@@ -2,10 +2,13 @@
 id: x00759
 title: "Every agent is told its project's work model before it works"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
+last-transition-id: c49277a1-8f54-417a-9bb1-0e4d915c496f
+last-correlation-id: c49277a1-8f54-417a-9bb1-0e4d915c496f
+last-transition-from: in-progress
 ---
 
 # x00759 — Every agent is told its project's work model before it works
@@ -48,6 +51,9 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
   - "The connect-time server instructions and the agent_bootstrap prompt carry the same work-model lines, rendered from the resolved development policy."
   - "The compact overview carries the profile, how to start work and how work lands, within its token budget."
   - "Under shared-checkout-merge the lines say work merges into the integration branch after the local gate and that no pull request is opened; under shared-checkout-pr they say pull request; under shared-direct they say direct commit."
+- shipped-in: `6f377971d124`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A refusal names the profile and its next step
 - **Status**: pending
@@ -57,6 +63,9 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
 - acceptance:
   - "A commit or write refused on the integration branch states the active profile, how to start work and how that profile lands it, from the same renderer."
   - "Specs prove the remedies differ between shared-checkout-merge and shared-checkout-pr."
+- shipped-in: `6f377971d124`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Static host docs defer to the served work model
 - **Status**: pending
@@ -66,6 +75,9 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
 - acceptance:
   - "AGENT-BOOTSTRAP.md no longer names a landing mechanism; it points to the server-served work model and stays within 32,000 bytes."
   - "A lint run in CI fails when a host instruction document hardcodes a landing mechanism, and fails when it finds no document to scan."
+- shipped-in: `6f377971d124`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
