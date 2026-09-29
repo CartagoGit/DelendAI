@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
 	collectProposalMarkdownAtCommit,
+	refDrift,
 	resolveCommit,
 } from '../../../../src/lib/services/proposal-markdown-at-commit';
 
@@ -136,5 +137,35 @@ describe('the proposal tree as a commit holds it', () => {
 			collectProposalMarkdownAtCommit(root, root, 'develop'),
 		).toThrow('is not inside');
 		expect(proposalsDir.startsWith(root)).toBe(true);
+	});
+});
+
+describe('a reference that moved while it was read', () => {
+	it('is reported when the branch moved or went away, and never for a SHA', () => {
+		const { root } = repository();
+		write(root, 'README.md', '# one\n');
+		const read = commitAll(root, 'one');
+		git(root, 'branch', 'release');
+
+		// Nothing moved yet.
+		expect(refDrift(root, 'develop', read)).toBeNull();
+		expect(refDrift(root, read, read)).toBeNull();
+
+		write(root, 'README.md', '# two\n');
+		const moved = commitAll(root, 'two');
+		expect(refDrift(root, 'develop', read)).toEqual({
+			from: read,
+			to: moved,
+			reason: 'ref-moved',
+		});
+		// A SHA names the commit it read for ever.
+		expect(refDrift(root, read, read)).toBeNull();
+
+		git(root, 'branch', '-D', 'release');
+		expect(refDrift(root, 'release', read)).toEqual({
+			from: read,
+			to: null,
+			reason: 'ref-gone',
+		});
 	});
 });

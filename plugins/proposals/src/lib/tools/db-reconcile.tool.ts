@@ -74,7 +74,11 @@ import {
 	type IShadowReconcileInput,
 } from '@delendai/proposals-sqlite';
 
-import { collectProposalMarkdownAtCommit } from '../services/proposal-markdown-at-commit';
+import type { IRefDrift } from '../contracts/interfaces/proposal-markdown-at-commit.interface';
+import {
+	collectProposalMarkdownAtCommit,
+	refDrift,
+} from '../services/proposal-markdown-at-commit';
 
 /** Wire-level tool name suffix; the namespace prefix is prepended. */
 export const DB_RECONCILE_TOOL_SUFFIX = 'db_reconcile';
@@ -199,6 +203,12 @@ export type IDbReconcileOutput = {
 	readonly reason: string | null;
 	readonly startedAt: number;
 	readonly durationMs: number;
+	/**
+	 * Set when `ref` no longer names the commit the run read: the branch
+	 * moved or went away meanwhile. `null` when it did not, or no `ref`
+	 * was given.
+	 */
+	readonly drift: IRefDrift | null;
 };
 
 export const proposalsDbReconcileInputSchema = z.object({
@@ -252,6 +262,13 @@ export const proposalsDbReconcileOutputSchema = z.object({
 	reason: z.string().nullable(),
 	startedAt: z.number().int().nonnegative(),
 	durationMs: z.number().int().nonnegative(),
+	drift: z
+		.object({
+			from: z.string(),
+			to: z.string().nullable(),
+			reason: z.enum(['ref-moved', 'ref-gone']),
+		})
+		.nullable(),
 });
 
 /**
@@ -490,6 +507,12 @@ export const reconcileProposalsDb = (
 		atCommit?.files ?? collectProposalMarkdown(input.proposalsDirAbs);
 	const preflight = preflightProposalFiles(files, sourceCommit);
 
+	// Asked when the run is done, so a branch that moved while it read the
+	// commit is reported rather than silently left behind.
+	const driftAfterRun = (): IRefDrift | null =>
+		input.ref === undefined || atCommit === undefined
+			? null
+			: refDrift(input.workspaceRoot, input.ref, atCommit.sha);
 	const base = {
 		created,
 		dryRun,
@@ -539,6 +562,7 @@ export const reconcileProposalsDb = (
 	if (staged.status !== 'ok') {
 		return {
 			...base,
+			drift: driftAfterRun(),
 			status: 'rejected',
 			logicalDigest: staged.stagingDigest,
 			proposals: 0,
@@ -558,6 +582,7 @@ export const reconcileProposalsDb = (
 		removeStagingArtifacts(paths.stagingPath);
 		return {
 			...base,
+			drift: driftAfterRun(),
 			status: 'ok',
 			logicalDigest: staged.stagingDigest,
 			proposals: 0,
@@ -588,6 +613,7 @@ export const reconcileProposalsDb = (
 
 	return {
 		...base,
+		drift: driftAfterRun(),
 		status: applied.status,
 		logicalDigest: applied.logicalDigest ?? staged.stagingDigest,
 		proposals: applied.proposalsApplied,

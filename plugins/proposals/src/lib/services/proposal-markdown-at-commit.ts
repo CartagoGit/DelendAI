@@ -20,7 +20,10 @@
 import { execFileSync } from 'node:child_process';
 import { isAbsolute, relative, sep } from 'node:path';
 
-import type { IProposalMarkdownAtCommit } from '../contracts/interfaces/proposal-markdown-at-commit.interface';
+import type {
+	IProposalMarkdownAtCommit,
+	IRefDrift,
+} from '../contracts/interfaces/proposal-markdown-at-commit.interface';
 
 /** Room for the whole proposal tree in one `cat-file --batch` answer. */
 const GIT_OUTPUT_LIMIT_BYTES = 268_435_456;
@@ -134,5 +137,30 @@ export const collectProposalMarkdownAtCommit = (
 	return {
 		sha,
 		files: files.sort((a, b) => a.path.localeCompare(b.path)),
+	};
+};
+
+/**
+ * Whether `ref` still names `sha`, asked once the reconcile is done. A
+ * SHA names itself for ever, so it never drifts; a branch or a tag that
+ * moved, or was deleted, while the run read `sha` is reported.
+ */
+export const refDrift = (
+	workspaceRoot: string,
+	ref: string,
+	sha: string,
+): IRefDrift | null => {
+	if (ref === sha) return null;
+	let now: string | null;
+	try {
+		now = resolveCommit(workspaceRoot, ref);
+	} catch {
+		now = null;
+	}
+	if (now === sha) return null;
+	return {
+		from: sha,
+		to: now,
+		reason: now === null ? 'ref-gone' : 'ref-moved',
 	};
 };

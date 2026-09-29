@@ -1633,14 +1633,6 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "q00023",
-				"title": "Snapshot Git by SHA — reconcile --sha <commit> is deterministic and atomic",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "plan",
-				"date": "2026-09-07"
-			},
-			{
 				"id": "q00026",
 				"title": "vitest 5 major migration planned after SQLite consolidation",
 				"track": "dependencies",
