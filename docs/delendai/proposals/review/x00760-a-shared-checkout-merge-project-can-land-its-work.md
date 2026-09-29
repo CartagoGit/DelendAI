@@ -2,13 +2,13 @@
 id: x00760
 title: "A shared-checkout-merge project can land its work"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
-last-transition-id: 8d7ef2bc-13a5-4c96-9b66-0e4c2b3355d3
-last-correlation-id: 8d7ef2bc-13a5-4c96-9b66-0e4c2b3355d3
-last-transition-from: ready
+last-transition-id: ed085ab1-29a8-439b-8ab9-d4d2bdd7eaa5
+last-correlation-id: ed085ab1-29a8-439b-8ab9-d4d2bdd7eaa5
+last-transition-from: in-progress
 ---
 
 # x00760 — A shared-checkout-merge project can land its work
@@ -37,6 +37,9 @@ The served work model (x00759) tells an agent on `shared-checkout-merge` to fini
   - "Under `integration.strategy: merge`, publishing a unit runs the project's validation gate against the current integration head and merges the work ref with `runLocalMergeCycle`, never in the shared checkout."
   - "A red certification, a stale head and a conflict each end in a refusal that names the next step; nothing lands uncertified."
   - "Under a pull-request profile nothing changes."
+- shipped-in: `de71f8444623`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
