@@ -2,15 +2,15 @@
 id: x00748
 title: "A published unit leaves no worktree behind"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00742]
-last-transition-id: 44a15381-767f-49eb-8b2c-cf0b00f39a9c
-last-correlation-id: 44a15381-767f-49eb-8b2c-cf0b00f39a9c
-last-transition-from: in-progress
+last-transition-id: 9d9ef662-eb48-4add-bfc0-93d3f332ba9d
+last-correlation-id: 9d9ef662-eb48-4add-bfc0-93d3f332ba9d
+last-transition-from: review
 shipped-in:
   - "4aef4c193d7c65adea568f0c8542e37f3768d8c0"
 ---
