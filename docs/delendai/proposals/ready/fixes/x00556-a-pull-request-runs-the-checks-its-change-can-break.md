@@ -72,12 +72,36 @@ answerable, reviewable and testable.
 
 ### S3 — The saving is measured, not assumed
 
-- **Status**: pending
-- **Gate**: `bun run lint:workflow`
-- **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/**`
+- **Status**: in-progress
+- **Gate**: `npx vitest run tools/scripts/ci/test-zones.script.spec.ts tools/scripts/lint/workflow-history-depth.script.spec.ts`
+- **Files**:
+  - `.github/workflows/ci.yml`
+  - `tools/scripts/ci/test-zones.script.ts`
+  - `tools/scripts/ci/test-zones.script.spec.ts`
+  - `tools/scripts/ci/zone-reads.ts`
+  - `tools/scripts/lint/workflow-history-depth.constant.ts`
+  - `tools/scripts/lint/workflow-history-depth.script.spec.ts`
 - The run reports which jobs were selected and which were skipped and
   why, so the selection is auditable and a wrong mapping is visible
   rather than silent.
+- **Found 2026-09-29 — the selection never ran in CI.** `plan-tests`
+  checked out one commit, so the pull request's base was not in its
+  object store, the diff threw, and the planner fell back to every zone
+  without saying so. #658 (a forge script and a proposal) ran all eleven
+  zone jobs; replayed with the history it skips core and packages. The
+  report line the log printed was computed without the base, so it read
+  "every zone" whatever happened.
+- `plan-tests` now fetches the history, and the report is computed for
+  the same base as the matrix. When the planner runs every zone it says
+  why, once: no base (a push or a dispatch), the diff from the base
+  failed, the workspace graph or the affected set could not be built, no
+  zone read map, or the root file or workflow that can reach anything.
+- `workflow-history-depth` did not catch it: the diff happens two
+  modules below the script the job runs. A job handed the pull
+  request's base (`github.event.pull_request.base.sha`) now counts as
+  reading history, so a shallow planner fails the lint.
+- Still to do in this slice: the same report for the jobs that are not
+  test zones, once S1 gives them inputs.
 
 ### S4 — A change outside the workspaces reaches only the zones that read it
 
