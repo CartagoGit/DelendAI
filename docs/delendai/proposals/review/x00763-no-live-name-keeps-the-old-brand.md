@@ -2,12 +2,15 @@
 id: x00763
 title: "No live name keeps the old brand"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-29
 priority: P1
 related: [x00758]
+last-transition-id: 6c29fc00-7c97-4da0-97b4-8b90d4cf6a00
+last-correlation-id: 6c29fc00-7c97-4da0-97b4-8b90d4cf6a00
+last-transition-from: in-progress
 ---
 
 # x00763 — No live name keeps the old brand
@@ -61,7 +64,7 @@ rename table next to that catalog, so it had the same gap.
 
 ### S1 — Every spelling of the old name is known, and none is live
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/workspace-migration && bun run migrate:rebrand:check`
 - **Files**:
   - `packages/core/src/lib/contracts/constants/legacy-identity.constant.ts`
@@ -79,6 +82,7 @@ rename table next to that catalog, so it had the same gap.
   - `extensions/vscode/src/test/configuration-center.spec.ts`
   - `packages/ui-extension/src/configuration-center/configuration-center-script.ts`
   - `packages/ui-extension/src/dashboard/render-dashboard.ts`
+- shipped-in: `2d793d3c3152`
 
 ## dependency graph
 
