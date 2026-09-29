@@ -44,7 +44,7 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
 - global_gate: type
 
 ### S1 — One renderer states the work model wherever an agent connects
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/development-policy/declare-workflow.interface.ts`, `packages/core/src/lib/prompts/agent-policy-instructions.helper.ts`, `packages/core/src/lib/prompts/agent-bootstrap.prompt.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/tools/overview-tool.ts`, `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`, `packages/core/tests/src/lib/prompts/agent-policy-instructions.helper.spec.ts`, `packages/core/tests/src/lib/prompts/agent-bootstrap.prompt.spec.ts`, `packages/core/tests/src/lib/cli/core-meta-tools.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-publish-next-action.spec.ts`, `plugins/proposals/tests/src/lib/plugin-register-wiring.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -56,7 +56,7 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
 - review-implementer: claude-opus-5-5
 
 ### S2 — A refusal names the profile and its next step
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/lib/development-policy/work-isolation.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`, `packages/core/tests/src/lib/development-policy/project-branches.spec.ts`
 - **Gate**: type
@@ -68,7 +68,7 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
 - review-implementer: claude-opus-5-5
 
 ### S3 — Static host docs defer to the served work model
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`, `docs/delendai/DEVELOPMENT-STRATEGIES.md`, `docs/delendai/adr/0020-branch-model-develop-integrates-through-pull-requests.md`, `tools/scripts/lint/host-docs-landing.script.ts`, `tools/scripts/lint/host-docs-landing.constant.ts`, `tools/scripts/lint/host-docs-landing.interface.ts`, `tools/scripts/lint/host-docs-landing.script.spec.ts`, `package.json`
 - **Gate**: lint
