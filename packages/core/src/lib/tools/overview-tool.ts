@@ -78,6 +78,14 @@ export interface IOverviewSnapshot {
 	readonly activationReport?: IActivationReport | undefined;
 	/** Enabled plugins with tools that have not been invoked this session. */
 	readonly unusedActivePlugins?: readonly string[] | undefined;
+	/**
+	 * How this project starts and lands work, in one line from its
+	 * resolved development policy. In compact mode too: it is the one
+	 * thing an agent cannot discover by looking at the repository, and
+	 * guessing it wrong puts work on the wrong route. Absent when no
+	 * policy resolved.
+	 */
+	readonly workModel?: string | undefined;
 	readonly recommendedNextAction: string;
 }
 
@@ -265,6 +273,9 @@ export const buildOverviewToolRegistration = (
 									};
 								})()
 							: {}),
+						...(snap.workModel !== undefined
+							? { workModel: snap.workModel }
+							: {}),
 						recommendedNextAction: snap.recommendedNextAction,
 					};
 					return toolJsonWithSummary(
@@ -364,6 +375,9 @@ export const buildOverviewToolRegistration = (
 									},
 								};
 							})()
+						: {}),
+					...(snap.workModel !== undefined
+						? { workModel: snap.workModel }
 						: {}),
 					recommendedNextAction: snap.recommendedNextAction,
 				};

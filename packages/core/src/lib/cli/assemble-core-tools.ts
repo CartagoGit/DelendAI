@@ -46,6 +46,8 @@ import type { IDelendaiConfigFile } from '../plugins/load-config-file';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
+import { workModelSummary } from '../development-policy/declare-workflow';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { buildSkillPromptRegistrations } from '../prompts/skill-prompts';
 import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
 import { buildCodeMapResourceRegistration } from '../code-map/resource';
@@ -132,6 +134,8 @@ export interface IAssembleCoreToolsInput {
 	readonly prompts: IPromptRegistration[];
 	/** Mutated in place: knowledge + catalog resources are appended. */
 	readonly resources: IResourceRegistration[];
+	/** The resolved work model, stated to every agent that orients. */
+	readonly developmentPolicy?: IResolvedDevelopmentPolicy | undefined;
 	readonly cacheReconcile: (
 		apply: boolean,
 	) => Promise<
@@ -178,6 +182,7 @@ export const assembleCoreTools = (
 		prompts,
 		resources,
 		cacheReconcile,
+		developmentPolicy,
 	} = input;
 	// Resolves paths in the checkout a bound call names, and in the
 	// server's root everywhere else.
@@ -339,6 +344,9 @@ export const assembleCoreTools = (
 				? { unusedActivePlugins }
 				: {};
 		})(),
+		...(developmentPolicy !== undefined
+			? { workModel: workModelSummary(developmentPolicy) }
+			: {}),
 		recommendedNextAction,
 	});
 
@@ -589,6 +597,7 @@ export const assembleCoreTools = (
 			...(fileConfig.core?.agentPolicy !== undefined
 				? { agentPolicy: fileConfig.core.agentPolicy }
 				: {}),
+			...(developmentPolicy !== undefined ? { developmentPolicy } : {}),
 			server: {
 				name: args.serverName,
 				version: args.serverVersion,

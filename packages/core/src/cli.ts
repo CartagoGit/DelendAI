@@ -20,6 +20,8 @@ export type { IAssembleCliDeps, IAssembledCliConfig } from './lib/cli/assemble';
 // A git hook asks the project's development policy whether a commit, a
 // branch creation or a push may proceed (`delendai guard <hook>`).
 export { judgeGitOperation } from './lib/development-policy/git-guard';
+// What a refusal says next: how work starts and lands in this profile.
+export { briefWorkModel } from './lib/development-policy/declare-workflow';
 export {
 	DEFAULT_WORK_KIND,
 	REVIEW_BATCH_ID,

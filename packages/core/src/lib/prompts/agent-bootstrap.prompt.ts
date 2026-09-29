@@ -1,7 +1,8 @@
 import type { IPromptRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { buildCatalog } from '../catalog/agent-discovery-catalog';
 import type { IDelendaiAgentPolicyConfig } from '../contracts/interfaces/agent-policy.interface';
-import { agentPolicyLines } from './agent-policy-instructions.helper';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { agentOperatingLines } from './agent-policy-instructions.helper';
 import type {
 	IBuildCatalogOptions,
 	ICatalogSources,
@@ -12,6 +13,8 @@ export interface ICatalogPromptOptions {
 	readonly server: IBuildCatalogOptions['server'];
 	readonly now?: () => Date;
 	readonly agentPolicy?: IDelendaiAgentPolicyConfig;
+	/** The resolved work model; the prompt states it as the server does. */
+	readonly developmentPolicy?: IResolvedDevelopmentPolicy;
 }
 
 export const buildAgentBootstrapPromptRegistration = (
@@ -45,7 +48,10 @@ export const buildAgentBootstrapPromptRegistration = (
 							content: {
 								type: 'text' as const,
 								text: [
-									...agentPolicyLines(options.agentPolicy),
+									...agentOperatingLines(
+										options.agentPolicy,
+										options.developmentPolicy,
+									),
 									'1. Call `delendai_overview` first to map the server and confirm the loaded plugin surface.',
 									'2. Call `delendai_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
 									'3. Narrow with `section` or `query` before doing work, then pick the matching proposal or skill instead of rereading docs broadly.',

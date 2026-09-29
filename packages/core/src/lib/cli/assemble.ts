@@ -781,6 +781,7 @@ export const assembleCliConfig = async (
 		prompts,
 		resources,
 		cacheReconcile,
+		developmentPolicy,
 	});
 	const runtimeEventSink = createJsonlRuntimeEventSink(
 		runtimeEventsPath(cacheDirContained.abs),
@@ -989,7 +990,10 @@ export const assembleCliConfig = async (
 	};
 
 	const config: IDelendaiHostConfig = {
-		instructions: agentPolicyInstructions(fileConfig.core?.agentPolicy),
+		instructions: agentPolicyInstructions(
+			fileConfig.core?.agentPolicy,
+			developmentPolicy,
+		),
 		onClientInitialized: (client) => {
 			handshakeClientName = client.name;
 		},

@@ -325,6 +325,42 @@ describe('core meta-tools', async () => {
 		expect(compact.activationReport).toBeUndefined();
 	});
 
+	it('states the configured work model on connect and in the compact overview', async () => {
+		const assembleOn = async (profile: string) => {
+			const args = parseCliArgs(
+				['--plugins=demo', `--workspace=${testWorkspace()}`],
+				'/cwd',
+			);
+			const { config } = await assembleCliConfig(args, {
+				import: async () => ({ default: fakePlugin }),
+				readFile: async () =>
+					JSON.stringify({
+						development: {
+							profile,
+							integration: { requiredChecks: ['validate'] },
+						},
+					}),
+			});
+			const overview = config.extraTools!.find(
+				(tool) => tool.id === 'overview',
+			)!;
+			return {
+				instructions: config.instructions ?? '',
+				compact: await callTool(overview, { compact: true }),
+			};
+		};
+		const merge = await assembleOn('shared-checkout-merge');
+		const pr = await assembleOn('shared-checkout-pr');
+
+		expect(merge.instructions).toContain(
+			'Work model: `shared-checkout-merge`',
+		);
+		expect(merge.instructions).toContain('opens no pull request');
+		expect(merge.compact.workModel).toContain('land by merge into develop');
+		expect(pr.instructions).toContain('opens a pull request into develop');
+		expect(pr.compact.workModel).toContain('land by pull request');
+	});
+
 	it('compact overview can opt into the same activation report', async () => {
 		const { byId } = await assemble();
 		const compact = await callTool(byId('overview'), {

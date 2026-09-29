@@ -5,7 +5,10 @@ import type {
 import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
+import { deriveCapabilities } from '@delendai/core/lib/development-policy/derive';
+import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
 import { buildAgentBootstrapPromptRegistration } from '@delendai/core/lib/prompts/agent-bootstrap.prompt';
+import { agentPolicyInstructions } from '@delendai/core/lib/prompts/agent-policy-instructions.helper';
 
 interface IPromptResult {
 	readonly messages: ReadonlyArray<{
@@ -73,6 +76,29 @@ describe('agent bootstrap prompt', () => {
 		expect(text).toContain('Working mode: collaborative.');
 		expect(text).toContain('never answer a question in their place');
 		expect(text).toContain('Apply SOLID architecture');
+	});
+
+	it('states the resolved work model in the words the server uses on connect', async () => {
+		const developmentPolicy = deriveCapabilities(
+			expandProfile('shared-checkout-merge'),
+		);
+		const registration = buildAgentBootstrapPromptRegistration('delendai', {
+			sources: emptySources,
+			server: {
+				name: 'test',
+				version: '1.0.0',
+				namespacePrefix: 'delendai',
+			},
+			agentPolicy: { autonomous: true },
+			developmentPolicy,
+		});
+		const fake = fakeServer();
+		await registration.register(fake.server);
+		const text = (await fake.invoke()).messages[0]?.content.text ?? '';
+		expect(text).toContain(
+			agentPolicyInstructions({ autonomous: true }, developmentPolicy),
+		);
+		expect(text).toContain('opens no pull request');
 	});
 
 	it('names the proposals an agent can act on now', async () => {
