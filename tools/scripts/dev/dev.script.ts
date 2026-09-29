@@ -357,7 +357,11 @@ const buildEntry = async (entryAbs: string): Promise<Response> => {
 		const message = err instanceof Error ? err.message : String(err);
 		const body = details === '' ? message : `${message}\n${details}`;
 		console.error(`[dev] entry bundle failed:\n${body}`);
-		return new Response(body, { status: 500 });
+		// The diagnostics are on the terminal above; the page is told where.
+		return new Response(
+			'The dev bundle failed to build; the dev server terminal has the errors.',
+			{ status: 500 },
+		);
 	}
 	const entry = bundleCache.get('entry.js');
 	if (!entry) {

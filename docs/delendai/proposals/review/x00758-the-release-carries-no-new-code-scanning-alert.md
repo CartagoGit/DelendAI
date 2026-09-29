@@ -106,6 +106,8 @@ written once:
   - `tools/scripts/ci/affected.script.ts`
   - `tools/scripts/ci/script-dependencies.ts`
   - `tools/scripts/dev/dev.script.ts`
+  - `tools/scripts/dev/api/real-data.ts`
+  - `packages/core/tests/src/lib/plugin-drift-budget.spec.ts`
   - `tools/scripts/docs/generate-docs-index.script.ts`
   - `tools/scripts/forge/advance-queue.script.ts`
   - `tools/scripts/forge/certify-integration.script.ts`
@@ -118,6 +120,14 @@ written once:
   - `tools/scripts/lint/file-conventions.script.spec.ts`
   - `tools/scripts/migrate/rebrand-propagate.script.ts`
 - shipped-in: `f5a6c17ebe6c`
+
+After the first merge the release's CodeQL still reported three: the
+directory `writeFileAtomic` opens to fsync it (now opened `O_RDONLY`, never
+created), and two dev-server responses that carried error text (the
+bundle failure and the dashboard's errors now tell the page where to look,
+and the terminal gets the error). Moving the loose-ref read also changed a
+line `plugin-drift-budget` allowlists by text; its entry names the new
+line.
 
 ## dependency graph
 
