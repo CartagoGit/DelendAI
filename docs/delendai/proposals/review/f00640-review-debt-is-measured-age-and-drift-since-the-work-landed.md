@@ -12,6 +12,8 @@ related:
 last-transition-id: 671e2c9c-61d6-4653-b6d3-478df6c4d964
 last-correlation-id: 671e2c9c-61d6-4653-b6d3-478df6c4d964
 last-transition-from: in-progress
+shipped-in:
+  - "e95e4e071fc125be14b463dff96d063fd124d267"
 ---
 
 # f00640 — Review debt is measured: age and drift since the work landed
@@ -63,7 +65,7 @@ reported as unmeasurable, never as fresh.
 - global_gate: none
 
 ### S1 — Measure review age and drift
-- **Status**: review
+- **Status**: done
 - shipped-in: `e95e4e071`
 - **Gate**: `npx vitest run tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
 - **Files**: `tools/scripts/lint/proposal-ready-to-close.script.ts`, `tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
@@ -71,6 +73,11 @@ The four measures for every review proposal, pure over git facts that
 are injected in the spec; `--sort=drift|age` on the report.
 Measured on develop at 309bbe59d: 79 proposals wait in review; the
 oldest-landed carry 250+ commits since and every slice file touched.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — f00640 S1 (commit e95e4e071) makes proposal-ready-to-close read shipped-in + slice Files + git facts and emit reviewAgeDays / commitsSince / filesTouchedSince / driftRatio for every proposal in review. When shipped-in is unknown to the clone, the entry reports {measured:false, reason:'no shipped-in commit is known to this clone'} - never 'fresh'. The list orders largest drift first, unmeasurable last, and accepts --sort=age. proposal-ready-to-close.script.spec.ts: 12/12 pass.
+- review-attribution: claude-opus-5-5 from Merge pull request #424 from CartagoGit/delendai/pr/claude-opus-5-5/f00640-S1-g1/review-age-and-drift (refs/heads/delendai/wip/claude-opus-5-5/f00640-S1-g1/review-age-and-drift) (e95e4e071fc125be14b463dff96d063fd124d267), opened by minimax-m3
 
 ### S2 — Surface it where reviewers look
 - **Status**: review
