@@ -152,6 +152,8 @@ export const reachForBase = (
 export const reachableZones = (
 	input: {
 		readonly base: string;
+		/** The end of the change; `HEAD` when omitted. */
+		readonly head?: string;
 		readonly rootDir: string;
 		readonly rules?: readonly IZoneRule[];
 	},
@@ -173,7 +175,7 @@ export const reachableZones = (
 	let changes: ReturnType<typeof gitDiffChanges>;
 	try {
 		graph = deps.buildGraph(input.rootDir);
-		changes = deps.diff(input.base, 'HEAD');
+		changes = deps.diff(input.base, input.head ?? 'HEAD', input.rootDir);
 		affected = deps.computeAffected(
 			changes.map((change) => change.path),
 			graph,
