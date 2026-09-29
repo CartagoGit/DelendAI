@@ -382,6 +382,11 @@ jobs:
                   # f00644: a pull request is opened from a well-shaped
                   # publication, whatever host opened it.
                   bun run lint:pr-head-shape
+                  # Every proposal in the tree projects into SQLite. It is
+                  # the one part of the SQLite suite a proposal edit can
+                  # break, and it takes seconds; running it here is what
+                  # lets a proposal edit skip `sqlite-cutover-ready`.
+                  bun run test:sqlite:real-tree
 
     typecheck:
         name: typecheck
