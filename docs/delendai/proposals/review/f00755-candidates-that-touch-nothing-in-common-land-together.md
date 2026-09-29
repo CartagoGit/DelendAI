@@ -2,12 +2,15 @@
 id: f00755
 title: "Candidates that touch nothing in common land together"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: efficiency
 date: 2026-09-29
 priority: P1
 related: [x00556]
+last-transition-id: c7ea941c-bfa6-4467-995d-2c3eadd295c5
+last-correlation-id: c7ea941c-bfa6-4467-995d-2c3eadd295c5
+last-transition-from: in-progress
 ---
 
 # f00755 — Candidates that touch nothing in common land together
@@ -61,7 +64,7 @@ not require it (`develop` has `strict: false`); the queue did.
 
 ### S1 — The queue lands every independent candidate
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/forge/independent-candidates.spec.ts`
 - **Files**:
   - `tools/scripts/forge/independent-candidates.ts`
@@ -72,6 +75,7 @@ not require it (`develop` has `strict: false`); the queue did.
   - `tools/scripts/forge/keep-the-queue-moving.script.ts`
   - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
   - `tools/scripts/ci/test-zones.script.ts`
+- shipped-in: `230e2af9c73b`
 
 ## dependency graph
 
