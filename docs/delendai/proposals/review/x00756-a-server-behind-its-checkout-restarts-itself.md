@@ -2,12 +2,15 @@
 id: x00756
 title: "A server behind its checkout restarts itself"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00701, x00709]
+last-transition-id: 6638d182-6edf-4084-a4bf-a090556f0487
+last-correlation-id: 6638d182-6edf-4084-a4bf-a090556f0487
+last-transition-from: in-progress
 ---
 
 # x00756 — A server behind its checkout restarts itself
@@ -79,7 +82,7 @@ project, and its commits say nothing about the code the server runs.
 
 ### S1 — The server moves onto the checkout's code by itself
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/host packages/core/tests/src/lib/development-policy/stale-runtime-advisory.spec.ts`
 - **Files**:
   - `tools/scripts/host/host-supervisor.ts`
@@ -90,6 +93,7 @@ project, and its commits say nothing about the code the server runs.
   - `tools/scripts/host/host-server.script.ts`
   - `packages/core/src/lib/development-policy/stale-runtime-advisory.ts`
   - `packages/core/tests/src/lib/development-policy/stale-runtime-advisory.spec.ts`
+- shipped-in: `1b4aeb82fe60`
 
 ## dependency graph
 
