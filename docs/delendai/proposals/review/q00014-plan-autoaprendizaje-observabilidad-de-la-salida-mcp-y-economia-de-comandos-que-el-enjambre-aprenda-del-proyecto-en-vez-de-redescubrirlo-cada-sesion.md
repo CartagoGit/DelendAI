@@ -2,15 +2,15 @@
 id: q00014
 title: "Plan autoaprendizaje, observabilidad de la salida MCP y economía de comandos: que el enjambre aprenda del proyecto en vez de redescubrirlo cada sesión"
 kind: plan
-status: in-progress
+status: review
 type: proposal
 track: quality
 date: 2026-09-03
 shipped-in:
   - 2a0ff85ac39cc174fda0646c571e21bc351d33d7
-last-transition-id: 6930a4e6-2a1d-485a-8733-83d5a7d91467
-last-correlation-id: 6930a4e6-2a1d-485a-8733-83d5a7d91467
-last-transition-from: review
+last-transition-id: 4de50f1c-aa2b-456b-8a7b-cf63c18a5fe8
+last-correlation-id: 4de50f1c-aa2b-456b-8a7b-cf63c18a5fe8
+last-transition-from: in-progress
 ---
 
 # q00014 — Autoaprendizaje, observabilidad de la salida y economía de comandos
@@ -85,7 +85,7 @@ trabajo redundante.
 - **Status**: done
 - **Files**:
   - `packages/core/src/lib/platform/system-profile.helper.ts` — detecta y cachea: SO y si es WSL, gestor de paquetes disponible (`bun`/`node`+`fnm`/`npm`), núcleos y memoria, si hay `rg`/`fd`/`jq`, locale utilizable, y si el FS es un montaje cruzado Windows↔Linux (que cambia radicalmente el coste de E/S).
-  - `packages/core/src/lib/platform/command-preference.ts` — dado un propósito (`search-text`, `list-files`, `run-tests`, `typecheck`), devuelve el comando preferido para ESTE perfil y por qué. Pura, sin efectos.
+  - `packages/core/src/lib/platform/command-preference.helper.ts` — dado un propósito (`search-text`, `list-files`, `run-tests`, `typecheck`), devuelve el comando preferido para ESTE perfil y por qué. Pura, sin efectos.
   - `packages/core/src/lib/contracts/interfaces/system-profile.interface.ts` — `ISystemProfile`, `ICommandPreference`.
   - `packages/core/tests/src/lib/platform/system-profile.spec.ts` — perfiles sintéticos, sin tocar la máquina real.
   - `packages/core/tests/src/lib/platform/command-preference.spec.ts` — que un perfil sin `rg` nunca recomiende `rg`.
@@ -100,9 +100,9 @@ trabajo redundante.
 - **Status**: done
 - **Files**:
   - `tools/scripts/test/journal-reporter.ts` — reporter de vitest que escribe JSONL a `.cache/delendai/results/logs/test-runs.jsonl`: fichero, nombre, aserción, diff esperado/recibido, primer frame en código propio, duración, id de ejecución. Nunca lanza; un fallo al escribir no puede tumbar la suite.
-  - `packages/test-kit/src/lib/reporters/failure-journal.contract.ts` — `ITestFailureRecord`, `ITestRunRecord`.
-  - `tools/scripts/test/read-test-failures.script.ts` — imprime los fallos de la ÚLTIMA ejecución, agrupados por fichero, sin banner y sin relanzar nada. Avisa explícitamente si el diario está obsoleto respecto al árbol de trabajo.
-  - `packages/test-kit/tests/src/lib/reporters/failure-journal.spec.ts`
+  - `tools/scripts/test/test-journal.ts` — `ITestFailureRecord`, `ITestRunRecord`.
+  - `tools/scripts/test/read-test-journal.script.ts` — imprime los fallos de la ÚLTIMA ejecución, agrupados por fichero, sin banner y sin relanzar nada. Avisa explícitamente si el diario está obsoleto respecto al árbol de trabajo.
+  - `tools/scripts/test/test-journal.spec.ts`
 - **Gate**: lint, types, test
 - review-state: done
 - review-implementer: unrecorded
@@ -114,7 +114,7 @@ trabajo redundante.
 - **Status**: done
 - **Files**:
   - `plugins/error-reporting/src/lib/intake/server-log-reader.helper.ts` — parsea el log de stderr del servidor (el que el host escribe: VS Code, Claude Code, Codex) y extrae eventos estructurados: refusals repetidos, `Failed to parse message`, tormentas de reintentos, plugins que no cargaron, fallos de push.
-  - `plugins/error-reporting/src/lib/intake/log-diagnosis.ts` — convierte esos eventos en un diagnóstico con causa probable y siguiente acción. Reutiliza `storm-detector` de `commit-policy` en vez de duplicar la detección de bucles.
+  - `plugins/error-reporting/src/lib/intake/log-diagnosis.helper.ts` — convierte esos eventos en un diagnóstico con causa probable y siguiente acción. Reutiliza `storm-detector` de `commit-policy` en vez de duplicar la detección de bucles.
   - `plugins/error-reporting/src/lib/tools/diagnose-log.tool.ts` — herramienta `error_reporting_diagnose_log`: lee, diagnostica, y SÓLO con confirmación abre issue. El validador de privacidad existente se aplica sin excepción.
   - `plugins/error-reporting/src/lib/contracts/interfaces/log-intake.interface.ts`
   - `plugins/error-reporting/tests/src/lib/intake/server-log-reader.spec.ts` — fixtures con los logs reales de 2026-09-02 (anonimizados) que contenían los cinco bugs.
@@ -130,9 +130,9 @@ trabajo redundante.
 - **Files**:
   - `plugins/self-learning/package.json`
   - `plugins/self-learning/src/index.ts` — registro del plugin, `cacheNamespace: 'self-learning'`, desactivado por defecto (opt-in explícito).
-  - `plugins/self-learning/src/lib/store/observation-store.ts` — almacén append-only por proyecto en `.cache/delendai/results/self-learning/`. Escritura atómica, tamaño acotado, compactación por recencia.
+  - `plugins/self-learning/src/lib/store/observation-store.service.ts` — almacén append-only por proyecto en .cache/delendai/results/self-learning/ (en tiempo de ejecución). Escritura atómica, tamaño acotado, compactación por recencia.
   - `plugins/self-learning/src/lib/contracts/interfaces/observation.interface.ts` — `IObservation` con un `kind` cerrado: `command-outcome`, `test-failure`, `tool-confusion`, `refusal`, `slice-outcome`.
-  - `plugins/self-learning/src/lib/collectors/index.ts` — se suscribe a lo que YA existe (usage-tracking, el diario de S2, el storm detector, los refusals del engine). No instrumenta nada nuevo.
+  - `plugins/self-learning/src/lib/collectors/test-journal.service.ts` — se suscribe a lo que YA existe (usage-tracking, el diario de S2, el storm detector, los refusals del engine). No instrumenta nada nuevo.
   - `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts`
 - **Gate**: lint, types, test
 - review-state: done
@@ -145,8 +145,8 @@ trabajo redundante.
 - **Status**: done
 - **Files**:
   - `plugins/self-learning/src/lib/lessons/derive-lessons.helper.ts` — de observaciones a lecciones con evidencia y confianza: "en este proyecto `bun run lint:web` falla tras tocar `packages/core` sin reconstruir dist (visto 6 veces)". Cada lección cita las observaciones que la sostienen y caduca si dejan de reproducirse.
-  - `plugins/self-learning/src/lib/lessons/confidence.ts` — soporte, recencia y contraejemplos. Una lección con contraejemplos recientes se degrada sola.
-  - `plugins/self-learning/src/lib/tools/lessons-tool.ts` — `self_learning_lessons` (qué sabemos de este proyecto) y `self_learning_advice` (dado un objetivo, qué activar y qué comando usar). Salida compacta por defecto.
+  - `plugins/self-learning/src/lib/lessons/confidence.helper.ts` — soporte, recencia y contraejemplos. Una lección con contraejemplos recientes se degrada sola.
+  - `plugins/self-learning/src/lib/tools/lessons.tool.ts` — `self_learning_lessons` (qué sabemos de este proyecto) y `self_learning_advice` (dado un objetivo, qué activar y qué comando usar). Salida compacta por defecto.
   - `plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts` — incluye el caso negativo: una correlación con soporte bajo NO debe convertirse en lección.
 - **Gate**: lint, types, test
 - review-state: done
@@ -159,7 +159,7 @@ trabajo redundante.
 - **Status**: done
 - **Files**:
   - `plugins/memory/src/lib/compaction/auto-compaction-policy.helper.ts` — decide CUÁNDO compactar (presupuesto consumido, antigüedad, saturación de un tema) en vez de que lo pida el agente. Se apoya en `memory_compaction_check`, que ya existe.
-  - `plugins/memory/src/lib/compaction/preserve-rules.ts` — qué NO puede perderse nunca en un resumen: decisiones del usuario, restricciones declaradas, causas raíz ya diagnosticadas, identificadores (SHA, ids de propuesta, rutas). Es la parte que hace la compactación segura, y se prueba con casos que antes se perdían.
+  - `plugins/memory/src/lib/compaction/preserve-rules.helper.ts` — qué NO puede perderse nunca en un resumen: decisiones del usuario, restricciones declaradas, causas raíz ya diagnosticadas, identificadores (SHA, ids de propuesta, rutas). Es la parte que hace la compactación segura, y se prueba con casos que antes se perdían.
   - `plugins/memory/tests/src/lib/compaction/preserve-rules.spec.ts` — un resumen que suelta una restricción del usuario debe fallar el test.
 - **Gate**: lint, types, test
 - review-state: done
@@ -169,18 +169,21 @@ trabajo redundante.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S7 — Higiene: que los defectos pequeños no puedan reaparecer
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `biome.json` — `noUnusedImports` pasa de warning a error. Un import muerto tras un refactor debe romper la build, no quedarse en un aviso que nadie lee.
   - `tools/scripts/lint/no-silent-gates.script.ts` — un gate que sale con código distinto de cero sin escribir NADA es un fallo del gate. Comprueba que cada script de `validate:run` produce salida en su camino de error.
   - `tools/scripts/lint/no-duplicate-implementation.script.ts` — detecta el patrón que causó el P0 de `commit-policy`: dos definiciones del mismo nombre exportado en el mismo paquete, una de ellas sombreando a la otra. Es exactamente la clase de defecto que ningún test encuentra porque cada copia tiene los suyos.
-  - `tools/scripts/lint/tests/no-duplicate-implementation.spec.ts`
+  - `tools/scripts/lint/no-duplicate-implementation.script.spec.ts` — `[shadowed-export]`, más la regla de que toda excepción de `ALLOWED_DUPLICATES` lleva motivo.
+  - `tools/scripts/lint/no-silent-gates.script.spec.ts` — `[silent-exit]` y `[silent-failure-branch]`.
 - **Gate**: lint, types, test
+- **Divergencia**: el spec declarado en `tools/scripts/lint/tests/` no llegó a existir. Los specs viven junto a su script, como el resto de `tools/scripts/lint/*.script.spec.ts`. No existían porque los dos scripts calculaban su raíz con `import.meta.dir`, que solo existe en Bun, y ninguno se podía importar bajo vitest. Ahora usan `fileURLToPath(import.meta.url)`.
 - review-state: changes_requested
 - review-implementer: unrecorded
 - review-reviewer: qwen-3.8-max
 - review-log: requested_changes by qwen-3.8-max — WHAT IS WRONG: the slice's declared Files list includes `tools/scripts/lint/tests/no-duplicate-implementation.spec.ts`, and that spec does not exist. WHERE: `tools/scripts/lint/tests/` directory does not exist at all; repo-wide search `find . -path ./node_modules -prune -o -type f -name '*.spec.ts' -print | xargs grep -ln 'no-duplicate-implementation|no-silent-gates|shadowed-export|silent-exit'` returns zero hits, and `git log --all -- '*duplicate-implementation*spec*'` returns zero commits, so the file never existed in history and is not a rename under the role-suffix convention either. HOW TO REPRODUCE: `ls tools/scripts/lint/tests/` fails with ENOENT on develop @ 522aabfc3. WHY IT MATTERS: `no-duplicate-implementation.script.ts` itself claims at line 114 of its own docblock that 'an entry with an empty `reason` fails this gate's own spec' — the script references a spec that does not exist, so its documented self-test is unbacked. WHAT I DID VERIFY AND HOLDS: both lints exist and pass (`bun run lint:no-duplicate-implementation` exit 0, 'debt 98 → 89'; `bun run lint:no-silent-gates` exit 0, '135 gate script(s) … all report on their failure path'); both are wired into `validate:run` (package.json line 226); biome.json declares noUnusedImports: error for TS (line 138, with a documented astro exception) plus a baseline script that the evidence pass proved ratchets (aa4f41eef); plan acceptance point 6 is evidenced by measured defect reintroduction in the proposal. WHAT MUST HOLD TO APPROVE: either the spec lands and passes (`env -u CLAUDECODE -u AI_AGENT npx vitest run tools/scripts/lint/tests/no-duplicate-implementation.spec.ts` green) covering at least the [shadowed-export] and [silent-exit] failure paths, or an explicit documented divergence in the slice Status/notes (as S2/S4/S5 carry for their renames) stating the spec was dropped and what covers the lints instead — the docblock claim at line 114 of no-duplicate-implementation.script.ts must then be corrected by whoever owns it, not by this reviewer. Implementer is unrecorded: independence could not be verified; this review was performed identically to a recorded delivery.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- shipped-in: `48cca4f984ea`
 ## acceptance
 
 1. `system-profile` identifica correctamente esta máquina (WSL2, bun,
