@@ -1665,14 +1665,6 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "r00049",
-				"title": "INDEX.json becomes a derived view, not an authoritative source",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-09-07"
-			},
-			{
 				"id": "r00056",
 				"title": "SQLite storage modes and canonical proposals DB wiring",
 				"track": "architecture",
