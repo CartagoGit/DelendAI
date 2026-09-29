@@ -9,6 +9,8 @@ date: 2026-09-08
 last-transition-id: 60f73d07-4762-4e43-9a3f-371510b20d7b
 last-correlation-id: 60f73d07-4762-4e43-9a3f-371510b20d7b
 last-transition-from: in-progress
+shipped-in:
+  - "4408dc2b876c200663dfbe41993b3d4ce410147c"
 ---
 
 # x00531 — El builder ordena por rangos hardcodeados en vez de por el grafo de dependencias declarado en los manifests
@@ -31,7 +33,7 @@ Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank 
 - global_gate: type
 
 ### S1 — grafo topologico derivado de los package.json, con deteccion de ciclos
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/compile/build-graph.ts`, `tools/scripts/compile/build-graph.spec.ts`, `tools/scripts/compile/build.script.ts`
 - **Gate**: type
 - acceptance:
@@ -39,6 +41,12 @@ Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank 
   - "buildRank desaparece; no queda ningun nombre de paquete hardcodeado en la logica de orden."
   - "Un ciclo de dependencias falla de forma explicita nombrando el ciclo, en vez de producir un orden arbitrario."
   - "El orden resultante situa contracts y state antes que core, y los plugins de los que depende cli antes que cli."
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — build-graph.ts derives the build order from manifest dependencies (deps, peerDependencies, optionalDependencies) and runs a deterministic topological sort with alphabetical tiebreak. buildRank() is fully removed from build.script.ts. The cycle detector names the cycle through BuildGraphCycleError. Verified end-to-end: computed order over real repo manifests places contracts/state before core, state before context-compiler/state-telemetry, and the plugins of cli depend on before cli (6/6 ordering checks). Spec covers synthetic + real manifests + cycle policy: 15/15 tests pass.
+- review-attribution: unrecorded — nothing in Git names who delivered 4408dc2b876c200663dfbe41993b3d4ce410147c: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
+
 ### S2 — build:clean y gate de CI sobre arbol vacio
 - **Status**: review
 - **DependsOn**: [S1]
