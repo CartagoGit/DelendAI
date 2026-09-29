@@ -2,15 +2,15 @@
 id: f00645
 title: "List tools answer compact by default"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00673, f00536]
-last-transition-id: 6c8ffa0b-2c18-4837-b9e8-b13d4ac0f3f2
-last-correlation-id: 6c8ffa0b-2c18-4837-b9e8-b13d4ac0f3f2
-last-transition-from: ready
+last-transition-id: da01769c-b89a-47c8-95c1-c807cc51b724
+last-correlation-id: da01769c-b89a-47c8-95c1-c807cc51b724
+last-transition-from: in-progress
 ---
 
 # f00645 — List tools answer compact by default
@@ -71,6 +71,7 @@ which tools cost the most context is not known.
 - acceptance:
   - "Every tool call's log entry carries the serialized size of its result." (already true: `responseBytes` in the invocation record)
   - "The usage report ranks tools by largest and by total result size."
+- shipped-in: `c9099b1057fa`
 
 ### S2 — A routed call is measured under the tool it reached
 
@@ -91,6 +92,7 @@ whole result, and the inner call leaves no record of its own, so every
 routed result was booked to the router, and S3 would have compacted the
 wrong tools. The record now takes the `qualifiedName` the router answers
 with.
+- shipped-in: `a03d2fdccade`
 
 ### S5 — A routed call is recorded once
 
@@ -114,6 +116,7 @@ the router's copy weighs about twice the tool's (22:44:02 on 2026-09-28:
 routed tool three times over. Only the outermost call is the agent's, and
 its answer is what reaches the agent's context, so observers now see that
 one call, under the tool it reached.
+- shipped-in: `0caa6f8d3273`
 
 ### S3 — The largest list tools answer compact by default
 
@@ -151,10 +154,11 @@ them, but they are routers, not lists.
 - `agent_names { action: "list" }` now returns the counts and the active
   agents in brief; `who_uses` is the one agent, and `detail: true` the
   registry as stored.
+- shipped-in: `1de0ade67cf8`
 
 ### S4 — A lint keeps new list tools compact
 
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S3]
 - **Files**:
   - `tools/scripts/lint/compact-list-tools.script.ts`
@@ -175,6 +179,7 @@ the input too). An entry that carries its own `detailsId` counts as
 compact. On 2026-09-29 it measured 205 tools; the 28 that already list full
 items by default are baselined by name, and a new one fails. It runs in the
 `lint-presets` CI job and in `validate:run`.
+- shipped-in: `ec98c0d31348`
 
 ## dependency graph
 
