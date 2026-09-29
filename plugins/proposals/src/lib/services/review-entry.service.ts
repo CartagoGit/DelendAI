@@ -17,9 +17,21 @@
  * the last commit on it that changed its declared files, and a slice with
  * none, or with declared files that do not exist, keeps the proposal out
  * of review with the step that fixes it.
+ *
+ * A proposal delivered over several pull requests hands over a branch that
+ * holds only its last slice: the earlier ones are already in the
+ * integration branch. Their delivery is the merge of their publication:
+ * its message names the slice's unit, or the whole proposal's, decoded with
+ * the project's own ref template, and it changed the slice's files.
  */
 import type { IReviewEntry } from '../contracts/interfaces/review-entry.interface';
+import type {
+	IIntegrationRecord,
+	IWorkRefShape,
+} from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
+import { readIntegrationHistory, unitKey } from './delivery-history.service';
+import { findWorkRefMention } from './work-ref-mention';
 import {
 	readShippingCommit,
 	recordShippingCommit,
@@ -54,11 +66,57 @@ const baseOf = async (
 	return undefined;
 };
 
+/** The id in a proposal's frontmatter. */
+const proposalIdOf = (markdown: string): string | undefined =>
+	/^id:\s*["']?([A-Za-z]\d+)["']?\s*$/mu.exec(markdown)?.[1];
+
+/** The slice's own unit, then the whole proposal's. */
+const WHOLE_PROPOSAL_SLICE = 'all';
+
+/**
+ * The integration commit that delivered this slice: the merge whose message
+ * names the slice's unit (or the whole proposal's), decoded with the
+ * project's ref template, and whose change touched the slice's files.
+ */
+const deliveringMergeOf = async (
+	run: IGitRunner,
+	history: readonly IIntegrationRecord[],
+	shape: IWorkRefShape,
+	proposalId: string,
+	sliceId: string,
+	files: readonly string[],
+): Promise<string | undefined> => {
+	const units = new Set([
+		unitKey(proposalId, sliceId),
+		unitKey(proposalId, WHOLE_PROPOSAL_SLICE),
+	]);
+	for (const record of history) {
+		if (record.commit === undefined || record.commit === record.delivered)
+			continue;
+		const mention = findWorkRefMention(record.message, shape);
+		if (mention === undefined) continue;
+		if (!units.has(unitKey(mention.proposal, mention.slice))) continue;
+		const changed = await run([
+			'diff',
+			'--name-only',
+			`${record.commit}^1`,
+			record.commit,
+			'--',
+			...files,
+		]);
+		if (changed.ok && changed.output.trim().length > 0)
+			return record.commit;
+	}
+	return undefined;
+};
+
 export const prepareReviewEntry = async (input: {
 	readonly markdown: string;
 	readonly workspaceRoot: string;
 	readonly run: IGitRunner;
 	readonly integration: string;
+	/** Decodes the unit a merge names; without it, only the branch counts. */
+	readonly refShape?: IWorkRefShape;
 }): Promise<IReviewEntry> => {
 	const slices = collectSliceStatuses(input.markdown);
 	const missing = await missingDeclaredFiles(
@@ -78,6 +136,7 @@ export const prepareReviewEntry = async (input: {
 	const proposalShipped = listShippedIn(input.markdown).length > 0;
 	let markdown = input.markdown;
 	const recorded: { slice: string; commit: string }[] = [];
+	let history: readonly IIntegrationRecord[] | undefined;
 	const undelivered: string[] = [];
 	for (const slice of slices) {
 		const re = blockOf(slice.id);
@@ -96,7 +155,25 @@ export const prepareReviewEntry = async (input: {
 						'--',
 						...slice.files,
 					]);
-		const commit = last?.ok === true ? last.output.trim() : '';
+		const onBranch = last?.ok === true ? last.output.trim() : '';
+		const id = proposalIdOf(markdown);
+		history ??=
+			input.refShape === undefined || base === undefined
+				? []
+				: await readIntegrationHistory(input.run, base);
+		const commit =
+			onBranch.length > 0 ||
+			input.refShape === undefined ||
+			id === undefined
+				? onBranch
+				: ((await deliveringMergeOf(
+						input.run,
+						history,
+						input.refShape,
+						id,
+						slice.id,
+						slice.files,
+					)) ?? '');
 		if (commit.length === 0) {
 			if (!proposalShipped) undelivered.push(slice.id);
 			continue;
