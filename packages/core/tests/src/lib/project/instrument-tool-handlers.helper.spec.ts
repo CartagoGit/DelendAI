@@ -11,6 +11,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { createFakeToolServer } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
@@ -166,5 +167,46 @@ describe('instrumentToolHandlers over the protocol', () => {
 		} finally {
 			await close();
 		}
+	});
+});
+
+describe('a tool call made by another tool', () => {
+	it('is observed once, as the call the agent made', async () => {
+		const started: string[] = [];
+		const called: string[] = [];
+		const handlers = new Map<string, (args: unknown) => unknown>();
+		const server = createFakeToolServer({
+			onRegisterTool: ({ name, handler }) => {
+				handlers.set(name, handler);
+			},
+		});
+		instrumentToolHandlers(
+			server,
+			baseConfig({
+				onToolStart: (name) => {
+					started.push(name);
+				},
+				onToolCall: (name) => {
+					called.push(name);
+				},
+			}),
+		);
+		server.registerTool('spec_inner', { description: 'inner' }, async () =>
+			toolOk({ value: 'inner' }),
+		);
+		server.registerTool(
+			'spec_router',
+			{ description: 'router' },
+			async () => {
+				await handlers.get('spec_inner')?.({});
+				return toolOk({ value: 'router' });
+			},
+		);
+
+		await handlers.get('spec_router')?.({});
+		await handlers.get('spec_inner')?.({});
+
+		expect(started).toEqual(['spec_router', 'spec_inner']);
+		expect(called).toEqual(['spec_router', 'spec_inner']);
 	});
 });

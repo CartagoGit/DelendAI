@@ -92,10 +92,33 @@ routed result was booked to the router, and S3 would have compacted the
 wrong tools. The record now takes the `qualifiedName` the router answers
 with.
 
+### S5 — A routed call is recorded once
+
+- **Status**: review
+- **DependsOn**: [S2]
+- **Files**:
+  - `packages/core/src/lib/project/tool-call-scope.helper.ts`
+  - `packages/core/src/lib/project/instrument-tool-handlers.helper.ts`
+  - `packages/core/tests/src/lib/project/instrument-tool-handlers.helper.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/project/instrument-tool-handlers.helper.spec.ts`
+- acceptance:
+  - "A tool call made from inside another tool call fires no `onToolStart`, `onToolCall` or `onToolCancel`; the outer call fires each once, and a later direct call of the inner tool is observed."
+
+S2's premise was wrong. The router invokes the tool through the same
+instrumented handler, so the inner call is recorded too: 329 of the 371
+routed calls over 5 KB in `invocations.jsonl` have an inner record in the
+same millisecond. Before S2 the log booked each routed call twice (the
+router, then the tool); after S2 both records carry the tool's name, and
+the router's copy weighs about twice the tool's (22:44:02 on 2026-09-28:
+57,830 B inner, 119,717 B routed). S3's ranking would have counted every
+routed tool three times over. Only the outermost call is the agent's, and
+its answer is what reaches the agent's context, so observers now see that
+one call, under the tool it reached.
+
 ### S3 — The largest list tools answer compact by default
 
 - **Status**: pending
-- **DependsOn**: [S2]
+- **DependsOn**: [S5]
 - **Files**: `plugins/proposals/src/lib/services/review-queue-view.service.ts`
 - **Gate**: type
 - acceptance:
@@ -112,10 +135,10 @@ with.
 
 ## dependency graph
 
-S1 → S2 → S3 → S4.
+S1 → S2 → S5 → S3 → S4.
 
 ## acceptance
 
-- Tool result sizes are measured per tool.
+- Tool result sizes are measured per tool, once per agent call.
 - The five largest list tools answer compact by default.
 - A new list tool that returns full items by default is flagged.
