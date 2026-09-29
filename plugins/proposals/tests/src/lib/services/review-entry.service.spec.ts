@@ -11,6 +11,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { prepareReviewEntry } from '@delendai/proposals/lib/services/review-entry.service';
 import { createGitRunner } from '@delendai/proposals/lib/shared/git-runner';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+
+const POLICY = resolveDevelopmentPolicy({
+	development: {
+		profile: 'shared-checkout-pr',
+		branches: { integration: 'develop' },
+	},
+});
 
 const roots: string[] = [];
 afterEach(() => {
@@ -81,6 +89,7 @@ const entry = (root: string, markdown: string) =>
 		workspaceRoot: root,
 		run: createGitRunner(root),
 		integration: 'develop',
+		refShape: POLICY.branches,
 	});
 
 describe('handing a proposal to review', () => {
@@ -139,5 +148,84 @@ describe('handing a proposal to review', () => {
 		});
 		if (result.ok) return;
 		expect(result.reason).toContain('src/missing.ts');
+	});
+
+	/**
+	 * Merge, on `develop`, a publication that adds `file`, the way the forge
+	 * does: a merge commit whose subject names the publication branch.
+	 */
+	const mergedEarlier = (
+		root: string,
+		unit: string,
+		file: string,
+	): string => {
+		const current = git(root, 'branch', '--show-current');
+		git(root, 'switch', '-q', 'develop');
+		git(
+			root,
+			'switch',
+			'-q',
+			'-c',
+			`delendai/pr/glm-5/implement/${unit}/w`,
+		);
+		mkdirSync(join(root, 'src'), { recursive: true });
+		writeFileSync(join(root, file), 'export {};\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'feat: an earlier slice');
+		git(root, 'switch', '-q', 'develop');
+		git(
+			root,
+			'merge',
+			'-q',
+			'--no-ff',
+			'-m',
+			`Merge pull request #1 from o/delendai/pr/glm-5/implement/${unit}/w`,
+			`delendai/pr/glm-5/implement/${unit}/w`,
+		);
+		const merge = git(root, 'rev-parse', 'HEAD').slice(0, 12);
+		git(root, 'switch', '-q', current);
+		git(root, 'merge', '-q', '--no-edit', 'develop');
+		return merge;
+	};
+
+	it('finds a slice delivered by an earlier pull request in the merge that landed it', async () => {
+		const root = repo(['src/b.ts']);
+		const merge = mergedEarlier(root, 'x00001-S1-g1', 'src/a.ts');
+
+		const result = await entry(
+			root,
+			proposal(slice('S1', '`src/a.ts`') + slice('S2', '`src/b.ts`')),
+		);
+
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.recorded).toContainEqual({ slice: 'S1', commit: merge });
+	});
+
+	it('finds a slice delivered with its whole proposal', async () => {
+		const root = repo(['src/b.ts']);
+		const merge = mergedEarlier(root, 'x00001-all-g1', 'src/a.ts');
+
+		const result = await entry(
+			root,
+			proposal(slice('S1', '`src/a.ts`') + slice('S2', '`src/b.ts`')),
+		);
+
+		expect(result).toMatchObject({ ok: true });
+		if (!result.ok) return;
+		expect(result.recorded).toContainEqual({ slice: 'S1', commit: merge });
+	});
+
+	it('does not take a merge that names the slice but changed none of its files', async () => {
+		const root = repo(['src/b.ts']);
+		mergedEarlier(root, 'x00001-S1-g1', 'src/other.ts');
+		writeFileSync(join(root, 'src/a.ts'), 'export {};\n');
+
+		const result = await entry(
+			root,
+			proposal(slice('S1', '`src/a.ts`') + slice('S2', '`src/b.ts`')),
+		);
+
+		expect(result).toMatchObject({ ok: false, code: 'undelivered-slices' });
 	});
 });

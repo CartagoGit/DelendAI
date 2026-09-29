@@ -76,6 +76,8 @@ const PINNED: Readonly<Record<string, string>> = {
 		'2c9953a41e4811e6dc4ae40a2e3c79c57ed3f93b36614e4bd1bceb8d0c3e2edb',
 	'0023_frontmatter_json.sql':
 		'1f161c76e2efb7d2b7b02b8a26d32e0d93c6ee1002117eaf09d0d44f9fcfff68',
+	'0024_any_forge_host.sql':
+		'4f1a66236f4e15053e4ed94f42fb13635e71c7bc3160d5f63fc1f2ae332e57a3',
 };
 
 /** What `0015` hashed to before #121 edited its comment. */

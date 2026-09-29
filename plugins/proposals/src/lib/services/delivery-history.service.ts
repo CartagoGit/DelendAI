@@ -49,6 +49,7 @@ export const readIntegrationHistory = async (
 			continue;
 		const merged = (parents ?? '').trim().split(/\s+/u)[1];
 		records.push({
+			commit: sha,
 			delivered: merged ?? sha,
 			subject: message.split('\n')[0]?.trim() ?? sha,
 			message,

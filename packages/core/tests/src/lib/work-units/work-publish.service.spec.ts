@@ -8,7 +8,13 @@
  */
 import { holdWorkRef } from '@delendai/core/lib/wip-engine/work-ref-lock';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -176,7 +182,7 @@ describe('publishWorkUnit (x00553 S5)', () => {
 		expect(git(root, 'rev-parse', '--verify', WORK_REF)).not.toBe('');
 	});
 
-	it('removes the worktree standing on the ref, and refuses to remove its own', () => {
+	it('removes the worktree standing on the ref, even the caller\u2019s own', () => {
 		const root = repoWithWork();
 		// The short branch name is what `work enter` passes, and it is
 		// what attaches the worktree to the ref; a fully-qualified ref
@@ -197,15 +203,33 @@ describe('publishWorkUnit (x00553 S5)', () => {
 			remote: 'origin',
 		});
 		expect(standing.published).toBe(true);
-		expect(standing.workRefRemoved).toBe(false);
+		expect(standing.workRefRemoved).toBe(true);
 		expect(
 			standing.steps.find((s) => s.name === 'remove-worktree')?.detail,
-		).toContain('current directory');
+		).toContain(`continue from ${root}`);
+		expect(existsSync(join(root, 'wt'))).toBe(false);
+	});
 
-		const outside = publish(root, {
-			publicationRef: publicationRefFor(policy, 'from-outside'),
+	it('keeps the caller\u2019s worktree when it holds uncommitted changes', () => {
+		const root = repoWithWork();
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			join(root, 'wt'),
+			WORK_REF.replace('refs/heads/', ''),
+		);
+		writeFileSync(join(root, 'wt', 'unsaved.txt'), 'draft\n');
+		const standing = publishWorkUnit({
+			root,
+			cwd: join(root, 'wt'),
+			workRef: WORK_REF,
+			publicationRef: publicationRefFor(policy, 'dirty-inside'),
+			remote: 'origin',
 		});
-		expect(outside.workRefRemoved).toBe(true);
+		expect(standing.workRefRemoved).toBe(false);
+		expect(existsSync(join(root, 'wt', 'unsaved.txt'))).toBe(true);
 	});
 
 	it('refuses a work ref that does not exist, and removes nothing', () => {

@@ -1,4 +1,5 @@
 import z from 'zod';
+import { listAgentNames } from '../shared/agent-names-list';
 import { randomUUID } from 'node:crypto';
 
 import type {
@@ -82,6 +83,8 @@ export interface IAgentNamesArgs {
 	readonly subscription_id?: string | undefined;
 	readonly dry_run?: boolean | undefined;
 	readonly stale_after_minutes?: number | undefined;
+	/** `list`: every assignment and adoption, not only the active agents. */
+	readonly detail?: boolean | undefined;
 	/** f00082 S3: composite-identity fields, persisted on assign. */
 	readonly host?: string | undefined;
 	readonly model?: string | undefined;
@@ -214,23 +217,14 @@ const runAgentNamesImpl = async (
 	};
 
 	switch (args.action) {
-		case 'list': {
-			const r = await store.read();
-			return json({
-				summary: {
-					active: r.assignments.filter((a) => a.status === 'active')
-						.length,
-					cooldown: r.assignments.filter(
-						(a) => a.status === 'cooldown',
-					).length,
-					orphan: r.assignments.filter((a) => a.status === 'orphan')
-						.length,
-					adopted: r.adopted.length,
-				},
-				assignments: r.assignments,
-				adopted: r.adopted,
-			});
-		}
+		case 'list':
+			return json(
+				listAgentNames(
+					await store.read(),
+					args.detail === true,
+					options.namespacePrefix,
+				),
+			);
 
 		case 'tree': {
 			const r = await store.read();
@@ -562,6 +556,12 @@ export const buildAgentNamesRegistration = (
 					now: z.string().optional(),
 					dry_run: z.boolean().optional(),
 					stale_after_minutes: z.number().optional(),
+					detail: z
+						.boolean()
+						.optional()
+						.describe(
+							'list: every assignment, released ones and adoptions included. Without it, the active agents in brief.',
+						),
 					subscription_id: z.string().optional(),
 					host: z
 						.string()

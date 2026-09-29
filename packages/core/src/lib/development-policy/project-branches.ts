@@ -101,6 +101,9 @@ export const projectBranches = async (
 ): Promise<{
 	readonly integration: string;
 	readonly workRefPrefix: string;
+	/** The work-ref template and publication prefix, to decode ref names. */
+	readonly workRefTemplate: string;
+	readonly publicationRefPrefix: string;
 }> => {
 	const development = await declaredDevelopment(workspaceRoot);
 	const declaredIntegration = (
@@ -130,7 +133,12 @@ export const projectBranches = async (
 				// other question, and `readWorkspacePolicy` asks it.
 				(checkedOutBranch(workspaceRoot) ??
 				policy.branches.integration);
-	return { integration, workRefPrefix: prefix };
+	return {
+		integration,
+		workRefPrefix: prefix,
+		workRefTemplate: policy.branches.workRefTemplate,
+		publicationRefPrefix: policy.branches.publicationRefPrefix,
+	};
 };
 
 /**
