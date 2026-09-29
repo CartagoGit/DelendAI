@@ -236,6 +236,42 @@ describe('lintCommitBranch', () => {
 			expect(result.ok).toBe(false);
 		});
 
+		it('does not refuse a CI checkout of the release branch, which is a merged pull request', () => {
+			const result = lintCommitBranch({
+				...baseInput,
+				currentBranch: 'main',
+				releaseBranch: 'main',
+				ciCheckout: true,
+			});
+			expect(result).toEqual({
+				ok: true,
+				note: expect.stringContaining('NOT_APPLICABLE'),
+			});
+		});
+
+		it('still refuses a commit on the release branch outside CI, or with something staged', () => {
+			for (const ciCheckout of [false, undefined]) {
+				expect(
+					lintCommitBranch({
+						...baseInput,
+						stagedFiles: ['README.md'],
+						currentBranch: 'main',
+						releaseBranch: 'main',
+						...(ciCheckout === undefined ? {} : { ciCheckout }),
+					}).ok,
+				).toBe(false);
+			}
+			// Another branch in CI is judged as before.
+			expect(
+				lintCommitBranch({
+					...baseInput,
+					currentBranch: 'feature/x',
+					releaseBranch: 'main',
+					ciCheckout: true,
+				}).ok,
+			).toBe(false);
+		});
+
 		it('keeps develop as the default when no policy was read', () => {
 			const result = lintCommitBranch({
 				...baseInput,

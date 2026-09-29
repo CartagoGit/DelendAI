@@ -270,6 +270,117 @@ describe('reachableZones', () => {
 		expect(reach).toBeUndefined();
 	});
 
+	it('says why it runs every zone, whichever step could not answer', () => {
+		const reasons: string[] = [];
+		const explain = (reason: string): void => {
+			reasons.push(reason);
+		};
+		// The planner's own checkout was one commit deep: the base was not
+		// in the object store, the diff threw, and every pull request ran
+		// all eleven zones without the log saying why.
+		expect(
+			reachableZones(
+				{ base: 'abc123', rootDir: '/repo' },
+				{
+					buildGraph: () => graph as never,
+					computeAffected: () => result({}) as never,
+					diff: () => {
+						throw new Error("fatal: bad revision 'abc123...HEAD'");
+					},
+					explain,
+				},
+			),
+		).toBeUndefined();
+		expect(
+			reachableZones(
+				{ base: 'x', rootDir: '/repo' },
+				{
+					buildGraph: () => {
+						throw new Error('no workspaces');
+					},
+					computeAffected: () => result({}) as never,
+					diff: () => [],
+					explain,
+				},
+			),
+		).toBeUndefined();
+		expect(
+			reachableZones(
+				{ base: 'x', rootDir: '/repo' },
+				{
+					buildGraph: () => graph as never,
+					computeAffected: () => {
+						throw new Error('cycle');
+					},
+					diff: () => [],
+					explain,
+				},
+			),
+		).toBeUndefined();
+		expect(
+			reachableZones(
+				{ base: 'x', rootDir: '/repo' },
+				{
+					buildGraph: () => graph as never,
+					computeAffected: () =>
+						result({ rootFiles: ['package.json'] }) as never,
+					diff: () => [{ path: 'package.json', listing: false }],
+					explain,
+				},
+			),
+		).toBeUndefined();
+		expect(
+			reachableZones(
+				{ base: 'x', rootDir: '/repo' },
+				{
+					buildGraph: () => graph as never,
+					computeAffected: () =>
+						result({
+							rootFiles: [
+								'docs/delendai/guide.md',
+								'package.json',
+							],
+						}) as never,
+					diff: () => [
+						{ path: 'docs/delendai/guide.md', listing: false },
+						{ path: 'package.json', listing: false },
+					],
+					readMap: () => ({
+						zones: { core: { read: [], listed: [] } },
+					}),
+					explain,
+				},
+			),
+		).toBeUndefined();
+		expect(reasons).toEqual([
+			"the change could not be diffed against abc123 — is the base in the clone? (fatal: bad revision 'abc123...HEAD')",
+			'the workspace graph could not be built (no workspaces)',
+			'what the change affects could not be computed (cycle)',
+			'no zone read map says which zones read the changed files outside every workspace',
+			'a root file or a workflow can reach any zone (package.json)',
+		]);
+	});
+
+	it('explains nothing when it could select', () => {
+		const reasons: string[] = [];
+		const reach = reachableZones(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => graph as never,
+				computeAffected: () =>
+					result({
+						directByWorkspace: new Map([['tools', ['tools/x.ts']]]),
+					}) as never,
+				diff: () => [{ path: 'tools/x.ts', listing: false }],
+				explain: (reason) => {
+					reasons.push(reason);
+				},
+			},
+		);
+		expect(reach).toEqual(new Set(['tools']));
+		expect(reasons).toEqual([]);
+	});
+
 	it('follows DOWNSTREAM only, never upstream', () => {
 		// `affected` unions both because it answers a build-ordering
 		// question: to build X, first build what X depends on. Test

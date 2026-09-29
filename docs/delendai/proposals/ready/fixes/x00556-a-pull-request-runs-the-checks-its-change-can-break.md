@@ -54,12 +54,31 @@ answerable, reviewable and testable.
 
 ### S1 — Each job declares the paths it can be broken by
 
-- **Status**: pending
-- **Gate**: `bun run lint:workflow`
-- **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/**`
+- **Status**: in-progress
+- **Gate**: `bun run lint:job-scope && bun run test:sqlite:real-tree`
+- **Files**:
+  - `.github/workflows/ci.yml`
+  - `tools/scripts/ci/job-scope.constant.ts`
+  - `package.json`
 - Every CI job carries an explicit input set. A job with no declared
   inputs always runs. A lint that fails to declare and is then skipped
   is a gate failure, not a saving.
+- **Found 2026-09-29 — `job-scope` already declares inputs, and one of
+  them made a 4-minute job run on every pull request.**
+  `sqlite-cutover-ready` (the second slowest job after the test zones,
+  257 s) listed `docs/delendai/proposals/`, and every pull request edits
+  a proposal. Its reason said the cutover gate reads proposal statuses;
+  it does not (its outstanding list is written in the script). What does
+  read the real tree is one spec of the SQLite suite,
+  `real-tree-projection` (3 s): a proposal edit can break it, as
+  `kind: infra` once did. It now runs as `test:sqlite:real-tree` in
+  `lint-governance`, on every change, and the proposal tree left the
+  cutover job's inputs. A change of a proposal and a script now selects
+  22 jobs instead of 23, without the slow one; a change to the SQLite
+  packages still selects it.
+- Still to do: the jobs declared `always` (the six lint groups,
+  `quality-gate`, `metrics-gate`, the artifact checks) — each needs its
+  inputs measured before it can be narrowed.
 
 ### S2 — A pull request selects, the integration branch does not
 
@@ -72,12 +91,36 @@ answerable, reviewable and testable.
 
 ### S3 — The saving is measured, not assumed
 
-- **Status**: pending
-- **Gate**: `bun run lint:workflow`
-- **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/**`
+- **Status**: in-progress
+- **Gate**: `npx vitest run tools/scripts/ci/test-zones.script.spec.ts tools/scripts/lint/workflow-history-depth.script.spec.ts`
+- **Files**:
+  - `.github/workflows/ci.yml`
+  - `tools/scripts/ci/test-zones.script.ts`
+  - `tools/scripts/ci/test-zones.script.spec.ts`
+  - `tools/scripts/ci/zone-reads.ts`
+  - `tools/scripts/lint/workflow-history-depth.constant.ts`
+  - `tools/scripts/lint/workflow-history-depth.script.spec.ts`
 - The run reports which jobs were selected and which were skipped and
   why, so the selection is auditable and a wrong mapping is visible
   rather than silent.
+- **Found 2026-09-29 — the selection never ran in CI.** `plan-tests`
+  checked out one commit, so the pull request's base was not in its
+  object store, the diff threw, and the planner fell back to every zone
+  without saying so. #658 (a forge script and a proposal) ran all eleven
+  zone jobs; replayed with the history it skips core and packages. The
+  report line the log printed was computed without the base, so it read
+  "every zone" whatever happened.
+- `plan-tests` now fetches the history, and the report is computed for
+  the same base as the matrix. When the planner runs every zone it says
+  why, once: no base (a push or a dispatch), the diff from the base
+  failed, the workspace graph or the affected set could not be built, no
+  zone read map, or the root file or workflow that can reach anything.
+- `workflow-history-depth` did not catch it: the diff happens two
+  modules below the script the job runs. A job handed the pull
+  request's base (`github.event.pull_request.base.sha`) now counts as
+  reading history, so a shallow planner fails the lint.
+- Still to do in this slice: the same report for the jobs that are not
+  test zones, once S1 gives them inputs.
 
 ### S4 — A change outside the workspaces reaches only the zones that read it
 

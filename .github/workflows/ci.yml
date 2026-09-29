@@ -382,6 +382,11 @@ jobs:
                   # f00644: a pull request is opened from a well-shaped
                   # publication, whatever host opened it.
                   bun run lint:pr-head-shape
+                  # Every proposal in the tree projects into SQLite. It is
+                  # the one part of the SQLite suite a proposal edit can
+                  # break, and it takes seconds; running it here is what
+                  # lets a proposal edit skip `sqlite-cutover-ready`.
+                  bun run test:sqlite:real-tree
 
     typecheck:
         name: typecheck
@@ -503,12 +508,21 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The planner diffs the change against the pull request's
+                  # base. On the default one-commit clone the base is not in
+                  # the object store, the diff fails, and the planner runs
+                  # every zone: every pull request ran all eleven.
+                  fetch-depth: '0'
 
             - name: Plan the test zones
               id: plan
               run: |
                   set -euo pipefail
-                  bun tools/scripts/ci/test-zones.script.ts
+                  # The report is for the same base as the matrix, so the log
+                  # says what was selected and why.
+                  bun tools/scripts/ci/test-zones.script.ts \
+                    --base=${{ github.event.pull_request.base.sha || '' }}
                   {
                     printf 'zones='
                     bun tools/scripts/ci/test-zones.script.ts --matrix \
