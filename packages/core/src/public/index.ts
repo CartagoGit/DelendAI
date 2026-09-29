@@ -1175,3 +1175,4 @@ export {
 	sharedCheckout,
 } from '../lib/shared/shared-checkout';
 export { projectBranches } from '../lib/development-policy/project-branches';
+export { createStaleRuntimeWatch } from '../lib/development-policy/stale-runtime-advisory';
