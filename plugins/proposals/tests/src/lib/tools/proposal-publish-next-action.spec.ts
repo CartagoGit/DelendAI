@@ -52,8 +52,11 @@ describe('proposalPublishNextAction', () => {
 		});
 
 		expect(action).toContain(PATH);
-		expect(action).not.toContain('pull request');
-		expect(action).toContain('Merge');
+		// Saying there is NO pull request is the point; telling it to open
+		// one is the failure.
+		expect(action).not.toMatch(/opens? a pull request/iu);
+		expect(action).toContain('opens no pull request');
+		expect(action).toContain('MERGING');
 	});
 
 	it('names no mechanism without a policy, only that the file must not stay untracked', () => {

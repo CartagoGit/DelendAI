@@ -8,9 +8,18 @@
  * a host showed its model. The server now states it in the instructions
  * every MCP client receives when it connects, and the prompt says the
  * same words.
+ *
+ * The same holds for the development policy. The work model was
+ * resolved at startup and then told to nobody: an agent learned how
+ * this project lands work from whatever document it read, and a
+ * document describing another profile sent it down a pull-request flow
+ * in a project that merges. The resolved policy is rendered here, by
+ * the one renderer every other surface uses, before anything else.
  */
 import { DEFAULT_AGENT_POLICY } from '../contracts/constants/agent-policy.constant';
 import type { IDelendaiAgentPolicyConfig } from '../contracts/interfaces/agent-policy.interface';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { workModelInstructionLines } from '../development-policy/declare-workflow';
 
 /** The working mode and principles an agent works under, as lines. */
 export const agentPolicyLines = (
@@ -27,7 +36,22 @@ export const agentPolicyLines = (
 	];
 };
 
+/**
+ * Everything an agent must obey before it works: the working mode, the
+ * principles, and this project's work model when one is resolved.
+ */
+export const agentOperatingLines = (
+	policy: IDelendaiAgentPolicyConfig | undefined,
+	developmentPolicy?: IResolvedDevelopmentPolicy | undefined,
+): readonly string[] => [
+	...agentPolicyLines(policy),
+	...(developmentPolicy === undefined
+		? []
+		: workModelInstructionLines(developmentPolicy)),
+];
+
 /** The server instructions an MCP client receives when it connects. */
 export const agentPolicyInstructions = (
 	policy: IDelendaiAgentPolicyConfig | undefined,
-): string => agentPolicyLines(policy).join('\n');
+	developmentPolicy?: IResolvedDevelopmentPolicy | undefined,
+): string => agentOperatingLines(policy, developmentPolicy).join('\n');

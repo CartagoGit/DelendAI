@@ -10,7 +10,7 @@
 import { execFileSync } from 'node:child_process';
 import { resolve as resolvePath } from 'node:path';
 
-import { judgeGitOperation } from '@delendai/core/cli';
+import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
 import { agentEnvironmentMarker } from '@delendai/core/cli';
@@ -322,6 +322,7 @@ export const checkoutWarning = (
 		`delendai guard (post-checkout): the shared checkout is now on \`${branch}\`.`,
 		`The \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`, and commits from here will be refused.`,
 		`Return with \`git switch ${policy.branches.integration}\` (your edits stay), then persist work with \`delendai work checkpoint\`, or take your own worktree with \`delendai work enter\`.`,
+		briefWorkModel(policy).land,
 	].join('\n');
 };
 
