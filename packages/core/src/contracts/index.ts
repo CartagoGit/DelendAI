@@ -141,6 +141,7 @@ export type {
 	DiagnosticResult,
 	ResourceResult,
 } from '../lib/contracts/envelopes.contract';
+export type { IDelendaiAgentPolicyConfig } from '../lib/contracts/interfaces/agent-policy.interface';
 export {
 	isOperationSuccess,
 	isOperationFailure,

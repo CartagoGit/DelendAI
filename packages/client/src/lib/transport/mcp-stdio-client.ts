@@ -388,6 +388,14 @@ export class McpStdioClient {
 		});
 	}
 
+	/**
+	 * The instructions the server sent when this client connected: how the
+	 * project wants its agents to work (`core.agentPolicy`).
+	 */
+	instructions(): string | undefined {
+		return this.transport.getInstructions?.();
+	}
+
 	async close(): Promise<void> {
 		this.closePromise ??= this.operationTail.then(
 			() => this.transport.close?.(),

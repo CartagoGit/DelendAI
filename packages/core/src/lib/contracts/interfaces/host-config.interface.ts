@@ -224,6 +224,11 @@ export interface IHostRegistrations {
 				readonly version: string;
 		  }) => void)
 		| undefined;
+	/**
+	 * The instructions every MCP client receives when it connects: how the
+	 * project wants its agents to work (`core.agentPolicy`).
+	 */
+	readonly instructions?: string | undefined;
 	readonly toolSurfaceRuntime?: IToolSurfaceRuntimeAccess | undefined;
 	/** Managed-only tool activators keyed by their stable registration id. */
 	readonly lazyToolActivators?: ReadonlyMap<
