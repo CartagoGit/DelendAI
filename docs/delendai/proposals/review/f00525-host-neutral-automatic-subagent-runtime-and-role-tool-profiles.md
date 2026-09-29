@@ -9,6 +9,8 @@ date: 2026-09-07
 last-transition-id: f1705cc5-038d-404c-8046-6196b79a930a
 last-correlation-id: f1705cc5-038d-404c-8046-6196b79a930a
 last-transition-from: in-progress
+shipped-in:
+  - "8a965a50db61d2879d67cdb5d821c82317cd6445"
 ---
 
 # f00525 — Host-neutral automatic subagent runtime and role tool profiles
@@ -34,7 +36,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 - global_gate: type
 
 ### S1 — Core host subagent capability contract and automatic context wiring
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/contracts/src/host-subagent-runtime.interface.ts`, `packages/contracts/src/index.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/host`
 - **Gate**: type
 - acceptance:
@@ -42,6 +44,11 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Inject the runtime through IMcpPluginContext without serializing it into plugin options."
   - "Provide a deterministic no-runtime behavior for hosts that do not expose native subagents."
   - "Keep existing test contexts source-compatible."
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — f00525 S1 introduces packages/contracts/src/host-subagent-runtime.interface.ts (IHostSubagentRuntime with spawnSubagent + hostId metadata) and wires it through assemble.ts as deps.hostSubagentRuntime, then through IMcpPluginContext as optional subagentRuntime. Runtime is a JS value, never JSON. No-runtime hosts get undefined and continue. agent-orchestrator port-resolution spec: 11/11 pass.
+- review-attribution: unrecorded — nothing in Git names who delivered 8a965a50db61d2879d67cdb5d821c82317cd6445: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — Agent orchestrator consumes host runtime automatically
 - **Status**: review
