@@ -133,6 +133,7 @@ answerable, reviewable and testable.
   - `tools/scripts/ci/zone-reads.script.spec.ts`
   - `tools/scripts/ci/test-zones.script.spec.ts`
   - `tools/tests/ci/affected.spec.ts`
+  - `tools/scripts/migrate/rebrand-propagate.script.ts`
 - S4 sent a changed root file to every zone that had listed ANY directory
   above it. Listing a directory depends on which files it holds, not on
   what they say, and `core`, `plugins` and `tools` list `docs/` and
@@ -151,6 +152,10 @@ answerable, reviewable and testable.
   plugins 19, proposals 1,144, tools 51. #648 replayed against it runs
   proposals, plugins, apps and tools, and skips core and packages; a
   proposal edit that moves nothing runs proposals alone.
+- The file-level map names the proposals a zone read, pre-rebrand audits
+  included, and the rebrand sweep read those file names as live uses of
+  the retired name: `develop` went red on it after the merge (#650). The
+  map joins the baselines the sweep already skips for the same reason.
 
 ## acceptance
 
