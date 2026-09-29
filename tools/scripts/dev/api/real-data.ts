@@ -28,6 +28,10 @@ export interface IApiError {
 	readonly durationMs: number;
 }
 
+/** What the page is told when the dashboard cannot be read. */
+const DASHBOARD_FAILURE =
+	'The delendai server did not answer the dashboard; the dev server terminal has the error.';
+
 const wrap = async <T>(
 	factory: () => Promise<T>,
 	kind: IApiError['kind'],
@@ -51,11 +55,13 @@ const wrap = async <T>(
 			),
 		]);
 	} catch (err) {
-		const message = err instanceof Error ? err.message : String(err);
+		// The detail goes to the dev server's terminal; the page gets a
+		// fixed sentence, never the error's own text (stack-trace-exposure).
+		console.error(`[dev] dashboard ${kind}:`, err);
 		throw {
 			ok: false,
 			kind,
-			message,
+			message: DASHBOARD_FAILURE,
 			durationMs: Date.now() - start,
 		} satisfies IApiError;
 	} finally {
@@ -90,10 +96,11 @@ export const fetchRealDashboard = async (
 	} catch (err) {
 		if (err && typeof err === 'object' && 'ok' in err)
 			return err as IApiError;
+		console.error('[dev] dashboard spawn-failed:', err);
 		return {
 			ok: false,
 			kind: 'spawn-failed',
-			message: err instanceof Error ? err.message : String(err),
+			message: DASHBOARD_FAILURE,
 			durationMs: 0,
 		};
 	}

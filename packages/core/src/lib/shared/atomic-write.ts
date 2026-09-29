@@ -7,6 +7,7 @@ import {
 	rmSync,
 	writeSync,
 } from 'node:fs';
+import { constants } from 'node:fs';
 import { mkdir, open, readdir, rename, rm, stat } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 import { randomBytes } from 'node:crypto';
@@ -84,7 +85,8 @@ const sweepOrphanTemporaries = async (absolutePath: string): Promise<void> => {
 
 const fsyncDir = async (dir: string): Promise<void> => {
 	try {
-		const handle = await open(dir, 'r');
+		// Read-only, never created: a directory is opened only to fsync it.
+		const handle = await open(dir, constants.O_RDONLY);
 		try {
 			await handle.sync();
 		} finally {
