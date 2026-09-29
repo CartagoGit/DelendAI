@@ -401,6 +401,6 @@ describeUnixOnly(
 			const capabilities = await probeTerminalCapabilities();
 			expect(capabilities.shell.path.length).toBeGreaterThan(0);
 			expect(capabilities.probeMs).toBeGreaterThanOrEqual(0);
-		}, 30_000);
+		});
 	},
 );
