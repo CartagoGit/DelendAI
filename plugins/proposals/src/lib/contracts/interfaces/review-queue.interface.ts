@@ -2,6 +2,7 @@
  * review-queue.interface.ts — the contract behind
  * `../../services/review-queue.service.ts`.
  */
+import type { IReviewDrift } from './review-drift.interface';
 import type { IGitRunner } from '../../shared/git-runner';
 import type { IWorkRefShape } from './review-attribution.interface';
 
@@ -70,6 +71,11 @@ export interface IReviewQueueProposal {
 	readonly claimedBy?: readonly string[];
 	/** How to claim it, when nobody else holds it. */
 	readonly claim?: string;
+	/**
+	 * How old the review is and how far the repository moved under it since
+	 * the work landed; the queue is ordered by it, largest first (f00640).
+	 */
+	readonly drift?: IReviewDrift;
 }
 
 export interface IReviewQueueTotals {

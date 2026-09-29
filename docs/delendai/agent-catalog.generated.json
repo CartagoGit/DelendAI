@@ -1537,14 +1537,6 @@
 				"date": "2026-09-20"
 			},
 			{
-				"id": "f00640",
-				"title": "Review debt is measured: age and drift since the work landed",
-				"track": "governance",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-25"
-			},
-			{
 				"id": "f00641",
 				"title": "The proposals database runs on Node as well as Bun",
 				"track": "architecture",

@@ -23,6 +23,7 @@ import {
 } from '../contracts/constants/review-claims.constant';
 import { packOf } from './review-pack.service';
 import { summarizeQueue } from './review-queue-summary.service';
+import { orderByDrift } from './review-drift.service';
 import { proposalsInReview } from './review-backlog.service';
 import { reviewClaims, unitOfRef } from './review-claims.service';
 import { pageOfQueue } from './review-queue-page.service';
@@ -366,7 +367,9 @@ export const buildReviewQueue = async (
 					},
 		);
 	}
-	const { proposals, page } = pageOfQueue(reviewed, input);
+	// Largest drift first: those reviews get dearer with every merge (f00640).
+	const ordered = await orderByDrift(reviewed, input.run, input.integration);
+	const { proposals, page } = pageOfQueue(ordered, input);
 	const slices = reviewed.flatMap((proposal) => proposal.slices);
 	const count = (verdict: IReviewQueueSlice['verdict']): number =>
 		slices.filter((slice) => slice.verdict === verdict).length;
