@@ -1,3 +1,12 @@
+import type { holdWorkRef } from '../../wip-engine/work-ref-lock';
+
+/** How long to wait for a held work ref, and how the hold is taken. */
+export interface IWorkRefHoldOptions {
+	readonly hold?: typeof holdWorkRef;
+	readonly waitMs?: number;
+	readonly pollMs?: number;
+}
+
 /** What `publishWorkRef` was asked to do. */
 export interface IWorkPublishRequest {
 	/** Repository root; every git command runs there. */

@@ -75,6 +75,13 @@ const START_STEPS: Readonly<
 		'STOP: this configuration declares no way to persist work. Fix the policy before working.',
 };
 
+/**
+ * The command that lands a unit under the merge profile. Named once, so
+ * what an agent is told and what `work publish` runs cannot drift apart.
+ */
+const LAND_BY_MERGE_COMMAND =
+	'delendai work publish --proposal=<id> --slice=<slice> --agent=<you>';
+
 /** How work reaches the integration branch. */
 const LAND_STEPS: Readonly<
 	Record<ILandRoute, (policy: IResolvedDevelopmentPolicy) => string>
@@ -82,7 +89,7 @@ const LAND_STEPS: Readonly<
 	'pull-request': ({ branches }) =>
 		`Land finished work through a pull request: \`delendai work publish\` (or the \`work\` tool, action publish) pushes ${shortName(branches.publicationRefPrefix)}<name> and opens a pull request into ${branches.integration}. Never push to ${branches.integration} directly.`,
 	merge: ({ branches }) =>
-		`Land finished work by MERGING it into ${branches.integration}; this profile opens no pull request. Finish the unit with \`delendai work publish\`: the merge is delendai's integration engine, never a hand-made merge, and it takes only a candidate the local validation gate passed against the current ${branches.integration} head.`,
+		`Land finished work by MERGING it into ${branches.integration}; this profile opens no pull request. Finish the unit with \`${LAND_BY_MERGE_COMMAND}\` (or the \`work\` tool, action publish): it merges your work ref into the current ${branches.integration} head in a throwaway index, runs the validation gate ${branches.integration} declares on that merge, and pushes it only if the gate passed — refusing, with the next step, when the gate fails, the head moved or the merge conflicts. Never merge or push to ${branches.integration} by hand.`,
 	direct: ({ branches }) =>
 		`Your commits reach ${branches.integration} directly; there is no review boundary and no pull request.`,
 };
@@ -102,7 +109,7 @@ const LAND_SUMMARIES: Readonly<
 > = {
 	'pull-request': (integration) => `land by pull request into ${integration}`,
 	merge: (integration) =>
-		`land by merge into ${integration} after the local gate, no pull request`,
+		`land by merge into ${integration} with \`delendai work publish\`, after the local gate, no pull request`,
 	direct: (integration) => `commits land on ${integration} directly`,
 };
 
@@ -136,11 +143,23 @@ const mergeStep = (policy: IResolvedDevelopmentPolicy): string => {
 	return `Work lands as a merge commit, so your commits survive the branch's deletion; \`git log --first-parent ${policy.branches.integration}\` still reads one line per change.`;
 };
 
+/** Who certifies a candidate, and when. */
+const certificationStep = (policy: IResolvedDevelopmentPolicy): string => {
+	if (!policy.integration.requiresLocalCertification)
+		return 'Certification happens on the forge, not on your machine.';
+	if (policy.integration.strategy === 'merge')
+		return `Nothing lands uncertified: \`delendai work publish\` runs the validation gate ${policy.branches.integration} declares (\`validationMatrix.scopes\` in delendai.config.json, else a \`validate\` script) on the merge it would push, in a worktree of its own, and a project that declares no gate lands nothing.`;
+	return 'Prove the candidate in isolation BEFORE you publish it; a candidate that was not proved must not be published.';
+};
+
 /** How long the work ref lives, and who ends it. */
-const workRefStep = (policy: IResolvedDevelopmentPolicy): string =>
-	policy.integration.deleteMergedWorkRef
+const workRefStep = (policy: IResolvedDevelopmentPolicy): string => {
+	if (policy.integration.strategy === 'merge')
+		return 'Publishing ends your work ref once its work has landed, unless its proposal still has slices to commit on it.';
+	return policy.integration.deleteMergedWorkRef
 		? 'The forge deletes your work ref as soon as its pull request merges, so one ref serves exactly one change.'
 		: 'Your work ref outlives its pull requests — a proposal lands one pull request per slice — and delendai deletes it when that proposal closes.';
+};
 
 /** The promise the recovery axis makes about work that never landed. */
 const recoveryStep = (policy: IResolvedDevelopmentPolicy): string =>
@@ -160,12 +179,7 @@ export const declareWorkflow = (
 	const sentences: readonly (readonly [string, string])[] = [
 		[workspaceStep(policy), 'workspace.strategy'],
 		[persistenceStep(policy), 'persistence.strategy'],
-		[
-			policy.integration.requiresLocalCertification
-				? 'Prove the candidate in isolation BEFORE you publish it; a candidate that was not proved must not be published.'
-				: 'Certification happens on the forge, not on your machine.',
-			'integration.requiresLocalCertification',
-		],
+		[certificationStep(policy), 'integration.requiresLocalCertification'],
 		[integrationStep(policy), 'integration.strategy'],
 		[gateStep(policy), 'integration.requiredChecks'],
 		[mergeStep(policy), 'integration.mergeMethod'],
