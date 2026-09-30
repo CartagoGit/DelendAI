@@ -26,6 +26,7 @@
 | error-reporting | @delendai/error-reporting | public | stable | standard, swarm, full, dogfood |
 | external-mcps | @delendai/external-mcps | public | stable | full |
 | forge | @delendai/forge | public | stable | swarm, full, dogfood |
+| framework-knowledge | @delendai/framework-knowledge | public | experimental |  |
 | git | @delendai/git | public | stable | minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | github | @delendai/github | public | experimental | full |
 | gitlab | @delendai/gitlab | public | experimental | full |
@@ -87,6 +88,7 @@
 | error-reporting | 3800 | 4200 | 20 |
 | external-mcps | 2700 | 3000 | 20 |
 | forge | 7400 | 8200 | 20 |
+| framework-knowledge | 2700 | 3000 | 20 |
 | git | 6200 | 6800 | 20 |
 | github | 2700 | 3000 | 20 |
 | gitlab | 2700 | 3000 | 20 |
@@ -149,6 +151,7 @@
 | error-reporting | filesystem-read, filesystem-write, network, forge-write | report_status: network, forge-write |
 | external-mcps | filesystem-read, process, network, env-read |  |
 | forge | filesystem-read, process, network, forge-read, forge-write | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |
+| framework-knowledge | filesystem-read |  |
 | git | filesystem-read, process, git-read, git-write | status: git-read; changed: git-read; diff: git-read; log: git-read; blame: git-read; show: git-read; worktree: git-read; changelog: git-read; commit: git-write; push: git-write |
 | github | filesystem-write, network, env-read |  |
 | gitlab | filesystem-write, network, env-read |  |
@@ -395,6 +398,15 @@
 | forge | web-app | no | no | yes |
 | forge | backend-api | no | no | yes |
 | forge | cli-tool | no | no | yes |
+| framework-knowledge | minimal | no | no | yes |
+| framework-knowledge | lean | no | no | yes |
+| framework-knowledge | standard | no | no | yes |
+| framework-knowledge | swarm | no | no | yes |
+| framework-knowledge | full | no | no | yes |
+| framework-knowledge | dogfood | no | no | yes |
+| framework-knowledge | web-app | no | no | yes |
+| framework-knowledge | backend-api | no | no | yes |
+| framework-knowledge | cli-tool | no | no | yes |
 | git | minimal | yes | yes | yes |
 | git | lean | yes | yes | yes |
 | git | standard | yes | yes | yes |

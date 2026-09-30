@@ -81,8 +81,8 @@ wrong version is worse than no rule.
 
 ### S2 — A knowledge record with its evidence and its force
 
-- **Status**: pending
-- **Files**: [`plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-record.interface.ts`, `plugins/framework-knowledge/src/lib/knowledge/knowledge-record.ts`, `plugins/framework-knowledge/src/lib/knowledge/knowledge-record.spec.ts`]
+- **Status**: review
+- **Files**: [`plugins/framework-knowledge/package.json`, `plugins/framework-knowledge/plugin.manifest.ts`, `plugins/framework-knowledge/tsconfig.json`, `plugins/framework-knowledge/vitest.config.ts`, `plugins/framework-knowledge/LICENSE`, `plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/src/public/index.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-record.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-force.constant.ts`, `plugins/framework-knowledge/src/lib/knowledge/knowledge-record.ts`, `plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts`, `plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts`, `bun.lock`]
 
 Every rule carries what it says, the framework version it applies to,
 where it came from, when it was retrieved, and its FORCE: `required`,
@@ -90,7 +90,36 @@ where it came from, when it was retrieved, and its FORCE: `required`,
 Force is what makes the difference between "the project may choose" and
 "this will not compile" — without it every rule reads as an order.
 
-- **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts`
+- **Gate**: `env -u CLAUDECODE -u AI_AGENT bunx vitest run plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts`
+
+2026-09-30: `plugins/framework-knowledge/` did not exist; this slice
+creates the plugin's bare package skeleton (package.json,
+plugin.manifest.ts — `maturity: 'experimental'`, `presets: []`, no
+tools yet — tsconfig.json, vitest.config.ts,
+LICENSE, modelled on the existing `self-learning` plugin, itself
+`presets: []`) alongside this slice's own library: `IKnowledgeRecord` /
+`IKnowledgeForce` / `IKnowledgeEvidence` and `createKnowledgeRecord` /
+`FORCE_VALUES` / `forceRank` / `isKnowledgeForce`. `src/index.ts`
+registers zero tools (`register() { return { tools: [] }; }`) — S5
+adds `framework_guidance` / `framework_source`. The manifest schema
+refuses an empty `permissions` array, so it declares `['filesystem-read']`
+(the one permission every consumer will need to read the manifest/
+lockfile) rather than `[]`; S5 decides whether its tools need more.
+Correction to this slice's own **Files** list:
+added the scaffold files (not listed in the original proposal, which
+assumed the plugin already had somewhere for S2's two files to live)
+and corrected the spec path to the repo's real `tests/src/lib/...`
+convention (see S1's note). Verified: 16/16 tests pass (`env
+-u CLAUDECODE -u AI_AGENT bunx vitest run plugins/framework-knowledge/tests`);
+coverage on the plugin's `src/**` is 100% statements/branches/functions/lines
+(the interface file has 0 coverable statements, which does not depress
+the PR's aggregated changed-file coverage — `tools/scripts/ci/changed-file-coverage.script.ts`
+sums counts across files rather than averaging percentages, so a 0/0
+file contributes nothing to either side of the ratio). `FORCE_VALUES`
+(SCREAMING_SNAKE) and `ICreateKnowledgeRecordResult` moved out of
+`knowledge-record.ts` into `contracts/constants/knowledge-force.constant.ts`
+and the interface file respectively, per `lint:types-in-contracts`
+(caught by `gates.sh`, not something the proposal anticipated).
 
 ### S3 — Resolve project policy against framework force
 
