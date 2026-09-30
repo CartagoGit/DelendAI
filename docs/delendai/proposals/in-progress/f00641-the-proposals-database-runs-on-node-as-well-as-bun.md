@@ -72,7 +72,7 @@ The adapter's own behaviour is pinned in the bun suite (Bun also provides
 
 ### S2 — The default read source can be SQL on both runtimes
 
-- **Status**: pending
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
 - **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`,
   `plugins/proposals/src/lib/proposals/index-reader.ts`
@@ -80,6 +80,11 @@ The adapter's own behaviour is pinned in the bun suite (Bun also provides
 q00022 S4 phase 2: with the database readable on Node, moving
 `DEFAULT_PROPOSAL_INDEX_SOURCE` from `auto` to `sql` no longer fails Node
 hosts. It remains gated on the evidence q00022 names.
+
+Delivered with q00022 S4 phase 2, in the same change: the default is
+`sql`, a projection never built is rebuilt from markdown before the read,
+and an index outside the canonical layout is served as JSON unless `sql`
+was chosen.
 
 ## dependency graph
 

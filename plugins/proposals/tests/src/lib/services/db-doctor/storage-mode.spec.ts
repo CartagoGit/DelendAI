@@ -30,6 +30,7 @@ describe('proposal index read stats', () => {
 			fallbacks: 2,
 			last: 'sql-refused',
 			lastDivergence: 0,
+			rebuilds: 0,
 		});
 	});
 
@@ -112,6 +113,7 @@ describe('storage_mode doctor check', () => {
 				fallbacks: 0,
 				last: 'sql-parity',
 				lastDivergence: 0,
+				rebuilds: 0,
 			},
 		});
 
@@ -132,6 +134,7 @@ describe('storage_mode doctor check', () => {
 				fallbacks: 1,
 				last: 'fallback-unavailable',
 				lastDivergence: 0,
+				rebuilds: 0,
 			},
 		});
 		const diverged = buildStorageModeCheck({
@@ -142,6 +145,7 @@ describe('storage_mode doctor check', () => {
 				fallbacks: 0,
 				last: 'sql-divergence-reported',
 				lastDivergence: 2,
+				rebuilds: 0,
 			},
 		});
 
