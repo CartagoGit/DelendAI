@@ -2,6 +2,8 @@
  * A unit of work, from any host (x00736): the MCP `work` tool runs the
  * engine the CLI runs, and each server is its own instance.
  */
+import { deriveCapabilities } from '@delendai/core/lib/development-policy/derive';
+import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -13,6 +15,7 @@ import { createFakeToolServer } from '@delendai/test-kit';
 
 import {
 	buildWorkUnitToolRegistration,
+	workUnitDescription,
 	workUnitArgs,
 } from '@delendai/core/lib/tools/work-unit.tool';
 
@@ -156,5 +159,22 @@ describe('the flags the tool passes the engine', () => {
 		expect(
 			workUnitArgs({ action: 'status', session: 'mine' }, 'srv'),
 		).toEqual(['status', '--session=mine']);
+	});
+});
+
+describe('workUnitDescription', () => {
+	const describeFor = (profile: Parameters<typeof expandProfile>[0]) =>
+		workUnitDescription(deriveCapabilities(expandProfile(profile)));
+
+	it('states how publish lands the unit from the policy, never a fixed mechanism', () => {
+		expect(describeFor('shared-checkout-merge')).toContain(
+			'no pull request',
+		);
+		expect(describeFor('shared-checkout-pr')).toContain('by pull request');
+		expect(describeFor('shared-direct')).not.toMatch(/pull request/u);
+	});
+
+	it('stays neutral without a policy', () => {
+		expect(workUnitDescription(undefined)).not.toMatch(/pull request/u);
 	});
 });

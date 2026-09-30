@@ -430,6 +430,9 @@ export const assembleCoreTools = (
 		buildWorkUnitToolRegistration({
 			namespacePrefix: corePrefix,
 			workspaceRoot: workspace.root,
+			...(developmentPolicy !== undefined
+				? { policy: developmentPolicy }
+				: {}),
 		}),
 		buildMetricsToolRegistration(
 			corePrefix,
