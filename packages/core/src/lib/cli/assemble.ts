@@ -25,6 +25,7 @@ import {
 import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
 import { createStaleRuntimeWatch } from '../development-policy/stale-runtime-advisory';
 import { resolveEffectivePolicy } from '../development-policy/effective-policy';
+import { legacyFieldsOf } from '../work-units/development-policy.service';
 import {
 	validateDevelopmentPolicy,
 	validatePolicyAlignment,
@@ -357,18 +358,14 @@ export const assembleCliConfig = async (
 		...(fileConfig.development !== undefined
 			? { development: fileConfig.development }
 			: {}),
-		legacy: {
-			agentWorktree: args.agentWorktree ?? fileConfig.agentWorktree,
-			...(pluginConfigFor(fileConfig, 'commit-policy')?.options !==
-			undefined
-				? {
-						commitPolicyOptions: pluginConfigFor(
-							fileConfig,
-							'commit-policy',
-						)?.options as Record<string, unknown>,
-					}
-				: {}),
-		},
+		// The same extraction `delendai work` and the guard use, so the
+		// legacy fields cannot be read two ways.
+		legacy: legacyFieldsOf({
+			...fileConfig,
+			...(args.agentWorktree === undefined
+				? {}
+				: { agentWorktree: args.agentWorktree }),
+		}),
 		workspaceRoot: workspace.root,
 	});
 

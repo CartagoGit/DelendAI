@@ -8,6 +8,7 @@ import { resolveWorkAgentId } from '@delendai/core/public';
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
 import { ensureMigrated } from './lib/cli/entrypoint';
+import { adoptionReportLines } from '@delendai/core/cli';
 import {
 	asksForHelp,
 	renderCommandHelp,
@@ -288,7 +289,13 @@ export const runEntry = async (
 	//
 	// `guard` runs inside git hooks on every commit and push: it must not
 	// migrate (and so write to) the workspace while git holds its locks.
-	if (argv[0] !== 'guard') await ensureMigrated(workspaceRoot);
+	if (argv[0] !== 'guard') {
+		const migrated = await ensureMigrated(workspaceRoot);
+		// A migration that edits the project's own configuration says so.
+		for (const line of await adoptionReportLines(migrated, workspaceRoot)) {
+			report(`[delendai] ${line}`);
+		}
+	}
 	if (argv[0] === '__serve') {
 		// Report the guard a project declares; never install it. Starting
 		// a server is not consent to edit the repository it was started

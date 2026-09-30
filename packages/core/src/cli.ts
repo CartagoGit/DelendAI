@@ -73,6 +73,7 @@ export {
 	readConfigText,
 	scalarArg,
 } from './lib/work-units/command-args.helper';
+export { adoptionReportLines } from './lib/workspace-migration/migration-report.service';
 export {
 	readWorkspaceDocsDir,
 	readWorkspacePolicy,
