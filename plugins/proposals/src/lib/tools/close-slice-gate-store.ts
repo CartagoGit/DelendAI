@@ -8,7 +8,7 @@
  * reported once and cleared, so the next call runs the gate again.
  */
 // effect-boundary-authorized: the gate's run state is files a detached process writes and later calls read; they are not workspace content.
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { writeFileAtomic } from '@delendai/core/public';
@@ -51,12 +51,11 @@ const readJsonIfPresent = async <T>(path: string): Promise<T | undefined> => {
 
 export const prepareJobDirectory = async (dir: string): Promise<void> => {
 	await rm(dir, { recursive: true, force: true });
-	await mkdir(dir, { recursive: true });
-	await writeFile(outputPath(dir), '', 'utf8');
+	await writeFileAtomic(outputPath(dir), '');
 };
 
 export const writeRunner = async (dir: string, script: string): Promise<void> =>
-	writeFile(runnerPath(dir), script, { encoding: 'utf8', mode: 0o755 });
+	writeFileAtomic(runnerPath(dir), script);
 
 export const writeJob = async (
 	dir: string,
