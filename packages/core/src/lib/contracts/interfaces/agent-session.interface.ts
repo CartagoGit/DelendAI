@@ -27,6 +27,12 @@ export interface IAgentSessionDerivationInput {
 	readonly worktrees: readonly IAgentSessionWorktreeSnapshot[];
 	readonly locks: readonly IAgentSessionLockSnapshot[];
 	readonly proposals: readonly IAgentSessionProposalSummary[];
+	/**
+	 * Branch namespaces whose worktrees belong to an agent. Defaults to the
+	 * `agent_worktree` one (`agent/`); a project whose units of work live
+	 * under its own work-ref prefix passes that.
+	 */
+	readonly branchPrefixes?: readonly string[];
 }
 
 export interface IAgentSession {

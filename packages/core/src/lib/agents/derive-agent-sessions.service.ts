@@ -6,7 +6,20 @@ import type {
 	IAgentSessionWorktreeSnapshot,
 } from '../contracts/interfaces/agent-session.interface';
 
-const AGENT_BRANCH_PREFIX = 'agent/';
+/**
+ * The `agent_worktree` namespace. A project whose units of work live under
+ * another prefix names it in the derivation input.
+ */
+const DEFAULT_AGENT_BRANCH_PREFIXES: readonly string[] = ['agent/'];
+
+/** The prefix `branch` sits under, or nothing. */
+const prefixOf = (
+	branch: string | undefined,
+	prefixes: readonly string[],
+): string | undefined =>
+	branch === undefined
+		? undefined
+		: prefixes.find((prefix) => branch.startsWith(prefix));
 
 const slugify = (value: string): string =>
 	value
@@ -67,13 +80,15 @@ const resolveProposalForTaskId = (
 const scoreWorktreeMatch = (
 	lock: IAgentSessionLockSnapshot,
 	worktree: IAgentSessionWorktreeSnapshot,
+	prefixes: readonly string[],
 ): number => {
 	const branch = normalizeBranch(worktree.branch);
-	if (branch === undefined || !branch.startsWith(AGENT_BRANCH_PREFIX)) {
+	const prefix = prefixOf(branch, prefixes);
+	if (branch === undefined || prefix === undefined) {
 		return -1;
 	}
 
-	const branchSlug = branch.slice(AGENT_BRANCH_PREFIX.length);
+	const branchSlug = branch.slice(prefix.length);
 	const agentSlug = slugify(lock.agent);
 	const taskSlug = slugify(lock.task_id);
 
@@ -94,13 +109,14 @@ const takeBestMatchingWorktree = (
 	lock: IAgentSessionLockSnapshot,
 	worktrees: readonly IAgentSessionWorktreeSnapshot[],
 	usedIndexes: Set<number>,
+	prefixes: readonly string[],
 ): IAgentSessionWorktreeSnapshot | undefined => {
 	let bestIndex = -1;
 	let bestScore = -1;
 
 	for (const [index, worktree] of worktrees.entries()) {
 		if (usedIndexes.has(index)) continue;
-		const score = scoreWorktreeMatch(lock, worktree);
+		const score = scoreWorktreeMatch(lock, worktree, prefixes);
 		if (score > bestScore) {
 			bestScore = score;
 			bestIndex = index;
@@ -114,12 +130,14 @@ const takeBestMatchingWorktree = (
 
 const worktreeBranchAgent = (
 	worktree: IAgentSessionWorktreeSnapshot,
+	prefixes: readonly string[],
 ): string | undefined => {
 	const branch = normalizeBranch(worktree.branch);
-	if (branch === undefined || !branch.startsWith(AGENT_BRANCH_PREFIX)) {
+	const prefix = prefixOf(branch, prefixes);
+	if (branch === undefined || prefix === undefined) {
 		return undefined;
 	}
-	return branch.slice(AGENT_BRANCH_PREFIX.length);
+	return branch.slice(prefix.length);
 };
 
 const sessionFromLock = (
@@ -152,8 +170,9 @@ const sessionFromLock = (
 
 const sessionFromWorktree = (
 	worktree: IAgentSessionWorktreeSnapshot,
+	prefixes: readonly string[],
 ): IAgentSession | undefined => {
-	const agent = worktreeBranchAgent(worktree);
+	const agent = worktreeBranchAgent(worktree, prefixes);
 	const branch = normalizeBranch(worktree.branch);
 	if (agent === undefined || branch === undefined) return undefined;
 
@@ -172,6 +191,7 @@ const sessionFromWorktree = (
 export const deriveAgentSessions = (
 	input: IAgentSessionDerivationInput,
 ): readonly IAgentSession[] => {
+	const prefixes = input.branchPrefixes ?? DEFAULT_AGENT_BRANCH_PREFIXES;
 	const usedWorktrees = new Set<number>();
 	const sessions: IAgentSession[] = [];
 
@@ -180,6 +200,7 @@ export const deriveAgentSessions = (
 			lock,
 			input.worktrees,
 			usedWorktrees,
+			prefixes,
 		);
 		const proposal = resolveProposalForTaskId(
 			lock.task_id,
@@ -190,7 +211,7 @@ export const deriveAgentSessions = (
 
 	for (const [index, worktree] of input.worktrees.entries()) {
 		if (usedWorktrees.has(index)) continue;
-		const session = sessionFromWorktree(worktree);
+		const session = sessionFromWorktree(worktree, prefixes);
 		if (session !== undefined) sessions.push(session);
 	}
 

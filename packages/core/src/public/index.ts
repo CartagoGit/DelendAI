@@ -1182,4 +1182,10 @@ export {
 	sharedCheckout,
 } from '../lib/shared/shared-checkout';
 export { projectBranches } from '../lib/development-policy/project-branches';
+/**
+ * Whether a branch provably delivered its work, by the ref-lifecycle verdict.
+ * The branch reaper in the proposals plugin removes only what this says is
+ * delivered, instead of judging by how a branch is named.
+ */
+export { branchDeliveryVerdict } from '../lib/ref-lifecycle/branch-delivery.service';
 export { createStaleRuntimeWatch } from '../lib/development-policy/stale-runtime-advisory';

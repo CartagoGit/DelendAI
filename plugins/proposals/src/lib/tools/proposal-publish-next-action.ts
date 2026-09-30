@@ -59,8 +59,28 @@ export const proposalPublishNextAction = (input: {
 	if (input.policy === undefined) {
 		return `${leftUntracked} Land it the way this project integrates work.`;
 	}
-	const landing = declareWorkflow(input.policy)
-		.steps.filter((step) => LANDING_AXES.has(step.derivedFrom))
+	const steps = declareWorkflow(input.policy).steps;
+	// A project with work refs that lands without a pull request has no
+	// ref for a fresh file to be published on: it reaches the integration
+	// branch as a unit of work. The generic sentences ("finish the unit")
+	// name a unit that does not exist yet for a file just written, so the
+	// two commands that create it are spelled out, with this proposal's
+	// own id, path and the create unit every proposal is authored in.
+	if (
+		input.policy.branches.workRefTemplate.length > 0 &&
+		!input.policy.integration.requiresPullRequest
+	) {
+		const integration = input.policy.branches.integration;
+		return [
+			leftUntracked,
+			`Put it on a unit of work from the checkout that holds it: \`delendai work checkpoint --proposal=${id} --slice=all --kind=create --paths=${path} --message="docs(proposals): add ${id}"\`. Then land the unit on ${integration}: \`delendai work publish --proposal=${id} --slice=all --kind=create\`.`,
+			...steps
+				.filter((step) => step.derivedFrom === 'integration.strategy')
+				.map((step) => step.instruction),
+		].join(' ');
+	}
+	const landing = steps
+		.filter((step) => LANDING_AXES.has(step.derivedFrom))
 		.map((step) => step.instruction);
 	return [leftUntracked, ...landing].join(' ');
 };
