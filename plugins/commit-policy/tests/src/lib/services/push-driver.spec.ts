@@ -85,11 +85,11 @@ describe('runPushDriver', () => {
 		if (result.ok) return;
 		// x00272 (Track A): direct push to `main` is hard-blocked BEFORE
 		// the protectedBranches override check, so the refusal codes as
-		// DIRECT_PUSH_TO_MAIN_NOT_ALLOWED (a defense-in-depth layer that
+		// DIRECT_PUSH_TO_RELEASE_NOT_ALLOWED (a defense-in-depth layer that
 		// no config override can enable).
-		expect(result.code).toBe('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(result.code).toBe('DIRECT_PUSH_TO_RELEASE_NOT_ALLOWED');
 		expect(result.refusal).toContain(
-			"direct push to 'main' is not allowed",
+			"'main' is the release branch and does not accept a direct push",
 		);
 	});
 
@@ -250,7 +250,7 @@ describe('runPushDriver', () => {
 		if (result.ok) return;
 		// x00272 (Track A): even with an authorized force push, `main` is
 		// hard-blocked before any other policy layer runs.
-		expect(result.code).toBe('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(result.code).toBe('DIRECT_PUSH_TO_RELEASE_NOT_ALLOWED');
 		expect(pushes.calls.length).toBe(0);
 	});
 
@@ -276,7 +276,7 @@ describe('runPushDriver', () => {
 		if (result.ok) return;
 		// x00272 (Track A): direct push to `main` is hard-blocked regardless
 		// of protectedBranches — config cannot re-enable the release path.
-		expect(result.code).toBe('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(result.code).toBe('DIRECT_PUSH_TO_RELEASE_NOT_ALLOWED');
 		expect(pushes.calls.length).toBe(0);
 	});
 
