@@ -111,20 +111,24 @@ export interface IAdoptedBlock extends IAdoptionBlock {
  * gets the merge model, which certifies locally and asks nothing of the
  * forge, and the reason is recorded.
  */
+export interface IAdoption {
+	readonly block?: IAdoptedBlock | undefined;
+	readonly reasons: readonly string[];
+	/** The forge the remote points at, so setup can follow it too. */
+	readonly forge: IAdoptionEvidence['forge'];
+}
+
 export const adoptionFor = async (
 	workspaceRoot: string,
 	parsed: IConfigShape,
 	gatherEvidence: typeof evidenceFor = evidenceFor,
-): Promise<{
-	readonly block?: IAdoptedBlock | undefined;
-	readonly reasons: readonly string[];
-}> => {
-	const proposal = proposeAdoption(
-		await gatherEvidence(workspaceRoot, parsed),
-	);
+): Promise<IAdoption> => {
+	const evidence = await gatherEvidence(workspaceRoot, parsed);
+	const proposal = proposeAdoption(evidence);
+	const { forge } = evidence;
 	const { block } = proposal;
 	if (block === undefined || !PULL_REQUEST_PROFILES.has(block.profile)) {
-		return proposal;
+		return { ...proposal, forge };
 	}
 	const derived = await deriveRequiredChecks(workspaceRoot);
 	if (derived !== undefined) {
@@ -134,6 +138,7 @@ export const adoptionFor = async (
 				integration: { requiredChecks: derived.checks },
 			},
 			reasons: [...proposal.reasons, `integration ${derived.reason}`],
+			forge,
 		};
 	}
 	if (block.profile === 'shared-checkout-pr') {
@@ -143,6 +148,7 @@ export const adoptionFor = async (
 				...proposal.reasons,
 				'fell back to `shared-checkout-merge`: the pull-request profile is enforced and needs a required check, and no single check could be read from the project workflows. Declare `development.integration.requiredChecks` to choose the pull-request model.',
 			],
+			forge,
 		};
 	}
 	return {
@@ -151,6 +157,7 @@ export const adoptionFor = async (
 			...proposal.reasons,
 			'no required check could be read from the project workflows: declare `development.integration.requiredChecks`, or startup will refuse this profile.',
 		],
+		forge,
 	};
 };
 

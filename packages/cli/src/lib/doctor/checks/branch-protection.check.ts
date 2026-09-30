@@ -10,9 +10,10 @@
  * does not manage forge settings, so a missing projection file is a fact
  * to report, not a defect to warn about.
  */
+import { readWorkspacePolicy } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import type { IDoctorSection } from '../types';
+import type { DoctorCheck, IDoctorSection } from '../types';
 
 /** The slice of the policy this check reads. */
 export type IBranchProtectionPolicy = Pick<
@@ -151,3 +152,32 @@ export const assessBranchProtection = (input: {
 			}
 		: { name: CHECK_NAME, status: 'warn', findings: found };
 };
+
+type IPolicyReader = (
+	workspace: string,
+) => Promise<IBranchProtectionPolicy | undefined>;
+
+/** The check, with the way the policy is read left to the caller. */
+export const createBranchProtectionCheck =
+	(readPolicy: IPolicyReader): DoctorCheck =>
+	async ({ fs, workspace }) => {
+		let policy: IBranchProtectionPolicy | undefined;
+		try {
+			policy = await readPolicy(workspace);
+		} catch (error) {
+			return {
+				name: CHECK_NAME,
+				status: 'warn',
+				findings: [
+					`the development policy could not be read: ${error instanceof Error ? error.message : String(error)}`,
+				],
+			};
+		}
+		return assessBranchProtection({
+			policy,
+			projection: await fs.readFile(BRANCH_PROTECTION_FILE),
+		});
+	};
+
+export const checkBranchProtection: DoctorCheck =
+	createBranchProtectionCheck(readWorkspacePolicy);
