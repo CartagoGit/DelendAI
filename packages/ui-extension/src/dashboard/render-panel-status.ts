@@ -141,7 +141,7 @@ const renderKpis = (
 					? `<path d="${arc}" stroke="${colour}" stroke-width="6" fill="none" stroke-linecap="round" />`
 					: ''
 			}
-			<text x="32" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">${percent}%</text>
+			<text x="32" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">${formatNumber(percent)}%</text>
 		</svg>
 		<p class="delendai-kpi__hint">${escapeHtml(caption)}</p>
 	</article>`;
@@ -195,7 +195,7 @@ const renderLatency = (
 		</dl>
 		${
 			sparkPath.length > 0
-				? `<svg class="delendai-status__sparkline" viewBox="0 0 240 36" preserveAspectRatio="none" aria-label="${text('dashboard.times.sparkline', 'latency trend')}" role="img">
+				? `<svg class="delendai-status__sparkline" viewBox="0 0 240 36" preserveAspectRatio="none" aria-label="${escapeHtml(text('dashboard.times.sparkline', 'latency trend'))}" role="img">
 				<path d="${sparkPath}" fill="none" stroke="currentColor" stroke-width="1.5" />
 			</svg>`
 				: ''

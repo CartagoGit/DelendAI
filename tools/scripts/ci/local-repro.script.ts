@@ -552,6 +552,9 @@ export interface IStepDetails {
 	readonly workingDirectory: string;
 }
 
+/** The programs a reproduced step may start. */
+const REPRO_PROGRAMS = ['bun', 'bunx', 'node', 'npm', 'npx'] as const;
+
 /**
  * Default runner: execute the command with the same working
  * directory the script was invoked from. Uses Node's `spawn`
@@ -569,9 +572,20 @@ export const defaultRunner = (
 	}
 	const argv = command.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? [];
 	const unquoted = argv.map((token) => token.replace(/^(['"])(.*)\1$/, '$2'));
+	// The command comes out of a downloaded log, so the program it names is
+	// only run when it is one of the runtimes the workflows invoke.
+	const program = REPRO_PROGRAMS.find((known) => known === unquoted[0]);
+	if (program === undefined) {
+		return Promise.reject(
+			new Error(
+				`refusing command whose program is not one of ${REPRO_PROGRAMS.join(', ')}`,
+			),
+		);
+	}
+	const args = unquoted.slice(1);
 	if (typeof Bun === 'undefined') {
 		return new Promise((resolveFn) => {
-			const child = spawn(unquoted[0] ?? '', unquoted.slice(1), {
+			const child = spawn(program, args, {
 				cwd,
 				env: { ...process.env, CI_REPRO: '1' },
 			});
@@ -592,7 +606,7 @@ export const defaultRunner = (
 			);
 		});
 	}
-	const child = Bun.spawn(unquoted, {
+	const child = Bun.spawn([program, ...args], {
 		cwd,
 		stdout: 'pipe',
 		stderr: 'pipe',
