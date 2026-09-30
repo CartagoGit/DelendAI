@@ -1180,5 +1180,5 @@ export { projectBranches } from '../lib/development-policy/project-branches';
  * The branch reaper in the proposals plugin removes only what this says is
  * delivered, instead of judging by how a branch is named.
  */
-export { branchDeliveryVerdict } from '../lib/ref-lifecycle/branch-delivery';
+export { branchDeliveryVerdict } from '../lib/ref-lifecycle/branch-delivery.service';
 export { createStaleRuntimeWatch } from '../lib/development-policy/stale-runtime-advisory';

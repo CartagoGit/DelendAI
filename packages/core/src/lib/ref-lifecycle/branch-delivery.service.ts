@@ -19,16 +19,7 @@ import { resolveDevelopmentPolicy } from '../development-policy/resolve';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
 
 import { reconcileRefs } from './reconcile.service';
-
-/** What the project's policy says about one branch's delivery. */
-export interface IBranchDeliveryVerdict {
-	/** The ref-lifecycle role the branch was given. */
-	readonly role: string;
-	/** True only when deleting or retiring the branch loses nothing. */
-	readonly delivered: boolean;
-	/** Why, in one sentence an operator can act on. */
-	readonly reason: string;
-}
+import type { IBranchDeliveryVerdict } from './reconcile.interface';
 
 /**
  * The verdict for `branch`, in the project rooted at `workspaceRoot`.

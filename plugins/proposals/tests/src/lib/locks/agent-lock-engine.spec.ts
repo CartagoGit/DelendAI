@@ -427,12 +427,12 @@ describe('runAgentLockEngine — stale GC', async () => {
 					},
 				}),
 			);
-			const claim = {
+			const claim: IAgentLockArgs = {
 				action: 'claim',
 				task_id: 't1',
 				agent: 'a1',
 				files: ['src/a.ts'],
-			} as const;
+			};
 			const inUnit = await run(claim, {
 				agentWorktreeEnabled: true,
 				currentBranchOverride: 'acme/wip/a1/implement/x1-S1-g1/topic',

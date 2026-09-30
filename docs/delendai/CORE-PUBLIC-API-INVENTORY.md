@@ -28,7 +28,7 @@ Total exports: 643
 | `assertExpectedReleaseState` | const | stable | `../lib/contracts/release-state` |
 | `assertReleaseMetadata` | const | stable | `../lib/contracts/release` |
 | `assertReleaseSlug` | const | stable | `../lib/contracts/release` |
-| `branchDeliveryVerdict` | const | stable | `../lib/ref-lifecycle/branch-delivery` |
+| `branchDeliveryVerdict` | const | stable | `../lib/ref-lifecycle/branch-delivery.service` |
 | `BufferingErrorSink` | const | stable | `../lib/error-collection/buffering-sink` |
 | `buildAdoptionAssessment` | const | stable | `../lib/adopt/adoption-assessment.service` |
 | `buildAdoptProjectPlan` | const | stable | `../lib/adopt/adopt-project.tool` |
