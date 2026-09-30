@@ -84,6 +84,17 @@ rename table next to that catalog, so it had the same gap.
   - `packages/ui-extension/src/dashboard/render-dashboard.ts`
 - shipped-in: `2d793d3c3152`
 
+**Found 2026-09-30 while covering the renamed files.** The Configuration
+Center opened from a plugin's context menu rendered the Save button but
+its message handler only knew `discardConfiguration`: a save was dropped
+without persisting or answering, and the button stayed in "saving". It
+now saves through `saveConfigurationDocument` and answers
+`configurationSaved` / `configurationConflict` / `configurationInvalid`,
+as the full Configuration Center does. Added:
+`extensions/vscode/src/test/open-plugin-config.spec.ts`,
+`extensions/vscode/src/test/configuration-center-dev-page.spec.ts`,
+`extensions/vscode/src/test/open-configuration-center-edge-cases.spec.ts`.
+
 ## dependency graph
 
 None.

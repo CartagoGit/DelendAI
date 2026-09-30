@@ -25,6 +25,7 @@ import {
 	type IConfigurationCenterResult,
 	type IConfigurationPlugin,
 } from '@delendai/client';
+import { saveAndAnswer } from './open-configuration-center';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
@@ -157,6 +158,21 @@ export const registerOpenPluginConfigCommand = (deps: ICommandDeps) =>
 					if (!parsed.success) return;
 					if (parsed.data.command === 'discardConfiguration') {
 						panel.webview.html = html;
+						return;
+					}
+					// This panel used to drop `saveConfiguration`: the webview
+					// disabled Save, posted the edits, and nothing answered.
+					try {
+						await saveAndAnswer(panel, workspaceRoot, parsed.data);
+					} catch (err) {
+						await panel.webview.postMessage?.({
+							command: 'configurationInvalid',
+						});
+						await showCommandError(
+							deps.vscode,
+							'save plugin config',
+							err,
+						);
 					}
 				});
 				return panel;
