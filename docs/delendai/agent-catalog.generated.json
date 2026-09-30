@@ -1649,9 +1649,25 @@
 				"date": "2026-09-19"
 			},
 			{
+				"id": "x00768",
+				"title": "Branch tools and proposal publication follow the configured policy",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
 				"id": "x00769",
 				"title": "Push guards and protected-branch defaults follow the configured development policy",
 				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
+				"id": "x00770",
+				"title": "Diagnostics and setup follow the configured profile",
+				"track": "trust",
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-30"
