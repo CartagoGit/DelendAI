@@ -45,6 +45,11 @@ export const IDENTITY_RENAMES: readonly IIdentityRename[] = [
 	{ from: 'mcp_vertex', to: 'delendai' },
 	{ from: 'mcpvertex', to: 'delendai' },
 	{ from: 'mcp-vertex', to: 'delendai' },
+	{ from: 'MCPVERTEX', to: 'DELENDAI' },
+	{ from: 'McpVertex', to: 'Delendai' },
+	{ from: 'mcpVertex', to: 'delendai' },
+	{ from: 'MCPV', to: 'DELENDAI' },
+	{ from: 'Mcpv', to: 'Delendai' },
 	{ from: 'mcpv', to: 'delendai' },
 ] as const;
 

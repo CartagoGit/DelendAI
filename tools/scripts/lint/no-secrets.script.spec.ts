@@ -89,7 +89,7 @@ describe('no-secrets neutralising', () => {
 		const result = redactTextInPlace(`const k = '${stripeKey}';`);
 		expect(result.replaced).toBe(1);
 		expect(result.text).not.toContain(stripeKey);
-		expect(result.text).toContain('MCPV_REDACTED_SECRET_STRIPE_KEY');
+		expect(result.text).toContain('DELENDAI_REDACTED_SECRET_STRIPE_KEY');
 	});
 
 	it('leaves nothing that would trip the gate a second time', () => {
@@ -106,7 +106,7 @@ describe('no-secrets neutralising', () => {
 
 	it('names the placeholder after the rule', () => {
 		expect(redactionPlaceholder('github-token')).toBe(
-			'MCPV_REDACTED_SECRET_GITHUB_TOKEN',
+			'DELENDAI_REDACTED_SECRET_GITHUB_TOKEN',
 		);
 	});
 });

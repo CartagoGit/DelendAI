@@ -11,7 +11,7 @@ interface IConfigurationHost {
 
 declare global {
 	interface Window {
-		__MCPV_CONFIGURATION_HOST__?: IConfigurationHost;
+		__DELENDAI_CONFIGURATION_HOST__?: IConfigurationHost;
 	}
 }
 
@@ -56,7 +56,7 @@ const mountDocument = (
 		'[data-delendai-configuration-center]',
 	);
 	if (center) center.style.height = '100%';
-	window.__MCPV_CONFIGURATION_HOST__ = host;
+	window.__DELENDAI_CONFIGURATION_HOST__ = host;
 	for (const text of scripts) {
 		const script = document.createElement('script');
 		script.textContent = text;

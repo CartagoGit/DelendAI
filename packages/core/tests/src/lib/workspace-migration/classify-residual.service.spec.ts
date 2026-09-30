@@ -27,6 +27,11 @@ describe('legacy identity spellings', () => {
 			'mcp_vertex',
 			'mcpvertex',
 			'mcp-vertex',
+			'MCPV',
+			'Mcpv',
+			'McpVertex',
+			'mcpVertex',
+			'MCPVERTEX',
 			'mcpv',
 		]);
 	});
