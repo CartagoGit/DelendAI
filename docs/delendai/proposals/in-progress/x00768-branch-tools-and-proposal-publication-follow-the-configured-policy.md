@@ -2,10 +2,13 @@
 id: x00768
 title: "Branch tools and proposal publication follow the configured policy"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-30
+last-transition-id: 228748a0-2ddd-4dfc-8899-1d76b00efe32
+last-correlation-id: 228748a0-2ddd-4dfc-8899-1d76b00efe32
+last-transition-from: ready
 ---
 
 # x00768 — Branch tools and proposal publication follow the configured policy
@@ -29,7 +32,7 @@ An audit found plugins/proposals hardcodes defaultBaseBranch develop and agent/ 
 
 ### S1 — Policy-derived branch namespaces, verdict-classified gc, merge-profile proposal landing
 - **Status**: pending
-- **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/branch-status.tool.ts`, `plugins/proposals/src/lib/tools/branch-gc.tool.ts`, `plugins/proposals/src/lib/tools/swarm-hygiene.tool.ts`, `plugins/proposals/src/lib/shared/branch-status-engine.ts`, `plugins/proposals/src/lib/shared/branch-gc-engine.ts`, `plugins/proposals/src/lib/shared/swarm-hygiene-engine.ts`, `plugins/proposals/src/lib/shared/branch-namespaces.ts`, `plugins/proposals/src/lib/locks/lock-paths.ts`, `plugins/proposals/src/lib/locks/engine.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `packages/core/src/lib/agents/derive-agent-sessions.service.ts`
+- **Files**: `packages/core/src/lib/agents/derive-agent-sessions.service.ts`, `packages/core/src/lib/contracts/interfaces/agent-session.interface.ts`, `packages/core/src/lib/ref-lifecycle/branch-delivery.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/agents/derive-agent-sessions.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/branch-delivery.spec.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/contracts/constants/agent-branch-convention.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/locks/engine.ts`, `plugins/proposals/src/lib/locks/lock-paths.ts`, `plugins/proposals/src/lib/shared/branch-gc-engine.ts`, `plugins/proposals/src/lib/shared/branch-namespaces.ts`, `plugins/proposals/src/lib/shared/branch-status-engine.ts`, `plugins/proposals/src/lib/shared/swarm-hygiene-engine.ts`, `plugins/proposals/src/lib/swarm/validation-activity.resolver.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/src/lib/tools/branch-gc.tool.ts`, `plugins/proposals/src/lib/tools/branch-status.tool.ts`, `plugins/proposals/src/lib/tools/proposal-publish-next-action.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/tools/swarm-hygiene.tool.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`, `plugins/proposals/tests/src/lib/shared/branch-gc-engine.spec.ts`, `plugins/proposals/tests/src/lib/tools/branch-tools-follow-policy.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-publish-next-action.spec.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`
 - **Gate**: type
 - acceptance:
   - "branch_status, branch_gc and swarm_hygiene resolve the base branch and prefixes from the policy when not passed"
