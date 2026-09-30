@@ -2,13 +2,13 @@
 id: x00781
 title: "Adoption writes exactly the policy already enforced"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: 6d763085-aa7c-4834-83a0-a37dab8ebaa7
-last-correlation-id: 6d763085-aa7c-4834-83a0-a37dab8ebaa7
-last-transition-from: ready
+last-transition-id: b07a431a-a835-4f1e-bf18-41820ade3b2e
+last-correlation-id: b07a431a-a835-4f1e-bf18-41820ade3b2e
+last-transition-from: in-progress
 ---
 
 # x00781 — Adoption writes exactly the policy already enforced
@@ -47,6 +47,9 @@ The project's delendai configuration is the single source of truth, so every sur
   - "the migrator writes the policy resolveEffectivePolicy already resolved, with or without a GitHub remote"
   - "legacy fields and declared blocks are never rewritten"
   - "instructions, overview and work status say when the policy was adopted and written"
+- shipped-in: `3ecf943bb84b`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Specs for parity and for never rewriting
 - **Status**: pending
@@ -56,6 +59,9 @@ The project's delendai configuration is the single source of truth, so every sur
 - acceptance:
   - "the same undeclared repository yields one policy from the migrator, resolveEffectivePolicy, the served instructions and the guard's reader"
   - "the written config round-trips to the same effective policy"
+- shipped-in: `3ecf943bb84b`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
