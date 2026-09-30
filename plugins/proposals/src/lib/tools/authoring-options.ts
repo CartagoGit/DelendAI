@@ -29,6 +29,26 @@ import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
 
+/** Which way the declared gate answered, and the run it belongs to. */
+export interface ICloseSliceGateReport {
+	readonly state: 'pass' | 'fail' | 'pending' | 'unverifiable';
+	readonly reused: boolean;
+	readonly handle?: string;
+	readonly tree?: string;
+}
+
+/** What the quality probe reports back to `close_slice`. */
+export interface ICloseSliceQualityResult {
+	readonly ok: boolean;
+	readonly severity: 'ok' | 'error';
+	readonly findings: readonly string[];
+	readonly summary?: {
+		readonly ok: boolean;
+		readonly scopes: number;
+	};
+	readonly gate?: ICloseSliceGateReport;
+}
+
 export interface ICloseSliceValidationDecision {
 	readonly mode: 'scoped' | 'full' | 'blocked';
 	readonly resolvedScopes: readonly string[];
@@ -217,15 +237,7 @@ export interface IAuthoringToolOptions {
 		readonly skipWhenValidateEvidenceFresh?: boolean;
 		readonly scopes?: readonly string[];
 		readonly mode?: 'scoped' | 'full';
-	}) => Promise<{
-		readonly ok: boolean;
-		readonly severity: 'ok' | 'error';
-		readonly findings: readonly string[];
-		readonly summary?: {
-			readonly ok: boolean;
-			readonly scopes: number;
-		};
-	}>;
+	}) => Promise<ICloseSliceQualityResult>;
 	/** f00386: resolve the validation mode for the current slice. */
 	readonly resolveValidationDecision?: (input: {
 		readonly operation: 'close';

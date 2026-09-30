@@ -29,7 +29,7 @@ The gate ran the whole validate chain synchronously inside the proposal file mut
 
 ### S1 — Async tree-keyed close_slice gate
 - **Status**: pending
-- **Files**: `packages/core/src/public/index.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/lib/tools/close-slice-gate.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-store.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`
+- **Files**: `packages/core/src/public/index.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/lib/tools/close-slice-gate.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-store.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`, `plugins/proposals/tests/src/lib/e2e/quality-close-slice.e2e.spec.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-quality-gate.spec.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-process.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-tree.ts`, `plugins/proposals/src/generated/tool-outputs.ts`
 - **Gate**: type
 - acceptance:
   - "a gate longer than the old timeout returns pending with a handle, not failure and not pass"

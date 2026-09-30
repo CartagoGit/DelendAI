@@ -250,7 +250,7 @@ export interface DelendaiProposalsBranchStatusOutput {
 
 export interface DelendaiProposalsCloseSliceOutput {
 	ok: boolean;
-	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown" | "validation-error" | "quality-failed" | "peer-review-required";
+	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown" | "validation-error" | "quality-failed" | "gate-pending" | "gate-unverifiable" | "peer-review-required";
 	already_closed?: boolean;
 	entity?: {
 		id: string;
@@ -260,6 +260,12 @@ export interface DelendaiProposalsCloseSliceOutput {
 		sliceId?: string;
 	};
 	blockerType?: string;
+	gate?: {
+		state: "pass" | "fail" | "pending" | "unverifiable";
+		reused: boolean;
+		handle?: string;
+		tree?: string;
+	};
 	blockerDetail?: {
 		ok: boolean;
 		severity: "ok" | "error";
@@ -267,6 +273,12 @@ export interface DelendaiProposalsCloseSliceOutput {
 		summary?: {
 			ok: boolean;
 			scopes: number;
+		};
+		gate?: {
+			state: "pass" | "fail" | "pending" | "unverifiable";
+			reused: boolean;
+			handle?: string;
+			tree?: string;
 		};
 	};
 	error?: {

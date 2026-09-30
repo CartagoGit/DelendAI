@@ -1649,12 +1649,12 @@
 				"date": "2026-09-19"
 			},
 			{
-				"id": "x00760",
-				"title": "A shared-checkout-merge project can land its work",
-				"track": "hosts",
+				"id": "x00765",
+				"title": "close_slice runs the project's declared gate asynchronously and never counts a timeout as green",
+				"track": "general",
 				"status": "ready",
 				"kind": "fix",
-				"date": "2026-09-29"
+				"date": "2026-09-30"
 			}
 		]
 	}
