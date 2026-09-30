@@ -16,7 +16,6 @@
  * remain visible to validation instead of being silently migrated. Choosing
  * the new model is an edit the operator makes.
  */
-
 import {
 	DEVELOPMENT_POLICY_VERSION,
 	type IResolvedDevelopmentPolicy,
@@ -24,6 +23,7 @@ import {
 } from '../contracts/interfaces/development-policy.interface';
 import type { IPublicationGranularity } from '../contracts/interfaces/publication-unit.interface';
 import { deriveCapabilities } from './derive';
+import { releaseBranchOf } from './release-branch';
 import {
 	DEFAULT_DEVELOPMENT_PROFILE,
 	expandProfile,
@@ -178,13 +178,7 @@ const applyOverrides = (
 			namespacePrefix,
 			integration:
 				input.branches?.integration ?? base.branches.integration,
-			// Naming an integration branch and no release branch declares a
-			// project with one branch: the profile's `main` is a habit of
-			// the projects that have both, not a branch this project owns.
-			release:
-				input.branches?.release ??
-				input.branches?.integration ??
-				base.branches.release,
+			release: releaseBranchOf(input.branches, base.branches),
 			workRefTemplate:
 				input.branches?.workRefTemplate ??
 				(requestedVisibility === undefined &&

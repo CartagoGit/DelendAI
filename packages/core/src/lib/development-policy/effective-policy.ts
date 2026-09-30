@@ -21,6 +21,7 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 
 import { defaultBranchOf } from './default-branch';
 import { resolveDevelopmentPolicy } from './resolve';
+import type { IEffectivePolicyInput } from './effective-policy.interface';
 import type { IResolveDevelopmentPolicyInput } from './resolve.interface';
 
 const asRecord = (value: unknown): Record<string, unknown> | undefined =>
@@ -36,11 +37,6 @@ const declaresIntegration = (input: IResolveDevelopmentPolicyInput): boolean =>
 	nonEmptyString(
 		asRecord(input.legacy?.commitPolicyOptions?.push)?.branch,
 	) !== undefined;
-
-export interface IEffectivePolicyInput extends IResolveDevelopmentPolicyInput {
-	/** The workspace, asked for its stable default branch when none is declared. */
-	readonly workspaceRoot: string;
-}
 
 /**
  * Resolves the policy every reader of a workspace obeys: the declared

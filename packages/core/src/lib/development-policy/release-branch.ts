@@ -55,3 +55,20 @@ export const describeBranches = (branches: IBranchPair): string =>
 	hasSeparateReleaseBranch(branches)
 		? `integration branch ${branches.integration}, release branch ${branches.release}`
 		: `${branches.integration} is both the integration and the release branch`;
+
+/**
+ * The release branch a `development` block resolves to. Naming an
+ * integration branch and no release branch declares a project with one
+ * branch: the profile's `main` is a habit of the projects that have both,
+ * not a branch this project owns.
+ */
+export const releaseBranchOf = (
+	declared:
+		| {
+				readonly integration?: string | undefined;
+				readonly release?: string | undefined;
+		  }
+		| undefined,
+	profileDefault: IBranchPair,
+): string =>
+	declared?.release ?? declared?.integration ?? profileDefault.release;
