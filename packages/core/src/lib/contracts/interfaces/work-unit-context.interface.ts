@@ -40,4 +40,9 @@ export interface IWorkUnitToolOptions {
 	readonly workspaceRoot: string;
 	/** This server's session; one is made when none is given. */
 	readonly session?: string;
+	/**
+	 * The resolved policy, so the tool's description states how work lands
+	 * in THIS project instead of one profile's mechanism.
+	 */
+	readonly policy?: IResolvedDevelopmentPolicy;
 }
