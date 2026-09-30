@@ -43,7 +43,7 @@ TODO: why this work matters now.
 - Under the merge and direct strategies no pull request is requested; promotion follows integration.strategy because the policy does not model release promotion separately.
 - This repository (develop to main by pull request, versioned in packages/core) releases unchanged.
 
-## Decisions
+## Notes
 
 - The policy models how work reaches the integration branch, not a separate release strategy, so release promotion is derived: no separate release branch means no promotion; otherwise it follows `integration.strategy` (pull-request opens a pull request; merge and direct merge or push the candidate and make no forge call).
 - The versioned manifest is an explicit input that defaults to the root `package.json`; this repository's own release script names `packages/core/package.json`.
