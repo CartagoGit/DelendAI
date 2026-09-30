@@ -2,7 +2,7 @@
 id: v00127
 title: "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: governance
 date: 2026-08-25
@@ -23,9 +23,9 @@ related:
     - c00144 # protection YAML bifurcada (predecesor duro — debe estar aplicado a main)
     - c00145 # protectedBranches default main-only (predecesor — el plugin debe coincidir con main)
     - x00272 # bloquea push directo a main (predecesor — driver de la invariante a verificar)
-last-transition-id: d8563c5d-1c8d-43c9-be73-c3f1f482dd73
-last-correlation-id: d8563c5d-1c8d-43c9-be73-c3f1f482dd73
-last-transition-from: ready
+last-transition-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
+last-correlation-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
+last-transition-from: in-progress
 ---
 
 # v00127 — Track A.close: verificar `main` verde y protegida en GitHub (API real)
@@ -263,6 +263,7 @@ abre issue — es observación, nunca gate.
 - **Gate**: type + test passing (rewritten from "type + visual" — there is
   no visual surface to gate on).
 - **Depends on**: S1.
+- shipped-in: `a801eb344c89`
 
 ### S3 — Supersede `v00125` y enlazar en `AGENT-BOOTSTRAP.md`
 
@@ -282,6 +283,7 @@ abre issue — es observación, nunca gate.
   `docs/delendai/AGENT-BOOTSTRAP.md` (link to `verify-main-health`).
 - **Gate**: docs lint + `lint:prompt-size`.
 - **Depends on**: S1.
+- shipped-in: `a801eb344c89`
 
 ## acceptance
 

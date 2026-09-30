@@ -1673,14 +1673,6 @@
 				"date": "2026-09-08"
 			},
 			{
-				"id": "v00127",
-				"title": "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas",
-				"track": "governance",
-				"status": "in-progress",
-				"kind": "perf",
-				"date": "2026-08-25"
-			},
-			{
 				"id": "x00541",
 				"title": "576 de los 865 exports públicos de core no tienen ningún importador en el repo y 59 no se referencian en ninguna parte fuera del paquete",
 				"track": "architecture",
