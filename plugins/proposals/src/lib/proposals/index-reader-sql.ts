@@ -171,10 +171,20 @@ export const readProposalIndexResultFromSql = async (
 	if (db === null) return null;
 	try {
 		if (db.schemaVersion < MIN_INDEX_SCHEMA_VERSION) return null;
+		// `proposals` is an append-only historical record: a file removed
+		// from the tree is tombstoned (`deleted_at` set), not deleted from
+		// the table, so the reconciler never forgets it happened. The
+		// index is a listing of what exists NOW, so a tombstoned row must
+		// be excluded — otherwise a proposal removed from disk keeps
+		// showing up, with whatever status it last had, forever. This was
+		// invisible while `auto` silently served the (correctly current)
+		// JSON registry on any divergence; under `sql` as the default it
+		// is what the read actually returns.
 		const rows = db
 			.query<IProposalIndexRow>(
 				`SELECT uid, status, source_path
 				 FROM proposals
+				 WHERE deleted_at IS NULL
 				 ORDER BY uid ASC`,
 			)
 			.all();

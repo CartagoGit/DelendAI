@@ -20,6 +20,13 @@ import type { IGitRunner } from '../../shared/git-runner';
 export interface IProposalPublicationPolicy {
 	/** True when work reaches the integration branch via a pull request. */
 	readonly requiresPullRequest?: boolean | undefined;
+	/**
+	 * True when the project keeps units of work on refs of their own. With
+	 * no pull request that is the merge profile: a proposal reaches the
+	 * integration branch as a unit, and the reason it is not published on
+	 * a ref says so.
+	 */
+	readonly hasWorkRefs?: boolean | undefined;
 	/** Ref prefix for published work, e.g. `delendai/pr/`. */
 	readonly publicationRefPrefix?: string | undefined;
 	/** The work-ref template publication names are rendered from. */

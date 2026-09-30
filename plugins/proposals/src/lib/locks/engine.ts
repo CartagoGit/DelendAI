@@ -22,6 +22,8 @@ export type {
 	ILockFile,
 	IReleaseAuditEntry,
 } from '../contracts/interfaces/agent-lock.interface';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
+import { workBranchPrefixes } from '../shared/branch-namespaces';
 import { lockResult, validateArgs } from './lock-args';
 import {
 	getFileLockTablePath,
@@ -110,14 +112,22 @@ export async function runAgentLockEngine(
 				{ isError: true },
 			);
 		}
-		if (!isAgentBranchName(branch)) {
+		const workspaceRoot = resolveSessionWorkspaceRoot(deps);
+		if (
+			!isAgentBranchName(
+				branch,
+				workspaceRoot === undefined
+					? undefined
+					: await workBranchPrefixes(workspaceRoot),
+			)
+		) {
 			return lockResult(
 				{
 					tool: toolName,
 					action: args.action,
 					path: lockFileLabel,
 					activeBranch: branch,
-					error: `agent_lock claim requires a per-agent worktree when the host gate is on; active branch is "${branch}", expected "agent/<name>"`,
+					error: `agent_lock claim requires a per-agent worktree when the host gate is on; active branch is "${branch}", expected a branch under one of: ${(workspaceRoot === undefined ? [AGENT_BRANCH_PREFIX] : await workBranchPrefixes(workspaceRoot)).join(', ')}`,
 					blockerType: 'needs-worktree',
 					nextAction:
 						'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',

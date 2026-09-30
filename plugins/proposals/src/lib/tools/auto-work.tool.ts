@@ -13,6 +13,8 @@ import { SafeWorkspaceReader, toolJson } from '@delendai/core/public';
 import { runContinueProposal } from './continue-proposal.tool';
 import type { IContinueProposalToolOptions } from './continue-proposal.tool';
 import type { IAutoWorkPersistMode } from '../tools/auto-work-persist';
+import { isAgentBranchName } from '../locks/lock-paths';
+import { workBranchPrefixes } from '../shared/branch-namespaces';
 import { createGitRunner } from '../shared/git-runner';
 import { runBranchStatusEngine } from '../shared/branch-status-engine';
 import { runBranchGcEngine } from '../shared/branch-gc-engine';
@@ -517,7 +519,8 @@ export const runAutoWork = async (
 	const idleStreak = options.idleStreak ?? createIdleStreak();
 
 	// f00078 S1: needs-worktree gate. When the host gate is on AND the
-	// active branch is not `agent/<name>`, refuse the plan. The
+	// active branch is not one an agent works on (the project's work-ref
+	// namespace, or the `agent_worktree` one), refuse the plan. The
 	// `agentWorktreeEnabled` flag is propagated via IAutoWorkToolOptions
 	// (the host passes it from the plugin context). The check is a
 	// no-op when the gate is off so solo hosts are unaffected.
@@ -1067,8 +1070,10 @@ const readCurrentBranchForWorktreeGate = async (
 		return {
 			ok: true,
 			branch: branch.length === 0 ? 'HEAD' : branch,
-			isAgentBranch:
-				branch.startsWith('agent/') && branch.length > 'agent/'.length,
+			isAgentBranch: isAgentBranchName(
+				branch,
+				await workBranchPrefixes(workspaceRoot),
+			),
 		};
 	} catch {
 		return { ok: false };
