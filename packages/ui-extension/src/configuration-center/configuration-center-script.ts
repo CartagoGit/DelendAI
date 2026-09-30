@@ -10,7 +10,7 @@ export const configurationCenterScript = (): string => `
   var initialDigest = root.getAttribute('data-config-digest') || '';
 
   function post(message) {
-    var host = window.__MCPV_CONFIGURATION_HOST__;
+    var host = window.__DELENDAI_CONFIGURATION_HOST__;
     if (host && typeof host.post === 'function') {
       host.post(message);
       return;
