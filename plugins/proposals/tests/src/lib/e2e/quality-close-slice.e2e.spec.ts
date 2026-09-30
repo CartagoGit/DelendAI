@@ -12,6 +12,7 @@ import { join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { waitUntil } from '@delendai/test-kit';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
@@ -312,12 +313,15 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				),
 			).toContain('- **Status**: pending');
 
-			let resumed = await close();
-			for (let attempt = 0; attempt < 40; attempt += 1) {
-				if (resumed.isError !== true) break;
-				await new Promise((resolve) => setTimeout(resolve, 250));
-				resumed = await close();
-			}
+			let resumed = first;
+			await waitUntil(
+				'the resumed gate finishes and close_slice stops answering pending',
+				async () => {
+					resumed = await close();
+					return resumed.isError !== true;
+				},
+				{ timeoutMs: 20_000, intervalMs: 250 },
+			);
 
 			expect(resumed.structuredContent).toMatchObject({
 				ok: true,
