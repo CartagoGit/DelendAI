@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-09-26T12:23:14.459Z",
+	"generatedAt": "2026-09-30T05:52:19.961Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -958,6 +958,33 @@
 				"git",
 				"ci"
 			]
+		},
+		{
+			"id": "framework-knowledge",
+			"package": "@delendai/framework-knowledge",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.",
+			"tags": [
+				"knowledge",
+				"frameworks",
+				"policy"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"filesystem-read"
+			],
+			"presets": [],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@delendai/core",
+				"zod"
+			],
+			"capabilities": []
 		},
 		{
 			"id": "git",
@@ -2868,6 +2895,21 @@
 		},
 		{
 			"origin": "first-party",
+			"id": "framework-knowledge",
+			"package": "@delendai/framework-knowledge",
+			"summary": "Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.",
+			"tags": [
+				"knowledge",
+				"frameworks",
+				"policy"
+			],
+			"permissions": [
+				"filesystem-read"
+			],
+			"tokenBudgetBytes": 2700
+		},
+		{
+			"origin": "first-party",
 			"id": "git",
 			"package": "@delendai/git",
 			"summary": "Git wrappers (PR list/view, diff, changelog, extended).",
@@ -4315,6 +4357,28 @@
 			}
 		},
 		{
+			"id": "framework-knowledge",
+			"package": "@delendai/framework-knowledge",
+			"summary": "Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.",
+			"tags": [
+				"knowledge",
+				"frameworks",
+				"policy"
+			],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": [],
+			"capabilities": [],
+			"permissions": [
+				"filesystem-read"
+			],
+			"tokenBudget": {
+				"warning": 2700,
+				"hard": 3000,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
 			"id": "git",
 			"package": "@delendai/git",
 			"summary": "Git wrappers (PR list/view, diff, changelog, extended).",
@@ -5430,6 +5494,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "framework-knowledge",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "git",
 			"warning": 6200,
 			"hard": 6800,
@@ -5899,6 +5969,12 @@
 					"network"
 				]
 			}
+		},
+		{
+			"id": "framework-knowledge",
+			"permissions": [
+				"filesystem-read"
+			]
 		},
 		{
 			"id": "git",
@@ -7729,6 +7805,69 @@
 		},
 		{
 			"pluginId": "forge",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "dogfood",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
