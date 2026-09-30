@@ -78,8 +78,8 @@ const FRONTMATTER = /^﻿?---\r?\n[\s\S]*?\r?\n---/;
 // whitespace before the `>`. A pattern that demands `</script>` exactly
 // stops stripping at the first tag written that way and treats
 // everything after it as markup (`js/bad-tag-filter`).
-const STYLE_BLOCK = /<style\b[^>]*>([\s\S]*?)<\/style\s*>/gi;
-const SCRIPT_BLOCK = /<script\b[^>]*>[\s\S]*?<\/script\s*>/gi;
+const STYLE_BLOCK = /<style\b[^>]*>([\s\S]*?)<\/style\b[^>]*>/gi;
+const SCRIPT_BLOCK = /<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi;
 
 /**
  * At-rules whose body starts a fresh selector context (their inner

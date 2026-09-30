@@ -12,7 +12,7 @@ import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { barChart } from './bar-chart';
-import { escapeHtml, formatTokens } from './format';
+import { escapeHtml, formatNumber, formatTokens } from './format';
 
 const formatUsd = (value: number): string =>
 	`$${value.toFixed(value < 10 ? 2 : 0)}`;
@@ -48,7 +48,7 @@ export const renderPanelSpend = (
 			(p) => `<tr>
 				<td><code>${escapeHtml(p.provider)}</code></td>
 				<td class="delendai-num">${formatUsd(p.costUsd)}</td>
-				<td class="delendai-num">${p.calls}</td>
+				<td class="delendai-num">${formatNumber(p.calls)}</td>
 			</tr>`,
 		)
 		.join('');
@@ -67,7 +67,7 @@ export const renderPanelSpend = (
 		</div>
 		<div class="delendai-card delendai-card--third">
 			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.spend.savings'))}</h3>
-			<p class="delendai-kpi__value">${model.savingsPercent}%</p>
+			<p class="delendai-kpi__value">${formatNumber(model.savingsPercent)}%</p>
 		</div>
 		<div class="delendai-card">
 			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.spend.byProvider'))}</h3>

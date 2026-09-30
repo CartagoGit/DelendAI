@@ -475,7 +475,13 @@ const syncDirectory = (srcDir: string, dstDir: string): void => {
 			continue;
 		}
 		const next = readFileSync(from);
-		if (existsSync(to) && readFileSync(to).equals(next)) continue;
+		let current: Buffer | undefined;
+		try {
+			current = readFileSync(to);
+		} catch {
+			current = undefined;
+		}
+		if (current?.equals(next)) continue;
 		writeFileSync(to, next);
 	}
 };

@@ -228,7 +228,6 @@ const readBodyCapped = async (
 			out += decoder.decode(value.subarray(0, remaining), {
 				stream: true,
 			});
-			received = maxBytes;
 			truncated = true;
 			await reader.cancel();
 			break;

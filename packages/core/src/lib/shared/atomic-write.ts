@@ -86,7 +86,7 @@ const sweepOrphanTemporaries = async (absolutePath: string): Promise<void> => {
 const fsyncDir = async (dir: string): Promise<void> => {
 	try {
 		// Read-only, never created: a directory is opened only to fsync it.
-		const handle = await open(dir, constants.O_RDONLY);
+		const handle = await open(dir, constants.O_RDONLY, 0o600);
 		try {
 			await handle.sync();
 		} finally {
