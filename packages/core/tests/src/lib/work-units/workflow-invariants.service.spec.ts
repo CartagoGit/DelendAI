@@ -131,9 +131,57 @@ describe('workflow invariants (x00573)', () => {
 			'push',
 			'-q',
 			'origin',
-			'HEAD:refs/heads/delendai/pr/claude-opus-5/x1-S1-g1/shaped',
+			'HEAD:refs/heads/delendai/pr/claude-opus-5/implement/x1-S1-g1/shaped',
 		);
 		expect(by(root, 'publications-canonical').holds).toBe(true);
+	});
+
+	it('takes the four-component shape the template names for canonical, and the old three for not', () => {
+		const { root, remote } = repo();
+		git(
+			root,
+			'push',
+			'-q',
+			'origin',
+			'HEAD:refs/heads/delendai/pr/claude-test/x1-S1-g1/before-kind',
+		);
+		expect(by(root, 'publications-canonical').holds).toBe(false);
+		execFileSync(
+			'git',
+			[
+				'update-ref',
+				'-d',
+				'refs/heads/delendai/pr/claude-test/x1-S1-g1/before-kind',
+			],
+			{ cwd: remote },
+		);
+		git(
+			root,
+			'push',
+			'-q',
+			'origin',
+			'HEAD:refs/heads/delendai/pr/claude-test/implement/x1-S1-g1/probe',
+		);
+		expect(by(root, 'publications-canonical').holds).toBe(true);
+	});
+
+	it('does not require the checkout on the integration branch when the profile does not anchor it', () => {
+		const { root } = repo();
+		git(root, 'switch', '-q', '-c', 'somewhere-else');
+		const unanchored = resolveDevelopmentPolicy({
+			development: {
+				profile: 'worktree-pr',
+				branches: {
+					namespacePrefix: 'delendai',
+					integration: 'develop',
+				},
+			},
+		});
+		const result = checkWorkflowInvariants({
+			root,
+			policy: unanchored,
+		}).results.find((each) => each.id === 'checkout-anchored');
+		expect(result?.holds).toBe(true);
 	});
 
 	it('sees a candidate that does not contain the integration branch', () => {
