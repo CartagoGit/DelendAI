@@ -2,7 +2,7 @@
 id: f00537
 title: "Archify plugin: architecture diagrams as a projection of the structures the runtime already reads"
 kind: feat
-status: ready
+status: retired
 type: proposal
 track: surface
 date: 2026-09-11
@@ -12,7 +12,28 @@ tags:
     - diagrams
     - drift
     - external-tool
+last-transition-id: b9ca80d1-b767-4998-9d68-1751a93296b8
+last-correlation-id: b9ca80d1-b767-4998-9d68-1751a93296b8
+last-transition-from: ready
 ---
+
+> **Retired 2026-09-30**: `plugins/diagram/` already delivers this
+> proposal's stated goal. `diagram_deps` and `diagram_modules`
+> (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts`) render the
+> workspace dependency graph and a package's module graph as mermaid
+> **on demand**, from `buildDependencyGraph`/`buildModuleGraph` — i.e.
+> already "a projection of the structures the runtime already reads,"
+> regenerated fresh on every call. There is no committed diagram to go
+> stale, so this proposal's central complaint (diagrams "authored once,
+> true briefly, stale") does not hold against the current tree, and its
+> S1-S3 (author a committed IR + IMAGE) would create the staleness
+> problem its own S4 drift-lint exists only to catch. `plugins/diagram`
+> also already extends past dependency graphs (see
+> `plugins/diagram/src/lib/erd/build-proposal-dfa.ts`). If richer
+> visuals (Archify's HTML/SVG "showcase" rendering) are ever wanted,
+> the smaller change is piping `diagram_deps`'s existing graph JSON
+> through an external renderer, not a parallel 5-slice plugin with its
+> own IR, receipts, and CI workflow.
 
 # f00537 — Archify plugin: architecture diagrams as a projection of the structures the runtime already reads
 
