@@ -17,7 +17,7 @@ export { checkConfig } from './config.check';
 export { checkPluginGraph } from './plugin-graph.check';
 export { checkDeps } from './deps.check';
 export { checkTokenBudgets } from './token-budgets.check';
-export { checkBranchProtection } from './branch-protection.check';
+export { assessBranchProtection } from './branch-protection.check';
 export { checkSchemas } from './schemas.check';
 export { checkPorts } from './ports.check';
 export { checkNetworkDependentSurfaces } from './network.check';

@@ -1,57 +1,36 @@
+import { readWorkspacePolicy } from '@delendai/core/cli';
+
 import type { IDoctorCommandCheck } from '../doctor';
+import {
+	BRANCH_PROTECTION_FILE,
+	assessBranchProtection,
+	type IBranchProtectionPolicy,
+} from '../../lib/doctor/checks/branch-protection.check';
 
-const matchesBranch = (text: string, branch: string): string | undefined => {
-	const escaped = branch.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-	const block = text.match(
-		new RegExp(
-			`name:\\s*['"]${escaped}['"][\\s\\S]*?(?=name:\\s*['"]|$)`,
-			'u',
-		),
-	);
-	return block?.[0];
-};
+type IPolicyReader = (
+	workspace: string,
+) => Promise<IBranchProtectionPolicy | undefined>;
 
-export const checkBranchProtection: IDoctorCommandCheck = async ({ fs }) => {
-	const path = '.github/branch-protection.ts';
-	const text = await fs.readFile(path);
-	if (text === undefined) {
-		return {
-			name: 'branch-protection',
-			status: 'warn',
-			findings: [
-				`${path} not found; local branch policy cannot be verified`,
-			],
-		};
-	}
-	const developBlock = matchesBranch(text, 'develop');
-	const mainBlock = matchesBranch(text, 'main');
-	const findings: string[] = [];
-	if (developBlock === undefined)
-		findings.push('develop branch policy missing');
-	if (mainBlock === undefined) findings.push('main branch policy missing');
-	if (
-		developBlock !== undefined &&
-		!/protected:\s*false/u.test(developBlock)
-	) {
-		findings.push('develop should stay unprotected in the local policy');
-	}
-	if (mainBlock !== undefined && !/protected:\s*true/u.test(mainBlock)) {
-		findings.push('main must be protected in the local policy');
-	}
-	if (
-		mainBlock !== undefined &&
-		!/required_checks:\s*\[[\s\S]*?['"]ci-complete['"]/u.test(mainBlock)
-	) {
-		findings.push('main must require ci-complete in the local policy');
-	}
-	if (findings.length === 0) {
-		return {
-			name: 'branch-protection',
-			status: 'ok',
-			findings: [
-				'local branch policy covers develop and main with the expected protection contract',
-			],
-		};
-	}
-	return { name: 'branch-protection', status: 'warn', findings };
-};
+export const createBranchProtectionCheck =
+	(readPolicy: IPolicyReader): IDoctorCommandCheck =>
+	async ({ fs, workspace }) => {
+		let policy: IBranchProtectionPolicy | undefined;
+		try {
+			policy = await readPolicy(workspace);
+		} catch (error) {
+			return {
+				name: 'branch-protection',
+				status: 'warn',
+				findings: [
+					`the development policy could not be read: ${error instanceof Error ? error.message : String(error)}`,
+				],
+			};
+		}
+		return assessBranchProtection({
+			policy,
+			projection: await fs.readFile(BRANCH_PROTECTION_FILE),
+		});
+	};
+
+export const checkBranchProtection: IDoctorCommandCheck =
+	createBranchProtectionCheck(readWorkspacePolicy);

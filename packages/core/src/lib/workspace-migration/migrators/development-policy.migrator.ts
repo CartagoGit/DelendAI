@@ -41,7 +41,10 @@ import { join } from 'node:path';
 import { applyEdits, modify, parse as parseJsonc } from 'jsonc-parser';
 
 import { proposeAdoption } from '../../development-policy/adopt';
-import type { IAdoptionEvidence } from '../../development-policy/adopt';
+import type {
+	IAdoptionBlock,
+	IAdoptionEvidence,
+} from '../../development-policy/adopt';
 import type {
 	IMigration,
 	IMigrationContext,
@@ -53,8 +56,9 @@ import {
 	DEVELOPMENT_POLICY_CONFIG_FILE,
 } from './development-policy.constant';
 import { gatherAdoptionEvidence } from './development-policy-evidence';
+import { deriveRequiredChecks } from './development-policy-required-checks';
 
-interface IConfigShape {
+export interface IConfigShape {
 	readonly development?: unknown;
 	readonly agentWorktree?: unknown;
 }
@@ -88,6 +92,68 @@ const evidenceFor = async (
 			: {}),
 	});
 
+/** Profiles whose governance is enforced, and so cannot start without checks. */
+const PULL_REQUEST_PROFILES: ReadonlySet<string> = new Set([
+	'shared-checkout-pr',
+	'worktree-pr',
+]);
+
+/** The block adoption writes: its profile, branches, and any checks. */
+export interface IAdoptedBlock extends IAdoptionBlock {
+	readonly integration?: { readonly requiredChecks: readonly string[] };
+}
+
+/**
+ * What adoption proposes, made startable. A pull-request profile is
+ * enforced, and enforcement without a check is refused at startup, so it
+ * is only adopted with checks read from the project's workflows. Without
+ * an unambiguous one, a project that never chose the pull-request model
+ * gets the merge model, which certifies locally and asks nothing of the
+ * forge, and the reason is recorded.
+ */
+export const adoptionFor = async (
+	workspaceRoot: string,
+	parsed: IConfigShape,
+	gatherEvidence: typeof evidenceFor = evidenceFor,
+): Promise<{
+	readonly block?: IAdoptedBlock | undefined;
+	readonly reasons: readonly string[];
+}> => {
+	const proposal = proposeAdoption(
+		await gatherEvidence(workspaceRoot, parsed),
+	);
+	const { block } = proposal;
+	if (block === undefined || !PULL_REQUEST_PROFILES.has(block.profile)) {
+		return proposal;
+	}
+	const derived = await deriveRequiredChecks(workspaceRoot);
+	if (derived !== undefined) {
+		return {
+			block: {
+				...block,
+				integration: { requiredChecks: derived.checks },
+			},
+			reasons: [...proposal.reasons, `integration ${derived.reason}`],
+		};
+	}
+	if (block.profile === 'shared-checkout-pr') {
+		return {
+			block: { ...block, profile: 'shared-checkout-merge' },
+			reasons: [
+				...proposal.reasons,
+				'fell back to `shared-checkout-merge`: the pull-request profile is enforced and needs a required check, and no single check could be read from the project workflows. Declare `development.integration.requiredChecks` to choose the pull-request model.',
+			],
+		};
+	}
+	return {
+		block,
+		reasons: [
+			...proposal.reasons,
+			'no required check could be read from the project workflows: declare `development.integration.requiredChecks`, or startup will refuse this profile.',
+		],
+	};
+};
+
 export const createDevelopmentPolicyMigrator = (): IMigration => ({
 	id: DEVELOPMENT_POLICY_MIGRATOR_ID,
 
@@ -106,10 +172,7 @@ export const createDevelopmentPolicyMigrator = (): IMigration => ({
 		if (config === null || config.parsed.development !== undefined) {
 			return [];
 		}
-		const proposal = await evidenceFor(
-			ctx.workspaceRoot,
-			config.parsed,
-		).then(proposeAdoption);
+		const proposal = await adoptionFor(ctx.workspaceRoot, config.parsed);
 		if (proposal.block === undefined) return [];
 		return [
 			{
@@ -130,10 +193,7 @@ export const createDevelopmentPolicyMigrator = (): IMigration => ({
 		const config = await readConfig(ctx.workspaceRoot);
 		if (config === null || config.parsed.development !== undefined) return;
 
-		const proposal = await evidenceFor(
-			ctx.workspaceRoot,
-			config.parsed,
-		).then(proposeAdoption);
+		const proposal = await adoptionFor(ctx.workspaceRoot, config.parsed);
 		if (proposal.block === undefined) return;
 
 		const edits = modify(config.text, ['development'], proposal.block, {
