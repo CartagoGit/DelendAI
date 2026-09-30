@@ -2,13 +2,13 @@
 id: x00780
 title: "Release tooling follows the configured branches and strategy"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: 9dfb0990-bf4f-46ac-aa80-f3bce9afb124
-last-correlation-id: 9dfb0990-bf4f-46ac-aa80-f3bce9afb124
-last-transition-from: ready
+last-transition-id: b730b7c6-d4a6-4560-a973-0855b473f9cd
+last-correlation-id: b730b7c6-d4a6-4560-a973-0855b473f9cd
+last-transition-from: in-progress
 ---
 
 # x00780 — Release tooling follows the configured branches and strategy
@@ -40,6 +40,9 @@ The release tools name this repository's shape: git.ts, release and release-fina
   - "A single-branch project has no release promotion step and the tools say so instead of opening a pull request into a branch that does not exist."
   - "Under the merge and direct strategies no pull request is requested; promotion follows integration.strategy because the policy does not model release promotion separately."
   - "This repository (develop to main by pull request, versioned in packages/core) releases unchanged."
+- shipped-in: `9d46a11aaeeb`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
