@@ -134,3 +134,13 @@ export interface IRefReconciliation {
 	 */
 	readonly active: readonly IRefVerdict[];
 }
+
+/** What the project's policy says about one branch's delivery. */
+export interface IBranchDeliveryVerdict {
+	/** The ref-lifecycle role the branch was given. */
+	readonly role: string;
+	/** True only when deleting or retiring the branch loses nothing. */
+	readonly delivered: boolean;
+	/** Why, in one sentence an operator can act on. */
+	readonly reason: string;
+}

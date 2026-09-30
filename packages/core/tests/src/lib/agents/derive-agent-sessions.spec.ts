@@ -198,4 +198,30 @@ describe('deriveAgentSessions', () => {
 			},
 		]);
 	});
+
+	it('recognises worktrees under the namespaces the caller names, and only those', () => {
+		const sessions = deriveAgentSessions({
+			worktrees: [
+				worktree({
+					path: '/repo/.worktrees/unit',
+					head: 'abc123',
+					branch: 'acme/wip/falcon',
+					detached: false,
+					locked: false,
+				}),
+				worktree({
+					path: '/repo/.worktrees/legacy',
+					head: 'def456',
+					branch: 'agent/heron',
+					detached: false,
+					locked: false,
+				}),
+			],
+			locks: [],
+			proposals: [],
+			branchPrefixes: ['acme/wip/'],
+		});
+
+		expect(sessions.map((session) => session.agent)).toEqual(['falcon']);
+	});
 });

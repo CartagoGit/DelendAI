@@ -7,6 +7,7 @@ import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';
 import { purgeStrandedBranches } from '../locks/branch-hygiene';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 import { listAgentBranchesWithGit } from './branch-status.tool';
 
 export interface IAgentWorktreeToolOptions {
@@ -201,6 +202,8 @@ export const buildAgentWorktreeRegistration = (
 											listAgentBranchesWithGit(
 												run,
 												options.workspaceRoot,
+												undefined,
+												AGENT_BRANCH_PREFIX,
 											),
 									}),
 								}
