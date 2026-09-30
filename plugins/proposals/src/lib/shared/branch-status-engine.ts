@@ -27,6 +27,7 @@ import { join, relative, resolve } from 'node:path';
 
 import type { IGitRunner } from './git-runner';
 import { projectBranches } from '@delendai/core/public';
+import { isUnderPrefixes, managedBranchPrefixes } from './branch-namespaces';
 
 /** Result type for one branch (always local, agent/* by default). */
 export interface IBranchStatusEntry {
@@ -117,9 +118,10 @@ export interface IBranchStatusEngineOptions {
 	 */
 	readonly baseBranch?: string;
 	/**
-	 * Prefix that identifies "agent" branches. Default `agent/`. Only
-	 * branches whose name starts with this prefix appear in
-	 * `branches[]`. Pass `""` to include every local branch.
+	 * Prefix that identifies "agent" branches. Only branches whose name
+	 * starts with it appear in `branches[]`. Pass `""` to include every
+	 * local branch. Absent, the project's own namespaces apply (see
+	 * `managedBranchPrefixes`).
 	 */
 	readonly agentPrefix?: string;
 	/**
@@ -251,6 +253,10 @@ const mergedInto = async (
 	// earlier can still have unique commits at its tip that `branch --merged`
 	// happily reports as merged. Without check (2) `branch_gc` would happily
 	// delete such a worktree.
+	//
+	// A branch checked out in a linked worktree is listed with a `+ ` prefix,
+	// not `* `: stripping only the latter made every worktree's branch look
+	// unmerged, which is the one case the reaper exists for.
 	const branchMergedResult = await run([
 		'branch',
 		'--list',
@@ -262,7 +268,7 @@ const mergedInto = async (
 		branchMergedResult.ok &&
 		branchMergedResult.output
 			.split('\n')
-			.map((line) => line.trim().replace(/^\*\s*/u, ''))
+			.map((line) => line.trim().replace(/^[*+]\s*/u, ''))
 			.some((line) => line === branch);
 	if (!branchMerged) return false;
 
@@ -305,24 +311,36 @@ export const runBranchStatusEngine = async (
 	const baseBranch =
 		options.baseBranch ??
 		(await projectBranches(options.workspaceRoot)).integration;
-	const agentPrefix = options.agentPrefix ?? 'agent/';
+	const prefixes =
+		options.agentPrefix === undefined
+			? await managedBranchPrefixes(options.workspaceRoot)
+			: [options.agentPrefix];
 	const now = options.now ?? Date.now();
 	const generatedAt = new Date(now).toISOString();
 	const canonicalDir = resolveCanonicalWorktreesDir(options);
 
-	// 1. List local branches that match the agent prefix.
-	const branchListResult = await run(['branch', '--list', `${agentPrefix}*`]);
-	if (!branchListResult.ok) {
-		return {
-			ok: false,
-			reason: branchListResult.reason ?? 'git branch --list failed',
-			baseBranch,
-		};
+	// 1. List local branches under the managed prefixes.
+	const branchLists = [];
+	for (const prefix of prefixes) {
+		const listed = await run(['branch', '--list', `${prefix}*`]);
+		if (!listed.ok) {
+			return {
+				ok: false,
+				reason: listed.reason ?? 'git branch --list failed',
+				baseBranch,
+			};
+		}
+		branchLists.push(listed);
 	}
-	const branchNames = parseBranchList(branchListResult.output).filter(
-		(name) =>
-			agentPrefix.length === 0 ? true : name.startsWith(agentPrefix),
-	);
+	const branchNames = [
+		...new Set(
+			branchLists.flatMap((listed) =>
+				parseBranchList(listed.output).filter((name) =>
+					isUnderPrefixes(name, prefixes),
+				),
+			),
+		),
+	];
 
 	// 2. List worktrees (porcelain).
 	const worktreeListResult = await run(['worktree', 'list', '--porcelain']);

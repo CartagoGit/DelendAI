@@ -745,8 +745,6 @@ export default definePlugin({
 					buildBranchStatusRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						defaultBaseBranch: 'develop',
-						defaultAgentPrefix: 'agent/',
 						// `layout.worktreesDir` is ALREADY the cache-rooted
 						// workspace-relative path (default
 						// `.cache/delendai/.worktrees`). The previous
@@ -765,7 +763,6 @@ export default definePlugin({
 					buildBranchGcRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						defaultBaseBranch: 'develop',
 						defaultStaleMinutes: 60,
 					}),
 					// read-only swarm hygiene snapshot — rescue
@@ -773,7 +770,6 @@ export default definePlugin({
 					buildSwarmHygieneRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						defaultBaseBranch: 'develop',
 						defaultStaleMinutes: 60,
 					}),
 					buildTaskQueueRegistration({

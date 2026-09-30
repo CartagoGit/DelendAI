@@ -45,6 +45,7 @@ const SKIPPED_ENTRY = z.object({
 		'protected-branch',
 		'not-found',
 		'no-branch',
+		'undelivered',
 	]),
 	detail: z.string(),
 });
@@ -89,7 +90,7 @@ export const buildBranchGcRegistration = (
 				{
 					outputSchema: BRANCH_GC_OUTPUT_SCHEMA,
 					description:
-						'Idempotent cleanup of worktrees that have decayed into orphan state. A worktree is eligible when its branch is merged into baseBranch (default develop), its working tree is clean, and the last commit is older than staleMinutes (default 60). Defaults to dryRun: true; pass dryRun: false to actually execute. force: true allows removal of dirty worktrees (unmerged branches are still refused — that is sacred). Never pushes.',
+						'Idempotent cleanup of worktrees that have decayed into orphan state. A worktree is eligible when its branch is merged into baseBranch (default: the integration branch this project declares), the ref-lifecycle verdict proves its work delivered, its working tree is clean, and the last commit is older than staleMinutes (default 60). Defaults to dryRun: true; pass dryRun: false to actually execute. force: true allows removal of dirty worktrees (unmerged branches are still refused — that is sacred). Never pushes.',
 					inputSchema: z.object({
 						baseBranch: z.string().optional(),
 						staleMinutes: z.number().int().positive().optional(),

@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 642
+Total exports: 643
 
 | Maturity | Count |
 | --- | --- |
-| stable | 639 |
+| stable | 640 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -28,6 +28,7 @@ Total exports: 642
 | `assertExpectedReleaseState` | const | stable | `../lib/contracts/release-state` |
 | `assertReleaseMetadata` | const | stable | `../lib/contracts/release` |
 | `assertReleaseSlug` | const | stable | `../lib/contracts/release` |
+| `branchDeliveryVerdict` | const | stable | `../lib/ref-lifecycle/branch-delivery` |
 | `BufferingErrorSink` | const | stable | `../lib/error-collection/buffering-sink` |
 | `buildAdoptionAssessment` | const | stable | `../lib/adopt/adoption-assessment.service` |
 | `buildAdoptProjectPlan` | const | stable | `../lib/adopt/adopt-project.tool` |

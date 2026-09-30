@@ -1147,6 +1147,12 @@ export const buildCreateProposalRegistration = (
 															.developmentPolicy
 															.integration
 															.requiresPullRequest,
+													hasWorkRefs:
+														options
+															.developmentPolicy
+															.branches
+															.workRefTemplate
+															.length > 0,
 													publicationRefPrefix:
 														options
 															.developmentPolicy
