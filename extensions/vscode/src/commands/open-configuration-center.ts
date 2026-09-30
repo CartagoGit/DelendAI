@@ -32,7 +32,7 @@ const bridgeScript = `<script>
 (function () {
   'use strict';
   var vscode = typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
-  window.__MCPV_CONFIGURATION_HOST__ = {
+  window.__DELENDAI_CONFIGURATION_HOST__ = {
     post: function (message) { if (vscode) vscode.postMessage(message); }
   };
 })();
