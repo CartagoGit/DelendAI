@@ -2,10 +2,13 @@
 id: x00785
 title: "worktree-pr has one work model: the unit worktree that work enter makes"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-30
+last-transition-id: b7078295-641f-4a74-8c32-635f42b5029d
+last-correlation-id: b7078295-641f-4a74-8c32-635f42b5029d
+last-transition-from: ready
 ---
 
 # x00785 — worktree-pr has one work model: the unit worktree that work enter makes
