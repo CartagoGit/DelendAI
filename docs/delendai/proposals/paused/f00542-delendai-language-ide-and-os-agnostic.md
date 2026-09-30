@@ -2,13 +2,34 @@
 id: f00542
 title: "Delendai language-, IDE-, and OS-agnostic"
 kind: feat
-status: ready
+status: paused
 type: proposal
 track: general
 date: 2026-09-15
+paused-reason: "Paused 2026-09-30: owner policy is to consolidate before vertical features; resume when the ready backlog is empty"
+last-transition-id: fbad0b24-7df4-471d-bcc2-049e8de1a030
+last-correlation-id: fbad0b24-7df4-471d-bcc2-049e8de1a030
+last-transition-from: ready
 ---
 
 # f00542 — Delendai language-, IDE-, and OS-agnostic
+
+> **Paused 2026-09-30**: owner policy is to consolidate before vertical
+> features; resume when the ready backlog is empty. This proposal's own
+> "why" is already partly false: `plugins/conventions/src/lib/profiles/`
+> already has `python.profile.ts`, `go.profile.ts`, `rust.profile.ts`
+> (file-convention roles per language), and
+> `packages/core/src/lib/config/detect-stack.ts` already detects
+> Python/Rust/Go manifests (polyglot detection). What genuinely does not
+> exist — a polyglot plugin runtime, an OS abstraction layer, a
+> universal installer, IDE connector generators, alternate transports,
+> plugin signing — is a maximalist, 10-slice, cross-OS/cross-language/
+> cross-IDE rewrite that directly contradicts the current priority to
+> simplify and reduce core surface first. Not retired: if incremental
+> polyglot support is wanted later, re-propose S1 (manifest schema)
+> alone after core-surface work lands, dropping S4/S6/S7/S8/S9
+> (installer, IDE generators, transports, signing, cross-OS CI) until a
+> real non-TS plugin author exists.
 
 ## Goal
 
