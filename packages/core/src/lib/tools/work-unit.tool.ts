@@ -16,8 +16,10 @@ import { randomUUID } from 'node:crypto';
 import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IWorkUnitToolOptions } from '../contracts/interfaces/work-unit-context.interface';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { workModelSummary } from '../development-policy/declare-workflow';
 import { runWorkUnit } from '../work-units/work-unit.service';
 import { toolJson } from '../shared/tool-response';
 
@@ -80,6 +82,21 @@ export const workUnitArgs = (
 	];
 };
 
+/**
+ * How `publish` lands the unit differs per profile (pull request, local
+ * merge, nothing), so the sentence comes from the policy; without one it
+ * stays neutral and points at the served work model.
+ */
+export const workUnitDescription = (
+	policy: IResolvedDevelopmentPolicy | undefined,
+): string => {
+	const publish =
+		policy === undefined
+			? '`publish` lands the unit the way this project’s work model declares'
+			: `\`publish\` lands the unit as this project declares (${workModelSummary(policy)})`;
+	return `Your unit of work, from any host: the same operations as \`delendai work\`. \`enter\` gives you your own worktree and work ref (pass it as \`checkout\` to the write tools); ${publish}. The session is this server’s, so your calls keep your unit; pass \`agent\` (your model id) unless DELENDAI_AGENT_ID is set.`;
+};
+
 export const buildWorkUnitToolRegistration = (
 	options: IWorkUnitToolOptions,
 ): IToolRegistration => {
@@ -96,8 +113,7 @@ export const buildWorkUnitToolRegistration = (
 				`${options.namespacePrefix}_${WORK_UNIT_REGISTRATION_ID}`,
 				{
 					title: 'DelendAI Unit of Work',
-					description:
-						'Your unit of work, from any host: the same operations as `delendai work`. `enter` gives you your own worktree and work ref (pass it as `checkout` to the write tools); `publish` lands the unit the way this project’s work model says: a pull request, or — under a merge profile — a merge into the integration branch after its validation gate passed. The session is this server’s, so your calls keep your unit; pass `agent` (your model id) unless DELENDAI_AGENT_ID is set.',
+					description: workUnitDescription(options.policy),
 					inputSchema: workUnitInputSchema,
 					outputSchema: workUnitOutputSchema,
 				},

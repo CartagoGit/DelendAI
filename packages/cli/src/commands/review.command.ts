@@ -281,7 +281,7 @@ const next = async (
 				: data({
 						...session,
 						published: published.data,
-						next: 'Nothing else is waiting for a verdict; your pack is published as its pull request.',
+						next: 'Nothing else is waiting for a verdict; your pack is published.',
 					});
 		}
 		// The next pack, in a unit of its own.
