@@ -41,10 +41,7 @@ import { join } from 'node:path';
 import { applyEdits, modify, parse as parseJsonc } from 'jsonc-parser';
 
 import { proposeAdoption } from '../../development-policy/adopt';
-import type {
-	IAdoptionBlock,
-	IAdoptionEvidence,
-} from '../../development-policy/adopt';
+import type { IAdoptionEvidence } from '../../development-policy/adopt';
 import type {
 	IMigration,
 	IMigrationContext,
@@ -57,11 +54,11 @@ import {
 } from './development-policy.constant';
 import { gatherAdoptionEvidence } from './development-policy-evidence';
 import { deriveRequiredChecks } from './development-policy-required-checks';
-
-export interface IConfigShape {
-	readonly development?: unknown;
-	readonly agentWorktree?: unknown;
-}
+import type {
+	IAdoptedBlock,
+	IAdoption,
+	IConfigShape,
+} from './development-policy-adoption.interface';
 
 const readConfig = async (
 	workspaceRoot: string,
@@ -97,26 +94,6 @@ const PULL_REQUEST_PROFILES: ReadonlySet<string> = new Set([
 	'shared-checkout-pr',
 	'worktree-pr',
 ]);
-
-/** The block adoption writes: its profile, branches, and any checks. */
-export interface IAdoptedBlock extends IAdoptionBlock {
-	readonly integration?: { readonly requiredChecks: readonly string[] };
-}
-
-/**
- * What adoption proposes, made startable. A pull-request profile is
- * enforced, and enforcement without a check is refused at startup, so it
- * is only adopted with checks read from the project's workflows. Without
- * an unambiguous one, a project that never chose the pull-request model
- * gets the merge model, which certifies locally and asks nothing of the
- * forge, and the reason is recorded.
- */
-export interface IAdoption {
-	readonly block?: IAdoptedBlock | undefined;
-	readonly reasons: readonly string[];
-	/** The forge the remote points at, so setup can follow it too. */
-	readonly forge: IAdoptionEvidence['forge'];
-}
 
 export const adoptionFor = async (
 	workspaceRoot: string,

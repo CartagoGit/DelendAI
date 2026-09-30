@@ -129,6 +129,14 @@ export interface IInitDevelopmentSummary {
 	readonly reasons: readonly string[];
 }
 
+/** What installing the guard hooks did, before it is summarised. */
+export type IInitGuardHooks =
+	| {
+			readonly state: 'installed';
+			readonly report: import('./guard-hooks-service.interface').IGuardHooksReport;
+	  }
+	| { readonly state: 'skipped'; readonly reason: string };
+
 /** The outcome of installing the guard hooks. */
 export type IInitGuardHooksSummary =
 	| { readonly state: 'installed'; readonly directory: string }

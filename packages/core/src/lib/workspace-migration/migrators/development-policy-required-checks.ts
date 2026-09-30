@@ -13,10 +13,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export interface IDerivedRequiredChecks {
-	readonly checks: readonly string[];
-	readonly reason: string;
-}
+import type { IDerivedRequiredChecks } from './development-policy-required-checks.interface';
 
 const WORKFLOWS_DIRECTORY = '.github/workflows';
 const RUNS_ON_PULL_REQUESTS = /\bpull_request(_target)?\b/u;

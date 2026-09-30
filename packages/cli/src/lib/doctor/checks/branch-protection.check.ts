@@ -11,18 +11,10 @@
  * to report, not a defect to warn about.
  */
 import { readWorkspacePolicy } from '@delendai/core/cli';
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import type { DoctorCheck, IDoctorSection } from '../types';
-
-/** The slice of the policy this check reads. */
-export type IBranchProtectionPolicy = Pick<
-	IResolvedDevelopmentPolicy,
-	'branches' | 'integration' | 'governance'
->;
-
-/** Where the generated projection of the policy is kept. */
-export const BRANCH_PROTECTION_FILE = '.github/branch-protection.ts';
+import { BRANCH_PROTECTION_FILE } from './branch-protection.constant';
+import type { IBranchProtectionPolicy } from './branch-protection.interface';
 
 const CHECK_NAME = 'branch-protection';
 

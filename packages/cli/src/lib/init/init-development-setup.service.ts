@@ -14,7 +14,7 @@ import { resolve } from 'node:path';
 import { adoptionFor, type IAdoption } from '@delendai/core/cli';
 import { parseJsonc } from '@delendai/core/public';
 
-import type { IGuardHooksReport } from '../../contracts/interfaces/guard-hooks-service.interface';
+import type { IInitGuardHooks } from '../../contracts/interfaces/init.interface';
 import { isRecord } from '../helpers/cli-command.helper';
 import { readConfigText } from '../config-file.service';
 import { guardHooksMode } from '../guard-hooks-autoinstall.service';
@@ -70,10 +70,6 @@ export const adoptDevelopmentForInit = async (
 		return undefined;
 	}
 };
-
-export type IInitGuardHooks =
-	| { readonly state: 'installed'; readonly report: IGuardHooksReport }
-	| { readonly state: 'skipped'; readonly reason: string };
 
 /**
  * Install the hooks that enforce the policy. `init` is a command someone

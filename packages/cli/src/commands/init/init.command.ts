@@ -49,10 +49,10 @@ import {
 	adoptDevelopmentForInit,
 	forgePluginExclusions,
 	installGuardHooksForInit,
-	type IInitGuardHooks,
 } from '../../lib/init/init-development-setup.service';
 import type {
 	IInitDevelopmentSummary,
+	IInitGuardHooks,
 	IInitGuardHooksSummary,
 } from '../../contracts/interfaces/init.interface';
 import { InitAnswers } from '../../lib/init/init-answers.schema';

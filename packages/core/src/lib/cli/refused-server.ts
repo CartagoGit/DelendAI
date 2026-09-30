@@ -18,8 +18,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 
-/** The one tool a refused server offers. */
-export const REFUSED_SERVER_TOOL = 'delendai_startup_refusal';
+import { REFUSED_SERVER_TOOL } from './refused-server.constant';
 
 const HEADER =
 	'delendai cannot start in this workspace, so no other tool is available. Fix the configuration below, then restart the server.';

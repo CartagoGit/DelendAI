@@ -2,10 +2,8 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { describe, expect, it } from 'vitest';
 
-import {
-	REFUSED_SERVER_TOOL,
-	createRefusedServer,
-} from '@delendai/core/lib/cli/refused-server';
+import { REFUSED_SERVER_TOOL } from '@delendai/core/lib/cli/refused-server.constant';
+import { createRefusedServer } from '@delendai/core/lib/cli/refused-server';
 
 const REFUSAL =
 	'[enforced-governance-needs-checks] integration.requiredChecks: name the check the forge must require.';

@@ -64,7 +64,7 @@ export { adoptionFor } from './lib/workspace-migration/migrators/development-pol
 export type {
 	IAdoptedBlock,
 	IAdoption,
-} from './lib/workspace-migration/migrators/development-policy.migrator';
+} from './lib/workspace-migration/migrators/development-policy-adoption.interface';
 export { runWorkUnit } from './lib/work-units/work-unit.service';
 export { EXIT_CODE } from './lib/contracts/constants/exit-code.constant';
 export type { IExitCode } from './lib/contracts/interfaces/exit-code.interface';
