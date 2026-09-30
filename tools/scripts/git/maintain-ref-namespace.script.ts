@@ -43,6 +43,7 @@ import {
 } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
+import { FORWARD_SYNC_REF_PREFIX } from '../forge/forward-sync-release.script';
 import { repoRoot } from '../lib/repo-root';
 
 import type {
@@ -172,10 +173,21 @@ export const isSpent = (
 	root: string,
 	integration: string,
 	sha: string,
+	ref = '',
 ): boolean => {
 	const integrationSha = git(root, ['rev-parse', integration]);
 	if (integrationSha === undefined) return false;
 	if (integrationSha === sha) return false;
+	// A forward sync carries the release branch's HISTORY back, usually with
+	// no file changed at all. Judged by content it looks spent the moment it
+	// is opened, and reaping its branch closed its pull request (#656,
+	// #675). It is spent only once the integration branch contains it.
+	if (ref.startsWith(FORWARD_SYNC_REF_PREFIX)) {
+		return (
+			git(root, ['merge-base', '--is-ancestor', sha, integration]) !==
+			undefined
+		);
+	}
 	const diff = git(root, ['diff', '--name-only', `${integration}...${sha}`]);
 	return diff !== undefined && diff.trim().length === 0;
 };
@@ -288,7 +300,7 @@ export const maintainRefNamespace = (input: {
 			}
 			// Spent first: a ref the integration branch already contains
 			// needs no name and no rebase.
-			if (isSpent(root, integration, sha)) {
+			if (isSpent(root, integration, sha, name)) {
 				actions.push({
 					ref: name,
 					kind: 'reap',
