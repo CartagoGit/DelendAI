@@ -17,7 +17,8 @@
  * the rest of the slice-close flow.
  *
  * Safety net: pushes are refused only when the configured target matches
- * the effective protected-branch policy (default: `main` / `master`).
+ * the effective protected-branch policy (default: the one the host derived
+ * from its development policy; `main` / `master` only when it has none).
  * Explicit non-protected targets such as `origin develop` are honored.
  *
  * @example
@@ -41,6 +42,7 @@ import {
 	type IFinding,
 	type IFindingCounts,
 	type ICommitAuthorResolution,
+	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
 } from '@delendai/core/public';
 
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
@@ -310,7 +312,8 @@ export const maybePersistAfterSlice = async (
 
 	// A target is refused only when it matches the effective host policy.
 	const pushTarget = options.pushTarget ?? DEFAULT_PUSH_TARGET;
-	const protectedBranches = options.protectedBranches ?? ['main', 'master'];
+	const protectedBranches =
+		options.protectedBranches ?? UNRESOLVED_POLICY_PROTECTED_BRANCHES;
 	const protectedBranch = pushWouldHitProtectedBranch(
 		pushTarget,
 		protectedBranches,

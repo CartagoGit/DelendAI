@@ -1064,9 +1064,16 @@ export { publicationUnitFor } from '../lib/development-policy/publication-unit';
  * project shipped the ambiguity it exists to remove.
  */
 export {
+	briefWorkModel,
 	declareWorkflow,
 	renderWorkflowDeclaration,
 } from '../lib/development-policy/declare-workflow';
+export {
+	deriveDefaultProtectedBranches,
+	distinctReleaseBranch,
+	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
+	UNRESOLVED_POLICY_RELEASE_BRANCH,
+} from '../lib/development-policy/protected-branches';
 export {
 	anchorFromPolicy,
 	anchorRefusal,

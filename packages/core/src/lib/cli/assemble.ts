@@ -393,15 +393,28 @@ export const assembleCliConfig = async (
 	// is the shape of every bug this file guards against: `#105` added
 	// the conflict detector and wired only half of it, so a config that
 	// said the opposite of its own profile still started cleanly.
-	const policyViolations = [
+	const allPolicyFindings = [
 		...validateDevelopmentPolicy(developmentPolicy),
 		...validatePolicyAlignment(
 			developmentPolicy,
 			pluginConfigFor(fileConfig, 'commit-policy')?.options as
 				| Record<string, unknown>
 				| undefined,
+			pluginConfigFor(fileConfig, 'git')?.options as
+				| Record<string, unknown>
+				| undefined,
 		),
 	];
+	const policyViolations = allPolicyFindings.filter(
+		(finding) => finding.severity !== 'warning',
+	);
+	const policyAdvisoryWarnings = allPolicyFindings
+		.filter((finding) => finding.severity === 'warning')
+		.map((finding) => ({
+			severity: 'warning' as const,
+			code: finding.rule,
+			message: `${finding.path}: ${finding.message} ${finding.remedy}`,
+		}));
 	if (policyViolations.length > 0) {
 		const detail = policyViolations
 			.map(
@@ -1290,6 +1303,7 @@ export const assembleCliConfig = async (
 							},
 						]
 					: []),
+				...policyAdvisoryWarnings,
 				...extraWarnings,
 			],
 			diagnostics: {
