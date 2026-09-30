@@ -134,7 +134,11 @@ export type IWorkRefVisibility = (typeof WORK_REF_VISIBILITIES)[number];
 export interface IPolicyBranches {
 	/** Where agents integrate. `develop` here, NOT the forge default. */
 	readonly integration: string;
-	/** Where releases land. Held to a stricter policy than integration. */
+	/**
+	 * Where releases land. When it names a branch other than integration,
+	 * that branch is held to a stricter policy. Equal to `integration` for
+	 * a project with one branch: omit it, or name the same branch.
+	 */
 	readonly release: string;
 	/**
 	 * Namespace for delendai-owned refs, no trailing slash. Empty by

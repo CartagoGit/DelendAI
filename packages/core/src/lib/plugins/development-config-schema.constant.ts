@@ -58,7 +58,13 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 				integration: z.string().min(1).optional(),
 				publicationRefPrefix: z.string().optional(),
 				foreignRefPrefixes: z.array(z.string()).optional(),
-				release: z.string().min(1).optional(),
+				release: z
+					.string()
+					.min(1)
+					.describe(
+						'The branch releases land on. Omit it, or name the integration branch, for a project with one branch.',
+					)
+					.optional(),
 				workRefTemplate: z.string().optional(),
 				workRefPrefix: z.string().optional(),
 			})

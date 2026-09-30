@@ -180,10 +180,15 @@ describe('integrationCheckoutRefusal', () => {
 		).toBeUndefined();
 	});
 
-	it('allows a project with no declared policy, or one without work refs', async () => {
-		expect(
-			await integrationCheckoutRefusal(repoOn('develop')),
-		).toBeUndefined();
+	it('holds a project with no declared policy to the model delendai adopts for it', async () => {
+		// The adopted default keeps the shared checkout for work refs, the
+		// same model the served instructions describe.
+		expect(await integrationCheckoutRefusal(repoOn('develop'))).toContain(
+			'`shared-checkout-merge`',
+		);
+	});
+
+	it('allows a project whose profile has no work refs', async () => {
 		expect(
 			await integrationCheckoutRefusal(
 				repoOn(

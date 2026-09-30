@@ -111,12 +111,12 @@ const validateVocabulary = (
 	}
 };
 
-/** Branch identities must be usable and distinct. */
+/** Branch identities must be usable. One branch may play both roles. */
 const validateBranches = (
 	policy: IResolvedDevelopmentPolicy,
 	out: IDevelopmentPolicyViolation[],
 ): void => {
-	const { integration, release, workRefTemplate } = policy.branches;
+	const { integration, workRefTemplate } = policy.branches;
 
 	if (integration.length === 0) {
 		out.push({
@@ -124,15 +124,6 @@ const validateBranches = (
 			path: 'branches.integration',
 			message: 'No integration branch is configured.',
 			remedy: 'Set `development.branches.integration` (e.g. "develop"). Do not rely on the forge default branch.',
-		});
-	}
-
-	if (integration.length > 0 && integration === release) {
-		out.push({
-			rule: 'release-must-differ',
-			path: 'branches.release',
-			message: `The integration and release branches are both \`${integration}\`.`,
-			remedy: 'Give the release branch its own name so it can carry a stricter policy than the branch agents integrate into.',
 		});
 	}
 

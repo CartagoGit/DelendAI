@@ -178,7 +178,13 @@ const applyOverrides = (
 			namespacePrefix,
 			integration:
 				input.branches?.integration ?? base.branches.integration,
-			release: input.branches?.release ?? base.branches.release,
+			// Naming an integration branch and no release branch declares a
+			// project with one branch: the profile's `main` is a habit of
+			// the projects that have both, not a branch this project owns.
+			release:
+				input.branches?.release ??
+				input.branches?.integration ??
+				base.branches.release,
 			workRefTemplate:
 				input.branches?.workRefTemplate ??
 				(requestedVisibility === undefined &&

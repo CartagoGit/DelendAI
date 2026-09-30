@@ -104,13 +104,14 @@ describe('validateDevelopmentPolicy', () => {
 		).toContain('recovery-needs-durable-ref');
 	});
 
-	it('rejects an integration branch that is also the release branch', () => {
+	it('accepts an integration branch that is also the release branch', () => {
 		expect(
 			rulesFor({
 				profile: 'shared-checkout-pr',
 				branches: { integration: 'main', release: 'main' },
+				integration: { requiredChecks: ['verify'] },
 			}),
-		).toContain('release-must-differ');
+		).toEqual([]);
 	});
 
 	it('rejects a work-ref template that cannot distinguish generations', () => {
