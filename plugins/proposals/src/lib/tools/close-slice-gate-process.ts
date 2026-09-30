@@ -5,10 +5,14 @@
  * of its own writing to files, so a host that cancels the call after a
  * minute cannot kill it, and a later call can find out how it ended.
  */
+// effect-boundary-authorized: the gate is a detached process group that must outlive the tool call, which ctx.effects does not offer.
 import { spawn } from 'node:child_process';
 
 import { donePath, outputPath, progressPath } from './close-slice-gate-store';
-import type { ICloseGateStep } from './close-slice-gate-store';
+import type {
+	ICloseGateProcessPort,
+	ICloseGateStep,
+} from '../contracts/interfaces/close-slice-gate.interface';
 
 /** Environment variables that make a suite behave as an agent's shell, not CI's. */
 const AGENT_ENVIRONMENT_VARIABLES = ['CLAUDECODE', 'AI_AGENT'] as const;
@@ -39,13 +43,6 @@ export const renderRunnerScript = (
 		`touch ${shellQuote(donePath(dir))}`,
 		'',
 	].join('\n');
-
-export interface ICloseGateProcessPort {
-	/** Start the runner detached; the pid of its process group leader. */
-	readonly start: (runner: string, cwd: string) => number | undefined;
-	readonly isAlive: (pid: number) => boolean;
-	readonly killGroup: (pid: number) => void;
-}
 
 export const systemGateProcess: ICloseGateProcessPort = {
 	start: (runner, cwd) => {

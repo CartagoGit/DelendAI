@@ -7,10 +7,18 @@
  * green verdict outlives its report: a failed or unverifiable run is
  * reported once and cleared, so the next call runs the gate again.
  */
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+// effect-boundary-authorized: the gate's run state is files a detached process writes and later calls read; they are not workspace content.
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { writeFileAtomic } from '@delendai/core/public';
+
+import type {
+	ICloseGateGreenVerdict,
+	ICloseGateJob,
+	ICloseGateProgress,
+} from '../contracts/interfaces/close-slice-gate.interface';
+import { readTextOrNull } from '../proposals/index-reader';
 
 const JOB_FILE = 'job.json';
 const VERDICT_FILE = 'verdict.json';
@@ -20,35 +28,6 @@ const OUTPUT_FILE = 'output.log';
 const RUNNER_FILE = 'run.sh';
 const OUTPUT_TAIL_LINES = 40;
 
-export interface ICloseGateStep {
-	readonly scope: string;
-	readonly command: string;
-}
-
-/** What was started: enough to resume, time out or report the run. */
-export interface ICloseGateJob {
-	readonly handle: string;
-	readonly tree: string;
-	readonly steps: readonly ICloseGateStep[];
-	readonly cwd: string;
-	readonly startedAtMs: number;
-	readonly timeoutMs: number;
-	readonly pid: number;
-}
-
-export interface ICloseGateGreenVerdict {
-	readonly tree: string;
-	readonly steps: number;
-	readonly passedAt: string;
-}
-
-export interface ICloseGateProgress {
-	/** The runner reached its end marker (whatever the exit codes say). */
-	readonly finished: boolean;
-	/** One exit code per step that ran, in order. */
-	readonly exitCodes: readonly number[];
-}
-
 export const jobDirectory = (storeRoot: string, handle: string): string =>
 	join(storeRoot, handle);
 
@@ -57,15 +36,8 @@ export const outputPath = (dir: string): string => join(dir, OUTPUT_FILE);
 export const progressPath = (dir: string): string => join(dir, PROGRESS_FILE);
 export const donePath = (dir: string): string => join(dir, DONE_FILE);
 
-const readTextIfPresent = async (path: string): Promise<string | undefined> => {
-	try {
-		return await readFile(path, 'utf8');
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === 'ENOENT')
-			return undefined;
-		throw error;
-	}
-};
+const readTextIfPresent = async (path: string): Promise<string | undefined> =>
+	(await readTextOrNull(path)) ?? undefined;
 
 const readJsonIfPresent = async <T>(path: string): Promise<T | undefined> => {
 	const text = await readTextIfPresent(path);

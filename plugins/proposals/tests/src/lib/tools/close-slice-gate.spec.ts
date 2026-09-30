@@ -20,12 +20,14 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { runCloseSliceGateProbe } from '@delendai/proposals/lib/tools/authoring.tool';
+import type {
+	ICloseGateDeps,
+	ICloseGateProcessPort,
+} from '@delendai/proposals/lib/contracts/interfaces/close-slice-gate.interface';
 import {
 	declaredGateSteps,
 	runCloseSliceGate,
-	type ICloseGateDeps,
 } from '@delendai/proposals/lib/tools/close-slice-gate';
-import type { ICloseGateProcessPort } from '@delendai/proposals/lib/tools/close-slice-gate-process';
 
 const directories: string[] = [];
 
@@ -99,7 +101,7 @@ describe('runCloseSliceGate', () => {
 		expect(resumed.state).toBe('pass');
 		expect(resumed.handle).toBe(first.handle);
 		expect(runsRecorded(fixture.counter)).toBe(1);
-	}, 20_000);
+	});
 
 	it('never reports a still-running gate as a pass through the probe', async () => {
 		const fixture = checkoutWithGate('sleep 2');
@@ -111,7 +113,7 @@ describe('runCloseSliceGate', () => {
 		expect(probe.ok).toBe(false);
 		expect(probe.severity).toBe('error');
 		expect(probe.gate?.state).toBe('pending');
-	}, 20_000);
+	});
 
 	it('reuses a recorded green result for the same tree and reruns when the tree changes', async () => {
 		const fixture = checkoutWithGate('echo ran >> $COUNTER');
@@ -128,7 +130,7 @@ describe('runCloseSliceGate', () => {
 
 		expect(third).toMatchObject({ state: 'pass', reused: false });
 		expect(runsRecorded(fixture.counter)).toBe(2);
-	}, 20_000);
+	});
 
 	it('keeps the tree identity when only host state or a lock file changes', async () => {
 		const fixture = checkoutWithGate('echo ran >> $COUNTER');
@@ -143,7 +145,7 @@ describe('runCloseSliceGate', () => {
 
 		expect(again).toMatchObject({ state: 'pass', reused: true });
 		expect(runsRecorded(fixture.counter)).toBe(1);
-	}, 20_000);
+	});
 
 	it('blocks on a failing gate and reports the step and its output', async () => {
 		const fixture = checkoutWithGate('echo lint exploded && exit 3');
@@ -153,7 +155,7 @@ describe('runCloseSliceGate', () => {
 		expect(verdict.state).toBe('fail');
 		expect(verdict.findings.join('\n')).toContain('lint exploded');
 		expect(verdict.findings.join('\n')).toContain('gate step failed');
-	}, 20_000);
+	});
 
 	it('runs a failed gate again on the next call instead of remembering the failure', async () => {
 		const fixture = checkoutWithGate('echo ran >> $COUNTER && exit 1');
@@ -162,7 +164,7 @@ describe('runCloseSliceGate', () => {
 		await runCloseSliceGate(depsFor(fixture));
 
 		expect(runsRecorded(fixture.counter)).toBe(2);
-	}, 20_000);
+	});
 
 	it('reports a gate that exceeds its timeout as unverifiable, stopped, and never green', async () => {
 		const fixture = checkoutWithGate('sleep 30');
@@ -173,7 +175,7 @@ describe('runCloseSliceGate', () => {
 
 		expect(verdict.state).toBe('unverifiable');
 		expect(verdict.findings.join('\n')).toContain('stopped after 300 ms');
-	}, 20_000);
+	});
 
 	it('reports a run whose process vanished as unverifiable', async () => {
 		const fixture = checkoutWithGate('true');
@@ -188,7 +190,7 @@ describe('runCloseSliceGate', () => {
 		);
 
 		expect(verdict.state).toBe('unverifiable');
-	}, 20_000);
+	});
 
 	it('says so when the project declares no gate', async () => {
 		const cwd = scratch('close-gate-empty-');

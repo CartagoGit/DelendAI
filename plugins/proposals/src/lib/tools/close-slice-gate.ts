@@ -24,8 +24,18 @@ import { fingerprintTree } from './close-slice-gate-tree';
 import {
 	renderRunnerScript,
 	systemGateProcess,
-	type ICloseGateProcessPort,
 } from './close-slice-gate-process';
+import {
+	CLOSE_GATE_DEFAULT_TIMEOUT_MS,
+	CLOSE_GATE_DEFAULT_WAIT_MS,
+} from '../contracts/constants/close-slice-gate.constant';
+import type {
+	ICloseGateDeps,
+	ICloseGateJob,
+	ICloseGateProcessPort,
+	ICloseGateStep,
+	ICloseGateVerdict,
+} from '../contracts/interfaces/close-slice-gate.interface';
 import {
 	clearJob,
 	jobDirectory,
@@ -38,51 +48,10 @@ import {
 	writeGreenVerdict,
 	writeJob,
 	writeRunner,
-	type ICloseGateJob,
-	type ICloseGateStep,
 } from './close-slice-gate-store';
 
-export const CLOSE_GATE_DEFAULT_WAIT_MS = 20_000;
-export const CLOSE_GATE_DEFAULT_TIMEOUT_MS = 30 * 60_000;
 const POLL_INTERVAL_MS = 200;
 const HANDLE_HASH_LENGTH = 16;
-
-export type CloseGateState = 'pass' | 'fail' | 'pending' | 'unverifiable';
-
-export interface ICloseGateVerdict {
-	readonly state: CloseGateState;
-	/** Names the run; absent when no run could be identified. */
-	readonly handle?: string;
-	readonly tree?: string;
-	/** True when a recorded green result for this tree answered. */
-	readonly reused: boolean;
-	/** Why the gate is not green; empty on a pass. */
-	readonly findings: readonly string[];
-}
-
-export interface ICloseGateDeps {
-	/** Directory that holds the runs (shared by every checkout). */
-	readonly storeRoot: string;
-	/**
-	 * Directories holding the host's own state (absolute). They change while
-	 * a slice is worked on, so they are not part of the tree a result is
-	 * keyed by. Defaults to the store itself.
-	 */
-	readonly stateRoots?: readonly string[];
-	/** The checkout whose content is being certified and where the gate runs. */
-	readonly cwd: string;
-	/** Reads one declaration file (relative path) of the integration head. */
-	readonly readDeclaration: (relativePath: string) => Promise<string | null>;
-	readonly waitMs?: number;
-	readonly timeoutMs?: number;
-	readonly process?: ICloseGateProcessPort;
-	readonly fingerprint?: (
-		cwd: string,
-		excludedPaths: readonly string[],
-	) => Promise<string | undefined>;
-	readonly now?: () => number;
-	readonly sleep?: (ms: number) => Promise<void>;
-}
 
 const DECLARATION_FILES = [
 	'delendai.config.json',
@@ -301,6 +270,7 @@ export const runCloseSliceGate = async (
 	const tree = await (deps.fingerprint ?? fingerprintTree)(
 		deps.cwd,
 		ownState,
+		deps.storeRoot,
 	);
 	if (tree === undefined) {
 		return unverifiable(

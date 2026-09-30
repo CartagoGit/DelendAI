@@ -93,10 +93,13 @@ import {
 import { resolveIndexedDoc } from './authoring-options';
 import type {
 	IAuthoringToolOptions,
-	ICloseSliceQualityResult,
 	ICloseSliceValidationDecision,
 } from './authoring-options';
-import { runCloseSliceGate, type ICloseGateDeps } from './close-slice-gate';
+import type {
+	ICloseGateDeps,
+	ICloseSliceQualityResult,
+} from '../contracts/interfaces/close-slice-gate.interface';
+import { runCloseSliceGate } from './close-slice-gate';
 import {
 	maybePersistAfterSlice,
 	type IPersistResult,

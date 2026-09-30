@@ -9,9 +9,10 @@
  * excluded: it lives beside the code in a project that does not ignore
  * its cache, and it would otherwise change the tree it is keyed by.
  */
+// effect-boundary-authorized: hashing the checkout's content is a read-only git plumbing call in a scratch index.
 import { execFile } from 'node:child_process';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, rm } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 
 const GIT_TIMEOUT_MS = 60_000;
@@ -45,9 +46,11 @@ const runGit = (
 /** The tree hash of the checkout's content, or `undefined` when git cannot say. */
 export const fingerprintTree = async (
 	cwd: string,
-	excludedPaths: readonly string[] = [],
+	excludedPaths: readonly string[],
+	scratchRoot: string,
 ): Promise<string | undefined> => {
-	const scratch = await mkdtemp(join(tmpdir(), 'close-gate-index-'));
+	const scratch = join(scratchRoot, `index-${randomUUID()}`);
+	await mkdir(scratch, { recursive: true });
 	const indexFile = join(scratch, 'index');
 	try {
 		// An unborn HEAD has nothing to read; the scratch index then starts empty.
