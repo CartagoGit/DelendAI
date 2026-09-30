@@ -1385,14 +1385,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "d00416",
-				"title": "Document the push.branch × shared-checkout-merge adopter trip-up and the fresh-clone SQLite projection bootstrap",
-				"track": "adopter-experience",
-				"status": "ready",
-				"kind": "docs",
-				"date": "2026-09-29"
-			},
-			{
 				"id": "f00509",
 				"title": "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease",
 				"track": "trust",
@@ -1433,33 +1425,9 @@
 				"date": "2026-09-10"
 			},
 			{
-				"id": "f00537",
-				"title": "Archify plugin: architecture diagrams as a projection of the structures the runtime already reads",
-				"track": "surface",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-11"
-			},
-			{
 				"id": "f00538",
 				"title": "Forward-sync the release branch back into the integration branch after every promotion",
 				"track": "trust",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
-				"id": "f00539",
-				"title": "Configurable CI/PR policy with free-tier autodetection",
-				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
-				"id": "f00540",
-				"title": "Git host provider abstraction with capability flags",
-				"track": "general",
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-09-15"
@@ -1492,7 +1460,7 @@
 				"id": "f00544",
 				"title": "WordPress plugin covering self-hosted and WordPress.com SaaS",
 				"track": "general",
-				"status": "ready",
+				"status": "paused",
 				"kind": "feat",
 				"date": "2026-09-15"
 			},
@@ -1500,15 +1468,7 @@
 				"id": "f00545",
 				"title": "Plugin authoring multi-platform with analyzer (WordPress, Joomla, Drupal, Magento 2, PrestaShop, custom PHP)",
 				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
-				"id": "f00546",
-				"title": "Extensible repository format adapters (stubs for Bitbucket, Gitea, SourceHut, Gerrit)",
-				"track": "general",
-				"status": "ready",
+				"status": "paused",
 				"kind": "feat",
 				"date": "2026-09-15"
 			},
@@ -1585,14 +1545,6 @@
 				"date": "2026-08-27"
 			},
 			{
-				"id": "q00015",
-				"title": "Plan eventual settlement: commits atómicos con scope exacto sobre develop compartido; develop rojo es estado transitorio válido",
-				"track": "quality",
-				"status": "ready",
-				"kind": "plan",
-				"date": "2026-09-02"
-			},
-			{
 				"id": "q00018",
 				"title": "State Engine foundation: pure deterministic project/swarm scopes, generation rebuild and shadow equivalence",
 				"track": "swarm-scope-v1",
@@ -1633,14 +1585,6 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "q00023",
-				"title": "Snapshot Git by SHA — reconcile --sha <commit> is deterministic and atomic",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "plan",
-				"date": "2026-09-07"
-			},
-			{
 				"id": "q00026",
 				"title": "vitest 5 major migration planned after SQLite consolidation",
 				"track": "dependencies",
@@ -1673,28 +1617,12 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "r00049",
-				"title": "INDEX.json becomes a derived view, not an authoritative source",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-09-07"
-			},
-			{
 				"id": "r00056",
 				"title": "SQLite storage modes and canonical proposals DB wiring",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "refactor",
 				"date": "2026-09-08"
-			},
-			{
-				"id": "v00127",
-				"title": "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas",
-				"track": "governance",
-				"status": "ready",
-				"kind": "perf",
-				"date": "2026-08-25"
 			},
 			{
 				"id": "x00541",
