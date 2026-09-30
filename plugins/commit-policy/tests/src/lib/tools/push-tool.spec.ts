@@ -96,7 +96,7 @@ describe('commit_policy_push', () => {
 			{ remote: 'origin', branch: 'main' },
 			options,
 		)) as IResult;
-		expect(text(result)).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(text(result)).toContain('DIRECT_PUSH_TO_RELEASE_NOT_ALLOWED');
 	});
 
 	it('asks for a reason before a plain --force', async () => {

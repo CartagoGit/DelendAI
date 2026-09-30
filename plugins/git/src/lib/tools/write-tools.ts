@@ -21,6 +21,7 @@ import {
 	toolError,
 	toolOk,
 	type ICommitAuthorResolution,
+	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
 } from '@delendai/core/public';
 
 import { checkRepo } from '../services/git';
@@ -39,15 +40,17 @@ export interface IGitWriteToolOptions {
 	readonly run: IGitRunner;
 	/**
 	 * Branches that `git_push` always refuses to target, regardless of
-	 * `force`. Default: `['main', 'master']` (AGENTS.md: "no commit-back
-	 * loop on main"; `master` covers the older default branch name).
+	 * `force`. The host derives it from the development policy
+	 * (release branch, plus the integration branch when direct commits are
+	 * forbidden); only a host with no policy falls back to `main` / `master`.
 	 */
 	readonly protectedBranches?: readonly string[];
 	/** f00082: resolved commit-author policy. */
 	readonly commitAuthor?: ICommitAuthorResolution | undefined;
 }
 
-const DEFAULT_PROTECTED_BRANCHES: readonly string[] = ['main', 'master'];
+const DEFAULT_PROTECTED_BRANCHES: readonly string[] =
+	UNRESOLVED_POLICY_PROTECTED_BRANCHES;
 
 // ---------------------------------------------------------------------------
 // Conventional Commits validation

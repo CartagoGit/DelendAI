@@ -188,6 +188,6 @@ describe('runPushDriver — the integration branch under a policy', () => {
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.code).toBe('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(result.code).toBe('DIRECT_PUSH_TO_RELEASE_NOT_ALLOWED');
 	});
 });
