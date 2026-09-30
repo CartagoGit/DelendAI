@@ -258,3 +258,142 @@ describe('runLocalMergeCycle', () => {
 		expect(stub.pushes).toEqual([]);
 	});
 });
+
+describe('runLocalMergeCycle, certifying inside the section', () => {
+	const asked = (passed: boolean) => {
+		const calls: unknown[] = [];
+		return {
+			calls,
+			certify: async (candidate: {
+				readonly integrationSha: string;
+				readonly workSha: string;
+				readonly candidateSha: string;
+			}) => {
+				calls.push(candidate);
+				return {
+					passed,
+					againstIntegrationSha: candidate.integrationSha,
+				};
+			},
+		};
+	};
+	const unit = { workRef: 'refs/wip/agent-a/p-s-g1', remote: 'origin' };
+
+	it('certifies the merge it would push, against the head it just read, and pushes that commit', async () => {
+		const stub = gitStub({ integrationSha: 'd'.repeat(40) });
+		const gate = asked(true);
+
+		const outcome = await runLocalMergeCycle(
+			mergePolicy(),
+			stub.git,
+			section(),
+			{
+				...unit,
+				certify: gate.certify,
+			},
+		);
+
+		expect(outcome.status).toBe('merged');
+		expect(gate.calls).toEqual([
+			{
+				integrationSha: 'd'.repeat(40),
+				workSha: 'b'.repeat(40),
+				candidateSha: 'c'.repeat(40),
+			},
+		]);
+		expect(stub.pushes[0]?.localRef).toBe('c'.repeat(40));
+	});
+
+	it('lands nothing the gate did not pass', async () => {
+		const stub = gitStub();
+		const outcome = await runLocalMergeCycle(
+			mergePolicy(),
+			stub.git,
+			section(),
+			{
+				...unit,
+				certify: asked(false).certify,
+			},
+		);
+
+		expect(outcome.status).toBe('blocked');
+		expect(stub.pushes).toEqual([]);
+	});
+
+	it('lands nothing when nothing could certify it', async () => {
+		const stub = gitStub();
+		const outcome = await runLocalMergeCycle(
+			mergePolicy(),
+			stub.git,
+			section(),
+			{
+				...unit,
+				certify: async () => undefined,
+			},
+		);
+
+		expect(outcome.status).toBe('blocked');
+		expect(outcome.reason).toContain('no certification');
+		expect(stub.pushes).toEqual([]);
+	});
+
+	it('asks for a replay before spending a gate run on a stale base', async () => {
+		const stub = gitStub({ isAncestor: false });
+		const gate = asked(true);
+
+		const outcome = await runLocalMergeCycle(
+			mergePolicy(),
+			stub.git,
+			section(),
+			{
+				...unit,
+				certify: gate.certify,
+			},
+		);
+
+		expect(outcome.status).toBe('revalidating');
+		expect(gate.calls).toEqual([]);
+		expect(stub.pushes).toEqual([]);
+	});
+
+	it('answers a conflict before running the gate', async () => {
+		const stub = gitStub({ merge: { kind: 'conflict', paths: ['a.ts'] } });
+		const gate = asked(true);
+
+		const outcome = await runLocalMergeCycle(
+			mergePolicy(),
+			stub.git,
+			section(),
+			{
+				...unit,
+				certify: gate.certify,
+			},
+		);
+
+		expect(outcome.status).toBe('RECOVERY_CONFLICT');
+		expect(outcome.conflicts).toEqual(['a.ts']);
+		expect(gate.calls).toEqual([]);
+	});
+
+	it('leaves the work ref to a caller that ends it itself', async () => {
+		const policy = mergePolicy();
+		const deleting: IResolvedDevelopmentPolicy = {
+			...policy,
+			integration: { ...policy.integration, deleteMergedWorkRef: true },
+		};
+		const kept = gitStub();
+		await runLocalMergeCycle(deleting, kept.git, section(), {
+			...unit,
+			certify: asked(true).certify,
+			deleteWorkRef: false,
+		});
+		expect(kept.deleted).toEqual([]);
+
+		const removed = gitStub();
+		await runLocalMergeCycle(deleting, removed.git, section(), {
+			...unit,
+			certify: asked(true).certify,
+		});
+		expect(removed.deleted).toEqual([unit.workRef]);
+	});
+});

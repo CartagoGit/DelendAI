@@ -12,6 +12,7 @@ import {
 	proposalStillInProgress,
 } from './publication-target.service';
 import { openPublicationPullRequest } from './publication-pull-request.service';
+import { landWorkUnit } from './work-unit-land.service';
 import { scalarArg } from './command-args.helper';
 import { readWorkspaceDocsDir } from './development-policy.service';
 import {
@@ -34,8 +35,9 @@ import {
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
 
 /**
- * Hand the work over: the publication ref carries it, and the work ref
- * stops existing. The two halves belong together — doing only the first
+ * Hand the work over: the publication ref carries it — or, under a
+ * profile that integrates by merge, the integration branch does — and
+ * the work ref stops existing. The two halves belong together — doing only the first
  * is what fills a namespace with `wip/` branches that look alive.
  */
 export const published = async (
@@ -109,6 +111,27 @@ export const published = async (
 			);
 		}
 	}
+	// The branch of a proposal still in progress outlives this
+	// publication: its next slices are committed on it.
+	const inProgress = proposalStillInProgress(root, proposal, workRef);
+	const keepWorkRef = args.includes('--keep-work-ref') || inProgress;
+	const keepWorkRefBecause =
+		inProgress && !args.includes('--keep-work-ref')
+			? `${proposal} is still in progress, and its next slices are committed on this branch`
+			: undefined;
+	// A profile that integrates by merge has no pull request to publish
+	// into: the unit lands here, certified by the local gate, or not at all.
+	if (policy.integration.strategy === 'merge') {
+		return landWorkUnit({
+			root,
+			cwd: ctx.cwd,
+			policy,
+			remote,
+			workRef,
+			keepWorkRef,
+			keepWorkRefBecause,
+		});
+	}
 	// Whether this slice is published alone or joins its proposal's pull
 	// request is the policy's decision (integration.publication).
 	const target = choosePublicationTarget({
@@ -130,10 +153,6 @@ export const published = async (
 			'Publish from a work ref under the policy prefix.',
 		);
 	}
-	// The branch of a proposal still in progress outlives this
-	// publication: its next slices are committed on it.
-	const inProgress = proposalStillInProgress(root, proposal, workRef);
-	const keepWorkRef = args.includes('--keep-work-ref') || inProgress;
 	const outcome = await publishWorkUnitExclusively({
 		root,
 		cwd: ctx.cwd,
@@ -141,11 +160,7 @@ export const published = async (
 		publicationRef: target.publicationRef,
 		remote,
 		keepWorkRef,
-		...(inProgress && !args.includes('--keep-work-ref')
-			? {
-					keepWorkRefBecause: `${proposal} is still in progress, and its next slices are committed on this branch`,
-				}
-			: {}),
+		...(keepWorkRefBecause === undefined ? {} : { keepWorkRefBecause }),
 	});
 	const publication = {
 		unit: target.unit,
