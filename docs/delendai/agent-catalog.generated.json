@@ -1489,14 +1489,6 @@
 				"date": "2026-09-15"
 			},
 			{
-				"id": "f00546",
-				"title": "Extensible repository format adapters (stubs for Bitbucket, Gitea, SourceHut, Gerrit)",
-				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
 				"id": "f00547",
 				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
 				"track": "architecture",
