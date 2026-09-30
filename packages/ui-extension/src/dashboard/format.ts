@@ -40,6 +40,14 @@ export const formatPercent = (
 	}).format(value / total)}`;
 };
 
+/**
+ * A number written verbatim (no locale grouping) where markup needs the
+ * raw value, such as a `data-*` sort key. The model reaches the renderer
+ * as parsed JSON, so the static type is a promise, not a guarantee: it is
+ * escaped like any other value.
+ */
+export const rawNumber = (n: number): string => escapeHtml(String(n));
+
 export const escapeHtml = (raw: string): string =>
 	raw
 		.replaceAll('&', '&amp;')

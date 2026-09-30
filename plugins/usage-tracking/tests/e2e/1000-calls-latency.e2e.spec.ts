@@ -90,13 +90,14 @@ describe('f00067 S10 — 1000-call usage-tracking latency overhead', () => {
 
 		// --- Baseline: the bare tool call (no record path). ---
 		const baseline: number[] = [];
+		const sink: unknown[] = [];
 		for (let i = 0; i < N; i += 1) {
 			const start = performance.now();
-			const result = makeResult(i);
-			// Touch the result so the work is not optimised away.
-			if (result === undefined) throw new Error('unreachable');
+			// Keep the result so the work is not optimised away.
+			sink.push(makeResult(i));
 			baseline.push(performance.now() - start);
 		}
+		expect(sink).toHaveLength(N);
 
 		// --- With tracking: the same call + buildRecord + buffered push. ---
 		const withTracking: number[] = [];

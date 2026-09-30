@@ -69,8 +69,7 @@ written once:
 
 ## non-goals
 
-- Alerts that already existed on `main` before this release: a follow-up
-  slice.
+- Dismissing an alert instead of fixing it. None of the 48 is dismissed.
 
 ## Slices
 
@@ -129,6 +128,91 @@ and the terminal gets the error). Moving the loose-ref read also changed a
 line `plugin-drift-budget` allowlists by text; its entry names the new
 line.
 
+### S2 — Fix the 48 alerts `main` already carried
+
+- **Status**: review
+- **Gate**: `npx vitest run packages/ui-extension plugins/proposals/tests/src/lib/agents packages/core/tests/src/lib/services/shell packages/core/tests/src/lib/shared tools/tests/ci/local-repro.spec.ts`
+- **Files**:
+  - `apps/web/scripts/fetch-brand-logos.ts`
+  - `docs/delendai/proposals/review/x00758-the-release-carries-no-new-code-scanning-alert.md`
+  - `extensions/vscode/src/dev/pages/configuration-center.ts`
+  - `extensions/vscode/src/dev/settings-panel.ts`
+  - `extensions/vscode/src/test/open-auto-agent-selector.spec.ts`
+  - `packages/cli/src/lib/alias/integration.spec.ts`
+  - `packages/client/src/node/services/configuration-center.service.ts`
+  - `packages/client/tests/services/external-mcp/router.spec.ts`
+  - `packages/core/src/lib/services/shell/terminal-probe.service.ts`
+  - `packages/core/src/lib/shared/atomic-write.ts`
+  - `packages/core/src/lib/shared/with-file-mutex.ts`
+  - `packages/core/tests/src/lib/capabilities/adversarial.spec.ts`
+  - `packages/core/tests/src/lib/services/shell/terminal-probe.spec.ts`
+  - `packages/core/tests/src/lib/shared/run-command.spec.ts`
+  - `packages/core/tests/src/lib/shared/with-file-mutex.spec.ts`
+  - `packages/ui-extension/src/configuration-center/render-configuration-center.ts`
+  - `packages/ui-extension/src/dashboard/bar-chart.ts`
+  - `packages/ui-extension/src/dashboard/builders/build-kpi-strip.ts`
+  - `packages/ui-extension/src/dashboard/builders/build-tabs-bar.ts`
+  - `packages/ui-extension/src/dashboard/format.ts`
+  - `packages/ui-extension/src/dashboard/render-panel-health.ts`
+  - `packages/ui-extension/src/dashboard/render-panel-plugins.ts`
+  - `packages/ui-extension/src/dashboard/render-panel-spend.ts`
+  - `packages/ui-extension/src/dashboard/render-panel-status.ts`
+  - `packages/ui-extension/src/dashboard/render-panel-tokens.ts`
+  - `packages/ui-extension/src/dashboard/render-panel-tools.ts`
+  - `packages/ui-extension/tests/components/runtime.spec.ts`
+  - `plugins/error-reporting/src/lib/mcp-internal-error.helper.ts`
+  - `plugins/gitlab/tests/src/lib/tools.spec.ts`
+  - `plugins/proposals/src/lib/agents/loop-detector-service.ts`
+  - `plugins/proposals/src/lib/agents/zombie-reconcile.ts`
+  - `plugins/proposals/tests/src/lib/agents/delivery-verifier.task-queue.spec.ts`
+  - `plugins/proposals/tests/src/lib/agents/zombie-reconcile.lock-vanished.spec.ts`
+  - `plugins/usage-tracking/tests/e2e/1000-calls-latency.e2e.spec.ts`
+  - `plugins/web-fetch/src/lib/services/engine.ts`
+  - `tools/scripts/build/stable-manifest.script.ts`
+  - `tools/scripts/ci/local-repro.script.ts`
+  - `tools/scripts/ci/pack-smoke.script.ts`
+  - `tools/scripts/ci/verify-develop-health.script.ts`
+  - `tools/scripts/compile/build.script.ts`
+  - `tools/scripts/dev/api/real-data.ts`
+  - `tools/scripts/lint/content-integrity.script.ts`
+  - `tools/scripts/lint/llm-attribution-rules.ts`
+  - `tools/scripts/lint/style-integrity.script.ts`
+  - `tools/scripts/publish/workspace-deps.ts`
+  - `tools/tests/ci/local-repro.spec.ts`
+
+The security-and-quality suite, run locally with the CodeQL CLI against
+this branch, is the measure: 48 alerts before, none after. Each is fixed
+at its cause:
+
+- **Command injection**: `local-repro` starts only a runtime the workflows
+  invoke (`bun`, `bunx`, `node`, `npm`, `npx`), never a program named by a
+  downloaded log; the terminal probe executes `$SHELL` only when it is one
+  of a fixed list of shell paths (it still reports whatever `$SHELL` says);
+  the `run-command` spec passes its paths through the environment.
+- **Prototype pollution**: the configuration editor refuses `__proto__`,
+  `constructor` and `prototype` at the write itself.
+- **HTML from input**: every translated string and model value the
+  dashboard and the configuration center interpolate is escaped; the bar
+  chart uses the shared `escapeHtml`; numbers are formatted or escaped
+  (the model arrives as JSON, so its static type is not a guarantee).
+- **Request forgery**: the settings page forwards only `cwd` to
+  `/api/setup/status`, the one parameter it reads.
+- **Temporary files**: the file mutex creates its lock and marker `0600`;
+  `workspace-deps` writes through `writeFileAtomic`.
+- **File-system races**: nine check-then-read pairs read once.
+- **Tag filters and sanitisation**: the dev page parses the document with
+  `DOMParser`; the integrity lints accept `</script >`; the attribution
+  lint matches domains with boundary checks instead of RegExps built from
+  strings.
+- **Stack traces**: the dashboard API returns the failure's kind and
+  message, never the caught error.
+- **Quality**: useless assignments, a redundant null check, a missing
+  space, an expression statement and a test that asserted nothing. One of
+  the useless assignments was a real bug: when the lock file vanished
+  after a release, `zombie-reconcile` skipped the watchdog event
+  (`continue`) instead of counting the lock as released, as it did before
+  the read moved to `readLockText`.
+
 ## dependency graph
 
 None.
@@ -136,4 +220,5 @@ None.
 ## acceptance
 
 - The release pull request's CodeQL check reports no new alert.
+- The CodeQL security-and-quality suite reports no alert on `develop`.
 - Every suite the changed files belong to passes.

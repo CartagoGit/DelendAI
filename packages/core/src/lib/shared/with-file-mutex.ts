@@ -16,6 +16,9 @@ import { basename, dirname, join } from 'node:path';
 import type { IMutexMetricsCollector } from '../contracts/interfaces/mutex-metrics.interface';
 import { getNoopMutexMetricsCollector } from './mutex-metrics.helper';
 
+/** Lock files are this process's business alone: owner read/write only. */
+const LOCK_FILE_MODE = 0o600;
+
 /**
  * Reentrance tracker: tracks the set of lock paths currently held by this
  * async call stack. Nested calls for an already-held path skip the mutex
@@ -357,7 +360,7 @@ const refreshLeaseHeartbeat = async (
 ): Promise<void> => {
 	let handle: Awaited<ReturnType<typeof open>> | undefined;
 	try {
-		handle = await open(lockPath, 'r+');
+		handle = await open(lockPath, 'r+', LOCK_FILE_MODE);
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
 			return;
@@ -494,7 +497,7 @@ export const withFileMutex = async <T>(
 		try {
 			const nowMs = Date.now();
 			const initialLease = createLeasePayload(token, nowMs);
-			const handle = await open(lockPath, 'wx');
+			const handle = await open(lockPath, 'wx', LOCK_FILE_MODE);
 			try {
 				await handle.writeFile(serializeLeasePayload(initialLease));
 			} finally {
@@ -555,6 +558,7 @@ export const withFileMutex = async <T>(
 							observedHeartbeatAt: observedLease.heartbeatAt,
 							observedToken: observedLease.token,
 						}),
+						{ mode: LOCK_FILE_MODE },
 					);
 					try {
 						// A dead holder cannot come back and refresh, so
@@ -597,7 +601,11 @@ export const withFileMutex = async <T>(
 							)
 						) {
 							try {
-								const handle = await open(lockPath, 'wx');
+								const handle = await open(
+									lockPath,
+									'wx',
+									LOCK_FILE_MODE,
+								);
 								try {
 									await handle.writeFile(
 										serializeLeasePayload(

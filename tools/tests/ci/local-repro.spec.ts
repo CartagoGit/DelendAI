@@ -278,10 +278,15 @@ describe('local-repro (v00126) — CLI', () => {
 		expect(code).toBe(0);
 	});
 
-	it('exposes defaultRunner as a function that exits 0 for `true`', async () => {
-		// Sanity check: real command runner is wired up to a shell.
-		const r = await defaultRunner('true', process.cwd());
+	it('exposes defaultRunner as a function that runs a known runtime', async () => {
+		const r = await defaultRunner('bun --version', process.cwd());
 		expect(r.status).toBe(0);
+	});
+
+	it('defaultRunner refuses a program outside the runtimes CI invokes', async () => {
+		await expect(defaultRunner('true', process.cwd())).rejects.toThrow(
+			/refusing command whose program is not one of bun/,
+		);
 	});
 
 	it('resolveToken returns null when neither env nor `gh` token is set', () => {

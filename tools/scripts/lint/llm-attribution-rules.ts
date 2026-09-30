@@ -140,26 +140,40 @@ const matchesLlmPhrase = (
 	return null;
 };
 
+const ALPHANUMERIC = /[a-z0-9]/u;
+const DOMAIN_CONTINUES = /[a-z0-9.-]/u;
+
+/**
+ * Where `domain` occurs as a whole domain in `value`: after the start, an
+ * `@` or any other non-alphanumeric character, and not followed by more
+ * domain (`anthropic.community`, `anthropic.com.example.org`).
+ *
+ * Plain string search, not a RegExp built from the domain: the list is
+ * data, and the boundary checks read clearer as two character tests than
+ * as an escaped pattern.
+ */
+const containsDomain = (value: string, domain: string): boolean => {
+	for (
+		let at = value.indexOf(domain);
+		at !== -1;
+		at = value.indexOf(domain, at + 1)
+	) {
+		const before = value[at - 1];
+		const after = value[at + domain.length];
+		if (
+			(before === undefined || !ALPHANUMERIC.test(before)) &&
+			(after === undefined || !DOMAIN_CONTINUES.test(after))
+		) {
+			return true;
+		}
+	}
+	return false;
+};
+
 const matchesLlmDomain = (value: string): string | null => {
 	const lower = value.toLowerCase();
-	for (const d of LLM_DOMAINS) {
-		// Match when the domain appears after an @ (so `copilot@local`
-		// matches) OR when the value is the bare domain (so a `Local-Part:
-		// copilot@local` still trips). We require a word boundary before
-		// `@` so `notllmatminimax.ai` doesn't false-positive on
-		// `minimax.ai` — and the SAME boundary after it, or the pattern
-		// reads `anthropic.com` inside `anthropic.community` and inside
-		// `anthropic.com.example.org`, attributing to an LLM a commit
-		// from a domain that merely starts the same way.
-		// Every metacharacter, not just the dot: an escape that covers
-		// one character and leaves its neighbours is the shape that reads
-		// as safe and is not (`js/incomplete-sanitization`). The list is
-		// a constant today, which is when it is cheap to make right.
-		const re = new RegExp(
-			`(?:^|[^a-z0-9])@?${d.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(?![a-z0-9.-])`,
-			'iu',
-		);
-		if (re.test(lower)) return d;
+	for (const domain of LLM_DOMAINS) {
+		if (containsDomain(lower, domain)) return domain;
 	}
 	return null;
 };

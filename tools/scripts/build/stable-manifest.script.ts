@@ -24,6 +24,7 @@ import {
 } from '@delendai/core/public';
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
+import { readTextIfPresent } from '../lib/read-text-if-present';
 
 const REPO_ROOT = process.cwd();
 const SEMVER_RE =
@@ -155,8 +156,7 @@ const main = (): void => {
 	const packageVersion = readCorePackageVersion();
 	const abs = join(REPO_ROOT, STABLE_MANIFEST_REL);
 	mkdirSync(dirname(abs), { recursive: true });
-	const existed = existsSync(abs);
-	const previous = existed ? readFileSync(abs, 'utf8') : '';
+	const previous = readTextIfPresent(abs) ?? '';
 	const existingManifest = readExistingManifest(abs);
 	const manifest = buildStableManifest(
 		STABLE_API_TOOLS,

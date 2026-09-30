@@ -191,10 +191,15 @@ describe('withFileMutex — cross-process critical section', async () => {
 		});
 
 		// Wait until A has acquired (sidecar written), then simulate B stealing.
-		while (
-			!existsSync(sidecar) ||
-			readFileSync(sidecar, 'utf8').trim() === ''
-		) {
+		// Read once per poll: an absent sidecar reads as empty.
+		const sidecarText = (): string => {
+			try {
+				return readFileSync(sidecar, 'utf8');
+			} catch {
+				return '';
+			}
+		};
+		while (sidecarText().trim() === '') {
 			await new Promise((r) => setTimeout(r, 5));
 		}
 		const stolenToken = '12345\n0\nb-owns-this-now';

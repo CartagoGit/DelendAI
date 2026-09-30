@@ -171,7 +171,7 @@ const renderPlugin = (
 		highlightPluginId !== undefined && highlightPluginId === plugin.id;
 	return `<article class="delendai-config__card${highlighted ? ' delendai-config__card--highlight' : ''}" data-config-search-text="${attr(`${plugin.id} ${plugin.origin} ${plugin.source}`)}" id="${attr(`config-plugin-${plugin.id}`)}">
 		<header class="delendai-config__card-head">
-			<div><h3 class="delendai-config__card-title">${attr(plugin.id)}</h3><p class="delendai-config__card-meta">${plugin.capabilities.tools} ${attr(model.copy.capabilityTools)} · ${plugin.capabilities.prompts} ${attr(model.copy.capabilityPrompts)} · ${plugin.capabilities.resources} ${attr(model.copy.capabilityResources)}</p></div>
+			<div><h3 class="delendai-config__card-title">${attr(plugin.id)}</h3><p class="delendai-config__card-meta">${attr(String(plugin.capabilities.tools))} ${attr(model.copy.capabilityTools)} · ${attr(String(plugin.capabilities.prompts))} ${attr(model.copy.capabilityPrompts)} · ${attr(String(plugin.capabilities.resources))} ${attr(model.copy.capabilityResources)}</p></div>
 			<div class="delendai-config__badges"><span class="delendai-config__badge">${attr(originLabel(plugin.origin, model))}</span><span class="delendai-config__badge delendai-config__badge--${plugin.active ? 'active' : 'inactive'}">${attr(plugin.active ? model.copy.active : model.copy.inactive)}</span></div>
 		</header>
 		${plugin.schemaStatus === 'unavailable' ? `<p class="delendai-config__notice">${attr(model.copy.schemaUnavailable)}</p>` : ''}
@@ -255,7 +255,7 @@ export const renderConfigurationCenter = (
 		<nav class="delendai-config__nav" role="tablist" aria-label="${attr(model.copy.title)}">${model.tabs
 			.map(
 				(tab) =>
-					`<button class="delendai-config__tab" id="config-tab-${tab.id}" type="button" role="tab" data-config-tab="${tab.id}" aria-controls="config-panel-${tab.id}" aria-selected="${model.activeTab === tab.id ? 'true' : 'false'}" tabindex="${model.activeTab === tab.id ? '0' : '-1'}"><span>${attr(tab.label)}</span>${tab.unavailable ? '<span class="delendai-config__tab-warning" aria-hidden="true">!</span>' : ''}<span class="delendai-config__tab-count">${tab.count}</span></button>`,
+					`<button class="delendai-config__tab" id="config-tab-${attr(tab.id)}" type="button" role="tab" data-config-tab="${attr(tab.id)}" aria-controls="config-panel-${attr(tab.id)}" aria-selected="${model.activeTab === tab.id ? 'true' : 'false'}" tabindex="${model.activeTab === tab.id ? '0' : '-1'}"><span>${attr(tab.label)}</span>${tab.unavailable ? '<span class="delendai-config__tab-warning" aria-hidden="true">!</span>' : ''}<span class="delendai-config__tab-count">${attr(String(tab.count))}</span></button>`,
 			)
 			.join('')}</nav>
 		<div class="delendai-config__content">${banner(model)}${panel('general', model.copy.tabs.general, renderFields(model.generalFields, model), model)}${panel('plugins', model.copy.tabs.plugins, pluginBody, model)}${panel('providers', model.copy.tabs.providers, providerBody, model)}${artifactPanel('agents')}${artifactPanel('skills')}${artifactPanel('prompts')}${artifactPanel('resources')}${artifactPanel('knowledge')}</div>
