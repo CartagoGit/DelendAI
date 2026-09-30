@@ -52,6 +52,26 @@ export const gateLocalMerge = (
 			};
 
 /**
+ * Whether the work is built on the head it would land on, when the policy
+ * demands it. Asked on its own before a certification is produced, since
+ * certifying a candidate that must be replayed first is a gate run
+ * answering a question nobody will act on.
+ */
+export const staleBase = (
+	policy: IResolvedDevelopmentPolicy,
+	input: Pick<
+		ILocalMergeInput,
+		'workRef' | 'integrationSha' | 'builtOnIntegrationHead'
+	>,
+): ILocalMergeVerdict | undefined =>
+	policy.integration.requireLatestIntegration && !input.builtOnIntegrationHead
+		? {
+				decision: 'revalidate',
+				reason: `${input.workRef} is not built on ${input.integrationSha.slice(0, 8)}; replay it onto the current head before it can land.`,
+			}
+		: undefined;
+
+/**
  * The decision, from the policy and the facts.
  *
  * Ordered so that every reason to NOT land is exhausted before landing
@@ -91,15 +111,8 @@ export const planLocalMerge = (
 		}
 	}
 
-	if (
-		policy.integration.requireLatestIntegration &&
-		!input.builtOnIntegrationHead
-	) {
-		return {
-			decision: 'revalidate',
-			reason: `${input.workRef} is not built on ${input.integrationSha.slice(0, 8)}; replay it onto the current head before it can land.`,
-		};
-	}
+	const stale = staleBase(policy, input);
+	if (stale !== undefined) return stale;
 
 	return {
 		decision: 'merge',
