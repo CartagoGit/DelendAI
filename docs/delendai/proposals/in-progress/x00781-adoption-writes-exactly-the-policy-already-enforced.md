@@ -2,10 +2,13 @@
 id: x00781
 title: "Adoption writes exactly the policy already enforced"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-30
+last-transition-id: 6d763085-aa7c-4834-83a0-a37dab8ebaa7
+last-correlation-id: 6d763085-aa7c-4834-83a0-a37dab8ebaa7
+last-transition-from: ready
 ---
 
 # x00781 — Adoption writes exactly the policy already enforced
