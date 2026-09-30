@@ -13,7 +13,7 @@ export const isSafeScalar = (value: unknown): value is SafeScalar => {
 	if (Array.isArray(value)) {
 		return value.every((entry) => isSafeScalar(entry));
 	}
-	if (typeof value !== 'object' || value === null) return false;
+	if (typeof value !== 'object') return false;
 	if (value instanceof Error) return false;
 	if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) return false;
 	for (const entry of Object.values(value)) {

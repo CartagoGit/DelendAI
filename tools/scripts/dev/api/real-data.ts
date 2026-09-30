@@ -94,8 +94,17 @@ export const fetchRealDashboard = async (
 	try {
 		return await connectAndFetch(cwd);
 	} catch (err) {
-		if (err && typeof err === 'object' && 'ok' in err)
-			return err as IApiError;
+		// Rebuilt field by field: the caught value itself never reaches the
+		// page, only what the dashboard's own error says.
+		if (err && typeof err === 'object' && 'ok' in err) {
+			const failure = err as IApiError;
+			return {
+				ok: false,
+				kind: failure.kind,
+				message: failure.message,
+				durationMs: failure.durationMs,
+			};
+		}
 		console.error('[dev] dashboard spawn-failed:', err);
 		return {
 			ok: false,

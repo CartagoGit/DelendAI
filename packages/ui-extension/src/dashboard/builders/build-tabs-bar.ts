@@ -2,6 +2,7 @@ import type { ILangDict } from '@delendai/shared/i18n';
 import { renderTabs } from '@delendai/shared/components/ui/tabs';
 
 import { extensionText } from '../../i18n/extension-text';
+import { escapeHtml } from '../format';
 
 export const TABS: ReadonlyArray<{
 	id: string;
@@ -50,11 +51,18 @@ const NAV_GROUPS: ReadonlyArray<{
 ];
 
 export function buildTabsBar(lang: ILangDict): string {
-	const text = (
+	// `renderTabs` escapes what it is given; everything interpolated here
+	// goes through `text`, which escapes.
+	const rawText = (
 		key: string,
 		fallbackOrVars?: string | Readonly<Record<string, string | number>>,
 		vars?: Readonly<Record<string, string | number>>,
 	) => extensionText(lang, key, fallbackOrVars, vars);
+	const text = (
+		key: string,
+		fallbackOrVars?: string | Readonly<Record<string, string | number>>,
+		vars?: Readonly<Record<string, string | number>>,
+	) => escapeHtml(rawText(key, fallbackOrVars, vars));
 	// WAI-ARIA tabs (H27): the tablist uses a roving tabindex —
 	// only the selected tab is in the tab order (tabindex="0"); the
 	// rest are `-1` and reachable via ArrowLeft/ArrowRight (wired in
@@ -74,7 +82,7 @@ export function buildTabsBar(lang: ILangDict): string {
 	// `data-tab-trigger`, so it stays out of the keyboard loop.
 	const tabItems = TABS.map((tab) => ({
 		id: tab.id,
-		label: text(tab.label, tab.fallback),
+		label: rawText(tab.label, tab.fallback),
 	}));
 	const refreshHtml = `<button class="delendai-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}" aria-label="${text('refreshDashboard')}">${REFRESH_ICON}</button>`;
 	const expandHtml = `<button class="delendai-tabs__action-btn" id="tab-expand" data-action="expand" type="button" title="${text('openDashboardInTab', 'Open dashboard in a tab')}" aria-label="${text('openDashboardInTab', 'Open dashboard in a tab')}">${EXPAND_ICON}</button>`;
@@ -89,7 +97,7 @@ export function buildTabsBar(lang: ILangDict): string {
 		</div>`;
 	const sidebar = NAV_GROUPS.map(
 		(group) =>
-			`<details class="delendai-app-nav__group" open><summary>${group.label}<span aria-hidden="true">⌄</span></summary><div class="delendai-app-nav__items">${group.tabs
+			`<details class="delendai-app-nav__group" open><summary>${escapeHtml(group.label)}<span aria-hidden="true">⌄</span></summary><div class="delendai-app-nav__items">${group.tabs
 				.map((id) => {
 					const tab = TABS.find((item) => item.id === id);
 					return tab === undefined
@@ -105,7 +113,7 @@ export function buildTabsBar(lang: ILangDict): string {
 		renderTabs({
 			tabs: tabItems,
 			variant: 'underline',
-			label: text('dashboardSections', 'Dashboard sections'),
+			label: rawText('dashboardSections', 'Dashboard sections'),
 			idPrefix: '',
 			actionHtml: `${surfaceActions}${refreshHtml}${expandHtml}`,
 		}) +

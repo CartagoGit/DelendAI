@@ -506,7 +506,7 @@ const CLIENT_SCRIPT = `
   window.addEventListener('message', (event) => {
     const data = event && event.data;
     if (!data || typeof data !== 'object') return;
-    const detail = window.__MCPV_DASHBOARD_DETAIL__ || {};
+    const detail = window.__DELENDAI_DASHBOARD_DETAIL__ || {};
     if (data.command === 'hostToolDetail' && data.model && typeof detail.RENDER_TOOL_BODY === 'function') {
       showOverlay((data.model.tool && data.model.tool.name) || 'Tool', detail.RENDER_TOOL_BODY(data.model));
     } else if (data.command === 'hostProposalDetail' && data.model && typeof detail.RENDER_PROPOSAL_BODY === 'function') {
@@ -677,7 +677,7 @@ export const renderDashboard = (
 		</div>
 	</div>
 	<script>${CLIENT_SCRIPT}</script>
-	<script>window.__MCPV_DASHBOARD_DETAIL__ = { RENDER_TOOL_BODY: ${renderToolDetailBody.toString()}, RENDER_PROPOSAL_BODY: ${renderProposalDetailBody.toString()} };</script>
+	<script>window.__DELENDAI_DASHBOARD_DETAIL__ = { RENDER_TOOL_BODY: ${renderToolDetailBody.toString()}, RENDER_PROPOSAL_BODY: ${renderProposalDetailBody.toString()} };</script>
 	${renderRuntime()}
 </body>
 </html>`;

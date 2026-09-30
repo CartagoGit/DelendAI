@@ -2,13 +2,27 @@
 id: f00546
 title: "Extensible repository format adapters (stubs for Bitbucket, Gitea, SourceHut, Gerrit)"
 kind: feat
-status: ready
+status: retired
 type: proposal
 track: general
 date: 2026-09-15
+last-transition-id: 5874df87-a338-4317-bc02-f304fc012ec3
+last-correlation-id: 5874df87-a338-4317-bc02-f304fc012ec3
+last-transition-from: ready
 ---
 
 # f00546 — Extensible repository format adapters (stubs for Bitbucket, Gitea, SourceHut, Gerrit)
+
+> **Retired 2026-09-30**: `plugins/repo-formats/` was never created
+> (`git ls-tree -r origin/develop -- plugins` has no such directory);
+> all slices are still `pending`. This proposal is speculative empty
+> stubs for VCS backends (Gerrit, SourceHut, Fossil, pijul) with zero
+> current consumer demand, and it depends on `f00540`
+> (`IGitHostProvider`), which is itself retired as never-built and
+> superseded by the shipped `plugins/forge` design. Building fixtures
+> and conformance tests for formats nobody has asked to use directly
+> contradicts the current owner priority to simplify and consolidate
+> before adding new surface.
 
 ## Goal
 

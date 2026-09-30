@@ -9,6 +9,7 @@ date: 2026-08-25
 shipped-in: [305515338]
 priority: P0
 parent-plan: q00006
+superseded-by: v00127
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track A / v00125"
@@ -24,6 +25,14 @@ last-transition-from: review
 ---
 
 # v00125 — Verificar estado real de `develop` (verde + protegida) antes de cerrar este track
+
+> **superseded-by: v00127** (2026-09-30). The external reviewer retracted
+> the recommendation to require `develop` "green + protected" — `develop`
+> is the shared lab branch, `main` is the publish boundary. `v00127`
+> carries the same real-API-verification approach over to `main` as the
+> strict gate, with `develop` kept only as an observation. This proposal
+> stays `done`: the verifier it shipped was real and used; only the
+> "which branch is the gate" premise changed.
 
 ## Goal
 

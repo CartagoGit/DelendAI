@@ -1,4 +1,11 @@
-import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import {
+	mkdir,
+	mkdtemp,
+	readFile,
+	rm,
+	symlink,
+	writeFile,
+} from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -8,6 +15,16 @@ import {
 	readConfigurationDocument,
 	saveConfigurationDocument,
 } from '../../src/public';
+
+// Credential-SHAPED values, assembled at run time: written out whole, the
+// commit hook replaces them with a placeholder (it cannot tell a fixture
+// from a leak), and the redaction specs then test nothing.
+const GITHUB_PAT_SHAPED = ['github', 'pat', 'abcdefghijklmnopqrstuv'].join('_');
+const OPENAI_KEY_SHAPED = ['sk', 'abcdefghijklmnopqrstuvwxyz'].join('-');
+const GITHUB_TOKEN_SHAPED = [
+	'ghp',
+	'0123456789abcdefghijklmnopqrstuvwxyzAB',
+].join('_');
 
 const roots: string[] = [];
 const workspace = async (): Promise<string> => {
@@ -38,7 +55,7 @@ describe('configuration center document service', () => {
 		await writeFile(
 			join(root, 'delendai.config.json'),
 			JSON.stringify({
-				custom: { token: 'github_pat_abcdefghijklmnopqrstuv' },
+				custom: { token: GITHUB_PAT_SHAPED },
 			}),
 		);
 
@@ -240,7 +257,7 @@ describe('configuration center document service', () => {
 				{
 					action: 'set',
 					path: ['plugins', 'remote', 'options', 'apiKey'],
-					value: 'sk-abcdefghijklmnopqrstuvwxyz',
+					value: OPENAI_KEY_SHAPED,
 				},
 			],
 		});
@@ -257,7 +274,7 @@ describe('configuration center document service', () => {
 		await writeFile(
 			file,
 			JSON.stringify({
-				custom: { token: 'github_pat_abcdefghijklmnopqrstuv' },
+				custom: { token: GITHUB_PAT_SHAPED },
 			}),
 		);
 		const snapshot = await readConfigurationDocument({
@@ -398,5 +415,126 @@ describe('an edit whose path reaches the prototype', () => {
 		});
 
 		expect(result.ok).toBe(true);
+	});
+});
+
+describe('edits the document can refuse or apply', () => {
+	const documentWith = async (
+		value: unknown,
+	): Promise<{ readonly root: string; readonly digest: string }> => {
+		const root = await workspace();
+		await writeFile(
+			join(root, 'delendai.config.json'),
+			JSON.stringify(value),
+			'utf8',
+		);
+		const { digest } = await readConfigurationDocument({
+			workspaceRoot: root,
+		});
+		return { root, digest };
+	};
+
+	const save = async (
+		value: unknown,
+		edits: Parameters<typeof saveConfigurationDocument>[0]['edits'],
+	) => {
+		const { root, digest } = await documentWith(value);
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: digest,
+			edits,
+		});
+		const after = await readConfigurationDocument({ workspaceRoot: root });
+		return { result, after: after.value };
+	};
+
+	it('sets, appends and deletes array items, and walks through them', async () => {
+		const set = await save({ list: ['a', 'b'] }, [
+			{ action: 'set', path: ['list', 0], value: 'A' },
+			{ action: 'set', path: ['list', 2], value: 'c' },
+			{ action: 'delete', path: ['list', 1] },
+			{ action: 'delete', path: ['list', 9] },
+		]);
+		expect(set.result.ok).toBe(false);
+		const applied = await save({ list: ['a', 'b'] }, [
+			{ action: 'set', path: ['list', 0], value: 'A' },
+			{ action: 'set', path: ['list', 2], value: 'c' },
+			{ action: 'delete', path: ['list', 1] },
+			{ action: 'set', path: ['rows', 0, 'name'], value: 'first' },
+			{ action: 'set', path: ['rows', 0, 'tags', 0], value: 't' },
+			{ action: 'delete', path: ['rows', 1, 'name'] },
+		]);
+		expect(applied.result).toMatchObject({ ok: true });
+		expect(applied.after).toEqual({
+			list: ['A', 'c'],
+			rows: [{ name: 'first', tags: ['t'] }],
+		});
+	});
+
+	it('refuses paths that do not fit the document', async () => {
+		for (const [value, path] of [
+			[{ list: [] }, ['list', 'x']],
+			[{ list: [] }, ['list', 'x', 'y']],
+			[{ map: {} }, ['map', 0]],
+			[{ map: {} }, ['map', 0, 'y']],
+			[{ scalar: 1 }, ['scalar', 'y']],
+			[{ list: [1] }, ['list', 0, 'y']],
+			[{ list: [] }, ['list', 5, 'y']],
+		] as const) {
+			const { result } = await save(value, [
+				{ action: 'set', path: [...path], value: true },
+			]);
+			expect(`${path.join('.')}: ${String(result.ok)}`).toBe(
+				`${path.join('.')}: false`,
+			);
+		}
+	});
+
+	it('refuses an empty path, a value that is not JSON, and secret-like material', async () => {
+		const cycle: Record<string, unknown> = {};
+		cycle.self = cycle;
+		const refused: Parameters<
+			typeof saveConfigurationDocument
+		>[0]['edits'] = [
+			{ action: 'set', path: [], value: 1 },
+			{ action: 'set', path: ['n'], value: Number.NaN },
+			{ action: 'set', path: ['n'], value: () => 1 },
+			{ action: 'set', path: ['n'], value: cycle },
+			{ action: 'set', path: ['n'], value: new Date(0) },
+			{
+				action: 'set',
+				path: ['n'],
+				value: JSON.parse('{"__proto__":1}'),
+			},
+			{
+				action: 'set',
+				path: ['n'],
+				value: GITHUB_TOKEN_SHAPED,
+			},
+		];
+		for (const edit of refused) {
+			const { result } = await save({}, [edit]);
+			expect(result.ok).toBe(false);
+		}
+		const nested = await save({}, [
+			{ action: 'set', path: ['n'], value: { a: [1, { b: null }] } },
+		]);
+		expect(nested.result.ok).toBe(true);
+	});
+
+	it('refuses a workspace root that is not absolute, and a document it cannot read', async () => {
+		await expect(
+			readConfigurationDocument({ workspaceRoot: 'relative/root' }),
+		).rejects.toThrow('must be absolute');
+		const root = await workspace();
+		await mkdir(join(root, 'delendai.config.json'));
+		await expect(
+			readConfigurationDocument({ workspaceRoot: root }),
+		).rejects.toThrow('Unable to read config file');
+		const listRoot = await workspace();
+		await writeFile(join(listRoot, 'delendai.config.json'), '[1]', 'utf8');
+		await expect(
+			readConfigurationDocument({ workspaceRoot: listRoot }),
+		).rejects.toThrow('must contain a JSON object');
 	});
 });

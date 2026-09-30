@@ -2,11 +2,29 @@
 id: f00540
 title: "Git host provider abstraction with capability flags"
 kind: feat
-status: ready
+status: retired
 type: proposal
 track: general
 date: 2026-09-15
+last-transition-id: 68837763-66d1-4e1c-af29-f321c5dc3817
+last-correlation-id: 68837763-66d1-4e1c-af29-f321c5dc3817
+last-transition-from: ready
 ---
+
+> **Retired 2026-09-30**: `plugins/git-host/` was never created
+> (`git ls-tree -r origin/develop -- plugins/git-host` is empty), and
+> `plugins/github`/`plugins/gitlab` were never refactored into adapters
+> of an `IGitHostProvider` contract — they remain separate plugins. The
+> repo instead shipped `plugins/forge`, a unified plugin that
+> autodetects GitHub/GitLab from the origin remote and drives the
+> host's own authenticated `gh`/`glab` CLI (see
+> `plugins/forge/README.md`), plus `plugins/remote-provider-core`
+> (`url-policy.ts`, `limits.ts`, `redaction.ts`) for the small shared
+> primitives. This is an intentionally smaller-surface design than the
+> proposal's per-provider TypeScript API-client registry (no adapter
+> class hierarchy, no N×M capability matrix). If Bitbucket/Gitea support
+> is ever wanted, the cheaper path is a `detect.ts` + CLI-wrapper
+> addition inside `plugins/forge`, not a new `plugins/git-host` package.
 
 # f00540 — Git host provider abstraction with capability flags
 

@@ -273,7 +273,8 @@ If enabled plugins claim the same automatic side effect, startup stops with a
 diagnostic containing the exact configuration keys, effective values,
 precedence, and a JSON patch for `delendai.config.json`. The core remains
 agnostic; each plugin declares only the compatibility rules for its own
-interactions.
+interactions. Two common `delendai.config.json` trip-ups (and their fixes)
+are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
 
 - `bun run validate` is green (typecheck + lint + tests + drift guards).
 - Conventional Commits (`fix:` / `feat:` / `feat!:`) — versioning is

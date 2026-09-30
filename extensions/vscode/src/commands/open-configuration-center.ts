@@ -20,8 +20,48 @@ import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { configurationCenterStringsByLang } from '../i18n/configuration-center.strings';
 import { RESTART_SERVER_COMMAND } from './restart-server';
 import { HOST_LANG_KEY } from './setup-github';
+import type { IWebviewPanel } from '../extension';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
+
+/**
+ * Save the edits a Configuration Center panel sent and answer it with the
+ * outcome: `configurationSaved`, `configurationConflict` or
+ * `configurationInvalid`. Every panel that renders the center saves through
+ * this one path. Resolves to whether the document changed, or `undefined`
+ * when it was not saved (or the panel went away meanwhile).
+ */
+export const saveAndAnswer = async (
+	panel: IWebviewPanel,
+	workspaceRoot: string,
+	message: {
+		readonly expectedDigest: string;
+		readonly edits: Parameters<
+			typeof saveConfigurationDocument
+		>[0]['edits'];
+	},
+	isGone: () => boolean = () => false,
+): Promise<boolean | undefined> => {
+	const result = await saveConfigurationDocument({
+		workspaceRoot,
+		expectedDigest: message.expectedDigest,
+		edits: message.edits,
+	});
+	if (isGone()) return undefined;
+	if (!result.ok) {
+		await panel.webview.postMessage?.(
+			result.reason === 'conflict'
+				? { command: 'configurationConflict' }
+				: { command: 'configurationInvalid', issues: result.issues },
+		);
+		return undefined;
+	}
+	await panel.webview.postMessage?.({
+		command: 'configurationSaved',
+		digest: result.document.digest,
+	});
+	return result.changed;
+};
 
 export const OPEN_CONFIGURATION_CENTER_COMMAND =
 	'delendai.openConfigurationCenter';
@@ -32,7 +72,7 @@ const bridgeScript = `<script>
 (function () {
   'use strict';
   var vscode = typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
-  window.__MCPV_CONFIGURATION_HOST__ = {
+  window.__DELENDAI_CONFIGURATION_HOST__ = {
     post: function (message) { if (vscode) vscode.postMessage(message); }
   };
 })();
@@ -209,28 +249,13 @@ export const registerOpenConfigurationCenterCommand = (deps: ICommandDeps) =>
 								if (!disposed) panel.webview.html = html;
 								return;
 							}
-							const result = await saveConfigurationDocument({
+							const changed = await saveAndAnswer(
+								panel,
 								workspaceRoot,
-								expectedDigest: parsed.data.expectedDigest,
-								edits: parsed.data.edits,
-							});
-							if (disposed) return;
-							if (!result.ok) {
-								await panel.webview.postMessage?.(
-									result.reason === 'conflict'
-										? { command: 'configurationConflict' }
-										: {
-												command: 'configurationInvalid',
-												issues: result.issues,
-											},
-								);
-								return;
-							}
-							await panel.webview.postMessage?.({
-								command: 'configurationSaved',
-								digest: result.document.digest,
-							});
-							if (!result.changed) return;
+								parsed.data,
+								() => disposed,
+							);
+							if (changed !== true) return;
 							const action =
 								await deps.vscode.window.showInformationMessage?.(
 									`${strings.savedMessage} ${strings.copy.restartRequired}`,
