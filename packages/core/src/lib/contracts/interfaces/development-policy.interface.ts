@@ -302,9 +302,9 @@ export interface IPolicyIntegration {
 	 */
 	readonly releaseRequiredChecks: readonly string[];
 	/**
-	 * True when nothing on the forge will gate this merge, so the local
-	 * validation gate is the only certification the work will ever get
-	 * and MUST pass before it lands.
+	 * True when the work is certified on this machine before it lands: a
+	 * declared choice for `pull-request`, always true for `merge` (no forge
+	 * gate exists), always false for `direct`.
 	 *
 	 * This exists so that "we do not use pull requests here" never
 	 * degrades into "nothing is checked here". The `merge` strategy moves
