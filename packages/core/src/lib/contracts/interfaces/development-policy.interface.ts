@@ -396,9 +396,5 @@ export interface IDevelopmentPolicyViolation {
 	readonly message: string;
 	/** The concrete change that resolves it. */
 	readonly remedy: string;
-	/**
-	 * `warning` for a setting that starts but contradicts the policy;
-	 * absent means an error that stops startup.
-	 */
-	readonly severity?: 'warning';
+	readonly severity?: 'warning'; // absent: the violation stops startup
 }
