@@ -383,10 +383,7 @@ export interface IResolvedDevelopmentPolicy {
 /** Current `IResolvedDevelopmentPolicy.version`. */
 export const DEVELOPMENT_POLICY_VERSION = 2;
 
-/**
- * A rejected policy combination. Startup fails closed with these rather
- * than improvising a behaviour the operator never asked for.
- */
+/** A rejected policy combination: startup fails closed rather than improvise. */
 export interface IDevelopmentPolicyViolation {
 	/** Stable id so tests and docs can reference a rule without prose. */
 	readonly rule: string;
@@ -396,4 +393,5 @@ export interface IDevelopmentPolicyViolation {
 	readonly message: string;
 	/** The concrete change that resolves it. */
 	readonly remedy: string;
+	readonly severity?: 'warning'; // absent: the violation stops startup
 }
