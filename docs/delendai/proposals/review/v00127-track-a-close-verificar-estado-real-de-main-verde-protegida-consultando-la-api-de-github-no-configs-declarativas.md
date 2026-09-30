@@ -2,7 +2,7 @@
 id: v00127
 title: "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas"
 kind: perf
-status: ready
+status: review
 type: proposal
 track: governance
 date: 2026-08-25
@@ -23,6 +23,9 @@ related:
     - c00144 # protection YAML bifurcada (predecesor duro — debe estar aplicado a main)
     - c00145 # protectedBranches default main-only (predecesor — el plugin debe coincidir con main)
     - x00272 # bloquea push directo a main (predecesor — driver de la invariante a verificar)
+last-transition-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
+last-correlation-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
+last-transition-from: in-progress
 ---
 
 # v00127 — Track A.close: verificar `main` verde y protegida en GitHub (API real)
@@ -161,20 +164,44 @@ async function main() {
 Como arriba. El script separa **`main` (gate)** de
 **`develop` (observación)** en el JSON resultante.
 
-### 2. Dashboard entry
+### 2. Dashboard entry — REVISED 2026-09-30 (S2)
 
-`apps/web/src/data/health/main.json` se regenera en cada
-ejecución exitosa del script, con el snapshot más reciente.
-`apps/web/src/data/health/develop.json` se regenera idéntico,
-pero el componente React que lo muestra lleva una etiqueta
-`<Badge>observación</Badge>` en lugar de `<Badge>gate</Badge>`.
+The proposal originally assumed an `apps/web` React component
+(`MainHealthBadge.tsx`) and a `health/` subdirectory. Neither
+exists: `apps/web` is an Astro site with no React runtime, and
+the one real surface for branch health that already ships is
+`apps/web/src/data/develop-health.json`, written by the nightly
+`verify-develop-health` GitHub Actions workflow — a checked-in
+data artefact, not yet rendered by any page. There is no
+`MainHealthBadge`-shaped surface to "wire into"; there is this
+JSON-plus-workflow surface, so that is what S2 wires main into
+instead of building a new one:
+
+- `apps/web/src/data/main-health.json` is a sibling of
+  `develop-health.json`, written by
+  `tools/scripts/ci/verify-main-health.script.ts --output` in
+  the same nightly job. It carries the full `IMainHealthReport`
+  (main as `role: "gate"`, develop as `role: "observation"`) —
+  the same gate/observation distinction the original text asked
+  for, expressed as data rather than a `<Badge>`.
+- `develop-health.json`'s `note` field (both the checked-in
+  placeholder and the string `verify-develop-health.script.ts`
+  writes at runtime) now cross-links to `main-health.json`, so a
+  reader of the existing artifact discovers the new one.
+- Should `apps/web` grow a page that reads `develop-health.json`
+  in the future, `main-health.json` is already sitting next to
+  it in the same convention for that page to pick up — no
+  further plumbing needed on the data side.
 
 ### 3. Issue auto-creation
 
-Solo en fallo de `main`. Hook en
-`tools/scripts/ci/post-verify-main-health-failure.script.ts`
-usa `gh issue create --label governance --title "main health
-gate failed"`.
+Solo en fallo de `main`. Implementado como un step adicional en
+el mismo job `.github/workflows/verify-develop-health.yml`
+("Create issue on main drift"), no como script separado: corre
+`verify-main-health.script.ts`, y solo si ESE paso falla, abre
+un issue (`gh issue create --label ci-health,governance --title
+"main health gate failed (v00127)"`). Un `develop` rojo nunca
+abre issue — es observación, nunca gate.
 
 ### 4. Tests / specs
 
@@ -203,35 +230,71 @@ gate failed"`.
   `tools/scripts/ci/verify-main-health.spec.ts`.
 - **Gate**: type + test passing
 - **Depends on**: `c00144`, `c00132`, `c00133`.
+- shipped-in: `19218caf5a6b3b13379f358e00b5749560b55d35`
 
 ### S2 — Wire a dashboard
 
-- **Status**: pending
-- **Files**: `apps/web/src/data/health/main.json` (generado),
-  `apps/web/src/components/MainHealthBadge.tsx`,
-  `apps/web/src/components/MainHealthBadge.spec.tsx`.
-- **Gate**: type + visual
+- **Status**: review — 2026-09-30. Rewritten against the real surface (see
+  "2. Dashboard entry — REVISED" above): `apps/web` has no React runtime
+  and no `health/` data directory, so `MainHealthBadge.tsx` was never
+  buildable as specced. The real existing surface is
+  `apps/web/src/data/develop-health.json` + the nightly
+  `verify-develop-health` workflow. Wired main's real gate status into it:
+  `.github/workflows/verify-develop-health.yml` gained a "Run main health
+  verifier" step that runs `verify-main-health.script.ts --output
+  apps/web/src/data/main-health.json`, a "Create issue on main drift" step
+  that opens an issue ONLY on that step's failure (never on develop's),
+  and the existing "Commit the report" step now also commits
+  `main-health.json`. Added the checked-in bootstrap placeholder
+  `apps/web/src/data/main-health.json` (generated via the script's own
+  `--dry-run` mode, `generatedAt` nulled, matching `develop-health.json`'s
+  placeholder convention). Cross-linked the two JSON files' `note` fields
+  in both directions so a reader of either finds the other. Verified:
+  `bunx vitest run tools/tests/ci/verify-develop-health.spec.ts
+  tools/tests/ci/verify-main-health.spec.ts` — 44/9 passing, no regressions
+  (no logic in either script's tested surface changed, only the `note`
+  string and the workflow YAML). `python3 -c "import yaml; yaml.safe_load(...)"`
+  confirms the edited workflow YAML is well-formed.
+- **Files**:
+  `.github/workflows/verify-develop-health.yml`,
+  `apps/web/src/data/main-health.json`,
+  `apps/web/src/data/develop-health.json`,
+  `tools/scripts/ci/verify-develop-health.script.ts`.
+- **Gate**: type + test passing (rewritten from "type + visual" — there is
+  no visual surface to gate on).
 - **Depends on**: S1.
+- shipped-in: `a801eb344c89`
 
 ### S3 — Supersede `v00125` y enlazar en `AGENT-BOOTSTRAP.md`
 
-- **Status**: pending
+- **Status**: review — 2026-09-30. `v00125` (already `done/`, not
+  `in-progress/` as this slice assumed — corrected below) now carries
+  `superseded-by: v00127` in frontmatter plus a short dated note at the
+  top of its body explaining the retraction (develop-green-required →
+  main-as-gate, develop-as-observation). `AGENT-BOOTSTRAP.md`'s
+  "Integration branch protection" section gained a 3-line reference to
+  `verify-main-health.script.ts` and its nightly wiring. Verified byte
+  budget: `wc -c docs/delendai/AGENT-BOOTSTRAP.md` → 31,672 B, under the
+  32,000 B cap enforced by `bun run lint:prompt-size`
+  (`tools/scripts/lint/system-prompt-size.script.ts`).
 - **Files**:
-  `docs/delendai/proposals/in-progress/v00125-verificar-estado-real-develop-verde-protegida.md`
-  (frontmatter: `superseded-by: v00127`),
-  `docs/delendai/AGENT-BOOTSTRAP.md` (enlace a
-  `verify-main-health`).
-- **Gate**: docs lint
+  `docs/delendai/proposals/done/perfs/v00125-verificar-estado-real-de-develop-verde-protegida-antes-de-cerrar-este-track.md`
+  (frontmatter: `superseded-by: v00127`, plus a body note),
+  `docs/delendai/AGENT-BOOTSTRAP.md` (link to `verify-main-health`).
+- **Gate**: docs lint + `lint:prompt-size`.
 - **Depends on**: S1.
+- shipped-in: `a801eb344c89`
 
 ## acceptance
 
 - `bun run validate` verde.
 - `bun tools/scripts/ci/verify-main-health.script.ts` en CI
-  nightly, exit 0 cuando `main` está verde y protegida,
-  exit 1 si diverge.
-- Dashboard `apps/web` muestra `main` con badge `gate` y
-  `develop` con badge `observación`.
+  nightly (via `.github/workflows/verify-develop-health.yml`), exit 0
+  cuando `main` está verde y protegida, exit 1 si diverge.
+- `apps/web/src/data/main-health.json` (regenerado nightly) trae `main`
+  con `role: "gate"` y `develop` con `role: "observation"` — la
+  distinción que el texto original pedía como `<Badge>`, expresada como
+  dato en la única superficie real que existe hoy.
 - `AGENT-BOOTSTRAP.md` referencia el script como fuente de
   verdad del estado de `main`.
 - `v00125` lleva `superseded-by: v00127` en frontmatter; el
