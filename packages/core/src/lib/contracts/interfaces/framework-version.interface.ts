@@ -1,5 +1,5 @@
 /**
- * framework-version.interface.ts — f00547 S1: the pure contract for
+ * framework-version.interface.ts — the pure contract for
  * resolving the INSTALLED version of a detected framework dependency.
  *
  * `matchFramework` (framework-rules.ts) already answers "which
