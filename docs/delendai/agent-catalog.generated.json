@@ -1505,14 +1505,6 @@
 				"date": "2026-09-20"
 			},
 			{
-				"id": "f00641",
-				"title": "The proposals database runs on Node as well as Bun",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-25"
-			},
-			{
 				"id": "f00643",
 				"title": "The startup forge and journal phases run in a real host",
 				"track": "trust",
@@ -1659,6 +1651,14 @@
 			{
 				"id": "x00770",
 				"title": "Diagnostics and setup follow the configured profile",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
+				"id": "x00785",
+				"title": "worktree-pr has one work model: the unit worktree that work enter makes",
 				"track": "trust",
 				"status": "ready",
 				"kind": "fix",
