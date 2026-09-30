@@ -1671,14 +1671,6 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-30"
-			},
-			{
-				"id": "x00781",
-				"title": "Adoption writes exactly the policy already enforced",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-30"
 			}
 		]
 	}
