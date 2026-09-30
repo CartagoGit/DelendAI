@@ -1676,7 +1676,7 @@
 				"id": "v00127",
 				"title": "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas",
 				"track": "governance",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "perf",
 				"date": "2026-08-25"
 			},

@@ -263,6 +263,9 @@ names; `.github/` is generated from it, so never edit those by hand. Make
 the focused validation pass before committing. The read-only guard is
 `bun tools/scripts/lint/branch-protection-guard.script.ts` (`--live` when
 `gh` is authenticated). Never weaken a required check to pass a gate.
+`main`'s real green+protected state, read live from the GitHub API, is
+`tools/scripts/ci/verify-main-health.script.ts` (wired into the nightly
+`verify-develop-health` workflow), superseding `v00125`'s develop-only check.
 
 ### Cross-plugin configuration compatibility
 

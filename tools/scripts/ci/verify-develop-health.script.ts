@@ -425,7 +425,7 @@ const buildDashboard = (
 		},
 		requiredChecks: report.requiredChecks,
 		discrepancies: report.discrepancies,
-		note: 'Auto-populated by bun tools/scripts/ci/verify-develop-health.script.ts.',
+		note: 'Auto-populated by bun tools/scripts/ci/verify-develop-health.script.ts. For main as the strict release gate (v00127), see the sibling main-health.json, verified by tools/scripts/ci/verify-main-health.script.ts.',
 	};
 };
 
