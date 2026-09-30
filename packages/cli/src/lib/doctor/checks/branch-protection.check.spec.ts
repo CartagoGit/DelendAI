@@ -51,11 +51,11 @@ describe('branch protection against the policy', () => {
 		);
 	});
 
-	it('warns about a missing projection only where governance is enforced', () => {
+	it('does not warn about a projection file the project does not keep', () => {
 		expect(
 			assessBranchProtection({ policy: enforced, projection: undefined })
 				.status,
-		).toBe('warn');
+		).toBe('ok');
 		const observed = resolveDevelopmentPolicy({
 			development: {
 				profile: 'shared-checkout-merge',

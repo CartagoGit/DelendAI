@@ -250,6 +250,7 @@ export type {
 	IAssembledCliConfig,
 } from '../lib/cli/assemble';
 export { runCli, runDoctor } from '../lib/cli/run-cli';
+export { serveRefusal } from '../lib/cli/refused-server';
 export type {
 	IPluginWiringFs,
 	IPluginWiringReport,

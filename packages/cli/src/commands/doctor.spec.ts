@@ -178,6 +178,16 @@ describe('doctor checks', () => {
 		expect(result).toMatchObject({ name: 'config', status: 'ok' });
 	});
 
+	it('config: accepts the comments init writes into the file', async () => {
+		const result = await checkConfig(
+			buildDoctorContext({
+				'delendai.config.json':
+					'{\n\t// why this plugin\n\t"plugins":{}\n}',
+			}),
+		);
+		expect(result).toMatchObject({ name: 'config', status: 'ok' });
+	});
+
 	it('manifests: flags missing plugin manifests', async () => {
 		const result = await checkManifests(
 			buildDoctorContext({

@@ -115,42 +115,30 @@ export const assessBranchProtection = (input: {
 	}
 	const expected = expectedBranches(policy);
 	const declared = expected.map(describeExpected);
-	if (!policy.governance.enforced) {
-		const found =
-			projection === undefined
-				? []
-				: expected.flatMap((each) => mismatches(projection, each));
-		return {
-			name: CHECK_NAME,
-			status: found.length === 0 ? 'ok' : 'warn',
-			findings: [
-				`governance is ${policy.governance.strategy}: delendai does not manage the forge's branch settings here`,
-				...declared,
-				...found,
-			],
-		};
-	}
-	if (projection === undefined) {
-		return {
-			name: CHECK_NAME,
-			status: 'warn',
-			findings: [
-				`${BRANCH_PROTECTION_FILE} not found; governance is enforced, so the projection of the policy should exist`,
-				...declared,
-			],
-		};
-	}
-	const found = expected.flatMap((each) => mismatches(projection, each));
-	return found.length === 0
-		? {
-				name: CHECK_NAME,
-				status: 'ok',
-				findings: [
-					`${BRANCH_PROTECTION_FILE} matches the policy`,
-					...declared,
-				],
-			}
-		: { name: CHECK_NAME, status: 'warn', findings: found };
+	// The projection file is a generated artefact some projects keep; a
+	// project that keeps none is not defective, so its absence is a fact
+	// and only a projection that disagrees with the policy is a warning.
+	const found =
+		projection === undefined
+			? []
+			: expected.flatMap((each) => mismatches(projection, each));
+	const stance = policy.governance.enforced
+		? `governance is ${policy.governance.strategy}`
+		: `governance is ${policy.governance.strategy}: delendai does not manage the forge's branch settings here`;
+	return {
+		name: CHECK_NAME,
+		status: found.length === 0 ? 'ok' : 'warn',
+		findings:
+			found.length === 0
+				? [
+						stance,
+						...declared,
+						projection === undefined
+							? `no ${BRANCH_PROTECTION_FILE}: nothing local to compare with`
+							: `${BRANCH_PROTECTION_FILE} matches the policy`,
+					]
+				: found,
+	};
 };
 
 type IPolicyReader = (
