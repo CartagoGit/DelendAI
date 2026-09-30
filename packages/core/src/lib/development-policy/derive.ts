@@ -64,13 +64,33 @@ const coordinationFlags = (strategy: ICoordinationStrategy) => ({
 	requiresClaims: strategy !== 'none',
 });
 
-const integrationFlags = (strategy: IIntegrationStrategy) => ({
+/**
+ * Whether the local gate certifies the work is a DECLARED value of the
+ * profile, and a declared value wins: `pull-request` may be certified
+ * on the forge (false) or on the machine before publication (true), and
+ * only the profile knows which. Derivation overrides it only where the
+ * strategy leaves no choice — `merge` has no forge object to hold
+ * checks, so the local gate must certify; `direct` certifies nothing,
+ * and `validate` refuses to pair it with an isolated work ref.
+ */
+const localCertificationOf = (
+	strategy: IIntegrationStrategy,
+	declared: boolean,
+): boolean => {
+	if (strategy === 'merge') return true;
+	if (strategy === 'direct') return false;
+	return declared;
+};
+
+const integrationFlags = (
+	strategy: IIntegrationStrategy,
+	declaredLocalCertification: boolean,
+) => ({
 	requiresPullRequest: strategy === 'pull-request',
-	// Somebody has to certify the work. `pull-request` delegates that to
-	// the forge's checks; `merge` has no forge object to hold them, so
-	// the local gate inherits the duty. `direct` certifies nothing, and
-	// `validate` refuses to pair it with an isolated work ref.
-	requiresLocalCertification: strategy === 'merge',
+	requiresLocalCertification: localCertificationOf(
+		strategy,
+		declaredLocalCertification,
+	),
 });
 
 const recoveryFlags = (strategy: IRecoveryStrategy) => ({
@@ -122,7 +142,10 @@ export const deriveCapabilities = (
 		},
 		integration: {
 			...policy.integration,
-			...integrationFlags(policy.integration.strategy),
+			...integrationFlags(
+				policy.integration.strategy,
+				policy.integration.requiresLocalCertification,
+			),
 		},
 		coordination: {
 			...policy.coordination,

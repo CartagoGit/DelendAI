@@ -36,14 +36,15 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import type { ICriticalSection } from './critical-section.interface';
-import type { IIntegrationGit } from './git-port.interface';
-import { gateLocalMerge, planLocalMerge } from './local-merge-gate';
+import type { IIntegrationGit, IMergeCommitResult } from './git-port.interface';
+import { gateLocalMerge, planLocalMerge, staleBase } from './local-merge-gate';
 import type {
 	ILocalMergeCycleInput,
 	ILocalMergeCycleOutcome,
 } from './local-merge-cycle.interface';
 
 export type {
+	ILocalMergeCandidate,
 	ILocalMergeCycleInput,
 	ILocalMergeCycleOutcome,
 	ILocalMergeCycleStatus,
@@ -55,6 +56,44 @@ export const mergeMessageFor = (
 	integrationBranch: string,
 ): string =>
 	`merge: land ${workRef} on ${integrationBranch}\n\nIntegrated by the local merge model: this project's forge has no review object to hold the candidate, so the local certification is what stood between the work and the branch.`;
+
+/**
+ * The merge commit that would land, or the outcome that ends the attempt:
+ * already contained, a conflict a human reconciles, or git failing.
+ */
+const buildCandidate = async (
+	git: IIntegrationGit,
+	workRef: string,
+	branch: string,
+	integrationSha: string,
+	workSha: string,
+): Promise<
+	Extract<IMergeCommitResult, { kind: 'merged' }> | ILocalMergeCycleOutcome
+> => {
+	const merged = await git.mergeCommit({
+		base: integrationSha,
+		incoming: workSha,
+		message: mergeMessageFor(workRef, branch),
+	});
+	if (merged.kind === 'merged') return merged;
+	if (merged.kind === 'up-to-date') {
+		return {
+			status: 'merged',
+			reason: `${workRef} is already contained in ${branch}; nothing to land.`,
+			integrationSha,
+			mergedSha: integrationSha,
+		};
+	}
+	if (merged.kind === 'conflict') {
+		return {
+			status: 'RECOVERY_CONFLICT',
+			reason: `${workRef} does not merge cleanly into ${branch}; a human has to reconcile it.`,
+			integrationSha,
+			conflicts: merged.paths,
+		};
+	}
+	return { status: 'failed', reason: merged.reason, integrationSha };
+};
 
 /**
  * Attempt to land one work ref on the integration branch.
@@ -93,17 +132,52 @@ export const runLocalMergeCycle = async (
 			};
 		}
 
-		const verdict = planLocalMerge(policy, {
+		const builtOnIntegrationHead = await git.isAncestor(
+			integrationSha,
+			workSha,
+		);
+		const facts = {
 			workRef: input.workRef,
 			workSha,
 			integrationSha,
-			builtOnIntegrationHead: await git.isAncestor(
+			builtOnIntegrationHead,
+		};
+
+		// Asked to certify here: the head was read inside this section, so
+		// the certification describes the pair that lands. The candidate is
+		// built first because it IS what the gate has to run on, and a work
+		// ref that must be replayed, or that conflicts, is answered before
+		// any gate spends its time on it.
+		let built: Extract<IMergeCommitResult, { kind: 'merged' }> | undefined;
+		let certification = input.certification;
+		if (certification === undefined && input.certify !== undefined) {
+			const stale = staleBase(policy, facts);
+			if (stale !== undefined) {
+				return {
+					status: 'revalidating',
+					reason: stale.reason,
+					integrationSha,
+				};
+			}
+			const candidate = await buildCandidate(
+				git,
+				input.workRef,
+				branch,
 				integrationSha,
 				workSha,
-			),
-			...(input.certification === undefined
-				? {}
-				: { certification: input.certification }),
+			);
+			if ('status' in candidate) return candidate;
+			built = candidate;
+			certification = await input.certify({
+				integrationSha,
+				workSha,
+				candidateSha: candidate.sha,
+			});
+		}
+
+		const verdict = planLocalMerge(policy, {
+			...facts,
+			...(certification === undefined ? {} : { certification }),
 		});
 		if (verdict.decision === 'revalidate') {
 			return {
@@ -120,34 +194,16 @@ export const runLocalMergeCycle = async (
 			};
 		}
 
-		const merged = await git.mergeCommit({
-			base: integrationSha,
-			incoming: workSha,
-			message: mergeMessageFor(input.workRef, branch),
-		});
-		if (merged.kind === 'up-to-date') {
-			return {
-				status: 'merged',
-				reason: `${input.workRef} is already contained in ${branch}; nothing to land.`,
+		const merged =
+			built ??
+			(await buildCandidate(
+				git,
+				input.workRef,
+				branch,
 				integrationSha,
-				mergedSha: integrationSha,
-			};
-		}
-		if (merged.kind === 'conflict') {
-			return {
-				status: 'RECOVERY_CONFLICT',
-				reason: `${input.workRef} does not merge cleanly into ${branch}; a human has to reconcile it.`,
-				integrationSha,
-				conflicts: merged.paths,
-			};
-		}
-		if (merged.kind === 'failed') {
-			return {
-				status: 'failed',
-				reason: merged.reason,
-				integrationSha,
-			};
-		}
+				workSha,
+			));
+		if ('status' in merged) return merged;
 
 		// The compare-and-swap. `expectedRemoteSha` is the head the merge
 		// was BUILT against, not the head we hope is there — that is what
@@ -168,7 +224,7 @@ export const runLocalMergeCycle = async (
 			};
 		}
 
-		if (policy.integration.deleteMergedWorkRef) {
+		if (input.deleteWorkRef ?? policy.integration.deleteMergedWorkRef) {
 			// Deliberately not fatal. The work is on the branch; a ref that
 			// outlives it is untidy, and reporting the landing as failed
 			// because a cleanup did not happen would send somebody looking

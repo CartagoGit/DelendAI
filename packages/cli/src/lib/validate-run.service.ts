@@ -14,7 +14,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { parseJsonc } from '@delendai/core/public';
+import { packageManagerFrom, validationGateSteps } from '@delendai/core/cli';
 import {
 	appendValidateJournalEntry,
 	buildValidateJournalEntry,
@@ -23,60 +23,27 @@ import {
 
 import type { IValidateStep } from '../contracts/interfaces/validate-run.interface';
 
-const readJson = (path: string): Record<string, unknown> | undefined => {
-	if (!existsSync(path)) return undefined;
-	try {
-		const { value } = parseJsonc(readFileSync(path, 'utf8'));
-		return typeof value === 'object' && value !== null
-			? (value as Record<string, unknown>)
-			: undefined;
-	} catch {
-		return undefined;
-	}
-};
+/** A file of the workspace, or `undefined` when it has none. */
+const workspaceReader =
+	(workspace: string) =>
+	(relativePath: string): string | undefined => {
+		const path = join(workspace, relativePath);
+		return existsSync(path) ? readFileSync(path, 'utf8') : undefined;
+	};
 
 /** The package manager the project's lockfile names; npm when none does. */
 export const packageManagerOf = (workspace: string): string =>
-	[
-		['bun.lock', 'bun'],
-		['bun.lockb', 'bun'],
-		['pnpm-lock.yaml', 'pnpm'],
-		['yarn.lock', 'yarn'],
-	].find(([lock]) => existsSync(join(workspace, lock ?? '')))?.[1] ?? 'npm';
+	packageManagerFrom(workspaceReader(workspace));
 
 /**
  * The steps the project declares, in order: every command of every
  * `validationMatrix` scope, else its `validate` package script. Empty
- * when it declares neither.
+ * when it declares neither. The merge model's certification reads the
+ * same declaration, so the two gates cannot drift apart.
  */
 export const declaredValidateSteps = (
 	workspace: string,
-): readonly IValidateStep[] => {
-	const matrix = readJson(join(workspace, 'delendai.config.json'))
-		?.validationMatrix as
-		| { readonly scopes?: Record<string, readonly { command?: unknown }[]> }
-		| undefined;
-	const fromMatrix = Object.entries(matrix?.scopes ?? {}).flatMap(
-		([scope, gates]) =>
-			gates.flatMap((gate) =>
-				typeof gate.command === 'string' && gate.command.trim() !== ''
-					? [{ scope, command: gate.command }]
-					: [],
-			),
-	);
-	if (fromMatrix.length > 0) return fromMatrix;
-	const scripts = readJson(join(workspace, 'package.json'))?.scripts as
-		| Record<string, unknown>
-		| undefined;
-	return typeof scripts?.validate === 'string'
-		? [
-				{
-					scope: 'package',
-					command: `${packageManagerOf(workspace)} run validate`,
-				},
-			]
-		: [];
-};
+): readonly IValidateStep[] => validationGateSteps(workspaceReader(workspace));
 
 /** Run the declared steps, each to the end, and journal the outcome. */
 export const runValidate = async (

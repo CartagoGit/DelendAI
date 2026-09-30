@@ -75,6 +75,13 @@ const START_STEPS: Readonly<
 		'STOP: this configuration declares no way to persist work. Fix the policy before working.',
 };
 
+/**
+ * The command that lands a unit under the merge profile. Named once, so
+ * what an agent is told and what `work publish` runs cannot drift apart.
+ */
+const LAND_BY_MERGE_COMMAND =
+	'delendai work publish --proposal=<id> --slice=<slice> --agent=<you>';
+
 /** How work reaches the integration branch. */
 const LAND_STEPS: Readonly<
 	Record<ILandRoute, (policy: IResolvedDevelopmentPolicy) => string>
@@ -82,7 +89,7 @@ const LAND_STEPS: Readonly<
 	'pull-request': ({ branches }) =>
 		`Land finished work through a pull request: \`delendai work publish\` (or the \`work\` tool, action publish) pushes ${shortName(branches.publicationRefPrefix)}<name> and opens a pull request into ${branches.integration}. Never push to ${branches.integration} directly.`,
 	merge: ({ branches }) =>
-		`Land finished work by MERGING it into ${branches.integration}; this profile opens no pull request. Finish the unit with \`delendai work publish\`: the merge is delendai's integration engine, never a hand-made merge, and it takes only a candidate the local validation gate passed against the current ${branches.integration} head.`,
+		`Land finished work by MERGING it into ${branches.integration}; this profile opens no pull request. Finish the unit with \`${LAND_BY_MERGE_COMMAND}\` (or the \`work\` tool, action publish): it merges your work ref into the current ${branches.integration} head in a throwaway index, runs the validation gate ${branches.integration} declares on that merge, and pushes it only if the gate passed — refusing, with the next step, when the gate fails, the head moved or the merge conflicts. Never merge or push to ${branches.integration} by hand.`,
 	direct: ({ branches }) =>
 		`Your commits reach ${branches.integration} directly; there is no review boundary and no pull request.`,
 };
@@ -102,7 +109,7 @@ const LAND_SUMMARIES: Readonly<
 > = {
 	'pull-request': (integration) => `land by pull request into ${integration}`,
 	merge: (integration) =>
-		`land by merge into ${integration} after the local gate, no pull request`,
+		`land by merge into ${integration} with \`delendai work publish\`, after the local gate, no pull request`,
 	direct: (integration) => `commits land on ${integration} directly`,
 };
 
@@ -112,46 +119,97 @@ const persistenceStep = (policy: IResolvedDevelopmentPolicy): string =>
 const integrationStep = (policy: IResolvedDevelopmentPolicy): string =>
 	LAND_STEPS[landRouteOf(policy)](policy);
 
-/** What the integration branch demands before it accepts anything. */
-const gateStep = (policy: IResolvedDevelopmentPolicy): string => {
-	const checks =
-		policy.integration.requiredChecks.length === 0
-			? 'no required checks'
-			: `checks [${policy.integration.requiredChecks.join(', ')}]`;
-	const upToDate = policy.integration.requireLatestIntegration
-		? 'and must be up to date with it'
-		: 'and need not be refreshed against it';
-	return `${policy.branches.integration} requires ${checks} and ${policy.integration.requiredApprovals} approval(s), ${upToDate}.`;
+/**
+ * Each of the next five steps answers one question, and the answer
+ * depends on HOW work lands: a sentence about the forge is a lie under a
+ * profile that has none. So every step is a table keyed by the landing
+ * route, and no route inherits another's wording.
+ */
+type ILandingSentences = Readonly<
+	Record<ILandRoute, (policy: IResolvedDevelopmentPolicy) => string>
+>;
+
+/** Who certifies a candidate, and when. */
+const CERTIFICATION_STEPS: ILandingSentences = {
+	'pull-request': (policy) =>
+		policy.integration.requiresLocalCertification
+			? 'Prove the candidate in isolation BEFORE you publish it; a candidate that was not proved must not be published.'
+			: 'Certification happens on the forge, not on your machine.',
+	merge: ({ branches }) =>
+		`Nothing lands uncertified: \`delendai work publish\` runs the validation gate ${branches.integration} declares (\`validationMatrix.scopes\` in delendai.config.json, else a \`validate\` script) on the merge it would push, in a worktree of its own, and a project that declares no gate lands nothing.`,
+	direct: ({ branches }) =>
+		`Nothing certifies your commits before they reach ${branches.integration}: run the project's checks yourself first.`,
 };
 
+/** What the integration branch demands before it accepts anything. */
+const GATE_STEPS: ILandingSentences = {
+	'pull-request': ({ branches, integration }) => {
+		const checks =
+			integration.requiredChecks.length === 0
+				? 'no required checks'
+				: `checks [${integration.requiredChecks.join(', ')}]`;
+		const upToDate = integration.requireLatestIntegration
+			? 'and must be up to date with it'
+			: 'and need not be refreshed against it';
+		return `${branches.integration} requires ${checks} and ${integration.requiredApprovals} approval(s), ${upToDate}.`;
+	},
+	merge: ({ branches, integration }) =>
+		integration.requireLatestIntegration
+			? `The local validation gate is the only check ${branches.integration} gets, and it always judges the merge against the current ${branches.integration} head.`
+			: `The local validation gate is the only check ${branches.integration} gets; a candidate built on an older head is not validated again.`,
+	direct: ({ branches }) =>
+		`${branches.integration} enforces no checks and no approvals; nothing gates a commit.`,
+};
+
+const mergeCommitSentence = (integration: string): string =>
+	`Work lands as a merge commit, so your commits survive the branch's deletion; \`git log --first-parent ${integration}\` still reads one line per change.`;
+
 /**
- * What the merge does to the branch's commits. Stated in terms of what
+ * What landing does to the branch's commits. Stated in terms of what
  * SURVIVES, because that is the part an operator discovers too late.
  */
-const mergeStep = (policy: IResolvedDevelopmentPolicy): string => {
-	if (policy.integration.mergeMethod === 'squash')
-		return `Work lands squashed: the individual commits of your branch are DISCARDED, and only one commit reaches ${policy.branches.integration}.`;
-	if (policy.integration.mergeMethod === 'rebase')
-		return `Work lands rebased: your commits are replayed onto ${policy.branches.integration} one by one, with new identities.`;
-	return `Work lands as a merge commit, so your commits survive the branch's deletion; \`git log --first-parent ${policy.branches.integration}\` still reads one line per change.`;
+const MERGE_STEPS: ILandingSentences = {
+	'pull-request': ({ branches, integration }) => {
+		if (integration.mergeMethod === 'squash')
+			return `Work lands squashed: the individual commits of your branch are DISCARDED, and only one commit reaches ${branches.integration}.`;
+		if (integration.mergeMethod === 'rebase')
+			return `Work lands rebased: your commits are replayed onto ${branches.integration} one by one, with new identities.`;
+		return mergeCommitSentence(branches.integration);
+	},
+	merge: ({ branches }) => mergeCommitSentence(branches.integration),
+	direct: ({ branches }) =>
+		`Each commit reaches ${branches.integration} exactly as you made it; nothing is combined or rewritten.`,
 };
 
 /** How long the work ref lives, and who ends it. */
-const workRefStep = (policy: IResolvedDevelopmentPolicy): string =>
-	policy.integration.deleteMergedWorkRef
-		? 'The forge deletes your work ref as soon as its pull request merges, so one ref serves exactly one change.'
-		: 'Your work ref outlives its pull requests — a proposal lands one pull request per slice — and delendai deletes it when that proposal closes.';
+const WORK_REF_STEPS: ILandingSentences = {
+	'pull-request': ({ integration }) =>
+		integration.deleteMergedWorkRef
+			? 'The forge deletes your work ref as soon as its pull request merges, so one ref serves exactly one change.'
+			: 'Your work ref outlives its pull requests — a proposal lands one pull request per slice — and delendai deletes it when that proposal closes.',
+	merge: () =>
+		'Publishing ends your work ref once its work has landed, unless its proposal still has slices to commit on it.',
+	direct: () => 'There is no work ref in this profile.',
+};
+
+const landingStep = (
+	steps: ILandingSentences,
+	policy: IResolvedDevelopmentPolicy,
+): string => steps[landRouteOf(policy)](policy);
 
 /** The promise the recovery axis makes about work that never landed. */
-const recoveryStep = (policy: IResolvedDevelopmentPolicy): string =>
-	policy.recovery.neverDiscardUnmergedWork
+const recoveryStep = (policy: IResolvedDevelopmentPolicy): string => {
+	if (policy.recovery.strategy === 'none')
+		return 'Startup reconciles nothing and resumes nothing: commit whatever you want to keep.';
+	return policy.recovery.neverDiscardUnmergedWork
 		? 'Unmerged work is never discarded: startup reconciliation preserves it rather than cleaning it up.'
 		: 'Unmerged work may be cleaned up by reconciliation; land it or lose it.';
+};
 
 /**
  * Derives the full declaration. The step list is fixed in LENGTH and
  * ORDER across every policy — a reader comparing two projects compares
- * the same seven positions — while each sentence varies with the axis it
+ * the same eight positions — while each sentence varies with the axis it
  * came from.
  */
 export const declareWorkflow = (
@@ -161,15 +219,16 @@ export const declareWorkflow = (
 		[workspaceStep(policy), 'workspace.strategy'],
 		[persistenceStep(policy), 'persistence.strategy'],
 		[
-			policy.integration.requiresLocalCertification
-				? 'Prove the candidate in isolation BEFORE you publish it; a candidate that was not proved must not be published.'
-				: 'Certification happens on the forge, not on your machine.',
+			landingStep(CERTIFICATION_STEPS, policy),
 			'integration.requiresLocalCertification',
 		],
 		[integrationStep(policy), 'integration.strategy'],
-		[gateStep(policy), 'integration.requiredChecks'],
-		[mergeStep(policy), 'integration.mergeMethod'],
-		[workRefStep(policy), 'integration.deleteMergedWorkRef'],
+		[landingStep(GATE_STEPS, policy), 'integration.requiredChecks'],
+		[landingStep(MERGE_STEPS, policy), 'integration.mergeMethod'],
+		[
+			landingStep(WORK_REF_STEPS, policy),
+			'integration.deleteMergedWorkRef',
+		],
 		[recoveryStep(policy), 'recovery.neverDiscardUnmergedWork'],
 	];
 

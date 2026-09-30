@@ -152,7 +152,10 @@ describe('declareWorkflow', () => {
 		expect(merge.start).toContain('delendai work checkpoint');
 		expect(merge.land).toContain('MERGING it into develop');
 		expect(merge.land).toContain('opens no pull request');
-		expect(merge.land).toContain('local validation gate');
+		expect(merge.land).toContain('validation gate');
+		// The route it names is the command that lands.
+		expect(merge.land).toContain('`delendai work publish --proposal=<id>');
+		expect(merge.land).toContain('Never merge or push to develop by hand');
 
 		expect(pr.start).toBe(merge.start);
 		expect(pr.land).toContain('opens a pull request into develop');
@@ -164,7 +167,7 @@ describe('declareWorkflow', () => {
 
 	it('summarises each profile in one line, from the same axes', () => {
 		expect(workModelSummary(policyFor('shared-checkout-merge'))).toBe(
-			'shared-checkout-merge: start with `delendai work enter`; land by merge into develop after the local gate, no pull request.',
+			'shared-checkout-merge: start with `delendai work enter`; land by merge into develop with `delendai work publish`, after the local gate, no pull request.',
 		);
 		expect(workModelSummary(policyFor('shared-checkout-pr'))).toContain(
 			'land by pull request into develop',
@@ -174,6 +177,36 @@ describe('declareWorkflow', () => {
 		);
 		expect(workModelSummary(policyFor('worktree-pr'))).toContain(
 			'worktree branch',
+		);
+	});
+
+	it('says who certifies and when the work ref ends, per strategy', () => {
+		const merge = declareWorkflow(policyFor('shared-checkout-merge'));
+		const pr = declareWorkflow(policyFor('shared-checkout-pr'));
+		const step = (
+			declaration: ReturnType<typeof declareWorkflow>,
+			axis: string,
+		) =>
+			declaration.steps.find((entry) => entry.derivedFrom === axis)
+				?.instruction ?? '';
+
+		expect(step(merge, 'integration.requiresLocalCertification')).toContain(
+			'`delendai work publish` runs the validation gate',
+		);
+		expect(step(merge, 'integration.deleteMergedWorkRef')).toContain(
+			'once its work has landed',
+		);
+		expect(step(pr, 'integration.requiresLocalCertification')).toContain(
+			'Prove the candidate in isolation BEFORE',
+		);
+		expect(
+			step(
+				declareWorkflow(policyFor('worktree-pr')),
+				'integration.requiresLocalCertification',
+			),
+		).toContain('Certification happens on the forge');
+		expect(step(pr, 'integration.deleteMergedWorkRef')).toContain(
+			'outlives its pull requests',
 		);
 	});
 
@@ -212,5 +245,67 @@ describe('declareWorkflow', () => {
 		// Merging named as the normal route, not as something to avoid.
 		expect(text).toContain('Merging is how work lands');
 		expect(text).toContain('throwaway index');
+	});
+});
+
+describe('no sentence names a mechanism the profile does not have', () => {
+	const textOf = (profile: (typeof DEVELOPMENT_PROFILES)[number]) =>
+		declareWorkflow(policyFor(profile))
+			.steps.map((step) => step.instruction)
+			.join('\n');
+	/** "opens no pull request" is a denial, not a mechanism. */
+	const withoutDenials = (text: string) =>
+		text.replaceAll(/\bno pull request\b/giu, '');
+
+	it.each(['shared-checkout-merge', 'shared-direct'] as const)(
+		'%s never mentions a pull request or forge certification',
+		(profile) => {
+			const text = withoutDenials(textOf(profile));
+
+			expect(text).not.toMatch(/pull request/iu);
+			expect(text).not.toMatch(/on the forge/iu);
+		},
+	);
+
+	it('shared-direct neither squashes, discards nor has a work ref to end', () => {
+		const text = textOf('shared-direct');
+
+		expect(text).not.toMatch(/squash|discard|rebased|merge commit/iu);
+		expect(text).toContain('There is no work ref');
+		expect(text).toContain('nothing gates a commit');
+		expect(text).not.toContain('preserves it');
+	});
+
+	it('shared-checkout-merge is certified by the local gate, not the forge', () => {
+		const text = textOf('shared-checkout-merge');
+
+		expect(text).toContain('validation gate');
+		expect(text).not.toContain('Certification happens on the forge');
+		expect(text).toContain('merge commit');
+	});
+
+	it('shared-checkout-pr certifies on the machine, as its preset declares', () => {
+		const text = textOf('shared-checkout-pr');
+
+		expect(text).toContain('Prove the candidate in isolation BEFORE');
+		expect(text).not.toContain('Certification happens on the forge');
+	});
+
+	it('worktree-pr keeps its forge and pull-request wording', () => {
+		const text = textOf('worktree-pr');
+
+		expect(text).toContain('Certification happens on the forge');
+		expect(text).toContain('pull request');
+	});
+
+	it('states a recovery promise only where recovery exists', () => {
+		for (const profile of DEVELOPMENT_PROFILES) {
+			const policy = policyFor(profile);
+			const text = textOf(profile);
+
+			expect(text.includes('reconciliation preserves')).toBe(
+				policy.recovery.strategy !== 'none',
+			);
+		}
 	});
 });
