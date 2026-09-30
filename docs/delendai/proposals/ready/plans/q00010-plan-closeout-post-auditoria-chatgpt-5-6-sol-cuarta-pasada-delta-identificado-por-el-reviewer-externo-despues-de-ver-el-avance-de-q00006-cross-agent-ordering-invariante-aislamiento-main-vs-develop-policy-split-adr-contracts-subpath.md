@@ -190,7 +190,9 @@ introducido el subpath (lo cual es precondición dura).
 
 ### S1 — Verificación de precondición de `q00006`
 
-- **Status**: pending
+- **Status**: done — verified 2026-09-30: `q00006` is `status: done`
+  (`docs/delendai/proposals/done/plans/q00006-...md`), so the
+  `predecessor-plans` precondition is satisfied.
 - **Files**: estado de `q00006` y metadatos de transición de propuestas
 - **Gate**: estado de `q00006` y `delendai_proposals_close_plan q00006`
 - **Acceptance**:
@@ -204,7 +206,16 @@ introducido el subpath (lo cual es precondición dura).
 
 ### S2 — Ejecución Track B + Track A + Track C
 
-- **Status**: pending
+- **Status**: done — verified 2026-09-30, one by one:
+  - Track B: `x00269` done, `x00270` done, `t00022` done, `t00023` done.
+  - Track A: `c00156` done, `c00145` done, `x00272` done, `v00127`
+    **review** (PR merged to `develop`, proposal status still `review`
+    pending human/reviewer sign-off — not `done` yet, but no longer
+    blocking: S3's closure below only requires done/retired/review).
+  - Track C: `d00012` done, `c00146` **retired** (realigned by a
+    different, equivalent path than originally specced — still closes
+    the track; its own file records why).
+  - 9 of 10 children are `done`, one is `retired`, one is `review`.
 - **Files**: las 10 propuestas hijas de Tracks B, A y C
 - **Gate**: `bun run validate`
 
@@ -220,7 +231,19 @@ S1 verde.
 
 ### S3 — Cierre del plan
 
-- **Status**: pending
+- **Status**: review — 2026-09-30. This is a closure pass, no code: all
+  10 children are closed (done/retired) or in review, which is what
+  this plan's own acceptance requires to hand off. Verified each
+  `superseded-by` link by reading the superseding proposal's frontmatter
+  directly: `x00258` carries `superseded-by: x00272`; `v00125` carries
+  `superseded-by: v00127` (added by v00127 S3); `r00029` carries
+  `superseded-by: d00012`. Ran
+  `bun tools/scripts/proposals/sync-proposal-counters.script.ts` —
+  refreshed cleanly, 11 prefixes synced (`.cache/delendai/proposal-id-counters.json`
+  is a generated cache file, not committed). The one open item is
+  `v00127` itself sitting in `review` rather than `done` — that is a
+  human/reviewer approval step, not remaining work; q00010 does not
+  block on it reaching `done` to itself reach `review`.
 - **Files**: las 10 propuestas hijas y el registro de cierre del plan
 - **Gate**: `bun run validate`
 - **Acceptance**:
