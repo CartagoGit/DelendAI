@@ -1561,14 +1561,6 @@
 				"date": "2026-08-27"
 			},
 			{
-				"id": "q00015",
-				"title": "Plan eventual settlement: commits atómicos con scope exacto sobre develop compartido; develop rojo es estado transitorio válido",
-				"track": "quality",
-				"status": "ready",
-				"kind": "plan",
-				"date": "2026-09-02"
-			},
-			{
 				"id": "q00018",
 				"title": "State Engine foundation: pure deterministic project/swarm scopes, generation rebuild and shadow equivalence",
 				"track": "swarm-scope-v1",
