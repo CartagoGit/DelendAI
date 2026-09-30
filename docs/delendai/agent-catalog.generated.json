@@ -1505,14 +1505,6 @@
 				"date": "2026-09-20"
 			},
 			{
-				"id": "f00641",
-				"title": "The proposals database runs on Node as well as Bun",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-25"
-			},
-			{
 				"id": "f00643",
 				"title": "The startup forge and journal phases run in a real host",
 				"track": "trust",

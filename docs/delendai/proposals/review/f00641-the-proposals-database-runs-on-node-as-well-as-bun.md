@@ -2,12 +2,15 @@
 id: f00641
 title: "The proposals database runs on Node as well as Bun"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-25
 priority: P1
 related: [q00022, r00043]
+last-transition-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
+last-correlation-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
+last-transition-from: in-progress
 ---
 
 # f00641 — The proposals database runs on Node as well as Bun
@@ -69,6 +72,7 @@ including 0020's table rebuild; this repository's proposals reconcile;
 and the registry exported from that database equals the markdown scan.
 The adapter's own behaviour is pinned in the bun suite (Bun also provides
 `node:sqlite`).
+- shipped-in: `4cca8dcd7a85`
 
 ### S2 — The default read source can be SQL on both runtimes
 
@@ -85,6 +89,7 @@ Delivered with q00022 S4 phase 2, in the same change: the default is
 `sql`, a projection never built is rebuilt from markdown before the read,
 and an index outside the canonical layout is served as JSON unless `sql`
 was chosen.
+- shipped-in: `7a5236e63cdd`
 
 ## dependency graph
 
