@@ -1460,7 +1460,7 @@
 				"id": "f00542",
 				"title": "Delendai language-, IDE-, and OS-agnostic",
 				"track": "general",
-				"status": "ready",
+				"status": "paused",
 				"kind": "feat",
 				"date": "2026-09-15"
 			},
