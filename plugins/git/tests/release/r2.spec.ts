@@ -7,6 +7,14 @@ import {
 	releaseStatus,
 } from '../../src/lib/release';
 import type { IGitRunner } from '../../src/lib/services/git';
+import type { IReleaseTarget } from '@delendai/core/public';
+
+const target: IReleaseTarget = {
+	integrationBranch: 'develop',
+	releaseBranch: 'main',
+	versionManifestPath: 'packages/core/package.json',
+	promotion: 'pull-request',
+};
 
 const makeRun =
 	(state: { develop: string; main: string; version: string }): IGitRunner =>
@@ -30,6 +38,7 @@ describe('release R2 git adapter', () => {
 			type: 'patch' as const,
 			slug: 'r2-state',
 			actor: 'release-agent',
+			target,
 			expected: {
 				sourceDevelopSha: '1111111',
 				mainSha: '2222222',
@@ -53,6 +62,7 @@ describe('release R2 git adapter', () => {
 			slug: 'r2-idempotent',
 			actor: 'release-agent',
 			idempotencyKey: 'retry-1',
+			target,
 			expected: {
 				sourceDevelopSha: '1111111',
 				mainSha: '2222222',
@@ -77,6 +87,7 @@ describe('release R2 git adapter', () => {
 			type: 'patch' as const,
 			slug: 'r2-dry-run',
 			actor: 'agent',
+			target,
 			expected: {
 				sourceDevelopSha: '1111111',
 				mainSha: '2222222',
@@ -102,6 +113,7 @@ describe('release R2 git adapter', () => {
 			slug: 'r2-develop-advanced',
 			actor: 'agent',
 			idempotencyKey: 'develop-retry',
+			target,
 			expected: {
 				sourceDevelopSha: '1111111',
 				mainSha: '2222222',
@@ -125,6 +137,7 @@ describe('release R2 git adapter', () => {
 			slug: 'r2-restart',
 			actor: 'agent',
 			idempotencyKey: 'restart-1',
+			target,
 			expected: {
 				sourceDevelopSha: '1111111',
 				mainSha: '2222222',
@@ -152,6 +165,7 @@ describe('release R2 git adapter', () => {
 			const store = createReleaseCandidateStore();
 			const base = {
 				actor: 'agent',
+				target,
 				expected: {
 					sourceDevelopSha: '1111111',
 					mainSha: '2222222',

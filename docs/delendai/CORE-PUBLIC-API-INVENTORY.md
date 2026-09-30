@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 644
+Total exports: 646
 
 | Maturity | Count |
 | --- | --- |
-| stable | 641 |
+| stable | 643 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -340,6 +340,7 @@ Total exports: 644
 | `IReleaseReceipt` | type | stable | `../lib/contracts/release-finalize` |
 | `IReleaseReconciliationInput` | type | stable | `../lib/contracts/release-finalize` |
 | `IReleaseStatusCompact` | type | stable | `../lib/contracts/release-state` |
+| `IReleaseTarget` | type | stable | `../lib/development-policy/release-target.interface` |
 | `IRepairDecision` | const | stable | `../lib/startup-reconciler/index` |
 | `IRepairResolution` | const | stable | `../lib/startup-reconciler/index` |
 | `IResolvedDevelopmentPolicy` | type | stable | `../lib/contracts/interfaces/development-policy.interface` |
@@ -532,6 +533,7 @@ Total exports: 644
 | `resolvePluginSpecifier` | const | stable | `../plugin` |
 | `resolvePresetMembers` | const | stable | `../lib/plugins/preset-catalog` |
 | `resolvePublicToolIdentity` | const | stable | `../lib/contracts/resolvers/safe-tool-identity.resolver` |
+| `resolveReleaseTarget` | const | stable | `../lib/development-policy/release-target` |
 | `resolveSearchHybridWeights` | const | stable | `../lib/plugins/pack-defaults` |
 | `resolveTokenBudget` | const | stable | `../lib/contracts/interfaces/plugin-token-budget.interface` |
 | `resolveToolPermissions` | const | stable | `../lib/contracts/interfaces/plugin-tool-permissions.interface` |

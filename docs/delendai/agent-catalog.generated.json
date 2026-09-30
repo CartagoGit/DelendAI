@@ -1671,6 +1671,14 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-30"
+			},
+			{
+				"id": "x00780",
+				"title": "Release tooling follows the configured branches and strategy",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
 			}
 		]
 	}

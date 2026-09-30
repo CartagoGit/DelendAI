@@ -1076,6 +1076,8 @@ export {
 	hasSeparateReleaseBranch,
 	protectedBranchNames,
 } from '../lib/development-policy/release-branch';
+export { resolveReleaseTarget } from '../lib/development-policy/release-target';
+export type { IReleaseTarget } from '../lib/development-policy/release-target.interface';
 export {
 	anchorFromPolicy,
 	anchorRefusal,

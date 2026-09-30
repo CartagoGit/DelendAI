@@ -10,6 +10,7 @@ import type { IGitRunner } from '../services/git';
 export const reconcileRelease = async (
 	run: IGitRunner,
 	input: IReleaseReconciliationInput,
+	integrationBranch: string,
 ): Promise<IReleaseReceipt> => {
 	if (input.developShaNow === input.developShaAtCut)
 		return buildReleaseReceipt({
@@ -17,7 +18,7 @@ export const reconcileRelease = async (
 			status: 'planned',
 			actor: input.actor,
 			releaseSlug: input.releaseSlug,
-			details: { reason: 'develop unchanged' },
+			details: { reason: `${integrationBranch} unchanged` },
 		});
 	const sourceStillInDevelop = await run([
 		'merge-base',
@@ -26,7 +27,9 @@ export const reconcileRelease = async (
 		input.developShaNow,
 	]);
 	if (!sourceStillInDevelop.ok)
-		throw new Error('develop history cannot be reconciled without a loop');
+		throw new Error(
+			`${integrationBranch} history cannot be reconciled without a loop`,
+		);
 	const alreadyReconciled = await run([
 		'merge-base',
 		'--is-ancestor',
@@ -49,7 +52,7 @@ export const reconcileRelease = async (
 		actor: input.actor,
 		releaseSlug: input.releaseSlug,
 		source: input.developShaNow,
-		target: 'develop',
+		target: integrationBranch,
 		before: input.developShaAtCut,
 		after: input.developShaNow,
 		details: {

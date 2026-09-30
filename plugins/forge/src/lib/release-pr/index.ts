@@ -1,9 +1,11 @@
+import type { IReleasePromotionPlan } from '../contracts/interfaces/release-promotion-plan.interface';
 import {
 	assertReleaseMetadata,
 	evaluateReleaseReadiness,
 	type IReleaseCandidateMetadata,
 	type IReleaseGate,
 	type IReleaseReadiness,
+	type IReleaseTarget,
 } from '@delendai/core/public';
 
 export interface IReleasePrRecord {
@@ -23,13 +25,15 @@ export interface IReleasePrProvider {
 		readonly title: string;
 		readonly body: string;
 		readonly headBranch: string;
-		readonly baseBranch: 'main';
+		readonly baseBranch: string;
 	}): Promise<IReleasePrRecord>;
 }
 
 export interface ICreateReleasePrInput {
 	readonly candidate: IReleaseCandidateMetadata;
 	readonly gates: readonly IReleaseGate[];
+	/** Where the release lands, from the project's policy. */
+	readonly target: IReleaseTarget;
 	readonly currentBranch: string;
 	readonly upstream?: string | undefined;
 	readonly provider: IReleasePrProvider;
@@ -46,6 +50,7 @@ export class ReleasePrContractError extends Error {
 	readonly code:
 		| 'wrong-branch'
 		| 'wrong-base'
+		| 'no-pull-request'
 		| 'invalid-metadata'
 		| 'missing-upstream'
 		| 'readiness-blocked'
@@ -66,11 +71,28 @@ export class ReleasePrContractError extends Error {
 
 const RELEASE_BRANCH =
 	/^release\/(patch|minor|major)\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const ANTECEDENT_PR_NUMBER = 50;
+
+const NO_PULL_REQUEST_REASON: Readonly<
+	Record<Exclude<IReleaseTarget['promotion'], 'pull-request'>, string>
+> = {
+	none: 'is both the integration and the release branch, so there is no release promotion',
+	merge: 'integrates by merge, so a release reaches the release branch by merge and no pull request is opened',
+	direct: 'integrates directly, so a release reaches the release branch by push and no pull request is opened',
+};
+
+export const assertPullRequestPromotion = (target: IReleaseTarget): void => {
+	if (target.promotion === 'pull-request') return;
+	throw new ReleasePrContractError(
+		'no-pull-request',
+		`${target.integrationBranch} ${NO_PULL_REQUEST_REASON[target.promotion]}`,
+		{ promotion: target.promotion, releaseBranch: target.releaseBranch },
+	);
+};
 
 export const buildReleasePrDescription = (
 	candidate: IReleaseCandidateMetadata,
 	readiness: IReleaseReadiness,
+	target: IReleaseTarget,
 ): string => {
 	const gates = readiness.gates
 		.map(
@@ -80,12 +102,11 @@ export const buildReleasePrDescription = (
 		.join(', ');
 	return [
 		`Release branch: ${candidate.branch}`,
-		`Source develop SHA: ${candidate.sourceDevelopSha}`,
-		`Base main SHA: ${candidate.baseMainSha}`,
+		`Source ${target.integrationBranch} SHA: ${candidate.sourceDevelopSha}`,
+		`Base ${target.releaseBranch} SHA: ${candidate.baseMainSha}`,
 		`Version: ${candidate.fromVersion} -> ${candidate.targetVersion}`,
 		`Release type: ${candidate.type}`,
 		`Gates: ${gates || 'none'}`,
-		`Antecedent: PR #${ANTECEDENT_PR_NUMBER} used develop as its source; this release flow keeps the candidate branch explicit.`,
 	].join('\n');
 };
 
@@ -95,7 +116,9 @@ export const createReleasePullRequest = async ({
 	currentBranch,
 	upstream,
 	provider,
+	target,
 }: ICreateReleasePrInput): Promise<IReleasePrResult> => {
+	assertPullRequestPromotion(target);
 	try {
 		assertReleaseMetadata(candidate);
 	} catch (error) {
@@ -112,10 +135,13 @@ export const createReleasePullRequest = async ({
 			'wrong-branch',
 			`release PR branch must match candidate: ${candidate.branch}`,
 		);
-	if (candidate.baseMainSha.trim() === '' || candidate.branch === 'main')
+	if (
+		candidate.baseMainSha.trim() === '' ||
+		candidate.branch === target.releaseBranch
+	)
 		throw new ReleasePrContractError(
 			'wrong-base',
-			'release PR target must be main',
+			`release PR target must be ${target.releaseBranch}`,
 		);
 	if (upstream?.trim() === undefined || upstream.trim() === '')
 		throw new ReleasePrContractError(
@@ -128,14 +154,16 @@ export const createReleasePullRequest = async ({
 			'readiness-blocked',
 			`release readiness blocked: ${readiness.blockingGates.join(', ')}`,
 		);
-	const description = buildReleasePrDescription(candidate, readiness);
+	const description = buildReleasePrDescription(candidate, readiness, target);
 	const existing = (
 		await provider.listPullRequests({
 			headBranch: candidate.branch,
-			baseBranch: 'main',
+			baseBranch: target.releaseBranch,
 		})
 	).find(
-		(pr) => pr.headBranch === candidate.branch && pr.baseBranch === 'main',
+		(pr) =>
+			pr.headBranch === candidate.branch &&
+			pr.baseBranch === target.releaseBranch,
 	);
 	if (existing !== undefined)
 		return Object.freeze({
@@ -148,18 +176,48 @@ export const createReleasePullRequest = async ({
 		title: `Release ${candidate.targetVersion}`,
 		body: description,
 		headBranch: candidate.branch,
-		baseBranch: 'main',
+		baseBranch: target.releaseBranch,
 	});
-	if (pr.headBranch !== candidate.branch || pr.baseBranch !== 'main')
+	if (
+		pr.headBranch !== candidate.branch ||
+		pr.baseBranch !== target.releaseBranch
+	)
 		throw new ReleasePrContractError(
 			'provider-contract',
 			'provider returned a release PR with unexpected branches',
 			{
 				expectedHeadBranch: candidate.branch,
-				expectedBaseBranch: 'main',
+				expectedBaseBranch: target.releaseBranch,
 				actualHeadBranch: pr.headBranch,
 				actualBaseBranch: pr.baseBranch,
 			},
 		);
 	return Object.freeze({ created: true, pr, readiness, description });
+};
+
+/**
+ * Promotes a cut release the way the policy integrates: a pull request
+ * only under the pull-request strategy; under merge or direct the
+ * candidate is merged or pushed onto the release branch by the caller,
+ * so no forge call is made; with one branch there is nothing to promote.
+ */
+export const planReleasePromotion = async (
+	input: ICreateReleasePrInput,
+): Promise<IReleasePromotionPlan> => {
+	const { target, candidate } = input;
+	if (target.promotion === 'none')
+		return {
+			kind: 'none',
+			reason: `${target.integrationBranch} is both the integration and the release branch, so there is no release promotion`,
+		};
+	if (target.promotion === 'pull-request')
+		return {
+			kind: 'pull-request',
+			result: await createReleasePullRequest(input),
+		};
+	return {
+		kind: target.promotion,
+		headBranch: candidate.branch,
+		baseBranch: target.releaseBranch,
+	};
 };
