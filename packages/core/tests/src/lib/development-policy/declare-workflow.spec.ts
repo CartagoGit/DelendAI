@@ -152,7 +152,10 @@ describe('declareWorkflow', () => {
 		expect(merge.start).toContain('delendai work checkpoint');
 		expect(merge.land).toContain('MERGING it into develop');
 		expect(merge.land).toContain('opens no pull request');
-		expect(merge.land).toContain('local validation gate');
+		expect(merge.land).toContain('validation gate');
+		// The route it names is the command that lands.
+		expect(merge.land).toContain('`delendai work publish --proposal=<id>');
+		expect(merge.land).toContain('Never merge or push to develop by hand');
 
 		expect(pr.start).toBe(merge.start);
 		expect(pr.land).toContain('opens a pull request into develop');
@@ -164,7 +167,7 @@ describe('declareWorkflow', () => {
 
 	it('summarises each profile in one line, from the same axes', () => {
 		expect(workModelSummary(policyFor('shared-checkout-merge'))).toBe(
-			'shared-checkout-merge: start with `delendai work enter`; land by merge into develop after the local gate, no pull request.',
+			'shared-checkout-merge: start with `delendai work enter`; land by merge into develop with `delendai work publish`, after the local gate, no pull request.',
 		);
 		expect(workModelSummary(policyFor('shared-checkout-pr'))).toContain(
 			'land by pull request into develop',
@@ -174,6 +177,30 @@ describe('declareWorkflow', () => {
 		);
 		expect(workModelSummary(policyFor('worktree-pr'))).toContain(
 			'worktree branch',
+		);
+	});
+
+	it('says who certifies and when the work ref ends, per strategy', () => {
+		const merge = declareWorkflow(policyFor('shared-checkout-merge'));
+		const pr = declareWorkflow(policyFor('shared-checkout-pr'));
+		const step = (
+			declaration: ReturnType<typeof declareWorkflow>,
+			axis: string,
+		) =>
+			declaration.steps.find((entry) => entry.derivedFrom === axis)
+				?.instruction ?? '';
+
+		expect(step(merge, 'integration.requiresLocalCertification')).toContain(
+			'`delendai work publish` runs the validation gate',
+		);
+		expect(step(merge, 'integration.deleteMergedWorkRef')).toContain(
+			'once its work has landed',
+		);
+		expect(step(pr, 'integration.requiresLocalCertification')).toContain(
+			'Certification happens on the forge',
+		);
+		expect(step(pr, 'integration.deleteMergedWorkRef')).toContain(
+			'outlives its pull requests',
 		);
 	});
 

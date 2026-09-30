@@ -78,6 +78,13 @@ export {
 	readWorkspacePolicy,
 } from './lib/work-units/development-policy.service';
 export { openPublicationPullRequest } from './lib/work-units/publication-pull-request.service';
+// The gates a project declares: what `delendai validate` runs, and what
+// certifies a unit before the merge model lands it.
+export {
+	packageManagerFrom,
+	validationGateSteps,
+} from './lib/work-units/validation-gate-steps.service';
+export type { IValidationGateStep } from './lib/contracts/interfaces/local-certification.interface';
 export {
 	checkWorkflowInvariants,
 	renderInvariantReport,
