@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 642
+Total exports: 643
 
 | Maturity | Count |
 | --- | --- |
-| stable | 639 |
+| stable | 640 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -584,6 +584,7 @@ Total exports: 642
 | `scaffoldToolFile` | const | stable | `../lib/scaffold/scaffold-host` |
 | `scanLegacyIdentity` | const | stable | `../lib/workspace-migration/scanner/legacy-identity-scanner` |
 | `SCHEMA_VERSION` | const | stable | `../lib/api/stable-manifest` |
+| `serveRefusal` | const | stable | `../lib/cli/refused-server` |
 | `SHARED_CHECKOUT_WRITE_REFUSED` | const | stable | `../lib/contracts/constants/write-refusal.constant` |
 | `sharedCheckout` | const | stable | `../lib/shared/shared-checkout` |
 | `shingleBlocks` | const | stable | `../lib/scan` |
