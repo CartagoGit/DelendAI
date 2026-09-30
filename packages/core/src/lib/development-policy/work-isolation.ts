@@ -25,13 +25,28 @@ export const describeWorkIsolation = (
 	if (policy === undefined) {
 		return {
 			agentWorktrees: true,
+			unitWorktrees: false,
 			rule: '2+ agents sharing this repo? Each must call agent_worktree (action: create) once at the start of its session — it isolates the agent into its own git worktree + branch (agent/<name>) so concurrent git add/commit never race on a shared .git/index. List active worktrees with action: list; clean up with action: remove.',
 			worktreeRefusal: HOST_DISABLED_REFUSAL,
+		};
+	}
+	if (policy.workspace.agentWorktrees && policy.persistence.usesWipRefs) {
+		// One mechanism: the worktree is the unit's, made by `work enter` on
+		// the work ref that `work checkpoint` and `work publish` accept.
+		// `agent_worktree` made an `agent/*` branch they cannot use.
+		const brief = briefWorkModel(policy);
+		const rule = `This project uses the \`${policy.profile}\` development profile: each agent works in its own git worktree, and \`delendai work enter\` makes it. Do not call agent_worktree (action: create) or create worktrees and branches by hand: they cannot be published. ${brief.start} ${brief.land}`;
+		return {
+			agentWorktrees: true,
+			unitWorktrees: true,
+			rule,
+			worktreeRefusal: `agent_worktree does not create worktrees under the \`${policy.profile}\` development profile. ${rule}`,
 		};
 	}
 	if (policy.workspace.agentWorktrees) {
 		return {
 			agentWorktrees: true,
+			unitWorktrees: false,
 			rule: `This project uses the \`${policy.profile}\` development profile: each agent works in its own git worktree. Call agent_worktree (action: create) once at the start of the session and work only inside it; list with action: list, clean up with action: remove.`,
 			worktreeRefusal: HOST_DISABLED_REFUSAL,
 		};
@@ -53,6 +68,7 @@ export const describeWorkIsolation = (
 	const rule = `This project uses the \`${policy.profile}\` development profile: the shared checkout stays on \`${policy.branches.integration}\`. Do not create worktrees or branches by hand (no \`git worktree add\`, \`git switch\`, \`git checkout -b\`), and do not call agent_worktree.${route} Claim the files you edit with agent_lock so agents never touch the same file; ${persistence}.`;
 	return {
 		agentWorktrees: false,
+		unitWorktrees: false,
 		rule,
 		worktreeRefusal: `agent_worktree is not used under the \`${policy.profile}\` development profile. ${rule}`,
 	};

@@ -31,7 +31,7 @@ A real-CLI audit of worktree-pr found two incompatible models. The preset declar
 
 ### S1 — One worktree-pr model derived from the preset axes
 - **Status**: pending
-- **Files**: `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/development-policy/work-isolation.ts`, `packages/core/src/lib/contracts/interfaces/work-isolation.interface.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`
+- **Files**: `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/development-policy/work-isolation.ts`, `packages/core/src/lib/contracts/interfaces/work-isolation.interface.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`, `docs/delendai/DEVELOPMENT-STRATEGIES.md`, `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`, `packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`, `packages/core/tests/src/lib/startup-gate/policy-gate.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-profiles.spec.ts`, `plugins/proposals/tests/src/lib/tools/agent-worktree.tool.spec.ts`
 - **Gate**: none
 - acceptance:
   - "Under worktree-pr, work enter yields a worktree and branch that work checkpoint and work publish accept, and publish produces the publication ref (real git)."
