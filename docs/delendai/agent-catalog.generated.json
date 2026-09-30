@@ -1385,14 +1385,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "d00416",
-				"title": "Document the push.branch × shared-checkout-merge adopter trip-up and the fresh-clone SQLite projection bootstrap",
-				"track": "adopter-experience",
-				"status": "ready",
-				"kind": "docs",
-				"date": "2026-09-29"
-			},
-			{
 				"id": "f00509",
 				"title": "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease",
 				"track": "trust",
@@ -1431,14 +1423,6 @@
 				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-09-10"
-			},
-			{
-				"id": "f00537",
-				"title": "Archify plugin: architecture diagrams as a projection of the structures the runtime already reads",
-				"track": "surface",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-11"
 			},
 			{
 				"id": "f00538",
@@ -1559,14 +1543,6 @@
 				"status": "ready",
 				"kind": "plan",
 				"date": "2026-08-27"
-			},
-			{
-				"id": "q00015",
-				"title": "Plan eventual settlement: commits atómicos con scope exacto sobre develop compartido; develop rojo es estado transitorio válido",
-				"track": "quality",
-				"status": "ready",
-				"kind": "plan",
-				"date": "2026-09-02"
 			},
 			{
 				"id": "q00018",
