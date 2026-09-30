@@ -203,7 +203,7 @@ export const checkWorkflowInvariants = (input: {
 				: misshapen.length === 0
 					? `${String(published.length)} ref(s), all canonical`
 					: `${String(misshapen.length)} flat: ${misshapen.slice(0, 3).join(', ')}`,
-		remedy: 'rename on the forge, then reopen the pull request',
+		remedy: `give ${pubPrefix}<name> the agent, slice and generation segments (or delete the flat ref), then publish the unit again with \`delendai work publish\``,
 	});
 
 	// 5. Every candidate contains the integration branch.
