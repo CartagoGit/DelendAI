@@ -2,15 +2,15 @@
 id: x00771
 title: "The served work model is derived from the resolved policy for every profile"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-30
 priority: P1
 related: [x00760]
-last-transition-id: d2ada3f9-5ec7-4fe2-b2ca-5f6c197949a3
-last-correlation-id: d2ada3f9-5ec7-4fe2-b2ca-5f6c197949a3
-last-transition-from: ready
+last-transition-id: 03a98c97-49aa-4963-99ed-223975a4e51f
+last-correlation-id: 03a98c97-49aa-4963-99ed-223975a4e51f
+last-transition-from: in-progress
 ---
 
 # x00771 — The served work model is derived from the resolved policy for every profile
@@ -69,6 +69,9 @@ per profile, found the served text wrong in several places:
 - **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/development-policy/derive.ts`, `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/contracts/interfaces/work-unit-context.interface.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/review.command.ts`, `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`, `packages/core/tests/src/lib/development-policy/derived-invariants.spec.ts`, `packages/core/tests/src/lib/tools/work-unit.tool.spec.ts`
 - **Gate**: none
+- shipped-in: `d3f97b9fa53a`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
