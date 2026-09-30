@@ -2,13 +2,13 @@
 id: x00768
 title: "Branch tools and proposal publication follow the configured policy"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-09-30
-last-transition-id: 228748a0-2ddd-4dfc-8899-1d76b00efe32
-last-correlation-id: 228748a0-2ddd-4dfc-8899-1d76b00efe32
-last-transition-from: ready
+last-transition-id: f69f56ad-dc10-43ab-bcfc-007c0cc70750
+last-correlation-id: f69f56ad-dc10-43ab-bcfc-007c0cc70750
+last-transition-from: in-progress
 ---
 
 # x00768 — Branch tools and proposal publication follow the configured policy
@@ -38,6 +38,9 @@ An audit found plugins/proposals hardcodes defaultBaseBranch develop and agent/ 
   - "branch_status, branch_gc and swarm_hygiene resolve the base branch and prefixes from the policy when not passed"
   - "branch_gc removes only worktrees whose ref the ref-lifecycle verdict marks as delivered"
   - "a proposal created under shared-checkout-merge is landed or reports a concrete nextAction"
+- shipped-in: `8c1becdb89ec`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
