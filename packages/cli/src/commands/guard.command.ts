@@ -564,7 +564,7 @@ export const createGuardCommand = (
 			// agent would have to explain to itself.
 			if (outcome.paths.length > 0 && !outcome.committed) {
 				process.stderr.write(
-					`delendai guard (post-merge): regenerated ${outcome.paths.join(', ')}, and could not commit ${outcome.paths.length === 1 ? 'it' : 'them'} here. The change is staged; land it through a pull request.\n`,
+					`delendai guard (post-merge): regenerated ${outcome.paths.join(', ')}, and could not commit ${outcome.paths.length === 1 ? 'it' : 'them'} here. The change is staged. ${briefWorkModel(policy).land}\n`,
 				);
 			}
 			return { code: EXIT_CODE.OK };
