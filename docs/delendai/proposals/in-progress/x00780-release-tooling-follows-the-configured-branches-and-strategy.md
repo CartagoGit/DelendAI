@@ -2,10 +2,13 @@
 id: x00780
 title: "Release tooling follows the configured branches and strategy"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-30
+last-transition-id: 9dfb0990-bf4f-46ac-aa80-f3bce9afb124
+last-correlation-id: 9dfb0990-bf4f-46ac-aa80-f3bce9afb124
+last-transition-from: ready
 ---
 
 # x00780 — Release tooling follows the configured branches and strategy
@@ -16,11 +19,13 @@ The release tools (candidate cut, release pull request, finalize, reconcile) tak
 
 ## why
 
-TODO: why this work matters now.
+The release tools name this repository's shape: git.ts, release and release-finalize read `develop`, `main` and `packages/core/package.json`, and the forge release tools always open a pull request into `main`. A consumer with other branch names, one branch, or the merge strategy cannot use them. The project's configuration is the single source of truth for branches and strategy.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Adding a release strategy or a versioned-packages key to the development config schema.
+- Changing the persisted candidate field names (sourceDevelopSha, baseMainSha).
+- commit-policy push-driver, proposals, cli doctor and init, declare-workflow and the adopt migrator.
 
 ## Slices
 
