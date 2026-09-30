@@ -2,13 +2,13 @@
 id: d00416
 title: "Document the push.branch × shared-checkout-merge adopter trip-up and the fresh-clone SQLite projection bootstrap"
 kind: docs
-status: in-progress
+status: review
 type: proposal
 track: adopter-experience
 date: 2026-09-29
-last-transition-id: 3e756829-8c08-4dc2-b5f9-74f1580161e0
-last-correlation-id: 3e756829-8c08-4dc2-b5f9-74f1580161e0
-last-transition-from: ready
+last-transition-id: fb6e5d9f-fd4a-4e83-b027-289c68ef8b8e
+last-correlation-id: fb6e5d9f-fd4a-4e83-b027-289c68ef8b8e
+last-transition-from: in-progress
 ---
 
 # d00416 — Document the push.branch × shared-checkout-merge adopter trip-up and the fresh-clone SQLite projection bootstrap
@@ -70,6 +70,7 @@ Observed live on Beateam/logistics-app 2026-09-29: a single config file trips tw
 - acceptance:
   - "Both source files contain a discoverable link to `ADOPTER-CONFIG-FOOTGUNS.md`."
   - "The link is under a section that an adopter onboarding the project will read (config setup, not a contributor-only section)."
+- shipped-in: `c104a2522e42`
 
 ## acceptance
 
