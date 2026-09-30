@@ -2,10 +2,13 @@
 id: x00773
 title: "A proposal's lifecycle completes inside the unit that implemented it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-30
+last-transition-id: ca921ca2-3e3d-4f98-9e47-b65bd4be0dbe
+last-correlation-id: ca921ca2-3e3d-4f98-9e47-b65bd4be0dbe
+last-transition-from: ready
 ---
 
 # x00773 — A proposal's lifecycle completes inside the unit that implemented it
