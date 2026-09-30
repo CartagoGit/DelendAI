@@ -1647,14 +1647,6 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-19"
-			},
-			{
-				"id": "x00771",
-				"title": "The served work model is derived from the resolved policy for every profile",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-30"
 			}
 		]
 	}
