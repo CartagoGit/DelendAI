@@ -1449,22 +1449,6 @@
 				"date": "2026-09-15"
 			},
 			{
-				"id": "f00539",
-				"title": "Configurable CI/PR policy with free-tier autodetection",
-				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
-				"id": "f00540",
-				"title": "Git host provider abstraction with capability flags",
-				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
 				"id": "f00541",
 				"title": "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec",
 				"track": "general",
@@ -1663,14 +1647,6 @@
 				"status": "ready",
 				"kind": "refactor",
 				"date": "2026-09-08"
-			},
-			{
-				"id": "v00127",
-				"title": "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas",
-				"track": "governance",
-				"status": "ready",
-				"kind": "perf",
-				"date": "2026-08-25"
 			},
 			{
 				"id": "x00541",
