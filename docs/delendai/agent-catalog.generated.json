@@ -1468,7 +1468,7 @@
 				"id": "f00545",
 				"title": "Plugin authoring multi-platform with analyzer (WordPress, Joomla, Drupal, Magento 2, PrestaShop, custom PHP)",
 				"track": "general",
-				"status": "ready",
+				"status": "paused",
 				"kind": "feat",
 				"date": "2026-09-15"
 			},
