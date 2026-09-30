@@ -1,15 +1,7 @@
 import { spawn } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
-import {
-	cp,
-	mkdir,
-	readdir,
-	readFile,
-	rename,
-	rm,
-	writeFile,
-} from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
+import { writeFileAtomic } from '@delendai/core/public';
 
 /**
  * Maps each rewritable `@delendai/*` package name to the version its OWN
@@ -195,23 +187,13 @@ const writePackageJsonAtomic = async (
 	pkgPath: string,
 	payload: string,
 ): Promise<void> => {
-	// A pid and a clock are both guessable; the rename that follows
-	// replaces a package.json, so the name it lands from should not be
-	// something another process can create first.
-	const tempPath = `${pkgPath}.tmp-${process.pid}-${randomBytes(6).toString('hex')}`;
-	await writeFile(tempPath, payload, 'utf8').catch(() => {
+	// The core writer: an exclusive, private temporary that takes the
+	// package.json's own mode before it replaces it.
+	await writeFileAtomic(pkgPath, payload).catch(() => {
 		throw createWorkspaceDepsError(
 			'ERR_WORKSPACE_DEPS_IO',
-			`cannot write package.json for publish rewrite at ${pkgPath}`,
+			`cannot replace package.json for publish rewrite at ${pkgPath}`,
 		);
-	});
-	await rename(tempPath, pkgPath).catch(async () => {
-		await writeFile(pkgPath, payload, 'utf8').catch(() => {
-			throw createWorkspaceDepsError(
-				'ERR_WORKSPACE_DEPS_IO',
-				`cannot replace package.json for publish rewrite at ${pkgPath}`,
-			);
-		});
 	});
 };
 

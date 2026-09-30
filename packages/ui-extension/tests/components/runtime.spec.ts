@@ -26,7 +26,7 @@ describe('runtime', async () => {
 
 	it('renderRuntime wraps the script in a <script> tag', async () => {
 		const html = renderRuntime();
-		expect(html).toMatch(/^<script>/);
-		expect(html).toMatch(/<\/script>$/);
+		expect(html.startsWith('<script>')).toBe(true);
+		expect(html.endsWith('</script>')).toBe(true);
 	});
 });

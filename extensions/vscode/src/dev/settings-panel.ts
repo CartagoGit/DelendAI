@@ -342,6 +342,18 @@ export const bindSettingsHandlers = (
 };
 
 /**
+ * `/api/setup/status` for the project the page was opened on. Only `cwd`
+ * is forwarded: it is the one parameter the endpoint reads, and the rest
+ * of the page's query string has no business in the request.
+ */
+const setupStatusUrl = (): string => {
+	const cwd = new URLSearchParams(window.location.search).get('cwd');
+	return cwd === null
+		? '/api/setup/status'
+		: `/api/setup/status?cwd=${encodeURIComponent(cwd)}`;
+};
+
+/**
  * Apply the persisted theme on first paint. Idempotent — calling
  * with the same prefs is a no-op for the DOM (HTML attribute is set
  * unconditionally; that's the cheapest possible path).
@@ -412,9 +424,7 @@ export const mountSettingsPanel = (
 				statusTimer = window.setTimeout(() => {
 					void (async (): Promise<void> => {
 						if (!mounted || renderGeneration !== generation) return;
-						const r = await fetch(
-							`/api/setup/status${window.location.search}`,
-						);
+						const r = await fetch(setupStatusUrl());
 						if (
 							!r.ok ||
 							!mounted ||
@@ -429,9 +439,7 @@ export const mountSettingsPanel = (
 			},
 			onRecheck: async () => {
 				const requestGeneration = generation;
-				const r = await fetch(
-					`/api/setup/status${window.location.search}`,
-				);
+				const r = await fetch(setupStatusUrl());
 				if (!r.ok || !mounted || requestGeneration !== generation)
 					return;
 				rerender((await r.json()) as ISetupStatus);

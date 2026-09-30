@@ -69,15 +69,31 @@ This is infrastructure. f00548 (style architecture) and f00549
 
 ### S1 — Resolve the installed version, not just the framework id
 
-- **Status**: pending
-- **Files**: [`packages/core/src/lib/bootstrap/framework-version.ts`, `packages/core/src/lib/bootstrap/framework-version.spec.ts`, `packages/core/src/lib/contracts/interfaces/framework-version.interface.ts`]
+- **Status**: review
+- **Files**: [`packages/core/src/lib/bootstrap/framework-version.ts`, `packages/core/tests/src/lib/bootstrap/framework-version.spec.ts`, `packages/core/src/lib/contracts/interfaces/framework-version.interface.ts`]
 
 Read the resolved version from the lockfile first and the manifest range
 second, and say which of the two answered. A range with no lockfile is
 reported as unresolved rather than guessed, because a rule keyed to the
 wrong version is worse than no rule.
 
-- **Gate**: `npx vitest run packages/core/src/lib/bootstrap/framework-version.spec.ts`
+- **Gate**: `env -u CLAUDECODE -u AI_AGENT bunx vitest run packages/core/tests/src/lib/bootstrap/framework-version.spec.ts`
+
+2026-09-30: Implemented `resolveFrameworkVersion`/`extractLockfileVersion`/
+`isExactVersion` in `framework-version.ts`, pure and agnostic of package
+manager — dispatches on lockfile kind (`bun.lock`, `package-lock.json`
+v1/v3, `yarn.lock`, `pnpm-lock.yaml`), the same four kinds
+`detect-stack-defaults.helper.ts` already lists via
+`listPackageManagerLockfiles()`. Correction to this slice's own **Files**
+list: the repo's real spec convention mirrors `src/` under a sibling
+`tests/` tree (see `framework-rules.spec.ts` at
+`packages/core/tests/src/lib/bootstrap/`), not a colocated
+`framework-version.spec.ts` next to the source file as originally
+written — the Gate command above is corrected to match. Verified: 13/13
+tests pass (`env -u CLAUDECODE -u AI_AGENT bunx vitest run
+packages/core/tests/src/lib/bootstrap/framework-version.spec.ts`);
+coverage on `framework-version.ts` is 100% statements/functions/lines,
+88.88% branches (threshold 82/83/83/69).
 
 ### S2 — A knowledge record with its evidence and its force
 

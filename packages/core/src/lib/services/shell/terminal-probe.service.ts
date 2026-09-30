@@ -60,6 +60,24 @@ const execFile = promisify(execFileCb);
 const DEFAULT_PROBE_TIMEOUT_MS = 1_500;
 const MAX_PROBE_TIMEOUT_MS = 2_000;
 const SAFE_BASH = '/bin/bash';
+const KNOWN_SHELL_DIRS = [
+	'/bin',
+	'/usr/bin',
+	'/usr/local/bin',
+	'/opt/homebrew/bin',
+] as const;
+const KNOWN_SHELL_NAMES = ['bash', 'zsh', 'sh', 'dash', 'ksh', 'fish'] as const;
+const KNOWN_SHELLS: readonly string[] = KNOWN_SHELL_DIRS.flatMap((dir) =>
+	KNOWN_SHELL_NAMES.map((name) => `${dir}/${name}`),
+);
+
+/**
+ * The shell the probe may EXECUTE for `$SHELL`: the matching entry of a
+ * fixed list of shell paths, or bash. `$SHELL` is still what the descriptor
+ * reports; it is only never run as an arbitrary program.
+ */
+const launchableShell = (envShell: string): string =>
+	KNOWN_SHELLS.find((known) => known === envShell) ?? SAFE_BASH;
 
 /**
  * Default driver built on top of `node:child_process.execFile`. Uses
@@ -124,8 +142,11 @@ const defaultDriver = (): ITerminalProbeDriver => {
 						clearTimeout(timeoutHandle);
 						const stdout =
 							typeof err.stdout === 'string' ? err.stdout : '';
+						// A program that never started (ENOENT) has an empty
+						// stderr; the error message is then the only reason.
 						const stderr =
-							typeof err.stderr === 'string'
+							typeof err.stderr === 'string' &&
+							err.stderr.length > 0
 								? err.stderr
 								: (err.message ?? '');
 						const timedOut =
@@ -270,14 +291,15 @@ export class TerminalProbeService {
 			'case "$-" in *i*) echo interactive;; esac',
 		]);
 		const loginProbe = await this.run([SAFE_BASH, '-c', 'echo "$0"']);
+		const launchShell = launchableShell(envShell);
 		const interactiveInit = await this.run([
-			envShell !== '' ? envShell : SAFE_BASH,
+			launchShell,
 			'-i',
 			'-c',
 			'echo __PROBE__',
 		]);
 		const nonInteractiveInit = await this.run([
-			envShell !== '' ? envShell : SAFE_BASH,
+			launchShell,
 			'-c',
 			'echo __PROBE__',
 		]);

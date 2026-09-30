@@ -129,12 +129,14 @@ describe('f00193 — external-mcp.router (Track K)', () => {
 		});
 
 		it('returns a refusal when every eligible provider is in `excluded`', () => {
-			let result = selectProvider({
-				capability: 'chat',
-				providers: [make({ providerId: 'a' })],
-				options: { excluded: ['a'] },
-			});
-			result = expectRefusal(result);
+			const refusal = expectRefusal(
+				selectProvider({
+					capability: 'chat',
+					providers: [make({ providerId: 'a' })],
+					options: { excluded: ['a'] },
+				}),
+			);
+			expect(refusal.capability).toBe('chat');
 		});
 
 		it('picks the only eligible provider with `only-candidate`', () => {

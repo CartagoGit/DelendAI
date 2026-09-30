@@ -9,7 +9,7 @@
  * Each test uses its own tmp dir so parallel runs don't collide.
  */
 
-import { mkdtemp, readFile, stat } from 'node:fs/promises';
+import { mkdtemp, open, readFile, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
 
@@ -56,11 +56,16 @@ describe('alias integration (real fs, b00239 S6)', () => {
 
 			// File actually lives on disk.
 			const path = join(binDir, 'est');
-			const st = await stat(path);
-			expect(st.isFile()).toBe(true);
-
-			// File carries the marker.
-			const contents = await readFile(path, 'utf8');
+			// One handle for the type check and the read.
+			const handle = await open(path, 'r');
+			let contents: string;
+			try {
+				expect((await handle.stat()).isFile()).toBe(true);
+				// File carries the marker.
+				contents = await handle.readFile('utf8');
+			} finally {
+				await handle.close();
+			}
 			expect(contents).toContain(ALIAS_MARKER);
 			expect(contents).toContain(env.canonicalPath);
 
