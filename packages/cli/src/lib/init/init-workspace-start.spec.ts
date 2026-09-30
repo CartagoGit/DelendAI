@@ -28,6 +28,7 @@ import {
 	validateDevelopmentPolicy,
 } from '@delendai/core/public';
 
+import { createNoopContext } from '../noop-context.factory';
 import type { ICliCommandContext } from '../../contracts/interfaces/cli-command.interface';
 import { runInitWithAnswers } from '../../commands/init/init.command';
 import { InitAnswers } from './init-answers.schema';
@@ -64,10 +65,19 @@ const consumer = (options: { workflow?: string } = {}): string => {
 };
 
 const contextFor = (cwd: string): ICliCommandContext =>
-	({
-		cwd,
-		globals: { json: true, workspace: cwd, format: 'json' },
-	}) as unknown as ICliCommandContext;
+	createNoopContext(cwd, {
+		workspace: cwd,
+		remote: undefined,
+		json: true,
+		format: 'json',
+		lang: 'en',
+		noColor: true,
+		plugins: [],
+		preset: undefined,
+		config: undefined,
+		extraOptions: undefined,
+		agentWorktree: undefined,
+	});
 
 const CI =
 	'name: CI\non:\n  pull_request:\njobs:\n  validate:\n    runs-on: x\n';

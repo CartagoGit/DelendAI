@@ -55,7 +55,6 @@ import {
 import { gatherAdoptionEvidence } from './development-policy-evidence';
 import { deriveRequiredChecks } from './development-policy-required-checks';
 import type {
-	IAdoptedBlock,
 	IAdoption,
 	IConfigShape,
 } from './development-policy-adoption.interface';
