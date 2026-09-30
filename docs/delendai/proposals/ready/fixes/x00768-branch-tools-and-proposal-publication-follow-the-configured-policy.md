@@ -20,7 +20,8 @@ An audit found plugins/proposals hardcodes defaultBaseBranch develop and agent/ 
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Redesigning the agent_worktree model, which still creates agent/<name> branches and stays recognised.
+- The push.protectedBranches default, close_slice's gate timeout, and the doctor/init and core policy validate/resolve work owned elsewhere.
 
 ## Slices
 
