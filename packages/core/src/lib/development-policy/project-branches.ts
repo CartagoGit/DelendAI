@@ -14,8 +14,10 @@
  * single place that should. This reads it, so the last resort is the
  * project's own configuration rather than this repository's habits.
  */
+import type { ILiveProposalUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
+import { liveUnitsOfProposal } from '../work-units/proposal-branch.service';
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -217,4 +219,59 @@ export const unitBranchOf = async (
 	}
 	const branch = checkedOutBranch(root);
 	return branch?.startsWith(prefix) === true ? branch : undefined;
+};
+
+/** Which unit of work a call that named a proposal belongs to. */
+export type ICallerUnit =
+	| { readonly status: 'found'; readonly unit: ILiveProposalUnit }
+	| {
+			readonly status: 'ambiguous';
+			readonly units: readonly ILiveProposalUnit[];
+	  }
+	| { readonly status: 'none' };
+
+/**
+ * The unit of work a proposal's own tools act in.
+ *
+ * A proposal created or implemented in a unit exists only on that unit's
+ * ref until its pull request lands, or its merge, so every later move of
+ * its lifecycle (a slice closed, the hand-off to review) has to happen in
+ * that unit's worktree. Asking the caller to name it by path made each
+ * agent find out, one refusal at a time, where its own work lived; the
+ * work-ref shape already says which unit carries the proposal, so the
+ * answer is read from there. More than one candidate is not guessed.
+ */
+export const callerUnitCheckout = async (
+	root: string,
+	wanted: { readonly proposal: string; readonly agent?: string | undefined },
+): Promise<ICallerUnit> => {
+	const policy = await readPolicyOrNone(root);
+	if (policy === undefined) return { status: 'none' };
+	if (policy.branches.workRefTemplate.length === 0) {
+		return { status: 'none' };
+	}
+	const listing = worktreeListing(root);
+	if (listing === undefined) return { status: 'none' };
+	const units = liveUnitsOfProposal(
+		policy.branches.workRefTemplate,
+		listing,
+		wanted,
+	);
+	const [only, ...others] = units;
+	if (only === undefined) return { status: 'none' };
+	return others.length === 0
+		? { status: 'found', unit: only }
+		: { status: 'ambiguous', units };
+};
+
+const worktreeListing = (root: string): string | undefined => {
+	try {
+		return execFileSync('git', ['worktree', 'list', '--porcelain'], {
+			cwd: root,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		});
+	} catch {
+		return undefined;
+	}
 };

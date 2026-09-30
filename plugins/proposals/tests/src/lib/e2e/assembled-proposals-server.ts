@@ -106,12 +106,20 @@ export interface ICreateAssembledProposalsServerOptions {
 	 * smaller surface.
 	 */
 	readonly progressiveDisclosure?: boolean;
+	/**
+	 * Serve a workspace the spec prepared (a git repository, say) instead of
+	 * an empty temporary one. The harness still removes it on `close`.
+	 */
+	readonly workspace?: string;
+	/** The raw `delendai.config.json` the assembled server reads. */
+	readonly workspaceConfig?: string;
 }
 
 export const createAssembledProposalsServer = async (
 	options: ICreateAssembledProposalsServerOptions = {},
 ): Promise<IAssembledProposalsServer> => {
-	const workspace = mkdtempSync(join(tmpdir(), 'proposals-e2e-'));
+	const workspace =
+		options.workspace ?? mkdtempSync(join(tmpdir(), 'proposals-e2e-'));
 	const args = parseCliArgs(
 		[
 			'--plugins=proposals',
@@ -141,6 +149,9 @@ export const createAssembledProposalsServer = async (
 		// plugin receives pure defaults from ctx.corePaths.
 		readFile: async (path) => {
 			if (!path.endsWith('delendai.config.json')) return undefined;
+			if (options.workspaceConfig !== undefined) {
+				return options.workspaceConfig;
+			}
 			const hasPeerReview = options.requirePeerReview !== undefined;
 			const hasDisclosure = options.progressiveDisclosure === true;
 			const hasWorktrees = options.enableAgentWorktree === true;

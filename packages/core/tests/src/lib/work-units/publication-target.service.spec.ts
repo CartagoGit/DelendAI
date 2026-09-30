@@ -22,6 +22,7 @@ import {
 import {
 	changedLines,
 	choosePublicationTarget,
+	proposalHandoffNote,
 	proposalSliceCount,
 	proposalStillInProgress,
 	publicationPattern,
@@ -360,6 +361,25 @@ describe('what the decision reads', () => {
 		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(false);
 		expect(proposalStillInProgress(root, 'x00001', 'HEAD~1')).toBe(true);
 		expect(proposalStillInProgress(root, 'x09999', 'HEAD')).toBe(false);
+	});
+
+	it('tells a publication carrying a proposal that is not in review to hand it over first', () => {
+		const { root } = setup(2);
+		const ready = proposalHandoffNote(root, 'x00001', 'HEAD');
+		expect(ready?.status).toBe('ready');
+		expect(ready?.nextAction).toContain('BEFORE publishing');
+		mkdirSync(join(root, 'docs/delendai/proposals/review'), {
+			recursive: true,
+		});
+		git(
+			root,
+			'mv',
+			'docs/delendai/proposals/ready/fixes/x00001-a-change.md',
+			'docs/delendai/proposals/review/x00001-a-change.md',
+		);
+		git(root, 'commit', '-q', '-m', 'to review');
+		expect(proposalHandoffNote(root, 'x00001', 'HEAD')).toBeUndefined();
+		expect(proposalHandoffNote(root, 'x09999', 'HEAD')).toBeUndefined();
 	});
 
 	it('counts added and removed lines against the base', () => {

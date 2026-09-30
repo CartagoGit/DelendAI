@@ -15,25 +15,45 @@ last-transition-from: ready
 
 ## Goal
 
-An agent that creates a proposal and implements it in a work unit can hand it to review, and move its slices, from that unit, under every profile: the transition is written in the unit's tree, rides with the pull request or the merge, and lands directly under a direct profile.
+An agent that creates a proposal and implements it in a work unit can hand it to review, and move its slices, from that unit, under every profile: the move is written in the unit's tree, rides with the pull request or the merge, and lands directly under a direct profile.
 
 ## why
 
-Proposals sit in ready with slices pending after their PR is published, because the hand-off needs the file on the integration branch and agents edit statuses by hand.
+A proposal created or implemented in a unit exists only on that unit's ref until its work lands. The tools that move its lifecycle (`proposal_transition`, `close_slice`, the review tools) act in the tree the call names, and a call from the shared checkout on the integration branch is refused, so every agent had to find out, one refusal at a time, that the worktree has to be passed as `checkout`. Publishing then ends the unit, and with it the only tree the hand-off could be made in: proposals sit in `ready` with their slices `pending`, and agents edit statuses by hand.
+
+## Design
+
+- A call about a proposal (`id`, `proposalId` or `proposal`) that would be refused in the shared checkout acts instead in the one live implementation (else creation) unit that carries that proposal, for the agent named when one is. The move is committed in the unit by the same write commit every caller-checkout tool gets, so it lands with the pull request under a pull-request strategy, with the merge under a merge strategy, and the unit is the place where it is written under a worktree strategy. More than one candidate is never guessed: the refusal lists them. A project with no work-ref model commits directly, and its tools act where the proposal is.
+- `work publish` states, before the unit is gone, that the published proposal is not yet in review and that the hand-off is made in the unit before the last publish; both the pull-request and the merge routes carry it.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Gating `close_slice` or changing what the hand-off requires.
+- Performing the hand-off inside `work publish`: core stays agnostic of the proposals plugin, and the hand-off records review rounds under the agent making it.
 
 ## Slices
 
 - global_gate: none
 
-### S1 — Hand-off from the unit
+### S1 — Proposal tools act in the unit that carries the proposal
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
+- **Files**:
+  - `packages/core/src/lib/contracts/interfaces/live-proposal-unit.interface.ts`
+  - `packages/core/src/lib/work-units/proposal-branch.service.ts`
+  - `packages/core/src/lib/development-policy/project-branches.ts`
+  - `packages/core/src/lib/shared/bind-write-root.ts`
+  - `packages/core/src/lib/work-units/publication-target.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+  - `packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
+  - `packages/core/tests/src/lib/work-units/proposal-branch.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
+  - `plugins/proposals/tests/src/lib/e2e/assembled-proposals-server.ts`
+  - `plugins/proposals/tests/src/lib/e2e/proposal-lifecycle-in-unit.e2e.spec.ts`
 - **Gate**: type
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- From the shared checkout on the integration branch, `proposal_transition` for a proposal only a unit carries moves it in that unit and commits it there, under shared-checkout-pr, shared-checkout-merge and worktree-pr, with the shared checkout untouched.
+- Under shared-direct the move is made where the proposal is.
+- Two units carrying the proposal are refused with both paths named.
+- `work publish` of a unit whose proposal is not in review says how to hand it over first.

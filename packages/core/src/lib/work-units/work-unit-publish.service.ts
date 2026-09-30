@@ -9,6 +9,7 @@ import {
 } from './work-publish.service';
 import {
 	choosePublicationTarget,
+	proposalHandoffNote,
 	proposalStillInProgress,
 } from './publication-target.service';
 import { openPublicationPullRequest } from './publication-pull-request.service';
@@ -119,18 +120,29 @@ export const published = async (
 		inProgress && !args.includes('--keep-work-ref')
 			? `${proposal} is still in progress, and its next slices are committed on this branch`
 			: undefined;
+	// Read before the work ref is gone: publishing ends the unit.
+	const proposalHandoff = proposalHandoffNote(root, proposal, workRef);
+	const withHandoff = (result: IWorkUnitResult): IWorkUnitResult =>
+		proposalHandoff === undefined || result.data === undefined
+			? result
+			: {
+					...result,
+					data: { ...(result.data as object), proposalHandoff },
+				};
 	// A profile that integrates by merge has no pull request to publish
 	// into: the unit lands here, certified by the local gate, or not at all.
 	if (policy.integration.strategy === 'merge') {
-		return landWorkUnit({
-			root,
-			cwd: ctx.cwd,
-			policy,
-			remote,
-			workRef,
-			keepWorkRef,
-			keepWorkRefBecause,
-		});
+		return withHandoff(
+			await landWorkUnit({
+				root,
+				cwd: ctx.cwd,
+				policy,
+				remote,
+				workRef,
+				keepWorkRef,
+				keepWorkRefBecause,
+			}),
+		);
 	}
 	// Whether this slice is published alone or joins its proposal's pull
 	// request is the policy's decision (integration.publication).
@@ -200,7 +212,7 @@ export const published = async (
 					},
 				})
 			: undefined;
-	return {
+	return withHandoff({
 		// Published but not cleaned up is not a success: the namespace is
 		// left carrying a ref that looks like live work.
 		code:
@@ -212,5 +224,5 @@ export const published = async (
 			publication,
 			...(pullRequest === undefined ? {} : { pullRequest }),
 		},
-	};
+	});
 };
