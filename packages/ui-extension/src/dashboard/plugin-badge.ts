@@ -8,6 +8,7 @@
 import type { ILangDict } from '@delendai/shared/i18n';
 
 import { renderBrandIcon } from './brand-icons';
+import { escapeHtml, rawNumber } from './format';
 
 const INITIALS_FALLBACK = (label: string): string => {
 	const cleaned = label.replace(/[^a-zA-Z0-9]+/g, ' ').trim();
@@ -35,9 +36,9 @@ export const renderPluginBadge = (
 	const brand = renderBrandIcon(options.code);
 	const title = TITLE_TEXT(options.title, options.label);
 	if (brand.length > 0) {
-		return `<span class="delendai-badge delendai-badge--brand" data-code="${options.code}" title="${title.replace(/"/g, '&quot;')}" style="--delendai-badge-size:${size}px">${brand}</span>`;
+		return `<span class="delendai-badge delendai-badge--brand" data-code="${escapeHtml(options.code)}" title="${escapeHtml(title)}" style="--delendai-badge-size:${rawNumber(size)}px">${brand}</span>`;
 	}
 	const initials = INITIALS_FALLBACK(options.label);
 	const colour = options.fallbackColour ?? 'var(--delendai-brand-blue)';
-	return `<span class="delendai-badge delendai-badge--initials" data-code="${options.code}" title="${title.replace(/"/g, '&quot;')}" style="--delendai-badge-size:${size}px;background:${colour}">${initials}</span>`;
+	return `<span class="delendai-badge delendai-badge--initials" data-code="${escapeHtml(options.code)}" title="${escapeHtml(title)}" style="--delendai-badge-size:${rawNumber(size)}px;background:${escapeHtml(colour)}">${escapeHtml(initials)}</span>`;
 };
