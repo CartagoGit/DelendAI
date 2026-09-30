@@ -263,9 +263,6 @@ names; `.github/` is generated from it, so never edit those by hand. Make
 the focused validation pass before committing. The read-only guard is
 `bun tools/scripts/lint/branch-protection-guard.script.ts` (`--live` when
 `gh` is authenticated). Never weaken a required check to pass a gate.
-`main`'s real green+protected state, read live from the GitHub API, is
-`tools/scripts/ci/verify-main-health.script.ts` (wired into the nightly
-`verify-develop-health` workflow), superseding `v00125`'s develop-only check.
 
 ### Cross-plugin configuration compatibility
 
@@ -276,7 +273,8 @@ If enabled plugins claim the same automatic side effect, startup stops with a
 diagnostic containing the exact configuration keys, effective values,
 precedence, and a JSON patch for `delendai.config.json`. The core remains
 agnostic; each plugin declares only the compatibility rules for its own
-interactions.
+interactions. Two common `delendai.config.json` trip-ups (and their fixes)
+are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
 
 - `bun run validate` is green (typecheck + lint + tests + drift guards).
 - Conventional Commits (`fix:` / `feat:` / `feat!:`) — versioning is

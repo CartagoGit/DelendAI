@@ -179,6 +179,10 @@ const INTENTIONAL_LEGACY_PATHS = [
 	// mid-commit. The fixture has to be a genuine legacy workspace, which
 	// means the old spelling is the assertion.
 	'packages/cli/src/index.spec.ts',
+	// Flags the old shell-completion name wherever it is left behind, so it
+	// has to spell it.
+	'tools/scripts/lint/i18n-english-prose.script.ts',
+	'tools/scripts/lint/i18n-english-prose.script.spec.ts',
 	'packages/test-kit/src/lib/fixtures/legacy-workspace/',
 	'packages/test-kit/dist/',
 	'build/packages/cli/',
@@ -197,8 +201,6 @@ const REPO_SCANNER_EXCLUDE_PREFIXES = [
 const REPO_SCANNER_HISTORICAL_PATHS = [
 	'docs/delendai/proposals/',
 	'docs/delendai/evidence/',
-	'tools/scripts/git/',
-	'tools/scripts/lint/',
 ] as const;
 
 interface IFindOptions {

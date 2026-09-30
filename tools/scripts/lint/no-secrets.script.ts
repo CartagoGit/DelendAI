@@ -24,7 +24,7 @@
  * Replacing it removes the value at the only moment we are certain to
  * be looking at it. The placeholder is deliberately loud and greppable
  *
- *     MCPV_REDACTED_SECRET_STRIPE_KEY
+ *     DELENDAI_REDACTED_SECRET_STRIPE_KEY
  *
  * so that a human, and equally an agent reading the file later, can see
  * that a real value stood here, that delendai removed it because it
@@ -97,7 +97,7 @@ export interface ISecretFinding {
  * key went here") without carrying anything usable.
  */
 export const redactionPlaceholder = (rule: string): string =>
-	`MCPV_REDACTED_SECRET_${rule.toUpperCase().replace(/[^A-Z0-9]+/gu, '_')}`;
+	`DELENDAI_REDACTED_SECRET_${rule.toUpperCase().replace(/[^A-Z0-9]+/gu, '_')}`;
 
 export const maskMatch = (match: string): string => {
 	const head = match.slice(0, 4);
@@ -327,7 +327,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		);
 		console.error('');
 		console.error(
-			'  Each now reads MCPV_REDACTED_SECRET_<KIND>. That is not a value to',
+			'  Each now reads DELENDAI_REDACTED_SECRET_<KIND>. That is not a value to',
 		);
 		console.error(
 			'  restore: a real credential stood there and delendai removed it before',
