@@ -26,6 +26,15 @@ export const LEGACY_IDENTITY_SPELLINGS = [
 	'mcp_vertex',
 	'mcpvertex',
 	'mcp-vertex',
+	// The abbreviation and the code spellings. Matching is case-sensitive,
+	// and these were missing: the extension's configuration-host global and
+	// the no-secrets placeholder kept the old abbreviation, upper-case, as
+	// live names after the rename, because nothing here spelled them.
+	'MCPV',
+	'Mcpv',
+	'McpVertex',
+	'mcpVertex',
+	'MCPVERTEX',
 	'mcpv',
 ] as const;
 
