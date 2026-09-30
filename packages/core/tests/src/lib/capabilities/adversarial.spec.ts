@@ -235,7 +235,7 @@ describe('f00188 — capability gate adversarial (Track F)', () => {
 		});
 		expectTypeOf(ctx.fs.read).toBeFunction();
 		expectTypeOf(ctx.git.write).toBeFunction();
-		// @ts-expect-error — git.read is not declared, only git.write
-		ctx.git.read;
+		// git.read is not declared, only git.write
+		expectTypeOf(ctx.git).not.toHaveProperty('read');
 	});
 });

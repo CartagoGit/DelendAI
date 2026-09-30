@@ -41,7 +41,7 @@ export const renderPanelPlugins = (
 				<td class="delendai-num">${formatNumber(p.errors)}</td>
 				<td class="delendai-num">${formatMs(p.avgMs)}</td>
 				<td class="delendai-num">${formatTokens(p.tokens)}</td>
-				<td class="delendai-num">${p.tokenSharePercent}%</td>
+				<td class="delendai-num">${formatNumber(p.tokenSharePercent)}%</td>
 			</tr>`,
 		)
 		.join('');

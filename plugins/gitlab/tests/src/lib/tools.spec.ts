@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -465,8 +465,10 @@ describe('gitlab read-only tools (f00411 S2)', () => {
 		expect(savedTo.includes('..')).toBe(false);
 		expect(output.truncated).toBe(true);
 		expect(output.bytes).toBe(10);
-		expect((await stat(savedTo)).size).toBe(4);
-		expect(await readFile(savedTo, 'utf8')).toBe('0123');
+		// Read once: the size is the length of what was read.
+		const saved = await readFile(savedTo, 'utf8');
+		expect(saved.length).toBe(4);
+		expect(saved).toBe('0123');
 		expect(tool.meta.outputSchema?.safeParse(output).success).toBe(true);
 		expect(
 			tool.meta.inputSchema?.safeParse({

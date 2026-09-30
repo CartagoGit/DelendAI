@@ -281,13 +281,12 @@ export class AgentLoopDetectorService {
 		// Calculate progress via git diff
 		const isMod = this.isModifying(toolName);
 		let madeProgress = true;
-		let currentDiff = this.lastKnownDiff;
 
 		if (isMod) {
 			try {
 				const diffRes = await this.gitRunner(['diff', '--stat']);
 				if (diffRes.ok) {
-					currentDiff = diffRes.output.trim();
+					const currentDiff = diffRes.output.trim();
 					madeProgress = currentDiff !== this.lastKnownDiff;
 					this.lastKnownDiff = currentDiff;
 				}

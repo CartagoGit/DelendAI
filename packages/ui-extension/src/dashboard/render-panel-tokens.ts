@@ -6,7 +6,12 @@ import type { IDashboardTokensModel } from '@delendai/client';
 import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
-import { escapeHtml, formatPercent, formatTokens } from './format';
+import {
+	escapeHtml,
+	formatNumber,
+	formatPercent,
+	formatTokens,
+} from './format';
 
 export const renderPanelTokens = (
 	model: IDashboardTokensModel,
@@ -39,7 +44,7 @@ export const renderPanelTokens = (
 		</div>
 		<div class="delendai-card delendai-card--third">
 			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.tokens.savings'))}</h3>
-			<p class="delendai-kpi__value">${model.savingsPercent}%</p>
+			<p class="delendai-kpi__value">${formatNumber(model.savingsPercent)}%</p>
 		</div>
 		<div class="delendai-card">
 			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.tokens.topTools'))}</h3>

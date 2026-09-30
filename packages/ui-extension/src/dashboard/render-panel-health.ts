@@ -61,7 +61,7 @@ export const renderPanelHealth = (
 	<div class="delendai-grid">
 		<div class="delendai-card delendai-card--third">
 			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.health.status'))}</h3>
-			<p class="delendai-kpi__value" data-healthy="${model.healthy}">
+			<p class="delendai-kpi__value" data-healthy="${model.healthy ? 'true' : 'false'}">
 				${escapeHtml(model.healthy ? text('healthHealthy') : text('healthDegraded'))}
 			</p>
 			<p class="delendai-kpi__hint">${escapeHtml(text('dashboard.health.fetchedAt'))} ${escapeHtml(model.fetchedAt)}</p>
