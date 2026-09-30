@@ -4,7 +4,10 @@
 > that is **not** the delendai monorepo itself. The
 > [`AGENT-BOOTSTRAP.md`](AGENT-BOOTSTRAP.md) file is the universal
 > contract; this page is a pragmatic checklist of the gotchas that
-> trip up first-time integrators.
+> trip up first-time integrators. If your `delendai.config.json`
+> refuses to boot, or a fresh clone reports the state database as
+> corrupt, check [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md)
+> before you start editing delendai itself.
 
 ## 1. The host-server entrypoint
 

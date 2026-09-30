@@ -157,7 +157,7 @@ describe('delendai.openConfigurationCenter', () => {
 
 		await commands.get(OPEN_CONFIGURATION_CENTER_COMMAND)?.();
 		expect(panel.webview.html).toContain('Content-Security-Policy');
-		expect(panel.webview.html).toContain('__MCPV_CONFIGURATION_HOST__');
+		expect(panel.webview.html).toContain('__DELENDAI_CONFIGURATION_HOST__');
 		expect(panel.webview.html).toContain('Centro de configuración');
 		expect(panel.webview.html).toContain('<html lang="es">');
 		expect(panel.webview.html).toContain(
