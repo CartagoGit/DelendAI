@@ -2,13 +2,41 @@
 id: f00539
 title: "Configurable CI/PR policy with free-tier autodetection"
 kind: feat
-status: ready
+status: retired
 type: proposal
 track: general
 date: 2026-09-15
+superseded-by: x00556
+last-transition-id: 1ca4de1c-039d-4f20-809e-7cc5ced849d2
+last-correlation-id: 1ca4de1c-039d-4f20-809e-7cc5ced849d2
+last-transition-from: ready
 ---
 
 # f00539 — Configurable CI/PR policy with free-tier autodetection
+
+> **Retired 2026-09-30**: every file this proposal's slices name under
+> `packages/core/src/lib/ci/**` (`ci-policy.ts`, `capability-matrix.ts`,
+> `provider-github.ts`/`-gitlab.ts`/`-bitbucket.ts`/`-selfhosted.ts`,
+> `detect-visibility.ts`, `cost-estimator.ts`, `decision-engine.ts`,
+> `degraded.ts`, `notify.ts`, `runner-discovery.ts`) was never built —
+> verified empty on `origin/develop` (`git ls-tree -r origin/develop --
+> packages/core/src/lib/ci` returns nothing). All 8 slices are still
+> `pending`.
+>
+> The CI-cost lever the repo actually shipped is `x00556` ("A pull
+> request runs the checks its change can break"), which reduces CI cost
+> by job/test-zone selection (`tools/scripts/ci/job-scope.constant.ts`,
+> `tools/scripts/ci/test-zones.script.ts`) rather than a per-provider
+> cost-estimation/decision-engine model. The host-abstraction half this
+> proposal implicitly needed is covered by `plugins/forge` (CLI-driven
+> `gh`/`glab` detection) and `plugins/remote-provider-core`
+> (`url-policy.ts`, `limits.ts`, `redaction.ts`), a much smaller surface
+> than the per-provider API-client registry this proposal proposed (see
+> `f00540`, retired for the same reason).
+>
+> Retiring rather than resuming: rebuilding a provider-cost model now
+> conflicts with the current owner priority (simplify/consolidate core,
+> reduce surface) and duplicates work `x00556` already delivers cheaper.
 
 ## Goal
 

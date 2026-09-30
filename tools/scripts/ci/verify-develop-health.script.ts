@@ -753,8 +753,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	// visible in the run without being fatal.
 	if (readCount === 0) {
 		err(
-			'::warning title=develop-health unverified::' +
-				'no branch could be read with the token in use — nothing was ' +
+			'::warning title=develop-health unverified::no branch could be read with the token in use — nothing was ' +
 				'verified, so nothing is asserted. Grant the workflow a token ' +
 				'with administration:read to turn this into a real check.',
 		);
