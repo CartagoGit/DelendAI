@@ -24,7 +24,7 @@
  * Run: bun test libs/mcp-project -- delivery-verifier.task-queue
  */
 
-import { mkdtempSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -312,9 +312,8 @@ describe('verifyClosure — missing queue file is treated as empty', async () =>
 		TEMP_DIRS.push(dir);
 		const queuePath = join(dir, 'queue.json'); // intentionally not created
 		const closedTasksPath = join(dir, 'closed-tasks.json');
-		if (!existsSync(closedTasksPath)) {
-			writeFileSync(closedTasksPath, JSON.stringify([], null, 2), 'utf8');
-		}
+		// A fresh directory: the file is written, never checked for first.
+		writeFileSync(closedTasksPath, JSON.stringify([], null, 2), 'utf8');
 
 		const proposal = minimalProposalWithTaskQueue(
 			'p40c',
