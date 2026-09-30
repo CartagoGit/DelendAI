@@ -12,6 +12,8 @@ import type {
 	IMcpPluginContext,
 } from '@delendai/core/public';
 
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+
 import plugin from '../../src/index';
 
 /** A fake `IGitRunner` that always succeeds, for wiring `ctx.effects.git`. */
@@ -63,6 +65,29 @@ describe('@delendai/git optionsSchema (S9 F7)', async () => {
 		expect(withWrite.tools?.length ?? 0).toBeGreaterThan(
 			readOnly.tools?.length ?? 0,
 		);
+	});
+
+	it('accepts an explicit protectedBranches list and derives one from the policy otherwise', async () => {
+		expect(
+			plugin.optionsSchema?.safeParse({ protectedBranches: ['stable'] })
+				.success,
+		).toBe(true);
+		expect(
+			plugin.optionsSchema?.safeParse({ protectedBranches: 'stable' })
+				.success,
+		).toBe(false);
+		const policy = resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-merge',
+				branches: { integration: 'trunk', release: 'stable' },
+			},
+		});
+		const ctx = {
+			...baseCtx({ allowWrite: true }),
+			developmentPolicy: policy,
+		} as IMcpPluginContext;
+		const registered = await plugin.register(ctx);
+		expect(registered.tools?.length ?? 0).toBeGreaterThan(0);
 	});
 
 	it('throws before wiring tools when allowWrite has the wrong type', async () => {
