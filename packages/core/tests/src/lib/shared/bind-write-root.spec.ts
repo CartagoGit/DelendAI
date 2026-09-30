@@ -23,7 +23,7 @@ import type {
 } from '@delendai/core/lib/plugins/plugin-contract';
 
 import { SHARED_CHECKOUT_WRITE_REFUSED } from '../../../../src/lib/contracts/constants/write-refusal.constant';
-import type { ICallerUnit } from '../../../../src/lib/development-policy/project-branches';
+import type { ICallerUnit } from '../../../../src/lib/contracts/interfaces/live-proposal-unit.interface';
 import { bindWriteRoot } from '../../../../src/lib/shared/bind-write-root';
 import {
 	executionRootOr,

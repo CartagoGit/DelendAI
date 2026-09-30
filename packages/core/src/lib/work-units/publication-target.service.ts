@@ -144,32 +144,6 @@ export const proposalStillInProgress = (
 	proposalFileAt(root, proposal, ref)?.includes('/proposals/in-progress/') ===
 	true;
 
-/**
- * What publishing leaves undone for a proposal that is not yet in review.
- *
- * A proposal created or implemented in a unit exists only on the unit's
- * ref until the publication lands, and the publication ends the unit: its
- * worktree and work ref go with it. The hand-off to review is a move of
- * the proposal's document, so it is made in the unit, before the last
- * publish, and lands with the work. `undefined` when the document is
- * already in review or closed, or the unit carries none.
- */
-export const proposalHandoffNote = (
-	root: string,
-	proposal: string,
-	ref: string,
-): { readonly status: string; readonly nextAction: string } | undefined => {
-	const file = proposalFileAt(root, proposal, ref);
-	const status = /\/proposals\/([^/]+)\//u.exec(file ?? '')?.[1];
-	if (status === undefined || status === 'review' || status === 'done') {
-		return undefined;
-	}
-	return {
-		status,
-		nextAction: `${proposal} is \`${status}\` in this publication. If this work completes it, hand it to review from the unit BEFORE publishing, so the move lands with the work: \`proposal_transition\` with to=review and your agent (the tool finds the unit on its own). Once published the unit is gone and the proposal exists only on the pull request.`,
-	};
-};
-
 export const proposalSliceCount = (
 	root: string,
 	proposal: string,

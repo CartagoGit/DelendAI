@@ -14,7 +14,7 @@
  * single place that should. This reads it, so the last resort is the
  * project's own configuration rather than this repository's habits.
  */
-import type { ILiveProposalUnit } from '../contracts/interfaces/live-proposal-unit.interface';
+import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
 import { liveUnitsOfProposal } from '../work-units/proposal-branch.service';
@@ -220,15 +220,6 @@ export const unitBranchOf = async (
 	const branch = checkedOutBranch(root);
 	return branch?.startsWith(prefix) === true ? branch : undefined;
 };
-
-/** Which unit of work a call that named a proposal belongs to. */
-export type ICallerUnit =
-	| { readonly status: 'found'; readonly unit: ILiveProposalUnit }
-	| {
-			readonly status: 'ambiguous';
-			readonly units: readonly ILiveProposalUnit[];
-	  }
-	| { readonly status: 'none' };
 
 /**
  * The unit of work a proposal's own tools act in.

@@ -37,10 +37,10 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { CHECKOUT_ARG_SCHEMA } from '../contracts/constants/checkout-arg.constant';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 import {
 	callerUnitCheckout,
 	integrationCheckoutRefusal,
-	type ICallerUnit,
 } from '../development-policy/project-branches';
 import { withCallWritesCommitted } from './commit-call-writes';
 import { runInExecutionRoot } from './execution-root';
