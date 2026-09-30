@@ -2,12 +2,15 @@
 id: x00764
 title: "A long file name can be written atomically"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-30
 priority: P1
 related: [q00010]
+last-transition-id: 2c9bdc2b-172d-4242-b6e4-8406ee8b6028
+last-correlation-id: 2c9bdc2b-172d-4242-b6e4-8406ee8b6028
+last-transition-from: in-progress
 ---
 
 # x00764 — A long file name can be written atomically
@@ -53,6 +56,7 @@ remedies left were hand edits the governance refuses.
 - **Files**:
   - `packages/core/src/lib/shared/atomic-write.ts`
   - `packages/core/tests/src/lib/shared/atomic-write.spec.ts`
+- shipped-in: `7dc72fffb95b`
 
 ## dependency graph
 
