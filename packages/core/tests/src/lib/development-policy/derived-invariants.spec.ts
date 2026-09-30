@@ -11,7 +11,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { DEVELOPMENT_PROFILES } from '@delendai/core/lib/development-policy/profiles';
+import { deriveCapabilities } from '@delendai/core/lib/development-policy/derive';
+import {
+	DEVELOPMENT_PROFILES,
+	expandProfile,
+} from '@delendai/core/lib/development-policy/profiles';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import { validateDevelopmentPolicy } from '@delendai/core/lib/development-policy/validate';
 
@@ -87,12 +91,15 @@ describe('shared-checkout-merge — the model without pull requests', () => {
 		expect(policy.governance.failClosedOnUnverifiable).toBe(true);
 	});
 
-	it('is the only profile that certifies locally', () => {
+	it('certifies locally exactly where the profile declares it', () => {
 		for (const profile of DEVELOPMENT_PROFILES) {
 			expect(
 				resolve({ profile }).integration.requiresLocalCertification,
 				profile,
-			).toBe(profile === 'shared-checkout-merge');
+			).toBe(
+				profile === 'shared-checkout-merge' ||
+					profile === 'shared-checkout-pr',
+			);
 		}
 	});
 });
@@ -115,5 +122,32 @@ describe('work is committed and pushed unless the operator says otherwise', () =
 			persistence: { autoPushAfterCommit: false },
 		});
 		expect(policy.persistence.autoPushAfterCommit).toBe(false);
+	});
+});
+
+describe('a declared certification value is not clobbered by derivation', () => {
+	const certifiedBy = (
+		strategy: 'pull-request' | 'merge' | 'direct',
+		declared: boolean,
+	) => {
+		const base = expandProfile('shared-checkout-pr');
+		return deriveCapabilities({
+			...base,
+			integration: {
+				...base.integration,
+				strategy,
+				requiresLocalCertification: declared,
+			},
+		}).integration.requiresLocalCertification;
+	};
+
+	it('keeps the declared value where the strategy leaves a choice', () => {
+		expect(certifiedBy('pull-request', true)).toBe(true);
+		expect(certifiedBy('pull-request', false)).toBe(false);
+	});
+
+	it('forces it only where the strategy dictates the answer', () => {
+		expect(certifiedBy('merge', false)).toBe(true);
+		expect(certifiedBy('direct', true)).toBe(false);
 	});
 });
