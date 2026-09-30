@@ -1,4 +1,7 @@
-import { definePlugin } from '@delendai/core/public';
+import {
+	definePlugin,
+	deriveDefaultProtectedBranches,
+} from '@delendai/core/public';
 import type { IPluginEffectsCapability } from '@delendai/core/public';
 import z from 'zod';
 
@@ -50,6 +53,12 @@ const OptionsSchema = z.object({
 	allowWrite: z.boolean().optional(),
 	allowForge: z.boolean().optional(),
 	allowStash: z.boolean().optional(),
+	/**
+	 * Branches `git_push` refuses. Absent means derived from the
+	 * development policy; an explicit list wins but is checked against the
+	 * policy at startup.
+	 */
+	protectedBranches: z.array(z.string()).optional(),
 });
 
 export default definePlugin({
@@ -86,6 +95,9 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					run: requireEffects(ctx.effects).git,
 					commitAuthor: ctx.commitAuthor,
+					protectedBranches:
+						parsed.data.protectedBranches ??
+						deriveDefaultProtectedBranches(ctx.developmentPolicy),
 				})
 			: [];
 		const forgeTools = allowForge
