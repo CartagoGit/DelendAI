@@ -1449,14 +1449,6 @@
 				"date": "2026-09-15"
 			},
 			{
-				"id": "f00539",
-				"title": "Configurable CI/PR policy with free-tier autodetection",
-				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
 				"id": "f00540",
 				"title": "Git host provider abstraction with capability flags",
 				"track": "general",
