@@ -24,7 +24,13 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, mkdtempSync, rmSync } from 'node:fs';
+import {
+	appendFileSync,
+	existsSync,
+	mkdtempSync,
+	rmSync,
+	symlinkSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -67,6 +73,20 @@ export const forwardSyncVerdict = (
 	if (facts.releaseIsAncestor) return 'in-sync';
 	if (facts.conflicts) return 'conflict';
 	return facts.treeChanges ? 'content' : 'ancestry-only';
+};
+
+/**
+ * What `git merge --no-commit` left behind. A merge that stopped with
+ * unmerged paths is a conflict; one that stopped with none failed for
+ * another reason, and calling that a conflict sent a person to resolve a
+ * disagreement that did not exist.
+ */
+export const mergeOutcome = (input: {
+	readonly mergeOk: boolean;
+	readonly unmergedPaths: readonly string[];
+}): 'clean' | 'conflict' | 'failed' => {
+	if (input.unmergedPaths.length > 0) return 'conflict';
+	return input.mergeOk ? 'clean' : 'failed';
 };
 
 /** One candidate per release tip, so a rerun finds the one it opened. */
@@ -337,22 +357,53 @@ const main = (): number => {
 			dir,
 			integration,
 		]);
+		// Merged without committing first, so a conflict is told apart from
+		// a merge commit that fails for another reason.
 		const merged = run(
 			'git',
-			[
-				'merge',
-				'--no-ff',
-				'-m',
-				forwardSyncTitle(branches, releaseSha),
-				release,
-			],
+			['merge', '--no-ff', '--no-commit', release],
 			dir,
 		);
+		const outcome = mergeOutcome({
+			mergeOk: merged.ok,
+			unmergedPaths: run(
+				'git',
+				['diff', '--name-only', '--diff-filter=U'],
+				dir,
+			)
+				.out.split('\n')
+				.filter((path) => path !== ''),
+		});
+		if (outcome === 'failed') {
+			throw new Error(
+				`forward-sync-release: merging ${release} into ${integration} failed without a conflict: ${merged.err || merged.out}`,
+			);
+		}
+		if (outcome === 'clean') {
+			// The commit hooks are the repository's own lints and need its
+			// `node_modules`, which a worktree under the system temp directory
+			// does not have: without it the hook died on `Cannot find module`
+			// and the run was reported as a conflict (2026-09-30).
+			const modules = join(dir, 'node_modules');
+			if (!existsSync(modules)) {
+				symlinkSync(join(repoRoot(), 'node_modules'), modules, 'dir');
+			}
+			must(
+				'git',
+				[
+					'commit',
+					'--no-edit',
+					'-m',
+					forwardSyncTitle(branches, releaseSha),
+				],
+				dir,
+			);
+		}
 		const verdict = forwardSyncVerdict({
 			releaseIsAncestor: false,
-			conflicts: !merged.ok,
+			conflicts: outcome === 'conflict',
 			treeChanges:
-				merged.ok &&
+				outcome === 'clean' &&
 				must('git', ['rev-parse', 'HEAD^{tree}'], dir) !==
 					must('git', ['rev-parse', `${integration}^{tree}`]),
 		});
