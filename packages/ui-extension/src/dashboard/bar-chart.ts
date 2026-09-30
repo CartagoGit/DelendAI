@@ -3,6 +3,7 @@
  * element so it can be inlined into a dashboard panel. No external
  * chart library — keeps the bundle ≤ 1 KB of chart code.
  */
+import { escapeHtml } from './format';
 
 export interface IBarDatum {
 	readonly label: string;
@@ -47,18 +48,11 @@ export const barChart = (
 				1,
 			)}" height="${h.toFixed(1)}" fill="var(--delendai-brand-purple)" rx="2" /><text x="${labelX.toFixed(
 				1,
-			)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--delendai-fg-muted)">${escapeXml(
+			)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--delendai-fg-muted)">${escapeHtml(
 				b.label,
 			)}</text>`;
 		})
 		.join('');
 
-	return `<svg class="delendai-barchart" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(options.ariaLabel)}">${barsSvg}</svg>`;
+	return `<svg class="delendai-barchart" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeHtml(options.ariaLabel)}">${barsSvg}</svg>`;
 };
-
-const escapeXml = (raw: string): string =>
-	raw
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;');
