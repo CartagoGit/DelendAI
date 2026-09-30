@@ -15,18 +15,24 @@ declare global {
 	}
 }
 
-const hoistStyles = (html: string): void => {
+/**
+ * The rendered document, parsed by the browser rather than cut with
+ * regexes: a regex misses `</script >`, `</STYLE>` and every other shape
+ * the parser accepts (`js/bad-tag-filter`).
+ */
+const parseDocument = (html: string): Document =>
+	new DOMParser().parseFromString(html, 'text/html');
+
+const hoistStyles = (doc: Document): void => {
 	for (const stale of document.head.querySelectorAll(
 		'style[data-configuration-center-hoisted]',
 	)) {
 		stale.remove();
 	}
-	for (const block of html.match(/<style[^>]*>[\s\S]*?<\/style>/gi) ?? []) {
+	for (const block of doc.querySelectorAll('style')) {
 		const style = document.createElement('style');
 		style.setAttribute('data-configuration-center-hoisted', 'true');
-		style.textContent = block
-			.replace(/^<style[^>]*>/i, '')
-			.replace(/<\/style>$/i, '');
+		style.textContent = block.textContent;
 		document.head.appendChild(style);
 	}
 };
@@ -36,10 +42,13 @@ const mountDocument = (
 	html: string,
 	host: IConfigurationHost,
 ): void => {
-	hoistStyles(html);
-	const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? html;
-	const scripts = body.match(/<script[^>]*>[\s\S]*?<\/script>/gi) ?? [];
-	root.innerHTML = body.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+	const doc = parseDocument(html);
+	hoistStyles(doc);
+	const scripts = [...doc.body.querySelectorAll('script')].map(
+		(script) => script.textContent ?? '',
+	);
+	for (const script of doc.body.querySelectorAll('script')) script.remove();
+	root.replaceChildren(...doc.body.childNodes);
 	// The production document owns the whole webview viewport (`100vh`). In the
 	// dev shell it lives below preview chrome, so bind it to the available page
 	// slot or the sticky save bar lands one header-height below the viewport.
@@ -48,11 +57,9 @@ const mountDocument = (
 	);
 	if (center) center.style.height = '100%';
 	window.__MCPV_CONFIGURATION_HOST__ = host;
-	for (const block of scripts) {
+	for (const text of scripts) {
 		const script = document.createElement('script');
-		script.textContent = block
-			.replace(/^<script[^>]*>/i, '')
-			.replace(/<\/script>$/i, '');
+		script.textContent = text;
 		root.appendChild(script);
 	}
 };

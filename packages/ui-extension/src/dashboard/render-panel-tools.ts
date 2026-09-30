@@ -6,7 +6,13 @@ import type { IDashboardToolsModel } from '@delendai/client';
 import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
-import { escapeHtml, formatMs, formatNumber, formatTokens } from './format';
+import {
+	escapeHtml,
+	formatMs,
+	formatNumber,
+	formatTokens,
+	rawNumber,
+} from './format';
 import { sparklinePath } from './sparkline';
 
 const SPARK_W = 80;
@@ -32,7 +38,7 @@ export const renderPanelTools = (
 					? series
 					: [r.avgMs, r.avgMs, r.maxMs, r.avgMs, r.avgMs, r.avgMs];
 			const d = sparklinePath(samples, SPARK_W, SPARK_H);
-			return `<tr data-tool="${escapeHtml(r.tool)}" data-plugin="${escapeHtml(r.plugin)}" data-calls="${r.calls}" data-errors="${r.errors}" data-avgms="${r.avgMs}" data-tokens="${r.tokens}">
+			return `<tr data-tool="${escapeHtml(r.tool)}" data-plugin="${escapeHtml(r.plugin)}" data-calls="${rawNumber(r.calls)}" data-errors="${rawNumber(r.errors)}" data-avgms="${rawNumber(r.avgMs)}" data-tokens="${rawNumber(r.tokens)}">
 				<td><a href="#" data-tool-name="${escapeHtml(r.tool)}"><code>${escapeHtml(r.tool)}</code></a></td>
 				<td><code>${escapeHtml(r.plugin)}</code></td>
 				<td class="delendai-num">${formatNumber(r.calls)}</td>

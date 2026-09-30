@@ -12,6 +12,7 @@ import {
 	forwardSyncRef,
 	forwardSyncTitle,
 	forwardSyncVerdict,
+	mergeOutcome,
 	type IForwardSyncVerdict,
 	openCandidate,
 } from './forward-sync-release.script';
@@ -192,5 +193,27 @@ describe('openCandidate (x00557 S4)', () => {
 
 		expect(calls.at(-1)).toContain('--squash');
 		expect(calls.at(-1)).not.toContain('--merge');
+	});
+});
+
+describe('mergeOutcome — a conflict is only unmerged paths', () => {
+	it('calls a merge that stopped with unmerged paths a conflict', () => {
+		expect(
+			mergeOutcome({ mergeOk: false, unmergedPaths: ['package.json'] }),
+		).toBe('conflict');
+	});
+
+	it('calls a merge that failed with nothing unmerged a failure, not a conflict', () => {
+		// 2026-09-30: the commit hook could not find `node_modules` in the
+		// throwaway worktree and the run reported a conflict that did not exist.
+		expect(mergeOutcome({ mergeOk: false, unmergedPaths: [] })).toBe(
+			'failed',
+		);
+	});
+
+	it('calls a merge that went through clean', () => {
+		expect(mergeOutcome({ mergeOk: true, unmergedPaths: [] })).toBe(
+			'clean',
+		);
 	});
 });
