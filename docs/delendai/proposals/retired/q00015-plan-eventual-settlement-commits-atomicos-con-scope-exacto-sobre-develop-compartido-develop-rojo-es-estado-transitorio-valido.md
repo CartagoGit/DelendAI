@@ -2,14 +2,34 @@
 id: q00015
 title: "Plan eventual settlement: commits atómicos con scope exacto sobre develop compartido; develop rojo es estado transitorio válido"
 kind: plan
-status: ready
+status: retired
 type: proposal
 track: quality
 date: 2026-09-02
+last-transition-id: b275bf73-7b2e-4093-91dc-685094d933de
+last-correlation-id: b275bf73-7b2e-4093-91dc-685094d933de
+last-transition-from: ready
 ---
 
 # q00015 — Plan eventual settlement sobre develop compartido
 
+> **Retired 2026-09-30**: the plan's own premise note below (2026-09-23)
+> already says the "shared checkout + direct commits to `develop`"
+> assumption is superseded by the `shared-checkout-pr` policy — verified
+> against `origin/develop`: `refuse-integration-commit` is a live commit
+> hook, and work lives in `delendai/wip/…` refs published as PRs (see
+> MEMORY notes `work-branch-ends-when-published`,
+> `work-ref-branch-naming`). S3/S4/S5 are pending and were never started
+> under the old premise; S2 has real, salvageable progress —
+> `plugins/commit-policy/src/lib/settlement/*` and the
+> `commit_policy_settlement` tool — but it is manual-only today (its own
+> note: "nothing enters `settling` on its own", wiring it naively would
+> deadlock under the PR model). Retiring rather than resuming: if
+> automatic settlement is still wanted, it needs a full rewrite against
+> the wip/pr publish model, not a resume of S1/S3/S4/S5 as written. A
+> future proposal reusing S2's `commit-policy/settlement` primitives
+> would be a new, narrower scope, not this plan.
+>
 > **Premisa superada (2026-09-23).** Este plan asume «shared checkout +
 > commits directos a `develop`». La política vigente del repositorio es el
 > perfil `shared-checkout-pr`: el checkout compartido no recibe commits de

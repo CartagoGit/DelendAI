@@ -137,6 +137,50 @@ describe('isSpent (x00564)', () => {
 	});
 });
 
+describe('isSpent — a forward sync is history, not content', () => {
+	it('keeps a forward-sync ref that changes no file until the integration branch contains it', () => {
+		const { root } = repo();
+		// The release branch gets a promotion merge commit that changes no
+		// file; carrying it back adds history and nothing else.
+		const head = git(root, 'rev-parse', 'HEAD');
+		const tree = git(root, 'rev-parse', 'HEAD^{tree}');
+		const release = git(
+			root,
+			'commit-tree',
+			tree,
+			'-p',
+			head,
+			'-m',
+			'release',
+		);
+		const sync = git(
+			root,
+			'commit-tree',
+			tree,
+			'-p',
+			head,
+			'-p',
+			release,
+			'-m',
+			'forward-sync',
+		);
+		const name = 'delendai/pr/forward-sync-0720e8436';
+		// By content alone it would read as spent: it adds no file.
+		expect(isSpent(root, 'refs/remotes/origin/develop', sync)).toBe(true);
+		expect(isSpent(root, 'refs/remotes/origin/develop', sync, name)).toBe(
+			false,
+		);
+		// Once the integration branch has it, it is spent.
+		git(root, 'merge', '-q', '--ff-only', sync);
+		git(root, 'commit', '-q', '--allow-empty', '-m', 'later work');
+		git(root, 'push', '-q', 'origin', 'develop');
+		git(root, 'fetch', '-q', 'origin');
+		expect(isSpent(root, 'refs/remotes/origin/develop', sync, name)).toBe(
+			true,
+		);
+	});
+});
+
 describe('maintainRefNamespace (x00564)', () => {
 	it('renames a ref that does not carry the shape, keeping its commit', () => {
 		const { root } = repo();
