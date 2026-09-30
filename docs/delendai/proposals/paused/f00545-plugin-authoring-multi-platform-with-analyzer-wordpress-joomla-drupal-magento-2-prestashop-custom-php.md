@@ -2,13 +2,25 @@
 id: f00545
 title: "Plugin authoring multi-platform with analyzer (WordPress, Joomla, Drupal, Magento 2, PrestaShop, custom PHP)"
 kind: feat
-status: ready
+status: paused
 type: proposal
 track: general
 date: 2026-09-15
+paused-reason: "Paused 2026-09-30: owner policy is to consolidate before vertical features; resume when the ready backlog is empty"
+last-transition-id: 14c4791b-fbbe-4bd8-9ab6-047982decdde
+last-correlation-id: 14c4791b-fbbe-4bd8-9ab6-047982decdde
+last-transition-from: ready
 ---
 
 # f00545 — Plugin authoring multi-platform with analyzer (WordPress, Joomla, Drupal, Magento 2, PrestaShop, custom PHP)
+
+> **Paused 2026-09-30**: owner policy is to consolidate before vertical
+> features; resume when the ready backlog is empty. `plugins/plugin-authoring/`
+> does not exist; all 10 slices are net-new (5 full per-CMS adapters,
+> none of which delendai's own stack uses anywhere, plus a risk/license
+> analyzer and paid-license scaffolding). This is the largest, most
+> purely-vertical proposal in the batch with zero dogfood path. Not
+> retired: deliberately deferred, not judged wrong.
 
 ## Goal
 
