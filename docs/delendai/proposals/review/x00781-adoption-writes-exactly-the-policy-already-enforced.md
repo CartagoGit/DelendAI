@@ -21,7 +21,7 @@ There is one rule for what an undeclared project's development policy is, and th
 
 The project's delendai configuration is the single source of truth, so every surface must give the same answer: the served instructions, `delendai work`, the guards and the migrator. The migrator chose a profile from forge evidence (`shared-checkout-pr` on a GitHub remote, `worktree-pr` for a legacy `agentWorktree`) and wrote it into the consumer's file, while `work` on the same not-yet-migrated repository resolved `shared-checkout-merge` (or `legacy-compat`). The same repository was described differently depending on which ran first, the file was rewritten to the model nobody had been told about, and the CLI reported nothing.
 
-## Decision
+## why this design
 
 - Adoption decides nothing. `proposeAdoption` takes the policy `readWorkspacePolicy` (that is, `resolveEffectivePolicy`) already resolved and records it: profile, integration, release. What is written is exactly what was enforced.
 - The forge is not evidence. `DEFAULT_DEVELOPMENT_PROFILE` is `shared-checkout-merge` because it asks nothing of the forge, so a forge probe has nothing left to decide; the `gh api` call and the remote classification at startup are removed. A project that wants pull requests declares them.
