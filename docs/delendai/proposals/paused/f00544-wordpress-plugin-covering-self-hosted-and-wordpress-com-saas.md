@@ -2,13 +2,25 @@
 id: f00544
 title: "WordPress plugin covering self-hosted and WordPress.com SaaS"
 kind: feat
-status: ready
+status: paused
 type: proposal
 track: general
 date: 2026-09-15
+paused-reason: "Paused 2026-09-30: owner policy is to consolidate before vertical features; resume when the ready backlog is empty"
+last-transition-id: d950d2be-92ef-43e5-9174-4ffd9a5ec0da
+last-correlation-id: d950d2be-92ef-43e5-9174-4ffd9a5ec0da
+last-transition-from: ready
 ---
 
 # f00544 — WordPress plugin covering self-hosted and WordPress.com SaaS
+
+> **Paused 2026-09-30**: owner policy is to consolidate before vertical
+> features; resume when the ready backlog is empty. This is the largest
+> and least-dogfoodable of the CMS proposals (no `plugins/wordpress/`
+> exists yet; all 7 slices are net-new) and it depends on `f00541`
+> (execution environments — SSH/Compose connections), which does not
+> exist either. Not retired: the real-world need is legitimate per this
+> proposal's own "why"; it is deliberately deferred, not judged wrong.
 
 ## Goal
 
