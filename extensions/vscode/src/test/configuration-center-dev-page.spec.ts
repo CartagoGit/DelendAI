@@ -92,10 +92,76 @@ class FakeHead {
 	}
 }
 
+/** A parsed fragment of markup: what `replaceChildren` receives. */
+class FakeFragment {
+	constructor(readonly outerHTML: string) {}
+}
+
+/**
+ * The page parses the rendered document with `DOMParser` and reads its
+ * `<style>` blocks, its body's `<script>` blocks and the rest of its body.
+ * This stand-in answers exactly those three questions from the markup.
+ */
+class FakeParsedDocument {
+	private readonly styles: FakeNode[];
+	private readonly scripts: FakeNode[] = [];
+	private bodyHtml: string;
+
+	constructor(html: string) {
+		this.styles = [
+			...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/giu),
+		].map((match) => {
+			const node = new FakeNode('style');
+			node.textContent = match[1] ?? '';
+			return node;
+		});
+		const body = /<body[^>]*>([\s\S]*)<\/body>/iu.exec(html)?.[1] ?? html;
+		this.bodyHtml = body;
+		for (const match of body.matchAll(
+			/<script[^>]*>([\s\S]*?)<\/script>/giu,
+		)) {
+			const node = new FakeNode('script');
+			node.textContent = match[1] ?? '';
+			const whole = match[0];
+			node.attachTo(this.scripts);
+			node.remove = () => {
+				this.bodyHtml = this.bodyHtml.replace(whole, '');
+			};
+		}
+	}
+
+	querySelectorAll(_selector: 'style'): FakeNode[] {
+		return this.styles;
+	}
+
+	readonly body = {
+		querySelectorAll: (_selector: 'script'): FakeNode[] => this.scripts,
+		// A getter, like the DOM's: read after the scripts were removed.
+		childNodes: [] as FakeFragment[],
+	};
+
+	withLiveBody(): this {
+		Object.defineProperty(this.body, 'childNodes', {
+			get: (): FakeFragment[] => [new FakeFragment(this.bodyHtml)],
+		});
+		return this;
+	}
+}
+
+class FakeDomParser {
+	parseFromString(html: string, _type: string): FakeParsedDocument {
+		return new FakeParsedDocument(html).withLiveBody();
+	}
+}
+
 class FakeRoot {
 	innerHTML = '';
 	readonly appendedScripts: FakeNode[] = [];
 	readonly center = new FakeNode('div');
+
+	replaceChildren(...nodes: FakeFragment[]): void {
+		this.innerHTML = nodes.map((node) => node.outerHTML).join('');
+	}
 
 	querySelector(_selector: string): FakeNode {
 		return this.center;
@@ -208,6 +274,10 @@ const setUpDom = (): {
 		configurable: true,
 		value: fakeDocument,
 	});
+	Object.defineProperty(globalThis, 'DOMParser', {
+		configurable: true,
+		value: FakeDomParser,
+	});
 	const win = new FakeWindow();
 	Object.defineProperty(globalThis, 'window', {
 		configurable: true,
@@ -237,6 +307,7 @@ const flushMicrotasks = async (): Promise<void> => {
 describe('configuration-center dev page', () => {
 	afterEach(() => {
 		Reflect.deleteProperty(globalThis, 'document');
+		Reflect.deleteProperty(globalThis, 'DOMParser');
 		Reflect.deleteProperty(globalThis, 'window');
 		Reflect.deleteProperty(globalThis, 'fetch');
 	});
