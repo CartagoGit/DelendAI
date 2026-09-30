@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
-import { runCli as runServerCli, serveRefusal } from '@delendai/core/public';
+import { runCli as runServerCli } from '@delendai/core/public';
+import { serveRefusal } from '@delendai/core/cli';
 
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
