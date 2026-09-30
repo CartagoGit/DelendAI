@@ -10,6 +10,32 @@ export interface ILocalMergeCycleInput {
 	readonly remote: string;
 	/** Absent when nothing certified this candidate at all. */
 	readonly certification?: ILocalCertification | undefined;
+	/**
+	 * Certifies the candidate INSIDE the critical section, against the
+	 * integration head the cycle has just read, when no certification was
+	 * given. A certification made before that read describes a head that
+	 * may already be gone; one made here describes the pair that lands.
+	 * `undefined` means nothing could certify it, and nothing lands.
+	 */
+	readonly certify?:
+		| ((
+				candidate: ILocalMergeCandidate,
+		  ) => Promise<ILocalCertification | undefined>)
+		| undefined;
+	/**
+	 * Whether the cycle deletes the local work ref once it has landed.
+	 * Defaults to the policy's `deleteMergedWorkRef`; a caller that ends
+	 * the work ref itself (its worktree, its remote copy) says `false`.
+	 */
+	readonly deleteWorkRef?: boolean | undefined;
+}
+
+/** The pair a certification is asked about, and the commit that lands. */
+export interface ILocalMergeCandidate {
+	readonly integrationSha: string;
+	readonly workSha: string;
+	/** The integration head with the work merged in: the tree that lands. */
+	readonly candidateSha: string;
 }
 
 /**

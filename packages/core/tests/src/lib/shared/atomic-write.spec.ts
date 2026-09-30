@@ -11,11 +11,39 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
+	tmpStemFor,
 	writeFileAtomic,
 	writeFileAtomicSync,
 } from '@delendai/core/lib/shared/atomic-write';
 
 const scratch = (): string => mkdtempSync(join(tmpdir(), 'mcp-atomic-'));
+
+describe('a file whose name leaves no room for the temporary suffix', () => {
+	// 242 bytes: the length of a proposal file named after a long title.
+	const longName = `${'q'.repeat(239)}.md`;
+
+	it('is written, sync and async, where appending the suffix would pass 255 bytes', async () => {
+		const dir = scratch();
+		const target = join(dir, longName);
+		await writeFileAtomic(target, 'async');
+		expect(readFileSync(target, 'utf8')).toBe('async');
+		writeFileAtomicSync(target, 'sync');
+		expect(readFileSync(target, 'utf8')).toBe('sync');
+		expect(readdirSync(dir)).toEqual([longName]);
+	});
+
+	it('keeps short names as they are and shortens only the ones that do not fit', () => {
+		expect(tmpStemFor('state.json')).toBe('state.json');
+		const stem = tmpStemFor(longName);
+		expect(Buffer.byteLength(stem)).toBeLessThanOrEqual(255 - 32);
+		expect(stem.startsWith('q'.repeat(200))).toBe(true);
+		// Two long names with the same start get different stems.
+		expect(tmpStemFor(`${'q'.repeat(239)}.mx`)).not.toBe(stem);
+		// A multi-byte character is never cut in half.
+		const wide = tmpStemFor('✓'.repeat(200));
+		expect(Buffer.from(wide).toString('utf8')).toBe(wide);
+	});
+});
 
 describe('writeFileAtomic (durable + atomic)', () => {
 	it('writes content that round-trips exactly', async () => {

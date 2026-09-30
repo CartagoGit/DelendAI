@@ -97,7 +97,7 @@ export const buildWorkUnitToolRegistration = (
 				{
 					title: 'DelendAI Unit of Work',
 					description:
-						'Your unit of work, from any host: the same operations as `delendai work`. `enter` gives you your own worktree and work ref (pass it as `checkout` to the write tools); `publish` turns the unit into a pull request. The session is this server’s, so your calls keep your unit; pass `agent` (your model id) unless DELENDAI_AGENT_ID is set.',
+						'Your unit of work, from any host: the same operations as `delendai work`. `enter` gives you your own worktree and work ref (pass it as `checkout` to the write tools); `publish` lands the unit the way this project’s work model says: a pull request, or — under a merge profile — a merge into the integration branch after its validation gate passed. The session is this server’s, so your calls keep your unit; pass `agent` (your model id) unless DELENDAI_AGENT_ID is set.',
 					inputSchema: workUnitInputSchema,
 					outputSchema: workUnitOutputSchema,
 				},
