@@ -1657,6 +1657,14 @@
 				"date": "2026-09-30"
 			},
 			{
+				"id": "x00769",
+				"title": "Push guards and protected-branch defaults follow the configured development policy",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
 				"id": "x00770",
 				"title": "Diagnostics and setup follow the configured profile",
 				"track": "trust",
