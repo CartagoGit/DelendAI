@@ -181,11 +181,12 @@ describe('integrationCheckoutRefusal', () => {
 	});
 
 	it('holds a project with no declared policy to the model delendai adopts for it', async () => {
+		// An empty environment: a CI job's checkout is exempt by design.
 		// The adopted default keeps the shared checkout for work refs, the
 		// same model the served instructions describe.
-		expect(await integrationCheckoutRefusal(repoOn('develop'))).toContain(
-			'`shared-checkout-merge`',
-		);
+		expect(
+			await integrationCheckoutRefusal(repoOn('develop'), {}),
+		).toContain('`shared-checkout-merge`');
 	});
 
 	it('allows a project whose profile has no work refs', async () => {
