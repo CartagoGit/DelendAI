@@ -28,6 +28,7 @@ The project's delendai configuration is the single source of truth, so every sur
 - Legacy fields (`agentWorktree`, commit-policy options) resolve as `legacy-compat` and are never migrated: they are a decision somebody made, and rewriting them changed what they meant.
 - The integration branch is the stable default branch discovered from the checkout (as `work` does), not whatever branch the checkout is on.
 - The write is visible: the journal records it, `resolveEffectivePolicy` marks the policy `adoption: { writtenTo }`, the served instructions, the overview work model and `work status` say "adopted and written", and the CLI prints a line when it writes.
+- The forge evidence reader (`development-policy-evidence.ts`), its contract and its spec are deleted: nothing remains that reads the remote or calls `gh` at startup.
 - Opt-out: a declared block, even `"development": {}`, is never touched and resolves to the default.
 
 ## non-goals
@@ -40,7 +41,7 @@ The project's delendai configuration is the single source of truth, so every sur
 
 ### S1 — One adoption rule, visibly applied
 - **Status**: pending
-- **Files**: `packages/core/src/lib/development-policy/adopt.ts`, `packages/core/src/lib/development-policy/adopt.interface.ts`, `packages/core/src/lib/development-policy/adoption-record.ts`, `packages/core/src/lib/development-policy/effective-policy.ts`, `packages/core/src/lib/development-policy/served-work-model.ts`, `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/workspace-migration/migration-journal-path.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/src/lib/workspace-migration/migration-report.service.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy-evidence.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy.interface.ts`, `packages/core/src/lib/work-units/development-policy.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/cli.ts`, `packages/cli/src/index.ts`
+- **Files**: `packages/core/src/lib/development-policy/adopt.ts`, `packages/core/src/lib/development-policy/adopt.interface.ts`, `packages/core/src/lib/development-policy/adoption-record.ts`, `packages/core/src/lib/contracts/interfaces/policy-adoption.interface.ts`, `packages/core/src/lib/scan/dip-violation.ts`, `packages/core/src/lib/development-policy/effective-policy.ts`, `packages/core/src/lib/development-policy/served-work-model.ts`, `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/workspace-migration/migration-journal-path.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/src/lib/workspace-migration/migration-report.service.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy.migrator.ts`, `packages/core/src/lib/work-units/development-policy.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/cli.ts`, `packages/cli/src/index.ts`
 - **Gate**: type
 - acceptance:
   - "the migrator writes the policy resolveEffectivePolicy already resolved, with or without a GitHub remote"
@@ -50,7 +51,7 @@ The project's delendai configuration is the single source of truth, so every sur
 ### S2 — Specs for parity and for never rewriting
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/tests/src/lib/development-policy/adopt.spec.ts`, `packages/core/tests/src/lib/development-policy/adoption-parity.spec.ts`, `packages/core/tests/src/lib/workspace-migration/development-policy.migrator.spec.ts`, `packages/core/tests/src/lib/workspace-migration/development-policy-evidence.spec.ts`
+- **Files**: `packages/core/tests/src/lib/development-policy/adopt.spec.ts`, `packages/core/tests/src/lib/development-policy/adoption-parity.spec.ts`, `packages/core/tests/src/lib/workspace-migration/development-policy.migrator.spec.ts`
 - **Gate**: none
 - acceptance:
   - "the same undeclared repository yields one policy from the migrator, resolveEffectivePolicy, the served instructions and the guard's reader"
