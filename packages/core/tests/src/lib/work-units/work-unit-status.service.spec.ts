@@ -55,14 +55,15 @@ const contextFor = (
 ): IWorkUnitContext =>
 	fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
 		cwd: root,
-		globals: fakePartial<
-			IWorkUnitContext['globals'],
-			'workspace' | 'json' | 'format'
-		>({
-			workspace: root,
-			json: globals.json ?? false,
-			format: globals.format,
-		}),
+		globals: fakePartial<IWorkUnitContext['globals'], 'workspace' | 'json'>(
+			{
+				workspace: root,
+				json: globals.json ?? false,
+				...(globals.format === undefined
+					? {}
+					: { format: globals.format }),
+			},
+		),
 	});
 
 const printed = async (
