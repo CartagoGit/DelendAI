@@ -2,10 +2,13 @@
 id: x00797
 title: "A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-01
+last-transition-id: a91a7ab3-eff6-43db-a8e4-bc434a789835
+last-correlation-id: a91a7ab3-eff6-43db-a8e4-bc434a789835
+last-transition-from: ready
 ---
 
 # x00797 — A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives
