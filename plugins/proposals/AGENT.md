@@ -62,7 +62,7 @@
 - `delendai_proposals_close_slice` — 3,772 B total, 2,740 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_proposals_proposals_close_plan` — 3,405 B total, 2,579 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_proposals_review_queue` — 3,345 B total, 2,817 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_proposals_proposal_transition` — 3,127 B total, 1,810 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_proposals_agent_lock` — 3,179 B total, 2,449 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

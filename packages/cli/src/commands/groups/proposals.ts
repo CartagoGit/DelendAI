@@ -8,6 +8,7 @@
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import {
+	agentArg,
 	data,
 	hasFlag,
 	listArg,
@@ -91,44 +92,72 @@ const createCommand: ICliCommand = {
 	},
 };
 
+const CLOSE_SLICE_USAGE =
+	'proposals close-slice <proposalId> <sliceId> [--checkout=<unit worktree>]';
+
+/**
+ * The checkout a call acts in, when the caller named one. Absent, the
+ * tools bind the call to the caller's live unit on their own, exactly as
+ * they do for an MCP client.
+ */
+const checkoutArgs = (args: readonly string[]): { checkout?: string } => {
+	const checkout = scalarArg(args, 'checkout');
+	return checkout === undefined ? {} : { checkout };
+};
+
 const closeSliceCommand: ICliCommand = {
 	name: 'proposals close-slice',
-	flags: [],
-	summary: 'Mark a slice done + release its lock atomically, then re-sync.',
+	usage: CLOSE_SLICE_USAGE,
+	flags: ['checkout'],
+	summary:
+		'Mark a slice done + release its lock atomically, then re-sync. --checkout names the unit worktree; omitted, the live unit that carries the proposal is used.',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
 		const proposalId = positionals[0];
 		const sliceId = positionals[1];
 		if (proposalId === undefined || sliceId === undefined) {
-			return usage('proposals close-slice <proposalId> <sliceId>');
+			return usage(CLOSE_SLICE_USAGE);
 		}
 		return data(
 			await request(ctx, 'delendai_proposals_close_slice', {
 				proposalId,
 				sliceId,
+				...checkoutArgs(args),
 			}),
 		);
 	},
 };
 
+const TRANSITION_USAGE =
+	'proposals transition <id> <to> --reason=<why> [--agent=<you>] [--checkout=<unit worktree>]';
+
 const transitionCommand: ICliCommand = {
 	name: 'proposals transition',
-	flags: ['reason'],
+	usage: TRANSITION_USAGE,
+	flags: ['reason', 'agent', 'checkout'],
 	summary:
-		'Move a proposal to a new status (DFA-validated; requires reason).',
+		'Move a proposal to a new status (DFA-validated; requires reason). To review, --agent (or DELENDAI_AGENT_ID) names the implementer and opens the review rounds.',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
 		const id = positionals[0];
 		const to = positionals[1];
 		const reason = scalarArg(args, 'reason');
 		if (id === undefined || to === undefined || reason === undefined) {
-			return usage('proposals transition <id> <to> --reason=<why>');
+			return usage(TRANSITION_USAGE);
+		}
+		const agent = agentArg(args);
+		if (to === 'review' && agent === undefined) {
+			return usage(
+				`${TRANSITION_USAGE} — a hand-off to review needs the implementer, or no review round opens and reviewers never see the proposal: pass --agent=<you> or set DELENDAI_AGENT_ID`,
+			);
 		}
 		return data(
 			await request(ctx, 'delendai_proposals_proposal_transition', {
 				id,
 				to,
 				reason,
+				...(agent !== undefined ? { agent } : {}),
+				...checkoutArgs(args),
 			}),
 		);
 	},
@@ -199,7 +228,12 @@ const lockCommand: ICliCommand = {
 		if (action === undefined) {
 			return usage('proposals lock --action=claim|release|status|gc');
 		}
-		const agent = scalarArg(args, 'agent');
+		// A claim and its heartbeat are made by someone: the declared
+		// agent stands in when none is named.
+		const agent =
+			action === 'claim' || action === 'heartbeat'
+				? agentArg(args)
+				: scalarArg(args, 'agent');
 		const taskId = scalarArg(args, 'task') ?? scalarArg(args, 'taskId');
 		const files = listArg(args, 'files');
 		return data(
@@ -208,6 +242,9 @@ const lockCommand: ICliCommand = {
 				...(agent !== undefined ? { agent } : {}),
 				...(taskId !== undefined ? { task_id: taskId } : {}),
 				...(files !== undefined ? { files } : {}),
+				// This process ends with the call: a claim tied to it would
+				// be gone before the next command could rely on it.
+				...(action === 'claim' ? { holder: 'agent' } : {}),
 			}),
 		);
 	},
