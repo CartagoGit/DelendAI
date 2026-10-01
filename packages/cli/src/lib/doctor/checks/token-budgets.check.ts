@@ -1,6 +1,7 @@
+import { sourceCheckoutOnly } from '../applicability';
 import type { DoctorCheck } from '../types';
 
-export const checkTokenBudgets: DoctorCheck = async ({ fs }) => {
+const checkSourceTokenBudgets: DoctorCheck = async ({ fs }) => {
 	const candidates = [
 		'config/metrics-baseline.json',
 		'config/token-budgets.json',
@@ -31,3 +32,9 @@ export const checkTokenBudgets: DoctorCheck = async ({ fs }) => {
 		],
 	};
 };
+
+export const checkTokenBudgets: DoctorCheck = sourceCheckoutOnly(
+	'token-budgets',
+	'the token budget snapshot',
+	checkSourceTokenBudgets,
+);

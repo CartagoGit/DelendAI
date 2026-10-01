@@ -14,12 +14,13 @@
  * `plugins` section. This check covers the simpler "missing file"
  * drift class.
  */
+import { sourceCheckoutOnly } from '../applicability';
 import type { DoctorCheck } from '../types';
 
 export const MANIFEST_FILENAME = 'plugin.manifest.ts';
 export const PLUGINS_DIR = 'plugins';
 
-export const checkManifests: DoctorCheck = async ({ fs }) => {
+const checkSourceManifests: DoctorCheck = async ({ fs }) => {
 	const pluginDirs = await fs.listDirs(PLUGINS_DIR);
 	if (pluginDirs.length === 0) {
 		return {
@@ -66,3 +67,9 @@ export const checkManifests: DoctorCheck = async ({ fs }) => {
 	}
 	return { name: 'manifests', status: 'warn', findings };
 };
+
+export const checkManifests: DoctorCheck = sourceCheckoutOnly(
+	'manifests',
+	`${PLUGINS_DIR}/ plugin manifests`,
+	checkSourceManifests,
+);
