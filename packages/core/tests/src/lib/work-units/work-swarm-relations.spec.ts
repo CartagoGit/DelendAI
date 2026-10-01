@@ -129,6 +129,41 @@ describe('relationsOf', () => {
 	});
 });
 
+describe('relationsOf — the cases that are not a relation', () => {
+	it('calls one slice held by two agents a duplicate, even in one generation', () => {
+		const relations = relationsOf({
+			units: [unit('ns/wip/a/implement/x20-S1-g1/t', ['a.ts'])],
+			published: [unit('ns/pr/b/implement/x20-S1-g1/t', ['a.ts'])],
+			sharedUnlanded: none,
+		});
+		expect(relations).toEqual([
+			expect.objectContaining({
+				kind: 'duplicate',
+				detail: 'x20-S1 is live 2 times; keep one',
+			}),
+		]);
+	});
+
+	it('leaves units whose names carry no generation, and landed ones, out of the pairs', () => {
+		const relations = relationsOf({
+			units: [
+				unit('ns/wip/a/no-generation-here', ['a.ts']),
+				unit('ns/wip/b/neither-here', ['a.ts']),
+			],
+			published: [unit('ns/pr/c/implement/x21-S1-g1/t', ['a.ts'], 0)],
+			sharedUnlanded: () => 9,
+		});
+		expect(relations.map((relation) => relation.kind)).toEqual([
+			'landed',
+			'stacked',
+		]);
+		expect(relations[1]?.refs).toEqual([
+			'ns/wip/a/no-generation-here',
+			'ns/wip/b/neither-here',
+		]);
+	});
+});
+
 describe('describeSwarm', () => {
 	const view = (overlaps: number): ISwarmView => ({
 		integration: 'develop',
@@ -147,6 +182,22 @@ describe('describeSwarm', () => {
 		expect(lines).toContain('overlaps         none');
 		expect(lines).toContain('to sort out      nothing');
 		expect(lines).toContain('publications     1');
+	});
+
+	it('lists each relation with the refs it names', () => {
+		const lines = describeSwarm({
+			...view(0),
+			relations: [
+				{
+					kind: 'stacked',
+					refs: ['one', 'two'],
+					detail: 'land one first',
+				},
+			],
+		});
+		expect(lines).toContain('to sort out      1:');
+		expect(lines).toContain('  stacked   land one first');
+		expect(lines).toContain('            two');
 	});
 
 	it('summarises a long overlap list instead of burying the relations', () => {
@@ -204,7 +255,7 @@ describe('reading published work from git', () => {
 		git(root, 'config', 'commit.gpgsign', 'false');
 		writeFileSync(
 			join(root, '.gitattributes'),
-			'catalog.json linguist-generated\nindex.md merge=delendai-generated\n',
+			'catalog.json linguist-generated\nindex.md merge=delendai-generated\nlock.json linguist-generated=true\n',
 		);
 		writeFileSync(join(root, 'base.ts'), 'export const base = 0;\n');
 		git(root, 'add', '-A');
@@ -220,6 +271,7 @@ describe('reading published work from git', () => {
 		commitOnto(root, lower, `${remote}/x11-S1-g1/on-top`, {
 			'release.ts': 'export const release = 1;\n',
 			'catalog.json': '{"b":1}\n',
+			'lock.json': '{}\n',
 		});
 		// Already merged: its tip is develop itself.
 		git(root, 'update-ref', `${remote}/x12-S1-g1/done`, develop);

@@ -71,6 +71,7 @@ duplicating each other's work, because nothing said they were a stack.
   - `packages/core/src/lib/work-units/work-swarm.service.ts`
   - `packages/core/src/lib/work-units/work-unit-status.service.ts`
   - `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit-status.service.spec.ts`
 - shipped-in: `d981cd636893`
 
 ## dependency graph
