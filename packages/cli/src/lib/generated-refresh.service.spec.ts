@@ -15,7 +15,10 @@ import {
 } from '@delendai/test-kit/public';
 
 import { GENERATED_REFRESH_PATHS } from '../contracts/constants/generated-refresh.constant';
-import { refreshGeneratedAfterMerge } from './generated-refresh.service';
+import {
+	landedAsFastForward,
+	refreshGeneratedAfterMerge,
+} from './generated-refresh.service';
 
 const roots: string[] = [];
 const GENERATED = GENERATED_REFRESH_PATHS[0] as string;
@@ -323,5 +326,22 @@ describe('the uncommitted work around a refresh (x00635)', () => {
 
 		expect(outcome.committed).toBe(true);
 		expect(workingStateChanges(before)).toEqual([]);
+	});
+});
+
+describe('landedAsFastForward', () => {
+	it('is true for a tip that only moved forward and false for a merge commit', () => {
+		const root = repo();
+		expect(landedAsFastForward(root)).toBe(true);
+		git(root, 'checkout', '-q', '-b', 'side');
+		writeFileSync(join(root, 'side.ts'), 'export const s = 1;\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'side');
+		git(root, 'checkout', '-q', 'develop');
+		writeFileSync(join(root, 'main.ts'), 'export const m = 1;\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'main');
+		git(root, 'merge', '-q', '--no-edit', 'side');
+		expect(landedAsFastForward(root)).toBe(false);
 	});
 });

@@ -1663,6 +1663,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-30"
+			},
+			{
+				"id": "x00799",
+				"title": "Every derived file merges without a conflict and is recomputed by the queue",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-01"
 			}
 		]
 	}

@@ -70,6 +70,15 @@ const git = (
 };
 
 /**
+ * True when the merge only moved HEAD forward to a commit that already
+ * existed. Such a tip was certified where it was made, so there is
+ * nothing to recompute, and a ten-second `git pull` should not become
+ * a minute of generators.
+ */
+export const landedAsFastForward = (root: string): boolean =>
+	!git(root, ['rev-parse', '-q', '--verify', 'HEAD^2']).ok;
+
+/**
  * One bounded path as it was found: its bytes, and its exact index entry.
  *
  * The index entry is kept as git's own `mode,object` rather than a
