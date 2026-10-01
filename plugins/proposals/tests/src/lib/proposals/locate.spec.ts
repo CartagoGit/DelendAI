@@ -14,12 +14,24 @@
  *   - Both strategies return null when the id is truly absent.
  */
 
-import { describe, expect, it } from 'vitest';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
 	PROPOSAL_STATUS_FOLDERS,
 	locateProposal,
+	proposalScanDirs,
 } from '@delendai/proposals/lib/proposals/locate';
+
+const roots: string[] = [];
+afterEach(() => {
+	for (const root of roots.splice(0)) {
+		rmSync(root, { recursive: true, force: true });
+	}
+});
 
 describe('locate', async () => {
 	describe('PROPOSAL_STATUS_FOLDERS', async () => {
@@ -40,6 +52,37 @@ describe('locate', async () => {
 				proposalsDirAbs: '/nonexistent/path',
 			});
 			expect(result).toBeNull();
+		});
+	});
+
+	describe('the scan, with no registry to read', async () => {
+		it('finds a proposal filed under a kind folder of any status', async () => {
+			const dir = mkdtempSync(join(tmpdir(), 'locate-'));
+			roots.push(dir);
+			mkdirSync(join(dir, 'ready', 'feats'), { recursive: true });
+			writeFileSync(
+				join(dir, 'ready', 'feats', 'f00001-a-feature.md'),
+				'---\nid: f00001\ntype: proposal\nstatus: ready\n---\n# f00001\n',
+			);
+			const found = await locateProposal('f00001', {
+				indexPathAbs: join(dir, 'no-registry', 'index.json'),
+				proposalsDirAbs: dir,
+			});
+			expect(found?.absPath).toBe(
+				join(dir, 'ready', 'feats', 'f00001-a-feature.md'),
+			);
+			expect(found?.status).toBe('ready');
+		});
+
+		it('walks the same folders as the id allocator', async () => {
+			const dirs = proposalScanDirs('/p');
+			for (const folder of [
+				'/p/ready/feats',
+				'/p/in-progress/plans',
+				'/p/done/fixes',
+			]) {
+				expect(dirs).toContain(folder);
+			}
 		});
 	});
 });
