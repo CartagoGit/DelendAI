@@ -19,6 +19,7 @@ describe('git release finalize adapters', () => {
 				releaseOnlyFixes: ['fix'],
 				actor: 'agent',
 			},
+			'develop',
 		);
 		expect(receipt).toMatchObject({
 			operation: 'reconcile',
@@ -45,6 +46,7 @@ describe('git release finalize adapters', () => {
 				releaseOnlyFixes: ['fix'],
 				actor: 'agent',
 			},
+			'develop',
 		);
 		expect(receipt).toMatchObject({ status: 'planned' });
 		expect(commands).toHaveLength(2);
