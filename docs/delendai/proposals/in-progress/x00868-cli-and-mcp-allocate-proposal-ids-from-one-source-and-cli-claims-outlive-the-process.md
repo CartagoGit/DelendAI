@@ -2,10 +2,13 @@
 id: x00868
 title: "CLI and MCP allocate proposal ids from one source, and CLI claims outlive the process"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-01
+last-transition-id: c2fd6d9d-678e-4d3c-a7b8-a8bce9ff7be8
+last-correlation-id: c2fd6d9d-678e-4d3c-a7b8-a8bce9ff7be8
+last-transition-from: ready
 ---
 
 # x00868 — CLI and MCP allocate proposal ids from one source, and CLI claims outlive the process
