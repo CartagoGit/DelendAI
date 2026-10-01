@@ -2,13 +2,13 @@
 id: x00765
 title: "close_slice runs the project's declared gate asynchronously and never counts a timeout as green"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-09-30
-last-transition-id: 24b94cff-542e-42cf-892a-8e28d2f72c9c
-last-correlation-id: 24b94cff-542e-42cf-892a-8e28d2f72c9c
-last-transition-from: ready
+last-transition-id: 27b9b2aa-d329-420c-9f9b-f466f01b6c4a
+last-correlation-id: 27b9b2aa-d329-420c-9f9b-f466f01b6c4a
+last-transition-from: in-progress
 ---
 
 # x00765 — close_slice runs the project's declared gate asynchronously and never counts a timeout as green
@@ -32,13 +32,16 @@ The gate ran the whole validate chain synchronously inside the proposal file mut
 
 ### S1 — Async tree-keyed close_slice gate
 - **Status**: pending
-- **Files**: `packages/core/src/public/index.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/lib/tools/close-slice-gate.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-store.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`, `plugins/proposals/tests/src/lib/e2e/quality-close-slice.e2e.spec.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-quality-gate.spec.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-process.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-tree.ts`, `plugins/proposals/src/generated/tool-outputs.ts`
+- **Files**: `packages/core/src/public/index.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/lib/tools/close-slice-gate.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-store.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`, `plugins/proposals/tests/src/lib/e2e/quality-close-slice.e2e.spec.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-process.ts`, `plugins/proposals/src/lib/tools/close-slice-gate-tree.ts`, `plugins/proposals/src/generated/tool-outputs.ts`
 - **Gate**: type
 - acceptance:
   - "a gate longer than the old timeout returns pending with a handle, not failure and not pass"
   - "a recorded green result for the same tree is reused"
   - "a failing gate blocks the close"
   - "a timed-out or crashed gate is unverifiable and never green"
+- shipped-in: `cd6e1d3ca645`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
