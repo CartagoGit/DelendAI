@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 652
+Total exports: 653
 
 | Maturity | Count |
 | --- | --- |
-| stable | 649 |
+| stable | 650 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -641,6 +641,7 @@ Total exports: 652
 | `validatePluginManifest` | const | stable | `../lib/manifest/validation` |
 | `validateScopePaths` | const | stable | `../plugin` |
 | `validateToolDryRunManifest` | const | stable | `../lib/dry-run/enforce` |
+| `validationGateSteps` | const | stable | `../lib/work-units/validation-gate-steps.service` |
 | `waitsBackOnto` | const | stable | `../lib/shared/wait-for-graph` |
 | `walkAllowedFiles` | const | stable | `../lib/shared/walk-allowed-files` |
 | `walkTsFiles` | const | stable | `../lib/scan` |

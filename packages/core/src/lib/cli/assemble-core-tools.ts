@@ -47,6 +47,7 @@ import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
 import { workModelSummary } from '../development-policy/declare-workflow';
+import { policyOriginTag } from '../development-policy/served-work-model';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { buildSkillPromptRegistrations } from '../prompts/skill-prompts';
 import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
@@ -149,6 +150,13 @@ export interface IAssembleCoreToolsResult {
 	readonly metricsRegistry: ReturnType<typeof createMetricsRegistry>;
 	readonly configurationSnapshot: IConfigurationCenterSnapshot;
 }
+
+/** The overview's model line, with who chose it when delendai did. */
+const overviewWorkModel = (policy: IResolvedDevelopmentPolicy): string => {
+	const note = policyOriginTag(policy);
+	const summary = workModelSummary(policy);
+	return note === undefined ? summary : `${summary} (${note})`;
+};
 
 export const assembleCoreTools = (
 	input: IAssembleCoreToolsInput,
@@ -345,7 +353,7 @@ export const assembleCoreTools = (
 				: {};
 		})(),
 		...(developmentPolicy !== undefined
-			? { workModel: workModelSummary(developmentPolicy) }
+			? { workModel: overviewWorkModel(developmentPolicy) }
 			: {}),
 		recommendedNextAction,
 	});

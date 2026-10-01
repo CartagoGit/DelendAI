@@ -88,10 +88,8 @@ describe('deriveRequiredChecks', () => {
 
 describe('adoption of a pull-request profile', () => {
 	const github = async () => ({
-		hasDevelopmentBlock: false,
 		forge: 'github' as const,
 		canRequireChecks: true,
-		currentBranch: 'develop',
 	});
 
 	it('writes the checks it read, and the result is a policy that starts', async () => {
@@ -114,5 +112,26 @@ describe('adoption of a pull-request profile', () => {
 		);
 		expect(block?.profile).toBe('shared-checkout-merge');
 		expect(reasons.join('\n')).toContain('requiredChecks');
+	});
+
+	it('reads no forge at server start: a workflow with a check does not change the model', async () => {
+		const root = projectWith({ 'ci.yml': ONE_JOB });
+
+		const { block, forge } = await adoptionFor(root, {});
+
+		expect(block?.profile).toBe('shared-checkout-merge');
+		expect(block?.integration).toBeUndefined();
+		expect(forge).toBe('none');
+	});
+
+	it('never rewrites legacy fields, init or startup alike', async () => {
+		const root = projectWith({ 'ci.yml': ONE_JOB });
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "agentWorktree": true }',
+		);
+
+		expect((await adoptionFor(root, {}, github)).block).toBeUndefined();
+		expect((await adoptionFor(root, {})).block).toBeUndefined();
 	});
 });

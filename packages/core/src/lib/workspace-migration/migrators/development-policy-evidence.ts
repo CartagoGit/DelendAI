@@ -123,12 +123,6 @@ export const gatherAdoptionEvidence = async (
 	const cwd = input.workspaceRoot;
 	const remote = await git(cwd, ['remote', 'get-url', 'origin']);
 	const forge = forgeKindOf(remote);
-	const branch = await git(cwd, [
-		'symbolic-ref',
-		'--quiet',
-		'--short',
-		'HEAD',
-	]);
 	const branches = await git(cwd, [
 		'for-each-ref',
 		'--format=%(refname:short)',
@@ -136,12 +130,7 @@ export const gatherAdoptionEvidence = async (
 	]);
 
 	return {
-		hasDevelopmentBlock: input.hasDevelopmentBlock,
 		forge,
-		...(input.agentWorktree === undefined
-			? {}
-			: { agentWorktree: input.agentWorktree }),
-		...(branch === undefined ? {} : { currentBranch: branch }),
 		...(branches === undefined
 			? {}
 			: { existingBranches: branches.split('\n') }),
