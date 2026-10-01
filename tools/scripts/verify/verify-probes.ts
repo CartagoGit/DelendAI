@@ -26,7 +26,7 @@
  *   - **Testability**: each probe is now spec-able without booting
  *     the verify script.
  */
-import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/public';
+import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/cli';
 import type { z } from 'zod';
 
 import type { IToolEffect, IToolRegistration } from '@delendai/core/public';

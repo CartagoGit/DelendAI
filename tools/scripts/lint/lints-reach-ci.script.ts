@@ -48,10 +48,14 @@
  *     `lint:commit-driver-guard`). Running these in CI would pass
  *     vacuously, which `lint:no-silent-gates` exists to refuse.
  *   - STILL RED, and therefore not wired yet, because a gate introduced
- *     red is a gate somebody disables: `lint:core-public-surface-budget`
- *     (878 exports against a budget of 865 — x00541 is the plan) and
- *     `lint:workspace-deps-declared` (green again once the pull request
- *     that declares `@delendai/test-kit` in `plugins/api` lands).
+ *     red is a gate somebody disables: `lint:workspace-deps-declared`
+ *     (green again once the pull request that declares
+ *     `@delendai/test-kit` in `plugins/api` lands).
+ *
+ *     `lint:core-public-surface-budget` used to be listed here as red and
+ *     stayed unwired; it went red again unnoticed, blocking every review
+ *     hand-off. It is chained into `lint:architecture` now, so the next
+ *     export that crosses the budget fails the pull request that adds it.
  *
  * Usage:
  *   bun run lint:lints-reach-ci
