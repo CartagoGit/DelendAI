@@ -178,6 +178,7 @@ export const AGENT_LOCK_INPUT_SCHEMA = z.object({
 	files: z.array(z.string()).optional(),
 	parent_task_id: z.string().optional(),
 	onContention: z.enum(['steal', 'fail']).optional(),
+	holder: z.enum(['process', 'agent']).optional(),
 	host: z.string().optional(),
 	model: z.string().optional(),
 });
