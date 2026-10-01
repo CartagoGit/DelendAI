@@ -672,6 +672,28 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		}
 	},
 	{
+		"id": "framework-knowledge",
+		"package": "@delendai/framework-knowledge",
+		"summary": "Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.",
+		"tags": [
+			"knowledge",
+			"frameworks",
+			"policy"
+		],
+		"maturity": "experimental",
+		"visibility": "public",
+		"presets": [],
+		"capabilities": [],
+		"permissions": [
+			"filesystem-read"
+		],
+		"tokenBudget": {
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
 		"id": "git",
 		"package": "@delendai/git",
 		"summary": "Git wrappers (PR list/view, diff, changelog, extended).",

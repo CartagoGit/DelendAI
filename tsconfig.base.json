@@ -374,6 +374,15 @@
 				"./plugins/issues-triage/src/public/index.ts"
 			],
 			"@delendai/issues-triage/*": ["./plugins/issues-triage/src/*"],
+			"@delendai/framework-knowledge": [
+				"./plugins/framework-knowledge/src/index.ts"
+			],
+			"@delendai/framework-knowledge/public": [
+				"./plugins/framework-knowledge/src/public/index.ts"
+			],
+			"@delendai/framework-knowledge/*": [
+				"./plugins/framework-knowledge/src/*"
+			],
 			"@delendai/external-mcps": ["./plugins/external-mcps/src/index.ts"],
 			"@delendai/external-mcps/public": [
 				"./plugins/external-mcps/src/index.ts"
