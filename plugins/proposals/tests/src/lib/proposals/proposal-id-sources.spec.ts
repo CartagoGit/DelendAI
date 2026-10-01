@@ -2,11 +2,17 @@
  * proposal-id-sources.spec.ts — an id is taken if ANY checkout of the
  * clone or any remote ref already holds it, not only this tree.
  */
-import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
 
 import type { IAllocatorFs } from '@delendai/proposals/lib/proposals/proposal-id-allocator-fs';
 import {
 	countersFromNames,
+	countersFromReservations,
 	createGitProposalIdSources,
 	worktreePathsFrom,
 } from '@delendai/proposals/lib/proposals/proposal-id-sources';
@@ -92,9 +98,9 @@ describe('createGitProposalIdSources', () => {
 					'worktree /repo\nHEAD a\n\nworktree /repo/.cache/delendai/.worktrees/work-a\nHEAD b\n',
 				'for-each-ref':
 					'refs/remotes/origin/develop\nrefs/remotes/origin/delendai/pr/x\n',
-				'ls-tree -r --name-only refs/remotes/origin/develop':
+				'ls-tree -r --full-tree --name-only refs/remotes/origin/develop':
 					'docs/delendai/proposals/ready/fixes/x00544-a.md\n',
-				'ls-tree -r --name-only refs/remotes/origin/delendai/pr/x':
+				'ls-tree -r --full-tree --name-only refs/remotes/origin/delendai/pr/x':
 					'docs/delendai/proposals/ready/fixes/x00545-b.md\n',
 			}),
 			fs: fakeFs({
@@ -116,5 +122,137 @@ describe('createGitProposalIdSources', () => {
 
 		expect(await sources.sharedCounterPath()).toBeNull();
 		expect(await sources.elsewhere()).toEqual({});
+	});
+});
+
+describe('countersFromReservations', () => {
+	it('keeps the highest reserved id per prefix', () => {
+		expect(
+			countersFromReservations(
+				[
+					'a1\trefs/delendai/ids/x00811',
+					'b2\trefs/delendai/ids/x00850',
+					'c3\trefs/delendai/ids/f00040',
+					'd4\trefs/heads/x00999',
+				].join('\n'),
+			),
+		).toEqual({ x: 850, f: 40 });
+	});
+});
+
+describe('createGitProposalIdSources against a real repository', () => {
+	const repos: string[] = [];
+	afterEach(() => {
+		for (const repo of repos.splice(0)) {
+			rmSync(repo, { recursive: true, force: true });
+		}
+	});
+
+	const git = (cwd: string, ...args: string[]): string =>
+		execFileSync('git', args, { cwd, encoding: 'utf8' });
+
+	it('sees an id held on a remote ref from inside the proposals directory', async () => {
+		// The CLI's server runs with the proposals directory as its cwd,
+		// where `ls-tree` read a repository-relative pathspec as relative
+		// to that directory and matched nothing: the id held by another
+		// agent's published branch was invisible to it, and visible to the
+		// MCP server running at the repository root.
+		const repo = mkdtempSync(join(tmpdir(), 'delendai-id-sources-'));
+		repos.push(repo);
+		git(repo, 'init', '-q', '-b', 'develop');
+		const folder = join(repo, 'docs', 'delendai', 'proposals', 'ready');
+		mkdirSync(folder, { recursive: true });
+		writeFileSync(join(folder, 'x00900-held-elsewhere.md'), '# held\n');
+		git(repo, 'add', '.');
+		git(
+			repo,
+			'-c',
+			'user.name=t',
+			'-c',
+			'user.email=t@t',
+			'-c',
+			'commit.gpgsign=false',
+			'commit',
+			'--no-verify',
+			'-qm',
+			'held',
+		);
+		git(repo, 'update-ref', 'refs/remotes/origin/other', 'HEAD');
+		rmSync(join(repo, 'docs'), { recursive: true, force: true });
+		const proposalsDir = join(repo, 'docs', 'delendai', 'proposals');
+		mkdirSync(proposalsDir, { recursive: true });
+
+		const sources = createGitProposalIdSources(proposalsDir);
+
+		expect((await sources.elsewhere()).x).toBe(900);
+	});
+
+	const cloneWithRemote = (): {
+		readonly clone: string;
+		readonly remote: string;
+	} => {
+		const base = mkdtempSync(join(tmpdir(), 'delendai-id-reserve-'));
+		repos.push(base);
+		const remote = join(base, 'remote.git');
+		const clone = join(base, 'clone');
+		mkdirSync(clone, { recursive: true });
+		git(base, 'init', '-q', '--bare', '-b', 'develop', remote);
+		git(clone, 'init', '-q', '-b', 'develop');
+		writeFileSync(join(clone, 'README.md'), '# project\n');
+		git(clone, 'add', '.');
+		git(
+			clone,
+			'-c',
+			'user.name=t',
+			'-c',
+			'user.email=t@t',
+			'-c',
+			'commit.gpgsign=false',
+			'commit',
+			'--no-verify',
+			'-qm',
+			'base',
+		);
+		git(clone, 'remote', 'add', 'origin', remote);
+		git(clone, 'push', '-q', '--no-verify', 'origin', 'develop');
+		mkdirSync(join(clone, 'docs', 'delendai', 'proposals'), {
+			recursive: true,
+		});
+		return { clone, remote };
+	};
+
+	it('hands an id to exactly one of two clones that reserve it', async () => {
+		const { clone, remote } = cloneWithRemote();
+		const second = join(clone, '..', 'second');
+		git(clone, 'clone', '-q', remote, second);
+		mkdirSync(join(second, 'docs', 'delendai', 'proposals'), {
+			recursive: true,
+		});
+		const a = createGitProposalIdSources(
+			join(clone, 'docs/delendai/proposals'),
+		);
+		const b = createGitProposalIdSources(
+			join(second, 'docs/delendai/proposals'),
+		);
+
+		const first = await a.reserve('x00811');
+		const again = await b.reserve('x00811');
+		const other = await b.reserve('x00812');
+
+		expect(first).toBe('reserved');
+		expect(again).toBe('taken');
+		expect(other).toBe('reserved');
+		expect((await a.elsewhere()).x).toBe(812);
+	});
+
+	it('says nothing could be decided when there is no remote', async () => {
+		const { clone } = cloneWithRemote();
+		git(clone, 'remote', 'remove', 'origin');
+
+		expect(
+			await createGitProposalIdSources(
+				join(clone, 'docs/delendai/proposals'),
+			).reserve('x00811'),
+		).toBe('unavailable');
 	});
 });

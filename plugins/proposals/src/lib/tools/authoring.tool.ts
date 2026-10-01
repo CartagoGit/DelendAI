@@ -40,6 +40,7 @@ import {
 } from '../contracts/schemas/proposal-kind.schema';
 import { readTextOrNull } from '../proposals/index-reader';
 import { appendPeerReviewJsonl } from '../shared/peer-review-log';
+import { findExistingProposal } from '../proposals/existing-proposal';
 import { escapeRegExp, slugFromTitle } from '../shared/string-helpers';
 import {
 	parseProposalSlicePlan,
@@ -600,6 +601,8 @@ interface ICreateProposalWriteResult {
 	}[];
 	readonly indexCount: number;
 	readonly redactedSecrets: number;
+	/** The proposal was already on disk from an earlier call; nothing was written. */
+	readonly reused?: boolean;
 }
 
 interface ICreateProposalWriteError {
@@ -661,6 +664,34 @@ export const createProposalDocument = async (
 				ok: false,
 				reason: `unknown kind "${args.kind}"`,
 				nextAction: 'Pass a recognised kind, or pass id explicitly.',
+			};
+		}
+		// A repeated create (the first call's answer was lost to a timeout)
+		// finds its own earlier write instead of minting a second id.
+		const earlier = await findExistingProposal({
+			proposalsDirAbs: options.proposalsDirAbs,
+			prefix,
+			slug: slugFromTitle(args.title, ''),
+			title: args.title,
+			status: canonicalStatus(args.status),
+		});
+		if (earlier !== undefined) {
+			const sync = await syncProposalRegistry(
+				options.workspaceRoot,
+				options.layout,
+				options.extraFolders ?? [],
+				undefined,
+				options.folderPolicy,
+			);
+			return {
+				ok: true,
+				id: earlier.id,
+				file: earlier.file,
+				path: join(options.proposalsDirAbs, ...earlier.file.split('/')),
+				disjointnessIssues: [],
+				indexCount: sync.count,
+				redactedSecrets: 0,
+				reused: true,
 			};
 		}
 		id = await allocateNextProposalId(prefix, {
@@ -1025,7 +1056,7 @@ export const buildCreateProposalRegistration = (
 				// as well put the same file on two refs, the second one a
 				// pull request nobody opened.
 				const unitBranch =
-					git === undefined || forCheckout.source !== 'request'
+					git === undefined
 						? undefined
 						: await workUnitBranch(
 								git,
@@ -1100,7 +1131,7 @@ export const buildCreateProposalRegistration = (
 					disjointnessIssues: created.disjointnessIssues,
 					indexCount: created.indexCount,
 					redactedSecrets: created.redactedSecrets,
-					nextAction:
+					nextAction: `${created.reused === true ? `${created.id} was already written by an earlier call with this title, so nothing was created again. ` : ''}${
 						unitBranch !== undefined
 							? `Commit ${relative(scoped.workspaceRoot, created.path)} in the unit on ${unitBranch} (run \`bun run gen:all\` first if the project derives files from proposals), then publish the unit with \`delendai work publish\`.`
 							: proposalPublishNextAction({
@@ -1120,7 +1151,8 @@ export const buildCreateProposalRegistration = (
 													?.branches.workRefTemplate,
 										},
 									),
-								}),
+								})
+					}`,
 					published: publication.published,
 					...(publication.ref === undefined
 						? {}
