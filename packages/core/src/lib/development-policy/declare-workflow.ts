@@ -35,7 +35,9 @@ export type {
 /** Where the agent edits, and what it must not do to that checkout. */
 const workspaceStep = (policy: IResolvedDevelopmentPolicy): string => {
 	if (policy.workspace.strategy === 'agent-worktree')
-		return 'Edit in your own worktree; it is yours alone.';
+		return policy.persistence.usesWipRefs
+			? 'Edit in your own worktree: `delendai work enter` makes it for each unit of work, and it is yours alone. Git lets you switch branches in the checkout you were given, but only the work ref `work enter` makes can be checkpointed or published.'
+			: 'Edit in your own worktree; it is yours alone.';
 	if (
 		policy.workspace.pinnedCheckout &&
 		policy.persistence.allowsDirectIntegrationCommit
@@ -68,7 +70,9 @@ const START_STEPS: Readonly<
 	branch: (policy) =>
 		`Commit on your worktree's own branch (${shortName(policy.branches.workRefTemplate)}), never on ${policy.branches.integration}.`,
 	'wip-ref': (policy) =>
-		`Start each unit of work with \`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>\` (or the \`work\` tool, action enter) and edit and commit in the worktree it prints, passing it as \`checkout\` to delendai's tools; from the shared checkout, \`delendai work checkpoint --proposal=<id> --slice=<slice> --paths=<a,b> --message=<text>\` writes the same ref without moving HEAD. Your work ref is ${shortName(policy.branches.workRefTemplate)}; never commit to ${policy.branches.integration}.`,
+		policy.workspace.strategy === 'agent-worktree'
+			? `Start each unit of work with \`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>\` (or the \`work\` tool, action enter): it creates your worktree and its branch, ${shortName(policy.branches.workRefTemplate)}, in one step. Edit and commit there with ordinary git, passing it as \`checkout\` to delendai's tools; a worktree or branch made any other way (\`agent_worktree\`, \`git worktree add\`, a hand-named branch) cannot be published. Never commit to ${policy.branches.integration}.`
+			: `Start each unit of work with \`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>\` (or the \`work\` tool, action enter) and edit and commit in the worktree it prints, passing it as \`checkout\` to delendai's tools; from the shared checkout, \`delendai work checkpoint --proposal=<id> --slice=<slice> --paths=<a,b> --message=<text>\` writes the same ref without moving HEAD. Your work ref is ${shortName(policy.branches.workRefTemplate)}; never commit to ${policy.branches.integration}.`,
 	'direct-commit': (policy) =>
 		`Commit your work directly to ${policy.branches.integration}; there is no unit of work to enter.`,
 	none: () =>
