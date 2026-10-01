@@ -1,0 +1,360 @@
+#!/usr/bin/env bun
+import { runCli as runServerCli } from '@delendai/core/public';
+import { serveRefusal } from '@delendai/core/cli';
+
+import { registerAllCommands } from './commands/registry';
+import { CLI_VERSION } from './contracts/constants/version.constant';
+import { resolveWorkAgentId } from '@delendai/core/public';
+
+import { EXIT_CODE } from './contracts/constants/exit-code.constant';
+import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
+import { ensureMigrated } from './lib/cli/entrypoint';
+import { adoptionReportLines } from '@delendai/core/cli';
+import {
+	asksForHelp,
+	renderCommandHelp,
+	unknownFlagRefusal,
+} from './lib/command-flags.service';
+import { renderHelp } from './lib/help.service';
+import { parseCliInvocation } from './lib/parser.service';
+import { createStdioContext } from './lib/stdio-context.factory';
+import { createNoopContext } from './lib/noop-context.factory';
+import { formatJson } from './lib/stable-json.service';
+
+export {
+	CANONICAL_CLI_BIN,
+	CANONICAL_CLI_PACKAGE,
+} from './contracts/constants/canonical-launch.constant';
+export type {
+	ICanonicalLaunch,
+	ICanonicalLaunchMode,
+	ICanonicalLaunchOptions,
+} from './contracts/interfaces/canonical-launch.interface';
+export { buildCanonicalLaunch } from './lib/server-args.service';
+// A host entry that is not this CLI reports the state of the hooks a
+// project's development policy declares. It does not install them:
+// starting a server is not consent to edit the repository (x00591).
+export { reportGuardHooks } from './lib/guard-hooks-autoinstall.service';
+// The one way a publication becomes a pull request (x00677): the CLI's
+// publish and the local hydrator both go through it.
+export {
+	checkWorkflowInvariants,
+	openPublicationPullRequest,
+	policyOf,
+	renderInvariantReport,
+	runWorkflowDoctor,
+	sharedCheckoutOf,
+} from '@delendai/core/cli';
+export type {
+	IInvariantReport,
+	IInvariantResult,
+	IInvariantScope,
+} from '@delendai/core/cli';
+export type { IGuardAutoinstallOutcome } from './contracts/interfaces/guard-hooks-autoinstall.interface';
+
+const commandMatches = (
+	command: ICliCommand,
+	path: readonly string[],
+): boolean =>
+	command.name.split(' ').every((part, index) => path[index] === part);
+
+const findCommand = (
+	commands: readonly ICliCommand[],
+	path: readonly string[],
+): ICliCommand | undefined =>
+	commands
+		.filter((command) => commandMatches(command, path))
+		.sort((a, b) => b.name.split(' ').length - a.name.split(' ').length)[0];
+
+const consumedPathParts = (command: ICliCommand): number =>
+	command.name.split(' ').length;
+
+const twoPartPrefixes = (
+	commands: readonly ICliCommand[],
+): ReadonlySet<string> =>
+	new Set(
+		commands
+			.filter((command) => command.name.includes(' '))
+			.map((command) => command.name.split(' ')[0] ?? ''),
+	);
+
+export const runHumanCli = async (
+	argv: readonly string[],
+	cwd = process.cwd(),
+): Promise<number> => {
+	const commands = await registerAllCommands();
+	const parsed = parseCliInvocation(argv, cwd, twoPartPrefixes(commands));
+	if (parsed.version) {
+		process.stdout.write(`${CLI_VERSION}\n`);
+		return EXIT_CODE.OK;
+	}
+	if (parsed.help) {
+		process.stdout.write(renderHelp(commands, parsed.globals.lang));
+		return EXIT_CODE.OK;
+	}
+
+	const command = findCommand(commands, parsed.commandPath);
+	if (command === undefined) {
+		process.stderr.write(
+			`Unknown command: ${parsed.commandPath.join(' ')}\n`,
+		);
+		process.stderr.write('Run `delendai --help`.\n');
+		return EXIT_CODE.USAGE;
+	}
+
+	const commandArgs = [
+		...parsed.commandPath.slice(consumedPathParts(command)),
+		...parsed.commandArgs,
+	];
+	if (asksForHelp(command, commandArgs)) {
+		process.stdout.write(renderCommandHelp(command, parsed.globals.lang));
+		return EXIT_CODE.OK;
+	}
+	const refusal = unknownFlagRefusal(command, commandArgs);
+	if (refusal !== undefined) {
+		process.stderr.write(`${refusal}\n`);
+		return EXIT_CODE.USAGE;
+	}
+
+	const extraPlugins = command.name.startsWith('search')
+		? ['search']
+		: command.name.startsWith('docs ')
+			? ['docs']
+			: [];
+	// `init` (f00084) and `init:default` (f00103) are local-bootstrap
+	// commands — they write files to the workspace and never call back
+	// into the MCP server. They run with a noop context to avoid
+	// spawning an stdio server for what is essentially a copy-paste
+	// pipeline.
+	// `guard` runs from git hooks on every commit and push: it reads git and
+	// the project's configuration only, and must never start a server.
+	const isOffline =
+		command.name === 'init' ||
+		command.name === 'init:default' ||
+		command.name === 'guard';
+	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
+	try {
+		// a00061: `init`/`init:default` read ONLY `ctx.cwd` to resolve
+		// where to write (see noop-context.factory.ts) — they never look
+		// at `ctx.globals.workspace`. Passing the raw `cwd` (the CLI
+		// process's own process.cwd()) here silently ignored `--workspace`,
+		// so `delendai init:default --workspace=<other-dir>` bootstrapped/
+		// overwrote files in whatever directory the command happened to
+		// be run from instead of the intended target — a real data-loss
+		// risk caught live. `parsed.globals.workspace` already resolves
+		// to `cwd` when `--workspace` is absent (parser.service.ts), so
+		// this is a no-op for the common case and a real fix for the
+		// override case.
+		ctx = isOffline
+			? createNoopContext(parsed.globals.workspace, parsed.globals)
+			: await createStdioContext(cwd, parsed.globals, extraPlugins);
+		const result = await command.run(commandArgs, ctx);
+		if (result.error !== undefined)
+			process.stderr.write(`${result.error}\n`);
+		if (result.data !== undefined) {
+			// Stdout policy (f00103 follow-up + the operator's report,
+			// refined by a00087):
+			//   - `--json` (or `--format=json`)  → structured envelope
+			//     to stdout (pipe-safe, machine-readable).
+			//   - `suppressDefaultPrint: true`    → nothing on stdout.
+			//     The command already printed its own human-facing
+			//     recap as a side effect (e.g. `init` writes
+			//     `printInitHumanSummary` from `runInitWithAnswers`).
+			//     The previous behaviour (`asScalarText(result.data)`)
+			//     duplicated that recap with a full JSON dump on stdout
+			//     — the bug the operator reported for `init` and
+			//     `init:default` after a successful bootstrap.
+			//   - everything else                → the same JSON dump,
+			//     because a command with NO bespoke human output and
+			//     no `--json` used to be entirely silent (exit 0, zero
+			//     stdout/stderr) — indistinguishable from a hang for a
+			//     human running e.g. `delendai status` the obvious way
+			//     (a00087). Pretty JSON on stdout is a strictly better
+			//     default than nothing.
+			//
+			// Note: `result.text` below still writes to stdout because
+			// some commands (`--version`, `--help`, simple scalar
+			// commands) return their output via `result.text` rather
+			// than `result.data`. Plain-text commands are unaffected.
+			const emitStructured =
+				parsed.globals.json || parsed.globals.format === 'json';
+			if (emitStructured || !result.suppressDefaultPrint) {
+				process.stdout.write(formatJson(result.data));
+			}
+		} else if (result.text !== undefined) {
+			process.stdout.write(result.text);
+		}
+		return result.code;
+	} catch (error) {
+		const code =
+			typeof error === 'object' && error !== null && 'code' in error
+				? Number((error as { code: unknown }).code)
+				: EXIT_CODE.RUNTIME;
+		process.stderr.write(
+			`${error instanceof Error ? error.message : String(error)}\n`,
+		);
+		return Number.isFinite(code) ? code : EXIT_CODE.RUNTIME;
+	} finally {
+		await ctx?.close();
+	}
+};
+
+/**
+ * The invariants that do NOT hold, as lines, or nothing at all.
+ *
+ * Never throws and never writes: a workspace that cannot be judged still
+ * gets its server.
+ */
+/**
+ * Say, once, when work refs will not carry a model.
+ *
+ * A ref named `client-claude-code` or `unknown-agent` is honest, and an
+ * operator can only act on it if somebody says so — by the time it shows
+ * up in the graph the branch already exists. The remedy is one variable.
+ */
+const unnamedAgentNotice = (
+	env: NodeJS.ProcessEnv = process.env,
+): readonly string[] => {
+	const identity = resolveWorkAgentId({
+		environment: env.DELENDAI_AGENT_ID,
+	});
+	if (identity.source === 'environment') return [];
+	return [
+		`work refs will be named \`${identity.id}\` — no model or agent is declared here.`,
+		'      fix: set DELENDAI_AGENT_ID to the exact model doing the work (e.g. claude-opus-5).',
+	];
+};
+
+const brokenInvariants = async (
+	workspaceRoot: string,
+): Promise<readonly string[]> => {
+	try {
+		const { runWorkflowDoctor } = await import('@delendai/core/cli');
+		const report = await runWorkflowDoctor({
+			from: workspaceRoot,
+			scopes: ['checkout'],
+		});
+		if (report === undefined || report.broken === 0) return [];
+		return [
+			`work doctor: ${String(report.broken)} of ${String(report.results.length)} workflow invariant(s) do not hold — run \`delendai work doctor\``,
+			...report.results
+				.filter((result) => !result.holds)
+				.flatMap((result) => [
+					`  ✗ ${result.id}: ${result.observed}`,
+					...(result.remedy === undefined
+						? []
+						: [`      fix: ${result.remedy}`]),
+				]),
+		];
+	} catch {
+		return [];
+	}
+};
+
+/**
+ * What the binary does, as a function rather than as a top-level `if`.
+ *
+ * The boot sequence — migrate, report the guard, then either serve or
+ * run a command — used to live inside `if (import.meta.main)`, where no
+ * test can reach it. That is precisely the code whose mistakes are
+ * expensive: it is the first thing that runs in somebody else's project,
+ * and x00591 exists because one of its steps was writing to that project.
+ *
+ * The seams are parameters so a test can say what happened without a
+ * process: `serve` is the stdio server, `report` is where the guard's
+ * lines go.
+ */
+export const runEntry = async (
+	argv: readonly string[],
+	workspaceRoot: string,
+	options: {
+		readonly serve?: (args: readonly string[], root: string) => unknown;
+		readonly report?: (line: string) => void;
+		/** Answers the host's handshake with the refusal; stdio by default. */
+		readonly refuse?: (refusal: string) => Promise<void>;
+	} = {},
+): Promise<number | undefined> => {
+	const serve = options.serve ?? runServerCli;
+	const refuse = options.refuse ?? serveRefusal;
+	const report =
+		options.report ??
+		((line: string): void => {
+			process.stderr.write(`${line}\n`);
+		});
+	// Every project-aware entrypoint consults the legacy migration guard
+	// before loading the server and the plugins. The guard is silent on a
+	// workspace with nothing to migrate (the common case), and runs the
+	// registered migrations otherwise.
+	//
+	// Workspaces whose own scripts / CI invoke a legacy bin name get the
+	// same guard via the workspace-local shim produced by `delendai bridge
+	// install`; the shim re-execs into this exact binary, so the guard
+	// runs once per invocation no matter which entrypoint was typed.
+	//
+	// `guard` runs inside git hooks on every commit and push: it must not
+	// migrate (and so write to) the workspace while git holds its locks.
+	if (argv[0] !== 'guard') {
+		const migrated = await ensureMigrated(workspaceRoot);
+		// A migration that edits the project's own configuration says so.
+		for (const line of await adoptionReportLines(migrated, workspaceRoot)) {
+			report(`[delendai] ${line}`);
+		}
+	}
+	if (argv[0] === '__serve') {
+		// Report the guard a project declares; never install it. Starting
+		// a server is not consent to edit the repository it was started
+		// in — `delendai guard install` is.
+		const { reportGuardHooks } = await import(
+			'./lib/guard-hooks-autoinstall.service'
+		);
+		for (const line of (await reportGuardHooks({ workspaceRoot })).lines) {
+			report(`[delendai] ${line}`);
+		}
+		// What the work-ref model promises, and whether it is holding.
+		//
+		// The checks existed, in this repository's toolbox, reachable as
+		// `bun run work:doctor` by somebody who already knew to run it.
+		// Nobody ran it, which is why every one of the last dozen
+		// breakages was found by a person noticing a git graph.
+		//
+		// Reported on boot, and ONLY what does not hold: the promises
+		// that are kept are not news, and a server that recites its own
+		// health on every start is a server whose output gets ignored.
+		// Read-only, like everything else here — x00591.
+		for (const line of unnamedAgentNotice()) {
+			report(`[delendai] ${line}`);
+		}
+		for (const line of await brokenInvariants(workspaceRoot)) {
+			report(`[delendai] ${line}`);
+		}
+		// A server that cannot start says so in one sentence, not as an
+		// unhandled rejection.
+		//
+		// `void` was fire-and-forget, so a refusal that `assemble` raises —
+		// a configuration that cannot be honoured, and the diagnosis names
+		// the rule and its remedy — surfaced as a stack trace with the
+		// runtime's source listing wrapped around it. The sentence a person
+		// can act on was in there, under twenty lines that nobody can.
+		// Still not awaited: serving does not return, and awaiting it would
+		// hold the entrypoint open forever.
+		void Promise.resolve(serve(argv.slice(1), workspaceRoot)).catch(
+			async (error: unknown) => {
+				const refusal = `cannot start in this workspace: ${
+					error instanceof Error ? error.message : String(error)
+				}`;
+				report(`[delendai] ${refusal}`);
+				process.exitCode = EXIT_CODE.VALIDATION;
+				// The host discards stderr, and a process that exits shows the
+				// person only a closed connection. Answering the handshake
+				// puts the same sentence, with its remedy, where they read it.
+				await refuse(refusal).catch(() => undefined);
+			},
+		);
+		return undefined;
+	}
+	return runHumanCli(argv, workspaceRoot);
+};
+
+if (import.meta.main) {
+	process.exitCode = await runEntry(process.argv.slice(2), process.cwd());
+}

@@ -1,0 +1,1669 @@
+{
+	"mode": "compact",
+	"tools": [
+		{
+			"name": "delendai_adaptive-optimizer_activation_metrics",
+			"plugin": "adaptive-optimizer"
+		},
+		{
+			"name": "delendai_adaptive-optimizer_adaptive_facade",
+			"plugin": "adaptive-optimizer"
+		},
+		{
+			"name": "delendai_adaptive-optimizer_optimize_run",
+			"plugin": "adaptive-optimizer"
+		},
+		{
+			"name": "delendai_adopt_project"
+		},
+		{
+			"name": "delendai_agent_catalog"
+		},
+		{
+			"name": "delendai_agent-orchestrator_classify",
+			"plugin": "agent-orchestrator"
+		},
+		{
+			"name": "delendai_agent-orchestrator_dispatch",
+			"plugin": "agent-orchestrator"
+		},
+		{
+			"name": "delendai_agent-orchestrator_plan",
+			"plugin": "agent-orchestrator"
+		},
+		{
+			"name": "delendai_analyze_project"
+		},
+		{
+			"name": "delendai_audit_audit_consolidate",
+			"plugin": "audit"
+		},
+		{
+			"name": "delendai_audit_audit_plan",
+			"plugin": "audit"
+		},
+		{
+			"name": "delendai_audit_audit_run",
+			"plugin": "audit"
+		},
+		{
+			"name": "delendai_audit_self_audit",
+			"plugin": "audit"
+		},
+		{
+			"name": "delendai_auto-agent-selector_auto_evaluate",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "delendai_auto-agent-selector_auto_recommend",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "delendai_auto-agent-selector_auto_record",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "delendai_auto-agent-selector_auto_run",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "delendai_auto-agent-selector_auto_status",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "delendai_auto-plugin-selector_plugins_recommend",
+			"plugin": "auto-plugin-selector"
+		},
+		{
+			"name": "delendai_cache_reconcile"
+		},
+		{
+			"name": "delendai_commit-policy_commit_policy_commit",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "delendai_commit-policy_commit_policy_push",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "delendai_commit-policy_commit_policy_refresh_branch_protection",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "delendai_commit-policy_commit_policy_run",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "delendai_commit-policy_commit_policy_settlement",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "delendai_commit-policy_commit_policy_storms",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "delendai_commit-policy_commit_policy_work_ref",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "delendai_compact_router"
+		},
+		{
+			"name": "delendai_completion_clear",
+			"plugin": "completion"
+		},
+		{
+			"name": "delendai_completion_report_complete",
+			"plugin": "completion"
+		},
+		{
+			"name": "delendai_completion_status",
+			"plugin": "completion"
+		},
+		{
+			"name": "delendai_configuration_center"
+		},
+		{
+			"name": "delendai_container_container_build",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_container_container_inspect",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_container_container_lint",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_container_container_logs",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_container_k8s_apply",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_context-for-change_context_for_change",
+			"plugin": "context-for-change"
+		},
+		{
+			"name": "delendai_conventions_conventions_check",
+			"plugin": "conventions"
+		},
+		{
+			"name": "delendai_conventions_conventions_check_architecture",
+			"plugin": "conventions"
+		},
+		{
+			"name": "delendai_conventions_conventions_classify",
+			"plugin": "conventions"
+		},
+		{
+			"name": "delendai_conventions_conventions_explain_path",
+			"plugin": "conventions"
+		},
+		{
+			"name": "delendai_conventions_conventions_suggest_path",
+			"plugin": "conventions"
+		},
+		{
+			"name": "delendai_create_plugin"
+		},
+		{
+			"name": "delendai_create_project"
+		},
+		{
+			"name": "delendai_database_db_erd",
+			"plugin": "database"
+		},
+		{
+			"name": "delendai_database_db_explain",
+			"plugin": "database"
+		},
+		{
+			"name": "delendai_database_db_probe",
+			"plugin": "database"
+		},
+		{
+			"name": "delendai_database_db_query",
+			"plugin": "database"
+		},
+		{
+			"name": "delendai_database_db_schema",
+			"plugin": "database"
+		},
+		{
+			"name": "delendai_deps_deps_audit",
+			"plugin": "deps"
+		},
+		{
+			"name": "delendai_deps_deps_check",
+			"plugin": "deps"
+		},
+		{
+			"name": "delendai_deps_deps_licenses",
+			"plugin": "deps"
+		},
+		{
+			"name": "delendai_deps_deps_list",
+			"plugin": "deps"
+		},
+		{
+			"name": "delendai_deps_deps_outdated",
+			"plugin": "deps"
+		},
+		{
+			"name": "delendai_deps_deps_polyglot",
+			"plugin": "deps"
+		},
+		{
+			"name": "delendai_deps_deps_tree",
+			"plugin": "deps"
+		},
+		{
+			"name": "delendai_diagram_diagram_deps",
+			"plugin": "diagram"
+		},
+		{
+			"name": "delendai_diagram_diagram_erd",
+			"plugin": "diagram"
+		},
+		{
+			"name": "delendai_diagram_diagram_modules",
+			"plugin": "diagram"
+		},
+		{
+			"name": "delendai_diagram_diagram_proposals",
+			"plugin": "diagram"
+		},
+		{
+			"name": "delendai_docs_docs_generate",
+			"plugin": "docs"
+		},
+		{
+			"name": "delendai_docs_docs_list",
+			"plugin": "docs"
+		},
+		{
+			"name": "delendai_docs_docs_read",
+			"plugin": "docs"
+		},
+		{
+			"name": "delendai_docs_docs_search",
+			"plugin": "docs"
+		},
+		{
+			"name": "delendai_drift_check"
+		},
+		{
+			"name": "delendai_env_env_check",
+			"plugin": "env"
+		},
+		{
+			"name": "delendai_env_env_explains",
+			"plugin": "env"
+		},
+		{
+			"name": "delendai_error-reporting_diagnose_log",
+			"plugin": "error-reporting"
+		},
+		{
+			"name": "delendai_error-reporting_report_status",
+			"plugin": "error-reporting"
+		},
+		{
+			"name": "delendai_forge_ci_status",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_delendai_issue_create",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_issue_create",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_issue_list",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_issue_show",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_pr_comment",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_pr_create",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_pr_list",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_pr_show",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_release",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_forge_search_code",
+			"plugin": "forge"
+		},
+		{
+			"name": "delendai_fs_read"
+		},
+		{
+			"name": "delendai_fs_write"
+		},
+		{
+			"name": "delendai_get_validation_matrix"
+		},
+		{
+			"name": "delendai_git_blame",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_changed",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_changelog",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_commit",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_diff",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_log",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_pr_list",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_pr_view",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_push",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_show",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_status",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_git_worktree",
+			"plugin": "git"
+		},
+		{
+			"name": "delendai_i18n_i18n_check",
+			"plugin": "i18n"
+		},
+		{
+			"name": "delendai_i18n_i18n_validate",
+			"plugin": "i18n"
+		},
+		{
+			"name": "delendai_impact-analysis_impact_analyze",
+			"plugin": "impact-analysis"
+		},
+		{
+			"name": "delendai_impact-analysis_tests_for_change",
+			"plugin": "impact-analysis"
+		},
+		{
+			"name": "delendai_init_config"
+		},
+		{
+			"name": "delendai_knowledge"
+		},
+		{
+			"name": "delendai_link-check_link_check",
+			"plugin": "link-check"
+		},
+		{
+			"name": "delendai_logs_correlate",
+			"plugin": "logs"
+		},
+		{
+			"name": "delendai_logs_errors_tail",
+			"plugin": "logs"
+		},
+		{
+			"name": "delendai_logs_incidents",
+			"plugin": "logs"
+		},
+		{
+			"name": "delendai_logs_log",
+			"plugin": "logs"
+		},
+		{
+			"name": "delendai_logs_query",
+			"plugin": "logs"
+		},
+		{
+			"name": "delendai_logs_redact_test",
+			"plugin": "logs"
+		},
+		{
+			"name": "delendai_logs_search",
+			"plugin": "logs"
+		},
+		{
+			"name": "delendai_logs_subscribe",
+			"plugin": "logs"
+		},
+		{
+			"name": "delendai_logs_tail",
+			"plugin": "logs"
+		},
+		{
+			"name": "delendai_memory_checkpoint_packet",
+			"plugin": "memory"
+		},
+		{
+			"name": "delendai_memory_compact",
+			"plugin": "memory"
+		},
+		{
+			"name": "delendai_memory_compaction_check",
+			"plugin": "memory"
+		},
+		{
+			"name": "delendai_memory_export",
+			"plugin": "memory"
+		},
+		{
+			"name": "delendai_memory_forget",
+			"plugin": "memory"
+		},
+		{
+			"name": "delendai_memory_import",
+			"plugin": "memory"
+		},
+		{
+			"name": "delendai_memory_list",
+			"plugin": "memory"
+		},
+		{
+			"name": "delendai_memory_recall",
+			"plugin": "memory"
+		},
+		{
+			"name": "delendai_memory_save",
+			"plugin": "memory"
+		},
+		{
+			"name": "delendai_metrics"
+		},
+		{
+			"name": "delendai_notification_await_lock",
+			"plugin": "notification"
+		},
+		{
+			"name": "delendai_notification_notify_status",
+			"plugin": "notification"
+		},
+		{
+			"name": "delendai_orchestrator-runner_advise_routing",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_advise_spend",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_bootstrap_providers",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_cancel_invocation",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_discover_providers",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_format_handoff",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_get_quota",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_healthcheck_providers",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_invoke",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_list_models",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_orchestrator-runner_set_provider_state",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "delendai_overview"
+		},
+		{
+			"name": "delendai_perf_perf_bench",
+			"plugin": "perf"
+		},
+		{
+			"name": "delendai_perf_perf_bundle",
+			"plugin": "perf"
+		},
+		{
+			"name": "delendai_perf_perf_profile",
+			"plugin": "perf"
+		},
+		{
+			"name": "delendai_plan_mcp_project"
+		},
+		{
+			"name": "delendai_plugin_activate"
+		},
+		{
+			"name": "delendai_plugin_add"
+		},
+		{
+			"name": "delendai_plugin_deactivate"
+		},
+		{
+			"name": "delendai_plugin_search"
+		},
+		{
+			"name": "delendai_project_context"
+		},
+		{
+			"name": "delendai_project_plugins_create"
+		},
+		{
+			"name": "delendai_project_plugins_inspect"
+		},
+		{
+			"name": "delendai_project_plugins_repair"
+		},
+		{
+			"name": "delendai_project-health_project_health",
+			"plugin": "project-health"
+		},
+		{
+			"name": "delendai_project-kpis_project_kpis",
+			"plugin": "project-kpis"
+		},
+		{
+			"name": "delendai_proposals_agent_lock",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_agent_lock_release_orphan",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_agent_names",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_agent_worktree",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_agents_lock_diagnose",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_auto_fix_queue",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_auto_work",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_branch_gc",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_branch_status",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_close_slice",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_compact_status",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_continue_proposal",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_create_proposal",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_delegate",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_get_proposal_workflow",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_incident_proposals",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_inherit_host_instructions",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_plan",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposal_adopt",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposal_board",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposal_diagnose",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposal_force_transition",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposal_get",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposal_reconcile_folder",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposal_review",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposal_stale_list",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposal_transition",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_close_plan",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_compile_context",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_conflicts",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_diff",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_doctor",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_quarantine_list",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_quarantine_repair",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_rebuild",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_reconcile",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_resurrect",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_status",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_tombstones",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_verify",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_search",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_summary_backfill",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_review_claim",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_review_queue",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_round_context",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_state_health",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_state_repair",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_swarm_hygiene",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_sync_proposals",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_task_queue",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_quality_complexity",
+			"plugin": "quality"
+		},
+		{
+			"name": "delendai_quality_coverage",
+			"plugin": "quality"
+		},
+		{
+			"name": "delendai_quality_get_quality_scopes",
+			"plugin": "quality"
+		},
+		{
+			"name": "delendai_quality_quality_cancel",
+			"plugin": "quality"
+		},
+		{
+			"name": "delendai_quality_quality_run_all",
+			"plugin": "quality"
+		},
+		{
+			"name": "delendai_quality_run_quality",
+			"plugin": "quality"
+		},
+		{
+			"name": "delendai_quality-policy_quality_policy",
+			"plugin": "quality-policy"
+		},
+		{
+			"name": "delendai_quality-policy_quality_policy_run_settlement",
+			"plugin": "quality-policy"
+		},
+		{
+			"name": "delendai_refactor_refactor_apply",
+			"plugin": "refactor"
+		},
+		{
+			"name": "delendai_refactor_refactor_codemod",
+			"plugin": "refactor"
+		},
+		{
+			"name": "delendai_refactor_refactor_definition",
+			"plugin": "refactor"
+		},
+		{
+			"name": "delendai_refactor_refactor_references",
+			"plugin": "refactor"
+		},
+		{
+			"name": "delendai_refactor_refactor_rename",
+			"plugin": "refactor"
+		},
+		{
+			"name": "delendai_refactor_refactor_symbols",
+			"plugin": "refactor"
+		},
+		{
+			"name": "delendai_resolve_capability"
+		},
+		{
+			"name": "delendai_rules_apply_rules",
+			"plugin": "rules"
+		},
+		{
+			"name": "delendai_rules_check_rules",
+			"plugin": "rules"
+		},
+		{
+			"name": "delendai_rules_get_rules",
+			"plugin": "rules"
+		},
+		{
+			"name": "delendai_scaffold"
+		},
+		{
+			"name": "delendai_search_references",
+			"plugin": "search"
+		},
+		{
+			"name": "delendai_search_search",
+			"plugin": "search"
+		},
+		{
+			"name": "delendai_search_symbol",
+			"plugin": "search"
+		},
+		{
+			"name": "delendai_security_security_audit",
+			"plugin": "security"
+		},
+		{
+			"name": "delendai_security_security_deps",
+			"plugin": "security"
+		},
+		{
+			"name": "delendai_security_security_sast",
+			"plugin": "security"
+		},
+		{
+			"name": "delendai_security_security_secrets",
+			"plugin": "security"
+		},
+		{
+			"name": "delendai_shell_status"
+		},
+		{
+			"name": "delendai_skill"
+		},
+		{
+			"name": "delendai_status"
+		},
+		{
+			"name": "delendai_status-marker_close",
+			"plugin": "status-marker"
+		},
+		{
+			"name": "delendai_status-marker_ping",
+			"plugin": "status-marker"
+		},
+		{
+			"name": "delendai_status-marker_validate",
+			"plugin": "status-marker"
+		},
+		{
+			"name": "delendai_tech-debt_debt_scan",
+			"plugin": "tech-debt"
+		},
+		{
+			"name": "delendai_test-convention_get_convention",
+			"plugin": "test-convention"
+		},
+		{
+			"name": "delendai_test-convention_scan_drift",
+			"plugin": "test-convention"
+		},
+		{
+			"name": "delendai_test-convention_suggest_spec_path",
+			"plugin": "test-convention"
+		},
+		{
+			"name": "delendai_test-policy_get_test_policy",
+			"plugin": "test-policy"
+		},
+		{
+			"name": "delendai_test-policy_set_test_policy",
+			"plugin": "test-policy"
+		},
+		{
+			"name": "delendai_tool_search"
+		},
+		{
+			"name": "delendai_usage-tracking_session_hygiene",
+			"plugin": "usage-tracking"
+		},
+		{
+			"name": "delendai_usage-tracking_usage_clear",
+			"plugin": "usage-tracking"
+		},
+		{
+			"name": "delendai_usage-tracking_usage_report",
+			"plugin": "usage-tracking"
+		},
+		{
+			"name": "delendai_work"
+		}
+	],
+	"skills": [
+		{
+			"id": "delendai-audit-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before creating an audit proposal to follow the mandatory reading order, evidence bar, and output contract for full repo audits.",
+			"appliesTo": [
+				"@delendai/audit"
+			],
+			"tags": [
+				"audit",
+				"methodology",
+				"qualitative-analysis"
+			],
+			"bodyPath": "plugins/audit/skills/delendai-audit-playbook/SKILL.md"
+		},
+		{
+			"id": "delendai-audit-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when running or consolidating audits to follow the tool-level lifecycle, rubric, and ready-versus-done decision flow.",
+			"appliesTo": [
+				"@delendai/audit"
+			],
+			"tags": [
+				"audit",
+				"lifecycle",
+				"rubric"
+			],
+			"bodyPath": "plugins/audit/skills/audit-runner/SKILL.md"
+		},
+		{
+			"id": "delendai-concurrency-patterns",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when concurrent agents or processes may touch the same files to choose between withFileMutex and agent_lock or agent_worktree.",
+			"appliesTo": [
+				"@delendai/notification",
+				"@delendai/proposals"
+			],
+			"tags": [
+				"concurrency",
+				"locking",
+				"mutex"
+			],
+			"bodyPath": "plugins/proposals/skills/concurrency-patterns/SKILL.md"
+		},
+		{
+			"id": "delendai-conventional-commits-and-release",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before release-facing commits or bun run release so commit type, derived semver bump, and publish flow stay aligned with automation.",
+			"appliesTo": [
+				"@delendai/core"
+			],
+			"tags": [
+				"conventional-commits",
+				"release",
+				"versioning"
+			],
+			"bodyPath": "packages/core/skills/conventional-commits-and-release/SKILL.md"
+		},
+		{
+			"id": "delendai-debugging-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a run fails or output looks wrong to triage logs, proposal state, and orphaned locks before repairing anything.",
+			"appliesTo": [
+				"@delendai/logs",
+				"@delendai/proposals",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"debugging",
+				"logs",
+				"state",
+				"triage"
+			],
+			"bodyPath": "plugins/skills-pack/skills/debugging-playbook/SKILL.md"
+		},
+		{
+			"id": "delendai-error-collection",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",
+			"appliesTo": [
+				"@delendai/*"
+			],
+			"tags": [
+				"error-collection",
+				"privacy",
+				"redaction",
+				"sink"
+			],
+			"bodyPath": "packages/core/skills/error-collection/SKILL.md"
+		},
+		{
+			"id": "delendai-external-mcps",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a workspace needs a capability native tools do not cover, to compose a third-party MCP server via catalog, suggest, validate_config, ack, and the lazy ext.<server>.<tool> call proxy.",
+			"appliesTo": [
+				"@delendai/external-mcps"
+			],
+			"tags": [
+				"composition",
+				"external-mcps",
+				"f00068",
+				"human-ack"
+			],
+			"bodyPath": "plugins/external-mcps/skills/external-mcps/SKILL.md"
+		},
+		{
+			"id": "delendai-failure-modes",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a tool returns ok:false or a swarm stalls to recover from lock conflicts, corruption, state drift, policy blocks, or timeouts.",
+			"appliesTo": [
+				"@delendai/*"
+			],
+			"tags": [
+				"failure-modes",
+				"recovery",
+				"swarm"
+			],
+			"bodyPath": "packages/core/skills/failure-modes/SKILL.md"
+		},
+		{
+			"id": "delendai-incident-response",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
+			"appliesTo": [
+				"@delendai/logs",
+				"@delendai/notification",
+				"@delendai/observability",
+				"@delendai/proposals",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"incident",
+				"logs",
+				"operations",
+				"recovery"
+			],
+			"bodyPath": "plugins/skills-pack/skills/incident-response/SKILL.md"
+		},
+		{
+			"id": "delendai-legacy-proposal-migration",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use only when migrating pre-f00016 pNNN proposals so the legacy mapping and required script order stay correct.",
+			"appliesTo": [
+				"@delendai/proposals"
+			],
+			"tags": [
+				"legacy",
+				"migration",
+				"proposals"
+			],
+			"bodyPath": "plugins/proposals/skills/legacy-proposal-migration/SKILL.md"
+		},
+		{
+			"id": "delendai-migrate-from-x",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when migrating off a legacy tool or pattern to extend the legacy migration discipline with codemods, rename, history checks, and final quality gates.",
+			"appliesTo": [
+				"@delendai/git",
+				"@delendai/proposals",
+				"@delendai/quality",
+				"@delendai/refactor",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"legacy",
+				"migration",
+				"quality",
+				"refactor"
+			],
+			"bodyPath": "plugins/skills-pack/skills/migrate-from-x/SKILL.md"
+		},
+		{
+			"id": "delendai-multi-agent-coordination",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when several agents share this repo to choose locks, await release notifications, and avoid duplicate MCP reads.",
+			"appliesTo": [
+				"@delendai/notification",
+				"@delendai/proposals"
+			],
+			"tags": [
+				"coordination",
+				"locking",
+				"multi-agent"
+			],
+			"bodyPath": "plugins/proposals/skills/multi-agent-coordination/SKILL.md"
+		},
+		{
+			"id": "delendai-operator",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use at session start to call overview first, read recommendedNextAction, and choose the right preset before touching plugin-specific tools.",
+			"appliesTo": [
+				"@delendai/*"
+			],
+			"tags": [
+				"operator",
+				"orientation",
+				"presets"
+			],
+			"bodyPath": "packages/core/skills/operator/SKILL.md"
+		},
+		{
+			"id": "delendai-performance-optimization",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when performance regresses to benchmark first, profile the real hotspot, and validate improvements with the narrowest quality gate.",
+			"appliesTo": [
+				"@delendai/perf",
+				"@delendai/quality",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"benchmarking",
+				"performance",
+				"profiling",
+				"quality"
+			],
+			"bodyPath": "plugins/skills-pack/skills/performance-optimization/SKILL.md"
+		},
+		{
+			"id": "delendai-plugin-authoring",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding or changing an delendai plugin so tools, schemas, state, path containment, and durability rules stay correct.",
+			"appliesTo": [
+				"@delendai/*"
+			],
+			"tags": [
+				"contract",
+				"core",
+				"plugin-authoring"
+			],
+			"bodyPath": "packages/core/skills/plugin-authoring/SKILL.md"
+		},
+		{
+			"id": "delendai-pr-review-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when reviewing a PR to check scope, history, CI, quality gates, and security signals before deciding.",
+			"appliesTo": [
+				"@delendai/forge",
+				"@delendai/git",
+				"@delendai/quality",
+				"@delendai/security",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"pull-request",
+				"quality",
+				"review",
+				"security"
+			],
+			"bodyPath": "plugins/skills-pack/skills/pr-review-checklist/SKILL.md"
+		},
+		{
+			"id": "delendai-proposal-swarm-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use as the compact entrypoint for proposal work when you need the canonical swarm workflow without re-deriving the process.",
+			"appliesTo": [
+				"@delendai/proposals"
+			],
+			"tags": [
+				"multi-agent",
+				"proposals",
+				"swarm"
+			],
+			"bodyPath": "plugins/proposals/skills/proposal-swarm-runner/SKILL.md"
+		},
+		{
+			"id": "delendai-proposals-workflow-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use for end-to-end proposal execution: orient, select, claim, implement, validate, close, and sync without polling or hand-editing state.",
+			"appliesTo": [
+				"@delendai/proposals"
+			],
+			"tags": [
+				"compact",
+				"proposals",
+				"workflow"
+			],
+			"bodyPath": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md"
+		},
+		{
+			"id": "delendai-quality-and-rules-gates",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before run_quality or apply_rules to understand command resolution, commandPolicy boundaries, and why a rules plan was selected.",
+			"appliesTo": [
+				"@delendai/quality",
+				"@delendai/rules"
+			],
+			"tags": [
+				"gates",
+				"quality",
+				"rules"
+			],
+			"bodyPath": "plugins/quality/skills/quality-and-rules-gates/SKILL.md"
+		},
+		{
+			"id": "delendai-rules-dogma-priority",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when deciding which lint or typecheck command wins; it explains the priority order project, then dogma, then the vendored default.",
+			"appliesTo": [
+				"@delendai/rules"
+			],
+			"tags": [
+				"contributor-guide",
+				"dogma",
+				"f00051-s11",
+				"priority",
+				"rules"
+			],
+			"bodyPath": "plugins/rules/skills/delendai-rules-dogma-priority/SKILL.md"
+		},
+		{
+			"id": "delendai-rules-solid-architecture",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding a rules preset, refactoring internals, or auditing the rules plugin so its SOLID boundaries remain intact.",
+			"appliesTo": [
+				"@delendai/rules"
+			],
+			"tags": [
+				"architecture",
+				"contributor-guide",
+				"rules",
+				"solid"
+			],
+			"bodyPath": "plugins/rules/skills/rules-solid-architecture/SKILL.md"
+		},
+		{
+			"id": "delendai-security-hardening-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when hardening a project so audit, dependency, SAST, secret, and environment checks happen in one repeatable pass.",
+			"appliesTo": [
+				"@delendai/env",
+				"@delendai/security",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"dependencies",
+				"hardening",
+				"secrets",
+				"security"
+			],
+			"bodyPath": "plugins/skills-pack/skills/security-hardening-checklist/SKILL.md"
+		},
+		{
+			"id": "delendai-state-repair-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when proposals state is inconsistent after crashes or stale locks to diagnose issues and repair queue, claims, and index drift.",
+			"appliesTo": [
+				"@delendai/proposals"
+			],
+			"tags": [
+				"recovery",
+				"state-health",
+				"state-repair"
+			],
+			"bodyPath": "plugins/proposals/skills/state-repair-playbook/SKILL.md"
+		},
+		{
+			"id": "delendai-status-marker-and-closure",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when the status-marker plugin is loaded to choose the right close state, generate the canonical marker, and validate the final line.",
+			"appliesTo": [
+				"@delendai/status-marker"
+			],
+			"tags": [
+				"audit-trail",
+				"closure",
+				"status-marker"
+			],
+			"bodyPath": "plugins/status-marker/skills/status-marker-and-closure/SKILL.md"
+		},
+		{
+			"id": "delendai-tabs-component",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
+			"appliesTo": [
+				"@delendai/web"
+			],
+			"tags": [
+				"brand-logo",
+				"f00069",
+				"iconography",
+				"tabs"
+			],
+			"bodyPath": "packages/core/skills/tabs-component/SKILL.md"
+		},
+		{
+			"id": "delendai-token-budget-discipline",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use as the pointer to the canonical token-budget playbook whenever you need the current guidance for keeping sessions compact.",
+			"appliesTo": [
+				"@delendai/core"
+			],
+			"tags": [
+				"compact",
+				"delegation",
+				"token-budget"
+			],
+			"bodyPath": "packages/core/skills/token-budget-discipline/SKILL.md"
+		},
+		{
+			"id": "delendai-token-budget-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before verbose tools or when context grows too fast to keep sessions compact through compact calls, delegation, and metrics-aware discipline.",
+			"appliesTo": [
+				"@delendai/*"
+			],
+			"tags": [
+				"compact",
+				"metrics",
+				"token-budget"
+			],
+			"bodyPath": "packages/core/skills/delendai-token-budget-playbook/SKILL.md"
+		}
+	],
+	"proposals": {
+		"actionable": [
+			{
+				"id": "f00509",
+				"title": "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-09-06"
+			},
+			{
+				"id": "f00510",
+				"title": "F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-06"
+			},
+			{
+				"id": "f00511",
+				"title": "F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-06"
+			},
+			{
+				"id": "f00512",
+				"title": "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-06"
+			},
+			{
+				"id": "f00536",
+				"title": "Context frugality as an enforced agent property, and automatic compaction of tool output",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-09-10"
+			},
+			{
+				"id": "f00538",
+				"title": "Forward-sync the release branch back into the integration branch after every promotion",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-15"
+			},
+			{
+				"id": "f00541",
+				"title": "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-15"
+			},
+			{
+				"id": "f00542",
+				"title": "Delendai language-, IDE-, and OS-agnostic",
+				"track": "general",
+				"status": "paused",
+				"kind": "feat",
+				"date": "2026-09-15"
+			},
+			{
+				"id": "f00543",
+				"title": "Docker plugin as a tool (autodetected, low-risk)",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-15"
+			},
+			{
+				"id": "f00544",
+				"title": "WordPress plugin covering self-hosted and WordPress.com SaaS",
+				"track": "general",
+				"status": "paused",
+				"kind": "feat",
+				"date": "2026-09-15"
+			},
+			{
+				"id": "f00545",
+				"title": "Plugin authoring multi-platform with analyzer (WordPress, Joomla, Drupal, Magento 2, PrestaShop, custom PHP)",
+				"track": "general",
+				"status": "paused",
+				"kind": "feat",
+				"date": "2026-09-15"
+			},
+			{
+				"id": "f00547",
+				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-16"
+			},
+			{
+				"id": "f00548",
+				"title": "Own the style surface: who may define a selector, and what breaks when it changes",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-16"
+			},
+			{
+				"id": "f00550",
+				"title": "Put the project's contract between an agent and every external capability",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-16"
+			},
+			{
+				"id": "f00551",
+				"title": "DelendAI Batuta — orquestación multicuenta mediante el plugin y MCP existentes",
+				"track": "batuta",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-20"
+			},
+			{
+				"id": "f00643",
+				"title": "The startup forge and journal phases run in a real host",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-09-26"
+			},
+			{
+				"id": "q00009",
+				"title": "Plan: Managed Surface + portable Skills + 5-level Startup Report — separar catálogo, superficie LLM, working set y bajo demanda",
+				"track": "managed-surface-portable-skills-startup-report",
+				"status": "ready",
+				"kind": "plan",
+				"date": "2026-08-26"
+			},
+			{
+				"id": "q00011",
+				"title": "Plan — cerrar los contratos de runtime que el sistema promete y no cumple: ciclo de vida eager/lazy, propiedad del teardown, enforcement de efectos, puertas ciegas de CI y el 66% del coste de tokens que vive en los output schemas",
+				"track": "runtime-contracts-v1",
+				"status": "ready",
+				"kind": "plan",
+				"date": "2026-08-27"
+			},
+			{
+				"id": "q00018",
+				"title": "State Engine foundation: pure deterministic project/swarm scopes, generation rebuild and shadow equivalence",
+				"track": "swarm-scope-v1",
+				"status": "ready",
+				"kind": "plan",
+				"date": "2026-09-05"
+			},
+			{
+				"id": "q00019",
+				"title": "State Engine Phase 1 — SQLite shadow driver + parity sampler (no behaviour change, only shadow verifies legacy)",
+				"track": "swarm-scope-v1",
+				"status": "ready",
+				"kind": "plan",
+				"date": "2026-09-06"
+			},
+			{
+				"id": "q00020",
+				"title": "Plan — Work Telemetry & Progress Runtime: progreso, fase, ETA y observación de agentes en tiempo real, sin LLM, sin coste de tokens, sobre el State Engine ya consolidado en SQLite",
+				"track": "trust",
+				"status": "ready",
+				"kind": "plan",
+				"date": "2026-09-06"
+			},
+			{
+				"id": "q00021",
+				"title": "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)",
+				"track": "trust",
+				"status": "ready",
+				"kind": "plan",
+				"date": "2026-09-07"
+			},
+			{
+				"id": "q00022",
+				"title": "Proposals SQLite schema — replace proposals/INDEX.json as sole source of truth",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "plan",
+				"date": "2026-09-07"
+			},
+			{
+				"id": "q00026",
+				"title": "vitest 5 major migration planned after SQLite consolidation",
+				"track": "dependencies",
+				"status": "ready",
+				"kind": "plan",
+				"date": "2026-09-07"
+			},
+			{
+				"id": "r00040",
+				"title": "Migrar el barrel de 288 exports a los subpaths del core que ya existen",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": "2026-08-29"
+			},
+			{
+				"id": "r00043",
+				"title": "`@delendai/core` deja de conocer el dominio `proposals`",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": "2026-08-30"
+			},
+			{
+				"id": "r00048",
+				"title": "CAS optimistic concurrency — revision column on proposals, plans, slices",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": "2026-09-07"
+			},
+			{
+				"id": "r00056",
+				"title": "SQLite storage modes and canonical proposals DB wiring",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": "2026-09-08"
+			},
+			{
+				"id": "x00541",
+				"title": "576 de los 865 exports públicos de core no tienen ningún importador en el repo y 59 no se referencian en ninguna parte fuera del paquete",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-10"
+			},
+			{
+				"id": "x00554",
+				"title": "A green pull request lands itself and the swarm rebases",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-19"
+			},
+			{
+				"id": "x00556",
+				"title": "A pull request runs the checks its change can break",
+				"track": "efficiency",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-19"
+			},
+			{
+				"id": "x00766",
+				"title": "A project with one branch and a project with no policy both get a working model",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
+				"id": "x00769",
+				"title": "Push guards and protected-branch defaults follow the configured development policy",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
+				"id": "x00773",
+				"title": "A proposal's lifecycle completes inside the unit that implemented it",
+				"track": "general",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
+				"id": "x00797",
+				"title": "A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives",
+				"track": "general",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-10-01"
+			}
+		]
+	}
+}

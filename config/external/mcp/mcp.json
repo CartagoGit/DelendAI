@@ -1,0 +1,14 @@
+{
+	"mcpServers": {
+		"delendai": {
+			"type": "stdio",
+			"command": "bun",
+			"args": [
+				"${workspaceFolder}/tools/scripts/host/host-server.script.ts",
+				"--workspace=${workspaceFolder}",
+				"--config=${workspaceFolder}/delendai.config.json",
+				"--preset=swarm"
+			]
+		}
+	}
+}

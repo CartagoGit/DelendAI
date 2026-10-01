@@ -1,0 +1,109 @@
+{
+	"version": 1,
+	"resolutions": [
+		{
+			"taskId": "03e62b03af6b776226e6d96b23dc571b",
+			"evidenceDigest": "d54ac235248a4a622b63e213d5412725",
+			"decision": "not-a-problem",
+			"reason": "Two agents' review batches share a generation (copilot and glm-5.3-max batch-all-g1): different units, not a duplicate. The reconciler keyed batch units by proposal alone; x00702 keys them per agent.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T16:01:45.980Z"
+		},
+		{
+			"taskId": "234a490ff3d4564f19e041ba7005de81",
+			"evidenceDigest": "3944e86f936b68eb165756b759bb1b45",
+			"decision": "accepted-loss",
+			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:02.570Z"
+		},
+		{
+			"taskId": "3ef6bab00c31b1dec6dbdca9e2805133",
+			"evidenceDigest": "d718bf3e86b1edda26ef9b0eb3aaa36a",
+			"decision": "accepted-loss",
+			"reason": "Investigated in x00546: the x00545-S1 work was discarded deliberately in an earlier session and its SHAs are recorded there; commit 9421185e is not in develop and never will be.",
+			"decidedBy": "cartago",
+			"decidedAt": "2026-09-19T12:27:03.041Z"
+		},
+		{
+			"taskId": "4e01795d59ce68b10d6ed333dbc42b79",
+			"evidenceDigest": "1071c02ee8c721aa4d65e9b27687b2e3",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-m3 review unit that closed proposals without an independent review; PR #582 closed unmerged. Commits kept in refs/pull/582/head and in .cache/delendai/evidence/swarm-2026-09-28 (swarm-refs.bundle, verified; MANIFEST.json).",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-28T07:15:17.726Z"
+		},
+		{
+			"taskId": "4eef0c8fe5f1b95e46f526fe8efb865f",
+			"evidenceDigest": "9a67c2a6206813f30d7c12aea6f7b8e7",
+			"decision": "accepted-loss",
+			"reason": "Discarded on the owner's instruction (2026-09-27). wip/copilot/.../close-the-ready-review-batches (tip c8604804458d) closed 124 proposals by moving files into done/ by hand, without independent approval, and raised the proposal-cited-commits baseline; its pull requests (#535-#540) were closed. Nothing legitimate is lost: approved proposals are closed through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T21:51:45.162Z"
+		},
+		{
+			"taskId": "593fd173544d841c22d9a37777cc8344",
+			"evidenceDigest": "662e3a41011d9781b7a6a260d5b4fe34",
+			"decision": "not-a-problem",
+			"reason": "x00699's wip ref was removed by its own publication; the work is kept on its publication (PR #553). x00702 counts publication tips as keeping a checkpoint.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T16:01:57.931Z"
+		},
+		{
+			"taskId": "7fb60a464799d3f86ae87e6b1dffda89",
+			"evidenceDigest": "3f949959c0cf84117df82084e438d092",
+			"decision": "resolved-elsewhere",
+			"reason": "x00553 moved to review on develop through the normal path (docs/delendai/proposals/review/x00553-the-checkout-cannot-leave-the-integration-node.md); this checkpoint only carried that move.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:13.974Z"
+		},
+		{
+			"taskId": "96e8c4cd562d58d29663878f48bba0e3",
+			"evidenceDigest": "5658cfafad26115749667c7dfa7c58e5",
+			"decision": "accepted-loss",
+			"reason": "Discarded on the owner's instruction (2026-09-27). wip/minimax-3/.../close-pack-20260927 (tip 8c5b39504) closed 6 proposals by moving files into done/ by hand, including x00546 which awaits the owner's decision; its pull request #545 was closed. The legitimate closes (x00555) went through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T21:51:48.300Z"
+		},
+		{
+			"taskId": "b939802bc4278d0fcb50fa59af7f0c01",
+			"evidenceDigest": "14e7a3de190dcaeae1e970b723f1cd3f",
+			"decision": "accepted-loss",
+			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:05.602Z"
+		},
+		{
+			"taskId": "c3f86dc68828a5596d504d65cf227ac6",
+			"evidenceDigest": "bef4f9839e9ae93992de6c0545ccb912",
+			"decision": "accepted-loss",
+			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:08.700Z"
+		},
+		{
+			"taskId": "da287c6b71db4cb55773767842f03e1d",
+			"evidenceDigest": "c5561a59885568cabcd042b4446c82fb",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 g7 unit that moved 44 proposals to done without review; no PR. Commits kept in .cache/delendai/evidence/swarm-2026-09-28 (swarm-refs.bundle, verified; MANIFEST.json).",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-28T07:15:21.180Z"
+		},
+		{
+			"taskId": "dc2ab703141c51c5a562edf34c9e3bc8",
+			"evidenceDigest": "f3091a9a6ea8e707f365f91da895d794",
+			"decision": "accepted-loss",
+			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-27T09:33:11.730Z"
+		},
+		{
+			"taskId": "ea278115e9d2719354dc8712ccb8dada",
+			"evidenceDigest": "04143ba753f9683d188150b1bfc3961b",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 unit that moved all 83 review proposals to done without review; PRs #580/#581 closed unmerged. Commits kept in refs/pull/580/head and in .cache/delendai/evidence/swarm-2026-09-28 (swarm-refs.bundle, verified; MANIFEST.json).",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-09-28T07:15:24.952Z"
+		}
+	]
+}

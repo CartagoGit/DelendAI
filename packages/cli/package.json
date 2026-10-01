@@ -1,0 +1,61 @@
+{
+	"name": "@delendai/cli",
+	"version": "0.1.1",
+	"type": "module",
+	"description": "Human-facing DelendAI CLI. Single canonical bin `delendai` (S1); bridges for legacy bin names live in the WORKSPACE via `delendai bridge install` (S3).",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"cli",
+		"delendai",
+		"delendai-legacy-bridge"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"bin": {
+		"delendai": "./dist/index.js"
+	},
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts"
+	},
+	"dependencies": {
+		"@delendai/auto-agent-selector": "workspace:*",
+		"@delendai/client": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/env": "workspace:*",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@delendai/test-kit": "workspace:*",
+		"@delendai/proposals": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/delendai"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

@@ -1,0 +1,59 @@
+# AGENT.md — plugin `plugins/rules`
+
+> Below the `<!-- delendai:begin agent-md -->
+## Purpose
+
+- Lint/type rules engine (frameworks, dogmas, presets).
+
+## Public API
+
+- default
+- RULE_PRESETS
+- PRESET_BY_ID
+- REQUIRED_ESLINT_DEPS
+- SUPPORTED_PRESET_IDS
+- RULES_MODES
+- RULES_MODE_GUIDANCE
+- detectPresetForArea
+- discoverAreas
+- ensureRulesCache
+- buildGetRulesRegistration
+- buildCheckRulesRegistration
+- buildApplyRulesRegistration
+
+## Depends on
+
+- @modelcontextprotocol/sdk
+- zod
+- @delendai/core
+
+## Writes
+
+- <host workspace>/.delendai/cache/rules/
+
+## Entry points
+
+- ./dist/index.js
+- src/index.ts (default export → IMcpPlugin)
+
+## Tests
+
+- plugins/rules/src/__typecheck_solid.spec.ts
+- plugins/rules/tests/src/__typecheck_solid.spec.ts
+- plugins/rules/tests/src/lib/e2e-polyglot.spec.ts
+- plugins/rules/tests/src/lib/frameworks/dogmas/dogma-registry.spec.ts
+
+## Do not
+
+- An agent does not run `git stash`: git refuses it for agents (`delendai guard`, reference-transaction), because every worktree shares one stash and stashed work is invisible to the work model. Commit, or checkpoint to your work ref, instead.
+- Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
+- Do not import `@delendai/core/lib/...`; use `@delendai/core/public`.
+- Do not run user-facing shell or destructive tools without `dryRunSupported: true`.
+- Do not surface absolute host paths; use `workspaceRoot`-relative paths only.
+
+## Token hotspots
+
+- `delendai_rules_check_rules` — 2,576 B total, 2,251 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+
+<!-- delendai:end agent-md -->
+

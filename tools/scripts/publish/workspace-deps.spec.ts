@@ -1,0 +1,367 @@
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
+
+import {
+	assertNoWorkspaceRangesRemain,
+	findUnresolvedWorkspaceRanges,
+	findWorkspaceConsumers,
+	rewriteWorkspaceDeps,
+	stageBuildForPublish,
+	type IWorkspaceDepsPlan,
+} from './workspace-deps.ts';
+
+const createdDirs: string[] = [];
+
+const plan = (
+	packageVersions: Readonly<Record<string, string>> = {
+		'@delendai/core': '2.0.0',
+		'@delendai/client': '2.0.0',
+	},
+): IWorkspaceDepsPlan => ({
+	packageVersions: new Map(Object.entries(packageVersions)),
+});
+
+const writePackageJson = async (
+	root: string,
+	relDir: string,
+	pkg: Record<string, unknown>,
+): Promise<string> => {
+	const dir = join(root, relDir);
+	await mkdir(dir, { recursive: true });
+	await writeFile(
+		join(dir, 'package.json'),
+		`${JSON.stringify(pkg, null, '\t')}\n`,
+		'utf8',
+	);
+	return dir;
+};
+
+afterEach(async () => {
+	await Promise.all(
+		createdDirs
+			.splice(0)
+			.map((dir) => rm(dir, { recursive: true, force: true })),
+	);
+});
+
+describe('workspace-deps', () => {
+	it('stages centralized build output as package-local dist without copying build inputs', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			files: ['dist', 'README.md'],
+		});
+		await writeFile(join(pkgDir, 'README.md'), 'fixture\n', 'utf8');
+		const buildDir = join(root, 'build', 'packages', 'fixture', '1.0.0');
+		await mkdir(buildDir, { recursive: true });
+		await writeFile(join(buildDir, 'index.js'), 'export {}\n', 'utf8');
+		const stageDir = join(root, 'stage');
+
+		await stageBuildForPublish(pkgDir, buildDir, stageDir);
+
+		expect(await readFile(join(stageDir, 'dist', 'index.js'), 'utf8')).toBe(
+			'export {}\n',
+		);
+		expect(await readFile(join(stageDir, 'README.md'), 'utf8')).toBe(
+			'fixture\n',
+		);
+		await expect(
+			readFile(
+				join(
+					stageDir,
+					'build',
+					'packages',
+					'fixture',
+					'1.0.0',
+					'index.js',
+				),
+				'utf8',
+			),
+		).rejects.toMatchObject({ code: 'ENOENT' });
+	});
+
+	it('version-major rewrites workspace:* to the target version', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			dependencies: {
+				'@delendai/core': 'workspace:*',
+			},
+		});
+
+		const result = await rewriteWorkspaceDeps(pkgDir, plan());
+
+		expect(result.rewritten.dependencies).toEqual({
+			'@delendai/core': '2.0.0',
+		});
+		expect(result.changedKeys).toEqual(['@delendai/core']);
+		expect(
+			JSON.parse(await readFile(join(pkgDir, 'package.json'), 'utf8')),
+		).toMatchObject({
+			dependencies: { '@delendai/core': '2.0.0' },
+		});
+	});
+
+	it('no-workspace returns unchanged with no changed keys', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			dependencies: {
+				'@delendai/core': '^1.2.3',
+			},
+		});
+
+		const result = await rewriteWorkspaceDeps(pkgDir, plan());
+
+		expect(result.changedKeys).toEqual([]);
+		expect(result.rewritten.dependencies).toEqual({
+			'@delendai/core': '^1.2.3',
+		});
+	});
+
+	it('io-error throws a bounded error code when the package dir is missing', async () => {
+		await expect(
+			rewriteWorkspaceDeps('/tmp/does-not-exist-workspace-deps', plan()),
+		).rejects.toMatchObject({ code: 'ERR_WORKSPACE_DEPS_IO' });
+	});
+
+	it('idempotence preserves the rewritten package on repeated calls', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			dependencies: {
+				'@delendai/core': 'workspace:*',
+			},
+		});
+
+		const first = await rewriteWorkspaceDeps(pkgDir, plan());
+		const second = await rewriteWorkspaceDeps(pkgDir, plan());
+
+		expect(second.rewritten).toEqual(first.rewritten);
+		expect(
+			JSON.parse(await readFile(join(pkgDir, 'package.json'), 'utf8')),
+		).toMatchObject({
+			dependencies: { '@delendai/core': '2.0.0' },
+		});
+	});
+
+	it('workspace-consumer-finder finds matching package.json files under the root', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		await writePackageJson(root, 'a', {
+			name: 'a',
+			dependencies: {
+				'@delendai/core': 'workspace:*',
+			},
+		});
+		await writePackageJson(root, 'b', {
+			name: 'b',
+			peerDependencies: {
+				'@delendai/client': 'workspace:^',
+			},
+		});
+		await writePackageJson(root, 'c', {
+			name: 'c',
+			dependencies: {
+				leftpad: '^1.0.0',
+			},
+		});
+
+		const consumers = await findWorkspaceConsumers(
+			root,
+			new Set(plan().packageVersions.keys()),
+		);
+
+		expect(consumers).toEqual([
+			join(root, 'a', 'package.json'),
+			join(root, 'b', 'package.json'),
+		]);
+	});
+
+	it('per-package-version resolves each dependency to ITS OWN version, not a shared/root version', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		// The regression this covers: a monorepo root at 0.1.0 with a
+		// dependency that has independently bumped ahead to 0.1.1. A plan
+		// keyed per-package must resolve to 0.1.1, never fall back to a
+		// single shared/root version like 0.1.0.
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			dependencies: {
+				'@delendai/core': 'workspace:*',
+				'@delendai/web-fetch': 'workspace:*',
+			},
+		});
+
+		const result = await rewriteWorkspaceDeps(
+			pkgDir,
+			plan({
+				'@delendai/core': '0.1.0',
+				'@delendai/web-fetch': '0.1.1',
+			}),
+		);
+
+		expect(result.rewritten.dependencies).toEqual({
+			'@delendai/core': '0.1.0',
+			'@delendai/web-fetch': '0.1.1',
+		});
+		expect(result.changedKeys).toEqual([
+			'@delendai/core',
+			'@delendai/web-fetch',
+		]);
+	});
+
+	it('every-dependency-kind rewrites workspace: ranges in dependencies, devDependencies, peerDependencies, and optionalDependencies alike', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			dependencies: { '@delendai/core': 'workspace:*' },
+			devDependencies: { '@delendai/core': 'workspace:*' },
+			peerDependencies: { '@delendai/core': 'workspace:*' },
+			optionalDependencies: { '@delendai/core': 'workspace:*' },
+		});
+
+		const result = await rewriteWorkspaceDeps(
+			pkgDir,
+			plan({ '@delendai/core': '3.4.5' }),
+		);
+
+		expect(result.rewritten).toMatchObject({
+			dependencies: { '@delendai/core': '3.4.5' },
+			devDependencies: { '@delendai/core': '3.4.5' },
+			peerDependencies: { '@delendai/core': '3.4.5' },
+			optionalDependencies: { '@delendai/core': '3.4.5' },
+		});
+	});
+
+	it.each([
+		['workspace:*', '1.2.3', '1.2.3'],
+		['workspace:^', '1.2.3', '^1.2.3'],
+		['workspace:~', '1.2.3', '~1.2.3'],
+	])(
+		"protocol-forms resolves %s against the target's own version %s to %s",
+		async (range, targetVersion, expected) => {
+			const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+			createdDirs.push(root);
+			const pkgDir = await writePackageJson(root, 'pkg', {
+				name: 'fixture',
+				dependencies: { '@delendai/core': range },
+			});
+
+			const result = await rewriteWorkspaceDeps(
+				pkgDir,
+				plan({ '@delendai/core': targetVersion }),
+			);
+
+			expect(result.rewritten.dependencies).toEqual({
+				'@delendai/core': expected,
+			});
+		},
+	);
+
+	it('unknown-protocol throws a bounded parse error instead of silently mis-resolving', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			dependencies: { '@delendai/core': 'workspace:1.2.3' },
+		});
+
+		await expect(
+			rewriteWorkspaceDeps(pkgDir, plan({ '@delendai/core': '2.0.0' })),
+		).rejects.toMatchObject({ code: 'ERR_WORKSPACE_DEPS_PARSE' });
+	});
+});
+
+/* x00530 S4 — a surviving `workspace:` range must abort the publish. */
+
+describe('unresolved workspace ranges', () => {
+	it('reports nothing when every range was rewritten', () => {
+		expect(
+			findUnresolvedWorkspaceRanges({
+				name: '@delendai/example',
+				dependencies: { '@delendai/core': '2.0.0' },
+			}),
+		).toEqual([]);
+	});
+
+	it('ignores devDependencies, which a consumer never installs', () => {
+		expect(
+			findUnresolvedWorkspaceRanges({
+				name: '@delendai/example',
+				devDependencies: { '@delendai/test-kit': 'workspace:*' },
+			}),
+		).toEqual([]);
+	});
+
+	it('reports a surviving range in dependencies', () => {
+		expect(
+			findUnresolvedWorkspaceRanges({
+				name: '@delendai/example',
+				dependencies: { '@delendai/secret': 'workspace:*' },
+			}),
+		).toEqual([
+			{
+				section: 'dependencies',
+				name: '@delendai/secret',
+				range: 'workspace:*',
+			},
+		]);
+	});
+
+	it('reports a surviving range in peerDependencies', () => {
+		const found = findUnresolvedWorkspaceRanges({
+			peerDependencies: { '@delendai/other': 'workspace:^' },
+		});
+		expect(found[0]?.section).toBe('peerDependencies');
+	});
+
+	it('aborts naming both the package and the dependency', () => {
+		expect(() =>
+			assertNoWorkspaceRangesRemain('@delendai/example', {
+				dependencies: { '@delendai/secret': 'workspace:*' },
+			}),
+		).toThrowError(/@delendai\/example -> dependencies\.@delendai\/secret/);
+	});
+
+	it('does not throw for a fully rewritten manifest', () => {
+		expect(() =>
+			assertNoWorkspaceRangesRemain('@delendai/example', {
+				dependencies: { '@delendai/core': '2.0.0' },
+			}),
+		).not.toThrow();
+	});
+
+	it('rewriteWorkspaceDeps aborts when the plan misses a dependency', async () => {
+		const dir = await mkdtemp(join(tmpdir(), 'workspace-deps-unresolved-'));
+		createdDirs.push(dir);
+		await writeFile(
+			join(dir, 'package.json'),
+			JSON.stringify({
+				name: '@delendai/example',
+				version: '1.0.0',
+				dependencies: {
+					'@delendai/core': 'workspace:*',
+					'@delendai/not-published': 'workspace:*',
+				},
+			}),
+			'utf8',
+		);
+		await expect(rewriteWorkspaceDeps(dir, plan())).rejects.toThrowError(
+			/@delendai\/not-published/,
+		);
+		// The manifest on disk is untouched: the guard runs before the write.
+		const onDisk = JSON.parse(
+			await readFile(join(dir, 'package.json'), 'utf8'),
+		) as { dependencies: Record<string, string> };
+		expect(onDisk.dependencies['@delendai/core']).toBe('workspace:*');
+	});
+});
