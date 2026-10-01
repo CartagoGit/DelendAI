@@ -1192,4 +1192,3 @@ export { createStaleRuntimeWatch } from '../lib/development-policy/stale-runtime
 // The gates a project declares, read the way `delendai validate` reads
 // them, so a plugin that runs a gate runs the same one.
 export { validationGateSteps } from '../lib/work-units/validation-gate-steps.service';
-export type { IValidationGateStep } from '../lib/contracts/interfaces/local-certification.interface';

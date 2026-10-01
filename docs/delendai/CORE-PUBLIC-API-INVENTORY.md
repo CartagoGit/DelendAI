@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 650
+Total exports: 649
 
 | Maturity | Count |
 | --- | --- |
-| stable | 647 |
+| stable | 646 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -401,7 +401,6 @@ Total exports: 650
 | `ITransactionResult` | type | stable | `../lib/transactions/types` |
 | `ITruncatedEnvelope` | type | stable | `../lib/contracts/interfaces/truncation.interface` |
 | `IValidationCommand` | type | stable | `../lib/contracts/interfaces/validation-matrix.interface` |
-| `IValidationGateStep` | type | stable | `../lib/contracts/interfaces/local-certification.interface` |
 | `IValidationMatrix` | type | stable | `../lib/contracts/interfaces/validation-matrix.interface` |
 | `IValidationMatrixConfig` | type | stable | `../lib/plugins/load-config-file` |
 | `IValidationMatrixScope` | type | stable | `../lib/plugins/load-config-file` |
