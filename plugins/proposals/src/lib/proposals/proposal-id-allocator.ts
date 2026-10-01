@@ -30,6 +30,9 @@ import {
 
 type ICounters = Record<string, number>;
 
+/** How many taken ids one allocation steps over before it gives up. */
+const MAX_RESERVATION_ATTEMPTS = 50;
+
 const FILENAME_PATTERN = /^([a-z])(\d+)-/;
 
 /**
@@ -138,7 +141,27 @@ export const allocateNextProposalId = async (
 				counters[key] = Math.max(counters[key] ?? 0, value);
 			}
 		}
-		const next = (counters[prefix] ?? 0) + 1;
+		// Claim the id on the remote before handing it out: two sessions
+		// (two clones, two machines) otherwise get the same one, as x00811
+		// was. A taken id is skipped, and the search goes on above it.
+		let next = (counters[prefix] ?? 0) + 1;
+		let claimed = false;
+		for (
+			let attempt = 0;
+			attempt < MAX_RESERVATION_ATTEMPTS && !claimed;
+			attempt += 1
+		) {
+			const reservation = await sources.reserve(
+				`${prefix}${String(next).padStart(5, '0')}`,
+			);
+			if (reservation === 'taken') next += 1;
+			else claimed = true;
+		}
+		if (!claimed) {
+			throw new Error(
+				`could not claim a free ${prefix} proposal id after ${String(MAX_RESERVATION_ATTEMPTS)} attempts: every id from ${prefix}${String(next - MAX_RESERVATION_ATTEMPTS + 1).padStart(5, '0')} up is held by another session`,
+			);
+		}
 		counters[prefix] = next;
 		const serialised = JSON.stringify(counters);
 		// The checkout-local file stays current for `lint:proposal-id-drift`
