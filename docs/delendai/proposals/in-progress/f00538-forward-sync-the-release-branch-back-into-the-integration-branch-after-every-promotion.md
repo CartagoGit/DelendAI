@@ -2,7 +2,7 @@
 id: f00538
 title: "Forward-sync the release branch back into the integration branch after every promotion"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-15
@@ -11,6 +11,9 @@ tags:
     - branches
     - release
     - automation
+last-transition-id: 93d4ba37-1bfc-4749-a0e6-39ed4a5b55a7
+last-correlation-id: 93d4ba37-1bfc-4749-a0e6-39ed4a5b55a7
+last-transition-from: ready
 ---
 
 # f00538 — Forward-sync the release branch back into the integration branch after every promotion
