@@ -42,7 +42,10 @@ import {
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 import type { IGeneratedMergeDriverReport } from '../contracts/interfaces/generated-merge-driver.interface';
 import { GENERATED_MERGE_DRIVER_SCRIPT } from '../contracts/constants/generated-merge-driver.constant';
-import { refreshGeneratedAfterMerge } from '../lib/generated-refresh.service';
+import {
+	landedAsFastForward,
+	refreshGeneratedAfterMerge,
+} from '../lib/generated-refresh.service';
 import { GENERATED_REFRESH_PATHS } from '../contracts/constants/generated-refresh.constant';
 import {
 	inspectGeneratedMergeDriver,
@@ -555,6 +558,7 @@ export const createGuardCommand = (
 		// tree is finished, so the generators run against what landed
 		// (x00559). It never refuses: a merge has already happened.
 		if (hook === 'post-merge') {
+			if (landedAsFastForward(workspace)) return { code: EXIT_CODE.OK };
 			const outcome = refreshGeneratedAfterMerge({
 				root: workspace,
 				paths: GENERATED_REFRESH_PATHS,
