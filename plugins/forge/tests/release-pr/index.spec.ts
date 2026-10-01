@@ -5,6 +5,14 @@ import type {
 	IReleasePrRecord,
 } from '../../src/lib/release-pr';
 import { createReleasePullRequest } from '../../src/lib/release-pr';
+import type { IReleaseTarget } from '@delendai/core/public';
+
+const target: IReleaseTarget = {
+	integrationBranch: 'develop',
+	releaseBranch: 'main',
+	versionManifestPath: 'packages/core/package.json',
+	promotion: 'pull-request',
+};
 
 const candidate = {
 	sourceDevelopSha: 'abcdef1',
@@ -23,7 +31,7 @@ const candidate = {
 const makeProvider = (existing: readonly IReleasePrRecord[] = []) => {
 	const created: Array<{
 		headBranch: string;
-		baseBranch: 'main';
+		baseBranch: string;
 		body: string;
 	}> = [];
 	const provider: IReleasePrProvider = {
@@ -46,6 +54,7 @@ describe('release PR forge contract', () => {
 	it('creates through the provider boundary with derived metadata', async () => {
 		const { provider, created } = makeProvider();
 		const result = await createReleasePullRequest({
+			target,
 			candidate,
 			currentBranch: candidate.branch,
 			upstream: 'origin/release/patch/august-cut',
@@ -60,7 +69,7 @@ describe('release PR forge contract', () => {
 			headBranch: candidate.branch,
 			baseBranch: 'main',
 		});
-		expect(result.description).toContain('PR #50');
+		expect(result.description).not.toContain('PR #50');
 		expect(result.description).toContain('abcdef1');
 		expect(result.description).toContain('1.4.2 -> 1.4.3');
 		expect(result.description).not.toMatch(/merge/i);
@@ -76,6 +85,7 @@ describe('release PR forge contract', () => {
 		};
 		const { provider, created } = makeProvider([existing]);
 		const result = await createReleasePullRequest({
+			target,
 			candidate,
 			currentBranch: candidate.branch,
 			upstream: 'origin/release/patch/august-cut',
@@ -90,6 +100,7 @@ describe('release PR forge contract', () => {
 		const { provider } = makeProvider();
 		await expect(
 			createReleasePullRequest({
+				target,
 				candidate,
 				currentBranch: candidate.branch,
 				upstream: 'origin/release/patch/august-cut',
@@ -105,6 +116,7 @@ describe('release PR forge contract', () => {
 		const { provider, created } = makeProvider();
 		await expect(
 			createReleasePullRequest({
+				target,
 				candidate: { ...candidate, targetVersion: '9.9.9' },
 				currentBranch: candidate.branch,
 				upstream: 'origin/release/patch/august-cut',
@@ -127,6 +139,7 @@ describe('release PR forge contract', () => {
 			}) as IReleasePrRecord;
 		await expect(
 			createReleasePullRequest({
+				target,
 				candidate,
 				currentBranch: candidate.branch,
 				upstream: 'origin/release/patch/august-cut',
@@ -147,6 +160,7 @@ describe('release PR forge contract', () => {
 		const { provider } = makeProvider();
 		await expect(
 			createReleasePullRequest({
+				target,
 				candidate,
 				currentBranch: 'develop',
 				upstream: 'origin/develop',
@@ -158,6 +172,7 @@ describe('release PR forge contract', () => {
 		);
 		await expect(
 			createReleasePullRequest({
+				target,
 				candidate,
 				currentBranch: candidate.branch,
 				gates: [],

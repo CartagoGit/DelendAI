@@ -26,6 +26,7 @@ import {
 } from './lib/slice-persistence-owner';
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
+import { readTextOrNull } from './lib/proposals/index-reader';
 
 import z from 'zod';
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
@@ -58,7 +59,7 @@ import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
 	buildReviewRegistration,
-	runCloseSliceQualityGate,
+	runCloseSliceGateProbe,
 } from './lib/tools/authoring.tool';
 import { buildProposalBoardRegistration } from './lib/tools/proposal-board.tool';
 import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
@@ -225,6 +226,16 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 * each agent on its declared slice files; `global` is for integration.
 	 */
 	validationScope: z.enum(['scoped', 'global']).optional(),
+	/**
+	 * How long one `close_slice` call waits for the declared gate before it
+	 * answers `pending` with a handle to resume (milliseconds).
+	 */
+	closeGateWaitMs: z.number().int().positive().optional(),
+	/**
+	 * How long a gate run may take before it is stopped and reported as
+	 * unverifiable, never as a pass (milliseconds).
+	 */
+	closeGateTimeoutMs: z.number().int().positive().optional(),
 	/**
 	 * Require a passing validation run before lifecycle operations. The
 	 * selected scope applies to `close_slice`; terminal proposal transitions
@@ -656,14 +667,42 @@ export default definePlugin({
 									: {}),
 							}),
 						runQuality: (input) =>
-							runCloseSliceQualityGate(
-								ctx.workspace.root,
-								undefined,
+							runCloseSliceGateProbe(
 								{
-									...(input?.scopes !== undefined
-										? { scopes: input.scopes }
+									storeRoot: ctx.workspace.resolve(
+										join(
+											ctx.cacheDir,
+											'proposals',
+											'close-gate',
+										),
+									),
+									stateRoots: [
+										ctx.workspace.resolve(ctx.cacheDir),
+									],
+									cwd: callerCheckout.executionRootOr(
+										ctx.workspace.root,
+									),
+									readDeclaration: (relativePath) =>
+										readTextOrNull(
+											ctx.workspace.resolve(relativePath),
+										),
+									...(parsedOptions.data.closeGateWaitMs !==
+									undefined
+										? {
+												waitMs: parsedOptions.data
+													.closeGateWaitMs,
+											}
+										: {}),
+									...(parsedOptions.data
+										.closeGateTimeoutMs !== undefined
+										? {
+												timeoutMs:
+													parsedOptions.data
+														.closeGateTimeoutMs,
+											}
 										: {}),
 								},
+								input?.scopes ?? [],
 							),
 					}
 				: {}),

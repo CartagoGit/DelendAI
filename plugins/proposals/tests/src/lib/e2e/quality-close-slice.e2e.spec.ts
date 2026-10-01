@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import {
 	mkdirSync,
 	mkdtempSync,
@@ -11,6 +12,7 @@ import { join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { waitUntil } from '@delendai/test-kit';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
@@ -32,13 +34,29 @@ const syncProposals = (client: Client) =>
 		arguments: {},
 	});
 
-const createQualityServer = async (command: string) => {
+interface IGateOverrides {
+	/** Replaces the workspace's `validate` script (a shell command). */
+	readonly validate?: string;
+	readonly closeGateWaitMs?: number;
+}
+
+const createQualityServer = async (
+	command: string,
+	overrides: IGateOverrides = {},
+) => {
 	const workspace = mkdtempSync(join(tmpdir(), 'proposals-quality-e2e-'));
 	workspaces.push(workspace);
 	const config = JSON.stringify({
 		plugins: {
 			quality: { options: { scopes: { all: [command] } } },
-			proposals: { options: { requirePeerReview: false } },
+			proposals: {
+				options: {
+					requirePeerReview: false,
+					...(overrides.closeGateWaitMs !== undefined
+						? { closeGateWaitMs: overrides.closeGateWaitMs }
+						: {}),
+				},
+			},
 		},
 	});
 	writeFileSync(join(workspace, 'delendai.config.json'), config, 'utf8');
@@ -48,16 +66,12 @@ const createQualityServer = async (command: string) => {
 		`const ok = ${command === 'true'};\nconsole.log(JSON.stringify({ok, severity: ok ? 'ok' : 'error', findings: ok ? [] : ['close: command failed'], summary: {ok, scopes: 1}}));\nprocess.exit(ok ? 0 : 1);\n`,
 		'utf8',
 	);
-	// `close_slice`'s quality gate (`runCloseSliceQualityGate`) shells
-	// `bun run validate --json` in the workspace and parses the structured
-	// output — it does NOT read `plugins.quality.options.scopes`, which
-	// governs the `quality_run_all` TOOL asserted separately below.
-	//
-	// Without this script the gate failed with `Script not found
-	// "validate"`. That made the passing case red, and — worse — made the
-	// FAILING case green for the wrong reason: the slice stayed pending
-	// because the command was missing, so that assertion would have held
-	// with no quality gate wired at all.
+	// `close_slice`'s gate runs the project's own `validate` script and
+	// judges it by exit code; it does NOT read
+	// `plugins.quality.options.scopes`, which governs the `quality_run_all`
+	// TOOL asserted separately below. The gate certifies a git tree, so the
+	// workspace is one.
+	execFileSync('git', ['init', '-q'], { cwd: workspace });
 	writeFileSync(
 		join(workspace, 'package.json'),
 		JSON.stringify(
@@ -65,7 +79,9 @@ const createQualityServer = async (command: string) => {
 				name: 'proposals-quality-e2e',
 				private: true,
 				scripts: {
-					validate: 'bun tools/scripts/quality/run-quality.script.ts',
+					validate:
+						overrides.validate ??
+						'bun tools/scripts/quality/run-quality.script.ts',
 				},
 			},
 			null,
@@ -253,4 +269,67 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			await project.server.close();
 		}
 	});
+
+	it('answers pending with a handle while a slow gate runs, then closes on resume', async () => {
+		const { workspace, client, project } = await createQualityServer(
+			'true',
+			{ validate: 'sleep 2', closeGateWaitMs: 100 },
+		);
+		try {
+			seedSlice(workspace, 'f04202');
+			expect((await syncProposals(client)).isError).toBeFalsy();
+			const claim = await client.callTool({
+				name: 'delendai_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f04202-S1',
+					agent: 'agent-quality-e2e',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(claim.isError).toBeFalsy();
+			const close = () =>
+				client.callTool({
+					name: 'delendai_proposals_close_slice',
+					arguments: {
+						proposalId: 'f04202',
+						sliceId: 'S1',
+						force: true,
+					},
+				});
+
+			const first = await close();
+
+			expect(first.structuredContent).toMatchObject({
+				ok: false,
+				closed: false,
+				blockerType: 'gate-pending',
+				gate: { state: 'pending' },
+			});
+			expect(
+				readFileSync(
+					await findProposalPath(workspace, 'f04202'),
+					'utf8',
+				),
+			).toContain('- **Status**: pending');
+
+			let resumed = first;
+			await waitUntil(
+				'the resumed gate finishes and close_slice stops answering pending',
+				async () => {
+					resumed = await close();
+					return resumed.isError !== true;
+				},
+				{ timeoutMs: 20_000, intervalMs: 250 },
+			);
+
+			expect(resumed.structuredContent).toMatchObject({
+				ok: true,
+				closed: true,
+			});
+		} finally {
+			await client.close();
+			await project.server.close();
+		}
+	}, 30_000);
 });

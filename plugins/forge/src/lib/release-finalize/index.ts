@@ -6,8 +6,10 @@ import {
 	type IReleaseCandidateMetadata,
 	type IReleaseReceipt,
 	type IReleaseReadiness,
+	type IReleaseTarget,
 } from '@delendai/core/public';
 
+import { assertPullRequestPromotion } from '../release-pr';
 import type { IForgePullRequestDetail } from '../contracts/interfaces/forge-read.interface';
 
 export type PullRequestReader = (
@@ -41,7 +43,9 @@ export const finalizeRelease = async (
 	readiness: IReleaseReadiness,
 	actor: string,
 	pullRequest: string,
+	target: IReleaseTarget,
 ): Promise<IReleaseReceipt> => {
+	assertPullRequestPromotion(target);
 	if (!readiness.ready)
 		throw new ReleaseStateError(
 			'readiness-blocked',
@@ -49,10 +53,10 @@ export const finalizeRelease = async (
 		);
 	const pr = await read(pullRequest);
 	const headBranch = pr.headBranch ?? pr.branch;
-	const baseBranch = pr.baseBranch ?? 'main';
-	if (headBranch !== candidate.branch || baseBranch !== 'main')
+	const baseBranch = pr.baseBranch ?? target.releaseBranch;
+	if (headBranch !== candidate.branch || baseBranch !== target.releaseBranch)
 		throw new Error(
-			'release PR must target main from the candidate branch',
+			`release PR must target ${target.releaseBranch} from the candidate branch`,
 		);
 	if (pr.state !== 'MERGED')
 		throw new Error('finalize requires Forge to report the PR as merged');
@@ -73,7 +77,7 @@ export const finalizeRelease = async (
 		actor,
 		releaseSlug: candidate.slug,
 		source: candidate.branch,
-		target: 'main',
+		target: target.releaseBranch,
 		before: expected.mainSha,
 		after: mainSha,
 		details: { pullRequest: pullRequest },

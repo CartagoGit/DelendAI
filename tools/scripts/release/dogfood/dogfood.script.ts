@@ -54,7 +54,10 @@ import type {
 	IHotfixInput,
 	IReleaseReceipt,
 	IReleaseReconciliationInput,
+	IReleaseTarget,
 } from '@delendai/core/public';
+import { resolveReleaseTarget } from '@delendai/core/public';
+import { readWorkspacePolicy } from '@delendai/core/cli';
 import type { IForgePullRequestDetail } from '../../../../plugins/forge/src/lib/contracts/interfaces/forge-read.interface';
 import {
 	readExpectedReleaseState,
@@ -286,6 +289,8 @@ export const createSpawnGitRunner = (
 export interface IDogfoodRunInput {
 	readonly flags: IReleaseDogfoodFlags;
 	readonly run: IGitRunner;
+	/** Branches, manifest and promotion this run releases by. */
+	readonly target: IReleaseTarget;
 	/**
 	 * Optional provider override (spec injects a spy). The script builds
 	 * a default mock that records calls and never touches the network.
@@ -344,7 +349,11 @@ export const createMockReleasePrProvider = (): IMockReleasePrProvider => {
  * end-to-end without waiting for the human to merge the PR on GitHub.
  */
 export const createSimulatedMergeReader =
-	(headSha: string, mergeCommitSha: string): PullRequestReader =>
+	(
+		headSha: string,
+		mergeCommitSha: string,
+		releaseBranch = 'main',
+	): PullRequestReader =>
 	async (_pullRequest): Promise<IForgePullRequestDetail> =>
 		Object.freeze({
 			number: 42,
@@ -366,7 +375,7 @@ export const createSimulatedMergeReader =
 			reviewDecision: 'APPROVED',
 			checks: [],
 			headBranch: 'release/minor/cli-typed-forge-boundary',
-			baseBranch: 'main',
+			baseBranch: releaseBranch,
 			headSha,
 			mergeCommitSha,
 		});
@@ -405,9 +414,12 @@ export interface IDogfoodResult {
 		readonly mode: 'normal' | 'emergency';
 		readonly capability: typeof EMERGENCY_BYPASS_CAPABILITY;
 		readonly branch: string;
-		readonly target: 'main';
+		readonly target: string;
 	};
 }
+
+/** Where this repository keeps the version its release bumps. */
+const THIS_REPOSITORY_VERSION_MANIFEST = 'packages/core/package.json';
 
 // ---------------------------------------------------------------------------
 // Receipt builder
@@ -434,10 +446,14 @@ const buildGateList = (
 	return Object.freeze(gates);
 };
 
-const buildGhCommand = (targetVersion: string, headBranch: string): string =>
+const buildGhCommand = (
+	targetVersion: string,
+	headBranch: string,
+	baseBranch: string,
+): string =>
 	[
 		'gh pr create',
-		'--base main',
+		`--base ${baseBranch}`,
 		`--head ${headBranch}`,
 		`--title 'Release ${targetVersion}'`,
 		'--body-file <(gh api -X POST /repos/{owner}/{repo}/releases/generate-notes',
@@ -473,11 +489,14 @@ const buildReconcileRunner = (
 export const runReleaseDogfood = async (
 	input: IDogfoodRunInput,
 ): Promise<IDogfoodResult> => {
-	const { flags, run } = input;
+	const { flags, run, target } = input;
 	const store: IReleaseCandidateStore = createReleaseCandidateStore();
 
 	// (a) Measure source/base/mainVersion via git.
-	const current: IExpectedReleaseState = await readExpectedReleaseState(run);
+	const current: IExpectedReleaseState = await readExpectedReleaseState(
+		run,
+		target,
+	);
 	const expected: IExpectedReleaseState = Object.freeze({
 		sourceDevelopSha: current.sourceDevelopSha,
 		mainSha: current.mainSha,
@@ -490,6 +509,7 @@ export const runReleaseDogfood = async (
 		slug: flags.slug,
 		actor: flags.actor,
 		expected,
+		target,
 		includedProposals: Object.freeze([
 			'github-security',
 			'r1-contracts',
@@ -550,7 +570,7 @@ export const runReleaseDogfood = async (
 	// runbook can show the policy that authorised the PR.
 	const policy = validateReleasePromotionPolicy({
 		sourceBranch: candidate.branch,
-		targetBranch: 'main',
+		targetBranch: target.releaseBranch,
 		mode: 'normal',
 	});
 
@@ -562,8 +582,9 @@ export const runReleaseDogfood = async (
 		candidate,
 		gates,
 		currentBranch: candidate.branch,
-		upstream: 'origin/develop',
+		upstream: `origin/${target.integrationBranch}`,
 		provider,
+		target,
 	});
 
 	// (i) Finalize. Only runs under --simulate-merge; otherwise we
@@ -582,6 +603,7 @@ export const runReleaseDogfood = async (
 			createSimulatedMergeReader(
 				candidate.sourceDevelopSha,
 				candidate.baseMainSha,
+				target.releaseBranch,
 			);
 		finalizeReceipt = await finalizeRelease(
 			reader,
@@ -590,6 +612,7 @@ export const runReleaseDogfood = async (
 			readiness,
 			flags.actor,
 			'42',
+			target,
 		);
 		finalizeBlockedReason = null;
 	}
@@ -615,12 +638,13 @@ export const runReleaseDogfood = async (
 	const reconcileReceipt: IReleaseReceipt = await reconcileRelease(
 		reconcileRunner,
 		reconcileInput,
+		target.integrationBranch,
 	);
 
 	// (k) Hotfix receipt. Hotfix source is always `main` per the contract.
 	const hotfixInput: IHotfixInput = Object.freeze({
 		slug: candidate.slug,
-		source: 'main',
+		source: target.releaseBranch,
 		actor: flags.actor,
 	});
 	const hotfixReceipt: IReleaseReceipt = createHotfixReceipt(hotfixInput);
@@ -629,7 +653,11 @@ export const runReleaseDogfood = async (
 	// user opted in with --confirm-pr; otherwise the script never prints
 	// the gh command.
 	const ghCommand = flags.confirmPr
-		? buildGhCommand(candidate.targetVersion, candidate.branch)
+		? buildGhCommand(
+				candidate.targetVersion,
+				candidate.branch,
+				target.releaseBranch,
+			)
 		: null;
 
 	return Object.freeze({
@@ -708,7 +736,13 @@ const main = async (): Promise<void> => {
 	const flags = parseDogfoodFlags(process.argv.slice(2));
 	const cwd = fileURLToPath(new URL('../..', import.meta.url));
 	const run = buildDogfoodRunner(cwd);
-	const result = await runReleaseDogfood({ flags, run });
+	const target = resolveReleaseTarget(
+		await readWorkspacePolicy(
+			fileURLToPath(new URL('../../../..', import.meta.url)),
+		),
+		THIS_REPOSITORY_VERSION_MANIFEST,
+	);
+	const result = await runReleaseDogfood({ flags, run, target });
 
 	printRunbookHeader(flags, result.candidate, {
 		sourceDevelopSha: result.sourceDevelopSha,

@@ -1077,6 +1077,8 @@ export {
 	hasSeparateReleaseBranch,
 	protectedBranchNames,
 } from '../lib/development-policy/release-branch';
+export { resolveReleaseTarget } from '../lib/development-policy/release-target';
+export type { IReleaseTarget } from '../lib/development-policy/release-target.interface';
 export {
 	deriveDefaultProtectedBranches,
 	distinctReleaseBranch,
@@ -1198,3 +1200,6 @@ export { projectBranches } from '../lib/development-policy/project-branches';
  */
 export { branchDeliveryVerdict } from '../lib/ref-lifecycle/branch-delivery.service';
 export { createStaleRuntimeWatch } from '../lib/development-policy/stale-runtime-advisory';
+// The gates a project declares, read the way `delendai validate` reads
+// them, so a plugin that runs a gate runs the same one.
+export { validationGateSteps } from '../lib/work-units/validation-gate-steps.service';
