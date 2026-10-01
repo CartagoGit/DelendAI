@@ -28,6 +28,10 @@ const wt = (
 	...overrides,
 });
 
+/** A ref-lifecycle verdict that proves each named branch delivered its work. */
+const delivered = (...names: string[]) =>
+	new Map(names.map((name) => [name, { delivered: true, reason: 'test' }]));
+
 const status = (
 	branches: IBranchStatusEntry[],
 	worktrees: IWorktreeStatusEntry[],
@@ -72,6 +76,7 @@ describe('planGc', () => {
 		const { removed, skipped } = planGc(snapshot, {
 			staleMinutes: 60,
 			now: FIXED_NOW,
+			deliveryVerdicts: delivered('agent/orion'),
 		});
 		expect(removed).toHaveLength(1);
 		expect(skipped).toHaveLength(0);
@@ -96,6 +101,7 @@ describe('planGc', () => {
 		const { removed, skipped } = planGc(snapshot, {
 			staleMinutes: 60,
 			now: FIXED_NOW,
+			deliveryVerdicts: delivered('agent/orion'),
 		});
 		expect(removed).toHaveLength(0);
 		expect(skipped).toHaveLength(1);
@@ -106,9 +112,73 @@ describe('planGc', () => {
 			staleMinutes: 60,
 			force: true,
 			now: FIXED_NOW,
+			deliveryVerdicts: delivered('agent/orion'),
 		});
 		expect(forced.removed).toHaveLength(1);
 		expect(forced.removed[0]?.reason).toBe('merged-and-clean-with-force');
+	});
+
+	it('keeps a merged worktree whose ref no verdict proves delivered', () => {
+		const snapshot = status(
+			[
+				{
+					name: 'feature/legacy',
+					head: 'abc1234',
+					ahead: 0,
+					behind: 0,
+					mergedIntoBase: true,
+					lastCommitMinutesAgo: 60 * 24 * 5,
+					worktreePath: '/cache/.worktrees/legacy',
+				},
+			],
+			[wt({ branch: 'feature/legacy' })],
+		);
+		for (const options of [
+			{},
+			{ deliveryVerdicts: new Map() },
+			{
+				deliveryVerdicts: new Map([
+					[
+						'feature/legacy',
+						{ delivered: false, reason: 'outside every namespace' },
+					],
+				]),
+			},
+		]) {
+			const { removed, skipped } = planGc(snapshot, {
+				staleMinutes: 60,
+				now: FIXED_NOW,
+				force: true,
+				...options,
+			});
+			expect(removed).toHaveLength(0);
+			expect(skipped[0]?.reason).toBe('undelivered');
+		}
+	});
+
+	it('protects the project integration branch whatever it is called', () => {
+		const snapshot = status(
+			[
+				{
+					name: 'trunk',
+					head: 'abc1234',
+					ahead: 0,
+					behind: 0,
+					mergedIntoBase: true,
+					lastCommitMinutesAgo: 60 * 24 * 5,
+					worktreePath: '/cache/.worktrees/trunk',
+				},
+			],
+			[wt({ branch: 'trunk' })],
+			'trunk',
+		);
+		const { removed, skipped } = planGc(snapshot, {
+			staleMinutes: 60,
+			now: FIXED_NOW,
+			deliveryVerdicts: delivered('trunk'),
+		});
+		expect(removed).toHaveLength(0);
+		expect(skipped[0]?.reason).toBe('protected-branch');
 	});
 
 	it('never removes worktrees with unmerged branches (sacred)', () => {
@@ -304,7 +374,11 @@ describe('planGc', () => {
 		]);
 		const withExtras = planGc(
 			snapshot,
-			{ staleMinutes: 60, now: FIXED_NOW },
+			{
+				staleMinutes: 60,
+				now: FIXED_NOW,
+				deliveryVerdicts: delivered('agent/copilot-minimax-m3-x00056'),
+			},
 			lookups,
 		);
 		expect(withExtras.removed).toHaveLength(1);
@@ -337,6 +411,7 @@ describe('planGc', () => {
 		const withoutExtras = planGc(snapshot, {
 			staleMinutes: 60,
 			now: FIXED_NOW,
+			deliveryVerdicts: delivered('agent/copilot-minimax-m3-x00056'),
 		});
 		expect(withoutExtras.removed).toHaveLength(1);
 		expect(withoutExtras.removed[0]?.path).toBe('/cache/.worktrees/x00056');

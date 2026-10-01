@@ -22,6 +22,7 @@
  */
 import type { IGitRunner } from './git-runner';
 import { projectBranches } from '@delendai/core/public';
+import { isUnderPrefixes, managedBranchPrefixes } from './branch-namespaces';
 import { runBranchGcEngine } from './branch-gc-engine';
 import { runBranchStatusEngine } from './branch-status-engine';
 import type { IPendingIntegrationEntry } from '../contracts/interfaces/pending-integration.interface';
@@ -171,7 +172,10 @@ export const runSwarmHygieneEngine = async (
 		options.maxStaleUnmerged ?? DEFAULT_MAX_STALE_UNMERGED;
 	const staleBehindThreshold =
 		options.staleBehindThreshold ?? DEFAULT_STALE_BEHIND_THRESHOLD;
-	const agentPrefix = options.agentPrefix ?? 'agent/';
+	const prefixes =
+		options.agentPrefix === undefined
+			? await managedBranchPrefixes(options.workspaceRoot)
+			: [options.agentPrefix];
 
 	const snapshot = await runBranchStatusEngine({
 		run: options.run,
@@ -357,8 +361,7 @@ export const runSwarmHygieneEngine = async (
 		if (protectedFor(baseBranch).has(wt.branch)) continue;
 		if (wt.branch === baseBranch) continue;
 
-		const conforms =
-			agentPrefix.length === 0 || wt.branch.startsWith(agentPrefix);
+		const conforms = isUnderPrefixes(wt.branch, prefixes);
 		if (!conforms && nonConformingBranches.length < maxNonConforming) {
 			nonConformingBranches.push({
 				path: wt.path,

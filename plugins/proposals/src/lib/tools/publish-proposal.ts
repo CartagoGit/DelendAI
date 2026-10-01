@@ -214,7 +214,10 @@ export const publishProposalOnRef = async (
 	if (!shouldPublishOnRef(request.policy)) {
 		return {
 			published: false,
-			reason: 'this project does not publish proposals on their own ref',
+			reason:
+				request.policy?.hasWorkRefs === true
+					? `this project lands work by merging a unit of work into ${request.policy.integration ?? 'its integration branch'}, not by publishing a ref for a pull request: the proposal is landed as a unit (see nextAction)`
+					: 'this project does not publish proposals on their own ref',
 		};
 	}
 
