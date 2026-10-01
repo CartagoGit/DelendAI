@@ -19,6 +19,8 @@
  *   - Interface segregation: each helper is a pure function with a
  *     minimal signature.
  */
+import { resolveWorkAgentId } from '@delendai/core/public';
+
 import type { ICliCommandResult } from '../../contracts/interfaces/cli-command.interface';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 // `scalarArg` is imported as a value binding so the local
@@ -72,3 +74,21 @@ export const usage = (line: string): ICliCommandResult => ({
 	code: EXIT_CODE.USAGE,
 	error: `usage: ${line}`,
 });
+
+/**
+ * Who this invocation works as: an explicit `--agent`, then what the
+ * environment declares (`DELENDAI_AGENT_ID`) — the same answer the work
+ * commands and the tools give. `undefined` when nobody declared one; the
+ * machine is never a guess.
+ */
+export const agentArg = (
+	args: readonly string[],
+	env: NodeJS.ProcessEnv = process.env,
+): string | undefined => {
+	const explicit = scalarArg(args, 'agent');
+	const identity = resolveWorkAgentId({
+		...(explicit === undefined ? {} : { model: explicit }),
+		environment: env.DELENDAI_AGENT_ID,
+	});
+	return identity.source === 'none' ? undefined : identity.id;
+};
