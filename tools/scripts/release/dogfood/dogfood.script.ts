@@ -56,8 +56,7 @@ import type {
 	IReleaseReconciliationInput,
 	IReleaseTarget,
 } from '@delendai/core/public';
-import { resolveReleaseTarget } from '@delendai/core/public';
-import { readWorkspacePolicy } from '@delendai/core/cli';
+import { readWorkspacePolicy, resolveReleaseTarget } from '@delendai/core/cli';
 import type { IForgePullRequestDetail } from '../../../../plugins/forge/src/lib/contracts/interfaces/forge-read.interface';
 import {
 	readExpectedReleaseState,

@@ -39,7 +39,7 @@ import {
 	declaredMergeMethod,
 	mergeFlagFor,
 } from '../lib/declared-branches';
-import { hasSeparateReleaseBranch } from '@delendai/core/public';
+import { hasSeparateReleaseBranch } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/repo-root';
 
