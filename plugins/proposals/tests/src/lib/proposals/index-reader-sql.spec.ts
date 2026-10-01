@@ -54,6 +54,8 @@ interface ISeedRow {
 	readonly status: string;
 	readonly title: string;
 	readonly sourcePath: string | null;
+	/** Tombstoned (removed from the tree, kept for history) when set. */
+	readonly deletedAt?: number;
 }
 
 /** Builds a real projection at the canonical path and seeds it. */
@@ -63,8 +65,8 @@ const seedDatabase = (root: string, rows: readonly ISeedRow[]): string => {
 	const now = 1_700_000_000_000;
 	const insert = driver.handle.prepare(
 		`INSERT INTO proposals
-		   (uid, slug, kind, status, title, source_path, created_at, updated_at)
-		 VALUES ($uid, $slug, $kind, $status, $title, $source_path, $created, $updated)`,
+		   (uid, slug, kind, status, title, source_path, created_at, updated_at, deleted_at)
+		 VALUES ($uid, $slug, $kind, $status, $title, $source_path, $created, $updated, $deleted_at)`,
 	);
 	for (const row of rows) {
 		insert.run({
@@ -76,6 +78,7 @@ const seedDatabase = (root: string, rows: readonly ISeedRow[]): string => {
 			source_path: row.sourcePath,
 			created: now,
 			updated: now,
+			deleted_at: row.deletedAt ?? null,
 		});
 	}
 	driver.close();
@@ -209,6 +212,41 @@ describe('readProposalIndexFromSql — field mapping (f00535 S1)', () => {
 			databasePath: resolveProposalsDbPaths(root).databasePath,
 		});
 		expect(entries?.[0]?.file.startsWith('/')).toBe(false);
+	});
+
+	it('excludes a tombstoned row (q00022 S4 phase 2)', async () => {
+		// The `proposals` table is append-only history: a file removed
+		// from the tree is tombstoned (`deleted_at` set), never deleted
+		// from the row. The index lists what exists NOW, so a tombstoned
+		// proposal — however stale its `status` — must never resurface.
+		const root = makeRoot();
+		seedDatabase(root, [
+			{
+				uid: 'f00535',
+				kind: 'feat',
+				status: 'ready',
+				title: 'still live',
+				sourcePath: 'ready/feats/f00535-cutover.md',
+			},
+			{
+				uid: 'x09001',
+				kind: 'fix',
+				status: 'ready',
+				title: 'removed from disk',
+				sourcePath: 'ready/fixes/x09001-gone.md',
+				deletedAt: 1_700_000_100_000,
+			},
+		]);
+		const entries = await readProposalIndexFromSql({
+			databasePath: resolveProposalsDbPaths(root).databasePath,
+		});
+		expect(entries).toEqual([
+			{
+				id: 'f00535',
+				file: 'ready/feats/f00535-cutover.md',
+				status: 'ready',
+			},
+		]);
 	});
 });
 
