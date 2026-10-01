@@ -2,7 +2,7 @@
 id: x00556
 title: "A pull request runs the checks its change can break"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: efficiency
 date: 2026-09-19
@@ -10,6 +10,9 @@ tags:
     - ci
     - cost
     - gates
+last-transition-id: f482c614-0913-4aaf-8932-f62812a93c9b
+last-correlation-id: f482c614-0913-4aaf-8932-f62812a93c9b
+last-transition-from: ready
 ---
 
 # x00556 — A pull request runs the checks its change can break
