@@ -2,12 +2,15 @@
 id: x00790
 title: "A change with nothing to test passes its tests"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [f00538, x00556]
+last-transition-id: 949b477a-c740-4535-a57b-0596e1a0385f
+last-correlation-id: 949b477a-c740-4535-a57b-0596e1a0385f
+last-transition-from: in-progress
 ---
 
 # x00790 — A change with nothing to test passes its tests
@@ -49,6 +52,7 @@ history, which is the one thing a forward-sync exists to fix.
 - **Gate**: `bun run lint:workflow`
 - **Files**:
   - `.github/workflows/ci.yml`
+- shipped-in: `429c2a77fd2b`
 
 ## dependency graph
 

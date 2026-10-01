@@ -1663,14 +1663,6 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-30"
-			},
-			{
-				"id": "x00790",
-				"title": "A change with nothing to test passes its tests",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-10-01"
 			}
 		]
 	}
