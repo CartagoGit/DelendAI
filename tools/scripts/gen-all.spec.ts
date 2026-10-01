@@ -106,6 +106,14 @@ describe('gen-all.script', () => {
 				name: 'host-hints',
 				cmd: 'bun tools/scripts/catalog/render-host-hints.script.ts',
 			},
+			{
+				name: 'docs-index',
+				cmd: 'bun tools/scripts/docs/generate-docs-index.script.ts',
+			},
+			{
+				name: 'tool-types',
+				cmd: 'bun tools/scripts/types/generate-tool-types.script.ts',
+			},
 		]);
 	});
 
@@ -160,6 +168,8 @@ describe('gen-all.script', () => {
 			// to it. Its own gate is `tokens:dashboard:check`, on one
 			// machine at one moment, which is what a measurement needs.
 			'bun tools/scripts/catalog/render-host-hints.script.ts --check',
+			'bun tools/scripts/docs/generate-docs-index.script.ts --check',
+			'bun tools/scripts/types/generate-tool-types.script.ts',
 			// No `git diff --exit-code` any more: drift is now read from
 			// the dirty-path snapshot, not from a subprocess exit code,
 			// because the exit code cannot say WHICH files moved and this
@@ -228,6 +238,8 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/gen/agent-md.script.ts',
 			// The measured step is absent here too — see the case above.
 			'bun tools/scripts/catalog/render-host-hints.script.ts --check',
+			'bun tools/scripts/docs/generate-docs-index.script.ts --check',
+			'bun tools/scripts/types/generate-tool-types.script.ts',
 		]);
 		expect(errors).toContain(
 			'gen-all: at least one generator exited non-zero (exit=2)',
