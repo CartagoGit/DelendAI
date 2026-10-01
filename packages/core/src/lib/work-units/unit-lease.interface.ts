@@ -1,0 +1,105 @@
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+
+/** What a unit of work is, as far as its owner is concerned. */
+export const UNIT_STANDINGS = [
+	/** Its owner showed life within the lease window. */
+	'live',
+	/** The owner is known and quiet beyond the window: listed for adoption. */
+	'idle',
+	/** Quiet for so long that its owner is gone. */
+	'abandoned',
+	/** Its work is provably in the integration branch or a publication. */
+	'delivered',
+] as const;
+export type IUnitStanding = (typeof UNIT_STANDINGS)[number];
+
+/** Who owns a unit: the model, and the host session that runs it. */
+export interface IUnitOwner {
+	readonly agent: string;
+	/** The host session, never the short-lived CLI process that wrote it. */
+	readonly session: string | null;
+}
+
+/** The durable record of a unit's owner and heartbeat. Times are epoch seconds. */
+export interface IUnitLease {
+	/** Short work-ref name, e.g. `delendai/wip/<agent>/<kind>/<unit>/<topic>`. */
+	readonly ref: string;
+	readonly owner: IUnitOwner;
+	readonly worktree: string | null;
+	/** The commit the ref pointed at when the unit was entered. */
+	readonly entrySha: string | null;
+	readonly enteredAt: number;
+	readonly heartbeatAt: number;
+}
+
+/** What the verdict is judged from. */
+export interface IUnitEvidence {
+	readonly lease?: IUnitLease | undefined;
+	/** Commit time of the ref's tip, the heartbeat of a unit with no lease. */
+	readonly tipAt?: number | undefined;
+	/** The caller proved the unit's work is already delivered. */
+	readonly delivered: boolean;
+	readonly now: number;
+	/** The lease window in seconds. */
+	readonly windowSeconds: number;
+}
+
+/** The one verdict on a unit. */
+export interface IUnitVerdict {
+	readonly standing: IUnitStanding;
+	readonly owner: IUnitOwner | null;
+	/** Seconds since the last sign of life; null when there is none. */
+	readonly silentSeconds: number | null;
+	readonly reason: string;
+}
+
+/** A unit's ref, its verdict and what is needed to act on it. */
+export interface IUnitStandingEntry extends IUnitVerdict {
+	readonly ref: string;
+	readonly worktree: string | null;
+}
+
+export interface IRecordUnitEntry {
+	readonly cwd: string;
+	readonly ref: string;
+	readonly owner: IUnitOwner;
+	readonly worktree: string | null;
+	readonly now?: number | undefined;
+}
+
+export interface ITouchUnit {
+	readonly cwd: string;
+	readonly ref: string;
+	readonly owner: IUnitOwner;
+	readonly worktree?: string | null | undefined;
+	readonly now?: number | undefined;
+}
+
+export interface IReapedUnit {
+	readonly ref: string;
+	readonly outcome: 'removed' | 'would-remove' | 'kept';
+	readonly worktree: string | null;
+	/** The edits that kept it, when it was kept. */
+	readonly edited: readonly string[];
+	readonly regenerable: readonly string[];
+}
+
+export interface IUnitRemoval {
+	readonly removedWorktree: string | null;
+	readonly deletedBranch: boolean;
+	/** Real edits that kept the worktree and the branch in place. */
+	readonly keptBecauseEdited: readonly string[];
+}
+
+export interface IReadUnitStandings {
+	readonly root: string;
+	readonly policy: IResolvedDevelopmentPolicy;
+	readonly now?: number | undefined;
+}
+
+export interface IWorktreeState {
+	/** Edits somebody made: removing the worktree would lose them. */
+	readonly edited: readonly string[];
+	/** Files a generator or installer rewrites. */
+	readonly regenerable: readonly string[];
+}

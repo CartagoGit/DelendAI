@@ -33,11 +33,14 @@ export {
 	kindsInAgentId,
 	legacyWorkKind,
 } from './lib/development-policy/work-ref-placeholders';
+export { readUnitRefFacts } from './lib/work-units/unit-ref-facts.service';
+export { touchUnitOfCheckout } from './lib/work-units/unit-lease.service';
 export { agentEnvironmentMarker } from './lib/work-identity/agent-environment.helper';
 export { AGENT_ENVIRONMENT_MARKERS } from './lib/contracts/constants/agent-environment.constant';
 export type {
 	IGitGuardVerdict,
 	IGuardedGitOperation,
+	IUnitRefFacts,
 } from './lib/contracts/interfaces/git-guard.interface';
 
 // The block `delendai guard install` adds to a project's git hooks.
