@@ -190,3 +190,24 @@ Body of ${id}.
 		expect(getProposalIndexReadStats().rebuilds).toBe(1);
 	});
 });
+
+describe('readProposalIndex — sql with no JSON registry on disk', () => {
+	it('serves the projection without calling every id a divergence', async () => {
+		// A fresh worktree has no `index.json`. That is nothing to compare,
+		// and reporting the whole backlog as divergent drowned the log.
+		const messages: string[] = [];
+		const entries = await readProposalIndex(INDEX_PATH, fakeFs(null), {
+			source: 'sql',
+			databasePath: '/fake/proposals.sqlite',
+			readFromSqlResult: async () => ({
+				entries: JSON_ENTRIES,
+				sourceCommit: 'abc123',
+				logicalDigest: 'digest',
+			}),
+			log: (message) => messages.push(message),
+		});
+		expect(entries).toEqual(JSON_ENTRIES);
+		expect(messages).toEqual([]);
+		expect(getProposalIndexReadStats().last).toBe('sql-parity');
+	});
+});
