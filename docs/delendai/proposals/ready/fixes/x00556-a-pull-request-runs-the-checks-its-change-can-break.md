@@ -82,12 +82,24 @@ answerable, reviewable and testable.
 
 ### S2 — A pull request selects, the integration branch does not
 
-- **Status**: pending
-- **Gate**: `bun run lint:workflow`
-- **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/**`
+- **Status**: done — verified 2026-10-01; it holds by construction and is
+  pinned by tests on both selectors.
+- **Gate**: `npx vitest run tools/scripts/ci/job-scope.script.spec.ts tools/scripts/ci/test-zones.script.spec.ts`
+- **Files**:
+  - `.github/workflows/ci.yml`
+  - `tools/scripts/ci/job-scope.script.ts`
+  - `tools/scripts/ci/test-zones.script.ts`
 - On a publication ref, the changed paths select the jobs; on the
   integration branch and on the merge that lands work, the full
   aggregate runs unconditionally.
+- How it holds: `plan-scope` and `plan-tests` pass `--base` only when the
+  event is `pull_request`. A push to the integration or release branch, a
+  `merge_group` run and a dispatch arrive with no base. With no base,
+  `job-scope` gets an empty change list and runs every job
+  (`jobMustRun`: "runs everything when the change list is empty"), and
+  the test planner runs every zone ("runs every zone when the run has no
+  base, as a dispatch or a push does"). Evidence: CI run 36607216424, a push
+  to develop, planned `26/26 job(s)` and ran all 11 test zones.
 
 ### S3 — The saving is measured, not assumed
 
