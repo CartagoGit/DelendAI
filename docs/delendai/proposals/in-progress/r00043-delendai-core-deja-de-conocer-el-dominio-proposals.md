@@ -2,7 +2,7 @@
 id: r00043
 title: "`@delendai/core` deja de conocer el dominio `proposals`"
 kind: refactor
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-30
@@ -13,6 +13,9 @@ audit-source:
     finding: AUD-E05
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 related: [q00011, r00040, r00041, r00042, r00034]
+last-transition-id: 4e3220a8-a09b-418e-ab68-917f931121f8
+last-correlation-id: 4e3220a8-a09b-418e-ab68-917f931121f8
+last-transition-from: ready
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -144,6 +147,7 @@ packages/core/                         plugins/proposals/
 ### S0 — Inventario ejecutable de acoplamientos core → proposals
 
 - **Status**: done
+- shipped-in: `420e86f48`
 - **Files**:
     - `tools/scripts/inspect/core-proposals-boundary.script.ts` (nuevo)
     - `packages/core/tests/src/architecture/core-proposals-boundary.spec.ts` (nuevo)
@@ -163,6 +167,7 @@ packages/core/                         plugins/proposals/
 ### S1 — Contratos agnósticos de contribuciones de workflow y adopción
 
 - **Status**: done
+- shipped-in: `7c861d2f9`
 - **DependsOn**: [S0]
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/workflow-contribution.interface.ts` (nuevo)
@@ -225,6 +230,7 @@ not part of this delivery; it moves to S6.
 ### S3 — Convertir stable-facade en un registro de contribuciones
 
 - **Status**: done — verified 2026-09-25 by an evidence pass (a second agent; delivered in `7c861d2f9`). `stable-facade.ts` names no plugin: `stable-facade-registry.ts` holds contributions and the proposals plugin registers its tools through `registerProposalsStableTools`. The gate passes 14/14, and the boundary inventory lists `plugin: 'proposals'` in the facade as resolved by S3.
+- shipped-in: `7c861d2f9`
 - **DependsOn**: [S1]
 - **Files**:
     - `packages/core/src/lib/api/stable-facade.ts`
