@@ -2,12 +2,15 @@
 id: x00833
 title: "A unit does not overlap its own publication"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P2
 related: [x00791]
+last-transition-id: 3760845e-dee7-4611-89ec-d2cc677babd0
+last-correlation-id: 3760845e-dee7-4611-89ec-d2cc677babd0
+last-transition-from: in-progress
 ---
 
 # x00833 — A unit does not overlap its own publication
@@ -48,6 +51,7 @@ teaches agents to stop reading it.
   - `packages/core/src/lib/work-units/work-swarm.service.ts`
   - `packages/core/src/lib/work-units/work-swarm-relations.service.ts`
   - `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
+- shipped-in: `c13145c1ca18`
 
 ## dependency graph
 
