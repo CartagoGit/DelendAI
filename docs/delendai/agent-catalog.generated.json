@@ -1428,7 +1428,7 @@
 				"id": "f00538",
 				"title": "Forward-sync the release branch back into the integration branch after every promotion",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-09-15"
 			},
@@ -1476,7 +1476,7 @@
 				"id": "f00547",
 				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
 				"track": "architecture",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-09-16"
 			},
