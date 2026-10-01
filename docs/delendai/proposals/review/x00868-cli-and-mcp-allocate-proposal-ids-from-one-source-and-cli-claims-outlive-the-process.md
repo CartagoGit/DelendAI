@@ -2,13 +2,13 @@
 id: x00868
 title: "CLI and MCP allocate proposal ids from one source, and CLI claims outlive the process"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: c2fd6d9d-678e-4d3c-a7b8-a8bce9ff7be8
-last-correlation-id: c2fd6d9d-678e-4d3c-a7b8-a8bce9ff7be8
-last-transition-from: ready
+last-transition-id: 89f6828f-9c48-4ac4-b3f2-7720769a0953
+last-correlation-id: 89f6828f-9c48-4ac4-b3f2-7720769a0953
+last-transition-from: in-progress
 ---
 
 # x00868 — CLI and MCP allocate proposal ids from one source, and CLI claims outlive the process
@@ -48,6 +48,9 @@ The owner's principle is that every workflow is completable by any agent on any 
   - "ls-tree of remote refs finds proposals whatever directory the server runs in"
   - "an id is claimed on the remote as a ref of its own before it is handed out, atomically: of two clones reserving one id exactly one is told reserved, and the allocator steps over a taken one"
   - "a spec against a real repository shows a remote-held id is honoured from inside the proposals directory"
+- shipped-in: `26da5edf1275`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — create_proposal does not block on a publish and is safe to repeat
 - **Status**: pending
@@ -56,6 +59,9 @@ The owner's principle is that every workflow is completable by any agent on any 
 - acceptance:
   - "a server whose own root is a unit writes the proposal there and pushes nothing"
   - "a repeated create with the same title returns the proposal already on disk instead of a new id"
+- shipped-in: `7562b1249fd9`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Every CLI claim outlives the CLI process
 - **Status**: pending
@@ -64,6 +70,9 @@ The owner's principle is that every workflow is completable by any agent on any 
 - acceptance:
   - "delegate and continue --mode=claim take holder agent from the CLI"
   - "a claim made through either is still held after the CLI process has exited"
+- shipped-in: `26da5edf1275`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — The CLI derives the agent from the unit ref
 - **Status**: pending
@@ -71,6 +80,9 @@ The owner's principle is that every workflow is completable by any agent on any 
 - **Gate**: none
 - acceptance:
   - "the agent is the --agent flag, then DELENDAI_AGENT_ID, then the agent segment of the checkout's work ref"
+- shipped-in: `26da5edf1275`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — Real-server specs for the CLI lifecycle
 - **Status**: pending
@@ -78,6 +90,9 @@ The owner's principle is that every workflow is completable by any agent on any 
 - **Gate**: none
 - acceptance:
   - "close-slice and transition run against a spawned server from a unit worktree and from the shared checkout, under shared-checkout-pr and shared-checkout-merge"
+- shipped-in: `26da5edf1275`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
