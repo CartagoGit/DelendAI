@@ -19,6 +19,7 @@
 import { sharedCheckout } from '../shared/shared-checkout';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
+import { readAdoptionRecord } from './adoption-record';
 import { defaultBranchOf } from './default-branch';
 import { resolveDevelopmentPolicy } from './resolve';
 import type { IEffectivePolicyInput } from './effective-policy.interface';
@@ -39,11 +40,22 @@ const declaresIntegration = (input: IResolveDevelopmentPolicyInput): boolean =>
 	) !== undefined;
 
 /**
- * Resolves the policy every reader of a workspace obeys: the declared
- * `development` block, else the legacy fields, else the built-in default.
- * `policy.source` says which, so a caller can say the model was adopted.
+ * A `development` block delendai wrote is the project's block from then
+ * on, and resolves like any other; the record only lets a reader say who
+ * wrote it.
  */
-export const resolveEffectivePolicy = (
+const withAdoptionRecord = (
+	policy: IResolvedDevelopmentPolicy,
+	workspaceRoot: string,
+): IResolvedDevelopmentPolicy => {
+	if (policy.source === 'default' || policy.source === 'legacy-compat') {
+		return policy;
+	}
+	const adoption = readAdoptionRecord(workspaceRoot);
+	return adoption === undefined ? policy : { ...policy, adoption };
+};
+
+const withDiscoveredBranches = (
 	input: IEffectivePolicyInput,
 ): IResolvedDevelopmentPolicy => {
 	const policy = resolveDevelopmentPolicy(input);
@@ -68,3 +80,13 @@ export const resolveEffectivePolicy = (
 		},
 	};
 };
+
+/**
+ * Resolves the policy every reader of a workspace obeys: the declared
+ * `development` block, else the legacy fields, else the built-in default.
+ * `policy.source` says which, so a caller can say the model was adopted.
+ */
+export const resolveEffectivePolicy = (
+	input: IEffectivePolicyInput,
+): IResolvedDevelopmentPolicy =>
+	withAdoptionRecord(withDiscoveredBranches(input), input.workspaceRoot);

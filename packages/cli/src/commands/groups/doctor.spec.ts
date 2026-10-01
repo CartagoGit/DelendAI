@@ -349,9 +349,11 @@ describe('checkManifests (f00191)', () => {
 		fileExists: async (rel: string) =>
 			rel === 'plugins/git/plugin.manifest.ts',
 		readFile: async (rel: string) =>
-			rel === 'plugins/git/plugin.manifest.ts'
-				? "import { definePluginManifest } from 'x';\nexport default definePluginManifest({\n\tid: 'git',\n});"
-				: undefined,
+			rel === 'package.json'
+				? '{"name":"@delendai/core-monorepo"}'
+				: rel === 'plugins/git/plugin.manifest.ts'
+					? "import { definePluginManifest } from 'x';\nexport default definePluginManifest({\n\tid: 'git',\n});"
+					: undefined,
 		listDirs: async (_rel: string) => ['git'],
 	};
 	const ctx = {
@@ -478,7 +480,7 @@ describe('checkRuntime (f00191)', () => {
 			},
 			now: () => new Date(),
 		});
-		expect(section.status).toBe('warn');
+		expect(section.status).toBe('not-applicable');
 	});
 });
 
