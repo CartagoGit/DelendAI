@@ -5,6 +5,14 @@ import {
 	stabilizeRelease,
 } from '../../src/lib/release-finalize';
 import type { IForgePullRequestDetail } from '../../src/lib/contracts/interfaces/forge-read.interface';
+import type { IReleaseTarget } from '@delendai/core/public';
+
+const target: IReleaseTarget = {
+	integrationBranch: 'develop',
+	releaseBranch: 'main',
+	versionManifestPath: 'packages/core/package.json',
+	promotion: 'pull-request',
+};
 
 const candidate = {
 	sourceDevelopSha: 'aaaaaaa',
@@ -71,6 +79,7 @@ describe('release finalize', () => {
 				{ ready: false, gates: [], blockingGates: ['tests'] },
 				'agent',
 				'7',
+				target,
 			),
 		).rejects.toThrow('not ready');
 	});
@@ -87,6 +96,7 @@ describe('release finalize', () => {
 			{ ready: true, gates: [], blockingGates: [] },
 			'agent',
 			'7',
+			target,
 		);
 		expect(receipt).toMatchObject({
 			operation: 'finalize',
@@ -108,6 +118,7 @@ describe('release finalize', () => {
 				{ ready: true, gates: [], blockingGates: [] },
 				'agent',
 				'7',
+				target,
 			),
 		).rejects.toThrow('requires Forge to report the PR as merged');
 	});
