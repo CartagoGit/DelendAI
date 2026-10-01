@@ -42,7 +42,7 @@ import {
 	type IFinding,
 	type IFindingCounts,
 	type ICommitAuthorResolution,
-	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
+	deriveDefaultProtectedBranches,
 } from '@delendai/core/public';
 
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
@@ -313,7 +313,7 @@ export const maybePersistAfterSlice = async (
 	// A target is refused only when it matches the effective host policy.
 	const pushTarget = options.pushTarget ?? DEFAULT_PUSH_TARGET;
 	const protectedBranches =
-		options.protectedBranches ?? UNRESOLVED_POLICY_PROTECTED_BRANCHES;
+		options.protectedBranches ?? deriveDefaultProtectedBranches(undefined);
 	const protectedBranch = pushWouldHitProtectedBranch(
 		pushTarget,
 		protectedBranches,

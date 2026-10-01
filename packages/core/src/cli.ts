@@ -109,6 +109,21 @@ export type {
 } from './lib/contracts/interfaces/workflow-invariants.interface';
 export { worktreeAgent } from './lib/work-units/worktree-agent.service';
 
+// What only the host and the verification scripts read: the watch that tells
+// a running server its source moved, and the code a refused shared-checkout
+// write carries.
+export { createStaleRuntimeWatch } from './lib/development-policy/stale-runtime-advisory';
+// Whether a project has a release branch of its own, and the branches its
+// policy protects: read by the forge governance and release scripts.
+export {
+	hasSeparateReleaseBranch,
+	protectedBranchNames,
+} from './lib/development-policy/release-branch';
+export { resolveReleaseTarget } from './lib/development-policy/release-target';
+// The host keeps the shared checkout on develop while it runs.
+export { startCheckoutHydration } from './lib/startup-gate/index';
+export { SHARED_CHECKOUT_WRITE_REFUSED } from './lib/contracts/constants/write-refusal.constant';
+
 if (import.meta.main) {
 	void runCli(process.argv.slice(2), process.cwd());
 }
