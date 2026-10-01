@@ -61,9 +61,14 @@ export const openPublicationPullRequest = (input: {
 	const { ports } = input;
 	const url = ports.git(['remote', 'get-url', input.remote]) ?? '';
 	if (!GITHUB_REMOTE.test(url)) {
+		// Never "open it by hand": a pull request an agent opens is a second
+		// author for one publication. The machine holding the forge
+		// credential opens it after the next merge (open-publication-prs).
+		const seen =
+			url === '' ? `its URL could not be read` : `its URL is \`${url}\``;
 		return {
 			status: 'skipped',
-			reason: `\`${input.remote}\` is not a GitHub remote; open the pull request of \`${input.branch}\` into \`${input.base}\` the way this forge does.`,
+			reason: `\`${input.remote}\` is not recognised as a GitHub remote (${seen}); \`${input.branch}\` stays published, and the machine that holds the forge credential opens its pull request into \`${input.base}\` after the next merge there, so until then it has none.`,
 		};
 	}
 	if (ports.gh(['--version']) === undefined) {
@@ -72,7 +77,7 @@ export const openPublicationPullRequest = (input: {
 			// Never "open it by hand": a pull request an agent opens is a second
 			// author for one publication. The machine holding the forge
 			// credential opens it after the next merge (open-publication-prs).
-			reason: `the \`gh\` CLI is not available here; \`${input.branch}\` stays published, and the owner machine opens its pull request into \`${input.base}\` after the next merge.`,
+			reason: `the \`gh\` CLI is not available here; \`${input.branch}\` stays published, and the machine that holds the forge credential opens its pull request into \`${input.base}\` after the next merge there, so until then it has none.`,
 		};
 	}
 	const existing = ports.gh([

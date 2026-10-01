@@ -28,6 +28,7 @@ import {
 	integrationRemote,
 	kindFor,
 	kindInAgent,
+	mainWorktreeOf,
 	openWork,
 	refused,
 	unknownKind,
@@ -46,7 +47,11 @@ export const published = async (
 ): Promise<IWorkUnitResult> => {
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
-	const { root, policy } = opened;
+	const { policy } = opened;
+	// Publishing removes the unit's worktree, which is where this command
+	// may be standing: everything asked of git and the forge is asked from
+	// the repository's own checkout, which stays.
+	const root = mainWorktreeOf(opened.root);
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
 	const agent = agentFor(args);

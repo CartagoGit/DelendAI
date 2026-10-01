@@ -3,6 +3,8 @@ import {
 	anchorRefusal,
 	observeAnchor,
 } from '../wip-engine/index';
+import { shortName } from '../development-policy/git-guard-namespaces';
+import { checkedOutHereReason } from '../wip-engine/checkpoint';
 import { validateScopePaths } from '../../plugin';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -19,6 +21,7 @@ import {
 	integrationBase,
 	kindInAgent,
 	openWork,
+	readGit,
 	refused,
 	unknownKind,
 } from './work-unit-shared.service';
@@ -78,6 +81,16 @@ export const checkpointed = async (
 		return refused(
 			`This scope is already somebody else's work.`,
 			describeCollisions(collisions).join('\n'),
+		);
+	}
+	// Standing in a unit's own worktree is the answer to "where do I
+	// commit", not a shared checkout to checkpoint from: git commits there.
+	const here = readGit(root, ['symbolic-ref', '--quiet', 'HEAD']) ?? '';
+	const workPrefix = shortName(policy.branches.workRefPrefix);
+	if (workPrefix.length > 0 && here.startsWith(`refs/heads/${workPrefix}`)) {
+		return refused(
+			checkedOutHereReason(here),
+			'work checkpoint is for a checkout that is not on the work ref; inside a unit worktree, commit with git.',
 		);
 	}
 	// The anchor is the whole point: a checkpoint taken while the shared
