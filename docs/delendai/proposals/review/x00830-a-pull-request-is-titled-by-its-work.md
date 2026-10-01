@@ -2,12 +2,15 @@
 id: x00830
 title: "A pull request is titled by its work"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P2
 related: [x00677]
+last-transition-id: 5869e617-8997-45c8-ac26-3b5c3d0a7272
+last-correlation-id: 5869e617-8997-45c8-ac26-3b5c3d0a7272
+last-transition-from: in-progress
 ---
 
 # x00830 — A pull request is titled by its work
@@ -54,6 +57,7 @@ it, which is part of how overlapping work went unnoticed.
 - **Files**:
   - `packages/core/src/lib/work-units/publication-pull-request.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
+- shipped-in: `fe8889c334e0`
 
 ## dependency graph
 
