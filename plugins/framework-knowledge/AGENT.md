@@ -31,6 +31,7 @@
 ## Tests
 
 - plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts
+- plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts
 - plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts
 
 ## Do not
