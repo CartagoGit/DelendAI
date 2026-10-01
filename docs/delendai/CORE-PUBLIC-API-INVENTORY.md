@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 648
+Total exports: 650
 
 | Maturity | Count |
 | --- | --- |
-| stable | 645 |
+| stable | 647 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -175,6 +175,7 @@ Total exports: 648
 | `hasExplicitPluginSurfaceSelection` | const | stable | `../lib/plugins/parse-cli-args` |
 | `hasPhasedLifecycle` | const | stable | `../lib/plugins/lifecycle` |
 | `hasSegment` | const | stable | `../lib/contracts/file-conventions.contract` |
+| `hasSeparateReleaseBranch` | const | stable | `../lib/development-policy/release-branch` |
 | `HIGH_CONFIDENCE_SECRET_PATTERNS` | const | stable | `../lib/shared/redact` |
 | `hydrateKpis` | const | stable | `../lib/observability/activation-kpis` |
 | `IActivationSources` | type | stable | `../lib/contracts/interfaces/activation-report.interface` |
@@ -480,6 +481,7 @@ Total exports: 648
 | `projectValue` | const | stable | `../lib/contracts/output/projection` |
 | `PROPOSAL_STATUS_VALUES` | const | stable | `../lib/catalog/agent-discovery-types` |
 | `ProposalStatus` | type | stable | `../lib/catalog/agent-discovery-types` |
+| `protectedBranchNames` | const | stable | `../lib/development-policy/release-branch` |
 | `ProviderKind` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `ProviderState` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `pruneExpiredExec` | const | stable | `../lib/shared/exec-path` |

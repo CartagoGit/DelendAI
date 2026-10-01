@@ -174,9 +174,13 @@ describe('readWorkspacePolicy resolves the integration branch agnostically', () 
 		expect(policy?.branches.workRefPrefix.length).toBeGreaterThan(0);
 	});
 
-	it('still answers nothing for a project that declares no policy', async () => {
+	it('answers the adopted default for a project that declares no policy', async () => {
 		const root = project('main', '{ "plugins": {} }');
-		expect(await readWorkspacePolicy(root)).toBeUndefined();
+		const policy = await readWorkspacePolicy(root);
+		expect(policy.source).toBe('default');
+		expect(policy.profile).toBe('shared-checkout-merge');
+		expect(policy.branches.integration).toBe('main');
+		expect(policy.branches.release).toBe('main');
 	});
 });
 
