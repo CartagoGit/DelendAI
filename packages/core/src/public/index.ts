@@ -602,9 +602,6 @@ export {
 	toolOk,
 	truncateIfTooLarge,
 } from '../lib/shared/tool-response';
-// The code a write refused in the shared checkout carries, for a caller
-// that must tell policy from a broken tool (`verify:tools`).
-export { SHARED_CHECKOUT_WRITE_REFUSED } from '../lib/contracts/constants/write-refusal.constant';
 export type {
 	IToolErrorLogHint,
 	IToolTextResult,
@@ -1068,22 +1065,10 @@ export {
 	declareWorkflow,
 	renderWorkflowDeclaration,
 } from '../lib/development-policy/declare-workflow';
-/**
- * Whether a project has a release branch of its own. A project with one
- * branch integrates and releases there, and its scripts must ask instead
- * of assuming a second boundary.
- */
-export {
-	hasSeparateReleaseBranch,
-	protectedBranchNames,
-} from '../lib/development-policy/release-branch';
-export { resolveReleaseTarget } from '../lib/development-policy/release-target';
 export type { IReleaseTarget } from '../lib/development-policy/release-target.interface';
 export {
 	deriveDefaultProtectedBranches,
 	distinctReleaseBranch,
-	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
-	UNRESOLVED_POLICY_RELEASE_BRANCH,
 } from '../lib/development-policy/protected-branches';
 export {
 	anchorFromPolicy,
@@ -1157,7 +1142,6 @@ export {
 	createStartupGovernanceSeam,
 	renderStartupGate,
 	runStartupGate,
-	startCheckoutHydration,
 	startupGateWarnings,
 } from '../lib/startup-gate/index';
 export type { IStartupStatePorts } from '../lib/startup-reconciler/index';
@@ -1199,7 +1183,6 @@ export { projectBranches } from '../lib/development-policy/project-branches';
  * delivered, instead of judging by how a branch is named.
  */
 export { branchDeliveryVerdict } from '../lib/ref-lifecycle/branch-delivery.service';
-export { createStaleRuntimeWatch } from '../lib/development-policy/stale-runtime-advisory';
 // The gates a project declares, read the way `delendai validate` reads
 // them, so a plugin that runs a gate runs the same one.
 export { validationGateSteps } from '../lib/work-units/validation-gate-steps.service';
