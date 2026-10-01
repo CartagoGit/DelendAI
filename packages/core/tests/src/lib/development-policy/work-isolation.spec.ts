@@ -60,12 +60,31 @@ describe('describeWorkIsolation', () => {
 		);
 	});
 
-	it('worktree-pr: each agent works in its own worktree', () => {
+	it('worktree-pr: each agent works in its own worktree, made by work enter', () => {
 		const isolation = describeWorkIsolation(expandProfile('worktree-pr'));
 		expect(isolation.agentWorktrees).toBe(true);
+		expect(isolation.unitWorktrees).toBe(true);
+		expect(isolation.rule).toContain('delendai work enter');
+		expect(isolation.rule).toContain('delendai work publish');
+		expect(isolation.rule).toContain('Do not call agent_worktree');
+		expect(isolation.worktreeRefusal).toContain(isolation.rule);
+		expect(isolation.worktreeRefusal).not.toContain(
+			'--agent-worktree=true',
+		);
+	});
+
+	it('an agent-worktree policy without work refs keeps agent_worktree', () => {
+		const policy = {
+			...expandProfile('worktree-pr'),
+			persistence: {
+				...expandProfile('worktree-pr').persistence,
+				strategy: 'branch' as const,
+				usesWipRefs: false,
+			},
+		};
+		const isolation = describeWorkIsolation(policy);
+		expect(isolation.unitWorktrees).toBe(false);
 		expect(isolation.rule).toContain('agent_worktree (action: create)');
-		// The host gate is the only thing that can refuse here.
-		expect(isolation.worktreeRefusal).toContain('--agent-worktree=true');
 	});
 
 	it('no policy: keeps the historical advice', () => {

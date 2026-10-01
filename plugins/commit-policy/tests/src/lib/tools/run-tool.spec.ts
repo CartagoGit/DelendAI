@@ -244,7 +244,14 @@ describe('commit_policy_run reads the slice from the checkout the call names (x0
 		git(parent, 'init', '-q', '-b', 'develop', 'checkout');
 		git(server, 'config', 'user.email', 'spec@example.test');
 		git(server, 'config', 'user.name', 'Spec');
-		git(server, 'commit', '-q', '--allow-empty', '-m', 'chore: base');
+		// Declared, because an undeclared project is held to the default
+		// model, which keeps its shared checkout for work refs.
+		await writeFile(
+			join(server, 'delendai.config.json'),
+			JSON.stringify({ development: { profile: 'shared-direct' } }),
+		);
+		git(server, 'add', 'delendai.config.json');
+		git(server, 'commit', '-q', '-m', 'chore: base');
 		git(server, 'worktree', 'add', '-q', '-b', 'work', worktree);
 		await writeIndex(worktree, [
 			{
