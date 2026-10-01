@@ -124,9 +124,9 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'proposals create':
 		'Create a proposal document with a parseable Slices section.',
 	'proposals close-slice':
-		'Mark a slice done + release its lock atomically, then re-sync.',
+		'Mark a slice done + release its lock atomically, then re-sync. --checkout names the unit worktree; omitted, the live unit that carries the proposal is used.',
 	'proposals transition':
-		'Move a proposal to a new status (DFA-validated; requires reason).',
+		'Move a proposal to a new status (DFA-validated; requires reason). To review, --agent (or DELENDAI_AGENT_ID) names the implementer and opens the review rounds.',
 	'proposals board':
 		'Show each actionable proposal with its slices (verbose).',
 	'proposals status':
