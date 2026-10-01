@@ -1671,6 +1671,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-01"
+			},
+			{
+				"id": "x09903",
+				"title": "The proposals lifecycle completes from the CLI the way the tools complete it",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-01"
 			}
 		]
 	}
