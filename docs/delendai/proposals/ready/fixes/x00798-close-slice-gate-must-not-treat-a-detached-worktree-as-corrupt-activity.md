@@ -20,7 +20,7 @@ Any post-merge hook run creates a detached scratch worktree for minutes, blockin
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Moving the candidate-refresh scratch worktree: it already lives in the OS temp directory, outside the repo, and is ignored once evidence is scoped to managed worktrees.
 
 ## Slices
 
