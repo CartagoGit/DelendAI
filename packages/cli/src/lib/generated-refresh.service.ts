@@ -25,7 +25,7 @@ import {
 	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { GENERATED_REFRESH_COMMANDS } from '../contracts/constants/generated-refresh.constant';
 import type { IGeneratedRefreshReport } from '../contracts/interfaces/generated-refresh.interface';
@@ -89,7 +89,7 @@ export const landedAsFastForward = (root: string): boolean =>
 /** True while git has not yet finished the merge whose hook is running. */
 const mergeIsOpen = (root: string): boolean => {
 	const marker = git(root, ['rev-parse', '--git-path', 'MERGE_HEAD']);
-	return marker.ok && existsSync(join(root, marker.out));
+	return marker.ok && existsSync(resolve(root, marker.out));
 };
 
 /**
