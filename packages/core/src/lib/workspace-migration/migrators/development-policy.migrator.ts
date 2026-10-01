@@ -58,6 +58,7 @@ import {
 	DEVELOPMENT_POLICY_MIGRATOR_ID,
 	DEVELOPMENT_POLICY_CONFIG_FILE,
 } from './development-policy.constant';
+import type { IEvidenceInput } from './development-policy.interface';
 import { deriveRequiredChecks } from './development-policy-required-checks';
 import type {
 	IAdoption,
@@ -99,22 +100,18 @@ const PULL_REQUEST_PROFILES: ReadonlySet<string> = new Set([
 export const adoptionFor = async (
 	workspaceRoot: string,
 	parsed: IConfigShape,
-	gatherEvidence?: (workspaceRoot: string) => Promise<IAdoptionEvidence>,
+	gatherEvidence?: (input: IEvidenceInput) => Promise<IAdoptionEvidence>,
 ): Promise<IAdoption> => {
 	// A declared block, even an empty one, is the project's answer.
 	if (parsed.development !== undefined) return { reasons: [], forge: 'none' };
-	const evidence = await gatherEvidence?.(workspaceRoot);
+	const evidence = await gatherEvidence?.({ workspaceRoot });
 	const forge = evidence?.forge ?? 'none';
-	let proposal;
-	try {
-		proposal = proposeAdoption(
-			await readWorkspacePolicy(workspaceRoot),
-			evidence,
-		);
-	} catch {
+	const policy = await readWorkspacePolicy(workspaceRoot).catch(
 		// A configuration that does not parse is not ours to edit.
-		return { reasons: [], forge };
-	}
+		() => undefined,
+	);
+	if (policy === undefined) return { reasons: [], forge };
+	const proposal = proposeAdoption(policy, evidence);
 	const { block } = proposal;
 	if (block === undefined || !PULL_REQUEST_PROFILES.has(block.profile)) {
 		return { ...proposal, forge };

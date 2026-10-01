@@ -63,4 +63,21 @@ describe('proposeAdoption', () => {
 		expect(proposal.block).toBeUndefined();
 		expect(proposal.reasons[0]).toContain('legacy');
 	});
+
+	it('offers the pull-request model only when init brings forge evidence', () => {
+		const policy = resolveDevelopmentPolicy({});
+
+		const atStartup = proposeAdoption(policy);
+		const atInit = proposeAdoption(policy, {
+			forge: 'github',
+			canRequireChecks: true,
+		});
+		const unknownRights = proposeAdoption(policy, { forge: 'github' });
+
+		expect(atStartup.block?.profile).toBe('shared-checkout-merge');
+		expect(atInit.block?.profile).toBe('shared-checkout-pr');
+		expect(atInit.reasons.join('\n')).toContain('GitHub');
+		// Unknown is not permission.
+		expect(unknownRights.block?.profile).toBe('shared-checkout-merge');
+	});
 });
