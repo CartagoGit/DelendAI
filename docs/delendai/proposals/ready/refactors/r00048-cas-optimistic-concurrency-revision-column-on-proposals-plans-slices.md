@@ -121,7 +121,7 @@ the policy in the host.
 - review-implementer: github-copilot-reconcile-20260911
 ### S2 — Expose CAS to the host: read returns `revision`, write returns either updated or conflict
 
-- **Status**: pending
+- **Status**: retired — 2026-10-01, superseded by the authority decision. `AUTHORITIES.md` makes `docs/delendai/proposals` the authority for proposal status and `proposals.sqlite` a projection the reconciler rebuilds from it; tools write the markdown, never these rows, so there is no writer to hand a `revision` to. None of the files this slice names exists (`read.ts`, `proposal-store.ts`, `plan-store.ts`, `slice-store.ts`). Concurrent writes to the authority go through the file mutex and atomic writes instead.
 - **Files**:
   - `packages/proposals-sqlite/src/lib/repository/read.ts` (new —
     `getProposal(uid) → { ..., revision }`, `listProposals(...)` includes `revision`)
@@ -142,7 +142,8 @@ the policy in the host.
 
 ### S3 — CAS regression suite: parallel writers race; exactly one wins
 
-- **Status**: pending
+- **Status**: done — verified 2026-10-01: `packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts` races a proposal, a plan and a slice across connections, and N stale writers against one row: exactly one closes, the others are told it is already closed.
+- shipped-in: `578148ae1`
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/cas-race.spec.ts` (new)
   - `plugins/proposals/tests/src/lib/services/cas-regression.spec.ts`
