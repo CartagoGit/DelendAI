@@ -2,12 +2,15 @@
 id: x00791
 title: "The swarm sees published work, stacks and duplicates"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [x00555]
+last-transition-id: eb1d5d8a-f3d6-46aa-8228-bad945d683da
+last-correlation-id: eb1d5d8a-f3d6-46aa-8228-bad945d683da
+last-transition-from: in-progress
 ---
 
 # x00791 — The swarm sees published work, stacks and duplicates
@@ -68,6 +71,7 @@ duplicating each other's work, because nothing said they were a stack.
   - `packages/core/src/lib/work-units/work-swarm.service.ts`
   - `packages/core/src/lib/work-units/work-unit-status.service.ts`
   - `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
+- shipped-in: `d981cd636893`
 
 ## dependency graph
 
