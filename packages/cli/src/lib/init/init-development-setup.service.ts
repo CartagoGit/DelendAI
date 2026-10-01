@@ -11,7 +11,11 @@
  */
 import { resolve } from 'node:path';
 
-import { adoptionFor, type IAdoption } from '@delendai/core/cli';
+import {
+	adoptionFor,
+	gatherAdoptionEvidence,
+	type IAdoption,
+} from '@delendai/core/cli';
 import { parseJsonc } from '@delendai/core/public';
 
 import type { IInitGuardHooks } from '../../contracts/interfaces/init.interface';
@@ -65,7 +69,13 @@ export const adoptDevelopmentForInit = async (
 		}
 	}
 	try {
-		return await adoptionFor(workspaceRoot, {}, gatherEvidence);
+		// Init declares a model on the person's behalf, so it is the one
+		// caller that reads the forge.
+		return await adoptionFor(
+			workspaceRoot,
+			{},
+			gatherEvidence ?? gatherAdoptionEvidence,
+		);
 	} catch {
 		return undefined;
 	}

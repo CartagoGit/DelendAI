@@ -1,14 +1,28 @@
 /**
- * development-policy.migrator.ts — give a workspace the development model
- * it never asked for, because a model nobody adopts is worth nothing.
+ * development-policy.migrator.ts — write down the development model a
+ * project is already working under, so it is visible and editable.
  *
  * ## Why this runs at startup
  *
- * Every project that has to hand-author seven orthogonal axes before it
- * gets any benefit will instead get none. The runtime already knows
- * enough to propose the right block — which forge this is, whether it can
- * require a check, which branch the work is happening on — so it
- * proposes it once, writes it, and records that it did.
+ * A model nobody can see is a model nobody can change. A project that
+ * declared nothing is already served a policy (see
+ * `resolveEffectivePolicy`); this writes that same policy into
+ * `delendai.config.json`, once, so the project has a block to edit.
+ *
+ * ## Why it decides nothing
+ *
+ * It asks `readWorkspacePolicy` — the path `delendai work`, the guard and
+ * the served instructions already use — and records the answer
+ * (`development-policy/adopt.ts`). It reads no forge and probes no
+ * network: what it writes is exactly what was already enforced.
+ *
+ * ## Why it is never silent
+ *
+ * It edits a file the project owns. The migration is journalled, every
+ * surface that describes the policy says it was adopted and written, and
+ * the CLI prints what it wrote. A project that does not want the block
+ * written states `"development": {}` — a declared, empty block resolves to
+ * the same default and is never touched.
  *
  * ## Why it writes JSONC and never re-parses
  *
@@ -20,19 +34,10 @@
  *
  * ## Why it never overwrites
  *
- * `detect` is false the moment a `development` block exists. Adoption
- * proposes a model for a workspace that has none; it does not revise a
- * decision somebody made. That is also why this migrator cannot be
- * "re-run to update": there is nothing here that updates.
- *
- * ## Why the evidence is gathered, not assumed
- *
- * The block chosen for a GitHub repository whose checks we can require is
- * not the block for a GitLab instance the team does not administer, and
- * guessing generously in either direction is harmful — see
- * `development-policy/adopt.ts`, which owns the choice and the reasons.
- * This module is the impure edge: it reads the workspace and writes the
- * file. It decides nothing.
+ * `detect` is false the moment a `development` block exists, and the
+ * proposal is empty for a policy that is not a default (legacy fields
+ * included). Adoption proposes a model for a workspace that has none; it
+ * does not revise a decision somebody made.
  */
 
 import { readFile, writeFile } from 'node:fs/promises';
@@ -42,6 +47,7 @@ import { applyEdits, modify, parse as parseJsonc } from 'jsonc-parser';
 
 import { proposeAdoption } from '../../development-policy/adopt';
 import type { IAdoptionEvidence } from '../../development-policy/adopt';
+import { readWorkspacePolicy } from '../../work-units/development-policy.service';
 import type {
 	IMigration,
 	IMigrationContext,
@@ -52,7 +58,6 @@ import {
 	DEVELOPMENT_POLICY_MIGRATOR_ID,
 	DEVELOPMENT_POLICY_CONFIG_FILE,
 } from './development-policy.constant';
-import { gatherAdoptionEvidence } from './development-policy-evidence';
 import { deriveRequiredChecks } from './development-policy-required-checks';
 import type {
 	IAdoption,
@@ -76,32 +81,40 @@ const readConfig = async (
 	}
 };
 
-const evidenceFor = async (
-	workspaceRoot: string,
-	parsed: IConfigShape,
-): Promise<IAdoptionEvidence> =>
-	gatherAdoptionEvidence({
-		workspaceRoot,
-		hasDevelopmentBlock: parsed.development !== undefined,
-		...(typeof parsed.agentWorktree === 'boolean'
-			? { agentWorktree: parsed.agentWorktree }
-			: {}),
-	});
-
 /** Profiles whose governance is enforced, and so cannot start without checks. */
 const PULL_REQUEST_PROFILES: ReadonlySet<string> = new Set([
 	'shared-checkout-pr',
 	'worktree-pr',
 ]);
 
+/**
+ * The ONE function that proposes a `development` block, for the server's
+ * startup migrator and for `delendai init` alike.
+ *
+ * Without `gatherEvidence` (server start) it records the policy the
+ * workspace already resolves, reading nothing from the forge. `init`
+ * passes the evidence reader, because declaring a model is the person's
+ * own act; it prints the reasons, and what it writes is then declared.
+ */
 export const adoptionFor = async (
 	workspaceRoot: string,
 	parsed: IConfigShape,
-	gatherEvidence: typeof evidenceFor = evidenceFor,
+	gatherEvidence?: (workspaceRoot: string) => Promise<IAdoptionEvidence>,
 ): Promise<IAdoption> => {
-	const evidence = await gatherEvidence(workspaceRoot, parsed);
-	const proposal = proposeAdoption(evidence);
-	const { forge } = evidence;
+	// A declared block, even an empty one, is the project's answer.
+	if (parsed.development !== undefined) return { reasons: [], forge: 'none' };
+	const evidence = await gatherEvidence?.(workspaceRoot);
+	const forge = evidence?.forge ?? 'none';
+	let proposal;
+	try {
+		proposal = proposeAdoption(
+			await readWorkspacePolicy(workspaceRoot),
+			evidence,
+		);
+	} catch {
+		// A configuration that does not parse is not ours to edit.
+		return { reasons: [], forge };
+	}
 	const { block } = proposal;
 	if (block === undefined || !PULL_REQUEST_PROFILES.has(block.profile)) {
 		return { ...proposal, forge };
@@ -160,7 +173,7 @@ export const createDevelopmentPolicyMigrator = (): IMigration => ({
 		return [
 			{
 				kind: 'write-development-block',
-				detail: `add \`development\` to ${DEVELOPMENT_POLICY_CONFIG_FILE}: profile "${proposal.block.profile}"`,
+				detail: `add \`development\` to ${DEVELOPMENT_POLICY_CONFIG_FILE}: profile "${proposal.block.profile}", integration "${proposal.block.branches.integration}", release "${proposal.block.branches.release}"`,
 			},
 			// Every reason is a step of its own, so `--dry-run` shows the
 			// operator WHY before anything is written. A migration nobody

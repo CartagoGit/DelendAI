@@ -48,10 +48,9 @@ export interface IGuardFacts {
 	/** Everything git wrote to the hook's stdin. */
 	readonly stdin: () => Promise<string>;
 	/**
-	 * The policy the project DECLARES, or undefined when its configuration
-	 * has no `development` block: an undeclared policy is never enforced.
+	 * The policy the project works under: the one it declares, or the one
+	 * delendai adopts when it declares none. The same reader `delendai work`
+	 * uses, so the guard enforces the model the instructions describe.
 	 */
-	readonly policy: (
-		workspace: string,
-	) => Promise<IResolvedDevelopmentPolicy | undefined>;
+	readonly policy: (workspace: string) => Promise<IResolvedDevelopmentPolicy>;
 }

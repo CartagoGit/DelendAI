@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 648
+Total exports: 644
 
 | Maturity | Count |
 | --- | --- |
-| stable | 645 |
+| stable | 641 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -28,8 +28,6 @@ Total exports: 648
 | `assertExpectedReleaseState` | const | stable | `../lib/contracts/release-state` |
 | `assertReleaseMetadata` | const | stable | `../lib/contracts/release` |
 | `assertReleaseSlug` | const | stable | `../lib/contracts/release` |
-| `branchDeliveryVerdict` | const | stable | `../lib/ref-lifecycle/branch-delivery.service` |
-| `briefWorkModel` | const | stable | `../lib/development-policy/declare-workflow` |
 | `BufferingErrorSink` | const | stable | `../lib/error-collection/buffering-sink` |
 | `buildAdoptionAssessment` | const | stable | `../lib/adopt/adoption-assessment.service` |
 | `buildAdoptProjectPlan` | const | stable | `../lib/adopt/adopt-project.tool` |
@@ -122,7 +120,6 @@ Total exports: 648
 | `DEFAULT_TS_RULES` | const | stable | `../lib/contracts/file-conventions.contract` |
 | `definePlugin` | const | stable | `../plugin` |
 | `definePluginManifest` | const | stable | `../lib/manifest/define-plugin-manifest` |
-| `deriveDefaultProtectedBranches` | const | stable | `../lib/development-policy/protected-branches` |
 | `deriveSourceRoots` | const | stable | `../lib/bootstrap/derive-config` |
 | `describeStableTool` | const | stable | `../lib/api/stable-facade` |
 | `describeStackPacks` | const | stable | `../lib/plugins/pack-defaults-overlay` |
@@ -141,7 +138,6 @@ Total exports: 648
 | `diagnoseConfigFile` | const | stable | `../lib/plugins/load-config-file` |
 | `diagnosePluginWiring` | const | stable | `../lib/scaffold/diagnose-plugin-wiring` |
 | `discoverPluginManifests` | const | stable | `../lib/manifest/discovery` |
-| `distinctReleaseBranch` | const | stable | `../lib/development-policy/protected-branches` |
 | `DryRunEffectRefusedError` | const | stable | `../lib/dry-run/effect-guard.helper` |
 | `dryRunRequiredFor` | const | stable | `../lib/dry-run/protocol` |
 | `DURABILITY_REMOTE_MISSING` | const | stable | `../lib/wip-engine/durability-remote.constant` |
@@ -175,6 +171,7 @@ Total exports: 648
 | `hasExplicitPluginSurfaceSelection` | const | stable | `../lib/plugins/parse-cli-args` |
 | `hasPhasedLifecycle` | const | stable | `../lib/plugins/lifecycle` |
 | `hasSegment` | const | stable | `../lib/contracts/file-conventions.contract` |
+| `hasSeparateReleaseBranch` | const | stable | `../lib/development-policy/release-branch` |
 | `HIGH_CONFIDENCE_SECRET_PATTERNS` | const | stable | `../lib/shared/redact` |
 | `hydrateKpis` | const | stable | `../lib/observability/activation-kpis` |
 | `IActivationSources` | type | stable | `../lib/contracts/interfaces/activation-report.interface` |
@@ -480,6 +477,7 @@ Total exports: 648
 | `projectValue` | const | stable | `../lib/contracts/output/projection` |
 | `PROPOSAL_STATUS_VALUES` | const | stable | `../lib/catalog/agent-discovery-types` |
 | `ProposalStatus` | type | stable | `../lib/catalog/agent-discovery-types` |
+| `protectedBranchNames` | const | stable | `../lib/development-policy/release-branch` |
 | `ProviderKind` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `ProviderState` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `pruneExpiredExec` | const | stable | `../lib/shared/exec-path` |
@@ -628,8 +626,6 @@ Total exports: 648
 | `truncateRedactor` | const | stable | `../lib/observability/timeline` |
 | `UNANCHORED` | const | stable | `../lib/wip-engine/index` |
 | `UNICODE_TOKEN_LEGEND` | const | stable | `../lib/shared/unicode-safe-text` |
-| `UNRESOLVED_POLICY_PROTECTED_BRANCHES` | const | stable | `../lib/development-policy/protected-branches` |
-| `UNRESOLVED_POLICY_RELEASE_BRANCH` | const | stable | `../lib/development-policy/protected-branches` |
 | `utility` | const | stable | `../lib/routing/utility` |
 | `VALIDATE_EVIDENCE_SCHEMA` | const | stable | `../lib/proposals/validate-evidence.schema` |
 | `validateDevelopmentPolicy` | const | stable | `../lib/development-policy/validate` |

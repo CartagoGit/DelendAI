@@ -4,23 +4,21 @@
  *
  * Before this contract the answer was spread across `agentWorktree`, the
  * `commit-policy` plugin options, `.github/settings.yml`, the branch
- * guards and the bootstrap prose, with no way to tell which one won. This
- * file defines the resolved policy every one of those must now derive
- * from, so a project states its model once and the runtime, the guards
- * and the forge governance all read the same answer.
+ * guards and the bootstrap prose, with no way to tell which one won. The
+ * resolved policy defined here is what every one of those now derives
+ * from: a project states its model once and all readers get one answer.
  *
  * The model is deliberately NOT a single `mode` enum. Workspace layout,
  * work persistence, checkpoint cadence, integration, coordination,
  * recovery and governance are orthogonal: a project can share a checkout
  * and still integrate directly, or use worktrees and still require pull
- * requests. Profiles (see `development-policy/profiles.ts`) exist only as
- * ergonomic presets that expand into an explicit policy — the runtime
- * consumes the resolved capability booleans here, never a profile string.
+ * requests. Profiles are only presets that expand into an explicit
+ * policy; the runtime consumes the resolved booleans, never a profile name.
  */
 
-/** How agents get a working tree to edit. */
+import type { IPolicyAdoption } from './policy-adoption.interface';
 import type { IPolicyPublication } from './publication-unit.interface';
-
+/** How agents get a working tree to edit. */
 export const WORKSPACE_STRATEGIES = [
 	/** One checkout shared by every agent; nobody changes HEAD. */
 	'shared-checkout',
@@ -134,7 +132,7 @@ export type IWorkRefVisibility = (typeof WORK_REF_VISIBILITIES)[number];
 export interface IPolicyBranches {
 	/** Where agents integrate. `develop` here, NOT the forge default. */
 	readonly integration: string;
-	/** Where releases land. Held to a stricter policy than integration. */
+	/** Where releases land; equals `integration` for a one-branch project. */
 	readonly release: string;
 	/**
 	 * Namespace for delendai-owned refs, no trailing slash. Empty by
@@ -362,6 +360,8 @@ export interface IPolicyGovernance {
  * name.
  */
 export interface IResolvedDevelopmentPolicy {
+	/** Present when delendai chose this model and wrote it into the config. */
+	readonly adoption?: IPolicyAdoption;
 	/**
 	 * Schema version of the policy shape itself, so a future change has a
 	 * known migration path instead of open-ended heuristics.
