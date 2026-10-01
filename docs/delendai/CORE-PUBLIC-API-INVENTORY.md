@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 648
+Total exports: 650
 
 | Maturity | Count |
 | --- | --- |
-| stable | 645 |
+| stable | 647 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -401,6 +401,7 @@ Total exports: 648
 | `ITransactionResult` | type | stable | `../lib/transactions/types` |
 | `ITruncatedEnvelope` | type | stable | `../lib/contracts/interfaces/truncation.interface` |
 | `IValidationCommand` | type | stable | `../lib/contracts/interfaces/validation-matrix.interface` |
+| `IValidationGateStep` | type | stable | `../lib/contracts/interfaces/local-certification.interface` |
 | `IValidationMatrix` | type | stable | `../lib/contracts/interfaces/validation-matrix.interface` |
 | `IValidationMatrixConfig` | type | stable | `../lib/plugins/load-config-file` |
 | `IValidationMatrixScope` | type | stable | `../lib/plugins/load-config-file` |
@@ -637,6 +638,7 @@ Total exports: 648
 | `validatePluginManifest` | const | stable | `../lib/manifest/validation` |
 | `validateScopePaths` | const | stable | `../plugin` |
 | `validateToolDryRunManifest` | const | stable | `../lib/dry-run/enforce` |
+| `validationGateSteps` | const | stable | `../lib/work-units/validation-gate-steps.service` |
 | `waitsBackOnto` | const | stable | `../lib/shared/wait-for-graph` |
 | `walkAllowedFiles` | const | stable | `../lib/shared/walk-allowed-files` |
 | `walkTsFiles` | const | stable | `../lib/scan` |
