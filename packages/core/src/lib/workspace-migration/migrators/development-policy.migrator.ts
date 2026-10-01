@@ -53,11 +53,11 @@ import {
 	DEVELOPMENT_POLICY_CONFIG_FILE,
 } from './development-policy.constant';
 import { gatherAdoptionEvidence } from './development-policy-evidence';
-
-interface IConfigShape {
-	readonly development?: unknown;
-	readonly agentWorktree?: unknown;
-}
+import { deriveRequiredChecks } from './development-policy-required-checks';
+import type {
+	IAdoption,
+	IConfigShape,
+} from './development-policy-adoption.interface';
 
 const readConfig = async (
 	workspaceRoot: string,
@@ -88,6 +88,55 @@ const evidenceFor = async (
 			: {}),
 	});
 
+/** Profiles whose governance is enforced, and so cannot start without checks. */
+const PULL_REQUEST_PROFILES: ReadonlySet<string> = new Set([
+	'shared-checkout-pr',
+	'worktree-pr',
+]);
+
+export const adoptionFor = async (
+	workspaceRoot: string,
+	parsed: IConfigShape,
+	gatherEvidence: typeof evidenceFor = evidenceFor,
+): Promise<IAdoption> => {
+	const evidence = await gatherEvidence(workspaceRoot, parsed);
+	const proposal = proposeAdoption(evidence);
+	const { forge } = evidence;
+	const { block } = proposal;
+	if (block === undefined || !PULL_REQUEST_PROFILES.has(block.profile)) {
+		return { ...proposal, forge };
+	}
+	const derived = await deriveRequiredChecks(workspaceRoot);
+	if (derived !== undefined) {
+		return {
+			block: {
+				...block,
+				integration: { requiredChecks: derived.checks },
+			},
+			reasons: [...proposal.reasons, `integration ${derived.reason}`],
+			forge,
+		};
+	}
+	if (block.profile === 'shared-checkout-pr') {
+		return {
+			block: { ...block, profile: 'shared-checkout-merge' },
+			reasons: [
+				...proposal.reasons,
+				'fell back to `shared-checkout-merge`: the pull-request profile is enforced and needs a required check, and no single check could be read from the project workflows. Declare `development.integration.requiredChecks` to choose the pull-request model.',
+			],
+			forge,
+		};
+	}
+	return {
+		block,
+		reasons: [
+			...proposal.reasons,
+			'no required check could be read from the project workflows: declare `development.integration.requiredChecks`, or startup will refuse this profile.',
+		],
+		forge,
+	};
+};
+
 export const createDevelopmentPolicyMigrator = (): IMigration => ({
 	id: DEVELOPMENT_POLICY_MIGRATOR_ID,
 
@@ -106,10 +155,7 @@ export const createDevelopmentPolicyMigrator = (): IMigration => ({
 		if (config === null || config.parsed.development !== undefined) {
 			return [];
 		}
-		const proposal = await evidenceFor(
-			ctx.workspaceRoot,
-			config.parsed,
-		).then(proposeAdoption);
+		const proposal = await adoptionFor(ctx.workspaceRoot, config.parsed);
 		if (proposal.block === undefined) return [];
 		return [
 			{
@@ -130,10 +176,7 @@ export const createDevelopmentPolicyMigrator = (): IMigration => ({
 		const config = await readConfig(ctx.workspaceRoot);
 		if (config === null || config.parsed.development !== undefined) return;
 
-		const proposal = await evidenceFor(
-			ctx.workspaceRoot,
-			config.parsed,
-		).then(proposeAdoption);
+		const proposal = await adoptionFor(ctx.workspaceRoot, config.parsed);
 		if (proposal.block === undefined) return;
 
 		const edits = modify(config.text, ['development'], proposal.block, {
