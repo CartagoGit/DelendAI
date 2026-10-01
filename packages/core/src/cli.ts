@@ -117,6 +117,7 @@ export {
 	hasSeparateReleaseBranch,
 	protectedBranchNames,
 } from './lib/development-policy/release-branch';
+export { resolveReleaseTarget } from './lib/development-policy/release-target';
 export { SHARED_CHECKOUT_WRITE_REFUSED } from './lib/contracts/constants/write-refusal.constant';
 
 if (import.meta.main) {

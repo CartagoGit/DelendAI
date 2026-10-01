@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 644
+Total exports: 645
 
 | Maturity | Count |
 | --- | --- |
-| stable | 641 |
+| stable | 642 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -342,6 +342,7 @@ Total exports: 644
 | `IReleaseReceipt` | type | stable | `../lib/contracts/release-finalize` |
 | `IReleaseReconciliationInput` | type | stable | `../lib/contracts/release-finalize` |
 | `IReleaseStatusCompact` | type | stable | `../lib/contracts/release-state` |
+| `IReleaseTarget` | type | stable | `../lib/development-policy/release-target.interface` |
 | `IRepairDecision` | const | stable | `../lib/startup-reconciler/index` |
 | `IRepairResolution` | const | stable | `../lib/startup-reconciler/index` |
 | `IResolvedDevelopmentPolicy` | type | stable | `../lib/contracts/interfaces/development-policy.interface` |

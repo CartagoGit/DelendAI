@@ -178,12 +178,13 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // importing through the barrel, or document other than the generated
 // inventory — left the barrel. They stay exported from their `lib/` modules.
 //
-// Held at 645 (2026-10-01) with the surface back to 644 after it reached
-// 648 unseen: this gate ran only in `validate:run`, which CI does not
+// Held at 645 (2026-10-01) with the surface back to 645 after it reached
+// 650 unseen: this gate ran only in `validate:run`, which CI does not
 // invoke, so a dozen exports arrived across several pull requests without
 // anyone being asked. It runs in `lint:architecture` now. Nothing was raised:
-// two exports only the host and a verification script read
-// (`createStaleRuntimeWatch`, `SHARED_CHECKOUT_WRITE_REFUSED`) moved to
+// five exports only the host and the scripts read
+// (`createStaleRuntimeWatch`, `SHARED_CHECKOUT_WRITE_REFUSED`,
+// `hasSeparateReleaseBranch`, `protectedBranchNames`, `resolveReleaseTarget`) moved to
 // `@delendai/core/cli`, and two constants that restated what a function
 // already answered left the barrel (`UNRESOLVED_POLICY_RELEASE_BRANCH` is
 // what `distinctReleaseBranch(undefined)` returns,

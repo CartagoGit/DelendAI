@@ -1065,6 +1065,7 @@ export {
 	declareWorkflow,
 	renderWorkflowDeclaration,
 } from '../lib/development-policy/declare-workflow';
+export type { IReleaseTarget } from '../lib/development-policy/release-target.interface';
 export {
 	deriveDefaultProtectedBranches,
 	distinctReleaseBranch,
