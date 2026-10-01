@@ -1476,7 +1476,7 @@
 				"id": "f00547",
 				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
 				"track": "architecture",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-09-16"
 			},
@@ -1585,14 +1585,6 @@
 				"date": "2026-08-29"
 			},
 			{
-				"id": "r00043",
-				"title": "`@delendai/core` deja de conocer el dominio `proposals`",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-08-30"
-			},
-			{
 				"id": "r00056",
 				"title": "SQLite storage modes and canonical proposals DB wiring",
 				"track": "architecture",
@@ -1620,7 +1612,7 @@
 				"id": "x00556",
 				"title": "A pull request runs the checks its change can break",
 				"track": "efficiency",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-19"
 			},
@@ -1653,6 +1645,14 @@
 				"title": "A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives",
 				"track": "general",
 				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-10-01"
+			},
+			{
+				"id": "x00798",
+				"title": "close_slice gate must not treat a detached worktree as corrupt activity",
+				"track": "general",
+				"status": "ready",
 				"kind": "fix",
 				"date": "2026-10-01"
 			}
