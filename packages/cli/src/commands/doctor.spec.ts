@@ -50,6 +50,10 @@ const buildFs = (files: Record<string, string>): IDoctorFs => ({
 	},
 });
 
+const SOURCE_PACKAGE = {
+	'package.json': '{"name":"@delendai/core-monorepo"}',
+};
+
 const buildCliContext = (
 	options: {
 		json?: boolean;
@@ -191,6 +195,7 @@ describe('doctor checks', () => {
 	it('manifests: flags missing plugin manifests', async () => {
 		const result = await checkManifests(
 			buildDoctorContext({
+				...SOURCE_PACKAGE,
 				'plugins/a/plugin.manifest.ts':
 					'definePluginManifest({ id: "a" })',
 				'plugins/b/package.json': '{}',
@@ -205,6 +210,7 @@ describe('doctor checks', () => {
 	it('plugin-graph: detects local cycles', async () => {
 		const result = await checkPluginGraph(
 			buildDoctorContext({
+				...SOURCE_PACKAGE,
 				'plugins/a/package.json': JSON.stringify({
 					dependencies: { '@delendai/b': 'workspace:*' },
 				}),
@@ -219,7 +225,7 @@ describe('doctor checks', () => {
 
 	it('deps: reports bun.lock presence', async () => {
 		const result = await checkDeps(
-			buildDoctorContext({ 'bun.lock': 'lock' }),
+			buildDoctorContext({ 'package.json': '{}', 'bun.lock': 'lock' }),
 		);
 		expect(result).toMatchObject({ name: 'deps', status: 'ok' });
 	});
@@ -227,6 +233,7 @@ describe('doctor checks', () => {
 	it('token-budgets: parses baseline snapshots', async () => {
 		const result = await checkTokenBudgets(
 			buildDoctorContext({
+				...SOURCE_PACKAGE,
 				'config/metrics-baseline.json': '{"ok":true}',
 			}),
 		);
@@ -314,6 +321,7 @@ describe('doctor checks', () => {
 	it('schemas: sees plugin schema files', async () => {
 		const result = await checkSchemas(
 			buildDoctorContext({
+				...SOURCE_PACKAGE,
 				'plugins/a/src/output.schema.ts': 'export {};',
 			}),
 		);
