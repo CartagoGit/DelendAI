@@ -36,7 +36,7 @@ export type {
 const workspaceStep = (policy: IResolvedDevelopmentPolicy): string => {
 	if (policy.workspace.strategy === 'agent-worktree')
 		return policy.persistence.usesWipRefs
-			? 'Edit in your own worktree: `delendai work enter` makes it for each unit of work, and it is yours alone. Git lets you switch branches in the checkout you were given, but only the work ref `work enter` makes can be checkpointed or published.'
+			? 'Edit in your own worktree: `delendai work enter` makes it for each unit of work, and it is yours alone. Git lets you switch branches in the checkout you were given, but only the work ref `work enter` makes can be published. Commit there with git: `delendai work checkpoint` is for a checkout that is not on the work ref, and inside the worktree it is refused.'
 			: 'Edit in your own worktree; it is yours alone.';
 	if (
 		policy.workspace.pinnedCheckout &&

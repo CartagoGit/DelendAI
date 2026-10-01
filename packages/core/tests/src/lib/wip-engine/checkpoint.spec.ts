@@ -56,6 +56,30 @@ describe('createOrUpdateWipRef', () => {
 		repo.cleanup();
 	});
 
+	it('refuses a ref this checkout stands on, leaving HEAD, index and ref untouched', async () => {
+		repo.git('switch', '-q', '-c', 'unit/work');
+		const engineHere = (await createWipEngine(repo.dir, {
+			required: false,
+			branch: INTEGRATION_BRANCH,
+		})) as IWipEngine;
+		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
+		const tip = repo.git('rev-parse', 'HEAD');
+		const index = repo.indexBytes();
+
+		const result = await engineHere.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['src/alpha.ts'],
+			ref: 'refs/heads/unit/work',
+			message: 'wip: here',
+		});
+
+		expect(result.status).toBe('failed');
+		expect(result.reason).toContain('Commit here with git');
+		expect(repo.git('rev-parse', 'refs/heads/unit/work')).toBe(tip);
+		expect(repo.indexBytes().equals(index)).toBe(true);
+		expect(repo.git('status', '--porcelain')).toBe('M src/alpha.ts');
+	});
+
 	it('captures only the claimed paths when two agents share one tree', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		repo.write('src/beta.ts', 'export const beta = 2;\n');

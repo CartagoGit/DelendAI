@@ -1,3 +1,7 @@
+import {
+	isDelendaiSourceWorkspace,
+	notApplicable,
+} from '../../lib/doctor/applicability';
 import type { IDoctorCommandCheck } from '../doctor';
 
 const PLUGIN_PREFIX = '@delendai/';
@@ -26,6 +30,12 @@ const visit = (
 };
 
 export const checkPluginGraph: IDoctorCommandCheck = async ({ fs }) => {
+	if (!(await isDelendaiSourceWorkspace(fs))) {
+		return notApplicable(
+			'plugin-graph',
+			'not applicable: the plugin dependency graph only exists in the delendai source checkout',
+		);
+	}
 	const plugins = await fs.listDirs('plugins');
 	if (plugins.length === 0) {
 		return {

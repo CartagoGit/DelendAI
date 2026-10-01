@@ -92,6 +92,23 @@ const droppedPaths = (
 ): readonly string[] =>
 	recorded.filter((path) => !isWithinScope(path, claimed));
 
+/** Whether `ref` is the branch this checkout's HEAD is attached to. */
+const isCheckedOutHere = async (
+	run: IGitRunner,
+	ref: string,
+): Promise<boolean> => {
+	const head = await gitOutput(run, ['symbolic-ref', '--quiet', 'HEAD']);
+	return (
+		head !== undefined &&
+		head.length > 0 &&
+		head === (ref.startsWith('refs/') ? ref : `refs/heads/${ref}`)
+	);
+};
+
+/** What to do instead, named where the refusal is read. */
+export const checkedOutHereReason = (ref: string): string =>
+	`${ref} is checked out in this very worktree, so a checkpoint would move it under a HEAD and an index that never learn of it. Commit here with git instead — stage only your paths (git add -- <a> <b>; git commit -m "..."); that commit is the durable record, and \`delendai work publish\` publishes it.`;
+
 /** Stage exactly `files`, in batches, handling adds, edits and deletions. */
 const stageExactly = async (
 	indexRun: IGitRunner,
@@ -133,6 +150,14 @@ export const createOrUpdateWipRef = async (
 	request: IWipCheckpointRequest,
 ): Promise<IWipCheckpointResult> => {
 	const { run } = context;
+
+	// A ref this very checkout stands on is not the engine's to write: the
+	// ref would move under a HEAD and an index that never learn of it, and
+	// the checkout would show the difference as phantom edits. A checkout
+	// that has the ref is committed in with git.
+	if (await isCheckedOutHere(run, request.ref)) {
+		return failed(request.ref, checkedOutHereReason(request.ref));
+	}
 
 	// Before anything is built. A checkpoint made from the wrong branch
 	// is not a smaller problem than a checkpoint with the wrong scope: it

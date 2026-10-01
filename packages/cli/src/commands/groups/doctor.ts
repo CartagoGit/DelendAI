@@ -86,6 +86,7 @@ const CODE_BY_STATUS: Record<SectionStatus, ICliCommandResult['code']> = {
 	ok: EXIT_CODE.OK,
 	warn: EXIT_CODE.VALIDATION,
 	error: EXIT_CODE.RUNTIME,
+	'not-applicable': EXIT_CODE.OK,
 };
 
 // The config-vs-reality preflight lives in lib/ (pure,
