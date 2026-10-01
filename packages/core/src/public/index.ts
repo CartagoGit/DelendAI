@@ -602,8 +602,6 @@ export {
 	toolOk,
 	truncateIfTooLarge,
 } from '../lib/shared/tool-response';
-// The code a write refused in the shared checkout carries, for a caller
-// that must tell policy from a broken tool (`verify:tools`).
 export type {
 	IToolErrorLogHint,
 	IToolTextResult,

@@ -39,6 +39,8 @@ import {
 	declaredMergeMethod,
 	mergeFlagFor,
 } from '../lib/declared-branches';
+import { hasSeparateReleaseBranch } from '@delendai/core/cli';
+
 import { repoRoot } from '../lib/repo-root';
 
 import type {
@@ -295,6 +297,12 @@ export const openCandidate = (
 
 const main = (): number => {
 	const branches = declaredBranches();
+	if (!hasSeparateReleaseBranch(branches)) {
+		console.log(
+			`forward-sync-release: not applicable — \`${branches.integration}\` is both the integration and the release branch, so there is nothing to carry back.`,
+		);
+		return 0;
+	}
 	const integration = `${SYNC_REMOTE}/${branches.integration}`;
 	const release = `${SYNC_REMOTE}/${branches.release}`;
 	must('git', [

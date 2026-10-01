@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 648
+Total exports: 644
 
 | Maturity | Count |
 | --- | --- |
-| stable | 645 |
+| stable | 641 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -104,7 +104,6 @@ Total exports: 648
 | `createOrUpdateWipRef` | const | stable | `../lib/wip-engine/index` |
 | `createPluginMetrics` | const | stable | `../lib/observability/plugin-metrics` |
 | `createPluginStateMachine` | const | stable | `../lib/plugins/states` |
-| `createStaleRuntimeWatch` | const | stable | `../lib/development-policy/stale-runtime-advisory` |
 | `createStartupGovernanceSeam` | const | stable | `../lib/startup-gate/index` |
 | `createWipEngine` | const | stable | `../lib/wip-engine/index` |
 | `createWorkspaceFileReader` | const | stable | `../lib/bootstrap/index` |
@@ -588,7 +587,6 @@ Total exports: 648
 | `scaffoldToolFile` | const | stable | `../lib/scaffold/scaffold-host` |
 | `scanLegacyIdentity` | const | stable | `../lib/workspace-migration/scanner/legacy-identity-scanner` |
 | `SCHEMA_VERSION` | const | stable | `../lib/api/stable-manifest` |
-| `SHARED_CHECKOUT_WRITE_REFUSED` | const | stable | `../lib/contracts/constants/write-refusal.constant` |
 | `sharedCheckout` | const | stable | `../lib/shared/shared-checkout` |
 | `shingleBlocks` | const | stable | `../lib/scan` |
 | `shouldUseAnsiColors` | const | stable | `../lib/startup-report` |
@@ -628,8 +626,6 @@ Total exports: 648
 | `truncateRedactor` | const | stable | `../lib/observability/timeline` |
 | `UNANCHORED` | const | stable | `../lib/wip-engine/index` |
 | `UNICODE_TOKEN_LEGEND` | const | stable | `../lib/shared/unicode-safe-text` |
-| `UNRESOLVED_POLICY_PROTECTED_BRANCHES` | const | stable | `../lib/development-policy/protected-branches` |
-| `UNRESOLVED_POLICY_RELEASE_BRANCH` | const | stable | `../lib/development-policy/protected-branches` |
 | `utility` | const | stable | `../lib/routing/utility` |
 | `VALIDATE_EVIDENCE_SCHEMA` | const | stable | `../lib/proposals/validate-evidence.schema` |
 | `validateDevelopmentPolicy` | const | stable | `../lib/development-policy/validate` |

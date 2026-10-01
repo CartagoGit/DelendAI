@@ -4,7 +4,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { liveProposalBranch } from '@delendai/core/lib/work-units/proposal-branch.service';
+import {
+	liveProposalBranch,
+	liveUnitsOfProposal,
+} from '@delendai/core/lib/work-units/proposal-branch.service';
 
 const TEMPLATE =
 	'refs/heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic}';
@@ -71,5 +74,55 @@ describe('liveProposalBranch', () => {
 				listing('refs/heads/delendai/wip/agent-a/f00001-S1-g1/t'),
 			),
 		).toBeUndefined();
+	});
+});
+
+describe('liveUnitsOfProposal', () => {
+	const unit = (agent: string, kind: string, proposal = 'f00001') =>
+		`refs/heads/delendai/wip/${agent}/${kind}/${proposal}-S1-g1/t`;
+	const T =
+		'refs/heads/delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
+
+	it('lists the units that write the proposal, for the agent asking', () => {
+		const found = liveUnitsOfProposal(
+			T,
+			listing(
+				unit('agent-a', 'implement'),
+				unit('agent-b', 'implement'),
+				unit('agent-a', 'implement', 'f00002'),
+			),
+			{ proposal: 'f00001', agent: 'agent-a' },
+		);
+		expect(found.map((each) => each.agent)).toEqual(['agent-a']);
+	});
+
+	it('never lists a review or an audit, which do not write the proposal', () => {
+		expect(
+			liveUnitsOfProposal(
+				T,
+				listing(unit('agent-a', 'review'), unit('agent-a', 'audit')),
+				{ proposal: 'f00001' },
+			),
+		).toEqual([]);
+	});
+
+	it('prefers the implementation over the creation unit', () => {
+		const found = liveUnitsOfProposal(
+			T,
+			listing(unit('agent-a', 'create'), unit('agent-a', 'implement')),
+			{ proposal: 'f00001' },
+		);
+		expect(found.map((each) => each.kind)).toEqual(['implement']);
+	});
+
+	it('falls back to the creation unit when that is the only one', () => {
+		const found = liveUnitsOfProposal(
+			T,
+			listing(unit('agent-a', 'create')),
+			{
+				proposal: 'f00001',
+			},
+		);
+		expect(found.map((each) => each.kind)).toEqual(['create']);
 	});
 });

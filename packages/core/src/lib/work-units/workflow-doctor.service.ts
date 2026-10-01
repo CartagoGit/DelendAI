@@ -48,9 +48,7 @@ export const policyOf = async (
 	root: string,
 ): Promise<IResolvedDevelopmentPolicy> => {
 	try {
-		return (
-			(await readWorkspacePolicy(root)) ?? resolveDevelopmentPolicy({})
-		);
+		return await readWorkspacePolicy(root);
 	} catch {
 		return resolveDevelopmentPolicy({});
 	}

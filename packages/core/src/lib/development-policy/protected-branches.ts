@@ -8,6 +8,7 @@
  */
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { hasSeparateReleaseBranch } from './release-branch';
 import {
 	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
 	UNRESOLVED_POLICY_RELEASE_BRANCH,
@@ -31,9 +32,9 @@ export const distinctReleaseBranch = (
 	policy: IResolvedDevelopmentPolicy | undefined,
 ): string | undefined => {
 	if (policy === undefined) return UNRESOLVED_POLICY_RELEASE_BRANCH;
-	const { release, integration } = policy.branches;
-	if (typeof release !== 'string' || release.length === 0) return undefined;
-	return release === integration ? undefined : release;
+	return hasSeparateReleaseBranch(policy.branches)
+		? policy.branches.release
+		: undefined;
 };
 
 /**

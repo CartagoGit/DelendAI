@@ -24,7 +24,7 @@ import {
 } from '../plugins/load-config-file';
 import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
 import { createStaleRuntimeWatch } from '../development-policy/stale-runtime-advisory';
-import { resolveDevelopmentPolicy } from '../development-policy/resolve';
+import { resolveEffectivePolicy } from '../development-policy/effective-policy';
 import {
 	validateDevelopmentPolicy,
 	validatePolicyAlignment,
@@ -339,17 +339,6 @@ export const assembleCliConfig = async (
 	const fsAuthorizedRoots = (
 		fileConfig.filesystem?.authorizedRoots ?? []
 	).map((root) => resolve(workspace.root, root));
-	// The LEGACY agent_worktree gate, and only that. Resolution order is
-	// host CLI flag > config file > `false` default. The CLI value is
-	// already a tri-state boolean (`undefined` when the flag is absent),
-	// so a simple nullish cascade gives the documented precedence with a
-	// concrete boolean result that is never `undefined`.
-	//
-	// This is an INPUT to the policy below, never the answer. See the
-	// projection after the resolution for why that distinction matters.
-	const legacyAgentWorktree =
-		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
-
 	// The canonical development policy. Resolved once, here, so every
 	// consumer reads one answer instead of re-deriving it from the raw
 	// config. `agentWorktree` above is now an INPUT to this resolution
@@ -357,12 +346,19 @@ export const assembleCliConfig = async (
 	// exists the compatibility layer maps it (and the commit-policy
 	// options) onto the equivalent policy, so a project that upgrades
 	// without editing its config keeps its historical behaviour.
-	const developmentPolicy = resolveDevelopmentPolicy({
+	// Through the SAME resolver `delendai work` and the guard use, so the
+	// instructions this server serves describe the model they enforce. The
+	// legacy field is passed as written (CLI flag over config file, and
+	// absent when neither names it): a `false` default here made every
+	// project without a `development` block look like one that had
+	// configured the legacy model, so the default profile was never
+	// reachable from this entry point.
+	const developmentPolicy = resolveEffectivePolicy({
 		...(fileConfig.development !== undefined
 			? { development: fileConfig.development }
 			: {}),
 		legacy: {
-			agentWorktree: legacyAgentWorktree,
+			agentWorktree: args.agentWorktree ?? fileConfig.agentWorktree,
 			...(pluginConfigFor(fileConfig, 'commit-policy')?.options !==
 			undefined
 				? {
@@ -373,6 +369,7 @@ export const assembleCliConfig = async (
 					}
 				: {}),
 		},
+		workspaceRoot: workspace.root,
 	});
 
 	// Whether agents get worktrees is a WORKSPACE question, and the

@@ -10,6 +10,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	branchProtectionDocument,
+	branchProtectionModule,
 	integrationBranchDocument,
 	releaseBranchDocument,
 	namespaceRuleset,
@@ -268,5 +269,53 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 			}
 		).conditions.ref_name.exclude;
 		expect(theirs).toContain('refs/heads/acme/pr/**/*');
+	});
+});
+
+describe('a project with one branch', () => {
+	const single = policyFor({
+		profile: 'shared-checkout-pr',
+		branches: { integration: 'main' },
+		integration: { requiredChecks: ['verify'] },
+	});
+
+	it('protects its branch once, as the integration branch', () => {
+		const document = branchProtectionDocument(single);
+
+		expect(document.branches.map((branch) => branch.name)).toEqual([
+			'main',
+		]);
+		expect(settingsDocument(single).branches).toHaveLength(1);
+	});
+
+	it('declares its branch once in the typed protection module', () => {
+		const module = branchProtectionModule(single);
+
+		expect(module.match(/name: 'main'/gu)).toHaveLength(1);
+		expect(module).toContain("required_checks: ['verify']");
+	});
+
+	it('allows its branch once in the creation ruleset', () => {
+		const exclude = (
+			namespaceRuleset(single) as {
+				conditions: { ref_name: { exclude: readonly string[] } };
+			}
+		).conditions.ref_name.exclude;
+
+		expect(exclude.filter((ref) => ref === 'refs/heads/main')).toHaveLength(
+			1,
+		);
+	});
+
+	it('names the same branch for both roles without changing the result', () => {
+		const equal = policyFor({
+			profile: 'shared-checkout-pr',
+			branches: { integration: 'main', release: 'main' },
+			integration: { requiredChecks: ['verify'] },
+		});
+
+		expect(branchProtectionDocument(equal)).toEqual(
+			branchProtectionDocument(single),
+		);
 	});
 });

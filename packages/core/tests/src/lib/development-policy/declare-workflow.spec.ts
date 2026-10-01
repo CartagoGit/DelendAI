@@ -125,8 +125,7 @@ describe('declareWorkflow', () => {
 		expect(text).toContain('work model: shared-checkout-pr');
 	});
 	it('gives every built-in profile a way to persist work', () => {
-		// `worktree-pr` persists on a branch, which the route table did
-		// not know, so its own declaration told its agents to STOP.
+		// A profile the route table did not know told its agents to STOP.
 		for (const profile of DEVELOPMENT_PROFILES) {
 			expect(
 				renderWorkflowDeclaration(declareWorkflow(policyFor(profile))),
@@ -176,7 +175,7 @@ describe('declareWorkflow', () => {
 			'commit on develop',
 		);
 		expect(workModelSummary(policyFor('worktree-pr'))).toContain(
-			'worktree branch',
+			'start with `delendai work enter`',
 		);
 	});
 
@@ -289,6 +288,18 @@ describe('no sentence names a mechanism the profile does not have', () => {
 
 		expect(text).toContain('Prove the candidate in isolation BEFORE');
 		expect(text).not.toContain('Certification happens on the forge');
+	});
+
+	it('worktree-pr names the command that makes its worktree and branch', () => {
+		const text = textOf('worktree-pr');
+
+		expect(text).toContain('delendai work enter');
+		expect(text).toContain('wip/');
+		expect(text).toContain('only the work ref `work enter` makes');
+		expect(text).not.toContain('from the shared checkout');
+		expect(textOf('shared-checkout-pr')).not.toContain(
+			'Git lets you switch branches',
+		);
 	});
 
 	it('worktree-pr keeps its forge and pull-request wording', () => {

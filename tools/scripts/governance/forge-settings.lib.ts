@@ -25,6 +25,10 @@
  */
 
 import {
+	hasSeparateReleaseBranch,
+	protectedBranchNames,
+} from '@delendai/core/cli';
+import {
 	buildDesiredState,
 	type IDesiredBranchRule,
 	type IResolvedDevelopmentPolicy,
@@ -152,7 +156,11 @@ export const settingsDocument = (
 	branches: [integrationBranchDocument(policy)],
 });
 
-/** `.github/branch-protection.yml` — both branches, release first. */
+/**
+ * `.github/branch-protection.yml` — both branches, release first. A
+ * project with one branch has one document: the same branch is never
+ * protected twice.
+ */
 export const branchProtectionDocument = (
 	policy: IResolvedDevelopmentPolicy,
 ): {
@@ -161,7 +169,9 @@ export const branchProtectionDocument = (
 } => ({
 	version: 1,
 	branches: [
-		releaseBranchDocument(policy),
+		...(hasSeparateReleaseBranch(policy.branches)
+			? [releaseBranchDocument(policy)]
+			: []),
 		integrationBranchDocument(policy),
 	],
 });
@@ -184,8 +194,11 @@ export const branchProtectionDocument = (
 export const branchProtectionModule = (
 	policy: IResolvedDevelopmentPolicy,
 ): string => {
-	const release = ruleFor(policy, 'release');
 	const integration = ruleFor(policy, 'integration');
+	// With one branch there is no stricter boundary: its rule is the
+	// integration rule, and the defaults block is taken from it.
+	const separateRelease = hasSeparateReleaseBranch(policy.branches);
+	const release = separateRelease ? ruleFor(policy, 'release') : integration;
 	const entry = (rule: IDesiredBranchRule, why: string): string =>
 		[
 			'\t\t{',
@@ -237,7 +250,9 @@ export const branchProtectionModule = (
 			integration,
 			'The integration branch: where certified work lands.',
 		),
-		entry(release, 'The release branch: the promotion boundary.'),
+		...(separateRelease
+			? [entry(release, 'The release branch: the promotion boundary.')]
+			: []),
 		'\t],',
 		'};',
 	].join('\n')}\n`;
@@ -276,8 +291,9 @@ export const namespaceRuleset = (
 	policy: IResolvedDevelopmentPolicy,
 ): Readonly<Record<string, unknown>> => {
 	const allowed = [
-		`refs/heads/${policy.branches.integration}`,
-		`refs/heads/${policy.branches.release}`,
+		...protectedBranchNames(policy.branches).map(
+			(branch) => `refs/heads/${branch}`,
+		),
 		...(policy.branches.workRefVisibility === 'visible' &&
 		policy.branches.workRefPrefix.length > 0
 			? [
