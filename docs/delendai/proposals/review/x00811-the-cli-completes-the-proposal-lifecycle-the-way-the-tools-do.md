@@ -2,13 +2,13 @@
 id: x00811
 title: "The CLI completes the proposal lifecycle the way the tools do"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: f6e48262-aefa-488a-8be9-e0d5a91c048f
-last-correlation-id: f6e48262-aefa-488a-8be9-e0d5a91c048f
-last-transition-from: ready
+last-transition-id: a4da282b-af91-457c-89ea-ea965d36222a
+last-correlation-id: a4da282b-af91-457c-89ea-ea965d36222a
+last-transition-from: in-progress
 ---
 
 # x00811 — The CLI completes the proposal lifecycle the way the tools do
@@ -50,6 +50,9 @@ Symptoms that followed from it: `proposals close-slice` refused with "close requ
   - `plugins/proposals/src/lib/tools/agent-lock.tool.ts`
   - `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`
 - **Gate**: type
+- shipped-in: `c7ed36567e1a`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
