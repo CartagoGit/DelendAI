@@ -185,14 +185,29 @@ const MERGE_STEPS: ILandingSentences = {
 		`Each commit reaches ${branches.integration} exactly as you made it; nothing is combined or rewritten.`,
 };
 
+/**
+ * How a unit ends, from the coordination axis: the lease window is the
+ * policy's, so the sentence changes when the project changes it.
+ */
+const unitEndSentence = (policy: IResolvedDevelopmentPolicy): string => {
+	const window = policy.coordination.leaseTtlMinutes;
+	const quiet =
+		window > 0
+			? `a unit whose owner is silent for ${String(window)} minutes is listed idle, for adoption`
+			: 'a unit whose owner stays silent is listed idle, for adoption';
+	return ` A unit must end in \`delendai work publish\` or \`delendai work abandon\` (which keeps its tip), never be left: every work command and commit is its heartbeat, ${quiet} (\`delendai work swarm\`, \`work status\`), and one past recovery is reported abandoned.`;
+};
+
 /** How long the work ref lives, and who ends it. */
 const WORK_REF_STEPS: ILandingSentences = {
-	'pull-request': ({ integration }) =>
-		integration.deleteMergedWorkRef
-			? 'The forge deletes your work ref as soon as its pull request merges, so one ref serves exactly one change.'
-			: 'Your work ref outlives its pull requests — a proposal lands one pull request per slice — and delendai deletes it when that proposal closes.',
-	merge: () =>
-		'Publishing ends your work ref once its work has landed, unless its proposal still has slices to commit on it.',
+	'pull-request': (policy) =>
+		`${
+			policy.integration.deleteMergedWorkRef
+				? 'The forge deletes your work ref as soon as its pull request merges, so one ref serves exactly one change.'
+				: 'Your work ref outlives its pull requests — a proposal lands one pull request per slice — and delendai deletes it when that proposal closes.'
+		}${unitEndSentence(policy)}`,
+	merge: (policy) =>
+		`Publishing ends your work ref once its work has landed, unless its proposal still has slices to commit on it.${unitEndSentence(policy)}`,
 	direct: () => 'There is no work ref in this profile.',
 };
 

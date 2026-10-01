@@ -33,11 +33,20 @@ export {
 	kindsInAgentId,
 	legacyWorkKind,
 } from './lib/development-policy/work-ref-placeholders';
+export { readUnitRefFacts } from './lib/work-units/unit-ref-facts.service';
+export { touchUnitOfCheckout } from './lib/work-units/unit-lease.service';
+// The verdict on every unit of work and the reaper, for the repo's own
+// reclaim scripts.
+export { readUnitStandings } from './lib/work-units/unit-standings.service';
+export { reapDeliveredUnits } from './lib/work-units/unit-reaper.service';
+export { compileWorkRefParser } from './lib/startup-reconciler/work-ref-identity';
+export type { IUnitStandingEntry } from './lib/work-units/unit-lease.interface';
 export { agentEnvironmentMarker } from './lib/work-identity/agent-environment.helper';
 export { AGENT_ENVIRONMENT_MARKERS } from './lib/contracts/constants/agent-environment.constant';
 export type {
 	IGitGuardVerdict,
 	IGuardedGitOperation,
+	IUnitRefFacts,
 } from './lib/contracts/interfaces/git-guard.interface';
 
 // The block `delendai guard install` adds to a project's git hooks.

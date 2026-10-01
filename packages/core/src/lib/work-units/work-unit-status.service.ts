@@ -13,6 +13,11 @@ import type {
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import { describeSwarm, readSwarm } from './work-swarm.service';
+import {
+	countStandings,
+	readUnitStandings,
+	summarizeStandings,
+} from './unit-standings.service';
 import { reportDirtyPaths } from './work-dirty-paths.service';
 import { renderInvariantReport } from './workflow-invariants.service';
 import { runWorkflowDoctor } from './workflow-doctor.service';
@@ -57,6 +62,7 @@ export const statusOf = async (
 		git: (args) => gitVerbatim(root, args),
 		refs: readSwarm({ root, policy }).units,
 	});
+	const standings = await readUnitStandings({ root, policy });
 	const payload = {
 		profile: policy.profile,
 		policySource: policy.source,
@@ -74,6 +80,8 @@ export const statusOf = async (
 		base: integrationBase(root, policy) ?? null,
 		dirty: paths.dirty,
 		undurable: paths.undurable,
+		units: countStandings(standings),
+		unitsNextAction: summarizeStandings(standings).nextAction,
 	};
 	if (ctx.globals.json || ctx.globals.format === 'json') {
 		return { code: EXIT_CODE.OK, data: payload };
@@ -87,6 +95,10 @@ export const statusOf = async (
 			`work ref shape   ${payload.workRefTemplate.length > 0 ? payload.workRefTemplate : '(none: this profile commits directly)'}`,
 			`dirty paths      ${String(payload.dirty.length)}`,
 			`undurable        ${String(payload.undurable.length)}`,
+			`${summarizeStandings(standings).line.replace('units:', 'units           ')}`,
+			...(payload.unitsNextAction === null
+				? []
+				: [`                 next: ${payload.unitsNextAction}`]),
 			...undurableAdvice(payload.undurable),
 		].join('\n')}\n`,
 	);
