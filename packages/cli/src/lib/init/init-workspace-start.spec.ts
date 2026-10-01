@@ -82,10 +82,8 @@ const contextFor = (cwd: string): ICliCommandContext =>
 const CI =
 	'name: CI\non:\n  pull_request:\njobs:\n  validate:\n    runs-on: x\n';
 const github = async () => ({
-	hasDevelopmentBlock: false,
 	forge: 'github' as const,
 	canRequireChecks: true,
-	currentBranch: 'develop',
 	existingBranches: ['develop'],
 });
 

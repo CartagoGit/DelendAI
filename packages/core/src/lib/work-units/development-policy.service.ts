@@ -25,7 +25,7 @@ import { isRecord, readConfigText } from './command-args.helper';
  * layer. Absent fields stay absent: a project that never wrote them must
  * reach the built-in default, not a model they imply.
  */
-const legacyFieldsOf = (
+export const legacyFieldsOf = (
 	config: Record<string, unknown>,
 ): ILegacyDevelopmentInput => {
 	const plugins = isRecord(config.plugins) ? config.plugins : undefined;
