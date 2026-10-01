@@ -10,7 +10,8 @@
  * hard-coding it: when the floor moves in `package.json`, this check
  * moves with it without a code change.
  */
-import type { DoctorCheck } from '../types';
+import { notApplicable, parsePackageJson } from '../applicability';
+import type { DoctorCheck, IDoctorSection } from '../types';
 
 export interface IBunVersion {
 	readonly major: number;
@@ -69,16 +70,79 @@ export const bunMeetsFloor = (
 	return active.patch >= floor.patch;
 };
 
-export const checkRuntime: DoctorCheck = async ({ fs }) => {
-	const pkgRaw = await fs.readFile('package.json');
-	const pkg: unknown = pkgRaw === undefined ? undefined : JSON.parse(pkgRaw);
-	const engines = readEnginesBun(pkg);
-	if (engines === undefined) {
+const activeNodeVersion = (): IBunVersion | undefined => {
+	const raw = (globalThis as { process?: { versions?: { node?: string } } })
+		.process?.versions?.node;
+	return raw === undefined ? undefined : parseBunVersion(raw);
+};
+
+const readEnginesNode = (
+	pkg: Record<string, unknown> | undefined,
+): { readonly raw: string; readonly floor: IBunVersion } | undefined => {
+	const engines = pkg?.engines;
+	if (typeof engines !== 'object' || engines === null) return undefined;
+	const node = (engines as { node?: unknown }).node;
+	if (typeof node !== 'string') return undefined;
+	const floor = parseBunVersion(node.replace(/^>=\s*v?/u, ''));
+	return floor === undefined ? undefined : { raw: node, floor };
+};
+
+const checkNodeFloor = (engines: {
+	readonly raw: string;
+	readonly floor: IBunVersion;
+}): IDoctorSection => {
+	const active = activeNodeVersion();
+	if (active === undefined) {
 		return {
 			name: 'runtime',
 			status: 'warn',
-			findings: ['package.json has no engines.bun — cannot verify floor'],
+			findings: [
+				`cannot read the active Node version; package.json requires ${engines.raw}`,
+			],
 		};
+	}
+	return bunMeetsFloor(active, engines.floor)
+		? {
+				name: 'runtime',
+				status: 'ok',
+				findings: [
+					`Node ${active.major}.${active.minor}.${active.patch} (${engines.raw})`,
+				],
+			}
+		: {
+				name: 'runtime',
+				status: 'error',
+				findings: [
+					`Node ${active.major}.${active.minor}.${active.patch} is below floor ${engines.raw}`,
+				],
+			};
+};
+
+export const checkRuntime: DoctorCheck = async ({ fs }) => {
+	const pkgRaw = await fs.readFile('package.json');
+	if (pkgRaw === undefined) {
+		return notApplicable(
+			'runtime',
+			'not applicable: no package.json declares a runtime',
+		);
+	}
+	const parsed = parsePackageJson(pkgRaw);
+	if (parsed === undefined) {
+		return {
+			name: 'runtime',
+			status: 'warn',
+			findings: ['package.json is not parseable — cannot verify floor'],
+		};
+	}
+	const engines = readEnginesBun(parsed);
+	if (engines === undefined) {
+		const node = readEnginesNode(parsed);
+		return node === undefined
+			? notApplicable(
+					'runtime',
+					'not applicable: package.json declares no engines.bun or engines.node floor',
+				)
+			: checkNodeFloor(node);
 	}
 	const active = activeBunVersion(() => {
 		const bun = (globalThis as { Bun?: { version?: string } }).Bun;

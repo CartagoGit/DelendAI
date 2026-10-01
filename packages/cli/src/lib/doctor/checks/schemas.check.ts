@@ -1,6 +1,7 @@
+import { sourceCheckoutOnly } from '../applicability';
 import type { DoctorCheck } from '../types';
 
-export const checkSchemas: DoctorCheck = async ({ fs }) => {
+const checkSourceSchemas: DoctorCheck = async ({ fs }) => {
 	const plugins = await fs.listDirs('plugins');
 	let schemaFiles = 0;
 	for (const plugin of plugins) {
@@ -16,3 +17,9 @@ export const checkSchemas: DoctorCheck = async ({ fs }) => {
 				: ['schema inventory unavailable; validation skipped'],
 	};
 };
+
+export const checkSchemas: DoctorCheck = sourceCheckoutOnly(
+	'schemas',
+	'the plugin schema inventory',
+	checkSourceSchemas,
+);
