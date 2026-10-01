@@ -2,7 +2,7 @@
 id: f00547
 title: "Resolve what the installed framework version allows, recommends and forbids before an agent writes code"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,6 +11,9 @@ tags:
     - frameworks
     - policy
     - tokens
+last-transition-id: 556709e1-084c-436d-b15e-b3e5ad926e0a
+last-correlation-id: 556709e1-084c-436d-b15e-b3e5ad926e0a
+last-transition-from: ready
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
