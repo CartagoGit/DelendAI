@@ -2,10 +2,13 @@
 id: x00811
 title: "The CLI completes the proposal lifecycle the way the tools do"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-01
+last-transition-id: f6e48262-aefa-488a-8be9-e0d5a91c048f
+last-correlation-id: f6e48262-aefa-488a-8be9-e0d5a91c048f
+last-transition-from: ready
 ---
 
 # x00811 — The CLI completes the proposal lifecycle the way the tools do
