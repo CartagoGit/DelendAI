@@ -19,7 +19,7 @@
 import { DEFAULT_AGENT_POLICY } from '../contracts/constants/agent-policy.constant';
 import type { IDelendaiAgentPolicyConfig } from '../contracts/interfaces/agent-policy.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import { workModelInstructionLines } from '../development-policy/declare-workflow';
+import { servedWorkModelLines } from '../development-policy/served-work-model';
 
 /** The working mode and principles an agent works under, as lines. */
 export const agentPolicyLines = (
@@ -47,7 +47,7 @@ export const agentOperatingLines = (
 	...agentPolicyLines(policy),
 	...(developmentPolicy === undefined
 		? []
-		: workModelInstructionLines(developmentPolicy)),
+		: servedWorkModelLines(developmentPolicy)),
 ];
 
 /** The server instructions an MCP client receives when it connects. */

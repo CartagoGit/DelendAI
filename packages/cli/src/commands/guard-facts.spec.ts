@@ -86,13 +86,15 @@ describe('defaultGuardFacts', () => {
 		expect(policy?.profile).toBe('shared-checkout-merge');
 	});
 
-	it('enforces nothing without a configuration or a development block', async () => {
+	it('adopts the default model without a configuration or a development block', async () => {
 		const bare = repo();
-		expect(await defaultGuardFacts(bare).policy(bare)).toBeUndefined();
+		const adopted = await defaultGuardFacts(bare).policy(bare);
+		expect(adopted.profile).toBe('shared-checkout-merge');
+		expect(adopted.source).toBe('default');
 		const noBlock = repo('{ "plugins": {} }');
-		expect(
-			await defaultGuardFacts(noBlock).policy(noBlock),
-		).toBeUndefined();
+		expect((await defaultGuardFacts(noBlock).policy(noBlock)).profile).toBe(
+			'shared-checkout-merge',
+		);
 	});
 
 	it('refuses to guess from a configuration that does not parse', async () => {

@@ -88,6 +88,10 @@ const repositoryWithWorktree = () => {
 		mkdirSync(join(checkout, PROPOSALS_REL, folder), { recursive: true });
 		writeFileSync(join(checkout, PROPOSALS_REL, folder, '.gitkeep'), '');
 	}
+	writeFileSync(
+		join(checkout, 'delendai.config.json'),
+		JSON.stringify({ development: { profile: 'shared-direct' } }),
+	);
 	git(parent, ['init', '-q', '-b', 'develop', 'checkout']);
 	git(checkout, ['config', 'user.email', 'spec@example.test']);
 	git(checkout, ['config', 'user.name', 'Spec']);
