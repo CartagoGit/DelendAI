@@ -246,7 +246,7 @@ detalle vive en la hija; aquí el orden y la razón del orden.
 ### S1 — Gobernanza: devolver la señal a las puertas ciegas (P0)
 
 - **Status**: done
-- **Files**: [`tools/scripts/ci/verify-branch-protection.script.ts`, `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-branch-protection.spec.ts`, `tools/tests/ci/verify-develop-health.spec.ts`]
+- **Files**: [`tools/scripts/ci/verify-branch-protection.script.ts`, `tools/scripts/ci/verify-develop-health.script.ts`, `tools/scripts/ci/verify-branch-protection.spec.ts`, `tools/tests/ci/verify-develop-health.spec.ts`]
 - **Gate**: `bun run test -- tools/tests/ci && bun tools/scripts/ci/verify-branch-protection.script.ts --dry-run`
 
 
@@ -330,7 +330,7 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 ### S7 — CI y gobernanza, resto (P1)
 
 - **Status**: done
-- **Files**: [`.github/branch-protection.ts`, `tools/scripts/ci/affected.script.ts`, `.github/workflows/tier1.yml`, `docs/delendai/adr`]
+- **Files**: [`.github/branch-protection.ts`, `tools/scripts/ci/affected.script.ts`, `.github/workflows/ci.yml`, `docs/delendai/adr`]
 - **Gate**: `bun run test -- tools/tests/ci && bun run lint:proposals`
 
 
