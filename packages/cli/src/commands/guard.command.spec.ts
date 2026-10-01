@@ -218,17 +218,6 @@ describe('guard command', () => {
 		expect(result.error).toContain('Do not create worktrees or branches');
 	});
 
-	it('refuses nothing without a declared policy', async () => {
-		// Split from the case below, which used to share this assertion.
-		// "No policy" is an answer; "the policy is unreadable" is not, and
-		// treating them alike is what made the guard pass an operation it
-		// had not checked.
-		const none = await createGuardCommand(() =>
-			facts({ policy: async () => undefined }),
-		).run(['pre-commit'], context('/ws'));
-		expect(none.code).toBe(0);
-	});
-
 	it('answers an inherited property name as an unknown hook (x00558)', async () => {
 		// `MANAGEMENT[hook]` on a plain object resolved `toString` and
 		// `constructor` to inherited members instead of reaching the
@@ -627,16 +616,11 @@ describe('guard through real git hooks', () => {
 		).toBe(0);
 	}, 60_000);
 
-	it('without a declared policy, every operation goes through', () => {
+	it('without a declared policy, the adopted default judges an agent', () => {
 		const root = repoWith(undefined);
-		expect(git(root, 'switch', '-q', '-c', 'agent/runner/x').status).toBe(
-			0,
-		);
-		writeFileSync(join(root, 'b.ts'), 'export const b = 1;\n');
-		git(root, 'add', 'b.ts');
-		expect(git(root, 'commit', '-q', '-m', 'feat: anything').status).toBe(
-			0,
-		);
+		const created = git(root, 'switch', '-q', '-c', 'agent/runner/x');
+		expect(created.status).not.toBe(0);
+		expect(created.stderr).toContain('`shared-checkout-merge`');
 	}, 60_000);
 });
 
@@ -717,15 +701,6 @@ describe('a guard never authorises what it did not check (x00580)', () => {
 		).run(['pre-commit'], context('/ws'));
 		expect(result.code).not.toBe(0);
 	});
-
-	it('still passes a project that simply declares no policy', async () => {
-		// The distinction that makes the refusal fair: no policy is an
-		// answer, an unreadable one is not.
-		const result = await createGuardCommand(() =>
-			facts({ policy: async () => undefined }),
-		).run(['pre-commit'], context('/ws'));
-		expect(result.code).toBe(0);
-	});
 });
 
 describe('a project whose trunk is not develop can still commit (x00602)', () => {
@@ -785,6 +760,16 @@ describe('a project whose trunk is not develop can still commit (x00602)', () =>
 		expect(said).toContain('committing directly to `main`');
 	});
 
+	it('judges a project that declares no policy by the model delendai adopts for it', async () => {
+		// "Refuses nothing" was the old answer, and it left the served
+		// instructions describing a workflow no hook enforced. The default
+		// profile is one model, read by the guard, `work` and the
+		// instructions alike.
+		const said = await refusal('{}');
+		expect(said).toContain('`shared-checkout-merge`');
+		expect(said).toContain('committing directly to `main`');
+	});
+
 	it('still points at a branch the project DID declare', async () => {
 		// Declaring is the stronger statement: a project that says `trunk`
 		// while sitting on `main` has wandered and wants to be told so —
@@ -792,7 +777,11 @@ describe('a project whose trunk is not develop can still commit (x00602)', () =>
 		const said = await refusal(
 			'{ "development": { "profile": "shared-checkout-merge", "branches": { "integration": "trunk" } } }',
 		);
-		expect(said).toContain('git switch trunk');
+		// The project names `trunk` and no release branch, so `main` is not
+		// one of its branches: standing on it is outside the model, and the
+		// refusal says which branches the model uses.
+		expect(said).toContain('`main` is outside the branches');
+		expect(said).toContain('the shared checkout stays on `trunk`');
 	});
 });
 

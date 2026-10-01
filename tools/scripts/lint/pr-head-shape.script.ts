@@ -37,7 +37,9 @@ export const isBranchModelMove = (
 	branches: { readonly integration?: string; readonly release?: string },
 ): boolean =>
 	base !== undefined &&
-	((head === branches.integration && base === branches.release) ||
+	((head === branches.integration &&
+		base === branches.release &&
+		branches.release !== branches.integration) ||
 		(base === branches.integration &&
 			head.startsWith(FORWARD_SYNC_REF_PREFIX)));
 
