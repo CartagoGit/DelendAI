@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import { runCli as runServerCli } from '@delendai/core/public';
+import { serveRefusal } from '@delendai/core/cli';
 
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
@@ -268,9 +269,12 @@ export const runEntry = async (
 	options: {
 		readonly serve?: (args: readonly string[], root: string) => unknown;
 		readonly report?: (line: string) => void;
+		/** Answers the host's handshake with the refusal; stdio by default. */
+		readonly refuse?: (refusal: string) => Promise<void>;
 	} = {},
 ): Promise<number | undefined> => {
 	const serve = options.serve ?? runServerCli;
+	const refuse = options.refuse ?? serveRefusal;
 	const report =
 		options.report ??
 		((line: string): void => {
@@ -327,13 +331,16 @@ export const runEntry = async (
 		// Still not awaited: serving does not return, and awaiting it would
 		// hold the entrypoint open forever.
 		void Promise.resolve(serve(argv.slice(1), workspaceRoot)).catch(
-			(error: unknown) => {
-				report(
-					`[delendai] cannot start in this workspace: ${
-						error instanceof Error ? error.message : String(error)
-					}`,
-				);
+			async (error: unknown) => {
+				const refusal = `cannot start in this workspace: ${
+					error instanceof Error ? error.message : String(error)
+				}`;
+				report(`[delendai] ${refusal}`);
 				process.exitCode = EXIT_CODE.VALIDATION;
+				// The host discards stderr, and a process that exits shows the
+				// person only a closed connection. Answering the handshake
+				// puts the same sentence, with its remedy, where they read it.
+				await refuse(refusal).catch(() => undefined);
 			},
 		);
 		return undefined;

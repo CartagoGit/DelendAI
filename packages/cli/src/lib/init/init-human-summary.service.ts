@@ -63,7 +63,7 @@ const white = (text: string): string =>
  */
 export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 	const enabled = input.enabled ?? colorOn();
-	const { answers, written, dryRun } = input;
+	const { answers, written, dryRun, development, guardHooks } = input;
 
 	const lines: string[] = [];
 	const horiz = '─'.repeat(64);
@@ -117,6 +117,40 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 			enabled,
 		),
 	);
+	if (development !== undefined) {
+		lines.push(
+			renderKeyValue(
+				'development',
+				`${development.profile}${development.integration === undefined ? '' : ` (integrates on ${development.integration})`}`,
+				enabled,
+			),
+		);
+		if (development.requiredChecks.length > 0) {
+			lines.push(
+				renderKeyValue(
+					'required checks',
+					development.requiredChecks.join(', '),
+					enabled,
+				),
+			);
+		}
+		for (const reason of development.reasons) {
+			lines.push(enabled ? hint(`  ${reason}`) : `  ${reason}`);
+		}
+	}
+	if (guardHooks !== undefined) {
+		lines.push(
+			renderKeyValue(
+				'guard hooks',
+				guardHooks.state === 'installed'
+					? `installed in ${guardHooks.directory}`
+					: guardHooks.state === 'partial'
+						? `partly installed in ${guardHooks.directory}`
+						: `not installed: ${guardHooks.reason}`,
+				enabled,
+			),
+		);
+	}
 	if (answers.extraPlugins.length > 0) {
 		lines.push(
 			renderKeyValue(
@@ -269,6 +303,15 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		// a global install) — `bun delendai …` was not a runnable command.
 		nextActions.push(
 			`if you had a foreign proposals layout, run ${brand(`delendai scaffold ${answers.preset}`)} to migrate`,
+		);
+	}
+	if (
+		!dryRun &&
+		guardHooks !== undefined &&
+		guardHooks.state !== 'installed'
+	) {
+		nextActions.push(
+			`install the hooks that enforce the development policy: ${brand('delendai guard install')}${guardHooks.state === 'partial' ? ` (${guardHooks.reasons.join('; ')})` : ''}`,
 		);
 	}
 	if (nextActions.length === 0) {

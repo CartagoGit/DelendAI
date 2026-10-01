@@ -48,3 +48,46 @@ describe("init human summary — What's next (x00102 S2)", () => {
 		expect(out).not.toContain('bun delendai scaffold');
 	});
 });
+
+describe('init human summary — the development model and its hooks', () => {
+	const renderWith = (
+		extra: Partial<Parameters<typeof renderInitHumanSummary>[0]>,
+	): string =>
+		renderInitHumanSummary({
+			answers: InitAnswers.parse({}),
+			written: writtenFixture,
+			dryRun: false,
+			enabled: false,
+			...extra,
+		});
+
+	it('states the adopted profile, its checks and why', () => {
+		const out = renderWith({
+			development: {
+				profile: 'shared-checkout-pr',
+				integration: 'develop',
+				requiredChecks: ['validate'],
+				reasons: ['chose the pull-request model'],
+			},
+		});
+		expect(out).toContain('shared-checkout-pr (integrates on develop)');
+		expect(out).toContain('validate');
+		expect(out).toContain('chose the pull-request model');
+	});
+
+	it('says the hooks are installed and asks for nothing more', () => {
+		const out = renderWith({
+			guardHooks: { state: 'installed', directory: '/proj/.git/hooks' },
+		});
+		expect(out).toContain('installed in /proj/.git/hooks');
+		expect(out).not.toContain('delendai guard install');
+	});
+
+	it('puts the install command in the next steps when the hooks are missing', () => {
+		const out = renderWith({
+			guardHooks: { state: 'skipped', reason: 'not a git repository' },
+		});
+		expect(out).toContain('not installed: not a git repository');
+		expect(out).toContain('delendai guard install');
+	});
+});

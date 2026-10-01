@@ -142,6 +142,7 @@ docs as the delivery and verification surfaces around that core.
 | `plugins/error-reporting` | `@delendai/error-reporting` | Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off. |
 | `plugins/external-mcps` | `@delendai/external-mcps` | Compose third-party MCP servers through the catalog + human ack. |
 | `plugins/forge` | `@delendai/forge` | Forge (GitHub/GitLab) wrappers — PRs, CI, issues. |
+| `plugins/framework-knowledge` | `@delendai/framework-knowledge` | Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code. |
 | `plugins/git` | `@delendai/git` | Git wrappers (PR list/view, diff, changelog, extended). |
 | `plugins/github` | `@delendai/github` | GitHub read-only provider context, HTTP client and remote resource tools. |
 | `plugins/gitlab` | `@delendai/gitlab` | GitLab read-only provider context, HTTP client and resource tools. |
