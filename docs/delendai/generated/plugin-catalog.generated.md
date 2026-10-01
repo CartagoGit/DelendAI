@@ -31,6 +31,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `error-reporting` | `@delendai/error-reporting` | Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off. | manifest |
 | `external-mcps` | `@delendai/external-mcps` | Compose third-party MCP servers through the catalog + human ack. | manifest |
 | `forge` | `@delendai/forge` | Forge (GitHub/GitLab) wrappers — PRs, CI, issues. | manifest |
+| `framework-knowledge` | `@delendai/framework-knowledge` | Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code. | manifest |
 | `git` | `@delendai/git` | Git wrappers (PR list/view, diff, changelog, extended). | manifest |
 | `github` | `@delendai/github` | GitHub read-only provider context, HTTP client and remote resource tools. | manifest |
 | `gitlab` | `@delendai/gitlab` | GitLab read-only provider context, HTTP client and resource tools. | manifest |
@@ -93,6 +94,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `error-reporting` | `@delendai/error-reporting` | 0.1.0 | manifest |
 | `external-mcps` | `@delendai/external-mcps` | 0.1.1 | manifest |
 | `forge` | `@delendai/forge` | 0.1.1 | manifest |
+| `framework-knowledge` | `@delendai/framework-knowledge` | 0.1.0 | manifest |
 | `git` | `@delendai/git` | 0.1.1 | manifest |
 | `github` | `@delendai/github` | 0.1.0 | manifest |
 | `gitlab` | `@delendai/gitlab` | 0.1.0 | manifest |
@@ -155,6 +157,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `error-reporting` | none | standard, swarm, full, dogfood |
 | `external-mcps` | none | full |
 | `forge` | none | swarm, full, dogfood |
+| `framework-knowledge` | none | none |
 | `git` | none | minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | `github` | none | full |
 | `gitlab` | none | full |
@@ -217,6 +220,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `error-reporting` | manifest | error-reporting, github, issues |
 | `external-mcps` | manifest | external-mcps, composition |
 | `forge` | manifest | forge, git, ci |
+| `framework-knowledge` | manifest | not declared (index-only) |
 | `git` | manifest | git, changelog |
 | `github` | manifest | github, remote-provider |
 | `gitlab` | manifest | gitlab, remote-provider |

@@ -16,6 +16,7 @@ import type {
 	IDevelopmentPolicyViolation,
 	IResolvedDevelopmentPolicy,
 } from '../contracts/interfaces/development-policy.interface';
+import { hasSeparateReleaseBranch } from './release-branch';
 
 /** Cross-axis coherence — the combinations that cannot be honoured. */
 export const validateCombinations = (
@@ -151,8 +152,9 @@ export const validateCombinations = (
 	}
 
 	if (
+		hasSeparateReleaseBranch(policy.branches) &&
 		policy.integration.releaseRequiredApprovals <
-		policy.integration.requiredApprovals
+			policy.integration.requiredApprovals
 	) {
 		out.push({
 			rule: 'release-approvals-not-weaker',

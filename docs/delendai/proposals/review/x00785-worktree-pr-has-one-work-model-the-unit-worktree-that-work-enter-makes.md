@@ -2,10 +2,13 @@
 id: x00785
 title: "worktree-pr has one work model: the unit worktree that work enter makes"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-30
+last-transition-id: eeef0a59-7bb0-4821-9316-4673da763f05
+last-correlation-id: eeef0a59-7bb0-4821-9316-4673da763f05
+last-transition-from: in-progress
 ---
 
 # x00785 — worktree-pr has one work model: the unit worktree that work enter makes
@@ -31,13 +34,16 @@ A real-CLI audit of worktree-pr found two incompatible models. The preset declar
 
 ### S1 — One worktree-pr model derived from the preset axes
 - **Status**: pending
-- **Files**: `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/development-policy/work-isolation.ts`, `packages/core/src/lib/contracts/interfaces/work-isolation.interface.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`
+- **Files**: `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/development-policy/work-isolation.ts`, `packages/core/src/lib/contracts/interfaces/work-isolation.interface.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`, `docs/delendai/DEVELOPMENT-STRATEGIES.md`, `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`, `packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`, `packages/core/tests/src/lib/startup-gate/policy-gate.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-profiles.spec.ts`, `plugins/proposals/tests/src/lib/tools/agent-worktree.tool.spec.ts`
 - **Gate**: none
 - acceptance:
   - "Under worktree-pr, work enter yields a worktree and branch that work checkpoint and work publish accept, and publish produces the publication ref (real git)."
   - "agent_worktree create under a work-ref policy is refused with the work enter command as the next step; list still works."
   - "The declared workflow and the isolation rule for worktree-pr name delendai work enter; shared-checkout-pr text is unchanged."
   - "The preset states whether switching branches in the main worktree is intended."
+- shipped-in: `19d60b11be53`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 

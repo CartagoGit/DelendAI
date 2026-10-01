@@ -30,8 +30,18 @@ describe('decideStartupReconciliation', () => {
 	});
 
 	it('opens when abandoned work has to be resumed, even without wip refs', () => {
+		const direct = expandProfile('shared-direct');
+		const resuming = {
+			...direct,
+			recovery: { ...direct.recovery, resumeExistingWork: true },
+		};
+		expect(resuming.persistence.usesWipRefs).toBe(false);
+		expect(decideStartupReconciliation(resuming).required).toBe(true);
+	});
+
+	it('opens for worktree-pr, whose units are work refs like the shared profiles', () => {
 		const worktree = expandProfile('worktree-pr');
-		expect(worktree.persistence.usesWipRefs).toBe(false);
+		expect(worktree.persistence.usesWipRefs).toBe(true);
 		expect(decideStartupReconciliation(worktree).required).toBe(true);
 	});
 

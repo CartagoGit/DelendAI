@@ -68,6 +68,15 @@ evolution. It is the right choice when a consumer needs physical
 isolation, and selecting it is a configuration change rather than a
 migration.
 
+It has the same unit of work as the shared profiles: a work ref. An agent
+gets its worktree and branch from one command, `delendai work enter`, edits
+and commits there with ordinary git (HEAD is its to move), and
+`delendai work checkpoint` and `delendai work publish` accept that branch.
+`agent_worktree` does not create worktrees under it, because the `agent/*`
+branch it makes cannot be published. The checkout is not pinned, so git
+still lets an agent switch branches in the tree it was given; nothing is
+published from such a branch.
+
 ## Agents own work, not branches
 
 This is the sentence the rest of the model rests on, and it is the one
