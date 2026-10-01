@@ -1,3 +1,5 @@
+import { parseJsonc } from '@delendai/core/public';
+
 import type { DoctorCheck } from '../types';
 
 export const checkConfig: DoctorCheck = async ({ fs }) => {
@@ -10,18 +12,18 @@ export const checkConfig: DoctorCheck = async ({ fs }) => {
 			findings: [`${path} not found; server defaults are active`],
 		};
 	}
-	try {
-		JSON.parse(text);
-		return {
-			name: 'config',
-			status: 'ok',
-			findings: [`${path} is valid JSON`],
-		};
-	} catch {
-		return {
-			name: 'config',
-			status: 'warn',
-			findings: [`${path} is not valid JSON`],
-		};
-	}
+	// The file `init` writes carries a comment above every plugin, and the
+	// server reads it as JSONC; judging it as strict JSON called every
+	// freshly initialised project broken.
+	return parseJsonc(text).errors.length === 0
+		? {
+				name: 'config',
+				status: 'ok',
+				findings: [`${path} is valid JSON (comments allowed)`],
+			}
+		: {
+				name: 'config',
+				status: 'warn',
+				findings: [`${path} is not valid JSON`],
+			};
 };

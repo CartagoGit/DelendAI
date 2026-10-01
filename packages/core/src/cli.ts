@@ -60,6 +60,12 @@ export type {
 // A unit of work, one engine for the CLI's `work` command and the MCP
 // `work` tool: entering, checkpointing, claiming and publishing it, and
 // the policy it reads.
+export { serveRefusal } from './lib/cli/refused-server';
+export { adoptionFor } from './lib/workspace-migration/migrators/development-policy.migrator';
+export type {
+	IAdoptedBlock,
+	IAdoption,
+} from './lib/workspace-migration/migrators/development-policy-adoption.interface';
 export { runWorkUnit } from './lib/work-units/work-unit.service';
 export { EXIT_CODE } from './lib/contracts/constants/exit-code.constant';
 export type { IExitCode } from './lib/contracts/interfaces/exit-code.interface';
