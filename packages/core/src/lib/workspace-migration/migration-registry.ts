@@ -41,6 +41,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
+import { MIGRATION_JOURNAL_PATH } from './migration-journal-path.constant';
 import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 
 import type {
@@ -107,11 +108,7 @@ export const DEFAULT_MIGRATION_IDS: ReadonlySet<IMigrationId> = new Set(
 	DEFAULT_MIGRATIONS.map((migration) => migration.id),
 );
 
-/** Where the runtime records what has already been applied to a workspace. */
-export const MIGRATION_JOURNAL_PATH = [
-	'.delendai',
-	'migrations-applied.json',
-] as const;
+export { MIGRATION_JOURNAL_PATH };
 
 const journalAbsolutePath = (workspaceRoot: string): string =>
 	join(workspaceRoot, ...MIGRATION_JOURNAL_PATH);

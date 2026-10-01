@@ -18,10 +18,41 @@ import { describeBranches, singleBranchWarnings } from './release-branch';
 export const isAdoptedPolicy = (policy: IResolvedDevelopmentPolicy): boolean =>
 	policy.source === 'default' || policy.source === 'legacy-compat';
 
-const originClause = (policy: IResolvedDevelopmentPolicy): string =>
-	isAdoptedPolicy(policy)
-		? "adopted because this project's configuration declares no `development` block (add one to choose a different model)"
-		: "resolved from this project's configuration";
+/**
+ * Who chose the model, in a clause every surface (instructions, overview,
+ * `work status`, the startup report) shares. `undefined` when the project
+ * chose it itself: an unremarkable answer needs no note.
+ */
+export const policyOriginNote = (
+	policy: IResolvedDevelopmentPolicy,
+): string | undefined => {
+	if (policy.adoption !== undefined) {
+		return `adopted and written: this project declared no \`development\` block, so delendai chose this model and wrote it into ${policy.adoption.writtenTo}; edit that block to choose a different one`;
+	}
+	return isAdoptedPolicy(policy)
+		? 'adopted: this project declares no `development` block; add one to choose a different model'
+		: undefined;
+};
+
+/**
+ * The same fact in a few words, for the surfaces that pay per byte (the
+ * overview): who chose the model when delendai did, else `undefined`.
+ */
+export const policyOriginTag = (
+	policy: IResolvedDevelopmentPolicy,
+): string | undefined => {
+	if (policy.adoption !== undefined) {
+		return `adopted and written to ${policy.adoption.writtenTo}`;
+	}
+	return isAdoptedPolicy(policy) ? 'adopted' : undefined;
+};
+
+const originClause = (policy: IResolvedDevelopmentPolicy): string => {
+	const note = policyOriginNote(policy);
+	return note === undefined
+		? "resolved from this project's configuration"
+		: note;
+};
 
 /** The lines a host puts in its model's instructions when it connects. */
 export const servedWorkModelLines = (

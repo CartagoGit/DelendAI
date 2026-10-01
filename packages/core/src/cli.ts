@@ -62,6 +62,7 @@ export type {
 // the policy it reads.
 export { serveRefusal } from './lib/cli/refused-server';
 export { adoptionFor } from './lib/workspace-migration/migrators/development-policy.migrator';
+export { gatherAdoptionEvidence } from './lib/workspace-migration/migrators/development-policy-evidence';
 export type {
 	IAdoptedBlock,
 	IAdoption,
@@ -79,6 +80,7 @@ export {
 	readConfigText,
 	scalarArg,
 } from './lib/work-units/command-args.helper';
+export { adoptionReportLines } from './lib/workspace-migration/migration-report.service';
 export {
 	readWorkspaceDocsDir,
 	readWorkspacePolicy,
