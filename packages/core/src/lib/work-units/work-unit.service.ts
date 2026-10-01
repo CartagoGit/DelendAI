@@ -16,6 +16,7 @@ import {
 } from './work-unit-shared.service';
 import { readWorkspacePolicy } from './development-policy.service';
 import { recordUnitEntered, touchUnitOfCheckout } from './unit-lease.service';
+import { pruneUnitLeases } from './unit-standings.service';
 import { abandoned } from './work-unit-abandon.service';
 import { reaped } from './work-unit-reap.service';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
@@ -32,6 +33,18 @@ const showLife = async (ctx: IWorkUnitContext): Promise<void> => {
 		);
 	} catch {
 		// the lease is advisory evidence; the command goes on without it
+	}
+};
+
+/** A published unit's ref is gone; so is the lease that named its owner. */
+const pruneEndedLeases = async (ctx: IWorkUnitContext): Promise<void> => {
+	try {
+		await pruneUnitLeases({
+			root: workspaceOf(ctx),
+			policy: await readWorkspacePolicy(workspaceOf(ctx)),
+		});
+	} catch {
+		// a stale lease is harmless: standings are read from the refs
 	}
 };
 
@@ -77,7 +90,11 @@ export const runWorkUnit = async (
 	}
 	if (sub === 'abandon') return abandoned(args, ctx);
 	if (sub === 'reap') return reaped(args, ctx);
-	if (sub === 'publish') return published(args, ctx);
+	if (sub === 'publish') {
+		const result = await published(args, ctx);
+		await pruneEndedLeases(ctx);
+		return result;
+	}
 	if (sub === 'swarm') return swarm(ctx);
 	if (sub === 'doctor') return doctored(args, ctx);
 	if (sub === 'claim') return claimed(args, ctx);

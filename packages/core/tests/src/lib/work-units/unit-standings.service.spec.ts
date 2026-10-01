@@ -15,12 +15,14 @@ import { listUnitLeases } from '@delendai/core/lib/work-units/unit-lease.store';
 import {
 	countStandings,
 	overviewUnitsLine,
+	pruneUnitLeases,
 	readUnitStandings,
 	summarizeStandings,
 } from '@delendai/core/lib/work-units/unit-standings.service';
 
 import {
 	cleanUnitRepos,
+	git,
 	unitPolicy,
 	unitRef,
 	unitRepo,
@@ -170,5 +172,28 @@ await recordUnitEntered({ cwd: ${JSON.stringify(repo.root)}, ref: ${JSON.stringi
 				}),
 			).nextAction,
 		).toContain('abandon');
+	});
+});
+
+describe('pruneUnitLeases', () => {
+	it('drops the lease of a unit whose ref is gone and keeps the others', async () => {
+		const repo = unitRepo();
+		const kept = unitRef('kept');
+		const gone = unitRef('gone');
+		for (const ref of [kept, gone]) {
+			await recordUnitEntered({
+				cwd: repo.root,
+				ref,
+				owner: { agent: ref, session: 's' },
+				worktree: repo.enter(ref),
+			});
+		}
+		git(repo.root, 'worktree', 'remove', '--force', `${repo.root}/../wt-2`);
+		git(repo.root, 'update-ref', '-d', `refs/heads/${gone}`);
+		expect(
+			await pruneUnitLeases({ root: repo.root, policy: unitPolicy }),
+		).toBe(1);
+		const leases = await listUnitLeases(gitCommonDirOf(repo.root) ?? '');
+		expect([...leases.keys()]).toEqual([kept]);
 	});
 });

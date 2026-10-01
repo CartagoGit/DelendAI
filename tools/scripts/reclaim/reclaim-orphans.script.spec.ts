@@ -15,8 +15,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
-import type { IUnitStandingEntry } from '@delendai/core/lib/work-units/unit-lease.interface';
+import type { IUnitStandingEntry } from '@delendai/core/cli';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	buildReclaimReport,

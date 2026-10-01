@@ -8,7 +8,7 @@
  */
 import { shortName } from '../development-policy/git-guard-namespaces';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import { listUnitLeases } from './unit-lease.store';
+import { listUnitLeases, removeUnitLease } from './unit-lease.store';
 import { gitCommonDirOf } from './unit-lease.service';
 import type {
 	IReadUnitStandings,
@@ -174,4 +174,20 @@ export const overviewUnitsLine = async (
 		.filter((standing) => counts[standing] > 0)
 		.map((standing) => `${String(counts[standing])} ${standing}`);
 	return `${waiting.join(' ')}: ${next.command}`;
+};
+
+/** Drop the leases of units whose ref no longer exists (published or ended). */
+export const pruneUnitLeases = async (
+	input: IReadUnitStandings,
+): Promise<number> => {
+	const common = gitCommonDirOf(input.root);
+	if (common === undefined) return 0;
+	const alive = listWorkRefs(input.root, input.policy);
+	let pruned = 0;
+	for (const ref of (await listUnitLeases(common)).keys()) {
+		if (alive.has(ref)) continue;
+		await removeUnitLease(common, ref);
+		pruned += 1;
+	}
+	return pruned;
 };

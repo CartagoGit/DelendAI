@@ -38,11 +38,13 @@
 import { spawnSync } from 'node:child_process';
 
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
-import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
-import type { IUnitStandingEntry } from '@delendai/core/lib/work-units/unit-lease.interface';
-import { readWorkspacePolicy } from '@delendai/core/lib/work-units/development-policy.service';
-import { readUnitStandings } from '@delendai/core/lib/work-units/unit-standings.service';
-import { reapDeliveredUnits } from '@delendai/core/lib/work-units/unit-reaper.service';
+import {
+	compileWorkRefParser,
+	reapDeliveredUnits,
+	readUnitStandings,
+	readWorkspacePolicy,
+	type IUnitStandingEntry,
+} from '@delendai/core/cli';
 
 /** One local branch with the facts needed to classify it. */
 export interface IOrphanBranch {
