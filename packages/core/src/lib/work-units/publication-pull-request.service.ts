@@ -16,14 +16,19 @@ import type {
 	IPullRequestPorts,
 } from '../contracts/interfaces/publication-pull-request.interface';
 
-/**
- * Commits that say what the work is not: claims and hand-offs, the
- * records a tool commits for itself, regenerated files, and merges.
- * Pull requests were titled `chore(delendai): delendai_proposals_create_proposal`
- * because the tool's own record was a unit's oldest commit.
- */
+/** Commits that say what the work is not: claims and hand-offs. */
 const BOOKKEEPING =
-	/^(?:Merge\b|chore\(review\): claim\b|docs\(proposals\): .*\bto review$|chore\((?:delendai|generated|proposals)\):)/u;
+	/^chore\(review\): claim\b|^docs\(proposals\): .*\bto review$/u;
+
+/**
+ * Commits that are not the work either: the record a tool commits for
+ * itself, regenerated files, and merges. Pull requests were titled by a
+ * tool's record when it was a unit's oldest commit.
+ */
+const HOUSEKEEPING = /^(?:Merge\b|chore\((?:delendai|generated)\):)/u;
+
+const isBookkeeping = (subject: string): boolean =>
+	BOOKKEEPING.test(subject) || HOUSEKEEPING.test(subject);
 
 /** A subject that delivers something rather than tidying around it. */
 const DELIVERY =
@@ -43,9 +48,7 @@ export const pullRequestText = (
 	fallback: string,
 ): { readonly title: string; readonly body: string } => {
 	const oldestFirst = [...subjects].reverse();
-	const meaningful = oldestFirst.filter(
-		(subject) => !BOOKKEEPING.test(subject),
-	);
+	const meaningful = oldestFirst.filter((subject) => !isBookkeeping(subject));
 	const title =
 		meaningful.find((subject) => DELIVERY.test(subject)) ??
 		meaningful[0] ??
