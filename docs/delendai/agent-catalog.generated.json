@@ -1671,14 +1671,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-01"
-			},
-			{
-				"id": "x00811",
-				"title": "The CLI completes the proposal lifecycle the way the tools do",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-10-01"
 			}
 		]
 	}
