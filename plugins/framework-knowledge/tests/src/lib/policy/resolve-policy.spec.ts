@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { resolvePolicy } from '../../../../src/lib/policy/resolve-policy';
+import { resolvePolicy } from '../../../../src/lib/policy/resolve-policy.helper';
 import type { IPolicyInputs } from '../../../../src/lib/contracts/interfaces/policy.interface';
 
 const options: IPolicyInputs['options'] = [

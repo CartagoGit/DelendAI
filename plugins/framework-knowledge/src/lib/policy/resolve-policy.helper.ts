@@ -1,4 +1,4 @@
-// resolve-policy.ts — decide the effective answer for one
+// resolve-policy.helper.ts — decide the effective answer for one
 // topic from an ordered set of inputs.
 //
 // Pure: no fs, no network. Priority order (highest first):
