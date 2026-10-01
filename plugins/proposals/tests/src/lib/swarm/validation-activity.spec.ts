@@ -37,6 +37,39 @@ describe('validation activity resolver', () => {
 		expect(snapshot.currentActorKey).toBe('task:task-a');
 	});
 
+	const snapshotWithWorktrees = (
+		entries: readonly Record<string, unknown>[],
+	) =>
+		resolveValidationActivitySnapshot({
+			now: NOW,
+			staleAfterMinutes: 10,
+			current: { taskId: 'task-a', agentName: 'agent-a' },
+			registry: { state: 'ok', entries: [registryEntry] },
+			locks: { state: 'missing' },
+			worktrees: { state: 'ok', entries },
+		});
+
+	it('treats a detached worktree as no evidence, not as corruption', () => {
+		const snapshot = snapshotWithWorktrees([
+			{ path: '/tmp/candidate-refresh-abc123' },
+		]);
+
+		expect(snapshot.state).not.toBe('corrupt');
+		expect(snapshot.sourceStates.worktree).toBe('ok');
+		expect(snapshot.summary.activeAgents).toBe(1);
+	});
+
+	it('still reports a worktree with an invalid lastSeen as corrupt', () => {
+		const snapshot = snapshotWithWorktrees([
+			{
+				branch: 'agent/copilot-minimax-m3-agent-a-task-a',
+				lastSeen: 'not-a-date',
+			},
+		]);
+
+		expect(snapshot.state).toBe('corrupt');
+	});
+
 	it('produces the same snapshot id when source entries arrive in another order', () => {
 		const second = {
 			...registryEntry,
