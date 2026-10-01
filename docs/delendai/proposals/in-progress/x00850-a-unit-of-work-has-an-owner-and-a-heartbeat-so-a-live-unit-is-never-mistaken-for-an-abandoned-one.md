@@ -2,10 +2,13 @@
 id: x00850
 title: "A unit of work has an owner and a heartbeat, so a live unit is never mistaken for an abandoned one"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-01
+last-transition-id: 23de86fe-3eb0-482b-8960-db48fdecd05c
+last-correlation-id: 23de86fe-3eb0-482b-8960-db48fdecd05c
+last-transition-from: ready
 ---
 
 # x00850 — A unit of work has an owner and a heartbeat, so a live unit is never mistaken for an abandoned one
