@@ -87,8 +87,11 @@ describe('openPublicationPullRequest', () => {
 			openPublicationPullRequest({
 				...INPUT,
 				ports: portsWith({ url: '/tmp/bare.git' }),
-			}).status,
-		).toBe('skipped');
+			}),
+		).toMatchObject({
+			status: 'skipped',
+			reason: expect.stringContaining('/tmp/bare.git'),
+		});
 		expect(
 			openPublicationPullRequest({
 				...INPUT,
@@ -96,7 +99,7 @@ describe('openPublicationPullRequest', () => {
 			}),
 		).toMatchObject({
 			status: 'skipped',
-			reason: expect.stringContaining('owner machine opens'),
+			reason: expect.stringContaining('holds the forge credential opens'),
 		});
 		expect(
 			JSON.stringify(
