@@ -1663,6 +1663,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-30"
+			},
+			{
+				"id": "x00797",
+				"title": "A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives",
+				"track": "general",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-10-01"
 			}
 		]
 	}
