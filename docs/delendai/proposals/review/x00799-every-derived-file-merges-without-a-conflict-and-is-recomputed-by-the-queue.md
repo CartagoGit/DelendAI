@@ -2,13 +2,13 @@
 id: x00799
 title: "Every derived file merges without a conflict and is recomputed by the queue"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
-last-transition-id: 4ac3051f-3e8f-4920-87f2-e20600147b89
-last-correlation-id: 4ac3051f-3e8f-4920-87f2-e20600147b89
-last-transition-from: ready
+last-transition-id: ce9b31d3-df3b-4ba5-9f3b-a277ba5a4056
+last-correlation-id: ce9b31d3-df3b-4ba5-9f3b-a277ba5a4056
+last-transition-from: in-progress
 ---
 
 # x00799 — Every derived file merges without a conflict and is recomputed by the queue
@@ -52,6 +52,9 @@ Three layers, each with one job. The drift guards are untouched: a source change
 - **Status**: pending
 - **Files**: `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/contracts/constants/generated-refresh.constant.ts`, `packages/cli/src/lib/generated-refresh.service.ts`, `packages/cli/src/lib/generated-refresh.service.spec.ts`, `tools/scripts/git/generated-merge-driver.constant.ts`, `tools/scripts/git/generated-merge-driver.interface.ts`, `tools/scripts/git/generated-merge-driver.script.ts`, `tools/scripts/git/generated-merge-driver.script.spec.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/gen-all.spec.ts`, `.gitattributes`
 - **Gate**: none
+- shipped-in: `7b5326c0c7fc`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
