@@ -1,10 +1,14 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { buildCloseSliceValidationProvider } from '../../../../src/lib/swarm/validation-provider';
+import {
+	buildCloseSliceValidationProvider,
+	selectManagedWorktrees,
+} from '../../../../src/lib/swarm/validation-provider';
 import type { IScopeMap } from '@delendai/quality/public';
 
 const SCOPES: IScopeMap = {
@@ -108,5 +112,75 @@ describe('buildCloseSliceValidationProvider (f00386 S2)', () => {
 		expect(decision.blockingReasons.join(' ')).toMatch(
 			/not provably active|active current actor/i,
 		);
+	});
+
+	it('does not block the close while a detached scratch worktree exists', async () => {
+		const rootPath = setup([
+			lock('f00386-S3', 'owl', 'plugins/proposals/src/lib/x.ts'),
+			lock('f00386-S2', 'falcon', 'plugins/demo/src/index.ts'),
+		]);
+		const repo = join(rootPath, 'repo');
+		mkdirSync(repo);
+		const git = (...args: string[]): void => {
+			execFileSync(
+				'git',
+				[
+					'-c',
+					'user.name=t',
+					'-c',
+					'user.email=t@example.com',
+					'-c',
+					'commit.gpgsign=false',
+					...args,
+				],
+				{ cwd: repo, stdio: 'ignore' },
+			);
+		};
+		git('init', '-q');
+		git('commit', '-q', '--allow-empty', '-m', 'init');
+		git('worktree', 'add', '-q', '--detach', join(rootPath, 'scratch'));
+		const provider = buildCloseSliceValidationProvider({
+			workspaceRoot: repo,
+			registryPathAbs: join(rootPath, 'registry.json'),
+			lockPathAbs: join(rootPath, 'locks.json'),
+			worktreesDirAbs: join(rootPath, 'managed'),
+			scopes: SCOPES,
+		});
+		const decision = await provider({
+			operation: 'close',
+			ownedFiles: ['plugins/proposals/src/lib/x.ts'],
+			proposalId: 'f00386',
+			sliceId: 's3',
+		});
+		expect(decision.mode).toBe('scoped');
+	});
+});
+
+describe('selectManagedWorktrees', () => {
+	const managed = {
+		worktreesDirAbs: '/repo/.cache/worktrees',
+		branchPrefixes: ['delendai/wip/'],
+	};
+
+	it('keeps worktrees under the managed directory or on a swarm branch', () => {
+		const underDir = { path: '/repo/.cache/worktrees/a' };
+		const onBranch = { path: '/elsewhere/b', branch: 'delendai/wip/x/y' };
+		expect(selectManagedWorktrees([underDir, onBranch], managed)).toEqual([
+			underDir,
+			onBranch,
+		]);
+	});
+
+	it('ignores a scratch checkout, a sibling directory and an unrelated branch', () => {
+		expect(
+			selectManagedWorktrees(
+				[
+					{ path: '/tmp/candidate-refresh-1' },
+					{ path: '/repo/.cache/worktrees-other/c' },
+					{ path: '/repo', branch: 'develop' },
+				],
+				managed,
+			),
+		).toEqual([]);
 	});
 });

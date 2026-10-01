@@ -2,7 +2,7 @@
 id: r00043
 title: "`@delendai/core` deja de conocer el dominio `proposals`"
 kind: refactor
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-08-30
@@ -13,6 +13,9 @@ audit-source:
     finding: AUD-E05
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 related: [q00011, r00040, r00041, r00042, r00034]
+last-transition-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
+last-correlation-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
+last-transition-from: in-progress
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -144,6 +147,7 @@ packages/core/                         plugins/proposals/
 ### S0 — Inventario ejecutable de acoplamientos core → proposals
 
 - **Status**: done
+- shipped-in: `420e86f48`
 - **Files**:
     - `tools/scripts/inspect/core-proposals-boundary.script.ts` (nuevo)
     - `packages/core/tests/src/architecture/core-proposals-boundary.spec.ts` (nuevo)
@@ -163,6 +167,7 @@ packages/core/                         plugins/proposals/
 ### S1 — Contratos agnósticos de contribuciones de workflow y adopción
 
 - **Status**: done
+- shipped-in: `7c861d2f9`
 - **DependsOn**: [S0]
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/workflow-contribution.interface.ts` (nuevo)
@@ -221,10 +226,12 @@ without it; a spec asserts it equals the files the real plan writes. The
 assessment summary and the `adopt_project` help name no plugin. Nine
 inventory findings are resolved by S2. The `issues` acceptance item is
 not part of this delivery; it moves to S6.
+- shipped-in: `bb60f4954b62`
 
 ### S3 — Convertir stable-facade en un registro de contribuciones
 
 - **Status**: done — verified 2026-09-25 by an evidence pass (a second agent; delivered in `7c861d2f9`). `stable-facade.ts` names no plugin: `stable-facade-registry.ts` holds contributions and the proposals plugin registers its tools through `registerProposalsStableTools`. The gate passes 14/14, and the boundary inventory lists `plugin: 'proposals'` in the facade as resolved by S3.
+- shipped-in: `7c861d2f9`
 - **DependsOn**: [S1]
 - **Files**:
     - `packages/core/src/lib/api/stable-facade.ts`
@@ -271,6 +278,7 @@ index nor checks `isLoaded('proposals')`, and the gate passes. What was
 left were two messages that still named the proposals store and
 proposal files; they now speak of what loaded plugins contribute and of
 workflow files. Both inventory findings are resolved by S4.
+- shipped-in: `1059c6ce4311`
 
 
 ### S5 — Lint de frontera y documentación de compatibilidad
@@ -308,6 +316,7 @@ missing is the guide: `ARCHITECTURE.md` now says how a workflow plugin
 plugs in without editing the core, through the three registries the
 proposals plugin uses (adoption extensions, workflow contribution, stable
 tool descriptors), with its files as the reference.
+- shipped-in: `f99521d1bf31`
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
@@ -361,6 +370,7 @@ Delivered:
 - Without `proposals` loaded, a `repo` at a stage that includes issues
   now wires issues. Before, it did nothing. That is the point of the
   slice: the wiring belongs to issues, not to proposals.
+- shipped-in: `522aabfc31e6`
 
 ## Dependency graph
 
