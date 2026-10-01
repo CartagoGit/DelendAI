@@ -208,6 +208,25 @@ export const STEPS: readonly IStep[] = [
 		],
 		description: 'Regenerate the canonical host-hints fragment.',
 	},
+	// Both were run by hand only, so a candidate brought forward by the
+	// queue came back with the guide index or the typed tool outputs one
+	// merge behind, and went red on a file nobody authors.
+	{
+		name: 'docs-index',
+		cmd: ['bun', 'tools/scripts/docs/generate-docs-index.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/docs/generate-docs-index.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the guide index in docs/delendai/README.md.',
+	},
+	{
+		name: 'tool-types',
+		cmd: ['bun', 'tools/scripts/types/generate-tool-types.script.ts'],
+		description:
+			'Regenerate the typed structuredContent shapes of every package.',
+	},
 ];
 
 export interface IGenAllIo {
