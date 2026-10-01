@@ -25,9 +25,11 @@ const unit = (agent: string, paths: readonly string[]): ISwarmUnit =>
 const view = (
 	units: readonly ISwarmUnit[],
 	overlaps: readonly { readonly path: string }[] = [],
+	published: readonly ISwarmUnit[] = [],
 ): ISwarmView =>
-	fakePartial<ISwarmView, 'units' | 'overlaps'>({
+	fakePartial<ISwarmView, 'units' | 'overlaps' | 'published'>({
 		units,
+		published,
 		overlaps: overlaps.map((overlap) =>
 			fakePartial<ISwarmView['overlaps'][number], 'path' | 'refs'>({
 				path: overlap.path,
@@ -82,5 +84,20 @@ describe('briefingFrom (x00555 S3)', () => {
 		expect(said).toContain('2 path(s)');
 		expect(said).toContain('contested');
 		expect(said).toContain('src/a.ts');
+	});
+
+	it("states somebody else's publication that has not landed, and not one that has", () => {
+		const pending = { ...unit('gpt-5', ['src/a.ts']), ahead: 2 };
+		const landed = { ...unit('glm-5', ['src/b.ts']), ahead: 0 };
+		const mine = { ...unit('a', ['src/c.ts']), ahead: 1 };
+		const briefing = briefingFrom({
+			agent: 'a',
+			view: view([], [], [pending, landed, mine]),
+		});
+		expect(briefing.others.map((other) => other.agent)).toEqual(['gpt-5']);
+		expect(briefing.others[0]?.published).toBe(true);
+		expect(describeBriefing(briefing).join('\n')).toContain(
+			'(published, waiting to land)',
+		);
 	});
 });

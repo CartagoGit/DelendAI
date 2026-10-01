@@ -10,11 +10,17 @@ export interface IBriefedUnit {
 	readonly subject: string;
 	/** The paths it has changed since it branched. */
 	readonly paths: readonly string[];
+	/**
+	 * Whether it is a publication waiting to land rather than a unit still
+	 * being worked on. Its files change in the integration branch when it
+	 * merges, so starting on them now buys a conflict.
+	 */
+	readonly published: boolean;
 }
 
 /** The picture handed to an agent that is starting a unit of work. */
 export interface IWorkBriefing {
-	/** Live units of work belonging to somebody else. */
+	/** Live units and unlanded publications belonging to somebody else. */
 	readonly others: readonly IBriefedUnit[];
 	/** Paths more than one unit of work is already changing. */
 	readonly contested: readonly string[];
