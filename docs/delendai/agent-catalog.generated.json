@@ -1663,14 +1663,6 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-10-01"
-			},
-			{
-				"id": "x00850",
-				"title": "A unit of work has an owner and a heartbeat, so a live unit is never mistaken for an abandoned one",
-				"track": "general",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-01"
 			}
 		]
 	}

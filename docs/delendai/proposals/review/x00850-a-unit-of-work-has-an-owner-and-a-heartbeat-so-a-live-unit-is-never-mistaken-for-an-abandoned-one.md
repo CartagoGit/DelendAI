@@ -2,13 +2,13 @@
 id: x00850
 title: "A unit of work has an owner and a heartbeat, so a live unit is never mistaken for an abandoned one"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: 23de86fe-3eb0-482b-8960-db48fdecd05c
-last-correlation-id: 23de86fe-3eb0-482b-8960-db48fdecd05c
-last-transition-from: ready
+last-transition-id: 1bc9cdc1-5a24-4d0b-b0a9-5e863788c42a
+last-correlation-id: 1bc9cdc1-5a24-4d0b-b0a9-5e863788c42a
+last-transition-from: in-progress
 ---
 
 # x00850 — A unit of work has an owner and a heartbeat, so a live unit is never mistaken for an abandoned one
@@ -38,6 +38,9 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
   - "live, idle and abandoned follow the lease age against coordination.leaseTtlMinutes"
   - "two sessions of one agent hold separate leases"
   - "the lease survives the CLI process that wrote it"
+- shipped-in: `955914412aa0`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Reclaim, abandon and reaping follow the verdict
 - **Status**: pending
@@ -48,6 +51,9 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
   - "reclaim:orphans never lists a live unit and never advises git switch"
   - "work abandon keeps the tip before deleting and requires the abandoned verdict or the owner with force"
   - "a delivered unit loses its worktree and branch, a dirty one reports what is dirty"
+- shipped-in: `14da2e90af7d`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — The guard refuses a second ref of a unit and agents are told how a unit ends
 - **Status**: pending
@@ -57,6 +63,9 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
 - acceptance:
   - "pushing delendai/wip/<agent>/<kind>/<unit>/sim-a while the unit holds another ref is refused"
   - "served instructions say a unit ends in publish or abandon"
+- shipped-in: `955914412aa0`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
