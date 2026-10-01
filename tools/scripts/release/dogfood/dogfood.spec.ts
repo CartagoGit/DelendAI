@@ -15,7 +15,11 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type {
+	IGitRunner,
+	IGitRunResult,
+	IReleaseTarget,
+} from '@delendai/core/public';
 import {
 	parseDogfoodFlags,
 	runReleaseDogfood,
@@ -100,6 +104,14 @@ const _buildReconcileAwareGitRunner = (): IGitRunner => {
 	};
 };
 
+/** This repository's shape: develop to main by pull request. */
+const THIS_REPOSITORY_TARGET: IReleaseTarget = {
+	integrationBranch: 'develop',
+	releaseBranch: 'main',
+	versionManifestPath: 'packages/core/package.json',
+	promotion: 'pull-request',
+};
+
 /**
  * Helper: build a default `IDogfoodRunInput` for the spec. The
  * provider override defaults to a fresh mock; callers can replace it.
@@ -116,6 +128,7 @@ const buildInput = (
 	return {
 		flags: Object.freeze({ ...flags }),
 		run,
+		target: overrides.target ?? THIS_REPOSITORY_TARGET,
 		provider,
 		...(prReader === undefined ? {} : { prReader }),
 	};
