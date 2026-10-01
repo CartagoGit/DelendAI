@@ -138,6 +138,7 @@ const buildPluginComment = (
 export const renderDelendaiConfig = (
 	answers: IInitAnswers,
 	resolvedPlugins: readonly string[],
+	development?: Record<string, unknown>,
 ): IRenderedFile => {
 	const resolvedPluginSet = new Set(resolvedPlugins);
 	const derivedRoots = deriveSourceRoots(
@@ -173,6 +174,7 @@ export const renderDelendaiConfig = (
 		cacheDir: '.cache/delendai',
 		docsDir: 'docs/delendai',
 		plugins: {},
+		...(development === undefined ? {} : { development }),
 	};
 	// f00088 S4: when the S1 detector picked a non-default
 	// `pluginPathsRoot`, record it in a `convention` block so
@@ -468,6 +470,18 @@ const HOST_INSTRUCTIONS_CANONICAL_BODY =
 	'# delendai host hints (auto-generated)\n\n' +
 	'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live agent catalog.';
 
+/**
+ * The file every host block points at. The block names it, so a project
+ * that receives the block must receive the file; the server stays the
+ * source of truth and the file says so instead of listing anything.
+ */
+const HOST_HINTS_RELPATH =
+	'docs/delendai/host-hints/agent-instructions.generated.md';
+const HOST_HINTS_CONTENT =
+	'<!-- Written by `delendai init`; the delendai server is the source of truth. -->\n\n' +
+	'# delendai agent hints\n\n' +
+	'Start every session with `delendai_overview { compact: true }`, then route work with `delendai_agent_catalog`. Tools, skills and proposals change every week: read them from the server, never from a copy in this file.\n';
+
 const HOST_INSTRUCTIONS_TARGETS: ReadonlyArray<{
 	relPath: string;
 	host: 'copilot' | 'claude' | 'agents';
@@ -514,6 +528,9 @@ export const renderHostInstructionsBlocks = async (
 		if (next === undefined) continue;
 		out.push({ relPath: target.relPath, content: next });
 	}
+	if (out.length > 0) {
+		out.push({ relPath: HOST_HINTS_RELPATH, content: HOST_HINTS_CONTENT });
+	}
 	return out;
 };
 
@@ -544,6 +561,8 @@ export const renderInitBundle = async (
 	options: {
 		readonly launch?: ICanonicalLaunch;
 		readonly reader?: IFileReader;
+		/** The development block to write, when the project has none. */
+		readonly development?: Record<string, unknown>;
 	} = {},
 ): Promise<IRenderedBundle> => {
 	const reader: IFileReader =
@@ -559,7 +578,7 @@ export const renderInitBundle = async (
 			serverName: answers.serverName,
 		});
 	const files: IRenderedFile[] = [
-		renderDelendaiConfig(answers, resolvedPlugins),
+		renderDelendaiConfig(answers, resolvedPlugins, options.development),
 		renderVscodeMcpJson(launch, answers.serverName),
 		renderGenericMcpJson(
 			buildCanonicalLaunch({

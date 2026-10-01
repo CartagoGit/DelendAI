@@ -1146,6 +1146,20 @@ describe('delendai work, as a person reads it', () => {
 		expect(out).toContain('checkout on      develop');
 		expect(out).toContain('anchored         yes');
 	});
+
+	it('says the anchor is not required under a profile that does not anchor the checkout', async () => {
+		const root = repoWith({
+			development: {
+				profile: 'worktree-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		const out = await printed(() =>
+			command.run(['status'], contextFor(root, { json: false })),
+		);
+		expect(out).toContain('anchored         not required');
+		expect(out).not.toContain('anchored         yes');
+	});
 });
 
 describe('instances entering at once each get a unit (x00731)', () => {
