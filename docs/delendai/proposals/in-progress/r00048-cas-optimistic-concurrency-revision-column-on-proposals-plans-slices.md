@@ -2,7 +2,7 @@
 id: r00048
 title: "CAS optimistic concurrency — revision column on proposals, plans, slices"
 kind: refactor
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -17,6 +17,9 @@ audit-source:
 related:
   - q00022
   - r00047
+last-transition-id: 91cad156-a83c-4511-9fa4-1a55fb710c13
+last-correlation-id: 91cad156-a83c-4511-9fa4-1a55fb710c13
+last-transition-from: ready
 ---
 
 # r00048 — CAS optimistic concurrency via revision column
@@ -104,8 +107,8 @@ the policy in the host.
     (modified)
   - `packages/proposals-sqlite/src/lib/repository/slices-repo.ts`
     (modified)
-  - `packages/proposals-sqlite/tests/src/lib/repository/*.spec.ts`
-    (new + updated)
+  - `packages/proposals-sqlite/tests/src/lib/repository/revision-cas.spec.ts`
+  - `packages/proposals-sqlite/src/lib/repository/revision-cas.service.ts`
 - **Gate**: type
 - acceptance:
   - All three tables have `revision INTEGER NOT NULL DEFAULT 0` with
@@ -122,14 +125,7 @@ the policy in the host.
 ### S2 — Expose CAS to the host: read returns `revision`, write returns either updated or conflict
 
 - **Status**: retired — 2026-10-01, superseded by the authority decision. `AUTHORITIES.md` makes `docs/delendai/proposals` the authority for proposal status and `proposals.sqlite` a projection the reconciler rebuilds from it; tools write the markdown, never these rows, so there is no writer to hand a `revision` to. None of the files this slice names exists (`read.ts`, `proposal-store.ts`, `plan-store.ts`, `slice-store.ts`). Concurrent writes to the authority go through the file mutex and atomic writes instead.
-- **Files**:
-  - `packages/proposals-sqlite/src/lib/repository/read.ts` (new —
-    `getProposal(uid) → { ..., revision }`, `listProposals(...)` includes `revision`)
-  - `plugins/proposals/src/lib/services/proposal-store.ts` (modified —
-    surfaces revision to the lifecycle verbs)
-  - `plugins/proposals/src/lib/services/plan-store.ts` (modified)
-  - `plugins/proposals/src/lib/services/slice-store.ts` (modified)
-  - `plugins/proposals/tests/src/lib/services/*.spec.ts` (new + updated)
+- **Files**: none — retired before any file was written.
 - **Gate**: type
 - acceptance:
   - Every read tool (`proposals_get`, `plans_get`, `slices_get`,
@@ -145,9 +141,7 @@ the policy in the host.
 - **Status**: done — verified 2026-10-01: `packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts` races a proposal, a plan and a slice across connections, and N stale writers against one row: exactly one closes, the others are told it is already closed.
 - shipped-in: `578148ae1`
 - **Files**:
-  - `packages/proposals-sqlite/tests/e2e/cas-race.spec.ts` (new)
-  - `plugins/proposals/tests/src/lib/services/cas-regression.spec.ts`
-    (new)
+  - `packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - The e2e test launches N parallel transactions that each try to
