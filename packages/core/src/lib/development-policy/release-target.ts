@@ -14,7 +14,7 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
-import { hasSeparateReleaseBranch } from './release-branch';
+import { distinctReleaseBranch } from './protected-branches';
 import type {
 	IReleasePromotion,
 	IReleaseTarget,
@@ -37,9 +37,9 @@ const PROMOTION_BY_STRATEGY: Readonly<
 export const resolveReleasePromotion = (
 	policy: IResolvedDevelopmentPolicy,
 ): IReleasePromotion =>
-	hasSeparateReleaseBranch(policy.branches)
-		? PROMOTION_BY_STRATEGY[policy.integration.strategy]
-		: 'none';
+	distinctReleaseBranch(policy) === undefined
+		? 'none'
+		: PROMOTION_BY_STRATEGY[policy.integration.strategy];
 
 export const resolveReleaseTarget = (
 	policy: IResolvedDevelopmentPolicy,
