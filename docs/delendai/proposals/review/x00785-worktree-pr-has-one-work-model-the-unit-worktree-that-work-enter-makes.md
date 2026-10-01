@@ -2,13 +2,13 @@
 id: x00785
 title: "worktree-pr has one work model: the unit worktree that work enter makes"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: b7078295-641f-4a74-8c32-635f42b5029d
-last-correlation-id: b7078295-641f-4a74-8c32-635f42b5029d
-last-transition-from: ready
+last-transition-id: eeef0a59-7bb0-4821-9316-4673da763f05
+last-correlation-id: eeef0a59-7bb0-4821-9316-4673da763f05
+last-transition-from: in-progress
 ---
 
 # x00785 — worktree-pr has one work model: the unit worktree that work enter makes
@@ -41,6 +41,9 @@ A real-CLI audit of worktree-pr found two incompatible models. The preset declar
   - "agent_worktree create under a work-ref policy is refused with the work enter command as the next step; list still works."
   - "The declared workflow and the isolation rule for worktree-pr name delendai work enter; shared-checkout-pr text is unchanged."
   - "The preset states whether switching branches in the main worktree is intended."
+- shipped-in: `19d60b11be53`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
