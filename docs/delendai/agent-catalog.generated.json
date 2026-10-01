@@ -1663,6 +1663,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-30"
+			},
+			{
+				"id": "x00810",
+				"title": "A ready proposal is found in a worktree",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-10-01"
 			}
 		]
 	}
