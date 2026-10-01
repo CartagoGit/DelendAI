@@ -1641,14 +1641,6 @@
 				"date": "2026-09-19"
 			},
 			{
-				"id": "x00765",
-				"title": "close_slice runs the project's declared gate asynchronously and never counts a timeout as green",
-				"track": "general",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-09-30"
-			},
-			{
 				"id": "x00766",
 				"title": "A project with one branch and a project with no policy both get a working model",
 				"track": "trust",
