@@ -16,6 +16,7 @@ import {
 	readSwarm,
 	relationsOf,
 	unitKeyOf,
+	unlandedElsewhere,
 	type ISwarmUnit,
 	type ISwarmView,
 } from '@delendai/core/lib/work-units/work-swarm.service';
@@ -161,6 +162,22 @@ describe('relationsOf — the cases that are not a relation', () => {
 			'ns/wip/a/no-generation-here',
 			'ns/wip/b/neither-here',
 		]);
+	});
+});
+
+describe('unlandedElsewhere', () => {
+	it('drops a publication whose own work ref is live, and a landed one', () => {
+		const live = unit('ns/wip/a/implement/x30-S1-g1/t', ['a.ts']);
+		const own = unit('ns/pr/a/implement/x30-S1-g1/t', ['a.ts']);
+		const otherGeneration = unit('ns/pr/a/implement/x30-S1-g2/t', ['a.ts']);
+		const someoneElse = unit('ns/pr/b/implement/x30-S1-g1/t', ['a.ts']);
+		const landed = unit('ns/pr/c/implement/x31-S1-g1/t', ['a.ts'], 0);
+		expect(
+			unlandedElsewhere(
+				[live],
+				[own, otherGeneration, someoneElse, landed],
+			).map((entry) => entry.ref),
+		).toEqual([otherGeneration.ref, someoneElse.ref]);
 	});
 });
 
