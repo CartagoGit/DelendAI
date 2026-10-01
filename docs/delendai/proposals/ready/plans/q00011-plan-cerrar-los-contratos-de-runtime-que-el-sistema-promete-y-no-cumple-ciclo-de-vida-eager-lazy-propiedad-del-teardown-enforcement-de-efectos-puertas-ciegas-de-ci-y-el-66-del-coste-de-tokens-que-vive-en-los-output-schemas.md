@@ -338,7 +338,7 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 
 ### S8 — Testing (P1)
 
-- **Status**: pending
+- **Status**: done — verified 2026-10-01: both children are closed, `t00030` and `t00031` in `done/tests/`.
 - **Files**: [`vitest.config.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`]
 - **Gate**: `bun run test:coverage`
 
@@ -349,7 +349,7 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 
 ### S9 — Plataforma (P2)
 
-- **Status**: pending
+- **Status**: in-progress — verified 2026-10-01: eight of the eleven children are in `done/` (`f00272`, `f00273`, `r00035`, `r00041`, `r00042`, `x00287`, `v00132`, `d00014`). Open: `r00040` (ready), `f00274` and `f00275` (blocked).
 - **Files**: [`packages/core/src/public`, `packages/client/src`, `plugins/proposals/src`, `packages/cli/src/commands/groups/doctor.ts`, `extensions/vscode/package.json`, `docs/delendai/plugins`]
 - **Gate**: `bun run validate`
 
