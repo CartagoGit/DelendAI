@@ -1,5 +1,6 @@
 // effect-boundary-authorized: swarm validation provider only reads JSON snapshots from the proposals directory (read-only adapter)
 import { readFile } from 'node:fs/promises';
+import { isAbsolute, relative } from 'node:path';
 
 import {
 	resolveScopedValidationDecision,
@@ -9,6 +10,10 @@ import {
 
 import { parseWorktreeList } from '../agents/agent-worktree-engine';
 import { coerceHost } from '../shared/agent-identity';
+import {
+	isUnderPrefixes,
+	managedBranchPrefixes,
+} from '../shared/branch-namespaces';
 import { createGitRunner } from '../shared/git-runner';
 import { resolveValidationActivitySnapshot } from './validation-activity.resolver';
 import type {
@@ -74,6 +79,33 @@ const readLocks = async (
 	}
 };
 
+const isInsideDirectory = (path: string, directory: string): boolean => {
+	const relation = relative(directory, path);
+	return (
+		relation !== '' && !relation.startsWith('..') && !isAbsolute(relation)
+	);
+};
+
+/**
+ * Only worktrees delendai manages are evidence of agent activity: those
+ * under its worktrees directory or on a branch in the swarm's namespaces.
+ * A scratch checkout, a bisect or a CI helper is somebody else's.
+ */
+export const selectManagedWorktrees = (
+	entries: readonly IValidationWorktreeEntry[],
+	managed: {
+		readonly worktreesDirAbs: string;
+		readonly branchPrefixes: readonly string[];
+	},
+): readonly IValidationWorktreeEntry[] =>
+	entries.filter(
+		(entry) =>
+			(entry.path !== undefined &&
+				isInsideDirectory(entry.path, managed.worktreesDirAbs)) ||
+			(entry.branch !== undefined &&
+				isUnderPrefixes(entry.branch, managed.branchPrefixes)),
+	);
+
 export const buildCloseSliceValidationProvider = (input: {
 	readonly workspaceRoot: string;
 	readonly registryPathAbs: string;
@@ -98,14 +130,25 @@ export const buildCloseSliceValidationProvider = (input: {
 				run(['worktree', 'list', '--porcelain']),
 				run(['branch', '--show-current']),
 			]);
-		const worktreeEntries: IValidationWorktreeEntry[] = worktreeResult.ok
-			? parseWorktreeList(worktreeResult.output).map((entry) => ({
-					...(entry.branch !== undefined
-						? { branch: entry.branch }
-						: {}),
-					path: entry.path,
-				}))
-			: [];
+		const worktreeEntries: readonly IValidationWorktreeEntry[] =
+			worktreeResult.ok
+				? selectManagedWorktrees(
+						parseWorktreeList(worktreeResult.output).map(
+							(entry) => ({
+								...(entry.branch !== undefined
+									? { branch: entry.branch }
+									: {}),
+								path: entry.path,
+							}),
+						),
+						{
+							worktreesDirAbs: input.worktreesDirAbs,
+							branchPrefixes: await managedBranchPrefixes(
+								input.workspaceRoot,
+							),
+						},
+					)
+				: [];
 		const activity = resolveValidationActivitySnapshot({
 			current: {
 				taskId: compositeTaskId,

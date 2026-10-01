@@ -2,7 +2,7 @@
 id: q00011
 title: "Plan — cerrar los contratos de runtime que el sistema promete y no cumple: ciclo de vida eager/lazy, propiedad del teardown, enforcement de efectos, puertas ciegas de CI y el 66% del coste de tokens que vive en los output schemas"
 kind: plan
-status: ready
+status: in-progress
 type: plan
 track: runtime-contracts-v1
 date: 2026-08-27
@@ -121,6 +121,9 @@ contains:
             rationale: "delendai doctor --deep/--ci/--offline cubriendo los modos de fallo de esta auditoria. AUD-F04." }
         - { id: d00014, kind: docs, required: false, priority: P2, track: docs,
             rationale: "Una pagina canonica por plugin: tres paginas manuales duplican las auto-generadas. AUD-F07." }
+last-transition-id: a89da4b9-e95f-4328-8644-ba9cbe9152ae
+last-correlation-id: a89da4b9-e95f-4328-8644-ba9cbe9152ae
+last-transition-from: ready
 ---
 
 # q00011 — Cerrar los contratos de runtime
@@ -243,7 +246,7 @@ detalle vive en la hija; aquí el orden y la razón del orden.
 ### S1 — Gobernanza: devolver la señal a las puertas ciegas (P0)
 
 - **Status**: done
-- **Files**: [`tools/scripts/ci/verify-branch-protection.script.ts`, `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-branch-protection.spec.ts`, `tools/tests/ci/verify-develop-health.spec.ts`]
+- **Files**: [`tools/scripts/ci/verify-branch-protection.script.ts`, `tools/scripts/ci/verify-develop-health.script.ts`, `tools/scripts/ci/verify-branch-protection.spec.ts`, `tools/tests/ci/verify-develop-health.spec.ts`]
 - **Gate**: `bun run test -- tools/tests/ci && bun tools/scripts/ci/verify-branch-protection.script.ts --dry-run`
 
 
@@ -327,7 +330,7 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 ### S7 — CI y gobernanza, resto (P1)
 
 - **Status**: done
-- **Files**: [`.github/branch-protection.ts`, `tools/scripts/ci/affected.script.ts`, `.github/workflows/tier1.yml`, `docs/delendai/adr`]
+- **Files**: [`.github/branch-protection.ts`, `tools/scripts/ci/affected.script.ts`, `.github/workflows/ci.yml`, `docs/delendai/adr`]
 - **Gate**: `bun run test -- tools/tests/ci && bun run lint:proposals`
 
 
@@ -338,7 +341,7 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 
 ### S8 — Testing (P1)
 
-- **Status**: pending
+- **Status**: done — verified 2026-10-01: both children are closed, `t00030` and `t00031` in `done/tests/`.
 - **Files**: [`vitest.config.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`]
 - **Gate**: `bun run test:coverage`
 
@@ -349,7 +352,7 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 
 ### S9 — Plataforma (P2)
 
-- **Status**: pending
+- **Status**: in-progress — verified 2026-10-01: eight of the eleven children are in `done/` (`f00272`, `f00273`, `r00035`, `r00041`, `r00042`, `x00287`, `v00132`, `d00014`). Open: `r00040` (ready), `f00274` and `f00275` (blocked).
 - **Files**: [`packages/core/src/public`, `packages/client/src`, `plugins/proposals/src`, `packages/cli/src/commands/groups/doctor.ts`, `extensions/vscode/package.json`, `docs/delendai/plugins`]
 - **Gate**: `bun run validate`
 

@@ -314,10 +314,14 @@ const serveStrictSql = async (
 			indexPathAbs,
 		);
 	}
-	const divergence = compareIndexEntries(
-		fromSql.entries,
-		await readFromJson(indexPathAbs, fs),
-	);
+	// No registry on disk is nothing to compare, not a difference on
+	// every id: a fresh worktree has none, and each read there reported
+	// the whole backlog as divergent.
+	const registry = await readJsonOrNull<IProposalIndexFile>(indexPathAbs, fs);
+	const divergence =
+		registry === null
+			? []
+			: compareIndexEntries(fromSql.entries, registry.proposals ?? []);
 	recordProposalIndexRead(
 		divergence.length > 0 ? 'sql-divergence-reported' : 'sql-parity',
 		divergence.length,
