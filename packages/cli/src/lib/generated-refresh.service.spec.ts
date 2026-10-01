@@ -345,3 +345,32 @@ describe('landedAsFastForward', () => {
 		expect(landedAsFastForward(root)).toBe(false);
 	});
 });
+
+describe('refreshGeneratedAfterMerge while the merge is still open', () => {
+	it('commits the generated path even though MERGE_HEAD exists', () => {
+		const root = repo();
+		// A post-merge hook runs before git removes MERGE_HEAD, and git
+		// refuses a partial commit then.
+		writeFileSync(
+			join(root, '.git', 'MERGE_HEAD'),
+			`${git(root, 'rev-parse', 'HEAD')}\n`,
+		);
+		writeFileSync(join(root, 'authored.ts'), 'export const a = 2;\n');
+		git(root, 'add', 'authored.ts');
+		const outcome = refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 2\n');
+				return true;
+			},
+		});
+		expect(outcome).toMatchObject({ committed: true, paths: [GENERATED] });
+		expect(git(root, 'show', '--name-only', '--format=', 'HEAD')).toBe(
+			GENERATED,
+		);
+		expect(git(root, 'diff', '--cached', '--name-only')).toBe(
+			'authored.ts',
+		);
+	});
+});
