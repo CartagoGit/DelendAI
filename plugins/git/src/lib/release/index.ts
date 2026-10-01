@@ -9,6 +9,7 @@ import {
 	type IExpectedReleaseState,
 	type IReleaseCandidateMetadata,
 	type IReleaseGate,
+	type IReleaseTarget,
 	type IReleasePrepareInput,
 	type IReleasePreparation,
 	type IReleaseReadiness,
@@ -84,31 +85,51 @@ const resolveRef = async (run: IGitRunner, ref: string): Promise<string> => {
 	return result.output.trim();
 };
 
-const readMainVersion = async (
+/** A release needs a release branch to start from; one branch has none. */
+export const assertReleasable = (target: IReleaseTarget): void => {
+	if (target.promotion === 'none')
+		throw new ReleaseStateError(
+			'no-release-branch',
+			`${target.integrationBranch} is both the integration and the release branch, so there is no release promotion to prepare`,
+		);
+};
+
+export const readReleaseVersion = async (
 	run: IGitRunner,
-	mainSha: string,
+	releaseSha: string,
+	target: IReleaseTarget,
 ): Promise<string> => {
-	const result = await run(['show', `${mainSha}:packages/core/package.json`]);
+	const result = await run([
+		'show',
+		`${releaseSha}:${target.versionManifestPath}`,
+	]);
 	if (!result.ok)
-		throw new Error(result.reason ?? 'could not read main version');
+		throw new Error(
+			result.reason ??
+				`could not read the version of ${target.releaseBranch}`,
+		);
 	try {
 		const parsed = JSON.parse(result.output) as { version?: unknown };
 		if (typeof parsed.version !== 'string') throw new Error();
 		return parsed.version;
 	} catch {
-		throw new Error('main package.json has no string version');
+		throw new Error(
+			`${target.versionManifestPath} on ${target.releaseBranch} has no string version`,
+		);
 	}
 };
 
 export const readExpectedReleaseState = async (
 	run: IGitRunner,
+	target: IReleaseTarget,
 ): Promise<IExpectedReleaseState> => {
-	const sourceDevelopSha = await resolveRef(run, 'develop');
-	const mainSha = await resolveRef(run, 'main');
+	assertReleasable(target);
+	const sourceDevelopSha = await resolveRef(run, target.integrationBranch);
+	const mainSha = await resolveRef(run, target.releaseBranch);
 	return {
 		sourceDevelopSha,
 		mainSha,
-		mainVersion: await readMainVersion(run, mainSha),
+		mainVersion: await readReleaseVersion(run, mainSha, target),
 	};
 };
 
@@ -156,7 +177,7 @@ export const releasePrepare = async (
 		});
 	}
 
-	const current = await readExpectedReleaseState(run);
+	const current = await readExpectedReleaseState(run, input.target);
 	assertExpectedReleaseState(input.expected, current);
 	const existingBySlug = store.getBySlug(input.slug);
 	if (existingBySlug !== undefined && existingBySlug.state !== 'aborted') {

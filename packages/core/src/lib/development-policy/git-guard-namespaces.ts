@@ -4,6 +4,8 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
+import { protectedBranchNames } from './release-branch';
+
 /** `refs/heads/wip/`, `heads/wip/` and `wip/` are the same namespace. */
 export const shortName = (value: string): string =>
 	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
@@ -12,7 +14,7 @@ export const shortName = (value: string): string =>
 export const policyNamespaces = (
 	policy: IResolvedDevelopmentPolicy,
 ): { exact: readonly string[]; prefixes: readonly string[] } => ({
-	exact: [policy.branches.integration, policy.branches.release],
+	exact: protectedBranchNames(policy.branches),
 	prefixes: [
 		policy.branches.workRefPrefix,
 		policy.branches.publicationRefPrefix,
