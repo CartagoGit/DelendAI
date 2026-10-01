@@ -16,11 +16,19 @@ import type {
 	IPullRequestPorts,
 } from '../contracts/interfaces/publication-pull-request.interface';
 
-/** Commits that say what the work is not: claims and hand-offs. */
+/**
+ * Commits that say what the work is not: claims and hand-offs, the
+ * records a tool commits for itself, regenerated files, and merges.
+ * Pull requests were titled `chore(delendai): delendai_proposals_create_proposal`
+ * because the tool's own record was a unit's oldest commit.
+ */
 const BOOKKEEPING =
-	/^chore\(review\): claim\b|^docs\(proposals\): .*\bto review$/u;
+	/^(?:Merge\b|chore\(review\): claim\b|docs\(proposals\): .*\bto review$|chore\((?:delendai|generated|proposals)\):)/u;
 
-/** A title and body for the pull request, from the unit's commits. */
+/** A subject that delivers something rather than tidying around it. */
+const DELIVERY =
+	/^(?:feat|fix|refactor|perf|test|docs|build|ci|revert)(?:\([^)]*\))?!?:/u;
+
 /**
  * A GitHub remote, with the host anchored: `https://github.com/…`,
  * `ssh://git@github.com/…` or `git@github.com:…`, and not a host that
@@ -35,9 +43,17 @@ export const pullRequestText = (
 	fallback: string,
 ): { readonly title: string; readonly body: string } => {
 	const oldestFirst = [...subjects].reverse();
+	const meaningful = oldestFirst.filter(
+		(subject) => !BOOKKEEPING.test(subject),
+	);
 	const title =
-		oldestFirst.find((subject) => !BOOKKEEPING.test(subject)) ?? fallback;
-	const listed = oldestFirst.map((subject) => `- ${subject}`).join('\n');
+		meaningful.find((subject) => DELIVERY.test(subject)) ??
+		meaningful[0] ??
+		fallback;
+	const listed = oldestFirst
+		.filter((subject) => !subject.startsWith('Merge '))
+		.map((subject) => `- ${subject}`)
+		.join('\n');
 	return {
 		title,
 		body: `Opened by \`delendai work publish\` for \`${branch}\`.\n\n${listed}`,
