@@ -191,3 +191,27 @@ export const pruneUnitLeases = async (
 	}
 	return pruned;
 };
+
+/** The verdict on one unit, or undefined when the clone has no such ref. */
+export const unitVerdictOf = async (
+	input: IReadUnitStandings,
+	ref: string,
+): Promise<IUnitStandingEntry | undefined> =>
+	(await readUnitStandings(input)).find(
+		(entry) => entry.ref === ref.replace(/^refs\/heads\//u, ''),
+	);
+
+/**
+ * Whether a unit still holds the slice it was entered for. An abandoned
+ * unit does not: its owner is gone, so the slice is offered for adoption
+ * (`work claim`) instead of refusing everyone else. A delivered unit has
+ * landed its slice. Live and idle units hold it — an idle owner is only
+ * quiet. A ref with no verdict is assumed to hold, the cautious reading.
+ */
+export const isUnitHolding = (
+	entries: readonly IUnitStandingEntry[],
+	ref: string,
+): boolean => {
+	const standing = entries.find((entry) => entry.ref === ref)?.standing;
+	return standing !== 'abandoned' && standing !== 'delivered';
+};

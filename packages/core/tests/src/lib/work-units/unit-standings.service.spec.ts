@@ -14,6 +14,8 @@ import {
 import { listUnitLeases } from '@delendai/core/lib/work-units/unit-lease.store';
 import {
 	countStandings,
+	isUnitHolding,
+	unitVerdictOf,
 	overviewUnitsLine,
 	pruneUnitLeases,
 	readUnitStandings,
@@ -195,5 +197,44 @@ describe('pruneUnitLeases', () => {
 		).toBe(1);
 		const leases = await listUnitLeases(gitCommonDirOf(repo.root) ?? '');
 		expect([...leases.keys()]).toEqual([kept]);
+	});
+});
+
+describe('isUnitHolding', () => {
+	it('lets an abandoned unit release its slice and keeps a live or idle one', async () => {
+		const repo = unitRepo();
+		const start = wall();
+		const refs = {
+			live: unitRef('l'),
+			idle: unitRef('i'),
+			gone: unitRef('g'),
+		};
+		for (const [name, age] of [
+			['live', 1],
+			['idle', 40],
+			['gone', 600],
+		] as const) {
+			await recordUnitEntered({
+				cwd: repo.root,
+				ref: refs[name],
+				owner: { agent: name, session: 's' },
+				worktree: repo.enter(refs[name]),
+				now: start - age * MINUTE,
+			});
+		}
+		const entries = await readUnitStandings({
+			root: repo.root,
+			policy: unitPolicy,
+			now: start,
+		});
+		expect(isUnitHolding(entries, refs.live)).toBe(true);
+		expect(isUnitHolding(entries, refs.idle)).toBe(true);
+		expect(isUnitHolding(entries, refs.gone)).toBe(false);
+		expect(isUnitHolding(entries, 'delendai/wip/unknown/x')).toBe(true);
+		const one = await unitVerdictOf(
+			{ root: repo.root, policy: unitPolicy, now: start },
+			`refs/heads/${refs.gone}`,
+		);
+		expect(one?.standing).toBe('abandoned');
 	});
 });
