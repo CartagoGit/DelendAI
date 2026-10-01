@@ -2,12 +2,15 @@
 id: x00810
 title: "A ready proposal is found in a worktree"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [q00022]
+last-transition-id: 9e9478fb-d6bc-4848-bd22-bc7776d39633
+last-correlation-id: 9e9478fb-d6bc-4848-bd22-bc7776d39633
+last-transition-from: in-progress
 ---
 
 # x00810 — A ready proposal is found in a worktree
@@ -58,6 +61,7 @@ not there and reported all 1156 proposals as divergent.
   - `plugins/proposals/src/lib/proposals/index-reader.ts`
   - `plugins/proposals/tests/src/lib/proposals/locate.spec.ts`
   - `plugins/proposals/tests/src/lib/proposals/index-reader-rebuild.spec.ts`
+- shipped-in: `582d53897e04`
 
 ## dependency graph
 
