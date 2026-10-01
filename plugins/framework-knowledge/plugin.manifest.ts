@@ -9,12 +9,12 @@ export default definePluginManifest({
 		'Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.',
 	tags: ['knowledge', 'frameworks', 'policy'],
 	maturity: 'experimental',
-	// No tools yet (f00547 S2–S4 land the knowledge record, the policy
-	// resolver and the convention detector as library code only). The
-	// manifest schema refuses an empty `permissions` array, so this
-	// declares the one permission every consumer of this plugin will
-	// need at minimum — reading the manifest/lockfile to resolve a
-	// version — leaving S5 to decide whether its tools need more.
+	// No tools yet: the knowledge record, the policy resolver and the
+	// convention detector land first as library code. The manifest schema
+	// refuses an empty `permissions` array, so this declares the one
+	// permission every consumer of this plugin needs at minimum — reading
+	// the manifest/lockfile to resolve a version — leaving the tools to
+	// decide whether they need more.
 	permissions: ['filesystem-read'],
 	// Deliberately in NO preset while it has no tools to expose, and per
 	// the proposal's own acceptance criteria once it does: adopting a

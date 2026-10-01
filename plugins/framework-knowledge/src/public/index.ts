@@ -1,7 +1,7 @@
 /**
  * Public surface of `@delendai/framework-knowledge`.
  *
- * Exported as pure functions/types so a peer plugin (f00548, f00550)
+ * Exported as pure functions/types so a peer plugin
  * can build on the knowledge-record shape without importing
  * `src/index.ts`, which has side effects through `definePlugin`.
  */

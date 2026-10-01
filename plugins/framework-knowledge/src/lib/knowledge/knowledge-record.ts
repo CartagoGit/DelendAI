@@ -1,4 +1,4 @@
-// knowledge-record.ts — f00547 S2: construct and validate one piece of
+// knowledge-record.ts — construct and validate one piece of
 // framework knowledge, with its evidence and its force.
 //
 // Pure: no fs, no network, no clock reads other than validating a

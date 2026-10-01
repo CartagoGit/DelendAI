@@ -1,5 +1,5 @@
 /**
- * knowledge-record.interface.ts — f00547 S2: the pure contract for one
+ * knowledge-record.interface.ts — the pure contract for one
  * piece of framework knowledge.
  *
  * A record is never trusted on its say-so alone: it always carries
