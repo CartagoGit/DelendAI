@@ -12,7 +12,7 @@ import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
-import { readSwarm } from './work-swarm.service';
+import { describeSwarm, readSwarm } from './work-swarm.service';
 import {
 	countStandings,
 	readUnitStandings,
@@ -121,25 +121,7 @@ export const swarm = async (
 	if (ctx.globals.json || ctx.globals.format === 'json') {
 		return { code: EXIT_CODE.OK, data: view };
 	}
-	const lines = [
-		`integration      ${view.integration}`,
-		`units of work    ${String(view.units.length)}`,
-		...view.units.map(
-			(unit) =>
-				`  ${unit.agent}  ${unit.subject}  +${String(unit.ahead)}/-${String(unit.behind)}  ${String(unit.paths.length)} path(s)`,
-		),
-		`publications     ${String(view.publications.length)}`,
-		...view.publications.map((name) => `  ${name}`),
-		...(view.overlaps.length === 0
-			? ['overlaps         none']
-			: [
-					`overlaps         ${String(view.overlaps.length)} path(s) more than one unit of work is changing:`,
-					...view.overlaps.map(
-						(overlap) =>
-							`  ${overlap.path} — ${overlap.refs.join(', ')}`,
-					),
-				]),
-	];
+	const lines = describeSwarm(view);
 	process.stdout.write(`${lines.join('\n')}\n`);
 	return { code: EXIT_CODE.OK, data: view, suppressDefaultPrint: true };
 };

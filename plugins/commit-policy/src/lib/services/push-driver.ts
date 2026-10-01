@@ -15,7 +15,6 @@ import {
 	type IResolvedDevelopmentPolicy,
 	type IPushAuthorization,
 	type IPushForceMode,
-	UNRESOLVED_POLICY_RELEASE_BRANCH,
 } from '@delendai/core/public';
 
 import type { ICommitPolicyPush, ForceMode } from '../contracts/options';
@@ -117,10 +116,7 @@ const forceModeToGitPush = (mode: ForceMode): IPushForceMode => {
  */
 const releaseBranchOf = (
 	development: IResolvedDevelopmentPolicy | undefined,
-): string | undefined =>
-	development === undefined
-		? UNRESOLVED_POLICY_RELEASE_BRANCH
-		: distinctReleaseBranch(development);
+): string | undefined => distinctReleaseBranch(development);
 
 const refuseDirectReleasePush = (
 	branch: string,

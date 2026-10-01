@@ -25,9 +25,11 @@
  */
 
 import {
-	buildDesiredState,
 	hasSeparateReleaseBranch,
 	protectedBranchNames,
+} from '@delendai/core/cli';
+import {
+	buildDesiredState,
 	type IDesiredBranchRule,
 	type IResolvedDevelopmentPolicy,
 } from '@delendai/core/public';
