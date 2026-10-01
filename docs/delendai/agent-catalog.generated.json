@@ -1641,25 +1641,17 @@
 				"date": "2026-09-19"
 			},
 			{
+				"id": "x00766",
+				"title": "A project with one branch and a project with no policy both get a working model",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
 				"id": "x00769",
 				"title": "Push guards and protected-branch defaults follow the configured development policy",
 				"track": "general",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-09-30"
-			},
-			{
-				"id": "x00770",
-				"title": "Diagnostics and setup follow the configured profile",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-09-30"
-			},
-			{
-				"id": "x00785",
-				"title": "worktree-pr has one work model: the unit worktree that work enter makes",
-				"track": "trust",
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-30"
