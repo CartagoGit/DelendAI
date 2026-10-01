@@ -2,10 +2,13 @@
 id: x00765
 title: "close_slice runs the project's declared gate asynchronously and never counts a timeout as green"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-30
+last-transition-id: 24b94cff-542e-42cf-892a-8e28d2f72c9c
+last-correlation-id: 24b94cff-542e-42cf-892a-8e28d2f72c9c
+last-transition-from: ready
 ---
 
 # x00765 — close_slice runs the project's declared gate asynchronously and never counts a timeout as green
