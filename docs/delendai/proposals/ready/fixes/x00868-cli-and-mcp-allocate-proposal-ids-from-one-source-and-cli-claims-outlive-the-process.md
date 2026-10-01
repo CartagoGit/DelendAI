@@ -48,7 +48,7 @@ The owner's principle is that every workflow is completable by any agent on any 
 
 ### S2 — create_proposal does not block on a publish and is safe to repeat
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/proposals/existing-proposal.ts`, `plugins/proposals/tests/src/lib/create-proposal-retry.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/proposals/existing-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/existing-proposal.interface.ts`, `plugins/proposals/tests/src/lib/create-proposal-retry.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Gate**: none
 - acceptance:
   - "a server whose own root is a unit writes the proposal there and pushes nothing"

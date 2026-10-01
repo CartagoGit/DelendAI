@@ -15,25 +15,15 @@
  */
 import { join } from 'node:path';
 
+import type {
+	IExistingProposal,
+	IExistingProposalQuery,
+} from '../contracts/interfaces/existing-proposal.interface';
 import { PROPOSAL_SCAN_FOLDERS } from '../contracts/constants/proposal-glossary.constant';
 import {
 	DEFAULT_ALLOCATOR_FS,
 	type IAllocatorFs,
 } from './proposal-id-allocator-fs';
-
-export interface IExistingProposal {
-	readonly id: string;
-	/** Path relative to the proposals directory, `/`-separated. */
-	readonly file: string;
-}
-
-export interface IExistingProposalQuery {
-	readonly proposalsDirAbs: string;
-	readonly prefix: string;
-	readonly slug: string;
-	readonly title: string;
-	readonly status: string;
-}
 
 const FRONTMATTER_FIELD = (name: string, text: string): string | undefined =>
 	new RegExp(`^${name}:\\s*(.+?)\\s*$`, 'mu').exec(

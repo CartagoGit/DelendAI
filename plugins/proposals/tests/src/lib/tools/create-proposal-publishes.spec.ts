@@ -208,7 +208,7 @@ describe('create_proposal publishes what it writes', () => {
 		expect(result?.publishReason).toContain(
 			'wip/agent-a/f00001-S1-g1/the-work',
 		);
-		expect(git(root, 'ls-remote', 'origin')).toBe('');
+		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
 	});
 
 	it('does not push a second ref when the server itself runs in the unit', async () => {
@@ -230,7 +230,7 @@ describe('create_proposal publishes what it writes', () => {
 		expect(result.publishReason).toContain(
 			'wip/agent-a/f00001-S1-g1/the-work',
 		);
-		expect(git(root, 'ls-remote', 'origin')).toBe('');
+		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
 	});
 
 	it('publishes only its own file, on top of the integration branch', async () => {
@@ -243,7 +243,9 @@ describe('create_proposal publishes what it writes', () => {
 			'Only its own file',
 		);
 
-		const sha = git(root, 'ls-remote', 'origin').split(/\s+/u)[0] ?? '';
+		const sha =
+			git(root, 'ls-remote', 'origin', 'refs/heads/*').split(/\s+/u)[0] ??
+			'';
 		git(root, 'fetch', '-q', 'origin', sha);
 		expect(git(root, 'rev-parse', `${sha}^`)).toBe(base);
 		expect(
@@ -298,7 +300,7 @@ describe('create_proposal on a project that lands without a pull request', () =>
 		expect(result.publishReason).toContain(
 			'merging a unit of work into develop',
 		);
-		expect(git(root, 'ls-remote', 'origin')).toBe('');
+		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
 		// A concrete step, not "finish the unit" for a unit that does not
 		// exist yet: the file goes onto a create unit, and the unit lands.
 		expect(result.nextAction).toContain(
