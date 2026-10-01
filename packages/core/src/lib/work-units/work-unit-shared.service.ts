@@ -165,12 +165,6 @@ export const openWork = async (
 ): Promise<IWorkContext | IWorkUnitResult> => {
 	const root = workspaceOf(ctx);
 	const policy = await readWorkspacePolicy(root);
-	if (policy === undefined) {
-		return refused(
-			'This project declares no development policy.',
-			'Add a `development` block to delendai.config.json; without one there is no work-ref model to follow.',
-		);
-	}
 	const engine = await createWipEngine(root, anchorFromPolicy(policy));
 	if (engine === undefined) {
 		return refused(

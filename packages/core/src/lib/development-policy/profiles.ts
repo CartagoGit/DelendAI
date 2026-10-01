@@ -247,6 +247,17 @@ const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
  * `worktree-pr` — one worktree per agent. HEAD movement is legitimate
  * here, so the checkout is not pinned and the agent tool surface keeps
  * the branch-switching capabilities the shared profiles withhold.
+ *
+ * ONE work model, shared with `shared-checkout-pr`: a unit of work is a
+ * work ref, and `delendai work enter` makes the worktree whose branch is
+ * that ref (persistence `wip-ref`). `work checkpoint` and `work publish`
+ * accept that branch only, so `agent_worktree` does not create worktrees
+ * here: its `agent/*` branch could not be published. The agent edits and
+ * commits in its unit worktree with ordinary git.
+ *
+ * Switching branches in the checkout an agent was given is INTENDED to be
+ * possible (`pinnedCheckout: false`); nothing is published from such a
+ * branch.
  */
 const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 	version: DEVELOPMENT_POLICY_VERSION,
@@ -272,9 +283,9 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 		anchoredToIntegrationBranch: false,
 	},
 	persistence: {
-		strategy: 'branch',
-		usesWipRefs: false,
-		exactScope: false,
+		strategy: 'wip-ref',
+		usesWipRefs: true,
+		exactScope: true,
 		allowsDirectIntegrationCommit: false,
 		autoCommitOnTask: true,
 		autoPushAfterCommit: true,

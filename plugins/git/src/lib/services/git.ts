@@ -5,12 +5,14 @@ import { execFile } from 'node:child_process';
 // Only the contract is shared; the read-only runner implementation stays local.
 export type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import { readExpectedReleaseState } from '../release';
 import {
 	assertReleaseMetadata,
 	callerCheckout,
 	nextVersion,
 	releaseBranch,
 	type IReleaseCandidateMetadata,
+	type IReleaseTarget,
 	type ReleaseType,
 } from '@delendai/core/public';
 
@@ -369,40 +371,24 @@ export const gitWorktreeList = async (
 ): Promise<readonly IGitWorktreeEntry[]> =>
 	parseWorktreeList((await run(['worktree', 'list', '--porcelain'])).output);
 
-const resolveRef = async (run: IGitRunner, ref: string): Promise<string> => {
-	const result = await run(['rev-parse', ref]);
-	if (!result.ok || result.output.trim() === '')
-		throw new Error(result.reason ?? `could not resolve git ref "${ref}"`);
-	return result.output.trim();
-};
-
-/** Read the real package version from main and freeze an immutable release cut. */
+/** Read the real package version from the release branch and freeze an immutable release cut. */
 export const createReleaseCandidate = async (
 	run: IGitRunner,
 	input: {
 		readonly type: ReleaseType;
 		readonly slug: string;
 		readonly actor: string;
+		readonly target: IReleaseTarget;
 		readonly timestamp?: string;
 		readonly includedProposals?: readonly string[];
 	},
 ): Promise<IReleaseCandidateMetadata> => {
-	const sourceDevelopSha = await resolveRef(run, 'develop');
-	const baseMainSha = await resolveRef(run, 'main');
-	const versionResult = await run([
-		'show',
-		`${baseMainSha}:packages/core/package.json`,
-	]);
-	if (!versionResult.ok)
-		throw new Error(versionResult.reason ?? 'could not read main version');
-	const parsed = JSON.parse(versionResult.output) as { version?: unknown };
-	if (typeof parsed.version !== 'string')
-		throw new Error('main package.json has no string version');
+	const state = await readExpectedReleaseState(run, input.target);
 	const metadata: IReleaseCandidateMetadata = {
-		sourceDevelopSha,
-		baseMainSha,
-		fromVersion: parsed.version,
-		targetVersion: nextVersion(parsed.version, input.type),
+		sourceDevelopSha: state.sourceDevelopSha,
+		baseMainSha: state.mainSha,
+		fromVersion: state.mainVersion,
+		targetVersion: nextVersion(state.mainVersion, input.type),
 		type: input.type,
 		slug: input.slug,
 		branch: releaseBranch(input.type, input.slug),

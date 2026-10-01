@@ -59,12 +59,15 @@ const tempDir = (prefix: string): string => {
 	return dir;
 };
 
-/** A shared checkout on develop, tracking a bare remote that has it. */
-const projectWith = (config: object): { root: string; remote: string } => {
+/** A shared checkout on `trunk`, tracking a bare remote that has it. */
+const projectWith = (
+	config: object,
+	trunk = 'develop',
+): { root: string; remote: string } => {
 	const root = tempDir('land-');
 	const remote = tempDir('land-remote-');
-	git(remote, 'init', '-q', '--bare', '-b', 'develop');
-	git(root, 'init', '-q', '-b', 'develop');
+	git(remote, 'init', '-q', '--bare', '-b', trunk);
+	git(root, 'init', '-q', '-b', trunk);
 	git(root, 'config', 'user.email', 'land@example.com');
 	git(root, 'config', 'user.name', 'Land');
 	git(root, 'config', 'commit.gpgsign', 'false');
@@ -74,7 +77,7 @@ const projectWith = (config: object): { root: string; remote: string } => {
 	git(root, 'add', '-A');
 	git(root, 'commit', '-q', '-m', 'base');
 	git(root, 'remote', 'add', 'origin', remote);
-	git(root, 'push', '-q', '-u', 'origin', 'develop');
+	git(root, 'push', '-q', '-u', 'origin', trunk);
 	return { root, remote };
 };
 
@@ -123,8 +126,8 @@ const publish = (
 ): Promise<IWorkUnitResult> =>
 	runWorkUnit(['publish', ...UNIT, ...extra], contextFor(root));
 
-const remoteDevelop = (remote: string): string =>
-	git(remote, 'rev-parse', 'refs/heads/develop');
+const remoteDevelop = (remote: string, trunk = 'develop'): string =>
+	git(remote, 'rev-parse', `refs/heads/${trunk}`);
 
 const workRefExists = (root: string): boolean => {
 	try {
@@ -293,5 +296,100 @@ describe('work publish under a pull-request profile is unchanged', () => {
 		).toContain(
 			'refs/heads/delendai/pr/claude-opus-5/implement/x00553-S1-g1/probe',
 		);
+	});
+});
+
+describe('work publish in a project whose only branch is main', () => {
+	const landsOnMain = async (
+		config: object,
+		workRef: string,
+	): Promise<void> => {
+		const { root, remote } = projectWith({ ...config, ...GATE }, 'main');
+		const before = remoteDevelop(remote, 'main');
+		const localBefore = git(root, 'rev-parse', 'main');
+		await checkpoint(root, { 'state.txt': 'green\n' });
+		const workTip = git(root, 'rev-parse', workRef);
+
+		const result = await publish(root);
+
+		expect(result.error).toBeUndefined();
+		expect(result.data).toMatchObject({
+			landed: true,
+			landing: { status: 'merged' },
+			certification: { declared: true, passed: true },
+		});
+		const after = remoteDevelop(remote, 'main');
+		expect(git(remote, 'rev-parse', `${after}^1`)).toBe(before);
+		expect(git(remote, 'rev-parse', `${after}^2`)).toBe(workTip);
+		expect(git(remote, 'show', `${after}:state.txt`)).toBe('green');
+		// Nothing was invented: the remote still has only the one branch.
+		expect(git(remote, 'for-each-ref', '--format=%(refname)')).toBe(
+			'refs/heads/main',
+		);
+		expect(git(root, 'symbolic-ref', '--short', 'HEAD')).toBe('main');
+		expect(git(root, 'rev-parse', 'main')).toBe(localBefore);
+	};
+
+	it('lands on main after the gate when the release branch is omitted', async () => {
+		await landsOnMain(
+			{
+				development: {
+					profile: 'shared-checkout-merge',
+					branches: {
+						integration: 'main',
+						namespacePrefix: 'delendai',
+					},
+				},
+			},
+			WORK_REF,
+		);
+	});
+
+	it('lands on main after the gate when integration and release are both main', async () => {
+		await landsOnMain(
+			{
+				development: {
+					profile: 'shared-checkout-merge',
+					branches: {
+						integration: 'main',
+						release: 'main',
+						namespacePrefix: 'delendai',
+					},
+				},
+			},
+			WORK_REF,
+		);
+	});
+
+	it('lands on main after the gate when the project declares no policy at all', async () => {
+		await landsOnMain(
+			{},
+			'refs/heads/wip/claude-opus-5/implement/x00553-S1-g1/probe',
+		);
+	});
+
+	it('still refuses a failing gate on main and keeps the work', async () => {
+		const { root, remote } = projectWith(
+			{
+				development: {
+					profile: 'shared-checkout-merge',
+					branches: {
+						integration: 'main',
+						namespacePrefix: 'delendai',
+					},
+				},
+				...GATE,
+			},
+			'main',
+		);
+		const before = remoteDevelop(remote, 'main');
+		await checkpoint(root, { 'state.txt': 'still red\n' });
+
+		const result = await publish(root);
+
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('validation gate failed');
+		expect(remoteDevelop(remote, 'main')).toBe(before);
+		expect(workRefExists(root)).toBe(true);
 	});
 });

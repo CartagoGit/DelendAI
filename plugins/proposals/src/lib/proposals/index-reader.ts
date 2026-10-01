@@ -23,16 +23,16 @@
  * They are the canonical "existsSync + readFileSync" replacement.
  */
 
-import { basename, dirname } from 'node:path';
-
 import { DEFAULT_INDEX_FS, type IIndexFs } from './index-reader-fs';
 import { compareIndexEntries, decideIndexSource } from './index-source-policy';
 import {
 	DEFAULT_PROPOSAL_INDEX_SOURCE,
-	PROPOSAL_INDEX_DB_PATH_ENV_VAR,
 	PROPOSAL_INDEX_SOURCE_ENV_VAR,
 } from '../contracts/constants/proposal-index-source.constant';
 import type { IProposalIndexSource } from '../contracts/interfaces/proposal-index-source.interface';
+import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
+import { resolveDatabasePath } from './index-reader-location';
+import { attemptSqlRebuild } from './index-reader-rebuild';
 import { recordProposalIndexRead } from './index-read-stats';
 import { defaultLog, noticeOnce } from './index-reader-notice';
 import { ProposalIndexSqlUnavailableError } from './proposal-errors';
@@ -149,6 +149,31 @@ export interface IProposalIndexReadOptions {
 		readonly sourceCommit: string | null;
 		readonly logicalDigest: string | null;
 	} | null>;
+	/**
+	 * Absolute path of the markdown proposals tree — the authority a
+	 * `sql`-source rebuild-on-missing projects from. Defaults to
+	 * `<workspaceRoot>/docs/delendai/proposals`, the canonical layout.
+	 */
+	readonly proposalsDirAbs?: string;
+	/**
+	 * DIP seam: whether `root` exists and, when the projection could not
+	 * be opened at all, whether `databasePath` names a file that exists
+	 * (exists = the reader could not OPEN it, i.e. corrupt or locked — a
+	 * rebuild must never run over that; does not exist = nothing has
+	 * ever been built there, i.e. missing — safe to rebuild). Defaults to
+	 * the real filesystem.
+	 */
+	readonly pathExists?: (path: string) => boolean | Promise<boolean>;
+	/**
+	 * DIP seam for the rebuild-from-markdown the `sql` source runs before
+	 * giving up; defaults to the real leveller
+	 * (`reconcileProjection`). Never throws in production; a spec can
+	 * inject a fake to drive the retry without a real database.
+	 */
+	readonly rebuildProjection?: (input: {
+		readonly root: string;
+		readonly proposalsDir: string;
+	}) => IProjectionRefresh | Promise<IProjectionRefresh>;
 }
 
 export { resetProposalIndexFallbackNotice } from './index-reader-notice';
@@ -172,77 +197,17 @@ export const resolveProposalIndexSource = (
 };
 
 /**
- * The workspace this read belongs to, taken from the index path the
- * caller already resolved.
- *
- * WHY not `process.cwd()`, which is what this used to fall back to: an
- * MCP server's working directory is wherever the host happened to launch
- * it, which in a multi-project setup is frequently another project
- * entirely — and resolving the proposals database from it would read,
- * and eventually write, somebody else's repository. The index path has
- * none of that ambiguity: every caller gets it from its own resolved
- * layout, so it names the workspace being read rather than the process's
- * accident.
- *
- * The derivation is only trusted when it round-trips: the index must sit
- * at `<root>/.cache/delendai/proposals/`, the canonical sibling of the
- * state directory `resolveProposalsDbPaths` owns. Any other layout
- * returns `null` — "the SQL source cannot serve" — because a wrong root
- * here is the same wrong-repository bug under a different name.
+ * Whether the source was chosen by the caller or the environment rather
+ * than taken from {@link DEFAULT_PROPOSAL_INDEX_SOURCE}. Only a chosen
+ * `sql` refuses a read whose projection cannot even be located.
  */
-const workspaceRootFromIndexPath = (
-	indexPathAbs: string,
-	stateDir: (root: string) => string,
-): string | null => {
-	const proposalsCacheDir = dirname(indexPathAbs);
-	if (basename(proposalsCacheDir) !== 'proposals') return null;
-	const cacheDir = dirname(proposalsCacheDir);
-	const root = dirname(dirname(cacheDir));
-	return dirname(stateDir(root)) === cacheDir ? root : null;
-};
-
-/**
- * Canonical database path for this read. Never hand-built: the
- * `.cache/delendai/state/proposals.sqlite` layout belongs to
- * `resolveProposalsDbPaths`, imported dynamically so that a JSON-source
- * read never loads `bun:sqlite`.
- *
- * On a runtime without `bun:sqlite` (a plain Node host, vitest) the
- * import fails and this returns `null` — which the caller reads as
- * "the SQL source cannot serve" and falls back to JSON. That is the
- * correct answer there: without `bun:sqlite` there is no SQL source.
- */
-const resolveDatabasePath = async (
-	indexPathAbs: string,
+export const isProposalIndexSourcePinned = (
 	options?: IProposalIndexReadOptions,
-): Promise<string | null> => {
-	if (options?.databasePath !== undefined) return options.databasePath;
-	const fromEnv = (options?.env ?? process.env)[
-		PROPOSAL_INDEX_DB_PATH_ENV_VAR
-	];
-	if (typeof fromEnv === 'string' && fromEnv.length > 0) return fromEnv;
-	try {
-		const { resolveProposalsDbPaths } = await import(
-			'@delendai/proposals-sqlite'
-		);
-		// An explicit `workspaceRoot` is the caller's own word and wins;
-		// otherwise the root is derived from the index path and verified
-		// against the canonical layout.
-		const declared = options?.workspaceRoot;
-		const root =
-			declared !== undefined && declared.length > 0
-				? declared
-				: workspaceRootFromIndexPath(
-						indexPathAbs,
-						(candidate) =>
-							resolveProposalsDbPaths(candidate).stateDir,
-					);
-		if (root === null) return null;
-		return resolveProposalsDbPaths(root).databasePath;
-	} catch {
-		return null;
-	}
-};
+): boolean =>
+	options?.source !== undefined ||
+	isProposalIndexSource(
+		(options?.env ?? process.env)[PROPOSAL_INDEX_SOURCE_ENV_VAR],
+	);
 
 export const readFromJson = async (
 	indexPathAbs: string,
@@ -291,11 +256,15 @@ export const readFromSqlSource = async (
  *
  * The signature is unchanged (`indexPathAbs`, optional `fs`); the
  * optional third argument only exists for callers that pin a source or a
- * database path. With neither, the source is `auto`.
+ * database path. With neither, the source is `sql` (q00022 S4 phase 2):
+ * missing or unstamped, it rebuilds the projection from markdown and
+ * reads again before giving up.
  *
  * @throws ProposalIndexSqlUnavailableError only when the source is `sql`
- * and the projection cannot serve. `auto` and `json` never throw for a
- * missing or unstamped database.
+ * and the projection still cannot serve after a rebuild was attempted
+ * (or could not be — a corrupt database, or a workspace root that does
+ * not exist, are never rebuilt over). `auto` and `json` never throw for
+ * a missing or unstamped database.
  */
 /**
  * `sql`: the projection answers, or the read fails.
@@ -308,11 +277,38 @@ export const readFromSqlSource = async (
 const serveStrictSql = async (
 	indexPathAbs: string,
 	fs: IIndexFs | undefined,
-	fromSql: Awaited<ReturnType<typeof readFromSqlSource>>,
+	fromSqlInitial: Awaited<ReturnType<typeof readFromSqlSource>>,
 	log: (message: string) => void,
+	options?: IProposalIndexReadOptions,
 ): Promise<readonly IProposalIndexEntry[]> => {
+	let fromSql = fromSqlInitial;
+	let rebuilt = false;
 	if (fromSql === null || fromSql.sourceCommit === null) {
-		recordProposalIndexRead('sql-refused');
+		const attempt = await attemptSqlRebuild(
+			indexPathAbs,
+			options,
+			fromSql === null,
+			log,
+			() => readFromSqlSource(indexPathAbs, options),
+		);
+		if (attempt.attempted) {
+			rebuilt = true;
+			fromSql = attempt.result;
+		} else if (!attempt.located && !isProposalIndexSourcePinned(options)) {
+			// Nobody asked for `sql`: it is only the default, and this index
+			// sits in a layout the projection cannot be located in. Refusing
+			// would break a project for a choice it never made.
+			recordProposalIndexRead('fallback-unavailable');
+			noticeOnce(
+				`default-sql-unlocated:${indexPathAbs}`,
+				`proposal index: no SQLite projection can be located for ${indexPathAbs}; serving it as JSON (set ${PROPOSAL_INDEX_SOURCE_ENV_VAR}=sql to make this an error; this notice is emitted once per index path)`,
+				log,
+			);
+			return readFromJson(indexPathAbs, fs);
+		}
+	}
+	if (fromSql === null || fromSql.sourceCommit === null) {
+		recordProposalIndexRead('sql-refused', 0, rebuilt);
 		throw new ProposalIndexSqlUnavailableError(
 			fromSql === null ? 'unavailable' : 'unstamped',
 			indexPathAbs,
@@ -325,6 +321,7 @@ const serveStrictSql = async (
 	recordProposalIndexRead(
 		divergence.length > 0 ? 'sql-divergence-reported' : 'sql-parity',
 		divergence.length,
+		rebuilt,
 	);
 	if (divergence.length > 0)
 		noticeOnce(
@@ -354,7 +351,8 @@ export const readProposalIndex = async (
 	// hand every consumer an empty repository when the database is
 	// simply absent.
 	const log = options?.log ?? defaultLog;
-	if (source === 'sql') return serveStrictSql(indexPathAbs, fs, fromSql, log);
+	if (source === 'sql')
+		return serveStrictSql(indexPathAbs, fs, fromSql, log, options);
 	if (fromSql !== null) {
 		const fromJson = await readFromJson(indexPathAbs, fs);
 		const decision = decideIndexSource({

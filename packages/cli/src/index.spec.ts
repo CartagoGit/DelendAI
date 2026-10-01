@@ -192,6 +192,7 @@ describe('runEntry — what the binary actually does', () => {
 			'{ "development": { "profile": "shared-checkout-merge" } }',
 		);
 		const lines: string[] = [];
+		const refusals: string[] = [];
 		const previousExitCode = process.exitCode;
 
 		await runEntry(['__serve'], root, {
@@ -200,6 +201,9 @@ describe('runEntry — what the binary actually does', () => {
 					new Error('a development policy that cannot be honoured'),
 				),
 			report: (line) => lines.push(line),
+			refuse: async (refusal) => {
+				refusals.push(refusal);
+			},
 		});
 		// The rejection is handled on the microtask queue the catch is
 		// attached to, not inside runEntry: serving never returns, so the
@@ -210,6 +214,9 @@ describe('runEntry — what the binary actually does', () => {
 		expect(lines.join('\n')).toContain('cannot start in this workspace');
 		expect(lines.join('\n')).toContain('cannot be honoured');
 		expect(process.exitCode).not.toBe(0);
+		// The host gets the same sentence through the handshake, not a
+		// closed connection.
+		expect(refusals.join('\n')).toContain('cannot be honoured');
 		process.exitCode = previousExitCode;
 	});
 

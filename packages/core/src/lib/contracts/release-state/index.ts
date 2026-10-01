@@ -1,3 +1,4 @@
+import type { IReleaseTarget } from '../../development-policy/release-target.interface';
 import type { IReleaseCandidateMetadata, ReleaseType } from '../release';
 
 export type ReleasePrepareMode = 'dry-run' | 'execute';
@@ -26,6 +27,8 @@ export interface IReleasePrepareInput {
 	readonly slug: string;
 	readonly actor: string;
 	readonly expected: IExpectedReleaseState;
+	/** Where the release starts and lands, from the project's policy. */
+	readonly target: IReleaseTarget;
 	readonly idempotencyKey?: string;
 	readonly timestamp?: string;
 	readonly includedProposals?: readonly string[];
@@ -57,6 +60,7 @@ export type ReleaseStateErrorCode =
 	| 'release-collision'
 	| 'duplicate-release'
 	| 'not-found'
+	| 'no-release-branch'
 	| 'readiness-blocked';
 
 export class ReleaseStateError extends Error {

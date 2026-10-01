@@ -235,12 +235,6 @@ const next = async (
 	const unit = await unitOf(agent, sessionOf(args), ctx);
 	if (!isUnit(unit)) return unit;
 	const policy = await readWorkspacePolicy(unit.path);
-	if (policy === undefined) {
-		return {
-			code: EXIT_CODE.VALIDATION,
-			error: 'This project declares no development policy, so it has no review units.',
-		};
-	}
 	// The unit, not only the agent: another instance of this model is
 	// another reviewer, and its claims are not ours.
 	const answer = await queueOf(ctx, agent, { unit: unit.ref });
@@ -281,7 +275,7 @@ const next = async (
 				: data({
 						...session,
 						published: published.data,
-						next: 'Nothing else is waiting for a verdict; your pack is published as its pull request.',
+						next: 'Nothing else is waiting for a verdict; your pack is published.',
 					});
 		}
 		// The next pack, in a unit of its own.

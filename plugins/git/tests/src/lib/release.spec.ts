@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import { createReleaseCandidate } from '../../../src/lib/services/git';
 import type { IGitRunner } from '../../../src/lib/services/git';
+import type { IReleaseTarget } from '@delendai/core/public';
+
+const target: IReleaseTarget = {
+	integrationBranch: 'develop',
+	releaseBranch: 'main',
+	versionManifestPath: 'packages/core/package.json',
+	promotion: 'pull-request',
+};
 
 describe('release candidate cut', () => {
 	it('uses main version and preserves source/base SHAs when develop advances', async () => {
@@ -29,6 +37,7 @@ describe('release candidate cut', () => {
 			type: 'patch',
 			slug: 'r1-contracts',
 			actor: 'release-agent',
+			target,
 			timestamp: '2026-08-31T00:00:00.000Z',
 		});
 		developSha = '3333333';

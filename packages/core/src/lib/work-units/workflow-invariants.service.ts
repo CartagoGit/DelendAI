@@ -28,6 +28,7 @@ import { execFileSync } from 'node:child_process';
 
 import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
 
+import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import type {
@@ -124,7 +125,9 @@ export const checkWorkflowInvariants = (input: {
 		scope: 'checkout',
 		id: 'checkout-anchored',
 		claim: `the shared checkout is on \`${integration}\``,
-		holds: head === integration,
+		holds:
+			!policy.workspace.anchoredToIntegrationBranch ||
+			head === integration,
 		observed: head === '' ? 'detached' : head,
 		remedy: `git switch ${integration}`,
 	});
@@ -175,13 +178,20 @@ export const checkWorkflowInvariants = (input: {
 		(line) => line.split('\t')[1]?.replace('refs/heads/', '') ?? '',
 	);
 	const published = heads.filter((ref) => ref.startsWith(pubPrefix));
-	// `{ns}/pr/{agent}/{proposal}-{slice}-g{n}/{topic}` — two path
-	// components after the prefix, which is exactly what a flat name
-	// lacks.
-	const misshapen = published.filter((ref) => {
-		const tail = ref.slice(pubPrefix.length);
-		return tail.split('/').length !== 3;
-	});
+	// The shape is the policy's own work-ref template, which the
+	// publication ref repeats under its prefix: the count of components
+	// is read from it, so a component added to the template (as `kind`
+	// was) cannot leave this check judging the old shape.
+	const expectedSegments = workRefTailSegments(
+		policy.branches.workRefTemplate,
+	);
+	const misshapen =
+		expectedSegments === 0
+			? []
+			: published.filter((ref) => {
+					const tail = ref.slice(pubPrefix.length);
+					return tail.split('/').length !== expectedSegments;
+				});
 	add({
 		scope: 'forge',
 		id: 'publications-canonical',
@@ -193,7 +203,7 @@ export const checkWorkflowInvariants = (input: {
 				: misshapen.length === 0
 					? `${String(published.length)} ref(s), all canonical`
 					: `${String(misshapen.length)} flat: ${misshapen.slice(0, 3).join(', ')}`,
-		remedy: 'rename on the forge, then reopen the pull request',
+		remedy: `give ${pubPrefix}<name> the agent, slice and generation segments (or delete the flat ref), then publish the unit again with \`delendai work publish\``,
 	});
 
 	// 5. Every candidate contains the integration branch.

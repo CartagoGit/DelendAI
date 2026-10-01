@@ -9,7 +9,14 @@
  * makes observable.
  */
 
-/** Prefix every conforming per-agent branch must start with. */
+/**
+ * The namespace `agent_worktree` creates its per-agent branches in.
+ *
+ * It is ONE way of making a working branch, not where a project's work
+ * lives: a unit of work is a ref under the policy's work-ref namespace,
+ * which `shared/branch-namespaces.ts` reads from the project. This stays
+ * recognised for as long as `agent_worktree` creates branches here.
+ */
 export const AGENT_BRANCH_PREFIX = 'agent/' as const;
 
 /**

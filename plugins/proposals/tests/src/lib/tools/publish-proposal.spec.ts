@@ -202,6 +202,25 @@ describe('publishProposalOnRef', () => {
 		expect(calls).toEqual([]);
 	});
 
+	it('says a project with work refs and no pull request lands a proposal as a unit, on its own branch', async () => {
+		const { run, calls } = recordingRunner();
+
+		const outcome = await publishProposalOnRef(
+			request({
+				git: run,
+				policy: {
+					requiresPullRequest: false,
+					hasWorkRefs: true,
+					integration: 'trunk',
+				},
+			}),
+		);
+
+		expect(outcome.published).toBe(false);
+		expect(outcome.reason).toContain('merging a unit of work into trunk');
+		expect(calls).toEqual([]);
+	});
+
 	it('reports a failed push instead of throwing, so the document is not lost', async () => {
 		const { run } = recordingRunner({
 			step: 'push',

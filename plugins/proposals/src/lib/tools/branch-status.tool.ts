@@ -5,6 +5,10 @@ import type { IToolRegistration } from '@delendai/core/public';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { projectBranches } from '@delendai/core/public';
 import {
+	isUnderPrefixes,
+	managedBranchPrefixes,
+} from '../shared/branch-namespaces';
+import {
 	parseBranchList,
 	runBranchStatusEngine,
 } from '../shared/branch-status-engine';
@@ -27,7 +31,11 @@ export interface IBranchStatusToolOptions {
 	readonly run?: IGitRunner;
 	/** Default base branch. Defaults to the project's own. */
 	readonly defaultBaseBranch?: string;
-	/** Default agent-branch prefix. Default `agent/`. */
+	/**
+	 * Default agent-branch prefix. Absent, the project's own namespaces
+	 * apply: its work-ref and publication prefixes, and the
+	 * `agent_worktree` one.
+	 */
 	readonly defaultAgentPrefix?: string;
 	/** Default canonical worktrees dir (relative to workspaceRoot). */
 	readonly canonicalWorktreesDirRel?: string;
@@ -109,17 +117,17 @@ export const listAgentBranchesWithGit = async (
 	baseBranch?: string,
 	agentPrefix?: string,
 ): Promise<readonly IStrandedBranch[]> => {
-	const project = await projectBranches(cwd);
-	const base = baseBranch ?? project.integration;
-	const prefix = agentPrefix ?? project.workRefPrefix;
-	const branchListResult = await run([
-		'-C',
-		cwd,
-		'branch',
-		'--list',
-		`${prefix}*`,
-	]);
-	if (!branchListResult.ok) return [];
+	const base = baseBranch ?? (await projectBranches(cwd)).integration;
+	const prefixes =
+		agentPrefix === undefined
+			? await managedBranchPrefixes(cwd)
+			: [agentPrefix];
+	const branchLists = await Promise.all(
+		prefixes.map((prefix) =>
+			run(['-C', cwd, 'branch', '--list', `${prefix}*`]),
+		),
+	);
+	if (branchLists.some((listed) => !listed.ok)) return [];
 
 	const worktreeListResult = await run([
 		'-C',
@@ -131,9 +139,15 @@ export const listAgentBranchesWithGit = async (
 	const worktreePaths = worktreeListResult.ok
 		? parseWorktreeBranchPaths(worktreeListResult.output)
 		: new Map<string, string>();
-	const branchNames = parseBranchList(branchListResult.output).filter(
-		(name) => (prefix.length === 0 ? true : name.startsWith(prefix)),
-	);
+	const branchNames = [
+		...new Set(
+			branchLists.flatMap((listed) =>
+				parseBranchList(listed.output).filter((name) =>
+					isUnderPrefixes(name, prefixes),
+				),
+			),
+		),
+	];
 	const branches: IStrandedBranch[] = [];
 	for (const branch of branchNames) {
 		const [aheadBehindResult, lastCommitResult] = await Promise.all([
@@ -190,7 +204,7 @@ export const buildBranchStatusRegistration = (
 	return {
 		id: 'branch_status',
 		summary:
-			'Snapshot every agent/* branch and every worktree: ahead/behind vs base, dirty/untracked counts, out-of-cache flag.',
+			'Snapshot every work-ref, publication and agent branch and every worktree: ahead/behind vs base, dirty/untracked counts, out-of-cache flag.',
 		tags: ['coordination'],
 		register: async (server) => {
 			server.registerTool(
@@ -219,14 +233,14 @@ export const buildBranchStatusRegistration = (
 						options.defaultBaseBranch ??
 						project.integration;
 					const resolvedAgentPrefix =
-						args.agentPrefix ??
-						options.defaultAgentPrefix ??
-						project.workRefPrefix;
+						args.agentPrefix ?? options.defaultAgentPrefix;
 					const engineOptions = {
 						run,
 						workspaceRoot: options.workspaceRoot,
 						baseBranch: resolvedBaseBranch,
-						agentPrefix: resolvedAgentPrefix,
+						...(resolvedAgentPrefix !== undefined
+							? { agentPrefix: resolvedAgentPrefix }
+							: {}),
 						...(options.canonicalWorktreesDirRel !== undefined
 							? {
 									canonicalWorktreesDir: `${options.workspaceRoot}/${options.canonicalWorktreesDirRel}`,

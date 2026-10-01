@@ -191,16 +191,15 @@ Seed for the sync e2e.
 		}
 	});
 
-	it('agent_worktree create returns a clean worktree with no origin remote (host enabled)', async () => {
+	it('agent_worktree create is refused under worktree-pr, which makes its worktrees with work enter (host enabled)', async () => {
 		// f00052: the capability is off by default, so this test runs against
-		// a harness that opted in with the `worktree-pr` profile.
+		// a harness that opted in with the `worktree-pr` profile. That
+		// profile's unit of work is a work ref made by `delendai work
+		// enter`; an `agent/*` branch made here could not be published.
 		const enabled = await createAssembledProposalsServer({
 			enableAgentWorktree: true,
 		});
 		try {
-			// agent_worktree shells out to real git, so the workspace must be a
-			// git repo with at least one commit. No remote is ever added — the
-			// safety invariant is that commit-and-push could not reach the wire.
 			const ws = enabled.workspace;
 			git(ws, 'init', '-q');
 			git(ws, 'config', 'user.email', 'e2e@example.com');
@@ -213,25 +212,24 @@ Seed for the sync e2e.
 			const res = await enabled.callTool<{
 				ok: boolean;
 				action: string;
-				path?: string;
-				created?: boolean;
+				reason?: string;
 			}>('delendai_proposals_agent_worktree', {
 				action: 'create',
 				agent: 'agent-A',
 				base_branch: 'HEAD',
 			});
-			expect(res.ok).toBe(true);
-			expect(res.structured.ok).toBe(true);
-			expect(res.structured.path).toBeDefined();
-			const wtPath = res.structured.path as string;
-			expect(wtPath).toBe(
-				join(ws, '.cache', 'delendai', '.worktrees', 'agent-a'),
-			);
-			expect(existsSync(wtPath)).toBe(true);
+			expect(res.ok).toBe(false);
+			expect(res.structured.action).toBe('create');
+			expect(res.structured.reason).toContain('delendai work enter');
+			expect(
+				existsSync(join(ws, '.cache', 'delendai', '.worktrees')),
+			).toBe(false);
 
-			// Clean working tree and — critically — no origin remote.
-			expect(git(wtPath, 'status', '--porcelain').trim()).toBe('');
-			expect(git(wtPath, 'remote', '-v').trim()).toBe('');
+			const listed = await enabled.callTool<{ ok: boolean }>(
+				'delendai_proposals_agent_worktree',
+				{ action: 'list' },
+			);
+			expect(listed.structured.ok).toBe(true);
 		} finally {
 			await enabled.close();
 		}

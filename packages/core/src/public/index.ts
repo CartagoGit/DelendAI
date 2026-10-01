@@ -1064,9 +1064,27 @@ export { publicationUnitFor } from '../lib/development-policy/publication-unit';
  * project shipped the ambiguity it exists to remove.
  */
 export {
+	briefWorkModel,
 	declareWorkflow,
 	renderWorkflowDeclaration,
 } from '../lib/development-policy/declare-workflow';
+/**
+ * Whether a project has a release branch of its own. A project with one
+ * branch integrates and releases there, and its scripts must ask instead
+ * of assuming a second boundary.
+ */
+export {
+	hasSeparateReleaseBranch,
+	protectedBranchNames,
+} from '../lib/development-policy/release-branch';
+export { resolveReleaseTarget } from '../lib/development-policy/release-target';
+export type { IReleaseTarget } from '../lib/development-policy/release-target.interface';
+export {
+	deriveDefaultProtectedBranches,
+	distinctReleaseBranch,
+	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
+	UNRESOLVED_POLICY_RELEASE_BRANCH,
+} from '../lib/development-policy/protected-branches';
 export {
 	anchorFromPolicy,
 	anchorRefusal,
@@ -1175,4 +1193,10 @@ export {
 	sharedCheckout,
 } from '../lib/shared/shared-checkout';
 export { projectBranches } from '../lib/development-policy/project-branches';
+/**
+ * Whether a branch provably delivered its work, by the ref-lifecycle verdict.
+ * The branch reaper in the proposals plugin removes only what this says is
+ * delivered, instead of judging by how a branch is named.
+ */
+export { branchDeliveryVerdict } from '../lib/ref-lifecycle/branch-delivery.service';
 export { createStaleRuntimeWatch } from '../lib/development-policy/stale-runtime-advisory';

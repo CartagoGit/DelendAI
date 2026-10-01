@@ -125,8 +125,7 @@ describe('declareWorkflow', () => {
 		expect(text).toContain('work model: shared-checkout-pr');
 	});
 	it('gives every built-in profile a way to persist work', () => {
-		// `worktree-pr` persists on a branch, which the route table did
-		// not know, so its own declaration told its agents to STOP.
+		// A profile the route table did not know told its agents to STOP.
 		for (const profile of DEVELOPMENT_PROFILES) {
 			expect(
 				renderWorkflowDeclaration(declareWorkflow(policyFor(profile))),
@@ -176,7 +175,7 @@ describe('declareWorkflow', () => {
 			'commit on develop',
 		);
 		expect(workModelSummary(policyFor('worktree-pr'))).toContain(
-			'worktree branch',
+			'start with `delendai work enter`',
 		);
 	});
 
@@ -197,8 +196,14 @@ describe('declareWorkflow', () => {
 			'once its work has landed',
 		);
 		expect(step(pr, 'integration.requiresLocalCertification')).toContain(
-			'Certification happens on the forge',
+			'Prove the candidate in isolation BEFORE',
 		);
+		expect(
+			step(
+				declareWorkflow(policyFor('worktree-pr')),
+				'integration.requiresLocalCertification',
+			),
+		).toContain('Certification happens on the forge');
 		expect(step(pr, 'integration.deleteMergedWorkRef')).toContain(
 			'outlives its pull requests',
 		);
@@ -239,5 +244,79 @@ describe('declareWorkflow', () => {
 		// Merging named as the normal route, not as something to avoid.
 		expect(text).toContain('Merging is how work lands');
 		expect(text).toContain('throwaway index');
+	});
+});
+
+describe('no sentence names a mechanism the profile does not have', () => {
+	const textOf = (profile: (typeof DEVELOPMENT_PROFILES)[number]) =>
+		declareWorkflow(policyFor(profile))
+			.steps.map((step) => step.instruction)
+			.join('\n');
+	/** "opens no pull request" is a denial, not a mechanism. */
+	const withoutDenials = (text: string) =>
+		text.replaceAll(/\bno pull request\b/giu, '');
+
+	it.each(['shared-checkout-merge', 'shared-direct'] as const)(
+		'%s never mentions a pull request or forge certification',
+		(profile) => {
+			const text = withoutDenials(textOf(profile));
+
+			expect(text).not.toMatch(/pull request/iu);
+			expect(text).not.toMatch(/on the forge/iu);
+		},
+	);
+
+	it('shared-direct neither squashes, discards nor has a work ref to end', () => {
+		const text = textOf('shared-direct');
+
+		expect(text).not.toMatch(/squash|discard|rebased|merge commit/iu);
+		expect(text).toContain('There is no work ref');
+		expect(text).toContain('nothing gates a commit');
+		expect(text).not.toContain('preserves it');
+	});
+
+	it('shared-checkout-merge is certified by the local gate, not the forge', () => {
+		const text = textOf('shared-checkout-merge');
+
+		expect(text).toContain('validation gate');
+		expect(text).not.toContain('Certification happens on the forge');
+		expect(text).toContain('merge commit');
+	});
+
+	it('shared-checkout-pr certifies on the machine, as its preset declares', () => {
+		const text = textOf('shared-checkout-pr');
+
+		expect(text).toContain('Prove the candidate in isolation BEFORE');
+		expect(text).not.toContain('Certification happens on the forge');
+	});
+
+	it('worktree-pr names the command that makes its worktree and branch', () => {
+		const text = textOf('worktree-pr');
+
+		expect(text).toContain('delendai work enter');
+		expect(text).toContain('wip/');
+		expect(text).toContain('only the work ref `work enter` makes');
+		expect(text).not.toContain('from the shared checkout');
+		expect(textOf('shared-checkout-pr')).not.toContain(
+			'Git lets you switch branches',
+		);
+	});
+
+	it('worktree-pr keeps its forge and pull-request wording', () => {
+		const text = textOf('worktree-pr');
+
+		expect(text).toContain('Certification happens on the forge');
+		expect(text).toContain('pull request');
+	});
+
+	it('states a recovery promise only where recovery exists', () => {
+		for (const profile of DEVELOPMENT_PROFILES) {
+			const policy = policyFor(profile);
+			const text = textOf(profile);
+
+			expect(text.includes('reconciliation preserves')).toBe(
+				policy.recovery.strategy !== 'none',
+			);
+		}
 	});
 });

@@ -7,6 +7,7 @@ import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';
 import { purgeStrandedBranches } from '../locks/branch-hygiene';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 import { listAgentBranchesWithGit } from './branch-status.tool';
 
 export interface IAgentWorktreeToolOptions {
@@ -113,22 +114,27 @@ export const buildAgentWorktreeRegistration = (
 	const toolName = `${options.namespacePrefix}_agent_worktree`;
 	const run = options.run ?? createGitRunner(options.workspaceRoot);
 	const sharedCheckout = options.isolation?.agentWorktrees === false;
+	const unitWorktrees = options.isolation?.unitWorktrees === true;
 	return {
 		id: 'agent_worktree',
 		effects: ['write', 'spawn'],
 		writeRoot: 'repository',
-		summary: sharedCheckout
-			? "Not used under this project's development profile: agents share the checkout. Refuses create and says how to work instead."
-			: 'Isolate a concurrent agent into its own git worktree + branch (create/list/remove). Required when 2+ agents share this repo.',
+		summary: unitWorktrees
+			? 'Lists or removes agent worktrees. Does not create them under this development profile: `delendai work enter` makes the worktree for a unit of work.'
+			: sharedCheckout
+				? "Not used under this project's development profile: agents share the checkout. Refuses create and says how to work instead."
+				: 'Isolate a concurrent agent into its own git worktree + branch (create/list/remove). Required when 2+ agents share this repo.',
 		tags: ['coordination'],
 		register: async (server) => {
 			server.registerTool(
 				toolName,
 				{
 					outputSchema: AGENT_WORKTREE_OUTPUT_SCHEMA,
-					description: sharedCheckout
-						? `Not used under this project's development profile. ${options.isolation?.rule ?? ''}`
-						: 'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. In 2+ agent sessions this is the required git-isolation path before commit/push work. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`. f00082 S4: when `host`+`model`+`task_id` are all set, the branch is `agent/<host>-<model>-<agent_name>-<task_id>` instead of the historical `agent/<agent_name>`. On a collision, a numeric suffix (`-1`, `-2`, …) is appended automatically.',
+					description: unitWorktrees
+						? `Create is refused under this project's development profile; list and remove still work. ${options.isolation?.rule ?? ''}`
+						: sharedCheckout
+							? `Not used under this project's development profile. ${options.isolation?.rule ?? ''}`
+							: 'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. In 2+ agent sessions this is the required git-isolation path before commit/push work. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`. f00082 S4: when `host`+`model`+`task_id` are all set, the branch is `agent/<host>-<model>-<agent_name>-<task_id>` instead of the historical `agent/<agent_name>`. On a collision, a numeric suffix (`-1`, `-2`, …) is appended automatically.',
 					inputSchema: AGENT_WORKTREE_INPUT_SCHEMA,
 				},
 				async (args: {
@@ -155,6 +161,29 @@ export const buildAgentWorktreeRegistration = (
 					model?: string | undefined;
 					task_id?: string | undefined;
 				}) => {
+					// Under a work-ref policy the worktree is the unit's and
+					// `delendai work enter` makes it; an `agent/*` branch made
+					// here is one `work publish` cannot use.
+					if (args.action === 'create' && unitWorktrees) {
+						const refused = {
+							ok: false as const,
+							action: args.action,
+							reason: options.isolation?.worktreeRefusal ?? '',
+						};
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(refused),
+								},
+							],
+							structuredContent: refused as unknown as Record<
+								string,
+								unknown
+							>,
+							isError: true,
+						};
+					}
 					// f00052: host-scoped gate. Disabled (default) ⇒ return a
 					// structured error that echoes the action and explains how
 					// to enable; never invoke the engine, never throw.
@@ -201,6 +230,8 @@ export const buildAgentWorktreeRegistration = (
 											listAgentBranchesWithGit(
 												run,
 												options.workspaceRoot,
+												undefined,
+												AGENT_BRANCH_PREFIX,
 											),
 									}),
 								}

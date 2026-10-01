@@ -1,6 +1,9 @@
 // effect-boundary-authorized: access-only probe for the proposals dir; uses node:fs/promises access to decide whether the store is bootstrapped — no mutations. The SQLite probe moved to lib/sql/lifecycle-readers.ts, which carries its own marker.
 import { describeWorkIsolation } from '@delendai/core/plugin';
-import { registerAdoptionExtensions } from '@delendai/core/public';
+import {
+	deriveDefaultProtectedBranches,
+	registerAdoptionExtensions,
+} from '@delendai/core/public';
 import {
 	ProposalsSqliteDriver,
 	SummaryRepo,
@@ -151,7 +154,7 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 			messageTemplate: z.string().optional(),
 			pushTarget: z.string().optional(),
 			allowForeignChanges: z.boolean().optional(),
-			protectedBranches: z.array(z.string()).default(['main', 'master']),
+			protectedBranches: z.array(z.string()).optional(),
 		})
 		.optional(),
 	orchestration: z
@@ -495,7 +498,7 @@ export default definePlugin({
 			)
 				? (commitPolicyPush as { protectedBranches: string[] })
 						.protectedBranches
-				: ['main', 'master'];
+				: [...deriveDefaultProtectedBranches(ctx.developmentPolicy)];
 		const configuredPersist = parsedOptions.data.persist;
 		// Same resolution as before — `resolveProposalPersistMode` is
 		// still the authority on the MODE — plus who ends up owning it, so
@@ -745,8 +748,6 @@ export default definePlugin({
 					buildBranchStatusRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						defaultBaseBranch: 'develop',
-						defaultAgentPrefix: 'agent/',
 						// `layout.worktreesDir` is ALREADY the cache-rooted
 						// workspace-relative path (default
 						// `.cache/delendai/.worktrees`). The previous
@@ -765,7 +766,6 @@ export default definePlugin({
 					buildBranchGcRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						defaultBaseBranch: 'develop',
 						defaultStaleMinutes: 60,
 					}),
 					// read-only swarm hygiene snapshot — rescue
@@ -773,7 +773,6 @@ export default definePlugin({
 					buildSwarmHygieneRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						defaultBaseBranch: 'develop',
 						defaultStaleMinutes: 60,
 					}),
 					buildTaskQueueRegistration({

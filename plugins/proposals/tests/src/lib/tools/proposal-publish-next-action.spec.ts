@@ -69,4 +69,27 @@ describe('proposalPublishNextAction', () => {
 		expect(action).toContain('untracked');
 		expect(action).not.toContain('pull request');
 	});
+
+	it('names the create unit and the integration branch the project declares', () => {
+		const action = proposalPublishNextAction({
+			template: undefined,
+			policy: resolveDevelopmentPolicy({
+				development: {
+					profile: 'shared-checkout-merge',
+					branches: { integration: 'trunk', release: 'stable' },
+				},
+			}),
+			workspaceRoot: '/ws',
+			absPath: ABS,
+		});
+
+		expect(action).toContain(
+			`delendai work checkpoint --proposal=f00547 --slice=all --kind=create --paths=${PATH}`,
+		);
+		expect(action).toContain(
+			'delendai work publish --proposal=f00547 --slice=all --kind=create',
+		);
+		expect(action).toContain('on trunk');
+		expect(action).not.toContain('develop');
+	});
 });

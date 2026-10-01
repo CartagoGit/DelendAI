@@ -31,7 +31,8 @@ export interface ISwarmHygieneToolOptions {
 	readonly pendingIntegrationPathAbs?: string;
 	/**
 	 * f00091 S4a: prefix that identifies a *conforming* agent branch.
-	 * Default `agent/`. Worktree branches outside this prefix (and not a
+	 * Absent, the project's own work-ref and publication namespaces (and
+	 * the `agent_worktree` one) conform. Worktree branches outside this prefix (and not a
 	 * protected base) are surfaced as `nonConformingBranches`.
 	 */
 	readonly agentPrefix?: string;
@@ -89,7 +90,7 @@ export const buildSwarmHygieneRegistration = (
 				{
 					outputSchema: SWARM_HYGIENE_OUTPUT_SCHEMA,
 					description:
-						"Read-only swarm hygiene snapshot. Returns six lists: rescueCandidates (agent/* branches with ahead>0 and not merged into develop — carries cherryPickHint + diffStat), gcEligible (the branch_gc dry-run plan), outOfCache (worktrees outside <cacheDir>/delendai/.worktrees), pendingIntegration (branches close_slice recorded as finished-but-unintegrated; merged ones self-prune), nonConformingBranches (worktree branches that break the agent/ naming convention — e.g. feat/*, claude/* — and so escape agent-prefixed tooling), staleUnmerged (worktrees whose branch is unmerged AND has fallen far behind base, so pruning would lose work). Use this before merging, before closing a session, or whenever the orchestrator wants to surface the swarm's rescue/cleanup opportunities without firing destructive tools. Never mutates git.",
+						"Read-only swarm hygiene snapshot. Returns six lists: rescueCandidates (work-ref and agent branches with ahead>0 and not merged into the integration branch — carries cherryPickHint + diffStat), gcEligible (the branch_gc dry-run plan), outOfCache (worktrees outside <cacheDir>/delendai/.worktrees), pendingIntegration (branches close_slice recorded as finished-but-unintegrated; merged ones self-prune), nonConformingBranches (worktree branches that sit outside the project's branch namespaces — e.g. feat/*, claude/* — and so escape agent-prefixed tooling), staleUnmerged (worktrees whose branch is unmerged AND has fallen far behind base, so pruning would lose work). Use this before merging, before closing a session, or whenever the orchestrator wants to surface the swarm's rescue/cleanup opportunities without firing destructive tools. Never mutates git.",
 					inputSchema: z.object({
 						baseBranch: z.string().optional(),
 						staleMinutes: z.number().int().positive().optional(),

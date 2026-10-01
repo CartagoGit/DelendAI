@@ -104,13 +104,14 @@ describe('validateDevelopmentPolicy', () => {
 		).toContain('recovery-needs-durable-ref');
 	});
 
-	it('rejects an integration branch that is also the release branch', () => {
+	it('accepts an integration branch that is also the release branch', () => {
 		expect(
 			rulesFor({
 				profile: 'shared-checkout-pr',
 				branches: { integration: 'main', release: 'main' },
+				integration: { requiredChecks: ['verify'] },
 			}),
-		).toContain('release-must-differ');
+		).toEqual([]);
 	});
 
 	it('rejects a work-ref template that cannot distinguish generations', () => {
@@ -341,6 +342,99 @@ describe('validatePolicyAlignment', () => {
 		expect(validatePolicyAlignment(pullRequestPolicy(), undefined)).toEqual(
 			[],
 		);
+	});
+
+	describe('advisories (warnings, not startup errors)', () => {
+		const directPolicy = () =>
+			resolveDevelopmentPolicy({
+				development: { profile: 'shared-direct' },
+			});
+		const warningsFor = (
+			policy: ReturnType<typeof directPolicy>,
+			commitPolicy: Record<string, unknown> | undefined,
+			git?: Record<string, unknown>,
+		) =>
+			validatePolicyAlignment(policy, commitPolicy, git).filter(
+				(v) => v.severity === 'warning',
+			);
+
+		it('warns when a direct-commit profile protects its own integration branch', () => {
+			const found = warningsFor(directPolicy(), {
+				push: { protectedBranches: ['develop'] },
+			});
+			expect(found.map((v) => v.rule)).toEqual([
+				'protected-branches-contradict-policy',
+			]);
+		});
+
+		it('warns about the git plugin protected-branch option too', () => {
+			const found = warningsFor(directPolicy(), undefined, {
+				protectedBranches: ['develop'],
+			});
+			expect(found.map((v) => v.path)).toEqual([
+				'plugins.git.options.protectedBranches',
+			]);
+		});
+
+		it('is quiet about a list that only names the release branch', () => {
+			expect(
+				warningsFor(directPolicy(), {
+					push: { protectedBranches: ['main'] },
+				}),
+			).toEqual([]);
+		});
+
+		it('warns about automatic push under a work-ref profile', () => {
+			const found = warningsFor(pullRequestPolicy(), {
+				push: { enabled: true, onCommit: true },
+			});
+			expect(found.map((v) => v.rule)).toEqual([
+				'push-automation-contradicts-policy',
+			]);
+		});
+
+		it('is quiet about automatic push when push is disabled', () => {
+			expect(
+				warningsFor(pullRequestPolicy(), {
+					push: { enabled: false, onCommit: true },
+				}),
+			).toEqual([]);
+		});
+
+		it('warns about an interval cadence under slice checkpoints', () => {
+			const slicePolicy = resolveDevelopmentPolicy({
+				development: {
+					profile: 'shared-checkout-merge',
+					checkpoint: { strategy: 'slice' },
+				},
+			});
+			const found = warningsFor(slicePolicy, {
+				cadence: { triggers: [{ kind: 'interval', minutes: 5 }] },
+			});
+			expect(found.map((v) => v.rule)).toEqual([
+				'cadence-contradicts-policy',
+			]);
+		});
+
+		it('warns when the interval differs from the policy interval', () => {
+			const intervalPolicy = resolveDevelopmentPolicy({
+				development: {
+					profile: 'shared-checkout-merge',
+					checkpoint: { strategy: 'interval', intervalMinutes: 15 },
+				},
+			});
+			const found = warningsFor(intervalPolicy, {
+				cadence: { triggers: [{ kind: 'interval', minutes: 5 }] },
+			});
+			expect(found.map((v) => v.rule)).toEqual([
+				'cadence-contradicts-policy',
+			]);
+			expect(
+				warningsFor(intervalPolicy, {
+					cadence: { triggers: [{ kind: 'interval', minutes: 15 }] },
+				}),
+			).toEqual([]);
+		});
 	});
 
 	// x00540. `agentWorktree: true` resolves to `strategy: 'branch'`,

@@ -188,3 +188,55 @@ describe('buildAgentWorktreeRegistration — under a shared-checkout profile', (
 		expect(registration.summary).toContain('Not used');
 	});
 });
+
+describe('buildAgentWorktreeRegistration — under worktree-pr', () => {
+	const isolation = describeWorkIsolation(expandProfile('worktree-pr'));
+
+	const capture = async (run: IGitRunner) => {
+		const registration = buildAgentWorktreeRegistration({
+			namespacePrefix: 'proposals',
+			workspaceRoot: '/ws',
+			run,
+			enabled: true,
+			isolation,
+		});
+		let handler: ToolHandler | undefined;
+		await registration.register(
+			createFakeToolServer({
+				onRegisterTool: (call) => {
+					handler = call.handler as ToolHandler;
+				},
+			}),
+		);
+		if (handler === undefined)
+			throw new Error('handler was not registered');
+		return { handler, registration };
+	};
+
+	it('refuses create with the work enter command as the next step, and never reaches git', async () => {
+		const seen: string[][] = [];
+		const { handler, registration } = await capture(async (args) => {
+			seen.push([...args]);
+			return { ok: true, output: '' };
+		});
+		const result = await handler({ action: 'create', agent: 'runner' });
+
+		expect(seen).toEqual([]);
+		expect(result.isError).toBe(true);
+		expect(String(result.structuredContent?.reason)).toContain(
+			'delendai work enter',
+		);
+		expect(registration.summary).toContain('delendai work enter');
+	});
+
+	it('still lists worktrees', async () => {
+		const { handler } = await capture(async () => ({
+			ok: true,
+			output: 'worktree /ws\nHEAD abc\nbranch refs/heads/develop\n',
+		}));
+		const result = await handler({ action: 'list' });
+
+		expect(result.isError).toBeUndefined();
+		expect(result.structuredContent?.ok).toBe(true);
+	});
+});

@@ -134,7 +134,7 @@ export type IWorkRefVisibility = (typeof WORK_REF_VISIBILITIES)[number];
 export interface IPolicyBranches {
 	/** Where agents integrate. `develop` here, NOT the forge default. */
 	readonly integration: string;
-	/** Where releases land. Held to a stricter policy than integration. */
+	/** Where releases land; equals `integration` for a one-branch project. */
 	readonly release: string;
 	/**
 	 * Namespace for delendai-owned refs, no trailing slash. Empty by
@@ -302,9 +302,9 @@ export interface IPolicyIntegration {
 	 */
 	readonly releaseRequiredChecks: readonly string[];
 	/**
-	 * True when nothing on the forge will gate this merge, so the local
-	 * validation gate is the only certification the work will ever get
-	 * and MUST pass before it lands.
+	 * True when the work is certified on this machine before it lands: a
+	 * declared choice for `pull-request`, always true for `merge` (no forge
+	 * gate exists), always false for `direct`.
 	 *
 	 * This exists so that "we do not use pull requests here" never
 	 * degrades into "nothing is checked here". The `merge` strategy moves
@@ -383,10 +383,7 @@ export interface IResolvedDevelopmentPolicy {
 /** Current `IResolvedDevelopmentPolicy.version`. */
 export const DEVELOPMENT_POLICY_VERSION = 2;
 
-/**
- * A rejected policy combination. Startup fails closed with these rather
- * than improvising a behaviour the operator never asked for.
- */
+/** A rejected policy combination: startup fails closed rather than improvise. */
 export interface IDevelopmentPolicyViolation {
 	/** Stable id so tests and docs can reference a rule without prose. */
 	readonly rule: string;
@@ -396,4 +393,5 @@ export interface IDevelopmentPolicyViolation {
 	readonly message: string;
 	/** The concrete change that resolves it. */
 	readonly remedy: string;
+	readonly severity?: 'warning'; // absent: the violation stops startup
 }

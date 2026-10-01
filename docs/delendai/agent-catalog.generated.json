@@ -1444,7 +1444,7 @@
 				"id": "f00542",
 				"title": "Delendai language-, IDE-, and OS-agnostic",
 				"track": "general",
-				"status": "ready",
+				"status": "paused",
 				"kind": "feat",
 				"date": "2026-09-15"
 			},
@@ -1503,14 +1503,6 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-09-20"
-			},
-			{
-				"id": "f00641",
-				"title": "The proposals database runs on Node as well as Bun",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-25"
 			},
 			{
 				"id": "f00643",
@@ -1647,6 +1639,30 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-19"
+			},
+			{
+				"id": "x00766",
+				"title": "A project with one branch and a project with no policy both get a working model",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
+				"id": "x00769",
+				"title": "Push guards and protected-branch defaults follow the configured development policy",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-09-30"
+			},
+			{
+				"id": "x00773",
+				"title": "A proposal's lifecycle completes inside the unit that implemented it",
+				"track": "general",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-09-30"
 			}
 		]
 	}

@@ -221,12 +221,16 @@ describe('init:default (f00103)', () => {
 				(config.plugins[notInPreset] as { enabled?: boolean })?.enabled,
 			).toBe(false);
 		}
-		// Exactly 38 vertex plugins ENABLED in the current dogfood
-		// snapshot, no extras added.
+		// The dogfood snapshot enables 38 plugins; this directory has no
+		// forge remote, so the one forge plugin in it (`forge`) is left
+		// off. No extras added.
 		const enabled = Object.values(config.plugins).filter(
 			(entry) => (entry as { enabled?: boolean }).enabled !== false,
 		);
-		expect(enabled.length).toBe(38);
+		expect(enabled.length).toBe(37);
+		expect((config.plugins.forge as { enabled?: boolean })?.enabled).toBe(
+			false,
+		);
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {

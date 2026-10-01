@@ -171,7 +171,8 @@
 						},
 						"release": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "The branch releases land on. Omit it, or name the integration branch, for a project with one branch."
 						},
 						"workRefTemplate": {
 							"type": "string"

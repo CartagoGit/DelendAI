@@ -404,11 +404,17 @@ describe('delendai work (x00553)', () => {
 		}
 	});
 
-	it('says nothing to do when the project declares no policy', async () => {
+	it('reports the adopted default when the project declares no policy', async () => {
 		const root = repoWith(undefined);
-		const result = await command.run(['status'], contextFor(root));
-		expect(result.code).not.toBe(0);
-		expect(result.error).toContain('no development policy');
+		const result = await command.run(
+			['status'],
+			contextFor(root, { json: true }),
+		);
+		expect(result.code).toBe(0);
+		expect(result.data).toMatchObject({
+			profile: 'shared-checkout-merge',
+			policySource: 'default',
+		});
 	});
 
 	it('refuses a work ref under a profile that has none', async () => {
@@ -1145,6 +1151,20 @@ describe('delendai work, as a person reads it', () => {
 		expect(out).toContain('profile          shared-checkout-pr');
 		expect(out).toContain('checkout on      develop');
 		expect(out).toContain('anchored         yes');
+	});
+
+	it('says the anchor is not required under a profile that does not anchor the checkout', async () => {
+		const root = repoWith({
+			development: {
+				profile: 'worktree-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		const out = await printed(() =>
+			command.run(['status'], contextFor(root, { json: false })),
+		);
+		expect(out).toContain('anchored         not required');
+		expect(out).not.toContain('anchored         yes');
 	});
 });
 

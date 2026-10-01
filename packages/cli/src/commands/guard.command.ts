@@ -5,7 +5,8 @@
  * judged whoever runs it: an agent through delendai, an agent with a
  * shell, another host's subagent or a human. It runs offline (no MCP
  * server), reads only git and the project's own configuration, and
- * refuses nothing when the project declares no development policy.
+ * judges an undeclared project against the policy delendai adopts for it,
+ * the same one `delendai work` and the served instructions describe.
  */
 import { execFileSync } from 'node:child_process';
 import { resolve as resolvePath } from 'node:path';
@@ -496,14 +497,13 @@ export const createGuardCommand = (
 			// recoverable only by noticing later.
 			process.stderr.write(
 				`${[
-					`delendai guard: the development policy is declared but could not be read — ${error instanceof Error ? error.message : String(error)}`,
+					`delendai guard: the development policy could not be read — ${error instanceof Error ? error.message : String(error)}`,
 					'  Nothing was checked, so nothing is authorised: a guard that passes when it cannot read its rules is not a guard.',
-					'  Fix `delendai.config.json`, or remove the `development` block if this project has no policy.',
+					'  Fix `delendai.config.json`.',
 				].join('\n')}\n`,
 			);
 			return { code: EXIT_CODE.VALIDATION };
 		}
-		if (policy === undefined) return { code: EXIT_CODE.OK };
 		// An agent is recognised by its runtime's variable or, whatever the
 		// runtime, by the worktree `work enter` made for it (x00688).
 		// A worktree made before the stamp existed still says whose it is:
@@ -564,7 +564,7 @@ export const createGuardCommand = (
 			// agent would have to explain to itself.
 			if (outcome.paths.length > 0 && !outcome.committed) {
 				process.stderr.write(
-					`delendai guard (post-merge): regenerated ${outcome.paths.join(', ')}, and could not commit ${outcome.paths.length === 1 ? 'it' : 'them'} here. The change is staged; land it through a pull request.\n`,
+					`delendai guard (post-merge): regenerated ${outcome.paths.join(', ')}, and could not commit ${outcome.paths.length === 1 ? 'it' : 'them'} here. The change is staged. ${briefWorkModel(policy).land}\n`,
 				);
 			}
 			return { code: EXIT_CODE.OK };
