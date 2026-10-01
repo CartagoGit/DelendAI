@@ -225,7 +225,7 @@ export interface DelendaiProposalsBranchGcOutput {
 	skipped?: Array<{
 		path: string;
 		branch: string;
-		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch";
+		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch" | "undelivered";
 		detail: string;
 	}>;
 	summary?: {

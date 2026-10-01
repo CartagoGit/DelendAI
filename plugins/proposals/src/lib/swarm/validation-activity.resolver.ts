@@ -16,10 +16,10 @@ import type {
 	IValidationRegistryEntry,
 	IValidationWorktreeEntry,
 } from './validation-activity.types';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 
 const DEFAULT_SOURCE_STATE: IValidationActivitySourceState = 'missing';
 const DEFAULT_STALE_AFTER_MINUTES = AGENT_CONVENTIONS.heartbeat_ttl_minutes;
-const AGENT_BRANCH_PREFIX = 'agent/';
 
 interface IResolvedIdentity {
 	readonly taskId: string | null;

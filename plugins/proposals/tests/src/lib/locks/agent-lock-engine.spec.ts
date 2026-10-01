@@ -417,6 +417,40 @@ describe('runAgentLockEngine — stale GC', async () => {
 			expect(readLockFile().in_flight).toHaveLength(1);
 		});
 
+		it('claim with the gate on succeeds from a branch in the project work-ref namespace', async () => {
+			writeFileSync(
+				join(workspace, 'delendai.config.json'),
+				JSON.stringify({
+					development: {
+						profile: 'shared-checkout-pr',
+						branches: { namespacePrefix: 'acme' },
+					},
+				}),
+			);
+			const claim: IAgentLockArgs = {
+				action: 'claim',
+				task_id: 't1',
+				agent: 'a1',
+				files: ['src/a.ts'],
+			};
+			const inUnit = await run(claim, {
+				agentWorktreeEnabled: true,
+				currentBranchOverride: 'acme/wip/a1/implement/x1-S1-g1/topic',
+			});
+			expect(inUnit.isError).not.toBe(true);
+			// The namespace is the project's: the default one is not.
+			const outside = await run(
+				{ ...claim, task_id: 't2', files: ['src/b.ts'] },
+				{
+					agentWorktreeEnabled: true,
+					currentBranchOverride: 'wip/a1/implement/x1-S1-g1/topic',
+				},
+			);
+			expect(outside.isError).toBe(true);
+			expect(body(outside).blockerType).toBe('needs-worktree');
+			expect(String(body(outside).error)).toContain('acme/wip/');
+		});
+
 		it('gate on + unreadable branch (no git repo) refuses with needs-worktree', async () => {
 			// The lock lives in a plain temp dir — `git rev-parse` fails, the
 			// engine resolves the branch to null and refuses the claim.

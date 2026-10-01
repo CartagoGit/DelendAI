@@ -1,33 +1,7 @@
-/**
- * index-reader.spec.ts — f00535 S2.
- *
- * `readProposalIndex` gains a source, not a new signature. This spec
- * pins the mechanism and, above all, pins that the DEFAULT is still the
- * JSON index: S2 delivers the switch, S3 flips it.
- *
- * Run with `bun test`, like every other spec in this tree that can
- * reach `bun:sqlite`. The JSON path never loads it (the SQL import is
- * dynamic), so the consumers' specs stay runner-agnostic; the two tests
- * at the bottom exercise the real derivation of the database path and
- * therefore need the Bun runtime.
- *
- * What is pinned:
- *   1. Default (no options, no env) == today's behaviour, byte for byte
- *      against the raw `index.json` contents.
- *   2. With the database ABSENT, the 'auto' source returns exactly what
- *      the JSON path returns.
- *   3. The fallback notice is emitted ONCE, not per call.
- *   4. `null` from the SQL reader falls back; `[]` from the SQL reader
- *      does NOT — it is served as-is.
- *   5. Both switches (option and environment) can force either source.
- */
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import type { IIndexFs } from '../../../../src/lib/proposals/index-reader-fs';
 import {
 	DEFAULT_PROPOSAL_INDEX_SOURCE,
 	PROPOSAL_INDEX_SOURCE_ENV_VAR,
@@ -38,68 +12,67 @@ import {
 } from '../../../../src/lib/proposals/index-reader';
 import { ProposalIndexSqlUnavailableError } from '../../../../src/lib/proposals/proposal-errors';
 
-const INDEX_PATH = '/fake/.cache/delendai/proposals/index.json';
-
-const JSON_ENTRIES: readonly IProposalIndexEntry[] = [
-	{ id: 'f00535', file: 'ready/feats/f00535-cutover.md', status: 'ready' },
-	{ id: 'q00022', file: 'in-progress/q00022-plan.md', status: 'in-progress' },
-];
-
-const INDEX_JSON = JSON.stringify({
-	generated_at: '2026-09-08T00:00:00.000Z',
-	count: JSON_ENTRIES.length,
-	proposals: JSON_ENTRIES,
-});
-
-/** In-memory `IIndexFs` that also counts reads, so a test can prove the
- *  JSON file was (or was not) consulted. */
-const fakeFs = (
-	contents: string | null = INDEX_JSON,
-): IIndexFs & { readonly reads: string[] } => {
-	const reads: string[] = [];
-	return {
-		reads,
-		async read(absPath: string) {
-			reads.push(absPath);
-			return contents;
-		},
-	};
-};
-
-const roots: string[] = [];
-
-afterEach(() => {
-	for (const root of roots.splice(0)) {
-		rmSync(root, { recursive: true, force: true });
-	}
-	resetProposalIndexFallbackNotice();
-});
-
-/** A workspace root with NO `.cache/delendai/state/proposals.sqlite`. */
-const emptyWorkspace = (): string => {
-	const root = mkdtempSync(join(tmpdir(), 'f00535-idx-'));
-	roots.push(root);
-	return root;
-};
+import {
+	INDEX_JSON,
+	INDEX_PATH,
+	JSON_ENTRIES,
+	emptyWorkspace,
+	fakeFs,
+} from './index-reader-workspace';
 
 describe('readProposalIndex — signature and default source (f00535 S2)', () => {
-	it('defaults to auto: prefer SQL, keep the JSON fallback', () => {
-		// `sql` is strict now, so it cannot also be the default: a
-		// workspace whose database is not built yet would fail every
-		// index read instead of being told once.
-		expect(DEFAULT_PROPOSAL_INDEX_SOURCE).toBe('auto');
-		expect(resolveProposalIndexSource({ env: {} })).toBe('auto');
+	it('defaults to sql: the authority rebuilds itself on demand', () => {
+		// q00022 S4 phase 2: `sql` used to be unable to also be the
+		// default, because a workspace whose database was not built yet
+		// would fail every index read instead of being told once. It now
+		// rebuilds the projection from markdown before giving up (see the
+		// "rebuild-on-missing" describe block below), so the default can
+		// move.
+		expect(DEFAULT_PROPOSAL_INDEX_SOURCE).toBe('sql');
+		expect(resolveProposalIndexSource({ env: {} })).toBe('sql');
 	});
 
-	it('keeps the 1-arg and 2-arg call shapes every consumer uses', async () => {
+	it('keeps the 2-arg call shape every consumer uses (source pinned to json)', async () => {
+		// The JSON reading mechanics (arg shape, parse tolerance) are
+		// orthogonal to which source answers by default; pin `json` so
+		// this exercises exactly that, independent of the default.
 		const fs = fakeFs();
-		expect(await readProposalIndex(INDEX_PATH, fs)).toEqual(JSON_ENTRIES);
-		// 1-arg call: real fs, missing file -> [] (unchanged contract).
-		expect(await readProposalIndex('/nope/index.json')).toEqual([]);
+		expect(
+			await readProposalIndex(INDEX_PATH, fs, { source: 'json' }),
+		).toEqual(JSON_ENTRIES);
+	});
+
+	it('the default serves JSON, once noticed, where no projection can be located', async () => {
+		// `/nope/index.json` matches no canonical layout, so neither the
+		// database nor a workspace to rebuild into can be resolved. Nobody
+		// chose `sql` here, so the read is not refused over it.
+		const notices: string[] = [];
+		const read = () =>
+			readProposalIndex('/nope/index.json', fakeFs(), {
+				env: {},
+				log: (message) => notices.push(message),
+			});
+		expect(await read()).toEqual(JSON_ENTRIES);
+		expect(await read()).toEqual(JSON_ENTRIES);
+		expect(notices).toHaveLength(1);
+		expect(notices[0]).toContain('no SQLite projection can be located');
+	});
+
+	it('a chosen sql refuses where no projection can be located', async () => {
+		await expect(
+			readProposalIndex('/nope/index.json', fakeFs(), { source: 'sql' }),
+		).rejects.toBeInstanceOf(ProposalIndexSqlUnavailableError);
+		await expect(
+			readProposalIndex('/nope/index.json', fakeFs(), {
+				env: { [PROPOSAL_INDEX_SOURCE_ENV_VAR]: 'sql' },
+			}),
+		).rejects.toBeInstanceOf(ProposalIndexSqlUnavailableError);
 	});
 
 	it('returns the parsed `proposals` array unchanged', async () => {
-		const entries = await readProposalIndex(INDEX_PATH, fakeFs());
+		const entries = await readProposalIndex(INDEX_PATH, fakeFs(), {
+			source: 'json',
+		});
 		expect(entries).toEqual(
 			(JSON.parse(INDEX_JSON) as { proposals: IProposalIndexEntry[] })
 				.proposals,
@@ -107,9 +80,15 @@ describe('readProposalIndex — signature and default source (f00535 S2)', () =>
 	});
 
 	it('returns [] when the index is missing or unparseable', async () => {
-		expect(await readProposalIndex(INDEX_PATH, fakeFs(null))).toEqual([]);
 		expect(
-			await readProposalIndex(INDEX_PATH, fakeFs('{ not json')),
+			await readProposalIndex(INDEX_PATH, fakeFs(null), {
+				source: 'json',
+			}),
+		).toEqual([]);
+		expect(
+			await readProposalIndex(INDEX_PATH, fakeFs('{ not json'), {
+				source: 'json',
+			}),
 		).toEqual([]);
 	});
 
@@ -130,7 +109,9 @@ describe('readProposalIndex — signature and default source (f00535 S2)', () =>
 describe('readProposalIndex — fallback with the database absent (f00535 S2)', () => {
 	it('returns exactly what the JSON path returns when there is no database', async () => {
 		const root = emptyWorkspace();
-		const jsonResult = await readProposalIndex(INDEX_PATH, fakeFs());
+		const jsonResult = await readProposalIndex(INDEX_PATH, fakeFs(), {
+			source: 'json',
+		});
 		const autoResult = await readProposalIndex(INDEX_PATH, fakeFs(), {
 			source: 'auto',
 			workspaceRoot: root,

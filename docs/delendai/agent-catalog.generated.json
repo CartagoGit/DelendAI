@@ -1444,7 +1444,7 @@
 				"id": "f00542",
 				"title": "Delendai language-, IDE-, and OS-agnostic",
 				"track": "general",
-				"status": "ready",
+				"status": "paused",
 				"kind": "feat",
 				"date": "2026-09-15"
 			},
@@ -1503,14 +1503,6 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-09-20"
-			},
-			{
-				"id": "f00641",
-				"title": "The proposals database runs on Node as well as Bun",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-25"
 			},
 			{
 				"id": "f00643",
@@ -1647,14 +1639,6 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-19"
-			},
-			{
-				"id": "x00768",
-				"title": "Branch tools and proposal publication follow the configured policy",
-				"track": "general",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-09-30"
 			},
 			{
 				"id": "x00769",
