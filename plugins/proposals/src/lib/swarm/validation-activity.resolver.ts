@@ -346,8 +346,8 @@ const resolveWorktreeSignals = (
 		) {
 			return buildSignal({
 				source: 'worktree',
-				state: 'corrupt',
-				reason: 'worktree entry is missing branch and actor identity',
+				state: 'stale',
+				reason: 'worktree has no branch or actor identity',
 				lastSeen,
 				worktreePath: entry.path ?? null,
 				nowMs,
