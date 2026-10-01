@@ -25,7 +25,7 @@ export interface IGeneratedMergeRule {
 }
 
 /** How one file was resolved, for the driver's report and the specs. */
-export type GeneratedMergeOutcome =
+export type IGeneratedMergeOutcome =
 	| 'merged-textually'
 	| 'kept-ours-for-regeneration'
 	| 'authored-conflict';

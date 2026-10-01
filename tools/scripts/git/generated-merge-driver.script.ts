@@ -37,13 +37,13 @@ import { join } from 'node:path';
 
 import { GENERATED_MERGE_RULES } from './generated-merge-driver.constant';
 import type {
-	GeneratedMergeOutcome,
+	IGeneratedMergeOutcome,
 	IGeneratedBlock,
 	IGeneratedMergeRule,
 } from './generated-merge-driver.interface';
 
 export type {
-	GeneratedMergeOutcome,
+	IGeneratedMergeOutcome,
 	IGeneratedBlock,
 	IGeneratedMergeRule,
 } from './generated-merge-driver.interface';
@@ -81,13 +81,13 @@ const setAside = (text: string, block: IGeneratedBlock): string | undefined => {
 };
 
 /** `git merge-file`: merged text, and whether it is free of conflicts. */
-export type TextMerge = (input: {
+export type ITextMerge = (input: {
 	readonly ours: string;
 	readonly base: string;
 	readonly theirs: string;
 }) => { readonly text: string; readonly clean: boolean };
 
-export const gitTextMerge: TextMerge = (input) => {
+export const gitTextMerge: ITextMerge = (input) => {
 	const directory = mkdtempSync(join(tmpdir(), 'generated-merge-'));
 	try {
 		const files = ['ours', 'base', 'theirs'] as const;
@@ -136,8 +136,8 @@ export const mergeGenerated = (input: {
 	readonly base: string;
 	readonly ours: string;
 	readonly theirs: string;
-	readonly merge?: TextMerge;
-}): { readonly outcome: GeneratedMergeOutcome; readonly content?: string } => {
+	readonly merge?: ITextMerge;
+}): { readonly outcome: IGeneratedMergeOutcome; readonly content?: string } => {
 	const merge = input.merge ?? gitTextMerge;
 	const { rule, base, ours, theirs } = input;
 	if (rule.block === undefined) {
@@ -182,7 +182,7 @@ export const resolveGenerated = (input: {
 	readonly base: string;
 	readonly theirs: string;
 	readonly path: string;
-	readonly merge?: TextMerge;
+	readonly merge?: ITextMerge;
 }): number => {
 	const rule = ruleFor(input.path);
 	if (rule === undefined) return 1;
