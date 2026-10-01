@@ -2,12 +2,15 @@
 id: x00832
 title: "The entering agent is told about published work"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P2
 related: [x00555, x00791, x00831]
+last-transition-id: 59b6ffc9-ad8b-497a-9a07-9be968e53f0f
+last-correlation-id: 59b6ffc9-ad8b-497a-9a07-9be968e53f0f
+last-transition-from: in-progress
 ---
 
 # x00832 — The entering agent is told about published work
@@ -48,6 +51,7 @@ the briefing never read them.
   - `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`
   - `packages/core/src/lib/work-units/work-briefing.service.ts`
   - `packages/core/tests/src/lib/work-units/work-briefing.service.spec.ts`
+- shipped-in: `1f4460bde27f`
 
 ## dependency graph
 
