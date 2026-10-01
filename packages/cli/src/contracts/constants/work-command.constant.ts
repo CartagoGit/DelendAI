@@ -16,6 +16,7 @@ export const WORK_COMMAND = {
 		'as',
 		'session',
 		'generation',
+		'alongside',
 		'topic',
 		'dir',
 		'worktrees',
