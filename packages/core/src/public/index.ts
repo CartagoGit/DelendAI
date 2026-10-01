@@ -1068,6 +1068,15 @@ export {
 	declareWorkflow,
 	renderWorkflowDeclaration,
 } from '../lib/development-policy/declare-workflow';
+/**
+ * Whether a project has a release branch of its own. A project with one
+ * branch integrates and releases there, and its scripts must ask instead
+ * of assuming a second boundary.
+ */
+export {
+	hasSeparateReleaseBranch,
+	protectedBranchNames,
+} from '../lib/development-policy/release-branch';
 export {
 	deriveDefaultProtectedBranches,
 	distinctReleaseBranch,

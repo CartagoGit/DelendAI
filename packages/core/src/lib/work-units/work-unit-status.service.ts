@@ -3,7 +3,9 @@ import {
 	anchorRefusal,
 	observeAnchor,
 } from '../wip-engine/index';
+import { isAdoptedPolicy } from '../development-policy/served-work-model';
 import { checkedOutBranch } from '../development-policy/project-branches';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -24,6 +26,12 @@ import {
 	workspaceOf,
 } from './work-unit-shared.service';
 
+/** Says so when the project wrote no model and delendai adopted one. */
+const adoptedNote = (policy: IResolvedDevelopmentPolicy): string =>
+	isAdoptedPolicy(policy)
+		? ' (adopted: this project declares no `development` block)'
+		: '';
+
 export const statusOf = async (
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {
@@ -40,6 +48,7 @@ export const statusOf = async (
 	});
 	const payload = {
 		profile: policy.profile,
+		policySource: policy.source,
 		integration: policy.branches.integration,
 		branch: branch ?? null,
 		pinnedCheckout: policy.workspace.pinnedCheckout,
@@ -56,7 +65,7 @@ export const statusOf = async (
 	}
 	process.stdout.write(
 		`${[
-			`profile          ${payload.profile}`,
+			`profile          ${payload.profile}${adoptedNote(policy)}`,
 			`integration      ${payload.integration}`,
 			`checkout on      ${payload.branch ?? '(detached)'}`,
 			`anchored         ${payload.anchored ? 'yes' : `NO — ${payload.anchorRefusal ?? ''}`}`,
