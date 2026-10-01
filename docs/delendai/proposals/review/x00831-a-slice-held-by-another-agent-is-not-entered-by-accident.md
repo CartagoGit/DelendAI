@@ -2,12 +2,15 @@
 id: x00831
 title: "A slice held by another agent is not entered by accident"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [x00714, x00791]
+last-transition-id: 57a9264e-1876-4ae3-b406-a406b164fd92
+last-correlation-id: 57a9264e-1876-4ae3-b406-a406b164fd92
+last-transition-from: in-progress
 ---
 
 # x00831 — A slice held by another agent is not entered by accident
@@ -61,6 +64,7 @@ decides, never asked.
   - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
   - `packages/cli/src/contracts/constants/work-command.constant.ts`
   - `packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
+- shipped-in: `8acb6c0369b1`
 
 ## dependency graph
 
