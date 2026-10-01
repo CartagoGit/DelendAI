@@ -139,8 +139,8 @@ and the interface file respectively, per `lint:types-in-contracts`
 
 ### S3 — Resolve project policy against framework force
 
-- **Status**: pending
-- **Files**: [`plugins/framework-knowledge/src/lib/policy/resolve-policy.ts`, `plugins/framework-knowledge/src/lib/policy/resolve-policy.spec.ts`]
+- **Status**: review
+- **Files**: [`plugins/framework-knowledge/src/lib/policy/resolve-policy.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/policy.interface.ts`, `plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts`]
 
 One pure function decides the effective answer from an ordered set of
 inputs: technical impossibility, explicit user configuration, explicit
