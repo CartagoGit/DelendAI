@@ -14,6 +14,7 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import { briefingFrom, describeBriefing } from './work-briefing.service';
 import { readSwarm } from './work-swarm.service';
+import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { liveProposalBranch } from './proposal-branch.service';
 import { scalarArg } from './command-args.helper';
 
@@ -184,7 +185,7 @@ export const enteredHeld = async (
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
 			'A worktree belongs to one identity and one unit of work.',
-			'work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>]; --agent defaults to DELENDAI_AGENT_ID.',
+			'work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>] [--alongside]; --agent defaults to DELENDAI_AGENT_ID.',
 		);
 	}
 	if (policy.branches.workRefTemplate.length === 0) {
@@ -195,6 +196,21 @@ export const enteredHeld = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	if (!args.includes('--alongside')) {
+		const holders = holdersOfSlice({
+			view: readSwarm({ root, policy }),
+			agent,
+			kind: scalarArg(args, 'kind') ?? 'implement',
+			proposal,
+			slice,
+		});
+		if (holders.length > 0) {
+			return refused(
+				`${proposal} ${slice} is already being worked on by another agent: two units on one slice do the same work twice and collide when they land.`,
+				describeSliceHolders(holders).join('\n'),
+			);
+		}
+	}
 	if (scalarArg(args, 'generation') === undefined) {
 		const chosen = chooseGeneration(
 			root,
