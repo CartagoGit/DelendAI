@@ -3,7 +3,7 @@
  * (26 commands) and a representative sample of flag→tool mappings,
  * including the positional + required-flag validations. Recording-stub ctx.
  */
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
@@ -44,6 +44,13 @@ const find = (name: string): ICliCommand => {
 };
 
 describe('proposals group (f00046 S7)', async () => {
+	beforeEach(() => {
+		vi.stubEnv('DELENDAI_AGENT_ID', '');
+	});
+	afterEach(() => {
+		vi.unstubAllEnvs();
+	});
+
 	it('exposes 26 commands, all prefixed "proposals "', async () => {
 		expect(proposalsCommands).toHaveLength(26);
 		for (const command of proposalsCommands) {
@@ -77,6 +84,77 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
+	it('transition to review names the implementer, from --agent or the environment', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('proposals transition').run(
+			['x1', 'review', '--reason=done', '--agent=claude-sonnet-5-5'],
+			ctx,
+		);
+		expect(calls[0]?.args).toEqual({
+			id: 'x1',
+			to: 'review',
+			reason: 'done',
+			agent: 'claude-sonnet-5-5',
+		});
+		vi.stubEnv('DELENDAI_AGENT_ID', 'glm-5');
+		await find('proposals transition').run(
+			['x1', 'review', '--reason=done'],
+			ctx,
+		);
+		expect(calls[1]?.args).toMatchObject({ agent: 'glm-5' });
+	});
+
+	it('transition to review without an agent refuses and names the missing input', async () => {
+		const { ctx, calls } = buildStubContext();
+		const refused = await find('proposals transition').run(
+			['x1', 'review', '--reason=done'],
+			ctx,
+		);
+		expect(refused.code).toBe(EXIT_CODE.USAGE);
+		expect(refused.error).toContain('--agent');
+		expect(refused.error).toContain('DELENDAI_AGENT_ID');
+		expect(calls).toHaveLength(0);
+	});
+
+	it('transition and close-slice pass an explicit --checkout through', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('proposals transition').run(
+			['x1', 'ready', '--reason=r', '--checkout=/units/a'],
+			ctx,
+		);
+		await find('proposals close-slice').run(
+			['x1', 'S1', '--checkout=/units/a'],
+			ctx,
+		);
+		expect(calls[0]?.args).toMatchObject({ checkout: '/units/a' });
+		expect(calls[1]?.args).toEqual({
+			proposalId: 'x1',
+			sliceId: 'S1',
+			checkout: '/units/a',
+		});
+	});
+
+	it('close-slice refusal names the missing positional', async () => {
+		const { ctx } = buildStubContext();
+		const refused = await find('proposals close-slice').run(['x1'], ctx);
+		expect(refused.code).toBe(EXIT_CODE.USAGE);
+		expect(refused.error).toContain('<sliceId>');
+	});
+
+	it('a lock claim belongs to the agent, not to this short-lived process', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('proposals lock').run(
+			['--action=claim', '--task=t1', '--files=x.ts'],
+			ctx,
+		);
+		await find('proposals lock').run(
+			['--action=release', '--task=t1'],
+			ctx,
+		);
+		expect(calls[0]?.args).toMatchObject({ holder: 'agent' });
+		expect(calls[1]?.args).not.toHaveProperty('holder');
+	});
+
 	it('close-slice maps two positionals', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals close-slice').run(['f1', 'S2'], ctx);
@@ -99,6 +177,7 @@ describe('proposals group (f00046 S7)', async () => {
 				agent: 'a',
 				task_id: 't1',
 				files: ['x.ts', 'y.ts'],
+				holder: 'agent',
 			},
 		});
 	});

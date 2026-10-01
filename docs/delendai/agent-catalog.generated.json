@@ -1673,10 +1673,10 @@
 				"date": "2026-10-01"
 			},
 			{
-				"id": "x09903",
-				"title": "The proposals lifecycle completes from the CLI the way the tools complete it",
+				"id": "x00811",
+				"title": "The CLI completes the proposal lifecycle the way the tools do",
 				"track": "general",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-01"
 			}

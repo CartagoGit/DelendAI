@@ -231,8 +231,9 @@ export async function executeLockAction(
 			ownership: files,
 			started_at: now,
 			last_seen: now,
-			host: caller.host,
-			pid: caller.pid,
+			...(args.holder === 'agent'
+				? {}
+				: { host: caller.host, pid: caller.pid }),
 			...(args.parent_task_id !== undefined
 				? { parent_task_id: args.parent_task_id }
 				: {}),
