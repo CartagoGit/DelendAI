@@ -1601,14 +1601,6 @@
 				"date": "2026-08-30"
 			},
 			{
-				"id": "r00048",
-				"title": "CAS optimistic concurrency — revision column on proposals, plans, slices",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-09-07"
-			},
-			{
 				"id": "r00056",
 				"title": "SQLite storage modes and canonical proposals DB wiring",
 				"track": "architecture",
