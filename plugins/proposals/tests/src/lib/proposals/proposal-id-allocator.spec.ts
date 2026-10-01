@@ -140,6 +140,7 @@ describe('ids are unique across the clone, not only this checkout', async () => 
 			sources: {
 				sharedCounterPath: async () => null,
 				elsewhere: async () => ({ f: 546 }),
+				reserve: async () => 'reserved',
 			},
 		});
 
@@ -158,6 +159,7 @@ describe('ids are unique across the clone, not only this checkout', async () => 
 					'proposal-id-counters.json',
 				),
 			elsewhere: async () => ({}),
+			reserve: async () => 'reserved' as const,
 		};
 
 		const ids = await Promise.all([
@@ -168,6 +170,59 @@ describe('ids are unique across the clone, not only this checkout', async () => 
 
 		expect(new Set(ids).size).toBe(3);
 		expect([...ids].sort()).toEqual(['x00001', 'x00002', 'x00003']);
+	});
+});
+
+describe('allocateNextProposalId claims the id on the remote', () => {
+	let root: string;
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'id-allocator-reserve-'));
+		await mkdir(join(root, 'proposals', 'ready'), { recursive: true });
+	});
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	const options = (
+		reserve: (id: string) => Promise<'reserved' | 'taken' | 'unavailable'>,
+	) => ({
+		proposalsDirAbs: join(root, 'proposals'),
+		counterPathAbs: join(root, 'counters.json'),
+		sources: {
+			sharedCounterPath: async () => null,
+			elsewhere: async () => ({ x: 810 }),
+			reserve,
+		},
+	});
+
+	it('steps over an id another session claimed a moment ago', async () => {
+		const asked: string[] = [];
+		const id = await allocateNextProposalId(
+			'x',
+			options(async (candidate) => {
+				asked.push(candidate);
+				return candidate === 'x00811' ? 'taken' : 'reserved';
+			}),
+		);
+
+		expect(id).toBe('x00812');
+		expect(asked).toEqual(['x00811', 'x00812']);
+	});
+
+	it('keeps the local answer when the remote cannot be reached', async () => {
+		expect(
+			await allocateNextProposalId(
+				'x',
+				options(async () => 'unavailable'),
+			),
+		).toBe('x00811');
+	});
+
+	it('refuses, rather than hand out a taken id, when every candidate is held', async () => {
+		await expect(
+			allocateNextProposalId(
+				'x',
+				options(async () => 'taken'),
+			),
+		).rejects.toThrow(/could not claim a free x proposal id/u);
 	});
 });
 

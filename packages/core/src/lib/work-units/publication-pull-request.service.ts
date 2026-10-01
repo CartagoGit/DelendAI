@@ -20,7 +20,20 @@ import type {
 const BOOKKEEPING =
 	/^chore\(review\): claim\b|^docs\(proposals\): .*\bto review$/u;
 
-/** A title and body for the pull request, from the unit's commits. */
+/**
+ * Commits that are not the work either: the record a tool commits for
+ * itself, regenerated files, and merges. Pull requests were titled by a
+ * tool's record when it was a unit's oldest commit.
+ */
+const HOUSEKEEPING = /^(?:Merge\b|chore\((?:delendai|generated)\):)/u;
+
+const isBookkeeping = (subject: string): boolean =>
+	BOOKKEEPING.test(subject) || HOUSEKEEPING.test(subject);
+
+/** A subject that delivers something rather than tidying around it. */
+const DELIVERY =
+	/^(?:feat|fix|refactor|perf|test|docs|build|ci|revert)(?:\([^)]*\))?!?:/u;
+
 /**
  * A GitHub remote, with the host anchored: `https://github.com/…`,
  * `ssh://git@github.com/…` or `git@github.com:…`, and not a host that
@@ -35,9 +48,15 @@ export const pullRequestText = (
 	fallback: string,
 ): { readonly title: string; readonly body: string } => {
 	const oldestFirst = [...subjects].reverse();
+	const meaningful = oldestFirst.filter((subject) => !isBookkeeping(subject));
 	const title =
-		oldestFirst.find((subject) => !BOOKKEEPING.test(subject)) ?? fallback;
-	const listed = oldestFirst.map((subject) => `- ${subject}`).join('\n');
+		meaningful.find((subject) => DELIVERY.test(subject)) ??
+		meaningful[0] ??
+		fallback;
+	const listed = oldestFirst
+		.filter((subject) => !subject.startsWith('Merge '))
+		.map((subject) => `- ${subject}`)
+		.join('\n');
 	return {
 		title,
 		body: `Opened by \`delendai work publish\` for \`${branch}\`.\n\n${listed}`,

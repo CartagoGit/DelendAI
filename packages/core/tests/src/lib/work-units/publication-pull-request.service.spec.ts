@@ -137,4 +137,33 @@ describe('pullRequestText', () => {
 			).title,
 		).toBe('review batch');
 	});
+
+	it('is titled by the oldest commit that delivers, past tool records, regeneration and merges', () => {
+		// Newest first, as `git log` lists them.
+		const text = pullRequestText(
+			[
+				'chore(proposals): x00001 goes to review',
+				"Merge remote-tracking branch 'origin/develop' into HEAD",
+				'chore(generated): recompute the catalog',
+				'fix(release): release tooling follows the configured branches',
+				'chore(delendai): delendai_proposals_create_proposal',
+			],
+			'b',
+			'unit',
+		);
+		expect(text.title).toBe(
+			'fix(release): release tooling follows the configured branches',
+		);
+		expect(text.body).not.toContain('Merge ');
+	});
+
+	it('takes the oldest meaningful commit when none follows the delivery types', () => {
+		expect(
+			pullRequestText(
+				['chore(deps): bump zod', 'chore(delendai): a tool record'],
+				'b',
+				'unit',
+			).title,
+		).toBe('chore(deps): bump zod');
+	});
 });

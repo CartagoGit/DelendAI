@@ -289,6 +289,7 @@ export const buildDelegateRegistration = (
 					topic: z.string().optional(),
 					agentName: z.string().optional(),
 					parentTaskId: z.string().optional(),
+					holder: z.enum(['process', 'agent']).optional(),
 					// f00082 S3: the delegated subagent inherits the
 					// delegating orchestrator's host/model. Persisted in
 					// the registry and used for the worktree branch name.
@@ -313,6 +314,7 @@ export const buildDelegateRegistration = (
 				topic?: string | undefined;
 				agentName?: string | undefined;
 				parentTaskId?: string | undefined;
+				holder?: 'process' | 'agent' | undefined;
 				host?: string | undefined;
 				model?: string | undefined;
 			}) => {
@@ -449,6 +451,9 @@ export const buildDelegateRegistration = (
 							task_id: args.taskId,
 							agent: assigned.agent_name,
 							files: args.files,
+							...(args.holder === undefined
+								? {}
+								: { holder: args.holder }),
 						},
 						{
 							lockPath: options.lockPathAbs,
