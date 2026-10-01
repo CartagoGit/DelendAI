@@ -2,7 +2,7 @@
 id: q00010
 title: "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath"
 kind: plan
-status: ready
+status: review
 type: plan
 track: develop-audit-hardening-v4-closeout
 date: 2026-08-25
@@ -46,6 +46,9 @@ contains:
             rationale: "ADR 0007: registrar la decisión de usar subpath @delendai/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
+last-transition-id: 01c09fd0-489e-4bc1-a377-e44d76f84169
+last-correlation-id: 01c09fd0-489e-4bc1-a377-e44d76f84169
+last-transition-from: in-progress
 ---
 
 # q00010 — Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada)
