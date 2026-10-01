@@ -1649,14 +1649,6 @@
 				"date": "2026-09-30"
 			},
 			{
-				"id": "x00770",
-				"title": "Diagnostics and setup follow the configured profile",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-09-30"
-			},
-			{
 				"id": "x00785",
 				"title": "worktree-pr has one work model: the unit worktree that work enter makes",
 				"track": "trust",
