@@ -17,8 +17,15 @@
  * generators produce what is already there.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 import { GENERATED_REFRESH_COMMANDS } from '../contracts/constants/generated-refresh.constant';
 import type { IGeneratedRefreshReport } from '../contracts/interfaces/generated-refresh.interface';
@@ -53,6 +60,7 @@ const cleanEnvironment = (): NodeJS.ProcessEnv => {
 const git = (
 	cwd: string,
 	args: readonly string[],
+	extraEnvironment: NodeJS.ProcessEnv = {},
 ): { readonly ok: boolean; readonly out: string } => {
 	try {
 		return {
@@ -61,11 +69,73 @@ const git = (
 				cwd,
 				encoding: 'utf8',
 				stdio: ['ignore', 'pipe', 'pipe'],
-				env: cleanEnvironment(),
+				env: { ...cleanEnvironment(), ...extraEnvironment },
 			}).trim(),
 		};
 	} catch {
 		return { ok: false, out: '' };
+	}
+};
+
+/**
+ * True when the merge only moved HEAD forward to a commit that already
+ * existed. Such a tip was certified where it was made, so there is
+ * nothing to recompute, and a ten-second `git pull` should not become
+ * a minute of generators.
+ */
+export const landedAsFastForward = (root: string): boolean =>
+	!git(root, ['rev-parse', '-q', '--verify', 'HEAD^2']).ok;
+
+/** True while git has not yet finished the merge whose hook is running. */
+const mergeIsOpen = (root: string): boolean => {
+	const marker = git(root, ['rev-parse', '--git-path', 'MERGE_HEAD']);
+	return marker.ok && existsSync(resolve(root, marker.out));
+};
+
+/**
+ * Record `paths` as a commit on HEAD without `git commit`.
+ *
+ * `git post-merge` runs while `MERGE_HEAD` still exists, and `git commit`
+ * refuses a partial commit during a merge, so a commit naming the paths
+ * (the only way to keep an agent's other staged work out of it) failed on
+ * every real merge and the refresh quietly gave up. The same commit is
+ * built in a scratch index that holds HEAD plus these paths, then HEAD is
+ * moved to it; the policy's reference-transaction guard still judges that
+ * move, exactly as it judges a commit.
+ */
+const commitPaths = (
+	root: string,
+	paths: readonly string[],
+	message: string,
+): boolean => {
+	const directory = mkdtempSync(join(tmpdir(), 'generated-refresh-'));
+	try {
+		const scratch = { GIT_INDEX_FILE: join(directory, 'index') };
+		const head = git(root, ['rev-parse', 'HEAD']);
+		if (!head.ok) return false;
+		if (!git(root, ['read-tree', 'HEAD'], scratch).ok) return false;
+		if (!git(root, ['add', '--', ...paths], scratch).ok) return false;
+		const tree = git(root, ['write-tree'], scratch);
+		if (!tree.ok) return false;
+		const commit = git(root, [
+			'commit-tree',
+			tree.out,
+			'-p',
+			head.out,
+			'-m',
+			message,
+		]);
+		if (!commit.ok) return false;
+		return git(root, [
+			'update-ref',
+			'-m',
+			message,
+			'HEAD',
+			commit.out,
+			head.out,
+		]).ok;
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
 	}
 };
 
@@ -239,23 +309,19 @@ export const refreshGeneratedAfterMerge = (input: {
 		return { refreshed: true, committed: false, failed, paths: [] };
 	}
 	const staged = git(input.root, ['add', '--', ...changed]);
-	// `git commit` with no paths commits the WHOLE index, so anything an
-	// agent had already staged would be swept into this commit. Naming
-	// the paths keeps the promise this service makes: it commits what the
-	// generators produced, and nothing else.
+	// Only the named paths are committed; whatever else the agent had
+	// staged stays staged and out of this commit.
+	const message = 'chore(generated): recompute after a merge';
 	const committed =
 		staged.ok &&
-		// No `--no-verify`: this commit goes through the same hooks as any
-		// other. In an agent's worktree, on its work ref, the policy
-		// allows it; anywhere the policy refuses it, the refusal is the
-		// right answer and `committed: false` says so.
-		git(input.root, [
-			'commit',
-			'-m',
-			'chore(generated): recompute after a merge',
-			'--',
-			...changed,
-		]).ok;
+		(mergeIsOpen(input.root)
+			? commitPaths(input.root, changed, message)
+			: // No `--no-verify`: this commit goes through the same hooks
+				// as any other. In an agent's worktree, on its work ref, the
+				// policy allows it; anywhere the policy refuses it, the
+				// refusal is the right answer and `committed: false` says so.
+				git(input.root, ['commit', '-m', message, '--', ...changed])
+					.ok);
 	if (!committed) {
 		// A refusal is the right answer — and it must cost nothing. On the
 		// integration branch in the pinned checkout the policy refuses this

@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 653
+Total exports: 645
 
 | Maturity | Count |
 | --- | --- |
-| stable | 650 |
+| stable | 642 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -104,7 +104,6 @@ Total exports: 653
 | `createOrUpdateWipRef` | const | stable | `../lib/wip-engine/index` |
 | `createPluginMetrics` | const | stable | `../lib/observability/plugin-metrics` |
 | `createPluginStateMachine` | const | stable | `../lib/plugins/states` |
-| `createStaleRuntimeWatch` | const | stable | `../lib/development-policy/stale-runtime-advisory` |
 | `createStartupGovernanceSeam` | const | stable | `../lib/startup-gate/index` |
 | `createWipEngine` | const | stable | `../lib/wip-engine/index` |
 | `createWorkspaceFileReader` | const | stable | `../lib/bootstrap/index` |
@@ -175,7 +174,6 @@ Total exports: 653
 | `hasExplicitPluginSurfaceSelection` | const | stable | `../lib/plugins/parse-cli-args` |
 | `hasPhasedLifecycle` | const | stable | `../lib/plugins/lifecycle` |
 | `hasSegment` | const | stable | `../lib/contracts/file-conventions.contract` |
-| `hasSeparateReleaseBranch` | const | stable | `../lib/development-policy/release-branch` |
 | `HIGH_CONFIDENCE_SECRET_PATTERNS` | const | stable | `../lib/shared/redact` |
 | `hydrateKpis` | const | stable | `../lib/observability/activation-kpis` |
 | `IActivationSources` | type | stable | `../lib/contracts/interfaces/activation-report.interface` |
@@ -482,7 +480,6 @@ Total exports: 653
 | `projectValue` | const | stable | `../lib/contracts/output/projection` |
 | `PROPOSAL_STATUS_VALUES` | const | stable | `../lib/catalog/agent-discovery-types` |
 | `ProposalStatus` | type | stable | `../lib/catalog/agent-discovery-types` |
-| `protectedBranchNames` | const | stable | `../lib/development-policy/release-branch` |
 | `ProviderKind` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `ProviderState` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `pruneExpiredExec` | const | stable | `../lib/shared/exec-path` |
@@ -537,7 +534,6 @@ Total exports: 653
 | `resolvePluginSpecifier` | const | stable | `../plugin` |
 | `resolvePresetMembers` | const | stable | `../lib/plugins/preset-catalog` |
 | `resolvePublicToolIdentity` | const | stable | `../lib/contracts/resolvers/safe-tool-identity.resolver` |
-| `resolveReleaseTarget` | const | stable | `../lib/development-policy/release-target` |
 | `resolveSearchHybridWeights` | const | stable | `../lib/plugins/pack-defaults` |
 | `resolveTokenBudget` | const | stable | `../lib/contracts/interfaces/plugin-token-budget.interface` |
 | `resolveToolPermissions` | const | stable | `../lib/contracts/interfaces/plugin-tool-permissions.interface` |
@@ -592,7 +588,6 @@ Total exports: 653
 | `scaffoldToolFile` | const | stable | `../lib/scaffold/scaffold-host` |
 | `scanLegacyIdentity` | const | stable | `../lib/workspace-migration/scanner/legacy-identity-scanner` |
 | `SCHEMA_VERSION` | const | stable | `../lib/api/stable-manifest` |
-| `SHARED_CHECKOUT_WRITE_REFUSED` | const | stable | `../lib/contracts/constants/write-refusal.constant` |
 | `sharedCheckout` | const | stable | `../lib/shared/shared-checkout` |
 | `shingleBlocks` | const | stable | `../lib/scan` |
 | `shouldUseAnsiColors` | const | stable | `../lib/startup-report` |
@@ -604,7 +599,6 @@ Total exports: 653
 | `STABLE_API_TOOL_NAMES` | const | stable | `../lib/api/stable-facade` |
 | `STABLE_API_TOOLS` | const | stable | `../lib/api/stable-facade` |
 | `STABLE_MANIFEST_REL` | const | stable | `../lib/api/stable-manifest` |
-| `startCheckoutHydration` | const | stable | `../lib/startup-gate/index` |
 | `startupGateWarnings` | const | stable | `../lib/startup-gate/index` |
 | `stripAnsi` | const | stable | `../lib/shared/git-write` |
 | `STUCK_SHELL_SENTINELS` | const | stable | `../lib/agents/shell-fallback` |
@@ -632,8 +626,6 @@ Total exports: 653
 | `truncateRedactor` | const | stable | `../lib/observability/timeline` |
 | `UNANCHORED` | const | stable | `../lib/wip-engine/index` |
 | `UNICODE_TOKEN_LEGEND` | const | stable | `../lib/shared/unicode-safe-text` |
-| `UNRESOLVED_POLICY_PROTECTED_BRANCHES` | const | stable | `../lib/development-policy/protected-branches` |
-| `UNRESOLVED_POLICY_RELEASE_BRANCH` | const | stable | `../lib/development-policy/protected-branches` |
 | `utility` | const | stable | `../lib/routing/utility` |
 | `VALIDATE_EVIDENCE_SCHEMA` | const | stable | `../lib/proposals/validate-evidence.schema` |
 | `validateDevelopmentPolicy` | const | stable | `../lib/development-policy/validate` |

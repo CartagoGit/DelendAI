@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { createStaleRuntimeWatch } from '@delendai/core/public';
+import { createStaleRuntimeWatch } from '@delendai/core/cli';
 
 import { createHostSupervisor } from './host-supervisor';
 import type { ISupervisedChild } from './host-supervisor.interface';
