@@ -2,7 +2,7 @@
 id: q00011
 title: "Plan — cerrar los contratos de runtime que el sistema promete y no cumple: ciclo de vida eager/lazy, propiedad del teardown, enforcement de efectos, puertas ciegas de CI y el 66% del coste de tokens que vive en los output schemas"
 kind: plan
-status: ready
+status: in-progress
 type: plan
 track: runtime-contracts-v1
 date: 2026-08-27
@@ -121,6 +121,9 @@ contains:
             rationale: "delendai doctor --deep/--ci/--offline cubriendo los modos de fallo de esta auditoria. AUD-F04." }
         - { id: d00014, kind: docs, required: false, priority: P2, track: docs,
             rationale: "Una pagina canonica por plugin: tres paginas manuales duplican las auto-generadas. AUD-F07." }
+last-transition-id: a89da4b9-e95f-4328-8644-ba9cbe9152ae
+last-correlation-id: a89da4b9-e95f-4328-8644-ba9cbe9152ae
+last-transition-from: ready
 ---
 
 # q00011 — Cerrar los contratos de runtime
