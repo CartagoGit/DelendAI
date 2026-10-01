@@ -31,9 +31,9 @@ import {
 	createWriteGitRunner,
 	renderStartupGate,
 	runStartupGate,
-	startCheckoutHydration,
 	startupGateWarnings,
 } from '@delendai/core/public';
+import { startCheckoutHydration } from '@delendai/core/cli';
 import type { IMigrationRunResult } from '@delendai/core/public';
 import {
 	openStartupStatePorts,
