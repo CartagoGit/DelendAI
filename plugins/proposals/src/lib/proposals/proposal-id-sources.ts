@@ -25,12 +25,14 @@
  * Outside a git repository both answers degrade to "nothing known", so
  * the allocator behaves exactly as it did before.
  */
+import { randomUUID } from 'node:crypto';
 import { join, relative } from 'node:path';
 
 import { PROPOSAL_SCAN_FOLDERS } from '../contracts/constants/proposal-glossary.constant';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import type {
 	IProposalIdCounters,
+	IProposalIdReservation,
 	IProposalIdSources,
 } from '../contracts/interfaces/proposal-id-sources.interface';
 import {
@@ -40,6 +42,7 @@ import {
 
 export type {
 	IProposalIdCounters,
+	IProposalIdReservation,
 	IProposalIdSources,
 } from '../contracts/interfaces/proposal-id-sources.interface';
 
@@ -69,6 +72,25 @@ export const worktreePathsFrom = (porcelain: string): readonly string[] =>
 		.filter((line) => line.startsWith('worktree '))
 		.map((line) => line.slice('worktree '.length).trim())
 		.filter((path) => path !== '');
+
+/** Where an id is claimed on the remote: one ref per id. */
+const RESERVATION_NAMESPACE = 'refs/delendai/ids/';
+
+const RESERVATION_REF = /refs\/delendai\/ids\/([a-z])(\d+)\s*$/u;
+
+/** Folds the output of `ls-remote` over the reservation refs into counters. */
+export const countersFromReservations = (
+	output: string,
+): IProposalIdCounters => {
+	const counters: Record<string, number> = {};
+	for (const line of output.split('\n')) {
+		const match = RESERVATION_REF.exec(line);
+		if (match === null) continue;
+		const prefix = match[1] ?? '';
+		counters[prefix] = Math.max(counters[prefix] ?? 0, Number(match[2]));
+	}
+	return counters;
+};
 
 const lines = (output: string): readonly string[] =>
 	output
@@ -123,9 +145,17 @@ export const createGitProposalIdSources = (
 			]);
 			if (refs.ok) {
 				for (const ref of lines(refs.output)) {
+					// `--full-tree`: the pathspec is the repository-relative
+					// directory, but `ls-tree` reads it relative to the cwd
+					// by default. A process running inside the proposals
+					// directory (the CLI's server does) matched nothing and
+					// never saw an id held on a remote ref, while the same
+					// call from the repository root did: two callers, two
+					// answers, one id handed out twice.
 					const tree = await git([
 						'ls-tree',
 						'-r',
+						'--full-tree',
 						'--name-only',
 						ref,
 						'--',
@@ -134,7 +164,57 @@ export const createGitProposalIdSources = (
 					if (tree.ok) names.push(...lines(tree.output));
 				}
 			}
-			return countersFromNames(names);
+			const merged: Record<string, number> = {
+				...countersFromNames(names),
+			};
+			// Ids other sessions claimed on the remote, whether or not their
+			// proposal has reached any ref this clone has fetched.
+			const reserved = await git([
+				'ls-remote',
+				'origin',
+				`${RESERVATION_NAMESPACE}*`,
+			]);
+			if (reserved.ok) {
+				for (const [key, value] of Object.entries(
+					countersFromReservations(reserved.output),
+				)) {
+					merged[key] = Math.max(merged[key] ?? 0, value);
+				}
+			}
+			return merged;
+		},
+		async reserve(id): Promise<IProposalIdReservation> {
+			const url = await git(['remote', 'get-url', 'origin']);
+			const tree = await git(['rev-parse', 'HEAD^{tree}']);
+			if (!url.ok || !tree.ok) return 'unavailable';
+			// A commit of its own per reservation: two sessions pushing the
+			// SAME object to one ref would both be told "up to date". Unrelated
+			// commits cannot fast-forward, so the second push is rejected.
+			const commit = await git([
+				'-c',
+				'user.name=delendai',
+				'-c',
+				'user.email=delendai@localhost',
+				'commit-tree',
+				tree.output.trim(),
+				'-m',
+				`reserve ${id} ${randomUUID()}`,
+			]);
+			if (!commit.ok) return 'unavailable';
+			const ref = `${RESERVATION_NAMESPACE}${id}`;
+			// `send-pack`, not `push`: this moves a bookkeeping ref, not work,
+			// and `push` would run the whole pre-push gate (about a minute)
+			// for a reference that points at nothing anybody reviews.
+			const sent = await git([
+				'send-pack',
+				url.output.trim(),
+				`${commit.output.trim()}:${ref}`,
+			]);
+			if (sent.ok) return 'reserved';
+			const held = await git(['ls-remote', url.output.trim(), ref]);
+			return held.ok && held.output.trim() !== ''
+				? 'taken'
+				: 'unavailable';
 		},
 	};
 };

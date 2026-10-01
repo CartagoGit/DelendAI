@@ -1655,6 +1655,14 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-10-01"
+			},
+			{
+				"id": "x00868",
+				"title": "CLI and MCP allocate proposal ids from one source, and CLI claims outlive the process",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-01"
 			}
 		]
 	}
