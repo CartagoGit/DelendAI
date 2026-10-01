@@ -8,7 +8,10 @@
  */
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import { UNRESOLVED_POLICY_PROTECTED_BRANCHES } from './default-branch.constant';
+import {
+	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
+	UNRESOLVED_POLICY_RELEASE_BRANCH,
+} from './default-branch.constant';
 
 export {
 	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
@@ -20,11 +23,14 @@ export {
  *
  * A project whose release and integration branches are the same (or that
  * declares no release branch) has no separate release path to guard: its
- * integration branch is governed by the integration rules instead.
+ * integration branch is governed by the integration rules instead. With no
+ * policy resolved the historical release branch is kept, so a bare host
+ * does not lose the guard.
  */
 export const distinctReleaseBranch = (
-	policy: IResolvedDevelopmentPolicy,
+	policy: IResolvedDevelopmentPolicy | undefined,
 ): string | undefined => {
+	if (policy === undefined) return UNRESOLVED_POLICY_RELEASE_BRANCH;
 	const { release, integration } = policy.branches;
 	if (typeof release !== 'string' || release.length === 0) return undefined;
 	return release === integration ? undefined : release;

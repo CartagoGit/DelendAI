@@ -177,6 +177,20 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // `packages/core/src` references — no plugin, package, app, tool, spec
 // importing through the barrel, or document other than the generated
 // inventory — left the barrel. They stay exported from their `lib/` modules.
+//
+// Held at 645 (2026-10-01) with the surface back to 644 after it reached
+// 648 unseen: this gate ran only in `validate:run`, which CI does not
+// invoke, so a dozen exports arrived across several pull requests without
+// anyone being asked. It runs in `lint:architecture` now. Nothing was raised:
+// two exports only the host and a verification script read
+// (`createStaleRuntimeWatch`, `SHARED_CHECKOUT_WRITE_REFUSED`) moved to
+// `@delendai/core/cli`, and two constants that restated what a function
+// already answered left the barrel (`UNRESOLVED_POLICY_RELEASE_BRANCH` is
+// what `distinctReleaseBranch(undefined)` returns,
+// `UNRESOLVED_POLICY_PROTECTED_BRANCHES` what
+// `deriveDefaultProtectedBranches(undefined)` returns). A new export that a
+// plugin needs belongs in the barrel; one that only the CLI, the host or a
+// script reads belongs in `@delendai/core/cli`.
 export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 645;
 
 export interface ICorePublicSurfaceBudgetReport {

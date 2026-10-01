@@ -604,7 +604,6 @@ export {
 } from '../lib/shared/tool-response';
 // The code a write refused in the shared checkout carries, for a caller
 // that must tell policy from a broken tool (`verify:tools`).
-export { SHARED_CHECKOUT_WRITE_REFUSED } from '../lib/contracts/constants/write-refusal.constant';
 export type {
 	IToolErrorLogHint,
 	IToolTextResult,
@@ -1071,8 +1070,6 @@ export {
 export {
 	deriveDefaultProtectedBranches,
 	distinctReleaseBranch,
-	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
-	UNRESOLVED_POLICY_RELEASE_BRANCH,
 } from '../lib/development-policy/protected-branches';
 export {
 	anchorFromPolicy,
@@ -1188,4 +1185,3 @@ export { projectBranches } from '../lib/development-policy/project-branches';
  * delivered, instead of judging by how a branch is named.
  */
 export { branchDeliveryVerdict } from '../lib/ref-lifecycle/branch-delivery.service';
-export { createStaleRuntimeWatch } from '../lib/development-policy/stale-runtime-advisory';

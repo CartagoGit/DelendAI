@@ -107,6 +107,12 @@ export type {
 } from './lib/contracts/interfaces/workflow-invariants.interface';
 export { worktreeAgent } from './lib/work-units/worktree-agent.service';
 
+// What only the host and the verification scripts read: the watch that tells
+// a running server its source moved, and the code a refused shared-checkout
+// write carries.
+export { createStaleRuntimeWatch } from './lib/development-policy/stale-runtime-advisory';
+export { SHARED_CHECKOUT_WRITE_REFUSED } from './lib/contracts/constants/write-refusal.constant';
+
 if (import.meta.main) {
 	void runCli(process.argv.slice(2), process.cwd());
 }

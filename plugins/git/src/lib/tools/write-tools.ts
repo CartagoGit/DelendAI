@@ -21,7 +21,7 @@ import {
 	toolError,
 	toolOk,
 	type ICommitAuthorResolution,
-	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
+	deriveDefaultProtectedBranches,
 } from '@delendai/core/public';
 
 import { checkRepo } from '../services/git';
@@ -50,7 +50,7 @@ export interface IGitWriteToolOptions {
 }
 
 const DEFAULT_PROTECTED_BRANCHES: readonly string[] =
-	UNRESOLVED_POLICY_PROTECTED_BRANCHES;
+	deriveDefaultProtectedBranches(undefined);
 
 // ---------------------------------------------------------------------------
 // Conventional Commits validation
