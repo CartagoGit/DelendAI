@@ -12,7 +12,7 @@ import {
 	runHappyPathProbe,
 	type IToolHandle,
 } from './verify-probes';
-import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/public';
+import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/cli';
 
 /**
  * Solid-ISP test helper: build an `IToolHandle` from a stub schema +

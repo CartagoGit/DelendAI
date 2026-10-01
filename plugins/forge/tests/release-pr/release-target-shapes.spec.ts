@@ -3,10 +3,8 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-	resolveReleaseTarget,
-	type IReleaseTarget,
-} from '@delendai/core/public';
+import type { IReleaseTarget } from '@delendai/core/public';
+import { resolveReleaseTarget } from '@delendai/core/lib/development-policy/release-target';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 import type { IForgePullRequestDetail } from '../../src/lib/contracts/interfaces/forge-read.interface';

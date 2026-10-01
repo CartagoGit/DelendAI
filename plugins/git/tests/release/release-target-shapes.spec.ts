@@ -4,10 +4,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import {
-	resolveReleaseTarget,
-	type IReleaseTarget,
-} from '@delendai/core/public';
+import type { IReleaseTarget } from '@delendai/core/public';
+import { resolveReleaseTarget } from '@delendai/core/lib/development-policy/release-target';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 import {
