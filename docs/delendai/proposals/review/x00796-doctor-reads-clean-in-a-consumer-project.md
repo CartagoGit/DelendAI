@@ -2,10 +2,13 @@
 id: x00796
 title: "Doctor reads clean in a consumer project"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
+last-transition-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
+last-correlation-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
+last-transition-from: in-progress
 ---
 
 # x00796 — Doctor reads clean in a consumer project
@@ -28,9 +31,10 @@ A probe of the real CLI in throwaway consumer repos found that after `init`, `de
 - global_gate: none
 
 ### S1 — Gate monorepo-only doctor checks and derive deps and runtime from the project
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/lib/doctor/applicability.ts`, `packages/cli/src/lib/doctor/applicability.spec.ts`, `packages/cli/src/lib/doctor/analyze-config-roots.service.ts`, `packages/cli/src/lib/doctor/checks/manifests.check.ts`, `packages/cli/src/lib/doctor/checks/plugin-graph.check.ts`, `packages/cli/src/lib/doctor/checks/deps.check.ts`, `packages/cli/src/lib/doctor/checks/runtime.check.ts`, `packages/cli/src/lib/doctor/checks/schemas.check.ts`, `packages/cli/src/lib/doctor/checks/token-budgets.check.ts`, `packages/cli/src/lib/doctor/checks/network.check.ts`, `packages/cli/src/commands/doctor-checks/plugin-graph.ts`, `packages/cli/src/commands/groups/doctor.ts`, `packages/cli/src/commands/doctor.spec.ts`, `packages/cli/src/commands/groups/doctor.spec.ts`
 - **Gate**: none
+- shipped-in: `e59cea102e36`
 
 ## acceptance
 
