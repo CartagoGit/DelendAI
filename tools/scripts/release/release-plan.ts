@@ -55,6 +55,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/error-reporting',
 	'plugins/external-mcps',
 	'plugins/forge',
+	'plugins/framework-knowledge',
 	'plugins/git',
 	'plugins/github',
 	'plugins/gitlab',
