@@ -63,6 +63,17 @@ export const readGit = (
 };
 
 /**
+ * The repository's own checkout: the first entry `git worktree list`
+ * names, which outlives every linked worktree. `cwd` itself when git
+ * cannot say.
+ */
+export const mainWorktreeOf = (cwd: string): string =>
+	(readGit(cwd, ['worktree', 'list', '--porcelain']) ?? '')
+		.split('\n')
+		.find((line) => line.startsWith('worktree '))
+		?.slice('worktree '.length) ?? cwd;
+
+/**
  * `--workspace` is a GLOBAL flag, consumed by the parser before a command
  * sees its arguments; reading it from `args` silently resolved to the
  * process' own directory and created a worktree inside another worktree.
