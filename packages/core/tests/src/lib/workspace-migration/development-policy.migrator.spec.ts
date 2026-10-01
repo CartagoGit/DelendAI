@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 /** A git repository with a config file, on a branch we choose. */
-const workspace = (config: string, branch = 'develop'): string => {
+const workspace = (config: string, branch = 'main'): string => {
 	const root = mkdtempSync(join(tmpdir(), 'dev-policy-migrator-'));
 	directories.push(root);
 	const git = (...args: readonly string[]): void => {
@@ -76,19 +76,28 @@ describe('the development-policy migrator', () => {
 		expect(violations).toEqual([]);
 	});
 
-	it('integrates on the branch the workspace is on, not on `develop`', async () => {
-		const root = workspace('{\n\t"version": 1\n}\n', 'trabajo');
+	it('integrates on the branch the project names as its own, not on `develop`', async () => {
+		const root = workspace('{\n\t"version": 1\n}\n', 'trunk');
 		await migrator.apply(ctx(root));
 
 		const written = JSON.parse(readConfig(root)) as {
 			development?: { branches?: { integration?: string } };
 		};
-		expect(written.development?.branches?.integration).toBe('trabajo');
+		expect(written.development?.branches?.integration).toBe('trunk');
 	});
 
 	it('never touches a workspace that already decided', async () => {
 		const before =
 			'{\n\t"version": 1,\n\t"development": { "profile": "worktree-pr" }\n}\n';
+		const root = workspace(before);
+
+		expect(await migrator.detect(ctx(root))).toBe(false);
+		await migrator.apply(ctx(root));
+		expect(readConfig(root)).toBe(before);
+	});
+
+	it('never touches an empty block: declaring `{}` is how a project opts out', async () => {
+		const before = '{\n\t"version": 1,\n\t"development": {}\n}\n';
 		const root = workspace(before);
 
 		expect(await migrator.detect(ctx(root))).toBe(false);
