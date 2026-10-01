@@ -257,6 +257,31 @@ describe('runAgentLockEngine — release / status', async () => {
 		]);
 	});
 
+	it('a claim held by the agent records no process, so it survives the one-shot host that took it', async () => {
+		await run(
+			{
+				action: 'claim',
+				task_id: 'cli-task',
+				agent: 'agent-A',
+				files: ['src/cli.ts'],
+				holder: 'agent',
+			},
+			{ nowHostId: () => ({ host: 'host-a', pid: 100 }) },
+		);
+
+		expect(readLockFile().in_flight[0]).not.toHaveProperty('pid');
+		expect(readLockFile().in_flight[0]).not.toHaveProperty('host');
+
+		const released = await releaseAgentSessionClaims({
+			lockPath,
+			nowHostId: () => ({ host: 'host-a', pid: 100 }),
+		});
+		expect(released.releasedTaskIds).toEqual([]);
+
+		const status = await run({ action: 'status' });
+		expect(body(status).in_flight).toHaveLength(1);
+	});
+
 	it('heartbeat refreshes a long-running claim without changing ownership', async () => {
 		await run(
 			{
