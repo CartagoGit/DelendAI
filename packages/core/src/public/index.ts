@@ -1142,7 +1142,6 @@ export {
 	createStartupGovernanceSeam,
 	renderStartupGate,
 	runStartupGate,
-	startCheckoutHydration,
 	startupGateWarnings,
 } from '../lib/startup-gate/index';
 export type { IStartupStatePorts } from '../lib/startup-reconciler/index';
@@ -1184,3 +1183,6 @@ export { projectBranches } from '../lib/development-policy/project-branches';
  * delivered, instead of judging by how a branch is named.
  */
 export { branchDeliveryVerdict } from '../lib/ref-lifecycle/branch-delivery.service';
+// The gates a project declares, read the way `delendai validate` reads
+// them, so a plugin that runs a gate runs the same one.
+export { validationGateSteps } from '../lib/work-units/validation-gate-steps.service';

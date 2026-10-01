@@ -599,7 +599,6 @@ Total exports: 645
 | `STABLE_API_TOOL_NAMES` | const | stable | `../lib/api/stable-facade` |
 | `STABLE_API_TOOLS` | const | stable | `../lib/api/stable-facade` |
 | `STABLE_MANIFEST_REL` | const | stable | `../lib/api/stable-manifest` |
-| `startCheckoutHydration` | const | stable | `../lib/startup-gate/index` |
 | `startupGateWarnings` | const | stable | `../lib/startup-gate/index` |
 | `stripAnsi` | const | stable | `../lib/shared/git-write` |
 | `STUCK_SHELL_SENTINELS` | const | stable | `../lib/agents/shell-fallback` |
@@ -634,6 +633,7 @@ Total exports: 645
 | `validatePluginManifest` | const | stable | `../lib/manifest/validation` |
 | `validateScopePaths` | const | stable | `../plugin` |
 | `validateToolDryRunManifest` | const | stable | `../lib/dry-run/enforce` |
+| `validationGateSteps` | const | stable | `../lib/work-units/validation-gate-steps.service` |
 | `waitsBackOnto` | const | stable | `../lib/shared/wait-for-graph` |
 | `walkAllowedFiles` | const | stable | `../lib/shared/walk-allowed-files` |
 | `walkTsFiles` | const | stable | `../lib/scan` |

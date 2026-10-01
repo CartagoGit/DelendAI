@@ -1,6 +1,7 @@
+import { sourceCheckoutOnly } from '../applicability';
 import type { DoctorCheck } from '../types';
 
-export const checkPluginGraph: DoctorCheck = async ({ fs }) => {
+const checkSourcePluginGraph: DoctorCheck = async ({ fs }) => {
 	const plugins = await fs.listDirs('plugins');
 	if (plugins.length === 0)
 		return {
@@ -45,3 +46,9 @@ export const checkPluginGraph: DoctorCheck = async ({ fs }) => {
 				],
 			};
 };
+
+export const checkPluginGraph: DoctorCheck = sourceCheckoutOnly(
+	'plugin-graph',
+	'the plugin dependency graph',
+	checkSourcePluginGraph,
+);

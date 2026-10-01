@@ -48,6 +48,10 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// process each hook starts, whose facts are synchronous; and written
 	// once, when `work enter` creates the worktree.
 	/packages\/core\/src\/lib\/work-units\/worktree-agent\.service\.ts$/,
+	// The effective development policy is resolved synchronously by every
+	// reader (server boot, the git guard, `work`); the one fact it reads
+	// from disk is a small journal, so the read stays synchronous too.
+	/packages\/core\/src\/lib\/development-policy\/adoption-record\.ts$/,
 ];
 
 /** Sync node:fs functions that are not allowed outside boot. */

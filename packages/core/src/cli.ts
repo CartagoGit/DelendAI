@@ -62,6 +62,7 @@ export type {
 // the policy it reads.
 export { serveRefusal } from './lib/cli/refused-server';
 export { adoptionFor } from './lib/workspace-migration/migrators/development-policy.migrator';
+export { gatherAdoptionEvidence } from './lib/workspace-migration/migrators/development-policy-evidence';
 export type {
 	IAdoptedBlock,
 	IAdoption,
@@ -79,6 +80,7 @@ export {
 	readConfigText,
 	scalarArg,
 } from './lib/work-units/command-args.helper';
+export { adoptionReportLines } from './lib/workspace-migration/migration-report.service';
 export {
 	readWorkspaceDocsDir,
 	readWorkspacePolicy,
@@ -118,6 +120,8 @@ export {
 	protectedBranchNames,
 } from './lib/development-policy/release-branch';
 export { resolveReleaseTarget } from './lib/development-policy/release-target';
+// The host keeps the shared checkout on develop while it runs.
+export { startCheckoutHydration } from './lib/startup-gate/index';
 export { SHARED_CHECKOUT_WRITE_REFUSED } from './lib/contracts/constants/write-refusal.constant';
 
 if (import.meta.main) {

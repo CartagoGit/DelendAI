@@ -95,6 +95,11 @@ import type {
 	IAuthoringToolOptions,
 	ICloseSliceValidationDecision,
 } from './authoring-options';
+import type {
+	ICloseGateDeps,
+	ICloseSliceQualityResult,
+} from '../contracts/interfaces/close-slice-gate.interface';
+import { runCloseSliceGate } from './close-slice-gate';
 import {
 	maybePersistAfterSlice,
 	type IPersistResult,
@@ -120,6 +125,14 @@ export { readActiveLocks } from './authoring-options';
 // close-slice validation below that deadline so callers receive the
 // structured validation error and the document mutex is always released.
 const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
+const CLOSE_SLICE_GATE_SCHEMA = z
+	.object({
+		state: z.enum(['pass', 'fail', 'pending', 'unverifiable']),
+		reused: z.boolean(),
+		handle: z.string().optional(),
+		tree: z.string().optional(),
+	})
+	.optional();
 const ISO_DATE_LENGTH = 10;
 const TIMEOUT_EXIT_CODE = 124;
 
@@ -135,15 +148,12 @@ type ICloseSliceThrownError = Error & {
 	readonly kind?:
 		| 'validation-error'
 		| 'quality-failed'
+		| 'gate-pending'
+		| 'gate-unverifiable'
 		| 'peer-review-required';
 	readonly output?: string;
 	readonly persist?: IPersistResult;
-	readonly detail?: {
-		readonly ok: boolean;
-		readonly severity: 'ok' | 'error';
-		readonly findings: readonly string[];
-		readonly summary?: { readonly ok: boolean; readonly scopes: number };
-	};
+	readonly detail?: ICloseSliceQualityResult;
 	readonly validationDecision?: ICloseSliceValidationDecision;
 };
 
@@ -355,117 +365,26 @@ export const runCloseSliceValidation = async (
 };
 
 /**
- * Pull the quality report out of a command's combined output.
- *
- * `runAcceptanceCriteria` returns stdout AND stderr joined, and `bun run
- * <script>` unconditionally echoes `$ <the command>` on stderr — even
- * when nothing is a TTY. So the captured text is never just the JSON
- * document, and `JSON.parse(whole thing)` threw every single time:
- * `close_slice`'s quality gate could not recognise a PASS at all and
- * refused every close with `quality-failed`, whatever the gate had
- * actually reported.
- *
- * Scan for the report instead of assuming it is alone. Lines are tried
- * newest-first so a report printed after warmup noise still wins, and a
- * candidate only counts when it carries the report's own shape — a bare
- * `{}` or some other tool's JSON is not a verdict.
+ * The quality probe `close_slice` wires: the project's declared gate,
+ * run as a resumable job (see `close-slice-gate.ts`). `gate` tells a
+ * gate that is still running or could not be verified apart from one
+ * that failed, because the caller must answer each differently.
  */
-const extractQualityJson = (
-	output: string,
-):
-	| {
-			ok?: boolean;
-			severity?: 'ok' | 'error';
-			findings?: readonly string[];
-			summary?: { ok?: boolean; scopes?: number };
-	  }
-	| undefined => {
-	const candidates = [output, ...output.split('\n')]
-		.map((line) => line.trim())
-		.filter((line) => line.startsWith('{') && line.endsWith('}'));
-	for (const candidate of candidates.reverse()) {
-		try {
-			const parsed: unknown = JSON.parse(candidate);
-			if (parsed === null || typeof parsed !== 'object') continue;
-			const shape = parsed as Record<string, unknown>;
-			if ('ok' in shape || 'severity' in shape || 'findings' in shape) {
-				return shape;
-			}
-		} catch {
-			// Not this line. Keep looking.
-		}
-	}
-	return undefined;
-};
-
-export const runCloseSliceQualityGate = async (
-	cwd: string,
-	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
-	options: {
-		readonly scopes?: readonly string[];
-	} = {},
-): Promise<{
-	readonly ok: boolean;
-	readonly severity: 'ok' | 'error';
-	readonly findings: readonly string[];
-	readonly summary?: {
-		readonly ok: boolean;
-		readonly scopes: number;
-	};
-}> => {
-	const result = await runAcceptanceCriteria(
-		[
-			{
-				command: [
-					'bun run validate',
-					'--json',
-					...(options.scopes ?? []).map(
-						(scope) => `--scope=${scope}`,
-					),
-				].join(' '),
-				expect: 'exit0',
-				timeoutMs,
-			},
-		],
-		{ cwd },
-	);
-	const verdict = result.results[0];
-	const output = [verdict?.actual, verdict?.reason]
-		.filter(
-			(part): part is string =>
-				typeof part === 'string' && part.length > 0,
-		)
-		.join('\n')
-		.trim();
-	const structured = extractQualityJson(output);
-	if (structured !== undefined) {
-		{
-			const parsed = structured;
-			return {
-				ok: parsed.ok === true,
-				severity: parsed.severity === 'error' ? 'error' : 'ok',
-				findings: [...(parsed.findings ?? [])],
-				...(parsed.summary !== undefined &&
-				typeof parsed.summary.ok === 'boolean' &&
-				typeof parsed.summary.scopes === 'number'
-					? {
-							summary: {
-								ok: parsed.summary.ok,
-								scopes: parsed.summary.scopes,
-							},
-						}
-					: {}),
-			};
-		}
-	}
+export const runCloseSliceGateProbe = async (
+	deps: ICloseGateDeps,
+	scopes: readonly string[] = [],
+): Promise<ICloseSliceQualityResult> => {
+	const verdict = await runCloseSliceGate(deps, scopes);
 	return {
-		ok: false,
-		severity: 'error',
-		findings: [
-			output.length > 0
-				? output
-				: 'quality gate failed without structured output',
-		],
+		ok: verdict.state === 'pass',
+		severity: verdict.state === 'pass' ? 'ok' : 'error',
+		findings: verdict.findings,
+		gate: {
+			state: verdict.state,
+			reused: verdict.reused,
+			...(verdict.handle !== undefined ? { handle: verdict.handle } : {}),
+			...(verdict.tree !== undefined ? { tree: verdict.tree } : {}),
+		},
 	};
 };
 
@@ -1372,6 +1291,8 @@ export const buildCloseSliceRegistration = (
 							'unknown',
 							'validation-error',
 							'quality-failed',
+							'gate-pending',
+							'gate-unverifiable',
 							'peer-review-required',
 						])
 						.optional(),
@@ -1386,6 +1307,7 @@ export const buildCloseSliceRegistration = (
 						})
 						.optional(),
 					blockerType: z.string().optional(),
+					gate: CLOSE_SLICE_GATE_SCHEMA,
 					blockerDetail: z
 						.object({
 							ok: z.boolean(),
@@ -1397,6 +1319,7 @@ export const buildCloseSliceRegistration = (
 									scopes: z.number(),
 								})
 								.optional(),
+							gate: CLOSE_SLICE_GATE_SCHEMA,
 						})
 						.optional(),
 					error: z
@@ -1686,13 +1609,24 @@ export const buildCloseSliceRegistration = (
 									: undefined,
 							);
 							if (quality.severity === 'error') {
+								const gateKind =
+									quality.gate?.state === 'pending'
+										? ('gate-pending' as const)
+										: quality.gate?.state === 'unverifiable'
+											? ('gate-unverifiable' as const)
+											: ('quality-failed' as const);
 								const err: ICloseSliceThrownError =
 									Object.assign(
 										new Error(
-											'quality gate reported severity=error',
+											gateKind === 'gate-pending'
+												? 'the gate is still running'
+												: gateKind ===
+														'gate-unverifiable'
+													? 'the gate could not be verified'
+													: 'quality gate reported severity=error',
 										),
 										{
-											kind: 'quality-failed' as const,
+											kind: gateKind,
 											detail: quality,
 										},
 									);
@@ -1865,6 +1799,33 @@ export const buildCloseSliceRegistration = (
 								nextAction: `${options.namespacePrefix}_proposal_review { action: "submit", proposalId: "${entry.id}", sliceId: "${args.sliceId}", agent: "<implementer>" } then a DIFFERENT agent ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${entry.id}", sliceId: "${args.sliceId}", agent: "<reviewer≠implementer>" }`,
 								kind: 'peer-review-required',
 							},
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
+						};
+						return toolErrorEnvelope(envelope);
+					}
+					if (
+						err.kind === 'gate-pending' ||
+						err.kind === 'gate-unverifiable'
+					) {
+						const pending = err.kind === 'gate-pending';
+						const envelope = {
+							ok: false as const,
+							kind: err.kind,
+							blockerType: err.kind,
+							blockerDetail: err.detail,
+							error: {
+								reason: String(err.message),
+								nextAction: pending
+									? `The gate runs in the background (handle ${err.detail?.gate?.handle ?? 'unknown'}). Call close_slice again to resume it; the slice was NOT marked done and nothing is wrong yet.`
+									: 'The gate did not give a verdict, which is neither a pass nor a failure of the work. Read the findings, then call close_slice again to run it afresh; the slice was NOT marked done.',
+								kind: err.kind,
+								output: (err.detail?.findings ?? []).join('\n'),
+							},
+							...(err.detail?.gate !== undefined
+								? { gate: err.detail.gate }
+								: {}),
 							proposalId: entry.id,
 							sliceId: args.sliceId,
 							closed: false,
