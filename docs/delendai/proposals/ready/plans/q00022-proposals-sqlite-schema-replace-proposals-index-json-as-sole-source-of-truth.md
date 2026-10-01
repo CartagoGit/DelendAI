@@ -252,14 +252,24 @@ that the audit calls obligatory.
 
 ### S4 — One projection chain, then SQLite-only reads (the markdown stays the authority)
 
-- **Status**: pending
+- **Status**: in-progress (phase 2 delivered 2026-09-30; phase 3 remains)
 - **Files**:
   - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
   - `plugins/proposals/src/lib/services/projection-refresh.ts`
   - `plugins/proposals/plugin.manifest.ts`
   - `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`
   - `plugins/proposals/src/lib/proposals/index-reader.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-sql.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-location.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-rebuild.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-rebuild.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-workspace.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/proposal-index-read-stats.interface.ts`
+  - `plugins/proposals/src/lib/proposals/index-read-stats.ts`
   - `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-sql.spec.ts`
+  - `plugins/proposals/tests/src/lib/services/db-doctor/storage-mode.spec.ts`
   - `packages/proposals-sqlite/src/lib/migrations/0021_registry_fields.sql`
   - `packages/proposals-sqlite/src/lib/reconciler-markdown.ts`
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`
@@ -376,6 +386,64 @@ between by parity. Three phases, each ending with the declaration true:
    `json` stays the one-line rollback.
 3. **The registry leaves the read path.** It remains an export for the
    rollback until a later proposal removes it.
+
+**Phase 2 delivered 2026-09-30.** f00641 S1 (merged) gave the proposals
+database a `node:sqlite` adapter behind `loadDatabaseClass`, closing the
+Node blocker the 2026-09-25 finding recorded. What remained — a
+workspace whose database was never built reading as `sql-refused`
+instead of `auto`'s silent JSON fallback — is closed by making `sql`
+rebuild before it gives up, not by keeping the fallback:
+
+- `readProposalIndex`'s `sql` path (`index-reader.ts`) now distinguishes
+  three reasons the projection cannot serve: MISSING (no file at the
+  resolved database path), UNSTAMPED (the file exists but no reconcile
+  ever promoted into it — opened fine, no `reconciliation_runs` row),
+  and CORRUPT (a file exists but this reader could not open it). Missing
+  and unstamped rebuild once, through the existing leveller
+  (`reconcileProjection`, which never throws) against the markdown — the
+  authority `sql` already defers to for every row it serves — then read
+  again; corrupt still throws immediately, so a real problem is never
+  silently reconciled over. The workspace root itself must exist too,
+  so a synthetic/misconfigured root never triggers a real rebuild
+  attempt.
+- The rebuild is counted, not just logged once:
+  `IProposalIndexReadStats.rebuilds` (`index-read-stats.ts`) increments
+  on every attempt, whether or not the retry ends up serving — the
+  existing one-time notice behaviour is unchanged.
+- `DEFAULT_PROPOSAL_INDEX_SOURCE` moved from `auto` to `sql`
+  (`proposal-index-source.constant.ts`); `json` stays the one-line
+  rollback, `auto` stays selectable.
+- Fixed a real bug the flip surfaced: `readProposalIndexResultFromSql`
+  (`index-reader-sql.ts`) selected every row of the append-only
+  `proposals` table with no `WHERE deleted_at IS NULL`, so a proposal
+  tombstoned by a reconcile (its markdown file removed) kept resurfacing
+  in the index forever, with its last-seen status. `auto` never showed
+  this — any divergence with the (correctly current) JSON registry made
+  it silently serve JSON instead — so it was invisible until `sql` had
+  to serve directly. Caught by
+  `tests/src/lib/e2e/auto-work.e2e.spec.ts` (`resets the idle streak
+  after a work response`) and `tests/src/lib/continue-proposal.spec.ts`
+  ("a stale index is not an empty backlog") going red under the new
+  default; both are green again with the `WHERE` clause added, plus a
+  new regression spec in `index-reader-sql.spec.ts`.
+- Evidence: `bunx vitest run --project proposals` (full project) and
+  `bun run test:sqlite` both green; `bunx tsc --noEmit` clean for
+  `plugins/proposals`. New/updated specs:
+  `index-reader.spec.ts` (rebuild-on-missing/unstamped/corrupt unit
+  cases with injected seams, plus a real end-to-end spec: a fresh temp
+  workspace with a markdown proposals tree and no `.cache` at all reads
+  correctly under the bare default), `index-reader-sql.spec.ts`
+  (tombstone-exclusion regression), `index-read-stats` callers updated
+  for the new `rebuilds` field, `continue-proposal.spec.ts` unchanged: its fixtures are a hand-written
+  `index.json` outside the canonical layout, which the default now serves
+  as JSON (below).
+- Only a chosen `sql` is strict where no projection can be located. An
+  index outside the canonical layout (a project with another shape, a
+  test fixture) has no database path and no workspace to rebuild into;
+  under the default it is served as JSON with a one-time notice, while
+  `source: 'sql'` or `DELENDAI_PROPOSAL_INDEX_SOURCE=sql` still refuses
+  it. A corrupt database refuses under both.
+- Still open: phase 3 (the registry leaves the read path entirely).
 
 Acceptance:
 

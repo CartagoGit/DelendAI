@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 642
+Total exports: 648
 
 | Maturity | Count |
 | --- | --- |
-| stable | 639 |
+| stable | 645 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -28,6 +28,8 @@ Total exports: 642
 | `assertExpectedReleaseState` | const | stable | `../lib/contracts/release-state` |
 | `assertReleaseMetadata` | const | stable | `../lib/contracts/release` |
 | `assertReleaseSlug` | const | stable | `../lib/contracts/release` |
+| `branchDeliveryVerdict` | const | stable | `../lib/ref-lifecycle/branch-delivery.service` |
+| `briefWorkModel` | const | stable | `../lib/development-policy/declare-workflow` |
 | `BufferingErrorSink` | const | stable | `../lib/error-collection/buffering-sink` |
 | `buildAdoptionAssessment` | const | stable | `../lib/adopt/adoption-assessment.service` |
 | `buildAdoptProjectPlan` | const | stable | `../lib/adopt/adopt-project.tool` |
@@ -120,6 +122,7 @@ Total exports: 642
 | `DEFAULT_TS_RULES` | const | stable | `../lib/contracts/file-conventions.contract` |
 | `definePlugin` | const | stable | `../plugin` |
 | `definePluginManifest` | const | stable | `../lib/manifest/define-plugin-manifest` |
+| `deriveDefaultProtectedBranches` | const | stable | `../lib/development-policy/protected-branches` |
 | `deriveSourceRoots` | const | stable | `../lib/bootstrap/derive-config` |
 | `describeStableTool` | const | stable | `../lib/api/stable-facade` |
 | `describeStackPacks` | const | stable | `../lib/plugins/pack-defaults-overlay` |
@@ -138,6 +141,7 @@ Total exports: 642
 | `diagnoseConfigFile` | const | stable | `../lib/plugins/load-config-file` |
 | `diagnosePluginWiring` | const | stable | `../lib/scaffold/diagnose-plugin-wiring` |
 | `discoverPluginManifests` | const | stable | `../lib/manifest/discovery` |
+| `distinctReleaseBranch` | const | stable | `../lib/development-policy/protected-branches` |
 | `DryRunEffectRefusedError` | const | stable | `../lib/dry-run/effect-guard.helper` |
 | `dryRunRequiredFor` | const | stable | `../lib/dry-run/protocol` |
 | `DURABILITY_REMOTE_MISSING` | const | stable | `../lib/wip-engine/durability-remote.constant` |
@@ -624,6 +628,8 @@ Total exports: 642
 | `truncateRedactor` | const | stable | `../lib/observability/timeline` |
 | `UNANCHORED` | const | stable | `../lib/wip-engine/index` |
 | `UNICODE_TOKEN_LEGEND` | const | stable | `../lib/shared/unicode-safe-text` |
+| `UNRESOLVED_POLICY_PROTECTED_BRANCHES` | const | stable | `../lib/development-policy/protected-branches` |
+| `UNRESOLVED_POLICY_RELEASE_BRANCH` | const | stable | `../lib/development-policy/protected-branches` |
 | `utility` | const | stable | `../lib/routing/utility` |
 | `VALIDATE_EVIDENCE_SCHEMA` | const | stable | `../lib/proposals/validate-evidence.schema` |
 | `validateDevelopmentPolicy` | const | stable | `../lib/development-policy/validate` |

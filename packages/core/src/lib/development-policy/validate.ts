@@ -26,6 +26,7 @@ import {
 	type IResolvedDevelopmentPolicy,
 } from '../contracts/interfaces/development-policy.interface';
 import { DEVELOPMENT_PROFILES } from './profiles';
+import { policyAlignmentAdvisories } from './policy-alignment-advisories';
 import { persistenceRouteKind } from './resolve';
 import { validateCombinations } from './validate-combinations';
 
@@ -243,6 +244,15 @@ export const validateDevelopmentPolicy = (
  * because nothing compared them.
  */
 export const validatePolicyAlignment = (
+	policy: IResolvedDevelopmentPolicy,
+	commitPolicyOptions: Record<string, unknown> | undefined,
+	gitOptions?: Record<string, unknown> | undefined,
+): readonly IDevelopmentPolicyViolation[] => [
+	...validateBlockingAlignment(policy, commitPolicyOptions),
+	...policyAlignmentAdvisories(policy, commitPolicyOptions, gitOptions),
+];
+
+const validateBlockingAlignment = (
 	policy: IResolvedDevelopmentPolicy,
 	commitPolicyOptions: Record<string, unknown> | undefined,
 ): readonly IDevelopmentPolicyViolation[] => {

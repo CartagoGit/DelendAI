@@ -11,6 +11,7 @@ import type {
 	IAgentLockArgs,
 	IAgentLockDeps,
 } from '../contracts/interfaces/agent-lock.interface';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { deriveFileLockTablePath } from './file-lock-table';
 import { stat } from 'node:fs/promises';
@@ -88,8 +89,18 @@ export const readCurrentBranchName = async (
 	}
 };
 
-export const isAgentBranchName = (branch: string): boolean =>
-	branch.startsWith('agent/') && branch.length > 'agent/'.length;
+/**
+ * Whether `branch` is one an agent works on. `agent/` is the
+ * `agent_worktree` namespace and the default here; a project whose units
+ * of work live under its own work-ref prefix passes that too.
+ */
+export const isAgentBranchName = (
+	branch: string,
+	prefixes: readonly string[] = [AGENT_BRANCH_PREFIX],
+): boolean =>
+	prefixes.some(
+		(prefix) => branch.startsWith(prefix) && branch.length > prefix.length,
+	);
 
 export const fileExists = async (path: string): Promise<boolean> => {
 	try {

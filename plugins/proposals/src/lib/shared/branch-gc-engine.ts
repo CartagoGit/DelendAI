@@ -19,7 +19,8 @@
  * sibling `branch-status-engine`) and never throws.
  */
 import type { IGitRunner } from './git-runner';
-import { projectBranches } from '@delendai/core/public';
+import { branchDeliveryVerdict, projectBranches } from '@delendai/core/public';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 import {
 	type IBranchStatusEntry,
 	type IBranchStatusOutcome,
@@ -52,7 +53,8 @@ export interface IGcSkippedEntry {
 		| 'fresh'
 		| 'protected-branch'
 		| 'not-found'
-		| 'no-branch';
+		| 'no-branch'
+		| 'undelivered';
 	readonly detail: string;
 }
 
@@ -86,7 +88,7 @@ export interface IBranchGcEngineOptions {
 	readonly workspaceRoot: string;
 	/** Branch the snapshot was taken against. Defaults to the project's. */
 	readonly baseBranch?: string;
-	/** Agent-branch prefix filter. Default `agent/`. */
+	/** Agent-branch prefix filter. Default: the project's own namespaces. */
 	readonly agentPrefix?: string;
 	/**
 	 * Worktree minimum age (minutes) before it becomes GC-eligible.
@@ -113,6 +115,15 @@ export interface IBranchGcEngineOptions {
 	 * `['main', 'master', 'release']`.
 	 */
 	readonly protectedBranches?: readonly string[];
+	/**
+	 * The ref-lifecycle verdict per branch, by name. A worktree is removed
+	 * only when its branch's verdict says the work is delivered; a branch
+	 * with no verdict here is kept. Never derived from the branch's name.
+	 */
+	readonly deliveryVerdicts?: ReadonlyMap<
+		string,
+		{ readonly delivered: boolean; readonly reason: string }
+	>;
 }
 
 /**
@@ -167,7 +178,11 @@ export const planGc = (
 	snapshot: Extract<IBranchStatusOutcome, { ok: true }>,
 	options: Pick<
 		IBranchGcEngineOptions,
-		'staleMinutes' | 'force' | 'protectedBranches' | 'now'
+		| 'staleMinutes'
+		| 'force'
+		| 'protectedBranches'
+		| 'now'
+		| 'deliveryVerdicts'
 	>,
 	extraBranchLookups: ReadonlyMap<
 		string,
@@ -175,7 +190,10 @@ export const planGc = (
 	> = new Map(),
 ): { removed: IGcPlanEntry[]; skipped: IGcSkippedEntry[] } => {
 	const staleMinutes = options.staleMinutes ?? 60;
-	const protectedBranches = options.protectedBranches ?? WIDELY_PROTECTED;
+	const protectedBranches = [
+		...(options.protectedBranches ?? WIDELY_PROTECTED),
+		snapshot.baseBranch,
+	];
 	const removed: IGcPlanEntry[] = [];
 	const skipped: IGcSkippedEntry[] = [];
 	const branchByName = new Map(snapshot.branches.map((b) => [b.name, b]));
@@ -262,6 +280,22 @@ export const planGc = (
 					branch.ahead > 0
 						? `${branch.ahead} commit(s) ahead of ${snapshot.baseBranch}; unmerged is sacred even with force:true`
 						: `not reachable from ${snapshot.baseBranch} (ahead/behind unverifiable — base may have moved under an external commit); unmerged is sacred`,
+			});
+			continue;
+		}
+		// Merged into base is a fact about git, not a verdict about the
+		// ref: what a branch is FOR decides whether removing it loses
+		// nothing. Only what the ref-lifecycle verdict proves delivered is
+		// removed — never a name that merely looks like ours.
+		const verdict = options.deliveryVerdicts?.get(wt.branch);
+		if (verdict?.delivered !== true) {
+			skipped.push({
+				path: wt.path,
+				branch: wt.branch,
+				reason: 'undelivered',
+				detail:
+					verdict?.reason ??
+					'no ref-lifecycle verdict proves this branch delivered its work; kept',
 			});
 			continue;
 		}
@@ -386,7 +420,25 @@ export const runBranchGcEngine = async (
 	// can run `git rev-list` against the worktree to verify.
 	const augmentedSnapshot =
 		await augmentSnapshotWithWorktreeBranches(snapshot);
-	const { removed, skipped } = planGc(augmentedSnapshot, options);
+	const deliveryVerdicts = new Map<
+		string,
+		{ readonly delivered: boolean; readonly reason: string }
+	>();
+	for (const branch of augmentedSnapshot.branches) {
+		if (!branch.mergedIntoBase) continue;
+		deliveryVerdicts.set(
+			branch.name,
+			await branchDeliveryVerdict(
+				options.workspaceRoot,
+				{ name: branch.name, publishedIn: baseBranch },
+				[AGENT_BRANCH_PREFIX],
+			),
+		);
+	}
+	const { removed, skipped } = planGc(augmentedSnapshot, {
+		...options,
+		deliveryVerdicts,
+	});
 
 	// Execute the plan when not in dry-run. We never push; we only run
 	// `git worktree remove --force <path>` per removed entry.

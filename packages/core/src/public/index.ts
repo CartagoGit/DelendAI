@@ -1064,9 +1064,16 @@ export { publicationUnitFor } from '../lib/development-policy/publication-unit';
  * project shipped the ambiguity it exists to remove.
  */
 export {
+	briefWorkModel,
 	declareWorkflow,
 	renderWorkflowDeclaration,
 } from '../lib/development-policy/declare-workflow';
+export {
+	deriveDefaultProtectedBranches,
+	distinctReleaseBranch,
+	UNRESOLVED_POLICY_PROTECTED_BRANCHES,
+	UNRESOLVED_POLICY_RELEASE_BRANCH,
+} from '../lib/development-policy/protected-branches';
 export {
 	anchorFromPolicy,
 	anchorRefusal,
@@ -1175,4 +1182,10 @@ export {
 	sharedCheckout,
 } from '../lib/shared/shared-checkout';
 export { projectBranches } from '../lib/development-policy/project-branches';
+/**
+ * Whether a branch provably delivered its work, by the ref-lifecycle verdict.
+ * The branch reaper in the proposals plugin removes only what this says is
+ * delivered, instead of judging by how a branch is named.
+ */
+export { branchDeliveryVerdict } from '../lib/ref-lifecycle/branch-delivery.service';
 export { createStaleRuntimeWatch } from '../lib/development-policy/stale-runtime-advisory';

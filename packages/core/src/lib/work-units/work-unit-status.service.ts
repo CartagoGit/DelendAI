@@ -24,6 +24,17 @@ import {
 	workspaceOf,
 } from './work-unit-shared.service';
 
+const anchoredLine = (payload: {
+	readonly anchorRequired: boolean;
+	readonly anchored: boolean;
+	readonly anchorRefusal: string | null;
+}): string => {
+	if (!payload.anchorRequired) {
+		return 'not required (this profile does not anchor the checkout)';
+	}
+	return payload.anchored ? 'yes' : `NO — ${payload.anchorRefusal ?? ''}`;
+};
+
 export const statusOf = async (
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {
@@ -44,7 +55,10 @@ export const statusOf = async (
 		branch: branch ?? null,
 		pinnedCheckout: policy.workspace.pinnedCheckout,
 		agentWorktrees: policy.workspace.agentWorktrees,
-		anchored: anchor === undefined,
+		anchorRequired: policy.workspace.anchoredToIntegrationBranch,
+		anchored:
+			policy.workspace.anchoredToIntegrationBranch &&
+			anchor === undefined,
 		anchorRefusal: anchor ?? null,
 		workRefTemplate: policy.branches.workRefTemplate,
 		base: integrationBase(root, policy) ?? null,
@@ -59,7 +73,7 @@ export const statusOf = async (
 			`profile          ${payload.profile}`,
 			`integration      ${payload.integration}`,
 			`checkout on      ${payload.branch ?? '(detached)'}`,
-			`anchored         ${payload.anchored ? 'yes' : `NO — ${payload.anchorRefusal ?? ''}`}`,
+			`anchored         ${anchoredLine(payload)}`,
 			`work ref shape   ${payload.workRefTemplate.length > 0 ? payload.workRefTemplate : '(none: this profile commits directly)'}`,
 			`dirty paths      ${String(payload.dirty.length)}`,
 			`undurable        ${String(payload.undurable.length)}`,

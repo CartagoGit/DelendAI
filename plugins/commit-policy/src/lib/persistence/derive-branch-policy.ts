@@ -19,27 +19,30 @@
  * boot with the one-line remedy rather than silently fought.
  */
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import {
+	deriveDefaultProtectedBranches,
+	type IResolvedDevelopmentPolicy,
+} from '@delendai/core/public';
 
 export type { IDerivedBranchPolicy } from './derive-branch-policy.interface';
 
 /**
  * The branches this plugin must refuse to move.
  *
- * The configured list is a FLOOR, never the whole answer: a policy that
- * routes work to publication refs makes its integration branch
- * untouchable whether or not anybody remembered to list it.
+ * The configured list is a FLOOR, never the whole answer: the release
+ * branch, and an integration branch the policy forbids committing to,
+ * are untouchable whether or not anybody remembered to list them.
  */
 export const deriveProtectedBranches = (input: {
 	readonly configured: readonly string[];
 	readonly policy: IResolvedDevelopmentPolicy | undefined;
 }): readonly string[] => {
 	if (input.policy === undefined) return [...input.configured];
-	if (input.policy.persistence.allowsDirectIntegrationCommit) {
-		return [...input.configured];
-	}
 	return [
-		...new Set([...input.configured, input.policy.branches.integration]),
+		...new Set([
+			...input.configured,
+			...deriveDefaultProtectedBranches(input.policy),
+		]),
 	];
 };
 

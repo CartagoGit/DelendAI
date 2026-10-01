@@ -69,7 +69,30 @@ describe('deriveProtectedBranches', () => {
 				configured: [],
 				policy: policyWith(false, 'trunk'),
 			}),
-		).toEqual(['trunk']);
+		).toEqual(['main', 'trunk']);
+	});
+
+	it('protects the release branch even under a direct-commit policy', () => {
+		expect(
+			deriveProtectedBranches({
+				configured: [],
+				policy: policyWith(true),
+			}),
+		).toEqual(['main']);
+	});
+
+	it('leaves a single-branch direct project able to push its branch', () => {
+		expect(
+			deriveProtectedBranches({
+				configured: [],
+				policy: resolveDevelopmentPolicy({
+					development: {
+						profile: 'shared-direct',
+						branches: { integration: 'main', release: 'main' },
+					},
+				}),
+			}),
+		).toEqual([]);
 	});
 
 	// A project that opted into direct commits keeps exactly what it

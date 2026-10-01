@@ -52,3 +52,18 @@ export const kindsInAgentId = (agent: string): readonly string[] =>
 /** Whether `agent` names the program it runs in rather than a model. */
 export const isHostApplicationId = (agent: string): boolean =>
 	HOST_APPLICATION_IDS.includes(agent.trim().toLowerCase());
+
+/**
+ * How many path components a work ref carries after its namespace, read
+ * from the policy's template: everything from the first component that
+ * names a placeholder. A publication ref is the same shape under the
+ * publication prefix, so this is also what a canonical one must have.
+ * `0` when the template is empty (a profile that commits directly).
+ */
+export const workRefTailSegments = (template: string): number => {
+	const segments = template.split('/').filter((part) => part.length > 0);
+	const firstPlaceholder = segments.findIndex((part) =>
+		workRefPlaceholderPattern().test(part),
+	);
+	return firstPlaceholder === -1 ? 0 : segments.length - firstPlaceholder;
+};
