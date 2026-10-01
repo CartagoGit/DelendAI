@@ -138,14 +138,15 @@ export const createAssembledProposalsServer = async (
 					}>
 			: async () => ({ default: proposalsPlugin }),
 		// No on-disk config file: the harness owns the workspace, the
-		// plugin receives pure defaults from ctx.corePaths.
+		// plugin receives pure defaults from ctx.corePaths. The one thing
+		// it declares is the model the workspace works under, because a
+		// project that declares none is held to the default one, whose
+		// shared checkout belongs to work refs and not to these tools.
 		readFile: async (path) => {
 			if (!path.endsWith('delendai.config.json')) return undefined;
 			const hasPeerReview = options.requirePeerReview !== undefined;
 			const hasDisclosure = options.progressiveDisclosure === true;
 			const hasWorktrees = options.enableAgentWorktree === true;
-			if (!hasPeerReview && !hasDisclosure && !hasWorktrees)
-				return undefined;
 			return JSON.stringify({
 				// `requiredChecks` is not decoration: the profile enforces
 				// governance, and a required-pull-request gate with no
@@ -159,7 +160,7 @@ export const createAssembledProposalsServer = async (
 								},
 							},
 						}
-					: {}),
+					: { development: { profile: 'shared-direct' } }),
 				...(hasDisclosure
 					? { managedSurface: { progressiveDisclosure: true } }
 					: {}),

@@ -7,69 +7,67 @@
  * second reader is a second chance to disagree about what the project
  * declared. A workflow only holds if every entry point reads one answer.
  *
- * WHY a parse error throws instead of resolving to "no policy": a project
+ * WHY a parse error throws instead of resolving to the default: a project
  * that declared a policy and then typed a comma wrong must not silently
- * become a project with no rules. Absence is a valid answer; illegibility
- * is not.
+ * become a project with the default rules. Absence is a valid answer;
+ * illegibility is not.
  */
-import { defaultBranchOf } from '../development-policy/default-branch';
+import { resolveEffectivePolicy } from '../development-policy/effective-policy';
 import { parseJsonc } from '../config/jsonc-document';
-import { resolveDevelopmentPolicy } from '../development-policy/resolve';
-import { sharedCheckout } from '../shared/shared-checkout';
+import type { ILegacyDevelopmentInput } from '../development-policy/resolve.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 
 import { isRecord, readConfigText } from './command-args.helper';
 
+/**
+ * The pre-policy fields of a configuration file, for the compatibility
+ * layer. Absent fields stay absent: a project that never wrote them must
+ * reach the built-in default, not a model they imply.
+ */
+const legacyFieldsOf = (
+	config: Record<string, unknown>,
+): ILegacyDevelopmentInput => {
+	const plugins = isRecord(config.plugins) ? config.plugins : undefined;
+	const commitPolicy = isRecord(plugins?.['commit-policy'])
+		? plugins['commit-policy']
+		: undefined;
+	const options = isRecord(commitPolicy?.options)
+		? commitPolicy.options
+		: undefined;
+	return {
+		...(typeof config.agentWorktree === 'boolean'
+			? { agentWorktree: config.agentWorktree }
+			: {}),
+		...(options === undefined ? {} : { commitPolicyOptions: options }),
+	};
+};
+
+/**
+ * The policy this workspace works under: the one it declares, or the one
+ * delendai adopts for it when it declares none (`policy.source` says
+ * which). Never `undefined`: the guard, `delendai work` and the served
+ * instructions all read this, so none of them can disagree about whether
+ * a policy exists.
+ */
 export const readWorkspacePolicy = async (
 	root: string,
-): Promise<IResolvedDevelopmentPolicy | undefined> => {
+): Promise<IResolvedDevelopmentPolicy> => {
 	const text = await readConfigText(root);
-	if (text === undefined) return undefined;
-	const parsed = parseJsonc(text);
-	if (parsed.errors.length > 0) {
+	const parsed = text === undefined ? undefined : parseJsonc(text);
+	if (parsed !== undefined && parsed.errors.length > 0) {
 		throw new Error(
 			`delendai.config.json does not parse (${String(parsed.errors.length)} error(s))`,
 		);
 	}
-	const config = parsed.value;
-	if (!isRecord(config) || !isRecord(config.development)) return undefined;
-	const policy = resolveDevelopmentPolicy({
-		development: config.development,
+	const config = isRecord(parsed?.value) ? parsed.value : {};
+	return resolveEffectivePolicy({
+		...(isRecord(config.development)
+			? { development: config.development }
+			: {}),
+		legacy: legacyFieldsOf(config),
+		workspaceRoot: root,
 	});
-	// `develop` is this repository's habit, and a habit is not a default.
-	//
-	// `resolveDevelopmentPolicy` is pure — it cannot look at a checkout —
-	// so when a project declares no `branches.integration` it answers
-	// `develop`. Every consumer of this policy then believed it: the
-	// guard refused every commit in a project whose trunk is `main`, and
-	// told its owner to `git switch develop`, a branch that does not
-	// exist in their repository. Adoption was impossible for anyone not
-	// already shaped like us.
-	//
-	// Declared wins. Otherwise the branch is DISCOVERED from what is
-	// stable — the forge's published default, git's configured one, or a
-	// single conventional trunk — never read off HEAD: defining the
-	// integration branch as wherever the checkout currently is makes
-	// every check that depends on it vacuous, and the post-checkout
-	// warning that exists to say "you have wandered" goes silent exactly
-	// when somebody wanders.
-	//
-	// The SHARED checkout is asked, never the worktree the caller is
-	// standing in: which branch integrates is a fact about the project,
-	// and an agent would otherwise be told its own wip ref is it.
-	const declared = (
-		config.development.branches as { integration?: unknown } | undefined
-	)?.integration;
-	if (typeof declared === 'string' && declared.length > 0) return policy;
-	const discovered = defaultBranchOf(sharedCheckout(root) ?? root);
-	return discovered === undefined ||
-		discovered === policy.branches.integration
-		? policy
-		: {
-				...policy,
-				branches: { ...policy.branches, integration: discovered },
-			};
 };
 
 /**

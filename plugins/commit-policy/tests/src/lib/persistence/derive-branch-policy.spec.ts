@@ -31,7 +31,9 @@ const policyWith = (
 			profile: allowsDirectIntegrationCommit
 				? 'shared-direct'
 				: 'shared-checkout-pr',
-			branches: { integration },
+			// A separate release branch is declared: omitting it would mean the
+			// project has one branch.
+			branches: { integration, release: 'main' },
 			integration: { requiredChecks: ['delendai-validate'] },
 		},
 	});

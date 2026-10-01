@@ -99,6 +99,13 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		});
 		execFileSync('git', ['config', 'user.name', 'T'], { cwd: workspace });
 		writeFileSync(join(workspace, 'README.md'), '# e2e\n');
+		// The tools write into this checkout, so it declares the model
+		// that lets them: an undeclared project is served the default,
+		// which keeps the shared checkout for work refs.
+		writeFileSync(
+			join(workspace, 'delendai.config.json'),
+			JSON.stringify({ development: { profile: 'shared-direct' } }),
+		);
 		execFileSync('git', ['add', '.'], { cwd: workspace });
 		execFileSync('git', ['commit', '-q', '-m', 'init'], { cwd: workspace });
 
