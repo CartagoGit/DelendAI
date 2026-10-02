@@ -2,15 +2,17 @@
 id: x00763
 title: "No live name keeps the old brand"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-29
 priority: P1
 related: [x00758]
-last-transition-id: 6c29fc00-7c97-4da0-97b4-8b90d4cf6a00
-last-correlation-id: 6c29fc00-7c97-4da0-97b4-8b90d4cf6a00
-last-transition-from: in-progress
+last-transition-id: df4a7dc4-7aff-4b1a-bdb5-15d0e7a16613
+last-correlation-id: df4a7dc4-7aff-4b1a-bdb5-15d0e7a16613
+last-transition-from: review
+shipped-in:
+  - "2d793d3c315254b838688b3c1a78866085b0c554"
 ---
 
 # x00763 — No live name keeps the old brand
@@ -64,7 +66,7 @@ rename table next to that catalog, so it had the same gap.
 
 ### S1 — Every spelling of the old name is known, and none is live
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/workspace-migration && bun run migrate:rebrand:check`
 - **Files**:
   - `packages/core/src/lib/contracts/constants/legacy-identity.constant.ts`
@@ -94,6 +96,11 @@ as the full Configuration Center does. Added:
 `extensions/vscode/src/test/open-plugin-config.spec.ts`,
 `extensions/vscode/src/test/configuration-center-dev-page.spec.ts`,
 `extensions/vscode/src/test/open-configuration-center-edge-cases.spec.ts`.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: MiniMax-M3
+- review-log: approved by MiniMax-M3 — workspace-migration suite green 20 files / 251 tests, migrate:rebrand:check exit 0 (0 hits, brand contract green). Catalog has all five spellings (MCPV/Mcpv/McpVertex/mcpVertex/MCPVERTEX) and identity-renames covers them with PascalCase/UPPERCASE precedence. Reviewed on delivered state; later edits in no-secrets/style-integrity scripts are follow-up work, not regressions of this slice.
+- review-attribution: claude-opus-5-5 from Merge pull request #665 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00763-all-g1/no-live-name-keeps-the-old-brand (refs/heads/delendai/wip/claude-opus-5-5/implement/x00763-all-g1/no-live-name-keeps-the-old-brand) (2d793d3c315254b838688b3c1a78866085b0c554), opened by MiniMax-M3
 
 ## dependency graph
 
