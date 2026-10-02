@@ -42,7 +42,7 @@ export const judgeUnit = (evidence: IUnitEvidence): IUnitVerdict => {
 				standing: 'idle',
 				owner,
 				silentSeconds,
-				reason: 'its work landed but its proposal is still in progress: hand it off (`delendai proposals transition <id> review`) or continue it; it is reaped once the proposal leaves in-progress',
+				reason: 'its work landed but its proposal is still in progress: hand it off to review or continue it; it is reaped once the proposal leaves in-progress',
 			};
 		}
 		const reapAfter =
