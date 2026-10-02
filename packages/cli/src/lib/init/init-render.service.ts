@@ -14,17 +14,19 @@ import type {
 import { readdirSync } from 'node:fs';
 
 import {
-	applyJsoncEdits,
 	createWorkspaceFileReader,
 	createWorkspacePathProvider,
-	deriveSourceRoots,
 	FIRST_PARTY_PLUGIN_INDEX,
-	renderPluginConfigComment,
-	resolvePluginOptions,
 	resolvePresetMembers,
 	type IFileReader,
-	type IJsoncEdit,
 } from '@delendai/core/public';
+import {
+	applyJsoncEdits,
+	deriveSourceRoots,
+	renderPluginConfigComment,
+	resolvePluginOptions,
+	type IJsoncEdit,
+} from '@delendai/core/cli';
 
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import { buildCanonicalLaunch } from '../server-args.service';

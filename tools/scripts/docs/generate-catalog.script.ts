@@ -4,10 +4,9 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
 import {
 	FIRST_PARTY_PLUGIN_INDEX,
-	PRESET_KIND,
 	resolvePresetMembers,
-	type IPluginRegistryEntry,
 } from '@delendai/core/public';
+import { PRESET_KIND, type IPluginRegistryEntry } from '@delendai/core/cli';
 
 import {
 	discoverPluginPackages,

@@ -19,7 +19,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
 	parseRepairResolutions,
 	REPAIR_RESOLUTIONS_PATH,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 import { fakePartial } from '@delendai/test-kit';
 
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';

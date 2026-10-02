@@ -16,7 +16,7 @@ import {
 	gatherAdoptionEvidence,
 	type IAdoption,
 } from '@delendai/core/cli';
-import { parseJsonc } from '@delendai/core/public';
+import { parseJsonc } from '@delendai/core/cli';
 
 import type { IInitGuardHooks } from '../../contracts/interfaces/init.interface';
 import { isRecord } from '../helpers/cli-command.helper';

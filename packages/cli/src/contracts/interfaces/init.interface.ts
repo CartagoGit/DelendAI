@@ -32,7 +32,7 @@
  *     `IDiscoveredInstructionSource`, `IConsolidationWrite`,
  *     `IConsolidationPlan`).
  */
-import type { IProjectAnalysis } from '@delendai/core/public';
+import type { IProjectAnalysis } from '@delendai/core/cli';
 
 // ----------------------------------------------------------------
 // Operator-facing flags

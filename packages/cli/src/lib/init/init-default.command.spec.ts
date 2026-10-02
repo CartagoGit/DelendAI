@@ -38,7 +38,7 @@ import {
 } from '../../commands/init/init.command';
 import { initDefaultCommand } from '../../commands/init/init-default.command';
 
-import { parseJsonc } from '@delendai/core/public';
+import { parseJsonc } from '@delendai/core/cli';
 
 /**
  * f00502: the generated config is JSONC — one comment above every

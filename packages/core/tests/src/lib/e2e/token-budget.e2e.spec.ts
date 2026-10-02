@@ -15,7 +15,8 @@ import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project'
 import { nodeDynamicImport } from '@delendai/core/lib/plugins/load-plugins';
 import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import { SKILL_MANIFEST_REL } from '@delendai/core/lib/skills/skill-paths';
-import { TOKEN_BUDGETS, type IMcpToolSurfaceMode } from '@delendai/core/public';
+import { TOKEN_BUDGETS } from '@delendai/core/public';
+import { type IMcpToolSurfaceMode } from '@delendai/core/cli';
 
 /**
  * Token budget benchmark [N23]. Invariant: cold-start protocol payloads stay

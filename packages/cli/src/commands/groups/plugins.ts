@@ -12,7 +12,7 @@
 import {
 	buildPluginAddRecipe,
 	type IPluginAddRecipe,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, request } from './group-helpers';

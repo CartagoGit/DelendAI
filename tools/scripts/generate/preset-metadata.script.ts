@@ -20,11 +20,8 @@
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
-import {
-	PRESET_KIND,
-	withFileMutex,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
+import { PRESET_KIND } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
 import {

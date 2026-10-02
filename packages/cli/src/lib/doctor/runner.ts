@@ -13,7 +13,8 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { safeListDirNames, safePathExists } from '@delendai/core/public';
+import { safeListDirNames } from '@delendai/core/public';
+import { safePathExists } from '@delendai/core/cli';
 
 import {
 	checkGitStatus,

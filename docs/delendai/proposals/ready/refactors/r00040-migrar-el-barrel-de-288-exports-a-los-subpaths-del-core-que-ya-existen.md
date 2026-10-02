@@ -135,16 +135,31 @@ public/index.ts queda como:
 
 ### S2 — Migrar el dominio de mayor volumen a su subpath (o a uno nuevo si no encaja)
 
-- **Status**: pending
+- **Status**: review
+- **Gate**: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public`
 - **Files**:
-    - `packages/core/src/public/index.ts` (eliminar los exports
-      migrados, sustituir por `export * from '../<subpath>'`)
-    - el/los fichero(s) de destino bajo `packages/core/src/contracts/`,
-      `runtime/`, `plugin/`, `node/`, o un nuevo directorio de dominio
-      según lo que arroje S1
-    - `packages/core/tests/src/public/index.spec.ts` (snapshot de
-      superficie por subpath, con drift check)
-- **Gate**: `bunx vitest run packages/core/tests/src/public/index.spec.ts`
+    - `packages/core/src/public/index.ts`
+    - `packages/core/src/cli.ts`
+    - `tools/scripts/inspect/core-proposals-boundary.script.ts`
+    - `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
+    - `docs/delendai/CORE-PUBLIC-API-INVENTORY.md`
+- Delivered 2026-10-03. The largest domain is not a topic but an
+  audience: 112 of the 645 public exports are read only by the CLI, the
+  host and the repository's scripts (`packages/cli`, `tools/`, and core's
+  own tests), never by a plugin or an app. They moved to `@delendai/core/cli`,
+  the entry #721 created for exactly that audience, and their 105
+  consumer files import them from there. The public surface went from
+  645 to 533 exports.
+- How the audience was measured: every `import { … } from
+  '@delendai/core'` or `'@delendai/core/public'` outside `packages/core/src`,
+  grouped by top-level area. A name moved only when its importers were all
+  in `packages/cli`, `tools/` or `packages/core/tests` and at least one was
+  in `packages/cli` or `tools/`. Re-exports and dynamic imports were then
+  caught by the typecheck; the plugin host's generated code reads only
+  `definePlugin` from the barrel, which stayed.
+- Left for later: 122 exports that only core's own tests read through the
+  barrel, and 117 with no importer outside core. Neither is plugin
+  surface; both belong with x00541 (exports with no importer).
 
 ### S3 — Marcar el barrel como deprecado con fecha
 

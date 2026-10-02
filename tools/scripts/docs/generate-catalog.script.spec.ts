@@ -1,4 +1,4 @@
-import type { IPluginRegistryEntry } from '@delendai/core/public';
+import type { IPluginRegistryEntry } from '@delendai/core/cli';
 
 import { describe, expect, it } from 'vitest';
 

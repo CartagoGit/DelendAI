@@ -99,19 +99,19 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		note: 'El barrel publico reexporta un schema desde un subpath proposals interno del core.',
 	},
 	{
-		file: 'packages/core/src/public/index.ts',
+		file: 'packages/core/src/cli.ts',
 		symbolOrLiteral: 'ACTIONABLE_PROPOSAL_STATUSES',
 		category: 'type',
 		destination: 'contract',
-		needle: 'ACTIONABLE_PROPOSAL_STATUSES,',
-		note: 'El barrel publico reexporta el vocabulario del workflow con nombre proposals.',
+		needle: "export { ACTIONABLE_PROPOSAL_STATUSES } from './lib/catalog/agent-discovery-types';",
+		note: 'La entrada cli reexporta el vocabulario del workflow con nombre proposals.',
 	},
 	{
 		file: 'packages/core/src/public/index.ts',
 		symbolOrLiteral: 'PROPOSAL_STATUS_VALUES',
 		category: 'type',
 		destination: 'contract',
-		needle: 'PROPOSAL_STATUS_VALUES,',
+		needle: "export { PROPOSAL_STATUS_VALUES } from '../lib/catalog/agent-discovery-types';",
 		note: 'La lista publica de estados usa nomenclatura proposals.',
 	},
 	{

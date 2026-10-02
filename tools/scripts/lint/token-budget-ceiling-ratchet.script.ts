@@ -40,10 +40,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import {
-	TOKEN_BUDGETS,
-	type ITokenBudgetRegistry,
-} from '@delendai/core/public';
+import { TOKEN_BUDGETS } from '@delendai/core/public';
+import { type ITokenBudgetRegistry } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
 

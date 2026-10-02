@@ -15,8 +15,8 @@ import {
 	detectOs,
 	installToTarget,
 	runInstall,
-	targetById,
 } from '@delendai/core/public';
+import { targetById } from '@delendai/core/cli';
 
 describe('IDE installer (M39)', async () => {
 	let dir = '';

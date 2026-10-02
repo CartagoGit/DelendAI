@@ -21,6 +21,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 | File | Symbol or literal | Category | Proposed destination | Occurrences | Notes |
 | --- | --- | --- | --- | ---: | --- |
+| packages/core/src/cli.ts | ACTIONABLE_PROPOSAL_STATUSES | type | contract | 1 | La entrada cli reexporta el vocabulario del workflow con nombre proposals. |
 | packages/core/src/contracts/index.ts | IProposalSummary | type | contract | 1 | El barrel de contracts reexporta el mismo DTO nominal que core/public ya expone. `lint:no-core-public-types-in-client` prohibe que packages/client tome tipos de core/public, y hasta ahora nombraba una alternativa que no existia: sin esta reexportacion la regla no tenia destino alcanzable. Mismo acoplamiento que la fila de public/index.ts, no uno nuevo. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | pluginIds: proposals, agent-orchestrator | plugin-name | composition | 1 | La etapa agents del flujo de adopcion activa el plugin proposals por composicion declarativa. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | title: proposals+agents | message | composition | 1 | La etapa agents del flujo de adopcion enumera el workflow de proposals en su titulo visible. |
@@ -128,7 +129,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/work-units/publication-target.service.ts | '/proposals/in-progress/' | path | adapter | 1 | The unit-of-work engine (x00735) asks whether a proposal is still in progress by its folder; the status belongs behind an adapter the plugin provides. |
 | packages/core/src/lib/work-units/publication-target.service.ts | file.includes('/proposals/') | path | adapter | 1 | The unit-of-work engine (x00735) finds the proposal a unit belongs to by its path; the proposals layout belongs behind an adapter the plugin provides. |
 | packages/core/src/public/index.ts | ../lib/proposals/validate-evidence.schema | path | contract | 1 | El barrel publico reexporta un schema desde un subpath proposals interno del core. |
-| packages/core/src/public/index.ts | ACTIONABLE_PROPOSAL_STATUSES | type | contract | 1 | El barrel publico reexporta el vocabulario del workflow con nombre proposals. |
 | packages/core/src/public/index.ts | IProposalSummary | type | contract | 1 | Los consumidores externos siguen importando el DTO nominal de proposals desde core/public. |
 | packages/core/src/public/index.ts | PROPOSAL_STATUS_VALUES | type | contract | 1 | La lista publica de estados usa nomenclatura proposals. |
 | packages/core/src/public/index.ts | ProposalStatus | type | contract | 1 | El estado del workflow se exporta con nombre proposals desde el barrel estable. |

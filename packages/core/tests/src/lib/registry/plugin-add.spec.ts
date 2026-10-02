@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { buildPluginAddRecipe } from '@delendai/core/public';
+import { buildPluginAddRecipe } from '@delendai/core/cli';
 
 describe('buildPluginAddRecipe', () => {
 	it('returns undefined for an unknown plugin id', () => {

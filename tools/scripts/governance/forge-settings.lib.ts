@@ -28,11 +28,8 @@ import {
 	hasSeparateReleaseBranch,
 	protectedBranchNames,
 } from '@delendai/core/cli';
-import {
-	buildDesiredState,
-	type IDesiredBranchRule,
-	type IResolvedDevelopmentPolicy,
-} from '@delendai/core/public';
+import { type IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import { buildDesiredState, type IDesiredBranchRule } from '@delendai/core/cli';
 
 /** One branch's protection, in the shape the committed files already use. */
 export interface IProtectionDocument {
