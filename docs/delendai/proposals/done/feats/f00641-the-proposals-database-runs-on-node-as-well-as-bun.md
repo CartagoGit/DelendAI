@@ -2,17 +2,18 @@
 id: f00641
 title: "The proposals database runs on Node as well as Bun"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-25
 priority: P1
 related: [q00022, r00043]
-last-transition-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
-last-correlation-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
-last-transition-from: in-progress
+last-transition-id: dc0a1898-8854-4160-a72e-24cf18407b7e
+last-correlation-id: dc0a1898-8854-4160-a72e-24cf18407b7e
+last-transition-from: review
 shipped-in:
   - "4cca8dcd7a85"
+  - "7a5236e63cdd"
 ---
 
 # f00641 — The proposals database runs on Node as well as Bun
@@ -83,7 +84,7 @@ The adapter's own behaviour is pinned in the bun suite (Bun also provides
 
 ### S2 — The default read source can be SQL on both runtimes
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
 - **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`,
   `plugins/proposals/src/lib/proposals/index-reader.ts`
@@ -97,6 +98,11 @@ Delivered with q00022 S4 phase 2, in the same change: the default is
 and an index outside the canonical layout is served as JSON unless `sql`
 was chosen.
 - shipped-in: `7a5236e63cdd`
+- review-state: done
+- review-implementer: claude-sonnet-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S2 verified at 7a5236e63cdd ("feat(proposals): the proposal index reads SQLite by default"). index-reader.spec + index-reader-rebuild + index-reader-sql 30/30 cover default source = sql with no .cache, projection never built -> rebuild from markdown before read, index outside canonical layout -> served as JSON unless sql chosen.
+- review-attribution: claude-sonnet-5 from Merge pull request #695 from CartagoGit/delendai/pr/claude-sonnet-5/implement/q00022-S4-g1/sql-only-reads-phase-2 (refs/heads/delendai/wip/claude-sonnet-5/implement/q00022-S4-g1/sql-only-reads-phase-2) (7a5236e63cddf07f89a7ba6376c1c0e602bd9403), opened by minimax-m3
 
 ## dependency graph
 
