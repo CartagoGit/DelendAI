@@ -42,6 +42,8 @@ export const recordUnitEntered = async (
 		ref: shortRef(entry.ref),
 		owner: entry.owner,
 		worktree: entry.worktree,
+		clientCwd: entry.clientCwd ?? current?.clientCwd ?? null,
+		serverRoot: entry.serverRoot ?? current?.serverRoot ?? null,
 		entrySha: current?.entrySha ?? entrySha,
 		enteredAt: current?.enteredAt ?? now,
 		heartbeatAt: now,

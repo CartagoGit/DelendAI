@@ -9,7 +9,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { EXIT_CODE } from '@delendai/core/lib/contracts/constants/exit-code.constant';
 import type { IWorkUnitResult } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
-import { recordUnitEntered } from '@delendai/core/lib/work-units/unit-lease.service';
+import {
+	readLeaseOf,
+	recordUnitEntered,
+} from '@delendai/core/lib/work-units/unit-lease.service';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 
 import { cleanUnitRepos, git, unitRef, unitRepo } from './unit-repo.helper';
@@ -133,5 +136,11 @@ describe('the lease through the work engine', () => {
 			globals: { workspace: repo.root, json: true, format: 'json' },
 		});
 		expect((status.data as { units: { live: number } }).units.live).toBe(1);
+		const lease = await readLeaseOf(
+			repo.root,
+			(entered.data as { ref: string }).ref,
+		);
+		expect(lease?.clientCwd).toBe(repo.root);
+		expect(lease?.serverRoot).toBe(repo.root);
 	});
 });

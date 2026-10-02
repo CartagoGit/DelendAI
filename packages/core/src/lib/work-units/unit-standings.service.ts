@@ -19,6 +19,7 @@ import type {
 } from './unit-lease.interface';
 import { judgeUnit, leaseWindowSeconds } from './unit-verdict.service';
 import { listWorkRefs } from './work-swarm.service';
+import { proposalStillInProgress } from './publication-target.service';
 import { publicationRefFromWorkRef } from './work-publish.service';
 import {
 	integrationBase,
@@ -158,6 +159,10 @@ export const readUnitStandings = async (
 				...(Number.isFinite(tipAt) && tipAt > 0 ? { tipAt } : {}),
 				delivered: delivery.delivered,
 				keptForContinuation: delivery.keptForContinuation,
+				proposalInProgress:
+					delivery.delivered &&
+					mine !== undefined &&
+					proposalStillInProgress(root, mine.proposal, sha),
 				claimedByOther:
 					mine !== undefined &&
 					[...identities.entries()].some(

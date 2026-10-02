@@ -26,6 +26,13 @@ export interface IUnitLease {
 	readonly ref: string;
 	readonly owner: IUnitOwner;
 	readonly worktree: string | null;
+	/**
+	 * Where the entering client was working (`ctx.cwd`), and the workspace
+	 * root of the server it entered through. They differ when an agent of
+	 * another project talks to this project's server.
+	 */
+	readonly clientCwd?: string | null | undefined;
+	readonly serverRoot?: string | null | undefined;
 	/** The commit the ref pointed at when the unit was entered. */
 	readonly entrySha: string | null;
 	readonly enteredAt: number;
@@ -48,6 +55,11 @@ export interface IUnitEvidence {
 	 * proposal outlives each slice's publication).
 	 */
 	readonly keptForContinuation?: boolean | undefined;
+	/**
+	 * The unit's proposal is still in progress: its work landed but the
+	 * hand-off to review has not happened, so the unit is not litter yet.
+	 */
+	readonly proposalInProgress?: boolean | undefined;
 	/** Another agent already works on the same proposal. */
 	readonly claimedByOther?: boolean | undefined;
 }
@@ -76,6 +88,8 @@ export interface IUnitStandingEntry extends IUnitVerdict {
 }
 
 export interface IRecordUnitEntry {
+	readonly clientCwd?: string | undefined;
+	readonly serverRoot?: string | undefined;
 	readonly cwd: string;
 	readonly ref: string;
 	readonly owner: IUnitOwner;

@@ -235,3 +235,43 @@ describe('a publication that moved ahead of its unit', () => {
 		expect((await entry())?.publicationAhead).toBe(false);
 	});
 });
+
+describe('a landed unit whose proposal awaits its hand-off', () => {
+	it('is kept while the proposal is in progress and reaped once it is in review', async () => {
+		const repo = unitRepo();
+		const start = wall();
+		const ref = unitRef('handoff', 'x7-S1-g1');
+		const worktree = repo.enter(ref);
+		await recordUnitEntered({
+			cwd: repo.root,
+			ref,
+			owner: { agent: 'handoff', session: 's' },
+			worktree,
+			now: start - 900 * MINUTE,
+		});
+		const dir = join(worktree, 'docs/delendai/proposals/in-progress');
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(join(dir, 'x7-the-proposal.md'), '# x7\n');
+		git(worktree, 'add', '-A');
+		git(worktree, 'commit', '-q', '-m', 'feat: x7');
+		git(repo.root, 'merge', '-q', '--no-ff', '-m', 'merge x7', ref);
+		const standing = async () =>
+			(
+				await readUnitStandings({
+					root: repo.root,
+					policy: unitPolicy,
+					now: start,
+				})
+			).find((entry) => entry.ref === ref)?.standing;
+		expect(await standing()).toBe('idle');
+		git(
+			worktree,
+			'mv',
+			'docs/delendai/proposals/in-progress/x7-the-proposal.md',
+			'docs/delendai/proposals/x7-the-proposal.md',
+		);
+		git(worktree, 'commit', '-q', '-m', 'chore: hand x7 to review');
+		git(repo.root, 'merge', '-q', '--no-ff', '-m', 'merge review', ref);
+		expect(await standing()).toBe('delivered');
+	});
+});

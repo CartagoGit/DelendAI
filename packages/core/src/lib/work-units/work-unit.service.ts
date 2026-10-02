@@ -62,6 +62,8 @@ const recordEntered = async (
 			ref: data.ref,
 			owner: { agent: agentFor(args), session: data.session ?? null },
 			worktree: data.path ?? null,
+			clientCwd: ctx.cwd,
+			serverRoot: workspaceOf(ctx),
 		});
 	} catch {
 		// see showLife

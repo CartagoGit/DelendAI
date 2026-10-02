@@ -110,4 +110,19 @@ describe('judgeUnit', () => {
 			expect(kept(10)).toBe('live');
 		});
 	});
+
+	it('waits for the hand-off of a landed unit whose proposal is in progress, however long', () => {
+		const verdict = (claimedByOther: boolean) =>
+			judgeUnit({
+				lease: lease(WINDOW * 50),
+				delivered: true,
+				proposalInProgress: true,
+				claimedByOther,
+				now: NOW,
+				windowSeconds: WINDOW,
+			});
+		expect(verdict(false).standing).toBe('idle');
+		expect(verdict(false).reason).toContain('hand it off');
+		expect(verdict(true).standing).toBe('delivered');
+	});
 });
