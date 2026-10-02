@@ -16,6 +16,10 @@ related: [q00011, r00040, r00041, r00042, r00034]
 last-transition-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-correlation-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-transition-from: in-progress
+shipped-in:
+  - "dc61a40ec"
+  - "7c861d2f9"
+  - "039bb517e"
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -189,7 +193,7 @@ packages/core/                         plugins/proposals/
 - review-log: approved by delendai-review-r00043-s1-20260907 — Independent verification approved. Contracts remain proposals-agnostic, provider contracts cover workflow and adoption contributions generically, and safe empty fallbacks pass the slice gate.
 ### S2 — Extraer la adopción específica de proposals a un adaptador
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**:
     - `packages/core/src/lib/adopt/adopt-project-write-estimate.ts`
@@ -227,10 +231,15 @@ assessment summary and the `adopt_project` help name no plugin. Nine
 inventory findings are resolved by S2. The `issues` acceptance item is
 not part of this delivery; it moves to S6.
 - shipped-in: `bb60f4954b62`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — Verifiqué que la estimación y la adopción pasan a depender de extensiones cargadas, no de proposals hardcodeado en core; gate declarado de S2 verde: 8/8.
+- review-attribution: claude-opus-5-5 from Merge pull request #434 from CartagoGit/delendai/pr/claude-opus-5-5/r00043-S2-g1/adoption-knows-no-plugin (refs/heads/delendai/wip/claude-opus-5-5/r00043-S2-g1/adoption-knows-no-plugin) (dc61a40ec20129f7b422bee0f63e957164c0a930), opened by gpt-5.4
 
 ### S3 — Convertir stable-facade en un registro de contribuciones
 
-- **Status**: done — verified 2026-09-25 by an evidence pass (a second agent; delivered in `7c861d2f9`). `stable-facade.ts` names no plugin: `stable-facade-registry.ts` holds contributions and the proposals plugin registers its tools through `registerProposalsStableTools`. The gate passes 14/14, and the boundary inventory lists `plugin: 'proposals'` in the facade as resolved by S3.
+- **Status**: done
 - shipped-in: `7c861d2f9`
 - **DependsOn**: [S1]
 - **Files**:
@@ -249,10 +258,15 @@ not part of this delivery; it moves to S6.
       sin descriptores de propuestas ni imports del plugin.
     - Se mantiene la versión y la garantía semver del manifiesto durante la
       ventana de compatibilidad.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — Verifiqué que stable-facade usa un registro genérico y que proposals aporta sus descriptores desde el plugin; gate declarado de S3 verde: 14/14.
+- review-attribution: unrecorded — nothing in Git names who delivered 7c861d2f9e0762dfdcaa3e11e9017c62ab6b40af: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by gpt-5.4
 
 ### S4 — Hacer agnóstico el ensamblado de skills y recommendedNextAction
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**:
     - `packages/core/src/lib/cli/assemble-skills.ts`
@@ -279,7 +293,11 @@ left were two messages that still named the proposals store and
 proposal files; they now speak of what loaded plugins contribute and of
 workflow files. Both inventory findings are resolved by S4.
 - shipped-in: `1059c6ce4311`
-
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — Verifiqué que assemble-skills ya no decide la next action leyendo proposals directamente y que la contribución llega por el ensamblado genérico; gate declarado de S4 verde: 6/6.
+- review-attribution: claude-opus-5-5 from Merge pull request #435 from CartagoGit/delendai/pr/claude-opus-5-5/r00043-S4-g1/the-next-action-names-no-plugin (refs/heads/delendai/wip/claude-opus-5-5/r00043-S4-g1/the-next-action-names-no-plugin) (039bb517ef66fc73d51f9da59d44a12136969a85), opened by gpt-5.4
 
 ### S5 — Lint de frontera y documentación de compatibilidad
 
