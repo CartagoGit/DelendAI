@@ -2,10 +2,13 @@
 id: x00860
 title: "close_slice accepts a certification that already exists for the exact tree"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-01
+last-transition-id: 8abdc6f3-3e64-47da-a3f6-00f91a6df6bb
+last-correlation-id: 8abdc6f3-3e64-47da-a3f6-00f91a6df6bb
+last-transition-from: ready
 ---
 
 # x00860 — close_slice accepts a certification that already exists for the exact tree
