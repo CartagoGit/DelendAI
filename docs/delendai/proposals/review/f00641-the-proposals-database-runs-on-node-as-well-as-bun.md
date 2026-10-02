@@ -11,6 +11,8 @@ related: [q00022, r00043]
 last-transition-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
 last-correlation-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
 last-transition-from: in-progress
+shipped-in:
+  - "4cca8dcd7a85"
 ---
 
 # f00641 — The proposals database runs on Node as well as Bun
@@ -60,7 +62,7 @@ meant to work on either runtime. Node ships SQLite as `node:sqlite`
 
 ### S1 — An adapter over node:sqlite behind the one loader
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`
 - **Files**: `packages/proposals-sqlite/src/lib/node-sqlite-database.helper.ts`,
   `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts`,
@@ -73,6 +75,11 @@ and the registry exported from that database equals the markdown scan.
 The adapter's own behaviour is pinned in the bun suite (Bun also provides
 `node:sqlite`).
 - shipped-in: `4cca8dcd7a85`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at 4cca8dcd7a85 ("Merge pull request #449 ... f00641 S1"). proposals-db-on-node.spec.ts (Node runtime) opens a fresh database, applies every migration (incl. 0020's table rebuild), reconciles this repository, and exports the registry matching the markdown scan. node-sqlite-database.helper.spec.ts (Bun) pins the adapter behaviour (null on get, SQLITE_CANTOPEN on missing file with create:false, savepoint for nested transaction).
+- review-attribution: claude-opus-5-5 from commit 4cca8dcd7a85 names refs/heads/delendai/wip/claude-opus-5-5/f00641-S1-g1/the-proposals-database-runs-on-node (4cca8dcd7a852253362e51ce2a4e7e8bd0507d23), opened by minimax-m3
 
 ### S2 — The default read source can be SQL on both runtimes
 
