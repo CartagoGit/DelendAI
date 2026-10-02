@@ -2,17 +2,18 @@
 id: x00641
 title: "A hung CI run cannot hold the queue"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00637, x00636]
-last-transition-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
-last-correlation-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
-last-transition-from: in-progress
+last-transition-id: f995c507-2ff5-41a5-b801-053f5a1c6d8b
+last-correlation-id: f995c507-2ff5-41a5-b801-053f5a1c6d8b
+last-transition-from: review
 shipped-in:
   - "ed910e0e5c4e"
+  - "144a8768a906"
 ---
 
 # x00641 — A hung CI run cannot hold the queue
@@ -86,7 +87,7 @@ green full run took about seven minutes.
 
 ### S2 — A run that timed out is re-dispatched, not read as red
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/certify-integration.script.spec.ts`
 - **Files**: `tools/scripts/forge/certify-integration.script.ts`,
   `tools/scripts/forge/certify-integration.interface.ts`,
@@ -115,6 +116,11 @@ cancelled full runs and none that finished, `needsCertification` stops
 starting another, the certification is `red`, and the pass says why. A
 run that finishes still decides, whatever was cancelled before it.
 - shipped-in: `144a8768a906`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — Verifiqué que un full run cancelado se re-despacha en vez de leerse como rojo y que el número de reintentos queda acotado; gate declarado de S2 verde: 16/16.
+- review-attribution: claude-opus-5-5 from Merge pull request #658 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00641-all-g1/a-timed-out-run-is-run-again (refs/heads/delendai/wip/claude-opus-5-5/implement/x00641-all-g1/a-timed-out-run-is-run-again) (144a8768a906be0ccf29860f0f9b609fb193e2f5), opened by gpt-5.4
 
 ## dependency graph
 
