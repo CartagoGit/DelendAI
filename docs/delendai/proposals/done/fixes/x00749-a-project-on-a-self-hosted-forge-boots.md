@@ -2,15 +2,17 @@
 id: x00749
 title: "A project on a self-hosted forge boots"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P0
 related: [q00022]
-last-transition-id: a6712ed6-b789-421a-ae3f-2706476aa7f2
-last-correlation-id: a6712ed6-b789-421a-ae3f-2706476aa7f2
-last-transition-from: in-progress
+last-transition-id: 9d0de6db-d53b-4f9e-8315-fdabe353c285
+last-correlation-id: 9d0de6db-d53b-4f9e-8315-fdabe353c285
+last-transition-from: review
+shipped-in:
+  - "195d1a537e0e"
 ---
 
 # x00749 — A project on a self-hosted forge boots
@@ -59,7 +61,7 @@ could not start, Bitbucket included, although the seam names it.
 
 ### S1 — The repositories table takes any forge
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/any-forge-host.spec.ts`
 - **Files**:
   - `packages/proposals-sqlite/src/lib/migrations/0024_any_forge_host.sql`
@@ -68,6 +70,11 @@ could not start, Bitbucket included, although the seam names it.
   - `packages/proposals-sqlite/tests/src/lib/any-forge-host.spec.ts`
   - `packages/proposals-sqlite/tests/src/lib/migration-checksums.spec.ts`
 - shipped-in: `195d1a537e0e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00749 S1 - repositories table accepts any non-empty lowercase forge name. commit 195d1a537e0e3032259237b71f2b3967929fb896 adds packages/proposals-sqlite/src/lib/migrations/0024_any_forge_host.sql (rebuild repositories table the way 0020 did, kept foreign keys off, kept rows/ids/auto-increment counter), packages/proposals-sqlite/src/lib/schema.ts (CHECK constraint lowered to non-empty+lowercase), the spec + sqlite-driver.spec.ts + migration-checksums.spec.ts updates. gate: bun test packages/proposals-sqlite/tests/src/lib/any-forge-host.spec.ts => 3/3 passed (registers self-hosted host + bitbucket, refuses empty/uppercase, keeps prior rows/ids/counter), exit 0. acceptance: fresh DB registers forge.example.org and bitbucket + refuses empty/uppercase; pre-0024 DB keeps rows/ids/counter + passes PRAGMA foreign_key_check.
+- review-attribution: claude-opus-5-5 from Merge pull request #637 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00749-S1-g1/a-self-hosted-forge-boots (refs/heads/delendai/wip/claude-opus-5-5/implement/x00749-S1-g1/a-self-hosted-forge-boots) (195d1a537e0e3032259237b71f2b3967929fb896), opened by minimax-3
 
 ## dependency graph
 
