@@ -9,6 +9,8 @@ date: 2026-10-01
 last-transition-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
 last-correlation-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
 last-transition-from: in-progress
+shipped-in:
+  - "e59cea102e36"
 ---
 
 # x00796 — Doctor reads clean in a consumer project
@@ -35,6 +37,11 @@ A probe of the real CLI in throwaway consumer repos found that after `init`, `de
 - **Files**: `packages/cli/src/lib/doctor/applicability.ts`, `packages/cli/src/lib/doctor/applicability.spec.ts`, `packages/cli/src/lib/doctor/analyze-config-roots.service.ts`, `packages/cli/src/lib/doctor/checks/manifests.check.ts`, `packages/cli/src/lib/doctor/checks/plugin-graph.check.ts`, `packages/cli/src/lib/doctor/checks/deps.check.ts`, `packages/cli/src/lib/doctor/checks/runtime.check.ts`, `packages/cli/src/lib/doctor/checks/schemas.check.ts`, `packages/cli/src/lib/doctor/checks/token-budgets.check.ts`, `packages/cli/src/lib/doctor/checks/network.check.ts`, `packages/cli/src/commands/doctor-checks/plugin-graph.ts`, `packages/cli/src/commands/groups/doctor.ts`, `packages/cli/src/commands/doctor.spec.ts`, `packages/cli/src/commands/groups/doctor.spec.ts`
 - **Gate**: none
 - shipped-in: `e59cea102e36`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — Revisé e59cea102e36. El slice introduce not-applicable como estado propio, limita manifests/plugin-graph/schemas/token-budgets al source checkout, hace que deps siga el lockfile del gestor del proyecto y que runtime respete engines.bun o engines.node del consumidor. Corrí vitest focalizado sobre applicability + doctor specs: 86/86 verde.
+- review-attribution: claude-sonnet-5-5 from Merge pull request #708 from CartagoGit/delendai/pr/claude-sonnet-5-5/implement/x00796-S1-g1/doctor-reads-clean-in-a-consumer-project (refs/heads/delendai/wip/claude-sonnet-5-5/implement/x00796-S1-g1/doctor-reads-clean-in-a-consumer-project) (e59cea102e36b65d228144c0ee95d29a9e13992e), opened by minimax-3
 
 ## acceptance
 
