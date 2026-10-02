@@ -178,3 +178,49 @@ describe('workUnitDescription', () => {
 		expect(workUnitDescription(undefined)).not.toMatch(/pull request/u);
 	});
 });
+
+describe('a client working in another project', () => {
+	const serverFor = async (root: string, clientRoots?: readonly string[]) => {
+		let handler: ((input: unknown) => Promise<unknown>) | undefined;
+		await buildWorkUnitToolRegistration({
+			namespacePrefix: 'delendai',
+			workspaceRoot: root,
+			session: 'srv-roots',
+		}).register(
+			createFakeToolServer({
+				...(clientRoots === undefined ? {} : { clientRoots }),
+				onRegisterTool: (registered) => {
+					handler = registered.handler as typeof handler;
+				},
+			}),
+		);
+		if (handler === undefined) throw new Error('work did not register');
+		const call = handler;
+		return async (input: Record<string, unknown>) =>
+			(await call(input)) as IAnswer;
+	};
+
+	it('is refused a unit here, with both directories named', async () => {
+		const root = repo();
+		const elsewhere = realpathSync(mkdtempSync(join(tmpdir(), 'other-')));
+		roots.push(elsewhere);
+		const work = await serverFor(root, [`file://${elsewhere}`]);
+		const answer = await work(enterReview);
+		expect(answer.structuredContent.ok).toBe(false);
+		expect(answer.structuredContent.error).toContain(root);
+		expect(answer.structuredContent.error).toContain(elsewhere);
+		expect(git(root, 'for-each-ref', 'refs/heads/delendai')).toBe('');
+	});
+
+	it('still reads the swarm, and still enters from this project', async () => {
+		const root = repo();
+		const elsewhere = realpathSync(mkdtempSync(join(tmpdir(), 'other-')));
+		roots.push(elsewhere);
+		const reading = await serverFor(root, [`file://${elsewhere}`]);
+		expect((await reading({ action: 'swarm' })).structuredContent.ok).toBe(
+			true,
+		);
+		const here = await serverFor(root, [`file://${root}`]);
+		expect((await here(enterReview)).structuredContent.ok).toBe(true);
+	});
+});
