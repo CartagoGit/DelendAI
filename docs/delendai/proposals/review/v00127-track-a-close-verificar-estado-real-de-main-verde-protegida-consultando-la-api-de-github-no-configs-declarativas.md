@@ -26,6 +26,8 @@ related:
 last-transition-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
 last-correlation-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
 last-transition-from: in-progress
+shipped-in:
+  - "6af2c6a01"
 ---
 
 # v00127 — Track A.close: verificar `main` verde y protegida en GitHub (API real)
@@ -217,7 +219,7 @@ abre issue — es observación, nunca gate.
 
 ### S1 — `verify-main-health.script.ts` + bifuración
 
-- **Status**: done — verified 2026-09-02: `tools/scripts/ci/verify-main-health.script.ts`
+- **Status**: done
   and `tools/scripts/ci/verify-main-health.spec.ts` exist (commit `19218caf5`, "feat(tools):
   verify main health via GitHub API (v00127)"), target the real `CartagoGit/delendai`
   repository, and `bunx vitest run tools/scripts/ci/verify-main-health.spec.ts` passes 9/9.
@@ -231,6 +233,11 @@ abre issue — es observación, nunca gate.
 - **Gate**: type + test passing
 - **Depends on**: `c00144`, `c00132`, `c00133`.
 - shipped-in: `19218caf5a6b3b13379f358e00b5749560b55d35`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at 6af2c6a01 ("feat(tools): verify main health via GitHub API (v00127)"). verify-main-health.spec.ts 9/9 covers main green + protection matching -> exit 0, main CI fail -> exit 1, protection diverge -> exit 1 with diff, develop red but main green -> exit 0.
+- review-attribution: unrecorded — nothing in Git names who delivered 6af2c6a013c8bec231bfbfb13f83369cc2408ead: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
 
 ### S2 — Wire a dashboard
 
