@@ -16,7 +16,7 @@ import { nodeDynamicImport } from '@delendai/core/lib/plugins/load-plugins';
 import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import { SKILL_MANIFEST_REL } from '@delendai/core/lib/skills/skill-paths';
 import { TOKEN_BUDGETS } from '@delendai/core/public';
-import { type IMcpToolSurfaceMode } from '@delendai/core/cli';
+import type { IMcpToolSurfaceMode } from '@delendai/core/cli';
 
 /**
  * Token budget benchmark [N23]. Invariant: cold-start protocol payloads stay

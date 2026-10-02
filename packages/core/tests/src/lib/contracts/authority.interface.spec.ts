@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { definePluginManifest } from '@delendai/core/public';
-import { type IAuthorityDeclaration } from '@delendai/core/cli';
+import type { IAuthorityDeclaration } from '@delendai/core/cli';
 
 const base = {
 	id: 'proposals' as const,

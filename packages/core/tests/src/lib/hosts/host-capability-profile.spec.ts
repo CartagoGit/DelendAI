@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildHostCapabilityPlan } from '@delendai/core/public';
-import { type IHostCapabilityProfile } from '@delendai/core/cli';
+import type { IHostCapabilityProfile } from '@delendai/core/cli';
 
 describe('buildHostCapabilityPlan', () => {
 	it('makes the live MCP surface mandatory and host extensions optional', () => {

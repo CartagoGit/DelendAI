@@ -29,9 +29,9 @@ import {
 	type IWriteScaffoldedFilesResult,
 } from '@delendai/client';
 import { scaffoldPluginFiles } from '@delendai/core/public';
-import {
-	type IScaffoldedFile,
-	type IScaffoldPluginOptions,
+import type {
+	IScaffoldedFile,
+	IScaffoldPluginOptions,
 } from '@delendai/core/cli';
 
 const USAGE =

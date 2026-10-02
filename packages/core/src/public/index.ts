@@ -748,7 +748,7 @@ export {
 export type { PluginState } from '../lib/plugins/states';
 export { definePluginManifest } from '../lib/manifest/define-plugin-manifest';
 export { FIRST_PARTY_PLUGIN_INDEX } from '../lib/registry/first-party-index';
-export { type IPluginAddStep } from '../lib/registry/plugin-add';
+export type { IPluginAddStep } from '../lib/registry/plugin-add';
 export { buildPluginSearchRegistration } from '../lib/registry/plugin-search.tool';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
@@ -1008,9 +1008,9 @@ export { compileWorkRefParser } from '../lib/startup-reconciler/index';
 // The desired-state builder is public because the committed governance
 // YAML is RENDERED from it. Keeping it internal is what let a second
 // derivation grow in `tools/` and disagree with this one.
-export {
-	type IDesiredForgeState,
-	type ILiveForgeState,
+export type {
+	IDesiredForgeState,
+	ILiveForgeState,
 } from '../lib/forge-governance/index';
 
 export {
