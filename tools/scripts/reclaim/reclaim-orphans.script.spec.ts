@@ -133,6 +133,8 @@ describe('units of work', () => {
 	): IUnitStandingEntry => ({
 		ref: ref(agent),
 		worktree: null,
+		publicationAhead: false,
+		publicationRef: null,
 		standing,
 		owner: { agent, session: 's' },
 		silentSeconds: 0,
