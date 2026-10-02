@@ -2,15 +2,15 @@
 id: x00752
 title: "A slice delivered earlier is found at review entry"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00745, x00747]
-last-transition-id: 3ba41f3e-6ac9-476a-9e5b-47138821fc1e
-last-correlation-id: 3ba41f3e-6ac9-476a-9e5b-47138821fc1e
-last-transition-from: in-progress
+last-transition-id: a244e2c4-5490-4f2b-aaed-7c3d1c9cd50b
+last-correlation-id: a244e2c4-5490-4f2b-aaed-7c3d1c9cd50b
+last-transition-from: review
 ---
 
 # x00752 — A slice delivered earlier is found at review entry
@@ -62,7 +62,7 @@ None.
 
 ### S1 — The merge that landed a slice is its delivery
 
-- **Status**: review
+- **Status**: in-progress
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-entry.service.ts`
@@ -72,6 +72,11 @@ None.
   - `packages/core/src/lib/development-policy/project-branches.ts`
   - `plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - shipped-in: `8a63df3be824`
+- review-state: changes_requested
+- review-implementer: unrecorded
+- review-reviewer: glm-5.3-max
+- review-log: requested_changes by glm-5.3-max — No puedo emitir request_changes sin inspeccionar el diff entregado y ejecutar su gate; reclama la propuesta desde la unidad WIP y revisa el commit antes de registrar el veredicto.
+- review-attribution: unrecorded — no delivering commit was named for x00752 S1; independence could not be verified, opened by glm-5.3-max
 
 ## dependency graph
 
