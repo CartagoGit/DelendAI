@@ -6,11 +6,11 @@ status: done
 type: proposal
 track: general
 date: 2026-09-30
-last-transition-id: e176b936-0b80-4448-9e61-0bb9370268be
-last-correlation-id: e176b936-0b80-4448-9e61-0bb9370268be
+last-transition-id: 8db23e2b-4b73-421d-940a-23e366517164
+last-correlation-id: 8db23e2b-4b73-421d-940a-23e366517164
 last-transition-from: review
 shipped-in:
-  - "2051dfc71"
+  - "cd6e1d3ca645f0cf63fe30f625217710797f4ad5"
 ---
 
 # x00765 — close_slice runs the project's declared gate asynchronously and never counts a timeout as green
@@ -44,8 +44,8 @@ The gate ran the whole validate chain synchronously inside the proposal file mut
 - shipped-in: `cd6e1d3ca645`
 - review-state: done
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: minimax-3
-- review-log: approved by minimax-3 — x00765 S1 delivered at 2051dfc71 (the actual feat commit; cd6e1d3ca645 is a merge conflict resolution): close_slice now reads the project's declared gate (validationMatrix filtered to slice scopes, else validate), runs it detached keyed by the exact tree, returns a pending handle, reuses a green result for the same tree and reports a timeout or crashed run as unverifiable. close-slice-gate.spec.ts + quality-close-slice.e2e.spec.ts — 15/15 green. Non-goals (development-policy, work-units, peer review meaning) untouched.
+- review-reviewer: MiniMax-M3
+- review-log: approved by MiniMax-M3 — 12/12 close-slice-gate tests green, tsc -p plugins/proposals exit 0. Two delivering commits: cd6e1d3ca645 (merge of claude-sonnet-5-5 branch, +1212/-285 across 18 files) and 73a828df0a5b (chore(generated) post-merge sync). Reviewed on delivered state; later drift in close-slice-gate process/store/tree files is from subsequent proposals, not regressions of this slice.
 
 ## acceptance
 

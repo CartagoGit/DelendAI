@@ -6,11 +6,11 @@ status: done
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: e8a6efa8-595d-489d-8719-99d947936cab
-last-correlation-id: e8a6efa8-595d-489d-8719-99d947936cab
+last-transition-id: 10a2e05e-ff0c-4a35-a568-0d314d5dfafe
+last-correlation-id: 10a2e05e-ff0c-4a35-a568-0d314d5dfafe
 last-transition-from: review
 shipped-in:
-  - "c7ed36567e1a0a95c6e885d55b5c079e15477b82"
+  - "c7ed36567e1a"
 ---
 
 # x00811 — The CLI completes the proposal lifecycle the way the tools do
@@ -55,8 +55,8 @@ Symptoms that followed from it: `proposals close-slice` refused with "close requ
 - shipped-in: `c7ed36567e1a`
 - review-state: done
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: minimax-3
-- review-log: approved by minimax-3 — x00811 S1 - close-slice, transition and lock claims work from the CLI. commit c7ed36567e1a0a95c6e885d55b5c079e15477b82 adds packages/cli/src/commands/groups/{proposals.ts,group-helpers.ts,proposals.spec.ts}, packages/cli/src/contracts/constants/help-translation.constant.ts, plugins/proposals/src/lib/contracts/interfaces/agent-lock.interface.ts (agent-holder variant), plugins/proposals/src/lib/locks/execute-lock-action.ts, plugins/proposals/src/lib/tools/agent-lock.tool.ts. agent_lock now distinguishes holder: 'process' | 'agent'; the agent holder omits pid so the orphan sweep ignores it; CLI defaults agent from DELENDAI_AGENT_ID. gate: type. Repo typecheck has 4 pre-existing module-not-found errors; NONE in x00811-touched files. focused gate: vitest run packages/cli/src/commands/groups/proposals.spec.ts => 36/36 passed, exit 0. acceptance: close-slice accepts --checkout; transition accepts --agent (default DELENDAI_AGENT_ID) + --checkout; transition review --agent opens the round; refusal names missing input.
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at c7ed36567e1a ("fix(cli): proposal lifecycle completes from the CLI; lock claims outlive the one-shot process (x00811)"). proposals.spec.ts 36/36 (verified with bunx vitest run; bun test's runner lacks vi.stubEnv in vitest 4.x, but the spec passes under the canonical vitest runner) covers --checkout on close-slice and transition, --agent default from DELENDAI_AGENT_ID, lock claim holder='agent', refusal naming missing input. agent-lock-engine 38/38 covers the agent-holder semantics.
 
 ## acceptance
 

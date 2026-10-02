@@ -8,8 +8,8 @@ track: trust
 date: 2026-09-29
 priority: P1
 related: [x00758]
-last-transition-id: 95737ab9-1e16-4792-9dc6-c0d7e35d5ba3
-last-correlation-id: 95737ab9-1e16-4792-9dc6-c0d7e35d5ba3
+last-transition-id: df4a7dc4-7aff-4b1a-bdb5-15d0e7a16613
+last-correlation-id: df4a7dc4-7aff-4b1a-bdb5-15d0e7a16613
 last-transition-from: review
 shipped-in:
   - "2d793d3c315254b838688b3c1a78866085b0c554"
@@ -98,9 +98,9 @@ as the full Configuration Center does. Added:
 `extensions/vscode/src/test/open-configuration-center-edge-cases.spec.ts`.
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: minimax-3
-- review-log: approved by minimax-3 — x00763 S1 - no live name keeps the old brand. commit 2d793d3c315254b838688b3c1a78866085b0c554 adds packages/core/src/lib/contracts/constants/legacy-identity.constant.ts (LEGACY_IDENTITY_SPELLINGS now includes MCPV, Mcpv, McpVertex, mcpVertex, MCPVERTEX), packages/core/src/lib/workspace-migration/migrators/identity-renames.ts (consumer rename table updated), the three scanner specs, tools/scripts/migrate/rebrand-propagate.script.ts + no-secrets.script.ts + style-integrity.script.ts (no longer skips whole tools/scripts/lint or tools/scripts/git), and the live names renamed: __DELENDAI_CONFIGURATION_HOST__, __DELENDAI_DASHBOARD_DETAIL__, __DELENDAI_GLOBSTAR_SENTINEL__, DELENDAI_REDACTED_SECRET_<KIND>. gate: npx vitest run packages/core/tests/src/lib/workspace-migration => 20 files / 251 tests passed, exit 0; bun run migrate:rebrand:check => ✓ 0 repo-owned LIVE hits + brand contract green, exit 0. acceptance: rebrand:check reports 0 live hits with tools/scripts/ scanned; consumer migrator renames __MCPV__, IMcpVertex, mcpVertex, MCPV_REDACTED_SECRET_; one consumer project has no live remnant.
-- review-attribution: claude-opus-5-5 from Merge pull request #665 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00763-all-g1/no-live-name-keeps-the-old-brand (refs/heads/delendai/wip/claude-opus-5-5/implement/x00763-all-g1/no-live-name-keeps-the-old-brand) (2d793d3c315254b838688b3c1a78866085b0c554), opened by minimax-3
+- review-reviewer: MiniMax-M3
+- review-log: approved by MiniMax-M3 — workspace-migration suite green 20 files / 251 tests, migrate:rebrand:check exit 0 (0 hits, brand contract green). Catalog has all five spellings (MCPV/Mcpv/McpVertex/mcpVertex/MCPVERTEX) and identity-renames covers them with PascalCase/UPPERCASE precedence. Reviewed on delivered state; later edits in no-secrets/style-integrity scripts are follow-up work, not regressions of this slice.
+- review-attribution: claude-opus-5-5 from Merge pull request #665 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00763-all-g1/no-live-name-keeps-the-old-brand (refs/heads/delendai/wip/claude-opus-5-5/implement/x00763-all-g1/no-live-name-keeps-the-old-brand) (2d793d3c315254b838688b3c1a78866085b0c554), opened by MiniMax-M3
 
 ## dependency graph
 

@@ -6,11 +6,11 @@ status: done
 type: proposal
 track: hosts
 date: 2026-09-29
-last-transition-id: cccf3885-6906-46bf-9273-af7f7689f423
-last-correlation-id: cccf3885-6906-46bf-9273-af7f7689f423
+last-transition-id: f945f390-f525-487d-92b2-2032b9b00b83
+last-correlation-id: f945f390-f525-487d-92b2-2032b9b00b83
 last-transition-from: review
 shipped-in:
-  - "a4a0a88878531a50285fc40e238eb1c755660ba0"
+  - "de71f8444623"
 ---
 
 # x00760 — A shared-checkout-merge project can land its work
@@ -42,8 +42,8 @@ The served work model (x00759) tells an agent on `shared-checkout-merge` to fini
 - shipped-in: `de71f8444623`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: minimax-3
-- review-log: approved by minimax-3 — x00760 S1 - a shared-checkout-merge project can land its work. Real feat commit is a4a0a88878531a50285fc40e238eb1c755660ba0 (the merge d5da051b7 brought it into develop; shipped-in de71f8444 is the smaller follow-up). Adds packages/core/src/lib/work-units/{work-unit-publish.service.ts,work-unit-land.service.ts,local-certification.service.ts,validation-gate-steps.service.ts,work-publish.service.ts} + integration-engine/{local-merge-cycle.ts,local-merge-gate.ts} + declare-workflow.ts + work-unit.tool.ts + cli.ts. The CLI re-export de71f8444623 keeps validate-run.service.ts in its documented location. gate: type. Repo typecheck has 4 pre-existing module-not-found errors (better-sqlite3, @anthropic-ai/tokenizer); NONE in x00760-touched files. focused gate: vitest run packages/core/tests/src/lib/work-units/work-unit-land.service.spec.ts + local-certification.service.spec.ts + integration-engine/local-merge-cycle.spec.ts + development-policy/declare-workflow.spec.ts => 4 files / 53 tests passed, exit 0. Acceptance: 'lands on main after the gate when the release branch is omitted' + 'lands on main after the gate when integration and release are both main' + 'lands on main after the gate when the project declares no policy at all' + 'still refuses a failing gate on main and keeps the work' are explicit.
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at de71f8444623 ("fix(work): a merge-profile project lands its work with work publish"). work-unit-land.service / local-certification / local-merge-cycle 31/31 covers: local gate runs against current integration head before runLocalMergeCycle; red certification, stale head, and conflict each end in a refusal naming the next step; pull-request profile is unchanged.
 
 ## acceptance
 

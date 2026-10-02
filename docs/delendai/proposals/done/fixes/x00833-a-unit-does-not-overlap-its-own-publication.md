@@ -8,11 +8,11 @@ track: trust
 date: 2026-10-01
 priority: P2
 related: [x00791]
-last-transition-id: 10ed3ef1-fc46-4723-8379-b555d55a6622
-last-correlation-id: 10ed3ef1-fc46-4723-8379-b555d55a6622
+last-transition-id: 997c8e69-aa9f-4b74-a973-ea33a75ae773
+last-correlation-id: 997c8e69-aa9f-4b74-a973-ea33a75ae773
 last-transition-from: review
 shipped-in:
-  - "c13145c1ca18"
+  - "c13145c1ca185d0e607732ce4192737ca39ef96a"
 ---
 
 # x00833 — A unit does not overlap its own publication
@@ -56,9 +56,9 @@ teaches agents to stop reading it.
 - shipped-in: `c13145c1ca18`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: minimax-3
-- review-log: approved by minimax-3 — x00833 S1 delivered at c13145c1ca18: work-swarm.service.ts + work-swarm-relations.service.ts no longer count a publication whose agent/slice/generation match a live work ref as overlapping itself. work-swarm-relations.spec.ts — 13/13 green ('drops a publication whose own work ref is live, and a landed one' + 'does not call an agent updating its own pull request a duplicate'). Acceptance '42 overlapping paths → 0' is exactly what the unit-under-test case pins.
-- review-attribution: claude-opus-5-5 from Merge pull request #729 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00833-S1-g1/a-unit-does-not-overlap-its-own-publication (refs/heads/delendai/wip/claude-opus-5-5/implement/x00833-S1-g1/a-unit-does-not-overlap-its-own-publication) (c13145c1ca185d0e607732ce4192737ca39ef96a), opened by minimax-3
+- review-reviewer: MiniMax-M3
+- review-log: approved by MiniMax-M3 — work-swarm-relations.spec.ts green: 13/13 in 24.5s. Core typecheck on this branch surfaces 4 errors in 3 unrelated files (plugins/database/sqlite-driver.ts, sqlite-query-driver.ts, tools/scripts/report/tokenizer-real.script.ts), all pre-dating the delivering commit c13145c1ca18 (last touched by f00128 S1/S3 in 5bbde52a9/6e2cea8f9) — out of scope, not caused by this slice. Acceptance: '42 overlapping paths' → 0 in this repo (work-swarm.service no longer counts a publication whose agent/slice/generation match a live work ref).
+- review-attribution: claude-opus-5-5 from Merge pull request #729 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00833-S1-g1/a-unit-does-not-overlap-its-own-publication (refs/heads/delendai/wip/claude-opus-5-5/implement/x00833-S1-g1/a-unit-does-not-overlap-its-own-publication) (c13145c1ca185d0e607732ce4192737ca39ef96a), opened by MiniMax-M3
 
 ## dependency graph
 

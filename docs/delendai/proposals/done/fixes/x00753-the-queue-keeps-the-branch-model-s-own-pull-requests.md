@@ -8,11 +8,11 @@ track: hosts
 date: 2026-09-29
 priority: P0
 related: [x00690]
-last-transition-id: 0f0ebaea-c32e-4b3d-befe-8bbe219629be
-last-correlation-id: 0f0ebaea-c32e-4b3d-befe-8bbe219629be
+last-transition-id: 60fc3cd6-c485-4037-84d7-8726aa935c27
+last-correlation-id: 60fc3cd6-c485-4037-84d7-8726aa935c27
 last-transition-from: review
 shipped-in:
-  - "8cc340e08007"
+  - "8cc340e080076c551cf704f5da0305ec7451f6d7"
 ---
 
 # x00753 — The queue keeps the branch model's own pull requests
@@ -73,9 +73,9 @@ closed the same way.
 - shipped-in: `8cc340e08007`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: minimax-3
-- review-log: approved by minimax-3 — x00753 S1 delivered at 8cc340e08007: pr-head-shape.script.ts exports isBranchModelMove (head=integration + base=release = promotion; base=integration + head starts with FORWARD_SYNC_REF_PREFIX = forward sync). prHeadProblem now takes a base; returns undefined for either; the lint reads GITHUB_BASE_REF. close-unpublished-prs.script.ts selects baseRefName and feeds it through. close-unpublished-prs.script.spec.ts + pr-head-shape.script.spec.ts — 8/8 ('keeps the promotion into the release branch and the forward sync back'). Non-goal (renaming open PRs) untouched.
-- review-attribution: claude-opus-5-5 from Merge pull request #647 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00753-all-g1/a-release-promotion-stays-open (refs/heads/delendai/wip/claude-opus-5-5/implement/x00753-all-g1/a-release-promotion-stays-open) (8cc340e080076c551cf704f5da0305ec7451f6d7), opened by minimax-3
+- review-reviewer: MiniMax-M3
+- review-log: approved by MiniMax-M3 — close-unpublished-prs.script.spec.ts + pr-head-shape.script.spec.ts: 8/8 green. Acceptance test 'keeps the promotion into the release branch and the forward sync back' covers both pull-request shapes named in the proposal. Delivering commit 8cc340e08007 (+9/-3 in close-unpublished, +28 in pr-head-shape, +28 in close-unpublished spec).
+- review-attribution: claude-opus-5-5 from Merge pull request #647 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00753-all-g1/a-release-promotion-stays-open (refs/heads/delendai/wip/claude-opus-5-5/implement/x00753-all-g1/a-release-promotion-stays-open) (8cc340e080076c551cf704f5da0305ec7451f6d7), opened by MiniMax-M3
 
 ## dependency graph
 
