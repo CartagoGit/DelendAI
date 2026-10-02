@@ -2,15 +2,21 @@
 id: f00645
 title: "List tools answer compact by default"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00673, f00536]
-last-transition-id: da01769c-b89a-47c8-95c1-c807cc51b724
-last-correlation-id: da01769c-b89a-47c8-95c1-c807cc51b724
-last-transition-from: in-progress
+last-transition-id: 3e2b4348-ef3d-4b23-84f3-ffbccdf01983
+last-correlation-id: 3e2b4348-ef3d-4b23-84f3-ffbccdf01983
+last-transition-from: review
+shipped-in:
+  - "22ab06b48c4b512d1958595b368e7e2051feda36"
+  - "ccb2e01b0d4c9c306db26f532588de94595884dd"
+  - "24b2315c2dad5e4491b482e8d67b2cff07b444cf"
+  - "8e014cff34b8e6e0a01a0443efd9ef423f9ea147"
+  - "80a53ea9b0ec8d69e573d54576a564a97f4154c1"
 ---
 
 # f00645 — List tools answer compact by default
@@ -58,7 +64,7 @@ which tools cost the most context is not known.
 
 ### S1 — Tool results are measured
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/usage-tracking/src/lib/result-size-ranking.helper.ts`
   - `plugins/usage-tracking/src/lib/contracts/constants/result-size-rank-limit.constant.ts`
@@ -72,10 +78,15 @@ which tools cost the most context is not known.
   - "Every tool call's log entry carries the serialized size of its result." (already true: `responseBytes` in the invocation record)
   - "The usage report ranks tools by largest and by total result size."
 - shipped-in: `c9099b1057fa`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S1 - tool results are measured. Real feat commit is 22ab06b48c4b512d1958595b368e7e2051feda36 (the merge c9099b1057fa brought it into develop). Adds plugins/usage-tracking/src/lib/result-size-ranking.helper.ts (rankToolResultSizes), its constant + interface, and the report.tool.ts uses it. Each invocation row already has responseBytes (no new measurement cost); the new code ranks by total and by largest result size. The targeted result-size-ranking.spec.ts asserts both 'ranks tools by total and by largest result, skipping unmeasured calls' + 'lists at most limit tools' + 'returns the rankings, and drops them from a compact report' = 3/3 passed. acceptance: responseBytes per record (pre-existing) + report ranks by largest + by total (new code).
+- review-attribution: claude-opus-5-5 from Merge pull request #521 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-all-g1/tool-results-are-measured (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-all-g1/tool-results-are-measured) (22ab06b48c4b512d1958595b368e7e2051feda36), opened by minimax-3
 
 ### S2 — A routed call is measured under the tool it reached
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**:
   - `plugins/usage-tracking/src/lib/routed-tool.helper.ts`
@@ -93,10 +104,15 @@ routed result was booked to the router, and S3 would have compacted the
 wrong tools. The record now takes the `qualifiedName` the router answers
 with.
 - shipped-in: `a03d2fdccade`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S2 - routed call attributed to the tool it reached. Real feat commit is ccb2e01b0d4c9c306db26f532588de94595884dd (the merge a03d2fdccade brought it into develop). Adds plugins/usage-tracking/src/lib/routed-tool.helper.ts (toolReachedBy helper) and small changes to plugins/usage-tracking/src/lib/record.ts (buildRecord now takes the qualifiedName the router answers with). Refused routes stay as the router's. gate: npx vitest run plugins/usage-tracking/tests/src/lib/routed-tool.helper.spec.ts => 3/3 passed, exit 0. Tests cover: 'names the tool the router reached' + 'keeps a refused route, and every other tool, as it was called' + 'is booked to the tool it reached, in the plugin that owns it'. acceptance: routed call recorded under the tool it reached, refused route stays the router's.
+- review-attribution: claude-opus-5-5 from Merge pull request #625 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-S2-g1/routed-calls-are-measured-where-they-land (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-S2-g1/routed-calls-are-measured-where-they-land) (ccb2e01b0d4c9c306db26f532588de94595884dd), opened by minimax-3
 
 ### S5 — A routed call is recorded once
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**:
   - `packages/core/src/lib/project/tool-call-scope.helper.ts`
@@ -117,10 +133,15 @@ routed tool three times over. Only the outermost call is the agent's, and
 its answer is what reaches the agent's context, so observers now see that
 one call, under the tool it reached.
 - shipped-in: `0caa6f8d3273`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S5 - inner tool calls fired by another tool are not observed again. Real feat commit is 24b2315c2dad5e4491b482e8d67b2cff07b444cf (the merge 0caa6f8d3273 brought it into develop). Introduces packages/core/src/lib/project/tool-call-scope.helper.ts and rewires packages/core/src/lib/project/instrument-tool-handlers.helper.ts so handlers fire onToolStart/onToolCall/onToolCancel once for the outermost call. tool-call-scope is a depth-counter that suppresses nested hook invocations. gate: npx vitest run packages/core/tests/src/lib/project/instrument-tool-handlers.helper.spec.ts => 4/4 passed, exit 0. Acceptance test 'a tool call made by another tool > is observed once, as the call the agent made' is explicit. acceptance: inner tool calls fire no lifecycle hooks; outer fires each once; later direct call observed.
+- review-attribution: claude-opus-5-5 from Merge pull request #633 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-S5-g1/a-routed-call-is-recorded-once (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-S5-g1/a-routed-call-is-recorded-once) (24b2315c2dad5e4491b482e8d67b2cff07b444cf), opened by minimax-3
 
 ### S3 — The largest list tools answer compact by default
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S5]
 - **Files**:
   - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
@@ -155,10 +176,15 @@ them, but they are routers, not lists.
   agents in brief; `who_uses` is the one agent, and `detail: true` the
   registry as stored.
 - shipped-in: `1de0ade67cf8`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S3 - the largest list tools answer compact by default. Real feat commit is 8e014cff34b8e6e0a01a0443efd9ef423f9ea147 (the merge 1de0ade67cf8 brought it into develop). proposal_board.tool.ts now defaults to compact entries (status + slice count) and adds proposalId (one proposal's slices with status+owner) + detail: true (whole page). authoring.tool.ts (plan index) + agent-names.tool.ts + shared/agent-names-list.ts follow the same shape. docs/delendai/TOKEN-BUDGETS.md updated. gate: npx vitest run plugins/proposals/tests/src/lib/{authoring.spec.ts,shared/agent-names-list.spec.ts,tools/agent-names.tool.spec.ts} => 3 files / 26 tests passed, exit 0. Acceptance tests include 'lists the active agents in brief, with the counts' + 'returns the registry as stored with detail' which cover the compact + detail shape. acceptance: each of the five largest list tools returns compact by default, full item for id, full page with detail:true.
+- review-attribution: claude-opus-5-5 from Merge pull request #643 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-S3-g1/list-tools-answer-compact (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-S3-g1/list-tools-answer-compact) (8e014cff34b8e6e0a01a0443efd9ef423f9ea147), opened by minimax-3
 
 ### S4 — A lint keeps new list tools compact
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**:
   - `tools/scripts/lint/compact-list-tools.script.ts`
@@ -180,6 +206,11 @@ compact. On 2026-09-29 it measured 205 tools; the 28 that already list full
 items by default are baselined by name, and a new one fails. It runs in the
 `lint-presets` CI job and in `validate:run`.
 - shipped-in: `ec98c0d31348`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S4 - the lint keeps new list tools compact. Real feat commit is 80a53ea9b0ec8d69e573d54576a564a97f4154c1 (the merge ec98c0d31348 brought it into develop). Adds tools/scripts/lint/compact-list-tools.script.ts (compactListFindings + newFindings), spec, and the baseline. CI workflow wired into .github/workflows/ci.yml. gate: vitest run tools/scripts/lint/compact-list-tools.script.spec.ts => 4/4 passed, exit 0. Acceptance test 'finds a list of full items, however deep, in a tool without a detail input' + 'accepts entries of five fields, entries with a detailsId, and tools that take an id or detail' + 'reads the variants of a union output' + 'keeps only the tools the baseline does not name'. Live lint: bun tools/scripts/lint/compact-list-tools.script.ts => ✓ 205 tools, no new list of full items (28 baselined), exit 0. acceptance: a tool whose output is an array of objects with more than five fields, and whose input takes neither an item id nor detail, is a finding.
+- review-attribution: claude-opus-5-5 from Merge pull request #644 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-S4-g1/a-lint-keeps-list-tools-compact (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-S4-g1/a-lint-keeps-list-tools-compact) (80a53ea9b0ec8d69e573d54576a564a97f4154c1), opened by minimax-3
 
 ## dependency graph
 
