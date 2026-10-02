@@ -2,13 +2,13 @@
 id: x00860
 title: "close_slice accepts a certification that already exists for the exact tree"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: 8abdc6f3-3e64-47da-a3f6-00f91a6df6bb
-last-correlation-id: 8abdc6f3-3e64-47da-a3f6-00f91a6df6bb
-last-transition-from: ready
+last-transition-id: 5d074a73-f6b0-47b2-b42c-22412a90aac9
+last-correlation-id: 5d074a73-f6b0-47b2-b42c-22412a90aac9
+last-transition-from: in-progress
 ---
 
 # x00860 — close_slice accepts a certification that already exists for the exact tree
@@ -43,6 +43,9 @@ In a repo with no validationMatrix close_slice runs the whole validate locally (
   - "red CI blocks naming the failing check"
   - "concurrent local gates are bounded and queue"
   - "the served next action names the missing evidence"
+- shipped-in: `a037b43dfb9d`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
