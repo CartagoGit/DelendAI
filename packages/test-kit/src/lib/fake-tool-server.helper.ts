@@ -51,6 +51,14 @@ export const createFakeToolServer = (
 		}) => {
 			await overrides.onSendLoggingMessage?.(message);
 		},
+		// The low-level server a tool asks about its client.
+		server: {
+			getClientCapabilities: () =>
+				overrides.clientRoots === undefined ? {} : { roots: {} },
+			listRoots: async () => ({
+				roots: (overrides.clientRoots ?? []).map((uri) => ({ uri })),
+			}),
+		},
 	};
 	// The one documented boundary cast — see the module doc above for why
 	// `fakePartial` cannot close this gap.
