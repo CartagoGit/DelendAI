@@ -2,15 +2,16 @@
 id: x00781
 title: "Adoption writes exactly the policy already enforced"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: b07a431a-a835-4f1e-bf18-41820ade3b2e
-last-correlation-id: b07a431a-a835-4f1e-bf18-41820ade3b2e
-last-transition-from: in-progress
+last-transition-id: cf50d606-2da9-4ea4-a44b-85c08fc8457e
+last-correlation-id: cf50d606-2da9-4ea4-a44b-85c08fc8457e
+last-transition-from: review
 shipped-in:
   - "3ecf943bb84b7f87e119fca1074f6a8333ee7116"
+  - "da1ee9fb8615143878b477d454b9c6db734996e7"
 ---
 
 # x00781 — Adoption writes exactly the policy already enforced
@@ -58,7 +59,7 @@ The project's delendai configuration is the single source of truth, so every sur
 - review-log: approved by MiniMaxM3 — x00781 S1 delivered at 3ecf943bb84b: adoption migrator records what resolveEffectivePolicy already resolved, never reads the forge, leaves legacy fields alone. 30/30 tests green across adopt.spec + adoption-parity + development-policy.migrator. Reviewed on delivered state; later drift in development-policy.service.ts is from follow-up work.
 
 ### S2 — Specs for parity and for never rewriting
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/tests/src/lib/development-policy/adopt.spec.ts`, `packages/core/tests/src/lib/development-policy/adoption-parity.spec.ts`, `packages/core/tests/src/lib/workspace-migration/development-policy.migrator.spec.ts`, `packages/core/tests/src/lib/workspace-migration/development-policy-required-checks.spec.ts`, `packages/cli/src/lib/init/init-workspace-start.spec.ts`
 - **Gate**: none
@@ -66,8 +67,10 @@ The project's delendai configuration is the single source of truth, so every sur
   - "the same undeclared repository yields one policy from the migrator, resolveEffectivePolicy, the served instructions and the guard's reader"
   - "the written config round-trips to the same effective policy"
 - shipped-in: `3ecf943bb84b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00781 S2 delivered at da1ee9fb8615143878b477d454b9c6db734996e7: delendai init may choose the pull-request profile from forge+workflow evidence; server start records the policy already resolved and reads no forge. 19/19 tests green across init-workspace-start.spec.ts + development-policy-required-checks.spec.ts.
 
 ## acceptance
 
