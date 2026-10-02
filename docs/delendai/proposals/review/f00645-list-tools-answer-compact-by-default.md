@@ -13,6 +13,7 @@ last-correlation-id: da01769c-b89a-47c8-95c1-c807cc51b724
 last-transition-from: in-progress
 shipped-in:
   - "22ab06b48c4b512d1958595b368e7e2051feda36"
+  - "ccb2e01b0d4c9c306db26f532588de94595884dd"
 ---
 
 # f00645 — List tools answer compact by default
@@ -82,7 +83,7 @@ which tools cost the most context is not known.
 
 ### S2 — A routed call is measured under the tool it reached
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**:
   - `plugins/usage-tracking/src/lib/routed-tool.helper.ts`
@@ -100,6 +101,11 @@ routed result was booked to the router, and S3 would have compacted the
 wrong tools. The record now takes the `qualifiedName` the router answers
 with.
 - shipped-in: `a03d2fdccade`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S2 - routed call attributed to the tool it reached. Real feat commit is ccb2e01b0d4c9c306db26f532588de94595884dd (the merge a03d2fdccade brought it into develop). Adds plugins/usage-tracking/src/lib/routed-tool.helper.ts (toolReachedBy helper) and small changes to plugins/usage-tracking/src/lib/record.ts (buildRecord now takes the qualifiedName the router answers with). Refused routes stay as the router's. gate: npx vitest run plugins/usage-tracking/tests/src/lib/routed-tool.helper.spec.ts => 3/3 passed, exit 0. Tests cover: 'names the tool the router reached' + 'keeps a refused route, and every other tool, as it was called' + 'is booked to the tool it reached, in the plugin that owns it'. acceptance: routed call recorded under the tool it reached, refused route stays the router's.
+- review-attribution: claude-opus-5-5 from Merge pull request #625 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-S2-g1/routed-calls-are-measured-where-they-land (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-S2-g1/routed-calls-are-measured-where-they-land) (ccb2e01b0d4c9c306db26f532588de94595884dd), opened by minimax-3
 
 ### S5 — A routed call is recorded once
 
