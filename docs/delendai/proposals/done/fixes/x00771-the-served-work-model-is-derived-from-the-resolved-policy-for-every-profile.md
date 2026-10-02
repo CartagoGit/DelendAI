@@ -2,15 +2,17 @@
 id: x00771
 title: "The served work model is derived from the resolved policy for every profile"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-30
 priority: P1
 related: [x00760]
-last-transition-id: 03a98c97-49aa-4963-99ed-223975a4e51f
-last-correlation-id: 03a98c97-49aa-4963-99ed-223975a4e51f
-last-transition-from: in-progress
+last-transition-id: 22e07ff9-96b1-420f-bb69-e404e1c7a25d
+last-correlation-id: 22e07ff9-96b1-420f-bb69-e404e1c7a25d
+last-transition-from: review
+shipped-in:
+  - "d3f97b9fa53a"
 ---
 
 # x00771 — The served work model is derived from the resolved policy for every profile
@@ -66,12 +68,14 @@ per profile, found the served text wrong in several places:
 - global_gate: none
 
 ### S1 — Derive the served work model per landing route
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/development-policy/derive.ts`, `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/contracts/interfaces/work-unit-context.interface.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/review.command.ts`, `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`, `packages/core/tests/src/lib/development-policy/derived-invariants.spec.ts`, `packages/core/tests/src/lib/tools/work-unit.tool.spec.ts`
 - **Gate**: none
 - shipped-in: `d3f97b9fa53a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at d3f97b9fa53a ("fix(policy): serve a work model derived from the resolved policy for every profile"). Declare-workflow spec 22/22 covers per-profile sentences for shared-checkout-pr/merge/direct/worktree-pr. derived-invariants 12/12 covers the derivation rules. work-unit.tool spec 7/7 covers the policy-driven instruction lines.
 
 ## acceptance
 
