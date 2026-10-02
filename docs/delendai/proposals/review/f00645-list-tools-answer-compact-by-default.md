@@ -11,6 +11,8 @@ related: [x00673, f00536]
 last-transition-id: da01769c-b89a-47c8-95c1-c807cc51b724
 last-correlation-id: da01769c-b89a-47c8-95c1-c807cc51b724
 last-transition-from: in-progress
+shipped-in:
+  - "22ab06b48c4b512d1958595b368e7e2051feda36"
 ---
 
 # f00645 — List tools answer compact by default
@@ -58,7 +60,7 @@ which tools cost the most context is not known.
 
 ### S1 — Tool results are measured
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/usage-tracking/src/lib/result-size-ranking.helper.ts`
   - `plugins/usage-tracking/src/lib/contracts/constants/result-size-rank-limit.constant.ts`
@@ -72,6 +74,11 @@ which tools cost the most context is not known.
   - "Every tool call's log entry carries the serialized size of its result." (already true: `responseBytes` in the invocation record)
   - "The usage report ranks tools by largest and by total result size."
 - shipped-in: `c9099b1057fa`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S1 - tool results are measured. Real feat commit is 22ab06b48c4b512d1958595b368e7e2051feda36 (the merge c9099b1057fa brought it into develop). Adds plugins/usage-tracking/src/lib/result-size-ranking.helper.ts (rankToolResultSizes), its constant + interface, and the report.tool.ts uses it. Each invocation row already has responseBytes (no new measurement cost); the new code ranks by total and by largest result size. The targeted result-size-ranking.spec.ts asserts both 'ranks tools by total and by largest result, skipping unmeasured calls' + 'lists at most limit tools' + 'returns the rankings, and drops them from a compact report' = 3/3 passed. acceptance: responseBytes per record (pre-existing) + report ranks by largest + by total (new code).
+- review-attribution: claude-opus-5-5 from Merge pull request #521 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-all-g1/tool-results-are-measured (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-all-g1/tool-results-are-measured) (22ab06b48c4b512d1958595b368e7e2051feda36), opened by minimax-3
 
 ### S2 — A routed call is measured under the tool it reached
 
