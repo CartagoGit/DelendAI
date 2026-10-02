@@ -1513,6 +1513,14 @@
 				"date": "2026-09-26"
 			},
 			{
+				"id": "f00755",
+				"title": "Candidates that touch nothing in common land together",
+				"track": "efficiency",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-09-29"
+			},
+			{
 				"id": "q00009",
 				"title": "Plan: Managed Surface + portable Skills + 5-level Startup Report — separar catálogo, superficie LLM, working set y bajo demanda",
 				"track": "managed-surface-portable-skills-startup-report",
