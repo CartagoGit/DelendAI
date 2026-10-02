@@ -19,7 +19,10 @@ import type {
 	IBriefedUnit,
 	IWorkBriefing,
 } from '../contracts/interfaces/work-briefing.interface';
-import type { ISwarmView } from '../contracts/interfaces/work-swarm.interface';
+import type {
+	ISwarmUnit,
+	ISwarmView,
+} from '../contracts/interfaces/work-swarm.interface';
 
 export type {
 	IBriefedUnit,
@@ -36,15 +39,25 @@ export const briefingFrom = (input: {
 	readonly view: ISwarmView;
 	readonly agent: string;
 }): IWorkBriefing => {
-	const others: IBriefedUnit[] = input.view.units
-		// Your own units are not news to you.
-		.filter((unit) => unit.agent !== input.agent)
-		.map((unit) => ({
+	const briefed =
+		(published: boolean) =>
+		(unit: ISwarmUnit): IBriefedUnit => ({
 			agent: unit.agent,
 			ref: unit.ref,
 			subject: unit.subject,
 			paths: unit.paths,
-		}));
+			published,
+		});
+	// Your own units are not news to you. Somebody else's publication that
+	// has not landed is: an agent entering saw only work refs, so a pull
+	// request about to change its files went unmentioned.
+	const theirs = (unit: ISwarmUnit): boolean => unit.agent !== input.agent;
+	const others: IBriefedUnit[] = [
+		...input.view.units.filter(theirs).map(briefed(false)),
+		...input.view.published
+			.filter((unit) => theirs(unit) && unit.ahead > 0)
+			.map(briefed(true)),
+	];
 	return {
 		others,
 		contested: input.view.overlaps.map((overlap) => overlap.path),
@@ -63,10 +76,10 @@ export const describeBriefing = (
 ): readonly string[] => [
 	briefing.others.length === 0
 		? 'swarm            nobody else holds a unit of work right now'
-		: `swarm            ${String(briefing.others.length)} other unit(s) of work are live:`,
+		: `swarm            ${String(briefing.others.length)} other unit(s) of work are live or waiting to land:`,
 	...briefing.others.map(
 		(unit) =>
-			`  ${unit.agent}  ${unit.subject}  ${String(unit.paths.length)} path(s)  ${unit.ref}`,
+			`  ${unit.agent}  ${unit.subject}  ${String(unit.paths.length)} path(s)${unit.published ? '  (published, waiting to land)' : ''}  ${unit.ref}`,
 	),
 	...(briefing.contested.length === 0
 		? []

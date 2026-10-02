@@ -208,7 +208,29 @@ describe('create_proposal publishes what it writes', () => {
 		expect(result?.publishReason).toContain(
 			'wip/agent-a/f00001-S1-g1/the-work',
 		);
-		expect(git(root, 'ls-remote', 'origin')).toBe('');
+		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
+	});
+
+	it('does not push a second ref when the server itself runs in the unit', async () => {
+		// The CLI starts its server with the unit worktree as the root, so no
+		// `checkout` is passed. Treating that as "not a unit" pushed the
+		// file through the pre-push gate (a minute) and past the caller's
+		// timeout, leaving the document behind while the call reported an
+		// error.
+		const options = optionsFor(true);
+		const root = options.workspaceRoot;
+		git(root, 'checkout', '-q', '-b', 'wip/agent-a/f00001-S1-g1/the-work');
+
+		const result = await created(
+			await handlerFor(options),
+			'Written where the server runs',
+		);
+
+		expect(result.published).toBe(false);
+		expect(result.publishReason).toContain(
+			'wip/agent-a/f00001-S1-g1/the-work',
+		);
+		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
 	});
 
 	it('publishes only its own file, on top of the integration branch', async () => {
@@ -221,7 +243,9 @@ describe('create_proposal publishes what it writes', () => {
 			'Only its own file',
 		);
 
-		const sha = git(root, 'ls-remote', 'origin').split(/\s+/u)[0] ?? '';
+		const sha =
+			git(root, 'ls-remote', 'origin', 'refs/heads/*').split(/\s+/u)[0] ??
+			'';
 		git(root, 'fetch', '-q', 'origin', sha);
 		expect(git(root, 'rev-parse', `${sha}^`)).toBe(base);
 		expect(
@@ -276,7 +300,7 @@ describe('create_proposal on a project that lands without a pull request', () =>
 		expect(result.publishReason).toContain(
 			'merging a unit of work into develop',
 		);
-		expect(git(root, 'ls-remote', 'origin')).toBe('');
+		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
 		// A concrete step, not "finish the unit" for a unit that does not
 		// exist yet: the file goes onto a create unit, and the unit lands.
 		expect(result.nextAction).toContain(

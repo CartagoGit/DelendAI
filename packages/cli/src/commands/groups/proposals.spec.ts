@@ -196,8 +196,30 @@ describe('proposals group (f00046 S7)', async () => {
 				taskId: 't1',
 				slot: 'implementation_runner',
 				files: ['a.ts'],
+				// A claim must outlive this one-shot process.
+				holder: 'agent',
 			},
 		});
+	});
+
+	it('continue claims for the agent, held by the agent, not by this process', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('proposals continue').run(
+			['x1', '--mode=claim', '--slice=S1', '--agent=Claude-Sonnet-5-5'],
+			ctx,
+		);
+		expect(calls[0]).toEqual({
+			tool: 'delendai_proposals_continue_proposal',
+			args: {
+				proposalId: 'x1',
+				mode: 'claim',
+				sliceId: 'S1',
+				agentName: 'claude-sonnet-5-5',
+				holder: 'agent',
+			},
+		});
+		await find('proposals continue').run(['x1', '--mode=plan'], ctx);
+		expect(calls[1]?.args).toEqual({ proposalId: 'x1', mode: 'plan' });
 	});
 
 	it('state-repair defaults to dry-run, --execute switches mode', async () => {
