@@ -9,6 +9,8 @@ date: 2026-09-30
 last-transition-id: b07a431a-a835-4f1e-bf18-41820ade3b2e
 last-correlation-id: b07a431a-a835-4f1e-bf18-41820ade3b2e
 last-transition-from: in-progress
+shipped-in:
+  - "3ecf943bb84b7f87e119fca1074f6a8333ee7116"
 ---
 
 # x00781 — Adoption writes exactly the policy already enforced
@@ -42,7 +44,7 @@ The project's delendai configuration is the single source of truth, so every sur
 - global_gate: none
 
 ### S1 — One adoption rule, visibly applied
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/adopt.ts`, `packages/core/src/lib/development-policy/adopt.interface.ts`, `packages/core/src/lib/development-policy/adoption-record.ts`, `packages/core/src/lib/contracts/interfaces/policy-adoption.interface.ts`, `packages/core/src/lib/scan/dip-violation.ts`, `packages/core/src/lib/development-policy/effective-policy.ts`, `packages/core/src/lib/development-policy/served-work-model.ts`, `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/workspace-migration/migration-journal-path.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/src/lib/workspace-migration/migration-report.service.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy.migrator.ts`, `packages/core/src/lib/work-units/development-policy.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/cli.ts`, `packages/cli/src/index.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy-evidence.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy.interface.ts`, `packages/cli/src/lib/init/init-development-setup.service.ts`
 - **Gate**: type
 - acceptance:
@@ -50,8 +52,10 @@ The project's delendai configuration is the single source of truth, so every sur
   - "legacy fields and declared blocks are never rewritten"
   - "instructions, overview and work status say when the policy was adopted and written"
 - shipped-in: `3ecf943bb84b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00781 S1 delivered at 3ecf943bb84b: adoption migrator records what resolveEffectivePolicy already resolved, never reads the forge, leaves legacy fields alone. 30/30 tests green across adopt.spec + adoption-parity + development-policy.migrator. Reviewed on delivered state; later drift in development-policy.service.ts is from follow-up work.
 
 ### S2 — Specs for parity and for never rewriting
 - **Status**: pending
