@@ -2,13 +2,15 @@
 id: x00796
 title: "Doctor reads clean in a consumer project"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
-last-transition-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
-last-correlation-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
-last-transition-from: in-progress
+last-transition-id: 811033aa-478d-417d-ab81-8f5635663208
+last-correlation-id: 811033aa-478d-417d-ab81-8f5635663208
+last-transition-from: review
+shipped-in:
+  - "e59cea102e36b65d228144c0ee95d29a9e13992e"
 ---
 
 # x00796 — Doctor reads clean in a consumer project
@@ -35,6 +37,11 @@ A probe of the real CLI in throwaway consumer repos found that after `init`, `de
 - **Files**: `packages/cli/src/lib/doctor/applicability.ts`, `packages/cli/src/lib/doctor/applicability.spec.ts`, `packages/cli/src/lib/doctor/analyze-config-roots.service.ts`, `packages/cli/src/lib/doctor/checks/manifests.check.ts`, `packages/cli/src/lib/doctor/checks/plugin-graph.check.ts`, `packages/cli/src/lib/doctor/checks/deps.check.ts`, `packages/cli/src/lib/doctor/checks/runtime.check.ts`, `packages/cli/src/lib/doctor/checks/schemas.check.ts`, `packages/cli/src/lib/doctor/checks/token-budgets.check.ts`, `packages/cli/src/lib/doctor/checks/network.check.ts`, `packages/cli/src/commands/doctor-checks/plugin-graph.ts`, `packages/cli/src/commands/groups/doctor.ts`, `packages/cli/src/commands/doctor.spec.ts`, `packages/cli/src/commands/groups/doctor.spec.ts`
 - **Gate**: none
 - shipped-in: `e59cea102e36`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00796 S1 - doctor reads clean in a consumer project; monorepo-only checks report not-applicable. commit e59cea102e36b65d228144c0ee95d29a9e13992e adds packages/cli/src/lib/doctor/applicability.ts + .spec.ts, packages/cli/src/lib/doctor/analyze-config-roots.service.ts, and the seven check files (manifests, plugin-graph, deps, runtime, schemas, token-budgets, network) each gain an applicability gate. deps accepts bun/npm/pnpm/yarn lockfiles + is-not-applicable without package.json; runtime enforces engines.bun or engines.node when declared. gate: npx vitest run packages/cli/src/commands/doctor.spec.ts + packages/cli/src/commands/groups/doctor.spec.ts => 57/57 passed, exit 0. acceptance: monorepo-only checks (manifests/plugin-graph/token-budgets/schemas) report not-applicable unless root package is @delendai/core-monorepo; deps + runtime follow the project's own package manager + engines field; not-applicable is its own status (never rolled up as ok, never scored).
+- review-attribution: claude-sonnet-5-5 from Merge pull request #708 from CartagoGit/delendai/pr/claude-sonnet-5-5/implement/x00796-S1-g1/doctor-reads-clean-in-a-consumer-project (refs/heads/delendai/wip/claude-sonnet-5-5/implement/x00796-S1-g1/doctor-reads-clean-in-a-consumer-project) (e59cea102e36b65d228144c0ee95d29a9e13992e), opened by minimax-3
 
 ## acceptance
 
