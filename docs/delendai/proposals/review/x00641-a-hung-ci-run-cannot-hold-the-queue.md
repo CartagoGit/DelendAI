@@ -11,6 +11,8 @@ related: [x00637, x00636]
 last-transition-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
 last-correlation-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
 last-transition-from: in-progress
+shipped-in:
+  - "ed910e0e5c4e"
 ---
 
 # x00641 — A hung CI run cannot hold the queue
@@ -65,7 +67,7 @@ green full run took about seven minutes.
 
 ### S1 — Every job declares a bounded timeout
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/workflow-yaml.script.spec.ts`
 - **Files**: `tools/scripts/lint/workflow-yaml.script.ts`,
   `tools/scripts/lint/workflow-yaml.constant.ts`,
@@ -76,6 +78,11 @@ green full run took about seven minutes.
   `.github/workflows/pages.yml`, `.github/workflows/release.yml`,
   `.github/workflows/surface-bootstrap.yml`
 - shipped-in: `ed910e0e5c4e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — Verifiqué que el lint obliga timeouts acotados por job y que los workflows declarados reciben esos límites; gate declarado de S1 verde: 25/25 y bun run lint:workflow-yaml verde.
+- review-attribution: claude-opus-5-5 from commit ed910e0e5c4e names refs/heads/delendai/wip/claude-opus-5-5/x00641-all-g1/every-job-declares-its-timeout (ed910e0e5c4ec324dd09924a0468f7c8e457697e), opened by gpt-5.4
 
 ### S2 — A run that timed out is re-dispatched, not read as red
 
