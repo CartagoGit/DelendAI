@@ -15,6 +15,7 @@ shipped-in:
   - "22ab06b48c4b512d1958595b368e7e2051feda36"
   - "ccb2e01b0d4c9c306db26f532588de94595884dd"
   - "24b2315c2dad5e4491b482e8d67b2cff07b444cf"
+  - "8e014cff34b8e6e0a01a0443efd9ef423f9ea147"
 ---
 
 # f00645 — List tools answer compact by default
@@ -139,7 +140,7 @@ one call, under the tool it reached.
 
 ### S3 — The largest list tools answer compact by default
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S5]
 - **Files**:
   - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
@@ -174,6 +175,11 @@ them, but they are routers, not lists.
   agents in brief; `who_uses` is the one agent, and `detail: true` the
   registry as stored.
 - shipped-in: `1de0ade67cf8`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S3 - the largest list tools answer compact by default. Real feat commit is 8e014cff34b8e6e0a01a0443efd9ef423f9ea147 (the merge 1de0ade67cf8 brought it into develop). proposal_board.tool.ts now defaults to compact entries (status + slice count) and adds proposalId (one proposal's slices with status+owner) + detail: true (whole page). authoring.tool.ts (plan index) + agent-names.tool.ts + shared/agent-names-list.ts follow the same shape. docs/delendai/TOKEN-BUDGETS.md updated. gate: npx vitest run plugins/proposals/tests/src/lib/{authoring.spec.ts,shared/agent-names-list.spec.ts,tools/agent-names.tool.spec.ts} => 3 files / 26 tests passed, exit 0. Acceptance tests include 'lists the active agents in brief, with the counts' + 'returns the registry as stored with detail' which cover the compact + detail shape. acceptance: each of the five largest list tools returns compact by default, full item for id, full page with detail:true.
+- review-attribution: claude-opus-5-5 from Merge pull request #643 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-S3-g1/list-tools-answer-compact (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-S3-g1/list-tools-answer-compact) (8e014cff34b8e6e0a01a0443efd9ef423f9ea147), opened by minimax-3
 
 ### S4 — A lint keeps new list tools compact
 
