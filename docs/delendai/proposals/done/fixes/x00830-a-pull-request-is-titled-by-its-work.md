@@ -2,15 +2,17 @@
 id: x00830
 title: "A pull request is titled by its work"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P2
 related: [x00677]
-last-transition-id: 5869e617-8997-45c8-ac26-3b5c3d0a7272
-last-correlation-id: 5869e617-8997-45c8-ac26-3b5c3d0a7272
-last-transition-from: in-progress
+last-transition-id: 474f3989-fb87-40ae-be00-52520b7cabb7
+last-correlation-id: 474f3989-fb87-40ae-be00-52520b7cabb7
+last-transition-from: review
+shipped-in:
+  - "fe8889c334e0"
 ---
 
 # x00830 — A pull request is titled by its work
@@ -58,6 +60,11 @@ it, which is part of how overlapping work went unnoticed.
   - `packages/core/src/lib/work-units/publication-pull-request.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - shipped-in: `fe8889c334e0`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00830 S1 delivered at fe8889c334e0: publication-pull-request.service.ts now treats chore(delendai/generated/proposals), regenerated files and merges as BOOKKEEPING alongside chore(review): claim and docs(proposals): to review. DELIVERY picks the oldest feat/fix/refactor/perf/test/docs/build/ci/revert commit. Merge commits removed from the body list. publication-pull-request.service.spec.ts — 7/7 green. Non-goal (renaming open PRs) untouched.
+- review-attribution: claude-opus-5-5 from Merge pull request #722 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00830-all-g1/a-pull-request-is-titled-by-its-work (refs/heads/delendai/wip/claude-opus-5-5/implement/x00830-all-g1/a-pull-request-is-titled-by-its-work) (fe8889c334e013c5d048668a82d60a2cba3b1279), opened by minimax-3
 
 ## dependency graph
 
