@@ -2,20 +2,21 @@
 id: f00645
 title: "List tools answer compact by default"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00673, f00536]
-last-transition-id: da01769c-b89a-47c8-95c1-c807cc51b724
-last-correlation-id: da01769c-b89a-47c8-95c1-c807cc51b724
-last-transition-from: in-progress
+last-transition-id: 3e2b4348-ef3d-4b23-84f3-ffbccdf01983
+last-correlation-id: 3e2b4348-ef3d-4b23-84f3-ffbccdf01983
+last-transition-from: review
 shipped-in:
   - "22ab06b48c4b512d1958595b368e7e2051feda36"
   - "ccb2e01b0d4c9c306db26f532588de94595884dd"
   - "24b2315c2dad5e4491b482e8d67b2cff07b444cf"
   - "8e014cff34b8e6e0a01a0443efd9ef423f9ea147"
+  - "80a53ea9b0ec8d69e573d54576a564a97f4154c1"
 ---
 
 # f00645 — List tools answer compact by default
@@ -183,7 +184,7 @@ them, but they are routers, not lists.
 
 ### S4 — A lint keeps new list tools compact
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**:
   - `tools/scripts/lint/compact-list-tools.script.ts`
@@ -205,6 +206,11 @@ compact. On 2026-09-29 it measured 205 tools; the 28 that already list full
 items by default are baselined by name, and a new one fails. It runs in the
 `lint-presets` CI job and in `validate:run`.
 - shipped-in: `ec98c0d31348`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S4 - the lint keeps new list tools compact. Real feat commit is 80a53ea9b0ec8d69e573d54576a564a97f4154c1 (the merge ec98c0d31348 brought it into develop). Adds tools/scripts/lint/compact-list-tools.script.ts (compactListFindings + newFindings), spec, and the baseline. CI workflow wired into .github/workflows/ci.yml. gate: vitest run tools/scripts/lint/compact-list-tools.script.spec.ts => 4/4 passed, exit 0. Acceptance test 'finds a list of full items, however deep, in a tool without a detail input' + 'accepts entries of five fields, entries with a detailsId, and tools that take an id or detail' + 'reads the variants of a union output' + 'keeps only the tools the baseline does not name'. Live lint: bun tools/scripts/lint/compact-list-tools.script.ts => ✓ 205 tools, no new list of full items (28 baselined), exit 0. acceptance: a tool whose output is an array of objects with more than five fields, and whose input takes neither an item id nor detail, is a finding.
+- review-attribution: claude-opus-5-5 from Merge pull request #644 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-S4-g1/a-lint-keeps-list-tools-compact (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-S4-g1/a-lint-keeps-list-tools-compact) (80a53ea9b0ec8d69e573d54576a564a97f4154c1), opened by minimax-3
 
 ## dependency graph
 
