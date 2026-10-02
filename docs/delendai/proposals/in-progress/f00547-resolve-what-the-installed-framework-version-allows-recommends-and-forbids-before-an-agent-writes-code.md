@@ -156,8 +156,8 @@ recommendation; it does not win over `removed`, which resolves to
 
 ### S4 — Detected convention as an input, with its confidence
 
-- **Status**: pending
-- **Files**: [`plugins/framework-knowledge/src/lib/detect/detect-convention.ts`, `plugins/framework-knowledge/src/lib/detect/detect-convention.spec.ts`]
+- **Status**: review
+- **Files**: [`plugins/framework-knowledge/src/lib/detect/detect-convention.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/convention.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/convention.constant.ts`, `plugins/framework-knowledge/tests/src/lib/detect/detect-convention.spec.ts`]
 
 Count what the project actually does — 94 components with external
 templates against 2 inline — and feed that in as a measured input with
@@ -165,6 +165,9 @@ its confidence, so a new agent adopts the project's existing shape
 instead of its own habits.
 
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/detect/detect-convention.spec.ts`
+- Below 5 occurrences, on a tie at the top, or under a 60% share there is
+  no convention: a weak habit fed to the resolver would outrank the
+  framework's own recommendation.
 
 ### S5 — The two tools, and a cache keyed by resolved version
 

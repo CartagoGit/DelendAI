@@ -8,12 +8,12 @@
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import {
-	agentArg,
 	data,
 	hasFlag,
 	listArg,
 	positionalArg,
 	request,
+	resolveAgent,
 	scalarArg,
 	usage,
 } from './group-helpers';
@@ -49,17 +49,23 @@ const autoWorkCommand: ICliCommand = {
 
 const continueCommand: ICliCommand = {
 	name: 'proposals continue',
-	flags: ['id', 'mode', 'slice', 'sliceId'],
+	flags: ['id', 'mode', 'slice', 'sliceId', 'agent'],
 	summary: 'Resolve / plan / claim the next proposal slice.',
 	async run(args, ctx) {
 		const proposalId = positionalArg(args) ?? scalarArg(args, 'id');
 		const mode = scalarArg(args, 'mode');
 		const sliceId = scalarArg(args, 'slice') ?? scalarArg(args, 'sliceId');
+		// Only a claim is held by someone: the agent it is made for.
+		const agentName =
+			mode === 'claim' ? await resolveAgent(args, ctx.cwd) : undefined;
 		return data(
 			await request(ctx, 'delendai_proposals_continue_proposal', {
 				...(proposalId !== undefined ? { proposalId } : {}),
 				...(mode !== undefined ? { mode } : {}),
 				...(sliceId !== undefined ? { sliceId } : {}),
+				...(agentName !== undefined ? { agentName } : {}),
+				// The claim must outlive this one-shot process.
+				...(mode === 'claim' ? { holder: 'agent' } : {}),
 			}),
 		);
 	},
@@ -145,7 +151,7 @@ const transitionCommand: ICliCommand = {
 		if (id === undefined || to === undefined || reason === undefined) {
 			return usage(TRANSITION_USAGE);
 		}
-		const agent = agentArg(args);
+		const agent = await resolveAgent(args, ctx.cwd);
 		if (to === 'review' && agent === undefined) {
 			return usage(
 				`${TRANSITION_USAGE} — a hand-off to review needs the implementer, or no review round opens and reviewers never see the proposal: pass --agent=<you> or set DELENDAI_AGENT_ID`,
@@ -232,7 +238,7 @@ const lockCommand: ICliCommand = {
 		// agent stands in when none is named.
 		const agent =
 			action === 'claim' || action === 'heartbeat'
-				? agentArg(args)
+				? await resolveAgent(args, ctx.cwd)
 				: scalarArg(args, 'agent');
 		const taskId = scalarArg(args, 'task') ?? scalarArg(args, 'taskId');
 		const files = listArg(args, 'files');
@@ -577,6 +583,8 @@ const delegateCommand: ICliCommand = {
 				taskId,
 				slot,
 				files,
+				// The claim must outlive this one-shot process.
+				holder: 'agent',
 				...(topic !== undefined ? { topic } : {}),
 				...(agentName !== undefined ? { agentName } : {}),
 			}),
