@@ -11,6 +11,8 @@ related: [q00022]
 last-transition-id: 9e9478fb-d6bc-4848-bd22-bc7776d39633
 last-correlation-id: 9e9478fb-d6bc-4848-bd22-bc7776d39633
 last-transition-from: in-progress
+shipped-in:
+  - "582d53897e04"
 ---
 
 # x00810 — A ready proposal is found in a worktree
@@ -62,6 +64,11 @@ not there and reported all 1156 proposals as divergent.
   - `plugins/proposals/tests/src/lib/proposals/locate.spec.ts`
   - `plugins/proposals/tests/src/lib/proposals/index-reader-rebuild.spec.ts`
 - shipped-in: `582d53897e04`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00810 S1 delivered at 582d53897e04: locator walks PROPOSAL_SCAN_FOLDERS (the list the id allocator already shares), and a sqlite read with no registry on disk no longer reports every proposal as divergent. Tests: locate.spec.ts 4/4 green (lists all 7 status folders, empty index returns null, finds a proposal under any status kind folder, walks the same folders as the id allocator).
+- review-attribution: claude-opus-5-5 from Merge pull request #711 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00810-all-g1/a-ready-proposal-is-found-in-a-worktree (refs/heads/delendai/wip/claude-opus-5-5/implement/x00810-all-g1/a-ready-proposal-is-found-in-a-worktree) (582d53897e048ae282fb67dee12a33cd963d35c7), opened by minimax-3
 
 ## dependency graph
 
