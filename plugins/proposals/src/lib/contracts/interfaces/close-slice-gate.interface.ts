@@ -146,3 +146,13 @@ export interface ICloseSliceQualityResult {
 	};
 	readonly gate?: ICloseSliceGateReport;
 }
+
+/** What the reader asks of git, the forge's CLI and the disk. */
+export interface ICertificationPorts {
+	/** Git's trimmed output in the checkout, or `undefined` on failure. */
+	readonly git: (args: readonly string[]) => string | undefined;
+	/** The forge CLI's trimmed output in the checkout, or `undefined`. */
+	readonly gh: (args: readonly string[]) => string | undefined;
+	/** A file's text, or `undefined` when it is not there. */
+	readonly readFile: (path: string) => Promise<string | undefined>;
+}

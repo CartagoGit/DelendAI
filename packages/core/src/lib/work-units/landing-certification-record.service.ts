@@ -18,19 +18,12 @@
  */
 import { join } from 'node:path';
 
+import type { IRecordLandingCertificationRequest } from '../contracts/interfaces/local-certification.interface';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { readGit } from './work-unit-shared.service';
 
 /** Where the records live, relative to the git directory (the proposals plugin reads the same layout). */
 const LANDING_CERTIFICATION_DIRECTORY = 'delendai-certify/passed';
-
-export interface IRecordLandingCertificationRequest {
-	readonly root: string;
-	readonly candidateSha: string;
-	readonly integrationSha: string;
-	/** The unit's work ref (its tip's tree is covered by the merge). */
-	readonly workRef: string;
-}
 
 /** Record that the candidate passed the gate; `true` when a record was written. */
 export const recordLandingCertification = async (

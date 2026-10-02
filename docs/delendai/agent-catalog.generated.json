@@ -1663,6 +1663,14 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-10-01"
+			},
+			{
+				"id": "x00860",
+				"title": "close_slice accepts a certification that already exists for the exact tree",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-01"
 			}
 		]
 	}

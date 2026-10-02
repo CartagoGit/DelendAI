@@ -23,7 +23,6 @@
  */
 // effect-boundary-authorized: the forge's CLI and git plumbing are read-only questions about the pushed work; ctx.effects offers neither.
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
@@ -34,20 +33,12 @@ import {
 	CLOSE_GATE_PULL_REQUEST_SEARCH_LIMIT,
 	LANDING_CERTIFICATION_DIRECTORY,
 } from '../contracts/constants/close-slice-gate.constant';
+import { readTextOrNull } from '../proposals/index-reader';
 import type {
 	ICloseGateCertification,
+	ICertificationPorts,
 	ICloseGateCertificationReader,
 } from '../contracts/interfaces/close-slice-gate.interface';
-
-/** What the reader asks of git, the forge's CLI and the disk. */
-export interface ICertificationPorts {
-	/** Git's trimmed output in the checkout, or `undefined` on failure. */
-	readonly git: (args: readonly string[]) => string | undefined;
-	/** The forge CLI's trimmed output in the checkout, or `undefined`. */
-	readonly gh: (args: readonly string[]) => string | undefined;
-	/** A file's text, or `undefined` when it is not there. */
-	readonly readFile: (path: string) => string | undefined;
-}
 
 const SYSTEM_COMMAND_TIMEOUT_MS = 30_000;
 const SYSTEM_BUFFER_BYTES = 8 * 1024 * 1024;
@@ -73,13 +64,7 @@ const run =
 export const systemCertificationPorts = (cwd: string): ICertificationPorts => ({
 	git: run('git', cwd),
 	gh: run('gh', cwd),
-	readFile: (path) => {
-		try {
-			return readFileSync(path, 'utf8');
-		} catch {
-			return undefined;
-		}
-	},
+	readFile: async (path) => (await readTextOrNull(path)) ?? undefined,
 });
 
 type ILandingRoute = 'pull-request' | 'merge' | 'direct';
@@ -98,10 +83,10 @@ const short = (sha: string): string => sha.slice(0, SHORT_SHA);
 
 // ── merge route: the certification `work publish` recorded when it landed ──
 
-const readLandingCertification = (
+const readLandingCertification = async (
 	ports: ICertificationPorts,
 	tree: string,
-): ICloseGateCertification => {
+): Promise<ICloseGateCertification> => {
 	const gitDir = ports.git([
 		'rev-parse',
 		'--path-format=absolute',
@@ -110,7 +95,7 @@ const readLandingCertification = (
 	const record =
 		gitDir === undefined || gitDir === ''
 			? undefined
-			: ports.readFile(
+			: await ports.readFile(
 					join(
 						gitDir,
 						LANDING_CERTIFICATION_DIRECTORY,
@@ -327,7 +312,7 @@ export const createCertificationReader =
 			case 'pull-request':
 				return readForgeCertification(ports, policy, tree);
 			case 'merge':
-				return readLandingCertification(ports, tree);
+				return await readLandingCertification(ports, tree);
 			default:
 				return none(
 					[

@@ -9,10 +9,8 @@ import { describe, expect, it } from 'vitest';
 import { fakePartial } from '@delendai/test-kit';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import {
-	createCertificationReader,
-	type ICertificationPorts,
-} from '@delendai/proposals/lib/tools/close-slice-certification';
+import type { ICertificationPorts } from '@delendai/proposals/lib/contracts/interfaces/close-slice-gate.interface';
+import { createCertificationReader } from '@delendai/proposals/lib/tools/close-slice-certification';
 
 const TREE = 'a'.repeat(40);
 const OTHER_TREE = 'b'.repeat(40);
@@ -69,7 +67,7 @@ const portsFor = (forge: IForge): ICertificationPorts => ({
 		const rows = sha === undefined ? undefined : forge.checks?.[sha];
 		return rows?.join('\n');
 	},
-	readFile: (path) => forge.files?.[path],
+	readFile: async (path) => forge.files?.[path],
 });
 
 const read = (
