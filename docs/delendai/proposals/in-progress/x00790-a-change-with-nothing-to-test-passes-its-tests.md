@@ -2,15 +2,15 @@
 id: x00790
 title: "A change with nothing to test passes its tests"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [f00538, x00556]
-last-transition-id: 949b477a-c740-4535-a57b-0596e1a0385f
-last-correlation-id: 949b477a-c740-4535-a57b-0596e1a0385f
-last-transition-from: in-progress
+last-transition-id: 3232c5fe-47c1-466d-bcf6-9e96d6ddacb4
+last-correlation-id: 3232c5fe-47c1-466d-bcf6-9e96d6ddacb4
+last-transition-from: review
 ---
 
 # x00790 — A change with nothing to test passes its tests
@@ -48,11 +48,16 @@ history, which is the one thing a forward-sync exists to fix.
 
 ### S1 — The tests job accepts a plan that runs no zone
 
-- **Status**: done
+- **Status**: in-progress
 - **Gate**: `bun run lint:workflow`
 - **Files**:
   - `.github/workflows/ci.yml`
 - shipped-in: `429c2a77fd2b`
+- review-state: changes_requested
+- review-implementer: unrecorded
+- review-reviewer: glm-5.3-max
+- review-log: requested_changes by glm-5.3-max — No puedo emitir approve con la evidencia disponible: el diff del commit no quedó inspeccionado y el gate declarado (bun run lint:workflow) no se ejecutó. La verificación de calidad configurada solo expone bun run build y no prueba por sí misma las dos condiciones de acceptance. Adjunta evidencia reproducible del workflow que verifica plan exitoso y zonas no ejecutadas, además de preservar merge/coverage cuando alguna zona sí corre; luego vuelve a solicitar revisión.
+- review-attribution: unrecorded — no delivering commit was named for x00790 S1; independence could not be verified, opened by glm-5.3-max
 
 ## dependency graph
 
