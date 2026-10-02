@@ -14,6 +14,7 @@ last-transition-from: in-progress
 shipped-in:
   - "22ab06b48c4b512d1958595b368e7e2051feda36"
   - "ccb2e01b0d4c9c306db26f532588de94595884dd"
+  - "24b2315c2dad5e4491b482e8d67b2cff07b444cf"
 ---
 
 # f00645 — List tools answer compact by default
@@ -109,7 +110,7 @@ with.
 
 ### S5 — A routed call is recorded once
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**:
   - `packages/core/src/lib/project/tool-call-scope.helper.ts`
@@ -130,6 +131,11 @@ routed tool three times over. Only the outermost call is the agent's, and
 its answer is what reaches the agent's context, so observers now see that
 one call, under the tool it reached.
 - shipped-in: `0caa6f8d3273`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00645 S5 - inner tool calls fired by another tool are not observed again. Real feat commit is 24b2315c2dad5e4491b482e8d67b2cff07b444cf (the merge 0caa6f8d3273 brought it into develop). Introduces packages/core/src/lib/project/tool-call-scope.helper.ts and rewires packages/core/src/lib/project/instrument-tool-handlers.helper.ts so handlers fire onToolStart/onToolCall/onToolCancel once for the outermost call. tool-call-scope is a depth-counter that suppresses nested hook invocations. gate: npx vitest run packages/core/tests/src/lib/project/instrument-tool-handlers.helper.spec.ts => 4/4 passed, exit 0. Acceptance test 'a tool call made by another tool > is observed once, as the call the agent made' is explicit. acceptance: inner tool calls fire no lifecycle hooks; outer fires each once; later direct call observed.
+- review-attribution: claude-opus-5-5 from Merge pull request #633 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00645-S5-g1/a-routed-call-is-recorded-once (refs/heads/delendai/wip/claude-opus-5-5/implement/f00645-S5-g1/a-routed-call-is-recorded-once) (24b2315c2dad5e4491b482e8d67b2cff07b444cf), opened by minimax-3
 
 ### S3 — The largest list tools answer compact by default
 
