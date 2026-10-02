@@ -42,6 +42,14 @@ export interface IUnitEvidence {
 	readonly now: number;
 	/** The lease window in seconds. */
 	readonly windowSeconds: number;
+	/**
+	 * The unit is published and holds nothing newer, but its proposal is
+	 * still in progress, so its owner may continue on it (the branch of a
+	 * proposal outlives each slice's publication).
+	 */
+	readonly keptForContinuation?: boolean | undefined;
+	/** Another agent already works on the same proposal. */
+	readonly claimedByOther?: boolean | undefined;
 }
 
 /** The one verdict on a unit. */
@@ -57,6 +65,14 @@ export interface IUnitVerdict {
 export interface IUnitStandingEntry extends IUnitVerdict {
 	readonly ref: string;
 	readonly worktree: string | null;
+	/**
+	 * The unit's publication holds commits the unit lacks (the queue
+	 * refreshed the pull request): the next publish is rejected until the
+	 * publication is merged into the unit.
+	 */
+	readonly publicationAhead: boolean;
+	/** The publication ref, when the unit has one. */
+	readonly publicationRef: string | null;
 }
 
 export interface IRecordUnitEntry {

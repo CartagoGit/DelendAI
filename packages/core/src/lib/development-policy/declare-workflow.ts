@@ -195,7 +195,7 @@ const unitEndSentence = (policy: IResolvedDevelopmentPolicy): string => {
 		window > 0
 			? `a unit whose owner is silent for ${String(window)} minutes is listed idle, for adoption`
 			: 'a unit whose owner stays silent is listed idle, for adoption';
-	return ` A unit must end in \`delendai work publish\` or \`delendai work abandon\` (which keeps its tip), never be left: every work command and commit is its heartbeat, ${quiet} (\`delendai work swarm\`, \`work status\`), and one past recovery is reported abandoned.`;
+	return ` A unit must end in \`delendai work publish\` or \`delendai work abandon\` (which keeps its tip), never be left: every work command and commit is its heartbeat, ${quiet} (\`delendai work swarm\`, \`work status\`), and one past recovery is reported abandoned. If the queue refreshes your publication, \`work status\` says so: merge it into the unit before republishing.`;
 };
 
 /** How long the work ref lives, and who ends it. */

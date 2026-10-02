@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { judgeGitOperation } from '@delendai/core/lib/development-policy/git-guard';
-import { unitKeyOf } from '@delendai/core/lib/development-policy/git-guard-unit';
+import { workUnitKeyOf } from '@delendai/core/lib/development-policy/git-guard-unit';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 const policy = resolveDevelopmentPolicy({
@@ -82,9 +82,11 @@ describe('pushing into a unit', () => {
 	});
 
 	it('names a unit by everything but its topic', () => {
-		expect(unitKeyOf(policy, REAL)).toBe(unitKeyOf(policy, SCRATCH));
-		expect(unitKeyOf(policy, REAL)).not.toBe(
-			unitKeyOf(policy, REAL.replace('-g1', '-g2')),
+		expect(workUnitKeyOf(policy, REAL)).toBe(
+			workUnitKeyOf(policy, SCRATCH),
+		);
+		expect(workUnitKeyOf(policy, REAL)).not.toBe(
+			workUnitKeyOf(policy, REAL.replace('-g1', '-g2')),
 		);
 	});
 });

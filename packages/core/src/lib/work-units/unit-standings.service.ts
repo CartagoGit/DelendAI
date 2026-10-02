@@ -7,6 +7,7 @@
  * reaper — reads this, so they cannot disagree about a unit.
  */
 import { shortName } from '../development-policy/git-guard-namespaces';
+import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { listUnitLeases, removeUnitLease } from './unit-lease.store';
 import { gitCommonDirOf } from './unit-lease.service';
@@ -18,7 +19,12 @@ import type {
 } from './unit-lease.interface';
 import { judgeUnit, leaseWindowSeconds } from './unit-verdict.service';
 import { listWorkRefs } from './work-swarm.service';
-import { integrationBase, readGit } from './work-unit-shared.service';
+import { publicationRefFromWorkRef } from './work-publish.service';
+import {
+	integrationBase,
+	integrationRemote,
+	readGit,
+} from './work-unit-shared.service';
 
 const nowSeconds = (): number => Math.floor(Date.now() / 1000);
 
@@ -62,23 +68,58 @@ const hasMoved = (
 	);
 };
 
-const isDelivered = (
+const isAncestor = (root: string, sha: string, of: string): boolean =>
+	readGit(root, ['merge-base', '--is-ancestor', sha, of]) !== undefined;
+
+/** The tip of the unit's publication ref, local or on the remote. */
+const publicationTip = (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	ref: string,
+): { readonly ref: string; readonly sha: string } | undefined => {
+	const publication = publicationRefFromWorkRef(policy, ref);
+	if (publication === undefined) return undefined;
+	const bare = publication.replace(/^refs\/heads\//u, '');
+	const remote = integrationRemote(root, policy);
+	for (const candidate of [publication, `refs/remotes/${remote}/${bare}`]) {
+		const sha = readGit(root, ['rev-parse', '-q', '--verify', candidate]);
+		if (sha !== undefined && sha.length > 0) return { ref: bare, sha };
+	}
+	return undefined;
+};
+
+interface IDeliveryFacts {
+	readonly delivered: boolean;
+	/** Published, nothing newer, and not (yet) in the integration branch. */
+	readonly keptForContinuation: boolean;
+	readonly publication:
+		| { readonly ref: string; readonly sha: string }
+		| undefined;
+}
+
+const deliveryOf = (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	ref: string,
 	sha: string,
 	lease: IUnitLease | undefined,
-): boolean => {
+): IDeliveryFacts => {
+	const publication = publicationTip(root, policy, ref);
 	// Containment proves nothing for a unit that never moved off the commit
 	// it was made from: that commit is in the integration branch and in
 	// every publication that merged it.
-	if (!hasMoved(root, ref, sha, lease)) return false;
-	if (publishedElsewhere(root, policy, sha)) return true;
+	if (!hasMoved(root, ref, sha, lease)) {
+		return { delivered: false, keptForContinuation: false, publication };
+	}
 	const base = integrationBase(root, policy);
-	return (
-		base !== undefined &&
-		readGit(root, ['merge-base', '--is-ancestor', sha, base]) !== undefined
-	);
+	const inIntegration = base !== undefined && isAncestor(root, sha, base);
+	const delivered = inIntegration || publishedElsewhere(root, policy, sha);
+	return {
+		delivered,
+		keptForContinuation:
+			delivered && !inIntegration && publication?.sha === sha,
+		publication,
+	};
 };
 
 /** Whether a local branch of this name exists (a remote-only unit has none). */
@@ -97,20 +138,48 @@ export const readUnitStandings = async (
 			? new Map<string, IUnitLease>()
 			: await listUnitLeases(common);
 	const window = leaseWindowSeconds(policy.coordination.leaseTtlMinutes);
-	return [...listWorkRefs(root, policy).entries()]
+	const refs = listWorkRefs(root, policy);
+	const identities = new Map(
+		[...refs.keys()].map((name) => [
+			name,
+			workUnitIdentityOf(policy, name),
+		]),
+	);
+	return [...refs.entries()]
 		.map(([ref, sha]): IUnitStandingEntry => {
 			const lease = leases.get(ref);
 			const tipAt = Number(
 				readGit(root, ['log', '-1', '--format=%ct', sha]),
 			);
+			const mine = identities.get(ref);
+			const delivery = deliveryOf(root, policy, ref, sha, lease);
 			const verdict = judgeUnit({
 				lease,
 				...(Number.isFinite(tipAt) && tipAt > 0 ? { tipAt } : {}),
-				delivered: isDelivered(root, policy, ref, sha, lease),
+				delivered: delivery.delivered,
+				keptForContinuation: delivery.keptForContinuation,
+				claimedByOther:
+					mine !== undefined &&
+					[...identities.entries()].some(
+						([other, identity]) =>
+							other !== ref &&
+							identity?.proposal === mine.proposal &&
+							identity.agent !== mine.agent,
+					),
 				now,
 				windowSeconds: window,
 			});
-			return { ref, worktree: lease?.worktree ?? null, ...verdict };
+			const publicationSha = delivery.publication?.sha;
+			return {
+				ref,
+				worktree: lease?.worktree ?? null,
+				publicationRef: delivery.publication?.ref ?? null,
+				publicationAhead:
+					publicationSha !== undefined &&
+					publicationSha !== sha &&
+					!isAncestor(root, publicationSha, sha),
+				...verdict,
+			};
 		})
 		.sort((left, right) => (left.ref < right.ref ? -1 : 1));
 };

@@ -34,11 +34,29 @@ export const judgeUnit = (evidence: IUnitEvidence): IUnitVerdict => {
 	const stillShowingLife =
 		silentSeconds !== null && silentSeconds <= evidence.windowSeconds;
 	if (evidence.delivered && !stillShowingLife) {
+		const reapAfter =
+			evidence.windowSeconds * ABANDONED_AFTER_LEASE_WINDOWS;
+		if (
+			evidence.keptForContinuation === true &&
+			evidence.claimedByOther !== true &&
+			silentSeconds !== null &&
+			silentSeconds <= reapAfter
+		) {
+			return {
+				standing: 'idle',
+				owner,
+				silentSeconds,
+				reason: `published and kept for the next slices of its proposal; it is reaped after ${minutes(reapAfter)} of silence, or once another agent takes the proposal`,
+			};
+		}
 		return {
 			standing: 'delivered',
 			owner,
 			silentSeconds,
-			reason: 'its work is already in the integration branch or a publication, and its owner has gone quiet',
+			reason:
+				evidence.keptForContinuation === true
+					? 'published and kept for continuation, but nobody continued it: the publication holds everything'
+					: 'its work is already in the integration branch or a publication, and its owner has gone quiet',
 		};
 	}
 	if (silentSeconds === null) {

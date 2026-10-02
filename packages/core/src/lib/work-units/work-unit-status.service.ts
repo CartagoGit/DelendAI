@@ -31,6 +31,9 @@ import {
 	workspaceOf,
 } from './work-unit-shared.service';
 
+/** How many units whose publication moved ahead `work status` names. */
+const MAX_AHEAD_LINES = 3;
+
 const anchoredLine = (payload: {
 	readonly anchorRequired: boolean;
 	readonly anchored: boolean;
@@ -82,6 +85,12 @@ export const statusOf = async (
 		undurable: paths.undurable,
 		units: countStandings(standings),
 		unitsNextAction: summarizeStandings(standings).nextAction,
+		publicationsAhead: standings
+			.filter((unit) => unit.publicationAhead)
+			.map((unit) => ({
+				ref: unit.ref,
+				publication: unit.publicationRef,
+			})),
 	};
 	if (ctx.globals.json || ctx.globals.format === 'json') {
 		return { code: EXIT_CODE.OK, data: payload };
@@ -99,6 +108,12 @@ export const statusOf = async (
 			...(payload.unitsNextAction === null
 				? []
 				: [`                 next: ${payload.unitsNextAction}`]),
+			...payload.publicationsAhead
+				.slice(0, MAX_AHEAD_LINES)
+				.map(
+					(unit) =>
+						`publication ahead  ${unit.ref}: its publication moved on (the queue refreshed it); merge \`${unit.publication ?? 'the publication ref'}\` into the unit before republishing`,
+				),
 			...undurableAdvice(payload.undurable),
 		].join('\n')}\n`,
 	);

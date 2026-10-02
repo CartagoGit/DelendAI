@@ -17,17 +17,33 @@ import type {
 import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { shortName } from './git-guard-namespaces';
 
-/** The unit a work ref belongs to: everything its name says but the topic. */
-export const unitKeyOf = (
+const parsedWorkRef = (
 	policy: Pick<IResolvedDevelopmentPolicy, 'branches'>,
 	branch: string,
-): string | undefined => {
-	const parser = compileWorkRefParser(
+) =>
+	compileWorkRefParser(
 		policy.branches.workRefTemplate,
 		policy.branches.workRefPrefix,
 		{ requireKind: false },
-	);
-	const identity = parser?.parse(`refs/heads/${branch}`);
+	)?.parse(`refs/heads/${branch}`);
+
+/** Who works on which proposal, as far as a work ref's name says. */
+export const workUnitIdentityOf = (
+	policy: Pick<IResolvedDevelopmentPolicy, 'branches'>,
+	branch: string,
+): { readonly agent: string; readonly proposal: string } | undefined => {
+	const identity = parsedWorkRef(policy, branch);
+	return identity === undefined
+		? undefined
+		: { agent: identity.agent, proposal: identity.proposal };
+};
+
+/** The unit a work ref belongs to: everything its name says but the topic. */
+export const workUnitKeyOf = (
+	policy: Pick<IResolvedDevelopmentPolicy, 'branches'>,
+	branch: string,
+): string | undefined => {
+	const identity = parsedWorkRef(policy, branch);
 	return identity === undefined
 		? undefined
 		: [

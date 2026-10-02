@@ -81,4 +81,33 @@ describe('judgeUnit', () => {
 		expect(leaseWindowSeconds(0)).toBe(30 * 60);
 		expect(leaseWindowSeconds(45)).toBe(45 * 60);
 	});
+
+	describe("a published unit kept for its proposal's next slices", () => {
+		const kept = (silentFor: number, claimedByOther = false): string =>
+			judgeUnit({
+				lease: lease(silentFor),
+				delivered: true,
+				keptForContinuation: true,
+				claimedByOther,
+				now: NOW,
+				windowSeconds: WINDOW,
+			}).standing;
+
+		it('waits for its owner, as idle, through eight windows of silence', () => {
+			expect(kept(WINDOW + 1)).toBe('idle');
+			expect(kept(WINDOW * 8)).toBe('idle');
+		});
+
+		it('becomes reapable once nobody continued it', () => {
+			expect(kept(WINDOW * 8 + 1)).toBe('delivered');
+		});
+
+		it('becomes reapable as soon as another agent takes the proposal', () => {
+			expect(kept(WINDOW + 1, true)).toBe('delivered');
+		});
+
+		it('stays live while its owner is still working on it', () => {
+			expect(kept(10)).toBe('live');
+		});
+	});
 });
