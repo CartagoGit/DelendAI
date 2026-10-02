@@ -2,7 +2,7 @@
 id: r00043
 title: "`@delendai/core` deja de conocer el dominio `proposals`"
 kind: refactor
-status: review
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-30
@@ -13,9 +13,9 @@ audit-source:
     finding: AUD-E05
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 related: [q00011, r00040, r00041, r00042, r00034]
-last-transition-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
-last-correlation-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
-last-transition-from: in-progress
+last-transition-id: 9efe4609-6a47-40f9-b04e-4e6298a1ba57
+last-correlation-id: 9efe4609-6a47-40f9-b04e-4e6298a1ba57
+last-transition-from: review
 shipped-in:
   - "dc61a40ec"
   - "7c861d2f9"
@@ -301,7 +301,7 @@ workflow files. Both inventory findings are resolved by S4.
 
 ### S5 — Lint de frontera y documentación de compatibilidad
 
-- **Status**: review
+- **Status**: in-progress
 - **DependsOn**: [S2, S3, S4]
 - **Files**:
     - `tools/scripts/lint/core-proposals-boundary.script.ts`
@@ -335,6 +335,11 @@ plugs in without editing the core, through the three registries the
 proposals plugin uses (adoption extensions, workflow contribution, stable
 tool descriptors), with its files as the reference.
 - shipped-in: `f99521d1bf31`
+- review-state: changes_requested
+- review-implementer: unrecorded
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — El lint real está verde (bun tools/scripts/lint/core-proposals-boundary.script.ts), pero la slice declara como gate bun run lint:core-proposals-boundary y ese comando no existe en package.json; reproduzco Script not found "lint:core-proposals-boundary". Ajustad el gate declarado o exponed el script para que la aceptación sea reproducible.
+- review-attribution: unrecorded — no delivering commit was named for r00043 S5; independence could not be verified, opened by gpt-5.4
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
