@@ -36,8 +36,48 @@ export interface ICloseGateProgress {
 	readonly exitCodes: readonly number[];
 }
 
+/** Where an existing certification of the slice's exact tree came from. */
+export type ICloseGateCertifiedBy =
+	| 'forge-check'
+	| 'landing-certification'
+	| 'recorded-gate';
+
+/**
+ * What already certifies (or condemns) the slice's tree, before any gate
+ * is run: `certified` closes without running, `failed` blocks with the
+ * failing check, `none` says what is missing and how to get it.
+ */
+export type ICloseGateCertification =
+	| {
+			readonly state: 'certified';
+			readonly source: Exclude<ICloseGateCertifiedBy, 'recorded-gate'>;
+			readonly evidence: string;
+	  }
+	| {
+			readonly state: 'failed';
+			readonly check: string;
+			readonly evidence: string;
+			readonly nextAction: string;
+	  }
+	| {
+			readonly state: 'none';
+			readonly missing: readonly string[];
+			readonly nextAction: string;
+	  };
+
+/** Looks for a certification of one tree; never runs a gate. */
+export type ICloseGateCertificationReader = (
+	tree: string,
+) => Promise<ICloseGateCertification>;
+
 export interface ICloseGateVerdict {
 	readonly state: ICloseGateState;
+	/** Which existing evidence answered, when one did instead of a run. */
+	readonly certifiedBy?: ICloseGateCertifiedBy;
+	/** The commit/check or record that certified the tree. */
+	readonly evidence?: string;
+	/** What is missing and how to get it, when the slice cannot close yet. */
+	readonly nextAction?: string;
 	/** Names the run; absent when no run could be identified. */
 	readonly handle?: string;
 	readonly tree?: string;
@@ -68,6 +108,10 @@ export interface ICloseGateDeps {
 	readonly cwd: string;
 	/** Reads one declaration file (relative path) of the integration head. */
 	readonly readDeclaration: (relativePath: string) => Promise<string | null>;
+	/** Looks for a certification of the tree before a gate is run. */
+	readonly certification?: ICloseGateCertificationReader;
+	/** Local gates allowed to run at once on this machine (default 1). */
+	readonly maxConcurrentGates?: number;
 	readonly waitMs?: number;
 	readonly timeoutMs?: number;
 	readonly process?: ICloseGateProcessPort;
@@ -86,6 +130,9 @@ export interface ICloseSliceGateReport {
 	readonly reused: boolean;
 	readonly handle?: string;
 	readonly tree?: string;
+	readonly certifiedBy?: ICloseGateCertifiedBy;
+	readonly evidence?: string;
+	readonly nextAction?: string;
 }
 
 /** What the quality probe reports back to `close_slice`. */
