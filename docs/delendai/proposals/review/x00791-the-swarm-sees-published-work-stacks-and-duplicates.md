@@ -11,6 +11,8 @@ related: [x00555]
 last-transition-id: eb1d5d8a-f3d6-46aa-8228-bad945d683da
 last-correlation-id: eb1d5d8a-f3d6-46aa-8228-bad945d683da
 last-transition-from: in-progress
+shipped-in:
+  - "7321b3ac99f051c08d9d1d61dd1f576631a25a32"
 ---
 
 # x00791 — The swarm sees published work, stacks and duplicates
@@ -73,6 +75,11 @@ duplicating each other's work, because nothing said they were a stack.
   - `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
   - `packages/core/tests/src/lib/work-units/work-unit-status.service.spec.ts`
 - shipped-in: `d981cd636893`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max
+- review-attribution: unrecorded — nothing in Git names who delivered 7321b3ac99f051c08d9d1d61dd1f576631a25a32: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by glm-5.3-max
 
 ## dependency graph
 
