@@ -29,4 +29,9 @@ export interface IFakeToolServerOverrides {
 	readonly onSendLoggingMessage?: (
 		message: IFakeLoggingMessage,
 	) => void | Promise<void>;
+	/**
+	 * The roots the connected client declares, as `file://` URIs. Absent,
+	 * the client offers no roots, as most hosts do today.
+	 */
+	readonly clientRoots?: readonly string[];
 }
