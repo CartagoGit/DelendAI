@@ -94,7 +94,7 @@ the policy in the host.
 
 ### S1 — Schema guards + repo primitives on the existing `revision` columns
 
-- **Status**: done — `e0ddbbb60`, `91d45c00d`. every revision-carrying table is guarded by a `*_revision_steps_by_one` trigger (migration 0018, asserted for each table), and writes go through `casUpdate`, whose losing writer receives `{ kind: 'conflict', currentRevision }` — asserted by the two-connection race and by the proposals and slices repositories. The acceptance names per-entity `update*` functions; the shipped entry point is the shared `casUpdate` with that same outcome shape. Verified 2026-09-15.
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/migrations/0001_initial.sql`
     (existing baseline — `revision` already exists there)
@@ -120,8 +120,11 @@ the policy in the host.
   - The same shape applies to `updatePlan` and `updateSlice`.
   - Existing tests still pass; new tests cover conflict, skipped
     revision, decremented revision, and direct-SQL bypass attempts.
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot-reconcile-20260911
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — Delivery state at commit 91d45c00d (with e0ddbbb60 bootstrap, plus 86bbe1446 / 896762369 / 578148ae1 follow-ups): CAS schema guards + repo primitive are in place and exercised by tests that race two connections per table (proposals/plans/slices). The shared `casUpdate` is the documented entry point rather than per-entity `update*`; acceptance outcome shape is identical. Gate type verified by running the two suites with `bun test`, deterministic green on two runs.
+
 ### S2 — Expose CAS to the host: read returns `revision`, write returns either updated or conflict
 
 - **Status**: retired — 2026-10-01, superseded by the authority decision. `AUTHORITIES.md` makes `docs/delendai/proposals` the authority for proposal status and `proposals.sqlite` a projection the reconciler rebuilds from it; tools write the markdown, never these rows, so there is no writer to hand a `revision` to. None of the files this slice names exists (`read.ts`, `proposal-store.ts`, `plan-store.ts`, `slice-store.ts`). Concurrent writes to the authority go through the file mutex and atomic writes instead.
