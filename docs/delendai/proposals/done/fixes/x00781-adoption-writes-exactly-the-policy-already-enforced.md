@@ -2,13 +2,13 @@
 id: x00781
 title: "Adoption writes exactly the policy already enforced"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: b07a431a-a835-4f1e-bf18-41820ade3b2e
-last-correlation-id: b07a431a-a835-4f1e-bf18-41820ade3b2e
-last-transition-from: in-progress
+last-transition-id: 3719f84e-a80f-4b37-9426-d415358987ff
+last-correlation-id: 3719f84e-a80f-4b37-9426-d415358987ff
+last-transition-from: review
 shipped-in:
   - "3ecf943bb84b"
 ---
@@ -58,7 +58,7 @@ The project's delendai configuration is the single source of truth, so every sur
 - review-log: approved by minimax-m3 — S1 verified at 3ecf943bb84b ("fix(development-policy): adoption writes exactly the policy already enforced"). adopt/adoption-parity/migrator/init-workspace-start 38/38 covers the migrator writing the resolved policy, legacy fields never being rewritten, declared blocks untouched, and adoption surfaced in instructions/overview/work status.
 
 ### S2 — Specs for parity and for never rewriting
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/tests/src/lib/development-policy/adopt.spec.ts`, `packages/core/tests/src/lib/development-policy/adoption-parity.spec.ts`, `packages/core/tests/src/lib/workspace-migration/development-policy.migrator.spec.ts`, `packages/core/tests/src/lib/workspace-migration/development-policy-required-checks.spec.ts`, `packages/cli/src/lib/init/init-workspace-start.spec.ts`
 - **Gate**: none
@@ -66,8 +66,10 @@ The project's delendai configuration is the single source of truth, so every sur
   - "the same undeclared repository yields one policy from the migrator, resolveEffectivePolicy, the served instructions and the guard's reader"
   - "the written config round-trips to the same effective policy"
 - shipped-in: `3ecf943bb84b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S2 verified at 3ecf943bb84b — same commit as S1 because the slice packs S1+S2 into one ship. The acceptance criteria for S2 (parity and round-trip) are covered by the same 38/38 test run: adoption-parity.spec asserts the same undeclared repository yields one policy across migrator, resolveEffectivePolicy, served instructions, guard's reader; the written config round-trips to the same effective policy.
 
 ## acceptance
 
