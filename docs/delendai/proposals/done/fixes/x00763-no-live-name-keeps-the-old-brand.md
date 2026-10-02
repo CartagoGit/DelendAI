@@ -2,15 +2,17 @@
 id: x00763
 title: "No live name keeps the old brand"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-29
 priority: P1
 related: [x00758]
-last-transition-id: 6c29fc00-7c97-4da0-97b4-8b90d4cf6a00
-last-correlation-id: 6c29fc00-7c97-4da0-97b4-8b90d4cf6a00
-last-transition-from: in-progress
+last-transition-id: 95737ab9-1e16-4792-9dc6-c0d7e35d5ba3
+last-correlation-id: 95737ab9-1e16-4792-9dc6-c0d7e35d5ba3
+last-transition-from: review
+shipped-in:
+  - "2d793d3c315254b838688b3c1a78866085b0c554"
 ---
 
 # x00763 — No live name keeps the old brand
@@ -64,7 +66,7 @@ rename table next to that catalog, so it had the same gap.
 
 ### S1 — Every spelling of the old name is known, and none is live
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/workspace-migration && bun run migrate:rebrand:check`
 - **Files**:
   - `packages/core/src/lib/contracts/constants/legacy-identity.constant.ts`
@@ -94,6 +96,11 @@ as the full Configuration Center does. Added:
 `extensions/vscode/src/test/open-plugin-config.spec.ts`,
 `extensions/vscode/src/test/configuration-center-dev-page.spec.ts`,
 `extensions/vscode/src/test/open-configuration-center-edge-cases.spec.ts`.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00763 S1 - no live name keeps the old brand. commit 2d793d3c315254b838688b3c1a78866085b0c554 adds packages/core/src/lib/contracts/constants/legacy-identity.constant.ts (LEGACY_IDENTITY_SPELLINGS now includes MCPV, Mcpv, McpVertex, mcpVertex, MCPVERTEX), packages/core/src/lib/workspace-migration/migrators/identity-renames.ts (consumer rename table updated), the three scanner specs, tools/scripts/migrate/rebrand-propagate.script.ts + no-secrets.script.ts + style-integrity.script.ts (no longer skips whole tools/scripts/lint or tools/scripts/git), and the live names renamed: __DELENDAI_CONFIGURATION_HOST__, __DELENDAI_DASHBOARD_DETAIL__, __DELENDAI_GLOBSTAR_SENTINEL__, DELENDAI_REDACTED_SECRET_<KIND>. gate: npx vitest run packages/core/tests/src/lib/workspace-migration => 20 files / 251 tests passed, exit 0; bun run migrate:rebrand:check => ✓ 0 repo-owned LIVE hits + brand contract green, exit 0. acceptance: rebrand:check reports 0 live hits with tools/scripts/ scanned; consumer migrator renames __MCPV__, IMcpVertex, mcpVertex, MCPV_REDACTED_SECRET_; one consumer project has no live remnant.
+- review-attribution: claude-opus-5-5 from Merge pull request #665 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00763-all-g1/no-live-name-keeps-the-old-brand (refs/heads/delendai/wip/claude-opus-5-5/implement/x00763-all-g1/no-live-name-keeps-the-old-brand) (2d793d3c315254b838688b3c1a78866085b0c554), opened by minimax-3
 
 ## dependency graph
 
