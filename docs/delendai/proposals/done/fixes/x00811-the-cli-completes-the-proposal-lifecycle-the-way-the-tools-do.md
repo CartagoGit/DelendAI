@@ -2,13 +2,15 @@
 id: x00811
 title: "The CLI completes the proposal lifecycle the way the tools do"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: a4da282b-af91-457c-89ea-ea965d36222a
-last-correlation-id: a4da282b-af91-457c-89ea-ea965d36222a
-last-transition-from: in-progress
+last-transition-id: e8a6efa8-595d-489d-8719-99d947936cab
+last-correlation-id: e8a6efa8-595d-489d-8719-99d947936cab
+last-transition-from: review
+shipped-in:
+  - "c7ed36567e1a0a95c6e885d55b5c079e15477b82"
 ---
 
 # x00811 — The CLI completes the proposal lifecycle the way the tools do
@@ -39,7 +41,7 @@ Symptoms that followed from it: `proposals close-slice` refused with "close requ
 - global_gate: none
 
 ### S1 — close-slice, transition and lock claims work from the CLI
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/cli/src/commands/groups/proposals.ts`
   - `packages/cli/src/commands/groups/group-helpers.ts`
@@ -51,8 +53,10 @@ Symptoms that followed from it: `proposals close-slice` refused with "close requ
   - `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`
 - **Gate**: type
 - shipped-in: `c7ed36567e1a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00811 S1 - close-slice, transition and lock claims work from the CLI. commit c7ed36567e1a0a95c6e885d55b5c079e15477b82 adds packages/cli/src/commands/groups/{proposals.ts,group-helpers.ts,proposals.spec.ts}, packages/cli/src/contracts/constants/help-translation.constant.ts, plugins/proposals/src/lib/contracts/interfaces/agent-lock.interface.ts (agent-holder variant), plugins/proposals/src/lib/locks/execute-lock-action.ts, plugins/proposals/src/lib/tools/agent-lock.tool.ts. agent_lock now distinguishes holder: 'process' | 'agent'; the agent holder omits pid so the orphan sweep ignores it; CLI defaults agent from DELENDAI_AGENT_ID. gate: type. Repo typecheck has 4 pre-existing module-not-found errors; NONE in x00811-touched files. focused gate: vitest run packages/cli/src/commands/groups/proposals.spec.ts => 36/36 passed, exit 0. acceptance: close-slice accepts --checkout; transition accepts --agent (default DELENDAI_AGENT_ID) + --checkout; transition review --agent opens the round; refusal names missing input.
 
 ## acceptance
 
