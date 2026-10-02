@@ -190,7 +190,7 @@ Total exports: 533
 | `IDelendaiPluginConfig` | type | stable | `../contracts` |
 | `IDelendaiProject` | type | stable | `../contracts` |
 | `IDelendaiProjectMetadata` | type | stable | `../contracts` |
-| `IDesiredForgeState` | const | stable | `../lib/forge-governance/index` |
+| `IDesiredForgeState` | type | stable | `../lib/forge-governance/index` |
 | `IDryRunContractViolationRecord` | type | stable | `../lib/contracts/interfaces/dry-run-violation.interface` |
 | `IDryRunResult` | type | stable | `../lib/dry-run/protocol` |
 | `IErrorCollector` | type | stable | `../lib/error-collection/collector.interface` |
@@ -224,7 +224,7 @@ Total exports: 533
 | `IInstallHint` | type | stable | `../contracts` |
 | `IIntegrationEngine` | type | stable | `../lib/integration-engine/index.interface` |
 | `IKnowledgeEntry` | type | stable | `../contracts` |
-| `ILiveForgeState` | const | stable | `../lib/forge-governance/index` |
+| `ILiveForgeState` | type | stable | `../lib/forge-governance/index` |
 | `ILoadedPluginFacts` | type | stable | `../lib/contracts/interfaces/activation-report.interface` |
 | `ILocalMergeCycleInput` | type | stable | `../lib/integration-engine/local-merge-cycle.interface` |
 | `ILocalMergeCycleOutcome` | type | stable | `../lib/integration-engine/local-merge-cycle.interface` |
@@ -247,7 +247,7 @@ Total exports: 533
 | `IPeerPluginRegistry` | type | stable | `../lib/plugins/plugin-contract` |
 | `IPerSurfaceMeasurement` | type | stable | `../lib/budgets/types` |
 | `IPhasedLifecycle` | type | stable | `../contracts` |
-| `IPluginAddStep` | const | stable | `../lib/registry/plugin-add` |
+| `IPluginAddStep` | type | stable | `../lib/registry/plugin-add` |
 | `IPluginConfigurationIssue` | type | stable | `../lib/plugins/plugin-contract` |
 | `IPluginConfigurationValidationInput` | type | stable | `../lib/plugins/plugin-contract` |
 | `IPluginEffectsCapability` | type | stable | `../lib/contracts/interfaces/effect-capabilities.interface` |
