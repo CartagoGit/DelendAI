@@ -2,7 +2,7 @@
 id: v00127
 title: "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas"
 kind: perf
-status: review
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -23,9 +23,9 @@ related:
     - c00144 # protection YAML bifurcada (predecesor duro — debe estar aplicado a main)
     - c00145 # protectedBranches default main-only (predecesor — el plugin debe coincidir con main)
     - x00272 # bloquea push directo a main (predecesor — driver de la invariante a verificar)
-last-transition-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
-last-correlation-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
-last-transition-from: in-progress
+last-transition-id: 429941b6-adee-482c-bd4b-f256549969a2
+last-correlation-id: 429941b6-adee-482c-bd4b-f256549969a2
+last-transition-from: review
 shipped-in:
   - "6af2c6a01"
   - "a801eb344c"
@@ -280,7 +280,7 @@ abre issue — es observación, nunca gate.
 
 ### S3 — Supersede `v00125` y enlazar en `AGENT-BOOTSTRAP.md`
 
-- **Status**: review — 2026-09-30. `v00125` (already `done/`, not
+- **Status**: done
   `in-progress/` as this slice assumed — corrected below) now carries
   `superseded-by: v00127` in frontmatter plus a short dated note at the
   top of its body explaining the retraction (develop-green-required →
@@ -297,6 +297,11 @@ abre issue — es observación, nunca gate.
 - **Gate**: docs lint + `lint:prompt-size`.
 - **Depends on**: S1.
 - shipped-in: `a801eb344c89`
+- review-state: done
+- review-implementer: claude-sonnet-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S3 verified at a801eb344c — same commit as S2 (combined ship). v00125 carries superseded-by: v00127 frontmatter plus body note; AGENT-BOOTSTRAP.md gained 3-line reference to verify-main-health.script.ts. wc -c docs/delendai/AGENT-BOOTSTRAP.md = 31,672 B, under the 32,000 B prompt-size cap.
+- review-attribution: claude-sonnet-5 from Merge pull request #673 from CartagoGit/delendai/pr/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard (refs/heads/delendai/wip/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard) (a801eb344c89c98d6bce70336a0eea9431e2d544), opened by minimax-m3
 
 ## acceptance
 
