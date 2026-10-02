@@ -2,12 +2,15 @@
 id: x00834
 title: "A client working in another project gets no unit here"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-03
 priority: P1
 related: [x00736, x00850]
+last-transition-id: 41c195bf-b4d8-4665-9882-ec264e4a3d15
+last-correlation-id: 41c195bf-b4d8-4665-9882-ec264e4a3d15
+last-transition-from: in-progress
 ---
 
 # x00834 — A client working in another project gets no unit here
@@ -62,6 +65,7 @@ word.
   - `packages/core/tests/src/lib/tools/work-unit.tool.spec.ts`
   - `packages/test-kit/src/lib/fake-tool-server.helper.ts`
   - `packages/test-kit/src/contracts/interfaces/fake-tool-server.interface.ts`
+- shipped-in: `ba221ff68d9f`
 
 ## dependency graph
 
