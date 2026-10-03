@@ -2,12 +2,15 @@
 id: x00835
 title: "A review swarm leaves verdicts that can be checked, and loses none"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-10-03
 priority: P1
 related: [x00831, x00834, x00850]
+last-transition-id: 4cb13e5b-433d-4af5-a812-360fd13a9a51
+last-correlation-id: 4cb13e5b-433d-4af5-a812-360fd13a9a51
+last-transition-from: ready
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -254,6 +257,15 @@ The same run exposed the two Opus orchestrators, this author included:
 - E20 — review units were named `…/review/batch-all-gN/work` (the default
   topic), `review-backpack` and `review-all-g8` for the same thing; `work`
   names nothing.
+- E21 — carrying the stale packs' verdicts into one settling unit was tried
+  by hand and refused by `closed-with-independent-approval`: a unit of one
+  agent that adds approvals by another is that agent signing for it. The
+  gate held. The 57 verdicts of E19 therefore cannot be transported; they
+  are settled where they were made (S14) or the slices are reviewed again.
+- E22 — the clone's hooks run `lefthook` out of the `node_modules` of one
+  reviewer's worktree (`…/.worktrees/minimax-3-batch-all-g7/…`): an install
+  with scripts inside a unit rewrote the shared hook. Removing that unit
+  leaves every agent's commit on the hook's slower fallback path.
 
 ### What good verdicts did
 
@@ -285,32 +297,29 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S1 — A verdict names the commit it judged and the gate it ran
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/review.tool.ts`, `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
-- `approve` and `request_changes` require the delivering commit and the
-  declared gate's result (command, exit code or count). The commit must be on
-  the integration branch, or be the tip of the unit's publication; a commit
-  that a later commit of the same unit superseded is refused with the newer
-  one named (E3).
-- A reviewer that could not inspect or run anything does not record a
-  verdict: the tool tells it to release the claim (E9, E10).
-- The verdict text is checked for language like the rest of the proposal.
+- `approve` writes the commit, the gate's exit code and the test counts it
+  was given into the proposal; a commit the integration branch does not
+  hold is refused. `request_changes` on delivered work names the commit it
+  objects to, or is refused (E3, C1).
 
 ### S2 — A verdict is written in the reviewer's own unit, or not at all
 
-- **Status**: pending
-- **Files**: `packages/cli/src/commands/review.command.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`
-- **Gate**: `npx vitest run packages/cli/src/commands/review.command.spec.ts`
-- `review approve|request_changes|next` resolve the reviewer's review unit
-  worktree from `--agent`/`--session` and write there. Run from the shared
-  checkout with no unit, they refuse and name the unit to enter (E2, E7).
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-worktree.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
+- `review approve|changes|next` already write in the reviewer's unit. The
+  verdict tool called directly was the way around it: in a project with
+  work refs, `approve` and `request_changes` outside a review unit are now
+  refused, name the unit to enter, and write nothing (E2, E7).
 
 ### S3 — One model, one identity
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/command-args.helper.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/agent-identity.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/agent-alias.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/agent-alias.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/agent-alias.service.spec.ts`
 - An agent id that differs from an identity already present in the refs only
   by case, hyphens or a numeric suffix (`MiniMax-M3`, `minimaxm3`,
   `minimaxm3-3`) is refused with the existing spelling named. Verdicts are
@@ -320,8 +329,8 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S4 — A review pack carries only its own verdicts
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/review-pack-scope.service.ts`, `packages/core/src/lib/contracts/interfaces/review-pack.interface.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
 - A review unit starts from the integration branch. Publishing a review pack
   whose commits are already carried by another open review pack, or that
@@ -332,17 +341,17 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S5 — A review pack never deletes a proposal
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/review-pack-deletions.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/review-pack-deletions.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/review-pack-deletions.service.spec.ts`
 - The review-scope check refuses a pack that deletes a proposal file without
   adding it elsewhere in the same pack (a move), naming the file and the
   commit (#744).
 
 ### S6 — The CLI an agent runs is not behind the code it judges
 
-- **Status**: pending
-- **Files**: `packages/cli/src/lib/cli/entrypoint.ts`
+- **Status**: review
+- **Files**: `packages/cli/src/lib/stale-build.service.ts`, `packages/cli/src/contracts/interfaces/stale-build.interface.ts`, `packages/cli/src/index.ts`, `packages/cli/src/lib/stale-build.service.spec.ts`
 - **Gate**: `npx vitest run packages/cli/src/lib/stale-build.service.spec.ts`
 - A CLI started from `dist` inside the repository compares its build stamp
   with the sources it was built from and refuses writing commands when the
@@ -351,8 +360,8 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S7 — A unit starts from the integration branch the forge has
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/tests/src/lib/work-units/integration-base.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/integration-base.spec.ts`
 - `integrationBase` uses the remote-tracking integration branch whenever the
   local one carries commits the forge does not: under a pull-request model the
@@ -362,9 +371,9 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S8 — A publication that did not land says so loudly
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit-land.service.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-failure.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit-publish-failure.spec.ts`
 - `work publish` exits non-zero when the publication was not proved on the
   remote, and its first line says why and what to merge (C5).
 
@@ -409,9 +418,9 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S10 — A reviewer does not implement what it reviews
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - An agent holding a review claim on a proposal, or that recorded a verdict on
   it, is refused an `implement` unit on that proposal (E14). A review verdict
   committed in a non-review unit is refused at publication.
@@ -446,12 +455,13 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S15 — Recovery runs need no global git identity, and read-only writes nothing
 
-- **Status**: pending
-- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
-- **Gate**: `npx vitest run tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
-- Every internal commit passes its identity explicitly (`-c user.name/email`
-  or `GIT_AUTHOR_*`/`GIT_COMMITTER_*`), and a run reported as read-only
-  creates no commit at all (G3).
+- **Status**: review
+- **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.constant.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+- **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+- The merge and the commits a refresh makes name their committer with
+  `-c user.name/-c user.email` when the machine's git names nobody, and
+  leave a configured identity alone. A read-only run already made no
+  commit (G3).
 
 ### S16 — The run knows who joined it
 
@@ -497,6 +507,17 @@ the good verdicts' shape (P1) becomes the required shape.
 - A review pack has one topic, derived by the tools, not chosen per agent; an
   implementation unit's default topic comes from its proposal's title instead
   of `work` (E20).
+
+### S20 — A verdict names the newest commit, and a reviewer that ran nothing records none
+
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
+- A commit that a later commit of the same unit superseded is refused with
+  the newer one named (E3).
+- A reviewer that could not inspect or run anything does not record a
+  verdict: the tool tells it to release the claim (E9, E10).
+- The verdict text is checked for language like the rest of the proposal.
 
 ## dependency graph
 
