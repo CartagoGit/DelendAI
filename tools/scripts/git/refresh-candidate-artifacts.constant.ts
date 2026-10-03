@@ -36,3 +36,14 @@ export const REGENERATED_PROJECTIONS: ReadonlySet<string> = new Set(
  */
 export const REGENERATION_COMMIT_SUBJECT =
 	'chore(generated): recompute after refreshing the candidate';
+
+/**
+ * Who the queue's own commits are by on a machine whose git names
+ * nobody. A recovery run on a fresh runner has no global identity, and
+ * the merge that was to refresh a candidate stopped at "Author identity
+ * unknown" with the queue reported as moving.
+ */
+export const QUEUE_COMMIT_IDENTITY = {
+	name: 'delendai queue',
+	email: 'queue@delendai.invalid',
+} as const;

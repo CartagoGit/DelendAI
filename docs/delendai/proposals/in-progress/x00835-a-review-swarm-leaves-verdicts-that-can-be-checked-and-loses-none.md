@@ -330,7 +330,7 @@ the good verdicts' shape (P1) becomes the required shape.
 ### S4 — A review pack carries only its own verdicts
 
 - **Status**: review
-- **Files**: `packages/core/src/lib/work-units/review-pack-scope.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/review-pack-scope.service.ts`, `packages/core/src/lib/contracts/interfaces/review-pack.interface.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
 - A review unit starts from the integration branch. Publishing a review pack
   whose commits are already carried by another open review pack, or that
@@ -455,12 +455,13 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S15 — Recovery runs need no global git identity, and read-only writes nothing
 
-- **Status**: pending
-- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
-- **Gate**: `npx vitest run tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
-- Every internal commit passes its identity explicitly (`-c user.name/email`
-  or `GIT_AUTHOR_*`/`GIT_COMMITTER_*`), and a run reported as read-only
-  creates no commit at all (G3).
+- **Status**: review
+- **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.constant.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+- **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+- The merge and the commits a refresh makes name their committer with
+  `-c user.name/-c user.email` when the machine's git names nobody, and
+  leave a configured identity alone. A read-only run already made no
+  commit (G3).
 
 ### S16 — The run knows who joined it
 

@@ -11,22 +11,14 @@
  * a commit with another agent's pack still waiting to land is carrying
  * that pack, and is told which.
  */
+import type {
+	ICarriedPack,
+	IReviewPackCommits,
+} from '../contracts/interfaces/review-pack.interface';
 import type { ISwarmUnit } from '../contracts/interfaces/work-swarm.interface';
 
 /** Unit kinds that record verdicts. */
 const REVIEW_KIND = 'review';
-
-/** Another pack, and what it holds over the integration branch. */
-export interface IReviewPackCommits {
-	readonly ref: string;
-	readonly commits: readonly string[];
-}
-
-/** A pack this one carries, and how much of it. */
-export interface ICarriedPack {
-	readonly ref: string;
-	readonly shared: number;
-}
 
 /**
  * The review packs of OTHER agents among the swarm's units: the ones this
