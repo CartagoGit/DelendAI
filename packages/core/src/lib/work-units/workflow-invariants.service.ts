@@ -284,6 +284,54 @@ export const checkWorkflowInvariants = (input: {
 		remedy: 'publish the unit (`delendai work publish`); delete the ref only once its commits are on the integration branch or a publication',
 	});
 
+	// 8. A publication still on the forge holds something the integration
+	// branch lacks. One that holds nothing has landed, or never carried
+	// work: either way it is a branch that looks like a pull request to
+	// come and is not.
+	const spent = published.filter(
+		(ref) =>
+			git(root, [
+				'rev-list',
+				'--count',
+				`${remote}/${integration}..${remote}/${ref}`,
+			]) === '0',
+	);
+	add({
+		scope: 'forge',
+		id: 'publications-hold-work',
+		claim: `every publication holds work \`${integration}\` lacks`,
+		holds: spent.length === 0,
+		observed:
+			published.length === 0
+				? 'no publication refs'
+				: spent.length === 0
+					? `${String(published.length)} ref(s), all holding work`
+					: `${String(spent.length)} spent: ${spent.slice(0, 3).join(', ')}`,
+		remedy: `git push ${remote} --delete <ref> — its commits are already on \`${integration}\``,
+	});
+
+	// 9. The local integration branch only follows the forge's. A commit
+	// it holds that the forge lacks was made in the shared checkout: it
+	// is in no pull request, every unit entered here starts from it, and
+	// the next fast-forward refuses.
+	const ahead = lines(
+		git(root, [
+			'rev-list',
+			`${remote}/${integration}..refs/heads/${integration}`,
+		]),
+	);
+	add({
+		scope: 'checkout',
+		id: 'integration-follows-forge',
+		claim: `the local \`${integration}\` holds nothing the forge's lacks`,
+		holds: !policy.integration.requiresPullRequest || ahead.length === 0,
+		observed:
+			ahead.length === 0
+				? 'level, or behind'
+				: `${String(ahead.length)} commit(s) only here`,
+		remedy: `carry what is worth keeping into a unit (\`delendai work enter\`, then cherry-pick), then \`git reset --hard ${remote}/${integration}\` in the shared checkout`,
+	});
+
 	return { results, broken: results.filter((r) => !r.holds).length };
 };
 

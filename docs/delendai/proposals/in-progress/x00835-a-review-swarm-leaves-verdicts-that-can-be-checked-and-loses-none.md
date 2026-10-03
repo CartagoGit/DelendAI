@@ -390,18 +390,13 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S12 — A run ends with nothing hanging
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
-- `work doctor` places every work ref, publication, worktree and local
-  integration branch in exactly one state: merged and removed, waiting in an
-  open pull request, or live with a lease that answers. Anything else is a
-  broken invariant listed with its remedy: a unit never published, a
-  publication with no pull request or no commits, a kept unit whose next
-  slice went elsewhere, a worktree with no ref, a local integration branch
-  carrying commits the forge lacks.
-- The queue runs it after every merge and goes red while anything hangs, so a
-  run that leaves work behind cannot look finished.
+- `work doctor` already named a work ref with no worktree, a worktree with
+  no ref and a work ref left on the forge. It now also names a publication
+  that holds nothing the integration branch lacks, and a local integration
+  branch carrying commits the forge lacks, each with its remedy.
 
 ### S9 — An automatic commit is made once, by an agent, of the slice's files
 
@@ -521,11 +516,22 @@ the good verdicts' shape (P1) becomes the required shape.
   verdict: the tool tells it to release the claim (E9, E10).
 - The verdict text is checked for language like the rest of the proposal.
 
+### S21 — The queue goes red while something hangs on the forge
+
+- **Status**: pending
+- **Files**: `.github/workflows/keep-the-queue-moving.yml`
+- **Gate**: `bun run work:doctor -- --forge`
+- The queue runs `work doctor --forge` after every merge and fails while a
+  publication or a work ref hangs, so a run that leaves work behind cannot
+  look finished. On a runner there is no worktree to tell a live unit's
+  backup from an abandoned ref: this needs x00850's lease.
+
 ## dependency graph
 
 - S3 reads x00850's lease to recognise another orchestrator's identity.
 - S13, S14 and S16 read x00850's lease for the instance; S14 uses r00048's
   revision CAS.
+- S21 reads x00850's lease to tell a live unit from an abandoned one.
 - S17 needs S12 and S14 to have a single final state to assert.
 - E7's root cause (the guard recognising only Claude's markers) is fixed by
   the other orchestrator's guard work; this proposal does not repeat it.
