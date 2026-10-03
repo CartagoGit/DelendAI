@@ -2,15 +2,17 @@
 id: f00755
 title: "Candidates that touch nothing in common land together"
 kind: feat
-status: review
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-29
 priority: P1
 related: [x00556]
-last-transition-id: c7ea941c-bfa6-4467-995d-2c3eadd295c5
-last-correlation-id: c7ea941c-bfa6-4467-995d-2c3eadd295c5
-last-transition-from: in-progress
+last-transition-id: 0e2e162c-5cef-4797-b9b2-6be867a644ba
+last-correlation-id: 0e2e162c-5cef-4797-b9b2-6be867a644ba
+last-transition-from: review
+shipped-in:
+  - "230e2af9c73b33d8beb77504e444dd538ad03bcf"
 ---
 
 # f00755 — Candidates that touch nothing in common land together
@@ -64,7 +66,7 @@ not require it (`develop` has `strict: false`); the queue did.
 
 ### S1 — The queue lands every independent candidate
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/independent-candidates.spec.ts`
 - **Files**:
   - `tools/scripts/forge/independent-candidates.ts`
@@ -76,6 +78,11 @@ not require it (`develop` has `strict: false`); the queue did.
   - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
   - `tools/scripts/ci/test-zones.script.ts`
 - shipped-in: `230e2af9c73b`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — f00755 S1 delivered at 230e2af9c73b (feat(forge): candidates that touch nothing in common land together): independent-candidates.ts + queue-acceptance.ts; the queue accepts candidates whose footprint and the integration branch share no zone and no file, and that share none with a candidate accepted before it. 6/6 tests green in independent-candidates.spec.ts.
+- review-attribution: claude-opus-5-5 from Merge pull request #651 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00755-S1-g1/independent-candidates-merge-together (refs/heads/delendai/wip/claude-opus-5-5/implement/f00755-S1-g1/independent-candidates-merge-together) (230e2af9c73b33d8beb77504e444dd538ad03bcf), opened by MiniMaxM3
 
 ## dependency graph
 

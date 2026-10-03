@@ -16,6 +16,8 @@ related: [q00011, r00040, r00041, r00042, r00034]
 last-transition-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-correlation-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-transition-from: in-progress
+shipped-in:
+  - "bb60f4954b623abbe8acb8f6d9d1e9ae6901043a"
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -189,7 +191,7 @@ packages/core/                         plugins/proposals/
 - review-log: approved by delendai-review-r00043-s1-20260907 — Independent verification approved. Contracts remain proposals-agnostic, provider contracts cover workflow and adoption contributions generically, and safe empty fallbacks pass the slice gate.
 ### S2 — Extraer la adopción específica de proposals a un adaptador
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**:
     - `packages/core/src/lib/adopt/adopt-project-write-estimate.ts`
@@ -227,6 +229,11 @@ assessment summary and the `adopt_project` help name no plugin. Nine
 inventory findings are resolved by S2. The `issues` acceptance item is
 not part of this delivery; it moves to S6.
 - shipped-in: `bb60f4954b62`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — r00043 S2 delivered at bb60f4954b62 (refactor(core): the adoption estimate counts what loaded plugins add): adopt-project-write-estimate now delegates to a plugins-loaded extension registry, with the proposals-specific adoption as a dedicated adapter. 8/8 tests green in adoption-assessment.spec + proposals-adoption-extension.spec.
+- review-attribution: claude-opus-5-5 from commit bb60f4954b62 names refs/heads/delendai/wip/claude-opus-5-5/r00043-S2-g1/adoption-knows-no-plugin (bb60f4954b623abbe8acb8f6d9d1e9ae6901043a), opened by MiniMaxM3
 
 ### S3 — Convertir stable-facade en un registro de contribuciones
 

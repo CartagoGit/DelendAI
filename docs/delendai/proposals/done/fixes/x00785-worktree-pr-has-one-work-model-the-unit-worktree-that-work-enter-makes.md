@@ -6,11 +6,11 @@ status: done
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: 17ab92d7-0eee-4872-9331-ac98d62561aa
-last-correlation-id: 17ab92d7-0eee-4872-9331-ac98d62561aa
+last-transition-id: 1ef51960-0017-4325-8a1a-a1111237a389
+last-correlation-id: 1ef51960-0017-4325-8a1a-a1111237a389
 last-transition-from: review
 shipped-in:
-  - "19d60b11be53"
+  - "19d60b11be53fa2610acbf8a6c3f0cde13811e1c"
 ---
 
 # x00785 — worktree-pr has one work model: the unit worktree that work enter makes
@@ -46,6 +46,8 @@ A real-CLI audit of worktree-pr found two incompatible models. The preset declar
 - shipped-in: `19d60b11be53`
 - review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — Verified on the delivery state at 19d60b11be53 (gate=none). All five related spec files green at the unit worktree. Non-goals respected: edits limited to profiles/declare-workflow/work-isolation/agent-worktree/docs, plus the new work-unit-profiles spec; no release/forge/CLI-doctor/commit-policy touches.
 - review-reviewer: MiniMaxM3
 - review-log: approved by MiniMaxM3 — x00785 S1 delivered at 19d60b11be53 (fix(policy): worktree-pr has one work model, the unit worktree that work enter makes): profiles.ts now derives the worktree-pr model from preset axes; work-isolation names delendai work enter; agent_worktree create under work-ref policy is refused with 'work enter' as next step; list still works; 52/52 tests green.
 
