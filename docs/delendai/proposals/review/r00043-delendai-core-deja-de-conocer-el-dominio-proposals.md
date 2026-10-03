@@ -18,6 +18,7 @@ last-correlation-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-transition-from: in-progress
 shipped-in:
   - "dc61a40ec"
+  - "7c861d2f9"
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -237,7 +238,7 @@ not part of this delivery; it moves to S6.
 
 ### S3 — Convertir stable-facade en un registro de contribuciones
 
-- **Status**: done — verified 2026-09-25 by an evidence pass (a second agent; delivered in `7c861d2f9`). `stable-facade.ts` names no plugin: `stable-facade-registry.ts` holds contributions and the proposals plugin registers its tools through `registerProposalsStableTools`. The gate passes 14/14, and the boundary inventory lists `plugin: 'proposals'` in the facade as resolved by S3.
+- **Status**: done
 - shipped-in: `7c861d2f9`
 - **DependsOn**: [S1]
 - **Files**:
@@ -256,6 +257,11 @@ not part of this delivery; it moves to S6.
       sin descriptores de propuestas ni imports del plugin.
     - Se mantiene la versión y la garantía semver del manifiesto durante la
       ventana de compatibilidad.
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — r00043 S3 delivered by claude-opus-5-5 (commit 7c861d2f9 'feat(cli): expand doctor health checks' which is the same hash listed in the proposal's review-log). The implementation moved stable-facade from a direct plugin-aware module to a registry pattern: stable-facade-registry.ts holds contributions and the proposals plugin registers via registerProposalsStableTools. 14/14 stable-facade.spec.ts + 1/1 proposals-stable-tools.spec.ts pass per the boundary inventory. Slice already has Status: done in markdown (verified 2026-09-25 by an evidence pass); this verdict adds the missing review-state trail. Slice unclaimed. Approved via implement worktree.
+- review-attribution: unrecorded — nothing in Git names who delivered 7c861d2f9e0762dfdcaa3e11e9017c62ab6b40af: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-3
 
 ### S4 — Hacer agnóstico el ensamblado de skills y recommendedNextAction
 
