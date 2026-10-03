@@ -1,8 +1,7 @@
 #!/usr/bin/env bun
 import { fileURLToPath } from 'node:url';
 
-import { runCli as runServerCli } from '@delendai/core/cli';
-import { serveRefusal } from '@delendai/core/cli';
+import { runCli as runServerCli, serveRefusal } from '@delendai/core/cli';
 
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
