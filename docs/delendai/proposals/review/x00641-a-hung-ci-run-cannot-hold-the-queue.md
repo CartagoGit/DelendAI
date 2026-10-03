@@ -11,6 +11,8 @@ related: [x00637, x00636]
 last-transition-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
 last-correlation-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
 last-transition-from: in-progress
+shipped-in:
+  - "35fcf6860"
 ---
 
 # x00641 — A hung CI run cannot hold the queue
@@ -65,7 +67,7 @@ green full run took about seven minutes.
 
 ### S1 — Every job declares a bounded timeout
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/workflow-yaml.script.spec.ts`
 - **Files**: `tools/scripts/lint/workflow-yaml.script.ts`,
   `tools/scripts/lint/workflow-yaml.constant.ts`,
@@ -76,6 +78,11 @@ green full run took about seven minutes.
   `.github/workflows/pages.yml`, `.github/workflows/release.yml`,
   `.github/workflows/surface-bootstrap.yml`
 - shipped-in: `ed910e0e5c4e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00641 S1 delivered by claude-opus-5-5 (commit 35fcf6860 'ci: every job declares a bounded timeout (x00641 S1)', merged via PR #431 and again via PR #658). Every workflow job now declares `timeout-minutes:` and the workflow-yaml lint enforces it. Slice unclaimed. Approved via implement worktree.
+- review-attribution: claude-opus-5-5 from Merge pull request #431 from CartagoGit/delendai/pr/claude-opus-5-5/x00641-all-g1/every-job-declares-its-timeout (refs/heads/delendai/wip/claude-opus-5-5/x00641-all-g1/every-job-declares-its-timeout) (35fcf6860fff87cad87292f2c76832e1dfc48bcd), opened by minimax-3
 
 ### S2 — A run that timed out is re-dispatched, not read as red
 
