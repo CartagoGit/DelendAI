@@ -14,6 +14,14 @@ related: [x00831, x00834, x00850]
 
 ## goal
 
+At the end of a swarm run nothing hangs: every unit of work is merged and
+gone, waiting in an open pull request, or live with an owner that answers;
+the integration branch everyone starts from is the one the forge has; and
+every deviation the run showed is either refused by the tools or reported by
+them. Every way the run below departed from the intended workflow is treated
+as a defect of the system, not of the agent that happened to hit it.
+
+
 A swarm of reviewers from other model families, less capable than the ones
 that wrote the work, produces verdicts a person can re-check, records them
 where they survive, signs them with one identity per model, and never removes
@@ -104,6 +112,17 @@ went wrong, measured on the refs, pull requests and processes of that run:
   and the merges that joined other packs left the done/ copy out. Held as a
   draft on 2026-10-03 with the cause in a comment; merging it would have lost
   x00785.
+
+### Claims that do not exclude
+
+- E15 — twelve proposals were claimed twice by distinct claim commits:
+  sometimes by one identity (two MiniMax instances sharing `minimax-3`, the
+  second claim read as the claimer's own), sometimes by two (x00799, x00762,
+  q00023 and f00751 by `minimax-3` and `minimax-m3`; x00810 by `minimax-3` and
+  `minimaxm3`), between 25 and 215 minutes apart. Thirteen slices were judged
+  more than once: f00755 S1 and r00043 S2 four times each. A claim is a
+  commit on the claimer's own branch, so another agent learns of it only once
+  that branch reaches the forge; there is no shared reservation to lose.
 
 ### Units nobody chose, and work swept into them
 
@@ -281,6 +300,30 @@ the good verdicts' shape (P1) becomes the required shape.
 - `work publish` exits non-zero when the publication was not proved on the
   remote, and its first line says why and what to merge (C5).
 
+### S11 — A claim is one shared reservation
+
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`
+- Claiming a proposal slice, for review or implementation, creates one
+  reservation ref on the forge atomically (the same mechanism as #724's id
+  reservation); a second claimer is refused with the holder named. The
+  reservation carries the owning session (x00850's lease), so two instances
+  of one model are two holders, not one (E15).
+
+### S12 — A run ends with nothing hanging
+
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+- `work doctor` places every work ref, publication, worktree and local
+  integration branch in exactly one state: merged and removed, waiting in an
+  open pull request, or live with a lease that answers. Anything else is a
+  broken invariant listed with its remedy: a unit never published, a
+  publication with no pull request or no commits, a kept unit whose next
+  slice went elsewhere, a worktree with no ref, a local integration branch
+  carrying commits the forge lacks.
+- The queue runs it after every merge and goes red while anything hangs, so a
+  run that leaves work behind cannot look finished.
+
 ### S9 — An automatic commit is made once, by an agent, of the slice's files
 
 - **Status**: pending
@@ -309,6 +352,9 @@ the good verdicts' shape (P1) becomes the required shape.
 - The others are independent.
 
 ## acceptance
+
+- After a swarm run, `work doctor` reports nothing hanging, and the clone
+  and the forge both agree with it.
 
 - Re-running the 2026-10-03 swarm's mistakes against the tools: a bare
   `approve`, a `request_changes` without a commit, a verdict from the shared
