@@ -366,7 +366,7 @@ const main = (): number => {
 	console.log(`changed-file-coverage: ${report.verdict} — ${report.reason}`);
 	if (importOnly.length > 0) {
 		console.log(
-			`  not judged (only their imports changed): ${String(importOnly.length)} file(s)`,
+			`  not judged (only their imports or comments changed): ${String(importOnly.length)} file(s)`,
 		);
 	}
 	for (const shortfall of report.shortfalls) {

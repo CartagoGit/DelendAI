@@ -1,6 +1,7 @@
 /**
  * import-only-change.helper.ts — a file whose only change is where its
- * names are imported from did not change what it does.
+ * names are imported from, or what its comments say, did not change what
+ * it does.
  */
 
 /**
@@ -10,9 +11,38 @@
 const IMPORT_STATEMENT =
 	/^[ \t]*(?:import\s+(?:type\s+)?[\w*{][^;]*?from\s*['"][^'"]+['"]|import\s*['"][^'"]+['"]|export\s+(?:type\s+)?[*{][^;=]*?from\s*['"][^'"]+['"])\s*;?[ \t]*$/gmu;
 
-/** A module's text without its imports, and without the gaps they leave. */
+/**
+ * The lines of a module that are not a comment standing on its own: a
+ * `//` line, or a block opened by a line that starts with `/*`. A comment
+ * after code on the same line stays with its line, so nothing here has to
+ * tell a comment from the inside of a string.
+ */
+const withoutComments = (text: string): readonly string[] => {
+	const kept: string[] = [];
+	let inBlock = false;
+	for (const line of text.split('\n')) {
+		const trimmed = line.trim();
+		if (inBlock) {
+			inBlock = !trimmed.includes('*/');
+			continue;
+		}
+		if (trimmed.startsWith('//')) continue;
+		if (trimmed.startsWith('/*')) {
+			inBlock = !trimmed.includes('*/');
+			continue;
+		}
+		kept.push(line);
+	}
+	return kept;
+};
+
+/**
+ * A module's text without its comments and imports, and without the gaps
+ * they leave.
+ */
 export const behaviourOf = (text: string): string =>
-	text
+	withoutComments(text)
+		.join('\n')
 		.replaceAll(IMPORT_STATEMENT, '')
 		.split('\n')
 		.map((line) => line.trimEnd())
@@ -20,7 +50,8 @@ export const behaviourOf = (text: string): string =>
 		.join('\n');
 
 /**
- * True when a file's only change is where its names are imported from.
+ * True when a file's only change is where its names are imported from,
+ * or the comments that stand on their own lines.
  *
  * Moving an export from one entry point to another rewrites an import
  * line in every consumer. None of them does anything new, and none of
