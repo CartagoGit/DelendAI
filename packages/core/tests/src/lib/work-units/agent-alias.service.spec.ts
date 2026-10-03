@@ -98,7 +98,7 @@ describe('work enter under a re-spelled identity', () => {
 
 		expect((await enter(root, 'minimax-m3', 'S1')).code).toBe(0);
 
-		const respelled = await enter(root, 'MiniMax-M3', 'S2');
+		const respelled = await enter(root, 'minimaxm3', 'S2');
 		expect(respelled.code).not.toBe(0);
 		expect(respelled.error).toContain('--agent=minimax-m3');
 	});
