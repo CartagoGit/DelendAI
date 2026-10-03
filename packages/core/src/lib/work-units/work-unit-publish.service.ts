@@ -1,3 +1,4 @@
+import { deletedDocuments } from './review-pack-deletions.service';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	IWorkUnitContext,
@@ -113,6 +114,25 @@ export const published = async (
 			return refused(
 				`\`${workRef}\` is a unit that records verdicts, and it changes ${outside.join(', ')}: verdicts do not change the product.`,
 				'Take those changes out of the unit (revert the commits that made them). A change the product needs is a proposal of its own, implemented in an `implement` unit.',
+			);
+		}
+		const deleted = deletedDocuments(
+			(
+				readGit(root, [
+					'diff',
+					'--name-status',
+					'--no-renames',
+					`${base}...${workRef}`,
+				]) ?? ''
+			)
+				.split('\n')
+				.filter((line) => line.length > 0),
+			await readWorkspaceDocsDir(root),
+		);
+		if (deleted.length > 0) {
+			return refused(
+				`\`${workRef}\` is a unit that records verdicts, and it deletes ${deleted.join(', ')}: a review moves a document, it never removes one.`,
+				`Restore them from the integration branch (\`git checkout ${policy.branches.integration} -- ${deleted.join(' ')}\`), commit, and publish again.`,
 			);
 		}
 	}
