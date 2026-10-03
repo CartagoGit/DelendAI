@@ -2,13 +2,15 @@
 id: x00785
 title: "worktree-pr has one work model: the unit worktree that work enter makes"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: eeef0a59-7bb0-4821-9316-4673da763f05
-last-correlation-id: eeef0a59-7bb0-4821-9316-4673da763f05
-last-transition-from: in-progress
+last-transition-id: 17ab92d7-0eee-4872-9331-ac98d62561aa
+last-correlation-id: 17ab92d7-0eee-4872-9331-ac98d62561aa
+last-transition-from: review
+shipped-in:
+  - "19d60b11be53"
 ---
 
 # x00785 — worktree-pr has one work model: the unit worktree that work enter makes
@@ -33,7 +35,7 @@ A real-CLI audit of worktree-pr found two incompatible models. The preset declar
 - global_gate: none
 
 ### S1 — One worktree-pr model derived from the preset axes
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/development-policy/work-isolation.ts`, `packages/core/src/lib/contracts/interfaces/work-isolation.interface.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`, `docs/delendai/DEVELOPMENT-STRATEGIES.md`, `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`, `packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`, `packages/core/tests/src/lib/startup-gate/policy-gate.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-profiles.spec.ts`, `plugins/proposals/tests/src/lib/tools/agent-worktree.tool.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -42,8 +44,10 @@ A real-CLI audit of worktree-pr found two incompatible models. The preset declar
   - "The declared workflow and the isolation rule for worktree-pr name delendai work enter; shared-checkout-pr text is unchanged."
   - "The preset states whether switching branches in the main worktree is intended."
 - shipped-in: `19d60b11be53`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00785 S1 delivered at 19d60b11be53 (fix(policy): worktree-pr has one work model, the unit worktree that work enter makes): profiles.ts now derives the worktree-pr model from preset axes; work-isolation names delendai work enter; agent_worktree create under work-ref policy is refused with 'work enter' as next step; list still works; 52/52 tests green.
 
 ## acceptance
 
