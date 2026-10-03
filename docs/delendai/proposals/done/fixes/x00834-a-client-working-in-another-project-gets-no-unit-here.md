@@ -2,15 +2,15 @@
 id: x00834
 title: "A client working in another project gets no unit here"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-03
 priority: P1
 related: [x00736, x00850]
-last-transition-id: 41c195bf-b4d8-4665-9882-ec264e4a3d15
-last-correlation-id: 41c195bf-b4d8-4665-9882-ec264e4a3d15
-last-transition-from: in-progress
+last-transition-id: 6cbd2a76-6b12-41ab-b80c-91bffa6b559e
+last-correlation-id: 6cbd2a76-6b12-41ab-b80c-91bffa6b559e
+last-transition-from: review
 shipped-in:
   - "ba221ff68d9f"
 ---
