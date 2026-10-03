@@ -2,13 +2,15 @@
 id: x00760
 title: "A shared-checkout-merge project can land its work"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
-last-transition-id: ed085ab1-29a8-439b-8ab9-d4d2bdd7eaa5
-last-correlation-id: ed085ab1-29a8-439b-8ab9-d4d2bdd7eaa5
-last-transition-from: in-progress
+last-transition-id: f945f390-f525-487d-92b2-2032b9b00b83
+last-correlation-id: f945f390-f525-487d-92b2-2032b9b00b83
+last-transition-from: review
+shipped-in:
+  - "de71f8444623"
 ---
 
 # x00760 — A shared-checkout-merge project can land its work
@@ -30,7 +32,7 @@ The served work model (x00759) tells an agent on `shared-checkout-merge` to fini
 - global_gate: type
 
 ### S1 — The unit lands by local merge after its certification
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-land.service.ts`, `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/validation-gate-steps.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/src/lib/contracts/interfaces/local-certification.interface.ts`, `packages/core/src/lib/contracts/interfaces/work-publish.interface.ts`, `packages/core/src/lib/integration-engine/local-merge-cycle.ts`, `packages/core/src/lib/integration-engine/local-merge-cycle.interface.ts`, `packages/core/src/lib/integration-engine/local-merge-gate.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/validate-run.service.ts`, `packages/cli/src/contracts/interfaces/validate-run.interface.ts`, `packages/core/tests/src/lib/work-units/work-unit-land.service.spec.ts`, `packages/core/tests/src/lib/work-units/local-certification.service.spec.ts`, `packages/core/tests/src/lib/integration-engine/local-merge-cycle.spec.ts`, `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -38,8 +40,10 @@ The served work model (x00759) tells an agent on `shared-checkout-merge` to fini
   - "A red certification, a stale head and a conflict each end in a refusal that names the next step; nothing lands uncertified."
   - "Under a pull-request profile nothing changes."
 - shipped-in: `de71f8444623`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at de71f8444623 ("fix(work): a merge-profile project lands its work with work publish"). work-unit-land.service / local-certification / local-merge-cycle 31/31 covers: local gate runs against current integration head before runLocalMergeCycle; red certification, stale head, and conflict each end in a refusal naming the next step; pull-request profile is unchanged.
 
 ## acceptance
 
