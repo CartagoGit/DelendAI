@@ -205,6 +205,11 @@ a review of the run by another model, ChatGPT "Sol 6", each re-checked here):
 
 ### Tools that are behind the code under review
 
+- E1 measured — that dist was built at 17:36Z on 2026-10-01. The held-slice
+  refusal merged at 18:11Z (#727), the briefing of published work at 18:38Z
+  (#728), the own-publication fix at 21:24Z (#729) and the cross-project
+  guard a day later (#730). Every reviewer and every MCP server started from
+  dist ran with none of the guards written for exactly this run.
 - E1/E6 — reviewers ran `packages/cli/dist/index.js` (built 2026-10-01 19:36),
   `apps/web/node_modules/.bin/delendai` (the same dist) and
   `packages/cli/src/index.ts` side by side, and one server from another
@@ -237,6 +242,18 @@ The same run exposed the two Opus orchestrators, this author included:
 - C6 — this author's first draft of this proposal was built on the diverged
   local develop (E12) and carried thirty foreign commits until the gates
   refused it.
+
+### Who produced what, and how much of it landed
+
+- E19 — verdicts merged to develop over the run: GPT-5.4 nine (six approvals
+  and three requests for changes, each on a real defect), Qwen 3.8 Flash nine,
+  MiniMax M3 fifteen, GLM 5.3 Flash six, Luna 6 none. Not landed: 35 verdicts
+  signed `minimax-3`, 19 signed `minimaxm3` and 3 signed `glm-5.3-max`, in
+  packs that cannot merge as they are. The model that produced the most lost
+  most of it to stale packs.
+- E20 — review units were named `…/review/batch-all-gN/work` (the default
+  topic), `review-backpack` and `review-all-g8` for the same thing; `work`
+  names nothing.
 
 ### What good verdicts did
 
@@ -453,6 +470,14 @@ the good verdicts' shape (P1) becomes the required shape.
   recoveries, and the time from the end of a run until `work doctor` is green
   again. A supervising agent reads these instead of inferring the state from
   branches.
+
+### S19 — A unit's name says what it is
+
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/command-args.helper.ts`
+- A review pack has one topic, derived by the tools, not chosen per agent; an
+  implementation unit's default topic comes from its proposal's title instead
+  of `work` (E20).
 
 ## dependency graph
 
