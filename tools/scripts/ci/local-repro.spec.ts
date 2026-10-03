@@ -18,7 +18,7 @@ import {
 	REPOSITORY_NAME,
 	REPOSITORY_OWNER,
 	REPOSITORY_URL,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 const REPO: IGitHubRepo = { owner: REPOSITORY_OWNER, repo: REPOSITORY_NAME };
 const GH_LOG =

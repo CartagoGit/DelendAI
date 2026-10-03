@@ -2,15 +2,17 @@
 id: x00764
 title: "A long file name can be written atomically"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-30
 priority: P1
 related: [q00010]
-last-transition-id: 2c9bdc2b-172d-4242-b6e4-8406ee8b6028
-last-correlation-id: 2c9bdc2b-172d-4242-b6e4-8406ee8b6028
-last-transition-from: in-progress
+last-transition-id: 846b1fd4-5f23-4acd-aebe-80370e519b3a
+last-correlation-id: 846b1fd4-5f23-4acd-aebe-80370e519b3a
+last-transition-from: review
+shipped-in:
+  - "7dc72fffb95b"
 ---
 
 # x00764 — A long file name can be written atomically

@@ -26,7 +26,7 @@ import {
 	renderRepairResolutions,
 	type IRepairDecision,
 	type IRepairResolution,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {

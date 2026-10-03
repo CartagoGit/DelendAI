@@ -34,6 +34,7 @@ import { relative, resolve } from 'node:path';
 
 import { BUN_OWNED_SPECS } from '../../../vitest.shared';
 import { repoRoot } from '../lib/repo-root';
+import { onlyImportsChanged } from './import-only-change.helper';
 
 import type {
 	IChangedCoverageReport,
@@ -305,13 +306,40 @@ const changedSince = (base: string): readonly string[] =>
 		.map((line) => line.trim())
 		.filter((line) => line.length > 0);
 
+const contentAt = (ref: string, file: string): string | undefined => {
+	try {
+		return execFileSync('git', ['show', `${ref}:${file}`], {
+			cwd: repoRoot(),
+			encoding: 'utf8',
+			maxBuffer: 16 * 1024 * 1024,
+			stdio: ['ignore', 'pipe', 'ignore'],
+		});
+	} catch {
+		return undefined;
+	}
+};
+
+/** The changed files whose only change is an import, against `base`. */
+const importOnlyChanges = (
+	base: string,
+	changed: readonly string[],
+): readonly string[] => {
+	const fork = execFileSync('git', ['merge-base', base, 'HEAD'], {
+		cwd: repoRoot(),
+		encoding: 'utf8',
+	}).trim();
+	return changed.filter((file) =>
+		onlyImportsChanged(contentAt(fork, file), contentAt('HEAD', file)),
+	);
+};
+
 const main = (): number => {
 	const summaryPath = resolve(
 		repoRoot(),
 		arg('summary') ?? '.cache/coverage/coverage-summary.json',
 	);
 	const base = arg('base');
-	const changed =
+	const touched =
 		base === undefined
 			? (arg('changed-file') ?? '')
 					.trim()
@@ -319,6 +347,9 @@ const main = (): number => {
 					.map((line) => line.trim())
 					.filter((line) => line.length > 0)
 			: changedSince(base);
+	const importOnly =
+		base === undefined ? [] : importOnlyChanges(base, touched);
+	const changed = touched.filter((file) => !importOnly.includes(file));
 
 	const report = judgeChangedCoverage({
 		changed,
@@ -333,6 +364,11 @@ const main = (): number => {
 	});
 
 	console.log(`changed-file-coverage: ${report.verdict} — ${report.reason}`);
+	if (importOnly.length > 0) {
+		console.log(
+			`  not judged (only their imports or comments changed): ${String(importOnly.length)} file(s)`,
+		);
+	}
 	for (const shortfall of report.shortfalls) {
 		console.log(`  under floor: ${shortfall}`);
 	}

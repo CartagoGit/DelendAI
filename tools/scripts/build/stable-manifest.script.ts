@@ -21,7 +21,7 @@ import {
 	buildStableManifest,
 	STABLE_API_TOOLS,
 	STABLE_MANIFEST_REL,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
 import { readTextIfPresent } from '../lib/read-text-if-present';

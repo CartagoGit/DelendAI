@@ -28,11 +28,11 @@ import {
 	writeScaffoldedFilesOrThrow,
 	type IWriteScaffoldedFilesResult,
 } from '@delendai/client';
-import {
-	scaffoldPluginFiles,
-	type IScaffoldedFile,
-	type IScaffoldPluginOptions,
-} from '@delendai/core/public';
+import { scaffoldPluginFiles } from '@delendai/core/public';
+import type {
+	IScaffoldedFile,
+	IScaffoldPluginOptions,
+} from '@delendai/core/cli';
 
 const USAGE =
 	'usage: bun run tools/scripts/scaffold/create-plugin.script.ts <plugin-name> -- "<description>" [--keep-legacy]';

@@ -17,7 +17,6 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import {
-	CAPABILITIES,
 	createCapabilityGate,
 	isCapability,
 	parseCapability,
@@ -25,6 +24,7 @@ import {
 	resolveCapabilityAccess,
 	splitCapability,
 } from '@delendai/core/public';
+import { CAPABILITIES } from '@delendai/core/cli';
 
 import { createCapabilityContext } from '../../../../src/lib/capabilities/inject';
 import type {

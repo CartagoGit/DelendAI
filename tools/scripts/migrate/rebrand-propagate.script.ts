@@ -40,7 +40,7 @@ import {
 import { extname, join, relative, resolve } from 'node:path';
 import { readRegularFile } from '../lib/read-text-if-present';
 
-import { scanLegacyIdentity } from '@delendai/core/public';
+import { scanLegacyIdentity } from '@delendai/core/cli';
 
 interface IOptions {
 	from: string;

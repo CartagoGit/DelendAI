@@ -15,7 +15,7 @@ import { join } from 'node:path';
 import {
 	type IAuthorityDeclaration,
 	parseAuthorityDeclarations,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import { loadPluginManifests } from '../generate/from-manifests.script';
 import { repoRoot } from '../lib/repo-root';

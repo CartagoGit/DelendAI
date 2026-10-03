@@ -2,7 +2,7 @@
 id: q00023
 title: "Snapshot Git by SHA — reconcile --sha <commit> is deterministic and atomic"
 kind: plan
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -14,9 +14,11 @@ audit-source:
 related:
   - q00022
   - q00024
-last-transition-id: 1bd969fe-207f-4fd4-afb3-6c33eae26eae
-last-correlation-id: 1bd969fe-207f-4fd4-afb3-6c33eae26eae
-last-transition-from: in-progress
+last-transition-id: 384b6d12-4b83-42eb-acdd-ea4a75c2f7b2
+last-correlation-id: 384b6d12-4b83-42eb-acdd-ea4a75c2f7b2
+last-transition-from: review
+shipped-in:
+  - "4385f41e6bd9"
 ---
 
 # q00023 — Snapshot Git by SHA

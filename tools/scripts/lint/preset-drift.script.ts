@@ -28,13 +28,15 @@ import { access, readdir, readFile } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 
 import {
-	PACK_DEFAULTS_OVERLAY,
-	PACK_IDS,
 	PRESET_CATALOG,
-	PRESET_KIND,
 	resolvePresetMembers,
 	type IPresetDefinition,
 } from '@delendai/core/public';
+import {
+	PACK_DEFAULTS_OVERLAY,
+	PACK_IDS,
+	PRESET_KIND,
+} from '@delendai/core/cli';
 
 // Internal path on purpose: the generated lazy index is a build-time
 // artifact this gate reads, not a runtime API consumers should depend

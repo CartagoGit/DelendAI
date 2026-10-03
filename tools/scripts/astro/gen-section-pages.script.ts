@@ -98,7 +98,7 @@ import Base from '../../../layouts/Base.astro';
 import PluginsSection from '../../../components/PluginsSection.astro';
 import SiteFooter from '../../../components/SiteFooter.astro';
 import { useTranslations, type Lang } from '../../../i18n/ui';
-import { REPOSITORY_URL } from '@delendai/core/public';
+import { REPOSITORY_URL } from '@delendai/core/cli';
 
 const lang: Lang = '${params.lang}';
 const t = useTranslations(lang);

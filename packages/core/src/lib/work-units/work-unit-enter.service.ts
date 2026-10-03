@@ -17,7 +17,10 @@ import { readSwarm } from './work-swarm.service';
 import { aliasedIdentity, describeAlias } from './agent-alias.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { liveProposalBranch } from './proposal-branch.service';
-import { reviewedByEntrant } from './reviewed-proposal.service';
+import {
+	reviewedByEntrant,
+	topicForNewUnit,
+} from './reviewed-proposal.service';
 import { scalarArg } from './command-args.helper';
 
 import {
@@ -247,7 +250,18 @@ export const enteredHeld = async (
 	}
 	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
 	if (ambiguous !== undefined) return ambiguous;
-	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);
+	let ref = existingWorkRef(root, args, policy, agent, proposal, slice);
+	if (
+		scalarArg(args, 'topic') === undefined &&
+		readGit(root, ['rev-parse', '-q', '--verify', ref]) === undefined
+	) {
+		// A unit nobody named is named for what it is.
+		args = [
+			...args,
+			`--topic=${await topicForNewUnit(root, policy, args, proposal)}`,
+		];
+		ref = existingWorkRef(root, args, policy, agent, proposal, slice);
+	}
 	const branch = ref.replace(/^refs\/heads\//u, '');
 	const base = integrationBase(root, policy);
 	if (base === undefined) {

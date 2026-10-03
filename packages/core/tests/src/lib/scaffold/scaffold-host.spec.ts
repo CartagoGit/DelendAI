@@ -22,12 +22,14 @@ import {
 	scaffoldAgentFile,
 	scaffoldClaudeAgentFile,
 	scaffoldCodexAgentFile,
-	scaffoldHostProject,
 	scaffoldPluginFiles,
-	scaffoldPromptFile,
 	scaffoldSkillFile,
-	scaffoldToolFile,
 } from '@delendai/core/public';
+import {
+	scaffoldHostProject,
+	scaffoldPromptFile,
+	scaffoldToolFile,
+} from '@delendai/core/cli';
 
 const HOST = {
 	projectName: 'Acme Quest',

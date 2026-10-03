@@ -1,15 +1,14 @@
 #!/usr/bin/env bun
 import { join } from 'node:path';
 
+import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
 import {
 	aggregateROI,
 	buildValueLookup,
 	loadAllPluginManifests,
 	validatePluginManifest,
-	withFileMutex,
-	writeFileAtomic,
 	type IRoiMeasurement,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
 

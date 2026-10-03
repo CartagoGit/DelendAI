@@ -18,7 +18,7 @@
  * it found. Installing is `delendai guard install` — a command somebody
  * types, or a project's own `prepare`.
  */
-import { parseJsonc } from '@delendai/core/public';
+import { parseJsonc } from '@delendai/core/cli';
 
 import type {
 	IGuardAutoinstallOutcome,
