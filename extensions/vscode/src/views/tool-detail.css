@@ -1,0 +1,23 @@
+body {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 16px;
+	font-family: var(--vscode-font-family);
+	color: var(--vscode-foreground);
+	background: var(--vscode-editor-background);
+}
+
+pre,
+code {
+	font-family: var(--vscode-editor-font-family);
+}
+
+.schema__props {
+	display: grid;
+	gap: 8px;
+	padding-left: 18px;
+}
+
+.schema__node {
+	margin-top: 6px;
+}

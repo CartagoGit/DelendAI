@@ -1,0 +1,32 @@
+{
+	"name": "@delendai/changelog",
+	"version": "0.1.1",
+	"private": true,
+	"type": "module",
+	"description": "Changelog generation + semver bump inference + release-plan preview from conventional commits (f00131 S1+S2+S3).",
+	"sideEffects": false,
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"import": "./src/index.ts"
+		},
+		"./*": {
+			"types": "./src/*",
+			"import": "./src/*"
+		}
+	},
+	"scripts": {
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@delendai/core": "workspace:*",
+		"zod": "^4.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "^26.2.0",
+		"typescript": "7.0.2",
+		"vitest": "^4.1.11"
+	}
+}

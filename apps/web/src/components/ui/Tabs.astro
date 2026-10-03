@@ -1,0 +1,57 @@
+---
+/**
+ * `apps/web/src/components/ui/Tabs.astro` — wrapper around the
+ * host-agnostic `renderTabs()` from `@delendai/shared`.
+ *
+ * Before this slice the markup + class names + default-state logic
+ * all lived in the .astro; now the tablist portion (the
+ * `<nav role="tablist">` with the trigger buttons) is rendered by
+ * the shared `renderTabs()` (f00102 S2.1) so the docs site and any
+ * future product surface (extension webviews, JetBrains / etc.)
+ * emit the same HTML.
+ *
+ * Class name migration: the wrapper applies both `delendai-tabs` and
+ * `ui-tabs` to the root while the rest of `apps/web` keeps emitting
+ * `.ui-tabs*` markup. The shared SCSS has a `@extend .delendai-tabs` alias
+ * for `.ui-tabs`, so both spellings work today. Future slices rename
+ * the markup page-by-page.
+ *
+ * Same panel slot pattern as before — the .astro wraps the tablist
+ * + panels under a single `<section>` so the
+ * `[data-ui-tabs]`-rooted JS in `_tabs-controller.ts` keeps the
+ * aria-roving / cross-fade machinery intact.
+ */
+import {
+	renderTabs,
+	type ITabsProps,
+} from '@delendai/shared/components/ui/tabs';
+
+interface Props extends ITabsProps {}
+
+const { tabs, defaultTab, variant, label } = Astro.props as Props;
+const initial = defaultTab ?? tabs[0]?.id ?? '';
+---
+
+<section
+	class:list={['delendai-tabs', 'ui-tabs', `delendai-tabs--${variant ?? 'underline'}`]}
+	data-ui-tabs
+	data-default-tab={initial}
+>
+	<Fragment set:html={renderTabs({ tabs, defaultTab, variant, label })} />
+	<div class="delendai-tabs__panels">
+		<slot />
+	</div>
+</section>
+
+<script>
+	/**
+	 * Tabs controller — keyboard + cross-fade glue. Kept in
+	 * apps/web/src/components/ui/_tabs-controller.ts because the
+	 * scope of the controller is per-page (driven by `[data-ui-tabs]`
+	 * roots in the document) and the script lives alongside the
+	 * Astro components that produce those roots. The renderer
+	 * itself is host-agnostic; this site-specific glue is the seam.
+	 */
+	import { initTabs } from './_tabs-controller';
+	initTabs(document);
+</script>

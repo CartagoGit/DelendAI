@@ -1,0 +1,84 @@
+# setup-bun-repo — r00035 reusable composite action.
+#
+# Encapsulates the steps every workflow in this repo shares:
+#   - checkout
+#   - setup-bun (pin to the version the repo expects)
+#   - bun install --frozen-lockfile
+#
+# Use this action instead of inlining the same four-step preamble in every
+# workflow. Workflows that need a custom bun version or non-frozen install
+# should opt out and inline their own block.
+name: setup-bun-repo
+description: Checkout + setup-bun + frozen install for the delendai repo.
+
+inputs:
+    bun-version:
+        description: Bun version to install.
+        required: false
+        default: '1.4.2'
+    fetch-depth:
+        description: >-
+            Passed through to actions/checkout. Jobs that diff against a
+            base ref (e.g. affected-file detection) need '0' for full
+            history; everything else keeps the default shallow clone.
+        required: false
+        default: '1'
+
+runs:
+    using: composite
+    steps:
+        - name: checkout
+          uses: actions/checkout@v7
+          with:
+              fetch-depth: ${{ inputs.fetch-depth }}
+
+        # A pull request's run checks out a detached merge commit, while the
+        # run after it merges has the integration branch checked out BY
+        # NAME. Anything that depends on the checked-out branch was green on
+        # the pull request and red on the integration branch (#465 turned
+        # develop red for five merges that way). The merge commit is what
+        # the integration branch will hold, so the run puts it on a local
+        # branch of that name: the same tree, on the same branch, as the
+        # run the merge triggers. Only the local checkout changes; nothing
+        # is pushed, and no base resolution reads a local branch (they pass
+        # the base commit, or origin/<base>).
+        - name: check out the merge on the branch it merges into
+          if: ${{ github.event_name == 'pull_request' && github.base_ref != '' }}
+          shell: bash
+          env:
+              BASE_REF: ${{ github.base_ref }}
+          run: git checkout -q -B "$BASE_REF"
+
+        - name: setup-bun
+          uses: oven-sh/setup-bun@v2
+          with:
+              bun-version: ${{ inputs.bun-version }}
+
+        # BEFORE the install, which is the only position where a cache
+        # is a cache. `actions/cache` restores when its step RUNS and
+        # saves in the post-job phase — so sitting after `bun install`
+        # it saved a store faithfully on every run and restored it too
+        # late for anything to use.
+        #
+        # SIZE OF THE PROBLEM, measured rather than assumed: on a
+        # healthy run of develop this step takes ~15s and the whole
+        # `lint-biome` job takes 31s. So this was costing seconds per
+        # job across ~30 jobs, not the minutes it first looked like —
+        # the half-hour stalls that led here were zombie runs, which is
+        # a different fault entirely.
+        #
+        # Worth fixing anyway, and worth pinning: a cache that never
+        # hits is indistinguishable from one that is merely cold, so
+        # nothing would ever have reported this.
+        - name: cache bun
+          uses: actions/cache@v4
+          with:
+              path: ~/.bun/install/cache
+              key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+              restore-keys: |
+                  bun-${{ runner.os }}-
+          if: ${{ ! env.ACT }}
+
+        - name: install dependencies
+          shell: bash
+          run: bun install --frozen-lockfile

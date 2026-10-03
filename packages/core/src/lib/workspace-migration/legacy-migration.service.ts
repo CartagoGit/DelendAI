@@ -1,0 +1,224 @@
+/**
+ * legacy-migration.service.ts — b00239 S2.
+ *
+ * The versioned, idempotent engine that lets a workspace built against an
+ * older identity heal itself.
+ *
+ * ## Why this is the product, not a rebranding chore
+ *
+ * A rename that makes every existing project hunt down stale references by
+ * hand is the exact work this project exists to remove. The measure of the
+ * DelendAI rebrand is not that the repository says DelendAI; it is that a
+ * project which today launches the old binary comes back working after one
+ * run, and its owner only notices that nothing broke.
+ *
+ * ## Two properties the engine has to have
+ *
+ * **Cheap when there is nothing to do.** Every project-aware entrypoint
+ * asks this before loading the server, so the common case — a workspace
+ * with no legacy identity at all — must cost a probe and produce no
+ * output. A migration check that announces itself on every start is a
+ * migration check that gets disabled.
+ *
+ * **Idempotent, by recording what ran.** Re-running a completed migration
+ * must change nothing, and the way to guarantee that is to record
+ * completion rather than to re-derive it from the tree. Deriving it means
+ * asking "does this look migrated?", and a half-finished tree can look
+ * migrated from one angle and not another.
+ *
+ * The registry is ordered and each entry declares the id it produces, so
+ * `applied` is a set of migration ids and never a version number: a number
+ * cannot express "this project skipped v1 because it started at v2".
+ */
+
+import { access } from 'node:fs/promises';
+import { join } from 'node:path';
+
+import type {
+	IMigration,
+	IMigrationContext,
+	IMigrationJournal,
+	IMigrationOutcome,
+	IMigrationRunResult,
+} from '../contracts/interfaces/workspace-migration.interface';
+import type { IConfigTransition } from '../contracts/interfaces/config-transition.interface';
+import { ADOPTION_MARKERS } from './legacy-migration.constant';
+import { reconcileConfigTransitions } from './config-transitions.service';
+
+export type {
+	IMigration,
+	IMigrationContext,
+	IMigrationId,
+	IMigrationJournal,
+	IMigrationOutcome,
+	IMigrationPlanStep,
+	IMigrationRunResult,
+} from '../contracts/interfaces/workspace-migration.interface';
+
+/**
+ * Run every pending migration, in registry order.
+ *
+ * Ordering is by declaration and not by id, because migrations may depend
+ * on each other's output and an alphabetical accident is not a dependency
+ * statement.
+ */
+export const runPendingMigrations = async (input: {
+	readonly migrations: readonly IMigration[];
+	readonly journal: IMigrationJournal;
+	readonly ctx: IMigrationContext;
+}): Promise<IMigrationRunResult> => {
+	const applied = new Set(await input.journal.read(input.ctx.workspaceRoot));
+	const outcomes: IMigrationOutcome[] = [];
+
+	for (const migration of input.migrations) {
+		if (applied.has(migration.id)) continue;
+
+		// Detect BEFORE plan: the whole point of the cheap probe is that a
+		// workspace with nothing to migrate never reaches the expensive
+		// half.
+		if (!(await migration.detect(input.ctx))) continue;
+
+		const steps = await migration.plan(input.ctx);
+
+		if (input.ctx.dryRun) {
+			outcomes.push({ status: 'planned', id: migration.id, steps });
+			continue;
+		}
+
+		// A migration that plans nothing is not a migration.
+		//
+		// `detect` answers a question one step short of the one that
+		// matters. Each migrator probes for the file it OWNS —
+		// `pathExists(delendai.config.json)`, `pathExists(.vscode/mcp.json)`,
+		// "the agent-files directory is not empty" — and an adopted
+		// project has those files by definition. "The file I rewrite
+		// exists" is not "the file needs rewriting", so in a project with
+		// nothing legacy in it every migrator detected, applied a no-op,
+		// and got RECORDED — six lines of `migrated:` on every boot, and
+		// a journal write that conjured `.delendai/` into a tree that had
+		// no reason to grow one.
+		//
+		// `plan` already answers the real question, uniformly, for every
+		// migrator; it is what `--dry-run` has always been trusted to
+		// print. Asking it here fixes all six at once instead of six
+		// times, and keeps the answer in one place — which is the point
+		// of the migrator contract having a `plan` at all.
+		//
+		// Nothing is recorded, deliberately: there is nothing to be
+		// idempotent about, and the next boot re-probes for the price of
+		// the same reads.
+		if (steps.length === 0) continue;
+
+		try {
+			await migration.apply(input.ctx);
+		} catch (error) {
+			// A failure is reported and STOPS the run. Continuing would
+			// apply a later migration on top of a workspace whose earlier
+			// step did not finish, which is how a half-migrated tree gets
+			// recorded as complete.
+			outcomes.push({
+				status: 'failed',
+				id: migration.id,
+				reason: String(error),
+			});
+			return { outcomes, acted: true };
+		}
+
+		// Recorded only after `apply` returns. Recording first would mark a
+		// crashed migration as done and make the damage permanent.
+		await input.journal.record(input.ctx.workspaceRoot, migration.id);
+		outcomes.push({ status: 'migrated', id: migration.id });
+	}
+
+	if (outcomes.length === 0)
+		return { outcomes: [{ status: 'not-needed' }], acted: false };
+	return { outcomes, acted: true };
+};
+
+/**
+ * Whether this workspace has adopted delendai.
+ *
+ * The configuration file is the adoption marker, and `.delendai/` counts
+ * too: a workspace that has been healed before, and whose config was
+ * momentarily removed, should not be read as a stranger.
+ */
+export const hasAdopted = async (workspaceRoot: string): Promise<boolean> => {
+	for (const marker of ADOPTION_MARKERS) {
+		try {
+			await access(join(workspaceRoot, marker));
+			return true;
+		} catch {
+			// Not this one.
+		}
+	}
+	return false;
+};
+
+/**
+ * The guard every project-aware entrypoint calls before loading plugins.
+ *
+ * Returns quietly when there is nothing to do — no logging, no
+ * side effects — because it runs on every start of every project forever,
+ * and a check that talks on the happy path is a check somebody turns off.
+ */
+export const ensureWorkspaceMigrated = async (input: {
+	readonly migrations: readonly IMigration[];
+	readonly journal: IMigrationJournal;
+	readonly workspaceRoot: string;
+	/** Called only when something actually happened. */
+	readonly report?: (result: IMigrationRunResult) => void;
+	/**
+	 * What to do when the configuration changed since it was last
+	 * applied. Defaults to the shipped transitions; pass `[]` to opt out.
+	 */
+	readonly transitions?: readonly IConfigTransition[];
+}): Promise<IMigrationRunResult> => {
+	// A workspace that never adopted delendai is not ours to heal.
+	//
+	// This runs on every start of every project an editor opens, and the
+	// migrations behind it rename identity strings — `mcp-vertex`,
+	// `mcpv` — inside `.vscode/*.json`, `package.json`, host
+	// configuration and agent files, and move directories. That is
+	// correct for a workspace carrying this product's old name. In
+	// somebody else's repository it is a tool rewriting files nobody
+	// asked it to touch, and the journal it writes creates `.delendai/`
+	// in a project that has nothing to do with us.
+	//
+	// Observed: opening an unrelated project with the MCP configured
+	// created and modified a great many files.
+	//
+	// Adoption is one file. Without it, this returns without reading or
+	// writing anything — and `delendai init` is how a project opts in,
+	// deliberately, once.
+	if (!(await hasAdopted(input.workspaceRoot))) {
+		return { outcomes: [{ status: 'not-needed' }], acted: false };
+	}
+	const migrated = await runPendingMigrations({
+		migrations: input.migrations,
+		journal: input.journal,
+		ctx: { workspaceRoot: input.workspaceRoot, dryRun: false },
+	});
+	// A failed migration leaves the workspace between two identities;
+	// acting on its configuration then would build on a tree the engine
+	// has just refused to call finished.
+	if (migrated.outcomes.some((outcome) => outcome.status === 'failed')) {
+		input.report?.(migrated);
+		return migrated;
+	}
+	// After the migrations, not before: they may still be renaming the
+	// config file and the cache this reads and moves.
+	const transitions = await reconcileConfigTransitions({
+		workspaceRoot: input.workspaceRoot,
+		dryRun: false,
+		...(input.transitions === undefined
+			? {}
+			: { transitions: input.transitions }),
+	});
+	const result: IMigrationRunResult = {
+		...migrated,
+		acted: migrated.acted || transitions.acted,
+		transitions,
+	};
+	if (result.acted) input.report?.(result);
+	return result;
+};

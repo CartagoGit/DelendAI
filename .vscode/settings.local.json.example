@@ -1,0 +1,13 @@
+{
+	// ─── Local-only overrides for VS Code Copilot auto-approve ────────────
+	//
+	// Copy this file to `.vscode/settings.local.json` (gitignored) to
+	// re-enable confirmation prompts on this specific machine. Useful when
+	// working on a less-trusted subfolder or pair-programming.
+
+	"chat.tools.autoApprove": false,
+	"github.copilot.chat.agent.autoApprove": false,
+	"chat.tools.terminal.autoApprove": false,
+	"chat.mcp.autoApprove": false,
+	"chat.edit.autoApprove": false
+}

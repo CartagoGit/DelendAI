@@ -1,0 +1,433 @@
+/**
+ * init-default.command.spec.ts — f00103.
+ *
+ * Acceptance for `init:default`, the non-interactive counterpart of
+ * `init`. The operator's repeat-use path: pre-baked defaults, no
+ * prompts, safe merging for project-owned configuration.
+ *
+ * Covered here:
+ *   1. The default answers match the operator's selection
+ *      (vertex preset + managed instructions + skills + agents + scaffold).
+ *   2. The full pipeline (detection + render + write) runs end-to-end
+ *      against a tmpdir, surfaces every file the bundle produces, and
+ *      leaves the config + host-instructions on disk with the
+ *      vertex preset's plugin set.
+ *   3. The host-entry path resolution surfaces the typed
+ *      `HostEntryNotFoundError` envelope when no probe branch matches
+ *      and the operator did not pass `--delendai-root`.
+ *   4. Flag parsing matches `init`'s surface (`--dry-run`,
+ *      `--delendai-root`, `--plugin-paths-root`).
+ *
+ * The fake host-entry script lives inside the tmpdir and is wired
+ * through `--delendai-root` so the resolver's `flag` branch wins —
+ * no need to stub the filesystem probe.
+ */
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { basename } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import {
+	detectAndDecorateAnswers,
+	parseFlags,
+	runInitWithAnswers,
+	type IInitFlags,
+} from '../../commands/init/init.command';
+import { initDefaultCommand } from '../../commands/init/init-default.command';
+
+import { parseJsonc } from '@delendai/core/public';
+
+/**
+ * f00502: the generated config is JSONC — one comment above every
+ * plugin entry — so the spec reads it the way the loader does.
+ */
+const parseGeneratedConfig = <T>(raw: string | undefined): T =>
+	parseJsonc(raw ?? '{}').value as T;
+
+import type { IInitAnswers } from './init-answers.types';
+import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
+import type {
+	ICliCommandContext,
+	ICliGlobalOptions,
+} from '../../contracts/interfaces/cli-command.interface';
+import { createNoopContext } from '../noop-context.factory';
+
+const minimalGlobals = (): ICliGlobalOptions => ({
+	workspace: '',
+	remote: undefined,
+	json: false,
+	format: 'text',
+	lang: 'en',
+	noColor: true,
+	plugins: [],
+	preset: undefined,
+	config: undefined,
+	extraOptions: undefined,
+	agentWorktree: undefined,
+});
+
+const noopCtx = (cwd: string, globals: ICliGlobalOptions): ICliCommandContext =>
+	createNoopContext(cwd, globals);
+
+const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
+	preset: 'dogfood',
+	extraPlugins: [],
+	excludedPlugins: [],
+	hostInstructions: 'append',
+	copyCoreSkills: true,
+	generateAgentMd: true,
+	migrateFromLegacy: true,
+	force: false,
+};
+
+const HOST_ENTRY_PATH = join(
+	dirname(fileURLToPath(import.meta.url)),
+	'../../../../../tools/scripts/host/host-server.script.ts',
+);
+
+describe('init:default (f00103)', () => {
+	let tmp: string;
+	let fakeHostEntry: string;
+
+	beforeEach(async () => {
+		tmp = await mkdtemp(join(tmpdir(), 'delendai-init-default-'));
+		fakeHostEntry = join(tmp, 'fake-host/host-server.script.ts');
+		await mkdir(dirname(fakeHostEntry), { recursive: true });
+		await writeFile(fakeHostEntry, '// fake host entry for tests\n');
+	});
+
+	afterEach(async () => {
+		await rm(tmp, { recursive: true, force: true });
+	});
+
+	it('exposes the operator defaults as the canonical init:default answers', async () => {
+		const flags: IInitFlags = parseFlags([]);
+		const answers = await detectAndDecorateAnswers(
+			tmp,
+			flags,
+			INIT_DEFAULT_ANSWERS,
+		);
+		// `dogfood` is the operator's chosen default — mirrors the
+		// delendai project's own plugin set.
+		expect(answers.preset).toBe('dogfood');
+		expect(answers.extraPlugins).toEqual([]);
+		expect(answers.excludedPlugins).toEqual([]);
+		expect(answers.hostInstructions).toBe('append');
+		expect(answers.copyCoreSkills).toBe(true);
+		expect(answers.generateAgentMd).toBe(true);
+		expect(answers.migrateFromLegacy).toBe(true);
+		expect(answers.force).toBe(false);
+	});
+
+	it('parses the same flag surface as init', () => {
+		const flags = parseFlags([
+			'--dry-run',
+			`--delendai-root=${fakeHostEntry}`,
+			'--plugin-paths-root=libs',
+		]);
+		expect(flags.dryRun).toBe(true);
+		expect(flags.delendaiRoot).toBe(fakeHostEntry);
+		expect(flags.pluginPathsRoot).toBe('libs');
+		expect(flags.force).toBe(false);
+	});
+
+	it('runs the full pipeline end-to-end against a tmpdir with managed host instructions', async () => {
+		const ctx = noopCtx(tmp, minimalGlobals());
+		const result = await initDefaultCommand.run(
+			['--dry-run', `--delendai-root=${fakeHostEntry}`],
+			ctx,
+		);
+		expect(result.code).toBe(EXIT_CODE.OK);
+		const data = result.data as {
+			ok: boolean;
+			dryRun: boolean;
+			files: { relPath: string; content: string }[];
+			summary: string;
+		};
+		expect(data.ok).toBe(true);
+		expect(data.dryRun).toBe(true);
+		expect(Array.isArray(data.files)).toBe(true);
+		const rels = data.files.map((f) => f.relPath);
+		// The vertex preset must populate every expected file family.
+		expect(rels).toContain('delendai.config.json');
+		expect(rels).toContain('.vscode/mcp.json');
+		expect(rels).toContain('AGENTS.md');
+		expect(rels).toContain('CLAUDE.md');
+		expect(rels).toContain('.github/copilot-instructions.md');
+		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
+		expect(rels).toContain('docs/delendai/skills/manifest.json');
+
+		// The config must include every vertex member — x00166: vertex
+		// now mirrors delendai.config.json's `plugins` keys exactly
+		// (28 total), INCLUDING `proposals` (orchestration/swarm) since
+		// delendai dogfoods its own orchestrator and every adopter via
+		// `init:default` must get it too. Previously vertex silently
+		// excluded proposals/memory/rules/deps/notification/logs and
+		// included 6 phantom plugins that were never actually loaded.
+		const configFile = data.files.find(
+			(f) => f.relPath === 'delendai.config.json',
+		);
+		expect(configFile).toBeDefined();
+		const config = parseGeneratedConfig<{
+			plugins: Record<string, unknown>;
+		}>(configFile?.content);
+		for (const required of [
+			'audit',
+			'auto-agent-selector',
+			'container',
+			'conventions',
+			'deps',
+			'diagram',
+			'docs',
+			'env',
+			'error-reporting',
+			'forge',
+			'git',
+			'i18n',
+			'link-check',
+			'logs',
+			'memory',
+			'notification',
+			'orchestrator-runner',
+			'perf',
+			'proposals',
+			'quality',
+			'rules',
+			'search',
+			'security',
+			'status-marker',
+			'tech-debt',
+			'test-convention',
+			'test-policy',
+			'usage-tracking',
+		]) {
+			expect(config.plugins[required]).toBeDefined();
+		}
+		// f00502 S4: the config now lists every plugin the catalog knows
+		// about so the user can discover them, so a plugin outside the
+		// preset is present-and-disabled rather than absent.
+		for (const notInPreset of [
+			'web-fetch',
+			'issues',
+			'refactor',
+			'api',
+			'prompt-eval',
+			'database',
+		]) {
+			expect(
+				(config.plugins[notInPreset] as { enabled?: boolean })?.enabled,
+			).toBe(false);
+		}
+		// The dogfood snapshot enables 38 plugins; this directory has no
+		// forge remote, so the one forge plugin in it (`forge`) is left
+		// off. No extras added.
+		const enabled = Object.values(config.plugins).filter(
+			(entry) => (entry as { enabled?: boolean }).enabled !== false,
+		);
+		expect(enabled.length).toBe(37);
+		expect((config.plugins.forge as { enabled?: boolean })?.enabled).toBe(
+			false,
+		);
+	});
+
+	it('writes the bundle to disk when --dry-run is absent', async () => {
+		const ctx = noopCtx(tmp, minimalGlobals());
+		const result = await initDefaultCommand.run(
+			[`--delendai-root=${fakeHostEntry}`],
+			ctx,
+		);
+		expect(result.code).toBe(EXIT_CODE.OK);
+		const data = result.data as {
+			ok: true;
+			written: { path: string; kind: string }[];
+			summary: string;
+		};
+		expect(data.ok).toBe(true);
+		expect(data.written.length).toBeGreaterThan(0);
+
+		// The config file landed on disk with the rendered vertex preset.
+		const configOnDisk = parseGeneratedConfig<{
+			plugins: Record<string, unknown>;
+		}>(await readFile(join(tmp, 'delendai.config.json'), 'utf8'));
+		expect(configOnDisk.plugins.git).toBeDefined();
+		expect(configOnDisk.plugins.audit).toBeDefined();
+		expect(configOnDisk.plugins.conventions).toBeDefined();
+		// x00166: vertex now includes the orchestration plugins too —
+		// every adopter running init:default gets the orchestrator.
+		expect(configOnDisk.plugins.proposals).toBeDefined();
+		expect(configOnDisk.plugins.memory).toBeDefined();
+		// f00502 S4: plugins outside the preset are written disabled, so
+		// the adopter can see what exists without them being loaded.
+		expect(
+			(configOnDisk.plugins.issues as { enabled?: boolean })?.enabled,
+		).toBe(false);
+		expect(
+			(configOnDisk.plugins['web-fetch'] as { enabled?: boolean })
+				?.enabled,
+		).toBe(false);
+
+		// Host-instructions centralizer wrote its managed canonical block.
+		const agentsContent = await readFile(join(tmp, 'AGENTS.md'), 'utf8');
+		expect(agentsContent).toContain('<!-- delendai:begin -->');
+		expect(agentsContent).toContain('<!-- delendai:end -->');
+	});
+
+	it('does not project skills when a malformed project config was preserved', async () => {
+		await writeFile(join(tmp, 'delendai.config.json'), '{broken', 'utf8');
+		const result = await initDefaultCommand.run(
+			[`--delendai-root=${fakeHostEntry}`],
+			noopCtx(tmp, minimalGlobals()),
+		);
+		expect(result.code).toBe(EXIT_CODE.OK);
+		await expect(
+			readFile(join(tmp, 'docs/delendai/skills/manifest.json'), 'utf8'),
+		).rejects.toThrow();
+	});
+
+	it('uses the published canonical launcher when --delendai-root is absent', async () => {
+		const ctx = noopCtx(tmp, minimalGlobals());
+		const result = await initDefaultCommand.run([], ctx);
+		expect(result.code).toBe(EXIT_CODE.OK);
+		const vscode = JSON.parse(
+			await readFile(join(tmp, '.vscode/mcp.json'), 'utf8'),
+		) as {
+			servers: Record<string, { command: string; args: string[] }>;
+		};
+		const server = vscode.servers[`DelendAI:${basename(tmp)}`];
+		expect(server).toMatchObject({
+			command: 'bunx',
+			args: [
+				'--package',
+				'@delendai/cli',
+				'delendai',
+				'__serve',
+				'--workspace',
+				'${workspaceFolder}',
+				'--name',
+				`DelendAI:${basename(tmp)}`,
+			],
+		});
+	});
+
+	it('runInitWithAnswers passes through the force flag when --force is supplied by the caller', async () => {
+		const ctx = noopCtx(tmp, minimalGlobals());
+		const flags = parseFlags([
+			'--dry-run',
+			`--delendai-root=${fakeHostEntry}`,
+			'--force',
+		]);
+		const answers = await detectAndDecorateAnswers(
+			tmp,
+			flags,
+			INIT_DEFAULT_ANSWERS,
+		);
+		const result = await runInitWithAnswers(ctx, flags, answers);
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(answers.force).toBe(true);
+	});
+
+	it('removes stale generated agent files when the namespace prefix changes', async () => {
+		await mkdir(join(tmp, '.github/agents'), { recursive: true });
+		await mkdir(join(tmp, '.claude/agents'), { recursive: true });
+		await mkdir(join(tmp, '.codex/agents'), { recursive: true });
+		await writeFile(
+			join(tmp, '.github/agents/delendai-orchestrator.agent.md'),
+			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
+		);
+		await writeFile(
+			join(tmp, '.claude/agents/delendai-orchestrator.md'),
+			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
+		);
+		await writeFile(
+			join(tmp, '.codex/agents/delendai-orchestrator.md'),
+			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
+		);
+		await writeFile(
+			join(tmp, '.github/agents/custom-helper.agent.md'),
+			'custom user file\n',
+		);
+
+		const ctx = noopCtx(tmp, minimalGlobals());
+		const flags = parseFlags([`--delendai-root=${fakeHostEntry}`]);
+		const answers = await detectAndDecorateAnswers(tmp, flags, {
+			...INIT_DEFAULT_ANSWERS,
+			namespacePrefix: 'acme',
+			serverName: 'acme-tools',
+		});
+		const result = await runInitWithAnswers(ctx, flags, answers);
+
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(
+			existsSync(
+				join(tmp, '.github/agents/delendai-orchestrator.agent.md'),
+			),
+		).toBe(false);
+		expect(
+			existsSync(join(tmp, '.claude/agents/delendai-orchestrator.md')),
+		).toBe(false);
+		expect(
+			existsSync(join(tmp, '.codex/agents/delendai-orchestrator.md')),
+		).toBe(false);
+		expect(
+			existsSync(join(tmp, '.github/agents/acme-orchestrator.agent.md')),
+		).toBe(true);
+		expect(
+			existsSync(join(tmp, '.claude/agents/acme-orchestrator.md')),
+		).toBe(true);
+		expect(
+			existsSync(join(tmp, '.codex/agents/acme-orchestrator.md')),
+		).toBe(true);
+		expect(
+			existsSync(join(tmp, '.github/agents/custom-helper.agent.md')),
+		).toBe(true);
+	});
+
+	it('prints an early env warning block when the env plugin is loaded and a required var is missing', async () => {
+		// The requirement comes from the managed catalog, not from importing
+		// the database plugin: this case used to pay every standard-preset
+		// plugin's module graph (v00137).
+		const stderr = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation(() => true);
+		try {
+			const flags = parseFlags([
+				'--dry-run',
+				`--delendai-root=${HOST_ENTRY_PATH}`,
+			]);
+			const answers = await detectAndDecorateAnswers(tmp, flags, {
+				preset: 'standard',
+				extraPlugins: [],
+				excludedPlugins: [],
+				hostInstructions: 'append',
+				copyCoreSkills: true,
+				generateAgentMd: true,
+				migrateFromLegacy: true,
+				force: false,
+			});
+			const result = await runInitWithAnswers(
+				noopCtx(tmp, minimalGlobals()),
+				flags,
+				answers,
+			);
+			expect(result.code).toBe(EXIT_CODE.OK);
+			const stderrText = stderr.mock.calls
+				.map(([line]) => String(line))
+				.join('');
+			// It used to read "high/critical env findings detected before
+			// bootstrap", in a project with no `.env`, no database and no
+			// reason to have either. The variable is the `database`
+			// plugin's requirement; nothing is wrong with the project
+			// (x00605).
+			expect(stderrText).toContain('plugins that need configuring');
+			expect(stderrText).toContain('DATABASE_URL');
+			expect(stderrText).toContain('`database` plugin');
+			expect(stderrText).toContain('Nothing is wrong with this project');
+			expect(stderrText).not.toContain('high/critical');
+		} finally {
+			stderr.mockRestore();
+		}
+	});
+});

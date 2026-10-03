@@ -1,0 +1,394 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"lib": ["ES2022"],
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		"verbatimModuleSyntax": true,
+		"noImplicitOverride": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"declaration": false,
+		"sourceMap": true,
+		"noEmit": true,
+		"allowImportingTsExtensions": true,
+		"customConditions": ["@delendai/source"],
+		"types": ["bun", "node"],
+		"paths": {
+			"@delendai/core": ["./packages/core/src/index.ts"],
+			"@delendai/core/version": ["./packages/core/src/version.ts"],
+			"@delendai/core/public": ["./packages/core/src/public/index.ts"],
+			"@delendai/core/cli": ["./packages/core/src/cli.ts"],
+			"@delendai/core/*": ["./packages/core/src/*"],
+			"@delendai/client": ["./packages/client/src/index.ts"],
+			"@delendai/client/public": [
+				"./packages/client/src/public/index.ts"
+			],
+			"@delendai/client/*": ["./packages/client/src/*"],
+			"@delendai/cli": ["./packages/cli/src/index.ts"],
+			"@delendai/cli/*": ["./packages/cli/src/*"],
+			"@delendai/test-kit": ["./packages/test-kit/src/index.ts"],
+			"@delendai/test-kit/public": [
+				"./packages/test-kit/src/public/index.ts"
+			],
+			"@delendai/test-kit/*": ["./packages/test-kit/src/*"],
+			"@delendai/ui-extension": ["./packages/ui-extension/src/index.ts"],
+			"@delendai/ui-extension/public": [
+				"./packages/ui-extension/src/public/index.ts"
+			],
+			"@delendai/ui-extension/*": ["./packages/ui-extension/src/*"],
+			"@delendai/shared": ["./apps/shared/src/public/index.ts"],
+			"@delendai/shared/*": ["./apps/shared/src/*"],
+			"@delendai/ide": ["./packages/ui-extension/src/index.ts"],
+			"@delendai/ide/public": [
+				"./packages/ui-extension/src/public/index.ts"
+			],
+			"@delendai/ide/*": ["./packages/ui-extension/src/*"],
+			"@delendai/contracts": ["./packages/contracts/src/index.ts"],
+			"@delendai/contracts/*": ["./packages/contracts/src/*"],
+			"@delendai/state": ["./packages/state/src/public/index.ts"],
+			"@delendai/state/*": ["./packages/state/src/*"],
+			"@delendai/state-sqlite": ["./packages/state-sqlite/src/index.ts"],
+			"@delendai/state-sqlite/*": ["./packages/state-sqlite/src/*"],
+			"@delendai/state-sqlite/public": [
+				"./packages/state-sqlite/src/public/index.ts"
+			],
+			"@delendai/state-telemetry": [
+				"./packages/state-telemetry/src/index.ts"
+			],
+			"@delendai/state-telemetry/*": ["./packages/state-telemetry/src/*"],
+			"@delendai/proposals-sqlite": [
+				"./packages/proposals-sqlite/src/index.ts"
+			],
+			"@delendai/proposals-sqlite/*": [
+				"./packages/proposals-sqlite/src/*"
+			],
+			"@delendai/proposals-sqlite/public": [
+				"./packages/proposals-sqlite/src/public/index.ts"
+			],
+			"@delendai/context-compiler": [
+				"./packages/context-compiler/src/public/index.ts"
+			],
+			"@delendai/context-compiler/public": [
+				"./packages/context-compiler/src/public/index.ts"
+			],
+			"@delendai/context-compiler/*": [
+				"./packages/context-compiler/src/*"
+			],
+			"@delendai/proposals": ["./plugins/proposals/src/index.ts"],
+			"@delendai/proposals/public": [
+				"./plugins/proposals/src/public/index.ts"
+			],
+			"@delendai/proposals/*": ["./plugins/proposals/src/*"],
+			"@delendai/prompts-pack": ["./plugins/prompts-pack/src/index.ts"],
+			"@delendai/prompts-pack/public": [
+				"./plugins/prompts-pack/src/public/index.ts"
+			],
+			"@delendai/prompts-pack/*": ["./plugins/prompts-pack/src/*"],
+			"@delendai/rules": ["./plugins/rules/src/index.ts"],
+			"@delendai/rules/public": ["./plugins/rules/src/public/index.ts"],
+			"@delendai/rules/*": ["./plugins/rules/src/*"],
+			"@delendai/memory": ["./plugins/memory/src/index.ts"],
+			"@delendai/memory/public": ["./plugins/memory/src/public/index.ts"],
+			"@delendai/memory/*": ["./plugins/memory/src/*"],
+			"@delendai/git": ["./plugins/git/src/index.ts"],
+			"@delendai/git/public": ["./plugins/git/src/public/index.ts"],
+			"@delendai/git/*": ["./plugins/git/src/*"],
+			"@delendai/forge": ["./plugins/forge/src/index.ts"],
+			"@delendai/forge/public": ["./plugins/forge/src/public/index.ts"],
+			"@delendai/forge/*": ["./plugins/forge/src/*"],
+			"@delendai/remote-provider-core": [
+				"./plugins/remote-provider-core/src/index.ts"
+			],
+			"@delendai/remote-provider-core/public": [
+				"./plugins/remote-provider-core/src/index.ts"
+			],
+			"@delendai/remote-provider-core/*": [
+				"./plugins/remote-provider-core/src/*"
+			],
+			"@delendai/quality": ["./plugins/quality/src/index.ts"],
+			"@delendai/quality/public": [
+				"./plugins/quality/src/public/index.ts"
+			],
+			"@delendai/quality/*": ["./plugins/quality/src/*"],
+			"@delendai/refactor": ["./plugins/refactor/src/index.ts"],
+			"@delendai/refactor/public": [
+				"./plugins/refactor/src/public/index.ts"
+			],
+			"@delendai/refactor/*": ["./plugins/refactor/src/*"],
+			"@delendai/search": ["./plugins/search/src/index.ts"],
+			"@delendai/search/public": ["./plugins/search/src/public/index.ts"],
+			"@delendai/search/*": ["./plugins/search/src/*"],
+			"@delendai/notification": ["./plugins/notification/src/index.ts"],
+			"@delendai/notification/public": [
+				"./plugins/notification/src/public/index.ts"
+			],
+			"@delendai/notification/*": ["./plugins/notification/src/*"],
+			"@delendai/observability": ["./plugins/observability/src/index.ts"],
+			"@delendai/observability/public": [
+				"./plugins/observability/src/public/index.ts"
+			],
+			"@delendai/observability/*": ["./plugins/observability/src/*"],
+			"@delendai/docs": ["./plugins/docs/src/index.ts"],
+			"@delendai/docs/public": ["./plugins/docs/src/public/index.ts"],
+			"@delendai/docs/*": ["./plugins/docs/src/*"],
+			"@delendai/deps": ["./plugins/deps/src/index.ts"],
+			"@delendai/deps/public": ["./plugins/deps/src/public/index.ts"],
+			"@delendai/deps/*": ["./plugins/deps/src/*"],
+			"@delendai/security": ["./plugins/security/src/index.ts"],
+			"@delendai/security/public": [
+				"./plugins/security/src/public/index.ts"
+			],
+			"@delendai/security/*": ["./plugins/security/src/*"],
+			"@delendai/skills-pack": ["./plugins/skills-pack/src/index.ts"],
+			"@delendai/skills-pack/public": [
+				"./plugins/skills-pack/src/public/index.ts"
+			],
+			"@delendai/skills-pack/*": ["./plugins/skills-pack/src/*"],
+			"@delendai/diagram": ["./plugins/diagram/src/index.ts"],
+			"@delendai/diagram/public": [
+				"./plugins/diagram/src/public/index.ts"
+			],
+			"@delendai/diagram/*": ["./plugins/diagram/src/*"],
+			"@delendai/env": ["./plugins/env/src/index.ts"],
+			"@delendai/env/public": ["./plugins/env/src/public/index.ts"],
+			"@delendai/env/*": ["./plugins/env/src/*"],
+			"@delendai/i18n": ["./plugins/i18n/src/index.ts"],
+			"@delendai/i18n/public": ["./plugins/i18n/src/public/index.ts"],
+			"@delendai/i18n/*": ["./plugins/i18n/src/*"],
+			"@delendai/perf": ["./plugins/perf/src/index.ts"],
+			"@delendai/perf/public": ["./plugins/perf/src/public/index.ts"],
+			"@delendai/perf/*": ["./plugins/perf/src/*"],
+			"@delendai/prompt-eval": ["./plugins/prompt-eval/src/index.ts"],
+			"@delendai/prompt-eval/public": [
+				"./plugins/prompt-eval/src/public/index.ts"
+			],
+			"@delendai/prompt-eval/*": ["./plugins/prompt-eval/src/*"],
+			"@delendai/tech-debt": ["./plugins/tech-debt/src/index.ts"],
+			"@delendai/tech-debt/public": [
+				"./plugins/tech-debt/src/public/index.ts"
+			],
+			"@delendai/tech-debt/*": ["./plugins/tech-debt/src/*"],
+			"@delendai/link-check": ["./plugins/link-check/src/index.ts"],
+			"@delendai/link-check/public": [
+				"./plugins/link-check/src/public/index.ts"
+			],
+			"@delendai/link-check/*": ["./plugins/link-check/src/*"],
+			"@delendai/logs": ["./plugins/logs/src/index.ts"],
+			"@delendai/logs/public": ["./plugins/logs/src/public/index.ts"],
+			"@delendai/logs/*": ["./plugins/logs/src/*"],
+			"@delendai/status-marker": ["./plugins/status-marker/src/index.ts"],
+			"@delendai/status-marker/public": [
+				"./plugins/status-marker/src/public/index.ts"
+			],
+			"@delendai/status-marker/*": ["./plugins/status-marker/src/*"],
+			"@delendai/test-convention": [
+				"./plugins/test-convention/src/index.ts"
+			],
+			"@delendai/test-convention/public": [
+				"./plugins/test-convention/src/public/index.ts"
+			],
+			"@delendai/test-convention/*": ["./plugins/test-convention/src/*"],
+			"@delendai/test-policy": ["./plugins/test-policy/src/index.ts"],
+			"@delendai/test-policy/public": [
+				"./plugins/test-policy/src/public/index.ts"
+			],
+			"@delendai/test-policy/*": ["./plugins/test-policy/src/*"],
+			"@delendai/usage-tracking": [
+				"./plugins/usage-tracking/src/index.ts"
+			],
+			"@delendai/usage-tracking/public": [
+				"./plugins/usage-tracking/src/public/index.ts"
+			],
+			"@delendai/usage-tracking/*": ["./plugins/usage-tracking/src/*"],
+			"@delendai/orchestrator-runner": [
+				"./plugins/orchestrator-runner/src/index.ts"
+			],
+			"@delendai/orchestrator-runner/public": [
+				"./plugins/orchestrator-runner/src/public/index.ts"
+			],
+			"@delendai/orchestrator-runner/*": [
+				"./plugins/orchestrator-runner/src/*"
+			],
+			"@delendai/audit": ["./plugins/audit/src/index.ts"],
+			"@delendai/audit/public": ["./plugins/audit/src/public/index.ts"],
+			"@delendai/audit/*": ["./plugins/audit/src/*"],
+			"@delendai/audit-orchestrator": [
+				"./plugins/audit-orchestrator/src/index.ts"
+			],
+			"@delendai/audit-orchestrator/public": [
+				"./plugins/audit-orchestrator/src/public/index.ts"
+			],
+			"@delendai/audit-orchestrator/*": [
+				"./plugins/audit-orchestrator/src/*"
+			],
+			"@delendai/browser": ["./plugins/browser/src/index.ts"],
+			"@delendai/browser/public": [
+				"./plugins/browser/src/public/index.ts"
+			],
+			"@delendai/browser/*": ["./plugins/browser/src/*"],
+			"@delendai/conventions": ["./plugins/conventions/src/index.ts"],
+			"@delendai/conventions/public": [
+				"./plugins/conventions/src/public/index.ts"
+			],
+			"@delendai/conventions/*": ["./plugins/conventions/src/*"],
+			"@delendai/container": ["./plugins/container/src/index.ts"],
+			"@delendai/container/public": [
+				"./plugins/container/src/public/index.ts"
+			],
+			"@delendai/container/*": ["./plugins/container/src/*"],
+			"@delendai/database": ["./plugins/database/src/index.ts"],
+			"@delendai/database/public": [
+				"./plugins/database/src/public/index.ts"
+			],
+			"@delendai/database/*": ["./plugins/database/src/*"],
+			"@delendai/api": ["./plugins/api/src/index.ts"],
+			"@delendai/api/public": ["./plugins/api/src/public/index.ts"],
+			"@delendai/api/*": ["./plugins/api/src/*"],
+			"@delendai/github": ["./plugins/github/src/index.ts"],
+			"@delendai/github/public": ["./plugins/github/src/index.ts"],
+			"@delendai/github/*": ["./plugins/github/src/*"],
+			"@delendai/gitlab": ["./plugins/gitlab/src/index.ts"],
+			"@delendai/gitlab/public": ["./plugins/gitlab/src/index.ts"],
+			"@delendai/gitlab/*": ["./plugins/gitlab/src/*"],
+			"@delendai/web-fetch": ["./plugins/web-fetch/src/index.ts"],
+			"@delendai/web-fetch/public": [
+				"./plugins/web-fetch/src/public/index.ts"
+			],
+			"@delendai/web-fetch/*": ["./plugins/web-fetch/src/*"],
+			"@delendai/auto-agent-selector": [
+				"./plugins/auto-agent-selector/src/index.ts"
+			],
+			"@delendai/auto-agent-selector/public": [
+				"./plugins/auto-agent-selector/src/public/index.ts"
+			],
+			"@delendai/auto-agent-selector/*": [
+				"./plugins/auto-agent-selector/src/*"
+			],
+			"@delendai/auto-plugin-selector": [
+				"./plugins/auto-plugin-selector/src/index.ts"
+			],
+			"@delendai/auto-plugin-selector/public": [
+				"./plugins/auto-plugin-selector/src/public/index.ts"
+			],
+			"@delendai/auto-plugin-selector/*": [
+				"./plugins/auto-plugin-selector/src/*"
+			],
+			"@delendai/issues": ["./plugins/issues/src/index.ts"],
+			"@delendai/issues/public": ["./plugins/issues/src/public/index.ts"],
+			"@delendai/issues/*": ["./plugins/issues/src/*"],
+			"@delendai/cache": ["./plugins/cache/src/index.ts"],
+			"@delendai/cache/public": ["./plugins/cache/src/public/index.ts"],
+			"@delendai/cache/*": ["./plugins/cache/src/*"],
+			"@delendai/context-for-change": [
+				"./plugins/context-for-change/src/index.ts"
+			],
+			"@delendai/context-for-change/public": [
+				"./plugins/context-for-change/src/public/index.ts"
+			],
+			"@delendai/context-for-change/*": [
+				"./plugins/context-for-change/src/*"
+			],
+			"@delendai/impact-analysis": [
+				"./plugins/impact-analysis/src/index.ts"
+			],
+			"@delendai/impact-analysis/public": [
+				"./plugins/impact-analysis/src/public/index.ts"
+			],
+			"@delendai/impact-analysis/*": ["./plugins/impact-analysis/src/*"],
+			"@delendai/agent-orchestrator": [
+				"./plugins/agent-orchestrator/src/index.ts"
+			],
+			"@delendai/agent-orchestrator/public": [
+				"./plugins/agent-orchestrator/src/public/index.ts"
+			],
+			"@delendai/agent-orchestrator/*": [
+				"./plugins/agent-orchestrator/src/*"
+			],
+			"@delendai/adaptive-optimizer": [
+				"./plugins/adaptive-optimizer/src/index.ts"
+			],
+			"@delendai/adaptive-optimizer/public": [
+				"./plugins/adaptive-optimizer/src/public/index.ts"
+			],
+			"@delendai/adaptive-optimizer/*": [
+				"./plugins/adaptive-optimizer/src/*"
+			],
+			"@delendai/project-health": [
+				"./plugins/project-health/src/index.ts"
+			],
+			"@delendai/project-health/public": [
+				"./plugins/project-health/src/public/index.ts"
+			],
+			"@delendai/project-health/*": ["./plugins/project-health/src/*"],
+			"@delendai/quality-policy": [
+				"./plugins/quality-policy/src/index.ts"
+			],
+			"@delendai/quality-policy/public": [
+				"./plugins/quality-policy/src/public/index.ts"
+			],
+			"@delendai/quality-policy/*": ["./plugins/quality-policy/src/*"],
+			"@delendai/project-kpis": ["./plugins/project-kpis/src/index.ts"],
+			"@delendai/project-kpis/public": [
+				"./plugins/project-kpis/src/public/index.ts"
+			],
+			"@delendai/project-kpis/*": ["./plugins/project-kpis/src/*"],
+			"@delendai/commit-policy": ["./plugins/commit-policy/src/index.ts"],
+			"@delendai/commit-policy/public": [
+				"./plugins/commit-policy/src/public/index.ts"
+			],
+			"@delendai/commit-policy/*": ["./plugins/commit-policy/src/*"],
+			"@delendai/changelog": ["./plugins/changelog/src/index.ts"],
+			"@delendai/changelog/public": [
+				"./plugins/changelog/src/public/index.ts"
+			],
+			"@delendai/changelog/*": ["./plugins/changelog/src/*"],
+			"@delendai/self-learning": ["./plugins/self-learning/src/index.ts"],
+			"@delendai/self-learning/public": [
+				"./plugins/self-learning/src/public/index.ts"
+			],
+			"@delendai/self-learning/*": ["./plugins/self-learning/src/*"],
+			"@delendai/completion": ["./plugins/completion/src/index.ts"],
+			"@delendai/completion/public": [
+				"./plugins/completion/src/public/index.ts"
+			],
+			"@delendai/completion/*": ["./plugins/completion/src/*"],
+			"@delendai/error-reporting": [
+				"./plugins/error-reporting/src/index.ts"
+			],
+			"@delendai/error-reporting/public": [
+				"./plugins/error-reporting/src/public/index.ts"
+			],
+			"@delendai/error-reporting/*": ["./plugins/error-reporting/src/*"],
+			"@delendai/issues-triage": ["./plugins/issues-triage/src/index.ts"],
+			"@delendai/issues-triage/public": [
+				"./plugins/issues-triage/src/public/index.ts"
+			],
+			"@delendai/issues-triage/*": ["./plugins/issues-triage/src/*"],
+			"@delendai/framework-knowledge": [
+				"./plugins/framework-knowledge/src/index.ts"
+			],
+			"@delendai/framework-knowledge/public": [
+				"./plugins/framework-knowledge/src/public/index.ts"
+			],
+			"@delendai/framework-knowledge/*": [
+				"./plugins/framework-knowledge/src/*"
+			],
+			"@delendai/external-mcps": ["./plugins/external-mcps/src/index.ts"],
+			"@delendai/external-mcps/public": [
+				"./plugins/external-mcps/src/index.ts"
+			],
+			"@delendai/external-mcps/*": ["./plugins/external-mcps/src/*"]
+		}
+	},
+	"exclude": ["node_modules", "dist", "build", ".cache"]
+}
