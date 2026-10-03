@@ -1,0 +1,56 @@
+import type { IHostPathLayout } from '../interfaces/swarm-path-layout.interface';
+import { joinRel } from '@delendai/core/public';
+
+/**
+ * Derive the full swarm path layout from a cache root and a docs root.
+ * The delendai CLI resolves `--cacheDir` (default `.cache/delendai`)
+ * and `--docsDir` (default `docs/delendai`) and hands the proposals
+ * plugin those resolved roots. Cache artefacts (locks, queue,
+ * checkpoints, worktrees, **and** the proposals registry index — see
+ * x00052) live under `cacheDir`; human-edited proposals live under
+ * `docsDir`.
+ */
+export const buildSwarmPaths = (
+	cacheDir: string,
+	docsDir: string,
+	proposalsDir?: string,
+): IHostPathLayout => ({
+	lockFile: joinRel(cacheDir, 'agents.lock.json'),
+	agentRegistryFile: joinRel(cacheDir, 'subagent-registry.json'),
+	roundContextDigestFile: joinRel(cacheDir, 'round-context.digest.json'),
+	taskQueueDir: joinRel(cacheDir, 'agent-queue'),
+	taskQueueFile: joinRel(cacheDir, 'agent-queue/queue.json'),
+	taskQueueHeartbeatFile: joinRel(cacheDir, 'agent-queue/heartbeat.json'),
+	closedTasksFile: joinRel(cacheDir, 'agent-queue/closed-tasks.json'),
+	orchestratorCheckpointFile: joinRel(
+		cacheDir,
+		'agent/orchestrator/checkpoint.json',
+	),
+	orchestratorChatContextFile: joinRel(
+		cacheDir,
+		'agent/orchestrator/chat-context.json',
+	),
+	finishDayReportFile: joinRel(cacheDir, 'agent/finish-day/last-report.json'),
+	finishDayJournalFile: joinRel(cacheDir, 'agent/finish-day/journal.log'),
+	proposalsDir: proposalsDir ?? joinRel(docsDir, 'proposals'),
+	proposalIndexFile: joinRel(cacheDir, 'proposals/index.json'),
+	peerReviewLogFile: joinRel(cacheDir, 'proposals/peer-review.jsonl'),
+	proposalIdCountersFile: joinRel(cacheDir, 'proposal-id-counters.json'),
+	pendingIntegrationFile: joinRel(cacheDir, 'pending-integration.json'),
+	worktreesDir: joinRel(cacheDir, '.worktrees'),
+	scratchDir: cacheDir,
+});
+
+/**
+ * Default proposals layout, aligned with the delendai CLI defaults so the
+ * fallback and the live server agree: cache/state under `.cache/delendai`,
+ * human-edited proposals under `docs/delendai/proposals`. Everything the
+ * project writes lives under the single `docs/delendai` root; override it
+ * with `--docsDir` (and `--cacheDir`) — the proposals dir always follows as
+ * `<docsDir>/proposals`. Every engine and tool shares this one layout, so
+ * locks, queue, round-context and the proposal store agree on where state lives.
+ */
+export const DEFAULT_PATH_LAYOUT: IHostPathLayout = buildSwarmPaths(
+	'.cache/delendai',
+	'docs/delendai',
+);

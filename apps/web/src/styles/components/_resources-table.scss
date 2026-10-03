@@ -1,0 +1,46 @@
+// _resources-table.scss — resources + skills cards on the /resources page.
+//
+// BEM root: .resources-table (grid container) and .skill (single card)
+// with __head, __plugin, __summary, __read.
+
+.resources-table {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+}
+.skills-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+}
+.skill {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 1rem 1.1rem;
+
+	&__head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.6rem;
+		margin-bottom: 0.4rem;
+	}
+	&__plugin {
+		color: var(--accent);
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		font-weight: 700;
+	}
+	&__summary {
+		margin: 0.3rem 0 0;
+		color: var(--muted);
+		font-size: 0.9rem;
+	}
+	&__read {
+		margin-top: 0.6rem;
+		display: inline-block;
+		font-size: 0.85rem;
+	}
+}

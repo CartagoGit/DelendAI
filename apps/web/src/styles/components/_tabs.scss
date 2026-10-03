@@ -1,0 +1,9 @@
+// `apps/web/src/styles/components/_tabs.scss` is a shim that
+// `@forward`s the shared styles' Tabs partial. The real file lives in
+// `apps/shared/src/styles/components/_tabs.scss` (f00102 S2.1).
+// `@use 'tabs'` in styles.scss then resolves through this shim so
+// the existing 7-1 import line does not change while the source of
+// truth moves to `apps/shared` (where the BEM rules are
+// host-agnostic).
+
+@forward '../../../../shared/src/styles/components/tabs.scss';

@@ -1,0 +1,73 @@
+import z from 'zod';
+import type { IToolRegistration } from '@delendai/core/public';
+
+import type { IWorkIsolation } from '@delendai/core/plugin';
+
+import { buildProposalWorkflow } from '../knowledge/proposal-workflow';
+
+export interface IGetProposalWorkflowToolOptions {
+	readonly namespacePrefix: string;
+	readonly proposalsDir: string;
+	readonly indexFile: string;
+	/** How the development policy isolates agents; drives the workflow rule. */
+	readonly isolation?: IWorkIsolation | undefined;
+}
+
+/**
+ * Returns the proposal workflow (families, locations, naming, rules,
+ * template) as structured JSON. Read-only; an agent calls it once to
+ * learn how this project's proposals work.
+ */
+export const buildGetProposalWorkflowRegistration = (
+	options: IGetProposalWorkflowToolOptions,
+): IToolRegistration => ({
+	id: 'get_proposal_workflow',
+	summary: 'Read proposal workflow conventions and template.',
+	tags: ['orientation', 'lazy'],
+	register: async (server) => {
+		server.registerTool(
+			`${options.namespacePrefix}_get_proposal_workflow`,
+			{
+				inputSchema: z.object({}),
+				outputSchema: z.object({
+					families: z.array(
+						z.object({
+							prefix: z.string(),
+							/** f00024: proposal kind this family maps to (e.g. "fix", "feat"). */
+							kind: z.string().optional(),
+							description: z.string(),
+							cascadePriority: z.number(),
+						}),
+					),
+					locations: z.record(z.string(), z.string()),
+					naming: z.string(),
+					rules: z.array(z.string()),
+					template: z.string(),
+				}),
+				description:
+					'Read proposal workflow conventions, rules, and template.',
+			},
+			async () => {
+				const workflow = buildProposalWorkflow(
+					options.proposalsDir,
+					options.indexFile,
+					...(options.isolation !== undefined
+						? [options.isolation]
+						: []),
+				);
+				return {
+					content: [
+						{
+							type: 'text' as const,
+							text: JSON.stringify(workflow),
+						},
+					],
+					structuredContent: workflow as unknown as Record<
+						string,
+						unknown
+					>,
+				};
+			},
+		);
+	},
+});
