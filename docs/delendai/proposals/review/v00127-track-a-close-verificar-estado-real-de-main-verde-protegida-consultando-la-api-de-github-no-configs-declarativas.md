@@ -280,7 +280,7 @@ abre issue — es observación, nunca gate.
 
 ### S3 — Supersede `v00125` y enlazar en `AGENT-BOOTSTRAP.md`
 
-- **Status**: review — 2026-09-30. `v00125` (already `done/`, not
+- **Status**: done
   `in-progress/` as this slice assumed — corrected below) now carries
   `superseded-by: v00127` in frontmatter plus a short dated note at the
   top of its body explaining the retraction (develop-green-required →
@@ -297,6 +297,11 @@ abre issue — es observación, nunca gate.
 - **Gate**: docs lint + `lint:prompt-size`.
 - **Depends on**: S1.
 - shipped-in: `a801eb344c89`
+- review-state: done
+- review-implementer: claude-sonnet-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — v00127 S3 delivered at a801eb344c89c98d6bce70336a0eea9431e2d544: AGENT-BOOTSTRAP.md + v00125-perfs/done reference both link to the new health surface.
+- review-attribution: claude-sonnet-5 from Merge pull request #673 from CartagoGit/delendai/pr/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard (refs/heads/delendai/wip/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard) (a801eb344c89c98d6bce70336a0eea9431e2d544), opened by MiniMaxM3
 
 ## acceptance
 
