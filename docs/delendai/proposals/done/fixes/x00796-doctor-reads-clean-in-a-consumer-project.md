@@ -2,13 +2,15 @@
 id: x00796
 title: "Doctor reads clean in a consumer project"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
-last-transition-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
-last-correlation-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
-last-transition-from: in-progress
+last-transition-id: 179ea2af-bd00-446e-b427-0eedfefba210
+last-correlation-id: 179ea2af-bd00-446e-b427-0eedfefba210
+last-transition-from: review
+shipped-in:
+  - "e59cea102e36"
 ---
 
 # x00796 — Doctor reads clean in a consumer project

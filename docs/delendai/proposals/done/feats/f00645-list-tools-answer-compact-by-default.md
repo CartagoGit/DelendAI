@@ -2,15 +2,21 @@
 id: f00645
 title: "List tools answer compact by default"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00673, f00536]
-last-transition-id: da01769c-b89a-47c8-95c1-c807cc51b724
-last-correlation-id: da01769c-b89a-47c8-95c1-c807cc51b724
-last-transition-from: in-progress
+last-transition-id: 792f1aff-4fdb-4830-84ec-ebaa7d0a6947
+last-correlation-id: 792f1aff-4fdb-4830-84ec-ebaa7d0a6947
+last-transition-from: review
+shipped-in:
+  - "c9099b1057fa"
+  - "a03d2fdccade"
+  - "0caa6f8d3273"
+  - "1de0ade67cf8"
+  - "ec98c0d31348"
 ---
 
 # f00645 — List tools answer compact by default
