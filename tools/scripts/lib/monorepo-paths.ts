@@ -41,7 +41,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
-import { DEFAULT_CORE_PATHS } from '@delendai/core/public';
+import { DEFAULT_CORE_PATHS } from '@delendai/core/cli';
 
 import { repoRoot } from './repo-root';
 

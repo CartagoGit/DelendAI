@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import type { MockInstance } from 'vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { parseJsonc } from '@delendai/core/public';
+import { parseJsonc } from '@delendai/core/cli';
 
 import { initCommand } from '../../commands/init/init.command';
 

@@ -22,7 +22,7 @@
 import { existsSync, globSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { IAuthorityDeclaration } from '@delendai/core/public';
+import type { IAuthorityDeclaration } from '@delendai/core/cli';
 
 import { loadDeclaredAuthorities } from '../gen/authorities.script';
 import { repoRoot } from '../lib/repo-root';

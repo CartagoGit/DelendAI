@@ -306,6 +306,30 @@ describe('onlyImportsChanged', () => {
 		).toBe(false);
 	});
 
+	it('is true when only comments standing on their own lines changed', () => {
+		const commented = [
+			'// Read only by the CLI, so it lives here.',
+			"import { a, b } from '@scope/one';",
+			'/**',
+			' * What it does, said again.',
+			' */',
+			"import type { T } from './types';",
+			'',
+			'export const run = (): T => a(b);',
+			'',
+		].join('\n');
+		expect(onlyImportsChanged(before, commented)).toBe(true);
+	});
+
+	it('is false when a comment on a line of code hides a change to that line', () => {
+		expect(
+			onlyImportsChanged(
+				before,
+				before.replace('a(b);', 'a(b); // and something else'),
+			),
+		).toBe(false);
+	});
+
 	it('is false for a file that is new, or gone', () => {
 		expect(onlyImportsChanged(undefined, before)).toBe(false);
 		expect(onlyImportsChanged(before, undefined)).toBe(false);

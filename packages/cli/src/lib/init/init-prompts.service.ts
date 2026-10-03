@@ -12,11 +12,8 @@
  */
 import { createInterface, type Interface as RLInterface } from 'node:readline';
 
-import {
-	PRESET_KIND,
-	resolvePresetMembers,
-	type IPresetKind,
-} from '@delendai/core/public';
+import { resolvePresetMembers, type IPresetKind } from '@delendai/core/public';
+import { PRESET_KIND } from '@delendai/core/cli';
 
 import { INIT_VALID_PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
 import type { IInitAnswers } from './init-answers.types';

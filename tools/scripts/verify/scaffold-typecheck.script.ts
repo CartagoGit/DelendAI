@@ -30,14 +30,14 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
+import { scaffoldPluginFiles } from '@delendai/core/public';
 import {
 	scaffoldClientFiles,
 	scaffoldExtensionHostFiles,
 	scaffoldHostProject,
-	scaffoldPluginFiles,
 	scaffoldPromptFile,
 	scaffoldToolFile,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 const ROOT = resolve(import.meta.dir, '../../..');
 

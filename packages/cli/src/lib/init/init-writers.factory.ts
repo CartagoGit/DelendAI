@@ -13,7 +13,7 @@ import type {
 	IHostServerEntryWriteResult,
 } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
-import { applyJsoncEdits, parseJsonc } from '@delendai/core/public';
+import { applyJsoncEdits, parseJsonc } from '@delendai/core/cli';
 import {
 	writeConfigSafely,
 	writeConfigTextSafely,

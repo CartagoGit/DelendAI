@@ -11,10 +11,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	CAPABILITIES,
 	parseDeclaredCapabilities,
 	summariseLegacyShimWarning,
 } from '@delendai/core/public';
+import { CAPABILITIES } from '@delendai/core/cli';
 
 import {
 	buildActivateContext,

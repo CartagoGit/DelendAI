@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { ACTIONABLE_PROPOSAL_STATUSES } from '@delendai/core/public';
+import { ACTIONABLE_PROPOSAL_STATUSES } from '@delendai/core/cli';
 import type { IToolSummary } from '@delendai/core/public';
 import {
 	buildAgentCatalogArtifact,

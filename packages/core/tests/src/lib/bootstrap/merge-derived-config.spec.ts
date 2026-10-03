@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mergeDerivedConfig } from '@delendai/core/public';
+import { mergeDerivedConfig } from '@delendai/core/cli';
 
 describe('mergeDerivedConfig', () => {
 	it('adds recommended defaults without replacing project choices', () => {

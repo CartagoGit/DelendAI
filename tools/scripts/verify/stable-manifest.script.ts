@@ -20,7 +20,7 @@ import {
 	STABLE_API_TOOL_NAMES,
 	STABLE_MANIFEST_REL,
 	buildStableManifest,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 import { DELENDAI_VERSION } from '@delendai/core/version';
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';

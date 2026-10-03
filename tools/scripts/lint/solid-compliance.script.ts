@@ -63,7 +63,7 @@ import {
 	shingleBlocks,
 	toRelPosix,
 	walkTsFiles,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 import {
 	buildSolidBaseline,
 	EMPTY_SOLID_BASELINE,
