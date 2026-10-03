@@ -16,6 +16,8 @@ related: [q00011, r00040, r00041, r00042, r00034]
 last-transition-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-correlation-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-transition-from: in-progress
+shipped-in:
+  - "039bb517ef"
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -252,7 +254,7 @@ not part of this delivery; it moves to S6.
 
 ### S4 — Hacer agnóstico el ensamblado de skills y recommendedNextAction
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**:
     - `packages/core/src/lib/cli/assemble-skills.ts`
@@ -279,7 +281,11 @@ left were two messages that still named the proposals store and
 proposal files; they now speak of what loaded plugins contribute and of
 workflow files. Both inventory findings are resolved by S4.
 - shipped-in: `1059c6ce4311`
-
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — r00043 S4 delivered by claude-opus-5-5 (commit 039bb517ef 'refactor(core): the next action names no plugin, and stale boundary exceptions fail (r00043 S4)', merged through PR #435). The slice makes assemble-skills.ts plugin-agnostic by delegating to workflow-contribution-assembly.ts; the proposals plugin contributes via proposals-workflow-contribution.ts. The core-proposals-boundary lint was tightened to fail on stale exceptions. Slice unclaimed in the current queue. Approved via implement worktree.
+- review-attribution: claude-opus-5-5 from Merge pull request #435 from CartagoGit/delendai/pr/claude-opus-5-5/r00043-S4-g1/the-next-action-names-no-plugin (refs/heads/delendai/wip/claude-opus-5-5/r00043-S4-g1/the-next-action-names-no-plugin) (039bb517ef66fc73d51f9da59d44a12136969a85), opened by minimax-3
 
 ### S5 — Lint de frontera y documentación de compatibilidad
 
