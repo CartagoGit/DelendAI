@@ -501,12 +501,14 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S19 — A unit's name says what it is
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/command-args.helper.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/command-args.helper.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/unit-topic.service.ts`, `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/src/lib/contracts/constants/work-topic.constant.ts`, `packages/core/tests/src/lib/work-units/unit-topic.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/unit-topic.service.spec.ts`
 - A review pack has one topic, derived by the tools, not chosen per agent; an
   implementation unit's default topic comes from its proposal's title instead
   of `work` (E20).
+- A pull request of several deliveries says how many it holds instead of
+  taking its oldest commit's subject as if it were the whole.
 
 ### S20 — A verdict names the newest commit, and a reviewer that ran nothing records none
 
