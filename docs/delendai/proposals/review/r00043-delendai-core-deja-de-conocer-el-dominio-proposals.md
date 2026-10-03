@@ -16,6 +16,8 @@ related: [q00011, r00040, r00041, r00042, r00034]
 last-transition-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-correlation-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-transition-from: in-progress
+shipped-in:
+  - "31c73b5ecd"
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -283,7 +285,7 @@ workflow files. Both inventory findings are resolved by S4.
 
 ### S5 — Lint de frontera y documentación de compatibilidad
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2, S3, S4]
 - **Files**:
     - `tools/scripts/lint/core-proposals-boundary.script.ts`
@@ -317,6 +319,11 @@ plugs in without editing the core, through the three registries the
 proposals plugin uses (adoption extensions, workflow contribution, stable
 tool descriptors), with its files as the reference.
 - shipped-in: `f99521d1bf31`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — r00043 S5 delivered by claude-opus-5-5 (commit 31c73b5ecd 'docs(architecture): a workflow plugin plugs in without editing the core (r00043 S5)', merged through PR #447). The slice adds the core-proposals-boundary lint that catches new couplings and the ADR d00014 documenting the boundary. Slice unclaimed in current queue. Approved via implement worktree.
+- review-attribution: claude-opus-5-5 from Merge pull request #447 from CartagoGit/delendai/pr/claude-opus-5-5/r00043-S5-g1/a-workflow-plugin-needs-no-core-edit (refs/heads/delendai/wip/claude-opus-5-5/r00043-S5-g1/a-workflow-plugin-needs-no-core-edit) (31c73b5ecd0c09e8449f1677b92fb205142f465d), opened by minimax-3
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
