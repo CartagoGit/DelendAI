@@ -8,8 +8,8 @@ track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00701, x00709]
-last-transition-id: 7b071756-3ec1-48a1-853d-d08a1f79e987
-last-correlation-id: 7b071756-3ec1-48a1-853d-d08a1f79e987
+last-transition-id: 7857f596-e191-40b1-b2d6-f2405ec710f6
+last-correlation-id: 7857f596-e191-40b1-b2d6-f2405ec710f6
 last-transition-from: review
 shipped-in:
   - "1b4aeb82fe6006dca42c79d2e7b772f02844f937"
@@ -99,9 +99,9 @@ project, and its commits say nothing about the code the server runs.
 - shipped-in: `1b4aeb82fe60`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: MiniMax-M3
-- review-log: approved by MiniMax-M3 — tools/scripts/host + stale-runtime-advisory.spec.ts: 5 files / 39 tests green. Delivering commit 1b4aeb82fe60 (claude-opus-5-5): host-supervisor.ts (relay+switch over children), host-supervisor-process.ts (real processes, stdio, minute check), host-server.script.ts supervises unless it is the child, stale-runtime-advisory.ts tells the supervised agent there is nothing to do. +290 (supervisor) +125 (process) +213 (supervisor spec).
-- review-attribution: claude-opus-5-5 from Merge pull request #649 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00756-S1-g1/a-server-behind-its-checkout-restarts-itself (refs/heads/delendai/wip/claude-opus-5-5/implement/x00756-S1-g1/a-server-behind-its-checkout-restarts-itself) (1b4aeb82fe6006dca42c79d2e7b772f02844f937), opened by MiniMax-M3
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00756 S1 delivered at 1b4aeb82fe60: host-supervisor.ts (relay+switch), host-supervisor-process.ts (real processes, stdio, minute check), host-server.script.ts supervises unless it is the child, stale-runtime-advisory.ts tells the supervised agent there is nothing to do. 5 files / 39 tests green in tools/scripts/host + stale-runtime-advisory.spec.ts.
+- review-attribution: claude-opus-5-5 from Merge pull request #649 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00756-S1-g1/a-server-behind-its-checkout-restarts-itself (refs/heads/delendai/wip/claude-opus-5-5/implement/x00756-S1-g1/a-server-behind-its-checkout-restarts-itself) (1b4aeb82fe6006dca42c79d2e7b772f02844f937), opened by MiniMaxM3
 
 ## dependency graph
 
