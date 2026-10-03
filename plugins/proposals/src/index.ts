@@ -68,6 +68,10 @@ import type { IAutoWorkPersistMode } from './lib/tools/auto-work-persist';
 import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
 import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
 import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
+import {
+	createCertificationReader,
+	systemCertificationPorts,
+} from './lib/tools/close-slice-certification';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildDbStatusToolRegistration } from './lib/tools/db-status.tool';
@@ -686,6 +690,14 @@ export default definePlugin({
 										readTextOrNull(
 											ctx.workspace.resolve(relativePath),
 										),
+									certification: createCertificationReader({
+										policy: ctx.developmentPolicy,
+										ports: systemCertificationPorts(
+											callerCheckout.executionRootOr(
+												ctx.workspace.root,
+											),
+										),
+									}),
 									...(parsedOptions.data.closeGateWaitMs !==
 									undefined
 										? {
