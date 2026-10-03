@@ -2,7 +2,7 @@
 id: v00127
 title: "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas"
 kind: perf
-status: review
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -23,9 +23,9 @@ related:
     - c00144 # protection YAML bifurcada (predecesor duro — debe estar aplicado a main)
     - c00145 # protectedBranches default main-only (predecesor — el plugin debe coincidir con main)
     - x00272 # bloquea push directo a main (predecesor — driver de la invariante a verificar)
-last-transition-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
-last-correlation-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
-last-transition-from: in-progress
+last-transition-id: 270830ab-6626-4e32-b59f-a7973d8d114f
+last-correlation-id: 270830ab-6626-4e32-b59f-a7973d8d114f
+last-transition-from: review
 shipped-in:
   - "6af2c6a01"
   - "a801eb344c89"
@@ -280,7 +280,7 @@ abre issue — es observación, nunca gate.
 
 ### S3 — Supersede `v00125` y enlazar en `AGENT-BOOTSTRAP.md`
 
-- **Status**: review — 2026-09-30. `v00125` (already `done/`, not
+- **Status**: done
   `in-progress/` as this slice assumed — corrected below) now carries
   `superseded-by: v00127` in frontmatter plus a short dated note at the
   top of its body explaining the retraction (develop-green-required →
@@ -297,6 +297,11 @@ abre issue — es observación, nunca gate.
 - **Gate**: docs lint + `lint:prompt-size`.
 - **Depends on**: S1.
 - shipped-in: `a801eb344c89`
+- review-state: done
+- review-implementer: claude-sonnet-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — v00127 S3 delivered in commit a801eb344c89. v00125's frontmatter carries `superseded-by: v00127` correctly placed in the top-level YAML (NOT inside resolution). v00125 body has a blockquote dated 2026-09-30 explaining the external reviewer's retraction (develop-as-green gate -> main-as-strict-gate + develop-as-observation) and notes v00125 stays done because its shipped verifier was real and used. AGENT-BOOTSTRAP.md gained 3 lines in the 'Integration branch protection' section referencing verify-main-health.script.ts and its nightly wiring, superseding v00125's develop-only check. Byte budget: 31,588B / 32,000B (99%); lint:prompt-size passes for all 4 files. Implementation note from S3 that v00125 is already in done/ rather than in-progress/ was correctly recognized and the body note added without trying to move the file.
+- review-attribution: claude-sonnet-5 from Merge pull request #673 from CartagoGit/delendai/pr/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard (refs/heads/delendai/wip/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard) (a801eb344c89c98d6bce70336a0eea9431e2d544), opened by minimax-3
 
 ## acceptance
 
