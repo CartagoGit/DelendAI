@@ -1513,12 +1513,28 @@
 				"date": "2026-09-26"
 			},
 			{
+				"id": "f00755",
+				"title": "Candidates that touch nothing in common land together",
+				"track": "efficiency",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-09-29"
+			},
+			{
 				"id": "q00009",
 				"title": "Plan: Managed Surface + portable Skills + 5-level Startup Report — separar catálogo, superficie LLM, working set y bajo demanda",
 				"track": "managed-surface-portable-skills-startup-report",
 				"status": "ready",
 				"kind": "plan",
 				"date": "2026-08-26"
+			},
+			{
+				"id": "q00010",
+				"title": "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath",
+				"track": "develop-audit-hardening-v4-closeout",
+				"status": "in-progress",
+				"kind": "plan",
+				"date": "2026-08-25"
 			},
 			{
 				"id": "q00011",
@@ -1583,6 +1599,14 @@
 				"status": "ready",
 				"kind": "refactor",
 				"date": "2026-08-29"
+			},
+			{
+				"id": "r00043",
+				"title": "`@delendai/core` deja de conocer el dominio `proposals`",
+				"track": "architecture",
+				"status": "in-progress",
+				"kind": "refactor",
+				"date": "2026-08-30"
 			},
 			{
 				"id": "r00056",

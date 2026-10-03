@@ -98,6 +98,7 @@ import type {
 } from './authoring-options';
 import type {
 	ICloseGateDeps,
+	ICloseSliceGateReport,
 	ICloseSliceQualityResult,
 } from '../contracts/interfaces/close-slice-gate.interface';
 import { runCloseSliceGate } from './close-slice-gate';
@@ -132,6 +133,11 @@ const CLOSE_SLICE_GATE_SCHEMA = z
 		reused: z.boolean(),
 		handle: z.string().optional(),
 		tree: z.string().optional(),
+		certifiedBy: z
+			.enum(['forge-check', 'landing-certification', 'recorded-gate'])
+			.optional(),
+		evidence: z.string().optional(),
+		nextAction: z.string().optional(),
 	})
 	.optional();
 const ISO_DATE_LENGTH = 10;
@@ -385,6 +391,15 @@ export const runCloseSliceGateProbe = async (
 			reused: verdict.reused,
 			...(verdict.handle !== undefined ? { handle: verdict.handle } : {}),
 			...(verdict.tree !== undefined ? { tree: verdict.tree } : {}),
+			...(verdict.certifiedBy !== undefined
+				? { certifiedBy: verdict.certifiedBy }
+				: {}),
+			...(verdict.evidence !== undefined
+				? { evidence: verdict.evidence }
+				: {}),
+			...(verdict.nextAction !== undefined
+				? { nextAction: verdict.nextAction }
+				: {}),
 		},
 	};
 };
@@ -1472,6 +1487,7 @@ export const buildCloseSliceRegistration = (
 					| ICloseSliceValidationDecision
 					| undefined;
 				let alreadyClosedPayload: Record<string, unknown> | undefined;
+				let closeGate: ICloseSliceGateReport | undefined;
 				let persisted: IPersistResult = {
 					committed: false,
 					pushed: false,
@@ -1640,6 +1656,7 @@ export const buildCloseSliceRegistration = (
 										}
 									: undefined,
 							);
+							closeGate = quality.gate;
 							if (quality.severity === 'error') {
 								const gateKind =
 									quality.gate?.state === 'pending'
@@ -1849,9 +1866,17 @@ export const buildCloseSliceRegistration = (
 							blockerDetail: err.detail,
 							error: {
 								reason: String(err.message),
-								nextAction: pending
-									? `The gate runs in the background (handle ${err.detail?.gate?.handle ?? 'unknown'}). Call close_slice again to resume it; the slice was NOT marked done and nothing is wrong yet.`
-									: 'The gate did not give a verdict, which is neither a pass nor a failure of the work. Read the findings, then call close_slice again to run it afresh; the slice was NOT marked done.',
+								nextAction: [
+									pending
+										? `The gate runs in the background (handle ${err.detail?.gate?.handle ?? 'unknown'}). Call close_slice again to resume it; the slice was NOT marked done and nothing is wrong yet.`
+										: 'The gate did not give a verdict, which is neither a pass nor a failure of the work. Read the findings, then call close_slice again to run it afresh; the slice was NOT marked done.',
+									err.detail?.gate?.nextAction,
+								]
+									.filter(
+										(part): part is string =>
+											part !== undefined,
+									)
+									.join(' '),
 								kind: err.kind,
 								output: (err.detail?.findings ?? []).join('\n'),
 							},
@@ -1873,6 +1898,7 @@ export const buildCloseSliceRegistration = (
 							error: {
 								reason: String(err.message),
 								nextAction:
+									err.detail?.gate?.nextAction ??
 									'Fix the reported quality findings, then retry close_slice. The slice was NOT marked done.',
 								kind: 'quality-failed',
 								output: Array.isArray(err.detail?.findings)
@@ -1976,6 +2002,7 @@ export const buildCloseSliceRegistration = (
 					assignmentReleased,
 					persist: persisted,
 					pendingIntegrationBranch,
+					...(closeGate !== undefined ? { gate: closeGate } : {}),
 				});
 			},
 		);
