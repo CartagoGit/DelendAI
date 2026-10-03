@@ -8,7 +8,7 @@
  * reported once and cleared, so the next call runs the gate again.
  */
 // effect-boundary-authorized: the gate's run state is files a detached process writes and later calls read; they are not workspace content.
-import { rm } from 'node:fs/promises';
+import { readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { writeFileAtomic } from '@delendai/core/public';
@@ -95,3 +95,26 @@ export const readOutputTail = async (dir: string): Promise<string> => {
 
 export const clearJob = (dir: string): Promise<void> =>
 	rm(dir, { recursive: true, force: true });
+
+/**
+ * Handles of the gate runs other than `exceptHandle` that are still going
+ * on this machine: a started job whose runner has not reached its end
+ * marker and whose process is alive. A dead runner holds nothing.
+ */
+export const liveGateHandles = async (
+	storeRoot: string,
+	exceptHandle: string,
+	isAlive: (pid: number) => boolean,
+): Promise<readonly string[]> => {
+	const entries = await readdir(storeRoot).catch(() => [] as string[]);
+	const live: string[] = [];
+	for (const entry of entries) {
+		if (!/^gate-[0-9a-f]+$/u.test(entry) || entry === exceptHandle)
+			continue;
+		const dir = jobDirectory(storeRoot, entry);
+		const job = await readJob(dir);
+		if (job === undefined || !isAlive(job.pid)) continue;
+		if (!(await readProgress(dir)).finished) live.push(entry);
+	}
+	return live;
+};

@@ -71,3 +71,11 @@ export interface ILandWorkUnitRequest {
 	/** Certifies a candidate; the real gate unless a spec injects one. */
 	readonly certify?: ICandidateCertifier | undefined;
 }
+
+export interface IRecordLandingCertificationRequest {
+	readonly root: string;
+	readonly candidateSha: string;
+	readonly integrationSha: string;
+	/** The unit's work ref (its tip's tree is covered by the merge). */
+	readonly workRef: string;
+}
