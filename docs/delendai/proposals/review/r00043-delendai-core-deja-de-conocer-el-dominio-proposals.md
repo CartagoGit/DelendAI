@@ -17,6 +17,7 @@ last-transition-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-correlation-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-transition-from: in-progress
 shipped-in:
+  - "bb60f4954b623abbe8acb8f6d9d1e9ae6901043a"
   - "dc61a40ec"
   - "7c861d2f9"
   - "039bb517ef"
@@ -235,9 +236,15 @@ not part of this delivery; it moves to S6.
 - shipped-in: `bb60f4954b62`
 - review-state: done
 - review-implementer: claude-opus-5-5
+<<<<<<< HEAD
 - review-reviewer: minimax-3
 - review-log: approved by minimax-3 — r00043 S2 delivered by claude-opus-5-5 (commit dc61a40ec, merged through PR #434). The adoption estimate now counts what loaded plugins contribute via the adoption-extension-registry; the proposals plugin supplies its contribution through proposals-adoption-extension; core knows no plugin name. Slice unclaimed in the current queue (free slot). Approved via implement worktree (r00043 has verdict=approved per the queue summary but slice S2 still has needs-verdict; the S0+S1 approved review-state blocks transition).
 - review-attribution: claude-opus-5-5 from Merge pull request #434 from CartagoGit/delendai/pr/claude-opus-5-5/r00043-S2-g1/adoption-knows-no-plugin (refs/heads/delendai/wip/claude-opus-5-5/r00043-S2-g1/adoption-knows-no-plugin) (dc61a40ec20129f7b422bee0f63e957164c0a930), opened by minimax-3
+=======
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — r00043 S2 delivered at bb60f4954b62 (refactor(core): the adoption estimate counts what loaded plugins add): adopt-project-write-estimate now delegates to a plugins-loaded extension registry, with the proposals-specific adoption as a dedicated adapter. 8/8 tests green in adoption-assessment.spec + proposals-adoption-extension.spec.
+- review-attribution: claude-opus-5-5 from commit bb60f4954b62 names refs/heads/delendai/wip/claude-opus-5-5/r00043-S2-g1/adoption-knows-no-plugin (bb60f4954b623abbe8acb8f6d9d1e9ae6901043a), opened by MiniMaxM3
+>>>>>>> 1a324d784 (chore(delendai): delendai_proposals_proposal_review r00043 S2 approve)
 
 ### S3 — Convertir stable-facade en un registro de contribuciones
 
