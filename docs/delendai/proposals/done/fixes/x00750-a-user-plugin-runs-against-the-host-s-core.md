@@ -2,15 +2,17 @@
 id: x00750
 title: "A user plugin runs against the host's core"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00749]
-last-transition-id: 5f3bda23-2d8a-473e-a02f-b1fcd012294b
-last-correlation-id: 5f3bda23-2d8a-473e-a02f-b1fcd012294b
-last-transition-from: in-progress
+last-transition-id: d01c6622-e90d-4bec-a274-4339d5f326a3
+last-correlation-id: d01c6622-e90d-4bec-a274-4339d5f326a3
+last-transition-from: review
+shipped-in:
+  - "465d3287e9df"
 ---
 
 # x00750 — A user plugin runs against the host's core
@@ -62,13 +64,18 @@ host's own. A plugin belongs to the host that loads it.
 
 ### S1 — A user plugin's host imports resolve to the host
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/plugins/host-packages.helper.spec.ts`
 - **Files**:
   - `packages/core/src/lib/plugins/host-packages.helper.ts`
   - `packages/core/src/lib/plugins/load-plugins.ts`
   - `packages/core/tests/src/lib/plugins/host-packages.helper.spec.ts`
 - shipped-in: `465d3287e9df`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00750 S1 delivered at 465d3287e9df: host-packages.helper.ts rewrites the plugin's @delendai/* imports to point at what the host resolves (only under Bun's plugin loader); nodeDynamicImport in load-plugins.ts calls it for path/file: specifiers. 6/6 tests green in host-packages.helper.spec.ts.
+- review-attribution: claude-opus-5-5 from Merge pull request #638 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00750-all-g1/a-user-plugin-gets-the-host-core (refs/heads/delendai/wip/claude-opus-5-5/implement/x00750-all-g1/a-user-plugin-gets-the-host-core) (465d3287e9df4e7eb43767cf5ac91f0ecb3d0865), opened by MiniMaxM3
 
 ## dependency graph
 
