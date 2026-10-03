@@ -2,13 +2,14 @@
 id: x00780
 title: "Release tooling follows the configured branches and strategy"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-30
 last-transition-id: b730b7c6-d4a6-4560-a973-0855b473f9cd
-last-correlation-id: b730b7c6-d4a6-4560-a973-0855b473f9cd
-last-transition-from: in-progress
+last-transition-id: d0abb747-4651-40c0-a813-7e878ae390c8
+last-correlation-id: d0abb747-4651-40c0-a813-7e878ae390c8
+last-transition-from: review
 ---
 
 # x00780 — Release tooling follows the configured branches and strategy
@@ -32,7 +33,7 @@ The release tools name this repository's shape: git.ts, release and release-fina
 - global_gate: none
 
 ### S1 — Release target resolved from the policy; git and forge release tools consume it
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/release-target.ts`, `packages/core/src/lib/development-policy/release-target.interface.ts`, `packages/core/src/public/index.ts`, `packages/core/src/lib/contracts/release-state/index.ts`, `packages/core/src/lib/contracts/release-finalize/index.ts`, `packages/core/tests/src/lib/development-policy/release-target.spec.ts`, `plugins/git/src/lib/services/git.ts`, `plugins/git/src/lib/release/index.ts`, `plugins/git/src/lib/release-finalize/index.ts`, `plugins/forge/src/lib/release-pr/index.ts`, `plugins/forge/src/lib/release-finalize/index.ts`, `plugins/git/tests/release/r2.spec.ts`, `plugins/git/tests/release/release-target-shapes.spec.ts`, `plugins/git/tests/release-finalize/index.spec.ts`, `plugins/git/tests/release-finalize/e2e.spec.ts`, `plugins/git/tests/src/lib/release.spec.ts`, `plugins/forge/tests/release-pr/index.spec.ts`, `plugins/forge/tests/release-pr/release-target-shapes.spec.ts`, `plugins/forge/tests/release-finalize/index.spec.ts`, `tools/scripts/release/dogfood/dogfood.script.ts`, `tools/scripts/release/dogfood/dogfood.spec.ts`
 - **Gate**: none
 - acceptance:
