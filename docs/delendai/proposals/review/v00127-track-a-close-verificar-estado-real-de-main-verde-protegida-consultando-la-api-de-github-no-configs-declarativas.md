@@ -26,6 +26,8 @@ related:
 last-transition-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
 last-correlation-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
 last-transition-from: in-progress
+shipped-in:
+  - "6af2c6a01"
 ---
 
 # v00127 — Track A.close: verificar `main` verde y protegida en GitHub (API real)
@@ -217,7 +219,7 @@ abre issue — es observación, nunca gate.
 
 ### S1 — `verify-main-health.script.ts` + bifuración
 
-- **Status**: done — verified 2026-09-02: `tools/scripts/ci/verify-main-health.script.ts`
+- **Status**: done
   and `tools/scripts/ci/verify-main-health.spec.ts` exist (commit `19218caf5`, "feat(tools):
   verify main health via GitHub API (v00127)"), target the real `CartagoGit/delendai`
   repository, and `bunx vitest run tools/scripts/ci/verify-main-health.spec.ts` passes 9/9.
@@ -231,6 +233,11 @@ abre issue — es observación, nunca gate.
 - **Gate**: type + test passing
 - **Depends on**: `c00144`, `c00132`, `c00133`.
 - shipped-in: `19218caf5a6b3b13379f358e00b5749560b55d35`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — v00127 S1 delivered by claude-sonnet-5 (commit 6af2c6a01 'feat(tools): verify main health via GitHub API (v00127)'). The implement commit landed in worktree minimax-3-batch-all-g6 at HEAD; 9/9 dedicated vitest pass. Bifurcation: main as gate, develop as observation, in the script's JSON output. Target is CartagoGit/delendai via GitHub API. Note: candidate commit '19218caf5a6b' as listed by the queue is not in any local ref; the actual shipped commit is 6af2c6a01 (same author/date). Typecheck passes cleanly for these files (only unrelated errors in plugins/database and tools/scripts/report/tokenizer-real which are pre-existing worktree node_modules issues).
+- review-attribution: unrecorded — nothing in Git names who delivered 6af2c6a013c8bec231bfbfb13f83369cc2408ead: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-3
 
 ### S2 — Wire a dashboard
 
