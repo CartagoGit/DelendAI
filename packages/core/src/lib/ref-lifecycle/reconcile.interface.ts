@@ -14,6 +14,8 @@
  */
 export const DEFAULT_ADOPTION_GRACE_SECONDS = 1800;
 
+import type { IUnitStanding } from '../work-units/unit-lease.interface';
+
 /** A branch as the forge reports it. */
 export interface IObservedRef {
 	readonly name: string;
@@ -33,6 +35,12 @@ export interface IObservedRef {
 	 * pure.
 	 */
 	readonly proposalInProgress?: boolean | undefined;
+	/**
+	 * For a work ref: the verdict on its unit (owner and heartbeat). Only
+	 * a clone that holds the leases can state it; absent, a work ref is
+	 * judged as it always was.
+	 */
+	readonly standing?: IUnitStanding | undefined;
 }
 
 /** A pull request as the forge reports it, reduced to what matters here. */
@@ -73,6 +81,16 @@ export const REF_ROLES = [
 	 * would prove it spent has not been opened yet.
 	 */
 	'work',
+	/**
+	 * A work ref whose owner is known and quiet: listed for adoption, not
+	 * for removal.
+	 */
+	'work-idle',
+	/**
+	 * A work ref whose owner is gone. Its commits may be the only copy, so
+	 * it ends through `work abandon` (which keeps the tip) or `work publish`.
+	 */
+	'work-abandoned',
 	/**
 	 * A work ref whose content is already in a publication ref or the
 	 * integration branch. A work branch ends when it is published: past
@@ -133,6 +151,8 @@ export interface IRefReconciliation {
 	 * never goes silent about a ref it chose not to act on.
 	 */
 	readonly active: readonly IRefVerdict[];
+	/** Work refs whose owner went quiet: another agent may take them over. */
+	readonly adoptable: readonly IRefVerdict[];
 }
 
 /** What the project's policy says about one branch's delivery. */

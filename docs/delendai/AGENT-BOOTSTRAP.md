@@ -334,10 +334,11 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
   shared checkout never moves; `delendai work status` says where it
   stands.
 - **No orphaned branches or stashes — always reconcile (this repo).**
-  Before closing a session run `bun run reclaim:orphans` and resolve
-  every orphan: merge it if valuable (fixing it until it works), delete
-  if not. `--apply` removes only lossless branches (`ahead === 0`);
-  stashes and unique-commit branches are never auto-deleted.
+  A unit ends in `delendai work publish` or `delendai work abandon`
+  (keeps its tip). Before closing a session run `bun run reclaim:orphans`:
+  live units are not orphans, idle/abandoned ones print their policy
+  remedy, and `--apply` removes lossless branches and delivered units
+  (clean worktrees only); stashes and unique-commit branches are kept.
 - **Slice commits are causally bounded (f00417).** A slice commit is
   only valid if the staged paths are a subset of the **machine-resolved
   scope** at the moment the transition was emitted. The resolver
