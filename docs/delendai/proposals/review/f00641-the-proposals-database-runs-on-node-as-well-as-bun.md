@@ -60,12 +60,17 @@ meant to work on either runtime. Node ships SQLite as `node:sqlite`
 
 ### S1 — An adapter over node:sqlite behind the one loader
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`
 - **Files**: `packages/proposals-sqlite/src/lib/node-sqlite-database.helper.ts`,
   `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts`,
   `packages/proposals-sqlite/tests/src/lib/node-sqlite-database.helper.spec.ts`,
   `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at 4cca8dcd7a85 ("Merge pull request #449 ... f00641 S1"). proposals-db-on-node.spec.ts (Node runtime) opens a fresh database, applies every migration (incl. 0020's table rebuild), reconciles this repository, and exports the registry matching the markdown scan. node-sqlite-database.helper.spec.ts (Bun) pins the adapter behaviour (null on get, SQLITE_CANTOPEN on missing file with create:false, savepoint for nested transaction).
+- review-attribution: claude-opus-5-5 from commit 4cca8dcd7a85 names refs/heads/delendai/wip/claude-opus-5-5/f00641-S1-g1/the-proposals-database-runs-on-node (4cca8dcd7a852253362e51ce2a4e7e8bd0507d23), opened by minimax-m3
 
 Proven on Node (vitest): a fresh database applies every migration,
 including 0020's table rebuild; this repository's proposals reconcile;
@@ -76,10 +81,15 @@ The adapter's own behaviour is pinned in the bun suite (Bun also provides
 
 ### S2 — The default read source can be SQL on both runtimes
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
 - **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`,
   `plugins/proposals/src/lib/proposals/index-reader.ts`
+- review-state: done
+- review-implementer: claude-sonnet-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S2 verified at 7a5236e63cdd ("feat(proposals): the proposal index reads SQLite by default"). index-reader.spec + index-reader-rebuild + index-reader-sql 30/30 cover default source = sql with no .cache, projection never built -> rebuild from markdown before read, index outside canonical layout -> served as JSON unless sql chosen.
+- review-attribution: claude-sonnet-5 from Merge pull request #695 from CartagoGit/delendai/pr/claude-sonnet-5/implement/q00022-S4-g1/sql-only-reads-phase-2 (refs/heads/delendai/wip/claude-sonnet-5/implement/q00022-S4-g1/sql-only-reads-phase-2) (7a5236e63cddf07f89a7ba6376c1c0e602bd9403), opened by minimax-m3
 
 q00022 S4 phase 2: with the database readable on Node, moving
 `DEFAULT_PROPOSAL_INDEX_SOURCE` from `auto` to `sql` no longer fails Node

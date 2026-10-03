@@ -52,7 +52,7 @@ chance.
 
 ### S1 — Drain waits for the writes the plugin started
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/usage-tracking`
 - **Files**:
   - `plugins/usage-tracking/src/lib/record-buffer.ts`
@@ -60,6 +60,11 @@ chance.
   - `plugins/usage-tracking/tests/src/lib/record-buffer.spec.ts`
   - `plugins/usage-tracking/tests/src/lib/plugin.spec.ts`
 - shipped-in: `ec4fc3ebe938`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00762 S1 - drainLiveBuffers now waits for every tracked background write and anything those start. commit ec4fc3ebe938a10f34bee1d9e4dc0061f120996b wires plugins/usage-tracking/src/lib/record-buffer.ts (trackBackgroundWork) and plugins/usage-tracking/src/index.ts (the three writes that race directory removal: tmp sweep, pricing refresh, summary rollup) through drainLiveBuffers. Before/after diff is minimal: tracking on register, await in drain, no behaviour change on hot path. gate: npx vitest run plugins/usage-tracking => 23 files / 134 tests passed, exit 0. The acceptance test (plugin.spec.ts:94) runs the registering+drain+rmSync loop 5 consecutive rounds and was red before this commit on develop (raised ENOTEMPTY); green now. acceptance: drainLiveBuffers returns only after every tracked write settled; cache directory removable across five rounds.
+- review-attribution: claude-opus-5-5 from Merge pull request #662 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00762-all-g1/boot-writes-are-drained (refs/heads/delendai/wip/claude-opus-5-5/implement/x00762-all-g1/boot-writes-are-drained) (ec4fc3ebe938a10f34bee1d9e4dc0061f120996b), opened by minimax-3
 
 ## dependency graph
 

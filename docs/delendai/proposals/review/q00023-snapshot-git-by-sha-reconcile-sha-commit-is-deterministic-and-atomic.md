@@ -80,13 +80,18 @@ response. It does NOT silently re-run.
 
 ### S1 — Resolve Git refs at call time and freeze the SHA for the entire reconcile
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts && bun test --timeout 30000 plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts`
   - `plugins/proposals/src/lib/tools/db-reconcile.tool.ts`
   - `plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — Revisé 4385f41e6bd9. El reconcile con ref resuelve el commit una sola vez con rev-parse protegido, lee el árbol de propuestas desde ese SHA con ls-tree/cat-file y atribuye la corrida al SHA resuelto; así la proyección deja de depender del worktree vivo. Corrí las specs focalizadas de proposal-markdown-at-commit + db-reconcile + sync-proposals-projection: 12/12 verde.
+- review-attribution: claude-opus-5-5 from Merge pull request #668 from CartagoGit/delendai/pr/claude-opus-5-5/implement/q00023-all-g1/a-moved-branch-is-reported (refs/heads/delendai/wip/claude-opus-5-5/implement/q00023-all-g1/a-moved-branch-is-reported) (4385f41e6bd943e1b8229a0167633ef77edc8085), opened by minimax-3
 
 **Rewritten 2026-09-29 against the tree.** The files this slice first
 named (`reconciler/git-resolver.ts`, `reconciler/reconcile.ts`,
@@ -116,7 +121,7 @@ nothing outside the proposals tree is read.
 
 ### S2 — Drift detection: report when the ref moved mid-run
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts`
@@ -126,6 +131,11 @@ nothing outside the proposals tree is read.
   - `plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/sync-proposals-projection.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — Revisé 4385f41e6bd9. El output de db_reconcile ahora expone drift tipado y refDrift sólo vuelve a resolver el ref al final para reportar ref-moved o ref-gone sin re-leer ni reintentar la reconciliación; una SHA no deriva. Las mismas specs focalizadas quedaron 12/12 verde y cubren branch moved, ref gone y drift nulo para SHA.
+- review-attribution: claude-opus-5-5 from Merge pull request #668 from CartagoGit/delendai/pr/claude-opus-5-5/implement/q00023-all-g1/a-moved-branch-is-reported (refs/heads/delendai/wip/claude-opus-5-5/implement/q00023-all-g1/a-moved-branch-is-reported) (4385f41e6bd943e1b8229a0167633ef77edc8085), opened by minimax-3
 
 Rewritten against the tree like S1 (`reconciler/drift.ts` and the sync
 tool do not exist; the reconcile with a `ref` is `proposals_db_reconcile`).
