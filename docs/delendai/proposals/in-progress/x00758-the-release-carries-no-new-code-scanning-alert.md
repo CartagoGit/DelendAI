@@ -2,15 +2,15 @@
 id: x00758
 title: "The release carries no new code-scanning alert"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: security
 date: 2026-09-29
 priority: P0
 related: []
-last-transition-id: 6275ffbd-f1e8-44fb-a414-cefaa441d440
-last-correlation-id: 6275ffbd-f1e8-44fb-a414-cefaa441d440
-last-transition-from: in-progress
+last-transition-id: d6690454-064e-4d98-be3e-157636f01d5b
+last-correlation-id: d6690454-064e-4d98-be3e-157636f01d5b
+last-transition-from: review
 ---
 
 # x00758 — The release carries no new code-scanning alert

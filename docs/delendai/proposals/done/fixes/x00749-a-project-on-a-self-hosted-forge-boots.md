@@ -2,15 +2,17 @@
 id: x00749
 title: "A project on a self-hosted forge boots"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P0
 related: [q00022]
-last-transition-id: a6712ed6-b789-421a-ae3f-2706476aa7f2
-last-correlation-id: a6712ed6-b789-421a-ae3f-2706476aa7f2
-last-transition-from: in-progress
+last-transition-id: bdf1982b-6d61-4a4a-9118-8de2642505d5
+last-correlation-id: bdf1982b-6d61-4a4a-9118-8de2642505d5
+last-transition-from: review
+shipped-in:
+  - "195d1a537e0e"
 ---
 
 # x00749 — A project on a self-hosted forge boots
