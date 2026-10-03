@@ -343,7 +343,12 @@ describe('a verdict on a slice no round was opened for', () => {
 		const approved = await repo.review({
 			action: 'approve',
 			agent: 'agent-b',
-			evidence: { ...EVIDENCE, commitHash: 'abc1234' },
+			// A commit the integration branch has: an approval of one it
+			// lacks is refused.
+			evidence: {
+				...EVIDENCE,
+				commitHash: repo.git('rev-parse', 'develop').trim(),
+			},
 		});
 
 		expect(approved.isError).toBe(false);
