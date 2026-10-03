@@ -2,15 +2,13 @@
 id: x00799
 title: "Every derived file merges without a conflict and is recomputed by the queue"
 kind: fix
-status: done
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
-last-transition-id: c8e02c75-50ae-4db2-b496-6df3d43e2f2c
-last-correlation-id: c8e02c75-50ae-4db2-b496-6df3d43e2f2c
-last-transition-from: review
-shipped-in:
-  - "7b5326c0c7fc"
+last-transition-id: ce9b31d3-df3b-4ba5-9f3b-a277ba5a4056
+last-correlation-id: ce9b31d3-df3b-4ba5-9f3b-a277ba5a4056
+last-transition-from: in-progress
 ---
 
 # x00799 — Every derived file merges without a conflict and is recomputed by the queue
@@ -51,11 +49,11 @@ Three layers, each with one job. The drift guards are untouched: a source change
 - global_gate: none
 
 ### S1 — Every gen:all step is routed to the driver, block files merge their prose, and gen:all covers docs:index and types:generate
-- **Status**: done
+- **Status**: pending
 - **Files**: `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/contracts/constants/generated-refresh.constant.ts`, `packages/cli/src/lib/generated-refresh.service.ts`, `packages/cli/src/lib/generated-refresh.service.spec.ts`, `tools/scripts/git/generated-merge-driver.constant.ts`, `tools/scripts/git/generated-merge-driver.interface.ts`, `tools/scripts/git/generated-merge-driver.script.ts`, `tools/scripts/git/generated-merge-driver.script.spec.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/gen-all.spec.ts`, `.gitattributes`
 - **Gate**: none
 - shipped-in: `7b5326c0c7fc`
-- review-state: done
+- review-state: in_review
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3
 - review-log: approved by minimax-3 — x00799 S1 delivered at 7b5326c0c7fc: every gen:all step is routed to a rule (gen-all.spec.ts, generated-merge-driver.script.spec.ts, generated-refresh.service.spec.ts all green); .gitattributes' generated-merge driver is wired to the new driver; gen:all now runs docs-index and tool-types so the queue's post-merge refresh covers them. Conflicts in authored text remain conflicts (the spec case 'A conflict in the README stays a conflict' passes). The commit 6389125c5 is the empty ref-state follow-up.
