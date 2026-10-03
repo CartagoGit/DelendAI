@@ -537,7 +537,7 @@ the good verdicts' shape (P1) becomes the required shape.
 ### S22 — A unit that will not land is retired, with its work kept
 
 - **Status**: review
-- **Files**: `packages/core/src/lib/work-units/work-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/contracts/interfaces/work-retire.interface.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/lib/tools/work-unit-roots.helper.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/contracts/interfaces/work-retire.interface.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/lib/tools/work-unit-roots.helper.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `docs/delendai/TOKEN-BUDGETS.md`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - `work retire --ref=<branch> --reason=<why>` writes the unit's tip to
   `refs/<namespace>/retired/<unit>`, pushes it, and only then closes the

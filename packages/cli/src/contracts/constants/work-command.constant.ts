@@ -24,6 +24,8 @@ export const WORK_COMMAND = {
 		'message',
 		'paths',
 		'keep-work-ref',
+		'reason',
+		'with-worktree',
 		'no-pull-request',
 		'forge',
 		'allow-scope-narrowing',
