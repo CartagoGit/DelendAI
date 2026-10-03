@@ -94,7 +94,7 @@ the policy in the host.
 
 ### S1 — Schema guards + repo primitives on the existing `revision` columns
 
-- **Status**: done — `e0ddbbb60`, `91d45c00d`. every revision-carrying table is guarded by a `*_revision_steps_by_one` trigger (migration 0018, asserted for each table), and writes go through `casUpdate`, whose losing writer receives `{ kind: 'conflict', currentRevision }` — asserted by the two-connection race and by the proposals and slices repositories. The acceptance names per-entity `update*` functions; the shipped entry point is the shared `casUpdate` with that same outcome shape. Verified 2026-09-15.
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/migrations/0001_initial.sql`
     (existing baseline — `revision` already exists there)
@@ -120,8 +120,11 @@ the policy in the host.
   - The same shape applies to `updatePlan` and `updateSlice`.
   - Existing tests still pass; new tests cover conflict, skipped
     revision, decremented revision, and direct-SQL bypass attempts.
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot-reconcile-20260911
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — r00048 S1 shipped in e0ddbbb60 (bootstrap) + 91d45c00d (uniform CAS): migration 0018 (revision_step_guards) installs *_revision_steps_by_one triggers on every revisioned table; casUpdate returns {kind:'updated', revision} on success and {kind:'conflict', currentRevision} when the row changed under us; proposals/plans/slices repos all go through it. 11/11 tests green (revision-cas.spec + lifecycle-cas-race.spec). Acceptance rephrased: shipped as shared casUpdate (rather than per-entity update*) with the same conflict/updated outcome shape, every assertion is covered.
+
 ### S2 — Expose CAS to the host: read returns `revision`, write returns either updated or conflict
 
 - **Status**: retired — 2026-10-01, superseded by the authority decision. `AUTHORITIES.md` makes `docs/delendai/proposals` the authority for proposal status and `proposals.sqlite` a projection the reconciler rebuilds from it; tools write the markdown, never these rows, so there is no writer to hand a `revision` to. None of the files this slice names exists (`read.ts`, `proposal-store.ts`, `plan-store.ts`, `slice-store.ts`). Concurrent writes to the authority go through the file mutex and atomic writes instead.
