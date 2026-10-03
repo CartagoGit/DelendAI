@@ -2,15 +2,17 @@
 id: x00762
 title: "Usage tracking's background writes can be waited for"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-29
 priority: P1
 related: [x00641]
-last-transition-id: 732003be-df5b-46a0-b0f2-57c7539d425d
-last-correlation-id: 732003be-df5b-46a0-b0f2-57c7539d425d
-last-transition-from: in-progress
+last-transition-id: 8caba536-8ed5-43c8-bce5-c7f03018a78b
+last-correlation-id: 8caba536-8ed5-43c8-bce5-c7f03018a78b
+last-transition-from: review
+shipped-in:
+  - "ec4fc3ebe938"
 ---
 
 # x00762 — Usage tracking's background writes can be waited for

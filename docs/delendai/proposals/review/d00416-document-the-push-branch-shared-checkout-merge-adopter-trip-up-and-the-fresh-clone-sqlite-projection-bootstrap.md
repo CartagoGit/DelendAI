@@ -2,16 +2,13 @@
 id: d00416
 title: "Document the push.branch × shared-checkout-merge adopter trip-up and the fresh-clone SQLite projection bootstrap"
 kind: docs
-status: done
+status: review
 type: proposal
 track: adopter-experience
 date: 2026-09-29
-last-transition-id: d52ce07c-a803-484f-82b6-44e665a6866e
-last-correlation-id: d52ce07c-a803-484f-82b6-44e665a6866e
-last-transition-from: review
-shipped-in:
-  - "db98793fb4558f1f71fd667be84e82d675ac1ff5"
-  - "c104a2522e424d4982f0ccb45a6cb590ac83fd3e"
+last-transition-id: fb6e5d9f-fd4a-4e83-b027-289c68ef8b8e
+last-correlation-id: fb6e5d9f-fd4a-4e83-b027-289c68ef8b8e
+last-transition-from: in-progress
 ---
 
 # d00416 — Document the push.branch × shared-checkout-merge adopter trip-up and the fresh-clone SQLite projection bootstrap
@@ -36,7 +33,7 @@ Observed live on Beateam/logistics-app 2026-09-29: a single config file trips tw
 - global_gate: none
 
 ### S1 — Add `docs/delendai/ADOPTER-CONFIG-FOOTGUNS.md` with the two trip-ups, the rationale and the recovery paths
-- **Status**: done
+- **Status**: done — verified 2026-09-30: `docs/delendai/ADOPTER-CONFIG-FOOTGUNS.md`
   exists on `develop` (delivered by `db98793fb`, "docs(d00416): S1 — document the
   push.branch x shared-checkout-merge adopter trip-up and the fresh-clone SQLite
   projection bootstrap") and matches every acceptance bullet verbatim: Section 1
@@ -56,14 +53,9 @@ Observed live on Beateam/logistics-app 2026-09-29: a single config file trips tw
   - "Section 2 names the `state-database.corrupt`-on-fresh-clone behaviour, why the projection is rebuildable, and points at `proposals_db_reconcile` as the recovery."
   - "Each section cross-references the source it describes (with file:line of the validator and the projections' lifecycle section)."
 - shipped-in: `db98793fb4558f1f71fd667be84e82d675ac1ff5`
-- review-state: done
-- review-implementer: delendai-impl-20260929
-- review-reviewer: qwen3-flash
-- review-log: approved by qwen3-flash — Docs slice; verified acceptance in the file itself (4 sections of bullets covered by line numbers). Non-goals respected: policy-validation error message untouched; startup-reconciliation choice untouched; no SQLite artefact backfilled.
-- review-attribution: delendai-impl-20260929 from Merge pull request #634 from CartagoGit/delendai/pr/delendai-impl-20260929/implement/batch-all-g1/adopter-config-footguns (refs/heads/delendai/wip/delendai-impl-20260929/implement/batch-all-g1/adopter-config-footguns) (db98793fb4558f1f71fd667be84e82d675ac1ff5), opened by qwen3-flash
 
 ### S2 — Link the new page from `docs/delendai/AGENT-BOOTSTRAP.md` and `docs/delendai/ADOPTER-SURFACE-MODE.md` so the next adopter finds it before they hit the error
-- **Status**: done
+- **Status**: review — 2026-09-30. Added one discoverable line to each file:
   `AGENT-BOOTSTRAP.md`'s "Cross-plugin configuration compatibility" section
   (the section that already talks about `delendai.config.json` validation
   diagnostics) now links `ADOPTER-CONFIG-FOOTGUNS.md`; `ADOPTER-SURFACE-MODE.md`'s
@@ -79,11 +71,6 @@ Observed live on Beateam/logistics-app 2026-09-29: a single config file trips tw
   - "Both source files contain a discoverable link to `ADOPTER-CONFIG-FOOTGUNS.md`."
   - "The link is under a section that an adopter onboarding the project will read (config setup, not a contributor-only section)."
 - shipped-in: `c104a2522e42`
-- review-state: done
-- review-implementer: claude-sonnet-5
-- review-reviewer: qwen3-flash
-- review-log: approved by qwen3-flash — Docs slice; verified by grep of the two files in the unit worktree at delivery commit c104a2522e42. Byte budget respected: AGENT-BOOTSTRAP.md +137 B still under the 32,000 B lint:prompt-size cap (implementer reported 31,588 B).
-- review-attribution: claude-sonnet-5 from Merge pull request #676 from CartagoGit/delendai/pr/claude-sonnet-5/implement/d00416-S2-g1/cross-link-adopter-config-footguns (refs/heads/delendai/wip/claude-sonnet-5/implement/d00416-S2-g1/cross-link-adopter-config-footguns) (c104a2522e424d4982f0ccb45a6cb590ac83fd3e), opened by qwen3-flash
 
 ## acceptance
 

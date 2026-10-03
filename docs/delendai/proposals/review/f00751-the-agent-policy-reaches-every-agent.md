@@ -11,6 +11,8 @@ related: []
 last-transition-id: 0161c3e9-2c5e-44b9-a295-02badd85e141
 last-correlation-id: 0161c3e9-2c5e-44b9-a295-02badd85e141
 last-transition-from: in-progress
+shipped-in:
+  - "53053d1c4de3"
 ---
 
 # f00751 — The agent policy reaches every agent

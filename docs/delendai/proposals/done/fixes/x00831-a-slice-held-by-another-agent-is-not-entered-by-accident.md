@@ -2,15 +2,17 @@
 id: x00831
 title: "A slice held by another agent is not entered by accident"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [x00714, x00791]
-last-transition-id: 57a9264e-1876-4ae3-b406-a406b164fd92
-last-correlation-id: 57a9264e-1876-4ae3-b406-a406b164fd92
-last-transition-from: in-progress
+last-transition-id: 06e54a39-d456-4523-8124-f89ddad42781
+last-correlation-id: 06e54a39-d456-4523-8124-f89ddad42781
+last-transition-from: review
+shipped-in:
+  - "8acb6c0369b1"
 ---
 
 # x00831 — A slice held by another agent is not entered by accident

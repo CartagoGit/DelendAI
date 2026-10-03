@@ -9,6 +9,8 @@ date: 2026-10-01
 last-transition-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
 last-correlation-id: 85d50588-fa1c-4fdc-ab83-781af35d2a10
 last-transition-from: in-progress
+shipped-in:
+  - "e59cea102e36"
 ---
 
 # x00796 — Doctor reads clean in a consumer project

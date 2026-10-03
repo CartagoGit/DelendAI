@@ -11,6 +11,8 @@ related: [q00022]
 last-transition-id: a6712ed6-b789-421a-ae3f-2706476aa7f2
 last-correlation-id: a6712ed6-b789-421a-ae3f-2706476aa7f2
 last-transition-from: in-progress
+shipped-in:
+  - "195d1a537e0e"
 ---
 
 # x00749 — A project on a self-hosted forge boots
