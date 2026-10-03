@@ -2,12 +2,15 @@
 id: x00836
 title: "A file whose only change is an import is not judged as new code"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-10-03
 priority: P2
 related: [r00040, x00541]
+last-transition-id: 9bda25ad-e49a-44e9-bfa4-e4d378068664
+last-correlation-id: 9bda25ad-e49a-44e9-bfa4-e4d378068664
+last-transition-from: in-progress
 ---
 
 # x00836 — A file whose only change is an import is not judged as new code
@@ -62,6 +65,7 @@ majority, whatever its import lines say.
   once their static imports and re-exports are removed, and false for a new
   or deleted file.
 - The gate leaves such files out of what it judges and prints their count.
+- shipped-in: `463e7b1e3313`
 
 ## dependency graph
 
