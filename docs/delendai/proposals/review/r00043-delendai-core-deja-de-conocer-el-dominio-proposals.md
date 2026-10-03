@@ -16,6 +16,8 @@ related: [q00011, r00040, r00041, r00042, r00034]
 last-transition-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-correlation-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
 last-transition-from: in-progress
+shipped-in:
+  - "075350248c"
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -320,7 +322,7 @@ tool descriptors), with its files as the reference.
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
@@ -371,6 +373,11 @@ Delivered:
   now wires issues. Before, it did nothing. That is the point of the
   slice: the wiring belongs to issues, not to proposals.
 - shipped-in: `522aabfc31e6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — r00043 S6 delivered by claude-opus-5-5 (commit 075350248c 'refactor(adopt): the GitHub issues hint of an adoption comes from the issues manifest (r00043 S6)', merged through PR #463). The slice makes the adoption hint plugin-agnostic: the issues plugin declares its hint through the plugin manifest's adoptions extension, and core reads it without knowing the plugin's name. Slice unclaimed in current queue. Approved via implement worktree.
+- review-attribution: claude-opus-5-5 from Merge pull request #463 from CartagoGit/delendai/pr/claude-opus-5-5/r00043-S6-g1/the-issues-hint-comes-from-its-manifest (refs/heads/delendai/wip/claude-opus-5-5/r00043-S6-g1/the-issues-hint-comes-from-its-manifest) (075350248cf4971921b2f342ae4e6d0400c632d9), opened by minimax-3
 
 ## Dependency graph
 
