@@ -2,17 +2,18 @@
 id: x00641
 title: "A hung CI run cannot hold the queue"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00637, x00636]
-last-transition-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
-last-correlation-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
-last-transition-from: in-progress
+last-transition-id: 637904c4-d352-4422-b00e-1c0b0d17d4ab
+last-correlation-id: 637904c4-d352-4422-b00e-1c0b0d17d4ab
+last-transition-from: review
 shipped-in:
   - "35fcf6860"
+  - "144a8768a906"
 ---
 
 # x00641 — A hung CI run cannot hold the queue
@@ -86,7 +87,7 @@ green full run took about seven minutes.
 
 ### S2 — A run that timed out is re-dispatched, not read as red
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/certify-integration.script.spec.ts`
 - **Files**: `tools/scripts/forge/certify-integration.script.ts`,
   `tools/scripts/forge/certify-integration.interface.ts`,
@@ -115,6 +116,11 @@ cancelled full runs and none that finished, `needsCertification` stops
 starting another, the certification is `red`, and the pass says why. A
 run that finishes still decides, whatever was cancelled before it.
 - shipped-in: `144a8768a906`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00641 S2 delivered by claude-opus-5-5 (commit 144a8768a906 'fix(forge): a commit whose full run keeps timing out stops being re-run'). The certify-integration script distinguishes cancelled runs from red runs: cancelled runs dispatch a new full run instead of marking the commit red; after the bounded number of cancellations, the certification is red. 16/16 dedicated vitest pass. Slice unclaimed. Approved via implement worktree.
+- review-attribution: claude-opus-5-5 from Merge pull request #658 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00641-all-g1/a-timed-out-run-is-run-again (refs/heads/delendai/wip/claude-opus-5-5/implement/x00641-all-g1/a-timed-out-run-is-run-again) (144a8768a906be0ccf29860f0f9b609fb193e2f5), opened by minimax-3
 
 ## dependency graph
 
