@@ -2,13 +2,13 @@
 id: x00870
 title: "Every agent is held to the workflow, whatever its model or host"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-03
-last-transition-id: 70928512-289a-4793-b993-f4f0cc7625d3
-last-correlation-id: 70928512-289a-4793-b993-f4f0cc7625d3
-last-transition-from: ready
+last-transition-id: 6566cf46-bf74-4a3f-914c-2577a7a6f12c
+last-correlation-id: 6566cf46-bf74-4a3f-914c-2577a7a6f12c
+last-transition-from: in-progress
 ---
 
 # x00870 — Every agent is held to the workflow, whatever its model or host
@@ -39,6 +39,9 @@ On 2026-10-03 twelve reviewer agents of other model families committed 30 commit
   - "With no marker the outcome follows development.guard.unknownActor."
   - "A person explicitly allowed commits; CI=true with no marker is unaffected."
   - "Served instructions tell every agent to set DELENDAI_AGENT_ID to its exact model id."
+- shipped-in: `a7c9dacf63a0`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 

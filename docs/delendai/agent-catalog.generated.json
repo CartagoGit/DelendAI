@@ -1705,14 +1705,6 @@
 				"date": "2026-10-03"
 			},
 			{
-				"id": "x00870",
-				"title": "Every agent is held to the workflow, whatever its model or host",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-03"
-			},
-			{
 				"id": "x00871",
 				"title": "close_slice has one evidence decision: CI certification satisfies the validate-required gate",
 				"track": "general",
