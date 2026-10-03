@@ -152,7 +152,6 @@ no inferir el estado desde configs declarativas.
 
 resolution:
   status: implemented
-  shipped-in: ["30551533", "051b12d5", "e94d5639", "bd0df7b0"]
   evidence:
     - tests: "1 archivo, 23 tests"
     - typecheck: "bun tools/scripts/typecheck.script.ts exit 0"

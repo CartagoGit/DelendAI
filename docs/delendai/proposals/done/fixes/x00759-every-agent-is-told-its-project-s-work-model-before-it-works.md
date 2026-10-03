@@ -6,11 +6,9 @@ status: done
 type: proposal
 track: hosts
 date: 2026-09-29
-last-transition-id: 1cb2dfac-00d3-404c-8c15-567810ab47e2
-last-correlation-id: 1cb2dfac-00d3-404c-8c15-567810ab47e2
+last-transition-id: c49277a1-8f54-417a-9bb1-0e4d915c496f
+last-correlation-id: 6da36679-57c2-427f-a0e8-556cee1bf8fd
 last-transition-from: review
-shipped-in:
-  - "6f377971d124"
 ---
 
 # x00759 — Every agent is told its project's work model before it works
@@ -56,8 +54,8 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
 - shipped-in: `6f377971d124`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-flash
-- review-log: approved by glm-5.3-flash — All three slices delivered by 6f377971d124 as specified. S1: declareWorkflow is the one renderer (route tables on persistence/integration axes) and its workModelInstructionLines reach both the connect-time server instructions and agent_bootstrap via agentOperatingLines. S2: refusals (git-guard, write-refusal in project-branches, checkout guard in work-isolation) now answer with workModelNextStep naming the profile, and the specs prove merge vs pr remedies differ; the two surfaced wrong declarations are fixed (worktree-pr no longer told STOP; shared-direct allowed to commit). S3: AGENT-BOOTSTRAP.md defers to the served model and the new lint:host-docs-landing enforces it (ran: 5 docs scanned, exit 0). Evidence: typecheck exit 0; 96/96 targeted tests across 6 specs (declare-workflow, git-guard, project-branches, agent-bootstrap, agent-policy-instructions.helper, core-meta-tools). Non-goals respected: no new merge-cycle command wired, ADRs only got a scope note. Note: this repo's own overview now carries workModel; later commits refining these files are other proposals' work.
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ### S2 — A refusal names the profile and its next step
 - **Status**: done
@@ -70,8 +68,8 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
 - shipped-in: `6f377971d124`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-flash
-- review-log: approved by glm-5.3-flash — All three slices delivered by 6f377971d124 as specified. S1: declareWorkflow is the one renderer (route tables on persistence/integration axes) and its workModelInstructionLines reach both the connect-time server instructions and agent_bootstrap via agentOperatingLines. S2: refusals (git-guard, write-refusal in project-branches, checkout guard in work-isolation) now answer with workModelNextStep naming the profile, and the specs prove merge vs pr remedies differ; the two surfaced wrong declarations are fixed (worktree-pr no longer told STOP; shared-direct allowed to commit). S3: AGENT-BOOTSTRAP.md defers to the served model and the new lint:host-docs-landing enforces it (ran: 5 docs scanned, exit 0). Evidence: typecheck exit 0; 96/96 targeted tests across 6 specs (declare-workflow, git-guard, project-branches, agent-bootstrap, agent-policy-instructions.helper, core-meta-tools). Non-goals respected: no new merge-cycle command wired, ADRs only got a scope note. Note: this repo's own overview now carries workModel; later commits refining these files are other proposals' work.
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ### S3 — Static host docs defer to the served work model
 - **Status**: done
@@ -84,8 +82,8 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
 - shipped-in: `6f377971d124`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-flash
-- review-log: approved by glm-5.3-flash — All three slices delivered by 6f377971d124 as specified. S1: declareWorkflow is the one renderer (route tables on persistence/integration axes) and its workModelInstructionLines reach both the connect-time server instructions and agent_bootstrap via agentOperatingLines. S2: refusals (git-guard, write-refusal in project-branches, checkout guard in work-isolation) now answer with workModelNextStep naming the profile, and the specs prove merge vs pr remedies differ; the two surfaced wrong declarations are fixed (worktree-pr no longer told STOP; shared-direct allowed to commit). S3: AGENT-BOOTSTRAP.md defers to the served model and the new lint:host-docs-landing enforces it (ran: 5 docs scanned, exit 0). Evidence: typecheck exit 0; 96/96 targeted tests across 6 specs (declare-workflow, git-guard, project-branches, agent-bootstrap, agent-policy-instructions.helper, core-meta-tools). Non-goals respected: no new merge-cycle command wired, ADRs only got a scope note. Note: this repo's own overview now carries workModel; later commits refining these files are other proposals' work.
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## acceptance
 

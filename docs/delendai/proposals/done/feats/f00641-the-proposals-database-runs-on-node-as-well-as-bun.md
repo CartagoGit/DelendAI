@@ -2,15 +2,15 @@
 id: f00641
 title: "The proposals database runs on Node as well as Bun"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-25
 priority: P1
 related: [q00022, r00043]
 last-transition-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
-last-correlation-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
-last-transition-from: in-progress
+last-correlation-id: 748db005-749c-4a8a-bc2c-255d4d620eb2
+last-transition-from: review
 ---
 
 # f00641 — The proposals database runs on Node as well as Bun
@@ -60,7 +60,7 @@ meant to work on either runtime. Node ships SQLite as `node:sqlite`
 
 ### S1 — An adapter over node:sqlite behind the one loader
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`
 - **Files**: `packages/proposals-sqlite/src/lib/node-sqlite-database.helper.ts`,
   `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts`,
@@ -73,10 +73,14 @@ and the registry exported from that database equals the markdown scan.
 The adapter's own behaviour is pinned in the bun suite (Bun also provides
 `node:sqlite`).
 - shipped-in: `4cca8dcd7a85`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ### S2 — The default read source can be SQL on both runtimes
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
 - **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`,
   `plugins/proposals/src/lib/proposals/index-reader.ts`
@@ -90,6 +94,10 @@ Delivered with q00022 S4 phase 2, in the same change: the default is
 and an index outside the canonical layout is served as JSON unless `sql`
 was chosen.
 - shipped-in: `7a5236e63cdd`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## dependency graph
 

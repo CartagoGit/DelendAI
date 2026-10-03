@@ -2,7 +2,11 @@
 id: r00043
 title: "`@delendai/core` deja de conocer el dominio `proposals`"
 kind: refactor
+<<<<<<<< HEAD:docs/delendai/proposals/in-progress/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 status: in-progress
+========
+status: done
+>>>>>>>> 1499ac3d3f8655a7d63458b65473541a0cb68708:docs/delendai/proposals/done/refactors/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 type: proposal
 track: architecture
 date: 2026-08-30
@@ -13,6 +17,7 @@ audit-source:
     finding: AUD-E05
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 related: [q00011, r00040, r00041, r00042, r00034]
+<<<<<<<< HEAD:docs/delendai/proposals/in-progress/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 last-transition-id: 9efe4609-6a47-40f9-b04e-4e6298a1ba57
 last-correlation-id: 9efe4609-6a47-40f9-b04e-4e6298a1ba57
 last-transition-from: review
@@ -20,6 +25,11 @@ shipped-in:
   - "dc61a40ec"
   - "7c861d2f9"
   - "039bb517e"
+========
+last-transition-id: 8f16a78a-53d6-4e4d-9817-50ab77dfc21c
+last-correlation-id: 25fdadc2-860f-4d83-9d90-a56df1d749b6
+last-transition-from: review
+>>>>>>>> 1499ac3d3f8655a7d63458b65473541a0cb68708:docs/delendai/proposals/done/refactors/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -152,6 +162,10 @@ packages/core/                         plugins/proposals/
 
 - **Status**: done
 - shipped-in: `420e86f48`
+- review-state: done
+- review-implementer: gpt-5.4
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - **Files**:
     - `tools/scripts/inspect/core-proposals-boundary.script.ts` (nuevo)
     - `packages/core/tests/src/architecture/core-proposals-boundary.spec.ts` (nuevo)
@@ -172,6 +186,10 @@ packages/core/                         plugins/proposals/
 
 - **Status**: done
 - shipped-in: `7c861d2f9`
+- review-state: done
+- review-implementer: gpt-5.4
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - **DependsOn**: [S0]
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/workflow-contribution.interface.ts` (nuevo)
@@ -232,15 +250,25 @@ inventory findings are resolved by S2. The `issues` acceptance item is
 not part of this delivery; it moves to S6.
 - shipped-in: `bb60f4954b62`
 - review-state: done
+<<<<<<<< HEAD:docs/delendai/proposals/in-progress/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
 - review-log: approved by gpt-5.4 — Verifiqué que la estimación y la adopción pasan a depender de extensiones cargadas, no de proposals hardcodeado en core; gate declarado de S2 verde: 8/8.
 - review-attribution: claude-opus-5-5 from Merge pull request #434 from CartagoGit/delendai/pr/claude-opus-5-5/r00043-S2-g1/adoption-knows-no-plugin (refs/heads/delendai/wip/claude-opus-5-5/r00043-S2-g1/adoption-knows-no-plugin) (dc61a40ec20129f7b422bee0f63e957164c0a930), opened by gpt-5.4
+========
+- review-implementer: gpt-5.4
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
+>>>>>>>> 1499ac3d3f8655a7d63458b65473541a0cb68708:docs/delendai/proposals/done/refactors/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 
 ### S3 — Convertir stable-facade en un registro de contribuciones
 
 - **Status**: done
 - shipped-in: `7c861d2f9`
+- review-state: done
+- review-implementer: gpt-5.4
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - **DependsOn**: [S1]
 - **Files**:
     - `packages/core/src/lib/api/stable-facade.ts`
@@ -294,6 +322,7 @@ proposal files; they now speak of what loaded plugins contribute and of
 workflow files. Both inventory findings are resolved by S4.
 - shipped-in: `1059c6ce4311`
 - review-state: done
+<<<<<<<< HEAD:docs/delendai/proposals/in-progress/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
 - review-log: approved by gpt-5.4 — Verifiqué que assemble-skills ya no decide la next action leyendo proposals directamente y que la contribución llega por el ensamblado genérico; gate declarado de S4 verde: 6/6.
@@ -302,6 +331,16 @@ workflow files. Both inventory findings are resolved by S4.
 ### S5 — Lint de frontera y documentación de compatibilidad
 
 - **Status**: in-progress
+========
+- review-implementer: gpt-5.4
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
+
+
+### S5 — Lint de frontera y documentación de compatibilidad
+
+- **Status**: done
+>>>>>>>> 1499ac3d3f8655a7d63458b65473541a0cb68708:docs/delendai/proposals/done/refactors/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 - **DependsOn**: [S2, S3, S4]
 - **Files**:
     - `tools/scripts/lint/core-proposals-boundary.script.ts`
@@ -335,15 +374,22 @@ plugs in without editing the core, through the three registries the
 proposals plugin uses (adoption extensions, workflow contribution, stable
 tool descriptors), with its files as the reference.
 - shipped-in: `f99521d1bf31`
+<<<<<<<< HEAD:docs/delendai/proposals/in-progress/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 - review-state: changes_requested
 - review-implementer: unrecorded
 - review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — El lint real está verde (bun tools/scripts/lint/core-proposals-boundary.script.ts), pero la slice declara como gate bun run lint:core-proposals-boundary y ese comando no existe en package.json; reproduzco Script not found "lint:core-proposals-boundary". Ajustad el gate declarado o exponed el script para que la aceptación sea reproducible.
 - review-attribution: unrecorded — no delivering commit was named for r00043 S5; independence could not be verified, opened by gpt-5.4
+========
+- review-state: done
+- review-implementer: gpt-5.4
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
+>>>>>>>> 1499ac3d3f8655a7d63458b65473541a0cb68708:docs/delendai/proposals/done/refactors/r00043-delendai-core-deja-de-conocer-el-dominio-proposals.md
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
@@ -394,6 +440,10 @@ Delivered:
   now wires issues. Before, it did nothing. That is the point of the
   slice: the wiring belongs to issues, not to proposals.
 - shipped-in: `522aabfc31e6`
+- review-state: done
+- review-implementer: gpt-5.4
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## Dependency graph
 

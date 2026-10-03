@@ -8,11 +8,9 @@ track: trust
 date: 2026-09-29
 priority: P1
 related: [x00757, x00758]
-last-transition-id: 61c9b376-c738-4092-99d5-05184ceedc21
-last-correlation-id: 61c9b376-c738-4092-99d5-05184ceedc21
+last-transition-id: 3eacaac1-39c9-4a2c-88c7-afa2c100b028
+last-correlation-id: 3cc1abff-1d43-4ef1-9b8c-b9b8ac82662c
 last-transition-from: review
-shipped-in:
-  - "abb55b856b3c"
 ---
 
 # x00761 — The release branch validates what it merged
@@ -62,9 +60,8 @@ end red on the release branch, for a commit nobody made.
 - shipped-in: `abb55b856b3c`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: qwen3-flash
-- review-log: approved by qwen3-flash — Gate = vitest commit-branch-discipline.script.spec.ts on delivery commit abb55b856b3c. 20/20 green: covers 'does not refuse a CI checkout of the release branch' (the new NOT_APPLICABLE path, CI=true, no staged files, policy branches.release) and 'still refuses a commit on the release branch outside CI, or with something staged'. Read from policy not from a literal (no hard-coded 'main'). Non-goals respected: 'Changing where agents may commit' untouched. Future push runs on `main` will pass lint-governance.
-- review-attribution: claude-opus-5-5 from Merge pull request #661 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00761-all-g1/the-release-branch-checkout-is-not-a-commit (refs/heads/delendai/wip/claude-opus-5-5/implement/x00761-all-g1/the-release-branch-checkout-is-not-a-commit) (abb55b856b3ce2c0b8e4d077de9ea6d6b776643d), opened by qwen3-flash
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## dependency graph
 

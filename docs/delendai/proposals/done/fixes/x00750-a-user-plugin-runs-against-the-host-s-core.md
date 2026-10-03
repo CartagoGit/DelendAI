@@ -8,11 +8,9 @@ track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00749]
-last-transition-id: eda91fc3-647b-43fd-8608-a3ee6a566d93
-last-correlation-id: eda91fc3-647b-43fd-8608-a3ee6a566d93
+last-transition-id: 5f3bda23-2d8a-473e-a02f-b1fcd012294b
+last-correlation-id: e830c3af-717a-492b-987a-ceee739d895b
 last-transition-from: review
-shipped-in:
-  - "465d3287e9df"
 ---
 
 # x00750 — A user plugin runs against the host's core
@@ -72,10 +70,9 @@ host's own. A plugin belongs to the host that loads it.
   - `packages/core/tests/src/lib/plugins/host-packages.helper.spec.ts`
 - shipped-in: `465d3287e9df`
 - review-state: done
-- review-implementer: claude-opus-5-5
-- review-reviewer: qwen3-flash
-- review-log: approved by qwen3-flash — Gate = vitest host-packages.helper.spec.ts on delivery commit 465d3287e9df. 6/6 tests green in unit worktree; the helper rewrites @delendai/* bare specifiers in import/re-export/require positions, leaves the plugin's own node_modules and unknown specifiers untouched. Consumer's plugin that used to fail 'Cannot find package @delendai/core' now resolves via the host (nodeDynamicImport path/file: branch in load-plugins.ts). Non-goals respected: no changes to other package resolution.
-- review-attribution: claude-opus-5-5 from Merge pull request #638 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00750-all-g1/a-user-plugin-gets-the-host-core (refs/heads/delendai/wip/claude-opus-5-5/implement/x00750-all-g1/a-user-plugin-gets-the-host-core) (465d3287e9df4e7eb43767cf5ac91f0ecb3d0865), opened by qwen3-flash
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## dependency graph
 

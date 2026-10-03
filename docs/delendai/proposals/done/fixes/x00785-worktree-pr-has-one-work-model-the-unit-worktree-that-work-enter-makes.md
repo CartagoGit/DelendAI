@@ -6,11 +6,9 @@ status: done
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: 1ef51960-0017-4325-8a1a-a1111237a389
-last-correlation-id: 1ef51960-0017-4325-8a1a-a1111237a389
+last-transition-id: eeef0a59-7bb0-4821-9316-4673da763f05
+last-correlation-id: eba70e26-5b15-4410-9642-de05209c2723
 last-transition-from: review
-shipped-in:
-  - "19d60b11be53fa2610acbf8a6c3f0cde13811e1c"
 ---
 
 # x00785 — worktree-pr has one work model: the unit worktree that work enter makes
@@ -44,10 +42,8 @@ A real-CLI audit of worktree-pr found two incompatible models. The preset declar
   - "The declared workflow and the isolation rule for worktree-pr name delendai work enter; shared-checkout-pr text is unchanged."
   - "The preset states whether switching branches in the main worktree is intended."
 - shipped-in: `19d60b11be53`
-- review-state: done
+- review-state: in_review
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: qwen3-flash
-- review-log: approved by qwen3-flash — Verified on the delivery state at 19d60b11be53 (gate=none). All five related spec files green at the unit worktree. Non-goals respected: edits limited to profiles/declare-workflow/work-isolation/agent-worktree/docs, plus the new work-unit-profiles spec; no release/forge/CLI-doctor/commit-policy touches.
 
 ## acceptance
 

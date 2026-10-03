@@ -6,11 +6,9 @@ status: done
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: 6f462a45-3742-46dc-97b5-933f4a784fa7
-last-correlation-id: 6f462a45-3742-46dc-97b5-933f4a784fa7
+last-transition-id: b730b7c6-d4a6-4560-a973-0855b473f9cd
+last-correlation-id: d0abb747-4651-40c0-a813-7e878ae390c8
 last-transition-from: review
-shipped-in:
-  - "9d46a11aaeeb"
 ---
 
 # x00780 — Release tooling follows the configured branches and strategy
@@ -43,10 +41,8 @@ The release tools name this repository's shape: git.ts, release and release-fina
   - "Under the merge and direct strategies no pull request is requested; promotion follows integration.strategy because the policy does not model release promotion separately."
   - "This repository (develop to main by pull request, versioned in packages/core) releases unchanged."
 - shipped-in: `9d46a11aaeeb`
-- review-state: done
+- review-state: in_review
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: glm-5.3-flash
-- review-log: approved by glm-5.3-flash — S1 delivered as specified. Release tools now derive integration/release branches, versioned manifest (explicit input defaulting to root package.json) and the promotion step from the resolved policy: new release-target.ts + interface in core, consumed by git release (readExpectedReleaseState, createReleaseCandidate), release-finalize (reconcileRelease) and forge release-pr/finalize; new planReleasePromotion refuses a forge call under merge/direct/none and assertPullRequestPromotion rejects creating a release PR outside the pull-request strategy. The repo-specific antecedent PR line was removed from the description. Verified on a trunk/stable shape spec where no develop/main literal reaches git, and on this repo's own shape (dogfood names packages/core/package.json). Evidence: targeted vitest 21/21 (3 new/extended specs) + 14/14 (existing finalize/release-pr specs) green in the review worktree; non-goals respected (no schema change, persisted field names kept). Judged on the delivered state (commit 9d46a11aaeeb).
 
 ## acceptance
 

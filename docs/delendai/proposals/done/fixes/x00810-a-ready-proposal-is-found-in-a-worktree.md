@@ -8,8 +8,8 @@ track: trust
 date: 2026-10-01
 priority: P1
 related: [q00022]
-last-transition-id: 1dccde73-7367-4450-9aeb-1e1f523665a7
-last-correlation-id: 1dccde73-7367-4450-9aeb-1e1f523665a7
+last-transition-id: 9e9478fb-d6bc-4848-bd22-bc7776d39633
+last-correlation-id: 2f11dd2c-b4f6-4338-8018-90c814b83ff4
 last-transition-from: review
 shipped-in:
   - "582d53897e04"
@@ -66,9 +66,9 @@ not there and reported all 1156 proposals as divergent.
 - shipped-in: `582d53897e04`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-flash
-- review-log: approved by glm-5.3-flash — S1 delivered as specified. locate.ts now derives proposalScanDirs from the shared PROPOSAL_SCAN_FOLDERS constant (same list the id allocator and drift lint walk), so a proposal under ready/feats (or any <status>/<kind>/) is found and transitionable from a worktree with no JSON registry — the exact failure that motivated the proposal (f00547 transition). index-reader.ts treats an absent registry as nothing to compare (divergence []) while an existing-but-different registry is still reported. Gate (declared): vitest run on locate.spec.ts + index-reader-rebuild.spec.ts — 2 files, 11/11 pass in the review worktree, covering both new cases (kind folder of any status with no registry; scan equals allocator folders) and the registry-absent read. Non-goals respected: the JSON registry stays in the fast path (q00022 phase 3 untouched). Slice Status is already done; acceptance block empty so no per-criterion objects are required.
-- review-attribution: claude-opus-5-5 from Merge pull request #711 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00810-all-g1/a-ready-proposal-is-found-in-a-worktree (refs/heads/delendai/wip/claude-opus-5-5/implement/x00810-all-g1/a-ready-proposal-is-found-in-a-worktree) (582d53897e048ae282fb67dee12a33cd963d35c7), opened by glm-5.3-flash
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00810 S1 delivered at 582d53897e04: locator walks PROPOSAL_SCAN_FOLDERS (the list the id allocator already shares), and a sqlite read with no registry on disk no longer reports every proposal as divergent. Tests: locate.spec.ts 4/4 green (lists all 7 status folders, empty index returns null, finds a proposal under any status kind folder, walks the same folders as the id allocator).
+- review-attribution: claude-opus-5-5 from Merge pull request #711 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00810-all-g1/a-ready-proposal-is-found-in-a-worktree (refs/heads/delendai/wip/claude-opus-5-5/implement/x00810-all-g1/a-ready-proposal-is-found-in-a-worktree) (582d53897e048ae282fb67dee12a33cd963d35c7), opened by minimax-3
 
 ## dependency graph
 

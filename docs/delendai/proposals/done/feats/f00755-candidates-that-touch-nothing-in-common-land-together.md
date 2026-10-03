@@ -2,14 +2,23 @@
 id: f00755
 title: "Candidates that touch nothing in common land together"
 kind: feat
+<<<<<<<< HEAD:docs/delendai/proposals/in-progress/f00755-candidates-that-touch-nothing-in-common-land-together.md
 status: in-progress
+========
+status: done
+>>>>>>>> 1499ac3d3f8655a7d63458b65473541a0cb68708:docs/delendai/proposals/done/feats/f00755-candidates-that-touch-nothing-in-common-land-together.md
 type: proposal
 track: efficiency
 date: 2026-09-29
 priority: P1
 related: [x00556]
+<<<<<<<< HEAD:docs/delendai/proposals/in-progress/f00755-candidates-that-touch-nothing-in-common-land-together.md
 last-transition-id: 06863859-d93f-492d-96bc-afe538fa540f
 last-correlation-id: 06863859-d93f-492d-96bc-afe538fa540f
+========
+last-transition-id: c7ea941c-bfa6-4467-995d-2c3eadd295c5
+last-correlation-id: 2cbca48f-5700-48da-a1c0-02c9419d8141
+>>>>>>>> 1499ac3d3f8655a7d63458b65473541a0cb68708:docs/delendai/proposals/done/feats/f00755-candidates-that-touch-nothing-in-common-land-together.md
 last-transition-from: review
 ---
 
@@ -64,7 +73,11 @@ not require it (`develop` has `strict: false`); the queue did.
 
 ### S1 — The queue lands every independent candidate
 
+<<<<<<<< HEAD:docs/delendai/proposals/in-progress/f00755-candidates-that-touch-nothing-in-common-land-together.md
 - **Status**: in-progress
+========
+- **Status**: done
+>>>>>>>> 1499ac3d3f8655a7d63458b65473541a0cb68708:docs/delendai/proposals/done/feats/f00755-candidates-that-touch-nothing-in-common-land-together.md
 - **Gate**: `npx vitest run tools/scripts/forge/independent-candidates.spec.ts`
 - **Files**:
   - `tools/scripts/forge/independent-candidates.ts`
@@ -76,11 +89,18 @@ not require it (`develop` has `strict: false`); the queue did.
   - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
   - `tools/scripts/ci/test-zones.script.ts`
 - shipped-in: `230e2af9c73b`
+<<<<<<<< HEAD:docs/delendai/proposals/in-progress/f00755-candidates-that-touch-nothing-in-common-land-together.md
 - review-state: changes_requested
 - review-implementer: unrecorded
 - review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — El gate declarado pasa 6/6, pero branchesLandingAsTheyAre calcula integrationSha con rev-parse origin/<integration> antes de hacer fetch y luego decide con ese SHA obsoleto, mientras keep-the-queue-moving decide con certification.sha actual. Si la ref remota local está atrasada, el owner machine puede tratar una candidata como level y no traerla adelante aunque la integración ya cambió zonas/archivos superpuestos. Reproducible en tools/scripts/forge/queue-acceptance.ts: branchesLandingAsTheyAre fija integrationSha antes del fetch y queueAcceptance sólo hace fetch después.
 - review-attribution: unrecorded — no delivering commit was named for f00755 S1; independence could not be verified, opened by gpt-5.4
+========
+- review-state: done
+- review-implementer: gpt-5.4
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
+>>>>>>>> 1499ac3d3f8655a7d63458b65473541a0cb68708:docs/delendai/proposals/done/feats/f00755-candidates-that-touch-nothing-in-common-land-together.md
 
 ## dependency graph
 

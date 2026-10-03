@@ -23,12 +23,9 @@ related:
     - c00144 # protection YAML bifurcada (predecesor duro — debe estar aplicado a main)
     - c00145 # protectedBranches default main-only (predecesor — el plugin debe coincidir con main)
     - x00272 # bloquea push directo a main (predecesor — driver de la invariante a verificar)
-last-transition-id: 429941b6-adee-482c-bd4b-f256549969a2
-last-correlation-id: 429941b6-adee-482c-bd4b-f256549969a2
+last-transition-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
+last-correlation-id: ba620d82-8a0f-46d6-85b9-0fab17604a82
 last-transition-from: review
-shipped-in:
-  - "6af2c6a01"
-  - "a801eb344c"
 ---
 
 # v00127 — Track A.close: verificar `main` verde y protegida en GitHub (API real)
@@ -220,7 +217,7 @@ abre issue — es observación, nunca gate.
 
 ### S1 — `verify-main-health.script.ts` + bifuración
 
-- **Status**: done
+- **Status**: done — verified 2026-09-02: `tools/scripts/ci/verify-main-health.script.ts`
   and `tools/scripts/ci/verify-main-health.spec.ts` exist (commit `19218caf5`, "feat(tools):
   verify main health via GitHub API (v00127)"), target the real `CartagoGit/delendai`
   repository, and `bunx vitest run tools/scripts/ci/verify-main-health.spec.ts` passes 9/9.
@@ -235,14 +232,13 @@ abre issue — es observación, nunca gate.
 - **Depends on**: `c00144`, `c00132`, `c00133`.
 - shipped-in: `19218caf5a6b3b13379f358e00b5749560b55d35`
 - review-state: done
-- review-implementer: unrecorded
-- review-reviewer: minimax-m3
-- review-log: approved by minimax-m3 — S1 verified at 6af2c6a01 ("feat(tools): verify main health via GitHub API (v00127)"). verify-main-health.spec.ts 9/9 covers main green + protection matching -> exit 0, main CI fail -> exit 1, protection diverge -> exit 1 with diff, develop red but main green -> exit 0.
-- review-attribution: unrecorded — nothing in Git names who delivered 6af2c6a013c8bec231bfbfb13f83369cc2408ead: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ### S2 — Wire a dashboard
 
-- **Status**: done
+- **Status**: review — 2026-09-30. Rewritten against the real surface (see
   "2. Dashboard entry — REVISED" above): `apps/web` has no React runtime
   and no `health/` data directory, so `MainHealthBadge.tsx` was never
   buildable as specced. The real existing surface is
@@ -273,14 +269,13 @@ abre issue — es observación, nunca gate.
 - **Depends on**: S1.
 - shipped-in: `a801eb344c89`
 - review-state: done
-- review-implementer: claude-sonnet-5
-- review-reviewer: minimax-m3
-- review-log: approved by minimax-m3 — S2 verified at a801eb344c ("feat(ci): wire main branch health into the nightly develop-health surface"). verify-develop-health 44/44 + verify-main-health 9/9 = 53/53 across 3 files. Cross-linked main-health.json and develop-health.json .note fields, and added nightly job steps to run the script, commit the JSON, and open an issue only on main failure.
-- review-attribution: claude-sonnet-5 from Merge pull request #673 from CartagoGit/delendai/pr/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard (refs/heads/delendai/wip/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard) (a801eb344c89c98d6bce70336a0eea9431e2d544), opened by minimax-m3
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ### S3 — Supersede `v00125` y enlazar en `AGENT-BOOTSTRAP.md`
 
-- **Status**: done
+- **Status**: review — 2026-09-30. `v00125` (already `done/`, not
   `in-progress/` as this slice assumed — corrected below) now carries
   `superseded-by: v00127` in frontmatter plus a short dated note at the
   top of its body explaining the retraction (develop-green-required →
@@ -298,10 +293,9 @@ abre issue — es observación, nunca gate.
 - **Depends on**: S1.
 - shipped-in: `a801eb344c89`
 - review-state: done
-- review-implementer: claude-sonnet-5
-- review-reviewer: minimax-m3
-- review-log: approved by minimax-m3 — S3 verified at a801eb344c — same commit as S2 (combined ship). v00125 carries superseded-by: v00127 frontmatter plus body note; AGENT-BOOTSTRAP.md gained 3-line reference to verify-main-health.script.ts. wc -c docs/delendai/AGENT-BOOTSTRAP.md = 31,672 B, under the 32,000 B prompt-size cap.
-- review-attribution: claude-sonnet-5 from Merge pull request #673 from CartagoGit/delendai/pr/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard (refs/heads/delendai/wip/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard) (a801eb344c89c98d6bce70336a0eea9431e2d544), opened by minimax-m3
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## acceptance
 

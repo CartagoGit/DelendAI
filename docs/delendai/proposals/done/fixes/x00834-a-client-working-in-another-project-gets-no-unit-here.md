@@ -2,15 +2,15 @@
 id: x00834
 title: "A client working in another project gets no unit here"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-03
 priority: P1
 related: [x00736, x00850]
 last-transition-id: 41c195bf-b4d8-4665-9882-ec264e4a3d15
-last-correlation-id: 41c195bf-b4d8-4665-9882-ec264e4a3d15
-last-transition-from: in-progress
+last-correlation-id: f080319a-3ee7-4b52-9483-5b5162ef2672
+last-transition-from: review
 shipped-in:
   - "ba221ff68d9f"
 ---
@@ -68,11 +68,6 @@ word.
   - `packages/test-kit/src/lib/fake-tool-server.helper.ts`
   - `packages/test-kit/src/contracts/interfaces/fake-tool-server.interface.ts`
 - shipped-in: `ba221ff68d9f`
-- review-state: done
-- review-implementer: claude-opus-5-5
-- review-reviewer: qwen3-flash
-- review-log: approved by qwen3-flash — AC 1 — work-unit-roots.helper.ts decides a client root belongs (workspace/ancestor/inside/same-git-common-dir) and work-unit.tool.ts refuses the writing actions; test 'refuses a client that declares only a directory elsewhere, and names both' asserts nothing created. AC 2 — 'gives two servers of one model entering the same unit their own' + 'still reads the swarm, and still enters from this project' confirm read actions stay open and the repository client enters as before.
-- review-attribution: claude-opus-5-5 from Merge pull request #730 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00834-all-g1/a-client-elsewhere-gets-no-unit-here (refs/heads/delendai/wip/claude-opus-5-5/implement/x00834-all-g1/a-client-elsewhere-gets-no-unit-here) (ba221ff68d9f823fcc878f5c2e54651b18d662c0), opened by qwen3-flash
 
 ## dependency graph
 
