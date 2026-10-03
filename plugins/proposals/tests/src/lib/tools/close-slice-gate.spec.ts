@@ -215,6 +215,96 @@ describe('runCloseSliceGate', () => {
 	});
 });
 
+describe('runCloseSliceGate with existing certification', () => {
+	it('closes from a certification of the tree without running the gate', async () => {
+		const fixture = checkoutWithGate('echo ran >> $COUNTER');
+
+		const verdict = await runCloseSliceGate(
+			depsFor(fixture, {
+				certification: async () => ({
+					state: 'certified',
+					source: 'forge-check',
+					evidence: 'CI green',
+				}),
+			}),
+		);
+
+		expect(verdict).toMatchObject({
+			state: 'pass',
+			reused: true,
+			certifiedBy: 'forge-check',
+		});
+		expect(runsRecorded(fixture.counter)).toBe(0);
+	});
+
+	it('blocks on a failed certification without running the gate', async () => {
+		const fixture = checkoutWithGate('echo ran >> $COUNTER');
+
+		const verdict = await runCloseSliceGate(
+			depsFor(fixture, {
+				certification: async () => ({
+					state: 'failed',
+					check: 'delendai-validate',
+					evidence: 'required check `delendai-validate` failure',
+					nextAction: 'fix it',
+				}),
+			}),
+		);
+
+		expect(verdict.state).toBe('fail');
+		expect(verdict.findings.join(' ')).toContain('delendai-validate');
+		expect(runsRecorded(fixture.counter)).toBe(0);
+	});
+
+	it('runs the gate when no evidence exists and says what was missing', async () => {
+		const fixture = checkoutWithGate('exit 1');
+
+		const verdict = await runCloseSliceGate(
+			depsFor(fixture, {
+				certification: async () => ({
+					state: 'none',
+					missing: ['no pushed commit has this tree'],
+					nextAction: 'publish; CI will certify',
+				}),
+			}),
+		);
+
+		expect(verdict.state).toBe('fail');
+	});
+
+	it('stays unverifiable when there is no evidence and no gate', async () => {
+		const fixture = checkoutWithGate('true');
+		rmSync(join(fixture.cwd, 'package.json'));
+
+		const verdict = await runCloseSliceGate(
+			depsFor(fixture, {
+				certification: async () => ({
+					state: 'none',
+					missing: ['no pushed commit has this tree'],
+					nextAction: 'publish; CI will certify',
+				}),
+			}),
+		);
+
+		expect(verdict.state).toBe('unverifiable');
+		expect(verdict.nextAction).toBe('publish; CI will certify');
+	});
+
+	it('queues a second local gate while another is running', async () => {
+		const first = checkoutWithGate('sleep 3');
+		const second = checkoutWithGate('true');
+		const store = first.store;
+
+		await runCloseSliceGate(depsFor(first, { waitMs: 100 }));
+		const queued = await runCloseSliceGate(
+			depsFor({ ...second, store }, { waitMs: 100 }),
+		);
+
+		expect(queued.state).toBe('pending');
+		expect(queued.findings.join(' ')).toContain('queued');
+	});
+});
+
 describe('declaredGateSteps', () => {
 	const config = JSON.stringify({
 		validationMatrix: {
