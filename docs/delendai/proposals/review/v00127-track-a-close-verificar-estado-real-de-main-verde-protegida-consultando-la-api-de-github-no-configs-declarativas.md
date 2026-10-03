@@ -28,6 +28,7 @@ last-correlation-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
 last-transition-from: in-progress
 shipped-in:
   - "4e2e42441f1e8d688f589ba2b8c5cfd034d1e0e0"
+  - "a801eb344c89c98d6bce70336a0eea9431e2d544"
 ---
 
 # v00127 — Track A.close: verificar `main` verde y protegida en GitHub (API real)
@@ -241,7 +242,7 @@ abre issue — es observación, nunca gate.
 
 ### S2 — Wire a dashboard
 
-- **Status**: review — 2026-09-30. Rewritten against the real surface (see
+- **Status**: done
   "2. Dashboard entry — REVISED" above): `apps/web` has no React runtime
   and no `health/` data directory, so `MainHealthBadge.tsx` was never
   buildable as specced. The real existing surface is
@@ -271,6 +272,11 @@ abre issue — es observación, nunca gate.
   no visual surface to gate on).
 - **Depends on**: S1.
 - shipped-in: `a801eb344c89`
+- review-state: done
+- review-implementer: claude-sonnet-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — v00127 S2 delivered at a801eb344c89c98d6bce70336a0eea9431e2d544 (feat(ci): wire main branch health into the nightly develop-health surface): workflow + main-health.json data + verify-develop-health script.
+- review-attribution: claude-sonnet-5 from Merge pull request #673 from CartagoGit/delendai/pr/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard (refs/heads/delendai/wip/claude-sonnet-5/implement/v00127-all-g1/wire-health-into-main-gate-dashboard) (a801eb344c89c98d6bce70336a0eea9431e2d544), opened by MiniMaxM3
 
 ### S3 — Supersede `v00125` y enlazar en `AGENT-BOOTSTRAP.md`
 
