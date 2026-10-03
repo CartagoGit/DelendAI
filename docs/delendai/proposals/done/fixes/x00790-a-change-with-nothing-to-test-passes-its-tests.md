@@ -1,16 +1,19 @@
+shipped-in:
+  - "429c2a77fd2b"
 ---
 id: x00790
 title: "A change with nothing to test passes its tests"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [f00538, x00556]
 last-transition-id: 949b477a-c740-4535-a57b-0596e1a0385f
-last-correlation-id: 949b477a-c740-4535-a57b-0596e1a0385f
-last-transition-from: in-progress
+last-transition-id: 9146e094-6e4d-4235-8b7c-2d5548186cbd
+last-correlation-id: 9146e094-6e4d-4235-8b7c-2d5548186cbd
+last-transition-from: review
 ---
 
 # x00790 — A change with nothing to test passes its tests

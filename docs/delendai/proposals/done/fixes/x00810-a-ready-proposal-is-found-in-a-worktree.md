@@ -1,18 +1,19 @@
+shipped-in:
+  - "582d53897e04"
 ---
 id: x00810
 title: "A ready proposal is found in a worktree"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [q00022]
 last-transition-id: 9e9478fb-d6bc-4848-bd22-bc7776d39633
-last-correlation-id: 9e9478fb-d6bc-4848-bd22-bc7776d39633
-last-transition-from: in-progress
-shipped-in:
-  - "582d53897e04"
+last-transition-id: 2f11dd2c-b4f6-4338-8018-90c814b83ff4
+last-correlation-id: 2f11dd2c-b4f6-4338-8018-90c814b83ff4
+last-transition-from: review
 ---
 
 # x00810 — A ready proposal is found in a worktree
