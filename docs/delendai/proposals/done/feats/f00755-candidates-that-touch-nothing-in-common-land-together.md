@@ -8,11 +8,11 @@ track: efficiency
 date: 2026-09-29
 priority: P1
 related: [x00556]
-last-transition-id: 0e2e162c-5cef-4797-b9b2-6be867a644ba
-last-correlation-id: 0e2e162c-5cef-4797-b9b2-6be867a644ba
+last-transition-id: 98932b13-680d-45ae-b760-6e37999f17f7
+last-correlation-id: 98932b13-680d-45ae-b760-6e37999f17f7
 last-transition-from: review
 shipped-in:
-  - "230e2af9c73b33d8beb77504e444dd538ad03bcf"
+  - "230e2af9c73b"
 ---
 
 # f00755 — Candidates that touch nothing in common land together
@@ -80,9 +80,11 @@ not require it (`develop` has `strict: false`); the queue did.
 - shipped-in: `230e2af9c73b`
 - review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — f00755 S1 delivered by claude-opus-5-5 (commit 230e2af9c73b). The slice makes the queue land every independent candidate: independence is measured via candidate footprint and zone overlap, candidates sharing no zone and no file with the integration branch's footprint AND with prior accepted candidates land together. The queue job arms every accepted candidate, the owner machine brings forward only the rest. 6/6 dedicated vitest tests pass. Slice was free (unclaimed); approved via implement worktree.
+- review-attribution: claude-opus-5-5 from Merge pull request #651 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00755-S1-g1/independent-candidates-merge-together (refs/heads/delendai/wip/claude-opus-5-5/implement/f00755-S1-g1/independent-candidates-merge-together) (230e2af9c73b33d8beb77504e444dd538ad03bcf), opened by minimax-3
 - review-reviewer: MiniMaxM3
 - review-log: approved by MiniMaxM3 — f00755 S1 delivered at 230e2af9c73b (feat(forge): candidates that touch nothing in common land together): independent-candidates.ts + queue-acceptance.ts; the queue accepts candidates whose footprint and the integration branch share no zone and no file, and that share none with a candidate accepted before it. 6/6 tests green in independent-candidates.spec.ts.
-- review-attribution: claude-opus-5-5 from Merge pull request #651 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00755-S1-g1/independent-candidates-merge-together (refs/heads/delendai/wip/claude-opus-5-5/implement/f00755-S1-g1/independent-candidates-merge-together) (230e2af9c73b33d8beb77504e444dd538ad03bcf), opened by MiniMaxM3
 
 ## dependency graph
 
