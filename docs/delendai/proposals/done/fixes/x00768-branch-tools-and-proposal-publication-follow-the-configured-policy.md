@@ -2,13 +2,15 @@
 id: x00768
 title: "Branch tools and proposal publication follow the configured policy"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-30
-last-transition-id: f69f56ad-dc10-43ab-bcfc-007c0cc70750
-last-correlation-id: f69f56ad-dc10-43ab-bcfc-007c0cc70750
-last-transition-from: in-progress
+last-transition-id: f518b0c6-c887-448d-9129-122ab58888e4
+last-correlation-id: f518b0c6-c887-448d-9129-122ab58888e4
+last-transition-from: review
+shipped-in:
+  - "8c1becdb89ec2bb8dae1764c4fb8e47d547a78a1"
 ---
 
 # x00768 — Branch tools and proposal publication follow the configured policy
@@ -31,7 +33,7 @@ An audit found plugins/proposals hardcodes defaultBaseBranch develop and agent/ 
 - global_gate: none
 
 ### S1 — Policy-derived branch namespaces, verdict-classified gc, merge-profile proposal landing
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/agents/derive-agent-sessions.service.ts`, `packages/core/src/lib/contracts/interfaces/agent-session.interface.ts`, `packages/core/src/lib/ref-lifecycle/branch-delivery.service.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/agents/derive-agent-sessions.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/branch-delivery.spec.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/contracts/constants/agent-branch-convention.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/locks/engine.ts`, `plugins/proposals/src/lib/locks/lock-paths.ts`, `plugins/proposals/src/lib/shared/branch-gc-engine.ts`, `plugins/proposals/src/lib/shared/branch-namespaces.ts`, `plugins/proposals/src/lib/shared/branch-status-engine.ts`, `plugins/proposals/src/lib/shared/swarm-hygiene-engine.ts`, `plugins/proposals/src/lib/swarm/validation-activity.resolver.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/src/lib/tools/branch-gc.tool.ts`, `plugins/proposals/src/lib/tools/branch-status.tool.ts`, `plugins/proposals/src/lib/tools/proposal-publish-next-action.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/tools/swarm-hygiene.tool.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`, `plugins/proposals/tests/src/lib/shared/branch-gc-engine.spec.ts`, `plugins/proposals/tests/src/lib/tools/branch-tools-follow-policy.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-publish-next-action.spec.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,8 +41,10 @@ An audit found plugins/proposals hardcodes defaultBaseBranch develop and agent/ 
   - "branch_gc removes only worktrees whose ref the ref-lifecycle verdict marks as delivered"
   - "a proposal created under shared-checkout-merge is landed or reports a concrete nextAction"
 - shipped-in: `8c1becdb89ec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00768 S1 delivered at 8c1becdb89ec (fix(proposals): branch tools and proposal landing follow the configured policy): branch-namespaces.ts derives base + prefixes from policy; branch-gc-engine only removes worktrees whose ref the verdict marks delivered; create-proposal publishes on merge profile with concrete nextAction. 44/44 tests green across branch-tools-follow-policy + create-proposal-publishes + proposal-publish-next-action + branch-gc-engine + derive-agent-sessions + branch-delivery.
 
 ## acceptance
 
