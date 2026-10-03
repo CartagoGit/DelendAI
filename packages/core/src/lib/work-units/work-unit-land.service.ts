@@ -31,6 +31,7 @@ import { createIntegrationGit } from '../integration-engine/git-operations';
 import { runLocalMergeCycle } from '../integration-engine/local-merge-cycle';
 import type { ILocalMergeCycleOutcome } from '../integration-engine/local-merge-cycle.interface';
 
+import { recordLandingCertification } from './landing-certification-record.service';
 import { certifyCandidate } from './local-certification.service';
 import { endWorkRef, withWorkRefHeld } from './work-publish.service';
 import { readGit } from './work-unit-shared.service';
@@ -104,6 +105,8 @@ export const landWorkUnit = async (
 		}
 		const certify = request.certify ?? certifyCandidate;
 		let report: ILocalCertificationReport | undefined;
+		const certified: { candidateSha?: string; integrationSha?: string } =
+			{};
 		const outcome = await runLocalMergeCycle(
 			policy,
 			git,
@@ -119,6 +122,8 @@ export const landWorkUnit = async (
 						candidateSha: candidate.candidateSha,
 						integrationSha: candidate.integrationSha,
 					});
+					certified.candidateSha = candidate.candidateSha;
+					certified.integrationSha = candidate.integrationSha;
 					// Nothing certified is not a failed certification: the
 					// engine refuses both, and says which.
 					return report.declared && report.setupFailure === undefined
@@ -130,6 +135,21 @@ export const landWorkUnit = async (
 				},
 			},
 		);
+		// What the gate certified is kept, so closing the unit's slices
+		// afterwards reads it instead of running the gate again.
+		if (
+			outcome.status === 'merged' &&
+			report?.passed === true &&
+			certified.candidateSha !== undefined &&
+			certified.integrationSha !== undefined
+		) {
+			await recordLandingCertification({
+				root,
+				workRef,
+				candidateSha: certified.candidateSha,
+				integrationSha: certified.integrationSha,
+			});
+		}
 		return { outcome, report };
 	});
 	if (!held.held) {
