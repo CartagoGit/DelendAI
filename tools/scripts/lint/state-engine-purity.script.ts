@@ -35,7 +35,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-import { walkTsFiles } from '@delendai/core/public';
+import { walkTsFiles } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
 

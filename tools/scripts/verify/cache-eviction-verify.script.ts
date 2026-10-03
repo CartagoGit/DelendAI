@@ -28,7 +28,7 @@ import { mkdir, mkdtemp, rm, stat, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { createCacheEvictionRegistry } from '@delendai/core/public';
+import { createCacheEvictionRegistry } from '@delendai/core/cli';
 import { buildStaticRules } from '@delendai/cache/public';
 
 /** The minimum number of evictable items the dry-run MUST report. */

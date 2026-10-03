@@ -35,11 +35,8 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-import {
-	REPOSITORY_NAME,
-	REPOSITORY_OWNER,
-	REPOSITORY_SLUG,
-} from '@delendai/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
+import { REPOSITORY_NAME, REPOSITORY_OWNER } from '@delendai/core/cli';
 
 const BASELINE = 'tools/scripts/lint/repository-identity.baseline.json';
 

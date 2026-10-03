@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseAuthorityDeclarations } from '@delendai/core/public';
+import { parseAuthorityDeclarations } from '@delendai/core/cli';
 
 import { collectAuthorities, renderAuthorities } from './authorities.script';
 import { REPO_AUTHORITIES } from './repo-authorities.constant';

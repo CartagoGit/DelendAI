@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IAuthorityDeclaration } from '@delendai/core/public';
+import type { IAuthorityDeclaration } from '@delendai/core/cli';
 
 import {
 	authorityFindings,

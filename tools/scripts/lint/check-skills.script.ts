@@ -13,7 +13,8 @@
  */
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { SKILL_MANIFEST_REL, skillOwnerRoots } from '@delendai/core/public';
+import { skillOwnerRoots } from '@delendai/core/public';
+import { SKILL_MANIFEST_REL } from '@delendai/core/cli';
 
 export interface ISkillManifestEntry {
 	readonly id: string;

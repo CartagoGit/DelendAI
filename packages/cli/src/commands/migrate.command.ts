@@ -1,19 +1,19 @@
-import type { IMigrationRunResult } from '@delendai/core/public';
+import type { IMigrationRunResult } from '@delendai/core/cli';
 import {
 	DEFAULT_MIGRATIONS,
 	createFileSystemJournal,
-} from '@delendai/core/public';
-import { runPendingMigrations } from '@delendai/core/public';
+} from '@delendai/core/cli';
+import { runPendingMigrations } from '@delendai/core/cli';
 import {
 	readLatestManifestFromDisk,
 	type IStoredMigrationManifest,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 import {
 	createDefaultPhases,
 	rollbackLatestMigration,
 	runMigrationTransaction,
 	type ITransactionOutcome,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {

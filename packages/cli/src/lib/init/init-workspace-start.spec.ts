@@ -22,11 +22,8 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { readWorkspacePolicy } from '@delendai/core/cli';
-import {
-	parseJsonc,
-	resolveDevelopmentPolicy,
-	validateDevelopmentPolicy,
-} from '@delendai/core/public';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { parseJsonc, validateDevelopmentPolicy } from '@delendai/core/cli';
 
 import { createNoopContext } from '../noop-context.factory';
 import type { ICliCommandContext } from '../../contracts/interfaces/cli-command.interface';

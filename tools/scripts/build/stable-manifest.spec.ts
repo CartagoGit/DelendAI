@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { buildStableManifest, STABLE_API_TOOLS } from '@delendai/core/public';
+import { buildStableManifest, STABLE_API_TOOLS } from '@delendai/core/cli';
 import { DELENDAI_VERSION } from '@delendai/core/version';
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';

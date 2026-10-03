@@ -58,7 +58,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
-import { HIGH_CONFIDENCE_SECRET_PATTERNS } from '@delendai/core/public';
+import { HIGH_CONFIDENCE_SECRET_PATTERNS } from '@delendai/core/cli';
 
 const exec = promisify(execFile);
 

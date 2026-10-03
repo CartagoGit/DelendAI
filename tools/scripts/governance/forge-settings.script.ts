@@ -22,10 +22,8 @@ import { join } from 'node:path';
 
 import { stringify } from 'yaml';
 
-import {
-	resolveDevelopmentPolicy,
-	validateDevelopmentPolicy,
-} from '@delendai/core/public';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { validateDevelopmentPolicy } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
 import {

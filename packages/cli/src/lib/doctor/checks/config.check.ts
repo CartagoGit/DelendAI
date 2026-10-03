@@ -1,4 +1,4 @@
-import { parseJsonc } from '@delendai/core/public';
+import { parseJsonc } from '@delendai/core/cli';
 
 import type { DoctorCheck } from '../types';
 

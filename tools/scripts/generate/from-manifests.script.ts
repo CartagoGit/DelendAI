@@ -4,17 +4,19 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
 import {
+	resolvePresetMembers,
+	resolveTokenBudget,
+	type IPluginManifest,
+	type PermissionCategory,
+} from '@delendai/core/public';
+import {
 	discoverPluginManifests,
 	parsePluginManifest,
 	PRESET_KIND,
-	resolvePresetMembers,
-	resolveTokenBudget,
 	type IPluginConfigExample,
-	type IPluginManifest,
 	type IMcpPlugin,
 	type IPluginRegistryEntry,
-	type PermissionCategory,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 export const GENERATED_FIRST_PARTY_INDEX_PATH =
 	'packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts';

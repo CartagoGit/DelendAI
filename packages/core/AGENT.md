@@ -8,10 +8,8 @@
 ## Public API
 
 - __resetShutdownGuardForTests
-- gracefulShutdown
 - createMcpProject
 - planRegistrationOrder
-- DEFAULT_CORE_PATHS
 - isMcpToolSurfaceMode
 - MCP_TOOL_SURFACE_MODE
 - createWorkspacePathProvider
@@ -21,6 +19,8 @@
 - InMemoryModelCatalog
 - MAX_MODEL_CATALOG_LIMIT
 - ModelCatalogError
+- buildHostCapabilityPlan
+- createHostCapabilityRegistry
 
 ## Depends on
 

@@ -25,20 +25,19 @@ import { dirname, join, resolve } from 'node:path';
 import { mkdir, rm } from 'node:fs/promises';
 
 import {
-	ACTIONABLE_PROPOSAL_STATUSES,
 	assembleCliConfig,
-	buildCatalog,
 	parseCliArgs,
 	readProposalsIndex,
 } from '@delendai/core/public';
+import { ACTIONABLE_PROPOSAL_STATUSES, buildCatalog } from '@delendai/core/cli';
 import { scanProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import type {
-	ICatalogSources,
 	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
 } from '@delendai/core/public';
+import type { ICatalogSources } from '@delendai/core/cli';
 
 export const DEFAULT_OUTPUT_PATH = 'docs/delendai/agent-catalog.generated.json';
 export const DEFAULT_PROPOSALS_INDEX_PATH =

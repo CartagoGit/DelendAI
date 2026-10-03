@@ -31,12 +31,11 @@ import type {
 } from '../../contracts/interfaces/init.interface';
 
 import {
-	analyzeProject,
 	createWorkspaceFileReader,
 	createWorkspacePathProvider,
 	type IFileReader,
-	type IProjectAnalysis,
 } from '@delendai/core/public';
+import { analyzeProject, type IProjectAnalysis } from '@delendai/core/cli';
 
 import type { IInitAnswers } from './init-answers.types';
 

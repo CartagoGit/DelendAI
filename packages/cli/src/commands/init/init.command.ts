@@ -33,12 +33,14 @@ import {
 	resolveHostEntryPath,
 } from '../../lib/init/host-entry-resolver.service';
 import {
-	managedPluginEnvironmentRequirements,
 	nodeDynamicImport,
 	parseConfigFile,
-	parseJsonc,
 	resolvePluginSpecifier,
 } from '@delendai/core/public';
+import {
+	managedPluginEnvironmentRequirements,
+	parseJsonc,
+} from '@delendai/core/cli';
 import {
 	buildSchemaFromRequirements,
 	checkSchema,

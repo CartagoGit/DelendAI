@@ -3,7 +3,7 @@
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
 
-import { walkTsFiles } from '@delendai/core/public';
+import { walkTsFiles } from '@delendai/core/cli';
 
 const REPO_ROOT = process.cwd();
 const DEFAULT_SCAN_ROOT = 'packages/core/src';
