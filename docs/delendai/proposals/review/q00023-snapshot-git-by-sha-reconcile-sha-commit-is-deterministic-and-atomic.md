@@ -80,7 +80,7 @@ response. It does NOT silently re-run.
 
 ### S1 — Resolve Git refs at call time and freeze the SHA for the entire reconcile
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts && bun test --timeout 30000 plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts`
@@ -121,7 +121,7 @@ nothing outside the proposals tree is read.
 
 ### S2 — Drift detection: report when the ref moved mid-run
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts`

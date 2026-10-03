@@ -60,7 +60,7 @@ meant to work on either runtime. Node ships SQLite as `node:sqlite`
 
 ### S1 — An adapter over node:sqlite behind the one loader
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`
 - **Files**: `packages/proposals-sqlite/src/lib/node-sqlite-database.helper.ts`,
   `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts`,
@@ -81,7 +81,7 @@ The adapter's own behaviour is pinned in the bun suite (Bun also provides
 
 ### S2 — The default read source can be SQL on both runtimes
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
 - **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`,
   `plugins/proposals/src/lib/proposals/index-reader.ts`

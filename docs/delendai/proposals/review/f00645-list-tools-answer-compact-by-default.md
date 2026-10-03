@@ -58,7 +58,7 @@ which tools cost the most context is not known.
 
 ### S1 — Tool results are measured
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/usage-tracking/src/lib/result-size-ranking.helper.ts`
   - `plugins/usage-tracking/src/lib/contracts/constants/result-size-rank-limit.constant.ts`
@@ -80,7 +80,7 @@ which tools cost the most context is not known.
 
 ### S2 — A routed call is measured under the tool it reached
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**:
   - `plugins/usage-tracking/src/lib/routed-tool.helper.ts`
@@ -106,7 +106,7 @@ with.
 
 ### S5 — A routed call is recorded once
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**:
   - `packages/core/src/lib/project/tool-call-scope.helper.ts`
@@ -135,7 +135,7 @@ one call, under the tool it reached.
 
 ### S3 — The largest list tools answer compact by default
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S5]
 - **Files**:
   - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
@@ -178,7 +178,7 @@ them, but they are routers, not lists.
 
 ### S4 — A lint keeps new list tools compact
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**:
   - `tools/scripts/lint/compact-list-tools.script.ts`

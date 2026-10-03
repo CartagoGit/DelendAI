@@ -52,7 +52,7 @@ chance.
 
 ### S1 — Drain waits for the writes the plugin started
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/usage-tracking`
 - **Files**:
   - `plugins/usage-tracking/src/lib/record-buffer.ts`

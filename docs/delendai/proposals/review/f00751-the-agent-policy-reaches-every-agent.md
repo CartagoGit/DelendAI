@@ -68,7 +68,7 @@ project opted in.
 
 ### S1 — The server tells its agents how to work
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/prompts`
 - **Files**:
   - `packages/core/src/lib/prompts/agent-policy-instructions.helper.ts`

@@ -59,7 +59,7 @@ could not start, Bitbucket included, although the seam names it.
 
 ### S1 — The repositories table takes any forge
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/any-forge-host.spec.ts`
 - **Files**:
   - `packages/proposals-sqlite/src/lib/migrations/0024_any_forge_host.sql`
