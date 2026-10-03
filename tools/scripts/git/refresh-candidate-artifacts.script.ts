@@ -42,6 +42,7 @@ import { branchesLandingAsTheyAre } from '../forge/queue-acceptance';
 import { repoRoot } from '../lib/repo-root';
 import {
 	GENERATED_REFRESH_COMMANDS,
+	QUEUE_COMMIT_IDENTITY,
 	REGENERATED_PROJECTIONS,
 	REGENERATION_COMMIT_SUBJECT,
 } from './refresh-candidate-artifacts.constant';
@@ -77,6 +78,37 @@ const git = (cwd: string, args: readonly string[]): string | undefined => {
 		return undefined;
 	}
 };
+
+/**
+ * The `-c` settings that name the committer, and none when the machine
+ * already names one: a person's identity is theirs, and the queue signs
+ * as itself only where nobody else would.
+ */
+export const identityArgs = (configured: {
+	readonly name?: string | undefined;
+	readonly email?: string | undefined;
+}): readonly string[] =>
+	(configured.name ?? '').length > 0 && (configured.email ?? '').length > 0
+		? []
+		: [
+				'-c',
+				`user.name=${QUEUE_COMMIT_IDENTITY.name}`,
+				'-c',
+				`user.email=${QUEUE_COMMIT_IDENTITY.email}`,
+			];
+
+/** A commit or a merge in `dir`, made under an identity that exists. */
+const gitAsCommitter = (
+	dir: string,
+	args: readonly string[],
+): string | undefined =>
+	git(dir, [
+		...identityArgs({
+			name: git(dir, ['config', '--get', 'user.name']),
+			email: git(dir, ['config', '--get', 'user.email']),
+		}),
+		...args,
+	]);
 
 /** Publication refs the integration branch has moved past. */
 export const staleCandidates = (
@@ -173,8 +205,12 @@ const takeRegeneratedSide = (
 	git(dir, ['checkout', '--theirs', '--', ...conflicted]);
 	git(dir, ['add', '--', ...conflicted]);
 	return (
-		git(dir, ['-c', 'core.hooksPath=/dev/null', 'commit', '--no-edit']) !==
-		undefined
+		gitAsCommitter(dir, [
+			'-c',
+			'core.hooksPath=/dev/null',
+			'commit',
+			'--no-edit',
+		]) !== undefined
 	);
 };
 
@@ -221,7 +257,7 @@ export const refreshCandidate = (input: {
 		) {
 			return { candidate, state: 'failed', detail: 'no worktree' };
 		}
-		const merged = git(dir, [
+		const merged = gitAsCommitter(dir, [
 			'merge',
 			'--no-edit',
 			`${remote}/${policy.branches.integration}`,
@@ -251,7 +287,7 @@ export const refreshCandidate = (input: {
 		}
 		if ((git(dir, ['status', '--porcelain']) ?? '').length > 0) {
 			git(dir, ['add', '-A']);
-			git(dir, [
+			gitAsCommitter(dir, [
 				'-c',
 				'core.hooksPath=/dev/null',
 				'commit',

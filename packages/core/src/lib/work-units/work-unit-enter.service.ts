@@ -14,8 +14,10 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import { briefingFrom, describeBriefing } from './work-briefing.service';
 import { readSwarm } from './work-swarm.service';
+import { aliasedIdentity, describeAlias } from './agent-alias.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { liveProposalBranch } from './proposal-branch.service';
+import { reviewedByEntrant } from './reviewed-proposal.service';
 import { scalarArg } from './command-args.helper';
 
 import {
@@ -196,9 +198,29 @@ export const enteredHeld = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	const swarm = readSwarm({ root, policy });
+	const respelled = aliasedIdentity(agent, [
+		...new Set(
+			[...swarm.units, ...swarm.published].map((unit) => unit.agent),
+		),
+	]);
+	if (respelled !== undefined) {
+		return refused(
+			'An identity is spelled one way.',
+			describeAlias(agent, respelled),
+		);
+	}
+	const reviewed = await reviewedByEntrant(
+		root,
+		policy,
+		args,
+		agent,
+		proposal,
+	);
+	if (reviewed !== undefined) return reviewed;
 	if (!args.includes('--alongside')) {
 		const holders = holdersOfSlice({
-			view: readSwarm({ root, policy }),
+			view: swarm,
 			agent,
 			kind: scalarArg(args, 'kind') ?? 'implement',
 			proposal,
