@@ -105,6 +105,42 @@ went wrong, measured on the refs, pull requests and processes of that run:
   draft on 2026-10-03 with the cause in a comment; merging it would have lost
   x00785.
 
+### Units nobody chose, and work swept into them
+
+- E13 — the same two slices (x00569 S1, x00738 S1) were opened four times, by
+  `client-claude-code`, `client-visual-studio-code`, `client-delendai-client`
+  and `unknown-agent`: identities derived from the MCP client because no agent
+  declared one. Their commits read `feat(x00569): commit via slice S1`, the
+  message the `commit-policy` plugin writes on a slice event. That plugin runs
+  in every MCP server, so every connected client's server reacted to the same
+  event and opened its own unit. One such commit (2ae26a8fc) carried the other
+  orchestrator's x00860 files (`close-slice-certification.ts` and its specs):
+  the commit took what the event listed, not what the slice declares.
+- E14 — minimax-3, a reviewer, opened `implement` units on proposals it was
+  reviewing (r00043 S2/S4/S5/S6, x00641, x00749, x00761, x00764, f00755) and
+  committed verdicts in them, some for another proposal (v00127's approvals in
+  `implement/x00761-S1`), plus a `proposal_transition r00043 done`. A unit's
+  name said nothing about its contents, and a reviewer wrote where implementers
+  write.
+
+### Branches nobody finished or removed
+
+Measured on 2026-10-03 in the owner's clone, after the run:
+
+- 51 local work branches and 42 worktrees. 43 branches were never published;
+  15 of them carry no commit beyond develop and the thirty of E7. The rest are
+  review packs opened one after another (minimax-3 g1…g8, minimaxm3 g1…g9,
+  minimax-m3 g1…g12) and units of E13 and E14.
+- On the forge: three publications with no commit of their own
+  (`minimax-m3` g4, g5, g6), one review unit whose content is already in
+  develop, and a closed review pull request whose branch was kept.
+- While this was measured, the units of E13 and E14 were deleted from the
+  clone by something that left no record of who. Their tips are kept under
+  `refs/recovery/swarm-2026-10-03/`.
+
+Reaping delivered, kept and abandoned units is x00850's; what this proposal
+adds is that most of these units should never have been opened.
+
 ### Tools that are behind the code under review
 
 - E1/E6 — reviewers ran `packages/cli/dist/index.js` (built 2026-10-01 19:36),
@@ -244,6 +280,26 @@ the good verdicts' shape (P1) becomes the required shape.
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`
 - `work publish` exits non-zero when the publication was not proved on the
   remote, and its first line says why and what to merge (C5).
+
+### S9 — An automatic commit is made once, by an agent, of the slice's files
+
+- **Status**: pending
+- **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`
+- A slice event is committed by one server only (the one whose agent holds
+  the slice), never by every server that heard it (E13).
+- The commit carries only the files the slice declares that this agent
+  changed; anything else in the working tree stays where it is.
+- No automatic commit without a declared agent identity: a `client-…` or
+  `unknown-agent` identity skips the commit and says why. The detection reuses
+  the other orchestrator's agent-identification helper when it lands.
+
+### S10 — A reviewer does not implement what it reviews
+
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+- An agent holding a review claim on a proposal, or that recorded a verdict on
+  it, is refused an `implement` unit on that proposal (E14). A review verdict
+  committed in a non-review unit is refused at publication.
 
 ## dependency graph
 
