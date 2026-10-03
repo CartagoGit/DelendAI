@@ -77,7 +77,7 @@ written once:
 
 ### S1 — Fix the 35 alerts the release introduces
 
-- **Status**: review
+- **Status**: in-progress
 - **Gate**: `npx vitest run tools/scripts/lib/read-text-if-present.spec.ts packages/cli plugins/conventions`
 - **Files**:
   - `packages/cli/src/lib/doctor/checks/stale-docs.check.ts`
