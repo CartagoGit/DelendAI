@@ -2,15 +2,16 @@
 id: x00761
 title: "The release branch validates what it merged"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-29
 priority: P1
 related: [x00757, x00758]
 last-transition-id: 3eacaac1-39c9-4a2c-88c7-afa2c100b028
-last-correlation-id: 3eacaac1-39c9-4a2c-88c7-afa2c100b028
-last-transition-from: in-progress
+last-transition-id: 3cc1abff-1d43-4ef1-9b8c-b9b8ac82662c
+last-correlation-id: 3cc1abff-1d43-4ef1-9b8c-b9b8ac82662c
+last-transition-from: review
 ---
 
 # x00761 — The release branch validates what it merged
@@ -52,12 +53,16 @@ end red on the release branch, for a commit nobody made.
 
 ### S1 — A CI checkout of the release branch is not a commit
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 - **Files**:
   - `tools/scripts/lint/commit-branch-discipline.script.ts`
   - `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 - shipped-in: `abb55b856b3c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## dependency graph
 
