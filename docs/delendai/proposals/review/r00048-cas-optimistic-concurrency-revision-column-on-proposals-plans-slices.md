@@ -9,6 +9,7 @@ date: 2026-09-07
 shipped-in:
   - "e0ddbbb60"
   - "91d45c00d"
+  - "578148ae1"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -141,7 +142,7 @@ the policy in the host.
 
 ### S3 — CAS regression suite: parallel writers race; exactly one wins
 
-- **Status**: done — verified 2026-10-01: `packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts` races a proposal, a plan and a slice across connections, and N stale writers against one row: exactly one closes, the others are told it is already closed.
+- **Status**: done
 - shipped-in: `578148ae1`
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts`
@@ -156,6 +157,11 @@ the policy in the host.
     rest `{ kind: 'already_closed' }` (which is what `r00047` will
     guarantee once `r00048` is in place).
   - The tests run deterministically 100x without flakes.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — r00048 S3 (CAS regression suite — parallel writers race, exactly one wins) shipped in 578148ae1 (lifecycle-cas-race.spec.ts): the e2e suite races a proposal, a plan and a slice across connections, and N stale writers against one row; exactly one closes, the others are told it is already closed. 11/11 tests green including the e2e.
+- review-attribution: claude-opus-5 from Co-Authored-By: Claude Opus 5 <noreply@anthropic.com> (578148ae17b194d78fa0f062a6b8eb9083963f62), opened by MiniMaxM3
 
 ## acceptance
 
