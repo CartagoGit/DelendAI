@@ -14,8 +14,15 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import { briefingFrom, describeBriefing } from './work-briefing.service';
 import { readSwarm } from './work-swarm.service';
+import { aliasedIdentity, describeAlias } from './agent-alias.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { liveProposalBranch } from './proposal-branch.service';
+import { readWorkspaceDocsDir } from './development-policy.service';
+import {
+	describeReviewedProposal,
+	integratedDocumentOf,
+	reviewerNamed,
+} from './reviewed-proposal.service';
 import { scalarArg } from './command-args.helper';
 
 import {
@@ -171,6 +178,38 @@ export const enteredLocked = async (
 	}
 };
 
+/**
+ * The refusal an agent gets for implementing a proposal it reviews, or
+ * `undefined`: any other kind of unit, and any other agent, goes in.
+ */
+const reviewedByEntrant = async (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	args: readonly string[],
+	agent: string,
+	proposal: string,
+): Promise<IWorkUnitResult | undefined> => {
+	if ((scalarArg(args, 'kind') ?? 'implement') !== 'implement') {
+		return undefined;
+	}
+	const base = integrationBase(root, policy);
+	if (base === undefined) return undefined;
+	const document = integratedDocumentOf({
+		root,
+		base,
+		docsDir: await readWorkspaceDocsDir(root),
+		proposal,
+	});
+	const reviewer =
+		document === undefined ? undefined : reviewerNamed(document, agent);
+	return reviewer === undefined
+		? undefined
+		: refused(
+				`${proposal} is under this agent's review: a reviewer does not implement what it reviews.`,
+				describeReviewedProposal(proposal, reviewer),
+			);
+};
+
 export const enteredHeld = async (
 	given: readonly string[],
 	ctx: IWorkUnitContext,
@@ -196,9 +235,29 @@ export const enteredHeld = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	const swarm = readSwarm({ root, policy });
+	const respelled = aliasedIdentity(agent, [
+		...new Set(
+			[...swarm.units, ...swarm.published].map((unit) => unit.agent),
+		),
+	]);
+	if (respelled !== undefined) {
+		return refused(
+			'An identity is spelled one way.',
+			describeAlias(agent, respelled),
+		);
+	}
+	const reviewed = await reviewedByEntrant(
+		root,
+		policy,
+		args,
+		agent,
+		proposal,
+	);
+	if (reviewed !== undefined) return reviewed;
 	if (!args.includes('--alongside')) {
 		const holders = holdersOfSlice({
-			view: readSwarm({ root, policy }),
+			view: swarm,
 			agent,
 			kind: scalarArg(args, 'kind') ?? 'implement',
 			proposal,
