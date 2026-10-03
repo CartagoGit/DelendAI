@@ -153,12 +153,55 @@ Measured on 2026-10-03 in the owner's clone, after the run:
 - On the forge: three publications with no commit of their own
   (`minimax-m3` g4, g5, g6), one review unit whose content is already in
   develop, and a closed review pull request whose branch was kept.
-- While this was measured, the units of E13 and E14 were deleted from the
-  clone by something that left no record of who. Their tips are kept under
-  `refs/recovery/swarm-2026-10-03/`.
+- E16 — while this was measured, the units of E13 and E14 were deleted from
+  the clone. Not by the other orchestrator's agent (its reaper is unmerged and
+  ran only in scratch repositories), not by this author: most likely a stale
+  host-server process or a reviewer's host. A ref deletion leaves no record
+  of who made it. The tips are kept under `refs/recovery/swarm-2026-10-03/`.
 
 Reaping delivered, kept and abandoned units is x00850's; what this proposal
 adds is that most of these units should never have been opened.
+
+### Agents that left no trace, or the wrong name
+
+- E17 — the three Luna 6 instances left nothing attributable to them: no
+  ref, no commit, no verdict, no pull request names Luna. Either they did no
+  work, or they signed as something else; with no roster of who joined the
+  run, nobody can tell which. An agent that joins and produces nothing is
+  invisible, and so is one that works under another name.
+- E18 — the two Qwen 3.8 Flash instances signed `qwen3-flash` (no version) and
+  `qwen-3.8-max` (the wrong tier). Nothing checks an agent id against the model
+  that is actually running.
+
+### Decisions that contradict each other, with no conflict to show it
+
+Verified on 2026-10-03 against develop and the open review packs (several from
+a review of the run by another model, ChatGPT "Sol 6", each re-checked here):
+
+- G1 — this repository runs `reviewIndependence: "instance"`, and in that mode
+  `isSelfApproval` (`plugins/proposals/src/lib/shared/independent-approval.ts`)
+  returns false unconditionally: it proves nothing about instances, so no
+  approval is ever a self-approval. In `model` mode it compares names
+  lower-cased, so `minimaxm3` approving `minimax-m3`'s work passes as
+  independent.
+- G2 — v00127 reached `done` with `review-implementer: unrecorded` and
+  "independence could not be verified". `UNRECORDED_IMPLEMENTER` exists so
+  historical work can be reviewed; it also lets new work close without anyone
+  knowing who wrote it.
+- G4 — GPT-5.4 sent f00755, q00010 and r00043 back to `in-progress` on develop
+  for concrete defects (a stale SHA read before fetch, contradictory closing
+  conditions, a gate that does not exist). The open packs #745 (to `done`) and
+  #740/#746 (to `review`) still carry older decisions on the same proposals.
+  Git sees no conflict in that; merging any of them would overwrite a newer
+  decision with an older one.
+- G5 — #745's description lists about twenty verdicts and two moves; after
+  successive "join existing review pack" merges its diff changes far more
+  proposals than it declares. A pack's description stops describing it.
+- G3 — the queue's `report-stale-candidates` job fails on GitHub Actions with
+  "Committer identity unknown / fatal: empty ident name" in a step reported as
+  read-only (`forge:refresh: 0 refreshed (read-only; pass --apply)`): the
+  recovery path depends on the runner's global git identity, and a read-only
+  run creates commits at all.
 
 ### Tools that are behind the code under review
 
@@ -344,9 +387,79 @@ the good verdicts' shape (P1) becomes the required shape.
   it, is refused an `implement` unit on that proposal (E14). A review verdict
   committed in a non-review unit is refused at publication.
 
+### S13 — Independence is proved, or the review does not close
+
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/shared/independent-approval.ts`
+- An actor is a canonical model id plus an instance (the session x00850's
+  lease records). `model` independence compares canonical model ids, so an
+  alias is the same model; `instance` independence compares instances, and
+  an instance that cannot be proved is `unknown`, which closes nothing (G1).
+- `unrecorded` implementers are accepted only for proposals that predate unit
+  attribution; new work whose author cannot be named cannot reach `done` (G2).
+
+### S14 — A verdict applies to the revision it was made on
+
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
+- A verdict carries the proposal revision and delivery SHA it judged. Applying
+  it to a proposal whose revision moved on is refused as a stale verdict, to
+  be re-checked, never merged as text (G4, E3). The proposals SQLite
+  projection's revision CAS (r00048) is the place to compare.
+- A review pack's publication describes itself from its own verdict events
+  (proposal, slice, revision, verdict), and the publish gate refuses a pack
+  whose diff changes a proposal the description does not name (G5).
+- Packs that went stale are settled by extracting their verdicts and
+  re-applying the ones still valid on the current revision; the rest are
+  recorded as superseded. No pack is rebased or merged to catch up.
+
+### S15 — Recovery runs need no global git identity, and read-only writes nothing
+
+- **Status**: pending
+- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+- Every internal commit passes its identity explicitly (`-c user.name/email`
+  or `GIT_AUTHOR_*`/`GIT_COMMITTER_*`), and a run reported as read-only
+  creates no commit at all (G3).
+
+### S16 — The run knows who joined it
+
+- **Status**: pending
+- **Files**: `packages/core/src/lib/tools/work-unit.tool.ts`
+- An agent registers its canonical model id and instance when it first calls
+  delendai in a session; the id must match the running model's declared id
+  (family, version and tier), not free text (E17, E18). `work swarm` lists
+  every registered agent with what it produced, so an agent that joined and
+  produced nothing, or worked under another name, shows.
+
+### S17 — A storm can be replayed
+
+- **Status**: pending
+- **Files**: `packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
+- A fixture reproduces this run in a scratch repository: five reviewers of one
+  model under aliases, two of another, two implementers, a proposal approved
+  at revision N and sent back at N+1 while a third reviewer closes from N, a
+  publication with no pull request, an abandoned unit, a candidate sixty
+  commits behind, derived files, a server restart and an unattributable
+  implementer. Settling every event must reach one final state whatever the
+  order the agents finish in, with `work doctor` (S12) reporting nothing.
+
+### S18 — The run reports its own incidents
+
+- **Status**: pending
+- **Files**: `plugins/project-kpis/src/index.ts`
+- `project-kpis` counts what this run showed by hand: stale and superseded
+  verdicts, actor alias collisions, unverifiable attributions, units never
+  published, publications without a pull request, candidate lag, manual
+  recoveries, and the time from the end of a run until `work doctor` is green
+  again. A supervising agent reads these instead of inferring the state from
+  branches.
+
 ## dependency graph
 
 - S3 reads x00850's lease to recognise another orchestrator's identity.
+- S13, S14 and S16 read x00850's lease for the instance; S14 uses r00048's
+  revision CAS.
+- S17 needs S12 and S14 to have a single final state to assert.
 - E7's root cause (the guard recognising only Claude's markers) is fixed by
   the other orchestrator's guard work; this proposal does not repeat it.
 - The others are independent.
