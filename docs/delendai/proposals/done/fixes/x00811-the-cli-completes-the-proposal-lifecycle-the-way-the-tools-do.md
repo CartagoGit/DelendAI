@@ -2,13 +2,15 @@
 id: x00811
 title: "The CLI completes the proposal lifecycle the way the tools do"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: a4da282b-af91-457c-89ea-ea965d36222a
-last-correlation-id: a4da282b-af91-457c-89ea-ea965d36222a
-last-transition-from: in-progress
+last-transition-id: 10a2e05e-ff0c-4a35-a568-0d314d5dfafe
+last-correlation-id: 10a2e05e-ff0c-4a35-a568-0d314d5dfafe
+last-transition-from: review
+shipped-in:
+  - "c7ed36567e1a"
 ---
 
 # x00811 — The CLI completes the proposal lifecycle the way the tools do
@@ -39,7 +41,7 @@ Symptoms that followed from it: `proposals close-slice` refused with "close requ
 - global_gate: none
 
 ### S1 — close-slice, transition and lock claims work from the CLI
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/cli/src/commands/groups/proposals.ts`
   - `packages/cli/src/commands/groups/group-helpers.ts`
@@ -51,8 +53,10 @@ Symptoms that followed from it: `proposals close-slice` refused with "close requ
   - `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`
 - **Gate**: type
 - shipped-in: `c7ed36567e1a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at c7ed36567e1a ("fix(cli): proposal lifecycle completes from the CLI; lock claims outlive the one-shot process (x00811)"). proposals.spec.ts 36/36 (verified with bunx vitest run; bun test's runner lacks vi.stubEnv in vitest 4.x, but the spec passes under the canonical vitest runner) covers --checkout on close-slice and transition, --agent default from DELENDAI_AGENT_ID, lock claim holder='agent', refusal naming missing input. agent-lock-engine 38/38 covers the agent-holder semantics.
 
 ## acceptance
 
