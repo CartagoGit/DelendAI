@@ -119,6 +119,11 @@ written once:
   - `tools/scripts/lint/file-conventions.script.spec.ts`
   - `tools/scripts/migrate/rebrand-propagate.script.ts`
 - shipped-in: `f5a6c17ebe6c`
+- review-state: changes_requested
+- review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: requested_changes by minimax-3 — El candidato f5a6c17ebe6c no satisface por sí solo la slice. La propia propuesta dice que después del primer merge aún quedaban tres alertas de CodeQL y hubo que cerrarlas en 2c8cdadf0dc7b3c1303d32fc9c955119c57fdbf7; con este candidate hash la aceptación no queda cubierta.
+- review-attribution: unrecorded — no delivering commit was named for x00758 S1; independence could not be verified, opened by minimax-3
 
 After the first merge the release's CodeQL still reported three: the
 directory `writeFileAtomic` opens to fsync it (now opened `O_RDONLY`, never

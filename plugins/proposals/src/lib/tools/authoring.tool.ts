@@ -17,6 +17,11 @@ import {
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentNames } from './agent-names.tool';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
+import {
+	approvalNote,
+	commitIsIntegrated,
+	deliveredCommitOf,
+} from '../services/review-verdict-evidence';
 import { verdictClaimRefusal } from '../services/review-claim.service';
 import { canonicalRoleOf } from '../shared/agent-conventions';
 import { toolErrorEnvelope } from '../shared/tool-envelope';
@@ -320,6 +325,20 @@ const requireProposalReviewEvidence = (
 		);
 	}
 	return null;
+};
+
+/** An approval of a commit the integration branch does not have. */
+const unintegratedEvidenceError = async (
+	run: IGitRunner,
+	integration: string | undefined,
+	commit: string | undefined,
+): Promise<IToolTextResult | null> => {
+	if (integration === undefined || commit === undefined) return null;
+	return (await commitIsIntegrated(run, integration, commit)) !== false
+		? null
+		: toApproveEvidenceError(
+				`evidence.commitHash ${commit} is not on ${integration}: approve what landed, not a commit of a branch that may still change`,
+			);
 };
 
 type IPeerReviewPersistedEntry = {
@@ -2165,6 +2184,33 @@ export const buildReviewRegistration = (
 							const namedNoCommit =
 								args.commitHash === undefined &&
 								args.evidence?.commitHash === undefined;
+							const deliveredAt =
+								!derived.ok &&
+								args.action === 'request_changes' &&
+								namedNoCommit
+									? await deliveredCommitOf(
+											scoped.run ??
+												createGitRunner(
+													scoped.workspaceRoot,
+												),
+											scoped.developmentPolicy?.branches
+												.integration ?? 'HEAD',
+											entry.id,
+										)
+									: undefined;
+							if (deliveredAt !== undefined) {
+								// The work is in the integration branch: an
+								// objection to it names the commit it is about.
+								throw Object.assign(
+									new Error('change request names no commit'),
+									{
+										toolError: toolError(
+											`${entry.id} was delivered in ${deliveredAt}, and this change request names no commit: an objection is about what landed.`,
+											`Read that commit, run the slice's declared gate, and pass commitHash: "${deliveredAt}" with the objection. If you could not inspect it, record no verdict and release the claim.`,
+										),
+									},
+								);
+							}
 							if (
 								!derived.ok &&
 								args.action === 'request_changes' &&
@@ -2254,10 +2300,18 @@ export const buildReviewRegistration = (
 									},
 								);
 							}
-							const evidenceError = requireProposalReviewEvidence(
-								args.evidence,
-								acceptanceCriteria,
-							);
+							const evidenceError =
+								requireProposalReviewEvidence(
+									args.evidence,
+									acceptanceCriteria,
+								) ??
+								(await unintegratedEvidenceError(
+									scoped.run ??
+										createGitRunner(scoped.workspaceRoot),
+									scoped.developmentPolicy?.branches
+										.integration,
+									args.evidence?.commitHash,
+								));
 							if (evidenceError !== null) {
 								throw Object.assign(
 									new Error('missing empirical evidence'),
@@ -2291,7 +2345,10 @@ export const buildReviewRegistration = (
 							state,
 							args.action,
 							args.agent,
-							redactedNote.text,
+							args.action === 'approve' &&
+								args.evidence !== undefined
+								? approvalNote(args.evidence, redactedNote.text)
+								: redactedNote.text,
 							args.action === 'approve'
 								? { enforceDistinctAgentName: false, quorum }
 								: { quorum },
