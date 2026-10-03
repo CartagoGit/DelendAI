@@ -27,6 +27,7 @@ const WRITING_ACTIONS: ReadonlySet<string> = new Set([
 	'enter',
 	'checkpoint',
 	'publish',
+	'retire',
 ]);
 
 /** How long a client gets to name its roots before it is not judged. */

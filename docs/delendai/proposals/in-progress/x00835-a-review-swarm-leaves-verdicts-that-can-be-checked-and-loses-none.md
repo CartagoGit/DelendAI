@@ -267,6 +267,14 @@ The same run exposed the two Opus orchestrators, this author included:
   with scripts inside a unit rewrote the shared hook. Removing that unit
   leaves every agent's commit on the hook's slower fallback path.
 
+- E23 — nothing in the product retires a unit that will not land. The 21
+  branches of E19 could only be removed with `git push --delete` by hand,
+  which loses the work and which an agent's host rightly refuses; the
+  repository's own `reclaim:orphans` sees local branches only, calls a live
+  unit with no commits yet "safe to delete", and tells the reader to
+  `git switch develop && git merge` in the shared checkout. So the branches
+  stayed, and every claim in them kept holding its proposal.
+
 ### What good verdicts did
 
 - P1 — `MiniMaxM3` named the delivering commit and the gate with its count in
@@ -525,6 +533,20 @@ the good verdicts' shape (P1) becomes the required shape.
   publication or a work ref hangs, so a run that leaves work behind cannot
   look finished. On a runner there is no worktree to tell a live unit's
   backup from an abandoned ref: this needs x00850's lease.
+
+### S22 — A unit that will not land is retired, with its work kept
+
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/contracts/interfaces/work-retire.interface.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/lib/tools/work-unit-roots.helper.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- `work retire --ref=<branch> --reason=<why>` writes the unit's tip to
+  `refs/<namespace>/retired/<unit>`, pushes it, and only then closes the
+  unit's pull request with the reason and removes its work ref and its
+  publication, on the forge and here. A tip that cannot be kept removes
+  nothing.
+- It refuses a branch that is no unit, a missing reason, uncommitted
+  changes, and a unit with a worktree unless `--with-worktree` is passed.
+- `work doctor` names it as the remedy for a ref nobody works on.
 
 ## dependency graph
 
