@@ -2,13 +2,14 @@
 id: x00868
 title: "CLI and MCP allocate proposal ids from one source, and CLI claims outlive the process"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-01
 last-transition-id: 89f6828f-9c48-4ac4-b3f2-7720769a0953
-last-correlation-id: 89f6828f-9c48-4ac4-b3f2-7720769a0953
-last-transition-from: in-progress
+last-transition-id: f0967366-0a62-457f-a9ed-3aadf4f49ea9
+last-correlation-id: f0967366-0a62-457f-a9ed-3aadf4f49ea9
+last-transition-from: review
 shipped-in:
   - "26da5edf1275"
 ---
@@ -57,45 +58,48 @@ The owner's principle is that every workflow is completable by any agent on any 
 - review-log: approved by minimax-3
 
 ### S2 — create_proposal does not block on a publish and is safe to repeat
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/proposals/existing-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/existing-proposal.interface.ts`, `plugins/proposals/tests/src/lib/create-proposal-retry.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Gate**: none
 - acceptance:
   - "a server whose own root is a unit writes the proposal there and pushes nothing"
   - "a repeated create with the same title returns the proposal already on disk instead of a new id"
 - shipped-in: `7562b1249fd9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
-
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 ### S3 — Every CLI claim outlives the CLI process
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/orchestration.tool.ts`, `plugins/proposals/src/lib/tools/continue-proposal.tool.ts`, `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/groups/proposals.spec.ts`
 - **Gate**: none
 - acceptance:
   - "delegate and continue --mode=claim take holder agent from the CLI"
   - "a claim made through either is still held after the CLI process has exited"
 - shipped-in: `26da5edf1275`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
-
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 ### S4 — The CLI derives the agent from the unit ref
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/group-helpers.ts`, `packages/cli/src/commands/groups/group-helpers.spec.ts`
 - **Gate**: none
 - acceptance:
   - "the agent is the --agent flag, then DELENDAI_AGENT_ID, then the agent segment of the checkout's work ref"
 - shipped-in: `26da5edf1275`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
-
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 ### S5 — Real-server specs for the CLI lifecycle
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/proposals.real-server.spec.ts`
 - **Gate**: none
 - acceptance:
   - "close-slice and transition run against a spawned server from a unit worktree and from the shared checkout, under shared-checkout-pr and shared-checkout-merge"
 - shipped-in: `26da5edf1275`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
 
 ## acceptance
@@ -107,3 +111,5 @@ The owner's principle is that every workflow is completable by any agent on any 
 - delegate and continue --mode=claim take holder agent from the CLI, and the claim outlives the process
 - the agent is the --agent flag, then DELENDAI_AGENT_ID, then the work ref's agent segment
 - close-slice and transition are proved against a spawned server from a unit worktree and from the shared checkout, under both profiles
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
