@@ -49,10 +49,14 @@ export const pullRequestText = (
 ): { readonly title: string; readonly body: string } => {
 	const oldestFirst = [...subjects].reverse();
 	const meaningful = oldestFirst.filter((subject) => !isBookkeeping(subject));
+	// One delivery titles its pull request; several are counted, so a
+	// pull request of ten slices is not read as its oldest commit alone.
+	const deliveries = meaningful.filter((subject) => DELIVERY.test(subject));
+	const first = deliveries[0] ?? meaningful[0] ?? fallback;
 	const title =
-		meaningful.find((subject) => DELIVERY.test(subject)) ??
-		meaningful[0] ??
-		fallback;
+		deliveries.length > 1
+			? `${first} (+${String(deliveries.length - 1)} more)`
+			: first;
 	const listed = oldestFirst
 		.filter((subject) => !subject.startsWith('Merge '))
 		.map((subject) => `- ${subject}`)

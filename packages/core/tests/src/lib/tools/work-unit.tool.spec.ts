@@ -99,7 +99,7 @@ describe('the MCP work tool', () => {
 
 		expect(first.structuredContent.ok).toBe(true);
 		expect(first.structuredContent.data?.ref).toBe(
-			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/work',
+			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/verdicts',
 		);
 		expect(again.structuredContent.data?.path).toBe(
 			first.structuredContent.data?.path,
@@ -115,8 +115,8 @@ describe('the MCP work tool', () => {
 		expect(
 			[a, b].map((answer) => answer.structuredContent.data?.ref).sort(),
 		).toEqual([
-			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/work',
-			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g2/work',
+			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/verdicts',
+			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g2/verdicts',
 		]);
 	});
 
