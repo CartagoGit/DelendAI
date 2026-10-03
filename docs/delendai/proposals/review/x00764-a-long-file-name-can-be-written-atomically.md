@@ -57,6 +57,11 @@ remedies left were hand edits the governance refuses.
   - `packages/core/src/lib/shared/atomic-write.ts`
   - `packages/core/tests/src/lib/shared/atomic-write.spec.ts`
 - shipped-in: `7dc72fffb95b`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — tmpStemFor keeps the target name when the tmp suffix fits and otherwise cuts on a character boundary plus 12 hex of sha256; sweep prefix from the same helper. Gate in this unit: atomic-write.spec 10/10. q00010 moved to review post-fix (c08911ceb).
+- review-attribution: claude-opus-5-5 from Merge pull request #684 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00764-all-g1/a-long-file-name-can-be-written (refs/heads/delendai/wip/claude-opus-5-5/implement/x00764-all-g1/a-long-file-name-can-be-written) (7dc72fffb95bcb68fa32b8da7007adff93314854), opened by minimax-3
 
 ## dependency graph
 

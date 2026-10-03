@@ -46,6 +46,8 @@ In a repo with no validationMatrix close_slice runs the whole validate locally (
 - shipped-in: `a037b43dfb9d`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00860 S1 delivered at a037b43dfb9d: close-slice-certification.ts accepts a CI certification recorded for the exact tree (no gate rerun); merge profile closes from recorded landing certification; concurrent local gates queue; the served next action names the missing evidence. 31/31 tests green across close-slice-certification.spec + close-slice-gate.spec + e2e + landing-certification-record.spec.
 
 ## acceptance
 
