@@ -229,6 +229,38 @@ describe('workflow invariants (x00573)', () => {
 		expect(result.remedy).toContain('publish');
 	});
 
+	it('sees a publication that holds nothing the integration branch lacks', () => {
+		const { root } = repo();
+		const spent = 'delendai/pr/claude-opus-5/x1-S1-g1/landed';
+		git(root, 'push', '-q', 'origin', `HEAD:refs/heads/${spent}`);
+		git(root, 'fetch', '-q', 'origin');
+		const result = by(root, 'publications-hold-work');
+		expect(result.holds).toBe(false);
+		expect(result.observed).toContain(spent);
+
+		writeFileSync(join(root, 'c.txt'), 'c\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'work');
+		git(root, 'push', '-q', '-f', 'origin', `HEAD:refs/heads/${spent}`);
+		git(root, 'reset', '-q', '--hard', 'origin/develop');
+		git(root, 'fetch', '-q', 'origin');
+		expect(by(root, 'publications-hold-work').holds).toBe(true);
+	});
+
+	it('sees a local integration branch holding commits the forge lacks', () => {
+		const { root } = repo();
+		git(root, 'fetch', '-q', 'origin');
+		expect(by(root, 'integration-follows-forge').holds).toBe(true);
+
+		writeFileSync(join(root, 'd.txt'), 'd\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'made in the shared checkout');
+		const result = by(root, 'integration-follows-forge');
+		expect(result.holds).toBe(false);
+		expect(result.observed).toContain('1 commit(s) only here');
+		expect(result.remedy).toContain('work enter');
+	});
+
 	it('answers about the shared checkout when a hook in a worktree asks', () => {
 		const { root } = repo();
 		const wt = `${root}-wt`;

@@ -1195,8 +1195,8 @@ describe('instances entering at once each get a unit (x00731)', () => {
 			.map((result) => (result.data as { ref: string }).ref)
 			.sort();
 		expect(refs).toEqual([
-			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/work',
-			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g2/work',
+			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/verdicts',
+			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g2/verdicts',
 		]);
 		// The path it reports is the worktree's own, even for an absolute
 		// --dir, so the session is stamped where the next instance reads it.

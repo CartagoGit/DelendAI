@@ -14,6 +14,7 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
 import { scalarArg } from './command-args.helper';
 import { readWorkspaceDocsDir } from './development-policy.service';
+import { derivedTopic } from './unit-topic.service';
 import { integrationBase, readGit, refused } from './work-unit-shared.service';
 
 /** The line a slice carries for the agent that claimed or judged it. */
@@ -55,17 +56,14 @@ export const describeReviewedProposal = (
 ): string =>
 	`\`${reviewer}\` is a reviewer of ${proposal}: the changes it asked for are another agent's to make, or the next verdict on them is its own. Record the verdict (request_changes names what is missing) and take other work; the implementer, or any agent that has not reviewed ${proposal}, makes the change.`;
 
-/**
- * The proposal's document as the integration branch has it, or `undefined`
- * when the branch has none: a proposal not yet written has no reviewer.
- */
-export const integratedDocumentOf = (input: {
+/** Where a proposal's document is on the integration branch, if it has one. */
+export const integratedDocumentPathOf = (input: {
 	readonly root: string;
 	readonly base: string;
 	readonly docsDir: string;
 	readonly proposal: string;
-}): string | undefined => {
-	const path = (
+}): string | undefined =>
+	(
 		readGit(input.root, [
 			'ls-tree',
 			'-r',
@@ -79,6 +77,18 @@ export const integratedDocumentOf = (input: {
 		.find((file) =>
 			(file.split('/').at(-1) ?? '').startsWith(`${input.proposal}-`),
 		);
+
+/**
+ * The proposal's document as the integration branch has it, or `undefined`
+ * when the branch has none: a proposal not yet written has no reviewer.
+ */
+export const integratedDocumentOf = (input: {
+	readonly root: string;
+	readonly base: string;
+	readonly docsDir: string;
+	readonly proposal: string;
+}): string | undefined => {
+	const path = integratedDocumentPathOf(input);
 	return path === undefined
 		? undefined
 		: readGit(input.root, ['show', `${input.base}:${path}`]);
@@ -114,4 +124,30 @@ export const reviewedByEntrant = async (
 				`${proposal} is under this agent's review: a reviewer does not implement what it reviews.`,
 				describeReviewedProposal(proposal, reviewer),
 			);
+};
+
+/**
+ * The topic of a unit about to be created with none given: derived from
+ * what the unit is, never the same word for every unit.
+ */
+export const topicForNewUnit = async (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	args: readonly string[],
+	proposal: string,
+): Promise<string> => {
+	const base = integrationBase(root, policy);
+	return derivedTopic({
+		kind: scalarArg(args, 'kind') ?? 'implement',
+		proposal,
+		documentPath:
+			base === undefined
+				? undefined
+				: integratedDocumentPathOf({
+						root,
+						base,
+						docsDir: await readWorkspaceDocsDir(root),
+						proposal,
+					}),
+	});
 };
