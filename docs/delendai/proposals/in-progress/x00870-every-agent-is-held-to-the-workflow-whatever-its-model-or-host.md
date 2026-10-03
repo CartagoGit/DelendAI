@@ -2,10 +2,13 @@
 id: x00870
 title: "Every agent is held to the workflow, whatever its model or host"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-10-03
+last-transition-id: 70928512-289a-4793-b993-f4f0cc7625d3
+last-correlation-id: 70928512-289a-4793-b993-f4f0cc7625d3
+last-transition-from: ready
 ---
 
 # x00870 — Every agent is held to the workflow, whatever its model or host
