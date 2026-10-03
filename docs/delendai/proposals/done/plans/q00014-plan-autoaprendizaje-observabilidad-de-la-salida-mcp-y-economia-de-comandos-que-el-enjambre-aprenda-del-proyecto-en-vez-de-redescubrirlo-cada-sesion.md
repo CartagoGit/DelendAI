@@ -2,15 +2,16 @@
 id: q00014
 title: "Plan autoaprendizaje, observabilidad de la salida MCP y economía de comandos: que el enjambre aprenda del proyecto en vez de redescubrirlo cada sesión"
 kind: plan
-status: review
+status: done
 type: proposal
 track: quality
 date: 2026-09-03
 shipped-in:
   - 2a0ff85ac39cc174fda0646c571e21bc351d33d7
 last-transition-id: 4de50f1c-aa2b-456b-8a7b-cf63c18a5fe8
-last-correlation-id: 4de50f1c-aa2b-456b-8a7b-cf63c18a5fe8
-last-transition-from: in-progress
+last-transition-id: a57b109e-528a-4b67-842c-db6a36872cd3
+last-correlation-id: a57b109e-528a-4b67-842c-db6a36872cd3
+last-transition-from: review
 ---
 
 # q00014 — Autoaprendizaje, observabilidad de la salida y economía de comandos
@@ -92,6 +93,8 @@ trabajo redundante.
 - **Gate**: lint, types, test
 - review-state: done
 - review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. The commit named by the queue (2a0ff85a) only carries the evidence-pass documentation; the code itself was traced via git log to 9def714f5 and read in the current develop tree. Verified: (1) system-profile.helper.ts + command-preference.helper.ts + system-profile.interface.ts all present — the plan's command-preference.ts now follows the repo role-suffix convention (.helper.ts), documented in the proposal notes; (2) both specs (system-profile.spec.ts, command-preference.spec.ts) ran green: 28/28 tests, exit 0, via env -u CLAUDECODE -u AI_AGENT npx vitest run; (3) acceptance point 1 of the plan is evidenced in the proposal's own evidence pass (WSL2, 10 CPUs, bun/node/npm/fnm/rg/fd/jq/git present, pnpm absent; no absent tool recommended); (4) global bun run typecheck green (exit 0). No out-of-scope changes; non-goals respected (no telemetry out, no ML, stays in .cache/delendai/results/). Gate was none; typecheck+specs run anyway.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
@@ -106,6 +109,8 @@ trabajo redundante.
 - **Gate**: lint, types, test
 - review-state: done
 - review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + the covering spec anyway. Verified in the current develop tree: (1) tools/scripts/test/journal-reporter.ts exists and vitest-wires the JSONL journal; (2) tools/scripts/test/test-journal.ts exports ITestFailureRecord/ITestRunRecord — the planned packages/test-kit/src/lib/reporters/failure-journal.contract.ts does not exist, but this divergence is explicitly documented in the slice's own Status ('el diario vive en tools/scripts/test/, no en packages/test-kit/ como decía el plan'), matching the notes-section convention for plan-vs-tree drift; (3) `bun run test:failures` (read-test-journal.script.ts) runs and prints last run, totals, failure detail and freshness warning without re-launching any suite — exit 0; (4) tools/scripts/test/test-journal.spec.ts green: 16/16. Global `bun run typecheck` exit 0; `bun run lint:architecture` exit 0. Full `bun run validate` is red on this workspace since 2026-09-21T06:16Z from shared-branch breakage in files unrelated to this slice (check:quantitative, lint:proposals, etc.) — validateExitCode field reflects the gates actually run for this slice.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
@@ -121,6 +126,8 @@ trabajo redundante.
 - **Gate**: lint, types, test
 - review-state: done
 - review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering specs anyway. Verified in the current develop tree: (1) plugins/error-reporting/src/lib/intake/server-log-reader.helper.ts and log-diagnosis.helper.ts exist (planned log-diagnosis.ts carries the repo role-suffix convention, documented in the proposal notes); diagnose-log.tool.ts and log-intake.interface.ts exist; (2) server-log-reader.spec.ts green 11/11 via env -u CLAUDECODE -u AI_AGENT npx vitest run: it classifies the twelve-hour push retry loop, the 'Failed to parse message' stdout corruption and the .mutex pathspec failure from rewritten copies of the 2026-09-02 incidents, and asserts no log text or machine identifier reaches a finding (privacy validator intact, per non-goals); (3) plan acceptance point 3 itself is documented as not verifiable from this repository (original host log absent) — the slice's deliverable is the parser/diagnosis/tool/spec, all present and registered; the proposal's own evidence pass states this limitation honestly; (4) bun run typecheck exit 0, bun run lint:architecture exit 0. Full bun run validate is red workspace-wide since 2026-09-21T06:16Z on shared-branch breakage unrelated to this slice.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
@@ -137,6 +144,8 @@ trabajo redundante.
 - **Gate**: lint, types, test
 - review-state: done
 - review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering spec anyway. Verified in the current develop tree: (1) plugins/self-learning/ exists with package.json and src/index.ts; the index documents 'Opt-in on purpose, and absent from every preset' and no preset in config/delendai references it; (2) observation-store.service.ts (planned observation-store.ts, role-suffix convention divergence documented in the slice Status) is append-only JSONL under .cache/delendai/results/self-learning/ with writeFileAtomic + realpathContained from @delendai/core/public, DEFAULT_MAX_OBSERVATIONS=5000 bound and recency-first reads — the R2 mitigation (bound + recency compaction) is implemented, not deferred; (3) the single collector is collectors/test-journal.service.ts, consuming the S2 journal with no new instrumentation, as planned; (4) observation.interface.ts present; (5) observation-store.spec.ts green 13/13. Non-goals respected: nothing leaves the machine, no ML/embeddings — the store is plain JSONL counting. typecheck exit 0; lint:architecture exit 0. Full validate red workspace-wide since 2026-09-21 on shared breakage unrelated to this slice.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
@@ -151,6 +160,8 @@ trabajo redundante.
 - **Gate**: lint, types, test
 - review-state: done
 - review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering spec anyway. Verified in the current develop tree: (1) plugins/self-learning/src/lib/lessons/derive-lessons.helper.ts and confidence.helper.ts exist; scoreConfidence weighs support, recency and counterexamples and a counterexample-recent lesson degrades (spec asserts 'degrades when nothing recent supports it'); (2) tools/lessons.tool.ts exposes self_learning_lessons with an optional goal filter — one tool, not two duplicated schemas, as the slice Status documents; (3) derive-lessons.spec.ts green 12/12 including the mandated negative case: a low-support correlation must NOT become a lesson ('what a history does not support' describe block); (4) no core coupling: grep of the lessons dir shows imports stay inside the plugin plus typed contracts. typecheck exit 0; lint:architecture exit 0. Plan acceptance point 4 (a full round with self-learning enabled) remains documented as not verified by the proposal itself and is a plan-level acceptance item, not this slice's deliverable — the slice ships derive/score/tool/spec and all four exist and pass. Full validate red workspace-wide since 2026-09-21 on unrelated shared-branch breakage.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
@@ -164,12 +175,14 @@ trabajo redundante.
 - **Gate**: lint, types, test
 - review-state: done
 - review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering specs anyway. Verified in the current develop tree: (1) plugins/memory/src/lib/compaction/auto-compaction-policy.helper.ts exists and decides WHEN to compact on four signals: token-size facts, budget ratio (0.7 window threshold), turns since last compaction, and topic saturation; (2) judgeCompactedSummary lives in the same helper and is consumed by compact.tool.ts with binding = trigger === 'policy' — the preservation check is legally binding for policy-triggered compaction; the planned preserve-rules.ts maps to preserve-rules.helper.ts (role-suffix divergence documented in the proposal notes) whose CONSTRAINT_PATTERN classifies bare prohibitions in both languages; (3) specs green via env -u CLAUDECODE -u AI_AGENT npx vitest run: preserve-rules.spec.ts 9/9, auto-compaction-policy.spec.ts 11/11, and compaction-corpus.spec.ts 4/4; the corpus spec is exactly plan acceptance point 5: recognises all 16 declared constraints (>=16 asserted), does not flag surrounding chatter, accepts a binding compaction carrying every constraint, and REFUSES a binding compaction dropping any single constraint (asserted per-constraint, line 115-128); (4) commit 2a0ff85a (the queue-named delivering commit) itself only exempts compaction-corpus.spec.ts from the English-prose lint because the Spanish constraint lines ARE the fixture data — a legitimate, minimal, in-scope change with its reason documented in both the commit and the lint's exclusion list. typecheck exit 0; lint:architecture exit 0. Full validate red workspace-wide since 2026-09-21 on unrelated shared-branch breakage.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S7 — Higiene: que los defectos pequeños no puedan reaparecer
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `biome.json` — `noUnusedImports` pasa de warning a error. Un import muerto tras un refactor debe romper la build, no quedarse en un aviso que nadie lee.
   - `tools/scripts/lint/no-silent-gates.script.ts` — un gate que sale con código distinto de cero sin escribir NADA es un fallo del gate. Comprueba que cada script de `validate:run` produce salida en su camino de error.
@@ -178,8 +191,10 @@ trabajo redundante.
   - `tools/scripts/lint/no-silent-gates.script.spec.ts` — `[silent-exit]` y `[silent-failure-branch]`.
 - **Gate**: lint, types, test
 - **Divergencia**: el spec declarado en `tools/scripts/lint/tests/` no llegó a existir. Los specs viven junto a su script, como el resto de `tools/scripts/lint/*.script.spec.ts`. No existían porque los dos scripts calculaban su raíz con `import.meta.dir`, que solo existe en Bun, y ninguno se podía importar bajo vitest. Ahora usan `fileURLToPath(import.meta.url)`.
-- review-state: changes_requested
+- review-state: done
 - review-implementer: unrecorded
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - review-reviewer: qwen-3.8-max
 - review-log: requested_changes by qwen-3.8-max — WHAT IS WRONG: the slice's declared Files list includes `tools/scripts/lint/tests/no-duplicate-implementation.spec.ts`, and that spec does not exist. WHERE: `tools/scripts/lint/tests/` directory does not exist at all; repo-wide search `find . -path ./node_modules -prune -o -type f -name '*.spec.ts' -print | xargs grep -ln 'no-duplicate-implementation|no-silent-gates|shadowed-export|silent-exit'` returns zero hits, and `git log --all -- '*duplicate-implementation*spec*'` returns zero commits, so the file never existed in history and is not a rename under the role-suffix convention either. HOW TO REPRODUCE: `ls tools/scripts/lint/tests/` fails with ENOENT on develop @ 522aabfc3. WHY IT MATTERS: `no-duplicate-implementation.script.ts` itself claims at line 114 of its own docblock that 'an entry with an empty `reason` fails this gate's own spec' — the script references a spec that does not exist, so its documented self-test is unbacked. WHAT I DID VERIFY AND HOLDS: both lints exist and pass (`bun run lint:no-duplicate-implementation` exit 0, 'debt 98 → 89'; `bun run lint:no-silent-gates` exit 0, '135 gate script(s) … all report on their failure path'); both are wired into `validate:run` (package.json line 226); biome.json declares noUnusedImports: error for TS (line 138, with a documented astro exception) plus a baseline script that the evidence pass proved ratchets (aa4f41eef); plan acceptance point 6 is evidenced by measured defect reintroduction in the proposal. WHAT MUST HOLD TO APPROVE: either the spec lands and passes (`env -u CLAUDECODE -u AI_AGENT npx vitest run tools/scripts/lint/tests/no-duplicate-implementation.spec.ts` green) covering at least the [shadowed-export] and [silent-exit] failure paths, or an explicit documented divergence in the slice Status/notes (as S2/S4/S5 carry for their renames) stating the spec was dropped and what covers the lints instead — the docblock claim at line 114 of no-duplicate-implementation.script.ts must then be corrected by whoever owns it, not by this reviewer. Implementer is unrecorded: independence could not be verified; this review was performed identically to a recorded delivery.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max

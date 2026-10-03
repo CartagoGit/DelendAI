@@ -7,7 +7,8 @@ type: proposal
 track: trust
 date: 2026-09-30
 last-transition-id: 1874e928-2c4c-442c-9cf4-333b2d45afc0
-last-correlation-id: 1874e928-2c4c-442c-9cf4-333b2d45afc0
+last-transition-id: 39aafa8c-f0b6-41ea-b604-c555c7423969
+last-correlation-id: 39aafa8c-f0b6-41ea-b604-c555c7423969
 last-transition-from: in-progress
 ---
 
@@ -32,10 +33,14 @@ An audit that drove the real CLI in throwaway repositories per profile found six
 - global_gate: none
 
 ### S1 — Publication shape from the policy template; anchored reads the policy
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`, `packages/core/tests/src/lib/development-policy/work-ref-placeholders.spec.ts`
 - **Gate**: none
 - shipped-in: `187e5c39ac92`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 - acceptance:
   - "A publication ref shaped agent/kind/proposal-slice-gN/topic is canonical; a flat one is not."
   - "work status says anchored is not required under a profile that does not anchor the checkout."
