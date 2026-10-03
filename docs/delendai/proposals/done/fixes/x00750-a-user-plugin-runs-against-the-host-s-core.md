@@ -2,15 +2,16 @@
 id: x00750
 title: "A user plugin runs against the host's core"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00749]
 last-transition-id: 5f3bda23-2d8a-473e-a02f-b1fcd012294b
-last-correlation-id: 5f3bda23-2d8a-473e-a02f-b1fcd012294b
-last-transition-from: in-progress
+last-transition-id: e830c3af-717a-492b-987a-ceee739d895b
+last-correlation-id: e830c3af-717a-492b-987a-ceee739d895b
+last-transition-from: review
 ---
 
 # x00750 — A user plugin runs against the host's core
@@ -62,13 +63,17 @@ host's own. A plugin belongs to the host that loads it.
 
 ### S1 — A user plugin's host imports resolve to the host
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/plugins/host-packages.helper.spec.ts`
 - **Files**:
   - `packages/core/src/lib/plugins/host-packages.helper.ts`
   - `packages/core/src/lib/plugins/load-plugins.ts`
   - `packages/core/tests/src/lib/plugins/host-packages.helper.spec.ts`
 - shipped-in: `465d3287e9df`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## dependency graph
 
