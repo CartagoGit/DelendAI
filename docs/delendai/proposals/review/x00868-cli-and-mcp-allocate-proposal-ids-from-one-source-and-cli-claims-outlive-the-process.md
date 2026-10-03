@@ -9,6 +9,8 @@ date: 2026-10-01
 last-transition-id: 89f6828f-9c48-4ac4-b3f2-7720769a0953
 last-correlation-id: 89f6828f-9c48-4ac4-b3f2-7720769a0953
 last-transition-from: in-progress
+shipped-in:
+  - "26da5edf1275"
 ---
 
 # x00868 — CLI and MCP allocate proposal ids from one source, and CLI claims outlive the process
@@ -41,7 +43,7 @@ The owner's principle is that every workflow is completable by any agent on any 
 - global_gate: none
 
 ### S1 — Proposal ids: every process sees the same held ids, and two sessions cannot take one
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`, `plugins/proposals/src/lib/contracts/interfaces/proposal-id-sources.interface.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -49,8 +51,10 @@ The owner's principle is that every workflow is completable by any agent on any 
   - "an id is claimed on the remote as a ref of its own before it is handed out, atomically: of two clones reserving one id exactly one is told reserved, and the allocator steps over a taken one"
   - "a spec against a real repository shows a remote-held id is honoured from inside the proposals directory"
 - shipped-in: `26da5edf1275`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ### S2 — create_proposal does not block on a publish and is safe to repeat
 - **Status**: pending
