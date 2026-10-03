@@ -2,15 +2,15 @@
 id: f00751
 title: "The agent policy reaches every agent"
 kind: feat
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: []
-last-transition-id: 0161c3e9-2c5e-44b9-a295-02badd85e141
-last-correlation-id: 0161c3e9-2c5e-44b9-a295-02badd85e141
-last-transition-from: in-progress
+last-transition-id: 1a1f2ef3-3083-45cd-864e-b1369f2366bb
+last-correlation-id: 1a1f2ef3-3083-45cd-864e-b1369f2366bb
+last-transition-from: review
 shipped-in:
   - "53053d1c4de3"
 ---
