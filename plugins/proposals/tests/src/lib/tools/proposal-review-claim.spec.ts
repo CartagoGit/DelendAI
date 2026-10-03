@@ -116,18 +116,27 @@ describe('a verdict in a review unit', () => {
 		).toBe(before);
 	});
 
-	it('claims nothing outside a review unit', async () => {
+	it('is refused outside a review unit, and writes nothing', async () => {
 		repo.proposalInReview(SLICE_S1('review'));
+		repo.git('switch', '-q', '-c', 'somewhere-else');
 		const head = repo.git('rev-parse', 'HEAD');
+		const file = join(
+			repo.root,
+			'docs/delendai/proposals/review/x00001-work.md',
+		);
+		const before = readFileSync(file, 'utf8');
 
-		const answered = await repo.review({
+		const refused = await repo.review({
 			action: 'request_changes',
 			agent: 'agent-b',
 			note: 'the acceptance is not met',
 		});
 
-		expect(answered.isError).toBe(false);
+		expect(refused.isError).toBe(true);
+		expect(refused.text).toContain("the reviewer's own review unit");
+		expect(refused.text).toContain('delendai review next');
 		expect(repo.git('rev-parse', 'HEAD')).toBe(head);
+		expect(readFileSync(file, 'utf8')).toBe(before);
 	});
 });
 

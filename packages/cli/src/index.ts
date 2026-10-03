@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { fileURLToPath } from 'node:url';
+
 import { runCli as runServerCli } from '@delendai/core/cli';
 import { serveRefusal } from '@delendai/core/cli';
 
@@ -8,7 +10,13 @@ import { resolveWorkAgentId } from '@delendai/core/public';
 
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
+import type { IStaleBuild } from './contracts/interfaces/stale-build.interface';
 import { ensureMigrated } from './lib/cli/entrypoint';
+import {
+	answeredWhenStale,
+	describeStaleBuild,
+	staleBuildOf,
+} from './lib/stale-build.service';
 import { adoptionReportLines } from '@delendai/core/cli';
 import {
 	asksForHelp,
@@ -272,6 +280,8 @@ export const runEntry = async (
 		readonly report?: (line: string) => void;
 		/** Answers the host's handshake with the refusal; stdio by default. */
 		readonly refuse?: (refusal: string) => Promise<void>;
+		/** How far behind its sources this build is; read from disk by default. */
+		readonly staleBuild?: () => IStaleBuild | undefined;
 	} = {},
 ): Promise<number | undefined> => {
 	const serve = options.serve ?? runServerCli;
@@ -281,6 +291,19 @@ export const runEntry = async (
 		((line: string): void => {
 			process.stderr.write(`${line}\n`);
 		});
+	// A build older than the sources beside it applies older rules than the
+	// checkout it works in: it answers what only reads, and refuses the rest
+	// with the command that runs the current rules.
+	const stale = (
+		options.staleBuild ??
+		(() => staleBuildOf(fileURLToPath(import.meta.url)))
+	)();
+	if (stale !== undefined && !answeredWhenStale(argv[0])) {
+		const refusal = describeStaleBuild(stale, argv);
+		report(`[delendai] ${refusal}`);
+		if (argv[0] === '__serve') await refuse(refusal).catch(() => undefined);
+		return EXIT_CODE.VALIDATION;
+	}
 	// Every project-aware entrypoint consults the legacy migration guard
 	// before loading the server and the plugins. The guard is silent on a
 	// workspace with nothing to migrate (the common case), and runs the

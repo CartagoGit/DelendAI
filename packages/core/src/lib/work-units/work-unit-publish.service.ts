@@ -1,3 +1,10 @@
+import { deletedDocuments } from './review-pack-deletions.service';
+import {
+	describeCarriedPacks,
+	otherReviewPacks,
+	packsCarried,
+} from './review-pack-scope.service';
+import { readSwarm } from './work-swarm.service';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	IWorkUnitContext,
@@ -115,6 +122,52 @@ export const published = async (
 				'Take those changes out of the unit (revert the commits that made them). A change the product needs is a proposal of its own, implemented in an `implement` unit.',
 			);
 		}
+		const deleted = deletedDocuments(
+			(
+				readGit(root, [
+					'diff',
+					'--name-status',
+					'--no-renames',
+					`${base}...${workRef}`,
+				]) ?? ''
+			)
+				.split('\n')
+				.filter((line) => line.length > 0),
+			await readWorkspaceDocsDir(root),
+		);
+		if (deleted.length > 0) {
+			return refused(
+				`\`${workRef}\` is a unit that records verdicts, and it deletes ${deleted.join(', ')}: a review moves a document, it never removes one.`,
+				`Restore them from the integration branch (\`git checkout ${policy.branches.integration} -- ${deleted.join(' ')}\`), commit, and publish again.`,
+			);
+		}
+		const commitsOver = (tip: string): readonly string[] =>
+			(
+				readGit(root, ['rev-list', '--no-merges', `${base}..${tip}`]) ??
+				''
+			)
+				.split('\n')
+				.filter((commit) => commit.length > 0);
+		const own = commitsOver(workRef);
+		if (own.length === 0) {
+			return refused(
+				`\`${workRef}\` records no verdict of its own: it holds nothing over \`${policy.branches.integration}\` but merges.`,
+				'There is nothing to publish. Record a verdict in this unit; a unit that will record none is removed with its worktree and its branch.',
+			);
+		}
+		const swarm = readSwarm({ root, policy });
+		const carried = packsCarried(
+			own,
+			otherReviewPacks([...swarm.units, ...swarm.published], agent).map(
+				(pack) => ({ ref: pack.ref, commits: commitsOver(pack.tip) }),
+			),
+		);
+		if (carried.length > 0) {
+			return refused(
+				`\`${workRef}\` carries another reviewer's pack: one verdict in two pull requests conflicts with itself when the first one lands.`,
+				describeCarriedPacks(carried, policy.branches.integration),
+			);
+		}
 	}
 	// The branch of a proposal still in progress outlives this
 	// publication: its next slices are committed on it.
@@ -205,13 +258,29 @@ export const published = async (
 					},
 				})
 			: undefined;
+	// Published but not cleaned up is not a success: the namespace is
+	// left carrying a ref that looks like live work.
+	const landed = outcome.published && (outcome.workRefRemoved || keepWorkRef);
+	// A failure says so in words, first. The reason used to sit only in
+	// the list of steps, and a caller reading the summary took an
+	// unpublished unit for a published one.
+	const failed = outcome.steps.find((step) => !step.ok);
+	const failure = landed
+		? undefined
+		: [
+				outcome.published
+					? `${workRef} was published, but its work ref was not removed.`
+					: `${workRef} was NOT published.`,
+				...(failed === undefined
+					? []
+					: [`${failed.name}: ${failed.detail}`]),
+				...('nextAction' in publication
+					? [publication.nextAction]
+					: []),
+			].join('\n');
 	return {
-		// Published but not cleaned up is not a success: the namespace is
-		// left carrying a ref that looks like live work.
-		code:
-			outcome.published && (outcome.workRefRemoved || keepWorkRef)
-				? EXIT_CODE.OK
-				: EXIT_CODE.VALIDATION,
+		code: landed ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
+		...(failure === undefined ? {} : { error: failure }),
 		data: {
 			...outcome,
 			publication,
