@@ -2,10 +2,13 @@
 id: x00766
 title: "A project with one branch and a project with no policy both get a working model"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-30
+last-transition-id: 42fa905b-fea8-400c-a23b-a4b40d02b67d
+last-correlation-id: 42fa905b-fea8-400c-a23b-a4b40d02b67d
+last-transition-from: ready
 ---
 
 # x00766 — A project with one branch and a project with no policy both get a working model
