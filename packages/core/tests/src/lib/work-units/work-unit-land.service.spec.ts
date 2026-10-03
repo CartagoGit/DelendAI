@@ -8,7 +8,13 @@
  * branch ends up on, and nothing short of real git can show that.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -171,6 +177,10 @@ describe('work publish under shared-checkout-merge', () => {
 			landing: { status: 'blocked' },
 			certification: { declared: true, passed: false },
 		});
+		// A failed gate certifies nothing, so nothing is recorded.
+		expect(
+			existsSync(join(root, '.git', 'delendai-certify', 'passed')),
+		).toBe(false);
 		expect(remoteDevelop(remote)).toBe(before);
 		expect(workRefExists(root)).toBe(true);
 	});
@@ -207,6 +217,28 @@ describe('work publish under shared-checkout-merge', () => {
 		expect(git(root, 'worktree', 'list', '--porcelain')).not.toContain(
 			'delendai-certify',
 		);
+		// What the gate certified is recorded for close_slice to read: the
+		// merge's tree, and the unit's own tree as covered by that merge.
+		const record = (tree: string): Record<string, unknown> =>
+			JSON.parse(
+				readFileSync(
+					join(
+						root,
+						'.git',
+						'delendai-certify',
+						'passed',
+						`${tree}.json`,
+					),
+					'utf8',
+				),
+			);
+		expect(
+			record(git(remote, 'rev-parse', `${after}^{tree}`)),
+		).toMatchObject({ integrationSha: before });
+		// The integration head did not move, so the unit's tree IS the merge's.
+		expect(
+			record(git(remote, 'rev-parse', `${workTip}^{tree}`)),
+		).toMatchObject({ candidateSha: after });
 	});
 
 	it('lands nothing when the project declares no gate', async () => {

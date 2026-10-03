@@ -265,6 +265,9 @@ export interface DelendaiProposalsCloseSliceOutput {
 		reused: boolean;
 		handle?: string;
 		tree?: string;
+		certifiedBy?: "forge-check" | "landing-certification" | "recorded-gate";
+		evidence?: string;
+		nextAction?: string;
 	};
 	blockerDetail?: {
 		ok: boolean;
@@ -279,6 +282,9 @@ export interface DelendaiProposalsCloseSliceOutput {
 			reused: boolean;
 			handle?: string;
 			tree?: string;
+			certifiedBy?: "forge-check" | "landing-certification" | "recorded-gate";
+			evidence?: string;
+			nextAction?: string;
 		};
 	};
 	error?: {
