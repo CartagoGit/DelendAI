@@ -258,13 +258,29 @@ export const published = async (
 					},
 				})
 			: undefined;
+	// Published but not cleaned up is not a success: the namespace is
+	// left carrying a ref that looks like live work.
+	const landed = outcome.published && (outcome.workRefRemoved || keepWorkRef);
+	// A failure says so in words, first. The reason used to sit only in
+	// the list of steps, and a caller reading the summary took an
+	// unpublished unit for a published one.
+	const failed = outcome.steps.find((step) => !step.ok);
+	const failure = landed
+		? undefined
+		: [
+				outcome.published
+					? `${workRef} was published, but its work ref was not removed.`
+					: `${workRef} was NOT published.`,
+				...(failed === undefined
+					? []
+					: [`${failed.name}: ${failed.detail}`]),
+				...('nextAction' in publication
+					? [publication.nextAction]
+					: []),
+			].join('\n');
 	return {
-		// Published but not cleaned up is not a success: the namespace is
-		// left carrying a ref that looks like live work.
-		code:
-			outcome.published && (outcome.workRefRemoved || keepWorkRef)
-				? EXIT_CODE.OK
-				: EXIT_CODE.VALIDATION,
+		code: landed ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
+		...(failure === undefined ? {} : { error: failure }),
 		data: {
 			...outcome,
 			publication,
