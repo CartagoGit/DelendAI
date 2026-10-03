@@ -24,7 +24,6 @@ related:
     - c00145 # protectedBranches default main-only (predecesor — el plugin debe coincidir con main)
     - x00272 # bloquea push directo a main (predecesor — driver de la invariante a verificar)
 last-transition-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
-last-transition-id: ba620d82-8a0f-46d6-85b9-0fab17604a82
 last-correlation-id: ba620d82-8a0f-46d6-85b9-0fab17604a82
 last-transition-from: review
 ---

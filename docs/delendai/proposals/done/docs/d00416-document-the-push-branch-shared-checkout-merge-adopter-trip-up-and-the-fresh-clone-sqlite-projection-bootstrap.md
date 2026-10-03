@@ -7,7 +7,6 @@ type: proposal
 track: adopter-experience
 date: 2026-09-29
 last-transition-id: fb6e5d9f-fd4a-4e83-b027-289c68ef8b8e
-last-transition-id: de6968f0-84ed-4e86-bc1c-ed237a4dabcb
 last-correlation-id: de6968f0-84ed-4e86-bc1c-ed237a4dabcb
 last-transition-from: review
 ---

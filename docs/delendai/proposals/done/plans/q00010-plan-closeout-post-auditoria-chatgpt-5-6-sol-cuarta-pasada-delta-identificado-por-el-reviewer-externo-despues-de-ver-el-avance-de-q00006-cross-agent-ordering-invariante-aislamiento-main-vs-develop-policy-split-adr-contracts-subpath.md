@@ -47,7 +47,6 @@ contains:
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
 last-transition-id: 01c09fd0-489e-4bc1-a377-e44d76f84169
-last-transition-id: 5b02abec-e9a9-4185-b439-9bd264a4e3b7
 last-correlation-id: 5b02abec-e9a9-4185-b439-9bd264a4e3b7
 last-transition-from: review
 ---

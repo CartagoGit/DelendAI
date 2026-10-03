@@ -1,5 +1,3 @@
-shipped-in:
-  - "d981cd636893"
 ---
 id: x00791
 title: "The swarm sees published work, stacks and duplicates"
@@ -11,9 +9,10 @@ date: 2026-10-01
 priority: P1
 related: [x00555]
 last-transition-id: eb1d5d8a-f3d6-46aa-8228-bad945d683da
-last-transition-id: 85437e8d-a038-4b93-b699-7d9b58b14b4e
 last-correlation-id: 85437e8d-a038-4b93-b699-7d9b58b14b4e
 last-transition-from: review
+shipped-in:
+  - "d981cd636893"
 ---
 
 # x00791 — The swarm sees published work, stacks and duplicates

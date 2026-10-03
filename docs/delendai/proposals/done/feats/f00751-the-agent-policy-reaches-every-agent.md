@@ -1,5 +1,3 @@
-shipped-in:
-  - "53053d1c4de3"
 ---
 id: f00751
 title: "The agent policy reaches every agent"
@@ -11,9 +9,10 @@ date: 2026-09-29
 priority: P1
 related: []
 last-transition-id: 0161c3e9-2c5e-44b9-a295-02badd85e141
-last-transition-id: e36ead28-fdd5-4fca-afa6-10ad2e56ae35
 last-correlation-id: e36ead28-fdd5-4fca-afa6-10ad2e56ae35
 last-transition-from: review
+shipped-in:
+  - "53053d1c4de3"
 ---
 
 # f00751 — The agent policy reaches every agent

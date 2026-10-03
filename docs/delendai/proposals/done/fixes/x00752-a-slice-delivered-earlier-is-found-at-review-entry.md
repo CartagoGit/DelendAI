@@ -9,7 +9,6 @@ date: 2026-09-29
 priority: P1
 related: [x00745, x00747]
 last-transition-id: 3ba41f3e-6ac9-476a-9e5b-47138821fc1e
-last-transition-id: 5c1687c9-6260-49c4-985a-677a1770c7d0
 last-correlation-id: 5c1687c9-6260-49c4-985a-677a1770c7d0
 last-transition-from: review
 ---

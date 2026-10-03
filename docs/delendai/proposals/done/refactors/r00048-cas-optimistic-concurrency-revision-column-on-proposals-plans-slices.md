@@ -18,7 +18,6 @@ related:
   - q00022
   - r00047
 last-transition-id: b6dbaf27-f41e-490a-bad9-cd06ae29dc24
-last-transition-id: b78b91d1-7c54-410a-93c5-211661376883
 last-correlation-id: b78b91d1-7c54-410a-93c5-211661376883
 last-transition-from: review
 ---

@@ -7,7 +7,6 @@ type: proposal
 track: general
 date: 2026-09-30
 last-transition-id: f69f56ad-dc10-43ab-bcfc-007c0cc70750
-last-transition-id: db880e7d-17ef-4e51-9fbe-be23a7bcfef6
 last-correlation-id: db880e7d-17ef-4e51-9fbe-be23a7bcfef6
 last-transition-from: review
 ---

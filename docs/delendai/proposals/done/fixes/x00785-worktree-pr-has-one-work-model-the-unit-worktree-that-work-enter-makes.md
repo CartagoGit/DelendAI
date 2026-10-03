@@ -7,7 +7,6 @@ type: proposal
 track: trust
 date: 2026-09-30
 last-transition-id: eeef0a59-7bb0-4821-9316-4673da763f05
-last-transition-id: eba70e26-5b15-4410-9642-de05209c2723
 last-correlation-id: eba70e26-5b15-4410-9642-de05209c2723
 last-transition-from: review
 ---

@@ -7,7 +7,6 @@ type: proposal
 track: hosts
 date: 2026-09-29
 last-transition-id: c49277a1-8f54-417a-9bb1-0e4d915c496f
-last-transition-id: 6da36679-57c2-427f-a0e8-556cee1bf8fd
 last-correlation-id: 6da36679-57c2-427f-a0e8-556cee1bf8fd
 last-transition-from: review
 ---
