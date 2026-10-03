@@ -3,7 +3,7 @@
  *
  * Reads git (the work refs, what contains their tips) and the leases, and
  * hands each unit to `judgeUnit`. Every consumer — ref-lifecycle,
- * `reclaim:orphans`, `work status`, the overview, `work abandon` and the
+ * `reclaim:orphans`, `work status`, the overview, `work retire` and the
  * reaper — reads this, so they cannot disagree about a unit.
  */
 import { shortName } from '../development-policy/git-guard-namespaces';
@@ -211,7 +211,7 @@ const nextCommand = (
 		return { command: 'work reap --apply', why: 'reap delivered units' };
 	if (counts.abandoned > 0)
 		return {
-			command: 'work abandon --ref=<ref>',
+			command: 'work retire --ref=<ref> --reason=<why>',
 			why: 'end abandoned units',
 		};
 	if (counts.idle > 0)

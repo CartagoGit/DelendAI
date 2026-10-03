@@ -88,7 +88,7 @@ export const REF_ROLES = [
 	'work-idle',
 	/**
 	 * A work ref whose owner is gone. Its commits may be the only copy, so
-	 * it ends through `work abandon` (which keeps the tip) or `work publish`.
+	 * it ends through `work retire` (which keeps the tip) or `work publish`.
 	 */
 	'work-abandoned',
 	/**

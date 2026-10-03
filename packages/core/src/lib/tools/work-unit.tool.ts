@@ -40,7 +40,6 @@ const workUnitInputSchema = z.object({
 		'enter',
 		'checkpoint',
 		'publish',
-		'abandon',
 		'reap',
 	]),
 	proposal: z.string().min(1).optional(),

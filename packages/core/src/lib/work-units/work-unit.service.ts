@@ -17,7 +17,6 @@ import {
 import { readWorkspacePolicy } from './development-policy.service';
 import { recordUnitEntered, touchUnitOfCheckout } from './unit-lease.service';
 import { pruneUnitLeases } from './unit-standings.service';
-import { abandoned } from './work-unit-abandon.service';
 import { reaped } from './work-unit-reap.service';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 
@@ -90,7 +89,6 @@ export const runWorkUnit = async (
 		await recordEntered(args, ctx, result);
 		return result;
 	}
-	if (sub === 'abandon') return abandoned(args, ctx);
 	if (sub === 'reap') return reaped(args, ctx);
 	if (sub === 'publish') {
 		const result = await published(args, ctx);
@@ -102,6 +100,6 @@ export const runWorkUnit = async (
 	if (sub === 'claim') return claimed(args, ctx);
 	return {
 		code: EXIT_CODE.VALIDATION,
-		error: `Unknown subcommand '${sub}'. Use status, swarm, enter, checkpoint, publish, abandon or reap.`,
+		error: `Unknown subcommand '${sub}'. Use status, swarm, enter, checkpoint, publish or reap.`,
 	};
 };

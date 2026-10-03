@@ -15,7 +15,7 @@ last-transition-from: in-progress
 
 ## Goal
 
-Every unit entered through delendai records who owns it and when it last showed life; one verdict per unit (live, idle, abandoned, delivered) feeds ref-lifecycle, reclaim:orphans, work status and the overview, abandoned units end through an explicit work abandon that preserves the tip, delivered units are reaped with their worktrees, and a ref pushed under a unit that already has one is refused.
+Every unit entered through delendai records who owns it and when it last showed life; one verdict per unit (live, idle, abandoned, delivered) feeds ref-lifecycle, reclaim:orphans, work status and the overview, abandoned units are ended by work retire, which preserves the tip, delivered units are reaped with their worktrees, and a ref pushed under a unit that already has one is refused.
 
 ## why
 
@@ -42,14 +42,14 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
-### S2 — Reclaim, abandon and reaping follow the verdict
+### S2 — Reclaim, remedies and reaping follow the verdict
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/src/lib/work-units/work-unit-abandon.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `tools/scripts/reclaim/reclaim-orphans.script.ts`, `tools/scripts/reclaim/reclaim-orphans.script.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-abandon.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/reconcile-standing.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
+- **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, ``packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `tools/scripts/reclaim/reclaim-orphans.script.ts`, `tools/scripts/reclaim/reclaim-orphans.script.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-lease.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/reconcile-standing.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: type
 - acceptance:
   - "reclaim:orphans never lists a live unit and never advises git switch"
-  - "work abandon keeps the tip before deleting and requires the abandoned verdict or the owner with force"
+  - "remedies for an abandoned unit name work retire, and no second exit exists"
   - "a delivered unit loses its worktree and branch, a dirty one reports what is dirty"
 - shipped-in: `14da2e90af7d`
 - review-state: in_review
@@ -62,7 +62,7 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
 - **Gate**: type
 - acceptance:
   - "pushing delendai/wip/<agent>/<kind>/<unit>/sim-a while the unit holds another ref is refused"
-  - "served instructions say a unit ends in publish or abandon"
+  - "served instructions say a unit ends in publish or retire"
 - shipped-in: `955914412aa0`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
@@ -73,7 +73,7 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
 - two sessions of one agent hold separate leases
 - the lease survives the CLI process that wrote it
 - reclaim:orphans never lists a live unit and never advises git switch
-- work abandon keeps the tip before deleting and requires the abandoned verdict or the owner with force
+- remedies for an abandoned unit name work retire, and no second exit exists
 - a delivered unit loses its worktree and branch, a dirty one reports what is dirty
 - pushing delendai/wip/<agent>/<kind>/<unit>/sim-a while the unit holds another ref is refused
-- served instructions say a unit ends in publish or abandon
+- served instructions say a unit ends in publish or retire

@@ -27,6 +27,3 @@ export const REGENERABLE_PATH_PATTERNS: readonly RegExp[] = [
 	/(^|\/)\.cache\//u,
 	/(^|\/)(dist|build)\//u,
 ];
-
-/** Where an abandoned unit's tip is kept. */
-export const ABANDONED_TAG_NAMESPACE = 'delendai-abandoned';

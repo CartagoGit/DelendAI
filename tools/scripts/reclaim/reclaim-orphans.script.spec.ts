@@ -188,14 +188,14 @@ describe('units of work', () => {
 		const text = renderReport(report, 'develop', policy);
 		expect(text).not.toContain('git switch');
 		expect(text).toContain('live units (2)');
-		expect(text).toContain(`delendai work abandon --ref=${ref('gone')}`);
+		expect(text).toContain(`delendai work retire --ref=${ref('gone')}`);
 		expect(text).toContain('delendai work enter --proposal=x1 --slice=S1');
 		expect(text).toContain(
 			'delendai work publish --proposal=x1 --slice=S1',
 		);
 		expect(text).toContain('delendai work publish');
-		expect(text).not.toContain(`abandon --ref=${ref('live')}`);
-		expect(text).not.toContain(`abandon --ref=${ref('quiet')}`);
+		expect(text).not.toContain(`retire --ref=${ref('live')}`);
+		expect(text).not.toContain(`retire --ref=${ref('quiet')}`);
 	});
 
 	it('keeps the old merge remedy only for a profile that commits directly', () => {

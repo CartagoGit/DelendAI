@@ -142,7 +142,7 @@ const roleOf = (
 		if (ref.standing === 'abandoned') {
 			return {
 				role: 'work-abandoned',
-				reason: 'a work ref whose owner is gone and which was never published: end it with `delendai work abandon`, which keeps its tip, or adopt it and publish',
+				reason: 'a work ref whose owner is gone and which was never published: end it with `delendai work retire`, which keeps its tip, or adopt it and publish',
 			};
 		}
 		return {

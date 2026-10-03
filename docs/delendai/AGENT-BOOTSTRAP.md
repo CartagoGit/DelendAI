@@ -334,7 +334,7 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
   shared checkout never moves; `delendai work status` says where it
   stands.
 - **No orphaned branches or stashes — always reconcile (this repo).**
-  A unit ends in `delendai work publish` or `delendai work abandon`
+  A unit ends in `delendai work publish` or `delendai work retire`
   (keeps its tip). Before closing a session run `bun run reclaim:orphans`:
   live units are not orphans, idle/abandoned ones print their policy
   remedy, and `--apply` removes lossless branches and delivered units

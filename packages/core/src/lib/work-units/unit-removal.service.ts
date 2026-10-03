@@ -1,6 +1,6 @@
 /**
  * unit-removal.service.ts — the one way a unit's worktree and local branch
- * leave a clone, shared by `work abandon` and the reaper so neither can
+ * leave a clone, shared by the reaper and the retire command so neither can
  * remove more than the other would.
  */
 import { shortName } from '../development-policy/git-guard-namespaces';

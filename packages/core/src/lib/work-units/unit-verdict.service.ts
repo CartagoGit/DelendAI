@@ -3,7 +3,7 @@
  * anybody still on it".
  *
  * WHY one function: ref-lifecycle, `reclaim:orphans`, `work status`, the
- * overview and `work abandon` each guessed from a branch's commit counts,
+ * overview and `work retire` each guessed from a branch's commit counts,
  * and a branch that is ahead of the integration branch looks the same
  * whether a session is typing in it or a rate limit killed that session an
  * hour ago. Only a heartbeat tells them apart.

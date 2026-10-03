@@ -16,7 +16,7 @@
  *
  * Units of work are judged by their owner's heartbeat (`judgeUnit`), not
  * by commit counts: a live unit is never an orphan, an idle one is listed
- * for adoption, an abandoned one ends through `delendai work abandon`
+ * for adoption, an abandoned one ends through `delendai work retire`
  * (which keeps its tip), and a delivered one is reaped by `--apply`. No
  * remedy moves the shared checkout.
  *
@@ -308,7 +308,7 @@ export const unitCommands = (
 ): {
 	readonly resume: string;
 	readonly publish: string;
-	readonly abandon: string;
+	readonly retire: string;
 } => {
 	const identity =
 		policy === undefined
@@ -325,7 +325,7 @@ export const unitCommands = (
 	return {
 		resume: `delendai work enter ${unit}${identity?.kind === undefined ? '' : ` --kind=${identity.kind}`}${identity === undefined ? '' : ` --generation=${String(identity.generation)}`}`,
 		publish: `delendai work publish ${unit}`,
-		abandon: `delendai work abandon --ref=${ref}`,
+		retire: `delendai work retire --ref=${ref} --reason=<why>`,
 	};
 };
 
@@ -392,7 +392,7 @@ export const renderReport = (
 			'abandoned units — owner gone',
 			report.abandonedUnits,
 			policy,
-			['resume', 'publish', 'abandon'],
+			['resume', 'publish', 'retire'],
 		),
 	);
 	if (report.deliveredUnits.length > 0) {
