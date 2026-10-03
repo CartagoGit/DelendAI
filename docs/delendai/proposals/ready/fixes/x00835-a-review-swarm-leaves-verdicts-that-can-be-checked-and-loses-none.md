@@ -287,6 +287,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `plugins/proposals/src/lib/tools/review.tool.ts`, `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - `approve` and `request_changes` require the delivering commit and the
   declared gate's result (command, exit code or count). The commit must be on
   the integration branch, or be the tip of the unit's publication; a commit
@@ -300,6 +301,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/cli/src/commands/review.command.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`
+- **Gate**: `npx vitest run packages/cli/src/commands/review.command.spec.ts`
 - `review approve|request_changes|next` resolve the reviewer's review unit
   worktree from `--agent`/`--session` and write there. Run from the shared
   checkout with no unit, they refuse and name the unit to enter (E2, E7).
@@ -308,6 +310,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/command-args.helper.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/agent-identity.spec.ts`
 - An agent id that differs from an identity already present in the refs only
   by case, hyphens or a numeric suffix (`MiniMax-M3`, `minimaxm3`,
   `minimaxm3-3`) is refused with the existing spelling named. Verdicts are
@@ -319,6 +322,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
 - A review unit starts from the integration branch. Publishing a review pack
   whose commits are already carried by another open review pack, or that
   merges another pack, is refused with that pack named; a pack with no
@@ -330,6 +334,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
 - The review-scope check refuses a pack that deletes a proposal file without
   adding it elsewhere in the same pack (a move), naming the file and the
   commit (#744).
@@ -338,6 +343,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/cli/src/lib/cli/entrypoint.ts`
+- **Gate**: `npx vitest run packages/cli/src/lib/stale-build.service.spec.ts`
 - A CLI started from `dist` inside the repository compares its build stamp
   with the sources it was built from and refuses writing commands when the
   sources moved on, naming `bun packages/cli/src/index.ts` as the way to run
@@ -347,6 +353,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/integration-base.spec.ts`
 - `integrationBase` uses the remote-tracking integration branch whenever the
   local one carries commits the forge does not: under a pull-request model the
   local branch can only follow, so unpublished commits on it are an accident
@@ -357,6 +364,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit-land.service.spec.ts`
 - `work publish` exits non-zero when the publication was not proved on the
   remote, and its first line says why and what to merge (C5).
 
@@ -364,6 +372,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
 - Claiming a proposal slice, for review or implementation, creates one
   reservation ref on the forge atomically (the same mechanism as #724's id
   reservation); a second claimer is refused with the holder named. The
@@ -374,6 +383,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - `work doctor` places every work ref, publication, worktree and local
   integration branch in exactly one state: merged and removed, waiting in an
   open pull request, or live with a lease that answers. Anything else is a
@@ -388,6 +398,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`
+- **Gate**: `npx vitest run plugins/commit-policy/src/lib/engine.spec.ts`
 - A slice event is committed by one server only (the one whose agent holds
   the slice), never by every server that heard it (E13).
 - The commit carries only the files the slice declares that this agent
@@ -400,6 +411,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
 - An agent holding a review claim on a proposal, or that recorded a verdict on
   it, is refused an `implement` unit on that proposal (E14). A review verdict
   committed in a non-review unit is refused at publication.
@@ -408,6 +420,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `plugins/proposals/src/lib/shared/independent-approval.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/shared/independent-approval.spec.ts`
 - An actor is a canonical model id plus an instance (the session x00850's
   lease records). `model` independence compares canonical model ids, so an
   alias is the same model; `instance` independence compares instances, and
@@ -419,6 +432,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-lifecycle.spec.ts`
 - A verdict carries the proposal revision and delivery SHA it judged. Applying
   it to a proposal whose revision moved on is refused as a stale verdict, to
   be re-checked, never merged as text (G4, E3). The proposals SQLite
@@ -434,6 +448,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+- **Gate**: `npx vitest run tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - Every internal commit passes its identity explicitly (`-c user.name/email`
   or `GIT_AUTHOR_*`/`GIT_COMMITTER_*`), and a run reported as read-only
   creates no commit at all (G3).
@@ -442,6 +457,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/src/lib/tools/work-unit.tool.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/tools/work-unit.tool.spec.ts`
 - An agent registers its canonical model id and instance when it first calls
   delendai in a session; the id must match the running model's declared id
   (family, version and tier), not free text (E17, E18). `work swarm` lists
@@ -452,6 +468,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
 - A fixture reproduces this run in a scratch repository: five reviewers of one
   model under aliases, two of another, two implementers, a proposal approved
   at revision N and sent back at N+1 while a third reviewer closes from N, a
@@ -464,6 +481,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `plugins/project-kpis/src/index.ts`
+- **Gate**: `npx vitest run plugins/project-kpis`
 - `project-kpis` counts what this run showed by hand: stale and superseded
   verdicts, actor alias collisions, unverifiable attributions, units never
   published, publications without a pull request, candidate lag, manual
@@ -475,6 +493,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/command-args.helper.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/command-args.helper.spec.ts`
 - A review pack has one topic, derived by the tools, not chosen per agent; an
   implementation unit's default topic comes from its proposal's title instead
   of `work` (E20).
