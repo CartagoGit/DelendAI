@@ -6,11 +6,12 @@ status: done
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: 3719f84e-a80f-4b37-9426-d415358987ff
-last-correlation-id: 3719f84e-a80f-4b37-9426-d415358987ff
+last-transition-id: cf50d606-2da9-4ea4-a44b-85c08fc8457e
+last-correlation-id: cf50d606-2da9-4ea4-a44b-85c08fc8457e
 last-transition-from: review
 shipped-in:
-  - "3ecf943bb84b"
+  - "3ecf943bb84b7f87e119fca1074f6a8333ee7116"
+  - "da1ee9fb8615143878b477d454b9c6db734996e7"
 ---
 
 # x00781 — Adoption writes exactly the policy already enforced
@@ -54,8 +55,8 @@ The project's delendai configuration is the single source of truth, so every sur
 - shipped-in: `3ecf943bb84b`
 - review-state: done
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: minimax-m3
-- review-log: approved by minimax-m3 — S1 verified at 3ecf943bb84b ("fix(development-policy): adoption writes exactly the policy already enforced"). adopt/adoption-parity/migrator/init-workspace-start 38/38 covers the migrator writing the resolved policy, legacy fields never being rewritten, declared blocks untouched, and adoption surfaced in instructions/overview/work status.
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00781 S1 delivered at 3ecf943bb84b: adoption migrator records what resolveEffectivePolicy already resolved, never reads the forge, leaves legacy fields alone. 30/30 tests green across adopt.spec + adoption-parity + development-policy.migrator. Reviewed on delivered state; later drift in development-policy.service.ts is from follow-up work.
 
 ### S2 — Specs for parity and for never rewriting
 - **Status**: done
@@ -68,8 +69,8 @@ The project's delendai configuration is the single source of truth, so every sur
 - shipped-in: `3ecf943bb84b`
 - review-state: done
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: minimax-m3
-- review-log: approved by minimax-m3 — S2 verified at 3ecf943bb84b — same commit as S1 because the slice packs S1+S2 into one ship. The acceptance criteria for S2 (parity and round-trip) are covered by the same 38/38 test run: adoption-parity.spec asserts the same undeclared repository yields one policy across migrator, resolveEffectivePolicy, served instructions, guard's reader; the written config round-trips to the same effective policy.
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00781 S2 delivered at da1ee9fb8615143878b477d454b9c6db734996e7: delendai init may choose the pull-request profile from forge+workflow evidence; server start records the policy already resolved and reads no forge. 19/19 tests green across init-workspace-start.spec.ts + development-policy-required-checks.spec.ts.
 
 ## acceptance
 
