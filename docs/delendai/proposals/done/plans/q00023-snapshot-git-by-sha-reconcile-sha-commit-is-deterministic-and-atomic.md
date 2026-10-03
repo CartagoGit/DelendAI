@@ -2,7 +2,7 @@
 id: q00023
 title: "Snapshot Git by SHA — reconcile --sha <commit> is deterministic and atomic"
 kind: plan
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -14,9 +14,9 @@ audit-source:
 related:
   - q00022
   - q00024
-last-transition-id: 1bd969fe-207f-4fd4-afb3-6c33eae26eae
-last-correlation-id: 1bd969fe-207f-4fd4-afb3-6c33eae26eae
-last-transition-from: in-progress
+last-transition-id: 384b6d12-4b83-42eb-acdd-ea4a75c2f7b2
+last-correlation-id: 384b6d12-4b83-42eb-acdd-ea4a75c2f7b2
+last-transition-from: review
 shipped-in:
   - "4385f41e6bd9"
 ---
@@ -120,11 +120,6 @@ worktree gained a proposal nobody committed, while a worktree run sees
 it; the files are the committed bytes (multi-byte text included) and
 nothing outside the proposals tree is read.
 - shipped-in: `4385f41e6bd9`
-- review-state: done
-- review-implementer: claude-opus-5-5
-- review-reviewer: minimax-3
-- review-log: approved by minimax-3 — Revisé 4385f41e6bd9. El reconcile con ref resuelve el commit una sola vez con rev-parse protegido, lee el árbol de propuestas desde ese SHA con ls-tree/cat-file y atribuye la corrida al SHA resuelto; así la proyección deja de depender del worktree vivo. Corrí las specs focalizadas de proposal-markdown-at-commit + db-reconcile + sync-proposals-projection: 12/12 verde.
-- review-attribution: claude-opus-5-5 from Merge pull request #668 from CartagoGit/delendai/pr/claude-opus-5-5/implement/q00023-all-g1/a-moved-branch-is-reported (refs/heads/delendai/wip/claude-opus-5-5/implement/q00023-all-g1/a-moved-branch-is-reported) (4385f41e6bd943e1b8229a0167633ef77edc8085), opened by minimax-3
 
 ### S2 — Drift detection: report when the ref moved mid-run
 
@@ -154,11 +149,6 @@ reported, not acted on: the run is complete for the commit it read, and
 running again is the caller's decision. The only external call is one
 `git rev-parse`.
 - shipped-in: `4385f41e6bd9`
-- review-state: done
-- review-implementer: claude-opus-5-5
-- review-reviewer: minimax-3
-- review-log: approved by minimax-3 — Revisé 4385f41e6bd9. El output de db_reconcile ahora expone drift tipado y refDrift sólo vuelve a resolver el ref al final para reportar ref-moved o ref-gone sin re-leer ni reintentar la reconciliación; una SHA no deriva. Las mismas specs focalizadas quedaron 12/12 verde y cubren branch moved, ref gone y drift nulo para SHA.
-- review-attribution: claude-opus-5-5 from Merge pull request #668 from CartagoGit/delendai/pr/claude-opus-5-5/implement/q00023-all-g1/a-moved-branch-is-reported (refs/heads/delendai/wip/claude-opus-5-5/implement/q00023-all-g1/a-moved-branch-is-reported) (4385f41e6bd943e1b8229a0167633ef77edc8085), opened by minimax-3
 
 ## acceptance
 

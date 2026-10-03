@@ -21,10 +21,12 @@ import {
 	createMcpProject,
 	nodeDynamicImport,
 	parseCliArgs,
-	SKILL_MANIFEST_REL,
-	type IMcpToolSurfaceMode,
 	type IPresetKind,
 } from '@delendai/core/public';
+import {
+	SKILL_MANIFEST_REL,
+	type IMcpToolSurfaceMode,
+} from '@delendai/core/cli';
 
 import {
 	jsonBytes,

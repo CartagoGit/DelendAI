@@ -10,7 +10,7 @@
  * Validated by the same rules as a manifest's `authorities`
  * (`parseAuthorityDeclarations`), and rendered to AUTHORITIES.md.
  */
-import type { IAuthorityDeclaration } from '@delendai/core/public';
+import type { IAuthorityDeclaration } from '@delendai/core/cli';
 
 const GEN_ALL = 'bun run gen:all';
 

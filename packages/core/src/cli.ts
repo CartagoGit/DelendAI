@@ -133,6 +133,160 @@ export { resolveReleaseTarget } from './lib/development-policy/release-target';
 export { startCheckoutHydration } from './lib/startup-gate/index';
 export { SHARED_CHECKOUT_WRITE_REFUSED } from './lib/contracts/constants/write-refusal.constant';
 
+// Read only by the CLI, the host and the repository scripts, so they live
+// here and not on the public surface plugins build against (r00040).
+export { gracefulShutdown } from './lib/cli/graceful-shutdown';
+export { DEFAULT_CORE_PATHS } from './lib/contracts/interfaces/core-paths.interface';
+export type {
+	IMcpToolSurfaceMode,
+	IPluginConfigExample,
+	IToolEffect,
+	IMcpPlugin,
+	IScaffoldedFile,
+} from './contracts';
+export type { IHostCapabilityProfile } from './lib/contracts/interfaces/host-capabilities.interface';
+export { buildHostAdapterPack } from './lib/hosts/host-adapter-pack';
+export type { IHostAdapterPack } from './lib/hosts/host-adapter-pack';
+export { deriveSourceRoots } from './lib/bootstrap/derive-config';
+export { mergeDerivedConfig } from './lib/bootstrap/merge-derived-config';
+export {
+	REPOSITORY_NAME,
+	REPOSITORY_OWNER,
+	REPOSITORY_URL,
+} from './lib/contracts/constants/repository-identity.constant';
+export { managedPluginEnvironmentRequirements } from './lib/plugins/managed-plugin-environment';
+export { diagnoseConfigFile } from './lib/plugins/load-config-file';
+export {
+	PACK_DEFAULTS_OVERLAY,
+	PACK_IDS,
+} from './lib/plugins/pack-defaults-overlay';
+export { hasExplicitPluginSurfaceSelection } from './lib/plugins/parse-cli-args';
+export { resolvePluginOptions } from './lib/plugins/plugin-defaults';
+export { PRESET_KIND } from './lib/plugins/preset-catalog';
+export {
+	renderStartupReportAnsi,
+	renderStartupReportPlain,
+	shouldUseAnsiColors,
+} from './lib/startup-report';
+export type {
+	IPluginWiringFs,
+	IPluginWiringReport,
+} from './lib/contracts/interfaces/plugin-wiring.interface';
+export { diagnosePluginWiring } from './lib/scaffold/diagnose-plugin-wiring';
+export { runCreatePlugin } from './lib/scaffold/create-plugin.tool';
+export { scaffoldExtensionHostFiles } from './lib/scaffold/scaffold-extension-host';
+export {
+	scaffoldClientFiles,
+	scaffoldHostProject,
+	scaffoldPromptFile,
+	scaffoldToolFile,
+} from './lib/scaffold/scaffold-host';
+export type { IScaffoldPluginOptions } from './lib/scaffold/scaffold-host';
+export { createCacheEvictionRegistry } from './lib/cache/eviction-registry';
+export { safePathExists } from './lib/shared/safe-list-dir';
+export { HIGH_CONFIDENCE_SECRET_PATTERNS } from './lib/shared/redact';
+export { targetById } from './lib/install/ide-targets';
+export type {
+	IInstallOptions,
+	IInstallReport,
+	IRunnerVia,
+} from './lib/install/installer';
+export { CAPABILITIES } from './lib/capabilities/schema';
+export type { Capability } from './lib/capabilities/schema';
+export type {
+	IGovernedToolsListBudget,
+	ITokenBudgetRegistry,
+	ITokenBudgetSurface,
+} from './lib/contracts/constants/token-budgets.constant';
+export { buildValueLookup } from './lib/budgets/manifest';
+export { aggregateROI } from './lib/budgets/roi';
+export type { IRoiMeasurement } from './lib/budgets/roi';
+export { buildCatalog } from './lib/catalog/agent-discovery-catalog';
+export { ACTIONABLE_PROPOSAL_STATUSES } from './lib/catalog/agent-discovery-types';
+export type { ICatalogSources } from './lib/catalog/agent-discovery-types';
+export { createPluginMetrics } from './lib/observability/plugin-metrics';
+export { analyzeProject } from './lib/bootstrap/index';
+export type { IProjectAnalysis } from './lib/bootstrap/index';
+export { SKILL_MANIFEST_REL } from './lib/skills/skill-paths';
+export type { IPluginRegistryEntry } from './lib/contracts/interfaces/plugin-registry.interface';
+export type { IAuthorityDeclaration } from './lib/contracts/interfaces/authority.interface';
+export {
+	applyJsoncEdits,
+	parseJsonc,
+} from './lib/config/jsonc-document';
+export type { IJsoncEdit } from './lib/config/jsonc-document';
+export { renderPluginConfigComment } from './lib/plugins/plugin-config-docs';
+export {
+	parseAuthorityDeclarations,
+	parsePluginManifest,
+} from './lib/manifest/define-plugin-manifest';
+export {
+	discoverPluginManifests,
+	loadAllPluginManifests,
+} from './lib/manifest/discovery';
+export { validatePluginManifest } from './lib/manifest/validation';
+export {
+	buildPluginAddRecipe,
+	type IPluginAddRecipe,
+} from './lib/registry/plugin-add';
+export { resolvePlugins } from './lib/registry/resolve';
+export {
+	STABLE_API_TOOL_NAMES,
+	STABLE_API_TOOLS,
+} from './lib/api/stable-facade';
+export {
+	buildStableManifest,
+	STABLE_MANIFEST_REL,
+} from './lib/api/stable-manifest';
+export {
+	buildRegistrySkeleton,
+	detectCatchSwallow,
+	detectDipViolations,
+	detectLongChains,
+	detectMagicNumbers,
+	formatFixProposal,
+	shingleBlocks,
+	toRelPosix,
+	walkTsFiles,
+} from './lib/scan';
+export {
+	DEFAULT_MIGRATIONS,
+	createFileSystemJournal,
+} from './lib/workspace-migration/migration-registry';
+export {
+	runPendingMigrations,
+	ensureWorkspaceMigrated,
+} from './lib/workspace-migration/legacy-migration.service';
+export type { IMigrationRunResult } from './lib/contracts/interfaces/workspace-migration.interface';
+export { readLatestManifestFromDisk } from './lib/workspace-migration/transaction/migration-manifest';
+export type { IStoredMigrationManifest } from './lib/workspace-migration/transaction/migration-manifest';
+export type { ITransactionOutcome } from './lib/workspace-migration/transaction/migration-transaction';
+export {
+	createDefaultPhases,
+	runMigrationTransaction,
+	rollbackLatestMigration,
+} from './lib/workspace-migration/transaction/migration-transaction';
+export { scanLegacyIdentity } from './lib/workspace-migration/scanner/legacy-identity-scanner';
+export { validateDevelopmentPolicy } from './lib/development-policy/validate';
+export {
+	createStartupGovernanceSeam,
+	renderStartupGate,
+	runStartupGate,
+	startupGateWarnings,
+} from './lib/startup-gate/index';
+export {
+	type IRepairDecision,
+	type IRepairResolution,
+	parseRepairResolutions,
+	REPAIR_DECISIONS,
+	REPAIR_RESOLUTIONS_PATH,
+	renderRepairResolutions,
+} from './lib/startup-reconciler/index';
+export {
+	buildDesiredState,
+	type IDesiredBranchRule,
+} from './lib/forge-governance/index';
+
 if (import.meta.main) {
 	void runCli(process.argv.slice(2), process.cwd());
 }

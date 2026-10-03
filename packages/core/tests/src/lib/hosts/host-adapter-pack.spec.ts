@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	buildHostAdapterPack,
 	buildHostCapabilityPlan,
 	createHostCapabilityRegistry,
 	type IHostCapabilityManifest,
-	type IHostCapabilityProfile,
 } from '@delendai/core/public';
+import {
+	buildHostAdapterPack,
+	type IHostCapabilityProfile,
+} from '@delendai/core/cli';
 
 describe('buildHostAdapterPack', () => {
 	it('builds registry, profile plan and pack from the public surface only', () => {

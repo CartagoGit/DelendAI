@@ -2,15 +2,18 @@
 id: f00641
 title: "The proposals database runs on Node as well as Bun"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-25
 priority: P1
 related: [q00022, r00043]
-last-transition-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
-last-correlation-id: e1e3ae9d-9433-4172-9b60-3bf4c3fb38de
-last-transition-from: in-progress
+last-transition-id: 5028ee61-1fd2-4751-8401-50d0f049dd6d
+last-correlation-id: 5028ee61-1fd2-4751-8401-50d0f049dd6d
+last-transition-from: review
+shipped-in:
+  - "4cca8dcd7a85"
+  - "7a5236e63cdd"
 ---
 
 # f00641 — The proposals database runs on Node as well as Bun

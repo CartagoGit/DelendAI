@@ -1580,7 +1580,7 @@
 				"id": "r00040",
 				"title": "Migrar el barrel de 288 exports a los subpaths del core que ya existen",
 				"track": "architecture",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "refactor",
 				"date": "2026-08-29"
 			},
@@ -1676,6 +1676,14 @@
 				"id": "x00835",
 				"title": "A review swarm leaves verdicts that can be checked, and loses none",
 				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-10-03"
+			},
+			{
+				"id": "x00871",
+				"title": "close_slice has one evidence decision: CI certification satisfies the validate-required gate",
+				"track": "general",
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-03"

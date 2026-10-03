@@ -15,6 +15,7 @@ import {
 	isBunOwned,
 	judgeChangedCoverage,
 } from './changed-file-coverage.script';
+import { behaviourOf, onlyImportsChanged } from './import-only-change.helper';
 
 const FLOORS = {
 	statements: 82,
@@ -270,5 +271,77 @@ describe('files whose tests this report never ran', () => {
 
 		expect(report.verdict).toBe('FAIL');
 		expect(report.deferred).toEqual([]);
+	});
+});
+
+describe('onlyImportsChanged', () => {
+	const before = [
+		"import { a, b } from '@scope/one';",
+		"import type { T } from './types';",
+		'',
+		'export const run = (): T => a(b);',
+		'',
+	].join('\n');
+
+	it('is true when a name moves to another entry point, on one line or several', () => {
+		const after = [
+			"import { a } from '@scope/one';",
+			'import {',
+			'\tb,',
+			"} from '@scope/two';",
+			"import type { T } from './types';",
+			'',
+			'export const run = (): T => a(b);',
+			'',
+		].join('\n');
+		expect(onlyImportsChanged(before, after)).toBe(true);
+	});
+
+	it('is false when anything the module does changed', () => {
+		expect(
+			onlyImportsChanged(before, before.replace('a(b)', 'a(b, 1)')),
+		).toBe(false);
+		expect(
+			onlyImportsChanged(before, `${before}export const more = 1;\n`),
+		).toBe(false);
+	});
+
+	it('is true when only comments standing on their own lines changed', () => {
+		const commented = [
+			'// Read only by the CLI, so it lives here.',
+			"import { a, b } from '@scope/one';",
+			'/**',
+			' * What it does, said again.',
+			' */',
+			"import type { T } from './types';",
+			'',
+			'export const run = (): T => a(b);',
+			'',
+		].join('\n');
+		expect(onlyImportsChanged(before, commented)).toBe(true);
+	});
+
+	it('is false when a comment on a line of code hides a change to that line', () => {
+		expect(
+			onlyImportsChanged(
+				before,
+				before.replace('a(b);', 'a(b); // and something else'),
+			),
+		).toBe(false);
+	});
+
+	it('is false for a file that is new, or gone', () => {
+		expect(onlyImportsChanged(undefined, before)).toBe(false);
+		expect(onlyImportsChanged(before, undefined)).toBe(false);
+	});
+
+	it('keeps a re-export and a dynamic import as what the module does not import statically', () => {
+		expect(behaviourOf("export { x } from './x';\nconst y = 1;")).toBe(
+			'const y = 1;',
+		);
+		const dynamic = "const m = await import('./m');";
+		expect(behaviourOf(dynamic)).toBe(dynamic);
+		const local = 'export const from = 1;';
+		expect(behaviourOf(local)).toBe(local);
 	});
 });

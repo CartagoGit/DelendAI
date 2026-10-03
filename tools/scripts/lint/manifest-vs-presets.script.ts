@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
+import { resolvePresetMembers } from '@delendai/core/public';
 import {
 	loadAllPluginManifests,
 	PRESET_KIND,
-	resolvePresetMembers,
 	validatePluginManifest,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
 

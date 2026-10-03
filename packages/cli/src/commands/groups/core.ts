@@ -14,10 +14,8 @@
  */
 import { REVIEW_COMMAND } from '../../contracts/constants/review-command.constant';
 import { WORK_COMMAND } from '../../contracts/constants/work-command.constant';
-import {
-	createWorkspacePathProvider,
-	runCreatePlugin,
-} from '@delendai/core/public';
+import { createWorkspacePathProvider } from '@delendai/core/public';
+import { runCreatePlugin } from '@delendai/core/cli';
 
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';

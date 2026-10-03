@@ -14,7 +14,8 @@
 import { spawnSync } from 'node:child_process';
 
 import { normalizeRunId } from './local-repro.script';
-import { REPOSITORY_SLUG, REPOSITORY_URL } from '@delendai/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
+import { REPOSITORY_URL } from '@delendai/core/cli';
 
 interface IRunListEntry {
 	readonly databaseId?: number;

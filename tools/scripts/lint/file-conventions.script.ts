@@ -32,7 +32,7 @@ import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { relative, sep } from 'node:path';
 
-import { walkTsFiles } from '@delendai/core/public';
+import { walkTsFiles } from '@delendai/core/cli';
 
 import { classifyPath, DEFAULT_TS_RULES, type Role } from './file-conventions';
 import {

@@ -8,8 +8,8 @@ track: security
 date: 2026-09-29
 priority: P0
 related: []
-last-transition-id: c4b96385-df94-4773-b81d-c4ebfc8e60bf
-last-correlation-id: c4b96385-df94-4773-b81d-c4ebfc8e60bf
+last-transition-id: d6690454-064e-4d98-be3e-157636f01d5b
+last-correlation-id: d6690454-064e-4d98-be3e-157636f01d5b
 last-transition-from: review
 ---
 
@@ -132,11 +132,6 @@ bundle failure and the dashboard's errors now tell the page where to look,
 and the terminal gets the error). Moving the loose-ref read also changed a
 line `plugin-drift-budget` allowlists by text; its entry names the new
 line.
-- review-state: changes_requested
-- review-implementer: unrecorded
-- review-reviewer: minimax-3
-- review-log: requested_changes by minimax-3 — El candidato f5a6c17ebe6c no satisface por sí solo la slice. La propia propuesta dice que después del primer merge aún quedaban tres alertas de CodeQL y hubo que cerrarlas en 2c8cdadf0dc7b3c1303d32fc9c955119c57fdbf7; con este candidate hash la aceptación no queda cubierta.
-- review-attribution: unrecorded — no delivering commit was named for x00758 S1; independence could not be verified, opened by minimax-3
 
 ### S2 — Fix the 48 alerts `main` already carried
 

@@ -7,7 +7,7 @@ import { InitAnswers } from './init-answers.schema';
 import type { IInitAnswers } from './init-answers.types';
 import { renderInitBundle, resolvePluginSet } from './init-render.service';
 
-import { parseJsonc } from '@delendai/core/public';
+import { parseJsonc } from '@delendai/core/cli';
 
 /**
  * f00502: the generated config is JSONC — one comment above every

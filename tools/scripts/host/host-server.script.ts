@@ -12,29 +12,31 @@ import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { runSupervised, shouldSupervise } from './host-supervisor-process';
 import {
 	assembleCliConfig,
-	createFileSystemJournal,
-	DEFAULT_MIGRATIONS,
-	ensureWorkspaceMigrated,
 	createMcpProject,
-	gracefulShutdown,
-	hasExplicitPluginSurfaceSelection,
 	parseCliArgs,
 	resolveWorkAgentId,
 } from '@delendai/core/public';
 import {
+	createFileSystemJournal,
+	DEFAULT_MIGRATIONS,
+	ensureWorkspaceMigrated,
+	gracefulShutdown,
+	hasExplicitPluginSurfaceSelection,
+} from '@delendai/core/cli';
+import {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
+import { createWriteGitRunner } from '@delendai/core/public';
 import {
 	createStartupGovernanceSeam,
-	createWriteGitRunner,
 	renderStartupGate,
 	runStartupGate,
 	startupGateWarnings,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 import { startCheckoutHydration } from '@delendai/core/cli';
-import type { IMigrationRunResult } from '@delendai/core/public';
+import type { IMigrationRunResult } from '@delendai/core/cli';
 import {
 	openStartupStatePorts,
 	resolveProposalsDbPaths,

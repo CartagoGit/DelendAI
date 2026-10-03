@@ -16,7 +16,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { walkTsFiles } from '@delendai/core/public';
+import { walkTsFiles } from '@delendai/core/cli';
 
 import { repoRoot } from './monorepo-paths';
 

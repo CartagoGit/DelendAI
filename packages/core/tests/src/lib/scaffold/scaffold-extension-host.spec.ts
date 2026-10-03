@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { scaffoldExtensionHostFiles } from '@delendai/core/public';
+import { scaffoldExtensionHostFiles } from '@delendai/core/cli';
 
 describe('scaffoldExtensionHostFiles', () => {
 	it('generates a TypeScript reference extension host skeleton', () => {

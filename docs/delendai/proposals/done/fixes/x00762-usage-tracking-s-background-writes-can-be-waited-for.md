@@ -8,8 +8,8 @@ track: trust
 date: 2026-09-29
 priority: P1
 related: [x00641]
-last-transition-id: 8caba536-8ed5-43c8-bce5-c7f03018a78b
-last-correlation-id: 8caba536-8ed5-43c8-bce5-c7f03018a78b
+last-transition-id: 8dc68e3c-f34c-47a8-9618-c0509f65a456
+last-correlation-id: 8dc68e3c-f34c-47a8-9618-c0509f65a456
 last-transition-from: review
 shipped-in:
   - "ec4fc3ebe938"

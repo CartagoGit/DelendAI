@@ -24,7 +24,7 @@
  * a claim in a comment — the spec asserts that applying these edits produces
  * the same object `mergeDerivedConfig` would have produced.
  */
-import type { IJsoncEdit } from '@delendai/core/public';
+import type { IJsoncEdit } from '@delendai/core/cli';
 
 import { isRecord } from '../helpers/cli-command.helper';
 

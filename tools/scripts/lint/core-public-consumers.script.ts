@@ -45,7 +45,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
-import { walkTsFiles } from '@delendai/core/public';
+import { walkTsFiles } from '@delendai/core/cli';
 import { parseBarrel } from '../inspect/core-public-inventory.script';
 
 /** Where the annotation is written, and what it looks like. */

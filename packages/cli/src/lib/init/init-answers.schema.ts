@@ -21,7 +21,7 @@
  */
 import z from 'zod';
 
-import { PRESET_KIND } from '@delendai/core/public';
+import { PRESET_KIND } from '@delendai/core/cli';
 
 import { PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
 

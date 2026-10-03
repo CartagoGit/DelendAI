@@ -8,11 +8,10 @@ import {
 	buildCreatePluginToolRegistration,
 	CREATE_PLUGIN_INPUT_SCHEMA,
 	createWorkspacePathProvider,
-	runCreatePlugin,
 	type IBatchAtomicWriter,
-	type IPluginWiringFs,
 	type IRegenerateCatalogArgs,
 } from '@delendai/core/public';
+import { runCreatePlugin, type IPluginWiringFs } from '@delendai/core/cli';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const TS_BASE_SEED = `{

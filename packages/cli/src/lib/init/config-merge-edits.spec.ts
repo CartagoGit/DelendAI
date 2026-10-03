@@ -2,7 +2,7 @@ import {
 	applyJsoncEdits,
 	mergeDerivedConfig,
 	parseJsonc,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 import { describe, expect, it } from 'vitest';
 
 import { planConfigMergeEdits } from './config-merge-edits';

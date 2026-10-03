@@ -1,13 +1,12 @@
 import {
 	CONFIG_FILE_SCHEMA,
 	DEFAULT_CONFIG_FILENAME,
-	diagnoseConfigFile,
-	parseJsonc,
 	redactSecrets,
 	resolveWorkspaceContained,
 	withFileMutex,
 	writeFileAtomic,
 } from '@delendai/core/public';
+import { diagnoseConfigFile, parseJsonc } from '@delendai/core/cli';
 
 import type { IConfigSetPlan } from '../contracts/interfaces/config-file.interface';
 
