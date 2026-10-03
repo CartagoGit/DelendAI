@@ -10,7 +10,11 @@
  * carries its name, and the document on the integration branch is the one
  * every agent sees.
  */
-import { readGit } from './work-unit-shared.service';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
+import { scalarArg } from './command-args.helper';
+import { readWorkspaceDocsDir } from './development-policy.service';
+import { integrationBase, readGit, refused } from './work-unit-shared.service';
 
 /** The line a slice carries for the agent that claimed or judged it. */
 const REVIEWER_LINE = /^\s*-\s*review-reviewer:\s*(?<agent>\S+)\s*$/u;
@@ -78,4 +82,36 @@ export const integratedDocumentOf = (input: {
 	return path === undefined
 		? undefined
 		: readGit(input.root, ['show', `${input.base}:${path}`]);
+};
+
+/**
+ * The refusal an agent gets for implementing a proposal it reviews, or
+ * `undefined`: any other kind of unit, and any other agent, goes in.
+ */
+export const reviewedByEntrant = async (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	args: readonly string[],
+	agent: string,
+	proposal: string,
+): Promise<IWorkUnitResult | undefined> => {
+	if ((scalarArg(args, 'kind') ?? 'implement') !== 'implement') {
+		return undefined;
+	}
+	const base = integrationBase(root, policy);
+	if (base === undefined) return undefined;
+	const document = integratedDocumentOf({
+		root,
+		base,
+		docsDir: await readWorkspaceDocsDir(root),
+		proposal,
+	});
+	const reviewer =
+		document === undefined ? undefined : reviewerNamed(document, agent);
+	return reviewer === undefined
+		? undefined
+		: refused(
+				`${proposal} is under this agent's review: a reviewer does not implement what it reviews.`,
+				describeReviewedProposal(proposal, reviewer),
+			);
 };

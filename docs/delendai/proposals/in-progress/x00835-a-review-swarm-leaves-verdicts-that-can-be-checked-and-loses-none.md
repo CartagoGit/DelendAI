@@ -308,7 +308,7 @@ the good verdicts' shape (P1) becomes the required shape.
 ### S2 — A verdict is written in the reviewer's own unit, or not at all
 
 - **Status**: review
-- **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`
+- **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-worktree.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - `review approve|changes|next` already write in the reviewer's unit. The
   verdict tool called directly was the way around it: in a project with
