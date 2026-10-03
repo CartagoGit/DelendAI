@@ -22,6 +22,12 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { workModelSummary } from '../development-policy/declare-workflow';
 import { runWorkUnit } from '../work-units/work-unit.service';
 import { toolJson } from '../shared/tool-response';
+import {
+	clientRootUris,
+	describeRootsElsewhere,
+	rootsElsewhere,
+	writesToRepository,
+} from './work-unit-roots.helper';
 
 const WORK_UNIT_REGISTRATION_ID = 'work';
 
@@ -118,6 +124,23 @@ export const buildWorkUnitToolRegistration = (
 					outputSchema: workUnitOutputSchema,
 				},
 				async (input: IWorkUnitInput) => {
+					if (writesToRepository(input.action)) {
+						const uris = await clientRootUris(server);
+						const elsewhere =
+							uris === undefined
+								? undefined
+								: rootsElsewhere(uris, options.workspaceRoot);
+						if (elsewhere !== undefined) {
+							return toolJson({
+								ok: false,
+								code: EXIT_CODE.VALIDATION,
+								error: describeRootsElsewhere(
+									elsewhere,
+									options.workspaceRoot,
+								),
+							});
+						}
+					}
 					const result = await runWorkUnit(
 						workUnitArgs(input, session),
 						{
