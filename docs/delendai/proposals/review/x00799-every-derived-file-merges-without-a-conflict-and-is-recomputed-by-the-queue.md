@@ -55,6 +55,8 @@ Three layers, each with one job. The drift guards are untouched: a source change
 - shipped-in: `7b5326c0c7fc`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00799 S1 delivered at 7b5326c0c7fc: every gen:all step is routed to a rule (gen-all.spec.ts, generated-merge-driver.script.spec.ts, generated-refresh.service.spec.ts all green); .gitattributes' generated-merge driver is wired to the new driver; gen:all now runs docs-index and tool-types so the queue's post-merge refresh covers them. Conflicts in authored text remain conflicts (the spec case 'A conflict in the README stays a conflict' passes). The commit 6389125c5 is the empty ref-state follow-up.
 
 ## acceptance
 
