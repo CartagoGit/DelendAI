@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { runCli as runServerCli } from '@delendai/core/public';
-import { DELENDAI_SESSION_VARIABLE, serveRefusal } from '@delendai/core/cli';
+import { serveRefusal } from '@delendai/core/cli';
 
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
@@ -15,6 +15,7 @@ import {
 	renderCommandHelp,
 	unknownFlagRefusal,
 } from './lib/command-flags.service';
+import { markDelendaiSession } from './lib/delendai-session.service';
 import { renderHelp } from './lib/help.service';
 import { parseCliInvocation } from './lib/parser.service';
 import { createStdioContext } from './lib/stdio-context.factory';
@@ -356,12 +357,6 @@ export const runEntry = async (
 };
 
 if (import.meta.main) {
-	// Every process this one starts (git included) inherits the marker, so
-	// a call made through delendai is an agent's whatever its host sets.
-	// The guard is the exception: it runs INSIDE git and judges the
-	// process that called git, not itself.
-	if (process.argv[2] !== 'guard') {
-		process.env[DELENDAI_SESSION_VARIABLE] ??= '1';
-	}
+	markDelendaiSession(process.argv.slice(2), process.env);
 	process.exitCode = await runEntry(process.argv.slice(2), process.cwd());
 }
