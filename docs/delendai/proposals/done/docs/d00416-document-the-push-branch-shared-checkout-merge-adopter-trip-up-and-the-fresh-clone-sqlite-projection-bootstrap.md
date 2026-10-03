@@ -2,13 +2,14 @@
 id: d00416
 title: "Document the push.branch × shared-checkout-merge adopter trip-up and the fresh-clone SQLite projection bootstrap"
 kind: docs
-status: review
+status: done
 type: proposal
 track: adopter-experience
 date: 2026-09-29
 last-transition-id: fb6e5d9f-fd4a-4e83-b027-289c68ef8b8e
-last-correlation-id: fb6e5d9f-fd4a-4e83-b027-289c68ef8b8e
-last-transition-from: in-progress
+last-transition-id: de6968f0-84ed-4e86-bc1c-ed237a4dabcb
+last-correlation-id: de6968f0-84ed-4e86-bc1c-ed237a4dabcb
+last-transition-from: review
 ---
 
 # d00416 — Document the push.branch × shared-checkout-merge adopter trip-up and the fresh-clone SQLite projection bootstrap
@@ -53,6 +54,10 @@ Observed live on Beateam/logistics-app 2026-09-29: a single config file trips tw
   - "Section 2 names the `state-database.corrupt`-on-fresh-clone behaviour, why the projection is rebuildable, and points at `proposals_db_reconcile` as the recovery."
   - "Each section cross-references the source it describes (with file:line of the validator and the projections' lifecycle section)."
 - shipped-in: `db98793fb4558f1f71fd667be84e82d675ac1ff5`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ### S2 — Link the new page from `docs/delendai/AGENT-BOOTSTRAP.md` and `docs/delendai/ADOPTER-SURFACE-MODE.md` so the next adopter finds it before they hit the error
 - **Status**: review — 2026-09-30. Added one discoverable line to each file:
@@ -71,6 +76,10 @@ Observed live on Beateam/logistics-app 2026-09-29: a single config file trips tw
   - "Both source files contain a discoverable link to `ADOPTER-CONFIG-FOOTGUNS.md`."
   - "The link is under a section that an adopter onboarding the project will read (config setup, not a contributor-only section)."
 - shipped-in: `c104a2522e42`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## acceptance
 
