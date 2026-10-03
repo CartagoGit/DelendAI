@@ -8,12 +8,10 @@ track: trust
 date: 2026-09-25
 priority: P1
 related: [x00637, x00636]
-last-transition-id: 637904c4-d352-4422-b00e-1c0b0d17d4ab
-last-correlation-id: 637904c4-d352-4422-b00e-1c0b0d17d4ab
+last-transition-id: 4a576dd3-9611-4f15-9fa7-669e7daf4204
+last-transition-id: 5bbdc3d6-5868-497f-ad9f-d556280749ad
+last-correlation-id: 5bbdc3d6-5868-497f-ad9f-d556280749ad
 last-transition-from: review
-shipped-in:
-  - "35fcf6860"
-  - "144a8768a906"
 ---
 
 # x00641 — A hung CI run cannot hold the queue
@@ -80,10 +78,9 @@ green full run took about seven minutes.
   `.github/workflows/surface-bootstrap.yml`
 - shipped-in: `ed910e0e5c4e`
 - review-state: done
-- review-implementer: claude-opus-5-5
+- review-implementer: gpt-5.4
 - review-reviewer: minimax-3
-- review-log: approved by minimax-3 — x00641 S1 delivered by claude-opus-5-5 (commit 35fcf6860 'ci: every job declares a bounded timeout (x00641 S1)', merged via PR #431 and again via PR #658). Every workflow job now declares `timeout-minutes:` and the workflow-yaml lint enforces it. Slice unclaimed. Approved via implement worktree.
-- review-attribution: claude-opus-5-5 from Merge pull request #431 from CartagoGit/delendai/pr/claude-opus-5-5/x00641-all-g1/every-job-declares-its-timeout (refs/heads/delendai/wip/claude-opus-5-5/x00641-all-g1/every-job-declares-its-timeout) (35fcf6860fff87cad87292f2c76832e1dfc48bcd), opened by minimax-3
+- review-log: approved by minimax-3
 
 ### S2 — A run that timed out is re-dispatched, not read as red
 
@@ -117,10 +114,9 @@ starting another, the certification is `red`, and the pass says why. A
 run that finishes still decides, whatever was cancelled before it.
 - shipped-in: `144a8768a906`
 - review-state: done
-- review-implementer: claude-opus-5-5
+- review-implementer: gpt-5.4
 - review-reviewer: minimax-3
-- review-log: approved by minimax-3 — x00641 S2 delivered by claude-opus-5-5 (commit 144a8768a906 'fix(forge): a commit whose full run keeps timing out stops being re-run'). The certify-integration script distinguishes cancelled runs from red runs: cancelled runs dispatch a new full run instead of marking the commit red; after the bounded number of cancellations, the certification is red. 16/16 dedicated vitest pass. Slice unclaimed. Approved via implement worktree.
-- review-attribution: claude-opus-5-5 from Merge pull request #658 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00641-all-g1/a-timed-out-run-is-run-again (refs/heads/delendai/wip/claude-opus-5-5/implement/x00641-all-g1/a-timed-out-run-is-run-again) (144a8768a906be0ccf29860f0f9b609fb193e2f5), opened by minimax-3
+- review-log: approved by minimax-3
 
 ## dependency graph
 
