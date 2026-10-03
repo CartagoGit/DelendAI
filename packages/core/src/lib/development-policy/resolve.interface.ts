@@ -13,6 +13,7 @@ export interface IDevelopmentConfigInput {
 	readonly workRefs?:
 		| { readonly visibility?: string | undefined }
 		| undefined;
+	readonly guard?: { readonly unknownActor?: string | undefined } | undefined;
 	readonly branches?:
 		| {
 				readonly namespacePrefix?: string | undefined;

@@ -23,6 +23,7 @@ import {
 } from '../contracts/interfaces/development-policy.interface';
 import type { IPublicationGranularity } from '../contracts/interfaces/publication-unit.interface';
 import { deriveCapabilities } from './derive';
+import { guardOverride } from './resolve-guard';
 import { releaseBranchOf } from './release-branch';
 import {
 	DEFAULT_DEVELOPMENT_PROFILE,
@@ -30,7 +31,6 @@ import {
 	isDevelopmentProfile,
 	WORK_REF_SHAPE,
 } from './profiles';
-
 import type {
 	IDevelopmentConfigInput,
 	ILegacyDevelopmentInput,
@@ -171,9 +171,9 @@ const applyOverrides = (
 	const defaultWorkRefPrefix =
 		workRefVisibility === 'visible' ? `heads/${ns}wip/` : `${ns}wip/`;
 	const defaultPublicationRefPrefix = `${ns}pr/`;
-
 	return {
 		...base,
+		...guardOverride(input.guard),
 		branches: {
 			namespacePrefix,
 			integration:

@@ -25,6 +25,7 @@ import {
 	type IDevelopmentPolicyViolation,
 	type IResolvedDevelopmentPolicy,
 } from '../contracts/interfaces/development-policy.interface';
+import { UNKNOWN_ACTORS } from '../contracts/interfaces/policy-guard.interface';
 import { DEVELOPMENT_PROFILES } from './profiles';
 import { policyAlignmentAdvisories } from './policy-alignment-advisories';
 import { persistenceRouteKind } from './resolve';
@@ -92,6 +93,14 @@ const validateVocabulary = (
 		GOVERNANCE_STRATEGIES,
 		out,
 	);
+	if (policy.guard !== undefined) {
+		oneOf(
+			'guard.unknownActor',
+			policy.guard.unknownActor,
+			UNKNOWN_ACTORS,
+			out,
+		);
+	}
 	oneOf(
 		'integration.mergeMethod',
 		policy.integration.mergeMethod,

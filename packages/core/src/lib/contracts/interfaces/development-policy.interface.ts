@@ -17,6 +17,7 @@
  */
 
 import type { IPolicyAdoption } from './policy-adoption.interface';
+import type { IPolicyGuard } from './policy-guard.interface';
 import type { IPolicyPublication } from './publication-unit.interface';
 /** How agents get a working tree to edit. */
 export const WORKSPACE_STRATEGIES = [
@@ -378,6 +379,7 @@ export interface IResolvedDevelopmentPolicy {
 	readonly coordination: IPolicyCoordination;
 	readonly recovery: IPolicyRecovery;
 	readonly governance: IPolicyGovernance;
+	readonly guard?: IPolicyGuard;
 }
 
 /** Current `IResolvedDevelopmentPolicy.version`. */

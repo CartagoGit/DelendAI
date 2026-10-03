@@ -1687,6 +1687,14 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-10-01"
+			},
+			{
+				"id": "x00870",
+				"title": "Every agent is held to the workflow, whatever its model or host",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-03"
 			}
 		]
 	}

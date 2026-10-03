@@ -9,6 +9,7 @@
  * for a project that declared none, and must not be told about a
  * release branch a one-branch project does not have.
  */
+import { AGENT_IDENTITY_INSTRUCTION } from '../contracts/constants/agent-environment.constant';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import { declareWorkflow } from './declare-workflow';
@@ -65,5 +66,6 @@ export const servedWorkModelLines = (
 			(step) => `${step.order}. ${step.instruction}`,
 		),
 		...singleBranchWarnings(policy).map((warning) => `Warning: ${warning}`),
+		AGENT_IDENTITY_INSTRUCTION,
 	];
 };
