@@ -2,12 +2,15 @@
 id: x00837
 title: "A file whose only change is a comment is not judged as new code"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-10-03
 priority: P2
 related: [x00836, r00040]
+last-transition-id: 062a5452-56c5-43d9-bfd6-cc24a213cc83
+last-correlation-id: 062a5452-56c5-43d9-bfd6-cc24a213cc83
+last-transition-from: in-progress
 ---
 
 # x00837 — A file whose only change is a comment is not judged as new code
@@ -52,6 +55,7 @@ is covered; a sentence about old code is not new code.
 - **Gate**: `npx vitest run tools/scripts/ci/changed-file-coverage.script.spec.ts`
 - `behaviourOf` drops comments that stand on their own lines before it drops
   the imports; a trailing comment on a line of code is kept with the line.
+- shipped-in: `2c0b99381aba`
 
 ## dependency graph
 
