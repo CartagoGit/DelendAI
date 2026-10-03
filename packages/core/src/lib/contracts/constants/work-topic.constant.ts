@@ -6,3 +6,9 @@
  * commits, not its name.
  */
 export const MAX_WORK_TOPIC_LENGTH = 48;
+
+/** The topic of a unit whose proposal has no document to take words from. */
+export const DEFAULT_WORK_TOPIC = 'work';
+
+/** The one topic of a review pack: the tools name it, not each reviewer. */
+export const REVIEW_PACK_TOPIC = 'verdicts';
