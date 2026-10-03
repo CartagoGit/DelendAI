@@ -9,6 +9,8 @@ date: 2026-09-29
 last-transition-id: c49277a1-8f54-417a-9bb1-0e4d915c496f
 last-correlation-id: c49277a1-8f54-417a-9bb1-0e4d915c496f
 last-transition-from: in-progress
+shipped-in:
+  - "6f377971d124c8a9bc2598968cadf8fa69164711"
 ---
 
 # x00759 — Every agent is told its project's work model before it works
@@ -44,7 +46,7 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
 - global_gate: type
 
 ### S1 — One renderer states the work model wherever an agent connects
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/development-policy/declare-workflow.interface.ts`, `packages/core/src/lib/prompts/agent-policy-instructions.helper.ts`, `packages/core/src/lib/prompts/agent-bootstrap.prompt.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/tools/overview-tool.ts`, `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`, `packages/core/tests/src/lib/prompts/agent-policy-instructions.helper.spec.ts`, `packages/core/tests/src/lib/prompts/agent-bootstrap.prompt.spec.ts`, `packages/core/tests/src/lib/cli/core-meta-tools.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-publish-next-action.spec.ts`, `plugins/proposals/tests/src/lib/plugin-register-wiring.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -52,8 +54,10 @@ In a consumer project on `shared-checkout-merge` (integration branch develop), a
   - "The compact overview carries the profile, how to start work and how work lands, within its token budget."
   - "Under shared-checkout-merge the lines say work merges into the integration branch after the local gate and that no pull request is opened; under shared-checkout-pr they say pull request; under shared-direct they say direct commit."
 - shipped-in: `6f377971d124`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: MiniMaxM3
+- review-log: approved by MiniMaxM3 — x00759 S1 delivered at 6f377971d124 (fix(policy): every agent is told its project's work model before it works): declare-workflow.ts is the one renderer; connect-time instructions and agent_bootstrap share them; per-profile prose tested across declare-workflow + agent-policy-instructions + agent-bootstrap + core-meta-tools + proposal-publish-next-action. 110/110 tests green.
 
 ### S2 — A refusal names the profile and its next step
 - **Status**: review
