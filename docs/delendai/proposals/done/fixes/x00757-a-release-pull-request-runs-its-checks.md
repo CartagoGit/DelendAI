@@ -2,15 +2,17 @@
 id: x00757
 title: "A release pull request runs its checks"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P0
 related: [x00753]
-last-transition-id: 8afb7e76-3d5c-46ad-85d7-a018e12fe076
-last-correlation-id: 8afb7e76-3d5c-46ad-85d7-a018e12fe076
-last-transition-from: in-progress
+last-transition-id: 787b1b3d-0b53-482a-bc66-d564e2d82d6e
+last-correlation-id: 787b1b3d-0b53-482a-bc66-d564e2d82d6e
+last-transition-from: review
+shipped-in:
+  - "b28c3883ac9e"
 ---
 
 # x00757 — A release pull request runs its checks
@@ -50,12 +52,17 @@ None.
 
 ### S1 — The queue releases the branch model's parked runs
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - **Files**:
   - `tools/scripts/forge/keep-the-queue-moving.script.ts`
   - `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - shipped-in: `b28c3883ac9e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at b28c3883ac9e ("fix(forge): a release pull request runs its checks"). keep-the-queue-moving.script.spec.ts 22/22 covers armCandidates x00575/x00554-S1 and branchModelPulls finding the promotion and the forward sync.
+- review-attribution: claude-opus-5-5 from Merge pull request #652 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00757-all-g1/a-release-runs-its-checks (refs/heads/delendai/wip/claude-opus-5-5/implement/x00757-all-g1/a-release-runs-its-checks) (b28c3883ac9e9b70579af386fb8507b26aea36b3), opened by minimax-m3
 
 ## dependency graph
 
