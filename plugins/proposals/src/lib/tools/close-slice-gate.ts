@@ -26,6 +26,7 @@ import {
 	systemGateProcess,
 } from './close-slice-gate-process';
 import {
+	CLOSE_GATE_DEFAULT_MAX_CONCURRENT,
 	CLOSE_GATE_DEFAULT_TIMEOUT_MS,
 	CLOSE_GATE_DEFAULT_WAIT_MS,
 } from '../contracts/constants/close-slice-gate.constant';
@@ -39,6 +40,7 @@ import type {
 import {
 	clearJob,
 	jobDirectory,
+	liveGateHandles,
 	prepareJobDirectory,
 	readGreenVerdict,
 	readJob,
@@ -232,15 +234,58 @@ const attachOrStart = (
 				handle,
 				tree,
 				reused: true,
+				certifiedBy: 'recorded-gate' as const,
+				evidence: `the gate passed on this tree at ${green.passedAt}`,
 				findings: [],
 			};
 		}
 		const job = await readJob(dir);
 		return job === undefined
-			? startRun(dir, handle, tree, steps, deps, resolved)
+			? admitAndStart(dir, handle, tree, steps, deps, resolved)
 			: evaluateRun(dir, job, resolved);
 	});
 };
+
+/**
+ * One machine runs a bounded number of local gates: the others wait their
+ * turn rather than racing for its cores until every one of them times out.
+ * Admission is decided under one store-wide mutex, so two callers cannot
+ * both see a free slot. The heavy steps themselves still take the
+ * project's compute lock (the `with-compute-lock` wrappers its scripts
+ * use); holding that same lock around the whole gate would deadlock the
+ * gate against its own steps.
+ */
+const admitAndStart = (
+	dir: string,
+	handle: string,
+	tree: string,
+	steps: readonly ICloseGateStep[],
+	deps: ICloseGateDeps,
+	resolved: IResolvedDeps,
+): Promise<ICloseGateVerdict> =>
+	withFileMutex(join(deps.storeRoot, 'admission'), async () => {
+		const limit =
+			deps.maxConcurrentGates ?? CLOSE_GATE_DEFAULT_MAX_CONCURRENT;
+		const running = await liveGateHandles(
+			deps.storeRoot,
+			handle,
+			resolved.processPort.isAlive,
+		);
+		if (running.length >= limit) {
+			return {
+				state: 'pending' as const,
+				handle,
+				tree,
+				reused: false,
+				findings: [
+					`${running.length} other gate run${running.length === 1 ? ' is' : 's are'} using this machine (${running.join(', ')}; at most ${limit} at once); this one is queued, call close_slice again`,
+				],
+				nextAction:
+					'Another local gate holds the machine. Call close_slice again once it finishes; if the work is published, CI may already certify it and close_slice then closes without a local run.',
+			};
+		}
+		return startRun(dir, handle, tree, steps, deps, resolved);
+	});
 
 /**
  * Run (or resume) the project's declared gate against the current tree.
@@ -255,12 +300,6 @@ export const runCloseSliceGate = async (
 		timeoutMs: deps.timeoutMs ?? CLOSE_GATE_DEFAULT_TIMEOUT_MS,
 		now: deps.now ?? Date.now,
 	};
-	const steps = await declaredGateSteps(deps.readDeclaration, scopes);
-	if (steps.length === 0) {
-		return unverifiable(
-			'the project declares no gate (validationMatrix.scopes in delendai.config.json, or a validate script), so nothing was verified',
-		);
-	}
 	const ownState = (deps.stateRoots ?? [deps.storeRoot])
 		.map((root) => relative(deps.cwd, root))
 		.filter(
@@ -277,6 +316,41 @@ export const runCloseSliceGate = async (
 			'the checkout is not a git tree git can fingerprint, so a result could not be tied to it',
 		);
 	}
+	// Someone may already have certified exactly this tree: the forge for a
+	// pull-request route, the landing for a merge route.
+	const existing = await deps.certification?.(tree);
+	if (existing?.state === 'certified') {
+		return {
+			state: 'pass',
+			tree,
+			reused: true,
+			certifiedBy: existing.source,
+			evidence: existing.evidence,
+			findings: [],
+		};
+	}
+	if (existing?.state === 'failed') {
+		return {
+			state: 'fail',
+			tree,
+			reused: false,
+			findings: [existing.evidence],
+			nextAction: existing.nextAction,
+		};
+	}
+	const missing = existing?.state === 'none' ? existing : undefined;
+	const steps = await declaredGateSteps(deps.readDeclaration, scopes);
+	if (steps.length === 0) {
+		return unverifiable(
+			[
+				'the project declares no gate (validationMatrix.scopes in delendai.config.json, or a validate script), and nothing already certifies this tree, so nothing was verified',
+				...(missing?.missing ?? []),
+			].join('; '),
+			missing === undefined
+				? { tree }
+				: { tree, nextAction: missing.nextAction },
+		);
+	}
 	const sleep = deps.sleep ?? delay;
 	const deadline =
 		resolved.now() + (deps.waitMs ?? CLOSE_GATE_DEFAULT_WAIT_MS);
@@ -285,5 +359,13 @@ export const runCloseSliceGate = async (
 		await sleep(POLL_INTERVAL_MS);
 		verdict = await attachOrStart(deps, resolved, tree, steps);
 	}
-	return verdict;
+	// A gate that gave no pass says what else would have certified the tree.
+	return (verdict.state !== 'pending' && verdict.state !== 'unverifiable') ||
+		missing === undefined
+		? verdict
+		: {
+				...verdict,
+				findings: [...verdict.findings, ...missing.missing],
+				nextAction: verdict.nextAction ?? missing.nextAction,
+			};
 };
