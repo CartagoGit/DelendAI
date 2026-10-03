@@ -199,6 +199,23 @@ ${slices}`,
 			const handler = await captureHandler(
 				buildReviewRegistration(options(overrides)),
 			);
+			// A verdict is recorded in its reviewer's unit: a reviewer still
+			// on the integration branch enters one, as `review next` does.
+			const verdict =
+				args.action === 'approve' || args.action === 'request_changes';
+			if (
+				verdict &&
+				git('rev-parse', '--abbrev-ref', 'HEAD') === 'develop'
+			) {
+				const unit = `delendai/wip/${String(args.agent)}/review/batch-all-g1/backlog`;
+				if (git('branch', '--list', unit).trim().length === 0) {
+					git('switch', '-q', '-c', unit);
+				} else if (
+					!git('worktree', 'list', '--porcelain').includes(unit)
+				) {
+					git('switch', '-q', unit);
+				}
+			}
 			return handler({ proposalId: 'x00001', sliceId: 'S1', ...args });
 		},
 		cleanup: () => rmSync(root, { recursive: true, force: true }),

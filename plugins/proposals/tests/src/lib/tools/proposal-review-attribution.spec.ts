@@ -369,7 +369,14 @@ describe("a verdict recorded from a reviewer's own worktree", () => {
 		repo.git('add', '-A', 'docs');
 		repo.git('commit', '-q', '--no-verify', '-m', 'proposal in review');
 		const worktree = join(repo.root, '.worktrees', 'x00001-review');
-		repo.git('worktree', 'add', '-q', '-b', 'reviewer-unit', worktree);
+		repo.git(
+			'worktree',
+			'add',
+			'-q',
+			'-b',
+			'delendai/wip/agent-b/review/batch-all-g1/backlog',
+			worktree,
+		);
 		mkdirSync(join(worktree, '.cache/delendai/proposals'), {
 			recursive: true,
 		});

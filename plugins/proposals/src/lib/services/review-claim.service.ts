@@ -117,8 +117,8 @@ export const claimForReview = async (
 
 /**
  * A verdict in a review unit claims what it judges. `undefined` when the
- * verdict may go on (claimed now, already held here, or not written in a
- * review unit at all); otherwise why not, and what to do instead.
+ * verdict may go on (claimed now, already held here, or in a project
+ * that has no work refs); otherwise why not, and what to do instead.
  */
 export const verdictClaimRefusal = async (
 	run: IGitRunner,
@@ -127,7 +127,18 @@ export const verdictClaimRefusal = async (
 	integration: string,
 	namespacePrefix: string,
 ): Promise<IVerdictClaimRefusal | undefined> => {
-	if (!(await inReviewUnit(run, shape))) return undefined;
+	if (!(await inReviewUnit(run, shape))) {
+		// A project with no work refs has no unit to write in. One that has
+		// them keeps every verdict in its reviewer's unit: written anywhere
+		// else, it sits in a tree other agents are editing, is committed by
+		// whoever commits there next, and reaches no pull request.
+		return shape === undefined || shape.workRefTemplate.length === 0
+			? undefined
+			: {
+					reason: `A verdict on ${proposalId} is recorded in the reviewer's own review unit, and this checkout is not one.`,
+					nextAction: `Enter your review unit — the \`work\` tool { action: "enter", kind: "review", proposal: "batch", slice: "all", agent } (or \`delendai review next --agent=<you>\`) — and pass the worktree it gives you as \`checkout\`. Nothing was written here.`,
+				};
+	}
 	const outcome = await claimForReview(run, shape, proposalId, integration);
 	if (outcome.kind === 'held') {
 		return {
