@@ -88,6 +88,11 @@ project opted in.
   - `packages/core/tests/src/lib/prompts/agent-bootstrap.prompt.spec.ts`
   - `docs/delendai/PLUGIN-CONFIGURATION-GUIDE.md`
 - shipped-in: `53053d1c4de3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — Slice delivers the agent policy through MCP server instructions. commit 53053d1c4de3cb9f164e45ee46ea0bf2e4c59c2b adds agentPolicyInstructions helper (packages/core/src/lib/prompts/agent-policy-instructions.helper.ts), wires it through assemble.ts -> createMcpProject.ts -> McpServer({ instructions }), and shares the lines with the agent_bootstrap prompt + the client catalog service. default autonomous=false (collaborative/ask) per DEFAULT_AGENT_POLICY; autonomous:true (decide and carry on) reachable through core.agentPolicy. gate: npx vitest run packages/core/tests/src/lib/prompts => 15/15 passed, exit 0. acceptance: server instructions carry policy text, default is collaborative, prompt + client share the same lines.
+- review-attribution: claude-opus-5-5 from Merge pull request #642 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00751-all-g1/the-agent-policy-reaches-every-agent (refs/heads/delendai/wip/claude-opus-5-5/implement/f00751-all-g1/the-agent-policy-reaches-every-agent) (53053d1c4de3cb9f164e45ee46ea0bf2e4c59c2b), opened by minimax-3
 
 ## dependency graph
 

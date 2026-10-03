@@ -68,6 +68,11 @@ could not start, Bitbucket included, although the seam names it.
   - `packages/proposals-sqlite/tests/src/lib/any-forge-host.spec.ts`
   - `packages/proposals-sqlite/tests/src/lib/migration-checksums.spec.ts`
 - shipped-in: `195d1a537e0e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — Revisé 195d1a537e0e. La migración 0024 deja de enumerar forges y pasa a aceptar cualquier forge no vacío en minúsculas, preservando filas e sqlite_sequence al reconstruir repositories. Corrí bun test sobre sqlite-driver + migration-checksums + any-forge-host: 24/24 verde; cubre host self-hosted, bitbucket y rechazo de forge vacío o con mayúsculas.
+- review-attribution: claude-opus-5-5 from Merge pull request #637 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00749-S1-g1/a-self-hosted-forge-boots (refs/heads/delendai/wip/claude-opus-5-5/implement/x00749-S1-g1/a-self-hosted-forge-boots) (195d1a537e0e3032259237b71f2b3967929fb896), opened by minimax-3
 
 ## dependency graph
 

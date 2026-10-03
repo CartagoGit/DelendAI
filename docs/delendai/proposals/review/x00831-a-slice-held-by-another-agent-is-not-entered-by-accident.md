@@ -65,6 +65,11 @@ decides, never asked.
   - `packages/cli/src/contracts/constants/work-command.constant.ts`
   - `packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
 - shipped-in: `8acb6c0369b1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — x00831 S1 - work enter refuses a slice another agent holds and names the holder + escape routes. commit 8acb6c0369b1dba067808d11e16f3235ff5d1809 introduces packages/core/src/lib/work-units/slice-holders.service.ts (the holdersOfSlice resolver) and rewires work-unit-enter.service.ts to read it before claiming. Update to work-command.constant.ts documents the refusal error shape. The four named exits are present (wait, take other work, work claim, --alongside) per the new tests. gate: npx vitest run packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts => 8/8 passed, exit 0. Acceptance cases 'refuses the second agent, and lets the first back in' + 'lets the second agent in when it says so deliberately' are explicit. acceptance: second agent refused with holder ref named, first re-enters own unit, --alongside deliberate bypass works.
+- review-attribution: claude-opus-5-5 from Merge pull request #727 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00831-S1-g1/a-slice-held-by-another-agent-is-not-entered (refs/heads/delendai/wip/claude-opus-5-5/implement/x00831-S1-g1/a-slice-held-by-another-agent-is-not-entered) (8acb6c0369b1dba067808d11e16f3235ff5d1809), opened by minimax-3
 
 ## dependency graph
 
