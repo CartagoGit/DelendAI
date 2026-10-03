@@ -2,13 +2,15 @@
 id: x00768
 title: "Branch tools and proposal publication follow the configured policy"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-30
-last-transition-id: f69f56ad-dc10-43ab-bcfc-007c0cc70750
-last-correlation-id: f69f56ad-dc10-43ab-bcfc-007c0cc70750
-last-transition-from: in-progress
+last-transition-id: 24b28eb3-6152-4cb8-9397-bf98b0133d4a
+last-correlation-id: 24b28eb3-6152-4cb8-9397-bf98b0133d4a
+last-transition-from: review
+shipped-in:
+  - "8c1becdb89ec"
 ---
 
 # x00768 — Branch tools and proposal publication follow the configured policy
@@ -31,7 +33,7 @@ An audit found plugins/proposals hardcodes defaultBaseBranch develop and agent/ 
 - global_gate: none
 
 ### S1 — Policy-derived branch namespaces, verdict-classified gc, merge-profile proposal landing
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/agents/derive-agent-sessions.service.ts`, `packages/core/src/lib/contracts/interfaces/agent-session.interface.ts`, `packages/core/src/lib/ref-lifecycle/branch-delivery.service.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/agents/derive-agent-sessions.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/branch-delivery.spec.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/contracts/constants/agent-branch-convention.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/locks/engine.ts`, `plugins/proposals/src/lib/locks/lock-paths.ts`, `plugins/proposals/src/lib/shared/branch-gc-engine.ts`, `plugins/proposals/src/lib/shared/branch-namespaces.ts`, `plugins/proposals/src/lib/shared/branch-status-engine.ts`, `plugins/proposals/src/lib/shared/swarm-hygiene-engine.ts`, `plugins/proposals/src/lib/swarm/validation-activity.resolver.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/src/lib/tools/branch-gc.tool.ts`, `plugins/proposals/src/lib/tools/branch-status.tool.ts`, `plugins/proposals/src/lib/tools/proposal-publish-next-action.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/tools/swarm-hygiene.tool.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`, `plugins/proposals/tests/src/lib/shared/branch-gc-engine.spec.ts`, `plugins/proposals/tests/src/lib/tools/branch-tools-follow-policy.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-publish-next-action.spec.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,8 +41,10 @@ An audit found plugins/proposals hardcodes defaultBaseBranch develop and agent/ 
   - "branch_gc removes only worktrees whose ref the ref-lifecycle verdict marks as delivered"
   - "a proposal created under shared-checkout-merge is landed or reports a concrete nextAction"
 - shipped-in: `8c1becdb89ec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — S1 delivered as specified. (1) branch_status/branch_gc/swarm_hygiene now resolve base branch and prefixes from the resolved policy — new shared/branch-namespaces.ts (workRefPrefix + publicationRefPrefix + agent/, deduped) replaces the hardcoded agent/ filter; proven by the new branch-tools-follow-policy.spec.ts against an acme/trunk temp project. (2) branch_gc plans removal only when branchDeliveryVerdict (new core ref-lifecycle/branch-delivery.ts on reconcileRefs) marks the ref delivered; a merged-but-unpublished publication branch is skipped with reason 'undelivered' and a foreign merged branch is never removed — both tested. (3) Under shared-checkout-merge, proposal landing reports a concrete nextAction spelling work checkpoint + work publish with the proposal's id and path (proposal-publish-next-action.ts). Gate: typecheck exit 0. Tests: 6/6 pass in the new spec. Non-goals respected: agent_worktree model, protected-branch defaults and doctor/init work untouched. Judged on the delivered state; later commits that touched these files are separate proposals' work.
 
 ## acceptance
 
