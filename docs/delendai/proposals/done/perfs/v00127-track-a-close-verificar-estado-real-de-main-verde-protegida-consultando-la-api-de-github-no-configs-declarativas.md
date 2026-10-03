@@ -2,7 +2,7 @@
 id: v00127
 title: "Track A.close — Verificar estado real de `main` (verde + protegida) consultando la API de GitHub, no configs declarativas"
 kind: perf
-status: review
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -24,8 +24,9 @@ related:
     - c00145 # protectedBranches default main-only (predecesor — el plugin debe coincidir con main)
     - x00272 # bloquea push directo a main (predecesor — driver de la invariante a verificar)
 last-transition-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
-last-correlation-id: 0df5f5db-dfbf-4ee2-a92d-7b2265c41a73
-last-transition-from: in-progress
+last-transition-id: ba620d82-8a0f-46d6-85b9-0fab17604a82
+last-correlation-id: ba620d82-8a0f-46d6-85b9-0fab17604a82
+last-transition-from: review
 ---
 
 # v00127 — Track A.close: verificar `main` verde y protegida en GitHub (API real)
@@ -231,6 +232,10 @@ abre issue — es observación, nunca gate.
 - **Gate**: type + test passing
 - **Depends on**: `c00144`, `c00132`, `c00133`.
 - shipped-in: `19218caf5a6b3b13379f358e00b5749560b55d35`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ### S2 — Wire a dashboard
 
@@ -264,6 +269,10 @@ abre issue — es observación, nunca gate.
   no visual surface to gate on).
 - **Depends on**: S1.
 - shipped-in: `a801eb344c89`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ### S3 — Supersede `v00125` y enlazar en `AGENT-BOOTSTRAP.md`
 
@@ -284,6 +293,10 @@ abre issue — es observación, nunca gate.
 - **Gate**: docs lint + `lint:prompt-size`.
 - **Depends on**: S1.
 - shipped-in: `a801eb344c89`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3
 
 ## acceptance
 
