@@ -1692,7 +1692,7 @@
 				"id": "x00835",
 				"title": "A review swarm leaves verdicts that can be checked, and loses none",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-03"
 			}
