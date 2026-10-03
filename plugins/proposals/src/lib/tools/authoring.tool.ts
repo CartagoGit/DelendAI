@@ -518,37 +518,6 @@ const isFreshValidateEvidence = (evidence: IValidateEvidence): boolean =>
 	isEvidenceFresh(evidence);
 
 /**
- * a00069 S5 — read the most recent validate.jsonl row for the slice
- * from `.cache/delendai/results/logs/validate.jsonl`. Returns null
- * when no row is fresh enough. Reuses the same shape proposal_transition
- * already accepts.
- */
-const readValidateEvidenceFromDisk = async (
-	options: IAuthoringToolOptions & {
-		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
-	},
-): Promise<IValidateEvidence | null> => {
-	// a00069 S5: read the most recent fresh validate row. Production
-	// path uses the JSONL reader the host injects via `validateEvidenceDeps`;
-	// tests that do not wire deps skip the disk check (return null) and
-	// rely on inline evidence instead.
-	const logPath = options.validateEvidenceLogPath;
-	if (logPath === undefined) return null;
-	const rows = await options.validateEvidenceDeps?.readValidateLog?.(logPath);
-	if (rows === undefined || rows.length === 0) return null;
-	const last = rows[rows.length - 1];
-	if (last === undefined) return null;
-	const lastTs = last.timestamp ?? last.ts;
-	const lastExit = last.exitCode;
-	if (lastTs === undefined || lastExit === undefined) return null;
-	if (lastExit !== 0) return null;
-	if (!isEvidenceFresh({ timestamp: lastTs })) {
-		return null;
-	}
-	return { timestamp: lastTs, exitCode: lastExit, logPath };
-};
-
-/**
  * Regex fragment matching a slice id in either case (`s1`/`S1`), so
  * close_slice keeps finding blocks in legacy lowercase documents and in
  * the canonical uppercase form regardless of how the caller spelled it.
@@ -1493,49 +1462,41 @@ export const buildCloseSliceRegistration = (
 					pushed: false,
 					mode: 'none',
 				};
-				// a00069 S5: validate-required gate. When the slice block
-				// carries a gate that demands a green validate (type / e2e
-				// / explicit `bun run validate`) and the caller has not
-				// attached FRESH `validateEvidence`, refuse to flip the
-				// slice. Inline-stale evidence is also a blocker so the
-				// caller cannot ship a fake timestamp. `force` and
-				// `requireValidateEvidence: false` remain in effect. Reads
-				// the file OUTSIDE the mutex — the body never changes
-				// between the gate and the write because no other agent
-				// holds the lock yet.
+				// One decision for "is this tree verified": the tree-keyed close
+				// gate (`runQuality`) answers it from the certification that
+				// already exists for the exact tree (the forge's checks, the
+				// landing's) or a recorded local result. Explicit, fresh,
+				// green `validateEvidence` is one more source it accepts, so a
+				// slice whose gate demands a validate closes from it when the
+				// gate gives no verdict; a red verdict still blocks. With no
+				// gate wired, a slice that
+				// demands a validate has no source at all and is refused.
+				let explicitEvidenceAccepted = false;
 				if (
 					args.force !== true &&
 					scoped.requireValidateEvidence !== false
 				) {
 					const gateProbe = await readTextOrNull(docPath);
-					if (gateProbe !== null) {
-						const blockForGate = extractSliceBlockForGate(
-							gateProbe,
-							canonicalId,
-						);
-						const gateDemands = gateHardRequiresValidate(
-							blockForGate ?? '',
-						);
-						const inlineEvidence = args.validateEvidence;
-
-						const inlineOk =
-							inlineEvidence !== undefined &&
-							isFreshValidateEvidence(inlineEvidence);
-						const diskEvidence = gateDemands
-							? await readValidateEvidenceFromDisk(scoped)
-							: null;
-						const diskOk = diskEvidence !== null;
-						// Reject when the gate demands validate AND no fresh
-						// evidence exists anywhere (inline or on disk).
-						if (gateDemands && !inlineOk && !diskOk) {
+					const blockForGate =
+						gateProbe === null
+							? null
+							: extractSliceBlockForGate(gateProbe, canonicalId);
+					if (gateHardRequiresValidate(blockForGate ?? '')) {
+						explicitEvidenceAccepted =
+							args.validateEvidence !== undefined &&
+							isFreshValidateEvidence(args.validateEvidence);
+						if (
+							!explicitEvidenceAccepted &&
+							typeof scoped.runQuality !== 'function'
+						) {
 							return toolErrorEnvelope({
 								ok: false as const,
 								kind: 'validation-error' as const,
 								blockerType: 'validate-required' as const,
 								error: {
-									reason: `slice "${args.sliceId}" requires recent validate evidence before close_slice may flip it (gate requires \`delendai validate\`). Pass { validateEvidence: { timestamp, exitCode: 0, logPath } } or run \`bun run validate\` first, then retry.`,
+									reason: `slice "${args.sliceId}" has a gate that demands a verified tree, and nothing verifies this one: no certification of the tree, no recorded gate result, and no fresh passing validateEvidence.`,
 									nextAction:
-										'Pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path-to-validate.jsonl> } } or set `force: true` to skip the gate.',
+										'Publish the unit (`delendai work publish`), wait for the required checks to certify the exact tree, then retry close_slice; or pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path> } } from a validate run of this tree.',
 									kind: 'validation-error' as const,
 								},
 								proposalId: entry.id,
@@ -1657,13 +1618,22 @@ export const buildCloseSliceRegistration = (
 									: undefined,
 							);
 							closeGate = quality.gate;
-							if (quality.severity === 'error') {
-								const gateKind =
-									quality.gate?.state === 'pending'
-										? ('gate-pending' as const)
-										: quality.gate?.state === 'unverifiable'
-											? ('gate-unverifiable' as const)
-											: ('quality-failed' as const);
+							const gateKind =
+								quality.gate?.state === 'pending'
+									? ('gate-pending' as const)
+									: quality.gate?.state === 'unverifiable'
+										? ('gate-unverifiable' as const)
+										: ('quality-failed' as const);
+							// A red result always blocks. A gate that gave no
+							// verdict (still running, or nothing to verify
+							// with) is exactly what explicit evidence covers.
+							const coveredByExplicitEvidence =
+								explicitEvidenceAccepted &&
+								gateKind !== 'quality-failed';
+							if (
+								quality.severity === 'error' &&
+								!coveredByExplicitEvidence
+							) {
 								const err: ICloseSliceThrownError =
 									Object.assign(
 										new Error(

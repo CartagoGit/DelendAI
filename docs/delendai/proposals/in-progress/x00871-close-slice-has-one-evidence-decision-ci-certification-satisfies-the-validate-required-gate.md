@@ -23,7 +23,8 @@ Merged proposals with green CI could not close type/e2e-gated slices: the older 
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing what `force: true` does for callers that pass it deliberately; only the guidance stops pointing at it.
+- The declared gate, the certification readers and the landing routes (they already decide per route).
 
 ## Slices
 
@@ -31,7 +32,7 @@ Merged proposals with green CI could not close type/e2e-gated slices: the older 
 
 ### S1 — Unify the validate-evidence decision
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-ci-evidence.e2e.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/tests/src/lib/e2e/close-slice-ci-evidence.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "a type-gated slice closes from CI certification of the exact tree"
