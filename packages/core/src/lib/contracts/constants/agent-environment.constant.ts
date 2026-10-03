@@ -56,4 +56,4 @@ export const AGENT_ENVIRONMENT_MARKERS: readonly string[] = [
  * a unit is.
  */
 export const AGENT_IDENTITY_INSTRUCTION =
-	'Whatever your model or host, these rules bind you. Set DELENDAI_AGENT_ID to your exact model id (the one you run as, e.g. `glm-5.3-flash` for GLM 5.3 Flash; never a shortened, invented or borrowed id) before any delendai or git call; a shell with no declared agent is held to the same rules where the project says unidentified actors are agents.';
+	'Whatever your model or host, these rules bind you. Set DELENDAI_AGENT_ID to your exact model id (the one you run as, e.g. `glm-5.3-flash` for GLM 5.3 Flash; never a shortened, invented or borrowed id) before any delendai or git call (a re-spelling of an identity already at work is refused); a shell with no declared agent is held to the same rules where the project says unidentified actors are agents.';
