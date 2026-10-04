@@ -145,6 +145,8 @@ describe('work retire', () => {
 		expect(forge('rev-parse', `refs/delendai/retired/${UNIT}`)).toBe(tip);
 		expect(forge('for-each-ref', 'refs/heads/delendai')).toBe('');
 		expect(git('branch', '--list', WORK)).toBe('');
+		// Nothing of it stays in the clone, not even the ref that kept it.
+		expect(git('for-each-ref', 'refs/delendai')).toBe('');
 		// The work comes back from the forge alone.
 		git('fetch', '-q', 'origin', `refs/delendai/retired/${UNIT}`);
 		expect(git('rev-parse', 'FETCH_HEAD')).toBe(tip);
