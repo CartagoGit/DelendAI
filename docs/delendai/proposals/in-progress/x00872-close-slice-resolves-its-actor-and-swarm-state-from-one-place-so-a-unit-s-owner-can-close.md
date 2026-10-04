@@ -31,9 +31,9 @@ Seven finished proposals cannot be handed to review through the tools because ev
 - global_gate: none
 
 ### S1 — Resolve the closing actor and compare task ids canonically
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/swarm/close-actor.resolver.ts`, `plugins/proposals/src/lib/swarm/validation-provider.ts`, `plugins/proposals/src/lib/services/close-blocker.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/swarm/validation-provider.spec.ts`, `plugins/proposals/tests/src/lib/swarm/close-actor.resolver.spec.ts`, `plugins/proposals/tests/src/lib/services/close-blocker.spec.ts`, `plugins/proposals/src/lib/contracts/interfaces/close-actor.interface.ts`, `plugins/proposals/tests/src/lib/e2e/close-slice-actor.e2e.spec.ts`, `tools/scripts/lint/check-stray-cache-files.script.ts`, `tools/scripts/lint/check-stray-cache-files.script.spec.ts`
-- **Gate**: none
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/swarm/close-actor.resolver.spec.ts plugins/proposals/tests/src/lib/e2e/close-slice-actor.e2e.spec.ts plugins/proposals/tests/src/lib/services/close-blocker.spec.ts`
 - acceptance:
   - "a claim spelled proposal/slice satisfies the gate for the slice proposal-SLICE"
   - "the actor is resolved from the agent argument, then DELENDAI_AGENT_ID, then the checkout's work ref"
