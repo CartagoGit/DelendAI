@@ -2,15 +2,15 @@
 id: x00758
 title: "The release carries no new code-scanning alert"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-09-29
 priority: P0
 related: []
-last-transition-id: d6690454-064e-4d98-be3e-157636f01d5b
-last-correlation-id: d6690454-064e-4d98-be3e-157636f01d5b
-last-transition-from: review
+last-transition-id: 464b2e4c-c80f-4d0b-ae82-c6cbb74bcc13
+last-correlation-id: 464b2e4c-c80f-4d0b-ae82-c6cbb74bcc13
+last-transition-from: in-progress
 ---
 
 # x00758 — The release carries no new code-scanning alert
@@ -219,6 +219,7 @@ at its cause:
   after a release, `zombie-reconcile` skipped the watchdog event
   (`continue`) instead of counting the lock as released, as it did before
   the read moved to `readLockText`.
+- shipped-in: `b959235f4556`
 
 ## dependency graph
 
