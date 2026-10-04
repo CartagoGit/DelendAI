@@ -39,6 +39,8 @@ Seven finished proposals cannot be handed to review through the tools because ev
   - "the actor is resolved from the agent argument, then DELENDAI_AGENT_ID, then the checkout's work ref"
   - "the owner of the unit the checkout is on is active for that unit's slices without a claim"
   - "a refusal names the resolved actor and the files it read, and only suggests a claim when none exists"
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
