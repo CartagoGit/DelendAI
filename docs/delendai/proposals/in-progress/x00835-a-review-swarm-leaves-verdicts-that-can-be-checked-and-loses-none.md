@@ -498,14 +498,16 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S16 — The run knows who joined it
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/tools/work-unit.tool.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/tools/work-unit.tool.spec.ts`
-- An agent registers its canonical model id and instance when it first calls
-  delendai in a session; the id must match the running model's declared id
-  (family, version and tier), not free text (E17, E18). `work swarm` lists
-  every registered agent with what it produced, so an agent that joined and
-  produced nothing, or worked under another name, shows.
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/swarm-roster.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/contracts/interfaces/swarm-roster.interface.ts`, `packages/core/tests/src/lib/work-units/swarm-roster.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/swarm-roster.service.spec.ts`
+- Every agent that enters a unit leaves a lease, whether or not it commits.
+  `work swarm` lists the agents of the run from the leases and the refs:
+  how many instances of each, its units, its commits and what waits to
+  land. One that joined and produced nothing is listed, and says so (E17).
+- One model under two names is refused on the way in (S3). Checking that a
+  declared id is the model actually running needs the host to state it;
+  nothing here can tell `qwen3-flash` from the model it is (E18).
 
 ### S17 — A storm can be replayed
 

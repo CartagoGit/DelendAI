@@ -12,6 +12,7 @@ import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
+import { describeRoster, rosterOf } from './swarm-roster.service';
 import { describeSwarm, readSwarm } from './work-swarm.service';
 import {
 	countStandings,
@@ -133,12 +134,17 @@ export const swarm = async (
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const view = readSwarm({ root: opened.root, policy: opened.policy });
+	const agents = rosterOf(
+		view,
+		await readUnitStandings({ root: opened.root, policy: opened.policy }),
+	);
+	const data = { ...view, agents };
 	if (ctx.globals.json || ctx.globals.format === 'json') {
-		return { code: EXIT_CODE.OK, data: view };
+		return { code: EXIT_CODE.OK, data };
 	}
-	const lines = describeSwarm(view);
+	const lines = [...describeSwarm(view), ...describeRoster(agents)];
 	process.stdout.write(`${lines.join('\n')}\n`);
-	return { code: EXIT_CODE.OK, data: view, suppressDefaultPrint: true };
+	return { code: EXIT_CODE.OK, data, suppressDefaultPrint: true };
 };
 
 /**
