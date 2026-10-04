@@ -328,6 +328,14 @@ The same run exposed the two Opus orchestrators, this author included:
   it: the claim ended with two names for one unit, and the worktree had to
   be moved by hand.
 
+- E32 — seven proposals merged weeks earlier could not be handed to review
+  from a fresh unit: `undelivered-slices`, "no commit on this branch changes
+  the slice's declared files, and nothing records which commit delivered
+  it". Their deliveries were on `develop`; the merges named the unit they
+  came from, which had been opened under another id. The only way forward
+  was to write the commit into the document by hand, which the agent's host
+  refused.
+
 ### What good verdicts did
 
 - P1 — `MiniMaxM3` named the delivering commit and the gate with its count in
@@ -676,7 +684,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S25 — An automatic commit carries the slice's files, not the event's
 
-- **Status**: pending
+- **Status**: retired — 2026-10-05. The slice listener already takes the files a slice declares (`parseSliceFilesField`), not what an event lists. The foreign files of E13 came in because the slice declared a directory and the commit was made in the shared checkout, where another agent had changes: a unit's worktree holds one agent's changes, and since S9 a server with no declared agent commits nothing.
 - **Files**: `plugins/commit-policy/src/lib/engine.ts`
 - **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/engine-policy-routing.spec.ts`
 - The commit carries only the files the slice declares that this agent
@@ -775,6 +783,16 @@ the good verdicts' shape (P1) becomes the required shape.
   `work retire`, its verdicts that still name a commit and a gate carried
   by a `reconcile` unit the owner labels, the rest reviewed again. Doing
   that with one command is the rest of this slice.
+
+### S33 — A slice delivered from a unit of another name is still found
+
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-entry.service.ts`, `plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
+- Handing a proposal to review records each slice's delivery. When no merge
+  names the slice's unit, the delivery is the newest merge that changed the
+  slice's files and among whose commits one cites the proposal; a merge of
+  another unit that never cites it is not taken (E32).
 
 ## dependency graph
 

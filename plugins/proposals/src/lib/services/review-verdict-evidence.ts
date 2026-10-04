@@ -154,7 +154,7 @@ export const supersedingDelivery = async (
 };
 
 /** The commit an approval line says it verified. */
-const VERIFIED_AT = /approved by\s+\S+[^\n]*?verified at ([0-9a-f]{7,40})/giu;
+const VERIFIED_AT = /approved by\s+\S+[^\n]*?verified at ([0-9a-f]{7,})/giu;
 
 /**
  * The approvals of `markdown` that judged a delivery its proposal has

@@ -158,6 +158,7 @@ describe('handing a proposal to review', () => {
 		root: string,
 		unit: string,
 		file: string,
+		message = 'feat: an earlier slice',
 	): string => {
 		const current = git(root, 'branch', '--show-current');
 		git(root, 'switch', '-q', 'develop');
@@ -171,7 +172,7 @@ describe('handing a proposal to review', () => {
 		mkdirSync(join(root, 'src'), { recursive: true });
 		writeFileSync(join(root, file), 'export {};\n');
 		git(root, 'add', '-A');
-		git(root, 'commit', '-q', '-m', 'feat: an earlier slice');
+		git(root, 'commit', '-q', '-m', message);
 		git(root, 'switch', '-q', 'develop');
 		git(
 			root,
@@ -214,6 +215,37 @@ describe('handing a proposal to review', () => {
 		expect(result).toMatchObject({ ok: true });
 		if (!result.ok) return;
 		expect(result.recorded).toContainEqual({ slice: 'S1', commit: merge });
+	});
+
+	it('finds a slice delivered from a unit named after something else, by the commit that cites the proposal', async () => {
+		const root = repo(['src/b.ts']);
+		const merge = mergedEarlier(
+			root,
+			'x00099-all-g1',
+			'src/a.ts',
+			'feat(x00001): the work, from a unit opened for another id',
+		);
+
+		const result = await entry(
+			root,
+			proposal(slice('S1', '`src/a.ts`') + slice('S2', '`src/b.ts`')),
+		);
+
+		expect(result).toMatchObject({ ok: true });
+		if (!result.ok) return;
+		expect(result.recorded).toContainEqual({ slice: 'S1', commit: merge });
+	});
+
+	it('does not take a merge of another unit that changed the files and never cites the proposal', async () => {
+		const root = repo(['src/b.ts']);
+		mergedEarlier(root, 'x00099-all-g1', 'src/a.ts');
+
+		const result = await entry(
+			root,
+			proposal(slice('S1', '`src/a.ts`') + slice('S2', '`src/b.ts`')),
+		);
+
+		expect(result).toMatchObject({ ok: false, code: 'undelivered-slices' });
 	});
 
 	it('does not take a merge that names the slice but changed none of its files', async () => {
