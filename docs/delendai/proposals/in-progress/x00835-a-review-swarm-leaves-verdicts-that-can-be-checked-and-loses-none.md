@@ -290,6 +290,14 @@ The same run exposed the two Opus orchestrators, this author included:
   had one uncommitted change, a regenerated catalog. And units whose work
   `develop` already held were given a retired ref for nothing.
 
+- E27 — with every branch settled, the owner still saw a repository full of
+  lost work: a commit graph shows every ref, and the clone held a hundred
+  that were not branches. Forty-nine tips kept by hand under
+  `refs/recovery/`, fifty-six local copies of retired units, and a
+  remote-tracking ref of a remote that no longer existed. All of it was
+  kept elsewhere; nothing listed it, because nothing that lists branches
+  sees a ref that is not one.
+
 ### What good verdicts did
 
 - P1 — `MiniMaxM3` named the delivering commit and the gate with its count in
@@ -599,6 +607,12 @@ the good verdicts' shape (P1) becomes the required shape.
   caller asserts, its owner retires it freely, and a recent unit with no
   lease needs `--unowned`, the caller's word that it is not somebody's. A
   worktree no longer needs a flag of its own.
+- A retired ref is not left in the clone once the forge has it, and
+  `work doctor` gains `no-stray-refs`: a ref that is no branch, no tag,
+  nothing fetched from a configured remote and not the product's own
+  bookkeeping is named, with retiring as the way to keep a tip (E27;
+  `packages/core/src/lib/work-units/stray-refs.service.ts`,
+  `packages/core/src/lib/work-units/idle-units.service.ts`).
 
 ### S23 — A kept unit is brought forward or named, and retiring asks nobody to tidy first
 
