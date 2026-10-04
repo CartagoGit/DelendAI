@@ -2,15 +2,15 @@
 id: x00758
 title: "The release carries no new code-scanning alert"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-09-29
 priority: P0
 related: []
-last-transition-id: d6690454-064e-4d98-be3e-157636f01d5b
-last-correlation-id: d6690454-064e-4d98-be3e-157636f01d5b
-last-transition-from: review
+last-transition-id: 464b2e4c-c80f-4d0b-ae82-c6cbb74bcc13
+last-correlation-id: 464b2e4c-c80f-4d0b-ae82-c6cbb74bcc13
+last-transition-from: in-progress
 ---
 
 # x00758 — The release carries no new code-scanning alert
@@ -77,7 +77,7 @@ written once:
 
 ### S1 — Fix the 35 alerts the release introduces
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lib/read-text-if-present.spec.ts packages/cli plugins/conventions`
 - **Files**:
   - `packages/cli/src/lib/doctor/checks/stale-docs.check.ts`
@@ -118,12 +118,12 @@ written once:
   - `tools/scripts/lint/detail-levels-coverage.script.ts`
   - `tools/scripts/lint/file-conventions.script.spec.ts`
   - `tools/scripts/migrate/rebrand-propagate.script.ts`
-- shipped-in: `f5a6c17ebe6c`
-- review-state: changes_requested
-- review-implementer: unrecorded
-- review-reviewer: minimax-3
-- review-log: requested_changes by minimax-3 — El candidato f5a6c17ebe6c no satisface por sí solo la slice. La propia propuesta dice que después del primer merge aún quedaban tres alertas de CodeQL y hubo que cerrarlas en 2c8cdadf0dc7b3c1303d32fc9c955119c57fdbf7; con este candidate hash la aceptación no queda cubierta.
+- shipped-in: `2c8cdadf0dc7`
 - review-attribution: unrecorded — no delivering commit was named for x00758 S1; independence could not be verified, opened by minimax-3
+
+The slice was delivered by pull request #655 in two commits: `f5a6c17ebe6c`
+fixed the first 32 alerts and `2c8cdadf0dc7` the last three, so the commit
+that holds the whole slice is the second.
 
 After the first merge the release's CodeQL still reported three: the
 directory `writeFileAtomic` opens to fsync it (now opened `O_RDONLY`, never
@@ -132,6 +132,9 @@ bundle failure and the dashboard's errors now tell the page where to look,
 and the terminal gets the error). Moving the loose-ref read also changed a
 line `plugin-drift-budget` allowlists by text; its entry names the new
 line.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by minimax-3 — El candidato f5a6c17ebe6c no satisface por sí solo la slice. La propia propuesta dice que después del primer merge aún quedaban tres alertas de CodeQL y hubo que cerrarlas en 2c8cdadf0dc7b3c1303d32fc9c955119c57fdbf7; con este candidate hash la aceptación no queda cubierta.
 
 ### S2 — Fix the 48 alerts `main` already carried
 
@@ -139,7 +142,6 @@ line.
 - **Gate**: `npx vitest run packages/ui-extension plugins/proposals/tests/src/lib/agents packages/core/tests/src/lib/services/shell packages/core/tests/src/lib/shared tools/tests/ci/local-repro.spec.ts`
 - **Files**:
   - `apps/web/scripts/fetch-brand-logos.ts`
-  - `docs/delendai/proposals/review/x00758-the-release-carries-no-new-code-scanning-alert.md`
   - `extensions/vscode/src/dev/pages/configuration-center.ts`
   - `extensions/vscode/src/dev/settings-panel.ts`
   - `extensions/vscode/src/test/open-auto-agent-selector.spec.ts`
@@ -217,6 +219,7 @@ at its cause:
   after a release, `zombie-reconcile` skipped the watchdog event
   (`continue`) instead of counting the lock as released, as it did before
   the read moved to `readLockText`.
+- shipped-in: `b959235f4556`
 
 ## dependency graph
 
