@@ -175,8 +175,8 @@ public/index.ts queda como:
   its budget). Deprecating it with a removal date would announce the end of
   the one entry a plugin author is told to import from. What remains to
   shrink is x00541 S3: the exports with no importer outside core.
-- Declares no files: a retired slice delivers none. What it had planned
-  to touch was the entry's own header and the subpaths ADR.
+- **Files**: `packages/core/src/public/index.ts`, `docs/delendai/adr/`
+- What it had planned to touch; a retired slice delivers none of it.
 - **Gate**: `bun tools/scripts/lint/proposals.script.ts` (verifica que
   el ADR referenciado sigue siendo un documento válido enlazado) y
   revisión manual de que el comentario de deprecación incluye fecha
