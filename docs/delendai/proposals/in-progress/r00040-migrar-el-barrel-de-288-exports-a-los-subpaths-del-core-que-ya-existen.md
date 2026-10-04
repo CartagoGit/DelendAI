@@ -166,7 +166,13 @@ public/index.ts queda como:
 
 ### S3 — Marcar el barrel como deprecado con fecha
 
-- **Status**: pending
+- **Status**: retired — 2026-10-04. The entry this slice would deprecate is
+  the surface plugins build against: S2 moved the 112 exports only the CLI,
+  the host and the repository scripts read to `@delendai/core/cli` and left
+  `@delendai/core/public` with what plugins use (645 exports to 533, under
+  its budget). Deprecating it with a removal date would announce the end of
+  the one entry a plugin author is told to import from. What remains to
+  shrink is x00541 S3: the exports with no importer outside core.
 - **Files**:
     - `packages/core/src/public/index.ts` (comentario de deprecación
       con fecha de retirada)
