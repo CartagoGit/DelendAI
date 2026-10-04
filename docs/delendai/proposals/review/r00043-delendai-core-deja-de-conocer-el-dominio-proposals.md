@@ -2,7 +2,7 @@
 id: r00043
 title: "`@delendai/core` deja de conocer el dominio `proposals`"
 kind: refactor
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-08-30
@@ -13,9 +13,9 @@ audit-source:
     finding: AUD-E05
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 related: [q00011, r00040, r00041, r00042, r00034]
-last-transition-id: 9efe4609-6a47-40f9-b04e-4e6298a1ba57
-last-correlation-id: 9efe4609-6a47-40f9-b04e-4e6298a1ba57
-last-transition-from: review
+last-transition-id: 3a18803f-e028-4ca4-ae61-ade2700db73a
+last-correlation-id: 3a18803f-e028-4ca4-ae61-ade2700db73a
+last-transition-from: in-progress
 shipped-in:
   - "dc61a40ec"
   - "7c861d2f9"
