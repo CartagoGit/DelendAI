@@ -1641,14 +1641,6 @@
 				"date": "2026-09-19"
 			},
 			{
-				"id": "x00758",
-				"title": "The release carries no new code-scanning alert",
-				"track": "security",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-29"
-			},
-			{
 				"id": "x00766",
 				"title": "A project with one branch and a project with no policy both get a working model",
 				"track": "trust",
