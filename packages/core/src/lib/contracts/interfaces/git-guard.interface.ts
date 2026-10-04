@@ -1,3 +1,11 @@
+/** What is known about the unit a pushed work ref belongs to. */
+export interface IUnitRefFacts {
+	/** Other refs of the same unit (short names), local or remote. */
+	readonly siblings: readonly string[];
+	/** The ref the unit's lease names as its own, when it has a lease. */
+	readonly leasedRef?: string | undefined;
+}
+
 /** A git operation a hook asks the development policy about. */
 export type IGuardedGitOperation =
 	| {
@@ -56,6 +64,8 @@ export type IGuardedGitOperation =
 			 * work ref). `undefined` when that could not be determined.
 			 */
 			readonly deletedTipKept?: boolean | undefined;
+			/** For a push of a work ref: what is known about its unit. */
+			readonly unit?: IUnitRefFacts | undefined;
 	  };
 
 /** Whether the operation may proceed, and why. */

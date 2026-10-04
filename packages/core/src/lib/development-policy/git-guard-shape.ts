@@ -19,6 +19,7 @@ import {
 	shortName,
 } from './git-guard-namespaces';
 import { refuseLiveUnitDeletion } from './git-guard-live-unit';
+import { refuseSecondRefOfUnit } from './git-guard-unit';
 import { refuseReviewOutsideScope } from './git-guard-review-scope';
 import { WORK_KINDS } from './profiles.constant';
 import { isHostApplicationId, kindsInAgentId } from './work-ref-placeholders';
@@ -214,6 +215,7 @@ export const judgeNamespaceShape = (
 		const branch = operation.remoteRef.slice('refs/heads/'.length);
 		return (
 			refuseUnshapedWorkRef(policy, operation.remoteRef, branch, false) ??
+			refuseSecondRefOfUnit(policy, branch, operation.unit) ??
 			refuseUnshapedPublication(policy, branch)
 		);
 	}

@@ -133,6 +133,18 @@ const roleOf = (
 				reason: `its content is already in \`${ref.publishedIn}\`: a work branch ends when it is published, so this copy should be deleted — only the publication ref remains`,
 			};
 		}
+		if (ref.standing === 'idle') {
+			return {
+				role: 'work-idle',
+				reason: 'a work ref whose owner is known and has gone quiet: listed for adoption (`delendai work enter` resumes it), never reaped',
+			};
+		}
+		if (ref.standing === 'abandoned') {
+			return {
+				role: 'work-abandoned',
+				reason: 'a work ref whose owner is gone and which was never published: end it with `delendai work retire`, which keeps its tip, or adopt it and publish',
+			};
+		}
 		return {
 			role: 'work',
 			reason: 'a work ref an agent is developing on: visible before publication on purpose, and never reaped here because no pull request has had the chance to prove it spent',
@@ -224,9 +236,11 @@ export const reconcileRefs = (
 			(v) =>
 				v.role === 'unmanaged' ||
 				v.role === 'publication-unclaimed' ||
+				v.role === 'work-abandoned' ||
 				v.role === 'work-published',
 		),
 		awaiting: verdicts.filter((v) => v.role === 'publication-awaiting'),
 		active: verdicts.filter((v) => v.role === 'work'),
+		adoptable: verdicts.filter((v) => v.role === 'work-idle'),
 	};
 };
