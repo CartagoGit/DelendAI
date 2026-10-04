@@ -145,6 +145,15 @@ export const claimableWorkRefs = (input: {
 	return claims;
 };
 
+/** The worktree standing on `ref` (`refs/heads/…`), when there is one. */
+const worktreeOn = (root: string, ref: string): string | undefined =>
+	git(root, ['worktree', 'list', '--porcelain'])
+		.split('\n\n')
+		.find((block) => block.split('\n').includes(`branch ${ref}`))
+		?.split('\n')
+		.find((line) => line.startsWith('worktree '))
+		?.slice('worktree '.length);
+
 /**
  * Do it: create the new name, prove it resolves to the same commit, and
  * only then remove the old one.
@@ -181,6 +190,21 @@ export const applyWorkClaim = (
 			ref: claim.from,
 			reason: `${claim.to} resolves to ${landed || 'nothing'}, not ${claim.sha}; the old ref was left alone.`,
 		};
+	}
+	// A worktree standing on the old name follows the work to the new one.
+	// Left where it was, it kept the old name alive: the guard refuses to
+	// delete a branch a worktree is on, so the claim ended with two names
+	// for one unit and the worktree on the one that was meant to go.
+	const tree = worktreeOn(root, from);
+	if (tree !== undefined) {
+		try {
+			git(tree, ['symbolic-ref', 'HEAD', to]);
+		} catch (error) {
+			return {
+				ref: claim.from,
+				reason: `${claim.to} now holds the work, but the worktree at ${tree} could not be moved onto it: ${error instanceof Error ? error.message : String(error)}`,
+			};
+		}
 	}
 	try {
 		git(root, ['update-ref', '-d', from, claim.sha]);

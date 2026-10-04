@@ -172,6 +172,41 @@ describe('applyWorkClaim', () => {
 		expect(exists(root, `refs/heads/${from}`)).toBe(false);
 	});
 
+	it('takes the worktree along, so the old name is free to go', () => {
+		const root = repo();
+		const from = 'delendai/wip/other/x00001-S1-g1/topic';
+		const tree = join(root, 'unit');
+		execFileSync('git', ['worktree', 'add', '-q', tree, '-b', from], {
+			cwd: root,
+		});
+		const sha = at(root, 'HEAD');
+
+		const planned = planWorkClaim({
+			ref: from,
+			sha,
+			agent: 'mine',
+			policy,
+		});
+		if (!('to' in planned)) throw new Error('unreachable');
+		const result = applyWorkClaim(root, planned);
+
+		expect(result).toHaveProperty('to');
+		expect(
+			execFileSync('git', ['symbolic-ref', 'HEAD'], {
+				cwd: tree,
+				encoding: 'utf8',
+			}).trim(),
+		).toBe('refs/heads/delendai/wip/mine/x00001-S1-g2/topic');
+		expect(exists(root, `refs/heads/${from}`)).toBe(false);
+		// The tree is as it was: same commit, nothing to commit.
+		expect(
+			execFileSync('git', ['status', '--porcelain'], {
+				cwd: tree,
+				encoding: 'utf8',
+			}).trim(),
+		).toBe('');
+	});
+
 	it('lists what somebody else holds, and nothing of yours', () => {
 		const root = repo();
 		const sha = at(root, 'HEAD');

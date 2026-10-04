@@ -321,6 +321,13 @@ The same run exposed the two Opus orchestrators, this author included:
   always; and the owner can see which is which without asking git for its
   unreachable objects.
 
+- E31 — two units of the other orchestrator sat for 18 and 22 hours with no
+  pull request: its subagent had hit a rate limit and its session only woke
+  on events. Taking the larger one over with `work claim` created the new
+  name and then failed to remove the old one, because a worktree stood on
+  it: the claim ended with two names for one unit, and the worktree had to
+  be moved by hand.
+
 ### What good verdicts did
 
 - P1 — `MiniMaxM3` named the delivering commit and the gate with its count in
@@ -750,6 +757,15 @@ the good verdicts' shape (P1) becomes the required shape.
   model may review, so a project with one subscription can review its own
   work, as long as the two instances are seen to differ (S13). A project
   that wants another model sets `model`; this repository does.
+
+### S31 — A claim takes the worktree with it
+
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-claim.service.ts`, `packages/core/tests/src/lib/work-units/work-claim.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-claim.service.spec.ts`
+- `work claim` on a unit that has a worktree points that worktree at the
+  new name before the old one is removed, so a stalled unit changes hands
+  in one step and is left under one name (E31).
 
 ## dependency graph
 
