@@ -2,13 +2,13 @@
 id: x00872
 title: "close_slice resolves its actor and swarm state from one place, so a unit's owner can close"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-03
-last-transition-id: 67ccadd4-7714-4d10-aa10-78941cd70747
-last-correlation-id: 67ccadd4-7714-4d10-aa10-78941cd70747
-last-transition-from: ready
+last-transition-id: 60210241-c9a8-4a76-ace8-f64546ee4ee0
+last-correlation-id: 60210241-c9a8-4a76-ace8-f64546ee4ee0
+last-transition-from: in-progress
 ---
 
 # x00872 — close_slice resolves its actor and swarm state from one place, so a unit's owner can close
@@ -41,6 +41,7 @@ Seven finished proposals cannot be handed to review through the tools because ev
   - "a refusal names the resolved actor and the files it read, and only suggests a claim when none exists"
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `f5f4bd40ed0d`
 
 ## acceptance
 
