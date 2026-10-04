@@ -44,3 +44,15 @@ describe('the lease through the work engine', () => {
 		expect(lease?.serverRoot).toBe(repo.root);
 	});
 });
+
+describe('work reap through the work engine', () => {
+	it('reports without --apply and answers with the units it would reap', async () => {
+		const repo = unitRepo();
+		const result = await runWorkUnit(['reap'], {
+			cwd: repo.root,
+			globals: { workspace: repo.root, json: true, format: 'json' },
+		});
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect((result.data as { units: unknown[] }).units).toEqual([]);
+	});
+});
