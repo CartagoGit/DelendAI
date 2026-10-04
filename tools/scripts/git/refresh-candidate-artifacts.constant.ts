@@ -7,9 +7,13 @@ import { REPO_AUTHORITIES } from '../gen/repo-authorities.constant';
  * every generator. This used to be a second, shorter list (the catalog
  * and the quantitative block), which is how a candidate could come back
  * with every other derived file stale.
+ *
+ * No install scripts: the worktree is thrown away a minute later, and a
+ * script that writes into the clone it belongs to (a hook manager's own
+ * installer did) leaves the clone pointing at a directory that is gone.
  */
 export const GENERATED_REFRESH_COMMANDS: readonly string[] = [
-	'install --frozen-lockfile',
+	'install --frozen-lockfile --ignore-scripts',
 	'run gen:all',
 ];
 

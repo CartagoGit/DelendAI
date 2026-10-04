@@ -9,6 +9,7 @@ import { planRetirement, restoreAdvice } from './work-retire.service';
 
 import {
 	forgeCli,
+	integrationBase,
 	integrationRemote,
 	mainWorktreeOf,
 	openWork,
@@ -113,11 +114,18 @@ export const retired = async (
 		);
 	}
 	const worktree = worktreeOn(root, plan.workBranch);
+	let uncommitted: string | undefined;
 	if (worktree !== undefined) {
-		if ((readGit(worktree, ['status', '--porcelain']) ?? '').length > 0) {
+		const dirty = (readGit(worktree, ['status', '--porcelain']) ?? '')
+			.split('\n')
+			.filter((line) => line.length > 0);
+		const untracked = dirty
+			.filter((line) => line.startsWith('??'))
+			.map((line) => line.slice(3));
+		if (untracked.length > 0) {
 			return refused(
-				`\`${plan.unit}\` has uncommitted changes in ${worktree}.`,
-				'Commit them there, so the retired ref keeps them, then retire the unit again.',
+				`\`${plan.unit}\` has files git does not track in ${worktree}: ${untracked.slice(0, 5).join(', ')}.`,
+				'Add and commit them there if they are work, or delete them if they are not, then retire the unit again: a retired ref can only keep what git holds.',
 			);
 		}
 		if (!args.includes('--with-worktree')) {
@@ -126,10 +134,34 @@ export const retired = async (
 				'If it is yours or nobody’s, pass --with-worktree and the worktree is removed with the unit.',
 			);
 		}
+		// Changes to tracked files are kept too, as the commit git would
+		// stash: retiring never asks a person to tidy a tree first.
+		if (dirty.length > 0) {
+			uncommitted = readGit(worktree, ['stash', 'create']);
+			if (uncommitted === undefined || uncommitted.length === 0) {
+				return refused(
+					`Could not capture the uncommitted changes of \`${plan.unit}\` in ${worktree}.`,
+					'Nothing was removed. Commit them there, then retire the unit again.',
+				);
+			}
+		}
 	}
-	// Every distinct tip is kept: the forge's and the clone's can differ,
-	// and neither is known to be the one worth having.
-	const distinct = [...new Set(found.map((tip) => tip.commit))];
+	// Every distinct tip the integration branch lacks is kept: the forge's
+	// and the clone's can differ, and neither is known to be the one worth
+	// having. A tip the integration branch already holds needs no keeping.
+	const base = integrationBase(root, policy);
+	const delivered = (commit: string): boolean =>
+		base !== undefined &&
+		readGit(root, ['merge-base', '--is-ancestor', commit, base]) !==
+			undefined;
+	const distinct = [
+		...new Set([
+			...found
+				.map((tip) => tip.commit)
+				.filter((commit) => !delivered(commit)),
+			...(uncommitted === undefined ? [] : [uncommitted]),
+		]),
+	];
 	const kept = distinct.map((commit, index) => ({
 		ref:
 			index === 0
@@ -147,19 +179,25 @@ export const retired = async (
 			);
 		}
 	}
-	const pushed = readGit(root, [
-		'push',
-		'--quiet',
-		remote,
-		...kept.map((each) => `${each.ref}:${each.ref}`),
-	]);
+	const pushed =
+		kept.length === 0
+			? ''
+			: readGit(root, [
+					'push',
+					'--quiet',
+					remote,
+					...kept.map((each) => `${each.ref}:${each.ref}`),
+				]);
 	if (pushed === undefined) {
 		return refused(
 			`Could not keep \`${plan.unit}\` on \`${remote}\` (${kept.map((each) => each.ref).join(', ')}).`,
 			'Nothing was removed: the unit is where it was. Check that the remote accepts the push, then retire it again.',
 		);
 	}
-	const restore = restoreAdvice(remote, plan.retiredRef);
+	const restore =
+		kept.length === 0
+			? `nothing to restore: \`${policy.branches.integration}\` already holds the unit's work`
+			: restoreAdvice(remote, plan.retiredRef);
 	const closed: number[] = [];
 	for (const number of openPullRequestsOf(root, plan.publicationBranch)) {
 		forgeCli(root, [
