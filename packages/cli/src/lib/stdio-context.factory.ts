@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 
 import { McpStdioClient, serverEnvironment } from '@delendai/client/public';
-import { AGENT_ENVIRONMENT_MARKERS } from '@delendai/core/cli';
+import { isAgentEnvironmentVariable } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IConnectToServer } from '../contracts/interfaces/stdio-context.interface';
@@ -72,7 +72,7 @@ export const forwardedToServer = (
 		Object.entries(env).filter(
 			(entry): entry is [string, string] =>
 				entry[1] !== undefined &&
-				(AGENT_ENVIRONMENT_MARKERS.includes(entry[0]) ||
+				(isAgentEnvironmentVariable(entry[0]) ||
 					(entry[0].startsWith('DELENDAI_') &&
 						!namesASecret(entry[0]))),
 		),

@@ -8,12 +8,13 @@ import { doctored, statusOf, swarm } from './work-unit-status.service';
 import { entered } from './work-unit-enter.service';
 import { published } from './work-unit-publish.service';
 import { claimed } from './work-unit-claim.service';
+import { retired } from './work-unit-retire.service';
 import { checkpointed } from './work-unit-checkpoint.service';
 import { withSessionOfCwd } from './work-unit-shared.service';
 
 /**
  * A unit-of-work operation (`status`, `swarm`, `doctor`, `claim`, `enter`,
- * `checkpoint`, `publish`) from its flags: the one engine behind the CLI's
+ * `checkpoint`, `publish`, `retire`) from its flags: the one engine behind the CLI's
  * `work` command and the MCP `work` tool.
  */
 export const runWorkUnit = async (
@@ -30,8 +31,9 @@ export const runWorkUnit = async (
 	if (sub === 'swarm') return swarm(ctx);
 	if (sub === 'doctor') return doctored(args, ctx);
 	if (sub === 'claim') return claimed(args, ctx);
+	if (sub === 'retire') return retired(args, ctx);
 	return {
 		code: EXIT_CODE.VALIDATION,
-		error: `Unknown subcommand '${sub}'. Use status, swarm, enter, checkpoint or publish.`,
+		error: `Unknown subcommand '${sub}'. Use status, swarm, doctor, claim, enter, checkpoint, publish or retire.`,
 	};
 };

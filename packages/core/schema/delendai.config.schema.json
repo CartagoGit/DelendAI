@@ -137,6 +137,19 @@
 						"off"
 					]
 				},
+				"guard": {
+					"type": "object",
+					"properties": {
+						"unknownActor": {
+							"type": "string",
+							"enum": [
+								"agent",
+								"person"
+							]
+						}
+					},
+					"additionalProperties": false
+				},
 				"workRefs": {
 					"type": "object",
 					"properties": {

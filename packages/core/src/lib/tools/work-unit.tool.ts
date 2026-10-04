@@ -40,6 +40,7 @@ const workUnitInputSchema = z.object({
 		'enter',
 		'checkpoint',
 		'publish',
+		'retire',
 	]),
 	proposal: z.string().min(1).optional(),
 	slice: z.string().min(1).optional(),
@@ -51,6 +52,8 @@ const workUnitInputSchema = z.object({
 	message: z.string().min(1).optional(),
 	paths: z.array(z.string().min(1)).optional(),
 	ref: z.string().min(1).optional(),
+	reason: z.string().min(1).optional(),
+	withWorktree: z.boolean().optional(),
 	keepWorkRef: z.boolean().optional(),
 	noPullRequest: z.boolean().optional(),
 });
@@ -83,6 +86,8 @@ export const workUnitArgs = (
 		...flag('message', input.message),
 		...flag('paths', input.paths?.join(',')),
 		...flag('ref', input.ref),
+		...flag('reason', input.reason),
+		...(input.withWorktree === true ? ['--with-worktree'] : []),
 		...(input.keepWorkRef === true ? ['--keep-work-ref'] : []),
 		...(input.noPullRequest === true ? ['--no-pull-request'] : []),
 	];
