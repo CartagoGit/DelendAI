@@ -2,15 +2,15 @@
 id: f00755
 title: "Candidates that touch nothing in common land together"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: efficiency
 date: 2026-09-29
 priority: P1
 related: [x00556]
-last-transition-id: 06863859-d93f-492d-96bc-afe538fa540f
-last-correlation-id: 06863859-d93f-492d-96bc-afe538fa540f
-last-transition-from: review
+last-transition-id: 5302b5da-2662-43e4-bd3b-9e45971a7c30
+last-correlation-id: 5302b5da-2662-43e4-bd3b-9e45971a7c30
+last-transition-from: in-progress
 ---
 
 # f00755 — Candidates that touch nothing in common land together
@@ -64,23 +64,24 @@ not require it (`develop` has `strict: false`); the queue did.
 
 ### S1 — The queue lands every independent candidate
 
-- **Status**: in-progress
-- **Gate**: `npx vitest run tools/scripts/forge/independent-candidates.spec.ts`
+- **Status**: review
+- **Gate**: `npx vitest run tools/scripts/forge/independent-candidates.spec.ts tools/scripts/forge/queue-acceptance.spec.ts`
 - **Files**:
   - `tools/scripts/forge/independent-candidates.ts`
   - `tools/scripts/forge/independent-candidates.interface.ts`
   - `tools/scripts/forge/independent-candidates.spec.ts`
   - `tools/scripts/forge/candidate-footprint.ts`
   - `tools/scripts/forge/queue-acceptance.ts`
+  - `tools/scripts/forge/queue-acceptance.spec.ts`
+  - `tools/scripts/forge/queue-acceptance.ts`
   - `tools/scripts/forge/keep-the-queue-moving.script.ts`
   - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
   - `tools/scripts/ci/test-zones.script.ts`
 - shipped-in: `230e2af9c73b`
-- review-state: changes_requested
-- review-implementer: unrecorded
-- review-reviewer: gpt-5.4
-- review-log: requested_changes by gpt-5.4 — El gate declarado pasa 6/6, pero branchesLandingAsTheyAre calcula integrationSha con rev-parse origin/<integration> antes de hacer fetch y luego decide con ese SHA obsoleto, mientras keep-the-queue-moving decide con certification.sha actual. Si la ref remota local está atrasada, el owner machine puede tratar una candidata como level y no traerla adelante aunque la integración ya cambió zonas/archivos superpuestos. Reproducible en tools/scripts/forge/queue-acceptance.ts: branchesLandingAsTheyAre fija integrationSha antes del fetch y queueAcceptance sólo hace fetch después.
 - review-attribution: unrecorded — no delivering commit was named for f00755 S1; independence could not be verified, opened by gpt-5.4
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by gpt-5.4 — El gate declarado pasa 6/6, pero branchesLandingAsTheyAre calcula integrationSha con rev-parse origin/<integration> antes de hacer fetch y luego decide con ese SHA obsoleto, mientras keep-the-queue-moving decide con certification.sha actual. Si la ref remota local está atrasada, el owner machine puede tratar una candidata como level y no traerla adelante aunque la integración ya cambió zonas/archivos superpuestos. Reproducible en tools/scripts/forge/queue-acceptance.ts: branchesLandingAsTheyAre fija integrationSha antes del fetch y queueAcceptance sólo hace fetch después.
 
 ## dependency graph
 
