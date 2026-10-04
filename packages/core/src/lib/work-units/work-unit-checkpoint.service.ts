@@ -15,12 +15,14 @@ import type {
 import { collisionsWith, describeCollisions } from './scope-collision.service';
 import { readSwarm } from './work-swarm.service';
 import { scalarArg } from './command-args.helper';
+import { touchUnit } from './unit-lease.service';
 
 import {
 	agentFor,
 	integrationBase,
 	kindInAgent,
 	openWork,
+	sessionFor,
 	readGit,
 	refused,
 	unknownKind,
@@ -128,6 +130,14 @@ export const checkpointed = async (
 	// `unchanged` is a true answer, not a failure: the scope still hashes
 	// to what the ref already carries.
 	const ok = result.status === 'created' || result.status === 'unchanged';
+	if (ok) {
+		// A checkpoint is the owner saying the unit is alive.
+		await touchUnit({
+			cwd: root,
+			ref,
+			owner: { agent, session: sessionFor(args) ?? null },
+		}).catch(() => undefined);
+	}
 	return {
 		code: ok ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
 		data: result,
