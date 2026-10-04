@@ -1,8 +1,7 @@
 #!/usr/bin/env bun
 import { fileURLToPath } from 'node:url';
 
-import { runCli as runServerCli } from '@delendai/core/cli';
-import { serveRefusal } from '@delendai/core/cli';
+import { runCli as runServerCli, serveRefusal } from '@delendai/core/cli';
 
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
@@ -23,6 +22,7 @@ import {
 	renderCommandHelp,
 	unknownFlagRefusal,
 } from './lib/command-flags.service';
+import { markDelendaiSession } from './lib/delendai-session.service';
 import { renderHelp } from './lib/help.service';
 import { parseCliInvocation } from './lib/parser.service';
 import { createStdioContext } from './lib/stdio-context.factory';
@@ -379,5 +379,6 @@ export const runEntry = async (
 };
 
 if (import.meta.main) {
+	markDelendaiSession(process.argv.slice(2), process.env);
 	process.exitCode = await runEntry(process.argv.slice(2), process.cwd());
 }

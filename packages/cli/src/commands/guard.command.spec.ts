@@ -206,6 +206,87 @@ const facts = (over: Partial<IGuardFacts>): IGuardFacts => ({
 	...over,
 });
 
+const personPolicy = async () =>
+	resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-merge',
+			guard: { unknownActor: 'person' },
+		},
+	});
+
+const AGENT_VARIABLES = [
+	'DELENDAI_AGENT_ID',
+	'AI_AGENT',
+	'CLAUDECODE',
+	'CLAUDE_CODE_ENTRYPOINT',
+	'GEMINI_CLI',
+	'OPENCODE',
+	'CODEX_SANDBOX',
+	'CODEX_THREAD_ID',
+	'CURSOR_AGENT',
+	'CURSOR_TRACE_ID',
+	'DELENDAI_SESSION',
+] as const;
+
+const commitOnIntegration = (over: Partial<IGuardFacts> = {}) =>
+	createGuardCommand(() => facts(over)).run(['pre-commit'], context('/ws'));
+
+describe('who is running git', () => {
+	beforeEach(() => {
+		for (const name of AGENT_VARIABLES) vi.stubEnv(name, '');
+		vi.stubEnv('CI', '');
+	});
+
+	it.each(AGENT_VARIABLES.filter((name) => name !== 'DELENDAI_SESSION'))(
+		'refuses a commit on the integration branch under %s',
+		async (name) => {
+			vi.stubEnv(name, 'x');
+			// Even a policy that lets unidentified people through: the
+			// marker identifies an agent.
+			const result = await commitOnIntegration({ policy: personPolicy });
+			expect(result.code).not.toBe(0);
+			expect(result.error).toContain(`\`${name}\``);
+		},
+	);
+
+	it('refuses a commit made through a delendai session', async () => {
+		vi.stubEnv('DELENDAI_SESSION', '1');
+		const result = await commitOnIntegration({ policy: personPolicy });
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('DELENDAI_SESSION');
+	});
+
+	it('names the workflow and how to get a unit in the refusal', async () => {
+		vi.stubEnv('CODEX_SANDBOX', 'seatbelt');
+		const result = await commitOnIntegration({
+			policy: async () =>
+				resolveDevelopmentPolicy({
+					development: { profile: 'shared-checkout-pr' },
+				}),
+		});
+		expect(result.error).toContain('`shared-checkout-pr`');
+		expect(result.error).toContain('delendai work enter');
+		expect(result.error).toContain('DELENDAI_AGENT_ID');
+	});
+
+	it('follows the policy when nothing identifies the actor', async () => {
+		const asAgent = await commitOnIntegration();
+		expect(asAgent.code).not.toBe(0);
+		expect(asAgent.error).toContain('unidentified actor');
+		expect((await commitOnIntegration({ policy: personPolicy })).code).toBe(
+			0,
+		);
+	});
+
+	it('leaves CI alone when nothing identifies an agent', async () => {
+		vi.stubEnv('CI', 'true');
+		expect((await commitOnIntegration()).code).toBe(0);
+		// CI does not shelter a process an agent marker identifies.
+		vi.stubEnv('AI_AGENT', 'x');
+		expect((await commitOnIntegration()).code).not.toBe(0);
+	});
+});
+
 describe('guard command', () => {
 	it('refuses with the policy reason and remedy', async () => {
 		const result = await createGuardCommand(() => facts({})).run(
@@ -232,13 +313,12 @@ describe('guard command', () => {
 	});
 
 	it('judges a runtime with no agent marker as the agent its worktree was made for (x00688)', async () => {
-		for (const name of ['AI_AGENT', 'CLAUDECODE', 'DELENDAI_AGENT_ID']) {
+		for (const name of AGENT_VARIABLES) {
 			vi.stubEnv(name, '');
 		}
-		const person = await createGuardCommand(() => facts({})).run(
-			['pre-commit'],
-			context('/ws'),
-		);
+		const person = await createGuardCommand(() =>
+			facts({ policy: personPolicy }),
+		).run(['pre-commit'], context('/ws'));
 		expect(person.code).toBe(0);
 		const stamped = await createGuardCommand(() =>
 			facts({ worktreeAgent: () => 'glm-5' }),

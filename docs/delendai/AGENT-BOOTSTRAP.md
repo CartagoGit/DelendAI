@@ -299,6 +299,11 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
 
 ## 6. Invariants you must not break
 
+- **Every agent is held to the workflow, whatever its model.** Set
+  `DELENDAI_AGENT_ID` to your exact model id before any delendai or git call.
+  An unidentified process is judged per `development.guard.unknownActor`
+  (default `agent` in a shared checkout): never commit on the integration
+  branch; get a unit with `delendai work enter`.
 - **The dogfooding host is a one-shot process.** Keep `.vscode/mcp.json` and
   `.mcp.json` pointed at the repo-local host with
   `bun tools/scripts/host/host-server.script.ts` and the appropriate workspace

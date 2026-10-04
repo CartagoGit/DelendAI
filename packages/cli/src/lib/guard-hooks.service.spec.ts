@@ -4,6 +4,7 @@
  * (`core.hooksPath=.husky` with existing hooks that read stdin), and ones
  * managed by tools that rewrite hook files.
  */
+import { isAgentEnvironmentVariable } from '@delendai/core/cli';
 import { execFileSync, spawnSync } from 'node:child_process';
 import {
 	chmodSync,
@@ -66,8 +67,10 @@ const invocation = { runner: 'bun', entry: CLI_ENTRY };
  */
 const personEnv = (): Record<string, string | undefined> => {
 	const env: Record<string, string | undefined> = { ...process.env };
-	for (const marker of ['DELENDAI_AGENT_ID', 'AI_AGENT', 'CLAUDECODE']) {
-		delete env[marker];
+	for (const name of Object.keys(env)) {
+		if (isAgentEnvironmentVariable(name) || name === 'DELENDAI_SESSION') {
+			delete env[name];
+		}
 	}
 	return env;
 };
@@ -273,7 +276,7 @@ describe('the installed guard enforces the declared policy', () => {
 		const root = repo();
 		writeFileSync(
 			join(root, 'delendai.config.json'),
-			'{ "development": { "profile": "shared-checkout-merge" } }',
+			'{ "development": { "profile": "shared-checkout-merge", "guard": { "unknownActor": "person" } } }',
 		);
 		installGuardHooks(root, invocation);
 		const branch = spawnSync('git', ['switch', '-c', 'agent/x/y'], {
