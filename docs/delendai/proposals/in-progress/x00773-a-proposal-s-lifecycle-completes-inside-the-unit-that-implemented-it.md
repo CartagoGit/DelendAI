@@ -46,6 +46,8 @@ A proposal created or implemented in a unit exists only on that unit's ref until
   - `plugins/proposals/tests/src/lib/e2e/assembled-proposals-server.ts`
   - `plugins/proposals/tests/src/lib/e2e/proposal-lifecycle-in-unit.e2e.spec.ts`
 - **Gate**: type
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
