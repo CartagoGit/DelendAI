@@ -897,3 +897,58 @@ describe('defaultGuardFacts.tipKept (x00687)', () => {
 		}
 	});
 });
+
+describe('guard command, a unit of work', () => {
+	const unitPolicy = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: { namespacePrefix: 'delendai' },
+		},
+	});
+	const UNIT = 'delendai/wip/claude-sonnet-5-5/create/x00799-all-g1';
+	const push = (branch: string): string =>
+		`refs/heads/${branch} ${A} refs/heads/${branch} ${ZERO}\n`;
+
+	it('refuses a scratch ref pushed into a unit that has its own', async () => {
+		const result = await createGuardCommand(() =>
+			facts({
+				policy: async () => unitPolicy,
+				stdin: async () => push(`${UNIT}/sim-a`),
+				unitRefs: async () => ({
+					siblings: [`${UNIT}/the-work`],
+					leasedRef: `${UNIT}/the-work`,
+				}),
+			}),
+		).run(['pre-push', 'origin', 'url'], context('/ws'));
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('second ref');
+	});
+
+	it('lets the unit push its own ref', async () => {
+		const result = await createGuardCommand(() =>
+			facts({
+				policy: async () => unitPolicy,
+				stdin: async () => push(`${UNIT}/the-work`),
+				unitRefs: async () => ({
+					siblings: [],
+					leasedRef: `${UNIT}/the-work`,
+				}),
+			}),
+		).run(['pre-push', 'origin', 'url'], context('/ws'));
+		expect(result.code).toBe(0);
+	});
+
+	it('shows life on the unit when a commit is allowed, and never fails on it', async () => {
+		const showLife = vi.fn().mockRejectedValue(new Error('disk full'));
+		const result = await createGuardCommand(() =>
+			facts({
+				policy: async () => unitPolicy,
+				branch: () => `${UNIT}/the-work`,
+				inMainWorktree: () => false,
+				showLife,
+			}),
+		).run(['pre-commit'], context('/ws'));
+		expect(result.code).toBe(0);
+		expect(showLife).toHaveBeenCalledOnce();
+	});
+});

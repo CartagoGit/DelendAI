@@ -28,7 +28,9 @@ import type {
 } from '../contracts/interfaces/guard.interface';
 import {
 	readWorkspaceDocsDir,
+	readUnitRefFacts,
 	readWorkspacePolicy,
+	touchUnitOfCheckout,
 	worktreeAgent,
 } from '@delendai/core/cli';
 import {
@@ -203,6 +205,10 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 		git(workspace, ['rev-parse', '--git-dir']) ===
 		git(workspace, ['rev-parse', '--git-common-dir']),
 	worktreeAgent: () => worktreeAgent(workspace),
+	unitRefs: (policy, branch) => readUnitRefFacts(workspace, policy, branch),
+	showLife: async (policy) => {
+		await touchUnitOfCheckout(workspace, policy);
+	},
 	refAt: (ref) => git(workspace, ['rev-parse', '--verify', '--quiet', ref]),
 	worktreeOf: (ref) => {
 		const blocks = (
@@ -574,6 +580,24 @@ export const createGuardCommand = (
 			}
 			return { code: EXIT_CODE.OK };
 		}
+		// A pushed work ref is judged with what is known about its unit.
+		const withUnit = async (
+			operation: IGuardedGitOperation,
+		): Promise<IGuardedGitOperation> => {
+			if (
+				operation.kind !== 'push' ||
+				operation.deleting ||
+				facts.unitRefs === undefined ||
+				!operation.remoteRef.startsWith('refs/heads/')
+			) {
+				return operation;
+			}
+			const unit = await facts.unitRefs(
+				policy,
+				operation.remoteRef.slice('refs/heads/'.length),
+			);
+			return unit === undefined ? operation : { ...operation, unit };
+		};
 		const commits = hook === 'pre-commit' || hook === 'commit-msg';
 		const operations = operationsForHook(
 			hook as IGuardedHook,
@@ -601,9 +625,13 @@ export const createGuardCommand = (
 			},
 		);
 		for (const operation of operations) {
-			const verdict = judgeGitOperation(policy, operation, {
-				agentMarker,
-			});
+			const verdict = judgeGitOperation(
+				policy,
+				await withUnit(operation),
+				{
+					agentMarker,
+				},
+			);
 			if (!verdict.refused) continue;
 			return {
 				code: EXIT_CODE.VALIDATION,
@@ -612,6 +640,11 @@ export const createGuardCommand = (
 					...(verdict.remedy === undefined ? [] : [verdict.remedy]),
 				].join('\n'),
 			};
+		}
+		// A commit that may proceed is a sign of life for its unit; a
+		// heartbeat that fails never refuses the commit.
+		if (hook === 'pre-commit') {
+			await facts.showLife?.(policy).catch(() => undefined);
 		}
 		return { code: EXIT_CODE.OK };
 	},

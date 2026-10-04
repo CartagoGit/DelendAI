@@ -1,4 +1,5 @@
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import type { IUnitRefFacts } from '@delendai/core/cli';
 
 /** The git hooks `delendai guard` answers for. */
 export type IGuardedHook =
@@ -39,6 +40,19 @@ export interface IGuardFacts {
 	readonly tipKept?: (sha: string, deletedRef: string) => boolean | undefined;
 	/** The worktree that has `ref` checked out, if any. */
 	readonly worktreeOf?: (ref: string) => string | undefined;
+	/**
+	 * The other refs of the unit a pushed work ref belongs to, and the one
+	 * its lease names (async: the leases are files).
+	 */
+	readonly unitRefs?: (
+		policy: IResolvedDevelopmentPolicy,
+		branch: string,
+	) => Promise<IUnitRefFacts | undefined>;
+	/**
+	 * Show life on the unit whose worktree this is; called when a commit
+	 * is allowed to proceed.
+	 */
+	readonly showLife?: (policy: IResolvedDevelopmentPolicy) => Promise<void>;
 	/** The commit `ref` points at now, if it exists (x00703). */
 	readonly refAt?: (ref: string) => string | undefined;
 	/** The paths the commit being made changes; undefined when unknown. */

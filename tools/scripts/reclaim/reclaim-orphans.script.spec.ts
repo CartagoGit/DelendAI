@@ -15,9 +15,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import type { IUnitStandingEntry } from '@delendai/core/cli';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+
 import {
 	buildReclaimReport,
 	classifyBranch,
+	renderReport,
 	type IOrphanBranch,
 	type IOrphanStash,
 } from './reclaim-orphans.script';
@@ -111,5 +115,93 @@ describe('buildReclaimReport', () => {
 		expect(report.deleteSafeBranches).toHaveLength(0);
 		expect(report.reviewBranches).toHaveLength(0);
 		expect(report.stashes).toHaveLength(0);
+	});
+});
+
+describe('units of work', () => {
+	const policy = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: { namespacePrefix: 'delendai' },
+		},
+	});
+	const ref = (agent: string): string =>
+		`delendai/wip/${agent}/implement/x1-S1-g1/work`;
+	const unit = (
+		agent: string,
+		standing: IUnitStandingEntry['standing'],
+	): IUnitStandingEntry => ({
+		ref: ref(agent),
+		worktree: null,
+		publicationAhead: false,
+		publicationRef: null,
+		standing,
+		owner: { agent, session: 's' },
+		silentSeconds: 0,
+		reason: `${standing} for the test`,
+	});
+	const report = buildReclaimReport({
+		branches: [
+			branch(ref('live'), 3),
+			branch(ref('quiet'), 3),
+			branch(ref('gone'), 3),
+			branch(ref('done'), 0),
+			branch(ref('fresh'), 0),
+			branch('feature/loose', 2),
+		],
+		units: [
+			unit('live', 'live'),
+			unit('quiet', 'idle'),
+			unit('gone', 'abandoned'),
+			unit('done', 'delivered'),
+			unit('fresh', 'live'),
+		],
+		stashes: [],
+		currentBranch: 'develop',
+		protectedBranches: ['develop'],
+	});
+
+	it('never lists a live unit as an orphan, even one ahead 0', () => {
+		expect(report.liveUnits.map((u) => u.branch.name)).toEqual([
+			ref('live'),
+			ref('fresh'),
+		]);
+		expect(report.deleteSafeBranches).toHaveLength(0);
+		expect(report.reviewBranches.map((b) => b.name)).toEqual([
+			'feature/loose',
+		]);
+	});
+
+	it('sorts the others by their verdict', () => {
+		expect(report.idleUnits.map((u) => u.unit.owner?.agent)).toEqual([
+			'quiet',
+		]);
+		expect(report.abandonedUnits.map((u) => u.unit.owner?.agent)).toEqual([
+			'gone',
+		]);
+		expect(report.deliveredUnits.map((u) => u.unit.owner?.agent)).toEqual([
+			'done',
+		]);
+	});
+
+	it('derives remedies from the policy and never moves the shared checkout', () => {
+		const text = renderReport(report, 'develop', policy);
+		expect(text).not.toContain('git switch');
+		expect(text).toContain('live units (2)');
+		expect(text).toContain(`delendai work retire --ref=${ref('gone')}`);
+		expect(text).toContain('delendai work enter --proposal=x1 --slice=S1');
+		expect(text).toContain(
+			'delendai work publish --proposal=x1 --slice=S1',
+		);
+		expect(text).toContain('delendai work publish');
+		expect(text).not.toContain(`retire --ref=${ref('live')}`);
+		expect(text).not.toContain(`retire --ref=${ref('quiet')}`);
+	});
+
+	it('keeps the old merge remedy only for a profile that commits directly', () => {
+		const direct = resolveDevelopmentPolicy({
+			development: { profile: 'shared-direct' },
+		});
+		expect(renderReport(report, 'develop', direct)).toContain('git switch');
 	});
 });

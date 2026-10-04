@@ -13,6 +13,7 @@ import type {
 	IGitGuardActor,
 	IGitGuardVerdict,
 	IGuardedGitOperation,
+	IUnitRefFacts,
 } from '../contracts/interfaces/git-guard.interface';
 import { briefWorkModel } from './declare-workflow';
 import { describeWorkIsolation } from './work-isolation';
@@ -29,6 +30,7 @@ import {
 	refuseUnshapedWorkRef,
 } from './git-guard-shape';
 import { refuseLiveUnitDeletion } from './git-guard-live-unit';
+import { refuseSecondRefOfUnit } from './git-guard-unit';
 import { refuseReviewOutsideScope } from './git-guard-review-scope';
 
 const allow = (reason: string): IGitGuardVerdict => ({
@@ -124,6 +126,7 @@ const judgePush = (
 	remoteRef: string,
 	deleting: boolean,
 	deletedTipKept: boolean | undefined,
+	unit?: IUnitRefFacts,
 ): IGitGuardVerdict => {
 	if (!remoteRef.startsWith('refs/heads/')) {
 		return allow('only branches are judged.');
@@ -155,7 +158,12 @@ const judgePush = (
 		};
 	}
 	if (policy.workspace.pinnedCheckout) {
-		const unshaped = refuseUnshapedPublication(policy, branch);
+		// A work ref is judged for an agent as it is for a person: the
+		// push is the moment a scratch or misnamed ref reaches the remote.
+		const unshaped =
+			refuseUnshapedWorkRef(policy, remoteRef, branch, false) ??
+			refuseSecondRefOfUnit(policy, branch, unit) ??
+			refuseUnshapedPublication(policy, branch);
 		if (unshaped !== undefined) return unshaped;
 	}
 	return allow(`\`${branch}\` may be pushed under the policy.`);
@@ -240,6 +248,7 @@ const AGENT_JUDGES: {
 			operation.remoteRef,
 			operation.deleting,
 			operation.deletedTipKept,
+			operation.unit,
 		),
 	stash: (policy) => judgeStash(policy),
 	'branch-delete': (policy, operation) =>

@@ -41,6 +41,7 @@ const workUnitInputSchema = z.object({
 		'checkpoint',
 		'publish',
 		'retire',
+		'reap',
 	]),
 	proposal: z.string().min(1).optional(),
 	slice: z.string().min(1).optional(),
@@ -56,6 +57,7 @@ const workUnitInputSchema = z.object({
 	withWorktree: z.boolean().optional(),
 	keepWorkRef: z.boolean().optional(),
 	noPullRequest: z.boolean().optional(),
+	apply: z.boolean().optional(),
 });
 
 const workUnitOutputSchema = z.object({
@@ -90,6 +92,7 @@ export const workUnitArgs = (
 		...(input.withWorktree === true ? ['--with-worktree'] : []),
 		...(input.keepWorkRef === true ? ['--keep-work-ref'] : []),
 		...(input.noPullRequest === true ? ['--no-pull-request'] : []),
+		...(input.apply === true ? ['--apply'] : []),
 	];
 };
 
