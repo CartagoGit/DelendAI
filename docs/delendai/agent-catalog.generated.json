@@ -1663,14 +1663,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-03"
-			},
-			{
-				"id": "x00871",
-				"title": "close_slice has one evidence decision: CI certification satisfies the validate-required gate",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-10-03"
 			}
 		]
 	}

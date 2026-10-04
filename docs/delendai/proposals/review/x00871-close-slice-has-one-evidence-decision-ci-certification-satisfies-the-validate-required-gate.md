@@ -2,13 +2,13 @@
 id: x00871
 title: "close_slice has one evidence decision: CI certification satisfies the validate-required gate"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-03
-last-transition-id: 6f06c854-b56f-4eea-b53b-5f102958abaa
-last-correlation-id: 6f06c854-b56f-4eea-b53b-5f102958abaa
-last-transition-from: ready
+last-transition-id: 4c5aa72c-18fb-46fa-9a31-bcf7912aaad1
+last-correlation-id: 4c5aa72c-18fb-46fa-9a31-bcf7912aaad1
+last-transition-from: in-progress
 ---
 
 # x00871 — close_slice has one evidence decision: CI certification satisfies the validate-required gate
@@ -39,6 +39,9 @@ Merged proposals with green CI could not close type/e2e-gated slices: the older 
   - "a different tree is refused with a nextAction that never mentions force"
   - "explicit validateEvidence is still accepted"
   - "a red CI result blocks"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- shipped-in: `f448f46e0e6a`
 
 ## acceptance
 
