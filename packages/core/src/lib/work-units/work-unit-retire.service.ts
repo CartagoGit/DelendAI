@@ -214,6 +214,12 @@ export const retired = async (
 			'Nothing was removed: the unit is where it was. Check that the remote accepts the push, then retire it again.',
 		);
 	}
+	// The forge keeps the work now. A copy of the retired ref left in the
+	// clone showed in every graph as a branch tip going nowhere: fifty of
+	// them after one run.
+	for (const each of kept) {
+		readGit(root, ['update-ref', '-d', each.ref, each.commit]);
+	}
 	const restore =
 		kept.length === 0
 			? `nothing to restore: \`${policy.branches.integration}\` already holds the unit's work`
