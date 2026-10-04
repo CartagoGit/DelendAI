@@ -175,7 +175,7 @@ export const buildCloseSliceValidationProvider = (input: {
 			environment:
 				'environmentAgent' in input
 					? input.environmentAgent
-					: process.env['DELENDAI_AGENT_ID'],
+					: process.env.DELENDAI_AGENT_ID,
 			branch,
 			shape: input.branches,
 			proposalId,
