@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 533
+Total exports: 535
 
 | Maturity | Count |
 | --- | --- |
-| stable | 530 |
+| stable | 532 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -345,6 +345,7 @@ Total exports: 533
 | `IWalkTsFilesOptions` | type | stable | `../lib/scan` |
 | `IWipEngine` | type | stable | `../lib/wip-engine/index.interface` |
 | `IWorkflowContribution` | type | stable | `../lib/contracts` |
+| `IWorkflowKpis` | type | stable | `../lib/contracts/interfaces/workflow-kpis.interface` |
 | `IWorkspacePathProvider` | type | stable | `../contracts` |
 | `IWorktreeImpactPolicyInput` | type | stable | `../lib/contracts` |
 | `IWorktreeImpactPolicyVerdict` | type | stable | `../lib/contracts` |
@@ -417,6 +418,7 @@ Total exports: 533
 | `readAbsoluteTextSafe` | const | stable | `../lib/filesystem/safe-workspace-reader.helpers` |
 | `readMetricsSnapshot` | const | stable | `../lib/metrics/payload-percentile` |
 | `readProposalsIndex` | const | stable | `../lib/cli/read-proposals-index` |
+| `readWorkflowKpis` | const | stable | `../lib/work-units/workflow-kpis.service` |
 | `realpathContained` | const | stable | `../lib/shared/contain-realpath` |
 | `realProbeDeps` | const | stable | `../lib/external-tool/probe` |
 | `recall` | const | stable | `../lib/observability/activation-kpis` |
