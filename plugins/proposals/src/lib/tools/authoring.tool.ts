@@ -25,6 +25,7 @@ import {
 	approvalNote,
 	commitIsIntegrated,
 	deliveredCommitOf,
+	supersedingDelivery,
 } from '../services/review-verdict-evidence';
 import { verdictClaimRefusal } from '../services/review-claim.service';
 import { canonicalRoleOf } from '../shared/agent-conventions';
@@ -342,6 +343,29 @@ const unintegratedEvidenceError = async (
 		? null
 		: toApproveEvidenceError(
 				`evidence.commitHash ${commit} is not on ${integration}: approve what landed, not a commit of a branch that may still change`,
+			);
+};
+
+/** An approval of a delivery the same proposal has since replaced. */
+const supersededEvidenceError = async (
+	run: IGitRunner,
+	integration: string | undefined,
+	proposalId: string,
+	files: readonly string[],
+	commit: string | undefined,
+): Promise<IToolTextResult | null> => {
+	if (integration === undefined || commit === undefined) return null;
+	const newer = await supersedingDelivery(
+		run,
+		integration,
+		proposalId,
+		files,
+		commit,
+	);
+	return newer === undefined
+		? null
+		: toApproveEvidenceError(
+				`evidence.commitHash ${commit} is not the slice as it stands: ${proposalId} was delivered again by ${newer.slice(0, 12)}, which changed the same files. Read that one and approve it`,
 			);
 };
 
@@ -2326,6 +2350,15 @@ export const buildReviewRegistration = (
 										createGitRunner(scoped.workspaceRoot),
 									scoped.developmentPolicy?.branches
 										.integration,
+									args.evidence?.commitHash,
+								)) ??
+								(await supersededEvidenceError(
+									scoped.run ??
+										createGitRunner(scoped.workspaceRoot),
+									scoped.developmentPolicy?.branches
+										.integration,
+									entry.id,
+									slicePlan?.files ?? [],
 									args.evidence?.commitHash,
 								));
 							if (evidenceError !== null) {

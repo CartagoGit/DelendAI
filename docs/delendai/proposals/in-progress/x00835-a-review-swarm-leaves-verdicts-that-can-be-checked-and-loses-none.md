@@ -478,6 +478,9 @@ the good verdicts' shape (P1) becomes the required shape.
 - Packs that went stale are settled by extracting their verdicts and
   re-applying the ones still valid on the current revision; the rest are
   recorded as superseded. No pack is rebased or merged to catch up.
+- Shipped under S20: an approval of a delivery the proposal has since
+  replaced is refused. Still pending here: the verdict event with its
+  revision, the pack that describes itself, and automatic settlement.
 
 ### S15 — Recovery runs need no global git identity, and read-only writes nothing
 
@@ -542,14 +545,17 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S20 — A verdict names the newest commit, and a reviewer that ran nothing records none
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
-- A commit that a later commit of the same unit superseded is refused with
-  the newer one named (E3).
-- A reviewer that could not inspect or run anything does not record a
-  verdict: the tool tells it to release the claim (E9, E10).
-- The verdict text is checked for language like the rest of the proposal.
+- An approval names a commit; the pull request that brought that commit in
+  is its delivery. When a later delivery of the same proposal changed the
+  slice's files, the approval is refused and the newer delivery named: the
+  reviewer reads what the slice is now (E3). A later change to those files
+  that is no delivery of the proposal does not count, so who implemented
+  the slice is still read from the commit the reviewer named.
+- A reviewer that ran nothing, and the language of a verdict's text, are
+  S27.
 
 ### S21 — The queue goes red while something hangs on the forge
 
@@ -633,6 +639,17 @@ the good verdicts' shape (P1) becomes the required shape.
   one of two can win, so two machines entering one slice in the same minute
   are told apart before either writes: today the held-slice refusal reads
   refs each machine has already fetched.
+
+### S27 — A reviewer that ran nothing records nothing, in the project's language
+
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
+- A reviewer that could not inspect or run anything does not record a
+  verdict: the tool tells it to release the claim (E9, E10).
+- A verdict's text is in the language the project declares for its
+  documents. That needs a declared language: a guess would refuse correct
+  verdicts.
 
 ## dependency graph
 
