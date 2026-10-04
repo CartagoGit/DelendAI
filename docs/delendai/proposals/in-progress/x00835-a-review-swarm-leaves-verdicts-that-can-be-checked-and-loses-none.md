@@ -639,6 +639,11 @@ the good verdicts' shape (P1) becomes the required shape.
 - The commit carries only the files the slice declares that this agent
   changed; anything else the event listed stays in the working tree (E13:
   one automatic commit carried another proposal's files).
+- Not done on purpose yet: the persistence layer passes the claim whole so a
+  checkpoint never drops a path the ref already made durable. Narrowing it
+  needs the producer of the event's file list examined first, so the fix
+  lands where the foreign files came in. Since S9 no unit is opened under an
+  undeclared identity, which is how that commit came to exist.
 
 ### S26 — An implementation unit reserves its slice on the forge
 
