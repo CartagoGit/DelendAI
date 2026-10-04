@@ -301,7 +301,7 @@ workflow files. Both inventory findings are resolved by S4.
 
 ### S5 — Lint de frontera y documentación de compatibilidad
 
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S2, S3, S4]
 - **Files**:
     - `tools/scripts/lint/core-proposals-boundary.script.ts`
@@ -335,11 +335,10 @@ plugs in without editing the core, through the three registries the
 proposals plugin uses (adoption extensions, workflow contribution, stable
 tool descriptors), with its files as the reference.
 - shipped-in: `f99521d1bf31`
-- review-state: changes_requested
-- review-implementer: unrecorded
-- review-reviewer: gpt-5.4
-- review-log: requested_changes by gpt-5.4 — El lint real está verde (bun tools/scripts/lint/core-proposals-boundary.script.ts), pero la slice declara como gate bun run lint:core-proposals-boundary y ese comando no existe en package.json; reproduzco Script not found "lint:core-proposals-boundary". Ajustad el gate declarado o exponed el script para que la aceptación sea reproducible.
 - review-attribution: unrecorded — no delivering commit was named for r00043 S5; independence could not be verified, opened by gpt-5.4
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by gpt-5.4 — El lint real está verde (bun tools/scripts/lint/core-proposals-boundary.script.ts), pero la slice declara como gate bun run lint:core-proposals-boundary y ese comando no existe en package.json; reproduzco Script not found "lint:core-proposals-boundary". Ajustad el gate declarado o exponed el script para que la aceptación sea reproducible.
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
