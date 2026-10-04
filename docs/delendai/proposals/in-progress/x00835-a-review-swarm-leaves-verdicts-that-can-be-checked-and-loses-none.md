@@ -423,16 +423,16 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S9 — An automatic commit is made once, by an agent, of the slice's files
 
-- **Status**: pending
-- **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`
-- **Gate**: `npx vitest run plugins/commit-policy/src/lib/engine.spec.ts`
-- A slice event is committed by one server only (the one whose agent holds
-  the slice), never by every server that heard it (E13).
-- The commit carries only the files the slice declares that this agent
-  changed; anything else in the working tree stays where it is.
-- No automatic commit without a declared agent identity: a `client-…` or
-  `unknown-agent` identity skips the commit and says why. The detection reuses
-  the other orchestrator's agent-identification helper when it lands.
+- **Status**: review
+- **Files**: `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/persistence.interface.ts`, `plugins/commit-policy/src/lib/services/work-ref-naming.service.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`
+- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`
+- A slice event reaches every server connected to the workspace. A server
+  whose agent was never declared (its name comes from the program that
+  connected, or from nothing) checkpoints nothing and says
+  `WIP_NO_AGENT_IDENTITY` with what to declare: no unit is opened under
+  `client-…` or `unknown-agent` again (E13).
+- What a checkpoint carries stays the claim of the event; narrowing it to
+  the files the slice declares is S25.
 
 ### S10 — A reviewer does not implement what it reviews
 
@@ -480,6 +480,10 @@ the good verdicts' shape (P1) becomes the required shape.
   `-c user.name/-c user.email` when the machine's git names nobody, and
   leave a configured identity alone. A read-only run already made no
   commit (G3).
+- The trial merge `forge:refresh` makes to compare trees names a committer
+  the same way (`tools/scripts/forge/refresh-candidates.script.ts`,
+  `tools/scripts/forge/refresh-candidates.script.spec.ts`): the job still
+  printed "empty ident name" after the first fix, from a second script.
 
 ### S16 — The run knows who joined it
 
@@ -541,13 +545,18 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S21 — The queue goes red while something hangs on the forge
 
-- **Status**: pending
-- **Files**: `.github/workflows/keep-the-queue-moving.yml`
-- **Gate**: `bun run work:doctor -- --forge`
-- The queue runs `work doctor --forge` after every merge and fails while a
-  publication or a work ref hangs, so a run that leaves work behind cannot
-  look finished. On a runner there is no worktree to tell a live unit's
-  backup from an abandoned ref: this needs x00850's lease.
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `tools/scripts/git/check-workflow-invariants.script.ts`, `.github/workflows/keep-the-queue-moving.yml`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- A lease lives in the clone that entered the unit, so a runner has none.
+  A work ref on the forge is judged by what it says itself: one that holds
+  nothing the integration branch lacks has landed, one whose last commit is
+  older than the time a silent unit is given was left, and anything else is
+  somebody's backup and is left alone.
+- The queue's step no longer ends in `|| true`: it fails while a
+  publication holds nothing, is not canonical, or a work ref hangs. A
+  candidate still behind is reported and not counted, since bringing it
+  forward is what the queue has just started (`--except=`).
 
 ### S22 — A unit that will not land is retired, with its work kept
 
@@ -562,6 +571,10 @@ the good verdicts' shape (P1) becomes the required shape.
 - It refuses a branch that is no unit, a missing reason, uncommitted
   changes, and a unit with a worktree unless `--with-worktree` is passed.
 - `work doctor` names it as the remedy for a ref nobody works on.
+- With leases (x00850): another agent's live unit is refused whatever the
+  caller asserts, its owner retires it freely, and a recent unit with no
+  lease needs `--unowned`, the caller's word that it is not somebody's. A
+  worktree no longer needs a flag of its own.
 
 ### S23 — A kept unit is brought forward or named, and retiring asks nobody to tidy first
 
@@ -577,6 +590,11 @@ the good verdicts' shape (P1) becomes the required shape.
 - `work retire` keeps uncommitted changes to tracked files as a second
   retired ref instead of refusing, refuses only files git does not track,
   and keeps nothing for a tip the integration branch already holds (E26).
+- The held-slice refusal asks the lease: a unit its owner left, or whose
+  work landed, no longer keeps other agents out of its slice.
+- `post-merge` in the main checkout runs `work reap --apply`
+  (`lefthook.yml`): a unit whose work the merge brought in is collected
+  without waiting for a person.
 
 ### S24 — Only the main checkout installs the clone's hooks
 
@@ -588,6 +606,15 @@ the good verdicts' shape (P1) becomes the required shape.
   the only thing that installs hooks (E24).
 - The queue's refresh installs with `--ignore-scripts` and merges with no
   hooks: a throwaway worktree writes nothing into the clone it belongs to.
+
+### S25 — An automatic commit carries the slice's files, not the event's
+
+- **Status**: pending
+- **Files**: `plugins/commit-policy/src/lib/engine.ts`
+- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/engine-policy-routing.spec.ts`
+- The commit carries only the files the slice declares that this agent
+  changed; anything else the event listed stays in the working tree (E13:
+  one automatic commit carried another proposal's files).
 
 ## dependency graph
 

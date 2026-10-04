@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest';
 
 import { repoRoot } from '../lib/repo-root';
 
-import { planRefresh } from './refresh-candidates.script';
+import { planRefresh, trialMergeArgs } from './refresh-candidates.script';
 import type { ICandidate } from './refresh-candidates.interface';
 
 const candidate = (over: Partial<ICandidate> = {}): ICandidate => ({
@@ -198,5 +198,33 @@ describe('a shallow clone is not a conflict (x00578)', () => {
 		// `sharesHistory` is optional: an older caller that does not probe
 		// must behave exactly as before.
 		expect(planRefresh(ours).action).toBe('refresh');
+	});
+});
+
+describe('the trial merge', () => {
+	it('names a committer on a machine whose git names nobody, and runs no hook', () => {
+		const args = trialMergeArgs('develop', {});
+		expect(args).toContain('user.name=delendai queue');
+		expect(args).toContain('user.email=queue@delendai.invalid');
+		expect(args).toContain('core.hooksPath=/dev/null');
+		expect(args.slice(-4)).toEqual([
+			'merge',
+			'origin/develop',
+			'--no-edit',
+			'-q',
+		]);
+	});
+
+	it('leaves a configured identity alone', () => {
+		expect(
+			trialMergeArgs('develop', { name: 'C', email: 'c@example.com' }),
+		).toEqual([
+			'-c',
+			'core.hooksPath=/dev/null',
+			'merge',
+			'origin/develop',
+			'--no-edit',
+			'-q',
+		]);
 	});
 });

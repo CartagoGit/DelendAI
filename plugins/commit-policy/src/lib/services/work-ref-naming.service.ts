@@ -41,6 +41,23 @@ export const workRefAgent =
 				: { client: sources.clientName }),
 		}).id;
 
+/**
+ * Whether those sources DECLARE an agent: its model, or the id the
+ * environment gives it. A name inferred from the connecting program, or
+ * from nothing, identifies no agent.
+ */
+export const workRefAgentDeclared =
+	(sources: IWorkRefAgentSources): (() => boolean) =>
+	() => {
+		const source = resolveWorkAgentId({
+			...(sources.model === undefined ? {} : { model: sources.model }),
+			...(sources.host === undefined
+				? {}
+				: { environment: sources.host }),
+		}).source;
+		return source === 'model' || source === 'environment';
+	};
+
 export const agentIdOf = (agentId: IWorkRefAgentId): string =>
 	typeof agentId === 'function' ? agentId() : agentId;
 

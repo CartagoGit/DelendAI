@@ -462,6 +462,14 @@ post-merge:
         hydrate-candidates:
             run: bun tools/scripts/git/hydrate-candidates-after-merge.script.ts
 
+        # A unit whose work this merge brought in has nothing left to do:
+        # its worktree and local branch go, unless the worktree holds an
+        # edit of its own. Left to a person, delivered units stayed for
+        # days behind the integration branch, looking like work to come.
+        # Only from the main checkout, and never failing the hook.
+        reap-delivered-units:
+            run: '[ "$(git rev-parse --absolute-git-dir)" = "$(git rev-parse --path-format=absolute --git-common-dir)" ] && bun packages/cli/src/index.ts --workspace="$(git rev-parse --show-toplevel)" work reap --apply >/dev/null 2>&1 || true'
+
         # And then say whether it worked. A hydration that leaves the
         # shared checkout dirty, or a candidate behind, used to be found
         # by somebody looking at a Git graph later; this says so at the
