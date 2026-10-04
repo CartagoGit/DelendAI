@@ -15,8 +15,10 @@
 import { compileWorkRefParser } from '@delendai/core/public';
 
 import {
+	CLAIM_TRAILERS_FORMAT,
 	REVIEW_CLAIM_TRAILER,
 	REVIEW_PACK_SIZE,
+	REVIEW_RELEASE_TRAILER,
 } from '../contracts/constants/review-claims.constant';
 import type {
 	IReviewClaimOutcome,
@@ -24,8 +26,12 @@ import type {
 } from '../contracts/interfaces/review-claim-outcome.interface';
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
-import { reviewClaims, unitOfRef } from './review-claims.service';
-import { reserveReview } from './review-reservation.service';
+import {
+	heldFromTrailers,
+	reviewClaims,
+	unitOfRef,
+} from './review-claims.service';
+import { releaseReview, reserveReview } from './review-reservation.service';
 
 /** What a reviewer with a full pack does next. */
 export const publishPackStep = (namespacePrefix: string): string =>
@@ -78,20 +84,13 @@ export const claimForReview = async (
 	}
 	const own = await run([
 		'log',
-		`--format=%(trailers:key=${REVIEW_CLAIM_TRAILER},valueonly)`,
+		CLAIM_TRAILERS_FORMAT,
 		'HEAD',
 		'--not',
 		integration,
 		'--',
 	]);
-	const held = new Set(
-		own.ok
-			? own.output
-					.split('\n')
-					.map((line) => line.trim().toLowerCase())
-					.filter((line) => line.length > 0)
-			: [],
-	);
+	const held = new Set(own.ok ? heldFromTrailers(own.output) : []);
 	if (held.has(id)) return { kind: 'already-claimed' };
 	if (held.size >= REVIEW_PACK_SIZE) {
 		return { kind: 'pack-full', size: REVIEW_PACK_SIZE };
@@ -181,4 +180,62 @@ export const verdictClaimRefusal = async (
 		};
 	}
 	return undefined;
+};
+
+/**
+ * Give `proposalId` back from the checkout's review unit: a commit that
+ * says so, and the forge's reservation with it. For a reviewer that could
+ * not inspect or run what it claimed: it has no verdict to record, and a
+ * verdict recorded anyway sent finished work back to its implementer.
+ */
+export const releaseClaim = async (
+	run: IGitRunner,
+	shape: IWorkRefShape | undefined,
+	proposalId: string,
+	integration: string,
+	why: string,
+): Promise<
+	| { readonly kind: 'released'; readonly commit?: string }
+	| { readonly kind: 'not-held' }
+	| { readonly kind: 'failed'; readonly reason: string }
+> => {
+	if (shape === undefined) return { kind: 'not-held' };
+	const { unit, review } = await currentUnit(run, shape);
+	if (unit === undefined || !review) return { kind: 'not-held' };
+	const own = await run([
+		'log',
+		CLAIM_TRAILERS_FORMAT,
+		'HEAD',
+		'--not',
+		integration,
+		'--',
+	]);
+	const held = own.ok ? heldFromTrailers(own.output) : [];
+	if (!held.includes(proposalId.toLowerCase())) return { kind: 'not-held' };
+	const committed = await run([
+		'commit',
+		'--only',
+		'--allow-empty',
+		'-q',
+		'-m',
+		`chore(review): release ${proposalId}\n\n${why}`,
+		'--trailer',
+		`${REVIEW_RELEASE_TRAILER}: ${proposalId}`,
+	]);
+	if (!committed.ok) {
+		return { kind: 'failed', reason: committed.reason ?? 'git refused' };
+	}
+	await releaseReview(run, proposalId, {
+		unit,
+		agent:
+			compileWorkRefParser(
+				shape.workRefTemplate,
+				shape.workRefPrefix,
+			)?.parse(unit)?.agent ?? '',
+	});
+	const head = await run(['rev-parse', 'HEAD']);
+	return {
+		kind: 'released',
+		...(head.ok ? { commit: head.output.trim() } : {}),
+	};
 };

@@ -22,3 +22,16 @@ export const REVIEW_CLAIM_TRAILER = 'Claims';
  * reached the integration branch. A pack ends in a pull request.
  */
 export const REVIEW_PACK_SIZE = 5;
+
+/**
+ * The trailer of a commit that gives a claim back. A reviewer that could
+ * not inspect or run what it claimed has no verdict to record; without a
+ * way to let go it recorded one anyway.
+ */
+export const REVIEW_RELEASE_TRAILER = 'Releases';
+
+/**
+ * The `git log --format` that lists, per commit, its `Claims` ids, a tab,
+ * and its `Releases` ids.
+ */
+export const CLAIM_TRAILERS_FORMAT = `--format=%(trailers:key=${REVIEW_CLAIM_TRAILER},valueonly,separator=%x2C)%x09%(trailers:key=${REVIEW_RELEASE_TRAILER},valueonly,separator=%x2C)`;

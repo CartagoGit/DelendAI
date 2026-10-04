@@ -686,14 +686,18 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S27 — A reviewer that ran nothing records nothing, in the project's language
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
-- A reviewer that could not inspect or run anything does not record a
-  verdict: the tool tells it to release the claim (E9, E10).
-- A verdict's text is in the language the project declares for its
-  documents. That needs a declared language: a guess would refuse correct
-  verdicts.
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `plugins/proposals/src/lib/contracts/constants/review-claim-schema.constant.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
+- A reviewer that could not inspect or run what it claimed gives the claim
+  back instead of recording a verdict: `delendai review release <id>
+  --note="<why>"` (the claim tool's `release`). It commits a `Releases`
+  trailer, which undoes the claim for every reader of the unit, and deletes
+  the forge reservation, so the next reviewer takes the proposal at once.
+  `review next` tells every reviewer about it beside the two verdicts (E9,
+  E10).
+- A verdict's text in the language the project declares for its documents
+  still needs that declaration; a guess would refuse correct verdicts.
 
 ### S28 — A retired slice owes nothing, and a proposal's own document is never a missing file
 
