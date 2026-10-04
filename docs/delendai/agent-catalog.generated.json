@@ -1625,14 +1625,6 @@
 				"date": "2026-09-30"
 			},
 			{
-				"id": "x00773",
-				"title": "A proposal's lifecycle completes inside the unit that implemented it",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-30"
-			},
-			{
 				"id": "x00795",
 				"title": "The core public surface is back under budget and the gate runs in CI",
 				"track": "trust",
