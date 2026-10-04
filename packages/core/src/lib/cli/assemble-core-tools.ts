@@ -76,6 +76,7 @@ import type {
 	IOverviewToolEntry,
 } from '../tools/overview-tool';
 import { buildOverviewToolRegistration } from '../tools/overview-tool';
+import { overviewUnitsLine } from '../work-units/unit-standings.service';
 import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
@@ -409,6 +410,13 @@ export const assembleCoreTools = (
 			corePrefix,
 			buildSnapshot,
 			toolSurfaceRuntime,
+			developmentPolicy === undefined
+				? undefined
+				: () =>
+						overviewUnitsLine({
+							root: workspace.root,
+							policy: developmentPolicy,
+						}),
 		),
 		buildConfigurationCenterToolRegistration(
 			corePrefix,
