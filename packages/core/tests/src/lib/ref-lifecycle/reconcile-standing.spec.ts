@@ -39,7 +39,7 @@ describe('a work ref under the unit verdict', () => {
 	it('needs attention, and is still never reaped, when abandoned', () => {
 		const result = roleFor('abandoned');
 		expect(result.needsAttention.map((v) => v.name)).toEqual([WORK]);
-		expect(result.verdicts[0]?.reason).toContain('work abandon');
+		expect(result.verdicts[0]?.reason).toContain('work retire');
 		expect(result.reapable).toHaveLength(0);
 	});
 });

@@ -163,8 +163,10 @@ await recordUnitEntered({ cwd: ${JSON.stringify(repo.root)}, ref: ${JSON.stringi
 			policy: unitPolicy,
 			now: later,
 		});
-		expect(line).toBe('1 abandoned: work abandon --ref=<ref>');
-		expect(line).toContain('work abandon');
+		expect(line).toBe(
+			'1 abandoned: work retire --ref=<ref> --reason=<why>',
+		);
+		expect(line).toContain('work retire');
 		expect(
 			summarizeStandings(
 				await readUnitStandings({
@@ -173,7 +175,7 @@ await recordUnitEntered({ cwd: ${JSON.stringify(repo.root)}, ref: ${JSON.stringi
 					now: later,
 				}),
 			).nextAction,
-		).toContain('abandon');
+		).toContain('retire');
 	});
 });
 
