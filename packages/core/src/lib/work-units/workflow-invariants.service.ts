@@ -167,7 +167,7 @@ export const checkWorkflowInvariants = (input: {
 				: abandoned.length === 0
 					? `${String(localWork.length)} live, none abandoned`
 					: `${String(abandoned.length)}: ${abandoned.slice(0, 3).join(', ')}`,
-		remedy: 'publish it, or delete it once its content is proven elsewhere',
+		remedy: 'publish it (`delendai work publish`), or retire it with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
 
 	// 4. Every published ref is shaped like the work it published.
@@ -281,7 +281,7 @@ export const checkWorkflowInvariants = (input: {
 			remoteWork.length === 0
 				? 'none'
 				: `${String(remoteWork.length)} ref(s)`,
-		remedy: 'publish the unit (`delendai work publish`); delete the ref only once its commits are on the integration branch or a publication',
+		remedy: 'publish the unit (`delendai work publish`); one that will not land is retired with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
 
 	// 8. A publication still on the forge holds something the integration
