@@ -15,7 +15,7 @@ export const LINT_SCRIPT_REGISTRY: readonly ILintScriptRegistration[] = [
 		scope: 'packages/core/src',
 		description:
 			'Prevents new proposals-domain imports, path literals and workflow strings from entering packages/core/src without a time-boxed exception.',
-		gate: 'manual',
+		gate: 'validate',
 	},
 ] as const;
 
