@@ -142,7 +142,6 @@ line.
 - **Gate**: `npx vitest run packages/ui-extension plugins/proposals/tests/src/lib/agents packages/core/tests/src/lib/services/shell packages/core/tests/src/lib/shared tools/tests/ci/local-repro.spec.ts`
 - **Files**:
   - `apps/web/scripts/fetch-brand-logos.ts`
-  - `docs/delendai/proposals/review/x00758-the-release-carries-no-new-code-scanning-alert.md`
   - `extensions/vscode/src/dev/pages/configuration-center.ts`
   - `extensions/vscode/src/dev/settings-panel.ts`
   - `extensions/vscode/src/test/open-auto-agent-selector.spec.ts`
