@@ -236,6 +236,50 @@ describe('handing a proposal to review', () => {
 		expect(result.recorded).toContainEqual({ slice: 'S1', commit: merge });
 	});
 
+	it('finds a slice delivered by the pull request that wrote its proposal, whatever its commits say', async () => {
+		const root = repo(['src/b.ts']);
+		const current = git(root, 'branch', '--show-current');
+		git(root, 'switch', '-q', 'develop');
+		git(
+			root,
+			'switch',
+			'-q',
+			'-c',
+			'delendai/pr/glm-5/create/x00099-all-g1/w',
+		);
+		mkdirSync(join(root, 'src'), { recursive: true });
+		mkdirSync(join(root, 'docs/proposals/ready'), { recursive: true });
+		writeFileSync(join(root, 'src/a.ts'), 'export {};\n');
+		writeFileSync(
+			join(root, 'docs/proposals/ready/x00001-the-work.md'),
+			'# the work\n',
+		);
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'fix: the work, and its proposal');
+		git(root, 'switch', '-q', 'develop');
+		git(
+			root,
+			'merge',
+			'-q',
+			'--no-ff',
+			'-m',
+			'Merge pull request #2 from o/delendai/pr/glm-5/create/x00099-all-g1/w',
+			'delendai/pr/glm-5/create/x00099-all-g1/w',
+		);
+		const merge = git(root, 'rev-parse', 'HEAD').slice(0, 12);
+		git(root, 'switch', '-q', current);
+		git(root, 'merge', '-q', '--no-edit', 'develop');
+
+		const result = await entry(
+			root,
+			proposal(slice('S1', '`src/a.ts`') + slice('S2', '`src/b.ts`')),
+		);
+
+		expect(result).toMatchObject({ ok: true });
+		if (!result.ok) return;
+		expect(result.recorded).toContainEqual({ slice: 'S1', commit: merge });
+	});
+
 	it('does not take a merge of another unit that changed the files and never cites the proposal', async () => {
 		const root = repo(['src/b.ts']);
 		mergedEarlier(root, 'x00099-all-g1', 'src/a.ts');

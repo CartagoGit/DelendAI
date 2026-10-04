@@ -791,8 +791,14 @@ the good verdicts' shape (P1) becomes the required shape.
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - Handing a proposal to review records each slice's delivery. When no merge
   names the slice's unit, the delivery is the newest merge that changed the
-  slice's files and among whose commits one cites the proposal; a merge of
-  another unit that never cites it is not taken (E32).
+  slice's files and in which the commit that cites the proposal is one that
+  changed them, or that created the proposal's own document beside the
+  work. A merge of another unit that does neither is not taken (E32). The
+  seven proposals of E32 resolve to the pull requests that delivered them.
+- `work publish` reports a unit kept on purpose as `keep-work-ref`, a step
+  that succeeded, not as a failed `remove-work-ref`
+  (`packages/core/src/lib/work-units/work-publish.service.ts`,
+  `packages/core/src/lib/work-units/work-unit-land.service.ts`).
 
 ## dependency graph
 

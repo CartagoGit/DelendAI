@@ -193,9 +193,11 @@ export const publishWorkUnit = (
 	step('prove-publication', true, `${remote} reports it at ${tip.out}.`);
 
 	if (request.keepWorkRef) {
+		// A step of its own, and one that succeeded: reported as a failed
+		// removal, a unit kept on purpose read as a publication gone wrong.
 		step(
-			'remove-work-ref',
-			false,
+			'keep-work-ref',
+			true,
 			`kept: ${request.keepWorkRefBecause ?? '--keep-work-ref was passed'}.`,
 		);
 		return { published: true, workRefRemoved: false, steps, tip: tip.out };

@@ -113,8 +113,10 @@ const deliveringMergeOf = async (
 
 /**
  * The delivery of a slice whose unit was named after something else: the
- * newest merge that changed the slice's files and among whose commits one
- * cites the proposal.
+ * newest merge in which a commit that cites the proposal changed the
+ * slice's files, or that created the proposal's own document beside the
+ * work. A later pull request that touched the files for its own reasons
+ * and only moved the document is not a delivery of the slice.
  *
  * A proposal written and implemented in one unit, or delivered from a unit
  * opened for another id, lands through a merge that names that unit and
@@ -149,8 +151,25 @@ const deliveringMergeByCitation = async (
 			'--regexp-ignore-case',
 			`--grep=${proposalId}`,
 			`${record.commit}^1..${record.commit}^2`,
+			'--',
+			...files,
 		]);
 		if (cited.ok && cited.output.trim().length > 0) return record.commit;
+		// Or the pull request that wrote the proposal: it created the
+		// proposal's own document beside the work. Created, not moved: a
+		// later pull request that carries the document to another status
+		// renames it.
+		const wrote = await run([
+			'diff',
+			'--name-status',
+			'-M',
+			'--diff-filter=A',
+			`${record.commit}^1`,
+			record.commit,
+			'--',
+			`:(glob)**/${proposalId.toLowerCase()}-*.md`,
+		]);
+		if (wrote.ok && wrote.output.trim().length > 0) return record.commit;
 	}
 	return undefined;
 };
