@@ -39,6 +39,8 @@ Merged proposals with green CI could not close type/e2e-gated slices: the older 
   - "a different tree is refused with a nextAction that never mentions force"
   - "explicit validateEvidence is still accepted"
   - "a red CI result blocks"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
