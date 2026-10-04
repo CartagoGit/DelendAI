@@ -64,13 +64,15 @@ not require it (`develop` has `strict: false`); the queue did.
 
 ### S1 — The queue lands every independent candidate
 
-- **Status**: in-progress
-- **Gate**: `npx vitest run tools/scripts/forge/independent-candidates.spec.ts`
+- **Status**: review
+- **Gate**: `npx vitest run tools/scripts/forge/independent-candidates.spec.ts tools/scripts/forge/queue-acceptance.spec.ts`
 - **Files**:
   - `tools/scripts/forge/independent-candidates.ts`
   - `tools/scripts/forge/independent-candidates.interface.ts`
   - `tools/scripts/forge/independent-candidates.spec.ts`
   - `tools/scripts/forge/candidate-footprint.ts`
+  - `tools/scripts/forge/queue-acceptance.ts`
+  - `tools/scripts/forge/queue-acceptance.spec.ts`
   - `tools/scripts/forge/queue-acceptance.ts`
   - `tools/scripts/forge/keep-the-queue-moving.script.ts`
   - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
