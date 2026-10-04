@@ -17,6 +17,7 @@
 import { execFileSync } from 'node:child_process';
 
 import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
+import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import {
 	ABANDONED_AFTER_LEASE_WINDOWS,
 	SECONDS_PER_MINUTE,
@@ -80,4 +81,39 @@ export const hangingForgeWorkRefs = (input: {
 				]
 			: [];
 	});
+};
+
+/**
+ * A publication still on the forge holds something the integration branch
+ * lacks. One that holds nothing has landed, or never carried work: either
+ * way it is a branch that looks like a pull request to come and is not.
+ */
+export const spentPublicationsInvariant = (input: {
+	readonly root: string;
+	readonly remote: string;
+	readonly integration: string;
+	readonly published: readonly string[];
+}): IInvariantResult => {
+	const { remote, integration, published } = input;
+	const spent = published.filter(
+		(ref) =>
+			git(input.root, [
+				'rev-list',
+				'--count',
+				`${remote}/${integration}..${remote}/${ref}`,
+			]) === '0',
+	);
+	return {
+		scope: 'forge',
+		id: 'publications-hold-work',
+		claim: `every publication holds work \`${integration}\` lacks`,
+		holds: spent.length === 0,
+		observed:
+			published.length === 0
+				? 'no publication refs'
+				: spent.length === 0
+					? `${String(published.length)} ref(s), all holding work`
+					: `${String(spent.length)} spent: ${spent.slice(0, 3).join(', ')}`,
+		remedy: `git push ${remote} --delete <ref> — its commits are already on \`${integration}\``,
+	};
 };

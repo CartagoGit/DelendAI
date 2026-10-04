@@ -308,6 +308,19 @@ The same run exposed the two Opus orchestrators, this author included:
   that no script provided: the lint behind it was registered as manual and
   ran nowhere.
 
+- E29 — the clone held 5,150 commits no ref reached. Read one by one: 4,127
+  had their change in `develop` already, 425 were empty, 83 were kept on the
+  forge as retired units, and most of the rest were bookkeeping. Eleven
+  were work, three to four weeks old, whose files had never reached
+  `develop` under any name: a host bridge, a shell capability registry, a
+  compare-and-swap repository, a branch classifier, a stash of untracked
+  files. Nothing had ever listed them. They are on the forge now under
+  `refs/delendai/retired/rescued-2026-10-04/`, and the rest was pruned.
+- E30 — the owner's rule, stated on 2026-10-04: work is committed in its
+  unit and the unit is on the forge, always; what is not work disappears,
+  always; and the owner can see which is which without asking git for its
+  unreachable objects.
+
 ### What good verdicts did
 
 - P1 — `MiniMaxM3` named the delivering commit and the gate with its count in
@@ -696,8 +709,7 @@ the good verdicts' shape (P1) becomes the required shape.
   the forge reservation, so the next reviewer takes the proposal at once.
   `review next` tells every reviewer about it beside the two verdicts (E9,
   E10).
-- A verdict's text in the language the project declares for its documents
-  still needs that declaration; a guess would refuse correct verdicts.
+- The language of a verdict's text is S30.
 
 ### S28 — A retired slice owes nothing, and a proposal's own document is never a missing file
 
@@ -709,6 +721,32 @@ the good verdicts' shape (P1) becomes the required shape.
   no delivering commit is asked of it on the way to review (E28).
 - A slice file that is the proposal's own document, in whatever status
   folder, is never reported as missing.
+
+### S29 — Work nobody can see is named, and retired work can be read
+
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/hidden-work.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/hidden-work.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/hidden-work.service.spec.ts packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- `work doctor` gains three invariants: `no-stashed-work`,
+  `units-are-on-the-forge` (a unit's commits that stayed on this machine)
+  and `units-are-committed` (changes a unit left uncommitted). Each has a
+  grace period, read from when the work was last touched, so work in hand
+  is not called work left behind (E29, E30).
+- `work retired` lists what the forge keeps of units that did not land and
+  of work rescued from nowhere, and says how to read one and bring it back.
+
+### S30 — A project declares its documentation language and who counts as another reviewer
+
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/documentation-language.service.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/index.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `delendai.config.json`, `plugins/proposals/tests/src/lib/services/documentation-language.service.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/documentation-language.service.spec.ts`
+- `documentationLanguage: "en"` (proposals plugin option): a verdict whose
+  note is plainly not English is refused and writes nothing. Undeclared,
+  nothing is checked. This repository declares `en` (E9).
+- `reviewIndependence` defaults to `instance`: another agent of the same
+  model may review, so a project with one subscription can review its own
+  work, as long as the two instances are seen to differ (S13). A project
+  that wants another model sets `model`; this repository does.
 
 ## dependency graph
 

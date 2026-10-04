@@ -294,3 +294,54 @@ export const retired = async (
 	};
 	return { code: EXIT_CODE.OK, data: outcome };
 };
+
+/**
+ * `work retired` — what was retired, read from the forge: the units that
+ * did not land and the work rescued from nowhere. Retiring keeps work
+ * where no branch list shows it; this is how it is seen again.
+ */
+export const retiredListed = async (
+	ctx: IWorkUnitContext,
+): Promise<IWorkUnitResult> => {
+	const opened = await openWork(ctx);
+	if (!('engine' in opened)) return opened;
+	const { policy } = opened;
+	const root = mainWorktreeOf(opened.root);
+	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
+	const prefix = `refs/${policy.branches.namespacePrefix}/retired/`;
+	const listed = readGit(root, ['ls-remote', remote, `${prefix}*`]);
+	if (listed === undefined) {
+		return refused(
+			`Could not ask \`${remote}\` for the retired work.`,
+			'Check the remote (git remote -v) and the network, then ask again.',
+		);
+	}
+	const retiredUnits = listed
+		.split('\n')
+		.filter((line) => line.length > 0)
+		.map((line) => {
+			const [commit = '', ref = ''] = line.split('\t');
+			return { unit: ref.slice(prefix.length), ref, commit };
+		})
+		.sort((left, right) => left.unit.localeCompare(right.unit));
+	const data = {
+		remote,
+		retired: retiredUnits,
+		restore: restoreAdvice(remote, `${prefix}<unit>`),
+	};
+	if (ctx.globals.json || ctx.globals.format === 'json') {
+		return { code: EXIT_CODE.OK, data };
+	}
+	process.stdout.write(
+		`${[
+			`${String(retiredUnits.length)} retired on ${remote}:`,
+			...retiredUnits.map(
+				(each) => `  ${each.commit.slice(0, 12)}  ${each.unit}`,
+			),
+			'',
+			`To bring one back: ${data.restore}`,
+			`To read one: git fetch ${remote} ${prefix}<unit> && git log --stat FETCH_HEAD`,
+		].join('\n')}\n`,
+	);
+	return { code: EXIT_CODE.OK, data, suppressDefaultPrint: true };
+};
