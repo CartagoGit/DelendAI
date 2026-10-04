@@ -570,15 +570,18 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S18 — The run reports its own incidents
 
-- **Status**: pending
-- **Files**: `plugins/project-kpis/src/index.ts`
-- **Gate**: `npx vitest run plugins/project-kpis`
-- `project-kpis` counts what this run showed by hand: stale and superseded
-  verdicts, actor alias collisions, unverifiable attributions, units never
-  published, publications without a pull request, candidate lag, manual
-  recoveries, and the time from the end of a run until `work doctor` is green
-  again. A supervising agent reads these instead of inferring the state from
-  branches.
+- **Status**: review
+- **Files**: `packages/core/src/lib/contracts/interfaces/workflow-kpis.interface.ts`, `packages/core/src/lib/work-units/workflow-kpis.service.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.interface.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts`, `plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts`, `plugins/project-kpis/tests/src/kpi-workflow.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts plugins/project-kpis/tests/src/kpi-workflow.spec.ts`
+- The KPI snapshot carries an optional `workflow` block read from what core
+  already computes, so a supervising agent reads numbers instead of inferring
+  the state from branches: `invariants` (`total`, `broken`, `brokenIds` from
+  the workflow doctor, checkout scope only so a KPI never waits on the
+  network), `units`, `publicationsWaiting`, `agents` and
+  `agentsThatProducedNothing` from the swarm view and the roster.
+- One composing function, `readWorkflowKpis`, is exported through core's
+  public surface; the plugin reimplements no check. Outside a git repository
+  the block is omitted, and snapshots without it still parse.
 
 ### S19 — A unit's name says what it is
 
