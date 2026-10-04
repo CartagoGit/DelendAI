@@ -2,7 +2,7 @@
 id: r00040
 title: "Migrar el barrel de 288 exports a los subpaths del core que ya existen"
 kind: refactor
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, r00041]
-last-transition-id: cb125da2-97c5-4258-b3c2-84900e2bed78
-last-correlation-id: cb125da2-97c5-4258-b3c2-84900e2bed78
-last-transition-from: ready
+last-transition-id: 982a690d-7910-4a5c-804c-21d1dd259175
+last-correlation-id: 982a690d-7910-4a5c-804c-21d1dd259175
+last-transition-from: in-progress
 ---
 
 # r00040 — Migrar el barrel de 288 exports a los subpaths del core que ya existen
@@ -164,6 +164,7 @@ public/index.ts queda como:
 - Left for later: 122 exports that only core's own tests read through the
   barrel, and 117 with no importer outside core. Neither is plugin
   surface; both belong with x00541 (exports with no importer).
+- shipped-in: `f2b416c4e241`
 
 ### S3 — Marcar el barrel como deprecado con fecha
 
