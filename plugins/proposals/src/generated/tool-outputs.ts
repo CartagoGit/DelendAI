@@ -1012,6 +1012,7 @@ export interface DelendaiProposalsReviewClaimOutput {
 	proposalId: string;
 	claimed: boolean;
 	commit?: string;
+	released?: boolean;
 }
 
 export interface DelendaiProposalsReviewQueueOutput {

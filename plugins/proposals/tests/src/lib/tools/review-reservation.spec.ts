@@ -12,7 +12,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { REVIEW_RESERVATION_SECONDS } from '@delendai/proposals/lib/contracts/constants/review-reservation.constant';
-import { claimForReview } from '@delendai/proposals/lib/services/review-claim.service';
+import {
+	claimForReview,
+	releaseClaim,
+} from '@delendai/proposals/lib/services/review-claim.service';
+import { heldFromTrailers } from '@delendai/proposals/lib/services/review-claims.service';
 import {
 	releaseReview,
 	reserveReview,
@@ -159,5 +163,74 @@ describe('a reservation', () => {
 		expect(await reserveReview(first.run, 'x00001', holder(1))).toEqual({
 			kind: 'unavailable',
 		});
+	});
+});
+
+describe('giving a claim back', () => {
+	it('reads the newest word about each proposal', () => {
+		// Newest commit first: claims, a tab, releases.
+		expect(
+			heldFromTrailers(
+				['x00002\t', '\tx00001', 'x00001\t', '\t'].join('\n'),
+			),
+		).toEqual(['x00002']);
+		expect(heldFromTrailers('x00001\t\n\tx00001\nx00001\t')).toEqual([
+			'x00001',
+		]);
+		expect(heldFromTrailers('')).toEqual([]);
+	});
+
+	it('frees the proposal for the next reviewer, and leaves room in the pack', async () => {
+		const { first, second } = twoReviewers();
+		await claimForReview(first.run, shape, 'x00001', 'origin/develop');
+		expect(
+			(
+				await claimForReview(
+					second.run,
+					shape,
+					'x00001',
+					'origin/develop',
+				)
+			).kind,
+		).toBe('held');
+
+		const released = await releaseClaim(
+			first.run,
+			shape,
+			'x00001',
+			'origin/develop',
+			'its gate needs a service I cannot start here',
+		);
+		expect(released.kind).toBe('released');
+		expect(
+			first.git(
+				'log',
+				'-1',
+				'--format=%(trailers:key=Releases,valueonly)',
+			),
+		).toBe('x00001');
+
+		expect(
+			(
+				await claimForReview(
+					second.run,
+					shape,
+					'x00001',
+					'origin/develop',
+				)
+			).kind,
+		).toBe('claimed');
+		// Nothing to give back twice, and nothing the unit never held.
+		expect(
+			(
+				await releaseClaim(
+					first.run,
+					shape,
+					'x00001',
+					'origin/develop',
+					'again',
+				)
+			).kind,
+		).toBe('not-held');
 	});
 });
