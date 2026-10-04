@@ -1392,6 +1392,12 @@
       },
     },
   },
+  "trustedDependencies": [
+    "esbuild",
+    "keytar",
+    "@vscode/vsce-sign",
+    "@parcel/watcher",
+  ],
   "overrides": {
     "@hono/node-server": "2.0.12",
     "brace-expansion": "5.0.9",

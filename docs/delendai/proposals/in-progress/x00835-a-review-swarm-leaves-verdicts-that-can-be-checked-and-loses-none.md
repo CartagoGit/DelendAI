@@ -275,6 +275,21 @@ The same run exposed the two Opus orchestrators, this author included:
   `git switch develop && git merge` in the shared checkout. So the branches
   stayed, and every claim in them kept holding its proposal.
 
+- E24 — the cause of E22 is the hook manager's own package: `lefthook`
+  ships a postinstall that runs `lefthook install -f` in whatever directory
+  dependencies are installed in, and bun trusts it by default. `prepare`
+  refuses in a linked worktree and `no_auto_install` is set, and neither
+  matters: every `bun install` in a unit, and the queue's own refresh in a
+  throwaway worktree, rewrote the clone's hooks. On 2026-10-04 they pointed
+  at `/tmp/candidate-refresh-…`, a directory already deleted.
+- E25 — after every publication of a proposal still in progress the unit's
+  branch is kept, and nothing brings it forward or collects it: nine units
+  with no commit of their own sat 15 to 18 commits behind `develop`, each
+  with a worktree, looking like work to come.
+- E26 — retiring fifteen units needed a hand-run `git checkout` first: each
+  had one uncommitted change, a regenerated catalog. And units whose work
+  `develop` already held were given a retired ref for nothing.
+
 ### What good verdicts did
 
 - P1 — `MiniMaxM3` named the delivering commit and the gate with its count in
@@ -547,6 +562,32 @@ the good verdicts' shape (P1) becomes the required shape.
 - It refuses a branch that is no unit, a missing reason, uncommitted
   changes, and a unit with a worktree unless `--with-worktree` is passed.
 - `work doctor` names it as the remedy for a ref nobody works on.
+
+### S23 — A kept unit is brought forward or named, and retiring asks nobody to tidy first
+
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- `work enter` on a unit that holds no commit of its own and is behind
+  fast-forwards it to the integration base and says `hydrated`; a unit with
+  commits or uncommitted changes is left to its agent (E25).
+- `work doctor` gains `units-hold-work`: a clean unit with nothing ahead and
+  the integration branch gone on is named, with `enter` or `retire` as the
+  remedy.
+- `work retire` keeps uncommitted changes to tracked files as a second
+  retired ref instead of refusing, refuses only files git does not track,
+  and keeps nothing for a tip the integration branch already holds (E26).
+
+### S24 — Only the main checkout installs the clone's hooks
+
+- **Status**: review
+- **Files**: `package.json`, `bun.lock`, `tools/scripts/git/refresh-candidate-artifacts.constant.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`, `tools/scripts/git/prepare-clone.script.spec.ts`
+- **Gate**: `npx vitest run tools/scripts/git/prepare-clone.script.spec.ts tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+- `trustedDependencies` names the packages whose install scripts run, and
+  the hook manager is not one of them: `prepare`, in the main checkout, is
+  the only thing that installs hooks (E24).
+- The queue's refresh installs with `--ignore-scripts` and merges with no
+  hooks: a throwaway worktree writes nothing into the clone it belongs to.
 
 ## dependency graph
 

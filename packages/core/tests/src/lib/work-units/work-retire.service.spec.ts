@@ -165,6 +165,58 @@ describe('work retire', () => {
 		expect(git('branch', '--list', WORK)).not.toBe('');
 	});
 
+	it('keeps nothing for a unit whose work the integration branch already holds', async () => {
+		const { root, git, forge } = repository();
+		git('merge', '-q', '--no-ff', '--no-edit', WORK);
+		git('push', '-q', 'origin', 'develop');
+		git('fetch', '-q', 'origin');
+
+		const result = await retire(root, `--ref=${WORK}`, '--reason=landed');
+
+		expect(result.code).toBe(0);
+		const outcome = result.data as IRetirementOutcome;
+		expect(outcome.kept).toEqual([]);
+		expect(outcome.restore).toContain('already holds');
+		expect(forge('for-each-ref', 'refs/delendai/retired')).toBe('');
+		expect(forge('for-each-ref', 'refs/heads/delendai')).toBe('');
+	});
+
+	it('keeps changes nobody committed, and refuses files git does not track', async () => {
+		const { root, git, forge, tip } = repository();
+		const tree = join(root, '.cache', 'unit');
+		git('worktree', 'add', '-q', tree, WORK);
+		writeFileSync(
+			join(tree, 'verdict.md'),
+			'approved, and a second thought\n',
+		);
+		writeFileSync(join(tree, 'notes.txt'), 'never added\n');
+
+		const untracked = await retire(
+			root,
+			`--ref=${WORK}`,
+			'--reason=x',
+			'--with-worktree',
+		);
+		expect(untracked.error).toContain('notes.txt');
+		expect(git('branch', '--list', WORK)).not.toBe('');
+
+		rmSync(join(tree, 'notes.txt'));
+		const result = await retire(
+			root,
+			`--ref=${WORK}`,
+			'--reason=x',
+			'--with-worktree',
+		);
+		expect(result.code).toBe(0);
+		const outcome = result.data as IRetirementOutcome;
+		expect(outcome.kept.map((each) => each.commit)).toContain(tip);
+		expect(outcome.kept).toHaveLength(2);
+		const second = outcome.kept[1];
+		expect(forge('show', `${second?.commit ?? ''}:verdict.md`)).toContain(
+			'a second thought',
+		);
+	});
+
 	it('refuses without a reason, a branch that is no unit, and a unit somebody may be in', async () => {
 		const { root, git } = repository();
 		expect((await retire(root, `--ref=${WORK}`)).code).not.toBe(0);

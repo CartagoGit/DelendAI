@@ -41,4 +41,9 @@ export interface IEnteredWorktree {
 	 * (`--session`, or `DELENDAI_SESSION_ID`) to enter the unit again.
 	 */
 	readonly session?: string | undefined;
+	/**
+	 * Set when the unit held nothing of its own and was fast-forwarded to
+	 * the integration branch on the way in.
+	 */
+	readonly hydrated?: true;
 }
