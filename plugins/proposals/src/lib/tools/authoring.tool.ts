@@ -346,6 +346,9 @@ const unintegratedEvidenceError = async (
 			);
 };
 
+/** Hex characters of a delivery a person can still tell apart. */
+const SHORT_DELIVERY = 12;
+
 /** An approval of a delivery the same proposal has since replaced. */
 const supersededEvidenceError = async (
 	run: IGitRunner,
@@ -365,7 +368,7 @@ const supersededEvidenceError = async (
 	return newer === undefined
 		? null
 		: toApproveEvidenceError(
-				`evidence.commitHash ${commit} is not the slice as it stands: ${proposalId} was delivered again by ${newer.slice(0, 12)}, which changed the same files. Read that one and approve it`,
+				`evidence.commitHash ${commit} is not the slice as it stands: ${proposalId} was delivered again by ${newer.slice(0, SHORT_DELIVERY)}, which changed the same files. Read that one and approve it`,
 			);
 };
 

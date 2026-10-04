@@ -1,3 +1,4 @@
+import { UNRECORDED_IMPLEMENTER } from '../contracts/constants/review-attribution.constant';
 import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 
 /**
@@ -14,9 +15,6 @@ import type { IReviewIndependence } from '../contracts/interfaces/review-indepen
  * agent can pass skips it. A project that does not review turns it off
  * in its own configuration (`requirePeerReview: false`).
  */
-
-/** What an attribution writes when Git names nobody for the work. */
-export const UNRECORDED_IMPLEMENTER = 'unrecorded';
 
 /**
  * What an approval line carries when the tool saw that its reviewer and

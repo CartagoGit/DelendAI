@@ -509,7 +509,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S17 — A storm can be replayed
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
 - A fixture reproduces this run in a scratch repository: five reviewers of one
@@ -519,6 +519,14 @@ the good verdicts' shape (P1) becomes the required shape.
   commits behind, derived files, a server restart and an unattributable
   implementer. Settling every event must reach one final state whatever the
   order the agents finish in, with `work doctor` (S12) reporting nothing.
+- Shipped: one repository with a forge, in which a commit lands in the
+  shared checkout, a reviewer re-spells its name, a reviewer implements what
+  it reviews, a pack is built on another pack, a pack deletes a closed
+  document, two agents take one slice, and an agent retires a colleague's
+  live unit. Each is refused where it is made; the owners retire what
+  cannot land, and `work doctor` ends with nothing broken. The verdict
+  mistakes (bare approval, superseded delivery, double claim, same-instance
+  approval) are replayed by the proposals plugin's own specs.
 
 ### S18 — The run reports its own incidents
 
