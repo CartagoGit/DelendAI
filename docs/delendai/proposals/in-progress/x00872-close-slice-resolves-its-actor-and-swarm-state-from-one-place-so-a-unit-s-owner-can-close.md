@@ -2,10 +2,13 @@
 id: x00872
 title: "close_slice resolves its actor and swarm state from one place, so a unit's owner can close"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-03
+last-transition-id: 67ccadd4-7714-4d10-aa10-78941cd70747
+last-correlation-id: 67ccadd4-7714-4d10-aa10-78941cd70747
+last-transition-from: ready
 ---
 
 # x00872 — close_slice resolves its actor and swarm state from one place, so a unit's owner can close
