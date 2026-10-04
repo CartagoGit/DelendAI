@@ -90,4 +90,31 @@ describe('buildCloseBlockerGuidance', () => {
 		});
 		expect(guidance.blockingReasons).toEqual(['reason one', 'reason two']);
 	});
+
+	it('only suggests a claim when none exists', () => {
+		const reasons = (claim: string): readonly string[] => [
+			'the current actor is not provably active in the activity snapshot',
+			'resolved actor: owl (from argument); unit: checkout is not a work unit',
+			claim,
+		];
+		const none = buildCloseBlockerGuidance({
+			reason: 'close requires an active current actor',
+			blockingReasons: reasons('claim for x1-S1: none'),
+		}).nextAction;
+		expect(none).toContain('agent_lock action:"claim"');
+		expect(none).toContain('as owl');
+		const held = buildCloseBlockerGuidance({
+			reason: 'close requires an active current actor',
+			blockingReasons: reasons(
+				'claim for x1-S1: active (held by falcon)',
+			),
+		}).nextAction;
+		expect(held).not.toContain('action:"claim"');
+		expect(held).toContain('agent: "falcon"');
+		const stale = buildCloseBlockerGuidance({
+			reason: 'close requires an active current actor',
+			blockingReasons: reasons('claim for x1-S1: stale (held by owl)'),
+		}).nextAction;
+		expect(stale).toContain('heartbeat');
+	});
 });

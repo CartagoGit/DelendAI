@@ -2,12 +2,15 @@
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, relative } from 'node:path';
 
+import { readLeaseOf } from '@delendai/core/cli';
+import { callerCheckout } from '@delendai/core/public';
 import {
 	resolveScopedValidationDecision,
 	type IScopeMap,
 	type IScopedValidationDecision,
 } from '@delendai/quality/public';
 
+import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import { parseWorktreeList } from '../agents/agent-worktree-engine';
 import { coerceHost } from '../shared/agent-identity';
 import {
@@ -15,6 +18,7 @@ import {
 	managedBranchPrefixes,
 } from '../shared/branch-namespaces';
 import { createGitRunner } from '../shared/git-runner';
+import { canonicalTaskId, resolveCloseActor } from './close-actor.resolver';
 import { resolveValidationActivitySnapshot } from './validation-activity.resolver';
 import type {
 	IValidationActivitySource,
@@ -22,6 +26,14 @@ import type {
 	IValidationRegistryEntry,
 	IValidationWorktreeEntry,
 } from './validation-activity.types';
+
+/** A claim's task id in the one spelling the gate compares. */
+const withCanonicalTask = <T extends { readonly task_id?: string }>(
+	entry: T,
+): T =>
+	typeof entry.task_id === 'string'
+		? { ...entry, task_id: canonicalTaskId(entry.task_id) }
+		: entry;
 
 const readRegistry = async (
 	path: string,
@@ -35,7 +47,7 @@ const readRegistry = async (
 			return {
 				state: 'ok',
 				...(Array.isArray(parsed.assignments)
-					? { entries: parsed.assignments }
+					? { entries: parsed.assignments.map(withCanonicalTask) }
 					: {}),
 			};
 		} catch {
@@ -62,7 +74,7 @@ const readLocksInner = (
 	return {
 		state: 'ok',
 		...(Array.isArray(parsed.in_flight)
-			? { entries: parsed.in_flight }
+			? { entries: parsed.in_flight.map(withCanonicalTask) }
 			: {}),
 	};
 };
@@ -114,15 +126,20 @@ export const buildCloseSliceValidationProvider = (input: {
 	readonly scopes: IScopeMap;
 	readonly host?: string;
 	readonly model?: string;
+	/** The project's work-ref shape; absent when it names no work refs. */
+	readonly branches?: IWorkRefShape | undefined;
+	/** `DELENDAI_AGENT_ID`, injectable for tests. */
+	readonly environmentAgent?: string | undefined;
 }): ((args: {
 	readonly operation: 'close';
 	readonly ownedFiles: readonly string[];
 	readonly proposalId: string;
 	readonly sliceId: string;
+	readonly agent?: string | undefined;
 }) => Promise<IScopedValidationDecision>) => {
 	const run = createGitRunner(input.workspaceRoot);
-	return async ({ ownedFiles, proposalId, sliceId }) => {
-		const compositeTaskId = `${proposalId}-${sliceId.toUpperCase()}`;
+	return async ({ ownedFiles, proposalId, sliceId, agent }) => {
+		const compositeTaskId = canonicalTaskId(`${proposalId}-${sliceId}`);
 		const [registry, locks, worktreeResult, currentBranch] =
 			await Promise.all([
 				readRegistry(input.registryPathAbs),
@@ -149,31 +166,91 @@ export const buildCloseSliceValidationProvider = (input: {
 						},
 					)
 				: [];
+		const branch =
+			currentBranch.ok && currentBranch.output.trim() !== ''
+				? currentBranch.output.trim()
+				: undefined;
+		const checkout = callerCheckout.executionRootOr(input.workspaceRoot);
+		const lease =
+			branch === undefined
+				? undefined
+				: await readLeaseOf(checkout, branch).catch(() => undefined);
+		const actor = resolveCloseActor({
+			agent,
+			environment:
+				'environmentAgent' in input
+					? input.environmentAgent
+					: process.env.DELENDAI_AGENT_ID,
+			branch,
+			shape: input.branches,
+			leaseOwner: lease?.owner.agent,
+			proposalId,
+			sliceId,
+		});
+		const nowIso = new Date().toISOString();
+		// Being in one's own unit is proof of activity: the unit's owner is
+		// at work on its slices without a separate claim.
+		const unitEntries: readonly IValidationWorktreeEntry[] =
+			actor.ownsUnit &&
+			actor.unit !== undefined &&
+			actor.agent !== undefined
+				? [
+						{
+							branch: actor.unit.branch,
+							path: checkout,
+							taskId: compositeTaskId,
+							agentName: actor.agent,
+							lastSeen: nowIso,
+						},
+					]
+				: [];
 		const activity = resolveValidationActivitySnapshot({
+			now: nowIso,
 			current: {
 				taskId: compositeTaskId,
+				...(actor.agent !== undefined
+					? { agentName: actor.agent }
+					: {}),
 				...(coerceHost(input.host) !== null
 					? { host: coerceHost(input.host)! }
 					: {}),
 				...(input.model !== undefined && input.model !== ''
 					? { model: input.model }
 					: {}),
-				...(currentBranch.ok && currentBranch.output.trim() !== ''
-					? { branch: currentBranch.output.trim() }
-					: {}),
+				...(branch !== undefined ? { branch } : {}),
 			},
 			registry,
 			locks,
 			worktrees:
 				worktreeResult.ok === true
-					? { state: 'ok', entries: worktreeEntries }
+					? {
+							state: 'ok',
+							entries: [...worktreeEntries, ...unitEntries],
+						}
 					: { state: 'missing' },
 		});
-		return resolveScopedValidationDecision({
+		const decision = resolveScopedValidationDecision({
 			operation: 'close',
 			ownedFiles,
 			scopes: input.scopes,
 			activity,
 		});
+		if (decision.mode !== 'blocked') return decision;
+		const holder = activity.agents.find(
+			(candidate) => candidate.taskId === compositeTaskId,
+		);
+		const claim =
+			holder === undefined
+				? 'none'
+				: `${holder.state} (held by ${holder.agentName ?? 'unknown'})`;
+		return {
+			...decision,
+			blockingReasons: [
+				...decision.blockingReasons,
+				`resolved actor: ${actor.agent ?? 'none'} (from ${actor.source}); unit: ${actor.unit === undefined ? 'checkout is not a work unit' : `${actor.unit.branch}${actor.ownsUnit ? ' (own, for this slice)' : " (not this actor's unit for this slice)"}`}`,
+				`claim for ${compositeTaskId}: ${claim}`,
+				`read: locks ${input.lockPathAbs} (${activity.sourceStates.lock}), registry ${input.registryPathAbs} (${activity.sourceStates.registry})`,
+			],
+		};
 	};
 };

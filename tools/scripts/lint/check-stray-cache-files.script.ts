@@ -90,6 +90,8 @@ const SANCTIONED_SUBPATH_PREFIXES: readonly string[] = [
 	'evidence/',
 	'handoff/',
 	'results/logs/',
+	// The close gate's detached runner (`run.sh`) lives beside its job record.
+	'proposals/close-gate/',
 	'results/logs-errors/',
 	'results/memory/',
 	'results/usage-tracking/',
