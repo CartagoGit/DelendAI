@@ -63,7 +63,7 @@ const reviewPolicyOf = (
 	return {
 		requirePeerReview: options.requirePeerReview !== false,
 		reviewIndependence:
-			options.reviewIndependence === 'instance' ? 'instance' : 'model',
+			options.reviewIndependence === 'model' ? 'model' : 'instance',
 	};
 };
 

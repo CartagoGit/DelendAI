@@ -142,8 +142,10 @@ export interface IAuthoringToolOptions {
 	 * extending the same gate to every slice of every proposal kind.
 	 */
 	readonly requirePeerReview?: boolean;
-	/** What makes a reviewer independent (x00718); `model` by default. */
+	/** What makes a reviewer independent (x00718); `instance` by default. */
 	readonly reviewIndependence?: IReviewIndependence;
+	/** The language the project's documents are written in, when declared. */
+	readonly documentationLanguage?: string | undefined;
 	/**
 	 * Controls which validation gate applies to `close_slice`.
 	 * `scoped` (the default) validates only the files/scopes owned by the

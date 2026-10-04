@@ -1,5 +1,6 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
+import { languageRefusal } from '../services/documentation-language.service';
 import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
@@ -2114,6 +2115,16 @@ export const buildReviewRegistration = (
 					args.action === 'approve' ||
 					args.action === 'request_changes'
 				) {
+					const wrongLanguage = languageRefusal(
+						args.note ?? '',
+						scoped.documentationLanguage,
+					);
+					if (wrongLanguage !== undefined) {
+						return toolError(
+							wrongLanguage,
+							'Record the same verdict with its note in English. Nothing was written.',
+						);
+					}
 					const role = canonicalRoleOf(args.agent);
 					if (role !== undefined) {
 						return toolError(
