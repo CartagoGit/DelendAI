@@ -77,7 +77,7 @@ written once:
 
 ### S1 — Fix the 35 alerts the release introduces
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lib/read-text-if-present.spec.ts packages/cli plugins/conventions`
 - **Files**:
   - `packages/cli/src/lib/doctor/checks/stale-docs.check.ts`
@@ -118,12 +118,16 @@ written once:
   - `tools/scripts/lint/detail-levels-coverage.script.ts`
   - `tools/scripts/lint/file-conventions.script.spec.ts`
   - `tools/scripts/migrate/rebrand-propagate.script.ts`
-- shipped-in: `f5a6c17ebe6c`
+- shipped-in: `2c8cdadf0dc7`
 - review-state: changes_requested
 - review-implementer: unrecorded
 - review-reviewer: minimax-3
 - review-log: requested_changes by minimax-3 — El candidato f5a6c17ebe6c no satisface por sí solo la slice. La propia propuesta dice que después del primer merge aún quedaban tres alertas de CodeQL y hubo que cerrarlas en 2c8cdadf0dc7b3c1303d32fc9c955119c57fdbf7; con este candidate hash la aceptación no queda cubierta.
 - review-attribution: unrecorded — no delivering commit was named for x00758 S1; independence could not be verified, opened by minimax-3
+
+The slice was delivered by pull request #655 in two commits: `f5a6c17ebe6c`
+fixed the first 32 alerts and `2c8cdadf0dc7` the last three, so the commit
+that holds the whole slice is the second.
 
 After the first merge the release's CodeQL still reported three: the
 directory `writeFileAtomic` opens to fsync it (now opened `O_RDONLY`, never
