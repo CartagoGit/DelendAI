@@ -258,6 +258,8 @@ export const refreshCandidate = (input: {
 			return { candidate, state: 'failed', detail: 'no worktree' };
 		}
 		const merged = gitAsCommitter(dir, [
+			'-c',
+			'core.hooksPath=/dev/null',
 			'merge',
 			'--no-edit',
 			`${remote}/${policy.branches.integration}`,

@@ -261,6 +261,28 @@ describe('workflow invariants (x00573)', () => {
 		expect(result.remedy).toContain('work enter');
 	});
 
+	it('sees a unit kept with nothing in it once the integration branch moved on', () => {
+		const { root } = repo();
+		const kept = 'delendai/wip/claude-opus-5/x1-S1-g1/kept';
+		git(root, 'worktree', 'add', '-q', join(root, 'wt'), '-b', kept);
+		// Just entered, level with the integration branch: not idle.
+		expect(by(root, 'units-hold-work').holds).toBe(true);
+
+		writeFileSync(join(root, 'e.txt'), 'e\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'develop moves');
+		const result = by(root, 'units-hold-work');
+		expect(result.holds).toBe(false);
+		expect(result.observed).toContain(kept);
+		expect(result.remedy).toContain('work retire');
+
+		// A unit with a commit of its own is working, however far behind.
+		writeFileSync(join(root, 'wt', 'f.txt'), 'f\n');
+		git(join(root, 'wt'), 'add', '-A');
+		git(join(root, 'wt'), 'commit', '-q', '-m', 'work');
+		expect(by(root, 'units-hold-work').holds).toBe(true);
+	});
+
 	it('answers about the shared checkout when a hook in a worktree asks', () => {
 		const { root } = repo();
 		const wt = `${root}-wt`;

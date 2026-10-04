@@ -342,7 +342,7 @@ describe('who the queue commits as', () => {
 describe('what a refreshed candidate regenerates', () => {
 	it('installs from the merged lockfile, then runs gen:all, the one list of generators', () => {
 		expect(GENERATED_REFRESH_COMMANDS).toEqual([
-			'install --frozen-lockfile',
+			'install --frozen-lockfile --ignore-scripts',
 			'run gen:all',
 		]);
 	});

@@ -97,4 +97,20 @@ describe('who installs the hooks', () => {
 		);
 		expect(config).toMatch(/^no_auto_install: true$/mu);
 	});
+
+	it("does not let the hook manager's own install script run: it reinstalls the hooks from wherever dependencies are installed", () => {
+		// `lefthook` ships a postinstall that runs `lefthook install -f` in
+		// the installing directory. Trusted, every `bun install` in a
+		// worktree pointed the clone's hooks at that worktree's binary,
+		// whatever `no_auto_install` said: a queue refresh left them
+		// pointing at a directory under /tmp that no longer existed.
+		const manifest = JSON.parse(
+			readFileSync(
+				resolve(import.meta.dirname, '../../../package.json'),
+				'utf8',
+			),
+		) as { trustedDependencies?: readonly string[] };
+		expect(manifest.trustedDependencies).toBeDefined();
+		expect(manifest.trustedDependencies).not.toContain('lefthook');
+	});
 });

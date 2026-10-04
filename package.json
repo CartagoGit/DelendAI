@@ -300,6 +300,12 @@
 		"lint:forge-settings": "bun tools/scripts/governance/forge-settings.script.ts --check",
 		"lint:proposals-tracked": "bun tools/scripts/lint/proposals-tracked.script.ts"
 	},
+	"trustedDependencies": [
+		"@parcel/watcher",
+		"@vscode/vsce-sign",
+		"esbuild",
+		"keytar"
+	],
 	"devDependencies": {
 		"@biomejs/biome": "2.5.12",
 		"@delendai/conventions": "workspace:*",
