@@ -321,6 +321,12 @@ const EXCLUDED_PATHS: readonly IExcludedPath[] = [
 		reason: 'bilingual compaction corpus fixture',
 	},
 	{
+		// Verdicts as reviewers wrote them in other languages: the texts
+		// the language check exists to recognise are its test data.
+		match: (p) => p.includes('documentation-language.service.spec.ts'),
+		reason: 'non-English verdict fixtures of the language check',
+	},
+	{
 		match: (p) => p.includes('preserve-rules.helper.ts'),
 		reason: 'bilingual preserve-rules detector',
 	},

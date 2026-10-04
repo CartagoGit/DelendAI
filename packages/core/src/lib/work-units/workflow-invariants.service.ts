@@ -28,7 +28,10 @@ import { execFileSync } from 'node:child_process';
 
 import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
 
-import { hangingForgeWorkRefs } from './forge-work-refs.service';
+import {
+	hangingForgeWorkRefs,
+	spentPublicationsInvariant,
+} from './forge-work-refs.service';
 import { idleUnitsInvariant } from './idle-units.service';
 import { strayRefsInvariant } from './stray-refs.service';
 import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
@@ -302,30 +305,8 @@ export const checkWorkflowInvariants = (input: {
 	});
 
 	// 8. A publication still on the forge holds something the integration
-	// branch lacks. One that holds nothing has landed, or never carried
-	// work: either way it is a branch that looks like a pull request to
-	// come and is not.
-	const spent = published.filter(
-		(ref) =>
-			git(root, [
-				'rev-list',
-				'--count',
-				`${remote}/${integration}..${remote}/${ref}`,
-			]) === '0',
-	);
-	add({
-		scope: 'forge',
-		id: 'publications-hold-work',
-		claim: `every publication holds work \`${integration}\` lacks`,
-		holds: spent.length === 0,
-		observed:
-			published.length === 0
-				? 'no publication refs'
-				: spent.length === 0
-					? `${String(published.length)} ref(s), all holding work`
-					: `${String(spent.length)} spent: ${spent.slice(0, 3).join(', ')}`,
-		remedy: `git push ${remote} --delete <ref> — its commits are already on \`${integration}\``,
-	});
+	// branch lacks.
+	add(spentPublicationsInvariant({ root, remote, integration, published }));
 
 	// 9. The local integration branch only follows the forge's. A commit
 	// it holds that the forge lacks was made in the shared checkout: it

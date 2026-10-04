@@ -140,6 +140,39 @@ describe('a verdict in a review unit', () => {
 	});
 });
 
+describe('the language of a verdict', () => {
+	it('is the one the project declared, and a verdict in another writes nothing', async () => {
+		repo.proposalInReview(SLICE_S1('review'));
+		const file = join(
+			repo.root,
+			'docs/delendai/proposals/review/x00001-work.md',
+		);
+		const before = readFileSync(file, 'utf8');
+
+		const refused = await repo.review(
+			{
+				action: 'request_changes',
+				agent: 'agent-b',
+				note: 'El gate declarado no existe, falta el script en package.json',
+			},
+			{ documentationLanguage: 'en' },
+		);
+		expect(refused.isError).toBe(true);
+		expect(refused.text).toContain('English');
+		expect(readFileSync(file, 'utf8')).toBe(before);
+
+		const accepted = await repo.review(
+			{
+				action: 'request_changes',
+				agent: 'agent-b',
+				note: 'The declared gate does not exist: the script is missing.',
+			},
+			{ documentationLanguage: 'en' },
+		);
+		expect(accepted.isError).toBe(false);
+	});
+});
+
 describe('who signs a verdict', () => {
 	it('refuses a role in place of a reviewer, however it is spelled (x00745)', async () => {
 		repo.proposalInReview(SLICE_S1('review'));

@@ -145,6 +145,27 @@ describe('work retire', () => {
 		expect(forge('rev-parse', `refs/delendai/retired/${UNIT}`)).toBe(tip);
 		expect(forge('for-each-ref', 'refs/heads/delendai')).toBe('');
 		expect(git('branch', '--list', WORK)).toBe('');
+		// And it is seen again by asking for what was retired.
+		const listed = await runWorkUnit(
+			['retired'],
+			fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
+				cwd: root,
+				globals: fakePartial<
+					IWorkUnitContext['globals'],
+					'workspace' | 'json'
+				>({ workspace: root, json: true }),
+			}),
+		);
+		expect(
+			(listed.data as { retired: { unit: string; commit: string }[] })
+				.retired,
+		).toEqual([
+			{
+				unit: UNIT,
+				ref: `refs/delendai/retired/${UNIT}`,
+				commit: tip,
+			},
+		]);
 		// Nothing of it stays in the clone, not even the ref that kept it.
 		expect(git('for-each-ref', 'refs/delendai')).toBe('');
 		// The work comes back from the forge alone.

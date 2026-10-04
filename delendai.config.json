@@ -206,7 +206,8 @@
 					"mode": "commit-and-push"
 				},
 				"requirePeerReview": true,
-				"reviewIndependence": "instance"
+				"reviewIndependence": "model",
+				"documentationLanguage": "en"
 			}
 		},
 		"notification": {
