@@ -35,6 +35,13 @@ export interface ICreatePolicyPersistenceOptions {
 	 * What the work is, for the ref's `${topic}`. Absent or `undefined`
 	 * leaves the template's default.
 	 */
+	/**
+	 * Whether the agent declared who it is (its model, or the environment's
+	 * agent id). False when the name was only inferred from the program
+	 * that connected, or from nothing: such a server heard the event and
+	 * is not the one that did the work.
+	 */
+	readonly agentDeclared?: () => boolean;
 	readonly resolveTopic?: (input: {
 		readonly proposalId: string;
 		readonly sliceId: string;

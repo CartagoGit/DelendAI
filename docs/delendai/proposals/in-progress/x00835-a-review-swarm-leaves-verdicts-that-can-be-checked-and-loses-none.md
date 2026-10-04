@@ -402,14 +402,19 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S11 — A claim is one shared reservation
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
-- Claiming a proposal slice, for review or implementation, creates one
-  reservation ref on the forge atomically (the same mechanism as #724's id
-  reservation); a second claimer is refused with the holder named. The
-  reservation carries the owning session (x00850's lease), so two instances
-  of one model are two holders, not one (E15).
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-reservation.service.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-reservation.interface.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
+- Claiming a proposal for review first creates
+  `refs/delendai/claims/review/<id>` on the forge with a push only one of
+  two can win (the mechanism of the id reservation). The commit it points
+  at names the holder's unit, so two instances of one model are two
+  holders; the loser is told who holds it and commits no claim (E15).
+- A reservation is renewed by its holder, given back by it, and may be
+  taken over once it has not been renewed for four hours: a reviewer that
+  went away keeps nothing. Where there is no forge, nothing is reserved and
+  the claim works as before.
+- Reserving a slice for implementation the same way is S26.
 
 ### S12 — A run ends with nothing hanging
 
@@ -423,16 +428,16 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S9 — An automatic commit is made once, by an agent, of the slice's files
 
-- **Status**: pending
-- **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`
-- **Gate**: `npx vitest run plugins/commit-policy/src/lib/engine.spec.ts`
-- A slice event is committed by one server only (the one whose agent holds
-  the slice), never by every server that heard it (E13).
-- The commit carries only the files the slice declares that this agent
-  changed; anything else in the working tree stays where it is.
-- No automatic commit without a declared agent identity: a `client-…` or
-  `unknown-agent` identity skips the commit and says why. The detection reuses
-  the other orchestrator's agent-identification helper when it lands.
+- **Status**: review
+- **Files**: `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/persistence.interface.ts`, `plugins/commit-policy/src/lib/services/work-ref-naming.service.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`
+- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`
+- A slice event reaches every server connected to the workspace. A server
+  whose agent was never declared (its name comes from the program that
+  connected, or from nothing) checkpoints nothing and says
+  `WIP_NO_AGENT_IDENTITY` with what to declare: no unit is opened under
+  `client-…` or `unknown-agent` again (E13).
+- What a checkpoint carries stays the claim of the event; narrowing it to
+  the files the slice declares is S25.
 
 ### S10 — A reviewer does not implement what it reviews
 
@@ -445,15 +450,18 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S13 — Independence is proved, or the review does not close
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/shared/independent-approval.ts`
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/shared/independent-approval.ts`, `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/shared/independent-approval.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/shared/independent-approval.spec.ts`
-- An actor is a canonical model id plus an instance (the session x00850's
-  lease records). `model` independence compares canonical model ids, so an
-  alias is the same model; `instance` independence compares instances, and
-  an instance that cannot be proved is `unknown`, which closes nothing (G1).
-- `unrecorded` implementers are accepted only for proposals that predate unit
-  attribution; new work whose author cannot be named cannot reach `done` (G2).
+- Models are compared by their letters and digits, so an alias is the same
+  model. Another model is another reviewer under either rule.
+- Under `instance`, the same model is independent only when both instances
+  were seen and differ: the submitting and the approving process, compared
+  by the tool, which then marks the approval line `[another instance]`.
+  A document shows no instance, so without the mark the same model's
+  approval closes nothing. `instance` used to compare nothing at all (G1).
+- A slice whose implementer is `unrecorded` does not reach `done`, whoever
+  approved it: the delivering commit has to be named first (G2).
 
 ### S14 — A verdict applies to the revision it was made on
 
@@ -470,6 +478,9 @@ the good verdicts' shape (P1) becomes the required shape.
 - Packs that went stale are settled by extracting their verdicts and
   re-applying the ones still valid on the current revision; the rest are
   recorded as superseded. No pack is rebased or merged to catch up.
+- Shipped under S20: an approval of a delivery the proposal has since
+  replaced is refused. Still pending here: the verdict event with its
+  revision, the pack that describes itself, and automatic settlement.
 
 ### S15 — Recovery runs need no global git identity, and read-only writes nothing
 
@@ -480,6 +491,10 @@ the good verdicts' shape (P1) becomes the required shape.
   `-c user.name/-c user.email` when the machine's git names nobody, and
   leave a configured identity alone. A read-only run already made no
   commit (G3).
+- The trial merge `forge:refresh` makes to compare trees names a committer
+  the same way (`tools/scripts/forge/refresh-candidates.script.ts`,
+  `tools/scripts/forge/refresh-candidates.script.spec.ts`): the job still
+  printed "empty ident name" after the first fix, from a second script.
 
 ### S16 — The run knows who joined it
 
@@ -494,7 +509,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S17 — A storm can be replayed
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
 - A fixture reproduces this run in a scratch repository: five reviewers of one
@@ -504,6 +519,14 @@ the good verdicts' shape (P1) becomes the required shape.
   commits behind, derived files, a server restart and an unattributable
   implementer. Settling every event must reach one final state whatever the
   order the agents finish in, with `work doctor` (S12) reporting nothing.
+- Shipped: one repository with a forge, in which a commit lands in the
+  shared checkout, a reviewer re-spells its name, a reviewer implements what
+  it reviews, a pack is built on another pack, a pack deletes a closed
+  document, two agents take one slice, and an agent retires a colleague's
+  live unit. Each is refused where it is made; the owners retire what
+  cannot land, and `work doctor` ends with nothing broken. The verdict
+  mistakes (bare approval, superseded delivery, double claim, same-instance
+  approval) are replayed by the proposals plugin's own specs.
 
 ### S18 — The run reports its own incidents
 
@@ -530,24 +553,32 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S20 — A verdict names the newest commit, and a reviewer that ran nothing records none
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
-- A commit that a later commit of the same unit superseded is refused with
-  the newer one named (E3).
-- A reviewer that could not inspect or run anything does not record a
-  verdict: the tool tells it to release the claim (E9, E10).
-- The verdict text is checked for language like the rest of the proposal.
+- An approval names a commit; the pull request that brought that commit in
+  is its delivery. When a later delivery of the same proposal changed the
+  slice's files, the approval is refused and the newer delivery named: the
+  reviewer reads what the slice is now (E3). A later change to those files
+  that is no delivery of the proposal does not count, so who implemented
+  the slice is still read from the commit the reviewer named.
+- A reviewer that ran nothing, and the language of a verdict's text, are
+  S27.
 
 ### S21 — The queue goes red while something hangs on the forge
 
-- **Status**: pending
-- **Files**: `.github/workflows/keep-the-queue-moving.yml`
-- **Gate**: `bun run work:doctor -- --forge`
-- The queue runs `work doctor --forge` after every merge and fails while a
-  publication or a work ref hangs, so a run that leaves work behind cannot
-  look finished. On a runner there is no worktree to tell a live unit's
-  backup from an abandoned ref: this needs x00850's lease.
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `tools/scripts/git/check-workflow-invariants.script.ts`, `.github/workflows/keep-the-queue-moving.yml`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- A lease lives in the clone that entered the unit, so a runner has none.
+  A work ref on the forge is judged by what it says itself: one that holds
+  nothing the integration branch lacks has landed, one whose last commit is
+  older than the time a silent unit is given was left, and anything else is
+  somebody's backup and is left alone.
+- The queue's step no longer ends in `|| true`: it fails while a
+  publication holds nothing, is not canonical, or a work ref hangs. A
+  candidate still behind is reported and not counted, since bringing it
+  forward is what the queue has just started (`--except=`).
 
 ### S22 — A unit that will not land is retired, with its work kept
 
@@ -562,6 +593,10 @@ the good verdicts' shape (P1) becomes the required shape.
 - It refuses a branch that is no unit, a missing reason, uncommitted
   changes, and a unit with a worktree unless `--with-worktree` is passed.
 - `work doctor` names it as the remedy for a ref nobody works on.
+- With leases (x00850): another agent's live unit is refused whatever the
+  caller asserts, its owner retires it freely, and a recent unit with no
+  lease needs `--unowned`, the caller's word that it is not somebody's. A
+  worktree no longer needs a flag of its own.
 
 ### S23 — A kept unit is brought forward or named, and retiring asks nobody to tidy first
 
@@ -577,6 +612,11 @@ the good verdicts' shape (P1) becomes the required shape.
 - `work retire` keeps uncommitted changes to tracked files as a second
   retired ref instead of refusing, refuses only files git does not track,
   and keeps nothing for a tip the integration branch already holds (E26).
+- The held-slice refusal asks the lease: a unit its owner left, or whose
+  work landed, no longer keeps other agents out of its slice.
+- `post-merge` in the main checkout runs `work reap --apply`
+  (`lefthook.yml`): a unit whose work the merge brought in is collected
+  without waiting for a person.
 
 ### S24 — Only the main checkout installs the clone's hooks
 
@@ -588,6 +628,36 @@ the good verdicts' shape (P1) becomes the required shape.
   the only thing that installs hooks (E24).
 - The queue's refresh installs with `--ignore-scripts` and merges with no
   hooks: a throwaway worktree writes nothing into the clone it belongs to.
+
+### S25 — An automatic commit carries the slice's files, not the event's
+
+- **Status**: pending
+- **Files**: `plugins/commit-policy/src/lib/engine.ts`
+- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/engine-policy-routing.spec.ts`
+- The commit carries only the files the slice declares that this agent
+  changed; anything else the event listed stays in the working tree (E13:
+  one automatic commit carried another proposal's files).
+
+### S26 — An implementation unit reserves its slice on the forge
+
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
+- `work enter` for implementation reserves the slice with the same push only
+  one of two can win, so two machines entering one slice in the same minute
+  are told apart before either writes: today the held-slice refusal reads
+  refs each machine has already fetched.
+
+### S27 — A reviewer that ran nothing records nothing, in the project's language
+
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
+- A reviewer that could not inspect or run anything does not record a
+  verdict: the tool tells it to release the claim (E9, E10).
+- A verdict's text is in the language the project declares for its
+  documents. That needs a declared language: a guess would refuse correct
+  verdicts.
 
 ## dependency graph
 

@@ -13,6 +13,7 @@ import { hydratedIdleUnit } from './kept-unit-hydration.service';
 import { readSwarm } from './work-swarm.service';
 import { aliasedIdentity, describeAlias } from './agent-alias.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
+import { isUnitHolding, readUnitStandings } from './unit-standings.service';
 import { liveProposalBranch } from './proposal-branch.service';
 import {
 	reviewedByEntrant,
@@ -181,13 +182,19 @@ export const enteredHeld = async (
 	);
 	if (reviewed !== undefined) return reviewed;
 	if (!args.includes('--alongside')) {
-		const holders = holdersOfSlice({
+		const onSlice = holdersOfSlice({
 			view: swarm,
 			agent,
 			kind: scalarArg(args, 'kind') ?? 'implement',
 			proposal,
 			slice,
 		});
+		// A unit its owner left, or whose work landed, holds nothing: the
+		// slice is free, and the swarm view still shows the unit.
+		const standings = await readUnitStandings({ root, policy });
+		const holders = onSlice.filter((unit) =>
+			isUnitHolding(standings, unit.ref.replace(/^refs\/heads\//u, '')),
+		);
 		if (holders.length > 0) {
 			return refused(
 				`${proposal} ${slice} is already being worked on by another agent: two units on one slice do the same work twice and collide when they land.`,

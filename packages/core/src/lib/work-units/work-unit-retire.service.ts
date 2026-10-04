@@ -5,9 +5,11 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import type { IRetirementOutcome } from '../contracts/interfaces/work-retire.interface';
 import { scalarArg } from './command-args.helper';
+import { unitVerdictOf } from './unit-standings.service';
 import { planRetirement, restoreAdvice } from './work-retire.service';
 
 import {
+	agentFor,
 	forgeCli,
 	integrationBase,
 	integrationRemote,
@@ -16,6 +18,10 @@ import {
 	readGit,
 	refused,
 } from './work-unit-shared.service';
+
+/** The caller's word that a unit with no lease is not somebody's. */
+const assertsUnowned = (args: readonly string[]): boolean =>
+	args.includes('--unowned') || args.includes('--with-worktree');
 
 /** The worktree standing on `branch`, from `git worktree list --porcelain`. */
 const worktreeOn = (root: string, branch: string): string | undefined =>
@@ -64,7 +70,7 @@ export const retired = async (
 	if (named === undefined || reason === undefined) {
 		return refused(
 			'Retiring a unit needs the unit and why it will not land.',
-			'work retire --ref=<its work or publication branch> --reason="<why>" [--with-worktree]. `work swarm` lists the units there are.',
+			'work retire --ref=<its work or publication branch> --reason="<why>" [--unowned]. `work swarm` lists the units there are.',
 		);
 	}
 	const plan = planRetirement({
@@ -113,6 +119,25 @@ export const retired = async (
 			`Fetch first (git fetch ${remote}), or check the name against \`work swarm\`.`,
 		);
 	}
+	// Somebody in the unit keeps it: its lease says who, and how lately.
+	// A unit older than leases is dated by its last commit, which names
+	// nobody, so the caller has to say that it is not somebody's.
+	const standing = await unitVerdictOf({ root, policy }, plan.workBranch);
+	if (standing?.standing === 'live') {
+		const owner = standing.owner?.agent;
+		if (owner !== undefined && owner !== agentFor(args)) {
+			return refused(
+				`\`${plan.unit}\` is live: ${standing.reason}.`,
+				`It is ${owner}'s to retire. Ask its owner, or retire it once it has gone quiet.`,
+			);
+		}
+		if (owner === undefined && !assertsUnowned(args)) {
+			return refused(
+				`\`${plan.unit}\` may be somebody's: ${standing.reason}, and it has no lease to say whose.`,
+				'If it is yours or nobody’s, pass --unowned and it is retired.',
+			);
+		}
+	}
 	const worktree = worktreeOn(root, plan.workBranch);
 	let uncommitted: string | undefined;
 	if (worktree !== undefined) {
@@ -126,12 +151,6 @@ export const retired = async (
 			return refused(
 				`\`${plan.unit}\` has files git does not track in ${worktree}: ${untracked.slice(0, 5).join(', ')}.`,
 				'Add and commit them there if they are work, or delete them if they are not, then retire the unit again: a retired ref can only keep what git holds.',
-			);
-		}
-		if (!args.includes('--with-worktree')) {
-			return refused(
-				`\`${plan.unit}\` has a worktree at ${worktree}: something may be working in it.`,
-				'If it is yours or nobody’s, pass --with-worktree and the worktree is removed with the unit.',
 			);
 		}
 		// Changes to tracked files are kept too, as the commit git would

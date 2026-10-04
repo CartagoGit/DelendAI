@@ -53,6 +53,7 @@ import { sliceFilesAreCommitted } from './lib/services/slice-persisted.service';
 import {
 	createSliceTopicResolver,
 	workRefAgent,
+	workRefAgentDeclared,
 } from './lib/services/work-ref-naming.service';
 import { createIntervalTimer } from './lib/triggers/interval-timer';
 import {
@@ -529,6 +530,10 @@ export default definePlugin({
 			run,
 			...(wipEngine !== undefined ? { wip: wipEngine } : {}),
 			agentId: workRefAgentId,
+			agentDeclared: workRefAgentDeclared({
+				model: identityCtx.hostIdentity?.model,
+				host: identityCtx.hostIdentity?.host,
+			}),
 			resolveTopic: createSliceTopicResolver({
 				run,
 				workspaceRoot: ctx.workspace.root,

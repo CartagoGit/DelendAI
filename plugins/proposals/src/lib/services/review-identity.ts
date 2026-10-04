@@ -242,10 +242,19 @@ export const checkApproveIdentity = async (input: {
 	// single-host orchestration hands the review to a differently-named
 	// agent (a subagent), which must count as a legitimate peer. Only a
 	// self-approval (the same agent that submitted the slice) is refused.
+	// The process that submitted and the one that approves are the
+	// instances: one model in two processes is two reviewers where the
+	// project accepts instance independence, and one process is one.
+	const instanceOf = (identity: { host: string; pid: number }): string =>
+		`${identity.host}:${String(identity.pid)}`;
 	const sameAgent = isSelfApproval(
 		submitter.agent,
 		input.approver.agent,
 		input.independence,
+		{
+			implementer: instanceOf(submitter),
+			approver: instanceOf(input.approver),
+		},
 	);
 	if (sameAgent) {
 		return {

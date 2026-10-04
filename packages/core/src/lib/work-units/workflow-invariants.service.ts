@@ -28,6 +28,7 @@ import { execFileSync } from 'node:child_process';
 
 import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
 
+import { hangingForgeWorkRefs } from './forge-work-refs.service';
 import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
@@ -91,6 +92,8 @@ export const checkWorkflowInvariants = (input: {
 	readonly remote?: string;
 	/** Judge only these scopes. Default: all of them. */
 	readonly scopes?: readonly IInvariantScope[];
+	/** Seconds since the epoch; the clock, unless a test says otherwise. */
+	readonly now?: number | undefined;
 }): IInvariantReport => {
 	const { root, policy } = input;
 	const remote = input.remote ?? 'origin';
@@ -268,10 +271,19 @@ export const checkWorkflowInvariants = (input: {
 	// 7. No work ref is still on the forge once nothing works on it:
 	// publishing ends it. A live unit's ref IS on the forge, on purpose —
 	// the server pushes it so a lost machine loses no work — and calling
-	// that broken told every agent to delete a colleague's backup.
-	const remoteWork = heads.filter(
-		(ref) => ref.startsWith(workPrefix) && !worktreeBranches.has(ref),
-	);
+	// that broken told every agent to delete a colleague's backup. So a
+	// ref hangs only when it landed or has been silent too long, which a
+	// runner with no worktree and no lease can tell as well.
+	const remoteWork = hangingForgeWorkRefs({
+		root,
+		remote,
+		integration,
+		refs: heads.filter(
+			(ref) => ref.startsWith(workPrefix) && !worktreeBranches.has(ref),
+		),
+		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
+		now: input.now,
+	});
 	add({
 		scope: 'forge',
 		id: 'no-remote-work-refs',
@@ -280,7 +292,10 @@ export const checkWorkflowInvariants = (input: {
 		observed:
 			remoteWork.length === 0
 				? 'none'
-				: `${String(remoteWork.length)} ref(s)`,
+				: `${String(remoteWork.length)}: ${remoteWork
+						.slice(0, 3)
+						.map((each) => `${each.ref} (${each.why})`)
+						.join(', ')}`,
 		remedy: 'publish the unit (`delendai work publish`); one that will not land is retired with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
 
@@ -356,7 +371,7 @@ export const checkWorkflowInvariants = (input: {
 			idle.length === 0
 				? 'none idle'
 				: `${String(idle.length)} idle: ${idle.slice(0, 3).join(', ')}`,
-		remedy: 'enter it again to continue (`delendai work enter` brings an idle unit forward), or retire it (`delendai work retire --ref=<ref> --reason=<why> --with-worktree`)',
+		remedy: 'enter it again to continue (`delendai work enter` brings an idle unit forward), or retire it (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
 
 	return { results, broken: results.filter((r) => !r.holds).length };
