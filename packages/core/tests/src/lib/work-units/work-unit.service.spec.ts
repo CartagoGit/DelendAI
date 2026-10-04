@@ -595,7 +595,7 @@ describe('delendai work (x00553)', () => {
 			}
 		).steps;
 		expect(
-			steps.find((step) => step.name === 'remove-work-ref')?.detail,
+			steps.find((step) => step.name === 'keep-work-ref')?.detail,
 		).toContain('x00553 is still in progress');
 	});
 

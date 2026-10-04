@@ -108,6 +108,69 @@ const deliveringMergeOf = async (
 		if (changed.ok && changed.output.trim().length > 0)
 			return record.commit;
 	}
+	return deliveringMergeByCitation(run, history, proposalId, files);
+};
+
+/**
+ * The delivery of a slice whose unit was named after something else: the
+ * newest merge in which a commit that cites the proposal changed the
+ * slice's files, or that created the proposal's own document beside the
+ * work. A later pull request that touched the files for its own reasons
+ * and only moved the document is not a delivery of the slice.
+ *
+ * A proposal written and implemented in one unit, or delivered from a unit
+ * opened for another id, lands through a merge that names that unit and
+ * not the proposal. Its slices were then "delivered by nothing": seven
+ * proposals merged weeks earlier could not be handed to review, and the
+ * only way forward was to write the commit into the document by hand.
+ */
+const deliveringMergeByCitation = async (
+	run: IGitRunner,
+	history: readonly IIntegrationRecord[],
+	proposalId: string,
+	files: readonly string[],
+): Promise<string | undefined> => {
+	for (const record of history) {
+		// A merge only: a commit made on the branch itself delivers itself.
+		if (record.commit === undefined || record.commit === record.delivered)
+			continue;
+		const changed = await run([
+			'diff',
+			'--name-only',
+			`${record.commit}^1`,
+			record.commit,
+			'--',
+			...files,
+		]);
+		if (!changed.ok || changed.output.trim().length === 0) continue;
+		const cited = await run([
+			'log',
+			'-1',
+			'--format=%H',
+			'--fixed-strings',
+			'--regexp-ignore-case',
+			`--grep=${proposalId}`,
+			`${record.commit}^1..${record.commit}^2`,
+			'--',
+			...files,
+		]);
+		if (cited.ok && cited.output.trim().length > 0) return record.commit;
+		// Or the pull request that wrote the proposal: it created the
+		// proposal's own document beside the work. Created, not moved: a
+		// later pull request that carries the document to another status
+		// renames it.
+		const wrote = await run([
+			'diff',
+			'--name-status',
+			'-M',
+			'--diff-filter=A',
+			`${record.commit}^1`,
+			record.commit,
+			'--',
+			`:(glob)**/${proposalId.toLowerCase()}-*.md`,
+		]);
+		if (wrote.ok && wrote.output.trim().length > 0) return record.commit;
+	}
 	return undefined;
 };
 

@@ -7,7 +7,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { approvalNote } from '@delendai/proposals/lib/services/review-verdict-evidence';
+import {
+	approvalNote,
+	staleApprovals,
+} from '@delendai/proposals/lib/services/review-verdict-evidence';
+import { createGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 
 import {
 	createReviewRepo,
@@ -172,5 +176,46 @@ describe('an approval of a delivery the proposal has since replaced', () => {
 			evidence: { ...EVIDENCE, commitHash: first },
 		});
 		expect(approved.isError).toBe(false);
+	});
+});
+
+describe('an approval the proposal has since outgrown', () => {
+	const REF = 'delendai/pr/agent-a/implement/x00001-S1-g1/the-work';
+
+	it('is stale once the slice is delivered again, and not before', async () => {
+		const first = repo.deliverThroughPullRequest('src/a.ts', REF);
+		const run = createGitRunner(repo.root);
+		const slices = [
+			{
+				id: 'S1',
+				files: ['src/a.ts'],
+				block: `- review-log: approved by agent-b — verified at ${first.slice(0, 12)}, validate exit 0, tests 3/3`,
+			},
+			// A slice nobody approved, and one approved with no commit, say nothing.
+			{ id: 'S2', files: ['src/a.ts'], block: '- **Status**: review' },
+			{
+				id: 'S3',
+				files: ['src/a.ts'],
+				block: '- review-log: approved by agent-b — looks right',
+			},
+		];
+
+		expect(await staleApprovals(run, 'develop', 'x00001', slices)).toEqual(
+			[],
+		);
+
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			REF,
+			'fix: the work, reworked',
+			`Merge pull request #8 from Owner/${REF}`,
+		);
+		const stale = await staleApprovals(run, 'develop', 'x00001', slices);
+		expect(stale).toHaveLength(1);
+		expect(stale[0]).toMatchObject({
+			slice: 'S1',
+			judged: first.slice(0, 12),
+			newer: repo.git('rev-parse', 'develop'),
+		});
 	});
 });

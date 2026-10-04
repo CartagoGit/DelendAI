@@ -110,7 +110,11 @@ import {
 	checkTransitionEvidence,
 	type IValidateEvidence,
 } from '../services/transition-evidence';
-import { guardTransitionToDone } from '../services/proposal-completeness';
+import {
+	collectSliceStatuses,
+	guardTransitionToDone,
+} from '../services/proposal-completeness';
+import { staleApprovals } from '../services/review-verdict-evidence';
 import { openReviewRounds } from '../services/review-handoff';
 import { createIndexFreeGitRunner } from '../shared/index-free-git-runner';
 import {
@@ -635,6 +639,25 @@ const buildValidateRequiredEnvelope = (
 		: {}),
 	nextAction: diagnosis.nextAction,
 });
+
+/** Hex characters of a commit a person can still tell apart. */
+const STALE_HASH_LENGTH = 12;
+
+/** The text of one slice: from its heading to the next heading. */
+const sliceBlockOf = (markdown: string, sliceId: string): string => {
+	const start = markdown.search(
+		new RegExp(
+			`^### ${sliceId.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}\\s+—`,
+			'mu',
+		),
+	);
+	if (start === -1) return '';
+	const rest = markdown.slice(start + 1);
+	const end = rest.search(/^#{2,3} /mu);
+	return end === -1
+		? markdown.slice(start)
+		: markdown.slice(start, start + 1 + end);
+};
 
 const buildCodeError = (
 	code: string,
@@ -1222,6 +1245,48 @@ export const runProposalTransition = async (
 				structuredContent: envelope,
 				isError: true,
 			};
+		}
+	}
+	// An approval is about one revision of a slice. One made before the
+	// proposal delivered that slice again says nothing about what is now
+	// there, and does not close it.
+	if (
+		requirePeer &&
+		finalTo === 'done' &&
+		args.skipDfaForPlanClosure !== true
+	) {
+		const run = options.gitRunner ?? createGitRunner(options.workspaceRoot);
+		const integration = (await projectBranches(options.workspaceRoot))
+			.integration;
+		const hasIntegration = await run([
+			'rev-parse',
+			'-q',
+			'--verify',
+			`${integration}^{commit}`,
+		]);
+		const stale = hasIntegration.ok
+			? await staleApprovals(
+					run,
+					integration,
+					args.id,
+					collectSliceStatuses(raw).map((slice) => ({
+						id: slice.id,
+						files: slice.files,
+						block: sliceBlockOf(raw, slice.id),
+					})),
+				)
+			: [];
+		if (stale.length > 0) {
+			return buildCodeError(
+				'stale-verdict',
+				`${args.id} cannot close on a verdict about an earlier revision: ${stale
+					.map(
+						(each) =>
+							`${each.slice} was approved at ${each.judged.slice(0, STALE_HASH_LENGTH)} and delivered again by ${each.newer.slice(0, STALE_HASH_LENGTH)}`,
+					)
+					.join('; ')}.`,
+				`A reviewer reads the newer delivery and records a verdict on it (${options.namespacePrefix}_proposal_review { action: "approve", evidence.commitHash: <the newer commit> }). The earlier approval stays in the document as history.`,
+			);
 		}
 	}
 	if (requirePeer && from === 'review' && finalTo === 'done') {

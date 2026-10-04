@@ -170,8 +170,8 @@ export const landWorkUnit = async (
 	let workRefRemoved = false;
 	if (request.keepWorkRef) {
 		steps.push({
-			name: 'remove-work-ref',
-			ok: false,
+			name: 'keep-work-ref',
+			ok: true,
 			detail: `kept: ${request.keepWorkRefBecause ?? '--keep-work-ref was passed'}.`,
 		});
 	} else if (tip !== undefined && tip.length > 0) {

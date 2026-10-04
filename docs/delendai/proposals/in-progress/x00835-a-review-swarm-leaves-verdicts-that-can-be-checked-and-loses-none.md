@@ -328,6 +328,14 @@ The same run exposed the two Opus orchestrators, this author included:
   it: the claim ended with two names for one unit, and the worktree had to
   be moved by hand.
 
+- E32 — seven proposals merged weeks earlier could not be handed to review
+  from a fresh unit: `undelivered-slices`, "no commit on this branch changes
+  the slice's declared files, and nothing records which commit delivered
+  it". Their deliveries were on `develop`; the merges named the unit they
+  came from, which had been opened under another id. The only way forward
+  was to write the commit into the document by hand, which the agent's host
+  refused.
+
 ### What good verdicts did
 
 - P1 — `MiniMaxM3` named the delivering commit and the gate with its count in
@@ -503,22 +511,21 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S14 — A verdict applies to the revision it was made on
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-lifecycle.spec.ts`
-- A verdict carries the proposal revision and delivery SHA it judged. Applying
-  it to a proposal whose revision moved on is refused as a stale verdict, to
-  be re-checked, never merged as text (G4, E3). The proposals SQLite
-  projection's revision CAS (r00048) is the place to compare.
-- A review pack's publication describes itself from its own verdict events
-  (proposal, slice, revision, verdict), and the publish gate refuses a pack
-  whose diff changes a proposal the description does not name (G5).
-- Packs that went stale are settled by extracting their verdicts and
-  re-applying the ones still valid on the current revision; the rest are
-  recorded as superseded. No pack is rebased or merged to catch up.
-- Shipped under S20: an approval of a delivery the proposal has since
-  replaced is refused. Still pending here: the verdict event with its
-  revision, the pack that describes itself, and automatic settlement.
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
+- The revision a verdict is about is the delivery it names: the commit, and
+  through it the pull request that landed the slice. A verdict on a
+  delivery the proposal has since replaced is refused when it is recorded
+  (S20), and an approval recorded before the slice was delivered again does
+  not close the proposal: the move to `done` is refused as `stale-verdict`,
+  naming the slice, the commit that was judged and the newer delivery (G4,
+  E3). The document's text is the same before and after; the history is
+  what is compared, so nothing is merged as text.
+- The proposals database's revision column (r00048) is local to a clone and
+  cannot be compared from another one; the delivery commit can.
+- A pack that describes itself, and the settlement of packs that went
+  stale, are S32.
 
 ### S15 — Recovery runs need no global git identity, and read-only writes nothing
 
@@ -680,7 +687,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S25 — An automatic commit carries the slice's files, not the event's
 
-- **Status**: pending
+- **Status**: retired — 2026-10-05. The slice listener already takes the files a slice declares (`parseSliceFilesField`), not what an event lists. The foreign files of E13 came in because the slice declared a directory and the commit was made in the shared checkout, where another agent had changes: a unit's worktree holds one agent's changes, and since S9 a server with no declared agent commits nothing.
 - **Files**: `plugins/commit-policy/src/lib/engine.ts`
 - **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/engine-policy-routing.spec.ts`
 - The commit carries only the files the slice declares that this agent
@@ -766,6 +773,35 @@ the good verdicts' shape (P1) becomes the required shape.
 - `work claim` on a unit that has a worktree points that worktree at the
   new name before the old one is removed, so a stalled unit changes hands
   in one step and is left under one name (E31).
+
+### S32 — A review pack changes only the proposals it claimed
+
+- **Status**: pending
+- **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`
+- **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
+- CI refuses a review pack whose diff changes a proposal none of its
+  commits claims: its pull request then says, by construction, which
+  verdicts are its author's (G5).
+- A pack that went stale is settled the way this run was: retired with
+  `work retire`, its verdicts that still name a commit and a gate carried
+  by a `reconcile` unit the owner labels, the rest reviewed again. Doing
+  that with one command is the rest of this slice.
+
+### S33 — A slice delivered from a unit of another name is still found
+
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-entry.service.ts`, `plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
+- Handing a proposal to review records each slice's delivery. When no merge
+  names the slice's unit, the delivery is the newest merge that changed the
+  slice's files and in which the commit that cites the proposal is one that
+  changed them, or that created the proposal's own document beside the
+  work. A merge of another unit that does neither is not taken (E32). The
+  seven proposals of E32 resolve to the pull requests that delivered them.
+- `work publish` reports a unit kept on purpose as `keep-work-ref`, a step
+  that succeeded, not as a failed `remove-work-ref`
+  (`packages/core/src/lib/work-units/work-publish.service.ts`,
+  `packages/core/src/lib/work-units/work-unit-land.service.ts`).
 
 ## dependency graph
 

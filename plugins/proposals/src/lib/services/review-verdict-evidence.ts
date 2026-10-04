@@ -152,3 +152,49 @@ export const supersedingDelivery = async (
 	]);
 	return before.ok ? delivery : undefined;
 };
+
+/** The commit an approval line says it verified. */
+const VERIFIED_AT = /approved by\s+\S+[^\n]*?verified at ([0-9a-f]{7,})/giu;
+
+/**
+ * The approvals of `markdown` that judged a delivery its proposal has
+ * since replaced: for each slice, the commit its latest approval names,
+ * and the newer delivery that changed the same files.
+ *
+ * An approval is a statement about one revision of a slice. A reviewer
+ * approved a slice, a second pull request then reworked it, and the first
+ * approval went on closing the proposal: nobody had looked at what was
+ * about to be called done. The text of the document is the same before
+ * and after; only the history says the verdict is about something else.
+ */
+export const staleApprovals = async (
+	run: IGitRunner,
+	integration: string,
+	proposalId: string,
+	slices: readonly {
+		readonly id: string;
+		readonly block: string;
+		readonly files: readonly string[];
+	}[],
+): Promise<
+	readonly {
+		readonly slice: string;
+		readonly judged: string;
+		readonly newer: string;
+	}[]
+> => {
+	const stale: { slice: string; judged: string; newer: string }[] = [];
+	for (const slice of slices) {
+		const judged = [...slice.block.matchAll(VERIFIED_AT)].at(-1)?.[1];
+		if (judged === undefined) continue;
+		const newer = await supersedingDelivery(
+			run,
+			integration,
+			proposalId,
+			slice.files,
+			judged,
+		);
+		if (newer !== undefined) stale.push({ slice: slice.id, judged, newer });
+	}
+	return stale;
+};
