@@ -22,6 +22,34 @@ const SNAPSHOT_PATTERN = /corrupt|contradict|disagree/iu;
 const ACTOR_PATTERN = /actor/iu;
 const SCOPE_PATTERN = /scope/iu;
 
+const CLAIM_PATTERN =
+	/claim for (\S+): (none|stale|active)(?: \(held by ([^)]*)\))?/iu;
+const ACTOR_RESOLVED_PATTERN = /resolved actor: (\S+)/iu;
+
+/**
+ * The step for a caller who is not provably active, from the facts the
+ * gate recorded about the claim for this task. A claim is the fix only
+ * when none exists: naming it otherwise sends the caller to repeat a call
+ * that already succeeded.
+ */
+const actorNextAction = (reasons: readonly string[]): string => {
+	const haystack = reasons.join(' | ');
+	const claim = CLAIM_PATTERN.exec(haystack);
+	const actor = ACTOR_RESOLVED_PATTERN.exec(haystack)?.[1];
+	const as = actor === undefined || actor === 'none' ? '' : ` as ${actor}`;
+	if (claim === null) {
+		return 'You are not a provably active actor in the activity snapshot. Re-claim with `agent_lock action:"claim"` listing this slice\'s files, or close from your own unit (`delendai work enter`, pass its worktree as `checkout`), then retry close_slice. This is NOT the validate gate.';
+	}
+	const [, task, state, holder] = claim;
+	if (state === 'none') {
+		return `No claim for ${task} exists in the lock file named in blockingReasons, and you were resolved${as}. Claim it with \`agent_lock action:"claim" task_id:"${task}"\` listing this slice's files, or close from your own unit (\`delendai work enter\`, pass its worktree as \`checkout\`), then retry close_slice. This is NOT the validate gate.`;
+	}
+	if (state === 'stale') {
+		return `A claim for ${task} exists (held by ${holder}) but its heartbeat is stale, so it proves nothing; you were resolved${as}. Refresh it with \`agent_lock action:"heartbeat"\` (or claim again), then retry close_slice. Re-claiming from scratch is not needed if the holder is you. This is NOT the validate gate.`;
+	}
+	return `A live claim for ${task} exists, held by ${holder}, but you were resolved${as}, so it is not yours. Pass \`agent: "${holder}"\` if you are that actor, or close from your own unit. Claiming again will not change who you are resolved as. This is NOT the validate gate.`;
+};
+
 export const buildCloseBlockerGuidance = (input: {
 	readonly reason: string;
 	readonly blockingReasons: readonly string[];
@@ -37,8 +65,7 @@ export const buildCloseBlockerGuidance = (input: {
 	if (ACTOR_PATTERN.test(haystack)) {
 		return {
 			blockingReasons: [...input.blockingReasons],
-			nextAction:
-				'You are not a provably active actor in the activity snapshot — usually because the lock was released before closing, or the slice was never claimed. Re-claim with `agent_lock action:"claim"` listing this slice\'s files, then retry close_slice. This is NOT the validate gate.',
+			nextAction: actorNextAction(input.blockingReasons),
 		};
 	}
 	if (SCOPE_PATTERN.test(haystack)) {

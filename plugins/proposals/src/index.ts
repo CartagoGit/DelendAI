@@ -645,6 +645,7 @@ export default definePlugin({
 								registryPathAbs: abs(layout.agentRegistryFile),
 								lockPathAbs: abs(layout.lockFile),
 								worktreesDirAbs: abs(layout.worktreesDir),
+								branches: ctx.developmentPolicy?.branches,
 								scopes: await resolveScopes(
 									createWorkspaceFileReader(ctx.workspace),
 									ctx.pluginOptions?.has('quality') === true

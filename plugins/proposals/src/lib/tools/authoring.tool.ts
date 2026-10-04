@@ -1411,11 +1411,18 @@ export const buildCloseSliceRegistration = (
 					validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
 					validationScope: z.enum(['scoped', 'global']).optional(),
 					idempotencyKey: z.string().min(1).optional(),
+					agent: z
+						.string()
+						.optional()
+						.describe(
+							"Who is closing. Absent: DELENDAI_AGENT_ID, then the agent named by the checkout's work ref.",
+						),
 				}),
 			},
 			async (args: {
 				proposalId: string;
 				sliceId: string;
+				agent?: string | undefined;
 				releaseLock?: boolean | undefined;
 				force?: boolean | undefined;
 				validateEvidence?: IValidateEvidence | undefined;
@@ -1587,6 +1594,9 @@ export const buildCloseSliceRegistration = (
 										ownedFiles: slice.files,
 										proposalId: entry.id,
 										sliceId: canonicalId,
+										...(args.agent !== undefined
+											? { agent: args.agent }
+											: {}),
 									},
 								);
 							const guidance =

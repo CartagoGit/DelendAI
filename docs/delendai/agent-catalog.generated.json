@@ -1711,6 +1711,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-03"
+			},
+			{
+				"id": "x00872",
+				"title": "close_slice resolves its actor and swarm state from one place, so a unit's owner can close",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-03"
 			}
 		]
 	}
