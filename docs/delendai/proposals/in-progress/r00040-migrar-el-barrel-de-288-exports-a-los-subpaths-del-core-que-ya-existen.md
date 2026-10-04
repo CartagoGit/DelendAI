@@ -135,6 +135,7 @@ public/index.ts queda como:
       cuenta exports por anotación y por subpath destino propuesto)
     - `packages/core/tests/src/public/surface-classification.spec.ts` (nuevo)
 - **Gate**: `bun tools/scripts/report/core-public-surface-report.script.ts`
+- shipped-in: `d3eaef32a`
 
 ### S2 — Migrar el dominio de mayor volumen a su subpath (o a uno nuevo si no encaja)
 
@@ -173,12 +174,8 @@ public/index.ts queda como:
   its budget). Deprecating it with a removal date would announce the end of
   the one entry a plugin author is told to import from. What remains to
   shrink is x00541 S3: the exports with no importer outside core.
-- **Files**:
-    - `packages/core/src/public/index.ts` (comentario de deprecación
-      con fecha de retirada)
-    - `docs/delendai/adr/` (actualizar `d00012` o el ADR de subpaths
-      con el estado post-migración — confirmar el fichero exacto con
-      `ls docs/delendai/adr | grep contracts-subpath`)
+- Declares no files: a retired slice delivers none. What it had planned
+  to touch was the entry's own header and the subpaths ADR.
 - **Gate**: `bun tools/scripts/lint/proposals.script.ts` (verifica que
   el ADR referenciado sigue siendo un documento válido enlazado) y
   revisión manual de que el comentario de deprecación incluye fecha
