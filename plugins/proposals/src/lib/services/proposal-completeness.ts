@@ -56,7 +56,7 @@ import {
 export interface ISliceParse {
 	readonly id: string;
 	readonly title: string;
-	readonly status: 'pending' | 'in-progress' | 'done';
+	readonly status: 'pending' | 'in-progress' | 'done' | 'retired';
 	readonly files: ReadonlyArray<string>;
 }
 
@@ -70,7 +70,8 @@ export type ICompletenessResult =
 			readonly slices: ReadonlyArray<ISliceParse>;
 	  };
 
-const STATUS_TOKEN = /-\s*\*\*Status\*\*:\s*(pending|in-progress|done)\b/i;
+const STATUS_TOKEN =
+	/-\s*\*\*Status\*\*:\s*(pending|in-progress|done|retired)\b/i;
 /** A `## ` section heading ends the slice before it. */
 const SECTION_HEADER = /^##\s/;
 const SLICE_HEADER = /^###\s+(S\d+)\s+—\s*([^\n]+)$/;
@@ -167,7 +168,10 @@ export const guardSlicesComplete = async (input: {
 			}
 		});
 
-	const pending = slices.filter((s) => s.status !== 'done').map((s) => s.id);
+	// A retired slice is settled: the proposal closes without it.
+	const pending = slices
+		.filter((s) => s.status !== 'done' && !isRetiredSlice(s.status))
+		.map((s) => s.id);
 	const missing: string[] = [];
 	for (const slice of slices) {
 		if (slice.status !== 'done') continue;
@@ -248,6 +252,21 @@ export const guardTransitionToDone = async (input: {
 	return result;
 };
 
+/** A slice the proposal gave up on: nothing is expected of it. */
+export const isRetiredSlice = (status: string): boolean => status === 'retired';
+
+/** The `<id>-` every file name of this proposal's document starts with. */
+const ownDocumentName = (markdown: string): string | undefined => {
+	const id = /^id:\s*["']?([A-Za-z]\d+)["']?\s*$/mu.exec(markdown)?.[1];
+	return id === undefined ? undefined : `${id.toLowerCase()}-`;
+};
+
+/** Whether `file` is this proposal's own document, in whatever folder. */
+const isOwnDocument = (file: string, own: string): boolean => {
+	const name = file.split('/').at(-1) ?? '';
+	return name.toLowerCase().startsWith(own) && name.endsWith('.md');
+};
+
 /**
  * Every file a slice declares that does not exist, whatever the slice's
  * status: what a reviewer would approve and nobody could then close
@@ -258,8 +277,16 @@ export const missingDeclaredFiles = async (
 	workspaceRoot: string,
 ): Promise<readonly string[]> => {
 	const missing: string[] = [];
+	const own = ownDocumentName(markdown);
 	for (const slice of collectSliceStatuses(markdown)) {
+		// A retired slice delivers nothing, so what it had planned to
+		// touch is not owed to anybody.
+		if (isRetiredSlice(slice.status)) continue;
 		for (const file of slice.files) {
+			// The proposal's own document lives in a folder named after its
+			// status: declared as a slice file, it stopped existing the
+			// moment the proposal moved and blocked its next move.
+			if (own !== undefined && isOwnDocument(file, own)) continue;
 			try {
 				await stat(
 					isAbsolute(file) ? file : resolve(workspaceRoot, file),

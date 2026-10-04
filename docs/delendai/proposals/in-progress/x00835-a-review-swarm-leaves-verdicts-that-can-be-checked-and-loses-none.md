@@ -298,6 +298,16 @@ The same run exposed the two Opus orchestrators, this author included:
   kept elsewhere; nothing listed it, because nothing that lists branches
   sees a ref that is not one.
 
+- E28 — sending four proposals back to review after their changes were
+  made found two more refusals that were wrong. A slice that had been
+  retired was asked for the commit that delivered it; `retired` was not a
+  status the tools read, so it counted as `pending`. And a slice that
+  declared its own proposal's document as one of its files (under
+  `review/…`) blocked the proposal's move out of `in-progress/`, where the
+  document then was. The reviewer of r00043 had also found a declared gate
+  that no script provided: the lint behind it was registered as manual and
+  ran nowhere.
+
 ### What good verdicts did
 
 - P1 — `MiniMaxM3` named the delivering commit and the gate with its count in
@@ -684,6 +694,17 @@ the good verdicts' shape (P1) becomes the required shape.
 - A verdict's text is in the language the project declares for its
   documents. That needs a declared language: a guess would refuse correct
   verdicts.
+
+### S28 — A retired slice owes nothing, and a proposal's own document is never a missing file
+
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/proposal-completeness.ts`, `plugins/proposals/src/lib/services/review-entry.service.ts`, `plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`
+- `retired` is a slice status the tools read. A retired slice is settled:
+  it does not keep its proposal from closing, its files are not owed, and
+  no delivering commit is asked of it on the way to review (E28).
+- A slice file that is the proposal's own document, in whatever status
+  folder, is never reported as missing.
 
 ## dependency graph
 

@@ -38,6 +38,7 @@ import {
 } from '../swarm/slice-shipping-record';
 import {
 	collectSliceStatuses,
+	isRetiredSlice,
 	missingDeclaredFiles,
 } from './proposal-completeness';
 import { listShippedIn } from './review-attribution';
@@ -142,6 +143,9 @@ export const prepareReviewEntry = async (input: {
 		const re = blockOf(slice.id);
 		const match = markdown.match(re);
 		if (match === null || slice.files.length === 0) continue;
+		// A retired slice delivered nothing, and a reviewer judges nothing
+		// of it: no commit is owed.
+		if (isRetiredSlice(slice.status)) continue;
 		const block = match[2] ?? '';
 		if (readShippingCommit(block) !== undefined) continue;
 		const last =
