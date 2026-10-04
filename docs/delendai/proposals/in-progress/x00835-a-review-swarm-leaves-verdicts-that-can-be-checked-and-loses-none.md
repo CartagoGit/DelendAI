@@ -503,22 +503,21 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S14 — A verdict applies to the revision it was made on
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-lifecycle.spec.ts`
-- A verdict carries the proposal revision and delivery SHA it judged. Applying
-  it to a proposal whose revision moved on is refused as a stale verdict, to
-  be re-checked, never merged as text (G4, E3). The proposals SQLite
-  projection's revision CAS (r00048) is the place to compare.
-- A review pack's publication describes itself from its own verdict events
-  (proposal, slice, revision, verdict), and the publish gate refuses a pack
-  whose diff changes a proposal the description does not name (G5).
-- Packs that went stale are settled by extracting their verdicts and
-  re-applying the ones still valid on the current revision; the rest are
-  recorded as superseded. No pack is rebased or merged to catch up.
-- Shipped under S20: an approval of a delivery the proposal has since
-  replaced is refused. Still pending here: the verdict event with its
-  revision, the pack that describes itself, and automatic settlement.
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
+- The revision a verdict is about is the delivery it names: the commit, and
+  through it the pull request that landed the slice. A verdict on a
+  delivery the proposal has since replaced is refused when it is recorded
+  (S20), and an approval recorded before the slice was delivered again does
+  not close the proposal: the move to `done` is refused as `stale-verdict`,
+  naming the slice, the commit that was judged and the newer delivery (G4,
+  E3). The document's text is the same before and after; the history is
+  what is compared, so nothing is merged as text.
+- The proposals database's revision column (r00048) is local to a clone and
+  cannot be compared from another one; the delivery commit can.
+- A pack that describes itself, and the settlement of packs that went
+  stale, are S32.
 
 ### S15 — Recovery runs need no global git identity, and read-only writes nothing
 
@@ -763,6 +762,19 @@ the good verdicts' shape (P1) becomes the required shape.
 - `work claim` on a unit that has a worktree points that worktree at the
   new name before the old one is removed, so a stalled unit changes hands
   in one step and is left under one name (E31).
+
+### S32 — A review pack changes only the proposals it claimed
+
+- **Status**: pending
+- **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`
+- **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
+- CI refuses a review pack whose diff changes a proposal none of its
+  commits claims: its pull request then says, by construction, which
+  verdicts are its author's (G5).
+- A pack that went stale is settled the way this run was: retired with
+  `work retire`, its verdicts that still name a commit and a gate carried
+  by a `reconcile` unit the owner labels, the rest reviewed again. Doing
+  that with one command is the rest of this slice.
 
 ## dependency graph
 
