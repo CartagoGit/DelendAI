@@ -2,15 +2,15 @@
 id: f00755
 title: "Candidates that touch nothing in common land together"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: efficiency
 date: 2026-09-29
 priority: P1
 related: [x00556]
-last-transition-id: 06863859-d93f-492d-96bc-afe538fa540f
-last-correlation-id: 06863859-d93f-492d-96bc-afe538fa540f
-last-transition-from: review
+last-transition-id: 5302b5da-2662-43e4-bd3b-9e45971a7c30
+last-correlation-id: 5302b5da-2662-43e4-bd3b-9e45971a7c30
+last-transition-from: in-progress
 ---
 
 # f00755 — Candidates that touch nothing in common land together
