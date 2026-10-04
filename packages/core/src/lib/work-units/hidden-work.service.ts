@@ -12,7 +12,7 @@
  * not work. These three checks name what is neither.
  */
 import { execFileSync } from 'node:child_process';
-import { statSync } from 'node:fs';
+import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
@@ -49,9 +49,7 @@ const unitWorktrees = (
 			const path = /^worktree (?<path>.+)$/mu.exec(block)?.groups?.path;
 			const ref = /^branch refs\/heads\/(?<ref>.+)$/mu.exec(block)?.groups
 				?.ref;
-			return path !== undefined &&
-				ref !== undefined &&
-				ref.startsWith(workPrefix)
+			return path !== undefined && ref?.startsWith(workPrefix) === true
 				? [{ ref, path }]
 				: [];
 		});
@@ -71,7 +69,7 @@ const realEdits = (path: string): readonly string[] =>
  * The three invariants of hidden work, read from the clone. `now` is
  * seconds since the epoch; the clock, unless a test says otherwise.
  */
-export const hiddenWorkInvariants = (input: {
+export const hiddenWorkInvariants = async (input: {
 	readonly root: string;
 	readonly remote: string;
 	readonly integration: string;
@@ -79,7 +77,7 @@ export const hiddenWorkInvariants = (input: {
 	readonly publicationPrefix: string;
 	readonly leaseTtlMinutes: number;
 	readonly now?: number | undefined;
-}): readonly IInvariantResult[] => {
+}): Promise<readonly IInvariantResult[]> => {
 	const { root, remote } = input;
 	const now = input.now ?? Math.floor(Date.now() / 1000);
 	const window = leaseWindowSeconds(input.leaseTtlMinutes);
@@ -114,29 +112,28 @@ export const hiddenWorkInvariants = (input: {
 		);
 	});
 
-	const uncommitted = units.flatMap(({ ref, path }) => {
+	// Somebody working right now has changes in its tree: that is work in
+	// hand, not work left behind. The files say when: the unit's last
+	// commit may be days older than an edit made a minute ago.
+	const touchedAt = async (path: string, file: string): Promise<number> => {
+		try {
+			return Math.floor((await stat(join(path, file))).mtimeMs / 1000);
+		} catch {
+			// Deleted and not committed: dated by the unit's tip.
+			return Number(git(path, ['log', '-1', '--format=%ct'])) || 0;
+		}
+	};
+	const uncommitted: { ref: string; edits: number }[] = [];
+	for (const { ref, path } of units) {
 		const edits = realEdits(path);
-		if (edits.length === 0) return [];
-		// Somebody working right now has changes in its tree: that is work
-		// in hand, not work left behind. The files say when: the unit's
-		// last commit may be days older than an edit made a minute ago.
-		const touchedAt = Math.max(
+		if (edits.length === 0) continue;
+		const newest = Math.max(
 			0,
-			...edits.map((file) => {
-				try {
-					return Math.floor(
-						statSync(join(path, file)).mtimeMs / 1000,
-					);
-				} catch {
-					// Deleted and not committed: dated by the unit's tip.
-					return (
-						Number(git(path, ['log', '-1', '--format=%ct'])) || 0
-					);
-				}
-			}),
+			...(await Promise.all(edits.map((file) => touchedAt(path, file)))),
 		);
-		return now - touchedAt > window ? [{ ref, edits: edits.length }] : [];
-	});
+		if (now - newest > window)
+			uncommitted.push({ ref, edits: edits.length });
+	}
 
 	return [
 		{

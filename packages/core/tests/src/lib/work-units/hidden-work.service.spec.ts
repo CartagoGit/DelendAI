@@ -48,8 +48,8 @@ const project = () => {
 
 const LATER = Math.floor(Date.now() / 1000) + 24 * 3600;
 
-const judge = (root: string, now?: number) => {
-	const results = hiddenWorkInvariants({
+const judge = async (root: string, now?: number) => {
+	const results = await hiddenWorkInvariants({
 		root,
 		remote: 'origin',
 		integration: 'develop',
@@ -62,46 +62,50 @@ const judge = (root: string, now?: number) => {
 };
 
 describe('hiddenWorkInvariants', () => {
-	it('holds for a clone with a unit that has done nothing yet', () => {
+	it('holds for a clone with a unit that has done nothing yet', async () => {
 		const { root } = project();
-		const report = judge(root, LATER);
+		const report = await judge(root, LATER);
 		expect(Object.values(report).every((result) => result.holds)).toBe(
 			true,
 		);
 	});
 
-	it('names a stash', () => {
+	it('names a stash', async () => {
 		const { root, git } = project();
 		writeFileSync(join(root, 'a.txt'), 'changed\n');
 		git('stash', 'push', '-q', '-m', 'set aside');
-		const result = judge(root)['no-stashed-work'];
+		const result = (await judge(root))['no-stashed-work'];
 		expect(result?.holds).toBe(false);
 		expect(result?.observed).toContain('set aside');
 	});
 
-	it('names a commit that stayed on this machine, and not one made a moment ago or already pushed', () => {
+	it('names a commit that stayed on this machine, and not one made a moment ago or already pushed', async () => {
 		const { root, unit, inUnit } = project();
 		writeFileSync(join(unit, 'b.txt'), 'b\n');
 		inUnit('add', '-A');
 		inUnit('commit', '-q', '-m', 'work');
 		// Just made: on its way.
-		expect(judge(root)['units-are-on-the-forge']?.holds).toBe(true);
-		const stale = judge(root, LATER)['units-are-on-the-forge'];
+		expect((await judge(root))['units-are-on-the-forge']?.holds).toBe(true);
+		const stale = (await judge(root, LATER))['units-are-on-the-forge'];
 		expect(stale?.holds).toBe(false);
 		expect(stale?.observed).toContain(UNIT);
 
 		inUnit('push', '-q', 'origin', UNIT);
-		expect(judge(root, LATER)['units-are-on-the-forge']?.holds).toBe(true);
+		expect(
+			(await judge(root, LATER))['units-are-on-the-forge']?.holds,
+		).toBe(true);
 	});
 
-	it('names changes a unit left uncommitted, and not a regenerated file or work in hand', () => {
+	it('names changes a unit left uncommitted, and not a regenerated file or work in hand', async () => {
 		const { root, unit } = project();
 		writeFileSync(join(unit, 'catalog.generated.json'), '{}\n');
-		expect(judge(root, LATER)['units-are-committed']?.holds).toBe(true);
+		expect((await judge(root, LATER))['units-are-committed']?.holds).toBe(
+			true,
+		);
 
 		writeFileSync(join(unit, 'c.txt'), 'never committed\n');
-		expect(judge(root)['units-are-committed']?.holds).toBe(true);
-		const left = judge(root, LATER)['units-are-committed'];
+		expect((await judge(root))['units-are-committed']?.holds).toBe(true);
+		const left = (await judge(root, LATER))['units-are-committed'];
 		expect(left?.holds).toBe(false);
 		expect(left?.observed).toContain('1 path(s)');
 		expect(left?.remedy).toContain('work retire');

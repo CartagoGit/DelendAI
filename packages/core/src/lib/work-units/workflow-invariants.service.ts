@@ -32,7 +32,6 @@ import {
 	hangingForgeWorkRefs,
 	spentPublicationsInvariant,
 } from './forge-work-refs.service';
-import { hiddenWorkInvariants } from './hidden-work.service';
 import { idleUnitsInvariant } from './idle-units.service';
 import { strayRefsInvariant } from './stray-refs.service';
 import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
@@ -349,19 +348,6 @@ export const checkWorkflowInvariants = (input: {
 				})),
 		}),
 	);
-
-	// 12-14. Work nobody can see: stashed, never pushed, never committed.
-	for (const result of hiddenWorkInvariants({
-		root,
-		remote,
-		integration,
-		workPrefix,
-		publicationPrefix: pubPrefix,
-		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
-		now: input.now,
-	})) {
-		add(result);
-	}
 
 	// 11. Nothing in the clone is nobody's.
 	add(

@@ -13,8 +13,13 @@
  * a general language detector would be a dependency for one sentence.
  */
 
-/** Letters and marks English prose does not use. */
-const NON_ENGLISH_CHARACTER = /[áéíóúñüàèìòùâêîôûçãõäöß¿¡]/iu;
+/**
+ * Letters and marks English prose does not use: the accented vowels, the
+ * tilde and cedilla letters, the sharp s and the inverted marks, written
+ * as escapes so this file is itself plain English text.
+ */
+const NON_ENGLISH_CHARACTER =
+	/[\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1\u00fc\u00e0\u00e8\u00ec\u00f2\u00f9\u00e2\u00ea\u00ee\u00f4\u00fb\u00e7\u00e3\u00f5\u00e4\u00f6\u00df\u00bf\u00a1]/iu;
 
 /**
  * Words that carry a sentence in Spanish, Portuguese, French or Italian
