@@ -32,7 +32,7 @@ Seven finished proposals cannot be handed to review through the tools because ev
 
 ### S1 — Resolve the closing actor and compare task ids canonically
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/swarm/close-actor.resolver.ts`, `plugins/proposals/src/lib/swarm/validation-provider.ts`, `plugins/proposals/src/lib/services/close-blocker.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/swarm/validation-provider.spec.ts`, `plugins/proposals/tests/src/lib/swarm/close-actor.resolver.spec.ts`, `plugins/proposals/tests/src/lib/services/close-blocker.spec.ts`
+- **Files**: `plugins/proposals/src/lib/swarm/close-actor.resolver.ts`, `plugins/proposals/src/lib/swarm/validation-provider.ts`, `plugins/proposals/src/lib/services/close-blocker.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/swarm/validation-provider.spec.ts`, `plugins/proposals/tests/src/lib/swarm/close-actor.resolver.spec.ts`, `plugins/proposals/tests/src/lib/services/close-blocker.spec.ts`, `plugins/proposals/src/lib/contracts/interfaces/close-actor.interface.ts`, `plugins/proposals/tests/src/lib/e2e/close-slice-actor.e2e.spec.ts`, `tools/scripts/lint/check-stray-cache-files.script.ts`, `tools/scripts/lint/check-stray-cache-files.script.spec.ts`
 - **Gate**: none
 - acceptance:
   - "a claim spelled proposal/slice satisfies the gate for the slice proposal-SLICE"
