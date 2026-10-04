@@ -2,7 +2,7 @@
 id: q00010
 title: "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath"
 kind: plan
-status: in-progress
+status: review
 type: plan
 track: develop-audit-hardening-v4-closeout
 date: 2026-08-25
@@ -46,9 +46,9 @@ contains:
             rationale: "ADR 0007: registrar la decisión de usar subpath @delendai/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
-last-transition-id: 186ee801-7470-4c83-833b-fdee35b899f2
-last-correlation-id: 186ee801-7470-4c83-833b-fdee35b899f2
-last-transition-from: review
+last-transition-id: 4ec9bd1c-c814-4b17-af99-fdb896779e89
+last-correlation-id: 4ec9bd1c-c814-4b17-af99-fdb896779e89
+last-transition-from: in-progress
 shipped-in:
   - "6ab4f8f548bac7b59ee4c6d5d8f5915b657c4484"
 ---
@@ -235,11 +235,10 @@ S1 verde.
 - Track A → Slices S2.A1 (c00156), S2.A2 (c00145), S2.A3
   (x00272), S2.A4 (v00127).
 - Track C → Slices S2.C1 (d00012), S2.C2 (c00146).
-- review-state: changes_requested
-- review-implementer: unrecorded
-- review-reviewer: gpt-5.4
-- review-log: requested_changes by gpt-5.4 — El cierre del plan no es internamente consistente. En S2 se afirma a la vez que v00127 está en review, c00146 está retired y "9 of 10 children are done, one is retired, one is review", pero esa cuenta no cierra. Además, S3 contradice su propia aceptación: el cuerpo dice que basta con hijas done/retired/review para handoff, mientras la acceptance exige "Las 10 hijas están status: done con peer review". Ajustad la contabilidad y dejad una única condición de cierre coherente antes de aprobar el plan.
 - review-attribution: unrecorded — no delivering commit was named for q00010 S2; independence could not be verified, opened by gpt-5.4
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by gpt-5.4 — El cierre del plan no es internamente consistente. En S2 se afirma a la vez que v00127 está en review, c00146 está retired y "9 of 10 children are done, one is retired, one is review", pero esa cuenta no cierra. Además, S3 contradice su propia aceptación: el cuerpo dice que basta con hijas done/retired/review para handoff, mientras la acceptance exige "Las 10 hijas están status: done con peer review". Ajustad la contabilidad y dejad una única condición de cierre coherente antes de aprobar el plan.
 
 ### S3 — Cierre del plan
 
