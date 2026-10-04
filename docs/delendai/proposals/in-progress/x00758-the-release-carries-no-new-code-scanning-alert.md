@@ -119,10 +119,6 @@ written once:
   - `tools/scripts/lint/file-conventions.script.spec.ts`
   - `tools/scripts/migrate/rebrand-propagate.script.ts`
 - shipped-in: `2c8cdadf0dc7`
-- review-state: changes_requested
-- review-implementer: unrecorded
-- review-reviewer: minimax-3
-- review-log: requested_changes by minimax-3 — El candidato f5a6c17ebe6c no satisface por sí solo la slice. La propia propuesta dice que después del primer merge aún quedaban tres alertas de CodeQL y hubo que cerrarlas en 2c8cdadf0dc7b3c1303d32fc9c955119c57fdbf7; con este candidate hash la aceptación no queda cubierta.
 - review-attribution: unrecorded — no delivering commit was named for x00758 S1; independence could not be verified, opened by minimax-3
 
 The slice was delivered by pull request #655 in two commits: `f5a6c17ebe6c`
@@ -136,6 +132,9 @@ bundle failure and the dashboard's errors now tell the page where to look,
 and the terminal gets the error). Moving the loose-ref read also changed a
 line `plugin-drift-budget` allowlists by text; its entry names the new
 line.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by minimax-3 — El candidato f5a6c17ebe6c no satisface por sí solo la slice. La propia propuesta dice que después del primer merge aún quedaban tres alertas de CodeQL y hubo que cerrarlas en 2c8cdadf0dc7b3c1303d32fc9c955119c57fdbf7; con este candidate hash la aceptación no queda cubierta.
 
 ### S2 — Fix the 48 alerts `main` already carried
 
