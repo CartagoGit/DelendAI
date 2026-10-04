@@ -5,6 +5,7 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import type { IRetirementOutcome } from '../contracts/interfaces/work-retire.interface';
 import { scalarArg } from './command-args.helper';
+import { releaseSlices } from './slice-reservation.service';
 import { unitVerdictOf } from './unit-standings.service';
 import { planRetirement, restoreAdvice } from './work-retire.service';
 
@@ -263,6 +264,19 @@ export const retired = async (
 		) {
 			removed.push(branch);
 		}
+	}
+	// What the unit had reserved is free for the next agent.
+	const implemented = /^[^/]+\/implement\/(?<proposal>[^-/]+)-/u.exec(
+		plan.unit,
+	)?.groups?.proposal;
+	if (implemented !== undefined) {
+		releaseSlices({
+			root,
+			remote,
+			namespace: policy.branches.namespacePrefix,
+			proposal: implemented,
+			unit: plan.unit,
+		});
 	}
 	const outcome: IRetirementOutcome = {
 		unit: plan.unit,

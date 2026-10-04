@@ -640,13 +640,18 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S26 — An implementation unit reserves its slice on the forge
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/contracts/interfaces/slice-reservation.interface.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - `work enter` for implementation reserves the slice with the same push only
   one of two can win, so two machines entering one slice in the same minute
   are told apart before either writes: today the held-slice refusal reads
   refs each machine has already fetched.
+- The reservation is `refs/<namespace>/claims/slice/<proposal>/<slice>`; a
+  unit for `all` covers every slice and a slice covers `all`. It holds while
+  its unit is on the forge, or for the time a silent unit is given when it
+  was never pushed; `work retire` gives it back. `--alongside` skips it, and
+  where there is no forge nothing is reserved.
 
 ### S27 — A reviewer that ran nothing records nothing, in the project's language
 
