@@ -402,14 +402,19 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S11 — A claim is one shared reservation
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
-- Claiming a proposal slice, for review or implementation, creates one
-  reservation ref on the forge atomically (the same mechanism as #724's id
-  reservation); a second claimer is refused with the holder named. The
-  reservation carries the owning session (x00850's lease), so two instances
-  of one model are two holders, not one (E15).
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-reservation.service.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-reservation.interface.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
+- Claiming a proposal for review first creates
+  `refs/delendai/claims/review/<id>` on the forge with a push only one of
+  two can win (the mechanism of the id reservation). The commit it points
+  at names the holder's unit, so two instances of one model are two
+  holders; the loser is told who holds it and commits no claim (E15).
+- A reservation is renewed by its holder, given back by it, and may be
+  taken over once it has not been renewed for four hours: a reviewer that
+  went away keeps nothing. Where there is no forge, nothing is reserved and
+  the claim works as before.
+- Reserving a slice for implementation the same way is S26.
 
 ### S12 — A run ends with nothing hanging
 
@@ -615,6 +620,16 @@ the good verdicts' shape (P1) becomes the required shape.
 - The commit carries only the files the slice declares that this agent
   changed; anything else the event listed stays in the working tree (E13:
   one automatic commit carried another proposal's files).
+
+### S26 — An implementation unit reserves its slice on the forge
+
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
+- `work enter` for implementation reserves the slice with the same push only
+  one of two can win, so two machines entering one slice in the same minute
+  are told apart before either writes: today the held-slice refusal reads
+  refs each machine has already fetched.
 
 ## dependency graph
 

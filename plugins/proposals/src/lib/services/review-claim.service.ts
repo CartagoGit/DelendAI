@@ -25,6 +25,7 @@ import type {
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
 import { reviewClaims, unitOfRef } from './review-claims.service';
+import { reserveReview } from './review-reservation.service';
 
 /** What a reviewer with a full pack does next. */
 export const publishPackStep = (namespacePrefix: string): string =>
@@ -94,6 +95,27 @@ export const claimForReview = async (
 	if (held.has(id)) return { kind: 'already-claimed' };
 	if (held.size >= REVIEW_PACK_SIZE) {
 		return { kind: 'pack-full', size: REVIEW_PACK_SIZE };
+	}
+	// The forge decides between two reviewers claiming at once: each one's
+	// claim commit has reached nobody else yet (E15).
+	if (shape !== undefined) {
+		const { unit } = await currentUnit(run, shape);
+		if (unit !== undefined) {
+			const reservation = await reserveReview(run, proposalId, {
+				unit,
+				agent:
+					compileWorkRefParser(
+						shape.workRefTemplate,
+						shape.workRefPrefix,
+					)?.parse(unit)?.agent ?? '',
+			});
+			if (reservation.kind === 'taken') {
+				return {
+					kind: 'held',
+					by: [reservation.agent || reservation.unit],
+				};
+			}
+		}
 	}
 	const committed = await run([
 		'commit',
