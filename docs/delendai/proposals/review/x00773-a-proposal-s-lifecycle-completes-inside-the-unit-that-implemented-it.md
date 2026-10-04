@@ -2,13 +2,13 @@
 id: x00773
 title: "A proposal's lifecycle completes inside the unit that implemented it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-09-30
-last-transition-id: ca921ca2-3e3d-4f98-9e47-b65bd4be0dbe
-last-correlation-id: ca921ca2-3e3d-4f98-9e47-b65bd4be0dbe
-last-transition-from: ready
+last-transition-id: a3d989fd-7b9c-43ff-b060-0b4ebb37aa97
+last-correlation-id: a3d989fd-7b9c-43ff-b060-0b4ebb37aa97
+last-transition-from: in-progress
 ---
 
 # x00773 — A proposal's lifecycle completes inside the unit that implemented it
@@ -48,6 +48,7 @@ A proposal created or implemented in a unit exists only on that unit's ref until
 - **Gate**: type
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `97e521a4668f`
 
 ## acceptance
 
