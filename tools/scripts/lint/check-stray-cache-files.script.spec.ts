@@ -77,6 +77,15 @@ describe('findStrayCacheFiles (f00081)', () => {
 		expect(summary.strays).toEqual([]);
 	});
 
+	it("does not flag the close gate's own runner script", async () => {
+		writeFile(
+			join(cacheRoot(), 'proposals', 'close-gate', 'gate-1', 'run.sh'),
+			'#!/bin/sh\n',
+		);
+		const summary = await findStrayCacheFiles(cacheRoot());
+		expect(summary.strays).toEqual([]);
+	});
+
 	it('flags an unknown top-level directory AND every executable inside it', async () => {
 		writeFile(
 			join(cacheRoot(), 's4-s5-driver', 's4-s5-driver.ts'),
