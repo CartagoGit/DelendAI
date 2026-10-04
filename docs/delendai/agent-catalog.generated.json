@@ -1521,14 +1521,6 @@
 				"date": "2026-08-26"
 			},
 			{
-				"id": "q00010",
-				"title": "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath",
-				"track": "develop-audit-hardening-v4-closeout",
-				"status": "in-progress",
-				"kind": "plan",
-				"date": "2026-08-25"
-			},
-			{
 				"id": "q00011",
 				"title": "Plan — cerrar los contratos de runtime que el sistema promete y no cumple: ciclo de vida eager/lazy, propiedad del teardown, enforcement de efectos, puertas ciegas de CI y el 66% del coste de tokens que vive en los output schemas",
 				"track": "runtime-contracts-v1",
@@ -1623,14 +1615,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-19"
-			},
-			{
-				"id": "x00758",
-				"title": "The release carries no new code-scanning alert",
-				"track": "security",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-29"
 			},
 			{
 				"id": "x00766",
