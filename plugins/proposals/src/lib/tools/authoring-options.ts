@@ -220,6 +220,8 @@ export interface IAuthoringToolOptions {
 		readonly ownedFiles: readonly string[];
 		readonly proposalId: string;
 		readonly sliceId: string;
+		/** The caller, when it named itself; else the gate resolves one. */
+		readonly agent?: string | undefined;
 	}) => Promise<ICloseSliceValidationDecision>;
 	/**
 	 * f00508 S4: how many independent reviewers a slice needs.
