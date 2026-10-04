@@ -1,4 +1,7 @@
-import { UNRECORDED_IMPLEMENTER } from '../contracts/constants/review-attribution.constant';
+import {
+	ANOTHER_INSTANCE_MARK,
+	UNRECORDED_IMPLEMENTER,
+} from '../contracts/constants/review-attribution.constant';
 import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 
 /**
@@ -15,13 +18,6 @@ import type { IReviewIndependence } from '../contracts/interfaces/review-indepen
  * agent can pass skips it. A project that does not review turns it off
  * in its own configuration (`requirePeerReview: false`).
  */
-
-/**
- * What an approval line carries when the tool saw that its reviewer and
- * the implementer, one model, were two instances. A document cannot show
- * an instance, so without it the same model's approval proves nothing.
- */
-export const ANOTHER_INSTANCE_MARK = '[another instance]';
 
 /** The letters and digits of a model id, in one case. */
 const lettersOf = (agent: string): string =>

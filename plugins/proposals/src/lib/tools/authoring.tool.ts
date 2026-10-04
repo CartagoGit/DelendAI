@@ -1,9 +1,6 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
-import {
-	ANOTHER_INSTANCE_MARK,
-	isSameModel,
-	isSelfApproval,
-} from '../shared/independent-approval';
+import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
+import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
