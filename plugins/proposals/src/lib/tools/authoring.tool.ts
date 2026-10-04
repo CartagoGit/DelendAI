@@ -1,5 +1,9 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
-import { isSelfApproval } from '../shared/independent-approval';
+import {
+	ANOTHER_INSTANCE_MARK,
+	isSameModel,
+	isSelfApproval,
+} from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
@@ -2106,6 +2110,9 @@ export const buildReviewRegistration = (
 					}
 				}
 
+				// Set when the approver and the implementer, one model, were
+				// seen to be two processes: the approval line then says so.
+				let anotherInstance = false;
 				let nextStatus!:
 					| 'none'
 					| 'in_review'
@@ -2274,6 +2281,15 @@ export const buildReviewRegistration = (
 											args.agent,
 											scoped.reviewIndependence,
 										);
+							const submittedBy =
+								identityCheck.ok && 'submitter' in identityCheck
+									? (identityCheck.submitter as {
+											readonly agent?: string;
+										} | null)
+									: null;
+							anotherInstance =
+								typeof submittedBy?.agent === 'string' &&
+								isSameModel(submittedBy.agent, args.agent);
 							if (!identityCheck.ok) {
 								if (
 									sameAgentNameAsImplementer &&
@@ -2347,7 +2363,7 @@ export const buildReviewRegistration = (
 							args.agent,
 							args.action === 'approve' &&
 								args.evidence !== undefined
-								? approvalNote(args.evidence, redactedNote.text)
+								? `${approvalNote(args.evidence, redactedNote.text)}${anotherInstance ? ` ${ANOTHER_INSTANCE_MARK}` : ''}`
 								: redactedNote.text,
 							args.action === 'approve'
 								? { enforceDistinctAgentName: false, quorum }

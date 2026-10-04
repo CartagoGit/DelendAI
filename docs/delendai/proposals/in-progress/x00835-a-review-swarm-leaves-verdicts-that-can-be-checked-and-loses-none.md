@@ -450,15 +450,18 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S13 — Independence is proved, or the review does not close
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/shared/independent-approval.ts`
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/shared/independent-approval.ts`, `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/shared/independent-approval.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/shared/independent-approval.spec.ts`
-- An actor is a canonical model id plus an instance (the session x00850's
-  lease records). `model` independence compares canonical model ids, so an
-  alias is the same model; `instance` independence compares instances, and
-  an instance that cannot be proved is `unknown`, which closes nothing (G1).
-- `unrecorded` implementers are accepted only for proposals that predate unit
-  attribution; new work whose author cannot be named cannot reach `done` (G2).
+- Models are compared by their letters and digits, so an alias is the same
+  model. Another model is another reviewer under either rule.
+- Under `instance`, the same model is independent only when both instances
+  were seen and differ: the submitting and the approving process, compared
+  by the tool, which then marks the approval line `[another instance]`.
+  A document shows no instance, so without the mark the same model's
+  approval closes nothing. `instance` used to compare nothing at all (G1).
+- A slice whose implementer is `unrecorded` does not reach `done`, whoever
+  approved it: the delivering commit has to be named first (G2).
 
 ### S14 — A verdict applies to the revision it was made on
 
