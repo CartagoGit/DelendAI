@@ -153,8 +153,20 @@ describe('core -> proposals boundary lint (r00043 S5)', () => {
 			scope: 'packages/core/src',
 			description:
 				'Prevents new proposals-domain imports, path literals and workflow strings from entering packages/core/src without a time-boxed exception.',
-			gate: 'manual',
+			gate: 'validate',
 		});
+	});
+
+	it('is a script of its own that the architecture chain runs, so the declared gate exists and CI reaches it', async () => {
+		const manifest = JSON.parse(
+			await readFile(join(REPO_ROOT, 'package.json'), 'utf8'),
+		) as { scripts: Record<string, string> };
+		expect(manifest.scripts['lint:core-proposals-boundary']).toBe(
+			'bun tools/scripts/lint/core-proposals-boundary.script.ts',
+		);
+		expect(manifest.scripts['lint:architecture']).toContain(
+			'bun run lint:core-proposals-boundary',
+		);
 	});
 });
 

@@ -1,5 +1,6 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
-import { isSelfApproval } from '../shared/independent-approval';
+import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
+import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
@@ -21,6 +22,7 @@ import {
 	approvalNote,
 	commitIsIntegrated,
 	deliveredCommitOf,
+	supersedingDelivery,
 } from '../services/review-verdict-evidence';
 import { verdictClaimRefusal } from '../services/review-claim.service';
 import { canonicalRoleOf } from '../shared/agent-conventions';
@@ -338,6 +340,32 @@ const unintegratedEvidenceError = async (
 		? null
 		: toApproveEvidenceError(
 				`evidence.commitHash ${commit} is not on ${integration}: approve what landed, not a commit of a branch that may still change`,
+			);
+};
+
+/** Hex characters of a delivery a person can still tell apart. */
+const SHORT_DELIVERY = 12;
+
+/** An approval of a delivery the same proposal has since replaced. */
+const supersededEvidenceError = async (
+	run: IGitRunner,
+	integration: string | undefined,
+	proposalId: string,
+	files: readonly string[],
+	commit: string | undefined,
+): Promise<IToolTextResult | null> => {
+	if (integration === undefined || commit === undefined) return null;
+	const newer = await supersedingDelivery(
+		run,
+		integration,
+		proposalId,
+		files,
+		commit,
+	);
+	return newer === undefined
+		? null
+		: toApproveEvidenceError(
+				`evidence.commitHash ${commit} is not the slice as it stands: ${proposalId} was delivered again by ${newer.slice(0, SHORT_DELIVERY)}, which changed the same files. Read that one and approve it`,
 			);
 };
 
@@ -2116,6 +2144,9 @@ export const buildReviewRegistration = (
 					}
 				}
 
+				// Set when the approver and the implementer, one model, were
+				// seen to be two processes: the approval line then says so.
+				let anotherInstance = false;
 				let nextStatus!:
 					| 'none'
 					| 'in_review'
@@ -2284,6 +2315,15 @@ export const buildReviewRegistration = (
 											args.agent,
 											scoped.reviewIndependence,
 										);
+							const submittedBy =
+								identityCheck.ok && 'submitter' in identityCheck
+									? (identityCheck.submitter as {
+											readonly agent?: string;
+										} | null)
+									: null;
+							anotherInstance =
+								typeof submittedBy?.agent === 'string' &&
+								isSameModel(submittedBy.agent, args.agent);
 							if (!identityCheck.ok) {
 								if (
 									sameAgentNameAsImplementer &&
@@ -2321,6 +2361,15 @@ export const buildReviewRegistration = (
 									scoped.developmentPolicy?.branches
 										.integration,
 									args.evidence?.commitHash,
+								)) ??
+								(await supersededEvidenceError(
+									scoped.run ??
+										createGitRunner(scoped.workspaceRoot),
+									scoped.developmentPolicy?.branches
+										.integration,
+									entry.id,
+									slicePlan?.files ?? [],
+									args.evidence?.commitHash,
 								));
 							if (evidenceError !== null) {
 								throw Object.assign(
@@ -2357,7 +2406,7 @@ export const buildReviewRegistration = (
 							args.agent,
 							args.action === 'approve' &&
 								args.evidence !== undefined
-								? approvalNote(args.evidence, redactedNote.text)
+								? `${approvalNote(args.evidence, redactedNote.text)}${anotherInstance ? ` ${ANOTHER_INSTANCE_MARK}` : ''}`
 								: redactedNote.text,
 							args.action === 'approve'
 								? { enforceDistinctAgentName: false, quorum }

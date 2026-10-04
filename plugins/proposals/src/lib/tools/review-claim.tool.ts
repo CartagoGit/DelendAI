@@ -22,6 +22,7 @@ import {
 import {
 	claimForReview,
 	publishPackStep,
+	releaseClaim,
 } from '../services/review-claim.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
@@ -90,14 +91,43 @@ export const buildReviewClaimRegistration = (
 			`${options.namespacePrefix}_review_claim`,
 			{
 				description:
-					'Claim a proposal in your review unit before reading it, so no other reviewer takes it: a commit with the claim `review_queue` reads. Pass your unit’s worktree as `checkout` (the `work` tool gives it). Refused while another reviewer holds the proposal.',
+					'Claim a proposal in your review unit before reading it, so no other reviewer takes it: a commit with the claim `review_queue` reads. Pass your unit’s worktree as `checkout` (the `work` tool gives it). Refused while another reviewer holds the proposal. If you could not inspect or run what you claimed, do not record a verdict: pass `release` with why, and the proposal goes back to the queue.',
 				inputSchema: REVIEW_CLAIM_INPUT_SCHEMA,
 				outputSchema: REVIEW_CLAIM_OUTPUT_SCHEMA,
 			},
-			async (args: { proposalId: string; agent: string }) => {
+			async (args: {
+				proposalId: string;
+				agent: string;
+				release?: string | undefined;
+			}) => {
 				const scoped = scopeToCaller(options);
 				const run = scoped.run ?? createGitRunner(scoped.workspaceRoot);
 				const shape = scoped.developmentPolicy?.branches;
+				if (args.release !== undefined) {
+					const released = await releaseClaim(
+						run,
+						shape,
+						args.proposalId,
+						shape?.integration ?? 'HEAD',
+						args.release,
+					);
+					if (released.kind === 'released') {
+						return toolOk({
+							proposalId: args.proposalId,
+							claimed: false,
+							released: true,
+							...(released.commit === undefined
+								? {}
+								: { commit: released.commit }),
+						});
+					}
+					return toolError(
+						released.kind === 'not-held'
+							? `Your review unit does not hold ${args.proposalId}: there is nothing to give back.`
+							: `Could not release ${args.proposalId}: ${released.reason}.`,
+						'Call this from the review unit that claimed it (pass its worktree as `checkout`).',
+					);
+				}
 				const outcome = await claimForReview(
 					run,
 					shape,

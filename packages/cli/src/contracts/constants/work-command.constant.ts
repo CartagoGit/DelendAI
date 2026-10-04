@@ -25,6 +25,7 @@ export const WORK_COMMAND = {
 		'paths',
 		'keep-work-ref',
 		'reason',
+		'unowned',
 		'with-worktree',
 		'no-pull-request',
 		'forge',

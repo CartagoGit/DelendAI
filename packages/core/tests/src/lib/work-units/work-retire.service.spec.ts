@@ -131,6 +131,7 @@ describe('work retire', () => {
 			root,
 			`--ref=${PUBLISHED}`,
 			'--reason=the pack cannot merge',
+			'--unowned',
 		);
 
 		expect(result.code).toBe(0);
@@ -144,6 +145,8 @@ describe('work retire', () => {
 		expect(forge('rev-parse', `refs/delendai/retired/${UNIT}`)).toBe(tip);
 		expect(forge('for-each-ref', 'refs/heads/delendai')).toBe('');
 		expect(git('branch', '--list', WORK)).toBe('');
+		// Nothing of it stays in the clone, not even the ref that kept it.
+		expect(git('for-each-ref', 'refs/delendai')).toBe('');
 		// The work comes back from the forge alone.
 		git('fetch', '-q', 'origin', `refs/delendai/retired/${UNIT}`);
 		expect(git('rev-parse', 'FETCH_HEAD')).toBe(tip);
@@ -157,6 +160,7 @@ describe('work retire', () => {
 			root,
 			`--ref=${WORK}`,
 			'--reason=the pack cannot merge',
+			'--unowned',
 		);
 
 		expect(result.code).not.toBe(0);
@@ -171,7 +175,12 @@ describe('work retire', () => {
 		git('push', '-q', 'origin', 'develop');
 		git('fetch', '-q', 'origin');
 
-		const result = await retire(root, `--ref=${WORK}`, '--reason=landed');
+		const result = await retire(
+			root,
+			`--ref=${WORK}`,
+			'--reason=landed',
+			'--unowned',
+		);
 
 		expect(result.code).toBe(0);
 		const outcome = result.data as IRetirementOutcome;
@@ -195,7 +204,7 @@ describe('work retire', () => {
 			root,
 			`--ref=${WORK}`,
 			'--reason=x',
-			'--with-worktree',
+			'--unowned',
 		);
 		expect(untracked.error).toContain('notes.txt');
 		expect(git('branch', '--list', WORK)).not.toBe('');
@@ -205,7 +214,7 @@ describe('work retire', () => {
 			root,
 			`--ref=${WORK}`,
 			'--reason=x',
-			'--with-worktree',
+			'--unowned',
 		);
 		expect(result.code).toBe(0);
 		const outcome = result.data as IRetirementOutcome;
@@ -217,25 +226,67 @@ describe('work retire', () => {
 		);
 	});
 
-	it('refuses without a reason, a branch that is no unit, and a unit somebody may be in', async () => {
+	it('refuses without a reason, a branch that is no unit, and a recent unit nobody vouched for', async () => {
 		const { root, git } = repository();
 		expect((await retire(root, `--ref=${WORK}`)).code).not.toBe(0);
 
 		const integration = await retire(root, '--ref=develop', '--reason=x');
 		expect(integration.error).toContain('not a unit of work');
 
-		git('worktree', 'add', '-q', join(root, '.cache', 'unit'), WORK);
-		const occupied = await retire(root, `--ref=${WORK}`, '--reason=x');
-		expect(occupied.error).toContain('--with-worktree');
+		// Committed a moment ago and with no lease: it may be somebody's.
+		const recent = await retire(root, `--ref=${WORK}`, '--reason=x');
+		expect(recent.error).toContain('--unowned');
 		expect(git('branch', '--list', WORK)).not.toBe('');
 
+		git('worktree', 'add', '-q', join(root, '.cache', 'unit'), WORK);
 		const taken = await retire(
 			root,
 			`--ref=${WORK}`,
 			'--reason=x',
-			'--with-worktree',
+			'--unowned',
 		);
 		expect(taken.code).toBe(0);
 		expect(git('worktree', 'list')).not.toContain('.cache/unit');
+	});
+
+	it("refuses another agent's live unit, whatever the caller asserts, and lets its owner retire it", async () => {
+		const { root, git } = repository();
+		const enter = await runWorkUnit(
+			[
+				'enter',
+				'--proposal=x00009',
+				'--slice=S1',
+				'--agent=agent-b',
+				'--topic=theirs',
+			],
+			fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
+				cwd: root,
+				globals: fakePartial<
+					IWorkUnitContext['globals'],
+					'workspace' | 'json'
+				>({ workspace: root, json: true }),
+			}),
+		);
+		const theirs = (enter.data as { branch: string }).branch;
+
+		const foreign = await retire(
+			root,
+			`--ref=${theirs}`,
+			'--reason=x',
+			'--agent=agent-a',
+			'--unowned',
+		);
+		expect(foreign.code).not.toBe(0);
+		expect(foreign.error).toContain("agent-b's to retire");
+		expect(git('branch', '--list', theirs)).not.toBe('');
+
+		const own = await retire(
+			root,
+			`--ref=${theirs}`,
+			'--reason=x',
+			'--agent=agent-b',
+		);
+		expect(own.code).toBe(0);
+		expect(git('branch', '--list', theirs)).toBe('');
 	});
 });

@@ -13,6 +13,7 @@
  *                            claimed for you, and what to check
  *   review approve <id> <s>  the slice holds: recorded and committed
  *   review changes <id> <s>  it does not: recorded, committed, reopened
+ *   review release <id>      you could not judge it: the claim goes back
  *   review finish            your verdicts become one pull request
  *
  * Nothing here decides anything new. The unit is `work enter` / `work
@@ -221,6 +222,7 @@ const briefFor = (proposal: IQueueProposal, unit: IUnit, agent: string) => {
 				approve: `delendai review approve ${proposal.id} ${slice.sliceId} ${who} --commit=${slice.candidates?.[0]?.commit ?? '<sha>'} --validate-exit=<gate exit code> --tests-passing=<n> --tests-total=<n> --note="<what you verified>"`,
 				changes: `delendai review changes ${proposal.id} ${slice.sliceId} ${who} --note="<what is missing, precisely>"`,
 			})),
+		cannotJudge: `If you cannot inspect or run it, record no verdict: delendai review release ${proposal.id} ${who} --note="<why>"`,
 		afterwards: `delendai review next ${who}`,
 	};
 };
@@ -344,6 +346,37 @@ const verdict = async (
 	});
 };
 
+/**
+ * Give a claim back: for a reviewer that could not inspect or run what it
+ * claimed. It records no verdict, and the proposal returns to the queue.
+ */
+const release = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const [proposalId] = args.filter((arg) => !arg.startsWith('-'));
+	const agent = agentOf(args);
+	const note = scalarArg(args, 'note');
+	if (proposalId === undefined || agent === undefined || note === undefined) {
+		return usage(
+			'review release <proposalId> --agent=<you> --session=<s> --note="<why you could not judge it>"',
+		);
+	}
+	const unit = await unitOf(agent, sessionOf(args), ctx);
+	if (!isUnit(unit)) return unit;
+	const answer = await request<Record<string, unknown>>(ctx, CLAIM_TOOL, {
+		proposalId,
+		agent,
+		release: note,
+		checkout: unit.path,
+	});
+	return data({
+		...answer,
+		unit: unit.ref,
+		next: `delendai review next --agent=${agent} --session=${unit.session}`,
+	});
+};
+
 const finish = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
@@ -362,9 +395,10 @@ export const reviewRoundCommand: ICliCommand = {
 		if (sub === 'next') return next(rest, ctx);
 		if (sub === 'approve') return verdict('approve', rest, ctx);
 		if (sub === 'changes') return verdict('request_changes', rest, ctx);
+		if (sub === 'release') return release(rest, ctx);
 		if (sub === 'finish') return finish(rest, ctx);
 		return usage(
-			'review <next|approve|changes|finish> — start with: delendai review next --agent=<you>',
+			'review <next|approve|changes|release|finish> — start with: delendai review next --agent=<you>',
 		);
 	},
 };

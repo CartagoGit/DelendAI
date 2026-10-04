@@ -2,7 +2,7 @@
 id: q00010
 title: "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath"
 kind: plan
-status: in-progress
+status: review
 type: plan
 track: develop-audit-hardening-v4-closeout
 date: 2026-08-25
@@ -46,9 +46,9 @@ contains:
             rationale: "ADR 0007: registrar la decisión de usar subpath @delendai/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
-last-transition-id: 186ee801-7470-4c83-833b-fdee35b899f2
-last-correlation-id: 186ee801-7470-4c83-833b-fdee35b899f2
-last-transition-from: review
+last-transition-id: 4ec9bd1c-c814-4b17-af99-fdb896779e89
+last-correlation-id: 4ec9bd1c-c814-4b17-af99-fdb896779e89
+last-transition-from: in-progress
 shipped-in:
   - "6ab4f8f548bac7b59ee4c6d5d8f5915b657c4484"
 ---
@@ -216,16 +216,13 @@ introducido el subpath (lo cual es precondición dura).
 
 ### S2 — Ejecución Track B + Track A + Track C
 
-- **Status**: in-progress
+- **Status**: review
   - Track B: `x00269` done, `x00270` done, `t00022` done, `t00023` done.
-  - Track A: `c00156` done, `c00145` done, `x00272` done, `v00127`
-    **review** (PR merged to `develop`, proposal status still `review`
-    pending human/reviewer sign-off — not `done` yet, but no longer
-    blocking: S3's closure below only requires done/retired/review).
+  - Track A: `c00156` done, `c00145` done, `x00272` done, `v00127` done.
   - Track C: `d00012` done, `c00146` **retired** (realigned by a
-    different, equivalent path than originally specced — still closes
-    the track; its own file records why).
-  - 9 of 10 children are `done`, one is `retired`, one is `review`.
+    different, equivalent path than originally specced; its own file
+    records why).
+  - Of the 10 children, 9 are `done` and 1 (`c00146`) is `retired`.
 - **Files**: las 10 propuestas hijas de Tracks B, A y C
 - **Gate**: `bun run validate`
 
@@ -238,31 +235,29 @@ S1 verde.
 - Track A → Slices S2.A1 (c00156), S2.A2 (c00145), S2.A3
   (x00272), S2.A4 (v00127).
 - Track C → Slices S2.C1 (d00012), S2.C2 (c00146).
-- review-state: changes_requested
-- review-implementer: unrecorded
-- review-reviewer: gpt-5.4
-- review-log: requested_changes by gpt-5.4 — El cierre del plan no es internamente consistente. En S2 se afirma a la vez que v00127 está en review, c00146 está retired y "9 of 10 children are done, one is retired, one is review", pero esa cuenta no cierra. Además, S3 contradice su propia aceptación: el cuerpo dice que basta con hijas done/retired/review para handoff, mientras la acceptance exige "Las 10 hijas están status: done con peer review". Ajustad la contabilidad y dejad una única condición de cierre coherente antes de aprobar el plan.
 - review-attribution: unrecorded — no delivering commit was named for q00010 S2; independence could not be verified, opened by gpt-5.4
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by gpt-5.4 — El cierre del plan no es internamente consistente. En S2 se afirma a la vez que v00127 está en review, c00146 está retired y "9 of 10 children are done, one is retired, one is review", pero esa cuenta no cierra. Además, S3 contradice su propia aceptación: el cuerpo dice que basta con hijas done/retired/review para handoff, mientras la acceptance exige "Las 10 hijas están status: done con peer review". Ajustad la contabilidad y dejad una única condición de cierre coherente antes de aprobar el plan.
 
 ### S3 — Cierre del plan
 
-- **Status**: review — 2026-09-30. This is a closure pass, no code: all
-  10 children are closed (done/retired) or in review, which is what
-  this plan's own acceptance requires to hand off. Verified each
+- **Status**: review — a closure pass, no code. All 10 children are
+  closed: 9 `done` with peer review and 1 (`c00146`) `retired`, which is
+  the single condition this plan closes on (below). Verified each
   `superseded-by` link by reading the superseding proposal's frontmatter
   directly: `x00258` carries `superseded-by: x00272`; `v00125` carries
   `superseded-by: v00127` (added by v00127 S3); `r00029` carries
   `superseded-by: d00012`. Ran
   `bun tools/scripts/proposals/sync-proposal-counters.script.ts` —
   refreshed cleanly, 11 prefixes synced (`.cache/delendai/proposal-id-counters.json`
-  is a generated cache file, not committed). The one open item is
-  `v00127` itself sitting in `review` rather than `done` — that is a
-  human/reviewer approval step, not remaining work; q00010 does not
-  block on it reaching `done` to itself reach `review`.
+  is a generated cache file, not committed).
 - **Files**: las 10 propuestas hijas y el registro de cierre del plan
 - **Gate**: `bun run validate`
 - **Acceptance**:
-  - Las 10 hijas están `status: done` con peer review.
+  - Las 10 hijas están cerradas: `done` con peer review, o `retired` con
+    el motivo registrado en su propio documento. Ninguna queda en
+    `review`, `in-progress` ni `ready`.
   - **El fork de `commit-policy` plugin muestra al ejecutar
     `bun tools/scripts/proposals/sync-proposal-counters.script.ts`
     que los contadores están sincronizados.**
@@ -270,7 +265,6 @@ S1 verde.
   - Las 10 hijas tienen `superseded-by` correctamente en los
     heredados (`x00258 superseded-by x00272`, `v00125
     superseded-by v00127`, `r00029 superseded-by d00012`).
-- **Gate**: meta
 
 ## acceptance
 

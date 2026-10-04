@@ -126,3 +126,51 @@ describe('a change request', () => {
 		expect(JSON.stringify(rejected.body)).toContain('names no commit');
 	});
 });
+
+describe('an approval of a delivery the proposal has since replaced', () => {
+	const REF = 'delendai/pr/agent-a/implement/x00001-S1-g1/the-work';
+
+	it('is refused with the newer delivery named, and the newer one is approved', async () => {
+		const first = repo.deliverThroughPullRequest('src/a.ts', REF);
+		const second = repo.deliverThroughPullRequest(
+			'src/a.ts',
+			REF,
+			'fix: the work, reworked',
+			`Merge pull request #8 from Owner/${REF}`,
+		);
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const stale = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: first },
+		});
+		expect(stale.isError).toBe(true);
+		expect(stale.text).toContain('delivered again by');
+		expect(stale.text).toContain(
+			repo.git('rev-parse', 'develop').slice(0, 12),
+		);
+
+		const current = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: second },
+		});
+		expect(current.isError).toBe(false);
+	});
+
+	it('is not refused for a later change to the files that is no delivery of the proposal', async () => {
+		const first = repo.deliverThroughPullRequest('src/a.ts', REF);
+		writeFileSync(join(repo.root, 'src/a.ts'), 'export const a = 3;\n');
+		repo.git('add', 'src/a.ts');
+		repo.git('commit', '-q', '--no-verify', '-m', 'refactor: a rename');
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const approved = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: first },
+		});
+		expect(approved.isError).toBe(false);
+	});
+});

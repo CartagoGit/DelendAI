@@ -283,6 +283,46 @@ describe('workflow invariants (x00573)', () => {
 		expect(by(root, 'units-hold-work').holds).toBe(true);
 	});
 
+	it("leaves somebody's backup on the forge alone until it has been silent too long", () => {
+		const { root } = repo();
+		const backup = 'delendai/wip/claude-opus-5/x1-S1-g1/elsewhere';
+		git(root, 'switch', '-q', '-c', 'scratch');
+		writeFileSync(join(root, 'g.txt'), 'g\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'work on another machine');
+		git(root, 'push', '-q', 'origin', `HEAD:refs/heads/${backup}`);
+		git(root, 'switch', '-q', 'develop');
+		git(root, 'branch', '-q', '-D', 'scratch');
+		git(root, 'fetch', '-q', 'origin');
+
+		// No worktree here and no lease: a runner sees exactly this.
+		expect(by(root, 'no-remote-work-refs').holds).toBe(true);
+
+		const later = checkWorkflowInvariants({
+			root,
+			policy,
+			now: Math.floor(Date.now() / 1000) + 7 * 24 * 3600,
+		}).results.find((r) => r.id === 'no-remote-work-refs');
+		expect(later?.holds).toBe(false);
+		expect(later?.observed).toContain('silent');
+	});
+
+	it('sees a ref kept by hand, a retired unit copied here, and a remote that is gone', () => {
+		const { root } = repo();
+		expect(by(root, 'no-stray-refs').holds).toBe(true);
+		git(root, 'tag', 'v1');
+		git(root, 'update-ref', 'refs/delendai/ids/x00001', 'HEAD');
+		expect(by(root, 'no-stray-refs').holds).toBe(true);
+
+		git(root, 'update-ref', 'refs/recovery/run/unit', 'HEAD');
+		git(root, 'update-ref', 'refs/delendai/retired/agent/unit', 'HEAD');
+		git(root, 'update-ref', 'refs/remotes/gone/develop', 'HEAD');
+		const result = by(root, 'no-stray-refs');
+		expect(result.holds).toBe(false);
+		expect(result.observed).toContain('3:');
+		expect(result.remedy).toContain('work retire');
+	});
+
 	it('answers about the shared checkout when a hook in a worktree asks', () => {
 		const { root } = repo();
 		const wt = `${root}-wt`;
