@@ -2,6 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, relative } from 'node:path';
 
+import { readLeaseOf } from '@delendai/core/cli';
 import { callerCheckout } from '@delendai/core/public';
 import {
 	resolveScopedValidationDecision,
@@ -170,6 +171,10 @@ export const buildCloseSliceValidationProvider = (input: {
 				? currentBranch.output.trim()
 				: undefined;
 		const checkout = callerCheckout.executionRootOr(input.workspaceRoot);
+		const lease =
+			branch === undefined
+				? undefined
+				: await readLeaseOf(checkout, branch).catch(() => undefined);
 		const actor = resolveCloseActor({
 			agent,
 			environment:
@@ -178,6 +183,7 @@ export const buildCloseSliceValidationProvider = (input: {
 					: process.env.DELENDAI_AGENT_ID,
 			branch,
 			shape: input.branches,
+			leaseOwner: lease?.owner.agent,
 			proposalId,
 			sliceId,
 		});

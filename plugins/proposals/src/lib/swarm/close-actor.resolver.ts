@@ -13,8 +13,9 @@
  *  - whether the checkout is the actor's own unit for this slice, which
  *    is itself proof the actor is at work on it, with or without a claim.
  *
- * Unit ownership is read from the work ref behind `unitOwnerOf`, the one
- * place a unit lease can replace it.
+ * Unit ownership is the unit lease's owner (`work enter` records it); a
+ * unit entered before leases existed falls back to the agent its work ref
+ * names. `unitOwnerOf` is the one place that is decided.
  */
 import {
 	compileWorkRefParser,
@@ -48,12 +49,14 @@ const normalizedAgent = (value: string): string =>
 	resolveWorkAgentId({ model: value }).id;
 
 /**
- * The owner of the unit a branch names — the seam a unit lease replaces.
- * `undefined` when the branch is not a work ref or the project names none.
+ * The owner of the unit a branch names: the lease's owner when the unit has
+ * one, else the agent its work ref names. `undefined` when the branch is
+ * not a work ref or the project names none.
  */
 export const unitOwnerOf = (
 	branch: string | undefined,
 	shape: IWorkRefShape | undefined,
+	leaseOwner?: string | undefined,
 ): IUnitOwner | undefined => {
 	if (branch === undefined || branch === '' || shape === undefined) {
 		return undefined;
@@ -66,7 +69,7 @@ export const unitOwnerOf = (
 	)?.parse(unit);
 	if (identity === undefined || identity.agent === '') return undefined;
 	return {
-		agent: identity.agent,
+		agent: leaseOwner ?? identity.agent,
 		proposal: identity.proposal,
 		slice: identity.slice,
 		branch,
@@ -81,10 +84,12 @@ export const resolveCloseActor = (input: {
 	readonly environment?: string | undefined;
 	readonly branch?: string | undefined;
 	readonly shape?: IWorkRefShape | undefined;
+	/** The agent the unit's lease names as owner, when it has one. */
+	readonly leaseOwner?: string | undefined;
 	readonly proposalId: string;
 	readonly sliceId: string;
 }): ICloseActor => {
-	const unit = unitOwnerOf(input.branch, input.shape);
+	const unit = unitOwnerOf(input.branch, input.shape, input.leaseOwner);
 	const declared = resolveWorkAgentId({
 		...(input.agent === undefined ? {} : { model: input.agent }),
 		...(input.environment === undefined

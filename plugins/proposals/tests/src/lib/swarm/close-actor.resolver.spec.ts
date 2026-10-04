@@ -73,4 +73,25 @@ describe('resolveCloseActor', () => {
 			}).ownsUnit,
 		).toBe(true);
 	});
+
+	it('takes the unit owner from its lease over the name in the ref', () => {
+		const actor = resolveCloseActor({
+			...base,
+			branch: BRANCH,
+			leaseOwner: 'heron',
+		});
+		expect(actor).toMatchObject({
+			agent: 'heron',
+			source: 'work-ref',
+			ownsUnit: true,
+		});
+		expect(
+			resolveCloseActor({
+				...base,
+				branch: BRANCH,
+				leaseOwner: 'heron',
+				agent: 'owl',
+			}).ownsUnit,
+		).toBe(false);
+	});
 });
