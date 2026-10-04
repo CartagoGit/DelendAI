@@ -1,3 +1,5 @@
+import type { IWorkflowKpis } from '@delendai/core/public';
+
 export const KPI_VALUE_STATUSES = [
 	'measured',
 	'estimated',
@@ -71,17 +73,8 @@ export interface IKpiDeliverySection {
 	readonly note: string;
 }
 
-export interface IKpiWorkflowSection {
-	readonly invariants: {
-		readonly total: number;
-		readonly broken: number;
-		readonly brokenIds: readonly string[];
-	};
-	readonly units: number;
-	readonly publicationsWaiting: number;
-	readonly agents: number;
-	readonly agentsThatProducedNothing: number;
-}
+/** The work model's numbers, exactly as core computes them. */
+export type IKpiWorkflowSection = IWorkflowKpis;
 
 export interface IKpiSnapshot {
 	readonly contract: 'project-kpis.snapshot';
