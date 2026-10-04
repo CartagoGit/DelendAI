@@ -1593,14 +1593,6 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "r00040",
-				"title": "Migrar el barrel de 288 exports a los subpaths del core que ya existen",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "refactor",
-				"date": "2026-08-29"
-			},
-			{
 				"id": "r00043",
 				"title": "`@delendai/core` deja de conocer el dominio `proposals`",
 				"track": "architecture",
