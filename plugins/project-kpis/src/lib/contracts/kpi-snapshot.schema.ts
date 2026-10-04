@@ -68,6 +68,22 @@ export const KpiDeliverySectionSchema = z
 	})
 	.strict();
 
+export const KpiWorkflowSectionSchema = z
+	.object({
+		invariants: z
+			.object({
+				total: z.number().int().min(0),
+				broken: z.number().int().min(0),
+				brokenIds: z.array(z.string()),
+			})
+			.strict(),
+		units: z.number().int().min(0),
+		publicationsWaiting: z.number().int().min(0),
+		agents: z.number().int().min(0),
+		agentsThatProducedNothing: z.number().int().min(0),
+	})
+	.strict();
+
 export const KpiSnapshotSchema = z
 	.object({
 		contract: z.literal('project-kpis.snapshot'),
@@ -77,6 +93,7 @@ export const KpiSnapshotSchema = z
 		health: KpiHealthSectionSchema,
 		usage: KpiUsageSectionSchema,
 		delivery: KpiDeliverySectionSchema,
+		workflow: KpiWorkflowSectionSchema.optional(),
 		bytes: z.number().int().positive(),
 		truncated: z.boolean(),
 		originalBytes: z.number().int().positive().optional(),

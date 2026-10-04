@@ -71,6 +71,18 @@ export interface IKpiDeliverySection {
 	readonly note: string;
 }
 
+export interface IKpiWorkflowSection {
+	readonly invariants: {
+		readonly total: number;
+		readonly broken: number;
+		readonly brokenIds: readonly string[];
+	};
+	readonly units: number;
+	readonly publicationsWaiting: number;
+	readonly agents: number;
+	readonly agentsThatProducedNothing: number;
+}
+
 export interface IKpiSnapshot {
 	readonly contract: 'project-kpis.snapshot';
 	readonly version: 1;
@@ -79,6 +91,8 @@ export interface IKpiSnapshot {
 	readonly health: IKpiHealthSection;
 	readonly usage: IKpiUsageSection;
 	readonly delivery: IKpiDeliverySection;
+	/** Absent when the workspace is not a git repository. */
+	readonly workflow?: IKpiWorkflowSection;
 	readonly bytes: number;
 	readonly truncated: boolean;
 	readonly originalBytes?: number;
@@ -90,6 +104,9 @@ export interface IKpiAggregationOptions {
 	readonly usageSummaryPathAbs: string;
 	readonly usageInvocationsPathAbs: string;
 	readonly now?: Date;
+	readonly readWorkflow?: (
+		workspaceRootAbs: string,
+	) => Promise<IKpiWorkflowSection | undefined>;
 	readonly windowDays?: number;
 	readonly maxBytes?: number;
 	readonly pathExists?: (path: string) => boolean | Promise<boolean>;
