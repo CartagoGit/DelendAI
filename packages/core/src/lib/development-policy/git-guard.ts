@@ -58,8 +58,8 @@ const judgeCommit = (
 	) {
 		return {
 			refused: true,
-			reason: `the \`${policy.profile}\` development profile forbids committing directly to \`${branch}\`.`,
-			remedy: describeWorkIsolation(policy).rule,
+			reason: `the \`${policy.profile}\` development profile forbids committing directly to \`${branch}\`, the integration branch: no agent commits there, whatever its model or host.`,
+			remedy: `${describeWorkIsolation(policy).rule} Set DELENDAI_AGENT_ID to your exact model id so the work ref carries it. A person who owns this checkout can allow their own commits with \`development.guard.unknownActor: "person"\`.`,
 		};
 	}
 	if (policy.workspace.pinnedCheckout && !insideNamespaces(policy, branch)) {

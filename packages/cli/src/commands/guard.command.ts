@@ -14,7 +14,7 @@ import { resolve as resolvePath } from 'node:path';
 import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
-import { agentEnvironmentMarker } from '@delendai/core/cli';
+import { gitActorMarker } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -508,7 +508,8 @@ export const createGuardCommand = (
 			return { code: EXIT_CODE.VALIDATION };
 		}
 		// An agent is recognised by its runtime's variable or, whatever the
-		// runtime, by the worktree `work enter` made for it (x00688).
+		// runtime, by the worktree `work enter` made for it. When neither
+		// says, the policy's `guard.unknownActor` decides.
 		// A worktree made before the stamp existed still says whose it is:
 		// a linked worktree on a work branch belongs to the agent the branch
 		// names.
@@ -526,11 +527,11 @@ export const createGuardCommand = (
 			(onWorkBranch !== undefined && onWorkBranch.length > 0
 				? onWorkBranch
 				: undefined);
-		const agentMarker =
-			agentEnvironmentMarker(process.env) ??
-			(stamped === undefined
-				? undefined
-				: `the worktree delendai made for ${stamped}`);
+		const agentMarker = gitActorMarker({
+			env: process.env,
+			policy,
+			unitAgent: stamped,
+		});
 		if (hook === 'post-checkout') {
 			// A warning is still a limit on how somebody uses their own
 			// checkout; it is for agents, like every other verdict here.
