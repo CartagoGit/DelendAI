@@ -2,7 +2,7 @@
 id: r00040
 title: "Migrar el barrel de 288 exports a los subpaths del core que ya existen"
 kind: refactor
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, r00041]
-last-transition-id: cb125da2-97c5-4258-b3c2-84900e2bed78
-last-correlation-id: cb125da2-97c5-4258-b3c2-84900e2bed78
-last-transition-from: ready
+last-transition-id: 982a690d-7910-4a5c-804c-21d1dd259175
+last-correlation-id: 982a690d-7910-4a5c-804c-21d1dd259175
+last-transition-from: in-progress
 ---
 
 # r00040 — Migrar el barrel de 288 exports a los subpaths del core que ya existen
@@ -135,6 +135,7 @@ public/index.ts queda como:
       cuenta exports por anotación y por subpath destino propuesto)
     - `packages/core/tests/src/public/surface-classification.spec.ts` (nuevo)
 - **Gate**: `bun tools/scripts/report/core-public-surface-report.script.ts`
+- shipped-in: `d3eaef32a`
 
 ### S2 — Migrar el dominio de mayor volumen a su subpath (o a uno nuevo si no encaja)
 
@@ -163,16 +164,19 @@ public/index.ts queda como:
 - Left for later: 122 exports that only core's own tests read through the
   barrel, and 117 with no importer outside core. Neither is plugin
   surface; both belong with x00541 (exports with no importer).
+- shipped-in: `f2b416c4e241`
 
 ### S3 — Marcar el barrel como deprecado con fecha
 
-- **Status**: pending
-- **Files**:
-    - `packages/core/src/public/index.ts` (comentario de deprecación
-      con fecha de retirada)
-    - `docs/delendai/adr/` (actualizar `d00012` o el ADR de subpaths
-      con el estado post-migración — confirmar el fichero exacto con
-      `ls docs/delendai/adr | grep contracts-subpath`)
+- **Status**: retired — 2026-10-04. The entry this slice would deprecate is
+  the surface plugins build against: S2 moved the 112 exports only the CLI,
+  the host and the repository scripts read to `@delendai/core/cli` and left
+  `@delendai/core/public` with what plugins use (645 exports to 533, under
+  its budget). Deprecating it with a removal date would announce the end of
+  the one entry a plugin author is told to import from. What remains to
+  shrink is x00541 S3: the exports with no importer outside core.
+- **Files**: `packages/core/src/public/index.ts`, `docs/delendai/adr/`
+- What it had planned to touch; a retired slice delivers none of it.
 - **Gate**: `bun tools/scripts/lint/proposals.script.ts` (verifica que
   el ADR referenciado sigue siendo un documento válido enlazado) y
   revisión manual de que el comentario de deprecación incluye fecha
