@@ -498,14 +498,16 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S16 — The run knows who joined it
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/tools/work-unit.tool.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/tools/work-unit.tool.spec.ts`
-- An agent registers its canonical model id and instance when it first calls
-  delendai in a session; the id must match the running model's declared id
-  (family, version and tier), not free text (E17, E18). `work swarm` lists
-  every registered agent with what it produced, so an agent that joined and
-  produced nothing, or worked under another name, shows.
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/swarm-roster.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/contracts/interfaces/swarm-roster.interface.ts`, `packages/core/tests/src/lib/work-units/swarm-roster.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/swarm-roster.service.spec.ts`
+- Every agent that enters a unit leaves a lease, whether or not it commits.
+  `work swarm` lists the agents of the run from the leases and the refs:
+  how many instances of each, its units, its commits and what waits to
+  land. One that joined and produced nothing is listed, and says so (E17).
+- One model under two names is refused on the way in (S3). Checking that a
+  declared id is the model actually running needs the host to state it;
+  nothing here can tell `qwen3-flash` from the model it is (E18).
 
 ### S17 — A storm can be replayed
 
@@ -637,16 +639,26 @@ the good verdicts' shape (P1) becomes the required shape.
 - The commit carries only the files the slice declares that this agent
   changed; anything else the event listed stays in the working tree (E13:
   one automatic commit carried another proposal's files).
+- Not done on purpose yet: the persistence layer passes the claim whole so a
+  checkpoint never drops a path the ref already made durable. Narrowing it
+  needs the producer of the event's file list examined first, so the fix
+  lands where the foreign files came in. Since S9 no unit is opened under an
+  undeclared identity, which is how that commit came to exist.
 
 ### S26 — An implementation unit reserves its slice on the forge
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/contracts/interfaces/slice-reservation.interface.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - `work enter` for implementation reserves the slice with the same push only
   one of two can win, so two machines entering one slice in the same minute
   are told apart before either writes: today the held-slice refusal reads
   refs each machine has already fetched.
+- The reservation is `refs/<namespace>/claims/slice/<proposal>/<slice>`; a
+  unit for `all` covers every slice and a slice covers `all`. It holds while
+  its unit is on the forge, or for the time a silent unit is given when it
+  was never pushed; `work retire` gives it back. `--alongside` skips it, and
+  where there is no forge nothing is reserved.
 
 ### S27 — A reviewer that ran nothing records nothing, in the project's language
 

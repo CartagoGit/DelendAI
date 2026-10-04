@@ -13,6 +13,7 @@ import { hydratedIdleUnit } from './kept-unit-hydration.service';
 import { readSwarm } from './work-swarm.service';
 import { aliasedIdentity, describeAlias } from './agent-alias.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
+import { sliceHeldOnForge } from './slice-reservation.service';
 import { isUnitHolding, readUnitStandings } from './unit-standings.service';
 import { liveProposalBranch } from './proposal-branch.service';
 import {
@@ -291,6 +292,22 @@ export const enteredHeld = async (
 			`The topic is ${String(topic.length)} characters; a unit's topic is at most ${String(MAX_WORK_TOPIC_LENGTH)}.`,
 			'Name the work in a few words (--topic=review-pack-3). A review unit lists what it claims in its commits, not in its name.',
 		);
+	}
+	if (
+		createdRef &&
+		(scalarArg(args, 'kind') ?? 'implement') === 'implement' &&
+		!args.includes('--alongside')
+	) {
+		// The refs this clone has may be a minute old: the forge decides.
+		const reservedElsewhere = sliceHeldOnForge({
+			root,
+			policy,
+			proposal,
+			slice,
+			agent,
+			branch,
+		});
+		if (reservedElsewhere !== undefined) return reservedElsewhere;
 	}
 	if (createdRef) {
 		// From the integration branch, by plumbing: no checkout moves.
