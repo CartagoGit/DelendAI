@@ -28,6 +28,7 @@ import type {
 } from '../contracts/interfaces/guard.interface';
 import {
 	readWorkspaceDocsDir,
+	readLeaseOf,
 	readUnitRefFacts,
 	readWorkspacePolicy,
 	touchUnitOfCheckout,
@@ -205,6 +206,8 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 		git(workspace, ['rev-parse', '--git-dir']) ===
 		git(workspace, ['rev-parse', '--git-common-dir']),
 	worktreeAgent: () => worktreeAgent(workspace),
+	leaseAgent: async (branch) =>
+		(await readLeaseOf(workspace, branch))?.owner.agent,
 	unitRefs: (policy, branch) => readUnitRefFacts(workspace, policy, branch),
 	showLife: async (policy) => {
 		await touchUnitOfCheckout(workspace, policy);
@@ -528,11 +531,16 @@ export const createGuardCommand = (
 			(facts.branch() ?? '').startsWith(workPrefix)
 				? (facts.branch() ?? '').slice(workPrefix.length).split('/')[0]
 				: undefined;
+		const branchName = facts.branch();
 		const stamped =
 			facts.worktreeAgent?.() ??
 			(onWorkBranch !== undefined && onWorkBranch.length > 0
 				? onWorkBranch
-				: undefined);
+				: undefined) ??
+			// The lease names the owner of a unit whatever stamped its tree.
+			(branchName === undefined || facts.inMainWorktree()
+				? undefined
+				: await facts.leaseAgent?.(branchName));
 		const agentMarker = gitActorMarker({
 			env: process.env,
 			policy,

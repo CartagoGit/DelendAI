@@ -341,9 +341,8 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
 - **No orphaned branches or stashes — always reconcile (this repo).**
   A unit ends in `delendai work publish` or `delendai work retire`
   (keeps its tip). Before closing a session run `bun run reclaim:orphans`:
-  live units are not orphans, idle/abandoned ones print their policy
-  remedy, and `--apply` removes lossless branches and delivered units
-  (clean worktrees only); stashes and unique-commit branches are kept.
+  live units are no orphans; idle/abandoned ones print their remedy;
+  `--apply` removes lossless branches and delivered units, never stashes.
 - **Slice commits are causally bounded (f00417).** A slice commit is
   only valid if the staged paths are a subset of the **machine-resolved
   scope** at the moment the transition was emitted. The resolver

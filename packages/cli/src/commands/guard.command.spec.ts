@@ -952,3 +952,23 @@ describe('guard command, a unit of work', () => {
 		expect(showLife).toHaveBeenCalledOnce();
 	});
 });
+
+describe('guard command, a unit known only by its lease', () => {
+	it('judges the actor as the lease owner when no stamp says whose the worktree is', async () => {
+		const result = await createGuardCommand(() =>
+			facts({
+				policy: async () =>
+					resolveDevelopmentPolicy({
+						development: {
+							profile: 'shared-checkout-pr',
+							branches: { namespacePrefix: 'delendai' },
+						},
+					}),
+				branch: () => 'delendai/wip/some-model/implement/x1-S1-g1/work',
+				inMainWorktree: () => false,
+				leaseAgent: async () => 'some-model',
+			}),
+		).run(['post-checkout', 'a', 'b', '1'], context('/ws'));
+		expect(result.code).toBe(0);
+	});
+});

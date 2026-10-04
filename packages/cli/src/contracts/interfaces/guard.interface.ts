@@ -41,6 +41,11 @@ export interface IGuardFacts {
 	/** The worktree that has `ref` checked out, if any. */
 	readonly worktreeOf?: (ref: string) => string | undefined;
 	/**
+	 * The agent that owns the unit `branch` names, from its lease: the
+	 * evidence for a worktree delendai did not stamp.
+	 */
+	readonly leaseAgent?: (branch: string) => Promise<string | undefined>;
+	/**
 	 * The other refs of the unit a pushed work ref belongs to, and the one
 	 * its lease names (async: the leases are files).
 	 */
