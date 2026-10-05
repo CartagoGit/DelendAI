@@ -2,10 +2,13 @@
 id: x00874
 title: "A proposal is created in a unit that takes its id"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: workflow
 date: 2026-10-05
+last-transition-id: 8cf500e9-53d9-4eff-90c3-7ae72735eb54
+last-correlation-id: 8cf500e9-53d9-4eff-90c3-7ae72735eb54
+last-transition-from: in-progress
 ---
 
 # x00874 — A proposal is created in a unit that takes its id
@@ -73,6 +76,9 @@ capitalised, where the canonical order is lower case.
 - A registration's `refusedWriteNextStep` replaces the generic advice in a
   refused write. The create tool's says: enter a `create` unit for `new`,
   then create there.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `54e58a2d6954`
 
 ### S2 — A unit takes the id of the proposal created in it, and a renamed unit keeps its lease
 
@@ -84,6 +90,9 @@ capitalised, where the canonical order is lower case.
   answer of `create` names the unit's new name.
 - `work claim` carries the lease and drops the forge's old name the same
   way, so a claimed unit is one unit.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `b94d0a9818fa`
 
 ### S3 — A created document has the canonical headings
 
@@ -92,6 +101,9 @@ capitalised, where the canonical order is lower case.
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/create-proposal-retry.spec.ts`
 - `create` writes `## goal`, `## why`, `## non-goals`, `## Slices`,
   `## acceptance` in the canonical order and case.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `54e58a2d6954`
 
 ## dependency graph
 
