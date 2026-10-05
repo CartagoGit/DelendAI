@@ -17,10 +17,6 @@ export {
 export type { IDelendaiProject } from '../contracts';
 
 // --- workspace + paths -----------------------------------------------------
-export {
-	isMcpToolSurfaceMode,
-	MCP_TOOL_SURFACE_MODE,
-} from '../lib/contracts/interfaces/surface-mode.interface';
 export type {
 	ICorePaths,
 	IWorkspacePathProvider,
@@ -75,12 +71,6 @@ export type {
 	IValidationCommand,
 	IValidationMatrix,
 } from '../lib/contracts/interfaces/validation-matrix.interface';
-export {
-	DEFAULT_MODEL_CATALOG_LIMIT,
-	InMemoryModelCatalog,
-	MAX_MODEL_CATALOG_LIMIT,
-	ModelCatalogError,
-} from '../lib/catalog';
 export type { IEvidenceStore } from '../lib/contracts/interfaces/evidence.interface';
 export { buildHostCapabilityPlan } from '../lib/hosts/host-capability-profile';
 export { createHostCapabilityRegistry } from '../lib/host/host-capability-registry';
@@ -167,7 +157,6 @@ export type { ICheckpointAdvisory } from '../contracts';
 export {
 	measureBootstrapBytes,
 	measureToolWireBytes,
-	type IBootstrapMeasurement,
 	type IMcpToolWireDefinition,
 } from '../lib/surface/bootstrap';
 export { compactOutputSchema } from '../lib/surface/compact-output-schema.helper';
@@ -241,7 +230,6 @@ export {
 	detectExistingDelendaiInstall,
 	findDelendaiServerName,
 	isDelendaiLaunchShape,
-	resolveHostScaffoldDefaults,
 } from '../lib/scaffold/detect-existing-install';
 export {
 	scaffoldAgentFile,
@@ -384,12 +372,6 @@ export type {
 } from '../lib/shared/git-write';
 export type { ICommitAndPushResult } from '../contracts';
 // --- commit author policy (f00082) ---
-export type {
-	CommitAuthorMode,
-	ICommitAuthorIdentity,
-	ICommitAuthorInput,
-	ICommitAuthorNamed,
-} from '../lib/contracts/interfaces/commit-author.interface';
 export type { ICommitAuthorResolution } from '../contracts';
 
 // slice F: the canonical shared git-runner contract. Plugins that used
@@ -488,7 +470,6 @@ export {
 	guardEffectCapability,
 	runWithDryRunGate,
 } from '../lib/dry-run/effect-guard.helper';
-export type { TEffectCapabilityKind } from '../lib/dry-run/effect-guard.helper';
 // The mandatory capability-injection layer — the ambient
 // dry-run scope + the typed effects surface handed to plugins via
 // `IMcpPluginContext.effects`.
@@ -564,16 +545,7 @@ export type {
 // — TokenBudgetRegistry + types.
 export { TokenBudgetRegistry } from '../lib/budgets/registry';
 export type { IRegistryOptions } from '../lib/budgets/registry';
-export type {
-	IBudgetCeiling,
-	IBudgetSource,
-	IPerSurfaceMeasurement,
-	ITokenMeasurement,
-	ITokenReport,
-	ITokenReportRow,
-	Surface,
-	TokenSurface,
-} from '../lib/budgets/types';
+export type { Surface } from '../lib/budgets/types';
 // — Token ROI per plugin (KPI).
 export {
 	paginateFileExcerpt,
@@ -646,16 +618,11 @@ export { MigrationError, runMigrations } from '../lib/migrations/migrate';
 export type { IMigrator } from '../lib/migrations/migrate';
 export { migrateJsonFile } from '../lib/migrations/migrate-file';
 export { buildCodeMapResourceRegistration } from '../lib/code-map/resource';
-export type { ICodeMap } from '../lib/code-map/generator';
 export { CODE_MAP_SCHEMA_VERSION } from '../lib/code-map/generator';
-export type { IOverviewSnapshot } from '../lib/tools/overview-tool';
 export { buildStatusToolRegistration } from '../lib/tools/status-tool';
 
 // --- hybrid project analyzer (bootstrap) -----------------------------------
-export {
-	createWorkspaceFileReader,
-	recommendServerPlan,
-} from '../lib/bootstrap/index';
+export { createWorkspaceFileReader } from '../lib/bootstrap/index';
 export type { IFileReader } from '../contracts';
 
 // --- installed framework version (framework-knowledge) ---------------------
@@ -687,13 +654,6 @@ export type {
 // Self-healing recovery for the run_in_terminal wrapper's stuck-state
 // ("alternative buffer") failure mode. Plugins and swarm agents import
 // `withShellFallback` and the Ring-3 intent adapter from here.
-export {
-	detectStuckShell,
-	mapShellIntentToTool,
-	STUCK_SHELL_SENTINELS,
-	withShellFallback,
-} from '../lib/agents/shell-fallback';
-
 // --- shared external-tool / scanner core (r00012) --------------------------
 // One runner + one probe + one finding shape that security, deps-audit,
 // perf, forge, browser and database all compose, so a scanner is a thin
@@ -756,7 +716,6 @@ export {
 export type { PluginState } from '../lib/plugins/states';
 export { definePluginManifest } from '../lib/manifest/define-plugin-manifest';
 export { FIRST_PARTY_PLUGIN_INDEX } from '../lib/registry/first-party-index';
-export type { IPluginAddStep } from '../lib/registry/plugin-add';
 export { buildPluginSearchRegistration } from '../lib/registry/plugin-search.tool';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
@@ -802,7 +761,6 @@ export type {
 // one-line helper for plugins that build the error envelope
 // themselves.
 export { withIncidentLogging } from '../lib/tools/with-incident-logging';
-export type { IIncidentLoggingContext } from '../lib/tools/with-incident-logging';
 // S2: scan helpers - pure utilities adopted by the SOLID-compliance
 // lint and any future lint. See `packages/core/src/lib/scan/` for the
 // full module set; this block re-exports the public surface.
@@ -813,7 +771,6 @@ export {
 export type { IWalkTsFilesOptions } from '../lib/scan';
 // --- error collection (f00251) -------------------------------------------
 export type { IErrorSink } from '../lib/error-collection/sink.interface';
-export type { IErrorCollector } from '../lib/error-collection/collector.interface';
 export type { ICapturedError } from '../lib/error-collection/types';
 export { createErrorCollector } from '../lib/error-collection/collector.service';
 export { ConsoleErrorSink } from '../lib/error-collection/console-sink';
@@ -1015,11 +972,6 @@ export { compileWorkRefParser } from '../lib/startup-reconciler/index';
 // The desired-state builder is public because the committed governance
 // YAML is RENDERED from it. Keeping it internal is what let a second
 // derivation grow in `tools/` and disagree with this one.
-export type {
-	IDesiredForgeState,
-	ILiveForgeState,
-} from '../lib/forge-governance/index';
-
 export {
 	callerCheckout,
 	sharedCheckout,
