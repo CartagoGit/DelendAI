@@ -38,6 +38,8 @@ A consumer probe with integration and release both main failed at startup with r
   - "integration equal to release, or release omitted, starts and validates"
   - "no consumer writes duplicate protection or treats the integration branch as a forbidden release target"
   - "served instructions name no release branch when there is none"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — An undeclared policy is one resolution path
 - **Status**: pending
