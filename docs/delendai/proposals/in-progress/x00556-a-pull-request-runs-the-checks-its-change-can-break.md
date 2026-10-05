@@ -215,6 +215,32 @@ answerable, reviewable and testable.
   the retired name: `develop` went red on it after the merge (#650). The
   map joins the baselines the sweep already skips for the same reason.
 
+### S6 — A zone that scans other workspaces is reached by their changes
+
+- **Status**: review
+- **Gate**: `npx vitest run tools/scripts/ci/test-zones.script.spec.ts`
+- **Files**:
+  - `tools/scripts/ci/test-zones.script.ts`
+  - `tools/scripts/ci/test-zones.constant.ts`
+  - `tools/scripts/ci/test-zones.interface.ts`
+  - `tools/scripts/ci/test-zones.script.spec.ts`
+- **Found 2026-10-05 — a pull request was green and the integration branch
+  went red on its next full run.** A plugin wrote a file with its own
+  `writeFile` and `rename`. A core spec walks every plugin's source for
+  exactly that, and fails on it. The pull request changed only the plugin,
+  nothing in core imports the plugin, so the module graph selected the
+  `plugins` zone and not `core`: the spec never ran. On `develop` every
+  zone runs, the spec failed, and the queue armed nothing for seven hours.
+- A zone rule may declare `scans`: the sources of other workspaces its
+  specs read from disk. A change to a path it scans selects the zone,
+  whatever the graph says. `core` declares `plugins/`, `packages/`, `apps/`
+  and `extensions/`: ten of its specs walk those trees.
+- This costs two more shards on a pull request that changes a plugin and
+  nothing else. It is the price of specs that judge other workspaces from
+  where they live; moving them next to what they judge would remove it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - A change that touches only documentation runs strictly fewer jobs than
