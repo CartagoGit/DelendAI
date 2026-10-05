@@ -1,5 +1,5 @@
-import { stat } from 'node:fs/promises';
-import { isAbsolute, resolve } from 'node:path';
+import { readdir, stat } from 'node:fs/promises';
+import { basename, isAbsolute, join, resolve } from 'node:path';
 import {
 	looksLikePath,
 	readDeclaredSliceFiles,
@@ -267,6 +267,34 @@ const isOwnDocument = (file: string, own: string): boolean => {
 	return name.toLowerCase().startsWith(own) && name.endsWith('.md');
 };
 
+/** Where proposal documents live, relative to the workspace. */
+const PROPOSALS_DIR = 'docs/delendai/proposals';
+
+/** The file names of every proposal document, in every status folder. */
+const proposalDocumentNames = async (
+	workspaceRoot: string,
+): Promise<ReadonlySet<string>> => {
+	const names = new Set<string>();
+	try {
+		const entries = await readdir(join(workspaceRoot, PROPOSALS_DIR), {
+			recursive: true,
+		});
+		for (const entry of entries) {
+			if (entry.endsWith('.md')) names.add(basename(entry));
+		}
+	} catch {
+		// No proposals folder: nothing is found by name.
+	}
+	return names;
+};
+
+/**
+ * Whether `file` names a proposal document: one id is one document,
+ * whichever folder its status has moved it to since it was cited.
+ */
+const isProposalDocument = (file: string): boolean =>
+	file.startsWith(`${PROPOSALS_DIR}/`) && file.endsWith('.md');
+
 /**
  * Every file a slice declares that does not exist, whatever the slice's
  * status: what a reviewer would approve and nobody could then close
@@ -278,6 +306,7 @@ export const missingDeclaredFiles = async (
 ): Promise<readonly string[]> => {
 	const missing: string[] = [];
 	const own = ownDocumentName(markdown);
+	let documents: ReadonlySet<string> | undefined;
 	for (const slice of collectSliceStatuses(markdown)) {
 		// A retired slice delivers nothing, so what it had planned to
 		// touch is not owed to anybody.
@@ -292,6 +321,12 @@ export const missingDeclaredFiles = async (
 					isAbsolute(file) ? file : resolve(workspaceRoot, file),
 				);
 			} catch {
+				// Another proposal, cited by the path of a status it has
+				// since left.
+				if (isProposalDocument(file)) {
+					documents ??= await proposalDocumentNames(workspaceRoot);
+					if (documents.has(basename(file))) continue;
+				}
 				missing.push(file);
 			}
 		}

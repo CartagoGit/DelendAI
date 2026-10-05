@@ -62,7 +62,7 @@ and leaves the two ratchets as the authorities they already are.
 ### S1 — A selector's owner, and who consumes it
 
 - **Status**: pending
-- **Files**: [`plugins/style-convention/src/lib/graph/selector-graph.ts`, `plugins/style-convention/src/lib/graph/selector-graph.spec.ts`, `plugins/style-convention/src/lib/contracts/interfaces/selector-graph.interface.ts`]
+- **Files**: [`plugins/style-convention/src/lib/graph/selector-graph.service.ts`, `plugins/style-convention/src/lib/graph/selector-graph.service.spec.ts`, `plugins/style-convention/src/lib/contracts/interfaces/selector-graph.interface.ts`]
 
 Build the graph the existing ratchets already half-walk: every selector,
 the file that defines it, and every markup surface that uses it. The
@@ -70,7 +70,7 @@ scss parsing rules follow f00099's parser exactly — same nesting
 expansion, same comma-list splitting — so the two never disagree about
 what a stylesheet defines.
 
-- **Gate**: `npx vitest run plugins/style-convention/tests/src/lib/graph/selector-graph.spec.ts`
+- **Gate**: `npx vitest run plugins/style-convention/tests/src/lib/graph/selector-graph.service.spec.ts`
 
 ### S2 — `style_impact`: what a change to this selector reaches
 
@@ -99,7 +99,7 @@ for `delendai-*` classes.
 ### S4 — `style_profile`: the project's declared style architecture
 
 - **Status**: pending
-- **Files**: [`plugins/style-convention/src/index.ts`, `plugins/style-convention/src/lib/profile/style-profile.ts`, `plugins/style-convention/src/lib/profile/style-profile.spec.ts`]
+- **Files**: [`plugins/style-convention/src/index.ts`, `plugins/style-convention/src/lib/profile/style-profile.service.ts`, `plugins/style-convention/src/lib/profile/style-profile.service.spec.ts`]
 
 Declare the architecture once — scss-bem, css-modules, tailwind,
 legacy-global — per scope, with folder overrides so `src/legacy/**` is
@@ -108,7 +108,7 @@ not "fixed" by an agent that mistook it for drift. Tailwind specifics
 the installed version, so an unsupported directive is refused rather
 than emitted.
 
-- **Gate**: `npx vitest run plugins/style-convention/tests/src/lib/profile/style-profile.spec.ts && bun run lint:unregistered-tools`
+- **Gate**: `npx vitest run plugins/style-convention/tests/src/lib/profile/style-profile.service.spec.ts && bun run lint:unregistered-tools`
 
 ## acceptance
 
