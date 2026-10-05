@@ -98,6 +98,7 @@ extension.ts (activate):
     - `extensions/vscode/src/test/extension-activation.spec.ts`
     - `extensions/vscode/src/test/contributes-completeness.spec.ts`
     - `extensions/vscode/src/test/smoke.spec.ts`
+    - `tools/scripts/lint/cli-ui-parity.map.json`
 - **Gate**: `cd extensions/vscode && npx vitest run src/test/extension-activation.spec.ts src/test/contributes-completeness.spec.ts src/test/smoke.spec.ts`
 - Premise check: `activationEvents` already held `onStartupFinished` besides the
   config glob, so the extension was not inert; but no adoption command existed at
