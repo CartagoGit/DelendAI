@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 537
+Total exports: 541
 
 | Maturity | Count |
 | --- | --- |
-| stable | 534 |
+| stable | 538 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -96,6 +96,7 @@ Total exports: 537
 | `DEFAULT_AGENT_POLICY` | const | stable | `../lib/plugins/load-config-file` |
 | `DEFAULT_COMPACT_RESPONSE_BYTES` | const | stable | `../lib/contracts/constants/response-byte-budget.constant` |
 | `DEFAULT_CONFIG_FILENAME` | const | stable | `../lib/plugins/load-config-file` |
+| `DEFAULT_FRAMEWORK_RULES` | const | stable | `../lib/bootstrap/framework-rules` |
 | `DEFAULT_MAX_EVENTS` | const | stable | `../lib/observability/timeline` |
 | `DEFAULT_MAX_RESPONSE_BYTES` | const | stable | `../lib/contracts/constants/response-byte-budget.constant` |
 | `DEFAULT_MODEL_CATALOG_LIMIT` | const | stable | `../lib/catalog` |
@@ -231,6 +232,7 @@ Total exports: 537
 | `ILocalMergeCycleOutcome` | type | stable | `../lib/integration-engine/local-merge-cycle.interface` |
 | `ILocalMergeCycleStatus` | type | stable | `../lib/integration-engine/local-merge-cycle.interface` |
 | `ILockExpiryPolicy` | type | stable | `../lib/contracts/interfaces/lock-entry-expiry.interface` |
+| `ILockfileRef` | type | stable | `../lib/contracts/interfaces/framework-version.interface` |
 | `ILogsSink` | type | stable | `../lib/plugins/plugin-contract` |
 | `ILoopDetectorConfig` | type | stable | `../lib/plugins/load-config-file` |
 | `IMcpConfigKind` | type | stable | `../lib/install/merge-config` |
@@ -363,6 +365,7 @@ Total exports: 537
 | `localRefHolds` | const | stable | `../lib/wip-engine/work-ref-publication` |
 | `LockContentionError` | const | stable | `../lib/shared/with-file-mutex` |
 | `mapShellIntentToTool` | const | stable | `../lib/agents/shell-fallback` |
+| `matchFramework` | const | stable | `../lib/bootstrap/framework-rules` |
 | `MAX_MODEL_CATALOG_LIMIT` | const | stable | `../lib/catalog` |
 | `MAX_RESPONSE_BYTES_CEILING` | const | stable | `../lib/contracts/constants/response-byte-budget.constant` |
 | `MCP_TOOL_SURFACE_MODE` | const | stable | `../lib/contracts/interfaces/surface-mode.interface` |
@@ -447,6 +450,7 @@ Total exports: 537
 | `resolveDurabilityRemote` | const | stable | `../lib/wip-engine/durability-remote` |
 | `resolveExecPath` | const | stable | `../lib/shared/exec-path` |
 | `resolveExistingWorkspaceContained` | const | stable | `../lib/shared/contain-realpath` |
+| `resolveFrameworkVersion` | const | stable | `../lib/bootstrap/framework-version` |
 | `resolveHostScaffoldDefaults` | const | stable | `../lib/scaffold/detect-existing-install` |
 | `resolvePluginSpecifier` | const | stable | `../plugin` |
 | `resolvePresetMembers` | const | stable | `../lib/plugins/preset-catalog` |
