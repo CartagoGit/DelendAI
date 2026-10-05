@@ -1593,14 +1593,6 @@
 				"date": "2026-09-19"
 			},
 			{
-				"id": "x00556",
-				"title": "A pull request runs the checks its change can break",
-				"track": "efficiency",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-19"
-			},
-			{
 				"id": "x00769",
 				"title": "Push guards and protected-branch defaults follow the configured development policy",
 				"track": "general",
