@@ -1545,14 +1545,6 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "r00056",
-				"title": "SQLite storage modes and canonical proposals DB wiring",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-09-08"
-			},
-			{
 				"id": "x00541",
 				"title": "576 de los 865 exports públicos de core no tienen ningún importador en el repo y 59 no se referencian en ninguna parte fuera del paquete",
 				"track": "architecture",
