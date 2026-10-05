@@ -10,17 +10,17 @@
 - __resetShutdownGuardForTests
 - createMcpProject
 - planRegistrationOrder
-- isMcpToolSurfaceMode
-- MCP_TOOL_SURFACE_MODE
 - createWorkspacePathProvider
 - projectValue
 - createInMemoryHandleStore
-- DEFAULT_MODEL_CATALOG_LIMIT
-- InMemoryModelCatalog
-- MAX_MODEL_CATALOG_LIMIT
-- ModelCatalogError
 - buildHostCapabilityPlan
 - createHostCapabilityRegistry
+- classifyPath
+- DEFAULT_TS_RULES
+- endsWithBasename
+- hasSegment
+- assembleCliConfig
+- REPOSITORY_SLUG
 
 ## Depends on
 
