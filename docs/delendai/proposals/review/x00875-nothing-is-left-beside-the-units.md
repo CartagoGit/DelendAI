@@ -85,6 +85,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-implementer: claude-opus-5-5
 - shipped-in: `dd4b4305f8cd`
 
+### S6 — A delivery is read however its key was spelled
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/swarm/slice-shipping-record.ts`, `plugins/proposals/tests/src/lib/swarm/slice-shipping-record.spec.ts`
+- **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/swarm/slice-shipping-record.spec.ts`
+- Found handing `f00509` to review: its S1 records `- **Shipped-In**: 27c6cf021 feat(…)`, and the hand-off was refused with "nothing records which commit delivered it". The reader took only `- shipped-in:` in lower case with the hash in backticks. It now takes the key in any case, bold or not, and a hash in backticks or bare at the start of the value; a word is still no hash.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.
@@ -92,3 +100,4 @@ Found on 2026-10-05, reading what the last runs left behind.
 - `explainSelection` is exported by `auto-agent-selector` and every ranked route carries the parts of its score.
 - Opening for writing a state database one schema version ahead throws, changes nothing in the file, and startup reports why.
 - `work retired --drop` removes exactly the named retired refs from the forge.
+- A slice recording `- **Shipped-In**: <sha> <subject>` is handed to review without being asked for its delivering commit.
