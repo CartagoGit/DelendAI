@@ -36,6 +36,40 @@ const unit = (ref: string, paths: readonly string[], ahead = 1): ISwarmUnit => {
 
 const none = (): number => 0;
 
+describe('a unit whose base moved', () => {
+	const behind = (ref: string, ahead: number, by: number): ISwarmUnit => ({
+		...unit(ref, [`${ref}.ts`], ahead),
+		behind: by,
+	});
+
+	it('is told to bring it forward when it holds work, and last', () => {
+		const relations = relationsOf({
+			units: [
+				behind('ns/wip/a/implement/x1-S1-g1/t', 2, 5),
+				behind('ns/wip/b/implement/x2-S1-g1/t', 0, 5),
+				behind('ns/wip/c/implement/x3-S1-g1/t', 3, 0),
+			],
+			published: [
+				{
+					...unit('ns/pr/d/implement/x4-S1-g1/t', ['b.ts'], 1),
+					behind: 9,
+				},
+			],
+			sharedUnlanded: none,
+		});
+		expect(relations).toEqual([
+			{
+				kind: 'behind',
+				refs: ['ns/wip/a/implement/x1-S1-g1/t'],
+				detail: expect.stringContaining(
+					'its base moved 5 commit(s) on',
+				),
+			},
+		]);
+		expect(relations[0]?.detail).toContain('git merge');
+	});
+});
+
 describe('unitKeyOf', () => {
 	it('reads the slice and generation a unit ref names', () => {
 		expect(unitKeyOf('implement/x00780-all-g2/topic')).toEqual({

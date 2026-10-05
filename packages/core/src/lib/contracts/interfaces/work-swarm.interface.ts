@@ -35,7 +35,7 @@ export interface ISwarmUnit {
  *                 running them at once buys conflicts, not speed.
  */
 export interface ISwarmRelation {
-	readonly kind: 'stacked' | 'duplicate' | 'landed' | 'overlap';
+	readonly kind: 'stacked' | 'duplicate' | 'landed' | 'overlap' | 'behind';
 	readonly refs: readonly string[];
 	readonly detail: string;
 }
