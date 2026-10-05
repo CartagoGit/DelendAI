@@ -80,6 +80,47 @@ export const planJobs = (input: {
 		]),
 	);
 
+/**
+ * Why each job runs or does not, in a sentence a reader of the log can
+ * check against the change: a wrong bound is then seen, not inferred
+ * from a job that silently did not appear.
+ */
+export const explainJobs = (input: {
+	readonly changed: readonly string[];
+	readonly scopes?: readonly IJobScope[];
+}): readonly {
+	readonly job: string;
+	readonly runs: boolean;
+	readonly why: string;
+}[] =>
+	(input.scopes ?? JOB_SCOPES).map((scope) => {
+		if (scope.touches === 'always') {
+			return {
+				job: scope.job,
+				runs: true,
+				why: 'declared always: its verdict depends on the whole repository',
+			};
+		}
+		if (input.changed.length === 0) {
+			return {
+				job: scope.job,
+				runs: true,
+				why: 'no change list (a push, a dispatch or an unreadable diff): nothing is skipped',
+			};
+		}
+		const bound = scope.touches;
+		const hit = input.changed.find((file) =>
+			bound.some((prefix) => file.startsWith(prefix)),
+		);
+		return hit === undefined
+			? {
+					job: scope.job,
+					runs: false,
+					why: `no changed file is under ${bound.join(', ')}`,
+				}
+			: { job: scope.job, runs: true, why: `${hit} changed` };
+	});
+
 const changedSince = (base: string): readonly string[] => {
 	try {
 		return execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], {
@@ -106,8 +147,8 @@ const main = (): number => {
 	const changed = base === undefined ? [] : changedSince(base);
 	const plan = planJobs({ changed });
 
-	for (const [job, runs] of Object.entries(plan)) {
-		console.log(`  ${runs ? 'run ' : 'skip'} ${job}`);
+	for (const { job, runs, why } of explainJobs({ changed })) {
+		console.log(`  ${runs ? 'run ' : 'skip'} ${job} — ${why}`);
 	}
 	console.log(
 		`job-scope: ${Object.values(plan).filter(Boolean).length}/${Object.keys(plan).length} job(s) can be affected by ${changed.length} changed file(s).`,
