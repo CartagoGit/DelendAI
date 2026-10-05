@@ -658,6 +658,18 @@ export {
 } from '../lib/bootstrap/index';
 export type { IFileReader } from '../contracts';
 
+// --- installed framework version (framework-knowledge) ---------------------
+export {
+	DEFAULT_FRAMEWORK_RULES,
+	matchFramework,
+} from '../lib/bootstrap/framework-rules';
+export { resolveFrameworkVersion } from '../lib/bootstrap/framework-version';
+export type {
+	ILockfileKind,
+	ILockfileRef,
+	IResolvedFrameworkVersion,
+} from '../lib/contracts/interfaces/framework-version.interface';
+
 // --- one-call project adoption (f00157 S1) --------------------------------
 export { buildAdoptionAssessment } from '../lib/adopt/adoption-assessment.service';
 export { buildAdoptProjectPlan } from '../lib/adopt/adopt-project.tool';

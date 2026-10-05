@@ -2,7 +2,7 @@
 id: f00547
 title: "Resolve what the installed framework version allows, recommends and forbids before an agent writes code"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,9 +11,9 @@ tags:
     - frameworks
     - policy
     - tokens
-last-transition-id: 556709e1-084c-436d-b15e-b3e5ad926e0a
-last-correlation-id: 556709e1-084c-436d-b15e-b3e5ad926e0a
-last-transition-from: ready
+last-transition-id: e019cacf-e6ba-4421-b1fb-6962644c2a19
+last-correlation-id: e019cacf-e6ba-4421-b1fb-6962644c2a19
+last-transition-from: in-progress
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -97,6 +97,7 @@ tests pass (`env -u CLAUDECODE -u AI_AGENT bunx vitest run
 packages/core/tests/src/lib/bootstrap/framework-version.spec.ts`);
 coverage on `framework-version.ts` is 100% statements/functions/lines,
 88.88% branches (threshold 82/83/83/69).
+- shipped-in: `97ed3389c329`
 
 ### S2 — A knowledge record with its evidence and its force
 
@@ -139,6 +140,7 @@ file contributes nothing to either side of the ratio). `FORCE_VALUES`
 `knowledge-record.ts` into `contracts/constants/knowledge-force.constant.ts`
 and the interface file respectively, per `lint:types-in-contracts`
 (caught by `gates.sh`, not something the proposal anticipated).
+- shipped-in: `f75161fa8386`
 
 ### S3 — Resolve project policy against framework force
 
@@ -153,6 +155,7 @@ recommendation; it does not win over `removed`, which resolves to
 `incompatible` with the reason named.
 
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts`
+- shipped-in: `7cf206f4d2f8`
 
 ### S4 — Detected convention as an input, with its confidence
 
@@ -168,11 +171,12 @@ instead of its own habits.
 - Below 5 occurrences, on a tie at the top, or under a 60% share there is
   no convention: a weak habit fed to the resolver would outrank the
   framework's own recommendation.
+- shipped-in: `30680e32ef2b`
 
 ### S5 — The two tools, and a cache keyed by resolved version
 
-- **Status**: pending
-- **Files**: [`plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/source.tool.ts`, `plugins/framework-knowledge/src/lib/cache/knowledge-cache.ts`, `plugins/framework-knowledge/src/lib/cache/knowledge-cache.spec.ts`]
+- **Status**: review
+- **Files**: [`plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/plugin.manifest.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/source.tool.ts`, `plugins/framework-knowledge/src/lib/tools/knowledge-output.schema.ts`, `plugins/framework-knowledge/src/lib/cache/knowledge-cache.ts`, `plugins/framework-knowledge/src/lib/resolve/installed-framework.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-cache.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-cache.constant.ts`, `plugins/framework-knowledge/tests/src/lib/cache/knowledge-cache.spec.ts`, `plugins/framework-knowledge/tests/src/lib/tools/framework-tools.spec.ts`, `plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts`, `packages/core/src/public/index.ts`]
 
 `framework_guidance { topic }` returns the small resolved answer;
 `framework_source { ruleId }` returns the evidence behind one rule, only
@@ -181,6 +185,28 @@ is invalidated when the lockfile entry changes, survives offline, and
 keeps summary and evidence apart so the common path stays cheap.
 
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/cache/knowledge-cache.spec.ts && bun run lint:unregistered-tools`
+- Shipped: `knowledge-cache.ts` stores `summary.json` (records without
+  evidence), `evidence.json` and `meta.json` per framework and version;
+  `meta.json` names the lockfile entry (`<source>:<dep>@<version>`) and is
+  written last, so a changed entry reads as `stale` and a half-written set
+  is never visible. Reads never touch the network.
+- `framework_guidance` resolves the framework and version through core's
+  `matchFramework` and `resolveFrameworkVersion` (now exported from
+  `@delendai/core/public`, with this plugin as the consumer), reads the
+  summary for the topic only and runs `resolvePolicy` over it. It answers
+  `unresolved` when no version is known and `no-knowledge` on a cache
+  miss. `framework_source` opens only the evidence file.
+- Not provided by S1-S4 and kept minimal here: the reading of
+  `package.json` and the lockfile (`installed-framework.helper.ts`).
+  Nothing populates the cache yet: the per-framework adapters with
+  trusted domains are a later slice; `writeKnowledge` is the seam they
+  will use. The detected convention (S4) is not an input of the tool yet,
+  because it needs a project scan that no tool owns.
+- The spec lives at `tests/src/lib/cache/`, the repo's real convention,
+  not next to the source as the first draft of this slice said.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- shipped-in: `f75161fa8386`
 
 ## acceptance
 
