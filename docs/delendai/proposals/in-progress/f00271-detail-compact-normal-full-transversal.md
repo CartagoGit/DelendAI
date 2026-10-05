@@ -2,7 +2,7 @@
 id: f00271
 title: "`detail: compact | normal | full` transversal"
 kind: feat
-status: blocked
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -17,6 +17,9 @@ related:
     - r00031 # proposal_get (canary del patrón)
     - r00032 # orchestrator-runner (canary)
     - f00270 # TokenBudgetRegistry (mide los 3 niveles)
+last-transition-id: 84299e81-b291-40ba-a607-acdee67ac782
+last-correlation-id: 84299e81-b291-40ba-a607-acdee67ac782
+last-transition-from: ready
 ---
 
 # f00271 — `detail: compact | normal | full` transversal
@@ -136,6 +139,7 @@ cualquier tool a partir de un solo campo de input.
 - review-implementer: GitHub
 - review-reviewer: delivery_verifier
 - review-log: requested_changes by delivery_verifier — Regresión de compatibilidad en logs: query, subscribe, correlate y search resuelven detail omitido a normal, y normal vacía metadata. Sin detail debe conservarse el comportamiento legado con metadata completa; aplicar la proyección nueva solo cuando detail se solicite explícitamente. Mantén includeMeta compatible.
+- shipped-in: `7127cc34a`
 - **Evidence (2026-09-15)**: the logs regression the review raised is fixed in PR #223 (merge `7127cc34a`): an omitted `detail` resolves through `includeMeta` first and otherwise keeps each tool's legacy default — redacted `full` for query, subscribe, correlate and search, `normal` for tail and errors_tail — so metadata is no longer emptied unless `detail` is requested. `plugins/logs/tests/tools.spec.ts` pins both defaults. The shared contract lives in `detail.contract.ts` (not `detail.ts`; spec 6/6); audit adopts it in `audit-run` (specs 9/9 and 6/6) and `audit-consolidate` (8/8, compact trims consensus, findings and markdown); usage adopts it in the `usage-tracking` plugin's `report.tool.ts` (there is no `plugins/usage`), tools spec 9/9. The Files list above names what actually shipped.
 ### S2 — Adopción en project-health, dependencies, search + lint
 
