@@ -9,6 +9,8 @@ date: 2026-10-05
 last-transition-id: a10ff19e-ccb9-42f1-86b2-fa07307d1dc3
 last-correlation-id: a10ff19e-ccb9-42f1-86b2-fa07307d1dc3
 last-transition-from: in-progress
+shipped-in:
+  - "496d1721d"
 ---
 
 # x00873 — Proposal files are judged against the file conventions when written
@@ -65,15 +67,17 @@ done, and `lint:file-conventions` only after the file exists.
 
 ### S1 — Declared file names are judged against the conventions
 
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/proposal-files-follow-conventions.script.ts`, `tools/scripts/lint/proposal-files-follow-conventions.script.spec.ts`, `tools/scripts/lint/proposal-files-follow-conventions.baseline.json`, `tools/scripts/lint/proposal-files-exist.script.ts`, `package.json`
 - **Gate**: `npx vitest run tools/scripts/lint/proposal-files-follow-conventions.script.spec.ts`
 - A finding names the proposal, the slice, the path, and the file the
   convention would accept.
 - `--write-baseline=<path>` accepts today's findings as the floor.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `207557e218a9`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 496d1721d, validate exit 0, tests 8/8 — Delivered by #782 (merge 496d1721d). Proposal acceptance: spec 'accepts a declared path whose name has a role', 'reports a path with no role with proposal, slice and the accepted name', 'does not judge a file that already exists', 'does not judge directories, globs or other kinds of file', 'does not judge done or review proposals'; the lint is chained into lint:architecture, which CI runs, and passes on the repository. Used in anger on 2026-10-05: it found 31 refused names in pending proposals, all fixed, baseline now 0. 8/8.
 
 ## dependency graph
 
