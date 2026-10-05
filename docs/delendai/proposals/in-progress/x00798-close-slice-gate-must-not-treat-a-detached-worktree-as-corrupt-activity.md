@@ -2,10 +2,13 @@
 id: x00798
 title: "close_slice gate must not treat a detached worktree as corrupt activity"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-01
+last-transition-id: c777de8b-9cb3-417b-ad35-848135f3f99e
+last-correlation-id: c777de8b-9cb3-417b-ad35-848135f3f99e
+last-transition-from: ready
 ---
 
 # x00798 — close_slice gate must not treat a detached worktree as corrupt activity
