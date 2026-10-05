@@ -1564,7 +1564,7 @@
 				"id": "x00554",
 				"title": "A green pull request lands itself and the swarm rebases",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-19"
 			}
