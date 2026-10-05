@@ -205,7 +205,9 @@ that records it.
   transcript. delendai's own responses are ratcheted by `tokens:gate`;
   the rest of a transcript is the host's to measure.
 
-## Found closing it
+## notes
+
+Found closing it, on 2026-10-05:
 
 - **Moving this proposal broke another one's check.** `x00654`, closed,
   cites this document by its `in-progress/` path. When this proposal

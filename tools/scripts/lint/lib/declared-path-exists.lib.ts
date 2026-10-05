@@ -8,7 +8,7 @@
  * day the other one moved on, with nothing wrong in either: one id is one
  * document, whichever folder its status puts it in.
  */
-import { existsSync, readdirSync } from 'node:fs';
+import { type Dirent, existsSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
 const PROPOSALS_ROOT = 'docs/delendai/proposals';
@@ -16,7 +16,7 @@ const PROPOSALS_ROOT = 'docs/delendai/proposals';
 const documentsUnder = (directory: string): readonly string[] => {
 	const found: string[] = [];
 	const walk = (path: string): void => {
-		let entries;
+		let entries: Dirent[];
 		try {
 			entries = readdirSync(path, { withFileTypes: true });
 		} catch {
