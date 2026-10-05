@@ -33,6 +33,12 @@ import type {
 } from '../contracts/interfaces/cli-command.interface';
 import { readWorkspacePolicy } from '@delendai/core/cli';
 import { data, request, scalarArg } from '../lib/helpers/cli-command.helper';
+import type {
+	IQueue,
+	IQueueProposal,
+	IUnit,
+} from '../contracts/interfaces/review-queue-view.interface';
+import { briefFor } from '../lib/review/review-brief.service';
 import { usage } from './groups/group-helpers';
 import { evidenceArgs } from './groups/proposals';
 import { workCommand } from './work.command';
@@ -46,38 +52,6 @@ const CLAIM_TRAILER = 'Claims';
 const QUEUE_TOOL = 'delendai_proposals_review_queue';
 const VERDICT_TOOL = 'delendai_proposals_proposal_review';
 const CLAIM_TOOL = 'delendai_proposals_review_claim';
-
-interface IQueueSlice {
-	readonly sliceId: string;
-	readonly title?: string;
-	readonly verdict: string;
-	readonly implementer?: string;
-	readonly gate?: string;
-	readonly files?: readonly string[];
-	readonly acceptance?: readonly string[];
-	readonly candidates?: readonly { readonly commit: string }[];
-	readonly missing?: string;
-}
-
-interface IQueueProposal {
-	readonly id: string;
-	readonly file: string;
-	readonly slices: readonly IQueueSlice[];
-	readonly close?: string;
-	readonly claimedBy?: readonly string[];
-}
-
-interface IQueue {
-	readonly proposals?: readonly IQueueProposal[];
-	/** The unit's pack: published as one pull request once full. */
-	readonly pack?: { readonly full: boolean; readonly size: number };
-}
-
-interface IUnit {
-	readonly path: string;
-	readonly session: string;
-	readonly ref: string;
-}
 
 /** Who reviews: `--agent`, or the declared agent id. */
 const agentOf = (args: readonly string[]): string | undefined =>
@@ -197,35 +171,6 @@ const queueOf = async (
 		detail: true,
 		...extra,
 	});
-
-/** What the reviewer needs to judge one proposal, and how to answer. */
-const briefFor = (proposal: IQueueProposal, unit: IUnit, agent: string) => {
-	const who = `--agent=${agent} --session=${unit.session}`;
-	return {
-		proposal: proposal.id,
-		file: `${unit.path}/${proposal.file}`,
-		read: 'Read the proposal and, for each slice below, what its candidate commit delivered (`git show <commit>`). Run its gate. Judge it on what it delivered.',
-		slices: proposal.slices
-			.filter((slice) => slice.verdict === 'needs-verdict')
-			.map((slice) => ({
-				slice: slice.sliceId,
-				...(slice.title === undefined ? {} : { title: slice.title }),
-				...(slice.implementer === undefined
-					? {}
-					: { implementer: slice.implementer }),
-				...(slice.gate === undefined ? {} : { gate: slice.gate }),
-				...(slice.files === undefined ? {} : { files: slice.files }),
-				...(slice.acceptance === undefined
-					? {}
-					: { acceptance: slice.acceptance }),
-				commits: (slice.candidates ?? []).map((each) => each.commit),
-				approve: `delendai review approve ${proposal.id} ${slice.sliceId} ${who} --commit=${slice.candidates?.[0]?.commit ?? '<sha>'} --validate-exit=<gate exit code> --tests-passing=<n> --tests-total=<n> --note="<what you verified>"`,
-				changes: `delendai review changes ${proposal.id} ${slice.sliceId} ${who} --note="<what is missing, precisely>"`,
-			})),
-		cannotJudge: `If you cannot inspect or run it, record no verdict: delendai review release ${proposal.id} ${who} --note="<why>"`,
-		afterwards: `delendai review next ${who}`,
-	};
-};
 
 const next = async (
 	args: readonly string[],
