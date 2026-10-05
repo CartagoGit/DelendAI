@@ -49,7 +49,7 @@ const NON_PATH = new Set(['none', 'n/a', 'tbd']);
  *
  * A Files declaration is a bullet, not a phrase.
  */
-const FILES_BLOCK_RE =
+export const FILES_BLOCK_RE =
 	/^\s*-\s+\*\*Files\*\*:\s*([\s\S]*?)(?=\n\s*-\s*\*\*|\n\n|\n#{2,3}\s|$)/gm;
 
 /**
@@ -75,7 +75,7 @@ const pathsFromLine = (line: string): string[] => {
 	return /^\s*-\s/.test(line) ? ticked.slice(0, 1) : ticked;
 };
 
-const extractPathCandidates = (block: string): string[] =>
+export const extractPathCandidates = (block: string): string[] =>
 	block
 		.split('\n')
 		.flatMap(pathsFromLine)
@@ -89,9 +89,10 @@ const extractPathCandidates = (block: string): string[] =>
 			return true;
 		});
 
-const stripLineRefs = (p: string): string => p.replace(/:[\d,\-–]+$/, '');
+export const stripLineRefs = (p: string): string =>
+	p.replace(/:[\d,\-–]+$/, '');
 
-const walkMarkdown = (absDir: string, out: string[]): void => {
+export const walkMarkdown = (absDir: string, out: string[]): void => {
 	for (const entry of readdirSync(absDir, { withFileTypes: true })) {
 		const abs = join(absDir, entry.name);
 		if (entry.isDirectory()) walkMarkdown(abs, out);
