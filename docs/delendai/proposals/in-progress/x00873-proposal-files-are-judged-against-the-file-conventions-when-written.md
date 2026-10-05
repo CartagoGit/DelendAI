@@ -71,6 +71,8 @@ done, and `lint:file-conventions` only after the file exists.
 - A finding names the proposal, the slice, the path, and the file the
   convention would accept.
 - `--write-baseline=<path>` accepts today's findings as the floor.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## dependency graph
 
