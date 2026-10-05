@@ -57,36 +57,42 @@ The owner's principle is that every workflow is completable by any agent on any 
 - review-log: approved by claude-opus-5-5 — verified at f6e9d5c2d, validate exit 0, tests 40/40 — Delivered by #724 (merge f6e9d5c2d). Proposals specs 40/40 and CLI group specs 53/53 pass.
 
 ### S2 — create_proposal does not block on a publish and is safe to repeat
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/proposals/existing-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/existing-proposal.interface.ts`, `plugins/proposals/tests/src/lib/create-proposal-retry.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Gate**: none
 - acceptance:
   - "a server whose own root is a unit writes the proposal there and pushes nothing"
   - "a repeated create with the same title returns the proposal already on disk instead of a new id"
 - shipped-in: `7562b1249fd9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at f6e9d5c2d, validate exit 0, tests 40/40 — Delivered by #724 (merge f6e9d5c2d).
 
 ### S3 — Every CLI claim outlives the CLI process
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/orchestration.tool.ts`, `plugins/proposals/src/lib/tools/continue-proposal.tool.ts`, `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/groups/proposals.spec.ts`
 - **Gate**: none
 - acceptance:
   - "delegate and continue --mode=claim take holder agent from the CLI"
   - "a claim made through either is still held after the CLI process has exited"
 - shipped-in: `26da5edf1275`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at f6e9d5c2d, validate exit 0, tests 53/53 — Delivered by #724 (merge f6e9d5c2d).
 
 ### S4 — The CLI derives the agent from the unit ref
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/group-helpers.ts`, `packages/cli/src/commands/groups/group-helpers.spec.ts`
 - **Gate**: none
 - acceptance:
   - "the agent is the --agent flag, then DELENDAI_AGENT_ID, then the agent segment of the checkout's work ref"
 - shipped-in: `26da5edf1275`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at f6e9d5c2d, validate exit 0, tests 53/53 — Delivered by #724 (merge f6e9d5c2d).
 
 ### S5 — Real-server specs for the CLI lifecycle
 - **Status**: pending
