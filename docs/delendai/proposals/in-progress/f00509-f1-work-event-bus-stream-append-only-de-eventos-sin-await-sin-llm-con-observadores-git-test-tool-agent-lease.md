@@ -53,16 +53,19 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - review-state: in_review
 - review-implementer: Persia
 ### S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
-- **Status**: pending
+- **Status**: review
 - **Blocked by**: a consumer. Nothing in production reads `state-telemetry` events yet (f00510 is pending). Emitting them first is work nobody can see. The write boundary exists: every `caller-checkout` write passes `bindWriteRoot` (core), which is where a `git_change` would hook.
 - **DependsOn**: [F1-S1]
-- **Files**: `packages/state-telemetry/src/lib/observers/git-observer.ts`, `packages/state-telemetry/src/lib/observers/git-observer.spec.ts`, `packages/state-telemetry/src/lib/observers/index.ts`
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/observers/git-observer.service.ts`, `packages/state-telemetry/src/lib/observers/git-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/git-observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/git-observer.constant.ts`
+- **Gate**: `bunx vitest run --root packages/state-telemetry src/lib/observers`
+- shipped: `GitObserver` (`notify(trigger)` is fire-and-forget, one run in flight, requests in between fold into one repetition, `git` spawned asynchronously and read-only, killed at 250 ms with `git_change_stale`). A write observes `git status --porcelain` + `git diff --stat HEAD`; a commit observes `git show --name-only/--stat HEAD`. `payload_hash` is the sha256 of `{trigger, branch, paths, diffStat}`. A failing git or a directory that is not a repository emits nothing and never throws. It appends to any sink with the facade's `append` shape. Not wired into `bindWriteRoot` yet: that waits for a consumer (the Blocked-by note), so wiring adds no behaviour to the hook for other consumers.
 - acceptance:
   - "`GitObserver` ingiere `git status --porcelain` cada vez que el agente hace `write_file` o ejecuta `git commit`; emite eventos `kind: 'git_change'` con `payload_hash` del `git diff --stat`."
   - "No bloquea al agente ni al servidor: lanza `git` con `spawn` asíncrono que la herramienta nunca espera (fire-and-forget), con como mucho una ejecución en vuelo (las peticiones que llegan mientras tanto se funden en una sola repetición al terminar), y si pasan 250 ms mata el proceso y emite `kind: 'git_change_stale'`. Corregido el 2026-09-24: la versión anterior decía `spawnSync` con `timeout: 250ms` y lo llamaba no bloqueante por no hacer `await`; `spawnSync` detiene el event loop de todo el servidor durante esos 250 ms en cada escritura."
   - "Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso."
   - "Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`)."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — `TestObserver` — enganche a `bun test` / `vitest` (start, finish, failure_hash)
 - **Status**: pending
