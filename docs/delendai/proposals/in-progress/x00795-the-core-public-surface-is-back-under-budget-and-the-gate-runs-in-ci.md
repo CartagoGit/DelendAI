@@ -60,6 +60,8 @@ it as an accepted unreachable lint in its baseline, so CI never saw it.
   - "The barrel exports at most 645 symbols, with the budget unchanged."
   - "createStaleRuntimeWatch and SHARED_CHECKOUT_WRITE_REFUSED are read from @delendai/core/cli by the host and the verify script."
   - "lint:core-public-surface-budget is chained into lint:architecture and absent from the lints-reach-ci baseline."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
