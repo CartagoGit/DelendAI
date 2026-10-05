@@ -1,7 +1,7 @@
 /**
- * slice-listener.ts — polls the proposals plugin's `index.json` for
- * slices whose status flipped to `done` / `merged` since the last
- * scan, and emits a `TriggerEvent` per new close.
+ * slice-listener.ts — polls the proposal documents for slices whose
+ * status flipped to `done` / `merged` since the last scan, and emits a
+ * `TriggerEvent` per new close (see `slice-snapshot.service.ts`).
  *
  * x00260 (AUD-CP-002): events are no longer silently dropped.
  * The listener accepts an `onEvent` callback that is called for
@@ -11,7 +11,6 @@
  * un-marked so the next poll re-emits it — guaranteed delivery.
  */
 
-import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/public';
@@ -20,6 +19,8 @@ import {
 	BASELINE_EMIT_LIMIT,
 	MAX_DELIVERY_ATTEMPTS,
 } from '../contracts/constants/slice-listener.constant';
+import type { ISliceSnapshotEntry as SliceSnapshotEntry } from '../contracts/interfaces/slice-snapshot.interface';
+import { createSliceSnapshotReader } from './slice-snapshot.service';
 import type { ITriggerEvent, ISliceTriggerConfig } from './trigger-types';
 
 export { BASELINE_EMIT_LIMIT, MAX_DELIVERY_ATTEMPTS };
@@ -47,12 +48,6 @@ export type ITriggerHandler = (event: ITriggerEvent) => Promise<ITriggerAck>;
 export interface ISliceListenerEmissions {
 	readonly pending: readonly ITriggerEvent[];
 }
-
-type SliceSnapshotEntry = {
-	status: string;
-	proposalId: string;
-	files?: readonly string[];
-};
 
 const getSliceKey = (proposalId: string, sliceId: string): string =>
 	`${proposalId}-${sliceId}`;
@@ -103,116 +98,7 @@ const createSliceEvent = (
 	};
 };
 
-/** One entry of a `Files` list, without list markers, brackets or backticks. */
-const cleanFileEntry = (entry: string): string =>
-	entry
-		.trim()
-		.replace(/^[-*]\s+/u, '')
-		.replace(/^\[|\]$/gu, '')
-		.trim()
-		.replace(/^`|`$/gu, '')
-		.trim();
-
-/**
- * The paths a slice's `Files` field names, in every shape proposals use:
- * inline (`- **Files**: a, b`), bracketed (`[`a`, `b`]`) or a nested list
- * on the following lines. The match stays on the field's own line: a
- * pattern that let whitespace cross the newline read only the first
- * nested bullet, with its `- \`` prefix, and dropped the rest.
- */
-export const parseSliceFilesField = (body: string): string[] => {
-	const lines = body.split('\n');
-	const files: string[] = [];
-	for (let index = 0; index < lines.length; index += 1) {
-		const field = /^[-*][ \t]*(?:files|\*\*Files\*\*):[ \t]*(.*)$/iu.exec(
-			lines[index] ?? '',
-		);
-		if (field === null) continue;
-		const inline = (field[1] ?? '').trim();
-		if (inline.length > 0) {
-			files.push(...inline.split(',').map(cleanFileEntry));
-			continue;
-		}
-		for (let next = index + 1; next < lines.length; next += 1) {
-			const bullet = /^[ \t]+[-*][ \t]+(.+)$/u.exec(lines[next] ?? '');
-			if (bullet === null) break;
-			files.push(cleanFileEntry(bullet[1] ?? ''));
-		}
-	}
-	return files.filter((file) => file.length > 0);
-};
-
-const parseIndex = async (
-	raw: string,
-	reader: SafeWorkspaceReader,
-	proposalsDir: string,
-): Promise<{
-	slices: Map<string, SliceSnapshotEntry>;
-}> => {
-	const slices = new Map<string, SliceSnapshotEntry>();
-	try {
-		const parsed = JSON.parse(raw) as {
-			proposals?: readonly {
-				id?: string;
-				file?: string;
-				slices?: readonly {
-					id?: string;
-					status?: string;
-					files?: readonly unknown[];
-				}[];
-			}[];
-		};
-		for (const proposal of parsed.proposals ?? []) {
-			if (typeof proposal.id !== 'string') continue;
-			let sourceSlices = proposal.slices ?? [];
-			if (
-				sourceSlices.length === 0 &&
-				typeof proposal.file === 'string'
-			) {
-				const markdown = (
-					await reader.readText(join(proposalsDir, proposal.file))
-				).content;
-				const section = markdown.match(
-					/^##(?:\s+\d+\.)?\s*Slices\b[^\n]*$([\s\S]*?)(?=^## (?!#)|\n*$(?![\s\S]))/im,
-				)?.[1];
-				if (section !== undefined) {
-					sourceSlices = [
-						...section.matchAll(
-							/^### (\S+)\s+—\s+[^\n]*$([\s\S]*?)(?=^### |\n*$(?![\s\S]))/gmu,
-						),
-					].map((match) => {
-						const body = match[2] ?? '';
-						const files = parseSliceFilesField(body);
-						return {
-							id: match[1] ?? '',
-							status:
-								body
-									.match(
-										/^[-*]\s*(?:status|\*\*Status\*\*):\s*`?([^`\n]+)`?\s*$/mu,
-									)?.[1]
-									?.trim() ?? 'unknown',
-							files,
-						};
-					});
-				}
-			}
-			for (const slice of sourceSlices) {
-				if (typeof slice.id !== 'string') continue;
-				const files = (slice.files ?? []).filter(
-					(f): f is string => typeof f === 'string' && f.length > 0,
-				);
-				slices.set(getSliceKey(proposal.id, slice.id), {
-					status: slice.status ?? 'unknown',
-					proposalId: proposal.id,
-					...(files.length > 0 ? { files } : {}),
-				});
-			}
-		}
-	} catch {
-		// corrupt/missing index — treat as empty
-	}
-	return { slices };
-};
+export { parseSliceFilesField } from './slice-snapshot.service';
 
 const diffSlices = (
 	prev: ReadonlyMap<string, SliceSnapshotEntry>,
@@ -354,7 +240,10 @@ export const createSliceListener = (
 	 */
 	isAlreadyPersisted?: (event: ITriggerEvent) => Promise<boolean>,
 ): ISliceListener => {
-	const indexRel = join(indexDir, 'proposals', 'index.json');
+	const snapshot = createSliceSnapshotReader(
+		new SafeWorkspaceReader(workspaceRoot),
+		join(proposalsDir, 'proposals'),
+	);
 	let prev = new Map<string, SliceSnapshotEntry>();
 	let initialized = false;
 	/**
@@ -509,15 +398,8 @@ export const createSliceListener = (
 	};
 
 	const checkImpl = async (): Promise<readonly ITriggerEvent[]> => {
-		let raw = '';
-		try {
-			raw = (await reader.readText(indexRel)).content;
-		} catch {
-			return [];
-		}
-		const curr = (
-			await parseIndex(raw, reader, join(proposalsDir, 'proposals'))
-		).slices;
+		const curr = await snapshot.read();
+		if (curr === undefined) return [];
 		pruneAcknowledged(curr, config.onStatuses);
 		refreshPending(curr, config.onStatuses);
 		// f00417: the first successful poll is a BASELINE, not a
@@ -632,24 +514,8 @@ export const readCurrentSliceSnapshot = async (
 	workspaceRoot: string,
 	indexDir: string,
 	proposalsDir: string = indexDir,
-): Promise<Map<string, SliceSnapshotEntry>> => {
-	const indexRel = join(indexDir, 'proposals', 'index.json');
-	let raw = '';
-	try {
-		raw = (await new SafeWorkspaceReader(workspaceRoot).readText(indexRel))
-			.content;
-	} catch {
-		try {
-			raw = await readFile(join(workspaceRoot, indexRel), 'utf8');
-		} catch {
-			return new Map();
-		}
-	}
-	return (
-		await parseIndex(
-			raw,
-			new SafeWorkspaceReader(workspaceRoot),
-			join(proposalsDir, 'proposals'),
-		)
-	).slices;
-};
+): Promise<Map<string, SliceSnapshotEntry>> =>
+	(await createSliceSnapshotReader(
+		new SafeWorkspaceReader(workspaceRoot),
+		join(proposalsDir, 'proposals'),
+	).read()) ?? new Map();

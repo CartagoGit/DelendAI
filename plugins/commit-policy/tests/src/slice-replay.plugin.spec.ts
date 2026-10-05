@@ -24,6 +24,7 @@ import plugin from '@delendai/commit-policy';
 import type { IMcpPluginContext } from '@delendai/core/public';
 
 import { createTempGitRepo } from '../integration/_fixtures/git-tmp';
+import { writeProposalDocuments } from './lib/triggers/proposal-documents.fixture';
 
 const cleanups: Array<() => Promise<void>> = [];
 afterEach(async () => {
@@ -52,19 +53,12 @@ const writeIndex = async (
 	status: string,
 	extra: readonly { id: string; status: string; files: string[] }[] = [],
 ): Promise<void> => {
-	const indexDir = join(root, '.cache/delendai/proposals');
-	await mkdir(indexDir, { recursive: true });
-	await writeFile(
-		join(indexDir, 'index.json'),
-		JSON.stringify({
-			proposals: [
-				{
-					id: 'x00001',
-					slices: [{ id: 'S1', status, files: ['a.ts'] }, ...extra],
-				},
-			],
-		}),
-	);
+	await writeProposalDocuments(join(root, 'docs/delendai/proposals'), [
+		{
+			id: 'x00001',
+			slices: [{ id: 'S1', status, files: ['a.ts'] }, ...extra],
+		},
+	]);
 };
 
 /** A repository whose history already holds the slice's file. */

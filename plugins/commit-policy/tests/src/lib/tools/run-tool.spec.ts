@@ -14,6 +14,7 @@ import {
 } from '@delendai/commit-policy/lib/tools/run-tool';
 import { bindWriteRoot } from '@delendai/core/lib/shared/bind-write-root';
 import { createFakeToolServer } from '@delendai/test-kit/public';
+import { writeProposalDocuments } from '../triggers/proposal-documents.fixture';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 
@@ -70,11 +71,9 @@ const writeIndex = async (
 		}[];
 	}[],
 ): Promise<void> => {
-	await mkdir(join(workspaceRoot, 'docs', 'proposals'), { recursive: true });
-	await writeFile(
-		join(workspaceRoot, 'docs', 'proposals', 'index.json'),
-		JSON.stringify({ proposals }, null, 2),
-		'utf8',
+	await writeProposalDocuments(
+		join(workspaceRoot, 'docs', 'proposals'),
+		proposals,
 	);
 };
 
