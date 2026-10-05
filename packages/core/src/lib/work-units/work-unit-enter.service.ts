@@ -15,6 +15,7 @@ import { aliasedIdentity, describeAlias } from './agent-alias.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { sliceHeldOnForge } from './slice-reservation.service';
 import { isUnitHolding, readUnitStandings } from './unit-standings.service';
+import { DEFAULT_UNITS_DIRECTORY } from './units-directory.constant';
 import { liveProposalBranch } from './proposal-branch.service';
 import {
 	reviewedByEntrant,
@@ -329,7 +330,7 @@ export const enteredHeld = async (
 		scalarArg(args, 'dir') ??
 		resolve(
 			sharedCheckout(root) ?? root,
-			scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees',
+			scalarArg(args, 'worktrees') ?? DEFAULT_UNITS_DIRECTORY,
 			sanitizeRefComponent(
 				`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`,
 			),
