@@ -57,7 +57,7 @@ answerable, reviewable and testable.
 
 ### S1 — Each job declares the paths it can be broken by
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `bun run lint:job-scope && bun run test:sqlite:real-tree`
 - **Files**:
   - `.github/workflows/ci.yml`
@@ -79,9 +79,21 @@ answerable, reviewable and testable.
   cutover job's inputs. A change of a proposal and a script now selects
   22 jobs instead of 23, without the slow one; a change to the SQLite
   packages still selects it.
-- Still to do: the jobs declared `always` (the six lint groups,
-  `quality-gate`, `metrics-gate`, the artifact checks) — each needs its
-  inputs measured before it can be narrowed.
+- **Decided 2026-10-05 — the jobs declared `always` stay `always`.**
+  Fifteen jobs are: the six lint groups, `plan-scope`, `quality-gate`,
+  `metrics-gate`, `delendai-validate`, `ref-lifecycle`,
+  `release-the-queue`, `develop-protection-live`,
+  `generated-artifacts-check` and `manifests-check`. Each verifies a
+  property of the whole repository, or is the aggregate the others
+  report to. A lint group is a chain of dozens of scripts that scan
+  docs, workflows, proposals and source alike, so its true input set is
+  the repository, and a bound narrower than that is a guess. The
+  asymmetry this table is built on answers it: a job run without need
+  costs minutes, and a job skipped by a wrong bound ships a regression
+  under a green tick. The saving that was there to take is the one S4,
+  S5 and S6 took, in the test zones, where the inputs are measured. An
+  explicit `always` with its reason is this slice's "declared input
+  set" for these jobs.
 
 ### S2 — A pull request selects, the integration branch does not
 
@@ -106,10 +118,12 @@ answerable, reviewable and testable.
 
 ### S3 — The saving is measured, not assumed
 
-- **Status**: in-progress
-- **Gate**: `npx vitest run tools/scripts/ci/test-zones.script.spec.ts tools/scripts/lint/workflow-history-depth.script.spec.ts`
+- **Status**: review
+- **Gate**: `npx vitest run tools/scripts/ci/test-zones.script.spec.ts tools/scripts/ci/job-scope.script.spec.ts tools/scripts/lint/workflow-history-depth.script.spec.ts`
 - **Files**:
   - `.github/workflows/ci.yml`
+  - `tools/scripts/ci/job-scope.script.ts`
+  - `tools/scripts/ci/job-scope.script.spec.ts`
   - `tools/scripts/ci/test-zones.script.ts`
   - `tools/scripts/ci/test-zones.script.spec.ts`
   - `tools/scripts/ci/zone-reads.ts`
@@ -134,8 +148,13 @@ answerable, reviewable and testable.
   modules below the script the job runs. A job handed the pull
   request's base (`github.event.pull_request.base.sha`) now counts as
   reading history, so a shallow planner fails the lint.
-- Still to do in this slice: the same report for the jobs that are not
-  test zones, once S1 gives them inputs.
+- **Done 2026-10-05 — the jobs that are not test zones say why too.**
+  `plan-scope` printed `run` or `skip` beside each job and nothing
+  else. `explainJobs` now gives the sentence: the changed file that
+  makes a bounded job run, the bound none of the changed files is
+  under when it is skipped, `declared always`, or that there is no
+  change list and nothing is skipped. It is computed from the same
+  table as the plan, and a spec holds the two to the same answer.
 
 ### S4 — A change outside the workspaces reaches only the zones that read it
 
