@@ -14,5 +14,5 @@ export type {
 	IGitEventSink,
 	IGitObservation,
 	IGitObserverOptions,
-	TGitTrigger,
+	IGitTrigger,
 } from './contracts/interfaces/git-observer.interface';

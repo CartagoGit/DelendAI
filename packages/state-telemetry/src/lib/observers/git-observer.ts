@@ -23,7 +23,7 @@ import { GIT_OBSERVER_TIMEOUT_MS } from './contracts/constants/git-observer.cons
 import type {
 	IGitObservation,
 	IGitObserverOptions,
-	TGitTrigger,
+	IGitTrigger,
 } from './contracts/interfaces/git-observer.interface';
 
 type TGitRun =
@@ -46,7 +46,7 @@ export const hashGitObservation = (observation: IGitObservation): string =>
 		)
 		.digest('hex');
 
-const hashStale = (trigger: TGitTrigger): string =>
+const hashStale = (trigger: IGitTrigger): string =>
 	createHash('sha256')
 		.update(JSON.stringify({ trigger, stale: true }))
 		.digest('hex');
@@ -64,7 +64,7 @@ const splitLines = (stdout: string): string[] =>
 
 export class GitObserver {
 	private inFlight: Promise<void> | undefined;
-	private pending: TGitTrigger | undefined;
+	private pending: IGitTrigger | undefined;
 	private readonly timeoutMs: number;
 	private readonly gitBinary: string;
 	private readonly now: () => number;
@@ -76,7 +76,7 @@ export class GitObserver {
 	}
 
 	/** Ask for an observation. Never awaits, never throws. */
-	notify(trigger: TGitTrigger = 'write'): void {
+	notify(trigger: IGitTrigger = 'write'): void {
 		if (this.inFlight !== undefined) {
 			this.pending = trigger;
 			return;
@@ -89,8 +89,8 @@ export class GitObserver {
 		while (this.inFlight !== undefined) await this.inFlight;
 	}
 
-	private async drain(first: TGitTrigger): Promise<void> {
-		let trigger: TGitTrigger | undefined = first;
+	private async drain(first: IGitTrigger): Promise<void> {
+		let trigger: IGitTrigger | undefined = first;
 		while (trigger !== undefined) {
 			try {
 				await this.observe(trigger);
@@ -103,7 +103,7 @@ export class GitObserver {
 		this.inFlight = undefined;
 	}
 
-	private async observe(trigger: TGitTrigger): Promise<void> {
+	private async observe(trigger: IGitTrigger): Promise<void> {
 		const branchRun = await this.git(['rev-parse', '--abbrev-ref', 'HEAD']);
 		if (!branchRun.ok) {
 			if (branchRun.timedOut)

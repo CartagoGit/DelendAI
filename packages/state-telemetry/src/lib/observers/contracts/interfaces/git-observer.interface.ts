@@ -1,6 +1,6 @@
 import type { INewWorkEvent, IWorkItemId } from '../../../events/work-event';
 
-export type TGitTrigger = 'write' | 'commit';
+export type IGitTrigger = 'write' | 'commit';
 
 export interface IGitEventSink {
 	append(event: INewWorkEvent): Promise<unknown>;
@@ -19,7 +19,7 @@ export interface IGitObserverOptions {
 }
 
 export interface IGitObservation {
-	readonly trigger: TGitTrigger;
+	readonly trigger: IGitTrigger;
 	readonly branch: string;
 	readonly paths: readonly string[];
 	readonly diffStat: string;
