@@ -2,6 +2,7 @@ import type { IWorkEvent } from '../events/work-event';
 import { computeConfidence, uncertaintyOf } from './confidence-model.service';
 import {
 	ATTEMPT_EVENT_KINDS,
+	EMPTY_FOLD,
 	CONFIDENCE_WINDOW,
 	FAILURE_EVENT_KINDS,
 	STALLED_FAILURE_THRESHOLD_DEFAULT,
@@ -12,7 +13,7 @@ import type {
 	IWorkProgressOptions,
 	IWorkProgressRow,
 	IWorkProgressSnapshot,
-	TWorkPhase,
+	IWorkPhase,
 } from './contracts/interfaces/work-progress.interface';
 import {
 	advanceRank,
@@ -22,16 +23,6 @@ import {
 } from './phase-inference.service';
 import { resolvePhaseRules } from './phase-rules.service';
 import { sliceProgress, sliceWeight } from './progress-weighting.service';
-
-export const EMPTY_FOLD: IWorkProgressFold = {
-	phaseRank: 0,
-	recentRanks: [],
-	lastKind: null,
-	lastFailureHash: null,
-	failureRun: 0,
-	eventCount: 0,
-	lastEventAt: 0,
-};
 
 /** Canonical order of a stream: by time, then by the store's id. */
 export const compareEvents = (a: IWorkEvent, b: IWorkEvent): number =>
@@ -100,7 +91,7 @@ export const unknownItem = (workItemId: string): IWorkItemInput => ({
 
 const terminalPhase = (
 	status: IWorkItemInput['status'],
-): TWorkPhase | undefined =>
+): IWorkPhase | undefined =>
 	status === 'done' ? 'done' : status === 'blocked' ? 'blocked' : undefined;
 
 /** Derive the public snapshot from a fold and the plain item facts. */

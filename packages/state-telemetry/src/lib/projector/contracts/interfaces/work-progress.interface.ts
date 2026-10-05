@@ -1,14 +1,14 @@
-import type { TWorkEventKind } from '../../../events/work-event';
+import type { IWorkEvent, TWorkEventKind } from '../../../events/work-event';
 import type { WORK_PHASES } from '../constants/work-progress.constant';
 
-export type TWorkPhase = (typeof WORK_PHASES)[number];
+export type IWorkPhase = (typeof WORK_PHASES)[number];
 
 /** Declarative phase rule: first matching rule in the table wins. */
 export interface IPhaseRule {
 	readonly kind: TWorkEventKind;
 	/** When set, the rule only matches if the previous event had this kind. */
 	readonly afterKind?: TWorkEventKind;
-	readonly phase: Exclude<TWorkPhase, 'blocked' | 'done'>;
+	readonly phase: Exclude<IWorkPhase, 'blocked' | 'done'>;
 }
 
 /** Plain facts about one work item that the event stream cannot carry. */
@@ -37,7 +37,7 @@ export interface IWorkProgressSnapshot {
 	readonly workItemId: string;
 	readonly proposalId: string;
 	readonly sliceId: string;
-	readonly phase: TWorkPhase;
+	readonly phase: IWorkPhase;
 	/** 0..100. */
 	readonly progress: number;
 	readonly weight: number;
@@ -70,4 +70,28 @@ export interface IWeightedSlice {
 	readonly sliceId: string;
 	readonly progress: number;
 	readonly weight: number;
+}
+
+export type ISnapshotListener = (snapshot: IWorkProgressSnapshot) => void;
+
+export interface IWorkProgressServiceOptions extends IWorkProgressOptions {
+	/** Injected clock in epoch milliseconds; the service starts no timers. */
+	readonly now: () => number;
+	/** Minimum gap between two deliveries for one work item. */
+	readonly coalesceIntervalMs?: number;
+}
+
+export interface IWorkProgressService {
+	/** Replace everything with a clean rebuild. */
+	load(events: readonly IWorkEvent[], items: readonly IWorkItemInput[]): void;
+	/** Fold appended events in; only the touched rows change and are published. */
+	append(events: readonly IWorkEvent[]): void;
+	getSnapshot(workItemId: string): IWorkProgressSnapshot | undefined;
+	getSnapshotsForProposal(
+		proposalId: string,
+	): readonly IWorkProgressSnapshot[];
+	/** Returns the unsubscribe function. */
+	subscribe(listener: ISnapshotListener): () => void;
+	/** Deliver held snapshots whose interval has elapsed; the host calls it on its own tick. */
+	flush(): void;
 }

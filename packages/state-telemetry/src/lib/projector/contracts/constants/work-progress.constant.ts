@@ -1,3 +1,7 @@
+import type { IProducerInputSpec } from '@delendai/state';
+
+import type { IWorkProgressFold } from '../interfaces/work-progress.interface';
+
 /** Phases a work item moves through, in forward order. `done` is the last rank. */
 export const WORK_PHASE_ORDER = [
 	'investigating',
@@ -55,3 +59,24 @@ export const PROGRESS_FULL = 100;
 
 /** Minimum gap between two deliveries for the same work item. */
 export const SUBSCRIBE_COALESCE_INTERVAL_MS = 1000;
+
+/** Change kind `reconcile` understands: events appended after the base. */
+export const EVENTS_APPENDED_CHANGE = 'events-appended';
+
+/** The fold of a work item that has seen no event yet. */
+export const EMPTY_FOLD: IWorkProgressFold = {
+	phaseRank: 0,
+	recentRanks: [],
+	lastKind: null,
+	lastFailureHash: null,
+	failureRun: 0,
+	eventCount: 0,
+	lastEventAt: 0,
+};
+
+/** STATIC input specs: no tables back them yet, the host supplies opaque JSON blobs. */
+export const WORK_PROGRESS_INPUTS: readonly IProducerInputSpec[] = [
+	{ kind: 'opaque', locator: WORK_PROGRESS_INPUT_EVENTS },
+	{ kind: 'opaque', locator: WORK_PROGRESS_INPUT_ITEMS },
+	{ kind: 'opaque', locator: WORK_PROGRESS_INPUT_ASSIGNMENTS },
+];

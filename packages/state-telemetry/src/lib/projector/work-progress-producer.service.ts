@@ -4,7 +4,6 @@ import {
 	STATE_ABI_VERSION,
 	type CanonicalJsonValue,
 	type IProducerContext,
-	type IProducerInputSpec,
 	type IProjectionResult,
 	type IResolvedProducerInput,
 	type IStateChange,
@@ -13,6 +12,8 @@ import {
 
 import type { IWorkEvent } from '../events/work-event';
 import {
+	EVENTS_APPENDED_CHANGE,
+	WORK_PROGRESS_INPUTS,
 	WORK_PROGRESS_INPUT_ASSIGNMENTS,
 	WORK_PROGRESS_INPUT_EVENTS,
 	WORK_PROGRESS_INPUT_ITEMS,
@@ -25,15 +26,6 @@ import type {
 	IWorkProgressRow,
 } from './contracts/interfaces/work-progress.interface';
 import { reconcileRows, rebuildRows } from './work-progress-snapshot.service';
-
-/** Change kind `reconcile` understands: events appended after the base. */
-export const EVENTS_APPENDED_CHANGE = 'events-appended';
-
-export const WORK_PROGRESS_INPUTS: readonly IProducerInputSpec[] = [
-	{ kind: 'opaque', locator: WORK_PROGRESS_INPUT_EVENTS },
-	{ kind: 'opaque', locator: WORK_PROGRESS_INPUT_ITEMS },
-	{ kind: 'opaque', locator: WORK_PROGRESS_INPUT_ASSIGNMENTS },
-];
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -112,8 +104,8 @@ export const createWorkProgressProducer = (
 	): IProjectionResult => {
 		const delta =
 			change.kind === EVENTS_APPENDED_CHANGE &&
-			Array.isArray(change['events'])
-				? (change['events'] as IWorkEvent[])
+			Array.isArray(change.events)
+				? (change.events as IWorkEvent[])
 				: [];
 		return toResult(
 			reconcileRows(
