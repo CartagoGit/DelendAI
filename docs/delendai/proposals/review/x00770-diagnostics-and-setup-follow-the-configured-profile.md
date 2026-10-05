@@ -84,14 +84,16 @@ An audit that drove the real CLI in throwaway repositories per profile found six
 - review-log: approved by claude-opus-5-5 — verified at aa99eb781d2f, validate exit 0, tests 23/23 — Delivered by #693 (merge aa99eb781). init-default.command.spec, init-human-summary.service.spec and init-workspace-start.spec (23) pass. Record defect: the slice Status line said pending while in review.
 
 ### S5 — A refused startup reaches the host as instructions
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/cli/refused-server.ts`, `packages/core/src/lib/cli/refused-server.constant.ts`, `packages/core/tests/src/lib/cli/refused-server.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`
 - **Gate**: none
 - shipped-in: `cf36f14ca68e`
 - acceptance:
   - "When the server cannot start because the configuration cannot be honoured, an MCP client connects and reads the refusal and its remedy in the server instructions instead of a closed connection."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at aa99eb781d2f, validate exit 0, tests 2/2 — Delivered by #693 (merge aa99eb781). refused-server.spec (2) passes; index.spec covers the CLI wiring. Record defect: the slice Status line said pending while in review.
 
 ## acceptance
 
