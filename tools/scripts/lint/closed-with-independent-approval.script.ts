@@ -222,6 +222,36 @@ const pullRequestLabels = async (): Promise<readonly string[]> => {
 	}
 };
 
+/**
+ * The proposals a review pack changes without having claimed them.
+ *
+ * A pack is its reviewer's verdicts on the proposals it took. One pull
+ * request of a swarm described twenty verdicts and two moves and carried
+ * the edits of three other packs: nothing in it said which were its
+ * author's, so nothing could be checked against what it claimed.
+ * `changedPaths` are the proposal documents the pack touches, and
+ * `claimed` the ids of the `Claims` trailers of its own commits.
+ */
+export const unclaimedProposals = (
+	changedPaths: readonly string[],
+	claimed: readonly string[],
+): readonly string[] => {
+	const mine = new Set(claimed.map((id) => id.trim().toLowerCase()));
+	return [
+		...new Set(
+			changedPaths
+				.map((path) =>
+					/^([a-z]\d{5})-/iu
+						.exec(path.split('/').at(-1) ?? '')?.[1]
+						?.toLowerCase(),
+				)
+				.filter(
+					(id): id is string => id !== undefined && !mine.has(id),
+				),
+		),
+	].sort();
+};
+
 const git = (root: string, args: readonly string[]): string =>
 	execFileSync('git', [...args], { cwd: root, encoding: 'utf8' }).trim();
 
@@ -311,6 +341,30 @@ const main = async (): Promise<number> => {
 			`✖ closed-with-independent-approval: ${head} is ${kind} work, and adds approvals by ${[...new Set(approvals)].join(', ')}. An approval enters through a review unit: \`delendai review next\`.`,
 		);
 		return 1;
+	}
+	if (kind === 'review') {
+		const unclaimed = unclaimedProposals(
+			git(root, [
+				'diff',
+				'--name-only',
+				'--no-renames',
+				base,
+				'HEAD',
+				'--',
+				'docs/delendai/proposals/',
+			]).split('\n'),
+			git(root, [
+				'log',
+				'--format=%(trailers:key=Claims,valueonly,separator=%x2C)',
+				`${base}..HEAD`,
+			]).split(/[\n,]/u),
+		);
+		if (unclaimed.length > 0) {
+			console.error(
+				`✖ closed-with-independent-approval: ${head} is a review pack, and changes ${unclaimed.join(', ')} without having claimed ${unclaimed.length === 1 ? 'it' : 'them'}. A pack changes the proposals its own commits claim (\`delendai review next\` claims before it reads); what belongs to another pack lands with that pack.`,
+			);
+			return 1;
+		}
 	}
 	if (foreign.length > 0 && !authorized) {
 		console.error(

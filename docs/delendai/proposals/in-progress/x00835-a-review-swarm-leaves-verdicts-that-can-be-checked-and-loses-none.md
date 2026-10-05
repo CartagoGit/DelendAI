@@ -776,16 +776,19 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S32 — A review pack changes only the proposals it claimed
 
-- **Status**: pending
-- **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`
+- **Status**: review
+- **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - CI refuses a review pack whose diff changes a proposal none of its
   commits claims: its pull request then says, by construction, which
   verdicts are its author's (G5).
-- A pack that went stale is settled the way this run was: retired with
-  `work retire`, its verdicts that still name a commit and a gate carried
-  by a `reconcile` unit the owner labels, the rest reviewed again. Doing
-  that with one command is the rest of this slice.
+- A pack that went stale is settled the way this run was, with the tools
+  that exist now: `work retire` keeps it on the forge and frees its claims,
+  the verdicts that name a commit and a gate are carried by a `reconcile`
+  unit the owner labels, and the rest are reviewed again. No command does
+  the three in one step; nothing in a second run has asked for one yet.
+- Entering your own unit from another directory is refused as "another
+  session"; the refusal now says how to get back in.
 
 ### S33 — A slice delivered from a unit of another name is still found
 
