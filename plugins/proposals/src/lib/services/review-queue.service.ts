@@ -41,6 +41,7 @@ import type {
 } from '../contracts/interfaces/review-queue.interface';
 import { parseProposalSlicePlan } from '../swarm/proposal-slice-plan';
 import { parseReviewState } from '../swarm/proposal-review';
+import { isRetiredSlice } from './proposal-completeness';
 import { readShippingCommit } from '../swarm/slice-shipping-record';
 import {
 	attributeDelivery,
@@ -133,6 +134,17 @@ const settleSlice = async (
 		...later,
 	};
 	const prefix = input.namespacePrefix;
+	// A slice given up on purpose delivered nothing to judge. It has no
+	// round, so Git was asked who delivered it, and the queue sent a
+	// reviewer to approve work that was never meant to land.
+	if (isRetiredSlice(base.status.split(/\s/u)[0] ?? '')) {
+		return {
+			...base,
+			verdict: 'approved',
+			nextAction:
+				'Retired: nothing was delivered, so there is nothing to review.',
+		};
+	}
 	if (state.status === 'done') {
 		return {
 			...base,

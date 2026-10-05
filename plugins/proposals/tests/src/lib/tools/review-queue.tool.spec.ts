@@ -74,6 +74,21 @@ describe('review_queue', () => {
 		expect(slice?.nextAction).toContain('<you — not agent-a>');
 	});
 
+	it('asks for no verdict on a slice given up on purpose, whoever Git names', async () => {
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		repo.proposalInReview(
+			SLICE_S1('retired — 2026-10-05. The listener already does it.'),
+		);
+
+		const [slice] = slicesOf(await queue(), 'x00001');
+
+		expect(slice).toMatchObject({ sliceId: 'S1', verdict: 'approved' });
+		expect(slice?.nextAction).toContain('Retired');
+	});
+
 	it('names the later commits that changed what a slice delivered, so a superseded delivery is not read as incomplete', async () => {
 		repo.deliverThroughPullRequest(
 			'src/a.ts',

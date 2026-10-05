@@ -867,6 +867,12 @@ the good verdicts' shape (P1) becomes the required shape.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S38 — A retired slice waits for no verdict
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
+- **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue.tool.spec.ts`
+- Found 2026-10-05: `review next` offered this proposal's S25, retired that morning, as a slice needing a verdict, attributed to `claude-sonnet-5-5` from Git. A retired slice has no review round, so the queue asked Git who delivered its files and sent a reviewer to approve work that was given up on purpose. A slice whose status is `retired` is now settled in the queue, with a sentence that says why.
+
 ## acceptance
 
 - After a swarm run, `work doctor` reports nothing hanging, and the clone
