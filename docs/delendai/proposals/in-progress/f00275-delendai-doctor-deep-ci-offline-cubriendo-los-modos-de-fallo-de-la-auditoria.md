@@ -2,7 +2,7 @@
 id: f00275
 title: "`delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría"
 kind: feat
-status: blocked
+status: in-progress
 type: proposal
 track: product
 date: 2026-08-29
@@ -13,6 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00276]
+last-transition-id: 5beb2155-4977-4414-9138-cdcb0f5f46c0
+last-correlation-id: 5beb2155-4977-4414-9138-cdcb0f5f46c0
+last-transition-from: ready
 ---
 
 # f00275 — `delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría
