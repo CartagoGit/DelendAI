@@ -3,14 +3,23 @@
  * to repeat. Two timed-out calls used to leave two proposals with two
  * different ids for one intended document.
  */
-import { mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { fakePartial } from '@delendai/test-kit';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { DEFAULT_PROPOSAL_FOLDER_POLICY } from '@delendai/proposals/lib/contracts/proposal-folder-policy';
+import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '@delendai/proposals/lib/contracts/constants/create-proposal.constant';
 import {
+	buildCreateProposalRegistration,
 	createProposalDocument,
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
@@ -90,5 +99,44 @@ describe('createProposalDocument when the same create is repeated', () => {
 		if (!first.ok || !second.ok) return;
 		expect(second.id).not.toBe(first.id);
 		expect(filesOf(options)).toHaveLength(2);
+	});
+});
+
+describe('createProposalDocument headings', () => {
+	it('writes the canonical lower-case sections in the canonical order', async () => {
+		const options = makeOptions();
+
+		const created = await createProposalDocument(
+			{ kind: 'fix', title: 'Headings are canonical' },
+			options,
+		);
+
+		expect(created.ok).toBe(true);
+		if (!created.ok) return;
+		const headings = readFileSync(created.path, 'utf8')
+			.split('\n')
+			.filter((line) => line.startsWith('## '));
+		expect(headings).toEqual([
+			'## goal',
+			'## why',
+			'## non-goals',
+			'## slices',
+			'## acceptance',
+		]);
+	});
+});
+
+describe('the refusal of create_proposal in the shared checkout', () => {
+	it('names the create unit for the proposal new, which has no id to enter', () => {
+		const registration = buildCreateProposalRegistration(
+			fakePartial<IAuthoringToolOptions>({}),
+		);
+
+		expect(registration.refusedWriteNextStep).toBe(
+			CREATE_PROPOSAL_REFUSED_NEXT_STEP,
+		);
+		expect(CREATE_PROPOSAL_REFUSED_NEXT_STEP).toContain(
+			'work enter --kind=create --proposal=new',
+		);
 	});
 });
