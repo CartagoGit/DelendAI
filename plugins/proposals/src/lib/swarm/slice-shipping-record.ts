@@ -142,7 +142,10 @@ export const readShippingCommit = (block: string): string | undefined => {
 	if (match === null) return undefined;
 	const value = (match[1] ?? '').trim();
 	// In backticks anywhere on the line, or bare at its start.
-	const hash = (/`([0-9a-f]{7,40})`/iu.exec(value) ??
-		/^([0-9a-f]{7,40})(?![0-9a-z])/iu.exec(value))?.[1];
+	const candidates = [
+		...[...value.matchAll(/`([^`]+)`/gu)].map((each) => each[1] ?? ''),
+		value.split(/\s/u)[0] ?? '',
+	];
+	const hash = candidates.find(isCommitHash);
 	return hash?.toLowerCase();
 };

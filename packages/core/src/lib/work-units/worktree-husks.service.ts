@@ -17,8 +17,7 @@
  * with the retired work, and only then is the directory removed.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, readdir, rm, stat } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { readdir, rm, stat } from 'node:fs/promises';
 import { basename, join, relative, resolve } from 'node:path';
 
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
@@ -185,11 +184,14 @@ const treeOf = async (
 ): Promise<string | undefined> => {
 	const common = readGit(root, ['rev-parse', '--git-common-dir']);
 	if (common === undefined) return undefined;
-	const scratch = await mkdtemp(join(tmpdir(), 'delendai-husk-'));
+	// An index of its own, beside the repository's: the checkout's is
+	// gone with its link, and the shared one is not ours to rewrite.
+	const gitDirectory = resolve(root, common);
+	const index = join(gitDirectory, `husk-index-${String(process.pid)}`);
 	const env = {
-		GIT_DIR: resolve(root, common),
+		GIT_DIR: gitDirectory,
 		GIT_WORK_TREE: directory,
-		GIT_INDEX_FILE: join(scratch, 'index'),
+		GIT_INDEX_FILE: index,
 	};
 	const rules = ['-c', `core.excludesFile=${join(root, '.gitignore')}`];
 	try {
@@ -217,7 +219,8 @@ const treeOf = async (
 		if (added === undefined) return undefined;
 		return gitIn(directory, env, ['write-tree']);
 	} finally {
-		await rm(scratch, { recursive: true, force: true });
+		await rm(index, { force: true });
+		await rm(`${index}.lock`, { force: true });
 	}
 };
 
