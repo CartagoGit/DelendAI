@@ -2,7 +2,7 @@
 id: f00538
 title: "Forward-sync the release branch back into the integration branch after every promotion"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-15
@@ -11,9 +11,9 @@ tags:
     - branches
     - release
     - automation
-last-transition-id: 93d4ba37-1bfc-4749-a0e6-39ed4a5b55a7
-last-correlation-id: 93d4ba37-1bfc-4749-a0e6-39ed4a5b55a7
-last-transition-from: ready
+last-transition-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
+last-correlation-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
+last-transition-from: in-progress
 ---
 
 # f00538 — Forward-sync the release branch back into the integration branch after every promotion
@@ -71,24 +71,30 @@ fast-forwards a local clone and never touches the forge.
 - **Status**: done — `forwardSyncVerdict` classifies the gap as `in-sync`, `ancestry-only`, `content` or `conflict` from measured facts. The trial merge runs in a throwaway worktree. With `--apply` the script pushes `delendai/pr/forward-sync-<sha9>`, opens the pull request and arms auto-merge; inside a workflow it also dispatches `ci.yml` so the required check reports. It never force-pushes over an existing ref. A dry run against the forge on 2026-09-15 reported `ancestry-only` for `c7eda197a`. Branch names come from the development policy through `declaredBranches`, which `ref-lifecycle-guard` now shares instead of its private copy.
 - **Files**: [`tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.interface.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/lib/declared-branches.ts`, `tools/scripts/lib/declared-branches.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `package.json`]
 - **Gate**: `npx vitest run tools/scripts/forge/forward-sync-release.script.spec.ts tools/scripts/lib/declared-branches.spec.ts`
+- shipped-in: `e07b21b26b02`
 
 ### S2 — A history-only sync is a delivery, and only that one
 
 - **Status**: done — `lint:candidate-delivers` accepts a zero-file pull request only when the release tip is in the candidate's history and not in its base's. It asks the forge's compare API in CI and falls back to `git merge-base --is-ancestor`. A fact it cannot establish exempts nothing, so the #100 shape (empty, with no release tip) is still refused.
 - **Files**: [`tools/scripts/lint/candidate-delivers.script.ts`, `tools/scripts/lint/candidate-delivers.script.spec.ts`]
 - **Gate**: `npx vitest run tools/scripts/lint/candidate-delivers.script.spec.ts`
+- shipped-in: `0bf0fe61e015`
 
 ### S3 — Run it on every move of the release branch
 
 - **Status**: done — `forward-sync-release.yml` runs on a push to `main` and on `workflow_dispatch`, with `contents`, `pull-requests` and `actions` write and full history. `ci.yml` gains `workflow_dispatch`, the one event a workflow token may start, so the candidate's required check can run. The forge resolves both workflows from the default branch (`main`), so they take effect from the next promotion.
 - **Files**: [`.github/workflows/forward-sync-release.yml`, `.github/workflows/ci.yml`]
 - **Gate**: `bun run lint:workflow-yaml && bun run lint:workflow-runner-bootstrap && bun run lint:workflow-bootstrap`
+- shipped-in: `0bf0fe61e015`
 
 ### S4 — Let the workflow token open the pull request
 
-- **Status**: pending — operator decision. The repository reports `can_approve_pull_request_reviews: false`, and under that setting a workflow token cannot open a pull request. Until the setting changes, the workflow pushes the ref, fails red, and prints the exact `gh pr create` command in its summary. The setting is not changed from here: it widens what every workflow token may do, and that is the owner's call.
+- **Status**: review — the repository reports `can_approve_pull_request_reviews: true` since the owner changed the setting, and the workflow needs nothing else. The run of 2026-09-30 15:08 UTC opened #686 as `github-actions` with the workflow's own token, armed auto-merge on it seven seconds later, `delendai-validate` reported success on its head, and `github-actions` merged it on 2026-10-01 with no manual step. That run was a `workflow_dispatch`: `main` has not moved since, so the `push` trigger itself is still unobserved; it runs the same job. If the setting is ever turned off again the workflow still pushes the ref, fails red and prints the exact `gh pr create` command in its summary.
 - **Files**: [`.github/workflows/forward-sync-release.yml`]
 - **Gate**: a push to `main` ends with a forward-sync pull request armed for auto-merge and `delendai-validate` reported on its head, with no manual step.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `0bf0fe61e015`
 
 ### S5 — Close the gap that exists today
 
@@ -98,6 +104,7 @@ fast-forwards a local clone and never touches the forge.
 - **Found 2026-10-01 — the forward sync could not pass `tests`.** #686 carried no content, so the planner ran no test zone, no shard uploaded a report and the `tests` job failed merging reports that did not exist. x00790 made a plan that runs no zone the verdict; #686 then needed develop merged into its head, because a pull request's run used the workflow its head carried. It passed and merged, and the gate reads 0.
 - **Files**: [`tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `.github/workflows/ci.yml`]
 - **Gate**: `git rev-list --left-right --count origin/main...origin/develop` reports `0` on the left.
+- shipped-in: `20d9a0277167`
 
 ## acceptance
 
