@@ -864,6 +864,8 @@ the good verdicts' shape (P1) becomes the required shape.
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
 - Found 2026-10-05: after `review approve x00835 S18` the very next `review next` offered S18 again. The verdict was a commit in the reviewer's unit; the queue read the shared checkout, where the slice still waited for one. A reviewer that trusted the queue would review the same slice for ever.
 - When the caller names its unit (`review next` always does), `review_queue` reads the proposals from that unit's worktree. A unit not checked out on this machine, or a proposals folder outside the workspace, reads as before.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
