@@ -220,7 +220,10 @@ export const createProcessedEventsStore = (
 	return {
 		async has(key) {
 			if ((await stampOf()) !== readStamp) await syncSeenFromDisk();
-			return seen.has(key);
+			// Expiry is judged when asked: the map read earlier still holds
+			// a record its TTL has since run out on.
+			const record = seen.get(key);
+			return record !== undefined && Date.now() - record.ts <= ttlMs;
 		},
 		async add(key, sha, now = Date.now()) {
 			await withFileMutex(filePath, async () => {
