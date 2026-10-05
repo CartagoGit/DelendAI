@@ -1409,14 +1409,6 @@
 				"date": "2026-09-06"
 			},
 			{
-				"id": "f00536",
-				"title": "Context frugality as an enforced agent property, and automatic compaction of tool output",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-10"
-			},
-			{
 				"id": "f00541",
 				"title": "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec",
 				"track": "general",
