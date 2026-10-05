@@ -2,7 +2,7 @@
 id: x00795
 title: "The core public surface is back under budget and the gate runs in CI"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-10-01
@@ -11,6 +11,9 @@ related: [x00644, x00541, x00672]
 tags:
     - gates
     - public-surface
+last-transition-id: dd863f1c-5151-4664-95e2-285567ba517c
+last-correlation-id: dd863f1c-5151-4664-95e2-285567ba517c
+last-transition-from: ready
 ---
 
 # x00795 — The core public surface is back under budget and the gate runs in CI
