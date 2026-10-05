@@ -11,6 +11,8 @@ related: [x00831, x00834, x00850]
 last-transition-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
 last-correlation-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
 last-transition-from: in-progress
+shipped-in:
+  - "f83c85addc9e"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -594,7 +596,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S18 — The run reports its own incidents
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/workflow-kpis.interface.ts`, `packages/core/src/lib/work-units/workflow-kpis.service.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.interface.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts`, `plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts`, `plugins/project-kpis/tests/src/kpi-workflow.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts plugins/project-kpis/tests/src/kpi-workflow.spec.ts`
 - The KPI snapshot carries an optional `workflow` block read from what core
@@ -607,6 +609,11 @@ the good verdicts' shape (P1) becomes the required shape.
   public surface; the plugin reimplements no check. Outside a git repository
   the block is omitted, and snapshots without it still parse.
 - shipped-in: `f83c85addc9e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at f83c85addc9e, validate exit 0, tests 6/6 — Read #773: readWorkflowKpis composes runWorkflowDoctor (checkout scope), readSwarm and rosterOf without recomputing any check; the plugin's optional workflow block parses with and without it. The declared gate (both specs) passes 6/6.
+- review-attribution: claude-sonnet-5-5 from commit f83c85addc9e names refs/heads/delendai/wip/claude-sonnet-5-5/implement/x00835-S18-g1/a-review-swarm-leaves-verdicts-that-can-be (f83c85addc9e1282447e57daaab7ed0d86c0a0a0), opened by claude-opus-5-5
 
 ### S19 — A unit's name says what it is
 
