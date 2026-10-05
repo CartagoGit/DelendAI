@@ -94,6 +94,7 @@ extension.ts (activate):
     - `extensions/vscode/package.json`
     - `extensions/vscode/src/extension.ts`
     - `extensions/vscode/src/commands/adopt.ts`
+    - `extensions/vscode/src/contracts/constants/adopt-command.constant.ts`
     - `extensions/vscode/src/test/extension-activation.spec.ts`
     - `extensions/vscode/src/test/contributes-completeness.spec.ts`
     - `extensions/vscode/src/test/smoke.spec.ts`

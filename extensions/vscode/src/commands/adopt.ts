@@ -1,9 +1,8 @@
 import type { IDelendaiToolOutputs } from '@delendai/client';
 
+import { ADOPT_COMMAND } from '../contracts/constants/adopt-command.constant';
 import type { ICommandDeps } from './types';
 import { renderJsonHtml, showCommandError } from './types';
-
-export const ADOPT_COMMAND = 'delendai.adopt';
 
 const ADOPT_PROJECT_TOOL = 'delendai_adopt_project';
 

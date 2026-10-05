@@ -1,7 +1,8 @@
 import { McpStdioClient } from '@delendai/client';
 import { describe, expect, it } from 'vitest';
 
-import { ADOPT_COMMAND, registerAdoptCommand } from '../commands/adopt';
+import { registerAdoptCommand } from '../commands/adopt';
+import { ADOPT_COMMAND } from '../contracts/constants/adopt-command.constant';
 import type { ICommandVscodeApi } from '../commands/types';
 
 const createHarness = (
