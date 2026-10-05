@@ -81,6 +81,13 @@ export interface IToolRegistration {
 	/** Where the writes land; see `IToolWriteRoot`. */
 	readonly writeRoot?: IToolWriteRoot | undefined;
 	/**
+	 * What to tell a caller whose write was refused in the shared checkout,
+	 * when the generic advice (enter a unit for the proposal the call names)
+	 * cannot be followed. A tool that creates the thing it writes has no id
+	 * to enter a unit for yet.
+	 */
+	readonly refusedWriteNextStep?: string | undefined;
+	/**
 	 * f00189 (Track F / security): when `true`, the tool honours
 	 * the transversal `dryRun` protocol — accepts `args.dryRun`
 	 * and returns an `IDryRunResult` instead of executing side

@@ -1647,6 +1647,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-03"
+			},
+			{
+				"id": "x00874",
+				"title": "A proposal is created in a unit that takes its id",
+				"track": "workflow",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-05"
 			}
 		]
 	}
