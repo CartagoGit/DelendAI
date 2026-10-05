@@ -101,6 +101,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S8 — A slice reservation whose unit is gone is released
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/slice-reservation.interface.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
+- **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/slice-reservation.service.spec.ts`
+- Found in the audit after the queue emptied on 2026-10-05: eighteen refs under `refs/delendai/claims/slice/` for slices that had landed. A reservation was released only when its unit was retired, and a unit that lands is not retired. They kept nobody out, since an entrant takes over a reservation whose unit is gone, but each delivered slice left a ref for ever. `work reap` now lists the reservations whose unit has no branch on the forge and that are older than an abandoned unit is given and, with `--apply`, releases them.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.
@@ -110,3 +118,4 @@ Found on 2026-10-05, reading what the last runs left behind.
 - `work retired --drop` removes exactly the named retired refs from the forge.
 - A slice recording `- **Shipped-In**: <sha> <subject>` is handed to review without being asked for its delivering commit.
 - After `work reap --apply`, no ref under `refs/<namespace>/retired/` names a commit the integration branch contains.
+- After `work reap --apply`, no ref under `refs/<namespace>/claims/slice/` names a unit that is gone from the forge and past its grace.
