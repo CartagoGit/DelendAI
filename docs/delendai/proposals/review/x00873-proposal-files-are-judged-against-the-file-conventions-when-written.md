@@ -2,13 +2,13 @@
 id: x00873
 title: "Proposal files are judged against the file conventions when written"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-05
-last-transition-id: 183ba397-3eb6-4c56-add9-16e9b7ba68e1
-last-correlation-id: 183ba397-3eb6-4c56-add9-16e9b7ba68e1
-last-transition-from: ready
+last-transition-id: a10ff19e-ccb9-42f1-86b2-fa07307d1dc3
+last-correlation-id: a10ff19e-ccb9-42f1-86b2-fa07307d1dc3
+last-transition-from: in-progress
 ---
 
 # x00873 — Proposal files are judged against the file conventions when written
@@ -73,6 +73,7 @@ done, and `lint:file-conventions` only after the file exists.
 - `--write-baseline=<path>` accepts today's findings as the floor.
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `207557e218a9`
 
 ## dependency graph
 

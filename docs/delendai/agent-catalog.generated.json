@@ -1647,14 +1647,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-03"
-			},
-			{
-				"id": "x00873",
-				"title": "Proposal files are judged against the file conventions when written",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-10-05"
 			}
 		]
 	}
