@@ -2,13 +2,13 @@
 id: x00769
 title: "Push guards and protected-branch defaults follow the configured development policy"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-09-30
-last-transition-id: 6289c9c1-5a24-4f23-bbc5-f2a49abef47e
-last-correlation-id: 6289c9c1-5a24-4f23-bbc5-f2a49abef47e
-last-transition-from: ready
+last-transition-id: 8499e15f-2db4-4fd8-abcb-53cd80cc7e42
+last-correlation-id: 8499e15f-2db4-4fd8-abcb-53cd80cc7e42
+last-transition-from: in-progress
 ---
 
 # x00769 — Push guards and protected-branch defaults follow the configured development policy
@@ -43,6 +43,7 @@ A consumer on the merge profile was told to open a pull request, projects with i
   - "Contradicting protectedBranches, push and cadence settings are reported by validatePolicyAlignment"
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `e01ad21c5a21`
 
 ## acceptance
 
