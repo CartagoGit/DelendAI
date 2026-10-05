@@ -2,7 +2,7 @@
 id: f00274
 title: "La extensión VS Code se activa por comando, no sólo por config existente"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: product
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00280, f00272]
-last-transition-id: 32d30772-e141-4335-894a-ff4e3de9a8b4
-last-correlation-id: 32d30772-e141-4335-894a-ff4e3de9a8b4
-last-transition-from: ready
+last-transition-id: ffe82d87-405a-4706-bc12-7f21353ff485
+last-correlation-id: ffe82d87-405a-4706-bc12-7f21353ff485
+last-transition-from: in-progress
 ---
 
 # f00274 — La extensión VS Code se activa por comando, no sólo por config existente
@@ -87,36 +87,49 @@ extension.ts (activate):
 
 ## slices
 
-### S1 — Comandos de adopción alcanzables sin config
+### S1 - Adoption command reachable without a config
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-    - `extensions/vscode/package.json` (`activationEvents`, nueva
-      entrada `onCommand:delendai.adopt`)
-    - `extensions/vscode/src/extension.ts` (registrar el comando de
-      adopción de forma incondicional, antes de la comprobación de
-      config existente)
-    - `extensions/vscode/src/test/extension-activation.spec.ts` (nuevo)
-- **Gate**: `bunx vitest run extensions/vscode/src/test/extension-activation.spec.ts`
-
-### S2 — El comando de adopción invoca `adopt_project` en modo dry-run y muestra el plan
-
-- **Status**: pending
-- **Files**:
-    - `extensions/vscode/src/commands/adopt.command.ts` (nuevo, o
-      extender el comando existente si ya hay uno equivalente —
-      verificar con `grep -rn adopt extensions/vscode/src` antes de
-      implementar)
-    - `extensions/vscode/src/test/adopt-command.spec.ts` (nuevo)
-- **Gate**: `bunx vitest run extensions/vscode/src/test/adopt-command.spec.ts`
-
-### S3 — Registro condicional del resto de comandos según exista config
-
-- **Status**: pending
-- **Files**:
+    - `extensions/vscode/package.json`
     - `extensions/vscode/src/extension.ts`
-    - `extensions/vscode/src/test/extension-conditional-registration.spec.ts` (nuevo)
-- **Gate**: `bunx vitest run extensions/vscode/src/test/extension-conditional-registration.spec.ts`
+    - `extensions/vscode/src/commands/adopt.ts`
+    - `extensions/vscode/src/test/extension-activation.spec.ts`
+    - `extensions/vscode/src/test/contributes-completeness.spec.ts`
+    - `extensions/vscode/src/test/smoke.spec.ts`
+- **Gate**: `cd extensions/vscode && npx vitest run src/test/extension-activation.spec.ts src/test/contributes-completeness.spec.ts src/test/smoke.spec.ts`
+- Premise check: `activationEvents` already held `onStartupFinished` besides the
+  config glob, so the extension was not inert; but no adoption command existed at
+  all. Shipped: `delendai.adopt` contributed, `onCommand:delendai.adopt` added, and
+  the command registered in `activate()` before any network-backed surface. The
+  command-count ratchets (37 to 38, 38 to 39 subscriptions) moved with it.
+
+### S2 - The adopt command asks for a dry-run assessment and shows the plan
+
+- **Status**: review
+- **Files**:
+    - `extensions/vscode/src/commands/adopt.ts`
+    - `extensions/vscode/src/test/adopt-command.spec.ts`
+- **Gate**: `cd extensions/vscode && npx vitest run src/test/adopt-command.spec.ts`
+- No equivalent command existed (`grep -rni adopt extensions/vscode/src`). The
+  command calls `delendai_adopt_project` with `{ analyze: true }` only (never
+  `write`), renders the result in a webview and reports failures through
+  `showCommandError`.
+
+### S3 - Registration of the remaining commands with and without a config
+
+- **Status**: review
+- **Files**:
+    - `extensions/vscode/src/test/extension-conditional-registration.spec.ts`
+- **Gate**: `cd extensions/vscode && npx vitest run src/test/extension-conditional-registration.spec.ts`
+- Premise check: the slice proposed registering only adoption commands when there
+  is no config. Today every command is registered unconditionally (a contributed
+  command that is not registered fails with "command not found", and
+  `contributes-completeness.spec.ts` enforces it), and `activate()` has no
+  config-dependent registration. The intent, that no command assumes a config
+  exists, is satisfied by that and is pinned by a spec that activates with no
+  server configured, asserts every contributed command is registered and that the
+  overview and adoption commands fail softly. No `extension.ts` change was needed.
 
 ## dependency graph
 
