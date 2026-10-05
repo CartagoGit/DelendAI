@@ -92,6 +92,8 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`tool_error` hashes the exit code and the message through the same normalizer as the test observer, so equal errors hash equal."
   - "Attach/detach symmetry is tested: an observer over a no-op sink changes nothing and never mutates the args it is given."
   - "A 1000-call burst lands 1000 events through the NDJSON store in under one second (asserted in `tool-observer.service.spec.ts`)."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — `AgentLeaseObserver` — enganche al lock engine (claim, release, heartbeat)
 - **Status**: review
@@ -103,6 +105,8 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`AgentLeaseObserver.claimed`, `heartbeat` and `released` emit `lease_claimed`, `lease_heartbeat` and `lease_released` with a stable `payload_hash`; claim, 4 heartbeats and release make 6 events."
   - "`check(now)` takes the clock from the caller (no timers) and emits `lease_heartbeat_missed` once per lease when 3 heartbeat intervals passed without heartbeat or release: claim, 5 heartbeats and silence make 6 events plus one missed, and a second `check` adds nothing."
   - "Not shipped: `work_assignments.released_at` is left out because no such table exists yet."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
