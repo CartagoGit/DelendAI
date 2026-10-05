@@ -87,7 +87,7 @@ extension.ts (activate):
 
 ## slices
 
-### S1 - Adoption command reachable without a config
+### S1 — Adoption command reachable without a config
 
 - **Status**: review
 - **Files**:
@@ -103,8 +103,10 @@ extension.ts (activate):
   all. Shipped: `delendai.adopt` contributed, `onCommand:delendai.adopt` added, and
   the command registered in `activate()` before any network-backed surface. The
   command-count ratchets (37 to 38, 38 to 39 subscriptions) moved with it.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
-### S2 - The adopt command asks for a dry-run assessment and shows the plan
+### S2 — The adopt command asks for a dry-run assessment and shows the plan
 
 - **Status**: review
 - **Files**:
@@ -116,7 +118,7 @@ extension.ts (activate):
   `write`), renders the result in a webview and reports failures through
   `showCommandError`.
 
-### S3 - Registration of the remaining commands with and without a config
+### S3 — Registration of the remaining commands with and without a config
 
 - **Status**: review
 - **Files**:
