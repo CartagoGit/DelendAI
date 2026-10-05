@@ -242,7 +242,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@delendai/framework-knowledge',
 			summary: 'Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.',
 			tags: ['knowledge', 'frameworks', 'policy'],
-			permissions: ['filesystem-read'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 			tokenBudgetBytes: 2700,
 		},
 		{
