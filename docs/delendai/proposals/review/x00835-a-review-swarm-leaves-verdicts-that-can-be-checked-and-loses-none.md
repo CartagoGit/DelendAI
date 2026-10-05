@@ -867,6 +867,13 @@ the good verdicts' shape (P1) becomes the required shape.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S37 — A session goes back to its own unit, whatever generation it is
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- Found 2026-10-05: I retired my stale review unit `batch-all-g1` and kept working in `batch-all-g2`. The next `review next --session=<g2's session>` entered a new `batch-all-g1` and claimed `x00870` there, and the approval of `x00870` with the same session went to `g2`, which had claimed nothing, and was refused. `chooseGeneration` took the first generation no other session held, so a generation freed by a retirement came before the one the session was in.
+- A session that holds a unit of that agent, proposal and slice now goes back to it, whichever generation; only a session that holds none takes the first free one. The spec fails without the change.
+
 ## acceptance
 
 - After a swarm run, `work doctor` reports nothing hanging, and the clone
