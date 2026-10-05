@@ -74,6 +74,25 @@ export const chooseGeneration = (
 	const session = sessionFor(args);
 	// Occupancy is by unit, whatever topic another instance chose.
 	const unnamed = args.filter((arg) => !arg.startsWith('--topic='));
+	// A session that already holds a unit goes back to it, whichever
+	// generation it is. Taking the first free one instead sent a reviewer
+	// whose older unit had been retired to a new unit, where it claimed
+	// the next proposal, while its verdicts went to the unit its session
+	// named, which had claimed nothing.
+	if (session !== undefined && scalarArg(args, 'generation') === undefined) {
+		const held = unitRefsAnyName(
+			root,
+			unnamed,
+			policy,
+			agent,
+			proposal,
+			slice,
+		)
+			.filter((ref) => sessionHolding(root, ref) === session)
+			.map((ref) => Number(/-g(\d+)\//u.exec(ref)?.[1] ?? Number.NaN))
+			.filter((generation) => Number.isInteger(generation));
+		if (held.length > 0) return { generation: Math.max(...held) };
+	}
 	for (let generation = 1; ; generation += 1) {
 		const inGeneration = [...unnamed, `--generation=${String(generation)}`];
 		const exact = workRefFor(inGeneration, policy, agent, proposal, slice);
