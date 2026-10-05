@@ -2,13 +2,13 @@
 id: x00539
 title: "Tres defectos hacian imposible proyectar este repositorio a SQLite: vocabulario sin normalizar, promocion que exige ok, y PlanRepo.create no idempotente"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-08
-last-transition-id: 22067e93-1df3-47ee-bc33-e11325d3dc0e
-last-correlation-id: 22067e93-1df3-47ee-bc33-e11325d3dc0e
-last-transition-from: ready
+last-transition-id: 80342064-28f8-4546-8db3-44ecd6067fc5
+last-correlation-id: 80342064-28f8-4546-8db3-44ecd6067fc5
+last-transition-from: in-progress
 ---
 
 # x00539 — Tres defectos hacian imposible proyectar este repositorio a SQLite: vocabulario sin normalizar, promocion que exige ok, y PlanRepo.create no idempotente
