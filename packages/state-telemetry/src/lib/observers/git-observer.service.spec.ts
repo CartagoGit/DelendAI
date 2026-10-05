@@ -16,7 +16,7 @@ import {
 	GitObserver,
 	hashGitObservation,
 	parsePorcelainPaths,
-} from './git-observer';
+} from './git-observer.service';
 
 const git = (cwd: string, ...args: string[]): string =>
 	execFileSync('git', args, { cwd, encoding: 'utf8' });
