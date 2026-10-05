@@ -11,6 +11,8 @@ related: [x00831, x00834, x00850]
 last-transition-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
 last-correlation-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
 last-transition-from: in-progress
+shipped-in:
+  - "f83c85addc9e"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -594,7 +596,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S18 — The run reports its own incidents
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/workflow-kpis.interface.ts`, `packages/core/src/lib/work-units/workflow-kpis.service.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.interface.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts`, `plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts`, `plugins/project-kpis/tests/src/kpi-workflow.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts plugins/project-kpis/tests/src/kpi-workflow.spec.ts`
 - The KPI snapshot carries an optional `workflow` block read from what core
@@ -607,6 +609,11 @@ the good verdicts' shape (P1) becomes the required shape.
   public surface; the plugin reimplements no check. Outside a git repository
   the block is omitted, and snapshots without it still parse.
 - shipped-in: `f83c85addc9e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at f83c85addc9e, validate exit 0, tests 6/6 — Read #773: readWorkflowKpis composes runWorkflowDoctor (checkout scope), readSwarm and rosterOf without recomputing any check; the plugin's optional workflow block parses with and without it. The declared gate (both specs) passes 6/6.
+- review-attribution: claude-sonnet-5-5 from commit f83c85addc9e names refs/heads/delendai/wip/claude-sonnet-5-5/implement/x00835-S18-g1/a-review-swarm-leaves-verdicts-that-can-be (f83c85addc9e1282447e57daaab7ed0d86c0a0a0), opened by claude-opus-5-5
 
 ### S19 — A unit's name says what it is
 
@@ -855,6 +862,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/services/review-queue-reviewer.service.spec.ts`
 - Found 2026-10-05: `review next --agent=claude-opus-5-5` claimed `r00040`, every slice of which that same model had delivered, in a project whose `reviewIndependence` is `model`. The approval would have been refused as a self-approval after the reading was done, and the claim kept other reviewers out meanwhile.
 - `review_queue` now answers for the agent that asks. Under model independence, a slice waiting for a verdict that the asker's model delivered is `needs-another-reviewer`, with a sentence that says so, and it is not counted in `needsVerdict`. `review next` reads the same field, so it skips those proposals with no change of its own. Where another instance of the model may review, or the delivery is unrecorded, nothing changes: the approval decides.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S35 — A reviewer's queue is read from its own unit
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-unit-tree.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
+- **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
+- Found 2026-10-05: after `review approve x00835 S18` the very next `review next` offered S18 again. The verdict was a commit in the reviewer's unit; the queue read the shared checkout, where the slice still waited for one. A reviewer that trusted the queue would review the same slice for ever.
+- When the caller names its unit (`review next` always does), `review_queue` reads the proposals from that unit's worktree. A unit not checked out on this machine, or a proposals folder outside the workspace, reads as before.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 

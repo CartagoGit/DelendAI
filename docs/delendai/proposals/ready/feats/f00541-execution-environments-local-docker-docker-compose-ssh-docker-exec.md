@@ -31,7 +31,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 
 ### S1 — IExecutionEnvironment contract and registry
 - **Status**: pending
-- **Files**: `plugins/execution-env/contract.ts`, `plugins/execution-env/types.ts`, `plugins/execution-env/registry.ts`, `plugins/execution-env/package.json`
+- **Files**: `plugins/execution-env/src/lib/contracts/interfaces/execution-env.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/execution-env-types.interface.ts`, `plugins/execution-env/registry.ts`, `plugins/execution-env/package.json`
 - **Gate**: type
 - acceptance:
   - "Contract exposes id, label, capabilities(), prepare(), exec(), putFile(), getFile(), teardown(), env()."
@@ -40,7 +40,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 
 ### S2 — Local adapter baseline
 - **Status**: pending
-- **Files**: `plugins/execution-env/adapters/local.ts`, `plugins/execution-env/tests/local.spec.ts`
+- **Files**: `plugins/execution-env/src/lib/adapters/local.service.ts`, `plugins/execution-env/tests/local.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Wraps Bun child_process with proper stdio piping."
@@ -49,7 +49,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 
 ### S3 — Docker CLI adapter
 - **Status**: pending
-- **Files**: `plugins/execution-env/adapters/docker-cli.ts`, `plugins/execution-env/tests/docker-cli.spec.ts`
+- **Files**: `plugins/execution-env/src/lib/adapters/docker-cli.service.ts`, `plugins/execution-env/tests/docker-cli.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Uses docker CLI via spawn (no daemon socket for portability)."
@@ -60,7 +60,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 
 ### S4 — Docker Compose adapter
 - **Status**: pending
-- **Files**: `plugins/execution-env/adapters/docker-compose.ts`, `plugins/execution-env/tests/docker-compose.spec.ts`
+- **Files**: `plugins/execution-env/src/lib/adapters/docker-compose.service.ts`, `plugins/execution-env/tests/docker-compose.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Parses compose file (basic shape) and exposes per-service prepare and exec."
@@ -69,7 +69,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 
 ### S5 — SSH adapter with keepalive and jump host
 - **Status**: pending
-- **Files**: `plugins/execution-env/adapters/ssh.ts`, `plugins/execution-env/tests/ssh.spec.ts`
+- **Files**: `plugins/execution-env/src/lib/adapters/ssh.service.ts`, `plugins/execution-env/tests/ssh.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Supports identity file, ssh-agent, and ProxyCommand for jump host (ForwardAgent disabled by default)."
@@ -79,7 +79,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 
 ### S6 — Docker Exec adapter for sidecars
 - **Status**: pending
-- **Files**: `plugins/execution-env/adapters/docker-exec.ts`, `plugins/execution-env/tests/docker-exec.spec.ts`
+- **Files**: `plugins/execution-env/src/lib/adapters/docker-exec.service.ts`, `plugins/execution-env/tests/docker-exec.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Resolves container by name or id, supports user switching."
@@ -88,7 +88,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 
 ### S7 — Secret resolver
 - **Status**: pending
-- **Files**: `plugins/execution-env/secret-resolver.ts`, `plugins/execution-env/tests/secret-resolver.spec.ts`
+- **Files**: `plugins/execution-env/src/lib/secret-resolver.service.ts`, `plugins/execution-env/tests/secret-resolver.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Resolves env(file references), file(content references), and ssh-agent-forward (using $SSH_AUTH_SOCK)."
@@ -97,7 +97,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 
 ### S8 — Lifecycle integration in orchestrator-runner
 - **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/runner/execution-env.ts`, `plugins/orchestrator-runner/tests/execution-env.spec.ts`
+- **Files**: `plugins/orchestrator-runner/src/lib/services/execution-env.service.ts`, `plugins/orchestrator-runner/tests/execution-env.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Runner calls prepare before slice and teardown after, reporting durations in the slice log."

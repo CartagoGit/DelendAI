@@ -40,6 +40,7 @@ import { dirname, extname, isAbsolute, join } from 'node:path';
 
 import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
 import { repoRoot } from '../lib/monorepo-paths';
+import { declaredPathExists } from './lib/declared-path-exists.lib';
 
 const BASELINE_REL =
 	'tools/scripts/lint/proposal-slice-completeness.baseline.json';
@@ -161,7 +162,7 @@ export const findIssues = (root: string): readonly IIssue[] => {
 					// `root`, not the caller's cwd (a bug when this ran from
 					// a different cwd, and the only reason a temp-dir test
 					// of this function would have been impossible before).
-					if (!existsSync(join(root, file))) {
+					if (!declaredPathExists(root, file)) {
 						out.push({
 							proposal: f,
 							kind: 'missing-file',
