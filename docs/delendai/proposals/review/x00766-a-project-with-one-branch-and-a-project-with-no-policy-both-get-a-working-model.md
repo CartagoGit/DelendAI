@@ -2,13 +2,13 @@
 id: x00766
 title: "A project with one branch and a project with no policy both get a working model"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: 9daf22cf-651c-413d-a0bd-79c992f30aa3
-last-correlation-id: 9daf22cf-651c-413d-a0bd-79c992f30aa3
-last-transition-from: ready
+last-transition-id: 03b21a30-4d8e-4634-897f-10375f5d0b31
+last-correlation-id: 03b21a30-4d8e-4634-897f-10375f5d0b31
+last-transition-from: in-progress
 ---
 
 # x00766 — A project with one branch and a project with no policy both get a working model
@@ -40,6 +40,7 @@ A consumer probe with integration and release both main failed at startup with r
   - "served instructions name no release branch when there is none"
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `0e5630cc52db`
 
 ### S2 — An undeclared policy is one resolution path
 - **Status**: pending
@@ -51,6 +52,7 @@ A consumer probe with integration and release both main failed at startup with r
   - "instructions say when the policy was adopted rather than declared"
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `0e5630cc52db`
 
 ### S3 — Specs for both shapes and a real-git single-branch landing
 - **Status**: pending
@@ -62,6 +64,7 @@ A consumer probe with integration and release both main failed at startup with r
   - "integration=release no longer blocks validation"
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `0e5630cc52db`
 
 ## acceptance
 
