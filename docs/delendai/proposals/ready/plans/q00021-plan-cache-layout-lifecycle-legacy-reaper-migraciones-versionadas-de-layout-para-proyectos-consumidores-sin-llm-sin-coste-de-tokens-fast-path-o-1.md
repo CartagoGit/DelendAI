@@ -634,9 +634,9 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
 - **Status**: pending
 - **Files**:
-  - `packages/rules/src/rules/no-legacy-cache-paths.rule.ts`
+  - `tools/scripts/lint/no-legacy-cache-paths.script.ts`
   - `packages/rules/src/rules/cache-layout-ratchet.rule.ts`
-  - `packages/rules/tests/src/rules/no-legacy-cache-paths.rule.spec.ts`
+  - `tools/scripts/lint/no-legacy-cache-paths.script.spec.ts`
   - `packages/rules/tests/src/rules/cache-layout-ratchet.rule.spec.ts`
   - Whitelist documentada en cada rule.
 - **Tarea**: pasar `rg` y clasificar cada hit. Eliminar los que sean runtime/tooling. Whitelist para migrators, fixtures y docs.
