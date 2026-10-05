@@ -2,7 +2,7 @@
 id: f00275
 title: "`delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: product
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00276]
-last-transition-id: 5beb2155-4977-4414-9138-cdcb0f5f46c0
-last-correlation-id: 5beb2155-4977-4414-9138-cdcb0f5f46c0
-last-transition-from: ready
+last-transition-id: 3748813e-47c4-4977-ad5e-ce6966fde219
+last-correlation-id: 3748813e-47c4-4977-ad5e-ce6966fde219
+last-transition-from: in-progress
 ---
 
 # f00275 — `delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría
@@ -126,6 +126,7 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
 - Shipped: `--ci` adds a `ci` block (`exitCode`, `meaning`, `failing`, `skipped`) to the report and does not write the human recap. Exit codes stay 0/4/5 and are documented in `DOCTOR_CI_EXIT_MEANING`. Premise note: the file is still `groups/doctor.ts` (`commands/doctor.ts` is a dead duplicate, left untouched); the new flags are declared through the command's `flags` list.
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `66b124669ad9`
 
 ### S2 — `--offline`: marcar y saltar checks que requieren red
 
@@ -141,6 +142,7 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
 - Shipped: `--offline` skips the checks that need the network and reports each as `not-applicable` with a `skipped:` finding, never as passed. Premise note: no check in the pure registry opens a socket today (`network.check.ts` is already not-applicable), so no `requiresNetwork` property was needed there. The one network-bound section is the plugins/tools overview when `--remote` is set; it is skipped offline. `requiresNetwork` exists on deep checks, and the spec asserts a marked check is not run.
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `66b124669ad9`
 
 ### S3 — `--deep`: registro de checks caros + primer check (error-reporting self-test)
 
@@ -156,6 +158,7 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
 - Shipped: `defaultDeepChecks()` registry and the `error-reporting-self-test` check. The plugin is imported by a computed specifier so the CLI takes no static dependency; if it cannot be loaded the section is a `warn` that says it was skipped. Offline it passes `live: false`, so the `gh` checks come back marked skipped. The spec injects a runner with a fake exec and asserts zero `gh issue create` calls. File names follow the lints (`*.service.ts`), not the names drafted here.
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `66b124669ad9`
 
 ## dependency graph
 
