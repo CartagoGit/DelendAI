@@ -3,6 +3,7 @@ import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
+import { reapLandedRetired } from './retired-landed.service';
 import { reapDeliveredUnits } from './unit-reaper.service';
 import { leaseWindowSeconds } from './unit-verdict.service';
 import {
@@ -16,8 +17,9 @@ import { reapHusks } from './worktree-husks.service';
  * `work reap [--apply]` — remove the worktree and local branch of every
  * delivered unit whose worktree holds no edit of its own, and every
  * directory beside the units that is no unit, keeping on the forge what
- * such a directory held that no commit has. Reports only, without
- * `--apply`.
+ * such a directory held that no commit has; and drop from the forge the
+ * retired work the integration branch came to hold. Reports only,
+ * without `--apply`.
  */
 export const reaped = async (
 	args: readonly string[],
@@ -31,9 +33,10 @@ export const reaped = async (
 		apply: args.includes('--apply'),
 	});
 	const root = mainWorktreeOf(opened.root);
+	const remote = ctx.globals.remote ?? integrationRemote(root, opened.policy);
 	const husks = await reapHusks({
 		root,
-		remote: ctx.globals.remote ?? integrationRemote(root, opened.policy),
+		remote,
 		namespace: opened.policy.branches.namespacePrefix,
 		windowSeconds: leaseWindowSeconds(
 			opened.policy.coordination.leaseTtlMinutes,
@@ -41,5 +44,11 @@ export const reaped = async (
 		apply: args.includes('--apply'),
 		now: Math.floor(Date.now() / 1000),
 	});
-	return { code: EXIT_CODE.OK, data: { units, husks } };
+	const retired = reapLandedRetired({
+		root,
+		policy: opened.policy,
+		remote,
+		apply: args.includes('--apply'),
+	});
+	return { code: EXIT_CODE.OK, data: { units, husks, retired } };
 };

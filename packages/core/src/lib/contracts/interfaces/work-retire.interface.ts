@@ -28,3 +28,11 @@ export interface IRetirementOutcome {
 	/** How to bring the work back. */
 	readonly restore: string;
 }
+
+/** What `work reap` did, or would do, with one retired ref. */
+export interface ILandedRetired {
+	readonly unit: string;
+	readonly ref: string;
+	readonly commit: string;
+	readonly outcome: 'dropped' | 'would-drop' | 'kept';
+}

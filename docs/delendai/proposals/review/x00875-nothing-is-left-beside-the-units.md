@@ -93,6 +93,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S7 — Retired work the integration branch came to hold is reaped
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/work-retire.interface.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/work-retire.service.spec.ts`
+- Found using S5 on 2026-10-05: of 62 retired tips, 22 were ancestors of `develop`. A unit given up is often finished by another agent or merged a minute later, and from then on its kept tip keeps nothing. `work reap` now lists the retired refs whose commit the integration branch contains and, with `--apply`, drops them from the forge. A forge that cannot be reached drops nothing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.
@@ -101,3 +109,4 @@ Found on 2026-10-05, reading what the last runs left behind.
 - Opening for writing a state database one schema version ahead throws, changes nothing in the file, and startup reports why.
 - `work retired --drop` removes exactly the named retired refs from the forge.
 - A slice recording `- **Shipped-In**: <sha> <subject>` is handed to review without being asked for its delivering commit.
+- After `work reap --apply`, no ref under `refs/<namespace>/retired/` names a commit the integration branch contains.

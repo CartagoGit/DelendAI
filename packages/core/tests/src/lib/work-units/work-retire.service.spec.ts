@@ -224,6 +224,57 @@ describe('work retire', () => {
 		).toBe('refs/delendai/retired/kept/three');
 	});
 
+	it('reaps retired work the integration branch came to hold, and no other', async () => {
+		const { root, git, forge, tip } = repository();
+		const reap = (...flags: string[]) =>
+			runWorkUnit(
+				['reap', ...flags],
+				fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
+					cwd: root,
+					globals: fakePartial<
+						IWorkUnitContext['globals'],
+						'workspace' | 'json'
+					>({ workspace: root, json: true }),
+				}),
+			);
+		const landed = git('rev-parse', 'develop');
+		git(
+			'push',
+			'-q',
+			'origin',
+			`${landed}:refs/delendai/retired/landed/in`,
+		);
+		git('push', '-q', 'origin', `${tip}:refs/delendai/retired/still/out`);
+		const retiredOf = (data: unknown) =>
+			(data as { retired: { unit: string; outcome: string }[] }).retired;
+
+		expect(retiredOf((await reap()).data)).toEqual([
+			expect.objectContaining({
+				unit: 'landed/in',
+				outcome: 'would-drop',
+			}),
+		]);
+		expect(
+			forge(
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/delendai/retired',
+			),
+		).toContain('landed/in');
+
+		expect(retiredOf((await reap('--apply')).data)).toEqual([
+			expect.objectContaining({ unit: 'landed/in', outcome: 'dropped' }),
+		]);
+		expect(
+			forge(
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/delendai/retired',
+			),
+		).toBe('refs/delendai/retired/still/out');
+		expect(retiredOf((await reap('--apply')).data)).toEqual([]);
+	});
+
 	it('removes nothing when the tip cannot be kept on the forge', async () => {
 		const { root, git, forge } = repository();
 		git('remote', 'set-url', '--push', 'origin', join(root, 'nowhere.git'));
