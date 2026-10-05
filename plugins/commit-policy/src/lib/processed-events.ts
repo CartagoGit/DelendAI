@@ -15,7 +15,7 @@
  * policy (when to consult / when to add).
  */
 
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir, readFile, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
@@ -49,6 +49,9 @@ const DEFAULT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const DEFAULT_PATH = '.commit-policy/processed-events.jsonl';
 const DEFAULT_PRUNE_EVERY = 100;
 
+/** The file's ceiling: tens of thousands of records, read in milliseconds. */
+const DEFAULT_MAX_BYTES = 4 * 1024 * 1024;
+
 export const computeIdempotencyKey = (event: IEngineEvent): string => {
 	switch (event.kind) {
 		case 'slice':
@@ -76,8 +79,23 @@ export const createProcessedEventsStore = (
 	const ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
 	const filePath = join(options.workspaceRoot, options.path ?? DEFAULT_PATH);
 	const pruneEvery = options.pruneEvery ?? DEFAULT_PRUNE_EVERY;
+	const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
 	const seen = new Map<string, IProcessedRecord>();
 	let addsSincePrune = 0;
+	/**
+	 * The file as it was when `seen` was last read from it. A `has` asks
+	 * the disk only whether it changed: re-reading the whole file on every
+	 * question made each one cost as much as the history was long.
+	 */
+	let readStamp: string | undefined;
+	const stampOf = async (): Promise<string> => {
+		try {
+			const info = await stat(filePath);
+			return `${String(info.size)}:${String(info.mtimeMs)}`;
+		} catch {
+			return 'absent';
+		}
+	};
 
 	const readRecords = async (
 		now = Date.now(),
@@ -167,11 +185,13 @@ export const createProcessedEventsStore = (
 		now = Date.now(),
 		includeExpired = false,
 	): Promise<void> => {
+		const stamp = await stampOf();
 		const records = await readRecords(now, includeExpired);
 		seen.clear();
 		for (const [key, record] of records) {
 			seen.set(key, record);
 		}
+		readStamp = stamp;
 	};
 
 	const persist = async (): Promise<void> => {
@@ -179,18 +199,33 @@ export const createProcessedEventsStore = (
 		for (const rec of seen.values()) {
 			lines.push(JSON.stringify(rec));
 		}
+		// Past the ceiling the oldest records go first. Records are kept in
+		// the order they were last written, so the head is the oldest.
+		let bytes = lines.reduce((sum, line) => sum + line.length + 1, 0);
+		let dropped = 0;
+		while (bytes > maxBytes && dropped < lines.length - 1) {
+			bytes -= (lines[dropped]?.length ?? 0) + 1;
+			dropped += 1;
+		}
+		if (dropped > 0) {
+			for (const rec of [...seen.values()].slice(0, dropped)) {
+				seen.delete(rec.key);
+			}
+		}
 		await mkdir(dirname(filePath), { recursive: true });
-		await writeFileAtomic(filePath, `${lines.join('\n')}\n`);
+		await writeFileAtomic(filePath, `${lines.slice(dropped).join('\n')}\n`);
+		readStamp = await stampOf();
 	};
 
 	return {
 		async has(key) {
-			await syncSeenFromDisk();
+			if ((await stampOf()) !== readStamp) await syncSeenFromDisk();
 			return seen.has(key);
 		},
 		async add(key, sha, now = Date.now()) {
 			await withFileMutex(filePath, async () => {
 				await syncSeenFromDisk(now);
+				seen.delete(key);
 				seen.set(key, {
 					key,
 					sha,
@@ -208,6 +243,7 @@ export const createProcessedEventsStore = (
 		async recordTerminal(key, outcome, reason, now = Date.now()) {
 			await withFileMutex(filePath, async () => {
 				await syncSeenFromDisk(now);
+				seen.delete(key);
 				seen.set(key, {
 					key,
 					sha: null,
@@ -239,6 +275,7 @@ export const createProcessedEventsStore = (
 		},
 		async dispose() {
 			seen.clear();
+			readStamp = undefined;
 		},
 	};
 };
