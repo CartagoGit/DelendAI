@@ -19,35 +19,12 @@
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
-import type { INewWorkEvent, IWorkItemId } from '../events/work-event';
-
-/** Budget for one observation before it is declared stale. */
-export const GIT_OBSERVER_TIMEOUT_MS = 250;
-
-export type TGitTrigger = 'write' | 'commit';
-
-export interface IGitEventSink {
-	append(event: INewWorkEvent): Promise<unknown>;
-}
-
-export interface IGitObserverOptions {
-	/** Directory git runs in; each observer only ever sees its own. */
-	readonly cwd: string;
-	readonly workItemId: IWorkItemId;
-	readonly actorId: string | null;
-	readonly sink: IGitEventSink;
-	readonly timeoutMs?: number;
-	/** Git executable; overridable so tests can simulate a slow git. */
-	readonly gitBinary?: string;
-	readonly now?: () => number;
-}
-
-export interface IGitObservation {
-	readonly trigger: TGitTrigger;
-	readonly branch: string;
-	readonly paths: readonly string[];
-	readonly diffStat: string;
-}
+import { GIT_OBSERVER_TIMEOUT_MS } from './contracts/constants/git-observer.constant';
+import type {
+	IGitObservation,
+	IGitObserverOptions,
+	TGitTrigger,
+} from './contracts/interfaces/git-observer.interface';
 
 type TGitRun =
 	| { readonly ok: true; readonly stdout: string }

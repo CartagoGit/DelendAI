@@ -4,11 +4,15 @@
  */
 export {
 	GitObserver,
-	GIT_OBSERVER_TIMEOUT_MS,
 	hashGitObservation,
 	parsePorcelainPaths,
-	type IGitEventSink,
-	type IGitObservation,
-	type IGitObserverOptions,
-	type TGitTrigger,
 } from './git-observer';
+
+export { GIT_OBSERVER_TIMEOUT_MS } from './contracts/constants/git-observer.constant';
+
+export type {
+	IGitEventSink,
+	IGitObservation,
+	IGitObserverOptions,
+	TGitTrigger,
+} from './contracts/interfaces/git-observer.interface';
