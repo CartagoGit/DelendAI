@@ -49,6 +49,8 @@ A consumer probe with integration and release both main failed at startup with r
 - acceptance:
   - "work, guards and instructions resolve the same effective policy"
   - "instructions say when the policy was adopted rather than declared"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Specs for both shapes and a real-git single-branch landing
 - **Status**: pending
