@@ -65,6 +65,25 @@ const moveLease = async (
 };
 
 /**
+ * What belongs to a unit besides its branch follows a rename: its lease,
+ * which is keyed by the ref, and the forge's copy of the old name. A claim
+ * that left them behind had the old name still "live" by its lease and
+ * still on the forge: the unit read as two.
+ */
+export const carryUnitRecords = async (input: {
+	readonly cwd: string;
+	readonly policy: IResolvedDevelopmentPolicy;
+	readonly from: string;
+	readonly to: string;
+}): Promise<{
+	readonly lease: boolean;
+	readonly forge: IAdoptedForgeBranch;
+}> => ({
+	lease: await moveLease(input.cwd, input.from, input.to),
+	forge: dropForgeBranch(input.cwd, input.policy, input.from),
+});
+
+/**
  * Give the unit `cwd` is a worktree of the id of `proposal`, when it was
  * entered for `new`. Anything else — a checkout that is no unit, a unit
  * that already carries an id — is left exactly as it is.

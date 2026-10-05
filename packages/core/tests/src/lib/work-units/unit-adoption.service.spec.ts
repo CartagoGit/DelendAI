@@ -14,7 +14,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import { fakePartial } from '@delendai/test-kit';
 
-import { adoptProposalId } from '@delendai/core/lib/work-units/unit-adoption.service';
+import {
+	adoptProposalId,
+	carryUnitRecords,
+} from '@delendai/core/lib/work-units/unit-adoption.service';
 import {
 	gitCommonDirOf,
 	recordUnitEntered,
@@ -186,5 +189,41 @@ describe('adoptProposalId', () => {
 
 		expect(adopted.status).toBe('refused');
 		expect(git(tree, 'symbolic-ref', 'HEAD')).toBe(`refs/heads/${OLD}`);
+	});
+});
+
+describe('carryUnitRecords', () => {
+	const TAKEN = 'delendai/wip/agent-b/create/new-all-g2/the-topic';
+
+	it("moves the lease and drops the forge's copy when a unit changes hands", async () => {
+		const { main, tree, remote } = unitOn(OLD);
+		await enter(tree, OLD);
+		// The claim itself renamed the branch; this is what follows it.
+		git(main, 'branch', '-m', OLD, TAKEN);
+
+		const carried = await carryUnitRecords({
+			cwd: main,
+			policy,
+			from: OLD,
+			to: TAKEN,
+		});
+
+		expect(carried).toEqual({ lease: true, forge: 'removed' });
+		const common = gitCommonDirOf(tree) ?? '';
+		expect((await readUnitLease(common, TAKEN))?.ref).toBe(TAKEN);
+		expect(await readUnitLease(common, OLD)).toBeUndefined();
+		expect(git(remote, 'branch', '--list', OLD)).toBe('');
+	});
+
+	it('has nothing to carry for a unit with no lease that the forge never had', async () => {
+		const { main } = unitOn(OLD);
+		expect(
+			await carryUnitRecords({
+				cwd: main,
+				policy,
+				from: 'delendai/wip/agent-a/create/new-all-g9/never',
+				to: TAKEN,
+			}),
+		).toEqual({ lease: false, forge: 'absent' });
 	});
 });
