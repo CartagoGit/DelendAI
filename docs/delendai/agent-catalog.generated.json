@@ -1425,14 +1425,6 @@
 				"date": "2026-09-10"
 			},
 			{
-				"id": "f00538",
-				"title": "Forward-sync the release branch back into the integration branch after every promotion",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
 				"id": "f00541",
 				"title": "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec",
 				"track": "general",
