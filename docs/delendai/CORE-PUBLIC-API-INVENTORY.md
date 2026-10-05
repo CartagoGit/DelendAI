@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 535
+Total exports: 537
 
 | Maturity | Count |
 | --- | --- |
-| stable | 532 |
+| stable | 534 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -13,6 +13,7 @@ Total exports: 535
 | --- | --- | --- | --- |
 | `__resetShutdownGuardForTests` | const | stable | `../lib/cli/graceful-shutdown` |
 | `adaptLegacyPlugin` | const | stable | `../lib/plugins/lifecycle` |
+| `adoptProposalId` | const | stable | `../lib/work-units/unit-adoption.service` |
 | `AGENT_IDENTITY_LIMITS` | const | stable | `../lib/contracts/interfaces/agent-identity.interface` |
 | `AgentHost` | type | stable | `../contracts` |
 | `aggregateScans` | const | stable | `../lib/external-tool/aggregate-scans` |
@@ -336,6 +337,7 @@ Total exports: 535
 | `IToolTextResult` | type | stable | `../lib/shared/tool-response` |
 | `ITransactionResult` | type | stable | `../lib/transactions/types` |
 | `ITruncatedEnvelope` | type | stable | `../lib/contracts/interfaces/truncation.interface` |
+| `IUnitAdoption` | type | stable | `../lib/contracts/interfaces/unit-adoption.interface` |
 | `IValidationCommand` | type | stable | `../lib/contracts/interfaces/validation-matrix.interface` |
 | `IValidationMatrix` | type | stable | `../lib/contracts/interfaces/validation-matrix.interface` |
 | `IValidationMatrixConfig` | type | stable | `../lib/plugins/load-config-file` |
