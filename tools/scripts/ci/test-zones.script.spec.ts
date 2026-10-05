@@ -255,6 +255,52 @@ describe('reachableZones', () => {
 		expect(reach).toBeUndefined();
 	});
 
+	it('reaches the zone whose specs scan a workspace, although nothing there imports it', () => {
+		// A core spec walks every plugin's source for a raw write. The
+		// module graph sees a plugin nobody in core imports.
+		const changedPlugin = {
+			...graph,
+			dirToName: new Map([
+				...graph.dirToName,
+				['plugins/cache', '@delendai/cache'],
+			]),
+		};
+		const reach = reachableZones(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => changedPlugin as never,
+				computeAffected: () =>
+					result({
+						directByWorkspace: new Map([['@delendai/cache', []]]),
+					}) as never,
+				diff: () => [
+					{ path: 'plugins/cache/src/lib/store.ts', listing: false },
+				],
+			},
+		);
+
+		expect(reach).toBeDefined();
+		expect([...(reach ?? [])].sort()).toEqual(['core', 'plugins']);
+	});
+
+	it('does not reach it for a change it does not scan', () => {
+		const reach = reachableZones(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => graph as never,
+				computeAffected: () =>
+					result({
+						directByWorkspace: new Map([['tools', []]]),
+					}) as never,
+				diff: () => [
+					{ path: 'tools/scripts/ci/x.script.ts', listing: false },
+				],
+			},
+		);
+
+		expect([...(reach ?? [])]).not.toContain('core');
+	});
+
 	it('runs everything when the graph cannot be built at all', () => {
 		const reach = reachableZones(
 			{ base: 'x', rootDir: '/repo' },

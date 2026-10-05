@@ -2,7 +2,7 @@
 id: x00795
 title: "The core public surface is back under budget and the gate runs in CI"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-10-01
@@ -11,6 +11,9 @@ related: [x00644, x00541, x00672]
 tags:
     - gates
     - public-surface
+last-transition-id: d5f0b4a3-2e10-493a-a830-7cf7e85a506f
+last-correlation-id: d5f0b4a3-2e10-493a-a830-7cf7e85a506f
+last-transition-from: in-progress
 ---
 
 # x00795 — The core public surface is back under budget and the gate runs in CI
@@ -57,6 +60,9 @@ it as an accepted unreachable lint in its baseline, so CI never saw it.
   - "The barrel exports at most 645 symbols, with the budget unchanged."
   - "createStaleRuntimeWatch and SHARED_CHECKOUT_WRITE_REFUSED are read from @delendai/core/cli by the host and the verify script."
   - "lint:core-public-surface-budget is chained into lint:architecture and absent from the lints-reach-ci baseline."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- shipped-in: `8bbbcf896fa1`
 
 ## acceptance
 

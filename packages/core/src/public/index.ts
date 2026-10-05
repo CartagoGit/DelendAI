@@ -1039,4 +1039,9 @@ export { validationGateSteps } from '../lib/work-units/validation-gate-steps.ser
 // The work model's state as numbers, composed from the doctor, the swarm
 // view and the roster, so a KPI surface reports them without re-deriving.
 export { readWorkflowKpis } from '../lib/work-units/workflow-kpis.service';
+export type { IUnitAdoption } from '../lib/contracts/interfaces/unit-adoption.interface';
+
+// A unit entered for a proposal that did not exist yet takes the id the
+// proposals plugin has just allocated, so the unit is named after it.
+export { adoptProposalId } from '../lib/work-units/unit-adoption.service';
 export type { IWorkflowKpis } from '../lib/contracts/interfaces/workflow-kpis.interface';
