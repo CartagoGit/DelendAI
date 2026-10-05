@@ -25,13 +25,11 @@ import {
 	updateUnitLease,
 } from './unit-lease.store';
 import { gitCommonDirOf } from './unit-lease.service';
+import { UNALLOCATED_PROPOSAL } from './unit-proposal.constant';
 import { renameUnitRef } from './unit-ref-rename.service';
 import { parseWorkSubject } from './work-ref-shape.service';
 import { identityOf } from './work-swarm.service';
 import { integrationRemote, readGit } from './work-unit-shared.service';
-
-/** The proposal segment of a unit entered before its proposal existed. */
-const UNALLOCATED_PROPOSAL = 'new';
 
 /** Drop the forge's copy of the old name, when it has one. */
 const dropForgeBranch = (

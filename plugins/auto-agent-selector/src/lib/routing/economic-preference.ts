@@ -29,6 +29,7 @@
  * The consequence, stated plainly because it is easy to implement the
  * opposite by accident: a small quality edge never wins on its own.
  */
+import type { IRouteScoreComponents } from '../contracts/interfaces/selection-explain.interface';
 import {
 	quotaHeadroom,
 	quotaScarcity,
@@ -55,6 +56,7 @@ export interface IRankedRoute {
 	readonly route: IRoute;
 	readonly quality: IRouteQuality;
 	readonly score: number;
+	readonly components: IRouteScoreComponents;
 	readonly reasons: readonly string[];
 }
 
@@ -105,14 +107,17 @@ export const scoreRoute = (
 	now: number = Date.now(),
 ): IRankedRoute => {
 	const reasons: string[] = [];
-	const evidenced = quality.score * quality.confidence;
-	let score = evidenced;
+	const qualityEvidence = quality.score * quality.confidence;
+	let score = qualityEvidence;
+	let alreadyPaidBonus = 0;
+	let scarcityPenalty = 0;
 	reasons.push(
 		`quality ${quality.score.toFixed(2)} discounted by confidence ${quality.confidence.toFixed(2)}`,
 	);
 
 	if (!spendsMoney(route.economics)) {
-		score += ALREADY_PAID_BONUS;
+		alreadyPaidBonus = ALREADY_PAID_BONUS;
+		score += alreadyPaidBonus;
 		reasons.push('already paid for, so using it starts no bill');
 	} else {
 		reasons.push('spends money, so it must clearly beat a paid-for route');
@@ -123,15 +128,15 @@ export const scoreRoute = (
 	if (penalty > 0) {
 		// Weigh scarcity harder when the task does not warrant it: the
 		// reserve is worth more on work that needs it.
-		const weighted =
+		scarcityPenalty =
 			context.stakes === 'trivial'
 				? penalty * 2
 				: context.stakes === 'high'
 					? penalty * 0.5
 					: penalty;
-		score -= weighted;
+		score -= scarcityPenalty;
 		reasons.push(
-			`quota is ${scarcity}; spending it on ${context.stakes} work costs ${weighted.toFixed(2)}`,
+			`quota is ${scarcity}; spending it on ${context.stakes} work costs ${scarcityPenalty.toFixed(2)}`,
 		);
 	}
 
@@ -140,14 +145,28 @@ export const scoreRoute = (
 	// is bounded below the smallest gap between two buckets (0.15) so it
 	// can never promote a route across one.
 	const headroom = quotaHeadroom(route.economics);
-	score += HEADROOM_TIEBREAK * headroom;
+	const headroomTiebreak = HEADROOM_TIEBREAK * headroom;
+	score += headroomTiebreak;
 	if (headroom < 1) {
 		reasons.push(
 			`${(headroom * 100).toFixed(0)}% of its quota is left, which breaks ties against an equally scored route with less`,
 		);
 	}
 
-	return { route, quality, score: Number(score.toFixed(4)), reasons };
+	const total = Number(score.toFixed(4));
+	return {
+		route,
+		quality,
+		score: total,
+		components: {
+			qualityEvidence: Number(qualityEvidence.toFixed(4)),
+			alreadyPaidBonus: Number(alreadyPaidBonus.toFixed(4)),
+			scarcityPenalty: Number(scarcityPenalty.toFixed(4)),
+			headroomTiebreak: Number(headroomTiebreak.toFixed(4)),
+			total,
+		},
+		reasons,
+	};
 };
 
 export interface IPreferenceOutcome {
