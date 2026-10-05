@@ -167,9 +167,7 @@ inside its 32,000 B budget (31,922 B).
 
 ### S5 — Enforce them against a run's own transcript
 
-- **Status**: pending
-- **Blocked by**: a per-session transcript measurement, which only the
-  host can supply (see below)
+- **Status**: retired — 2026-10-05. The guard needs the agent's own transcript, and only a host has it: no two hosts export it the same way and several export nothing. A guard built on one host's export would hold for that host alone, in a product that governs agents of any model on any host. What delendai can measure is measured and ratcheted already: S1 attributes the cost of its own tool responses, S2 and S3 cap and summarise them, and `tokens:gate` fails when one grows. S4 states the habits for what it cannot see. If hosts come to share a usage export, a new proposal takes it up against that format.
 - **Files**: [`tools/scripts/lint/context-budget.script.ts`]
 - **Gate**: `bun tools/scripts/lint/context-budget.script.ts`
 
@@ -196,7 +194,7 @@ that records it.
 - The agent instructions state the frugality rules concretely enough to
   follow (`grep | head`, line ranges, no re-verification) rather than as
   an exhortation to be brief.
-- Measured on a real session: the same task consumes materially less
-  transcript than the recorded baseline, and the guard fails when it
-  does not.
+- Not delivered (S5, retired): a guard over the agent's whole
+  transcript. delendai's own responses are ratcheted by `tokens:gate`;
+  the rest of a transcript is the host's to measure.
 

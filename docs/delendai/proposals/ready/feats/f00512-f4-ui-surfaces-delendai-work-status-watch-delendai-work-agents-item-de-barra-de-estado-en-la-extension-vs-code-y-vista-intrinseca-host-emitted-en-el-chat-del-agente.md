@@ -90,7 +90,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 ### S5 — Vista intrínseca host-emitted en el chat del agente (bloque determinista que el host inyecta, no el modelo)
 - **Status**: pending
 - **DependsOn**: [F4-S1]
-- **Files**: `packages/core/src/lib/host-emitted/work-telemetry-block.ts`, `packages/core/src/lib/host-emitted/work-telemetry-block.spec.ts`, `packages/core/src/lib/mcp/chat-emitter.ts`, `packages/core/src/lib/mcp/chat-emitter.spec.ts`, `packages/core/tests/integration/telemetry-no-tokens.spec.ts`
+- **Files**: `packages/core/src/lib/host-emitted/work-telemetry-block.service.ts`, `packages/core/src/lib/host-emitted/work-telemetry-block.service.spec.ts`, `packages/core/src/lib/mcp/chat-emitter.service.ts`, `packages/core/src/lib/mcp/chat-emitter.service.spec.ts`, `packages/core/tests/integration/telemetry-no-tokens.spec.ts`
 - **Gate**: type
 - acceptance:
   - "El host emite un bloque `host-emitted/work-telemetry` como `host_message` (no como `assistant_message`) en cada turno del agente activo. El bloque es texto plano, no markdown pesado, formato: `◉ ${proposalId}  ${progress}%  ${phase}  ~${etaRange}  ${sourceTag}`."
