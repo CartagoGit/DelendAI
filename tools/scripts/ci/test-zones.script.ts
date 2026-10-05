@@ -256,6 +256,16 @@ export const reachableZones = (
 		if (id !== undefined) zones.add(id);
 	}
 	for (const zone of rootReached) zones.add(zone);
+	// A zone whose specs read other workspaces' sources from disk is
+	// reached by a change to them, which the module graph cannot see.
+	for (const rule of rules) {
+		if (
+			rule.scans !== undefined &&
+			changes.some((change) => rule.scans?.(change.path) === true)
+		) {
+			zones.add(rule.id);
+		}
+	}
 	return zones;
 };
 

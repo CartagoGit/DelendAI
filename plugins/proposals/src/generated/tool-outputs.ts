@@ -360,6 +360,7 @@ export interface DelendaiProposalsContinueProposalOutput {
 
 export interface DelendaiProposalsCreateProposalOutput {
 	ok: true;
+	id: string;
 	file: string;
 	path: string;
 	disjointnessIssues: {
@@ -373,6 +374,8 @@ export interface DelendaiProposalsCreateProposalOutput {
 	published: boolean;
 	publishedRef?: string;
 	publishReason?: string;
+	unitBranch?: string;
+	unitRenamedFrom?: string;
 }
 
 export interface DelendaiProposalsDelegateOutput {

@@ -9,6 +9,7 @@ import {
 	planWorkClaim,
 } from './work-claim.service';
 import { scalarArg } from './command-args.helper';
+import { carryUnitRecords } from './unit-adoption.service';
 
 import {
 	agentFor,
@@ -86,6 +87,13 @@ export const claimed = async (
 			'Nothing was lost: the work is still reachable under at least one of the two names.',
 		);
 	}
+	// The lease and the forge's copy of the old name go with the unit.
+	const carried = await carryUnitRecords({
+		cwd: opened.root,
+		policy: opened.policy,
+		from: result.from,
+		to: result.to,
+	});
 	process.stdout.write(
 		`${[
 			`claimed  ${result.from}`,
@@ -94,5 +102,9 @@ export const claimed = async (
 			`         was ${result.heldBy}, now ${result.claimedBy}, generation ${String(result.generation)}`,
 		].join('\n')}\n`,
 	);
-	return { code: EXIT_CODE.OK, data: result, suppressDefaultPrint: true };
+	return {
+		code: EXIT_CODE.OK,
+		data: { ...result, ...carried },
+		suppressDefaultPrint: true,
+	};
 };
