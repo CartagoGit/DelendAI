@@ -47,14 +47,16 @@ An audit that drove the real CLI in throwaway repositories per profile found six
 - review-log: approved by claude-opus-5-5 — verified at aa99eb781d2f, validate exit 0, tests 22/22 — Delivered by #693 (merge aa99eb781). work-ref-placeholders.spec (3) and workflow-invariants.service.spec (19) pass. Record defect: the slice Status line said pending while in review.
 
 ### S2 — Doctor reads branches and checks from the resolved policy
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/doctor-checks/branch-protection.ts`, `packages/cli/src/lib/doctor/checks/branch-protection.check.ts`, `packages/cli/src/lib/doctor/checks/branch-protection.constant.ts`, `packages/cli/src/lib/doctor/checks/branch-protection.interface.ts`, `packages/cli/src/lib/doctor/checks/branch-protection.check.spec.ts`, `packages/cli/src/lib/doctor/checks/config.check.ts`, `packages/cli/src/lib/doctor/checks/index.ts`, `packages/cli/src/commands/doctor.spec.ts`
 - **Gate**: none
 - shipped-in: `4369543e6f48`
 - acceptance:
   - "Branch names and required checks come from the policy; observed governance never warns about a missing forge file; a project whose release branch is absent or equal to integration is checked once."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at aa99eb781d2f, validate exit 0, tests 38/38 — Delivered by #693 (merge aa99eb781). doctor.spec + branch-protection.check.spec (27) and development-policy-required-checks.spec (11) pass. Record defect: the slice Status line said pending while in review.
 
 ### S3 — Adoption gives a pull-request profile the checks it needs
 - **Status**: pending
