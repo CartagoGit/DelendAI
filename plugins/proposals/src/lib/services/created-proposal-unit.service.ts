@@ -11,14 +11,7 @@ import {
 	type IResolvedDevelopmentPolicy,
 	type IUnitAdoption,
 } from '@delendai/core/public';
-
-/** The fields of the create result that describe the unit. */
-export interface ICreatedProposalUnit {
-	readonly unitBranch?: string;
-	readonly unitRenamedFrom?: string;
-	/** A sentence for the agent, appended to the next action. */
-	readonly note?: string;
-}
+import type { ICreatedProposalUnit } from '../contracts/interfaces/created-proposal-unit.interface';
 
 const describe = (adoption: IUnitAdoption): ICreatedProposalUnit => {
 	if (adoption.status === 'kept') {
