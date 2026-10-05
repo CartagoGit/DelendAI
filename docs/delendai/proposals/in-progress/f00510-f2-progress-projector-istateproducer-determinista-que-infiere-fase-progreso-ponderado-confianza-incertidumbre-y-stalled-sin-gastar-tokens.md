@@ -66,6 +66,8 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "The default table maps the event kinds that exist on the bus: tool_called/tool_finished/claims -> investigating; git_change -> implementing; test_started -> testing; git_change right after test_finished or tool_error -> fixing; slice_changes_requested -> fixing; stale_acceptance -> validating; slice_submitted -> reviewing; slice_approved -> reconciling. The bus has no read/write, validate or push kinds, so those rows of the original table are not expressible. `blocked` and `done` come from the item's status."
   - "`phase-inference.service.spec.ts` holds 32 hand-labelled streams and requires at least 95% to infer the labelled phase."
   - "The phase is monotonic forward: the fold keeps the highest rank seen, so a later `tool_called` never rewinds `implementing`."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — `confidence-model.ts` — confidence + uncertainty derivados de la varianza de los últimos N eventos y de la completitud del `work_items.acceptance_criteria`
 - **Status**: review
@@ -77,6 +79,8 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "`uncertainty = 1 - confidence` by definition; `confidence-model.service.spec.ts` checks it on every scenario."
   - "`confidence-model.service.spec.ts` covers 12 scenarios with exact expected values (no events gives confidence 0 and uncertainty 1; ten coherent events give 1 before the cap; alternating extremes give 0; and so on)."
   - "Confidence and uncertainty are always present in the snapshot so a view can show them beside the percentage."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — `progress-weighting.ts` — Σ(completion × weight) / Σ(weight), con pesos por defecto derivados de la posición de la slice en la proposal y override opcional en frontmatter
 - **Status**: review
