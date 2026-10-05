@@ -2,7 +2,7 @@
 id: f00509
 title: "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-06
@@ -15,6 +15,9 @@ tags:
     - event-bus
     - state-engine
     - non-blocking
+last-transition-id: 4f6ec4bc-66fc-48be-bf6d-a2a4a44464b3
+last-correlation-id: 4f6ec4bc-66fc-48be-bf6d-a2a4a44464b3
+last-transition-from: in-progress
 ---
 
 # f00509 — F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease
@@ -66,6 +69,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`)."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `a9cb8d6a4b9b`
 
 ### S3 — `TestObserver` — enganche a `bun test` / `vitest` (start, finish, failure_hash)
 - **Status**: review
@@ -80,6 +84,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "The observer is pure and fire-and-forget: it spawns and hooks nothing, never awaits in the caller and never throws, even when the sink rejects."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `c446c1602e8e`
 
 ### S4 — `ToolObserver` — observador del MCP request log (tool_called, tool_finished, tool_error)
 - **Status**: review
@@ -94,6 +99,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "A 1000-call burst lands 1000 events through the NDJSON store in under one second (asserted in `tool-observer.service.spec.ts`)."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `c446c1602e8e`
 
 ### S5 — `AgentLeaseObserver` — enganche al lock engine (claim, release, heartbeat)
 - **Status**: review
@@ -107,6 +113,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "Not shipped: `work_assignments.released_at` is left out because no such table exists yet."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `c446c1602e8e`
 
 ## acceptance
 
