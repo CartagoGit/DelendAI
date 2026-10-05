@@ -1385,6 +1385,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "f00275",
+				"title": "`delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría",
+				"track": "product",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-08-29"
+			},
+			{
 				"id": "f00510",
 				"title": "F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens",
 				"track": "trust",
