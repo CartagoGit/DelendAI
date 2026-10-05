@@ -1625,14 +1625,6 @@
 				"date": "2026-10-01"
 			},
 			{
-				"id": "x00798",
-				"title": "close_slice gate must not treat a detached worktree as corrupt activity",
-				"track": "general",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-01"
-			},
-			{
 				"id": "x00835",
 				"title": "A review swarm leaves verdicts that can be checked, and loses none",
 				"track": "trust",
