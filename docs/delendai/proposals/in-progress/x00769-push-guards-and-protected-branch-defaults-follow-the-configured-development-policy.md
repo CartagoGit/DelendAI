@@ -41,6 +41,8 @@ A consumer on the merge profile was told to open a pull request, projects with i
   - "Direct profile with integration main can push to main"
   - "Release branch protected from branches.release, integration rules apply when they are equal"
   - "Contradicting protectedBranches, push and cadence settings are reported by validatePolicyAlignment"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
