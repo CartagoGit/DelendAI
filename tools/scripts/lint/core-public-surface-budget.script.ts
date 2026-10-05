@@ -193,7 +193,14 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // `deriveDefaultProtectedBranches(undefined)` returns). A new export that a
 // plugin needs belongs in the barrel; one that only the CLI, the host or a
 // script reads belongs in `@delendai/core/cli`.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 645;
+//
+// Lowered to 509 (2026-10-05, x00541 S3): the surface had fallen to 541
+// under a budget of 645, so 104 exports could have come back unasked.
+// Thirty-two more left the barrel: fourteen that nothing outside
+// `packages/core/src` names, and eighteen whose only users are core's own
+// specs, which import them by their `lib/` path. The budget is the
+// surface: a new export is a decision, not slack.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 509;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;
