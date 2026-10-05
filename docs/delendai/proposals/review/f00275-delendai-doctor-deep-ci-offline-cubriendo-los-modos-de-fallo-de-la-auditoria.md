@@ -2,7 +2,7 @@
 id: f00275
 title: "`delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría"
 kind: feat
-status: blocked
+status: review
 type: proposal
 track: product
 date: 2026-08-29
@@ -13,6 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00276]
+last-transition-id: 3748813e-47c4-4977-ad5e-ce6966fde219
+last-correlation-id: 3748813e-47c4-4977-ad5e-ce6966fde219
+last-transition-from: in-progress
 ---
 
 # f00275 — `delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría
@@ -111,35 +114,51 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
 
 ### S1 — `--ci`: salida estructurada + exit codes documentados
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
     - `packages/cli/src/commands/groups/doctor.ts`
-    - `packages/cli/src/commands/groups/doctor.spec.ts`
-- **Gate**: `bunx vitest run packages/cli/src/commands/groups/doctor.spec.ts`
+    - `packages/cli/src/contracts/constants/doctor-modes.constant.ts`
+    - `packages/cli/src/contracts/interfaces/doctor-modes.interface.ts`
+    - `packages/cli/src/lib/doctor/doctor-modes.service.ts`
+    - `packages/cli/src/lib/doctor/deep-checks.service.ts`
+    - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
+- Shipped: `--ci` adds a `ci` block (`exitCode`, `meaning`, `failing`, `skipped`) to the report and does not write the human recap. Exit codes stay 0/4/5 and are documented in `DOCTOR_CI_EXIT_MEANING`. Premise note: the file is still `groups/doctor.ts` (`commands/doctor.ts` is a dead duplicate, left untouched); the new flags are declared through the command's `flags` list.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- shipped-in: `66b124669ad9`
 
 ### S2 — `--offline`: marcar y saltar checks que requieren red
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
     - `packages/cli/src/commands/groups/doctor.ts`
-    - `packages/cli/src/lib/doctor/score.ts` (o el fichero equivalente
-      donde vive la lista de checks — confirmar con
-      `grep -n "extraChecks\|DOCTOR_CHECKS" packages/cli/src/commands/groups/doctor.ts`
-      antes de implementar)
-    - `packages/cli/src/commands/groups/doctor.spec.ts`
-- **Gate**: `bunx vitest run packages/cli/src/commands/groups/doctor.spec.ts`
+    - `packages/cli/src/contracts/constants/doctor-modes.constant.ts`
+    - `packages/cli/src/contracts/interfaces/doctor-modes.interface.ts`
+    - `packages/cli/src/lib/doctor/doctor-modes.service.ts`
+    - `packages/cli/src/lib/doctor/deep-checks.service.ts`
+    - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
+- Shipped: `--offline` skips the checks that need the network and reports each as `not-applicable` with a `skipped:` finding, never as passed. Premise note: no check in the pure registry opens a socket today (`network.check.ts` is already not-applicable), so no `requiresNetwork` property was needed there. The one network-bound section is the plugins/tools overview when `--remote` is set; it is skipped offline. `requiresNetwork` exists on deep checks, and the spec asserts a marked check is not run.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- shipped-in: `66b124669ad9`
 
 ### S3 — `--deep`: registro de checks caros + primer check (error-reporting self-test)
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-    - `packages/cli/src/commands/groups/doctor.ts` (opción `--deep`,
-      composición con `runErrorReportingSelfTest`)
-    - `packages/cli/src/lib/doctor/deep-checks.ts` (nuevo)
-    - `packages/cli/src/lib/doctor/deep-checks.spec.ts` (nuevo, con un
-      `gh` fake — el spec debe verificar explícitamente que **no** se
-      crea ningún issue real)
-- **Gate**: `bunx vitest run packages/cli/src/lib/doctor/deep-checks.spec.ts`
+    - `packages/cli/src/commands/groups/doctor.ts`
+    - `packages/cli/src/contracts/constants/doctor-modes.constant.ts`
+    - `packages/cli/src/contracts/interfaces/doctor-modes.interface.ts`
+    - `packages/cli/src/lib/doctor/doctor-modes.service.ts`
+    - `packages/cli/src/lib/doctor/deep-checks.service.ts`
+    - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
+- Shipped: `defaultDeepChecks()` registry and the `error-reporting-self-test` check. The plugin is imported by a computed specifier so the CLI takes no static dependency; if it cannot be loaded the section is a `warn` that says it was skipped. Offline it passes `live: false`, so the `gh` checks come back marked skipped. The spec injects a runner with a fake exec and asserts zero `gh issue create` calls. File names follow the lints (`*.service.ts`), not the names drafted here.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- shipped-in: `66b124669ad9`
 
 ## dependency graph
 
