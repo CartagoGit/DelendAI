@@ -43,81 +43,83 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
 - global_gate: type
 
 ### S1 — `IWorkProgressProducer` + tabla `progress_snapshots` (un IStateProducer real)
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [f00509]
-- **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-producer.service.spec.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.spec.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts` (única slice que crea la lint de pureza para `packages/state-telemetry/src/**`; F1-S1 y el resto sólo la consumen vía `bun run lint`)
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-producer.service.spec.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.spec.ts`, `packages/state-telemetry/src/lib/projector/contracts/constants/work-progress.constant.ts`, `packages/state-telemetry/src/lib/projector/contracts/interfaces/work-progress.interface.ts`, `packages/state-telemetry/src/lib/projector/test-support.helper.ts`, `packages/state-telemetry/vitest.config.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts`, `tools/scripts/lint/state-telemetry-purity.script.spec.ts`, `package.json`
+- **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector && bunx vitest run tools/scripts/lint/state-telemetry-purity.script.spec.ts
 - acceptance:
-  - "`IWorkProgressProducer implements IStateProducer` declarado con `id: 'work-progress'` y `inputs: [IProducerInputSpec<'work_events'>, IProducerInputSpec<'work_items'>, IProducerInputSpec<'work_assignments'>]`."
+  - "`createWorkProgressProducer()` returns an `IStateProducer` with `id: 'work-progress'` and three declared opaque inputs (`work_events`, `work_items`, `work_assignments`). The tables `work_items`, `work_assignments` and `progress_snapshots` do not exist, so the projector is pure: no SQL table, no migration; the host supplies the inputs as JSON."
   - "`rebuild(scope)` produce el snapshot canónico en orden estable (mismo orden con mismos eventos); `reconcile(scope, delta)` actualiza sólo las filas afectadas."
-  - "Property test `incremental === cleanRebuild` verde sobre 1000 secuencias aleatorias de eventos sintéticos (heredado del State Engine, sin reescribir)."
-  - "La fila `progress_snapshots.stalled = 1` se materializa cuando se detecta el patrón `^k con misma failure_hash ∧ k ≥ 3` (umbral configurable, default 3)."
-  - "`tools/scripts/lint/state-telemetry-purity.script.ts` cubre `packages/state-telemetry/src/lib/projector/**` y rechaza cualquier `await` dentro de `rebuild`/`reconcile`."
+  - "Property test `reconcile`-in-chunks equals a clean `rebuild` over 200 seeded random sequences of 60 events (200 keeps the CI run short; the PRNG is a small seeded generator, no new dependency)."
+  - "The snapshot's `stalled` is true when the same failure hash (the payload hash of a `tool_error` event) repeats k >= 3 times in a row (configurable, default 3); a different hash or a code change restarts the run."
+  - "`tools/scripts/lint/state-telemetry-purity.script.ts` covers `packages/state-telemetry/src/lib/projector/**`, rejects any `await` inside `rebuild`/`reconcile` and any persistent I/O import, and is chained into `lint:architecture`."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — `phase-inference.ts` — tabla declarativa read→investigating, edit→implementing, test→testing, fix→fixing, validate→validating, review→reviewing, push→reconciling
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [F2-S1]
-- **Files**: `packages/state-telemetry/src/lib/projector/phase-inference.service.ts`, `packages/state-telemetry/src/lib/projector/phase-inference.service.spec.ts`, `packages/state-telemetry/src/lib/projector/phase-rules.service.ts`
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/projector/phase-inference.service.ts`, `packages/state-telemetry/src/lib/projector/phase-inference.service.spec.ts`, `packages/state-telemetry/src/lib/projector/phase-rules.service.ts`, `packages/state-telemetry/src/lib/projector/contracts/constants/phase-rules.constant.ts`
+- **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector
 - acceptance:
-  - "`phase-rules.ts` exporta un array de `PhaseRule` (declarativo, no lógica embebida) que cualquier propuesta posterior puede extender sin tocar el projector."
-  - "El default de la tabla mapea los 9 casos no-terminales descritos en `q00020` (read/search → investigating; write de código → implementing; test_started → testing; test_finished{exit≠0} seguido de write → fixing; validate_started sin write → validating; diff_self → reviewing; git_push → reconciling; claim sin eventos → investigating)."
-  - "Test con dataset sintético `tests/fixtures/phase-inference-fixtures.spec.ts` con ≥30 secuencias etiquetadas a mano; acierto ≥95% (los 5%，允许 son los `ambiguous` que el modelo marca como `confidence: 0.5`)."
-  - "El cambio de fase es **monótono hacia adelante** dentro de la ventana de observación (no se rebobina a `investigating` si el último evento fue `implementing`)."
+  - "`DEFAULT_PHASE_RULES` is a declarative array of `IPhaseRule`; `resolvePhaseRules(extra)` prepends caller rules, so a later proposal extends the table without touching the projector."
+  - "The default table maps the event kinds that exist on the bus: tool_called/tool_finished/claims -> investigating; git_change -> implementing; test_started -> testing; git_change right after test_finished or tool_error -> fixing; slice_changes_requested -> fixing; stale_acceptance -> validating; slice_submitted -> reviewing; slice_approved -> reconciling. The bus has no read/write, validate or push kinds, so those rows of the original table are not expressible. `blocked` and `done` come from the item's status."
+  - "`phase-inference.service.spec.ts` holds 32 hand-labelled streams and requires at least 95% to infer the labelled phase."
+  - "The phase is monotonic forward: the fold keeps the highest rank seen, so a later `tool_called` never rewinds `implementing`."
 
 ### S3 — `confidence-model.ts` — confidence + uncertainty derivados de la varianza de los últimos N eventos y de la completitud del `work_items.acceptance_criteria`
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [F2-S1]
 - **Files**: `packages/state-telemetry/src/lib/projector/confidence-model.service.ts`, `packages/state-telemetry/src/lib/projector/confidence-model.service.spec.ts`
-- **Gate**: type
+- **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector
 - acceptance:
-  - "`confidence` ∈ [0, 1] calculado como `1 − varianza_normalizada(últimos 10 eventos)` con cap por completitud de acceptance: si 0/5 criterios marcados → cap=0.5; si 5/5 → cap=1."
-  - "`uncertainty = 1 − confidence` por invariante explícita (`tests/property/uncertainty-invariance.spec.ts` lo verifica)."
-  - "El test `confidence-fixtures.spec.ts` cubre 12 escenarios: 0 eventos (confidence=0, uncertainty=1), 10 eventos coherentes (confidence≈0.95), 10 eventos con 7 cambios de fase (confidence≈0.6), etc."
-  - "La confidence se incluye SIEMPRE en el snapshot (no es opcional), para que `f00512` la pueda mostrar al lado del porcentaje."
+  - "`confidence` is in [0, 1], computed as 1 minus the variance of the phase ranks of the last 10 events divided by the largest possible variance, capped by acceptance completeness: 0 of 5 checked gives cap 0.5, 5 of 5 gives cap 1 (linear between), and a slice with no criteria is uncapped. No events gives 0."
+  - "`uncertainty = 1 - confidence` by definition; `confidence-model.service.spec.ts` checks it on every scenario."
+  - "`confidence-model.service.spec.ts` covers 12 scenarios with exact expected values (no events gives confidence 0 and uncertainty 1; ten coherent events give 1 before the cap; alternating extremes give 0; and so on)."
+  - "Confidence and uncertainty are always present in the snapshot so a view can show them beside the percentage."
 
 ### S4 — `progress-weighting.ts` — Σ(completion × weight) / Σ(weight), con pesos por defecto derivados de la posición de la slice en la proposal y override opcional en frontmatter
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [F2-S1]
 - **Files**: `packages/state-telemetry/src/lib/projector/progress-weighting.service.ts`, `packages/state-telemetry/src/lib/projector/progress-weighting.service.spec.ts`
-- **Gate**: type
+- **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector
 - acceptance:
-  - "El peso por defecto de una slice es `1 + log2(acceptance_count)`; un override en `proposal.md#slices[i].weight` se respeta si y sólo si está en `[0.1, 100]`."
-  - "El progreso de la proposal agregada es `Σ(progress(slice) × weight(slice)) / Σ(weight(slice))`, recalculado de forma estable (orden canónico de `slice_id`)."
-  - "Test: una proposal con 3 slices de pesos 1, 4, 8 y progresos 100/100/100 reporta `100.0`; 100/50/0 reporta `37.5` (= (100×1 + 50×4 + 0×8) / 13)."
-  - "Slice sin `acceptance_criteria` recibe peso por defecto `1` y reporta `progress: 1.0` cuando su `status === 'done'` (degradación elegante)."
+  - "The default slice weight is `1 + log2(acceptance_count)`; an explicit weight is honoured if and only if it is inside [0.1, 100]."
+  - "The aggregated proposal progress is Sum(progress x weight) / Sum(weight), summed in canonical slice-id order."
+  - "Test: three slices weighing 1, 4 and 8 report 100 at 100/100/100 and 300/13 (about 23.08) at 100/50/0. The original example claimed 37.5, which is not what (100x1 + 50x4 + 0x8) / 13 equals."
+  - "A slice with no acceptance criteria weighs 1 and reports progress 100 (the scale is 0..100 throughout) when its status is `done`, and 0 otherwise."
 
 ### S5 — API pública `getSnapshot`, `getSnapshotsForProposal`, `subscribe` + propiedad `incremental === cleanRebuild` verde
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [F2-S1, F2-S2, F2-S3, F2-S4]
-- **Files**: `packages/state-telemetry/src/public/index.ts`, `packages/state-telemetry/tests/integration/projector-ratchet.spec.ts`, `packages/state-telemetry/tests/integration/incremental-equiv-rebuild.spec.ts`
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/projector/work-progress-api.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-api.service.spec.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/state-telemetry/package.json`, `packages/state-telemetry/tests/integration/projector-ratchet.spec.ts`, `packages/state-telemetry/tests/integration/incremental-equiv-rebuild.spec.ts`
+- **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector && bunx vitest run --root packages/state-telemetry tests/integration
 - acceptance:
-  - "`@delendai/state-telemetry/public` exporta `IWorkProgressSnapshot`, `WorkPhase`, `getSnapshot(workItemId)`, `getSnapshotsForProposal(proposalId)`, `subscribe(callback)`."
-  - "El subscribe es un `EventEmitter` con back-pressure: si el consumidor se retrasa, los eventos se coalescen por `workItemId` (no se entrega más de 1 evento/slice/segundo)."
-  - "Test de propiedad: para 50 secuencias aleatorias de 100 eventos, `incremental(s0..sN) === cleanRebuild(s0..sN)` (probado contra el driver en memoria y contra la sombra SQLite de q00019)."
-  - "Test `projector-ratchet.spec.ts` verifica que un cambio en `phase-rules.ts` que rompe el invariante de monotonicidad falla el test (ratchet descendente)."
+  - "`@delendai/state-telemetry/public` exports `IWorkProgressSnapshot`, `IWorkPhase`, the producer factory and `createWorkProgressService()`, whose instance exposes `getSnapshot(workItemId)`, `getSnapshotsForProposal(proposalId)` and `subscribe(callback)`. The service is a factory because the state lives in the instance, not in module globals."
+  - "`subscribe` applies back-pressure by coalescing per `workItemId`: at most one delivery per item per second (configurable), only the newest held snapshot is kept, and the host calls `flush()` on its own tick. The clock is injected, so specs use no real timers."
+  - "Property test: for 50 seeded random sequences of 100 events appended in uneven chunks, the incremental service equals a clean rebuild. Only the in-memory path is covered: the SQLite shadow of the earlier State Engine plan does not exist."
+  - "`projector-ratchet.spec.ts` checks over 50 random streams that no event lowers the phase rank, with the default rules and with a caller rule that points backwards."
 
 ## acceptance
 
-- `IWorkProgressProducer implements IStateProducer` declarado con `id: 'work-progress'` y `inputs: [IProducerInputSpec<'work_events'>, IProducerInputSpec<'work_items'>, IProducerInputSpec<'work_assignments'>]`.
+- `createWorkProgressProducer()` returns an `IStateProducer` with `id: 'work-progress'` and three declared opaque inputs (`work_events`, `work_items`, `work_assignments`). The tables `work_items`, `work_assignments` and `progress_snapshots` do not exist, so the projector is pure: no SQL table, no migration; the host supplies the inputs as JSON.
 - `rebuild(scope)` produce el snapshot canónico en orden estable (mismo orden con mismos eventos); `reconcile(scope, delta)` actualiza sólo las filas afectadas.
-- Property test `incremental === cleanRebuild` verde sobre 1000 secuencias aleatorias de eventos sintéticos (heredado del State Engine, sin reescribir).
-- La fila `progress_snapshots.stalled = 1` se materializa cuando se detecta el patrón `^k con misma failure_hash ∧ k ≥ 3` (umbral configurable, default 3).
-- `tools/scripts/lint/state-telemetry-purity.script.ts` cubre `packages/state-telemetry/src/lib/projector/**` y rechaza cualquier `await` dentro de `rebuild`/`reconcile`.
-- `phase-rules.ts` exporta un array de `PhaseRule` (declarativo, no lógica embebida) que cualquier propuesta posterior puede extender sin tocar el projector.
-- El default de la tabla mapea los 9 casos no-terminales descritos en `q00020` (read/search → investigating; write de código → implementing; test_started → testing; test_finished{exit≠0} seguido de write → fixing; validate_started sin write → validating; diff_self → reviewing; git_push → reconciling; claim sin eventos → investigating).
-- Test con dataset sintético `tests/fixtures/phase-inference-fixtures.spec.ts` con ≥30 secuencias etiquetadas a mano; acierto ≥95% (los 5%，允许 son los `ambiguous` que el modelo marca como `confidence: 0.5`).
-- El cambio de fase es **monótono hacia adelante** dentro de la ventana de observación (no se rebobina a `investigating` si el último evento fue `implementing`).
-- `confidence` ∈ [0, 1] calculado como `1 − varianza_normalizada(últimos 10 eventos)` con cap por completitud de acceptance: si 0/5 criterios marcados → cap=0.5; si 5/5 → cap=1.
-- `uncertainty = 1 − confidence` por invariante explícita (`tests/property/uncertainty-invariance.spec.ts` lo verifica).
-- El test `confidence-fixtures.spec.ts` cubre 12 escenarios: 0 eventos (confidence=0, uncertainty=1), 10 eventos coherentes (confidence≈0.95), 10 eventos con 7 cambios de fase (confidence≈0.6), etc.
-- La confidence se incluye SIEMPRE en el snapshot (no es opcional), para que `f00512` la pueda mostrar al lado del porcentaje.
-- El peso por defecto de una slice es `1 + log2(acceptance_count)`; un override en `proposal.md#slices[i].weight` se respeta si y sólo si está en `[0.1, 100]`.
-- El progreso de la proposal agregada es `Σ(progress(slice) × weight(slice)) / Σ(weight(slice))`, recalculado de forma estable (orden canónico de `slice_id`).
-- Test: una proposal con 3 slices de pesos 1, 4, 8 y progresos 100/100/100 reporta `100.0`; 100/50/0 reporta `37.5` (= (100×1 + 50×4 + 0×8) / 13).
-- Slice sin `acceptance_criteria` recibe peso por defecto `1` y reporta `progress: 1.0` cuando su `status === 'done'` (degradación elegante).
-- `@delendai/state-telemetry/public` exporta `IWorkProgressSnapshot`, `WorkPhase`, `getSnapshot(workItemId)`, `getSnapshotsForProposal(proposalId)`, `subscribe(callback)`.
-- El subscribe es un `EventEmitter` con back-pressure: si el consumidor se retrasa, los eventos se coalescen por `workItemId` (no se entrega más de 1 evento/slice/segundo).
-- Test de propiedad: para 50 secuencias aleatorias de 100 eventos, `incremental(s0..sN) === cleanRebuild(s0..sN)` (probado contra el driver en memoria y contra la sombra SQLite de q00019).
-- Test `projector-ratchet.spec.ts` verifica que un cambio en `phase-rules.ts` que rompe el invariante de monotonicidad falla el test (ratchet descendente).
+- Property test `reconcile`-in-chunks equals a clean `rebuild` over 200 seeded random sequences of 60 events (200 keeps the CI run short; the PRNG is a small seeded generator, no new dependency).
+- The snapshot's `stalled` is true when the same failure hash (the payload hash of a `tool_error` event) repeats k >= 3 times in a row (configurable, default 3); a different hash or a code change restarts the run.
+- `tools/scripts/lint/state-telemetry-purity.script.ts` covers `packages/state-telemetry/src/lib/projector/**`, rejects any `await` inside `rebuild`/`reconcile` and any persistent I/O import, and is chained into `lint:architecture`.
+- `DEFAULT_PHASE_RULES` is a declarative array of `IPhaseRule`; `resolvePhaseRules(extra)` prepends caller rules, so a later proposal extends the table without touching the projector.
+- The default table maps the event kinds that exist on the bus: tool_called/tool_finished/claims -> investigating; git_change -> implementing; test_started -> testing; git_change right after test_finished or tool_error -> fixing; slice_changes_requested -> fixing; stale_acceptance -> validating; slice_submitted -> reviewing; slice_approved -> reconciling. The bus has no read/write, validate or push kinds, so those rows of the original table are not expressible. `blocked` and `done` come from the item's status.
+- `phase-inference.service.spec.ts` holds 32 hand-labelled streams and requires at least 95% to infer the labelled phase.
+- The phase is monotonic forward: the fold keeps the highest rank seen, so a later `tool_called` never rewinds `implementing`.
+- `confidence` is in [0, 1], computed as 1 minus the variance of the phase ranks of the last 10 events divided by the largest possible variance, capped by acceptance completeness: 0 of 5 checked gives cap 0.5, 5 of 5 gives cap 1 (linear between), and a slice with no criteria is uncapped. No events gives 0.
+- `uncertainty = 1 - confidence` by definition; `confidence-model.service.spec.ts` checks it on every scenario.
+- `confidence-model.service.spec.ts` covers 12 scenarios with exact expected values (no events gives confidence 0 and uncertainty 1; ten coherent events give 1 before the cap; alternating extremes give 0; and so on).
+- Confidence and uncertainty are always present in the snapshot so a view can show them beside the percentage.
+- The default slice weight is `1 + log2(acceptance_count)`; an explicit weight is honoured if and only if it is inside [0.1, 100].
+- The aggregated proposal progress is Sum(progress x weight) / Sum(weight), summed in canonical slice-id order.
+- Test: three slices weighing 1, 4 and 8 report 100 at 100/100/100 and 300/13 (about 23.08) at 100/50/0. The original example claimed 37.5, which is not what (100x1 + 50x4 + 0x8) / 13 equals.
+- A slice with no acceptance criteria weighs 1 and reports progress 100 (the scale is 0..100 throughout) when its status is `done`, and 0 otherwise.
+- `@delendai/state-telemetry/public` exports `IWorkProgressSnapshot`, `IWorkPhase`, the producer factory and `createWorkProgressService()`, whose instance exposes `getSnapshot(workItemId)`, `getSnapshotsForProposal(proposalId)` and `subscribe(callback)`. The service is a factory because the state lives in the instance, not in module globals.
+- `subscribe` applies back-pressure by coalescing per `workItemId`: at most one delivery per item per second (configurable), only the newest held snapshot is kept, and the host calls `flush()` on its own tick. The clock is injected, so specs use no real timers.
+- Property test: for 50 seeded random sequences of 100 events appended in uneven chunks, the incremental service equals a clean rebuild. Only the in-memory path is covered: the SQLite shadow of the earlier State Engine plan does not exist.
+- `projector-ratchet.spec.ts` checks over 50 random streams that no event lowers the phase rank, with the default rules and with a caller rule that points backwards.
