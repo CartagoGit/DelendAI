@@ -94,6 +94,8 @@ answerable, reviewable and testable.
   S5 and S6 took, in the test zones, where the inputs are measured. An
   explicit `always` with its reason is this slice's "declared input
   set" for these jobs.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A pull request selects, the integration branch does not
 
