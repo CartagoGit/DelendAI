@@ -1601,28 +1601,12 @@
 				"date": "2026-09-19"
 			},
 			{
-				"id": "x00766",
-				"title": "A project with one branch and a project with no policy both get a working model",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-09-30"
-			},
-			{
 				"id": "x00769",
 				"title": "Push guards and protected-branch defaults follow the configured development policy",
 				"track": "general",
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-30"
-			},
-			{
-				"id": "x00835",
-				"title": "A review swarm leaves verdicts that can be checked, and loses none",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-10-03"
 			}
 		]
 	}
