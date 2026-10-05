@@ -118,6 +118,7 @@ const boundHandler =
 		checkoutOf: ((from: string) => string | undefined) | undefined,
 		refusalFor: (root: string) => Promise<string | undefined>,
 		unitFor: IUnitFor,
+		defaultNextStep: string,
 	): IHandler =>
 	async (...callArgs) => {
 		const requested = (callArgs[0] as { checkout?: unknown } | undefined)
@@ -133,7 +134,7 @@ const boundHandler =
 			// working tree: a write there is committed by nobody.
 			const refusal = await refusalFor(resolved.root);
 			let unitRoot: string | undefined;
-			let nextStep = WORK_REF_NEXT_STEP;
+			let nextStep = defaultNextStep;
 			const proposal =
 				refusal !== undefined && resolved.source === 'server'
 					? proposalOf(callArgs[0])
@@ -221,6 +222,7 @@ export const bindWriteRoot = (
 						checkoutOf,
 						refusalFor,
 						unitFor,
+						registration.refusedWriteNextStep ?? WORK_REF_NEXT_STEP,
 					) as never,
 				);
 			}) as McpServer['registerTool'];

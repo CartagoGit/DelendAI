@@ -5,6 +5,8 @@ import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
+import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../contracts/constants/create-proposal.constant';
+import { adoptCreatedProposalUnit } from '../services/created-proposal-unit.service';
 import {
 	VALIDATE_EVIDENCE_SCHEMA,
 	callerCheckout,
@@ -503,6 +505,8 @@ export const CREATE_PROPOSAL_INPUT_SCHEMA = z.object({
 
 export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	ok: z.literal(true),
+	/** The id the proposal was given. */
+	id: z.string(),
 	file: z.string(),
 	path: z.string(),
 	disjointnessIssues: z.array(
@@ -530,6 +534,10 @@ export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	publishedRef: z.string().optional(),
 	/** Why publication did not happen, when it did not. */
 	publishReason: z.string().optional(),
+	/** The unit the proposal was written in, under the name it has now. */
+	unitBranch: z.string().optional(),
+	/** The name a unit entered for `new` had before it took the id. */
+	unitRenamedFrom: z.string().optional(),
 });
 
 // emit the canonical slice shape the repo linter validates
@@ -789,7 +797,7 @@ export const createProposalDocument = async (
 		'',
 		`# ${id} — ${args.title}`,
 		'',
-		'## Goal',
+		'## goal',
 		'',
 		args.goal ?? 'TODO: describe the goal.',
 		'',
@@ -803,7 +811,7 @@ export const createProposalDocument = async (
 			? args.nonGoals.map((goal) => `- ${goal}`)
 			: ['- TODO: what this proposal deliberately skips.']),
 		'',
-		'## Slices',
+		'## slices',
 		'',
 		`- global_gate: ${args.globalGate ?? 'none'}`,
 		'',
@@ -1009,6 +1017,7 @@ export const buildCreateProposalRegistration = (
 	id: 'create_proposal',
 	effects: ['write'],
 	writeRoot: 'caller-checkout',
+	refusedWriteNextStep: CREATE_PROPOSAL_REFUSED_NEXT_STEP,
 	summary:
 		'Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.',
 	tags: ['proposals'],
@@ -1157,15 +1166,33 @@ export const buildCreateProposalRegistration = (
 												},
 											}),
 								});
+				// A unit entered for `new` takes the id it was waiting for. The
+				// publication above ran under the old name on purpose: it only
+				// reads which branch the checkout is on.
+				const unit = await adoptCreatedProposalUnit({
+					root:
+						forCheckout.source === 'request'
+							? forCheckout.root
+							: scoped.workspaceRoot,
+					id: created.id,
+					policy: options.developmentPolicy,
+				});
 				return toolOk({
+					id: created.id,
 					file: created.file,
 					path: created.path,
 					disjointnessIssues: created.disjointnessIssues,
 					indexCount: created.indexCount,
 					redactedSecrets: created.redactedSecrets,
-					nextAction: `${created.reused === true ? `${created.id} was already written by an earlier call with this title, so nothing was created again. ` : ''}${
+					...(unit.unitBranch === undefined
+						? {}
+						: { unitBranch: unit.unitBranch }),
+					...(unit.unitRenamedFrom === undefined
+						? {}
+						: { unitRenamedFrom: unit.unitRenamedFrom }),
+					nextAction: `${unit.note === undefined ? '' : `${unit.note} `}${created.reused === true ? `${created.id} was already written by an earlier call with this title, so nothing was created again. ` : ''}${
 						unitBranch !== undefined
-							? `Commit ${relative(scoped.workspaceRoot, created.path)} in the unit on ${unitBranch} (run \`bun run gen:all\` first if the project derives files from proposals), then publish the unit with \`delendai work publish\`.`
+							? `Commit ${relative(scoped.workspaceRoot, created.path)} in the unit on ${unit.unitBranch ?? unitBranch} (run \`bun run gen:all\` first if the project derives files from proposals), then publish the unit with \`delendai work publish\`.`
 							: proposalPublishNextAction({
 									template: options.publishCommand,
 									policy: options.developmentPolicy,
