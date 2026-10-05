@@ -9,6 +9,8 @@ date: 2026-09-30
 last-transition-id: 1874e928-2c4c-442c-9cf4-333b2d45afc0
 last-correlation-id: 1874e928-2c4c-442c-9cf4-333b2d45afc0
 last-transition-from: in-progress
+shipped-in:
+  - "aa99eb781d2f"
 ---
 
 # x00770 — Diagnostics and setup follow the configured profile
@@ -32,15 +34,17 @@ An audit that drove the real CLI in throwaway repositories per profile found six
 - global_gate: none
 
 ### S1 — Publication shape from the policy template; anchored reads the policy
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`, `packages/core/tests/src/lib/development-policy/work-ref-placeholders.spec.ts`
 - **Gate**: none
 - shipped-in: `187e5c39ac92`
 - acceptance:
   - "A publication ref shaped agent/kind/proposal-slice-gN/topic is canonical; a flat one is not."
   - "work status says anchored is not required under a profile that does not anchor the checkout."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at aa99eb781d2f, validate exit 0, tests 22/22 — Delivered by #693 (merge aa99eb781). work-ref-placeholders.spec (3) and workflow-invariants.service.spec (19) pass. Record defect: the slice Status line said pending while in review.
 
 ### S2 — Doctor reads branches and checks from the resolved policy
 - **Status**: pending
