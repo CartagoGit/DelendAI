@@ -59,14 +59,16 @@ An audit that drove the real CLI in throwaway repositories per profile found six
 - review-log: approved by claude-opus-5-5 — verified at aa99eb781d2f, validate exit 0, tests 38/38 — Delivered by #693 (merge aa99eb781). doctor.spec + branch-protection.check.spec (27) and development-policy-required-checks.spec (11) pass. Record defect: the slice Status line said pending while in review.
 
 ### S3 — Adoption gives a pull-request profile the checks it needs
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/development-policy.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy-adoption.interface.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy-required-checks.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy-required-checks.interface.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/workspace-migration/development-policy-required-checks.spec.ts`
 - **Gate**: none
 - shipped-in: `4369543e6f48`
 - acceptance:
   - "A pull-request profile is only adopted with requiredChecks derived from the project's declared workflow jobs; when none can be derived the merge profile is adopted and the reason is recorded."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at aa99eb781d2f, validate exit 0, tests 19/19 — Delivered by #693 (merge aa99eb781). development-policy-required-checks.spec (11) and development-policy.migrator.spec (8) pass. Record defect: the slice Status line said pending while in review.
 
 ### S4 — Init follows the project: profile block, plugins, hints, guard hooks
 - **Status**: pending
