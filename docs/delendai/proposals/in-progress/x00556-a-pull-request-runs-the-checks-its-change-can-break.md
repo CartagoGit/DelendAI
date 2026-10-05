@@ -238,6 +238,8 @@ answerable, reviewable and testable.
 - This costs two more shards on a pull request that changes a plugin and
   nothing else. It is the price of specs that judge other workspaces from
   where they live; moving them next to what they judge would remove it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
