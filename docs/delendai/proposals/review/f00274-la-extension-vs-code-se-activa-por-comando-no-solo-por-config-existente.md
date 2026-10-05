@@ -117,6 +117,8 @@ extension.ts (activate):
   command calls `delendai_adopt_project` with `{ analyze: true }` only (never
   `write`), renders the result in a webview and reports failures through
   `showCommandError`.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Registration of the remaining commands with and without a config
 
@@ -132,6 +134,8 @@ extension.ts (activate):
   exists, is satisfied by that and is pinned by a spec that activates with no
   server configured, asserts every contributed command is registered and that the
   overview and adoption commands fail softly. No `extension.ts` change was needed.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## dependency graph
 
