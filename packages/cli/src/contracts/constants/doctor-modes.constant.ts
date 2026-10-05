@@ -1,5 +1,6 @@
-/** The flags `delendai doctor` reads, without `--`. */
 import { REPOSITORY_SLUG } from '@delendai/core/public';
+
+/** The flags `delendai doctor` reads, without `--`. */
 export const DOCTOR_FLAGS = ['ci', 'offline', 'deep'] as const;
 
 /**
