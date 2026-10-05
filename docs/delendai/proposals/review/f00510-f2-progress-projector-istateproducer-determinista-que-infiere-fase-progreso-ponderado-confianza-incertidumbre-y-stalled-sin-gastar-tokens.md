@@ -2,7 +2,7 @@
 id: f00510
 title: "F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-06
@@ -16,9 +16,9 @@ tags:
     - state-engine
     - projector
     - non-llm
-last-transition-id: 9ad1635a-64c5-4fff-883f-00f411a483a7
-last-correlation-id: 9ad1635a-64c5-4fff-883f-00f411a483a7
-last-transition-from: ready
+last-transition-id: 998403ca-e038-4b0f-a8fd-b7e1f6981598
+last-correlation-id: 998403ca-e038-4b0f-a8fd-b7e1f6981598
+last-transition-from: in-progress
 ---
 
 # f00510 — F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens
@@ -55,6 +55,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` covers `packages/state-telemetry/src/lib/projector/**`, rejects any `await` inside `rebuild`/`reconcile` and any persistent I/O import, and is chained into `lint:architecture`."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `f1da8103c5dc`
 
 ### S2 — `phase-inference.ts` — tabla declarativa read→investigating, edit→implementing, test→testing, fix→fixing, validate→validating, review→reviewing, push→reconciling
 - **Status**: review
@@ -68,6 +69,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "The phase is monotonic forward: the fold keeps the highest rank seen, so a later `tool_called` never rewinds `implementing`."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `f1da8103c5dc`
 
 ### S3 — `confidence-model.ts` — confidence + uncertainty derivados de la varianza de los últimos N eventos y de la completitud del `work_items.acceptance_criteria`
 - **Status**: review
@@ -81,6 +83,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "Confidence and uncertainty are always present in the snapshot so a view can show them beside the percentage."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `8681776edb26`
 
 ### S4 — `progress-weighting.ts` — Σ(completion × weight) / Σ(weight), con pesos por defecto derivados de la posición de la slice en la proposal y override opcional en frontmatter
 - **Status**: review
@@ -94,6 +97,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "A slice with no acceptance criteria weighs 1 and reports progress 100 (the scale is 0..100 throughout) when its status is `done`, and 0 otherwise."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `8681776edb26`
 
 ### S5 — API pública `getSnapshot`, `getSnapshotsForProposal`, `subscribe` + propiedad `incremental === cleanRebuild` verde
 - **Status**: review
@@ -107,6 +111,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "`projector-ratchet.spec.ts` checks over 50 random streams that no event lowers the phase rank, with the default rules and with a caller rule that points backwards."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `f1da8103c5dc`
 
 ## acceptance
 
