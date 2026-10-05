@@ -2,7 +2,7 @@
 id: x00556
 title: "A pull request runs the checks its change can break"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: efficiency
 date: 2026-09-19
@@ -10,9 +10,9 @@ tags:
     - ci
     - cost
     - gates
-last-transition-id: f482c614-0913-4aaf-8932-f62812a93c9b
-last-correlation-id: f482c614-0913-4aaf-8932-f62812a93c9b
-last-transition-from: ready
+last-transition-id: 64730661-cf16-4a63-8fe6-706211d89466
+last-correlation-id: 64730661-cf16-4a63-8fe6-706211d89466
+last-transition-from: in-progress
 ---
 
 # x00556 — A pull request runs the checks its change can break
@@ -96,6 +96,7 @@ answerable, reviewable and testable.
   set" for these jobs.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `9d241a3dbba1`
 
 ### S2 — A pull request selects, the integration branch does not
 
@@ -117,6 +118,7 @@ answerable, reviewable and testable.
   the test planner runs every zone ("runs every zone when the run has no
   base, as a dispatch or a push does"). Evidence: CI run 36607216424, a push
   to develop, planned `26/26 job(s)` and ran all 11 test zones.
+- shipped-in: `1191c3a74071`
 
 ### S3 — The saving is measured, not assumed
 
@@ -159,6 +161,7 @@ answerable, reviewable and testable.
   table as the plan, and a spec holds the two to the same answer.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `1191c3a74071`
 
 ### S4 — A change outside the workspaces reaches only the zones that read it
 
@@ -198,6 +201,7 @@ answerable, reviewable and testable.
   test process, not in subprocesses a spec starts. The integration branch
   still runs every zone, which is where such a miss is caught, as it is
   for the module-graph filter today.
+- shipped-in: `76c3529fb71e`
 
 ### S5 — An edited file reaches only the zones that read it
 
@@ -237,6 +241,7 @@ answerable, reviewable and testable.
   included, and the rebrand sweep read those file names as live uses of
   the retired name: `develop` went red on it after the merge (#650). The
   map joins the baselines the sweep already skips for the same reason.
+- shipped-in: `c2cff78d39b7`
 
 ### S6 — A zone that scans other workspaces is reached by their changes
 
@@ -263,6 +268,7 @@ answerable, reviewable and testable.
   where they live; moving them next to what they judge would remove it.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `b7d8e2c7a084`
 
 ## acceptance
 
