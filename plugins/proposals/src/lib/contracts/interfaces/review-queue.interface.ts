@@ -19,9 +19,12 @@ export interface IDeliveryCandidate {
  * - `blocked` — no verdict can be recorded until `missing` is supplied.
  * - `waiting-on-implementer` — changes were requested; the fix is not in.
  * - `approved` — nothing left for a reviewer on this slice.
+ * - `needs-another-reviewer` — it needs a verdict, and the asker may not
+ *   give it: its own model delivered the slice.
  */
 export type IReviewQueueVerdict =
 	| 'needs-verdict'
+	| 'needs-another-reviewer'
 	| 'blocked'
 	| 'waiting-on-implementer'
 	| 'approved';
