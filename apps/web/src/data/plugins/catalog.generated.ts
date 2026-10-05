@@ -136,7 +136,7 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 		"slug": "framework-knowledge",
 		"displayName": "Framework Knowledge",
 		"purpose": "Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.",
-		"category": "code-intelligence"
+		"category": "workflow"
 	},
 	{
 		"slug": "git",
