@@ -917,6 +917,47 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
+	it('sends a session back to its own unit when an older generation was given up', async () => {
+		const root = repoWith(PINNED);
+		const enter = (extra: readonly string[]) =>
+			command.run(
+				[
+					'enter',
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					...extra,
+				],
+				contextFor(root),
+			);
+		const first = (await enter(['--topic=a'])).data as {
+			branch: string;
+			path: string;
+		};
+		const second = (await enter(['--topic=b'])).data as {
+			branch: string;
+			session: string;
+		};
+		expect(second.branch).toBe(
+			'delendai/wip/minimax-m3/review/batch-all-g2/b',
+		);
+		// The first unit is given up: its generation is free again.
+		execFileSync('git', ['worktree', 'remove', '--force', first.path], {
+			cwd: root,
+		});
+		execFileSync('git', ['branch', '-D', first.branch], { cwd: root });
+
+		const again = await enter([`--session=${second.session}`]);
+
+		expect(again.code).toBe(0);
+		expect(again.data).toMatchObject({
+			created: false,
+			branch: second.branch,
+			session: second.session,
+		});
+	});
+
 	it('refuses a second instance on a slice another instance works, and leaves no branch (x00714)', async () => {
 		const root = repoWith(PINNED);
 		const enter = (topic: string) =>
