@@ -60,6 +60,8 @@ A consumer probe with integration and release both main failed at startup with r
 - acceptance:
   - "a real-git single-branch shared-checkout-merge work publish lands on main after the gate"
   - "integration=release no longer blocks validation"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
