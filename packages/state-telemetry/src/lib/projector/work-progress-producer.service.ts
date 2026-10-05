@@ -71,7 +71,7 @@ const baseRows = (ctx: IProducerContext): readonly IWorkProgressRow[] => {
 		typeof canonical === 'object' &&
 		canonical !== null &&
 		!Array.isArray(canonical)
-			? canonical['rows']
+			? canonical.rows
 			: undefined;
 	return Array.isArray(rows) ? (rows as unknown as IWorkProgressRow[]) : [];
 };
