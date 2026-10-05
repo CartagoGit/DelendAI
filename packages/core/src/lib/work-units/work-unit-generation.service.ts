@@ -111,7 +111,7 @@ export const chooseGeneration = (
 			return {
 				refusal: refused(
 					`${proposal} ${slice} is being worked on by another session of \`${agent}\` (\`${other}\`): two instances on one slice would do the same work twice.`,
-					'Take other work, or pass --generation=<n> to start a deliberate second attempt at it.',
+					'If it is your own unit, enter it from inside its worktree, or pass the --session it gave you when you first entered. Otherwise take other work, or pass --generation=<n> to start a deliberate second attempt at it.',
 				),
 			};
 		}
