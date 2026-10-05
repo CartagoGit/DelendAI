@@ -13,7 +13,7 @@
  * a merge brought in someone else's finished work is a change in the
  * projection, not an act of this host, and must not be persisted as one.
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

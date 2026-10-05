@@ -264,7 +264,6 @@ export const createSliceListener = (
 	/** Consecutive failed delivery attempts, keyed by event id. */
 	const attempts = new Map<string, number>();
 	const refusals: ISliceRefusal[] = [];
-	const reader = new SafeWorkspaceReader(workspaceRoot);
 
 	/** Apply a single event against the engine; mark seen only on OK. */
 	/**
