@@ -205,3 +205,18 @@ that records it.
   transcript. delendai's own responses are ratcheted by `tokens:gate`;
   the rest of a transcript is the host's to measure.
 
+## Found closing it
+
+- **Moving this proposal broke another one's check.** `x00654`, closed,
+  cites this document by its `in-progress/` path. When this proposal
+  moved to `review/`, `lint:proposal-slice-completeness` reported
+  `x00654` as declaring a missing file. Nothing was wrong in either
+  document. A declared path under `docs/delendai/proposals/` now counts
+  as present when a proposal of that file name exists in any status
+  folder (`tools/scripts/lint/lib/declared-path-exists.lib.ts`, used by
+  both existence lints). Debt shrank: 356 → 327 dangling references,
+  847 → 837 completeness issues.
+- **A retired slice was asked for its files.** `proposal-files-exist`
+  skipped only `pending` slices, so S5's planned script was reported as
+  missing. A `retired` slice delivered nothing and is skipped too.
+
