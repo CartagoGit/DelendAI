@@ -1,4 +1,5 @@
 /** The flags `delendai doctor` reads, without `--`. */
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 export const DOCTOR_FLAGS = ['ci', 'offline', 'deep'] as const;
 
 /**
@@ -27,4 +28,4 @@ export const ERROR_REPORTING_PUBLIC_MODULE = '@delendai/error-reporting/public';
 export const SELF_TEST_PROBE_DIR_PREFIX = 'delendai-doctor-selftest-';
 
 /** Repository the self-test reads (never writes) when it exercises `gh`. */
-export const SELF_TEST_TARGET_REPO = 'CartagoGit/delendai';
+export const SELF_TEST_TARGET_REPO = REPOSITORY_SLUG;
