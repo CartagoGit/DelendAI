@@ -286,6 +286,12 @@ export {
 	runStartupGate,
 	startupGateWarnings,
 } from './lib/startup-gate/index';
+export type {
+	IForgeCheckRun,
+	IForgePullRequest,
+	IForgeRead,
+	IStartupForgeSeam,
+} from './lib/startup-reconciler/index';
 export {
 	type IRepairDecision,
 	type IRepairResolution,

@@ -28,7 +28,8 @@ import {
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
 } from '@delendai/core/cli';
-import { createWriteGitRunner } from '@delendai/core/public';
+import { createWriteGitRunner, REPOSITORY_SLUG } from '@delendai/core/public';
+import { createForgeCliRunner, createForgeSeam } from './forge-seam.service';
 import {
 	createStartupGovernanceSeam,
 	renderStartupGate,
@@ -336,6 +337,13 @@ const run = async (): Promise<void> => {
 					// it up from the ambient environment itself — and a
 					// forge it cannot reach yields "not read", from
 					// which nothing is inferred.
+					// The pull-request and check-run mirror reads the
+					// same forge through the same CLI session, with the
+					// last ETag, so a warm boot costs one request.
+					forge: createForgeSeam({
+						repositorySlug: REPOSITORY_SLUG,
+						run: createForgeCliRunner(config.workspace.root),
+					}),
 					governance: createStartupGovernanceSeam({
 						cwd: config.workspace.root,
 					}),
