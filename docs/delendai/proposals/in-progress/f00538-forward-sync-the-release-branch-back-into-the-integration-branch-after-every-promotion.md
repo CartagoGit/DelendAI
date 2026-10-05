@@ -86,7 +86,7 @@ fast-forwards a local clone and never touches the forge.
 
 ### S4 — Let the workflow token open the pull request
 
-- **Status**: pending — operator decision. The repository reports `can_approve_pull_request_reviews: false`, and under that setting a workflow token cannot open a pull request. Until the setting changes, the workflow pushes the ref, fails red, and prints the exact `gh pr create` command in its summary. The setting is not changed from here: it widens what every workflow token may do, and that is the owner's call.
+- **Status**: review — the repository reports `can_approve_pull_request_reviews: true` since the owner changed the setting, and the workflow needs nothing else. The run of 2026-09-30 15:08 UTC opened #686 as `github-actions` with the workflow's own token, armed auto-merge on it seven seconds later, `delendai-validate` reported success on its head, and `github-actions` merged it on 2026-10-01 with no manual step. That run was a `workflow_dispatch`: `main` has not moved since, so the `push` trigger itself is still unobserved; it runs the same job. If the setting is ever turned off again the workflow still pushes the ref, fails red and prints the exact `gh pr create` command in its summary.
 - **Files**: [`.github/workflows/forward-sync-release.yml`]
 - **Gate**: a push to `main` ends with a forward-sync pull request armed for auto-merge and `delendai-validate` reported on its head, with no manual step.
 
