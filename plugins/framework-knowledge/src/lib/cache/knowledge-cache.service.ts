@@ -8,12 +8,12 @@
 // read, so the cache answers offline. A set written for one lockfile
 // entry is reported `stale` when the entry changes.
 
-import { mkdir, rename, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import z from 'zod';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/public';
 
 import {
 	EVIDENCE_FILE_NAME,
@@ -87,13 +87,6 @@ const readJsonFile = async <T>(
 	} catch {
 		return null;
 	}
-};
-
-/** Write through a temporary name so a reader never sees half a file. */
-const writeFileAtomic = async (path: string, text: string): Promise<void> => {
-	const tmp = `${path}.${process.pid}.tmp`;
-	await writeFile(tmp, text, 'utf8');
-	await rename(tmp, path);
 };
 
 /**
