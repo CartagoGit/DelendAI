@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 541
+Total exports: 509
 
 | Maturity | Count |
 | --- | --- |
-| stable | 538 |
+| stable | 506 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -58,7 +58,6 @@ Total exports: 541
 | `clearDryRunViolationsForTests` | const | stable | `../lib/dry-run/dry-run-violation-log.service` |
 | `CODE_MAP_SCHEMA_VERSION` | const | stable | `../lib/code-map/generator` |
 | `commitAndPush` | const | stable | `../lib/shared/git-write` |
-| `CommitAuthorMode` | type | stable | `../lib/contracts/interfaces/commit-author.interface` |
 | `compactOutputSchema` | const | stable | `../lib/surface/compact-output-schema.helper` |
 | `compileWorkRefParser` | const | stable | `../lib/startup-reconciler/index` |
 | `computePayloadPercentile` | const | stable | `../lib/metrics/payload-percentile` |
@@ -99,7 +98,6 @@ Total exports: 541
 | `DEFAULT_FRAMEWORK_RULES` | const | stable | `../lib/bootstrap/framework-rules` |
 | `DEFAULT_MAX_EVENTS` | const | stable | `../lib/observability/timeline` |
 | `DEFAULT_MAX_RESPONSE_BYTES` | const | stable | `../lib/contracts/constants/response-byte-budget.constant` |
-| `DEFAULT_MODEL_CATALOG_LIMIT` | const | stable | `../lib/catalog` |
 | `DEFAULT_TS_RULES` | const | stable | `../lib/contracts/file-conventions.contract` |
 | `definePlugin` | const | stable | `../plugin` |
 | `definePluginManifest` | const | stable | `../lib/manifest/define-plugin-manifest` |
@@ -113,7 +111,6 @@ Total exports: 541
 | `detectExistingDelendaiInstall` | const | stable | `../lib/scaffold/detect-existing-install` |
 | `detectModelTier` | const | stable | `../lib/presets/model-profiles` |
 | `detectOs` | const | stable | `../lib/install/installer` |
-| `detectStuckShell` | const | stable | `../lib/agents/shell-fallback` |
 | `distinctReleaseBranch` | const | stable | `../lib/development-policy/protected-branches` |
 | `DryRunEffectRefusedError` | const | stable | `../lib/dry-run/effect-guard.helper` |
 | `dryRunRequiredFor` | const | stable | `../lib/dry-run/protocol` |
@@ -160,22 +157,15 @@ Total exports: 541
 | `IBatchAtomicWriter` | type | stable | `../contracts` |
 | `IBatchOperation` | type | stable | `../contracts` |
 | `IBatchWriteResult` | type | stable | `../contracts` |
-| `IBootstrapMeasurement` | const | stable | `../lib/surface/bootstrap` |
 | `IBootstrapPatternOverride` | type | stable | `../lib/plugins/load-config-file` |
 | `IBootstrapPatternOverrides` | type | stable | `../lib/plugins/load-config-file` |
-| `IBudgetCeiling` | type | stable | `../lib/budgets/types` |
-| `IBudgetSource` | type | stable | `../lib/budgets/types` |
 | `ICacheEvictionRegistry` | type | stable | `../contracts` |
 | `ICacheEvictionReport` | type | stable | `../lib/contracts/interfaces/cache-eviction.interface` |
 | `ICacheEvictionRule` | type | stable | `../contracts` |
 | `ICapturedError` | type | stable | `../lib/error-collection/types` |
 | `ICatalogSnapshot` | type | stable | `../contracts` |
 | `ICheckpointAdvisory` | type | stable | `../contracts` |
-| `ICodeMap` | type | stable | `../lib/code-map/generator` |
 | `ICommitAndPushResult` | type | stable | `../contracts` |
-| `ICommitAuthorIdentity` | type | stable | `../lib/contracts/interfaces/commit-author.interface` |
-| `ICommitAuthorInput` | type | stable | `../lib/contracts/interfaces/commit-author.interface` |
-| `ICommitAuthorNamed` | type | stable | `../lib/contracts/interfaces/commit-author.interface` |
 | `ICommitAuthorResolution` | type | stable | `../contracts` |
 | `IConfigurationArtifact` | type | stable | `../contracts` |
 | `IConfigurationCenterResult` | type | stable | `../contracts` |
@@ -192,10 +182,8 @@ Total exports: 541
 | `IDelendaiPluginConfig` | type | stable | `../contracts` |
 | `IDelendaiProject` | type | stable | `../contracts` |
 | `IDelendaiProjectMetadata` | type | stable | `../contracts` |
-| `IDesiredForgeState` | type | stable | `../lib/forge-governance/index` |
 | `IDryRunContractViolationRecord` | type | stable | `../lib/contracts/interfaces/dry-run-violation.interface` |
 | `IDryRunResult` | type | stable | `../lib/dry-run/protocol` |
-| `IErrorCollector` | type | stable | `../lib/error-collection/collector.interface` |
 | `IErrorSink` | type | stable | `../lib/error-collection/sink.interface` |
 | `IEvidenceStore` | type | stable | `../lib/contracts/interfaces/evidence.interface` |
 | `IExpectedFinalReleaseState` | type | stable | `../lib/contracts/release-finalize` |
@@ -222,11 +210,9 @@ Total exports: 541
 | `IHostPaths` | type | stable | `../lib/contracts/interfaces/host-config.interface` |
 | `IHostRegistrations` | type | stable | `../lib/contracts/interfaces/host-config.interface` |
 | `IHotfixInput` | type | stable | `../lib/contracts/release-finalize` |
-| `IIncidentLoggingContext` | type | stable | `../lib/tools/with-incident-logging` |
 | `IInstallHint` | type | stable | `../contracts` |
 | `IIntegrationEngine` | type | stable | `../lib/integration-engine/index.interface` |
 | `IKnowledgeEntry` | type | stable | `../contracts` |
-| `ILiveForgeState` | type | stable | `../lib/forge-governance/index` |
 | `ILoadedPluginFacts` | type | stable | `../lib/contracts/interfaces/activation-report.interface` |
 | `ILocalMergeCycleInput` | type | stable | `../lib/integration-engine/local-merge-cycle.interface` |
 | `ILocalMergeCycleOutcome` | type | stable | `../lib/integration-engine/local-merge-cycle.interface` |
@@ -242,15 +228,11 @@ Total exports: 541
 | `IMemoryEntry` | type | stable | `../lib/memory/utility` |
 | `IMetricsSnapshot` | type | stable | `../lib/metrics/metrics-registry` |
 | `IMigrator` | type | stable | `../lib/migrations/migrate` |
-| `InMemoryModelCatalog` | const | stable | `../lib/catalog` |
 | `inspectUnicodeForAgent` | const | stable | `../lib/shared/unicode-safe-text` |
 | `installToTarget` | const | stable | `../lib/install/installer` |
-| `IOverviewSnapshot` | type | stable | `../lib/tools/overview-tool` |
 | `IPayloadPercentile` | type | stable | `../lib/metrics/payload-percentile` |
 | `IPeerPluginRegistry` | type | stable | `../lib/plugins/plugin-contract` |
-| `IPerSurfaceMeasurement` | type | stable | `../lib/budgets/types` |
 | `IPhasedLifecycle` | type | stable | `../contracts` |
-| `IPluginAddStep` | type | stable | `../lib/registry/plugin-add` |
 | `IPluginConfigurationIssue` | type | stable | `../lib/plugins/plugin-contract` |
 | `IPluginConfigurationValidationInput` | type | stable | `../lib/plugins/plugin-contract` |
 | `IPluginEffectsCapability` | type | stable | `../lib/contracts/interfaces/effect-capabilities.interface` |
@@ -315,7 +297,6 @@ Total exports: 541
 | `isLockEntryExpired` | const | stable | `../lib/shared/lock-entry-expiry` |
 | `isLockEntryOrphaned` | const | stable | `../lib/shared/lock-entry-expiry` |
 | `isLockEntryStale` | const | stable | `../lib/shared/lock-entry-expiry` |
-| `isMcpToolSurfaceMode` | const | stable | `../lib/contracts/interfaces/surface-mode.interface` |
 | `IStableManifest` | type | stable | `../lib/api/stable-manifest` |
 | `IStableManifestTool` | type | stable | `../lib/api/stable-manifest` |
 | `IStableToolDescriptor` | type | stable | `../lib/api/stable-facade` |
@@ -327,9 +308,6 @@ Total exports: 541
 | `ITimelineEvent` | type | stable | `../lib/observability/timeline` |
 | `ITimelineLog` | type | stable | `../lib/observability/timeline` |
 | `ITokenBudgetCeiling` | type | stable | `../lib/contracts/constants/token-budgets.constant` |
-| `ITokenMeasurement` | type | stable | `../lib/budgets/types` |
-| `ITokenReport` | type | stable | `../lib/budgets/types` |
-| `ITokenReportRow` | type | stable | `../lib/budgets/types` |
 | `IToolErrorLogHint` | type | stable | `../lib/shared/tool-response` |
 | `IToolIdentityRegistry` | type | stable | `../lib/contracts/interfaces/safe-tool-identity.interface` |
 | `IToolProbeResult` | type | stable | `../contracts` |
@@ -364,11 +342,8 @@ Total exports: 541
 | `loadSkills` | const | stable | `../lib/skills/load-skills` |
 | `localRefHolds` | const | stable | `../lib/wip-engine/work-ref-publication` |
 | `LockContentionError` | const | stable | `../lib/shared/with-file-mutex` |
-| `mapShellIntentToTool` | const | stable | `../lib/agents/shell-fallback` |
 | `matchFramework` | const | stable | `../lib/bootstrap/framework-rules` |
-| `MAX_MODEL_CATALOG_LIMIT` | const | stable | `../lib/catalog` |
 | `MAX_RESPONSE_BYTES_CEILING` | const | stable | `../lib/contracts/constants/response-byte-budget.constant` |
-| `MCP_TOOL_SURFACE_MODE` | const | stable | `../lib/contracts/interfaces/surface-mode.interface` |
 | `measureBootstrapBytes` | const | stable | `../lib/surface/bootstrap` |
 | `measureToolWireBytes` | const | stable | `../lib/surface/bootstrap` |
 | `mergeCheckpointAdvisories` | const | stable | `../lib/shared/checkpoint-advisory` |
@@ -376,7 +351,6 @@ Total exports: 541
 | `mergeTimelineLogs` | const | stable | `../lib/observability/timeline` |
 | `migrateJsonFile` | const | stable | `../lib/migrations/migrate-file` |
 | `MigrationError` | const | stable | `../lib/migrations/migrate` |
-| `ModelCatalogError` | const | stable | `../lib/catalog` |
 | `nextVersion` | const | stable | `../lib/contracts/release` |
 | `nodeDynamicImport` | const | deprecated | `../public/index` |
 | `nowEvent` | const | stable | `../lib/observability/timeline` |
@@ -427,7 +401,6 @@ Total exports: 541
 | `realpathContained` | const | stable | `../lib/shared/contain-realpath` |
 | `realProbeDeps` | const | stable | `../lib/external-tool/probe` |
 | `recall` | const | stable | `../lib/observability/activation-kpis` |
-| `recommendServerPlan` | const | stable | `../lib/bootstrap/index` |
 | `recordDryRunViolation` | const | stable | `../lib/dry-run/dry-run-violation-log.service` |
 | `redactFreeText` | const | stable | `../lib/observability/timeline` |
 | `redactSecrets` | const | stable | `../lib/shared/redact` |
@@ -451,7 +424,6 @@ Total exports: 541
 | `resolveExecPath` | const | stable | `../lib/shared/exec-path` |
 | `resolveExistingWorkspaceContained` | const | stable | `../lib/shared/contain-realpath` |
 | `resolveFrameworkVersion` | const | stable | `../lib/bootstrap/framework-version` |
-| `resolveHostScaffoldDefaults` | const | stable | `../lib/scaffold/detect-existing-install` |
 | `resolvePluginSpecifier` | const | stable | `../plugin` |
 | `resolvePresetMembers` | const | stable | `../lib/plugins/preset-catalog` |
 | `resolvePublicToolIdentity` | const | stable | `../lib/contracts/resolvers/safe-tool-identity.resolver` |
@@ -502,17 +474,14 @@ Total exports: 541
 | `sortFindings` | const | stable | `../lib/external-tool/render-findings` |
 | `splitCapability` | const | stable | `../lib/capabilities/schema` |
 | `stripAnsi` | const | stable | `../lib/shared/git-write` |
-| `STUCK_SHELL_SENTINELS` | const | stable | `../lib/agents/shell-fallback` |
 | `summariseLegacyShimWarning` | const | stable | `../lib/capabilities/inject` |
 | `summarizeFindings` | const | stable | `../lib/external-tool/render-findings` |
 | `Surface` | type | stable | `../lib/budgets/types` |
-| `TEffectCapabilityKind` | type | stable | `../lib/dry-run/effect-guard.helper` |
 | `TimelineBuffer` | const | stable | `../lib/observability/timeline` |
 | `TimelineEventKind` | type | stable | `../lib/observability/timeline` |
 | `TModelTier` | type | stable | `../lib/presets/model-profiles` |
 | `TOKEN_BUDGETS` | const | stable | `../lib/contracts/constants/token-budgets.constant` |
 | `TokenBudgetRegistry` | const | stable | `../lib/budgets/registry` |
-| `TokenSurface` | type | stable | `../lib/budgets/types` |
 | `toolError` | const | stable | `../lib/shared/tool-response` |
 | `toolErrorWithLogHint` | const | stable | `../lib/shared/tool-response` |
 | `toolJson` | const | stable | `../lib/shared/tool-response` |
@@ -540,7 +509,6 @@ Total exports: 541
 | `withFileMutex` | const | internal | `../lib/shared/with-file-mutex` |
 | `withFileMutexes` | const | stable | `../lib/shared/with-file-mutexes` |
 | `withIncidentLogging` | const | stable | `../lib/tools/with-incident-logging` |
-| `withShellFallback` | const | stable | `../lib/agents/shell-fallback` |
 | `WORK_REF_NAMING` | const | stable | `../lib/contracts/constants/work-ref-naming.constant` |
 | `WorkspaceContainmentError` | const | stable | `../lib/filesystem/safe-workspace-reader.errors` |
 | `worstSeverity` | const | stable | `../lib/external-tool/render-findings` |

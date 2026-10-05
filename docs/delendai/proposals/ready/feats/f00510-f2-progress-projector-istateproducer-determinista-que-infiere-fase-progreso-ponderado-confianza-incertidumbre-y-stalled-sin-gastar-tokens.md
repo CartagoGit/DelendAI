@@ -42,7 +42,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
 ### S1 — `IWorkProgressProducer` + tabla `progress_snapshots` (un IStateProducer real)
 - **Status**: pending
 - **DependsOn**: [f00509]
-- **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.ts`, `packages/state-telemetry/src/lib/projector/work-progress-producer.spec.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.spec.ts`, `packages/state-telemetry/src/lib/projector/index.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts` (única slice que crea la lint de pureza para `packages/state-telemetry/src/**`; F1-S1 y el resto sólo la consumen vía `bun run lint`)
+- **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-producer.service.spec.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.spec.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts` (única slice que crea la lint de pureza para `packages/state-telemetry/src/**`; F1-S1 y el resto sólo la consumen vía `bun run lint`)
 - **Gate**: type
 - acceptance:
   - "`IWorkProgressProducer implements IStateProducer` declarado con `id: 'work-progress'` y `inputs: [IProducerInputSpec<'work_events'>, IProducerInputSpec<'work_items'>, IProducerInputSpec<'work_assignments'>]`."
@@ -54,7 +54,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
 ### S2 — `phase-inference.ts` — tabla declarativa read→investigating, edit→implementing, test→testing, fix→fixing, validate→validating, review→reviewing, push→reconciling
 - **Status**: pending
 - **DependsOn**: [F2-S1]
-- **Files**: `packages/state-telemetry/src/lib/projector/phase-inference.ts`, `packages/state-telemetry/src/lib/projector/phase-inference.spec.ts`, `packages/state-telemetry/src/lib/projector/phase-rules.ts`
+- **Files**: `packages/state-telemetry/src/lib/projector/phase-inference.service.ts`, `packages/state-telemetry/src/lib/projector/phase-inference.service.spec.ts`, `packages/state-telemetry/src/lib/projector/phase-rules.service.ts`
 - **Gate**: type
 - acceptance:
   - "`phase-rules.ts` exporta un array de `PhaseRule` (declarativo, no lógica embebida) que cualquier propuesta posterior puede extender sin tocar el projector."
@@ -65,7 +65,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
 ### S3 — `confidence-model.ts` — confidence + uncertainty derivados de la varianza de los últimos N eventos y de la completitud del `work_items.acceptance_criteria`
 - **Status**: pending
 - **DependsOn**: [F2-S1]
-- **Files**: `packages/state-telemetry/src/lib/projector/confidence-model.ts`, `packages/state-telemetry/src/lib/projector/confidence-model.spec.ts`
+- **Files**: `packages/state-telemetry/src/lib/projector/confidence-model.service.ts`, `packages/state-telemetry/src/lib/projector/confidence-model.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`confidence` ∈ [0, 1] calculado como `1 − varianza_normalizada(últimos 10 eventos)` con cap por completitud de acceptance: si 0/5 criterios marcados → cap=0.5; si 5/5 → cap=1."
@@ -76,7 +76,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
 ### S4 — `progress-weighting.ts` — Σ(completion × weight) / Σ(weight), con pesos por defecto derivados de la posición de la slice en la proposal y override opcional en frontmatter
 - **Status**: pending
 - **DependsOn**: [F2-S1]
-- **Files**: `packages/state-telemetry/src/lib/projector/progress-weighting.ts`, `packages/state-telemetry/src/lib/projector/progress-weighting.spec.ts`
+- **Files**: `packages/state-telemetry/src/lib/projector/progress-weighting.service.ts`, `packages/state-telemetry/src/lib/projector/progress-weighting.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "El peso por defecto de una slice es `1 + log2(acceptance_count)`; un override en `proposal.md#slices[i].weight` se respeta si y sólo si está en `[0.1, 100]`."
