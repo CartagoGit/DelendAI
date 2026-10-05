@@ -31,13 +31,16 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - global_gate: none
 
 ### S1 — A read-only forge seam is bound in the host
-- **Status**: pending
-- **Files**: `packages/core/src/lib/startup-gate/run-startup-gate.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.interface.ts`, `tools/scripts/host/host-server.script.ts`
-- **Gate**: type
+- **Status**: review
+- **Files**: `packages/core/src/lib/startup-gate/run-startup-gate.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.interface.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/startup-gate/run-startup-gate.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/idempotency.spec.ts`, `tools/scripts/host/forge-seam.service.ts`, `tools/scripts/host/forge-seam.interface.ts`, `tools/scripts/host/forge-seam.constant.ts`, `tools/scripts/host/forge-seam.service.spec.ts`, `tools/scripts/host/host-server.script.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/startup-gate/run-startup-gate.spec.ts packages/core/tests/src/lib/startup-reconciler/idempotency.spec.ts && npx vitest run --project tools tools/scripts/host/forge-seam.service.spec.ts`
 - acceptance:
   - "`runStartupGate` accepts a forge seam and passes it to the reconciler; the forge phase is no longer listed NOT EXECUTED when one is bound."
   - "The host binds a seam that lists pull requests and check runs through the forge's API with the previous ETag, and answers `unavailable` (never throws) without credentials or network."
   - "A warm boot with nothing changed costs one conditional request and writes no rows."
+  - shipped: `runStartupGate` takes an optional `forge` seam and stops listing the phase NOT EXECUTED when bound; the host seam (`forge-seam.service.ts`) shells out to the user's own `gh` session with `If-None-Match`, maps pull requests and check runs, and answers `unavailable` instead of throwing; a warm boot costs one conditional request and writes no rows.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A journal source is bound once its home is decided
 - **Status**: pending
