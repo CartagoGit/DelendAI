@@ -2,6 +2,7 @@
  * review-queue-swarm.tool.spec.ts — reviewers working at once see each
  * other's claims (x00646), on a real repository.
  */
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -235,5 +236,46 @@ describe('a swarm of reviewers', () => {
 		expect(
 			proposals.every((proposal) => proposal.claimedBy === undefined),
 		).toBe(true);
+	});
+
+	it('reads the queue from the reviewer’s own unit, where its verdicts are', async () => {
+		const unit = 'refs/heads/delendai/wip/qwen/review/batch-all-g1/sweep';
+		const worktree = join(repo.root, '.cache', 'unit');
+		repo.git('add', '-A');
+		repo.git('commit', '-q', '-m', 'proposals in review');
+		repo.git(
+			'worktree',
+			'add',
+			'-q',
+			'-b',
+			unit.slice('refs/heads/'.length),
+			worktree,
+		);
+		const inUnit = join(
+			worktree,
+			'docs/delendai/proposals/review/x00002-work.md',
+		);
+		writeFileSync(
+			inUnit,
+			readFileSync(inUnit, 'utf8').replace(
+				'- **Status**: review',
+				'- **Status**: review\n- review-state: done\n- review-implementer: glm',
+			),
+		);
+
+		const seen = (answer: IToolAnswer) =>
+			(
+				answer.body.proposals as {
+					id: string;
+					slices: { verdict: string }[];
+				}[]
+			)
+				.find((proposal) => proposal.id === 'x00002')
+				?.slices.map((slice) => slice.verdict);
+
+		expect(seen(await queue({ agent: 'qwen' }))).not.toEqual(['approved']);
+		expect(seen(await queue({ agent: 'qwen', unit }))).toEqual([
+			'approved',
+		]);
 	});
 });
