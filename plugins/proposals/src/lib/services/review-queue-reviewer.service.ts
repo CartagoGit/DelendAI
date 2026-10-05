@@ -13,10 +13,8 @@ import type {
 	IReviewQueue,
 	IReviewQueueSlice,
 } from '../contracts/interfaces/review-queue.interface';
-import {
-	isSelfApproval,
-	type IReviewIndependence,
-} from '../shared/independent-approval';
+import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
+import { isSelfApproval } from '../shared/independent-approval';
 
 const anothers = (
 	slice: IReviewQueueSlice,
