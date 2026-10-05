@@ -34,7 +34,6 @@
  * there and nothing is lost — the ordering is the safety.
  */
 import { shortName } from '../development-policy/git-guard-namespaces';
-import { execFileSync } from 'node:child_process';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { resolveWorkRef } from '../wip-engine/ref-name';
@@ -47,19 +46,13 @@ import {
 	parseWorkSubject,
 	workRefShapeInWords,
 } from './work-ref-shape.service';
+import { renameUnitRef } from './unit-ref-rename.service';
 import { identityOf, listWorkRefs } from './work-swarm.service';
 
 export type {
 	IWorkClaim,
 	IWorkClaimRefusal,
 } from '../contracts/interfaces/work-claim.interface';
-
-const git = (cwd: string, args: readonly string[]): string =>
-	execFileSync('git', args, {
-		cwd,
-		encoding: 'utf8',
-		stdio: ['ignore', 'pipe', 'pipe'],
-	}).trim();
 
 /**
  * What claiming `ref` for `agent` would produce — or why it cannot.
@@ -145,76 +138,14 @@ export const claimableWorkRefs = (input: {
 	return claims;
 };
 
-/** The worktree standing on `ref` (`refs/heads/…`), when there is one. */
-const worktreeOn = (root: string, ref: string): string | undefined =>
-	git(root, ['worktree', 'list', '--porcelain'])
-		.split('\n\n')
-		.find((block) => block.split('\n').includes(`branch ${ref}`))
-		?.split('\n')
-		.find((line) => line.startsWith('worktree '))
-		?.slice('worktree '.length);
-
 /**
- * Do it: create the new name, prove it resolves to the same commit, and
- * only then remove the old one.
- *
- * The order is the safety. A failed proof leaves both names in place,
- * which is recoverable; deleting first and failing to create is not.
+ * Do it: rename the unit's ref (see `renameUnitRef`, which holds the order
+ * that makes this safe) and hand back the claim that was made.
  */
 export const applyWorkClaim = (
 	root: string,
 	claim: IWorkClaim,
 ): IWorkClaim | IWorkClaimRefusal => {
-	const to = `refs/heads/${claim.to}`;
-	const from = `refs/heads/${claim.from}`;
-	try {
-		git(root, ['update-ref', to, claim.sha]);
-	} catch (error) {
-		return {
-			ref: claim.from,
-			reason: `could not create ${claim.to}: ${error instanceof Error ? error.message : String(error)}`,
-		};
-	}
-	// `rev-parse` THROWS for a ref that resolves to nothing — including
-	// a ref `update-ref` accepted while pointing it at an object this
-	// repository does not have. An unguarded read here turned the
-	// proof step into the thing it was proving against.
-	let landed = '';
-	try {
-		landed = git(root, ['rev-parse', to]);
-	} catch {
-		landed = '';
-	}
-	if (landed !== claim.sha) {
-		return {
-			ref: claim.from,
-			reason: `${claim.to} resolves to ${landed || 'nothing'}, not ${claim.sha}; the old ref was left alone.`,
-		};
-	}
-	// A worktree standing on the old name follows the work to the new one.
-	// Left where it was, it kept the old name alive: the guard refuses to
-	// delete a branch a worktree is on, so the claim ended with two names
-	// for one unit and the worktree on the one that was meant to go.
-	const tree = worktreeOn(root, from);
-	if (tree !== undefined) {
-		try {
-			git(tree, ['symbolic-ref', 'HEAD', to]);
-		} catch (error) {
-			return {
-				ref: claim.from,
-				reason: `${claim.to} now holds the work, but the worktree at ${tree} could not be moved onto it: ${error instanceof Error ? error.message : String(error)}`,
-			};
-		}
-	}
-	try {
-		git(root, ['update-ref', '-d', from, claim.sha]);
-	} catch (error) {
-		return {
-			ref: claim.from,
-			// Both names now point at the work. That is untidy and it is
-			// not a loss, so it is reported rather than repaired blindly.
-			reason: `${claim.to} now holds the work, but ${claim.from} could not be removed: ${error instanceof Error ? error.message : String(error)}`,
-		};
-	}
-	return claim;
+	const renamed = renameUnitRef(root, claim);
+	return 'reason' in renamed ? renamed : claim;
 };

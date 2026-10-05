@@ -2,10 +2,13 @@
 id: x00798
 title: "close_slice gate must not treat a detached worktree as corrupt activity"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-10-01
+last-transition-id: ff14f421-28cb-4d7c-8c34-f685e0e9ec8b
+last-correlation-id: ff14f421-28cb-4d7c-8c34-f685e0e9ec8b
+last-transition-from: in-progress
 ---
 
 # x00798 — close_slice gate must not treat a detached worktree as corrupt activity
@@ -34,6 +37,9 @@ Any post-merge hook run creates a detached scratch worktree for minutes, blockin
   - "a detached worktree yields a non-corrupt snapshot"
   - "an unmanaged worktree is ignored"
   - "a managed entry with an invalid lastSeen is still corrupt"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- shipped-in: `a540526cfa52`
 
 ## acceptance
 
