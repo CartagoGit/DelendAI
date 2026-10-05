@@ -26,6 +26,8 @@
  *   bun tools/scripts/lint/proposal-files-exist.script.ts --report   # counts only
  */
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+
+import { declaredPathExists } from './lib/declared-path-exists.lib';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
@@ -126,7 +128,9 @@ export const isRuntimeStatePath = (candidate: string): boolean =>
  * claims `done` while naming files that do not exist is still a failure,
  * which is the defect this lint exists to catch.
  */
-const PENDING_SLICE_STATUS_RE = /^\s*-\s+\*\*Status\*\*:\s*pending\s*$/i;
+// A retired slice delivered nothing: its files are a plan given up.
+const PENDING_SLICE_STATUS_RE =
+	/^\s*-\s+\*\*Status\*\*:\s*(?:pending\s*$|retired\b)/i;
 
 export const isInsidePendingSlice = (
 	text: string,
@@ -169,7 +173,7 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 					// the only person who can fix it.
 					if (isRuntimeStatePath(p)) continue;
 					const base = stripLineRefs(p);
-					if (!existsSync(join(root, base))) missing.push(p);
+					if (!declaredPathExists(root, base)) missing.push(p);
 				}
 			}
 			if (missing.length > 0) {
