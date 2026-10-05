@@ -855,6 +855,8 @@ the good verdicts' shape (P1) becomes the required shape.
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/services/review-queue-reviewer.service.spec.ts`
 - Found 2026-10-05: `review next --agent=claude-opus-5-5` claimed `r00040`, every slice of which that same model had delivered, in a project whose `reviewIndependence` is `model`. The approval would have been refused as a self-approval after the reading was done, and the claim kept other reviewers out meanwhile.
 - `review_queue` now answers for the agent that asks. Under model independence, a slice waiting for a verdict that the asker's model delivered is `needs-another-reviewer`, with a sentence that says so, and it is not counted in `needsVerdict`. `review next` reads the same field, so it skips those proposals with no change of its own. Where another instance of the model may review, or the delivery is unrecorded, nothing changes: the approval decides.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
