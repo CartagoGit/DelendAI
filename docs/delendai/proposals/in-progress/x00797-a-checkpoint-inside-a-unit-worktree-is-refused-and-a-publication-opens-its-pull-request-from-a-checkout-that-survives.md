@@ -48,6 +48,8 @@ Two bugs found by agents. A checkpoint run from inside the unit worktree wrote t
   - `packages/core/tests/src/lib/wip-engine/checkpoint.spec.ts`
   - `packages/core/tests/src/lib/work-units/work-unit-profiles.spec.ts`
 - **Gate**: type
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
