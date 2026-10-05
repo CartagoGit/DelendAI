@@ -2,7 +2,7 @@
 id: f00510
 title: "F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-06
@@ -16,6 +16,9 @@ tags:
     - state-engine
     - projector
     - non-llm
+last-transition-id: 9ad1635a-64c5-4fff-883f-00f411a483a7
+last-correlation-id: 9ad1635a-64c5-4fff-883f-00f411a483a7
+last-transition-from: ready
 ---
 
 # f00510 — F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens
