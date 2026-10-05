@@ -1623,14 +1623,6 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-03"
-			},
-			{
-				"id": "x00875",
-				"title": "Nothing is left beside the units",
-				"track": "general",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-05"
 			}
 		]
 	}
