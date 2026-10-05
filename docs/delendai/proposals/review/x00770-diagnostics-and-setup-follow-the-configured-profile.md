@@ -71,15 +71,17 @@ An audit that drove the real CLI in throwaway repositories per profile found six
 - review-log: approved by claude-opus-5-5 — verified at aa99eb781d2f, validate exit 0, tests 19/19 — Delivered by #693 (merge aa99eb781). development-policy-required-checks.spec (11) and development-policy.migrator.spec (8) pass. Record defect: the slice Status line said pending while in review.
 
 ### S4 — Init follows the project: profile block, plugins, hints, guard hooks
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/lib/init/init-development-setup.service.ts`, `packages/cli/src/lib/init/init-render.service.ts`, `packages/cli/src/lib/init/init-human-summary.service.ts`, `packages/cli/src/lib/init/init-human-summary.service.spec.ts`, `packages/cli/src/contracts/interfaces/init.interface.ts`, `packages/cli/src/lib/init/init-workspace-start.spec.ts`, `packages/cli/src/lib/init/init-default.command.spec.ts`
 - **Gate**: none
 - shipped-in: `5ed22085b3d3`
 - acceptance:
   - "init writes the development block with its required checks, installs the guard hooks unless development.guardHooks is off, selects forge plugins only for a forge remote, and never references a file it does not write."
   - "For each profile the workspace init produced starts."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at aa99eb781d2f, validate exit 0, tests 23/23 — Delivered by #693 (merge aa99eb781). init-default.command.spec, init-human-summary.service.spec and init-workspace-start.spec (23) pass. Record defect: the slice Status line said pending while in review.
 
 ### S5 — A refused startup reaches the host as instructions
 - **Status**: pending
