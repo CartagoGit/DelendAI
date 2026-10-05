@@ -2,7 +2,7 @@
 id: f00536
 title: "Context frugality as an enforced agent property, and automatic compaction of tool output"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-10
@@ -11,6 +11,9 @@ tags:
     - agent-policy
     - tool-output
     - compaction
+last-transition-id: 6f7c2fac-8643-4b03-985d-85a9d83d0d01
+last-correlation-id: 6f7c2fac-8643-4b03-985d-85a9d83d0d01
+last-transition-from: in-progress
 ---
 
 # f00536 — Context frugality as an enforced agent property, and automatic compaction of tool output
@@ -125,6 +128,7 @@ rest as `other tools`, summing exactly to `totalBytes` (a fast-check
 property). "By call site" is the five largest single responses, with
 tool and time. Prompt scaffolding and model output never pass through
 the server, so they are the host's to measure, not this slice's.
+- shipped-in: `03289da1e5f3`
 
 ### S2 — Elide at the seam, keep the artefact
 - **Status**: review — shipped in #421 (merge 55eae8993)
@@ -140,6 +144,7 @@ Keeping it never fails the tool: an output that cannot be written comes
 back as a stated elision without the path.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget/elide-tool-result.spec.ts`
 - **Expect**: the elision is stated and the named artefact holds the full output.
+- shipped-in: `55eae8993498`
 ### S3 — Summarise the shapes that dominate
 - **Status**: review — shipped in #422 (merge c6b96a4d0)
 - **Files**: [`packages/core/src/lib/context-budget/summarise-ci-log.helper.ts`, `packages/core/src/lib/contracts/interfaces/ci-log-summary.interface.ts`, `packages/core/tests/src/lib/context-budget/summarise-ci-log.spec.ts`]
@@ -152,6 +157,7 @@ guessed at. Fixtures are the shapes CI printed on 2026-09-24: a 500-line
 job log becomes under 1 KB with the failing assertion and job intact.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget/summarise-ci-log.spec.ts`
 - **Expect**: the failing assertion and its job name survive the summarisation.
+- shipped-in: `c6b96a4d0c19`
 ### S4 — State the rules
 
 - **Status**: review
@@ -164,12 +170,11 @@ output (`grep | head`, `--jq`), read line ranges, take the one failing
 assertion from a CI log, keep commit bodies short, and never re-read a
 file just written or re-run a check that passed. The bootstrap stays
 inside its 32,000 B budget (31,922 B).
+- shipped-in: `7fbff952e89c`
 
 ### S5 — Enforce them against a run's own transcript
 
-- **Status**: pending
-- **Blocked by**: a per-session transcript measurement, which only the
-  host can supply (see below)
+- **Status**: retired — 2026-10-05. The guard needs the agent's own transcript, and only a host has it: no two hosts export it the same way and several export nothing. A guard built on one host's export would hold for that host alone, in a product that governs agents of any model on any host. What delendai can measure is measured and ratcheted already: S1 attributes the cost of its own tool responses, S2 and S3 cap and summarise them, and `tokens:gate` fails when one grows. S4 states the habits for what it cannot see. If hosts come to share a usage export, a new proposal takes it up against that format.
 - **Files**: [`tools/scripts/lint/context-budget.script.ts`]
 - **Gate**: `bun tools/scripts/lint/context-budget.script.ts`
 
@@ -196,7 +201,24 @@ that records it.
 - The agent instructions state the frugality rules concretely enough to
   follow (`grep | head`, line ranges, no re-verification) rather than as
   an exhortation to be brief.
-- Measured on a real session: the same task consumes materially less
-  transcript than the recorded baseline, and the guard fails when it
-  does not.
+- Not delivered (S5, retired): a guard over the agent's whole
+  transcript. delendai's own responses are ratcheted by `tokens:gate`;
+  the rest of a transcript is the host's to measure.
+
+## notes
+
+Found closing it, on 2026-10-05:
+
+- **Moving this proposal broke another one's check.** `x00654`, closed,
+  cites this document by its `in-progress/` path. When this proposal
+  moved to `review/`, `lint:proposal-slice-completeness` reported
+  `x00654` as declaring a missing file. Nothing was wrong in either
+  document. A declared path under `docs/delendai/proposals/` now counts
+  as present when a proposal of that file name exists in any status
+  folder (`tools/scripts/lint/lib/declared-path-exists.lib.ts`, used by
+  both existence lints). Debt shrank: 356 → 327 dangling references,
+  847 → 837 completeness issues.
+- **A retired slice was asked for its files.** `proposal-files-exist`
+  skipped only `pending` slices, so S5's planned script was reported as
+  missing. A `retired` slice delivered nothing and is skipped too.
 
