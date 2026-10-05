@@ -116,6 +116,18 @@ export const relationsOf = (input: {
 			});
 		}
 	}
+	// A unit with work of its own whose base moved: nothing brings it
+	// forward but its agent, and the conflicts it is gathering surface
+	// only when it publishes. One that holds nothing is brought forward
+	// when it is entered again; a publication, by the queue.
+	for (const unit of input.units) {
+		if (unit.ahead === 0 || unit.behind === 0) continue;
+		relations.push({
+			kind: 'behind',
+			refs: [unit.ref],
+			detail: `its base moved ${String(unit.behind)} commit(s) on: in its worktree, merge the integration branch into it (\`git merge <remote>/<integration>\`) before it publishes`,
+		});
+	}
 	return relations;
 };
 
