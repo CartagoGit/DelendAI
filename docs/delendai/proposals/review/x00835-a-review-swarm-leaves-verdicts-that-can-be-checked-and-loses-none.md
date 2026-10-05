@@ -874,11 +874,20 @@ the good verdicts' shape (P1) becomes the required shape.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+<<<<<<< HEAD
 ### S38 — A retired slice waits for no verdict
 - **Status**: review
 - **Files**: `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue.tool.spec.ts`
 - Found 2026-10-05: `review next` offered this proposal's S25, retired that morning, as a slice needing a verdict, attributed to `claude-sonnet-5-5` from Git. A retired slice has no review round, so the queue asked Git who delivered its files and sent a reviewer to approve work that was given up on purpose. A slice whose status is `retired` is now settled in the queue, with a sentence that says why.
+=======
+### S36 — A reviewer can give the evidence each criterion asks for
+- **Status**: review
+- **Files**: `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `packages/cli/src/contracts/interfaces/review-queue-view.interface.ts`, `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
+- Found 2026-10-05 approving `x00870` S1: "approve requires empirical evidence: evidence.acceptanceCriteria must cover every declared criterion". The tool asks for one piece of evidence per declared criterion, and neither `delendai review approve` nor `delendai proposals review` could pass any. From a shell, no slice that declares acceptance criteria could be approved at all, whatever the reviewer had verified.
+- Both commands take `--criterion="<criterion> => <evidence>"`, once per criterion; the first ` => ` separates them, since evidence is free text. The call `review next` hands a reviewer now carries one `--criterion` per declared criterion, with the criterion already written, so a reviewer of any model fills in evidence instead of guessing a format. The brief moved to `lib/review/review-brief.service.ts` and the queue's shapes to `contracts/interfaces/`, which brings `review.command.ts` from 404 to 349 lines.
+>>>>>>> ac039a16553e4c2ff0c22af9199d24319e9e1396
 
 ## acceptance
 
