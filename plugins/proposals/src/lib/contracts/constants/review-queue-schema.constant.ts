@@ -46,6 +46,7 @@ const SLICE_SCHEMA = z.object({
 	acceptance: z.array(z.string()).optional(),
 	verdict: z.enum([
 		'needs-verdict',
+		'needs-another-reviewer',
 		'blocked',
 		'waiting-on-implementer',
 		'approved',
