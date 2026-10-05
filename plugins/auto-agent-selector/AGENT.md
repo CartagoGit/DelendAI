@@ -15,12 +15,12 @@
 - realRosterSnapshotStore
 - type IRosterSnapshotStore
 - rankProviders
+- explainSelection
 - buildDashboard
 - buildEscalationLadder
 - runWithEscalation
 - buildAutoEvaluateRegistration
 - KNOWN_APIS
-- KNOWN_CLIS
 
 ## Depends on
 

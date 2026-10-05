@@ -173,6 +173,57 @@ describe('work retire', () => {
 		expect(git('rev-parse', 'FETCH_HEAD')).toBe(tip);
 	});
 
+	it('drops retired work somebody read, by name or by pattern, and only with a reason', async () => {
+		const { root, git, forge, tip } = repository();
+		const ask = (...flags: string[]) =>
+			runWorkUnit(
+				['retired', ...flags],
+				fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
+					cwd: root,
+					globals: fakePartial<
+						IWorkUnitContext['globals'],
+						'workspace' | 'json'
+					>({ workspace: root, json: true }),
+				}),
+			);
+		for (const name of ['old/one', 'old/two', 'kept/three']) {
+			git('push', '-q', 'origin', `${tip}:refs/delendai/retired/${name}`);
+		}
+
+		expect((await ask('--drop=old/one')).code).not.toBe(0);
+		expect(
+			(await ask('--drop=never/there', '--reason=replaced')).code,
+		).not.toBe(0);
+		expect(
+			forge(
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/delendai/retired',
+			).split('\n'),
+		).toHaveLength(3);
+
+		const one = await ask(
+			'--drop=old/one',
+			'--reason=it landed as another unit',
+		);
+		expect(one.code).toBe(0);
+		expect(
+			(one.data as { dropped: { unit: string }[] }).dropped.map(
+				(each) => each.unit,
+			),
+		).toEqual(['old/one']);
+
+		const rest = await ask('--drop=old/*', '--reason=replaced since');
+		expect(rest.code).toBe(0);
+		expect(
+			forge(
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/delendai/retired',
+			),
+		).toBe('refs/delendai/retired/kept/three');
+	});
+
 	it('removes nothing when the tip cannot be kept on the forge', async () => {
 		const { root, git, forge } = repository();
 		git('remote', 'set-url', '--push', 'origin', join(root, 'nowhere.git'));

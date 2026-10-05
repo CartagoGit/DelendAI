@@ -8,6 +8,7 @@ import { doctored, statusOf, swarm } from './work-unit-status.service';
 import { entered } from './work-unit-enter.service';
 import { published } from './work-unit-publish.service';
 import { claimed } from './work-unit-claim.service';
+import { retiredDropped } from './work-retired-drop.service';
 import { retired, retiredListed } from './work-unit-retire.service';
 import { checkpointed } from './work-unit-checkpoint.service';
 import {
@@ -100,7 +101,11 @@ export const runWorkUnit = async (
 	if (sub === 'doctor') return doctored(args, ctx);
 	if (sub === 'claim') return claimed(args, ctx);
 	if (sub === 'retire') return retired(args, ctx);
-	if (sub === 'retired') return retiredListed(ctx);
+	if (sub === 'retired') {
+		return args.some((arg) => arg.startsWith('--drop'))
+			? retiredDropped(args, ctx)
+			: retiredListed(ctx);
+	}
 	return {
 		code: EXIT_CODE.VALIDATION,
 		error: `Unknown subcommand '${sub}'. Use status, swarm, doctor, claim, enter, checkpoint, publish, retire or reap.`,

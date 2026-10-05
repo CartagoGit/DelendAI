@@ -41,6 +41,28 @@ describe('slice shipping record (f00505 S5)', () => {
 		});
 	});
 
+	describe('a record is read however its key was spelled', () => {
+		it.each([
+			['- shipped-in: `abc1234`'],
+			['- Shipped-In: `abc1234` feat: a thing'],
+			['- **Shipped-In**: abc1234 feat(x): scaffold'],
+			['* **shipped-in:** ABC1234'],
+		])('%s', (line) => {
+			expect(readShippingCommit(`- **Status**: done\n${line}\n`)).toBe(
+				'abc1234',
+			);
+		});
+
+		it('takes no word for a hash', () => {
+			expect(
+				readShippingCommit('- **Shipped-In**: decided later\n'),
+			).toBeUndefined();
+			expect(
+				readShippingCommit('- shipped-in: not recorded\n'),
+			).toBeUndefined();
+		});
+	});
+
 	describe('closing without a known commit says so', () => {
 		it('records the absence as a fact rather than omitting the line', () => {
 			// A missing line is indistinguishable from a slice closed

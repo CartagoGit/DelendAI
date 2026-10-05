@@ -14,7 +14,9 @@ import { sharedCheckout } from '../shared/shared-checkout';
 import type { IInvariantReport } from '../contracts/interfaces/workflow-invariants.interface';
 import { readWorkspacePolicy } from './development-policy.service';
 import { hiddenWorkInvariants } from './hidden-work.service';
+import { leaseWindowSeconds } from './unit-verdict.service';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
+import { huskDirectories, husksInvariant } from './worktree-husks.service';
 
 /**
  * The shared checkout, whichever worktree the caller is standing in.
@@ -83,6 +85,14 @@ export const runWorkflowDoctor = async (input: {
 		publicationPrefix: bare(policy.branches.publicationRefPrefix),
 		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
 	});
-	const results = [...report.results, ...hidden];
+	// What a removed worktree's path was written into afterwards.
+	const husks = husksInvariant(
+		await huskDirectories({
+			root,
+			now: Math.floor(Date.now() / 1000),
+		}),
+		leaseWindowSeconds(policy.coordination.leaseTtlMinutes),
+	);
+	const results = [...report.results, ...hidden, husks];
 	return { results, broken: results.filter((each) => !each.holds).length };
 };
