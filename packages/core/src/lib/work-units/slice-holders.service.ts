@@ -17,6 +17,7 @@ import type {
 	ISwarmUnit,
 	ISwarmView,
 } from '../contracts/interfaces/work-swarm.interface';
+import { UNALLOCATED_PROPOSAL } from './unit-proposal.constant';
 import { unitKeyOf } from './work-swarm.service';
 
 /** Unit kinds that read work rather than do it. */
@@ -62,6 +63,9 @@ export const holdersOfSlice = (input: {
 	readonly slice: string;
 }): readonly ISwarmUnit[] => {
 	if (READING_KINDS.has(input.kind)) return [];
+	// A proposal not yet written has no slice to hold: two agents under
+	// the placeholder are writing two different proposals.
+	if (input.proposal === UNALLOCATED_PROPOSAL) return [];
 	const live = [
 		...input.view.units,
 		...input.view.published.filter((unit) => unit.ahead > 0),

@@ -34,6 +34,7 @@ import { loadDatabaseClass } from '../bun-sqlite.helper';
 import type { IStartupStatePorts } from '@delendai/core/public';
 
 import { applyMigrations } from '../migrations';
+import { describeSchemaAhead, readSchemaAhead } from '../schema-guard.service';
 import { ClaimsRepo } from './claims-repo';
 import { ForgeRepo } from './forge-repo';
 import { GenerationsRepo } from './generations-repo';
@@ -114,6 +115,17 @@ export const openStartupStatePorts = (
 		// schema forbids was accepted here and reported as a corrupt
 		// database at somebody else's startup (x00550).
 		for (const pragma of SQLITE_BOOT_PRAGMAS) db.exec(pragma);
+		// Asked before any use of the handle, a diagnose-only one too:
+		// every port bound below can write, and a database a newer
+		// delendai wrote must not be written by this build at all.
+		const ahead = readSchemaAhead(db);
+		if (ahead !== null) {
+			db.close();
+			return {
+				kind: 'unreadable',
+				reason: describeSchemaAhead(ahead, options.databasePath),
+			};
+		}
 		// Migrating on open is what makes a fresh clone usable without a
 		// manual step. It runs only when this boot was permitted to
 		// create, so a diagnose-only run cannot mutate the schema of a

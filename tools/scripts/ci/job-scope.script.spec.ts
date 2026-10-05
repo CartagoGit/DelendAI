@@ -12,7 +12,12 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { JOB_SCOPES, jobMustRun, planJobs } from './job-scope.script';
+import {
+	explainJobs,
+	JOB_SCOPES,
+	jobMustRun,
+	planJobs,
+} from './job-scope.script';
 import type { IJobScope } from './job-scope.interface';
 
 const SCOPES: readonly IJobScope[] = [
@@ -90,6 +95,45 @@ describe('planJobs', () => {
 			web: false,
 			packaging: false,
 		});
+	});
+});
+
+describe('explainJobs', () => {
+	it('agrees with the plan for every job, whatever changed', () => {
+		for (const changed of [[], ['docs/a.md'], ['apps/web/a.astro']]) {
+			expect(
+				Object.fromEntries(
+					explainJobs({ changed, scopes: SCOPES }).map((each) => [
+						each.job,
+						each.runs,
+					]),
+				),
+			).toEqual(planJobs({ changed, scopes: SCOPES }));
+		}
+	});
+
+	it('names the file that makes a bounded job run, and the bound that lets it skip', () => {
+		const said = explainJobs({
+			changed: ['docs/a.md', 'apps/web/a.astro'],
+			scopes: SCOPES,
+		});
+		expect(said.find((each) => each.job === 'web')?.why).toBe(
+			'apps/web/a.astro changed',
+		);
+		expect(said.find((each) => each.job === 'packaging')?.why).toMatch(
+			/^no changed file is under /u,
+		);
+		expect(said.find((each) => each.job === 'always-job')?.why).toMatch(
+			/^declared always/u,
+		);
+	});
+
+	it('says that nothing is skipped when there is no change list', () => {
+		expect(
+			explainJobs({ changed: [], scopes: SCOPES }).every(
+				(each) => each.runs && each.why.length > 0,
+			),
+		).toBe(true);
 	});
 });
 

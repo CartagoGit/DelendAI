@@ -24,10 +24,10 @@ _(none)_
 
 ## Tests
 
+- packages/proposals-sqlite/src/lib/schema-guard.service.spec.ts
 - packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts
 - packages/proposals-sqlite/tests/e2e/digest-property.spec.ts
 - packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts
-- packages/proposals-sqlite/tests/e2e/fts.spec.ts
 
 ## Do not
 

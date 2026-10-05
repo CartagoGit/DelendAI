@@ -39,8 +39,15 @@ const COMMIT_HASH_RE = /^[0-9a-f]{7,40}$/iu;
 
 export const SHIPPING_LINE_PREFIX = '- shipped-in:';
 
-/** Matches a shipping line already present, with or without a hash. */
-const SHIPPING_LINE_RE = /^[-*]\s*shipped-in:\s*(.*)$/mu;
+/**
+ * Matches a shipping line already present, with or without a hash, in
+ * any of the spellings a writer gives a list key: `shipped-in:`,
+ * `Shipped-In:`, `**Shipped-In**:`. The record is a fact about the
+ * repository, and a slice whose delivery was written in bold was told
+ * that nothing recorded it.
+ */
+const SHIPPING_LINE_RE =
+	/^[-*]\s*(?:\*\*)?shipped-in(?:\*\*)?\s*:\s*(?:\*\*)?\s*(.*)$/imu;
 
 export const isCommitHash = (candidate: string): boolean =>
 	COMMIT_HASH_RE.test(candidate.trim());
@@ -134,6 +141,11 @@ export const readShippingCommit = (block: string): string | undefined => {
 	const match = SHIPPING_LINE_RE.exec(block);
 	if (match === null) return undefined;
 	const value = (match[1] ?? '').trim();
-	const hash = /`([0-9a-f]{7,40})`/iu.exec(value)?.[1];
+	// In backticks anywhere on the line, or bare at its start.
+	const candidates = [
+		...[...value.matchAll(/`([^`]+)`/gu)].map((each) => each[1] ?? ''),
+		value.split(/\s/u)[0] ?? '',
+	];
+	const hash = candidates.find(isCommitHash);
 	return hash?.toLowerCase();
 };

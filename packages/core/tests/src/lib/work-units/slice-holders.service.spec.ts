@@ -119,6 +119,21 @@ describe('holdersOfSlice', () => {
 		).toEqual([]);
 	});
 
+	it('holds nobody out of a proposal not yet written: each agent writes its own', () => {
+		expect(
+			holdersOfSlice({
+				...asking,
+				kind: 'create',
+				proposal: 'new',
+				slice: 'all',
+				view: view(
+					[unit('codex', 'create/new-all-g1/one-proposal')],
+					[unit('glm', 'create/new-all-g1/another-proposal')],
+				),
+			}),
+		).toEqual([]);
+	});
+
 	it('says who holds it and what can be done about it', () => {
 		const lines = describeSliceHolders([
 			unit('codex', 'implement/x00001-S1-g1/t'),

@@ -86,7 +86,7 @@ Hay además una restricción de seguridad que el diseño debe garantizar por con
 ### S4 — Selección explicable
 - **Status**: done
 - **DependsOn**: [S3]
-- **Files**: `plugins/auto-agent-selector/src/lib/routing/selection-explain.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/selection-explain.spec.ts`
+- **Files**: `plugins/auto-agent-selector/src/lib/routing/selection-explain.service.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/selection-explain.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Toda selección responde por qué se eligió esa ruta, qué alternativas se descartaron y por qué motivo cada una."
