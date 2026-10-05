@@ -1609,14 +1609,6 @@
 				"date": "2026-09-19"
 			},
 			{
-				"id": "x00766",
-				"title": "A project with one branch and a project with no policy both get a working model",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-09-30"
-			},
-			{
 				"id": "x00769",
 				"title": "Push guards and protected-branch defaults follow the configured development policy",
 				"track": "general",
