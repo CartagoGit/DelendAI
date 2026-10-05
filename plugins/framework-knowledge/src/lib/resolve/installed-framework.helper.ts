@@ -1,26 +1,26 @@
-// effect-boundary-authorized: Reads the workspace manifest and lockfile to resolve the installed framework version; read-only.
 // installed-framework.helper.ts — which framework, at which version.
 //
 // Detection and version resolution are core's (`matchFramework`,
 // `resolveFrameworkVersion`); this only reads the two files they need
 // and joins the answers, so both tools resolve identically.
 
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
 import {
 	DEFAULT_FRAMEWORK_RULES,
 	matchFramework,
 	resolveFrameworkVersion,
+	SafeWorkspaceReader,
 } from '@delendai/core/public';
-import type { ILockfileKind, ILockfileRef } from '@delendai/core/public';
+import type { ILockfileRef } from '@delendai/core/public';
 
 import { LOCKFILE_NAMES } from '../contracts/constants/knowledge-cache.constant';
 import type { IInstalledFramework } from '../contracts/interfaces/knowledge-cache.interface';
 
-const readTextIfPresent = async (path: string): Promise<string | undefined> => {
+const readTextIfPresent = async (
+	rootAbs: string,
+	name: string,
+): Promise<string | undefined> => {
 	try {
-		return await readFile(path, 'utf8');
+		return (await new SafeWorkspaceReader(rootAbs).readText(name)).content;
 	} catch {
 		return undefined;
 	}
@@ -29,7 +29,7 @@ const readTextIfPresent = async (path: string): Promise<string | undefined> => {
 const readDependencies = async (
 	rootAbs: string,
 ): Promise<Readonly<Record<string, string>>> => {
-	const text = await readTextIfPresent(join(rootAbs, 'package.json'));
+	const text = await readTextIfPresent(rootAbs, 'package.json');
 	if (text === undefined) return {};
 	try {
 		const manifest = JSON.parse(text) as {
@@ -46,9 +46,9 @@ const readLockfile = async (
 	rootAbs: string,
 ): Promise<ILockfileRef | undefined> => {
 	for (const name of LOCKFILE_NAMES) {
-		const text = await readTextIfPresent(join(rootAbs, name));
+		const text = await readTextIfPresent(rootAbs, name);
 		if (text !== undefined) {
-			return { kind: name satisfies ILockfileKind, text };
+			return { kind: name, text };
 		}
 	}
 	return undefined;

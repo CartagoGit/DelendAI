@@ -664,11 +664,7 @@ export {
 	matchFramework,
 } from '../lib/bootstrap/framework-rules';
 export { resolveFrameworkVersion } from '../lib/bootstrap/framework-version';
-export type {
-	ILockfileKind,
-	ILockfileRef,
-	IResolvedFrameworkVersion,
-} from '../lib/contracts/interfaces/framework-version.interface';
+export type { ILockfileRef } from '../lib/contracts/interfaces/framework-version.interface';
 
 // --- one-call project adoption (f00157 S1) --------------------------------
 export { buildAdoptionAssessment } from '../lib/adopt/adoption-assessment.service';

@@ -9,7 +9,7 @@ import type { IToolRegistration } from '@delendai/core/public';
 import { toolError, toolOk } from '@delendai/core/public';
 
 import type { IKnowledgeToolOptions } from '../contracts/interfaces/knowledge-cache.interface';
-import { readEvidence } from '../cache/knowledge-cache';
+import { readEvidence } from '../cache/knowledge-cache.service';
 import { resolveInstalledFramework } from '../resolve/installed-framework.helper';
 import { SourceOutputSchema } from './knowledge-output.schema';
 

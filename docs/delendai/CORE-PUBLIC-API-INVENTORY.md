@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 541
+Total exports: 539
 
 | Maturity | Count |
 | --- | --- |
-| stable | 538 |
+| stable | 536 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -231,7 +231,6 @@ Total exports: 541
 | `ILocalMergeCycleOutcome` | type | stable | `../lib/integration-engine/local-merge-cycle.interface` |
 | `ILocalMergeCycleStatus` | type | stable | `../lib/integration-engine/local-merge-cycle.interface` |
 | `ILockExpiryPolicy` | type | stable | `../lib/contracts/interfaces/lock-entry-expiry.interface` |
-| `ILockfileKind` | type | stable | `../lib/contracts/interfaces/framework-version.interface` |
 | `ILockfileRef` | type | stable | `../lib/contracts/interfaces/framework-version.interface` |
 | `ILogsSink` | type | stable | `../lib/plugins/plugin-contract` |
 | `ILoopDetectorConfig` | type | stable | `../lib/plugins/load-config-file` |
@@ -294,7 +293,6 @@ Total exports: 541
 | `IReleaseStatusCompact` | type | stable | `../lib/contracts/release-state` |
 | `IReleaseTarget` | type | stable | `../lib/development-policy/release-target.interface` |
 | `IResolvedDevelopmentPolicy` | type | stable | `../lib/contracts/interfaces/development-policy.interface` |
-| `IResolvedFrameworkVersion` | type | stable | `../lib/contracts/interfaces/framework-version.interface` |
 | `IResolvedHostIdentity` | type | stable | `../contracts` |
 | `IResourceRegistration` | type | stable | `../contracts` |
 | `IRoleRule` | type | stable | `../lib/contracts/file-conventions.contract` |

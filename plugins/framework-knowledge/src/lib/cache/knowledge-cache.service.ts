@@ -1,5 +1,5 @@
 // effect-boundary-authorized: Owns the on-disk knowledge cache under the delendai cache directory; every read and write of it goes through this module.
-// knowledge-cache.ts — a cache of framework knowledge keyed by the
+// knowledge-cache.service.ts — a cache of framework knowledge keyed by the
 // resolved framework version.
 //
 // Summary and evidence live in separate files so the common question
@@ -8,10 +8,12 @@
 // read, so the cache answers offline. A set written for one lockfile
 // entry is reported `stale` when the entry changes.
 
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import z from 'zod';
+
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import {
 	EVIDENCE_FILE_NAME,
@@ -68,12 +70,14 @@ export const knowledgeDir = (
 
 /** Parse one JSON file against a schema; `undefined` when absent, `null` when unusable. */
 const readJsonFile = async <T>(
+	cacheRootAbs: string,
 	path: string,
 	schema: z.ZodType<T>,
 ): Promise<T | undefined | null> => {
 	let text: string;
 	try {
-		text = await readFile(path, 'utf8');
+		text = (await new SafeWorkspaceReader(cacheRootAbs).readText(path))
+			.content;
 	} catch {
 		return undefined;
 	}
@@ -136,10 +140,15 @@ export const writeKnowledge = async (
 
 /** `true` only when meta exists and names exactly this lockfile entry. */
 const metaState = async (
+	cacheRootAbs: string,
 	dir: string,
 	lockEntry: string,
 ): Promise<'fresh' | 'absent' | 'stale' | 'corrupt'> => {
-	const meta = await readJsonFile(join(dir, META_FILE_NAME), MetaFileSchema);
+	const meta = await readJsonFile(
+		cacheRootAbs,
+		join(dir, META_FILE_NAME),
+		MetaFileSchema,
+	);
 	if (meta === undefined) return 'absent';
 	if (meta === null) return 'corrupt';
 	return meta.lockEntry === lockEntry ? 'fresh' : 'stale';
@@ -154,9 +163,10 @@ export const readSummary = async (
 ): Promise<IKnowledgeSummaryResult> => {
 	const dir = knowledgeDir(cacheRootAbs, key);
 	if (dir === undefined) return { hit: false, reason: 'absent' };
-	const state = await metaState(dir, lockEntry);
+	const state = await metaState(cacheRootAbs, dir, lockEntry);
 	if (state !== 'fresh') return { hit: false, reason: state };
 	const summary = await readJsonFile(
+		cacheRootAbs,
 		join(dir, SUMMARY_FILE_NAME),
 		SummaryFileSchema,
 	);
@@ -180,9 +190,10 @@ export const readEvidence = async (
 ): Promise<IKnowledgeEvidenceResult> => {
 	const dir = knowledgeDir(cacheRootAbs, key);
 	if (dir === undefined) return { hit: false, reason: 'absent' };
-	const state = await metaState(dir, lockEntry);
+	const state = await metaState(cacheRootAbs, dir, lockEntry);
 	if (state !== 'fresh') return { hit: false, reason: state };
 	const evidence = await readJsonFile(
+		cacheRootAbs,
 		join(dir, EVIDENCE_FILE_NAME),
 		EvidenceFileSchema,
 	);

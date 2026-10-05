@@ -13,7 +13,7 @@ import {
 	readEvidence,
 	readSummary,
 	writeKnowledge,
-} from '../../../../src/lib/cache/knowledge-cache';
+} from '../../../../src/lib/cache/knowledge-cache.service';
 import type { IKnowledgeRecord } from '../../../../src/lib/contracts/interfaces/knowledge-record.interface';
 
 const KEY = { frameworkId: 'angular', version: '17.3.2' } as const;

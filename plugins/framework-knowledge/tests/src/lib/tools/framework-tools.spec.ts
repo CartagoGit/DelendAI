@@ -8,7 +8,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { writeKnowledge } from '../../../../src/lib/cache/knowledge-cache';
+import { writeKnowledge } from '../../../../src/lib/cache/knowledge-cache.service';
 import type { IKnowledgeToolOptions } from '../../../../src/lib/contracts/interfaces/knowledge-cache.interface';
 import type { IKnowledgeRecord } from '../../../../src/lib/contracts/interfaces/knowledge-record.interface';
 import { runFrameworkGuidance } from '../../../../src/lib/tools/guidance.tool';

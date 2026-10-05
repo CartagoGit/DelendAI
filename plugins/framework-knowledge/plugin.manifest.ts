@@ -9,9 +9,9 @@ export default definePluginManifest({
 		'Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.',
 	tags: ['knowledge', 'frameworks', 'policy'],
 	maturity: 'experimental',
-	// The tools only read the manifest, the lockfile and the local
-	// knowledge cache; nothing here writes outside the cache directory.
-	permissions: ['filesystem-read'],
+	// The tools read the manifest, the lockfile and the local knowledge
+	// cache; the cache module writes only under the cache directory.
+	permissions: ['filesystem-read', 'filesystem-write'],
 	// Deliberately in NO preset: adopting a framework rule is a decision
 	// a project opts into, not a default.
 	presets: [],

@@ -16,7 +16,7 @@ import type {
 	IKnowledgeSummaryEntry,
 	IKnowledgeToolOptions,
 } from '../contracts/interfaces/knowledge-cache.interface';
-import { readSummary } from '../cache/knowledge-cache';
+import { readSummary } from '../cache/knowledge-cache.service';
 import { resolvePolicy } from '../policy/resolve-policy.helper';
 import { resolveInstalledFramework } from '../resolve/installed-framework.helper';
 import { GuidanceOutputSchema } from './knowledge-output.schema';

@@ -176,7 +176,7 @@ instead of its own habits.
 ### S5 — The two tools, and a cache keyed by resolved version
 
 - **Status**: review
-- **Files**: [`plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/plugin.manifest.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/source.tool.ts`, `plugins/framework-knowledge/src/lib/tools/knowledge-output.schema.ts`, `plugins/framework-knowledge/src/lib/cache/knowledge-cache.ts`, `plugins/framework-knowledge/src/lib/resolve/installed-framework.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-cache.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-cache.constant.ts`, `plugins/framework-knowledge/tests/src/lib/cache/knowledge-cache.spec.ts`, `plugins/framework-knowledge/tests/src/lib/tools/framework-tools.spec.ts`, `plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts`, `packages/core/src/public/index.ts`]
+- **Files**: [`plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/plugin.manifest.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/source.tool.ts`, `plugins/framework-knowledge/src/lib/tools/knowledge-output.schema.ts`, `plugins/framework-knowledge/src/lib/cache/knowledge-cache.service.ts`, `plugins/framework-knowledge/src/lib/resolve/installed-framework.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-cache.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-cache.constant.ts`, `plugins/framework-knowledge/tests/src/lib/cache/knowledge-cache.spec.ts`, `plugins/framework-knowledge/tests/src/lib/tools/framework-tools.spec.ts`, `plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts`, `packages/core/src/public/index.ts`]
 
 `framework_guidance { topic }` returns the small resolved answer;
 `framework_source { ruleId }` returns the evidence behind one rule, only
@@ -185,7 +185,7 @@ is invalidated when the lockfile entry changes, survives offline, and
 keeps summary and evidence apart so the common path stays cheap.
 
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/cache/knowledge-cache.spec.ts && bun run lint:unregistered-tools`
-- Shipped: `knowledge-cache.ts` stores `summary.json` (records without
+- Shipped: `knowledge-cache.service.ts` stores `summary.json` (records without
   evidence), `evidence.json` and `meta.json` per framework and version;
   `meta.json` names the lockfile entry (`<source>:<dep>@<version>`) and is
   written last, so a changed entry reads as `stale` and a half-written set
