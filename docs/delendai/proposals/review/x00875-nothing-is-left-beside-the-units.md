@@ -109,6 +109,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S9 — A cited proposal is found in any status folder
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/proposal-completeness.ts`, `plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`
+- **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/services/proposal-completeness.spec.ts`
+- Found 2026-10-05 handing `x00539` to review: its S4 cites `f00534` by the `ready/` path it had when written, and the hand-off was refused with "declared files do not exist". The repository's lints had been taught the same thing an hour earlier (`f00536`); the plugin's own check, which only spared the proposal's own document, had not. A declared path under `docs/delendai/proposals/` now counts as present when a proposal document of that file name exists in any status folder; any other missing file is still owed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.
