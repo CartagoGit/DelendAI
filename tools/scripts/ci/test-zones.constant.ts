@@ -27,11 +27,25 @@ const under =
  * failing says nothing at all. Membership is by path, so a workspace
  * added tomorrow joins a zone without anyone editing a workflow.
  */
+/** The workspace roots whose sources the core zone's specs read. */
+const SCANNED_BY_CORE: readonly string[] = [
+	'plugins/',
+	'packages/',
+	'apps/',
+	'extensions/',
+];
+
 export const ZONE_RULES: readonly IZoneRule[] = [
 	{
 		id: 'core',
 		match: under('packages/core/'),
 		paths: () => ['packages/core'],
+		// Its architecture specs walk the source of every other workspace
+		// (raw writes in a plugin, a plugin's drift from the shared
+		// contracts), so a change there can break them.
+		scans: (path) =>
+			SCANNED_BY_CORE.some((prefix) => path.startsWith(prefix)) &&
+			!path.startsWith('packages/core/'),
 	},
 	{
 		id: 'proposals',
