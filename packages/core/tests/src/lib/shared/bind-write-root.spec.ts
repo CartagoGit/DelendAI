@@ -203,6 +203,46 @@ describe('bindWriteRoot', () => {
 		expect(result.structuredContent.error.reason).toContain('develop');
 	});
 
+	describe('the next step of a write refused in the shared checkout', () => {
+		const nextActionOf = async (
+			registration: IToolRegistration,
+		): Promise<string> => {
+			const { handler } = await registerOn(
+				bindWriteRoot(
+					registration,
+					SERVER,
+					sameRepository,
+					async () => 'this is the shared checkout on develop',
+				),
+			);
+			const result = (await handler({})) as {
+				readonly structuredContent: {
+					readonly error: { readonly nextAction: string };
+				};
+			};
+			return result.structuredContent.error.nextAction;
+		};
+
+		it('names the way in that a tool declares, when it creates what it writes', async () => {
+			const nextAction = await nextActionOf({
+				...toolReportingItsRoot('caller-checkout'),
+				refusedWriteNextStep:
+					'Enter a unit with `--proposal=new`, then create there.',
+			});
+			expect(nextAction).toBe(
+				'Enter a unit with `--proposal=new`, then create there.',
+			);
+		});
+
+		it('keeps pointing at a unit for the proposal for a tool that edits one', async () => {
+			const nextAction = await nextActionOf(
+				toolReportingItsRoot('caller-checkout'),
+			);
+			expect(nextAction).toContain('work enter --proposal=<id>');
+			expect(nextAction).not.toContain('--proposal=new');
+		});
+	});
+
 	describe('a call about a proposal, made from the shared checkout on the integration branch', () => {
 		const PROPOSAL_TOOL = z.object({
 			id: z.string(),
