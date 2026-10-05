@@ -1038,7 +1038,7 @@ export interface DelendaiProposalsReviewQueueOutput {
 			gate?: string;
 			files?: string[];
 			acceptance?: string[];
-			verdict: "needs-verdict" | "blocked" | "waiting-on-implementer" | "approved";
+			verdict: "needs-verdict" | "needs-another-reviewer" | "blocked" | "waiting-on-implementer" | "approved";
 			nextAction?: string;
 			missing?: string;
 			changedSince?: {
