@@ -2,7 +2,7 @@
 id: f00271
 title: "`detail: compact | normal | full` transversal"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -17,9 +17,9 @@ related:
     - r00031 # proposal_get (canary del patrón)
     - r00032 # orchestrator-runner (canary)
     - f00270 # TokenBudgetRegistry (mide los 3 niveles)
-last-transition-id: 84299e81-b291-40ba-a607-acdee67ac782
-last-correlation-id: 84299e81-b291-40ba-a607-acdee67ac782
-last-transition-from: ready
+last-transition-id: f82d5c4f-3e21-4c2a-8447-25753c9cfc74
+last-correlation-id: f82d5c4f-3e21-4c2a-8447-25753c9cfc74
+last-transition-from: in-progress
 ---
 
 # f00271 — `detail: compact | normal | full` transversal
@@ -180,6 +180,7 @@ cualquier tool a partir de un solo campo de input.
     - *No per-level answers.* `logs_correlate` (no task id) and `audit_consolidate` (no audit directory) returned their error envelope, 147 B and 232 B at every level. Before #232 a listing client could not receive those at all.
     - *Not measured.* `audit_run`, `invoke` and `proposal_get` need arguments (targets, a provider task, a view) that the fixture does not provide.
   - **Consequence.** The table answers the intent of acceptance 2, but it is not yet reproducible from the repository: the probe that produced it is not a committed script. Three adopted tools are unmeasured, and the log rows depend on run state. Until a committed measurement exists, with fixed log fixtures and arguments for the three missing tools, the proposal stays out of `done/`.
+- shipped-in: `8fd88fed02a3`
 ## acceptance
 
 - 8 plugins objetivo aceptan `detail` (incluyendo `proposals` y

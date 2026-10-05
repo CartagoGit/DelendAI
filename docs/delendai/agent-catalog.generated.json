@@ -1561,6 +1561,14 @@
 				"date": "2026-09-08"
 			},
 			{
+				"id": "x00539",
+				"title": "Tres defectos hacian imposible proyectar este repositorio a SQLite: vocabulario sin normalizar, promocion que exige ok, y PlanRepo.create no idempotente",
+				"track": "architecture",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-09-08"
+			},
+			{
 				"id": "x00541",
 				"title": "576 de los 865 exports públicos de core no tienen ningún importador en el repo y 59 no se referencian en ninguna parte fuera del paquete",
 				"track": "architecture",
