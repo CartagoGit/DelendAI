@@ -13,6 +13,7 @@ import {
 	REVIEW_QUEUE_OUTPUT_SCHEMA,
 } from '../contracts/constants/review-queue-schema.constant';
 import { queueForReviewer } from '../services/review-queue-reviewer.service';
+import { proposalsDirOfUnit } from '../services/review-unit-tree.service';
 import { compactQueue } from '../services/review-queue-view.service';
 import { buildReviewQueue } from '../services/review-queue.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
@@ -57,10 +58,17 @@ export const buildReviewQueueRegistration = (
 				detail?: boolean | undefined;
 			}) => {
 				const scoped = scopeToCaller(options);
+				const run = scoped.run ?? createGitRunner(scoped.workspaceRoot);
 				const built = await buildReviewQueue({
 					namespacePrefix: options.namespacePrefix,
-					proposalsDirAbs: scoped.proposalsDirAbs,
-					run: scoped.run ?? createGitRunner(scoped.workspaceRoot),
+					// The reviewer's own verdicts are in its unit, not yet here.
+					proposalsDirAbs: await proposalsDirOfUnit({
+						run,
+						workspaceRoot: scoped.workspaceRoot,
+						proposalsDirAbs: scoped.proposalsDirAbs,
+						unit: args.unit,
+					}),
+					run,
 					integration:
 						scoped.developmentPolicy?.branches.integration ??
 						'HEAD',
