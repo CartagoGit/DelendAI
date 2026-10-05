@@ -4,7 +4,7 @@ import {
 	registerWorkflowContribution,
 	type IAssembleWorkflowContributionsInput,
 } from '@delendai/core/public';
-import { readProposalsIndex } from '@delendai/core/public';
+import { readProposalsIndex } from '../proposals/proposal-summaries.service';
 
 import { PROPOSALS_STABLE_TOOLS } from '../api/proposals-stable-tools';
 

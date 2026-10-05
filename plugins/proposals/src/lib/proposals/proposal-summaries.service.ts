@@ -1,14 +1,17 @@
 /**
- * read-proposals-index.ts — Reads the proposal registry from the cache.
+ * proposal-summaries.service.ts — the proposal registry as catalog
+ * summaries.
  *
- * Extracted from `assemble.ts` (SRP): the proposal-index reader is a
+ * It lived in core, which then knew where this plugin keeps its registry
+ * and what its entries hold: the inversion core must not carry. The plugin
+ * owns the registry, so it owns this reader. The reader is a
  * self-contained concern that parses the regenerable cache artifact
  * `<cacheDir>/proposals/index.json` into typed `IProposalSummary[]`.
  * Pure except for the injectable file-reader.
  */
 import { join } from 'node:path';
 
-import type { IProposalSummary } from '../catalog/agent-discovery-types';
+import type { IProposalSummary } from '@delendai/core/public';
 
 interface IProposalIndexFileEntry {
 	readonly id?: string;

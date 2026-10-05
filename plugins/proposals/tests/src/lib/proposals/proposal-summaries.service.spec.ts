@@ -1,5 +1,5 @@
 /**
- * Tests for the extracted read-proposals-index module.
+ * Tests for the proposal summaries reader.
  */
 import { describe, expect, it } from 'vitest';
 
@@ -7,7 +7,7 @@ import {
 	proposalKindFromId,
 	normalizeProposalStatus,
 	readProposalsIndex,
-} from '../../../../src/lib/cli/read-proposals-index';
+} from '../../../../src/lib/proposals/proposal-summaries.service';
 
 describe('proposalKindFromId', () => {
 	it.each([
