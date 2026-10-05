@@ -37,6 +37,8 @@ Any post-merge hook run creates a detached scratch worktree for minutes, blockin
   - "a detached worktree yields a non-corrupt snapshot"
   - "an unmanaged worktree is ignored"
   - "a managed entry with an invalid lastSeen is still corrupt"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
