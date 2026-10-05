@@ -154,7 +154,8 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
     - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
 - Shipped: `defaultDeepChecks()` registry and the `error-reporting-self-test` check. The plugin is imported by a computed specifier so the CLI takes no static dependency; if it cannot be loaded the section is a `warn` that says it was skipped. Offline it passes `live: false`, so the `gh` checks come back marked skipped. The spec injects a runner with a fake exec and asserts zero `gh issue create` calls. File names follow the lints (`*.service.ts`), not the names drafted here.
-
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## dependency graph
 
