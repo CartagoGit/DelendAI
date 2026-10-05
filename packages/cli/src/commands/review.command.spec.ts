@@ -85,6 +85,10 @@ const contextFor = (
 								verdict,
 								implementer: 'claude-opus-5-5',
 								gate: 'npx vitest run a.spec.ts',
+								acceptance: [
+									'the flag is read',
+									'a person is unaffected',
+								],
 								candidates: [{ commit: 'abc1234' }],
 							}),
 						),
@@ -156,6 +160,11 @@ describe('delendai review', () => {
 			`delendai review approve x00002 S1 --agent=minimax-m3 --session=${answer.session} --commit=abc1234`,
 		);
 		expect(answer.slices[0]?.changes).toContain('review changes x00002 S1');
+		// One `--criterion` per declared criterion: an approval without
+		// evidence for each is refused, so the call says how to give it.
+		expect(answer.slices[0]?.approve).toContain(
+			'--criterion="the flag is read => <how you verified it>" --criterion="a person is unaffected => <how you verified it>"',
+		);
 	});
 
 	it('finishes the proposal it claimed before taking another', async () => {
@@ -225,6 +234,8 @@ describe('delendai review', () => {
 			'--validate-exit=0',
 			'--tests-passing=12',
 			'--tests-total=12',
+			'--criterion=the flag is read => guard.spec reads it',
+			'--criterion=a person is unaffected => a => in the evidence stays => person.spec',
 		);
 		const changes = await run(
 			ctx,
@@ -253,6 +264,17 @@ describe('delendai review', () => {
 					validateExitCode: 0,
 					testsPassing: 12,
 					testsTotal: 12,
+					acceptanceCriteria: [
+						{
+							criterion: 'the flag is read',
+							evidence: 'guard.spec reads it',
+						},
+						{
+							criterion: 'a person is unaffected',
+							evidence:
+								'a => in the evidence stays => person.spec',
+						},
+					],
 				},
 				commitHash: 'abc1234',
 				checkout: started.worktree,
