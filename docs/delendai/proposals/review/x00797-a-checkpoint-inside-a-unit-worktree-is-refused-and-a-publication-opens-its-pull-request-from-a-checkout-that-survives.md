@@ -2,13 +2,13 @@
 id: x00797
 title: "A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: a91a7ab3-eff6-43db-a8e4-bc434a789835
-last-correlation-id: a91a7ab3-eff6-43db-a8e4-bc434a789835
-last-transition-from: ready
+last-transition-id: 0960d810-fb71-43b5-9dc7-dce08667f1e6
+last-correlation-id: 0960d810-fb71-43b5-9dc7-dce08667f1e6
+last-transition-from: in-progress
 ---
 
 # x00797 — A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives
@@ -48,6 +48,9 @@ Two bugs found by agents. A checkpoint run from inside the unit worktree wrote t
   - `packages/core/tests/src/lib/wip-engine/checkpoint.spec.ts`
   - `packages/core/tests/src/lib/work-units/work-unit-profiles.spec.ts`
 - **Gate**: type
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- shipped-in: `0442b28dee5d`
 
 ## acceptance
 
