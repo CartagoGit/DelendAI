@@ -2,10 +2,13 @@
 id: x00769
 title: "Push guards and protected-branch defaults follow the configured development policy"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-30
+last-transition-id: 6289c9c1-5a24-4f23-bbc5-f2a49abef47e
+last-correlation-id: 6289c9c1-5a24-4f23-bbc5-f2a49abef47e
+last-transition-from: ready
 ---
 
 # x00769 — Push guards and protected-branch defaults follow the configured development policy
