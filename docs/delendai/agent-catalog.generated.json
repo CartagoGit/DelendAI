@@ -1615,22 +1615,6 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-09-30"
-			},
-			{
-				"id": "x00795",
-				"title": "The core public surface is back under budget and the gate runs in CI",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-01"
-			},
-			{
-				"id": "x00798",
-				"title": "close_slice gate must not treat a detached worktree as corrupt activity",
-				"track": "general",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-01"
 			}
 		]
 	}
