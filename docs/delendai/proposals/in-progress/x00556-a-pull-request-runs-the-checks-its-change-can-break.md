@@ -157,6 +157,8 @@ answerable, reviewable and testable.
   under when it is skipped, `declared always`, or that there is no
   change list and nothing is skipped. It is computed from the same
   table as the plan, and a spec holds the two to the same answer.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A change outside the workspaces reaches only the zones that read it
 
