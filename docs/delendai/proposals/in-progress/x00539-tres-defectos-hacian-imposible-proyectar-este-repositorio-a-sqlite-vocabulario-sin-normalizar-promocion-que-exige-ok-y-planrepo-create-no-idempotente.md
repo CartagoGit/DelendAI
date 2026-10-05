@@ -70,6 +70,7 @@ candidato en orden canonico (uid, path), que es determinista.
 
 ### S1 — normalizar kind y status en la frontera de escritura, con una ontologia unica
 - **Status**: done
+- shipped-in: `eaf03fb5c`
 - **Files**: `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`, `packages/proposals-sqlite/src/lib/vocabulary.ts`, `packages/proposals-sqlite/tests/src/lib/vocabulary.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -84,6 +85,7 @@ candidato en orden canonico (uid, path), que es determinista.
 - review-log: approved by delivery_verifier — Revisión independiente completada. La implementación ya estaba presente en el commit declarado y la validación compatible con bun:sqlite pasó; el typecheck focalizado también pasó.
 ### S2 — una ejecucion degraded es promocionable; solo failed bloquea
 - **Status**: done
+- shipped-in: `eaf03fb5c`
 - **Files**: `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`, `packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -97,6 +99,7 @@ candidato en orden canonico (uid, path), que es determinista.
 - review-log: approved by delivery_verifier — Revisión independiente completada. applyValidatedCandidate acepta staging degraded cuando integrity/FK/digest son válidos, rechaza failed y expone quarantinedEntries. La validación Bun pasó 6/6 y el typecheck focalizado pasó.
 ### S3 — PlanRepo.create y SliceRepo.create son idempotentes por uid
 - **Status**: done
+- shipped-in: `eaf03fb5c`
 - **DependsOn**: [S1]
 - **Files**: `packages/proposals-sqlite/src/lib/repository/plans-repo.ts`, `packages/proposals-sqlite/src/lib/repository/slices-repo.ts`, `packages/proposals-sqlite/tests/src/lib/repository/plans-repo.spec.ts`
 - **Gate**: type
@@ -110,6 +113,7 @@ candidato en orden canonico (uid, path), que es determinista.
 - review-log: approved by delivery_verifier — Revisión independiente completada. PlanRepo.create y SliceRepo.create son idempotentes por uid y actualizan la proyección sin duplicar filas; el caso real f00418 está cubierto. La suite Bun pasó 5/5 y el typecheck focalizado pasó.
 ### S4 — medir de nuevo la paridad y registrar la cifra
 - **Status**: done
+- shipped-in: `eaf03fb5c`
 - **DependsOn**: [S1, S2, S3]
 - **Files**: `docs/delendai/proposals/ready/feats/f00534-proposals-db-reconcile-la-primera-escritura-de-produccion-en-proposals-sqlite-que-hoy-no-existe-porque-nada-la-crea.md`
 - **Gate**: none
