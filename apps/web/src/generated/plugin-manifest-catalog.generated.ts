@@ -685,7 +685,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"presets": [],
 		"capabilities": [],
 		"permissions": [
-			"filesystem-read"
+			"filesystem-read",
+			"filesystem-write"
 		],
 		"tokenBudget": {
 			"warning": 2700,

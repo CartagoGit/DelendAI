@@ -1,6 +1,9 @@
 import z from 'zod';
 
-import { definePlugin } from '@delendai/core/public';
+import { definePlugin, joinUnderRoot } from '@delendai/core/public';
+
+import { buildGuidanceRegistration } from './lib/tools/guidance.tool';
+import { buildSourceRegistration } from './lib/tools/source.tool';
 
 /**
  * `@delendai/framework-knowledge`.
@@ -10,12 +13,10 @@ import { definePlugin } from '@delendai/core/public';
  * versioned, evidence-backed answer instead of thousands of tokens of
  * general training-knowledge guesswork.
  *
- * This entry registers NO tools yet. The library they will be built on
- * lands first — the knowledge record shape and its force
- * (`knowledge-record.ts`), the policy resolver and the detected-convention
- * input — all pure and independently tested. Until the tools exist the
- * plugin has nothing to expose and is absent from every preset (see
- * `plugin.manifest.ts`), and it takes no options.
+ * Two tools: `framework_guidance` returns the small resolved answer for a
+ * topic, `framework_source` the evidence behind one rule. Both answer from
+ * a cache keyed by the resolved framework version. The plugin is absent
+ * from every preset (see `plugin.manifest.ts`) and takes no options.
  */
 const OptionsSchema = z.object({});
 
@@ -25,7 +26,17 @@ export default definePlugin({
 	describe:
 		'Resolves what the installed framework version allows, recommends and forbids, as a small cached answer instead of general training knowledge.',
 	optionsSchema: OptionsSchema,
-	register() {
-		return { tools: [] };
+	register(ctx) {
+		const toolOptions = {
+			namespacePrefix: ctx.namespacePrefix,
+			workspaceRootAbs: ctx.workspace.root,
+			cacheRootAbs: joinUnderRoot(ctx.workspace.root, ctx.cacheDir),
+		};
+		return {
+			tools: [
+				buildGuidanceRegistration(toolOptions),
+				buildSourceRegistration(toolOptions),
+			],
+		};
 	},
 });
