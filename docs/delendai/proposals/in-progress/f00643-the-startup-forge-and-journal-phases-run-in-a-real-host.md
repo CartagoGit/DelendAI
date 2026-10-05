@@ -2,10 +2,13 @@
 id: f00643
 title: "The startup forge and journal phases run in a real host"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-26
+last-transition-id: 3e9f6faf-bbca-4f3a-8518-7d1d13153075
+last-correlation-id: 3e9f6faf-bbca-4f3a-8518-7d1d13153075
+last-transition-from: ready
 ---
 
 # f00643 — The startup forge and journal phases run in a real host

@@ -98,6 +98,7 @@ export const runStartupGate = async (
 		...(input.governance === undefined
 			? {}
 			: { governance: input.governance }),
+		...(input.forge === undefined ? {} : { forge: input.forge }),
 		...(input.allowCreate === undefined
 			? {}
 			: { allowCreate: input.allowCreate }),
@@ -111,8 +112,10 @@ export const runStartupGate = async (
 		// Only the collaborators that were actually left unbound are
 		// reported NOT EXECUTED. Listing a phase that DID run would be
 		// the same lie as implying a green one that did not.
-		notExecutedPhases: OPTIONAL_STARTUP_PHASES.filter(
-			(phase) => phase !== 'governance' || input.governance === undefined,
-		),
+		notExecutedPhases: OPTIONAL_STARTUP_PHASES.filter((phase) => {
+			if (phase === 'governance') return input.governance === undefined;
+			if (phase === 'forge') return input.forge === undefined;
+			return true;
+		}),
 	};
 };
