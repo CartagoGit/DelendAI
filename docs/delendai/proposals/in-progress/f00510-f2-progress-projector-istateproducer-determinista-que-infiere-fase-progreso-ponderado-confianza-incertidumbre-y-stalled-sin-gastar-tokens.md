@@ -105,6 +105,8 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "`subscribe` applies back-pressure by coalescing per `workItemId`: at most one delivery per item per second (configurable), only the newest held snapshot is kept, and the host calls `flush()` on its own tick. The clock is injected, so specs use no real timers."
   - "Property test: for 50 seeded random sequences of 100 events appended in uneven chunks, the incremental service equals a clean rebuild. Only the in-memory path is covered: the SQLite shadow of the earlier State Engine plan does not exist."
   - "`projector-ratchet.spec.ts` checks over 50 random streams that no event lowers the phase rank, with the default rules and with a caller rule that points backwards."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
