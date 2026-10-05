@@ -12,6 +12,7 @@ import {
 	OWNER_RECONCILE_LABEL,
 	ownerAuthorizedReconcile,
 	unapprovedSlices,
+	unclaimedProposals,
 } from './closed-with-independent-approval.script';
 
 const slice = (lines: string) => `### S1 — the work
@@ -161,5 +162,37 @@ describe('the owner authorizes a reconciliation (x00743)', () => {
 				['refs/heads/delendai/pr/'],
 			),
 		).toBe('reconcile');
+	});
+});
+
+describe('unclaimedProposals', () => {
+	const DIR = 'docs/delendai/proposals';
+
+	it('names a proposal a pack changes and none of its commits claimed', () => {
+		expect(
+			unclaimedProposals(
+				[
+					`${DIR}/review/x00001-one.md`,
+					`${DIR}/done/fixes/x00002-two.md`,
+					`${DIR}/review/x00003-three.md`,
+					`${DIR}/README.md`,
+					'',
+				],
+				['x00001', ' X00003 ', ''],
+			),
+		).toEqual(['x00002']);
+	});
+
+	it('is empty for a pack that changes only what it claimed, wherever the document moved', () => {
+		expect(
+			unclaimedProposals(
+				[
+					`${DIR}/review/x00001-one.md`,
+					`${DIR}/done/fixes/x00001-one.md`,
+				],
+				['x00001'],
+			),
+		).toEqual([]);
+		expect(unclaimedProposals([], [])).toEqual([]);
 	});
 });

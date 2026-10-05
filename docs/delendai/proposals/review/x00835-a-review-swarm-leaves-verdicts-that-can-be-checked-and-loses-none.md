@@ -2,15 +2,15 @@
 id: x00835
 title: "A review swarm leaves verdicts that can be checked, and loses none"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-03
 priority: P1
 related: [x00831, x00834, x00850]
-last-transition-id: 4cb13e5b-433d-4af5-a812-360fd13a9a51
-last-correlation-id: 4cb13e5b-433d-4af5-a812-360fd13a9a51
-last-transition-from: ready
+last-transition-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
+last-correlation-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
+last-transition-from: in-progress
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -373,6 +373,7 @@ the good verdicts' shape (P1) becomes the required shape.
   was given into the proposal; a commit the integration branch does not
   hold is refused. `request_changes` on delivered work names the commit it
   objects to, or is refused (E3, C1).
+- shipped-in: `70f0d67de5cd`
 
 ### S2 — A verdict is written in the reviewer's own unit, or not at all
 
@@ -383,6 +384,7 @@ the good verdicts' shape (P1) becomes the required shape.
   verdict tool called directly was the way around it: in a project with
   work refs, `approve` and `request_changes` outside a review unit are now
   refused, name the unit to enter, and write nothing (E2, E7).
+- shipped-in: `6f63a52e168e`
 
 ### S3 — One model, one identity
 
@@ -395,6 +397,7 @@ the good verdicts' shape (P1) becomes the required shape.
   signed with the canonical id, never with free text (E4, E11).
 - An identity whose refs belong to another orchestrator's session (x00850's
   lease) is refused for review units.
+- shipped-in: `b0f8d072ad9d`
 
 ### S4 — A review pack carries only its own verdicts
 
@@ -407,6 +410,7 @@ the good verdicts' shape (P1) becomes the required shape.
   commits of its own is not published.
 - `work swarm`'s duplicate relation (x00791) covers review packs that carry
   the same verdict.
+- shipped-in: `aefe63385650`
 
 ### S5 — A review pack never deletes a proposal
 
@@ -416,6 +420,7 @@ the good verdicts' shape (P1) becomes the required shape.
 - The review-scope check refuses a pack that deletes a proposal file without
   adding it elsewhere in the same pack (a move), naming the file and the
   commit (#744).
+- shipped-in: `aefe63385650`
 
 ### S6 — The CLI an agent runs is not behind the code it judges
 
@@ -426,6 +431,7 @@ the good verdicts' shape (P1) becomes the required shape.
   with the sources it was built from and refuses writing commands when the
   sources moved on, naming `bun packages/cli/src/index.ts` as the way to run
   the current rules (E1, E6).
+- shipped-in: `aefe63385650`
 
 ### S7 — A unit starts from the integration branch the forge has
 
@@ -437,6 +443,7 @@ the good verdicts' shape (P1) becomes the required shape.
   local branch can only follow, so unpublished commits on it are an accident
   to report, never a base to build on (E12, C6). `work status` and the
   doctor name the divergence and the backup to restore from.
+- shipped-in: `aefe63385650`
 
 ### S8 — A publication that did not land says so loudly
 
@@ -445,6 +452,7 @@ the good verdicts' shape (P1) becomes the required shape.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit-publish-failure.spec.ts`
 - `work publish` exits non-zero when the publication was not proved on the
   remote, and its first line says why and what to merge (C5).
+- shipped-in: `aefe63385650`
 
 ### S11 — A claim is one shared reservation
 
@@ -461,6 +469,7 @@ the good verdicts' shape (P1) becomes the required shape.
   went away keeps nothing. Where there is no forge, nothing is reserved and
   the claim works as before.
 - Reserving a slice for implementation the same way is S26.
+- shipped-in: `cef6142b3105`
 
 ### S12 — A run ends with nothing hanging
 
@@ -471,6 +480,7 @@ the good verdicts' shape (P1) becomes the required shape.
   no ref and a work ref left on the forge. It now also names a publication
   that holds nothing the integration branch lacks, and a local integration
   branch carrying commits the forge lacks, each with its remedy.
+- shipped-in: `6f63a52e168e`
 
 ### S9 — An automatic commit is made once, by an agent, of the slice's files
 
@@ -484,6 +494,7 @@ the good verdicts' shape (P1) becomes the required shape.
   `client-…` or `unknown-agent` again (E13).
 - What a checkpoint carries stays the claim of the event; narrowing it to
   the files the slice declares is S25.
+- shipped-in: `b0f8d072ad9d`
 
 ### S10 — A reviewer does not implement what it reviews
 
@@ -493,6 +504,7 @@ the good verdicts' shape (P1) becomes the required shape.
 - An agent holding a review claim on a proposal, or that recorded a verdict on
   it, is refused an `implement` unit on that proposal (E14). A review verdict
   committed in a non-review unit is refused at publication.
+- shipped-in: `b0f8d072ad9d`
 
 ### S13 — Independence is proved, or the review does not close
 
@@ -508,6 +520,7 @@ the good verdicts' shape (P1) becomes the required shape.
   approval closes nothing. `instance` used to compare nothing at all (G1).
 - A slice whose implementer is `unrecorded` does not reach `done`, whoever
   approved it: the delivering commit has to be named first (G2).
+- shipped-in: `6f63a52e168e`
 
 ### S14 — A verdict applies to the revision it was made on
 
@@ -526,6 +539,7 @@ the good verdicts' shape (P1) becomes the required shape.
   cannot be compared from another one; the delivery commit can.
 - A pack that describes itself, and the settlement of packs that went
   stale, are S32.
+- shipped-in: `70f0d67de5cd`
 
 ### S15 — Recovery runs need no global git identity, and read-only writes nothing
 
@@ -540,6 +554,7 @@ the good verdicts' shape (P1) becomes the required shape.
   the same way (`tools/scripts/forge/refresh-candidates.script.ts`,
   `tools/scripts/forge/refresh-candidates.script.spec.ts`): the job still
   printed "empty ident name" after the first fix, from a second script.
+- shipped-in: `6839c65ecf19`
 
 ### S16 — The run knows who joined it
 
@@ -553,6 +568,7 @@ the good verdicts' shape (P1) becomes the required shape.
 - One model under two names is refused on the way in (S3). Checking that a
   declared id is the model actually running needs the host to state it;
   nothing here can tell `qwen3-flash` from the model it is (E18).
+- shipped-in: `b0f8d072ad9d`
 
 ### S17 — A storm can be replayed
 
@@ -574,6 +590,7 @@ the good verdicts' shape (P1) becomes the required shape.
   cannot land, and `work doctor` ends with nothing broken. The verdict
   mistakes (bare approval, superseded delivery, double claim, same-instance
   approval) are replayed by the proposals plugin's own specs.
+- shipped-in: `fa48b1c9f7fd`
 
 ### S18 — The run reports its own incidents
 
@@ -589,6 +606,7 @@ the good verdicts' shape (P1) becomes the required shape.
 - One composing function, `readWorkflowKpis`, is exported through core's
   public surface; the plugin reimplements no check. Outside a git repository
   the block is omitted, and snapshots without it still parse.
+- shipped-in: `f83c85addc9e`
 
 ### S19 — A unit's name says what it is
 
@@ -600,6 +618,7 @@ the good verdicts' shape (P1) becomes the required shape.
   of `work` (E20).
 - A pull request of several deliveries says how many it holds instead of
   taking its oldest commit's subject as if it were the whole.
+- shipped-in: `b0f8d072ad9d`
 
 ### S20 — A verdict names the newest commit, and a reviewer that ran nothing records none
 
@@ -614,6 +633,7 @@ the good verdicts' shape (P1) becomes the required shape.
   the slice is still read from the commit the reviewer named.
 - A reviewer that ran nothing, and the language of a verdict's text, are
   S27.
+- shipped-in: `70f0d67de5cd`
 
 ### S21 — The queue goes red while something hangs on the forge
 
@@ -629,6 +649,7 @@ the good verdicts' shape (P1) becomes the required shape.
   publication holds nothing, is not canonical, or a work ref hangs. A
   candidate still behind is reported and not counted, since bringing it
   forward is what the queue has just started (`--except=`).
+- shipped-in: `6f63a52e168e`
 
 ### S22 — A unit that will not land is retired, with its work kept
 
@@ -653,6 +674,7 @@ the good verdicts' shape (P1) becomes the required shape.
   bookkeeping is named, with retiring as the way to keep a tip (E27;
   `packages/core/src/lib/work-units/stray-refs.service.ts`,
   `packages/core/src/lib/work-units/idle-units.service.ts`).
+- shipped-in: `6f63a52e168e`
 
 ### S23 — A kept unit is brought forward or named, and retiring asks nobody to tidy first
 
@@ -673,6 +695,7 @@ the good verdicts' shape (P1) becomes the required shape.
 - `post-merge` in the main checkout runs `work reap --apply`
   (`lefthook.yml`): a unit whose work the merge brought in is collected
   without waiting for a person.
+- shipped-in: `6f63a52e168e`
 
 ### S24 — Only the main checkout installs the clone's hooks
 
@@ -684,6 +707,7 @@ the good verdicts' shape (P1) becomes the required shape.
   the only thing that installs hooks (E24).
 - The queue's refresh installs with `--ignore-scripts` and merges with no
   hooks: a throwaway worktree writes nothing into the clone it belongs to.
+- shipped-in: `6839c65ecf19`
 
 ### S25 — An automatic commit carries the slice's files, not the event's
 
@@ -713,6 +737,7 @@ the good verdicts' shape (P1) becomes the required shape.
   its unit is on the forge, or for the time a silent unit is given when it
   was never pushed; `work retire` gives it back. `--alongside` skips it, and
   where there is no forge nothing is reserved.
+- shipped-in: `6f63a52e168e`
 
 ### S27 — A reviewer that ran nothing records nothing, in the project's language
 
@@ -727,6 +752,7 @@ the good verdicts' shape (P1) becomes the required shape.
   `review next` tells every reviewer about it beside the two verdicts (E9,
   E10).
 - The language of a verdict's text is S30.
+- shipped-in: `cef6142b3105`
 
 ### S28 — A retired slice owes nothing, and a proposal's own document is never a missing file
 
@@ -738,6 +764,7 @@ the good verdicts' shape (P1) becomes the required shape.
   no delivering commit is asked of it on the way to review (E28).
 - A slice file that is the proposal's own document, in whatever status
   folder, is never reported as missing.
+- shipped-in: `70f0d67de5cd`
 
 ### S29 — Work nobody can see is named, and retired work can be read
 
@@ -751,6 +778,7 @@ the good verdicts' shape (P1) becomes the required shape.
   is not called work left behind (E29, E30).
 - `work retired` lists what the forge keeps of units that did not land and
   of work rescued from nowhere, and says how to read one and bring it back.
+- shipped-in: `6f63a52e168e`
 
 ### S30 — A project declares its documentation language and who counts as another reviewer
 
@@ -764,6 +792,7 @@ the good verdicts' shape (P1) becomes the required shape.
   model may review, so a project with one subscription can review its own
   work, as long as the two instances are seen to differ (S13). A project
   that wants another model sets `model`; this repository does.
+- shipped-in: `00b2fc1256b6`
 
 ### S31 — A claim takes the worktree with it
 
@@ -773,19 +802,24 @@ the good verdicts' shape (P1) becomes the required shape.
 - `work claim` on a unit that has a worktree points that worktree at the
   new name before the old one is removed, so a stalled unit changes hands
   in one step and is left under one name (E31).
+- shipped-in: `27b60933038a`
 
 ### S32 — A review pack changes only the proposals it claimed
 
-- **Status**: pending
-- **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`
+- **Status**: review
+- **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - CI refuses a review pack whose diff changes a proposal none of its
   commits claims: its pull request then says, by construction, which
   verdicts are its author's (G5).
-- A pack that went stale is settled the way this run was: retired with
-  `work retire`, its verdicts that still name a commit and a gate carried
-  by a `reconcile` unit the owner labels, the rest reviewed again. Doing
-  that with one command is the rest of this slice.
+- A pack that went stale is settled the way this run was, with the tools
+  that exist now: `work retire` keeps it on the forge and frees its claims,
+  the verdicts that name a commit and a gate are carried by a `reconcile`
+  unit the owner labels, and the rest are reviewed again. No command does
+  the three in one step; nothing in a second run has asked for one yet.
+- Entering your own unit from another directory is refused as "another
+  session"; the refusal now says how to get back in.
+- shipped-in: `00b2fc1256b6`
 
 ### S33 — A slice delivered from a unit of another name is still found
 
@@ -802,6 +836,7 @@ the good verdicts' shape (P1) becomes the required shape.
   that succeeded, not as a failed `remove-work-ref`
   (`packages/core/src/lib/work-units/work-publish.service.ts`,
   `packages/core/src/lib/work-units/work-unit-land.service.ts`).
+- shipped-in: `70f0d67de5cd`
 
 ## dependency graph
 
