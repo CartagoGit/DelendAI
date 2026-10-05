@@ -2,10 +2,13 @@
 id: x00769
 title: "Push guards and protected-branch defaults follow the configured development policy"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-09-30
+last-transition-id: 8499e15f-2db4-4fd8-abcb-53cd80cc7e42
+last-correlation-id: 8499e15f-2db4-4fd8-abcb-53cd80cc7e42
+last-transition-from: in-progress
 ---
 
 # x00769 — Push guards and protected-branch defaults follow the configured development policy
@@ -38,6 +41,9 @@ A consumer on the merge profile was told to open a pull request, projects with i
   - "Direct profile with integration main can push to main"
   - "Release branch protected from branches.release, integration rules apply when they are equal"
   - "Contradicting protectedBranches, push and cadence settings are reported by validatePolicyAlignment"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- shipped-in: `e01ad21c5a21`
 
 ## acceptance
 
