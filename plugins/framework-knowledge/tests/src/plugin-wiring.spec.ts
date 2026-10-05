@@ -1,11 +1,11 @@
 /**
- * plugin-wiring.spec.ts — f00547 S2.
+ * plugin-wiring.spec.ts
  *
- * Pins that the plugin entry, as it stands through S2–S4, registers
- * no tools and carries no describe-time side effects. S5 changes this
- * expectation deliberately when it adds the two tools.
+ * Pins that the plugin entry registers exactly its two tools and that
+ * each one is registered with an output schema.
  */
-import { describe, expect, it } from 'vitest';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { describe, expect, it, vi } from 'vitest';
 
 import type {
 	IMcpPluginContext,
@@ -21,11 +21,28 @@ describe('the framework-knowledge plugin entry', () => {
 		expect(plugin.describe).toContain('installed framework version');
 	});
 
-	it('registers no tools yet', async () => {
-		const ctx = fakePartial<IMcpPluginContext>({});
+	it('registers the guidance and source tools, each with an output schema', async () => {
+		const ctx = fakePartial<IMcpPluginContext>({
+			namespacePrefix: 'dl',
+			cacheDir: '.cache/delendai',
+			workspace: { root: '/ws', resolve: (rel: string) => `/ws/${rel}` },
+		});
 		const registrations = (await plugin.register(
 			ctx,
 		)) as IMcpPluginRegistrations;
-		expect(registrations.tools ?? []).toEqual([]);
+		expect((registrations.tools ?? []).map((tool) => tool.id)).toEqual([
+			'framework_guidance',
+			'framework_source',
+		]);
+
+		const registerTool = vi.fn();
+		for (const tool of registrations.tools ?? []) {
+			await tool.register(fakePartial<McpServer>({ registerTool }));
+		}
+		const names = registerTool.mock.calls.map((call) => call[0]);
+		expect(names).toEqual(['dl_framework_guidance', 'dl_framework_source']);
+		for (const call of registerTool.mock.calls) {
+			expect(call[1].outputSchema).toBeDefined();
+		}
 	});
 });

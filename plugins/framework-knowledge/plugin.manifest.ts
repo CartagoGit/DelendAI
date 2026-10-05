@@ -9,16 +9,11 @@ export default definePluginManifest({
 		'Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.',
 	tags: ['knowledge', 'frameworks', 'policy'],
 	maturity: 'experimental',
-	// No tools yet: the knowledge record, the policy resolver and the
-	// convention detector land first as library code. The manifest schema
-	// refuses an empty `permissions` array, so this declares the one
-	// permission every consumer of this plugin needs at minimum — reading
-	// the manifest/lockfile to resolve a version — leaving the tools to
-	// decide whether they need more.
-	permissions: ['filesystem-read'],
-	// Deliberately in NO preset while it has no tools to expose, and per
-	// the proposal's own acceptance criteria once it does: adopting a
-	// framework rule is a decision a project opts into, not a default.
+	// The tools read the manifest, the lockfile and the local knowledge
+	// cache; the cache module writes only under the cache directory.
+	permissions: ['filesystem-read', 'filesystem-write'],
+	// Deliberately in NO preset: adopting a framework rule is a decision
+	// a project opts into, not a default.
 	presets: [],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', 'zod'],

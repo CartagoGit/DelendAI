@@ -1473,14 +1473,6 @@
 				"date": "2026-09-15"
 			},
 			{
-				"id": "f00547",
-				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-16"
-			},
-			{
 				"id": "f00548",
 				"title": "Own the style surface: who may define a selector, and what breaks when it changes",
 				"track": "architecture",
@@ -1625,26 +1617,10 @@
 				"date": "2026-09-30"
 			},
 			{
-				"id": "x00773",
-				"title": "A proposal's lifecycle completes inside the unit that implemented it",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-30"
-			},
-			{
 				"id": "x00795",
 				"title": "The core public surface is back under budget and the gate runs in CI",
 				"track": "trust",
 				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-01"
-			},
-			{
-				"id": "x00797",
-				"title": "A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives",
-				"track": "general",
-				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-01"
 			},

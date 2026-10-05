@@ -151,7 +151,7 @@
 | error-reporting | filesystem-read, filesystem-write, network, forge-write | report_status: network, forge-write |
 | external-mcps | filesystem-read, process, network, env-read |  |
 | forge | filesystem-read, process, network, forge-read, forge-write | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |
-| framework-knowledge | filesystem-read |  |
+| framework-knowledge | filesystem-read, filesystem-write |  |
 | git | filesystem-read, process, git-read, git-write | status: git-read; changed: git-read; diff: git-read; log: git-read; blame: git-read; show: git-read; worktree: git-read; changelog: git-read; commit: git-write; push: git-write |
 | github | filesystem-write, network, env-read |  |
 | gitlab | filesystem-write, network, env-read |  |
