@@ -95,14 +95,16 @@ The owner's principle is that every workflow is completable by any agent on any 
 - review-log: approved by claude-opus-5-5 — verified at f6e9d5c2d, validate exit 0, tests 53/53 — Delivered by #724 (merge f6e9d5c2d).
 
 ### S5 — Real-server specs for the CLI lifecycle
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/proposals.real-server.spec.ts`
 - **Gate**: none
 - acceptance:
   - "close-slice and transition run against a spawned server from a unit worktree and from the shared checkout, under shared-checkout-pr and shared-checkout-merge"
 - shipped-in: `26da5edf1275`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at f6e9d5c2d, validate exit 0, tests 53/53 — Delivered by #724 (merge f6e9d5c2d).
 
 ## acceptance
 
