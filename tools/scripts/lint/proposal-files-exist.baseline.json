@@ -106,7 +106,6 @@
 	"docs/delendai/proposals/done/feats/f00315-privacy-validator.md": 1,
 	"docs/delendai/proposals/done/feats/f00329-process-tree-termination.md": 1,
 	"docs/delendai/proposals/done/feats/f00383-preset-summaries-coherentes.md": 1,
-	"docs/delendai/proposals/done/feats/f00507-economia-de-rutas-el-coste-pertenece-a-la-ruta-de-acceso-no-al-modelo-y-primero-se-gasta-lo-ya-pagado.md": 2,
 	"docs/delendai/proposals/done/feats/f00381-adoption-count-exact-renamed.md": 1,
 	"docs/delendai/proposals/done/feats/f00364-privacy-adversarial-suite-verde.md": 1,
 	"docs/delendai/proposals/done/feats/f00363-internalonly-false-no-permite-ampliar-reporting.md": 1,
@@ -217,15 +216,5 @@
 	"docs/delendai/proposals/done/refactors/r00019-surface-adaptive-como-default-para-todos-los-presets-con-benchmark-y-compat-testing-tok2-004.md": 2,
 	"docs/delendai/proposals/done/refactors/r00010-separate-accumulated-results-logs-memory-usage-tracking-from-derivable-cache-under-cache-mcp-vertex-results.md": 1,
 	"docs/delendai/proposals/done/refactors/r00022-tokens-dashboard-separar-adaptive-y-native-surfaces-row-contains-surfacemode-y-source.md": 1,
-	"docs/delendai/proposals/done/refactors/r00027-inventario-clasificacion-stable-experimental-internal-de-core-public.md": 2,
-	"docs/delendai/proposals/review/x00553-the-checkout-cannot-leave-the-integration-node.md": 1,
-	"docs/delendai/proposals/review/f00554-a-project-decides-how-work-becomes-pull-requests-by-slice-by-proposal-or-adaptively.md": 1,
-	"docs/delendai/proposals/review/x00708-a-republished-slice-keeps-its-pull-request.md": 1,
-	"docs/delendai/proposals/review/x00699-an-agent-session-holds-its-unit.md": 1,
-	"docs/delendai/proposals/review/x00645-edits-no-work-ref-carries-are-reported-not-silent.md": 3,
-	"docs/delendai/proposals/review/f00642-a-proposal-keeps-one-work-branch-while-it-is-in-progress.md": 7,
-	"docs/delendai/proposals/review/x00546-work-refs-are-visible-named-after-their-model-and-known-to-the-ref-guard.md": 2,
-	"docs/delendai/proposals/review/f00644-a-branch-names-the-kind-of-work.md": 9,
-	"docs/delendai/proposals/review/x00610-a-branch-nobody-can-finish-should-never-have-been-created.md": 1,
-	"docs/delendai/proposals/review/x00561-an-operation-that-is-safe-alone-must-be-safe-in-sequence.md": 1
+	"docs/delendai/proposals/done/refactors/r00027-inventario-clasificacion-stable-experimental-internal-de-core-public.md": 2
 }

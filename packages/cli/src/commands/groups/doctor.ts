@@ -20,7 +20,13 @@ import type { IOverview } from '@delendai/client/public';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { DOCTOR_FLAGS } from '../../contracts/constants/doctor-modes.constant';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
+import type {
+	IDeepCheck,
+	IDoctorModes,
+	IDoctorReport,
+} from '../../contracts/interfaces/doctor-modes.interface';
 import type {
 	ICliCommand,
 	ICliCommandContext,
@@ -30,6 +36,12 @@ import {
 	generateCompletion,
 	type Shell,
 } from '../../lib/completion/completion.service';
+import { defaultDeepChecks } from '../../lib/doctor/deep-checks.service';
+import {
+	buildCiReport,
+	parseDoctorModes,
+	skippedOfflineSection,
+} from '../../lib/doctor/doctor-modes.service';
 import { analyzeConfigRoots } from '../../lib/doctor/analyze-config-roots.service';
 import {
 	runDoctorChecks,
@@ -159,12 +171,88 @@ export interface IRunDoctorOptions {
 	 * to use the defaults baked into `runDoctorChecks`.
 	 */
 	readonly extraChecks?: readonly DoctorCheck[] | undefined;
+	/** Modes asked for on the command line; all off when omitted. */
+	readonly modes?: IDoctorModes | undefined;
+	/** Override for the deep-check registry; tests inject fakes here. */
+	readonly deepChecks?: readonly IDeepCheck[] | undefined;
 }
+
+const NO_MODES: IDoctorModes = { ci: false, offline: false, deep: false };
+
+/** The sections `--deep` adds; a check needing the network is skipped offline. */
+const runDeepSections = async (
+	checks: readonly IDeepCheck[],
+	modes: IDoctorModes,
+): Promise<IDoctorSection[]> => {
+	const sections: IDoctorSection[] = [];
+	for (const check of checks) {
+		if (modes.offline && check.requiresNetwork) {
+			sections.push(skippedOfflineSection(check.id));
+			continue;
+		}
+		try {
+			sections.push(await check.run({ offline: modes.offline }));
+		} catch (error) {
+			sections.push({
+				name: check.id,
+				status: 'error',
+				findings: [
+					error instanceof Error ? error.message : String(error),
+				],
+			});
+		}
+	}
+	return sections;
+};
+
+/** Plugins + tools sections, from the server's overview. */
+const serverSections = async (
+	ctx: ICliCommandContext,
+): Promise<IDoctorSection[]> => {
+	try {
+		const overview = await request<IOverviewish>(ctx, 'delendai_overview', {
+			compact: true,
+		});
+		const pluginCount = overview.plugins?.length ?? 0;
+		const toolCount = countTools(overview.tools);
+		const missing = overview.pluginDiagnostic?.missing ?? [];
+		const loadErrors = overview.pluginDiagnostic?.errors ?? 0;
+		return [
+			{
+				name: 'plugins',
+				status: missing.length > 0 || loadErrors > 0 ? 'warn' : 'ok',
+				findings: [
+					`${pluginCount} plugin(s) loaded`,
+					...(missing.length > 0
+						? [`missing: ${missing.join(', ')}`]
+						: []),
+					...(loadErrors > 0 ? [`${loadErrors} load error(s)`] : []),
+				],
+			},
+			{
+				name: 'tools',
+				status: toolCount > 0 ? 'ok' : 'warn',
+				findings: [`${toolCount} tool(s) registered`],
+			},
+		];
+	} catch (error) {
+		return [
+			{
+				name: 'plugins',
+				status: 'error',
+				findings: [
+					`could not reach the server: ${error instanceof Error ? error.message : String(error)}`,
+				],
+			},
+		];
+	}
+};
 
 export const runDoctorBody = async (
 	ctx: ICliCommandContext,
 	options: IRunDoctorOptions = {},
 ): Promise<ICliCommandResult> => {
+	const modes = options.modes ?? NO_MODES;
 	const sections: IDoctorSection[] = [];
 
 	// Environment — workspace resolution is always available.
@@ -204,55 +292,47 @@ export const runDoctorBody = async (
 	const pureSections = await runDoctorChecks(runnerOptions);
 	for (const section of pureSections) sections.push(section);
 
-	// Plugins + tools — derived from the live server overview.
-	try {
-		const overview = await request<IOverviewish>(ctx, 'delendai_overview', {
-			compact: true,
-		});
-		const pluginCount = overview.plugins?.length ?? 0;
-		const toolCount = countTools(overview.tools);
-		const missing = overview.pluginDiagnostic?.missing ?? [];
-		const loadErrors = overview.pluginDiagnostic?.errors ?? 0;
-		sections.push({
-			name: 'plugins',
-			status: missing.length > 0 || loadErrors > 0 ? 'warn' : 'ok',
-			findings: [
-				`${pluginCount} plugin(s) loaded`,
-				...(missing.length > 0
-					? [`missing: ${missing.join(', ')}`]
-					: []),
-				...(loadErrors > 0 ? [`${loadErrors} load error(s)`] : []),
-			],
-		});
-		sections.push({
-			name: 'tools',
-			status: toolCount > 0 ? 'ok' : 'warn',
-			findings: [`${toolCount} tool(s) registered`],
-		});
-	} catch (error) {
-		sections.push({
-			name: 'plugins',
-			status: 'error',
-			findings: [
-				`could not reach the server: ${error instanceof Error ? error.message : String(error)}`,
-			],
-		});
+	// Plugins + tools — derived from the live server overview. Asking a
+	// remote server needs the network, so --offline reports it as
+	// skipped instead of letting it hang or pass.
+	if (modes.offline && ctx.globals.remote !== undefined) {
+		sections.push(skippedOfflineSection('plugins'));
+		sections.push(skippedOfflineSection('tools'));
+	} else {
+		sections.push(...(await serverSections(ctx)));
+	}
+
+	if (modes.deep) {
+		sections.push(
+			...(await runDeepSections(
+				options.deepChecks ?? defaultDeepChecks(),
+				modes,
+			)),
+		);
 	}
 
 	const status = rollup(sections);
 	const score = computeScore(sections);
-	if (!ctx.globals.json) {
+	const code = CODE_BY_STATUS[status];
+	// --ci is for a pipeline: the structured report is the output, so the
+	// human recap is not written beside it.
+	if (!ctx.globals.json && !modes.ci) {
 		process.stderr.write(renderDoctorSummary(status, sections, score));
 	}
-	return data({ status, sections, score }, CODE_BY_STATUS[status]);
+	const report: IDoctorReport = modes.ci
+		? { status, sections, score, ci: buildCiReport(status, sections, code) }
+		: { status, sections, score };
+	return data(report, code);
 };
 
 const doctorCommand: ICliCommand = {
 	name: 'doctor',
 	summary:
 		'Sectioned health report (env, config, manifests, runtime, plugins, tools) + exit code + 0–100 score.',
-	async run(_args, ctx) {
-		return runDoctorBody(ctx);
+	flags: DOCTOR_FLAGS,
+	usage: 'doctor [--ci] [--offline] [--deep]',
+	async run(args, ctx) {
+		return runDoctorBody(ctx, { modes: parseDoctorModes(args) });
 	},
 };
 
