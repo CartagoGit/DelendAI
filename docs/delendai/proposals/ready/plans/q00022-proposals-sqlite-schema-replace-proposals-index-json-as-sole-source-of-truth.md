@@ -459,7 +459,13 @@ with inline slices, a shape the registry never has; they now write
 proposal documents through one fixture
 (`tests/src/lib/triggers/proposal-documents.fixture.ts`). Readers of the
 registry left: `readProposalIndex`'s JSON fallback for layouts outside
-the canonical one, and the token dashboard's wait for its fixture.
+the canonical one; the token dashboard's wait for its fixture; and core's
+own `readProposalsIndex` (`packages/core/src/lib/cli/read-proposals-index.ts`),
+which the proposals plugin's workflow contribution and the agent-catalog
+generator call. That last one is also the core↔proposals inversion
+`lint:core-proposals-boundary` keeps as a dated exception: it moves to the
+plugin once the plugin's reader can return a summary (title, track, kind,
+date), not only `id`, `file` and `status`.
 
 Acceptance:
 
