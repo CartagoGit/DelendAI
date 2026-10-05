@@ -92,6 +92,8 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "The aggregated proposal progress is Sum(progress x weight) / Sum(weight), summed in canonical slice-id order."
   - "Test: three slices weighing 1, 4 and 8 report 100 at 100/100/100 and 300/13 (about 23.08) at 100/50/0. The original example claimed 37.5, which is not what (100x1 + 50x4 + 0x8) / 13 equals."
   - "A slice with no acceptance criteria weighs 1 and reports progress 100 (the scale is 0..100 throughout) when its status is `done`, and 0 otherwise."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — API pública `getSnapshot`, `getSnapshotsForProposal`, `subscribe` + propiedad `incremental === cleanRebuild` verde
 - **Status**: review
