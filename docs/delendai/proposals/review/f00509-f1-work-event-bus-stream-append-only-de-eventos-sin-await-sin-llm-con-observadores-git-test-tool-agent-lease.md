@@ -111,7 +111,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ### S5 — `AgentLeaseObserver` — enganche al lock engine (claim, release, heartbeat)
-- **Status**: review
+- **Status**: done
 - **Blocked by**: none. The original hook points do not exist (no `preExec` hook, no `IMcpHostSession.events`, the lock engine emits nothing), so this observer is a pure component fed by its consumer; wiring it belongs to f00510.
 - **DependsOn**: [F1-S1, F1-S4]
 - **Files**: `packages/state-telemetry/src/lib/observers/agent-lease-observer.service.ts`, `packages/state-telemetry/src/lib/observers/agent-lease-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/observer-emitter.service.ts`, `packages/state-telemetry/src/lib/observers/failure-normalizer.helper.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/observer.constant.ts`
@@ -120,9 +120,11 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`AgentLeaseObserver.claimed`, `heartbeat` and `released` emit `lease_claimed`, `lease_heartbeat` and `lease_released` with a stable `payload_hash`; claim, 4 heartbeats and release make 6 events."
   - "`check(now)` takes the clock from the caller (no timers) and emits `lease_heartbeat_missed` once per lease when 3 heartbeat intervals passed without heartbeat or release: claim, 5 heartbeats and silence make 6 events plus one missed, and a second `check` adds nothing."
   - "Not shipped: `work_assignments.released_at` is left out because no such table exists yet."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `c446c1602e8e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ## acceptance
 
