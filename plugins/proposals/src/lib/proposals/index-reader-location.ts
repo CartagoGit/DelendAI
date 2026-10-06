@@ -94,19 +94,20 @@ export const resolveWorkspaceRoot = async (
 ): Promise<string | null> => {
 	const declared = options?.workspaceRoot;
 	if (declared !== undefined && declared.length > 0) return declared;
+	let canonical: string | null = null;
 	try {
 		const { resolveProposalsDbPaths } = await import(
 			'@delendai/proposals-sqlite'
 		);
-		return (
-			workspaceRootFromIndexPath(
-				indexPathAbs,
-				(candidate) => resolveProposalsDbPaths(candidate).stateDir,
-			) ?? workspaceRootFromDeclaredLayout(indexPathAbs)
+		canonical = workspaceRootFromIndexPath(
+			indexPathAbs,
+			(candidate) => resolveProposalsDbPaths(candidate).stateDir,
 		);
 	} catch {
-		return null;
+		// The canonical layout cannot be checked here; a declared one is
+		// a matter of paths alone.
 	}
+	return canonical ?? workspaceRootFromDeclaredLayout(indexPathAbs);
 };
 
 /**
