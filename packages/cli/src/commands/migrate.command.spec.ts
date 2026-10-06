@@ -93,6 +93,35 @@ describe('migrate command (b00239 S6)', () => {
 		}
 	});
 
+	it('migrates the user-level host configs only when asked, and plans them in a dry run', async () => {
+		const planHost = vi.fn(async () => [{ kind: 'rewrite', detail: 'x' }]);
+		const applyHost = vi.fn(async () => ({
+			writtenFiles: ['~/.claude.json'],
+		}));
+		const runTransaction = vi.fn(async () => ({
+			status: 'committed' as const,
+		}));
+		const cmd = createMigrateCommand({
+			planHost,
+			applyHost,
+			runTransaction: runTransaction as never,
+			scanResidual: async () => ({ live: 0, hits: [] }),
+		});
+
+		const planned = await cmd.run(['host', '--dry-run'], mkCtx('/w'));
+		expect(planned.data).toEqual({
+			plan: [{ kind: 'rewrite', detail: 'x' }],
+		});
+		expect(applyHost).not.toHaveBeenCalled();
+
+		await cmd.run(['run'], mkCtx('/w'));
+		expect(applyHost).not.toHaveBeenCalled();
+
+		const applied = await cmd.run(['host'], mkCtx('/w'));
+		expect(applied.data).toEqual({ writtenFiles: ['~/.claude.json'] });
+		expect(applyHost).toHaveBeenCalledWith('/w');
+	});
+
 	it('returns the dry-run plan for `--dry-run`', async () => {
 		const cmd = createMigrateCommand({
 			dryRun: async () => ({

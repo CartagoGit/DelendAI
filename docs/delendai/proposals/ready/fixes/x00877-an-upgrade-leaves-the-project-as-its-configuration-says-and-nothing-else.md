@@ -101,11 +101,12 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-implementer: claude-opus-5-5
 
 ### S7 — The host-scope configs are migrated too
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/host-scope/global-config.migrator.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/cli.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The user-level host configs (`~/.claude.json`, `~/.codex/config.toml`) are migrated by an explicit, opt-in host-scope command, never by a workspace `migrate run`, and a dry run lists what it would change."
+- Delivered: the global-config migrator (which rewrites only the entries it can prove are this workspace's, and keeps every other key byte for byte) existed and nothing called it. `migrate host --dry-run` lists what it would change in `~/.claude.json` and `~/.codex/config.toml` for this workspace; `migrate host` applies it; `migrate run` never touches them. On this machine the dry run plans nothing. The spec (dry run plans and writes nothing, `run` leaves the host configs alone, `host` applies) fails without the change.
 
 ## acceptance
 

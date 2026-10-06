@@ -308,3 +308,9 @@ export {
 if (import.meta.main) {
 	void runCli(process.argv.slice(2), process.cwd());
 }
+export {
+	applyGlobalConfig,
+	createFileSystemHostConfigIO,
+	defaultHostConfigs,
+	planGlobalConfig,
+} from './lib/workspace-migration/host-scope/global-config.migrator';
