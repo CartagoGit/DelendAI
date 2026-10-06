@@ -7,7 +7,13 @@
 
 ## Public API
 
-_(none)_
+- WORK_PHASES
+- WORK_PHASE_ORDER
+- WORK_PROGRESS_PRODUCER_ID
+- resolvePhaseRules
+- aggregateProgress
+- createWorkProgressProducer
+- createWorkProgressService
 
 ## Depends on
 
