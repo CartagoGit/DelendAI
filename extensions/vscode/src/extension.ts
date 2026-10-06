@@ -39,6 +39,7 @@ import type {
 	IHostAdapter,
 	IWebviewViewProvider,
 } from '@delendai/ui-extension/public';
+import { registerAdoptCommand } from './commands/adopt';
 import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
 import { registerOpenAgentCatalogCommand } from './commands/open-agent-catalog';
 import { registerOpenAgentTimelineCommand } from './commands/open-agent-timeline';
@@ -643,6 +644,9 @@ export const activate = async (
 		handle.register(`sub-${trackSeq++}`, disposable);
 		return disposable;
 	};
+	// Registered before anything that reads project state, so a workspace
+	// that has not adopted delendai yet can still reach the adoption plan.
+	track(registerAdoptCommand({ vscode, client }));
 	const serverConfigured = configuredLaunch !== undefined;
 	const dashboardRefresh: {
 		current?: DashboardWebviewViewProvider;
