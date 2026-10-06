@@ -16,6 +16,7 @@ import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { sliceHeldOnForge } from './slice-reservation.service';
 import { isUnitHolding, readUnitStandings } from './unit-standings.service';
 import { DEFAULT_UNITS_DIRECTORY } from './units-directory.constant';
+import { freeDirectory } from './free-directory.helper';
 import { liveProposalBranch } from './proposal-branch.service';
 import {
 	reviewedByEntrant,
@@ -55,6 +56,7 @@ import {
  */
 /** How long an entering instance waits for another entering the same unit. */
 const ENTER_WAIT_MS = 60_000;
+
 const ENTER_POLL_MS = 200;
 
 /**
@@ -328,13 +330,15 @@ export const enteredHeld = async (
 	// dependencies there pointed every hook in the clone at it.
 	const dir =
 		scalarArg(args, 'dir') ??
-		resolve(
-			sharedCheckout(root) ?? root,
-			scalarArg(args, 'worktrees') ?? DEFAULT_UNITS_DIRECTORY,
-			sanitizeRefComponent(
-				`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`,
+		(await freeDirectory(
+			resolve(
+				sharedCheckout(root) ?? root,
+				scalarArg(args, 'worktrees') ?? DEFAULT_UNITS_DIRECTORY,
+				sanitizeRefComponent(
+					`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`,
+				),
 			),
-		);
+		));
 	// A worktree an agent places in the shared checkout's tree is a loose
 	// edit on the integration branch (`?? batch-g5/`) unless git ignores
 	// the path. The default location is delendai's own, self-ignoring.
