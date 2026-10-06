@@ -42,6 +42,25 @@ const DELIVERY =
 const GITHUB_REMOTE =
 	/^(?:(?:https?|ssh|git):\/\/(?:[^@/]+@)?|[^@/:]+@)github\.com[:/]/u;
 
+/** The proposal and slice a unit's branch names (`…/x00875-S23-g1/…`). */
+const UNIT_OF_BRANCH =
+	/(?:^|\/)(?<proposal>[a-z]\d{5,})-(?<slice>[^/]+?)-g\d+(?:\/|$)/iu;
+
+/**
+ * Whether `subject` cites the unit `branch` names. A unit that merged
+ * another unit's publication carries its commits too, and was titled by
+ * them when they were the oldest.
+ */
+const citesUnitOf = (subject: string, branch: string): boolean => {
+	const unit = UNIT_OF_BRANCH.exec(branch)?.groups;
+	if (unit?.proposal === undefined || unit.slice === undefined) return false;
+	const cited = subject.toLowerCase();
+	const proposal = unit.proposal.toLowerCase();
+	return unit.slice.toLowerCase() === 'all'
+		? cited.includes(proposal)
+		: cited.includes(`${proposal} ${unit.slice.toLowerCase()}`);
+};
+
 export const pullRequestText = (
 	subjects: readonly string[],
 	branch: string,
@@ -51,7 +70,11 @@ export const pullRequestText = (
 	const meaningful = oldestFirst.filter((subject) => !isBookkeeping(subject));
 	// One delivery titles its pull request; several are counted, so a
 	// pull request of ten slices is not read as its oldest commit alone.
-	const deliveries = meaningful.filter((subject) => DELIVERY.test(subject));
+	// The unit's own deliveries come first: another unit's, merged in, are
+	// that unit's pull request's to name.
+	const delivering = meaningful.filter((subject) => DELIVERY.test(subject));
+	const own = delivering.filter((subject) => citesUnitOf(subject, branch));
+	const deliveries = own.length > 0 ? own : delivering;
 	const first = deliveries[0] ?? meaningful[0] ?? fallback;
 	const title =
 		deliveries.length > 1
