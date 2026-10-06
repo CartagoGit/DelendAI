@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 422
+Total exports: 423
 
 | Maturity | Count |
 | --- | --- |
-| stable | 419 |
+| stable | 420 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -32,6 +32,7 @@ Total exports: 422
 | `buildGithubSetupSteps` | const | stable | `../lib/setup/setup-steps` |
 | `buildMetricsToolRegistration` | const | stable | `../lib/metrics/metrics-tool` |
 | `buildReleaseReceipt` | const | stable | `../lib/contracts/release-finalize` |
+| `buildStandaloneCoreToolRegistrations` | const | stable | `../lib/scaffold/standalone-core-tools` |
 | `buildStartupReport` | const | stable | `../lib/startup-report` |
 | `buildStatusToolRegistration` | const | stable | `../lib/tools/status-tool` |
 | `callerCheckout` | const | stable | `../lib/shared/shared-checkout` |

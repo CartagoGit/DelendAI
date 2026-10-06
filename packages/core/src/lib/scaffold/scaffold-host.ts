@@ -519,8 +519,10 @@ export const scaffoldHostConfigFile = (
 	const prefix = options.namespacePrefix;
 	return {
 		path: targetPath(options.targetDir, 'src/lib/shared/host-config.ts'),
-		content: `import { createWorkspacePathProvider } from '@delendai/core/public';
-import { buildStandaloneCoreToolRegistrations } from './standalone-core-tools';
+		content: `import {
+	buildStandaloneCoreToolRegistrations,
+	createWorkspacePathProvider,
+} from '@delendai/core/public';
 import type { IDelendaiHostConfig } from '@delendai/core/public';
 
 // The core is project-agnostic. The standalone surface registers the

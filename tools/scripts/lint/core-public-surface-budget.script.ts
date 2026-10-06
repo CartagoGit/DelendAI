@@ -205,7 +205,10 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // consumer outside `packages/core` each got a decision. Eighty-six left
 // the barrel, because only core's own specs used them and those now import
 // them by their `lib/` path; thirty-one stayed under an adopter note.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 422;
+// One of the eighty-six came back: a scaffolded host imports
+// `buildStandaloneCoreToolRegistrations` from the barrel, a consumer the
+// scan could not see while it skipped the templates core generates.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 423;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

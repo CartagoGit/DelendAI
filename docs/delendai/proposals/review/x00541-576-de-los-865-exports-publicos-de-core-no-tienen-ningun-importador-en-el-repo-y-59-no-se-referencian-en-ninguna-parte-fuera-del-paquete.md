@@ -72,7 +72,7 @@ real se quedaron.
   modo que la cifra de `stable` sea la promesa real.
 - Acceptance: "el inventario reporta un recuento `stable` que coincide
   con la API que el proyecto declara soportar."
-- Shipped 2026-10-06: the last 117 unmoored exports each got a decision. 31 are A (kept, under an `@adopter-api` note: config and manifest shapes, the phased plugin lifecycle, PluginState and PluginStateError, capability and dry-run validators a plugin author calls) and 86 are B (describeStackPacks and IStackPackMeta stayed under an adopter note because the web app imports them from an .astro file the consumer scan does not read) (left the barrel; their importers in core, all specs plus one source file, now import the `lib/` module). Rule: A only when a plugin, config or host author outside this repository needs the name to write a plugin, manifest, config or tool registration or to handle an error delendai throws; everything else is internal. The baseline is 0 and the budget is 422.
+- Shipped 2026-10-06: the last 117 unmoored exports each got a decision. 31 are A (kept, under an `@adopter-api` note: config and manifest shapes, the phased plugin lifecycle, PluginState and PluginStateError, capability and dry-run validators a plugin author calls) and 86 are B (describeStackPacks and IStackPackMeta stayed under an adopter note because the web app imports them from an .astro file the consumer scan does not read) (left the barrel; their importers in core, all specs plus one source file, now import the `lib/` module). Rule: A only when a plugin, config or host author outside this repository needs the name to write a plugin, manifest, config or tool registration or to handle an error delendai throws; everything else is internal. The baseline is 0 and the budget is 422 (423 after the correction below).
 - **Gate**: `bun run lint:core-public-surface-budget && bun run lint:core-public-consumers`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
@@ -108,6 +108,7 @@ real se quedaron.
 - Acceptance: "ningún export `stable` carece a la vez de importador y de
   anotación."
 - Progress 2026-10-06: the baseline is now empty (0 of 422 exports lack both an importer and an `@adopter-api` note), which meets the acceptance.
+- Corrected 2026-10-06: one of the 86 was not internal. `buildStandaloneCoreToolRegistrations` is what a scaffolded host imports from `@delendai/core/public`, and CI's `verify:scaffolds` failed when the template was pointed at a file the scaffold never writes. The export is back and the template unchanged; the consumer scan now reads what the scaffold templates (`packages/core/src/lib/scaffold/`) import from the barrel, because the project they generate is a consumer this repository holds only as text. The budget is 423.
 - **Gate**: `bun run lint:core-public-consumers`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5

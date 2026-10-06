@@ -195,6 +195,8 @@ export {
 	scaffoldAgentFile,
 	scaffoldPluginFiles,
 } from '../lib/scaffold/scaffold-host';
+// A scaffolded host registers the plugin-less core tools through this.
+export { buildStandaloneCoreToolRegistrations } from '../lib/scaffold/standalone-core-tools';
 
 // --- shared filesystem helpers ---------------------------------------------
 export {
