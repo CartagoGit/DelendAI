@@ -41,6 +41,7 @@
  *   bun run lint:core-public-consumers -- --update   # rewrite the baseline
  */
 
+import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -167,15 +168,39 @@ const parseAnnotatedBlocks = (source: string): readonly IUnmooredExport[] => {
 	return out;
 };
 
+/** Component files the TypeScript walker does not read. */
+const COMPONENT_EXTENSIONS = ['.astro', '.vue', '.svelte'] as const;
+
+const componentFiles = (root: string): readonly string[] => {
+	try {
+		return execFileSync('git', ['ls-files', '--', ...CONSUMER_ROOTS], {
+			cwd: root,
+			encoding: 'utf8',
+			maxBuffer: 64 * 1024 * 1024,
+		})
+			.split('\n')
+			.filter((file) =>
+				COMPONENT_EXTENSIONS.some((ext) => file.endsWith(ext)),
+			);
+	} catch {
+		return [];
+	}
+};
+
 /** Names referenced anywhere outside `packages/core`. */
 export const consumerNames = async (
 	root: string,
 ): Promise<ReadonlySet<string>> => {
 	const found = new Set<string>();
 	const word = /[A-Za-z_$][A-Za-z0-9_$]*/gu;
-	const files = await walkTsFiles(root, [...CONSUMER_ROOTS], {
-		authoredOnly: true,
-	});
+	const files = [
+		...(await walkTsFiles(root, [...CONSUMER_ROOTS], {
+			authoredOnly: true,
+		})),
+		// A component file imports from the barrel too: the site's pages
+		// are `.astro`, and an export only they used was read as unused.
+		...componentFiles(root),
+	];
 	const coreDir = `${join('packages', 'core')}/`;
 	for (const file of files) {
 		// The package cannot be its own consumer: an export that only
