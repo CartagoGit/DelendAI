@@ -12,6 +12,7 @@ import { fakePartial } from '@delendai/test-kit';
 
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
 import {
+	notCommittedForwarder,
 	createStdioContext,
 	forwardedToServer,
 	type IConnectToServer,
@@ -195,5 +196,21 @@ describe('createStdioContext (x00612)', () => {
 				'close',
 			]);
 		})();
+	});
+});
+
+describe('notCommittedForwarder', () => {
+	it('passes on the line saying a write was not committed, however the chunks split it', () => {
+		const written: string[] = [];
+		const forward = notCommittedForwarder((text) => written.push(text));
+		forward(
+			'[delendai] error-reporting is ON\n[delendai] delendai could not com',
+		);
+		forward(
+			'mit what this call wrote to b (lock held). Commit it yourself\nother\n',
+		);
+		expect(written).toEqual([
+			'[delendai] delendai could not commit what this call wrote to b (lock held). Commit it yourself\n',
+		]);
 	});
 });

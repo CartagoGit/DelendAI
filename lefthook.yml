@@ -454,6 +454,15 @@ post-merge:
         regenerate-after-merge:
             run: bun packages/cli/src/index.ts --workspace="$(git rev-parse --show-toplevel)" guard post-merge
 
+        # A merge brings in proposals created on other machines, whose ids
+        # this clone's counter cache never saw: `check-proposal-id-drift`
+        # then failed the gates of every unit that merged the integration
+        # branch (f00756, created by another host, the day it landed). The
+        # allocator reads the files and the forge's reservations anyway;
+        # the cache is brought level with them here. Never failing the hook.
+        reseed-proposal-counters:
+            run: bun tools/scripts/proposals/sync-proposal-counters.script.ts >/dev/null 2>&1 || true
+
         # x00554 S2 — the moment a candidate goes stale is the moment the
         # integration branch moves, and this is the machine holding a
         # credential the forge will build with. It abstains in an agent

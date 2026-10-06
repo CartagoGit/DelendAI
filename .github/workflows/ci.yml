@@ -374,6 +374,8 @@ jobs:
                   bun run lint:closed-frozen-guard
                   # x00696 — a close carries an independent approval.
                   bun run lint:closed-with-independent-approval
+                  # x00878 S2 — a review line is written by the review tool.
+                  bun run lint:verdicts-through-the-tool
                   bun run lint:user-markers
                   bun run lint:proposal-slice-completeness
                   bun run lint:commit-branch
