@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildHostCapabilityPlan } from '@delendai/core/public';
+import { buildHostCapabilityPlan } from '@delendai/core/lib/hosts/host-capability-profile';
 import type { IHostCapabilityProfile } from '@delendai/core/cli';
 
 describe('buildHostCapabilityPlan', () => {

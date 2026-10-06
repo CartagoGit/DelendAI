@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { rewriteUnicodeForAgent } from '@delendai/core/public';
 import {
 	UNICODE_TOKEN_LEGEND,
 	decodeUnicodeFromAgent,
 	inspectUnicodeForAgent,
-	rewriteUnicodeForAgent,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/shared/unicode-safe-text';
 
 const WHALE = String.fromCodePoint(0x1f433);
 const FAMILY = [0x1f468, 0x200d, 0x1f469, 0x200d, 0x1f467]

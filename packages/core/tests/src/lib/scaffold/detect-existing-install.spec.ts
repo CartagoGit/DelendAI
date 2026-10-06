@@ -4,12 +4,12 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { createWorkspacePathProvider } from '@delendai/core/public';
 import {
-	createWorkspacePathProvider,
 	detectExistingDelendaiInstall,
 	findDelendaiServerName,
 	isDelendaiLaunchShape,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/scaffold/detect-existing-install';
 
 // x00201 S2 — the postman-exporter project (delendai's own empirical
 // adopter testbed) really is wired exactly this way: a `.vscode/mcp.json`

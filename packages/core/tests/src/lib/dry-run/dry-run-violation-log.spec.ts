@@ -13,8 +13,8 @@ import {
 	clearDryRunViolationsForTests,
 	listDryRunViolations,
 	recordDryRunViolation,
-} from '@delendai/core/public';
-import type { IDryRunContractViolationRecord } from '@delendai/core/public';
+} from '@delendai/core/lib/dry-run/dry-run-violation-log.service';
+import type { IDryRunContractViolationRecord } from '@delendai/core/lib/contracts/interfaces/dry-run-violation.interface';
 
 const record = (
 	overrides: Partial<IDryRunContractViolationRecord> = {},

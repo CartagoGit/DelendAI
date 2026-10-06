@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	assertReleaseMetadata,
-	assertReleaseSlug,
 	nextVersion,
 	releaseBranch,
-	slugifyRelease,
 } from '@delendai/core/public';
+import {
+	assertReleaseSlug,
+	slugifyRelease,
+} from '@delendai/core/lib/contracts/release';
 import type { IReleaseCandidateMetadata } from '@delendai/core/public';
 
 describe('release contracts', () => {
