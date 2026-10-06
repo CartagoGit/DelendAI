@@ -215,6 +215,22 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+
+### S22 — A refused verdict claims nothing
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
+- Found 2026-10-06: `review approve f00509 S1` by the reviewer that had asked for its changes was refused (the fix needs a fresh reviewer), and the proposal stayed claimed by it: the verdict claimed before the review rules ran. The claim reached the published pack, so the one reviewer the rule asks for would have found f00509 held. The verdict now asks the same pure rule (`reviewTransition`) first, on a round already open, and claims only a verdict it will accept; the refusal still comes from the path that records verdicts, with its own reason. The spec fails without the change.
+
+### S23 — The queue does not offer a reviewer what it delivered
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/services/review-queue-slice.service.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
+- Found 2026-10-06: one `review next` session offered claude-opus-5-5 five proposals it could not judge: f00274 and x00541, whose deliveries include its own publications (`delendai/pr/claude-opus-5-5/...`), and three it had released before in other units. The queue knows a slice's implementer only from `review-implementer`, the agent that submitted; another agent's publication delivering the same slice is not counted, and a release lives only in the unit that made it.
+- acceptance:
+  - "A slice whose delivering merges include a publication by the reviewer is not offered to it."
+  - "A release a reviewer recorded in any unit that reached the integration branch is honoured by the queue."
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.
