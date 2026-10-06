@@ -2147,13 +2147,7 @@ export const buildReviewRegistration = (
 				evidence?: IProposalReviewEvidence | undefined;
 				commitHash?: string | undefined;
 			}) => {
-				// One agent, one spelling: the verdict is signed the way its
-				// unit's ref names the agent (`GPT-5.4` and `gpt-5.4` were two
-				// reviewers to every reader of the review lines).
-				const args = {
-					...rawArgs,
-					agent: resolveWorkAgentId({ model: rawArgs.agent }).id,
-				};
+				let args = rawArgs;
 				const scoped = scopeToCaller(options);
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
@@ -2230,11 +2224,20 @@ export const buildReviewRegistration = (
 						scoped.run ?? createGitRunner(scoped.workspaceRoot),
 						branches,
 					);
-					if (unitAgent !== undefined && unitAgent !== args.agent) {
-						return toolError(
-							`"${args.agent}" is not the reviewer of this review unit, which is ${unitAgent}'s.`,
-							`Record the verdict as ${unitAgent}, the model this unit was entered as, or enter a review unit of your own.`,
-						);
+					if (unitAgent !== undefined) {
+						if (
+							unitAgent !==
+							resolveWorkAgentId({ model: args.agent }).id
+						) {
+							return toolError(
+								`"${args.agent}" is not the reviewer of this review unit, which is ${unitAgent}'s.`,
+								`Record the verdict as ${unitAgent}, the model this unit was entered as, or enter a review unit of your own.`,
+							);
+						}
+						// One agent, one spelling: the verdict is signed the
+						// way its unit's ref names the agent (`GPT-5.4` and
+						// `gpt-5.4` were two reviewers to every reader).
+						args = { ...args, agent: unitAgent };
 					}
 					// A verdict the review rules will refuse claims nothing:
 					// claimed first, it left the refused reviewer holding the
