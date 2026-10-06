@@ -17,8 +17,23 @@ import type {
 	ISliceSnapshotReader,
 } from '../contracts/interfaces/slice-snapshot.interface';
 
-/** A proposal document's name: its id, a dash, its title. */
-const DOCUMENT_RE = /^([a-z]\d{5}[a-z]*)-.*\.md$/u;
+/** A markdown document that is not the folder's own README. */
+const DOCUMENT_RE = /\.md$/iu;
+const README_RE = /^readme\.md$/iu;
+
+/**
+ * A proposal's id: its frontmatter's `id`, which is what it says it is,
+ * or else the part of its file name before the first dash. No shape of id
+ * is assumed: projects number their proposals their own way.
+ */
+const idOf = (markdown: string, fileName: string): string | undefined => {
+	const declared = /^---\n[\s\S]*?^id:\s*["']?([^"'\s]+)["']?\s*$/mu.exec(
+		markdown,
+	)?.[1];
+	if (declared !== undefined) return declared;
+	const dash = fileName.indexOf('-');
+	return dash > 0 ? fileName.slice(0, dash) : undefined;
+};
 
 /** One entry of a `Files` list, without list markers, brackets or backticks. */
 const cleanFileEntry = (entry: string): string =>
@@ -97,7 +112,11 @@ export const createSliceSnapshotReader = (
 ): ISliceSnapshotReader => {
 	const cache = new Map<
 		string,
-		{ readonly stamp: string; readonly slices: readonly IParsedSlice[] }
+		{
+			readonly stamp: string;
+			readonly id: string | undefined;
+			readonly slices: readonly IParsedSlice[];
+		}
 	>();
 	return {
 		read: async () => {
@@ -115,18 +134,18 @@ export const createSliceSnapshotReader = (
 			for (const entry of listed.entries) {
 				if (!entry.stats.isFile()) continue;
 				const path = entry.path.relativePath;
-				const id = DOCUMENT_RE.exec(path.split('/').pop() ?? '')?.[1];
-				if (id === undefined) continue;
+				const name = path.split('/').pop() ?? '';
+				if (!DOCUMENT_RE.test(name) || README_RE.test(name)) continue;
 				seen.add(path);
 				const stamp = `${String(entry.stats.size)}:${String(entry.stats.mtimeMs)}`;
 				let parsed = cache.get(path);
 				if (parsed?.stamp !== stamp) {
 					try {
+						const markdown = (await reader.readText(path)).content;
 						parsed = {
 							stamp,
-							slices: slicesOfDocument(
-								(await reader.readText(path)).content,
-							),
+							id: idOf(markdown, name),
+							slices: slicesOfDocument(markdown),
 						};
 					} catch {
 						// Gone or unreadable since it was listed.
@@ -134,6 +153,8 @@ export const createSliceSnapshotReader = (
 					}
 					cache.set(path, parsed);
 				}
+				const id = parsed.id;
+				if (id === undefined) continue;
 				for (const slice of parsed.slices) {
 					if (slice.id.length === 0) continue;
 					slices.set(`${id}-${slice.id}`, {

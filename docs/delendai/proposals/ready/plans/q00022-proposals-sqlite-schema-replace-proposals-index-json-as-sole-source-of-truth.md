@@ -446,6 +446,11 @@ rebuild before it gives up, not by keeping the fallback:
 - Still open: phase 3 (the registry leaves the read path entirely).
 
 **Phase 3, first reader 2026-10-05 — commit-policy's slice listener.**
+(Corrected 2026-10-06: the first version recognised a document only by a
+file name of five digits, and CI's auto-work e2e, whose fixture is
+`p9995`, timed out waiting for a commit that never came. A document's id
+is now its frontmatter's `id`, or the file name before its first dash: no
+shape of id is assumed.)
 It read the registry for the list of documents, then read every document
 for its slices, because the registry carries none: 1,174 files a second.
 The list it read them by was a projection that had fallen behind (in the
@@ -458,7 +463,7 @@ it reads the authority and reads it once. Its specs wrote a registry
 with inline slices, a shape the registry never has; they now write
 proposal documents through one fixture
 (`tests/src/lib/triggers/proposal-documents.fixture.ts`). Readers of the
-registry left: `readProposalIndex`'s JSON fallback for layouts outside
+registry left (after the fix below): `readProposalIndex`'s JSON fallback for layouts outside
 the canonical one; the token dashboard's wait for its fixture; and core's
 own `readProposalsIndex` (`packages/core/src/lib/cli/read-proposals-index.ts`),
 which the proposals plugin's workflow contribution and the agent-catalog

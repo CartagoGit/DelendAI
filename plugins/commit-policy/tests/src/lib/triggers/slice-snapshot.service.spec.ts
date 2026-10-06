@@ -2,7 +2,7 @@
  * slice-snapshot.service.spec.ts — the slices of every proposal, read
  * from the documents, and read again only when one changed.
  */
-import { mkdtemp, rm, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -82,6 +82,26 @@ describe('createSliceSnapshotReader', () => {
 		expect(readText).toHaveBeenCalledTimes(3);
 		expect([...(after ?? []).keys()]).toEqual(['x00001-S1']);
 		expect(after?.get('x00001-S1')?.status).toBe('done');
+	});
+
+	it('takes the id the document declares, whatever shape the project gives its ids', async () => {
+		const folder = join(root, 'proposals', 'ready');
+		await mkdir(folder, { recursive: true });
+		await writeFile(
+			join(folder, 'p9995-four-digits.md'),
+			'---\nid: p9995\n---\n\n## slices\n\n### S1 — S1\n- **Status**: done\n- **Files**: `a.ts`\n',
+		);
+		await writeFile(
+			join(folder, 'ADR-12-no-frontmatter.md'),
+			'## slices\n\n### S1 — S1\n- **Status**: pending\n',
+		);
+
+		const read = await createSliceSnapshotReader(
+			new SafeWorkspaceReader(root),
+			'proposals',
+		).read();
+
+		expect([...(read ?? []).keys()].sort()).toEqual(['ADR-S1', 'p9995-S1']);
 	});
 
 	it('has nothing to compare against when the folder is not there', async () => {
