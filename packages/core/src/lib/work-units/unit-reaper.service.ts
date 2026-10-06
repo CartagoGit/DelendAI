@@ -11,12 +11,29 @@
  *
  * Nothing real is lost: a worktree holding an edit somebody made is kept
  * and reported with the paths; one holding only regenerable files is not.
+ *
+ * A unit whose owner went away before committing anything is reaped the
+ * same way: it carries no commit the integration branch lacks, so its
+ * branch and worktree hold nothing. A swarm left one such unit per agent
+ * it started, each a full copy of the repository, and none was ever
+ * delivered for this reaper to see.
  */
 import type { IReapedUnit } from './unit-lease.interface';
 import { removeUnitCheckout, worktreeOfRef } from './unit-removal.service';
 import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
 import { inspectWorktree } from './unit-worktree-state.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { integrationBase, readGit } from './work-unit-shared.service';
+
+/** Whether `ref` carries no commit of its own beyond the integration branch. */
+const carriesNothing = (
+	root: string,
+	base: string | undefined,
+	ref: string,
+): boolean =>
+	base !== undefined &&
+	readGit(root, ['rev-list', '--count', `${base}..refs/heads/${ref}`]) ===
+		'0';
 
 export const reapDeliveredUnits = async (input: {
 	readonly root: string;
@@ -30,10 +47,15 @@ export const reapDeliveredUnits = async (input: {
 		policy,
 		...(input.now === undefined ? {} : { now: input.now }),
 	});
+	const integration = integrationBase(root, policy);
 	const reaped: IReapedUnit[] = [];
 	for (const unit of standings) {
-		if (unit.standing !== 'delivered' || !hasLocalBranch(root, unit.ref))
-			continue;
+		if (!hasLocalBranch(root, unit.ref)) continue;
+		const spent =
+			unit.standing === 'delivered' ||
+			(unit.standing === 'abandoned' &&
+				carriesNothing(root, integration, unit.ref));
+		if (!spent) continue;
 		const worktree = worktreeOfRef(root, unit.ref) ?? null;
 		const state =
 			worktree === null
