@@ -135,6 +135,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S14 — A released proposal is not handed back to the reviewer who released it
+- **Status**: review
+- **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
+- Found 2026-10-06: I released `f00547`, which I had changed and so could not judge independently, and the very next `review next` gave it back. The release commit sits beside the claim commit in the unit, and `review next` read only the claims, so it resumed the proposal as the unit's own. What a unit holds is now what it claimed less what it released, and a proposal it released is not offered to it again; another reviewer still gets it. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.
