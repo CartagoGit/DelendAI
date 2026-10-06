@@ -20,6 +20,7 @@ shipped-in:
   - "cef6142b3105dc7896c396e953507acd90769795"
   - "6839c65ecf19b69cc2cf7511bceb29728e309903"
   - "fa48b1c9f7fd69b1f13b4a97c8f70f4f83f33f11"
+  - "27b60933038a5913ccecf4856cecc24e02b33a4e"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -884,7 +885,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S28 — A retired slice owes nothing, and a proposal's own document is never a missing file
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/proposal-completeness.ts`, `plugins/proposals/src/lib/services/review-entry.service.ts`, `plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`
 - `retired` is a slice status the tools read. A retired slice is settled:
@@ -893,10 +894,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - A slice file that is the proposal's own document, in whatever status
   folder, is never reported as missing.
 - shipped-in: `70f0d67de5cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 70f0d67de5cd, validate exit 0, tests 295/295 — Deliver merge 70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 70f0d67de5cd names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77), opened by minimax-3
 
 ### S29 — Work nobody can see is named, and retired work can be read
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/hidden-work.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/hidden-work.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/hidden-work.service.spec.ts packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - `work doctor` gains three invariants: `no-stashed-work`,
@@ -907,6 +913,11 @@ the good verdicts' shape (P1) becomes the required shape.
 - `work retired` lists what the forge keeps of units that did not land and
   of work rescued from nowhere, and says how to read one and bring it back.
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6f63a52e168e, validate exit 0, tests 295/295 — Deliver merge 6f63a52e168e57203553e0858b508c432998ef0e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6f63a52e168e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (6f63a52e168e57203553e0858b508c432998ef0e), opened by minimax-3
 
 ### S30 — A project declares its documentation language and who counts as another reviewer
 
@@ -924,13 +935,18 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S31 — A claim takes the worktree with it
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-claim.service.ts`, `packages/core/tests/src/lib/work-units/work-claim.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-claim.service.spec.ts`
 - `work claim` on a unit that has a worktree points that worktree at the
   new name before the old one is removed, so a stalled unit changes hands
   in one step and is left under one name (E31).
 - shipped-in: `27b60933038a`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 27b60933038a, validate exit 0, tests 295/295 — Deliver merge 27b60933038a5913ccecf4856cecc24e02b33a4e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 27b60933038a names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (27b60933038a5913ccecf4856cecc24e02b33a4e), opened by minimax-3
 
 ### S32 — A review pack changes only the proposals it claimed
 
