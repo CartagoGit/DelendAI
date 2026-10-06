@@ -10,6 +10,7 @@ import type {
 	ICliGlobalOptions,
 } from '../contracts/interfaces/cli-command.interface';
 import { buildServerArgs } from './server-args.service';
+import { CLI_TOOL_CALL_TIMEOUT_MS } from '../contracts/constants/stdio-context.constant';
 
 /**
  * The file to spawn as the server.
@@ -115,6 +116,7 @@ export const createStdioContext = async (
 		cwd,
 		env: serverEnvironment(forwardedToServer(process.env)),
 		stderr: 'pipe',
+		requestTimeoutMs: CLI_TOOL_CALL_TIMEOUT_MS,
 	}).catch((error: unknown) => {
 		throw Object.assign(
 			new Error(
