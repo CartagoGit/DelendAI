@@ -275,6 +275,45 @@ describe('work retire', () => {
 		expect(retiredOf((await reap('--apply')).data)).toEqual([]);
 	});
 
+	it('reaps a retired pack whose commits change no file: only its claims', async () => {
+		const { root, git, forge, tip } = repository();
+		git('switch', '-q', '-c', 'claims-only', 'develop');
+		git(
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			'chore(review): claim x00001',
+		);
+		git('push', '-q', 'origin', 'HEAD:refs/delendai/retired/claims/only');
+		git('switch', '-q', 'develop');
+		git('push', '-q', 'origin', `${tip}:refs/delendai/retired/still/out`);
+
+		const reaped = await runWorkUnit(
+			['reap', '--apply'],
+			fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
+				cwd: root,
+				globals: fakePartial<
+					IWorkUnitContext['globals'],
+					'workspace' | 'json'
+				>({ workspace: root, json: true }),
+			}),
+		);
+
+		expect(
+			(reaped.data as { retired: { unit: string }[] }).retired.map(
+				(each) => each.unit,
+			),
+		).toEqual(['claims/only']);
+		expect(
+			forge(
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/delendai/retired',
+			),
+		).toBe('refs/delendai/retired/still/out');
+	});
+
 	it('keeps a reused name beside the unit retired under it before', async () => {
 		const { root, git, forge, tip } = repository();
 		expect(
