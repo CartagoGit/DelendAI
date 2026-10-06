@@ -132,6 +132,16 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S11 — An id reservation ends when a higher one supersedes it
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Reserving an id releases the forge's reservations of the same prefix below it, so the forge holds at most one id reservation per prefix; the counter every clone reads is unchanged."
+- Delivered: an id is reserved as `refs/delendai/ids/<id>` and nothing ever removed one: a ref per proposal created piled up on the forge (nine after one afternoon). Only the highest reservation of a prefix feeds the counter — the allocator hands out the next one above it — so a successful reservation now deletes the lower ones of its prefix in the same `send-pack` way it was made; a failure to delete leaves them, harmless. The spec (three reservations, two left, the counter still 812) fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
