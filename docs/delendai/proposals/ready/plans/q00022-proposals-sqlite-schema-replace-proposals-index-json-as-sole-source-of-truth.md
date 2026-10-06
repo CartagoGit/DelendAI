@@ -286,6 +286,7 @@ that the audit calls obligatory.
   - `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`
   - `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`
   - `tools/scripts/catalog/generate-agent-catalog.script.ts`
+  - `tools/scripts/report/token-budget-report-lib.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -494,6 +495,16 @@ registry from disk instead gave a catalog with no proposals in a fresh
 unit). Its specs write a registry into a real workspace instead of
 answering an injected file read the summaries no longer make. Readers of
 the registry left: the JSON fallback and the token dashboard's wait.
+
+**Phase 3, third reader 2026-10-06 — the token dashboard's wait.** The
+dashboard syncs its fixture workspace and waits until the fixture
+proposal is listed before it measures `auto_work`. It waited on the
+registry's text while `auto_work` reads through `readProposalIndex`, so
+the wait could pass on a file the tool never consulted. It now waits
+through the same reader (`tools/scripts/report/token-budget-report-lib.ts`),
+and `tokens:dashboard:check` stays in sync. The only reader of the
+registry left is `readProposalIndex`'s JSON fallback, for a layout with
+no database.
 
 Acceptance:
 
