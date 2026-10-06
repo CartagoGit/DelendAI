@@ -1,7 +1,11 @@
 /**
  * Tests for the proposal summaries reader.
  */
-import { describe, expect, it } from 'vitest';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
 	proposalKindFromId,
@@ -47,31 +51,36 @@ describe('normalizeProposalStatus', () => {
 	});
 });
 
+const roots: string[] = [];
+afterEach(() => {
+	for (const root of roots.splice(0))
+		rmSync(root, { recursive: true, force: true });
+});
+
+/** A workspace whose registry holds `content`, read as the JSON source. */
+const summariesOf = async (content: string | undefined) => {
+	const root = mkdtempSync(join(tmpdir(), 'proposal-summaries-'));
+	roots.push(root);
+	if (content !== undefined) {
+		mkdirSync(join(root, 'cache', 'proposals'), { recursive: true });
+		writeFileSync(join(root, 'cache', 'proposals', 'index.json'), content);
+	}
+	return readProposalsIndex(root, 'cache', { source: 'json' });
+};
+
 describe('readProposalsIndex', () => {
 	it('returns empty array when index does not exist', async () => {
-		const result = await readProposalsIndex(
-			'/workspace',
-			'cache',
-			async () => undefined,
-		);
+		const result = await summariesOf(undefined);
 		expect(result).toEqual([]);
 	});
 
 	it('returns empty array for invalid JSON', async () => {
-		const result = await readProposalsIndex(
-			'/workspace',
-			'cache',
-			async () => '{ invalid json',
-		);
+		const result = await summariesOf('{ invalid json');
 		expect(result).toEqual([]);
 	});
 
 	it('returns empty array when proposals field is missing', async () => {
-		const result = await readProposalsIndex(
-			'/workspace',
-			'cache',
-			async () => JSON.stringify({ other: 'data' }),
-		);
+		const result = await summariesOf(JSON.stringify({ other: 'data' }));
 		expect(result).toEqual([]);
 	});
 
@@ -94,14 +103,7 @@ describe('readProposalsIndex', () => {
 				},
 			],
 		};
-		const result = await readProposalsIndex(
-			'/workspace',
-			'cache',
-			async (path) => {
-				expect(path).toBe('/workspace/cache/proposals/index.json');
-				return JSON.stringify(index);
-			},
-		);
+		const result = await summariesOf(JSON.stringify(index));
 
 		expect(result).toHaveLength(2);
 		expect(result[0]).toEqual({
@@ -129,11 +131,7 @@ describe('readProposalsIndex', () => {
 				{ id: 'f00001', title: 'Has id' },
 			],
 		};
-		const result = await readProposalsIndex(
-			'/workspace',
-			'cache',
-			async () => JSON.stringify(index),
-		);
+		const result = await summariesOf(JSON.stringify(index));
 		expect(result).toHaveLength(1);
 		expect(result[0]?.id).toBe('f00001');
 	});
@@ -142,11 +140,7 @@ describe('readProposalsIndex', () => {
 		const index = {
 			proposals: [{ id: 'f00100' }, { id: 'r00003' }, { id: 'x00052' }],
 		};
-		const result = await readProposalsIndex(
-			'/workspace',
-			'cache',
-			async () => JSON.stringify(index),
-		);
+		const result = await summariesOf(JSON.stringify(index));
 		expect(result[0]?.kind).toBe('feat');
 		expect(result[1]?.kind).toBe('refactor');
 		expect(result[2]?.kind).toBe('fix');
@@ -162,11 +156,7 @@ describe('readProposalsIndex kind', () => {
 				{ id: 'f00001', status: 'ready' },
 			],
 		};
-		const result = await readProposalsIndex(
-			'/workspace',
-			'cache',
-			async () => JSON.stringify(index),
-		);
+		const result = await summariesOf(JSON.stringify(index));
 		expect(result.map((proposal) => [proposal.id, proposal.kind])).toEqual([
 			['v00136', 'perf'],
 			['i00004', 'infra'],
