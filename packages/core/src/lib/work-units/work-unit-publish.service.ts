@@ -42,6 +42,12 @@ import {
 } from './work-unit-shared.service';
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
 
+/** The generation a work ref names (`…-g<n>/…`), if it names one. */
+const generationOfWorkRef = (ref: string): number | undefined => {
+	const found = /-g(\d+)\//u.exec(ref)?.[1];
+	return found === undefined ? undefined : Number(found);
+};
+
 /**
  * Hand the work over: the publication ref carries it — or, under a
  * profile that integrates by merge, the integration branch does — and
@@ -199,7 +205,12 @@ export const published = async (
 		agent,
 		proposal,
 		slice,
-		generation: Number(scalarArg(args, 'generation') ?? '1'),
+		// The generation of the ref being published, not the one the
+		// arguments default to: a second unit of one agent was otherwise
+		// published into the first unit's pull request.
+		generation:
+			generationOfWorkRef(workRef) ??
+			Number(scalarArg(args, 'generation') ?? '1'),
 		topic: scalarArg(args, 'topic'),
 		kind: kindFor(args, slice),
 		base,
