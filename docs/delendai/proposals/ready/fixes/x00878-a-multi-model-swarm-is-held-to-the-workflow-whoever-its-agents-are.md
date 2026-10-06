@@ -62,6 +62,28 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "After `proposals create` names a `new` unit's proposal, the `new/all` reservation and the `<agent>-new-all` worktree directory are free: a second new proposal can be started without `--alongside` or `--dir`."
 
+### S4 — A review reservation ends with its unit
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/services/review-reservation.service.ts`
+- **Gate**: type
+- acceptance:
+  - "A reservation whose unit has neither a work ref nor a publication on the forge is free at once, whatever its hours, and the queue does not count it as held."
+  - "Such a reservation ref is deleted by the reaper that already removes finished units, so none outlives its unit on the forge."
+
+### S5 — A pack that cannot land is refused before it is published
+- **Status**: pending
+- **Files**: `packages/cli/src/commands/review.command.ts`
+- **Gate**: type
+- acceptance:
+  - "`review finish` (and `review next` when it publishes a full pack) runs the pack's governance checks (independent approval, claimed proposals, cited commits) before publishing, and refuses with what to fix, so a reviewer is never told its pack is done while CI will refuse it."
+
+### S6 — An open publication is a generation in use
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`
+- **Gate**: type
+- acceptance:
+  - "`work enter`, with or without `--alongside`, never gives a generation whose publication is open on the forge."
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
