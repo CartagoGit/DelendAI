@@ -221,3 +221,31 @@ Body mentions mcp-vertex.
 		expect(after).not.toContain('mcp-vertex');
 	});
 });
+
+describe('agent-files.migrator — root instruction files', () => {
+	it('rewrites AGENTS.md, CLAUDE.md and the Copilot instructions at the root', async () => {
+		await mkdir(join(workspaceRoot, '.github'), { recursive: true });
+		const files = [
+			'AGENTS.md',
+			'CLAUDE.md',
+			'.github/copilot-instructions.md',
+		];
+		for (const file of files) {
+			await writeFile(
+				join(workspaceRoot, file),
+				'# Agents\n\nRun `mcp-vertex doctor` before committing.\n',
+				'utf8',
+			);
+		}
+		const migrator = createAgentFilesMigrator();
+		expect(await migrator.detect(ctx(workspaceRoot))).toBe(true);
+
+		await migrator.apply(ctx(workspaceRoot));
+
+		for (const file of files) {
+			const after = await readFile(join(workspaceRoot, file), 'utf8');
+			expect(after).not.toMatch(/mcp-vertex/u);
+			expect(after).toContain('delendai doctor');
+		}
+	});
+});
