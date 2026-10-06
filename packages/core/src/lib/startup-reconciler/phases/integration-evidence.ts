@@ -38,6 +38,9 @@ import type { IIntegrationPhaseResult } from './integration-evidence.interface';
 
 export type { IIntegrationPhaseResult } from './integration-evidence.interface';
 
+/** The journal's word for a checkpoint kept, and later dropped, as retired work. */
+const RETIRED_DECISION = 'retired';
+
 export const runIntegrationEvidencePhase = async (input: {
 	readonly ports: IStartupStatePorts;
 	readonly git: IStartupGitSeam;
@@ -61,6 +64,25 @@ export const runIntegrationEvidencePhase = async (input: {
 }): Promise<IIntegrationPhaseResult> => {
 	const findings: IStartupFinding[] = [];
 	let generationsIntegrated = 0;
+	// Checkpoints once seen kept as retired work. Retired work is dropped
+	// from the forge once somebody reads it and finds it keeps nothing, or
+	// once its content landed; the record that it was given up on purpose
+	// outlives the ref, so dropping it does not turn it into lost work.
+	const seenRetired = new Set(
+		input.ports.journal
+			.listAll()
+			.filter((event) => event.eventKind === 'recovery-decision')
+			.flatMap((event) => {
+				const payload = event.payload as {
+					readonly decision?: unknown;
+					readonly sha?: unknown;
+				} | null;
+				return payload?.decision === RETIRED_DECISION &&
+					typeof payload.sha === 'string'
+					? [payload.sha]
+					: [];
+			}),
+	);
 	if (input.integrationSha.length === 0) {
 		return { findings, counters: { generationsIntegrated } };
 	}
@@ -132,9 +154,26 @@ export const runIntegrationEvidencePhase = async (input: {
 						break;
 					}
 				}
-				const retired =
+				const keptRetired =
 					!kept &&
 					(input.retiredTips ?? []).includes(generation.wipHeadSha);
+				if (keptRetired && !seenRetired.has(generation.wipHeadSha)) {
+					// Once per checkpoint: the record that outlives the ref.
+					input.ports.journal.append({
+						eventKind: 'recovery-decision',
+						workUnitUid: unit.uid,
+						generation: generation.generation,
+						occurredAt: input.now,
+						payload: {
+							decision: RETIRED_DECISION,
+							sha: generation.wipHeadSha,
+							ref: generation.wipRef,
+						},
+					});
+					seenRetired.add(generation.wipHeadSha);
+				}
+				const retired =
+					keptRetired || seenRetired.has(generation.wipHeadSha);
 				if (retired) {
 					findings.push(
 						finding({
