@@ -16,6 +16,8 @@ export const FORGE_PAGE_SIZE = 100;
 
 export const HTTP_OK = 200;
 export const HTTP_NOT_MODIFIED = 304;
+/** The forge's answer for a commit it does not have: no runs to read. */
+export const HTTP_UNKNOWN_COMMIT = 422;
 export const HTTP_SUCCESS_FLOOR = 200;
 export const HTTP_SUCCESS_CEILING = 300;
 
