@@ -335,19 +335,23 @@ const main = (): number => {
 		// brings it level with the integration branch; built beside it,
 		// every pass closed the same proposals again and could not push
 		// (x00710), and a red pull request no author moved sat forever.
-		const existing = ownPublications(
+		// Every one of its open publications, not the first: passes that
+		// published beside each other left four pull requests open, each
+		// closing the same proposals.
+		const open = ownPublications(
 			tryRun('git', ['ls-remote', '--heads', 'origin'], root) ?? '',
 			branches.publicationRefPrefix,
-		)[0];
-		if (existing !== undefined) {
-			run('git', ['fetch', '--quiet', 'origin', existing.ref], path);
+		);
+		const existing = open[0];
+		for (const publication of open) {
+			run('git', ['fetch', '--quiet', 'origin', publication.ref], path);
 			if (
 				tryRun('git', ['merge', '--no-edit', 'FETCH_HEAD'], path) ===
 				undefined
 			) {
 				tryRun('git', ['merge', '--abort'], path);
 				console.log(
-					`close-approved-proposals: ${existing.ref} does not merge with ${branches.integration}; a person resolves it.`,
+					`close-approved-proposals: ${publication.ref} does not merge with ${branches.integration}; a person resolves it.`,
 				);
 				return 0;
 			}
@@ -421,17 +425,17 @@ const main = (): number => {
 			],
 			root,
 		);
-		// The pass merged the open publication before closing more, so its
-		// own carries everything that one did: the older one is retired,
-		// its tip kept, instead of left open beside it.
-		if (existing !== undefined) {
+		// The pass merged its open publications before closing more, so its
+		// own carries everything they did: they are retired, their tips
+		// kept, instead of left open beside it.
+		for (const publication of open) {
 			tryRun(
 				'bun',
 				[
 					...cli,
 					'work',
 					'retire',
-					`--ref=${existing.ref.replace(/^refs\/heads\//u, '')}`,
+					`--ref=${publication.ref.replace(/^refs\/heads\//u, '')}`,
 					'--reason=superseded by the next close pass, which merged it',
 					`--agent=${AGENT}`,
 					'--unowned',
