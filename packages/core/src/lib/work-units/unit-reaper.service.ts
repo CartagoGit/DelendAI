@@ -23,7 +23,8 @@ import { removeUnitCheckout, worktreeOfRef } from './unit-removal.service';
 import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
 import { inspectWorktree } from './unit-worktree-state.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import { integrationBase, readGit } from './work-unit-shared.service';
+import { carriesNothingBeyond } from './landed-work.service';
+import { integrationBase } from './work-unit-shared.service';
 
 /** Whether `ref` carries no commit of its own beyond the integration branch. */
 const carriesNothing = (
@@ -31,9 +32,7 @@ const carriesNothing = (
 	base: string | undefined,
 	ref: string,
 ): boolean =>
-	base !== undefined &&
-	readGit(root, ['rev-list', '--count', `${base}..refs/heads/${ref}`]) ===
-		'0';
+	base !== undefined && carriesNothingBeyond(root, `refs/heads/${ref}`, base);
 
 export const reapDeliveredUnits = async (input: {
 	readonly root: string;
