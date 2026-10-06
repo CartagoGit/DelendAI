@@ -20,6 +20,7 @@ shipped-in:
   - "05f70a3e258816a2a1bbd437b7c60df283f6c847"
   - "47baf9c2f4915ec6b614560ee262c32e7e64dfb5"
   - "fd5a3aa6ae81279f8b56c2eba7579e56537cf708"
+  - "57a631db9ae8a3bbebdde2373d0e9691377fe807"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -205,13 +206,15 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at fd5a3aa6ae81, validate exit 0, tests 11/11 — Delivered by the merge naming x00875-S14-g1 (f6f632c3f6ad) and last carried by fd5a3aa6ae81. review next defines claimsOf as claimed minus released and filters releasedElsewhere out of the free queue, so a proposal a unit released is not handed back to it. No acceptance bullet is declared for this slice. Gate review.command.spec.ts 11/11 exit 0.
 
 ### S15 — No tracked file keeps the markers of an unfinished merge
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-conflict-markers.script.spec.ts`, `package.json`, `docs/delendai/proposals/review/x00835-a-review-swarm-leaves-verdicts-that-can-be-checked-and-loses-none.md`, `docs/delendai/proposals/review/x00875-nothing-is-left-beside-the-units.md`
 - **Gate**: `bun run lint:no-conflict-markers && npx vitest run --project tools tools/scripts/lint/no-conflict-markers.script.spec.ts`
 - Found 2026-10-06: the documents of `x00835` and of this proposal reached `develop` with `<<<<<<< HEAD` and `>>>>>>>` lines in them. My batch script merged another open pull request of the same proposal into a unit, the merge stopped on a conflict, and the next step committed the tree as it was; every gate passed and the queue merged it. Markdown shows the markers as text, and nothing looked for them.
 - `lint:no-conflict-markers` refuses any tracked file with a line that starts with git's opening or closing marker (not `=======`, which is also a markdown underline), and runs first in `lint:architecture`, which CI runs. Both documents are repaired by keeping every side: each conflict was two pull requests appending different slices.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 57a631db9ae8, validate exit 0, tests 2/2 — Delivered in x00875-all-g1's lineage and last carried by 57a631db9ae8, cited here as the slice now stands. No merge on develop names x00875-S15-g1, so the attribution is inferred from the files: markerLines matches only lines that open or close a git merge marker, main walks the tracked files via git ls-files, and lint:architecture runs it first. No acceptance bullet is declared for this slice. Gate no-conflict-markers.script.spec.ts 2/2 exit 0.
 
 ### S16 — A review unit reads the integration branch of now
 - **Status**: review
