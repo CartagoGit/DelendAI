@@ -201,7 +201,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Status**: pending
 - **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared`
-- Found 2026-10-06, not yet explained: `proposals review <id> <slice> --action=submit --workspace=<unit>` writes the slice's review lines and leaves the document staged and uncommitted, most of the time (x00875 S17, S18, S19; f00643 S2) but not always (x00875 S15, f00509 S1 committed with the `chore(delendai): … submit` subject). Established: the unit's branch resolves (`unitBranchOf`), the path is staged, so `git add` ran and `git commit` failed; the same `withCallWritesCommitted` run in-process on the same change commits. The note it writes on a failed commit reaches neither the CLI's output nor its stderr, so the caller learns nothing.
+- Found 2026-10-06, not yet explained: `proposals review <id> <slice> --action=submit --workspace=<unit>` writes the slice's review lines and leaves the document staged and uncommitted, most of the time (x00875 S17, S18, S19; f00643 S2) but not always (x00875 S15, f00509 S1 committed with the `chore(delendai): … submit` subject). Established: the unit's branch resolves (`unitBranchOf`), the path is staged, so `git add` ran and `git commit` failed; the same `withCallWritesCommitted` run in-process on the same change commits. The note it writes on a failed commit reaches neither the CLI's output nor its stderr, so the caller learns nothing. Seen again for S21–S26 the same day, in three forms: committed by the tool (S21, S22, S24, S25), left staged (S23), and left unstaged (S26), which means the tool's commit step did not run at all for that call: the cause is upstream of `commitPaths`, in whether the call is bound to the unit.
 - acceptance:
   - "The cause is reproduced by a spec that drives the CLI against a unit, and fixed."
   - "A commit that fails is reported in what the CLI prints, not only on the server's stderr."
@@ -263,6 +263,8 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - Found 2026-10-06: #839, the publication of x00875 S23, opened titled "the review queue cites the delivery an approval is accepted with (x00835 S39)": the unit had merged S39's publication to build on it, and a pull request was titled by its oldest delivering commit. The title now prefers the deliveries that cite the unit its branch names (`<proposal> <slice>`, or the proposal for `all`); with none, it is titled as before. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
