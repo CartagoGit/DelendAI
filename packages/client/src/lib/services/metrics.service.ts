@@ -1,0 +1,59 @@
+import type { IDelendaiToolOutputs } from '@delendai/core/contracts';
+
+import type { McpStdioClient } from '../transport/mcp-stdio-client';
+
+export type IMetricsSnapshot = IDelendaiToolOutputs['delendai_metrics'];
+
+export interface IMetricsSnapshotOptions {
+	readonly reset?: boolean;
+	readonly persist?: boolean;
+}
+
+export interface IMetricsStreamOptions {
+	readonly signal?: AbortSignal;
+}
+
+export class MetricsService {
+	constructor(private readonly client: McpStdioClient) {}
+
+	async snapshot(
+		options: IMetricsSnapshotOptions = {},
+	): Promise<IMetricsSnapshot> {
+		return this.client.request<IMetricsSnapshotOptions, IMetricsSnapshot>(
+			'delendai_metrics',
+			options,
+		);
+	}
+
+	async *stream(
+		intervalMs: number,
+		options: IMetricsStreamOptions = {},
+	): AsyncIterable<IMetricsSnapshot> {
+		while (options.signal?.aborted !== true) {
+			yield await this.snapshot();
+			await wait(intervalMs, options.signal);
+		}
+	}
+}
+
+const wait = async (
+	intervalMs: number,
+	signal?: AbortSignal,
+): Promise<void> => {
+	if (signal?.aborted === true) return;
+	await new Promise<void>((resolve) => {
+		// The abort listener must be removed on BOTH exits, not just on abort:
+		// with only `{ once: true }` the timeout path leaves the listener
+		// attached, so a long-lived `stream()` accumulates one dead listener
+		// per tick on the same signal (Node warns past 10 — an unbounded leak).
+		const onAbort = (): void => {
+			clearTimeout(timer);
+			resolve();
+		};
+		const timer = setTimeout(() => {
+			signal?.removeEventListener('abort', onAbort);
+			resolve();
+		}, intervalMs);
+		signal?.addEventListener('abort', onAbort, { once: true });
+	});
+};

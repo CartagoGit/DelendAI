@@ -1,0 +1,63 @@
+---
+/**
+ * `apps/web/src/components/PageHeader.astro` — wrapper around the
+ * host-agnostic `renderPageHeader()` from `@delendai/shared`
+ * (f00102 S3.1).
+ *
+ * The wrapper is the ONLY Astro-aware seam: it reads
+ * `import.meta.env.BASE_URL`, resolves the localized `homeLabel`
+ * from the i18n dictionary, and forwards both into the shared
+ * renderer. The renderer is pure string and is reusable from
+ * non-Astro hosts (the extension webview, JetBrains, etc.).
+ *
+ * Astro View Transitions trade-off
+ * --------------------------------
+ * The previous incarnation attached `transition:name="page-title"`
+ * to the `<h1>` so the Astro ClientRouter morphed the heading
+ * across page navigations. The shared renderer can NOT emit
+ * `transition:name` directly because it is an Astro runtime
+ * directive other hosts can't honour, and Astro does not let
+ * `<Fragment set:html="…">` patch attributes post-render. The
+ * navigator morph falls back to the ClientRouter's default
+ * "fade" transition — visually consistent with the rest of the
+ * site. A future slice can reintroduce the named morph by
+ * switching the renderer to `set:html={...}` on raw markup
+ * typed as Astro templates (deferred to the Astro renderToString
+ * slice in the optional S5 of the proposal).
+ */
+import {
+	renderPageHeader,
+	type IPageHeaderProps,
+} from '@delendai/shared/components/ui/page-header';
+import { useTranslations } from '#I18N/ui';
+
+interface ICrumb {
+	readonly label: string;
+	readonly href: string;
+}
+
+interface Props {
+	lang: Parameters<typeof useTranslations>[0];
+	title: string;
+	crumbs?: ReadonlyArray<ICrumb>;
+	/**
+	 * Legacy alias for `baseHref`. The docs site pages still pass
+	 * `homeHref` to the wrapper; the wrapper forwards it as-is into
+	 * the shared renderer so the contract is symmetric.
+	 */
+	homeHref?: string;
+}
+
+const { lang, title, crumbs, homeHref } = Astro.props as Props;
+const t = useTranslations(lang);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+// `homeHref` is the legacy alias the docs site pages still pass;
+// the shared renderer accepts a single `baseHref` so we normalise
+// the value here. Both forms land on the same `baseHref` string.
+const baseHref = homeHref ?? `${base}/`;
+const homeLabel = t.nav.concept;
+---
+
+<header class="delendai-page-header page-header">
+	<Fragment set:html={renderPageHeader({ lang, title, crumbs: crumbs as IPageHeaderProps['crumbs'] | undefined, baseHref, homeLabel })} />
+</header>

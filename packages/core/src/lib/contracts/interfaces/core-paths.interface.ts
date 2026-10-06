@@ -1,0 +1,25 @@
+/**
+ * The two workspace-relative roots the core resolves from the CLI and
+ * hands to every plugin. Plugins derive their own concrete layout from
+ * these (e.g. the swarm plugin builds its lock/queue/proposal paths
+ * from `cacheDir`/`docsDir`). Both are relative to the workspace root
+ * resolved by `IWorkspacePathProvider`.
+ */
+export interface ICorePaths {
+	/**
+	 * Scratch/state root for transient artefacts.
+	 * CLI: `--cacheDir` (default `.cache/delendai`).
+	 */
+	readonly cacheDir: string;
+	/**
+	 * Human-edited document root (proposals, generated guides, etc.).
+	 * CLI: `--docsDir` (default `docs/delendai`).
+	 */
+	readonly docsDir: string;
+}
+
+/** Default core roots when the CLI is run without overrides. */
+export const DEFAULT_CORE_PATHS: ICorePaths = {
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
+};

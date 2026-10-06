@@ -1,0 +1,187 @@
+/**
+ * Contract shapes for `./classify`.
+ *
+ * Split out of the implementation module so the repo's "types and
+ * constants live in contracts" convention holds: `classify.ts` keeps the
+ * behaviour, this file keeps the shapes.
+ */
+
+/**
+ * How long a publication ref may exist with no pull request before it is
+ * reported as abandoned. Generous on purpose: the cost of waiting is one
+ * more reconcile pass, and the cost of being wrong is a gate that fails
+ * over work in flight.
+ */
+export const DEFAULT_ADOPTION_GRACE_SECONDS = 1800;
+
+/**
+ * How long a publication whose pull request was closed without merging
+ * stays where it is before it is retired: time for its author to reopen
+ * the request. Past it the tip is kept under the retired namespace and
+ * the branch goes, so a closed request leaves no branch on the forge.
+ */
+export const DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS = 3600;
+
+import type { IUnitStanding } from '../work-units/unit-lease.interface';
+
+/** A branch as the forge reports it. */
+export interface IObservedRef {
+	readonly name: string;
+	/** Seconds since the epoch of its tip, when the forge reports one. */
+	readonly updatedAt?: number | undefined;
+	/**
+	 * For a work ref: the branch that already contains its tip — a
+	 * publication ref, or the integration branch once it merged. The
+	 * caller measures containment (the forge can); reconcile stays pure.
+	 */
+	readonly publishedIn?: string | undefined;
+	/**
+	 * For a work ref: its proposal is still in progress on the integration
+	 * branch. A proposal keeps one work branch while it is in progress and
+	 * publishes its slices from it, so a published tip is not the end of
+	 * that branch. The caller reads the proposal state; reconcile stays
+	 * pure.
+	 */
+	readonly proposalInProgress?: boolean | undefined;
+	/**
+	 * For a work ref: the verdict on its unit (owner and heartbeat). Only
+	 * a clone that holds the leases can state it; absent, a work ref is
+	 * judged as it always was.
+	 */
+	readonly standing?: IUnitStanding | undefined;
+}
+
+/** A pull request as the forge reports it, reduced to what matters here. */
+export interface IObservedPullRequest {
+	readonly number: number;
+	readonly headRefName: string;
+	readonly state: 'open' | 'merged' | 'closed';
+	/** Seconds since the epoch it was closed, when the forge reports it. */
+	readonly closedAt?: number | undefined;
+}
+
+/** What a ref turned out to be. */
+export const REF_ROLES = [
+	/** The integration or release branch. Never reaped, never an agent's. */
+	'protected',
+	/** A publication ref with an open pull request — doing its job. */
+	'publication-open',
+	/** A publication ref whose pull request merged. Reapable. */
+	'publication-spent',
+	/**
+	 * A publication ref whose pull request was closed without merging.
+	 * Its commits may exist nowhere else, so it is never deleted (x00697):
+	 * it is kept for its author to reopen, and past the grace it is
+	 * retired — its tip kept under the retired namespace, its branch gone.
+	 */
+	'publication-closed',
+	/** A publication ref with no pull request at all. */
+	'publication-unclaimed',
+	/**
+	 * A publication ref with no pull request YET, pushed recently enough
+	 * that the request it exists for is plausibly still being opened.
+	 * Publishing a ref and opening its request are two forge calls with a
+	 * gap between them, and a reconcile that lands in that gap was
+	 * reporting a healthy candidate as abandoned.
+	 */
+	'publication-awaiting',
+	/**
+	 * A ref an agent is developing on, inside the policy's work
+	 * namespace. Visible so ordinary Git clients list it before there is
+	 * anything to review, and never reaped here: the pull request that
+	 * would prove it spent has not been opened yet.
+	 */
+	'work',
+	/**
+	 * A work ref whose owner is known and quiet: listed for adoption, not
+	 * for removal.
+	 */
+	'work-idle',
+	/**
+	 * A work ref whose owner is gone. Its commits may be the only copy, so
+	 * it ends through `work retire` (which keeps the tip) or `work publish`.
+	 */
+	'work-abandoned',
+	/**
+	 * A work ref whose content is already in a publication ref or the
+	 * integration branch. A work branch ends when it is published: past
+	 * that point it is a stale second copy that invites developing on the
+	 * wrong ref. Reapable, because nothing is lost by deleting it.
+	 */
+	'work-published',
+	/** Not ours: the forge's own automation. Reported, never reaped. */
+	'foreign',
+	/**
+	 * A branch outside every namespace the policy knows. Under a shared
+	 * checkout this is an agent that took ownership of a branch.
+	 */
+	'unmanaged',
+] as const;
+export type IRefRole = (typeof REF_ROLES)[number];
+
+export interface IRefVerdict {
+	readonly name: string;
+	readonly role: IRefRole;
+	/** The pull request that decided the role, when one did. */
+	readonly pullRequest?: number | undefined;
+	/** Why this role, in one sentence an operator can act on. */
+	readonly reason: string;
+}
+
+/** How a reconcile pass decides whether a ref has had its chance. */
+export interface IReconcileOptions {
+	/** Seconds since the epoch to judge ref ages against. */
+	readonly now?: number | undefined;
+	/**
+	 * How long a publication ref may exist without a pull request before
+	 * it counts as abandoned rather than in-flight.
+	 */
+	readonly adoptionGraceSeconds?: number | undefined;
+	/**
+	 * How long a publication closed without merging is left for its
+	 * author before it is retired.
+	 */
+	readonly closedRetirementGraceSeconds?: number | undefined;
+}
+
+/** What a reconcile pass concluded, split by what may be done about it. */
+export interface IRefReconciliation {
+	readonly verdicts: readonly IRefVerdict[];
+	/** Refs that may be deleted, with evidence for each. */
+	readonly reapable: readonly IRefVerdict[];
+	/**
+	 * Refs that are wrong but must NOT be deleted automatically: work
+	 * with no pull request may be the only copy of something.
+	 */
+	readonly needsAttention: readonly IRefVerdict[];
+	/**
+	 * Publications closed without merging, past the grace: retired, never
+	 * deleted — the tip is kept where `work retired` finds it.
+	 */
+	readonly retirable: readonly IRefVerdict[];
+	/**
+	 * Refs that are not yet anybody's problem: published inside the
+	 * adoption grace and still waiting for their pull request. Reported
+	 * so a pass is never silent about them, and excluded from
+	 * `needsAttention` so a race does not fail a gate.
+	 */
+	readonly awaiting: readonly IRefVerdict[];
+	/**
+	 * Refs that are doing exactly what the policy asks: work refs an
+	 * agent is developing on. Reported rather than omitted, so a pass
+	 * never goes silent about a ref it chose not to act on.
+	 */
+	readonly active: readonly IRefVerdict[];
+	/** Work refs whose owner went quiet: another agent may take them over. */
+	readonly adoptable: readonly IRefVerdict[];
+}
+
+/** What the project's policy says about one branch's delivery. */
+export interface IBranchDeliveryVerdict {
+	/** The ref-lifecycle role the branch was given. */
+	readonly role: string;
+	/** True only when deleting or retiring the branch loses nothing. */
+	readonly delivered: boolean;
+	/** Why, in one sentence an operator can act on. */
+	readonly reason: string;
+}

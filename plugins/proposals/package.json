@@ -1,0 +1,79 @@
+{
+	"name": "@delendai/proposals",
+	"version": "0.1.1",
+	"type": "module",
+	"description": "Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `delendai --plugins=proposals`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"proposals",
+		"swarm",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"skills",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/proposals"
+	},
+	"peerDependencies": {
+		"@delendai/core": "^0.1.1",
+		"@delendai/agent-orchestrator": "workspace:*"
+	},
+	"dependencies": {
+		"@delendai/state": "workspace:*",
+		"@delendai/proposals-sqlite": "workspace:*",
+		"@delendai/error-reporting": "workspace:*",
+		"@delendai/logs": "workspace:*",
+		"@delendai/quality": "workspace:*",
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@delendai/agent-orchestrator": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/error-reporting": "workspace:*",
+		"@delendai/logs": "workspace:*",
+		"@delendai/quality": "workspace:*",
+		"@delendai/test-kit": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/delendai"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

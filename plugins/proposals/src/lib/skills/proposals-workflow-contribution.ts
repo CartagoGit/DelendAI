@@ -1,0 +1,85 @@
+import type { IProposalSummary } from '@delendai/core/public';
+import type { IWorkflowContribution } from '@delendai/core/public';
+import {
+	registerWorkflowContribution,
+	type IAssembleWorkflowContributionsInput,
+} from '@delendai/core/public';
+import { readProposalsIndex } from '../proposals/proposal-summaries.service';
+
+import { PROPOSALS_STABLE_TOOLS } from '../api/proposals-stable-tools';
+
+type TProposalWorkflowContribution = IWorkflowContribution & {
+	readonly proposalSummaries: readonly IProposalSummary[];
+};
+
+const countActionableProposals = (
+	proposalSummaries: readonly IProposalSummary[],
+): number =>
+	proposalSummaries.filter(
+		(summary) =>
+			summary.status === 'ready' ||
+			summary.status === 'in-progress' ||
+			summary.status === 'paused',
+	).length;
+
+/**
+ * Proposals handed to review and waiting for a second agent. Counted
+ * apart from the actionable ones because the work they need is a
+ * verdict, not an implementation — and an agent asked to review has to
+ * learn from the first overview that there is a backlog and where it is.
+ */
+const countAwaitingReview = (
+	proposalSummaries: readonly IProposalSummary[],
+): number =>
+	proposalSummaries.filter((summary) => summary.status === 'review').length;
+
+export const buildProposalsWorkflowContribution = async (
+	input: IAssembleWorkflowContributionsInput,
+): Promise<TProposalWorkflowContribution> => {
+	const proposalSummaries = await readProposalsIndex(
+		input.workspaceRoot,
+		input.cacheDir,
+	);
+	const actionableCount = countActionableProposals(proposalSummaries);
+	const awaitingReview = countAwaitingReview(proposalSummaries);
+	const reviewClause =
+		awaitingReview === 0
+			? ''
+			: ` ${awaitingReview} await independent review — a reviewer starts with ${input.corePrefix}_proposals_review_queue.`;
+	return {
+		summary: {
+			title: 'Proposal workflow snapshot',
+			detail:
+				proposalSummaries.length === 0
+					? 'No proposals are indexed yet.'
+					: `${proposalSummaries.length} proposals indexed; ${actionableCount} actionable.${reviewClause}`,
+			metrics: [
+				{ label: 'totalProposals', value: proposalSummaries.length },
+				{ label: 'actionableProposals', value: actionableCount },
+				{ label: 'awaitingReview', value: awaitingReview },
+			],
+		},
+		stableTools: PROPOSALS_STABLE_TOOLS.map((descriptor) => ({
+			id: descriptor.name,
+			title: descriptor.name,
+			detail: descriptor.summary ?? descriptor.name,
+		})),
+		recommendedNextAction: {
+			title: 'Start proposal work',
+			detail: `Call ${input.corePrefix}_overview, then ${input.corePrefix}_proposals_auto_work to start working.`,
+			commands: [
+				`${input.corePrefix}_overview`,
+				`${input.corePrefix}_proposals_auto_work`,
+			],
+		},
+		proposalSummaries,
+	};
+};
+
+/** Register the proposals workflow contribution once the plugin loads. */
+export const registerProposalsWorkflowContribution = (): void => {
+	registerWorkflowContribution(
+		'proposals',
+		buildProposalsWorkflowContribution,
+	);
+};

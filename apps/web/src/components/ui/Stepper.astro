@@ -1,0 +1,22 @@
+---
+/**
+ * `apps/web/src/components/ui/Stepper.astro` — wrapper around the
+ * host-agnostic `renderStepper()` from `@delendai/shared`.
+ *
+ * The shared renderer emits the full `<ol class="delendai-stepper">…</ol>`
+ * already; the wrapper just delegates. Class rename keeps the
+ * legacy `ui-stepper` selector valid for one slice (the SCSS has
+ * a `@extend` alias) so the rest of `apps/web` keeps its existing
+ * markup without a rename.
+ */
+import {
+	renderStepper,
+	type IStepperProps,
+} from '@delendai/shared/components/ui/stepper';
+
+interface Props extends IStepperProps {}
+
+const { steps, start } = Astro.props as Props;
+---
+
+<Fragment set:html={renderStepper({ steps, start })} />

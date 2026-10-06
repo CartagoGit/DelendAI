@@ -1,0 +1,259 @@
+/**
+ * classify.ts — what every branch in a repository is FOR, decided from
+ * the policy rather than from a habit.
+ *
+ * WHY this exists: the shared-checkout model asks agents to own work
+ * instead of branches, and asking is not a mechanism. The failure it
+ * prevents is cumulative and quiet — one abandoned branch is untidy,
+ * twenty is a repository nobody can read, and each one arrives looking
+ * reasonable at the time. Nothing here depends on an agent remembering
+ * the rule; the repository is observed and each ref gets a verdict.
+ *
+ * WHY a publication ref is a category of its own: a forge needs a
+ * `refs/heads/*` to build a pull request from, so the ref has to exist.
+ * What must not follow is that it becomes somewhere to develop. Giving
+ * it a namespace turns "is this a workspace or an artifact?" from a
+ * judgement into a lookup.
+ *
+ * WHY reaping is split from reporting: a ref whose pull request merged
+ * has provably delivered its content, and deleting it loses nothing. A
+ * ref with NO pull request may be the only copy of work somebody is
+ * still holding. Both are wrong states; only the first is safe to fix
+ * automatically, and conflating them is how a cleanup eats work.
+ *
+ * WHY an adoption grace: publishing a ref and opening its pull request
+ * are two separate forge calls, and a reconcile that runs between them
+ * sees a ref nothing is reviewing. That is indistinguishable, in a
+ * snapshot, from an abandoned one — so the guard on the integration
+ * branch went red over a candidate that was perfectly healthy thirty
+ * seconds later, which is the worst kind of failure: red for a reason
+ * that has nothing to do with the commit under test. Age separates the
+ * two honestly. A ref with no age reported stays `unclaimed`, because
+ * absence of evidence must not buy a ref more time.
+ *
+ * WHY `foreign` is explicit: dependabot's branches are not delendai's to
+ * reap. A cleanup that cannot tell "not mine" from "abandoned" is a
+ * cleanup nobody can safely enable, so unowned prefixes are named in the
+ * policy and reported without ever being touched.
+ */
+
+import type { IPolicyBranches } from '../contracts/interfaces/development-policy.interface';
+
+import {
+	DEFAULT_ADOPTION_GRACE_SECONDS,
+	DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS,
+} from './reconcile.interface';
+import type {
+	IObservedPullRequest,
+	IObservedRef,
+	IReconcileOptions,
+	IRefReconciliation,
+	IRefVerdict,
+	IRefRole,
+} from './reconcile.interface';
+
+export type {
+	IObservedPullRequest,
+	IObservedRef,
+	IReconcileOptions,
+	IRefReconciliation,
+	IRefVerdict,
+	IRefRole,
+} from './reconcile.interface';
+export {
+	DEFAULT_ADOPTION_GRACE_SECONDS,
+	DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS,
+	REF_ROLES,
+} from './reconcile.interface';
+
+/** Latest pull request per head ref: an open one always wins. */
+const byHeadRef = (
+	pullRequests: readonly IObservedPullRequest[],
+): ReadonlyMap<string, IObservedPullRequest> => {
+	const index = new Map<string, IObservedPullRequest>();
+	for (const request of pullRequests) {
+		const existing = index.get(request.headRefName);
+		// An open request outranks a finished one, and a later number
+		// outranks an earlier one: the ref is doing the newest job asked
+		// of it, not the first.
+		if (
+			existing === undefined ||
+			(existing.state !== 'open' && request.state === 'open') ||
+			(existing.state === request.state &&
+				request.number > existing.number)
+		) {
+			index.set(request.headRefName, request);
+		}
+	}
+	return index;
+};
+
+/**
+ * Compare a forge-reported branch name against a configured prefix.
+ *
+ * The forge reports short names (`delendai/wip/agent/slice-g1`), while a
+ * prefix may be declared fully qualified (`heads/delendai/wip/`) because
+ * the same value also expands a work-ref template that `update-ref` has
+ * to accept. Two spellings of one namespace made the work prefix
+ * unmatchable, so every work ref fell through to `unmanaged`. Strip the
+ * qualification from both sides and the two spellings mean the same
+ * thing.
+ */
+const shortenRef = (value: string): string =>
+	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+const inNamespace = (name: string, prefix: string): boolean =>
+	prefix !== '' && shortenRef(name).startsWith(shortenRef(prefix));
+
+const roleOf = (
+	ref: IObservedRef,
+	branches: IPolicyBranches,
+	request: IObservedPullRequest | undefined,
+	graceStartsAfter: number,
+): { readonly role: IRefRole; readonly reason: string } => {
+	const name = ref.name;
+	if (name === branches.integration || name === branches.release) {
+		return {
+			role: 'protected',
+			reason: 'the branch the workspace is built on',
+		};
+	}
+	if (branches.foreignRefPrefixes.some((prefix) => name.startsWith(prefix))) {
+		return {
+			role: 'foreign',
+			reason: 'created by automation delendai does not own — reported, never reaped',
+		};
+	}
+	if (inNamespace(name, branches.workRefPrefix)) {
+		if (ref.publishedIn !== undefined && ref.proposalInProgress === true) {
+			return {
+				role: 'work',
+				reason: `the branch of a proposal still in progress: what it has published is in \`${ref.publishedIn}\`, and it goes on with the next slices — it ends when the proposal leaves in-progress`,
+			};
+		}
+		if (ref.publishedIn !== undefined) {
+			return {
+				role: 'work-published',
+				reason: `its content is already in \`${ref.publishedIn}\`: a work branch ends when it is published, so this copy should be deleted — only the publication ref remains`,
+			};
+		}
+		if (ref.standing === 'idle') {
+			return {
+				role: 'work-idle',
+				reason: 'a work ref whose owner is known and has gone quiet: listed for adoption (`delendai work enter` resumes it), never reaped',
+			};
+		}
+		if (ref.standing === 'abandoned') {
+			return {
+				role: 'work-abandoned',
+				reason: 'a work ref whose owner is gone and which was never published: end it with `delendai work retire`, which keeps its tip, or adopt it and publish',
+			};
+		}
+		return {
+			role: 'work',
+			reason: 'a work ref an agent is developing on: visible before publication on purpose, and never reaped here because no pull request has had the chance to prove it spent',
+		};
+	}
+	if (inNamespace(name, branches.publicationRefPrefix)) {
+		if (request === undefined) {
+			if (
+				ref.updatedAt !== undefined &&
+				ref.updatedAt > graceStartsAfter
+			) {
+				return {
+					role: 'publication-awaiting',
+					reason: 'a publication ref pushed moments ago: its pull request is plausibly still being opened, so nothing is wrong yet',
+				};
+			}
+			return {
+				role: 'publication-unclaimed',
+				reason: 'a publication ref with no pull request: it carries work nothing is reviewing, and nothing will clean it up',
+			};
+		}
+		if (request.state === 'open') {
+			return {
+				role: 'publication-open',
+				reason: 'carrying an open pull request',
+			};
+		}
+		// Only a merge delivered the work. A pull request closed without
+		// merging leaves the ref as the only copy of what it carried; it
+		// was reaped all the same until 2026-09-27 (x00697).
+		return request.state === 'merged'
+			? {
+					role: 'publication-spent',
+					reason: 'its pull request merged, so the ref has delivered its work',
+				}
+			: {
+					role: 'publication-closed',
+					reason: 'its pull request was closed without merging: the ref may be the only copy of its work, so it is kept for its author to reopen, then retired (its tip kept, its branch gone)',
+				};
+	}
+	return {
+		role: 'unmanaged',
+		reason: `outside every namespace the policy knows: under a shared checkout an agent owns work, not a branch. Work belongs under \`${branches.workRefPrefix}\`, and a ref that exists to carry a pull request belongs under \`${branches.publicationRefPrefix}\``,
+	};
+};
+
+/**
+ * Classify every observed ref and split the result by what may safely be
+ * done about it. Pure: the caller does the observing and the deleting.
+ */
+export const reconcileRefs = (
+	refs: readonly IObservedRef[],
+	pullRequests: readonly IObservedPullRequest[],
+	branches: IPolicyBranches,
+	options: IReconcileOptions = {},
+): IRefReconciliation => {
+	const now = options.now ?? Math.floor(Date.now() / 1000);
+	const graceStartsAfter =
+		now - (options.adoptionGraceSeconds ?? DEFAULT_ADOPTION_GRACE_SECONDS);
+	const retireClosedBefore =
+		now -
+		(options.closedRetirementGraceSeconds ??
+			DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS);
+	const index = byHeadRef(pullRequests);
+	const verdicts: IRefVerdict[] = refs.map((ref) => {
+		const request = index.get(ref.name);
+		const { role, reason } = roleOf(
+			ref,
+			branches,
+			request,
+			graceStartsAfter,
+		);
+		return {
+			name: ref.name,
+			role,
+			reason,
+			...(request === undefined ? {} : { pullRequest: request.number }),
+		};
+	});
+
+	return {
+		verdicts,
+		// Only a delivered pull request is evidence that deleting the ref
+		// loses nothing.
+		reapable: verdicts.filter(
+			(v) =>
+				v.role === 'publication-spent' || v.role === 'work-published',
+		),
+		// A published work branch is also a violation until removed: the
+		// flow is "publish, then delete the work branch", and a copy left
+		// behind is what agents then keep developing on.
+		needsAttention: verdicts.filter(
+			(v) =>
+				v.role === 'unmanaged' ||
+				v.role === 'publication-unclaimed' ||
+				v.role === 'work-abandoned' ||
+				v.role === 'work-published',
+		),
+		retirable: verdicts.filter((v) => {
+			if (v.role !== 'publication-closed') return false;
+			const closedAt = index.get(v.name)?.closedAt;
+			return closedAt !== undefined && closedAt <= retireClosedBefore;
+		}),
+		awaiting: verdicts.filter((v) => v.role === 'publication-awaiting'),
+		active: verdicts.filter((v) => v.role === 'work'),
+		adoptable: verdicts.filter((v) => v.role === 'work-idle'),
+	};
+};

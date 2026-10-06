@@ -1,0 +1,239 @@
+/**
+ * work-event-store.sqlite.ts — append-only SQLite backend for the
+ * Work Event Bus (q00020 F1).
+ *
+ * The table schema is the one declared by `q00020`:
+ *
+ *   work_events(
+ *     id INTEGER PRIMARY KEY AUTOINCREMENT,
+ *     work_item_id TEXT NOT NULL,
+ *     actor_id TEXT,
+ *     kind TEXT NOT NULL,
+ *     payload_hash TEXT,
+ *     created_at INTEGER NOT NULL
+ *   )
+ *
+ * Index on `(work_item_id, id)` so two writers can append at the
+ * same time without tripping the autoincrement lock at the project
+ * level (the bus is row-local, not scope-local).
+ *
+ * `Database` is created in WAL + NORMAL + 5s busy_timeout to match
+ * the State Engine conventions; FK enforcement stays off because the
+ * bus is deliberately append-only and has no referential integrity
+ * to enforce (work_items live elsewhere in q00019).
+ */
+
+import { mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname } from 'node:path';
+
+import type { Database } from 'bun:sqlite';
+
+type TSqliteModule = {
+	readonly Database: new (
+		path: string,
+		options?: {
+			readonly readonly?: boolean;
+			readonly create?: boolean;
+			readonly strict?: boolean;
+		},
+	) => Database;
+};
+
+/**
+ * `bun:sqlite` is a Bun builtin with no node resolution, so a static
+ * top-level import makes merely IMPORTING this module throw under
+ * node/vitest — taking every spec in the package with it, including the
+ * ones that never open a database.
+ *
+ * Resolving it at construction time keeps the module importable
+ * everywhere and still fails loudly when a database is actually wanted.
+ * Probing `globalThis.Bun` is not enough: a Bun polyfill can define the
+ * global on a host that cannot resolve the builtin, so the only honest
+ * test is the resolution itself.
+ */
+const loadDatabaseClass = (): TSqliteModule['Database'] => {
+	try {
+		return (createRequire(import.meta.url)('bun:sqlite') as TSqliteModule)
+			.Database;
+	} catch (cause) {
+		throw new Error(
+			'The SQLite work-event store requires the Bun runtime: `bun:sqlite` cannot be resolved here. Use the NDJSON store, or run under `bun`.',
+			{ cause },
+		);
+	}
+};
+
+import {
+	isWorkEventKind,
+	type INewWorkEvent,
+	type IWorkEvent,
+} from './work-event';
+
+export const WORK_EVENTS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS work_events (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	work_item_id TEXT NOT NULL,
+	actor_id TEXT,
+	kind TEXT NOT NULL,
+	payload_hash TEXT,
+	created_at INTEGER NOT NULL
+);
+`;
+
+export const WORK_EVENTS_INDEX_SQL = `
+CREATE INDEX IF NOT EXISTS idx_work_events_item_id
+ON work_events(work_item_id, id);
+`;
+
+export const WORK_EVENTS_SCHEMA_SQL = [
+	WORK_EVENTS_TABLE_SQL,
+	WORK_EVENTS_INDEX_SQL,
+] as const;
+
+/**
+ * `busy_timeout` comes first: switching to WAL takes a lock of its own,
+ * so a second process opening the same file at that moment would fail
+ * with SQLITE_BUSY if the wait were not already in force.
+ */
+export const WORK_EVENTS_BOOT_PRAGMAS = [
+	'PRAGMA busy_timeout = 5000;',
+	'PRAGMA journal_mode = WAL;',
+	'PRAGMA synchronous = NORMAL;',
+	'PRAGMA foreign_keys = OFF;',
+] as const;
+
+const WORK_EVENTS_BOOT_RETRY_MS = 5000;
+const WORK_EVENTS_BOOT_RETRY_STEP_MS = 5;
+
+export interface ISqliteWorkEventStoreOptions {
+	readonly path: string;
+	readonly now?: () => number;
+}
+
+const mapRow = (row: {
+	id: number;
+	work_item_id: string;
+	actor_id: string | null;
+	kind: string;
+	payload_hash: string | null;
+	created_at: number;
+}): IWorkEvent => ({
+	id: row.id,
+	work_item_id: row.work_item_id as IWorkEvent['work_item_id'],
+	actor_id: row.actor_id,
+	kind: isWorkEventKind(row.kind) ? row.kind : 'git_change_stale',
+	payload_hash: row.payload_hash ?? '',
+	created_at: row.created_at,
+});
+
+export class SqliteWorkEventStore {
+	private readonly db: Database;
+	private readonly now: () => number;
+	private closed = false;
+
+	constructor(options: ISqliteWorkEventStoreOptions) {
+		mkdirSync(dirname(options.path), { recursive: true });
+		const DatabaseClass = loadDatabaseClass();
+		this.db = new DatabaseClass(options.path, {
+			create: true,
+			strict: true,
+		});
+		for (const pragma of WORK_EVENTS_BOOT_PRAGMAS)
+			this.execWhenFree(pragma);
+		for (const statement of WORK_EVENTS_SCHEMA_SQL)
+			this.execWhenFree(statement);
+		this.now = options.now ?? (() => Date.now());
+	}
+
+	/**
+	 * Switching the journal to WAL answers SQLITE_BUSY at once when another
+	 * process holds the file, without waiting for `busy_timeout`. Retrying
+	 * for a bounded time lets two processes open the same store together.
+	 */
+	private execWhenFree(statement: string): void {
+		const deadline = Date.now() + WORK_EVENTS_BOOT_RETRY_MS;
+		for (;;) {
+			try {
+				this.db.exec(statement);
+				return;
+			} catch (error) {
+				const busy =
+					(error as { code?: string }).code === 'SQLITE_BUSY';
+				if (!busy || Date.now() >= deadline) throw error;
+				Bun.sleepSync(WORK_EVENTS_BOOT_RETRY_STEP_MS);
+			}
+		}
+	}
+
+	append(event: INewWorkEvent): IWorkEvent {
+		if (this.closed) throw new Error('SqliteWorkEventStore is closed');
+		if (!isWorkEventKind(event.kind)) {
+			throw new Error(`unknown work event kind: ${event.kind}`);
+		}
+		const createdAt = event.created_at ?? this.now();
+		const result = this.db
+			.prepare(
+				`INSERT INTO work_events (
+					work_item_id, actor_id, kind, payload_hash, created_at
+				) VALUES (?, ?, ?, ?, ?)`,
+			)
+			.run(
+				event.work_item_id,
+				event.actor_id,
+				event.kind,
+				event.payload_hash,
+				createdAt,
+			);
+		const id = Number(result.lastInsertRowid);
+		return {
+			id,
+			work_item_id: event.work_item_id,
+			actor_id: event.actor_id,
+			kind: event.kind,
+			payload_hash: event.payload_hash,
+			created_at: createdAt,
+		};
+	}
+
+	listByWorkItem(
+		workItemId: IWorkEvent['work_item_id'],
+	): readonly IWorkEvent[] {
+		return this.db
+			.prepare(
+				`SELECT id, work_item_id, actor_id, kind, payload_hash, created_at
+				 FROM work_events
+				 WHERE work_item_id = ?
+				 ORDER BY id ASC`,
+			)
+			.all(workItemId)
+			.map((row) =>
+				mapRow(
+					row as {
+						id: number;
+						work_item_id: string;
+						actor_id: string | null;
+						kind: string;
+						payload_hash: string | null;
+						created_at: number;
+					},
+				),
+			);
+	}
+
+	count(): number {
+		const row = this.db
+			.prepare<{ total: number }, []>(
+				`SELECT COUNT(*) AS total FROM work_events`,
+			)
+			.get();
+		return row?.total ?? 0;
+	}
+
+	close(): void {
+		if (this.closed) return;
+		this.db.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+		this.db.close();
+		this.closed = true;
+	}
+}

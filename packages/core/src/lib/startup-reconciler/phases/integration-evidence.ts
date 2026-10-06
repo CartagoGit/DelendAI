@@ -1,0 +1,181 @@
+/**
+ * integration-evidence.ts — phase 7: which checkpoints are already IN the
+ * integration branch, and which refs are gone because they merged.
+ *
+ * WHY containment is the evidence and age is not: a ref that has not been
+ * touched for a week may hold the only copy of somebody's work; a ref
+ * whose tip is an ancestor of the integration branch holds nothing that
+ * is not already safe. The first is untouchable, the second is
+ * cleanup — and the difference is a `merge-base --is-ancestor`, not a
+ * timestamp. The policy says the same thing
+ * (`recovery.neverDiscardUnmergedWork`), and this phase is where that
+ * sentence becomes code.
+ *
+ * WHY identical content counts too: ancestry is one kind of evidence,
+ * not the definition. A checkpoint with no changes (measured 2026-09-26:
+ * nine empty "commit via slice" checkpoints on a base already in
+ * develop) or work squashed into the integration branch is not an
+ * ancestor, and blocked every boot as possible loss while carrying
+ * nothing the integration branch lacked. Content evidence is strict: a
+ * path the integration branch later changed again differs, and stays a
+ * blocker.
+ *
+ * WHY a vanished ref with no evidence is a BLOCKER: the ref was deleted
+ * by something, its commits are not in the integration branch, and the
+ * only honest conclusion is that work may have been lost. Guessing
+ * "probably merged" here would be the single most destructive assumption
+ * in the whole subsystem — so it degrades the boot and generates a repair
+ * task that says exactly which ref and which SHA to go looking for.
+ */
+
+import type { IStartupFinding } from '../contracts';
+import { finding } from '../finding-catalog';
+import { ensureMergeCandidate } from '../merge-candidate';
+import type { IStartupGitSeam } from '../seams.interface';
+import type { IStartupStatePorts } from '../state-ports.interface';
+
+import type { IIntegrationPhaseResult } from './integration-evidence.interface';
+
+export type { IIntegrationPhaseResult } from './integration-evidence.interface';
+
+export const runIntegrationEvidencePhase = async (input: {
+	readonly ports: IStartupStatePorts;
+	readonly git: IStartupGitSeam;
+	readonly repositoryId: number;
+	readonly integrationSha: string;
+	/** Ref names git currently reports, for "deleted because merged". */
+	readonly liveRefs: ReadonlySet<string>;
+	/**
+	 * Tips of refs that may still hold a checkpoint whose work ref is gone:
+	 * publishing a unit moves its work to a publication and deletes the
+	 * work ref, which is not a loss (x00702).
+	 */
+	readonly keptBy?: readonly string[];
+	/**
+	 * Commits the forge keeps as retired work. A unit given up with
+	 * `work retire` is kept there, so its work ref is gone and nothing is
+	 * lost.
+	 */
+	readonly retiredTips?: readonly string[];
+	readonly now: number;
+}): Promise<IIntegrationPhaseResult> => {
+	const findings: IStartupFinding[] = [];
+	let generationsIntegrated = 0;
+	if (input.integrationSha.length === 0) {
+		return { findings, counters: { generationsIntegrated } };
+	}
+
+	for (const unit of input.ports.workUnits.listForRepository(
+		input.repositoryId,
+	)) {
+		for (const generation of input.ports.generations.listForWorkUnit(
+			unit.id,
+		)) {
+			if (generation.integratedSha !== null) continue;
+			// Ancestry is the first evidence; identical content is the
+			// second. An empty checkpoint, or work that reached the
+			// integration branch by a squash or a rewritten branch, is not
+			// an ancestor and loses nothing: every path it changed already
+			// holds the same content there.
+			const contained =
+				(await input.git.isAncestor(
+					generation.wipHeadSha,
+					input.integrationSha,
+				)) ||
+				(await (input.git.contentContained?.(
+					generation.wipHeadSha,
+					input.integrationSha,
+				) ?? Promise.resolve(false)));
+			const present = input.liveRefs.has(generation.wipRef);
+
+			if (contained) {
+				if (
+					!ensureMergeCandidate(
+						input.ports.generations,
+						generation,
+						input.now,
+					)
+				) {
+					continue;
+				}
+				const outcome = input.ports.generations.markIntegrated({
+					workUnitId: generation.workUnitId,
+					generation: generation.generation,
+					integratedSha: input.integrationSha,
+					now: input.now,
+				});
+				if (!outcome.first) continue;
+				generationsIntegrated += 1;
+				findings.push(
+					finding({
+						code: present
+							? 'integration-evidence.checkpoint-integrated'
+							: 'integration-evidence.merged-ref-absent',
+						phase: 'integration-evidence',
+						kind: 'repaired',
+						subject: `${unit.uid}@${String(generation.generation)}`,
+						message: present
+							? `Checkpoint ${generation.wipHeadSha} is contained in the integration branch; recorded as integrated.`
+							: `The ref ${generation.wipRef} is gone and its checkpoint is contained in the integration branch: it was deleted because it merged.`,
+					}),
+				);
+				continue;
+			}
+
+			if (!present) {
+				let kept = false;
+				for (const tip of input.keptBy ?? []) {
+					if (
+						await input.git.isAncestor(generation.wipHeadSha, tip)
+					) {
+						kept = true;
+						break;
+					}
+				}
+				const retired =
+					!kept &&
+					(input.retiredTips ?? []).includes(generation.wipHeadSha);
+				if (retired) {
+					findings.push(
+						finding({
+							code: 'integration-evidence.checkpoint-retired',
+							phase: 'integration-evidence',
+							kind: 'note',
+							subject: generation.wipRef,
+							message: `The ref ${generation.wipRef} is gone and its checkpoint ${generation.wipHeadSha} is kept on the forge as retired work: it was given up on purpose, not lost.`,
+						}),
+					);
+					continue;
+				}
+				if (kept) {
+					findings.push(
+						finding({
+							code: 'integration-evidence.checkpoint-published',
+							phase: 'integration-evidence',
+							kind: 'note',
+							subject: generation.wipRef,
+							message: `The ref ${generation.wipRef} is gone and its checkpoint ${generation.wipHeadSha} is held by another ref (its publication): the work was published, not lost.`,
+						}),
+					);
+					continue;
+				}
+				findings.push(
+					finding({
+						code: 'integration-evidence.ref-vanished',
+						phase: 'integration-evidence',
+						kind: 'blocker',
+						subject: generation.wipRef,
+						message: `The ref ${generation.wipRef} no longer exists and its checkpoint ${generation.wipHeadSha} is NOT contained in the integration branch. Nothing was assumed and nothing was removed.`,
+						detail: {
+							workUnit: unit.uid,
+							generation: generation.generation,
+							sha: generation.wipHeadSha,
+						},
+					}),
+				);
+			}
+		}
+	}
+
+	return { findings, counters: { generationsIntegrated } };
+};

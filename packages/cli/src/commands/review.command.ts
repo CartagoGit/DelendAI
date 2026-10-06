@@ -1,0 +1,418 @@
+/**
+ * review.command.ts — a review is four commands (x00727).
+ *
+ * Reviewing a proposal is reading what it delivered and saying whether it
+ * holds. On 2026-09-28 six reviewers spent hours failing at the steps
+ * around that: entering a review unit, finding its worktree, claiming a
+ * proposal with a hand-written empty commit and trailer, passing the
+ * worktree as `checkout` on every call, committing after each verdict,
+ * publishing. Each step was a place to go wrong, and most of them went
+ * wrong somewhere.
+ *
+ *   review next              your unit (entered once), the next proposal
+ *                            claimed for you, and what to check
+ *   review approve <id> <s>  the slice holds: recorded and committed
+ *   review changes <id> <s>  it does not: recorded, committed, reopened
+ *   review release <id>      you could not judge it: the claim goes back
+ *   review finish            your verdicts become one pull request
+ *
+ * Nothing here decides anything new. The unit is `work enter` / `work
+ * publish`, the claim is the commit `review_queue` names, and the verdict
+ * is `proposal_review`, which closes a proposal on its last approval and
+ * reopens it on a change request; the write binding commits what it
+ * wrote (x00722).
+ */
+import { execFileSync } from 'node:child_process';
+
+import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import {
+	RELEASE_TRAILER,
+	REVIEW_COMMAND,
+} from '../contracts/constants/review-command.constant';
+import type {
+	ICliCommand,
+	ICliCommandContext,
+	ICliCommandResult,
+} from '../contracts/interfaces/cli-command.interface';
+import { readWorkspacePolicy } from '@delendai/core/cli';
+import { data, request, scalarArg } from '../lib/helpers/cli-command.helper';
+import type {
+	IQueue,
+	IQueueProposal,
+	IUnit,
+} from '../contracts/interfaces/review-queue-view.interface';
+import { briefFor } from '../lib/review/review-brief.service';
+import { packRefusalsIn } from '../lib/review/review-pack-check.service';
+import { anythingWaiting } from '../lib/review/review-peek.service';
+import { releasedElsewhere } from '../lib/review/review-releases.service';
+import { usage } from './groups/group-helpers';
+import { evidenceArgs } from './groups/proposals';
+import { workCommand } from './work.command';
+
+/** The unit every review lives in: one batch per reviewer session. */
+const REVIEW_UNIT = ['--kind=review', '--proposal=batch', '--slice=all'];
+
+/** The trailer `review_queue` reads a claim from. */
+const CLAIM_TRAILER = 'Claims';
+
+const QUEUE_TOOL = 'delendai_proposals_review_queue';
+const VERDICT_TOOL = 'delendai_proposals_proposal_review';
+const CLAIM_TOOL = 'delendai_proposals_review_claim';
+
+/** Who reviews: `--agent`, or the declared agent id. */
+const agentOf = (args: readonly string[]): string | undefined =>
+	scalarArg(args, 'agent') ?? process.env.DELENDAI_AGENT_ID;
+
+const sessionOf = (args: readonly string[]): string | undefined =>
+	scalarArg(args, 'session') ?? process.env.DELENDAI_SESSION_ID;
+
+const quiet = (ctx: ICliCommandContext): ICliCommandContext => ({
+	...ctx,
+	globals: { ...ctx.globals, json: true, format: 'json' },
+});
+
+/** `work <sub>` on the reviewer's unit, as data. */
+const workOnUnit = async (
+	sub: 'enter' | 'publish',
+	agent: string,
+	session: string | undefined,
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> =>
+	workCommand.run(
+		[
+			sub,
+			...REVIEW_UNIT,
+			`--agent=${agent}`,
+			...(session === undefined ? [] : [`--session=${session}`]),
+		],
+		quiet(ctx),
+	);
+
+/** The reviewer's unit, entered if it is not yet. */
+const unitOf = async (
+	agent: string,
+	session: string | undefined,
+	ctx: ICliCommandContext,
+): Promise<IUnit | ICliCommandResult> => {
+	// No topic: `work enter` then finds this reviewer's unit whatever it
+	// was named, and names a new one itself.
+	const entered = await workOnUnit('enter', agent, session, ctx);
+	const unit = entered.data as
+		| { path?: string | null; session?: string; ref?: string }
+		| undefined;
+	if (
+		entered.code !== EXIT_CODE.OK ||
+		typeof unit?.path !== 'string' ||
+		typeof unit.session !== 'string' ||
+		typeof unit.ref !== 'string'
+	) {
+		return entered.code === EXIT_CODE.OK
+			? { code: EXIT_CODE.RUNTIME, error: 'work enter gave no worktree.' }
+			: entered;
+	}
+	return { path: unit.path, session: unit.session, ref: unit.ref };
+};
+
+const isUnit = (value: IUnit | ICliCommandResult): value is IUnit =>
+	'path' in value;
+
+const gitIn = (
+	cwd: string,
+	args: readonly string[],
+): { readonly ok: boolean; readonly out: string } => {
+	try {
+		return {
+			ok: true,
+			out: execFileSync('git', args, {
+				cwd,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'pipe'],
+			}).trim(),
+		};
+	} catch (error) {
+		const stderr = (error as { stderr?: unknown }).stderr;
+		return { ok: false, out: String(stderr ?? error).trim() };
+	}
+};
+
+/** Merge the integration branch's remote tip into the unit, or nothing. */
+const catchUp = (unit: IUnit, integration: string): void => {
+	gitIn(unit.path, ['fetch', '--quiet', 'origin', integration]);
+	const merged = gitIn(unit.path, [
+		'-c',
+		'core.hooksPath=/dev/null',
+		'merge',
+		'--quiet',
+		'--no-edit',
+		`origin/${integration}`,
+	]);
+	if (!merged.ok) gitIn(unit.path, ['merge', '--abort']);
+};
+
+/** The proposal ids a unit's own commits name under one trailer. */
+const trailerValuesOf = (
+	unit: IUnit,
+	integration: string,
+	key: string,
+): readonly string[] => {
+	// Only the unit's own commits: not those the integration branch
+	// holds, here or on the remote, whichever of the two exist.
+	const integrated = [
+		`refs/heads/${integration}`,
+		`refs/remotes/origin/${integration}`,
+	].filter(
+		(ref) => gitIn(unit.path, ['rev-parse', '--verify', '--quiet', ref]).ok,
+	);
+	const log = gitIn(unit.path, [
+		'log',
+		`--format=%(trailers:key=${key},valueonly)`,
+		'HEAD',
+		...(integrated.length === 0 ? [] : ['--not', ...integrated]),
+		'--',
+	]);
+	if (!log.ok) return [];
+	return [
+		...new Set(
+			log.out
+				.split('\n')
+				.map((line) => line.trim().toLowerCase())
+				.filter((line) => line.length > 0),
+		),
+	];
+};
+
+/**
+ * What the unit still holds: what it claimed, less what it gave back. A
+ * released claim stays in the unit's history, and `review next` resumed
+ * it as the unit's own, handing the reviewer straight back the proposal
+ * it had just released.
+ */
+const claimsOf = (unit: IUnit, integration: string): readonly string[] => {
+	const released = new Set(releasesOf(unit, integration));
+	return trailerValuesOf(unit, integration, CLAIM_TRAILER).filter(
+		(id) => !released.has(id),
+	);
+};
+
+/** What the unit gave back: never offered to it again. */
+const releasesOf = (unit: IUnit, integration: string): readonly string[] =>
+	trailerValuesOf(unit, integration, RELEASE_TRAILER);
+
+const needsVerdict = (proposal: IQueueProposal): boolean =>
+	proposal.slices.some((slice) => slice.verdict === 'needs-verdict');
+
+const queueOf = async (
+	ctx: ICliCommandContext,
+	agent: string,
+	extra: Record<string, unknown> = {},
+): Promise<IQueue> =>
+	request<IQueue>(ctx, QUEUE_TOOL, {
+		agent,
+		limit: 50,
+		detail: true,
+		...extra,
+	});
+
+const next = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const agent = agentOf(args);
+	if (agent === undefined)
+		return usage('review next --agent=<you> [--session=<s>]');
+	if (!sessionOf(args) && !(await anythingWaiting(() => queueOf(ctx, agent))))
+		return data({ next: 'Nothing is waiting for your verdict.' });
+	const unit = await unitOf(agent, sessionOf(args), ctx);
+	if (!isUnit(unit)) return unit;
+	const policy = await readWorkspacePolicy(unit.path);
+	// The queue is read from the unit, where the reviewer's own verdicts
+	// are; a unit made before others' verdicts merged still showed their
+	// proposals as waiting, closed ones included. Integration is brought
+	// in first; a merge that would conflict is undone and changes nothing.
+	catchUp(unit, policy.branches.integration);
+	// The unit, not only the agent: another instance of this model is
+	// another reviewer, and its claims are not ours.
+	const answer = await queueOf(ctx, agent, { unit: unit.ref });
+	const queue = answer.proposals ?? [];
+	const claimed = claimsOf(unit, policy.branches.integration);
+	// Your own claim first: a review you started is finished before
+	// another is taken.
+	const resumed = queue.find(
+		(proposal) =>
+			claimed.includes(proposal.id.toLowerCase()) &&
+			needsVerdict(proposal),
+	);
+	// What this reviewer gave back in any of its units, this one included.
+	const released = releasedElsewhere(unit.path, agent, policy.branches);
+	const free = queue.find(
+		(proposal) =>
+			proposal.claimedBy === undefined &&
+			!claimed.includes(proposal.id.toLowerCase()) &&
+			!released.includes(proposal.id.toLowerCase()) &&
+			needsVerdict(proposal),
+	);
+	const chosen = resumed ?? free;
+	const session = {
+		unit: unit.ref,
+		worktree: unit.path,
+		session: unit.session,
+	};
+	// A pack ends in a pull request: the verdicts reach the integration
+	// branch pack by pack, not when a backlog of a hundred runs dry.
+	// Only a unit that claimed something has a pack to publish: a fresh one
+	// never publishes, whatever the queue says.
+	const packDone =
+		resumed === undefined &&
+		claimed.length > 0 &&
+		answer.pack?.full === true;
+	if (packDone || (chosen === undefined && claimed.length > 0)) {
+		const published = await workOnUnit('publish', agent, unit.session, ctx);
+		if (published.code !== EXIT_CODE.OK || chosen === undefined) {
+			return published.code !== EXIT_CODE.OK
+				? published
+				: data({
+						...session,
+						published: published.data,
+						next: 'Nothing else is waiting for a verdict; your pack is published.',
+					});
+		}
+		// The next pack, in a unit of its own.
+		return next(
+			[
+				...args.filter((arg) => !arg.startsWith('--session=')),
+				`--session=${unit.session}`,
+			],
+			ctx,
+		);
+	}
+	if (chosen === undefined) {
+		return data({
+			...session,
+			next: 'Nothing is waiting for your verdict.',
+		});
+	}
+	if (resumed === undefined) {
+		// One way to claim, whatever host: the tool an MCP host calls too.
+		await request(ctx, CLAIM_TOOL, {
+			proposalId: chosen.id,
+			agent,
+			checkout: unit.path,
+		});
+	}
+	return data({ ...session, ...briefFor(chosen, unit, agent) });
+};
+
+const verdict = async (
+	action: 'approve' | 'request_changes',
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const [proposalId, sliceId] = args.filter((arg) => !arg.startsWith('-'));
+	const agent = agentOf(args);
+	const note = scalarArg(args, 'note');
+	const sub = action === 'approve' ? 'approve' : 'changes';
+	if (
+		proposalId === undefined ||
+		sliceId === undefined ||
+		agent === undefined ||
+		note === undefined
+	) {
+		return usage(
+			`review ${sub} <proposalId> <sliceId> --agent=<you> --session=<s> --note="<why>"${action === 'approve' ? ' --commit=<sha> --validate-exit=<n> --tests-passing=<n> --tests-total=<n>' : ''}`,
+		);
+	}
+	const unit = await unitOf(agent, sessionOf(args), ctx);
+	if (!isUnit(unit)) return unit;
+	const evidence = action === 'approve' ? evidenceArgs(args) : undefined;
+	const commit = scalarArg(args, 'commit');
+	const answer = await request<Record<string, unknown>>(ctx, VERDICT_TOOL, {
+		proposalId,
+		sliceId,
+		action,
+		agent,
+		note,
+		...(evidence === undefined ? {} : { evidence }),
+		...(commit === undefined ? {} : { commitHash: commit }),
+		checkout: unit.path,
+	});
+	return data({
+		...answer,
+		unit: unit.ref,
+		next: `delendai review next --agent=${agent} --session=${unit.session}`,
+	});
+};
+
+/**
+ * Give a claim back: for a reviewer that could not inspect or run what it
+ * claimed. It records no verdict, and the proposal returns to the queue.
+ */
+const release = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const [proposalId] = args.filter((arg) => !arg.startsWith('-'));
+	const agent = agentOf(args);
+	const note = scalarArg(args, 'note');
+	if (proposalId === undefined || agent === undefined || note === undefined) {
+		return usage(
+			'review release <proposalId> --agent=<you> --session=<s> --note="<why you could not judge it>"',
+		);
+	}
+	const unit = await unitOf(agent, sessionOf(args), ctx);
+	if (!isUnit(unit)) return unit;
+	const answer = await request<Record<string, unknown>>(ctx, CLAIM_TOOL, {
+		proposalId,
+		agent,
+		release: note,
+		checkout: unit.path,
+	});
+	return data({
+		...answer,
+		unit: unit.ref,
+		next: `delendai review next --agent=${agent} --session=${unit.session}`,
+	});
+};
+
+const finish = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const agent = agentOf(args);
+	if (agent === undefined)
+		return usage('review finish --agent=<you> --session=<s>');
+	const session = sessionOf(args);
+	if (session !== undefined) {
+		// What CI would refuse is refused here, before the pull request.
+		const unit = await unitOf(agent, session, ctx);
+		if (!isUnit(unit)) return unit;
+		const policy = await readWorkspacePolicy(unit.path);
+		const refusals = packRefusalsIn(
+			unit.path,
+			policy.branches.integration,
+			agent,
+		);
+		if (refusals.length > 0) {
+			return {
+				code: EXIT_CODE.RUNTIME,
+				error: `The pack in ${unit.path} would not land: ${refusals.join(' ')} Nothing was published.`,
+			};
+		}
+	}
+	return workOnUnit('publish', agent, session, ctx);
+};
+
+export const reviewRoundCommand: ICliCommand = {
+	name: 'review',
+	...REVIEW_COMMAND,
+	async run(args, ctx): Promise<ICliCommandResult> {
+		const [sub, ...rest] = args;
+		if (sub === 'next') return next(rest, ctx);
+		if (sub === 'approve') return verdict('approve', rest, ctx);
+		if (sub === 'changes') return verdict('request_changes', rest, ctx);
+		if (sub === 'release') return release(rest, ctx);
+		if (sub === 'finish') return finish(rest, ctx);
+		return usage(
+			'review <next|approve|changes|release|finish> — start with: delendai review next --agent=<you>',
+		);
+	},
+};

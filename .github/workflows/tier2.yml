@@ -1,0 +1,111 @@
+# tier2.yml — c00139 (Track G, audit §31).
+#
+# Pre-merge full-matrix CI. Triggered when a PR is marked
+# ready for review or whenever a reviewer asks for a
+# full re-run (the `tier2` label adds an explicit intent
+# signal on top of the `ready_for_review` event type).
+#
+# Runs the same gates the historical `quality-gate.yml`
+# already enforces, but keeps the budget under ten minutes
+# per job so PRs can rely on the gate being meaningful at
+# the moment of approval.
+#
+# Triggers:
+#   pull_request to main, ready_for_review.
+#   pull_request synchronize / reopened (re-runs the full
+#     matrix after a force-push; cheap because the matrix
+#     is the same).
+#   workflow_dispatch.
+
+name: tier2
+
+on:
+    pull_request:
+        branches: [main]
+        types: [ready_for_review, synchronize, reopened]
+    workflow_dispatch:
+
+concurrency:
+    group: tier2-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+jobs:
+    typecheck:
+        name: typecheck
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            # A `uses: ./path` step can only be resolved once the repo holding
+            # that path is on disk, and setup-bun-repo's own first internal step
+            # IS the checkout — so it can never bootstrap itself as a job's very
+            # first step. Every job in this file failed here, with every later
+            # step reported as `skipped`, from 2026-08-31 until this was added.
+            # The composite action then re-checks out at whatever fetch-depth it
+            # needs, so this bare one costs a shallow clone and nothing else.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Typecheck
+              run: bun run typecheck
+
+    lint-full:
+        name: lint-full
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Run biome and architecture lints
+              run: |
+                  set -eu
+                  bun run lint
+                  bun run lint:architecture-readfile-via-safe-reader
+                  bun run lint:privacy
+                  bun run lint:proposals
+                  bun run lint:agents
+                  bun run lint:workflow
+
+    tests:
+        name: tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Run vitest
+              run: bunx vitest run
+
+    quality-gate:
+        # Mirrors the historical `quality-gate` job but keeps
+        # the budget inside tier2's envelope. The full matrix
+        # script already enforces typecheck + lint + tests, so
+        # this is a defence-in-depth check.
+        name: quality-gate
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Run integrated quality gate
+              run: bun tools/scripts/ci/quality-gate.script.ts --real
