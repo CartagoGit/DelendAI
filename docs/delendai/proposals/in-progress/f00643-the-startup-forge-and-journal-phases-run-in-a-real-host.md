@@ -53,6 +53,8 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - acceptance:
   - "The maintainer's decision on where the coordination journal ships is recorded in this proposal."
   - "The host binds an `IStartupJournalSource` reading from there, and replaying the same events twice imports them once."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The journal is published to its ref
 - **Status**: pending
