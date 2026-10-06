@@ -2080,6 +2080,10 @@ export const buildReviewRegistration = (
 	id: 'proposal_review',
 	effects: ['write'],
 	writeRoot: 'caller-checkout',
+	// `status` reads the round and changes nothing.
+	readsOnly: (input) =>
+		(input as { readonly action?: unknown } | undefined)?.action ===
+		'status',
 	summary:
 		'Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.',
 	tags: ['proposals'],
