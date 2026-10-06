@@ -308,3 +308,5 @@ export {
 if (import.meta.main) {
 	void runCli(process.argv.slice(2), process.cwd());
 }
+
+export { CALL_WRITES_NOT_COMMITTED } from './lib/contracts/constants/call-writes.constant';
