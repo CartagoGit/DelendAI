@@ -2,7 +2,7 @@
 id: r00043
 title: "`@delendai/core` deja de conocer el dominio `proposals`"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-08-30
@@ -13,13 +13,15 @@ audit-source:
     finding: AUD-E05
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 related: [q00011, r00040, r00041, r00042, r00034]
-last-transition-id: 3a18803f-e028-4ca4-ae61-ade2700db73a
-last-correlation-id: 3a18803f-e028-4ca4-ae61-ade2700db73a
-last-transition-from: in-progress
+last-transition-id: a92aa169-1ca4-42ac-af37-22056333d148
+last-correlation-id: a92aa169-1ca4-42ac-af37-22056333d148
+last-transition-from: review
 shipped-in:
   - "dc61a40ec"
   - "7c861d2f9"
   - "039bb517e"
+  - "b7dcf3901f55b3b42f6bbd51e1d491a93e67ef1c"
+  - "522aabfc31e6"
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -259,10 +261,11 @@ not part of this delivery; it moves to S6.
     - Se mantiene la versión y la garantía semver del manifiesto durante la
       ventana de compatibilidad.
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
 - review-log: approved by gpt-5.4 — Verifiqué que stable-facade usa un registro genérico y que proposals aporta sus descriptores desde el plugin; gate declarado de S3 verde: 14/14.
-- review-attribution: unrecorded — nothing in Git names who delivered 7c861d2f9e0762dfdcaa3e11e9017c62ab6b40af: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by gpt-5.4
+- review-attribution: claude-opus-5-5 from Merge pull request #717 from CartagoGit/delendai/pr/claude-opus-5-5/implement/r00043-all-g1/core-no-longer-knows-proposals-goes-to-review (docs(proposals): r00043 records which commits delivered S0, S1 and S3 names 7c861d2f9 as S3's delivery), recorded by glm-5.3-flash 2026-10-06
+- review-log: approved by glm-5.3-flash — independent re-approval recorded 2026-10-06 after the closed-with-independent-approval lint flagged the unrecorded implementer. Verified on delivery commit 7c861d2f9: stable-facade no longer enumerates plugin: proposals descriptors in core; the generic stable-facade-registry holds contributions and the proposals plugin registers them via proposals-stable-tools. Gates re-run green: stable-facade.spec 11/11 (core) + proposals-stable-tools.spec 3/3 (plugin).
 
 ### S4 — Hacer agnóstico el ensamblado de skills y recommendedNextAction
 
@@ -301,7 +304,7 @@ workflow files. Both inventory findings are resolved by S4.
 
 ### S5 — Lint de frontera y documentación de compatibilidad
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2, S3, S4]
 - **Files**:
     - `tools/scripts/lint/core-proposals-boundary.script.ts`
@@ -336,13 +339,15 @@ proposals plugin uses (adoption extensions, workflow contribution, stable
 tool descriptors), with its files as the reference.
 - shipped-in: `f99521d1bf31`
 - review-attribution: unrecorded — no delivering commit was named for r00043 S5; independence could not be verified, opened by gpt-5.4
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
 - review-log: requested_changes by gpt-5.4 — El lint real está verde (bun tools/scripts/lint/core-proposals-boundary.script.ts), pero la slice declara como gate bun run lint:core-proposals-boundary y ese comando no existe en package.json; reproduzco Script not found "lint:core-proposals-boundary". Ajustad el gate declarado o exponed el script para que la aceptación sea reproducible.
+- review-log: approved by glm-5.3-flash — verified at b7dcf3901f55, validate exit 0, tests 13/13 — Declared gate lint:core-proposals-boundary is green on the current tip (830 files scanned, 37 active exceptions, 0 expired, exit 0); the gate script is registered in package.json (gpt-5.4's earlier defect is fixed). ADR d00014 documents the dependency direction core contracts -> plugin adapters -> host composition. ARCHITECTURE.md explains the three registries a workflow plugin uses to plug in without editing the core. Boundary spec 13/13 passing.
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
@@ -393,6 +398,11 @@ Delivered:
   now wires issues. Before, it did nothing. That is the point of the
   slice: the wiring belongs to issues, not to proposals.
 - shipped-in: `522aabfc31e6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 522aabfc31e6, validate exit 0, tests 75/75 — Slice gate green: adopt+manifest+adoption suites 9 files / 75 tests passing. The GitHub-issues adoption hint and wiring moved into IPluginAdoption on the issues plugin manifest (repo field, plugins.issues.options.repo option, both case texts); from-manifests carries it into the first-party index and declaredAdoptions applies it. No setup_github hint or issues wiring remains in packages/core/src or the proposals adapter; core spec drives declaredAdoptions with a fictional plugin. Minimax-3 approved the slice commit; b7dcf3901f55 only added inventory/docs churn and S8 code.
+- review-attribution: claude-opus-5-5 from commit 522aabfc31e6 names refs/heads/delendai/wip/claude-opus-5-5/r00043-S6-g1/the-issues-hint-comes-from-its-manifest (522aabfc31e65d303e7e77fbf16f6cd6f4c84fdf), opened by glm-5.3-flash
 
 ## Dependency graph
 
@@ -407,12 +417,14 @@ registro de contribuciones y que adopción tenga un proveedor real para
 validar la composición. S5 ratifica la frontera después de las migraciones.
 
 ### S8 — The proposals index reader lives in the plugin
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-summaries.service.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-summaries.service.spec.ts`, `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`, `tools/scripts/catalog/generate-agent-catalog.script.ts`, `packages/core/src/public/index.ts`, `tools/scripts/lint/core-proposals-boundary.script.ts`, `tools/scripts/inspect/core-proposals-boundary.script.ts`, `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/architecture/core-proposals-boundary.spec.ts`
 - Done 2026-10-05. `readProposalsIndex` read the proposals plugin's registry from core and was exported by core's barrel; its callers were the plugin itself and the agent-catalog generator. It moved to the plugin (`proposal-summaries.service.ts`) with its spec, and both callers import it from there. Core no longer knows where the plugin keeps its registry or what its entries hold. The two dated exceptions `lint:core-proposals-boundary` kept for it are gone (nothing matched them any more), and the boundary inventory marks its 17 entries resolved by this slice. `IProposalSummary` stays in core: it is the agent catalog's contract, not the plugin's.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at b7dcf3901f55, validate exit 0, tests 37/37 — Declared gate green: core project boundary spec 13/13. readProposalsIndex now lives in plugins/proposals/src/lib/proposals/proposal-summaries.service.ts with its 24-test spec passing; its two callers (proposals-workflow-contribution, generate-agent-catalog script) import it from the plugin. Core public barrel no longer exports it (0 matches). The two dated lint exceptions for it are gone and the boundary lint stays green. IProposalSummary remains in core as the agent-catalog contract, as the slice states.
 
 ## Acceptance
 
