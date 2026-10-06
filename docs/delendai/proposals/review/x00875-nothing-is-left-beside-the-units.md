@@ -194,6 +194,8 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - Found 2026-10-06: `x00835` S39 was committed to its work ref on 2026-10-05 and never published; the queue's doctor reported the ref (`no-remote-work-refs`, silent 9 h) and the queue run went red on it. Its implementer could not finish it: `work enter` refused every implement unit on x00835 because the same agent had approved a co-author's S18, and the rule looked for the agent's name anywhere in the document. Independence is per slice, the way the verdict enforces it (reviewer ≠ implementer of that slice). The refusal now reads the section of the slice being entered (`sliceSectionOf`); entering the whole proposal (`all`) still reads the whole document. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
