@@ -4,28 +4,21 @@
  *
  * It lived in core, which then knew where this plugin keeps its registry
  * and what its entries hold: the inversion core must not carry. The plugin
- * owns the registry, so it owns this reader. The reader is a
- * self-contained concern that parses the regenerable cache artifact
- * `<cacheDir>/proposals/index.json` into typed `IProposalSummary[]`.
- * Pure except for the injectable file-reader.
+ * owns the registry, so it owns this reader. It turns the plugin's
+ * proposal index into typed `IProposalSummary[]`, reading through the
+ * index reader, so the state database serves it wherever the project has
+ * one and the regenerable `<cacheDir>/proposals/index.json` only where it
+ * does not.
  */
 import { join } from 'node:path';
 
 import type { IProposalSummary } from '@delendai/core/public';
 
-interface IProposalIndexFileEntry {
-	readonly id?: string;
-	readonly title?: string;
-	readonly track?: string;
-	readonly status?: string;
-	readonly type?: string;
-	readonly kind?: string;
-	readonly date?: string;
-}
-
-interface IProposalIndexFile {
-	readonly proposals?: readonly IProposalIndexFileEntry[];
-}
+import {
+	readProposalIndex,
+	type IProposalIndexEntry,
+	type IProposalIndexReadOptions,
+} from './index-reader';
 
 /** Derive the proposal kind from its id prefix (f→feat, r→refactor, …). */
 export const proposalKindFromId = (id: string): IProposalSummary['kind'] => {
@@ -59,45 +52,65 @@ export const normalizeProposalStatus = (
 };
 
 /**
- * Read the proposals registry index from the cache and return typed
- * summaries. The index is a regenerable artifact, not a human-edited
- * source file (x00052).
+ * What a summary is built from: an index entry, or a registry entry read
+ * as it was written, where nothing is guaranteed to be present.
+ */
+type TProposalSummarySource = Partial<
+	Pick<
+		IProposalIndexEntry,
+		'id' | 'title' | 'track' | 'status' | 'kind' | 'date'
+	>
+>;
+
+/**
+ * Index entries as catalog summaries. Pure: callers that already hold
+ * the entries (a registry scanned in memory) map them without a read.
+ */
+export const toProposalSummaries = (
+	entries: readonly TProposalSummarySource[],
+): readonly IProposalSummary[] =>
+	entries.flatMap((entry) => {
+		const id = entry.id;
+		if (typeof id !== 'string' || id.length === 0) return [];
+		return [
+			{
+				id,
+				title: entry.title ?? id,
+				track: entry.track ?? 'unspecified',
+				status: normalizeProposalStatus(entry.status),
+				// The plugin owns the kind vocabulary and records each
+				// proposal's kind; deriving it from the id is only for an entry
+				// without one.
+				kind:
+					typeof entry.kind === 'string' && entry.kind.length > 0
+						? (entry.kind as IProposalSummary['kind'])
+						: proposalKindFromId(id),
+				date: entry.date ?? '',
+			},
+		];
+	});
+
+/**
+ * The proposals as catalog summaries, read through the plugin's index
+ * reader: from the state database by default, from the registry only
+ * where the project chose it or has no database.
  */
 export const readProposalsIndex = async (
 	workspaceRoot: string,
 	cacheDir: string,
-	readWorkspaceFile: (absolutePath: string) => Promise<string | undefined>,
+	options?: IProposalIndexReadOptions,
 ): Promise<readonly IProposalSummary[]> => {
-	const raw = await readWorkspaceFile(
-		join(workspaceRoot, cacheDir, 'proposals', 'index.json'),
-	);
-	if (raw === undefined) return [];
-	let parsed: IProposalIndexFile;
 	try {
-		parsed = JSON.parse(raw) as IProposalIndexFile;
+		return toProposalSummaries(
+			await readProposalIndex(
+				join(workspaceRoot, cacheDir, 'proposals', 'index.json'),
+				undefined,
+				options,
+			),
+		);
 	} catch {
+		// No projection could be read: the snapshot says nothing rather
+		// than fail the overview it is part of.
 		return [];
 	}
-	if (!Array.isArray(parsed.proposals)) return [];
-	return parsed.proposals
-		.filter(
-			(
-				entry,
-			): entry is Required<Pick<IProposalIndexFileEntry, 'id'>> &
-				IProposalIndexFileEntry => typeof entry.id === 'string',
-		)
-		.map((entry) => ({
-			id: entry.id,
-			title: entry.title ?? entry.id,
-			track: entry.track ?? 'unspecified',
-			status: normalizeProposalStatus(entry.status),
-			// The proposals plugin owns the kind vocabulary and writes each
-			// entry's kind into the index. Deriving it from the id is only
-			// for an index written before it did.
-			kind:
-				typeof entry.kind === 'string' && entry.kind.length > 0
-					? entry.kind
-					: proposalKindFromId(entry.id),
-			date: entry.date ?? '',
-		}));
 };

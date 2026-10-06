@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import { truncateIfTooLarge } from '@delendai/core/public';
 import {
 	paginateFileExcerpt,
 	paginateItems,
-	truncateIfTooLarge,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/shared/pagination.helper';
 
 describe('truncateIfTooLarge honest contract', () => {
 	it('returns an explicit clamp when maxBytes is below the minimum honest envelope', () => {

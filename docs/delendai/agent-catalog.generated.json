@@ -1545,14 +1545,6 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "x00541",
-				"title": "576 de los 865 exports públicos de core no tienen ningún importador en el repo y 59 no se referencian en ninguna parte fuera del paquete",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-09-10"
-			},
-			{
 				"id": "x00554",
 				"title": "A green pull request lands itself and the swarm rebases",
 				"track": "trust",

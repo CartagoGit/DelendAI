@@ -129,6 +129,8 @@ const CONSUMER_FIELDS: readonly {
 			'tools/continue-proposal.tool.ts (auto pick)',
 		],
 	},
+	{ field: 'title', consumers: ['proposals/proposal-summaries.service.ts'] },
+	{ field: 'kind', consumers: ['proposals/proposal-summaries.service.ts'] },
 ];
 
 describe('readProposalIndexFromSql — field mapping (f00535 S1)', () => {
@@ -159,6 +161,8 @@ describe('readProposalIndexFromSql — field mapping (f00535 S1)', () => {
 			id: 'f00535',
 			file: 'ready/feats/f00535-cutover.md',
 			status: 'ready',
+			title: 'cutover',
+			kind: 'feat',
 		});
 	});
 
@@ -188,11 +192,15 @@ describe('readProposalIndexFromSql — field mapping (f00535 S1)', () => {
 				id: 'a00094',
 				file: 'done/audits/a00094-audit.md',
 				status: 'done',
+				title: 'audit',
+				kind: 'audit',
 			},
 			{
 				id: 'q00022',
 				file: 'in-progress/q00022-plan.md',
 				status: 'in-progress',
+				title: 'plan',
+				kind: 'plan',
 			},
 		]);
 	});
@@ -245,6 +253,8 @@ describe('readProposalIndexFromSql — field mapping (f00535 S1)', () => {
 				id: 'f00535',
 				file: 'ready/feats/f00535-cutover.md',
 				status: 'ready',
+				title: 'still live',
+				kind: 'feat',
 			},
 		]);
 	});

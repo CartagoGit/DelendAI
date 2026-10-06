@@ -4,7 +4,7 @@ import { buildActivationReport } from '@delendai/core/lib/plugins/activation-rep
 import type {
 	IActivationSources,
 	ILoadedPluginFacts,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/contracts/interfaces/activation-report.interface';
 
 const facts = (
 	over: Partial<ILoadedPluginFacts> & { name: string },

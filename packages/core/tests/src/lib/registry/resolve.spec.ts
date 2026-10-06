@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import { FIRST_PARTY_PLUGIN_INDEX } from '@delendai/core/public';
 import { resolvePlugins } from '@delendai/core/cli';
-import type { IPluginRegistrySource } from '@delendai/core/public';
+import type { IPluginRegistrySource } from '@delendai/core/lib/contracts/interfaces/plugin-registry.interface';
 import type { IPluginRegistryEntry } from '@delendai/core/cli';
 
 const sample = (over: Partial<IPluginRegistryEntry>): IPluginRegistryEntry => ({
