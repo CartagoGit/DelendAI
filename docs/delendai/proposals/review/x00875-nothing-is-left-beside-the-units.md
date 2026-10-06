@@ -299,15 +299,17 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-implementer: claude-opus-5-5
 
 ### S24 — A release is honoured wherever it was recorded
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/lib/review/review-releases.service.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
 - Found 2026-10-06 (split out of S23): a release lives only in the unit that recorded it, so a reviewer that opens a new unit is offered again, one by one, every proposal it released for a reason that still holds (it changed that code). Five releases had to be repeated in one session.
 - acceptance:
   - "A release a reviewer recorded in any of its units, published or retired, keeps the proposal out of that reviewer's queue until the proposal's slices change."
 - Delivered: `review next` reads the reviewer's releases from every ref that names it, since a commit names no agent: its review units here, its packs on the remote, and the merges of its packs on the integration branch (their merged side). A release stands until the proposal's document changes after it, by commit time. A retired pack is not read: its ref is not fetched by a clone, and a retired pack was not delivered. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at fd5a3aa6ae81, validate exit 0, tests 11/11 — Delivered by the merge naming x00875-S24-g1 and still the newest delivery touching its files. review-releases.service reads the reviewer's releases from its own review units, its packs on the remote and the merged side of its packs' merges, and a release stands until the proposal's document changes after it; review next filters all of them out of the free queue. Gate review.command.spec.ts 11/11 exit 0, including 'honours a release made in another unit, until the proposal changes'.
 
 ### S25 — A published review pack is not closed behind its author
 - **Status**: review
