@@ -42,6 +42,7 @@ import type {
 	IUnit,
 } from '../contracts/interfaces/review-queue-view.interface';
 import { briefFor } from '../lib/review/review-brief.service';
+import { packRefusalsIn } from '../lib/review/review-pack-check.service';
 import { releasedElsewhere } from '../lib/review/review-releases.service';
 import { usage } from './groups/group-helpers';
 import { evidenceArgs } from './groups/proposals';
@@ -376,7 +377,25 @@ const finish = async (
 	const agent = agentOf(args);
 	if (agent === undefined)
 		return usage('review finish --agent=<you> --session=<s>');
-	return workOnUnit('publish', agent, sessionOf(args), ctx);
+	const session = sessionOf(args);
+	if (session !== undefined) {
+		// What CI would refuse is refused here, before the pull request.
+		const unit = await unitOf(agent, session, ctx);
+		if (!isUnit(unit)) return unit;
+		const policy = await readWorkspacePolicy(unit.path);
+		const refusals = packRefusalsIn(
+			unit.path,
+			policy.branches.integration,
+			agent,
+		);
+		if (refusals.length > 0) {
+			return {
+				code: EXIT_CODE.RUNTIME,
+				error: `The pack in ${unit.path} would not land: ${refusals.join(' ')} Nothing was published.`,
+			};
+		}
+	}
+	return workOnUnit('publish', agent, session, ctx);
 };
 
 export const reviewRoundCommand: ICliCommand = {
