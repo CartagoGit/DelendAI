@@ -2,15 +2,17 @@
 id: x00790
 title: "A change with nothing to test passes its tests"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [f00538, x00556]
-last-transition-id: 949b477a-c740-4535-a57b-0596e1a0385f
-last-correlation-id: 949b477a-c740-4535-a57b-0596e1a0385f
-last-transition-from: in-progress
+last-transition-id: 9cd14084-1e78-4f8e-b68b-9db95faef2d2
+last-correlation-id: 9cd14084-1e78-4f8e-b68b-9db95faef2d2
+last-transition-from: review
+shipped-in:
+  - "b36cb317e83e7076e8ccbc49daf85ca21a07ee6d"
 ---
 
 # x00790 — A change with nothing to test passes its tests
@@ -53,6 +55,11 @@ history, which is the one thing a forward-sync exists to fix.
 - **Files**:
   - `.github/workflows/ci.yml`
 - shipped-in: `429c2a77fd2b`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at b36cb317e83e, validate exit 0, tests 1/1 — Verified the no-zone guard requires successful planner and zone jobs plus a non-empty zones list where every zone has run=false; both shard download and merge/coverage remain enabled otherwise. bun run lint:workflow passes (0 findings).
+- review-attribution: claude-opus-5-5 from commit b36cb317e83e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00790-all-g1/a-change-with-nothing-to-test-passes (b36cb317e83e7076e8ccbc49daf85ca21a07ee6d), opened by glm-5.3-flash
 
 ## dependency graph
 
