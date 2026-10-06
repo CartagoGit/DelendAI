@@ -2,7 +2,7 @@
 id: r00048
 title: "CAS optimistic concurrency — revision column on proposals, plans, slices"
 kind: refactor
-status: done
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -18,9 +18,9 @@ audit-source:
 related:
   - q00022
   - r00047
-last-transition-id: a8b1d9b3-7dc5-4493-a9ac-615b9c97409a
-last-correlation-id: a8b1d9b3-7dc5-4493-a9ac-615b9c97409a
-last-transition-from: review
+last-transition-id: b6dbaf27-f41e-490a-bad9-cd06ae29dc24
+last-correlation-id: b6dbaf27-f41e-490a-bad9-cd06ae29dc24
+last-transition-from: in-progress
 ---
 
 # r00048 — CAS optimistic concurrency via revision column
