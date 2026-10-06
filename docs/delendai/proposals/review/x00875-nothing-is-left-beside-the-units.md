@@ -252,6 +252,8 @@ Found on 2026-10-05, reading what the last runs left behind.
   - "The process that closed it is identified and a spec reproduces it."
   - "A pack whose commits change no file is never taken for spent or superseded while it carries claims or releases the integration branch lacks."
 - Delivered: the cause is `maintain-ref-namespace`'s reap pass, run from the main checkout's post-merge hook (`hydrate-candidates-after-merge`). It took a ref as spent when its three-dot diff against the integration branch was empty, and a pack of claim and release commits changes no file, so it was spent the moment it was pushed; deleting its branch closed its pull request. A forward sync had been exempted by its name for the same reason (#656, #675). The rule is now general: a ref holding a commit the integration branch lacks that changes no file carries its meaning in that commit, and is spent only once the integration branch contains it (`carriesEmptyCommits`). The spec fails without the change, for the pack and for the forward sync judged without its name.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
