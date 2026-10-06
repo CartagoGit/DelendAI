@@ -28,6 +28,7 @@ import {
 	FORGE_PAGE_SIZE,
 	FORGE_REQUEST_TIMEOUT_MS,
 	HTTP_NOT_MODIFIED,
+	HTTP_UNKNOWN_COMMIT,
 	HTTP_OK,
 	HTTP_SUCCESS_CEILING,
 	HTTP_SUCCESS_FLOOR,
@@ -229,6 +230,11 @@ export const createForgeSeam = (
 			if (response === undefined) {
 				return { kind: 'unavailable', reason: failureReason(result) };
 			}
+			// A commit only this machine has (a unit not pushed yet) is not
+			// on the forge, which says so with 422: it has no runs, and the
+			// boot is not degraded for asking. A 404 stays unavailable: it is
+			// also how the forge answers a repository it will not show.
+			if (response.status === HTTP_UNKNOWN_COMMIT) continue;
 			if (
 				response.status < HTTP_SUCCESS_FLOOR ||
 				response.status >= HTTP_SUCCESS_CEILING
