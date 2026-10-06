@@ -114,6 +114,8 @@ export const spentPublicationsInvariant = (input: {
 				: spent.length === 0
 					? `${String(published.length)} ref(s), all holding work`
 					: `${String(spent.length)} spent: ${spent.slice(0, 3).join(', ')}`,
-		remedy: `git push ${remote} --delete <ref> — its commits are already on \`${integration}\``,
+		// Retiring keeps the tip on the forge and records why; a bare
+		// `git push --delete` keeps nothing and tells nobody.
+		remedy: `its commits are already on \`${integration}\`: retire it (\`delendai work retire --ref=<ref> --reason="landed on ${integration}"\`)`,
 	};
 };
