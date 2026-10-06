@@ -1,11 +1,4 @@
-import {
-	existsSync,
-	mkdtempSync,
-	mkdirSync,
-	readFileSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -33,6 +26,7 @@ import {
 	measureToolComponentBytes,
 	type IToolComponentBytes,
 } from './tool-component-breakdown.helper';
+import { readProposalIndex } from '../../../plugins/proposals/src/lib/proposals/index-reader';
 
 export { jsonBytes };
 
@@ -411,31 +405,33 @@ title: token budget fixture
 	// Sync, then CONFIRM the projection actually carries the fixture
 	// before anything measures against it.
 	//
-	// The sync writes the index and `auto_work` reads it back. Under load
-	// those two steps were observed to disagree: the tool answered with a
-	// short pointer instead of a plan, the dashboard recorded ~427 B
+	// The sync writes the projection and `auto_work` reads it back. Under
+	// load those two steps were observed to disagree: the tool answered
+	// with a short pointer instead of a plan, the dashboard recorded ~427 B
 	// instead of ~2,433 B for a row named "auto_work work plan", and
-	// because the dashboard is committed, that flip failed `drift` on
-	// pull requests that had nothing to do with it. Retrying the sync
-	// until the index agrees turns a race into a wait; refusing after
-	// three attempts turns an unmeasurable run into a loud failure
-	// instead of a wrong number.
+	// because the dashboard is committed, that flip failed `drift` on pull
+	// requests that had nothing to do with it. Retrying the sync until the
+	// projection agrees turns a race into a wait; refusing after three
+	// attempts turns an unmeasurable run into a loud failure instead of a
+	// wrong number. The wait reads through the plugin's index reader, the
+	// one `auto_work` reads through, so it waits on what will answer.
+	const indexPath = join(
+		workspace,
+		'.cache',
+		'delendai',
+		'proposals',
+		'index.json',
+	);
 	for (let attempt = 1; attempt <= 3; attempt += 1) {
 		await client.callTool({
 			name: 'delendai_proposals_sync_proposals',
 			arguments: {},
 		});
-		const indexPath = join(
-			workspace,
-			'.cache',
-			'delendai',
-			'proposals',
-			'index.json',
-		);
-		const index = existsSync(indexPath)
-			? readFileSync(indexPath, 'utf8')
-			: '';
-		if (index.includes(AUTO_WORK_FIXTURE_ID)) return;
+		const entries = await readProposalIndex(indexPath, undefined, {
+			workspaceRoot: workspace,
+			log: () => undefined,
+		}).catch(() => []);
+		if (entries.some((entry) => entry.id === AUTO_WORK_FIXTURE_ID)) return;
 	}
 	throw new Error(
 		`token dashboard: the proposal index never picked up the ${AUTO_WORK_FIXTURE_ID} fixture after three syncs. Every measurement that depends on it would record some other answer.`,

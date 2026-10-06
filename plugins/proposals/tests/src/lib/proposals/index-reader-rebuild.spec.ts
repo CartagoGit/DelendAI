@@ -185,6 +185,10 @@ Body of ${id}.
 				id: 'x09991',
 				file: 'ready/x09991-fixture.md',
 				status: 'ready',
+				title: 'Fixture x09991',
+				track: 'architecture',
+				kind: 'feat',
+				date: '2026-09-30',
 			},
 		]);
 		expect(getProposalIndexReadStats().rebuilds).toBe(1);
