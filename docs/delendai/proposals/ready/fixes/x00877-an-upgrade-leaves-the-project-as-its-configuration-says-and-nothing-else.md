@@ -88,11 +88,12 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "Hooks and `delendai.guard.*` keys follow the profile: installed where it needs them, removed where it does not."
 
 ### S6 — The generated-files merge driver exists where it is configured
-- **Status**: pending
-- **Files**: `packages/cli/src/contracts/constants/generated-merge-driver.constant.ts`
+- **Status**: review
+- **Files**: `packages/cli/src/lib/generated-merge-driver.service.ts`, `packages/cli/src/lib/generated-merge-driver.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`guard install` in an adopting project configures a merge driver that resolves to a file present there (the shipped CLI), or none."
+- Delivered: `guard install` configures the generated-files merge driver only where its script exists; in a project that does not carry it (every adopting project: it is this repository's tooling) nothing is configured, and a `merge.delendai-generated` section an older install left is removed. The spec fails without the change.
 
 ### S7 — The host-scope configs are migrated too
 - **Status**: pending

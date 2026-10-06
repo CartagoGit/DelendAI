@@ -126,6 +126,17 @@ export const installGeneratedMergeDriver = (
 	workspaceRoot: string,
 	invocation: IGeneratedMergeDriverInvocation,
 ): IGeneratedMergeDriverReport => {
+	// The driver script ships with this repository's tooling, not with the
+	// CLI: a project that does not carry it has no driver to run, and a
+	// configuration naming it is a command git would fail on. Nothing is
+	// configured there, and one an older install left is removed.
+	if (!existsSync(invocation.script)) {
+		const stale = uninstallGeneratedMergeDriver(workspaceRoot);
+		return {
+			...stale,
+			reason: `this project has no driver script at ${invocation.script}`,
+		};
+	}
 	const runtime = resolveDriverRuntime(
 		workspaceRoot,
 		invocation.explicitRunner,
