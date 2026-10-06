@@ -83,12 +83,13 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-implementer: claude-opus-5-5
 
 ### S5 — A profile change leaves nothing of the old mode unowned
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/profile-branches.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/profile-branches.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "After the development profile changes, every work ref and worktree of the old shape is either still a live unit the new profile sees, or reported by `work doctor` with its remedy (publish or retire); none is invisible."
   - "Hooks and `delendai.guard.*` keys follow the profile: installed where it needs them, removed where it does not."
+- Progress 2026-10-07, the first bullet: `work doctor` gains `branches-in-the-profile`, which asks the ref reconciler (the one source of which names are outside every namespace, `unmanaged`) of the clone's own branches and reports each one an earlier profile or a person left, with the way to end it (enter a unit, merge the branch in, publish, delete it). Work refs of the old shape under the product's namespace were already reported (`no-stray-refs`, `units-hold-work`). It holds on this repository. Still to do: the second bullet (hooks and guard keys removed where the new profile does not need them).
 
 ### S6 — The generated-files merge driver exists where it is configured
 - **Status**: review
