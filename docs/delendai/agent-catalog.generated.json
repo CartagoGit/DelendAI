@@ -1468,7 +1468,7 @@
 				"id": "f00643",
 				"title": "The startup forge and journal phases run in a real host",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-09-26"
 			},
@@ -1556,7 +1556,7 @@
 				"id": "x00554",
 				"title": "A green pull request lands itself and the swarm rebases",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-19"
 			}

@@ -2,7 +2,7 @@
 id: x00554
 title: "A green pull request lands itself and the swarm rebases"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-19
@@ -11,6 +11,9 @@ tags:
     - integration
     - hydration
     - swarm
+last-transition-id: 69d1dcf8-c04f-4977-a23e-8248c1af1315
+last-correlation-id: 69d1dcf8-c04f-4977-a23e-8248c1af1315
+last-transition-from: ready
 ---
 
 # x00554 — A green pull request lands itself and the swarm rebases
@@ -98,11 +101,22 @@ already hydrates the checkout.
 
 ### S3 — An agent is told its base moved under it
 
-- **Status**: pending
-- **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
-- **Files**: `packages/core/src/lib/startup-reconciler/**`, `packages/core/src/lib/wip-engine/rebase.ts`, `tools/scripts/forge/**`
+- **Status**: review
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/contracts/interfaces/work-swarm.interface.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - The boot and the work-status surface say, per work unit, whether it is
   based on the current integration tip, and what to run when it is not.
+- Measured 2026-10-05 before writing it. Two of the three cases were
+  already covered: a unit that holds nothing is fast-forwarded when it is
+  entered again (`kept-unit-hydration.service.ts`), and a publication is
+  refreshed by the queue. The third was not: a unit with commits of its
+  own, whose base had moved, showed `+2/-5` in `work swarm` and nothing
+  else, so its conflicts surfaced only when it published. `work swarm`
+  (and its `relations` in `--json`) now lists it under "to sort out" as
+  `behind`, with how far its base moved and what to run in its worktree,
+  after every other kind, since it is the mildest.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
