@@ -163,6 +163,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A publication that does not merge trivially and whose author's unit has been abandoned (past the lease windows) is reported once as adoptable, with the exact `work enter` + merge + `work retire --unowned` steps, instead of `its author decides` on every pass; after a further window with nobody adopting it, its pull request is closed with that reason, and S10 retires it."
 - Found 2026-10-06: after the swarm stopped, #856, #857 and #858 sat on the forge, two of them conflicted, each reported on every hydration as "its author decides" by an author that was gone. Done by hand that day: #857's verdicts were adopted into a pack of the orchestrator's (less one approval that judged an earlier definition of x00875 S20), #858 was retired (signed `illyria`, a name of no model; its q00010 changes superseded), and #856 duplicates the queue's own close pass #878.
 
+### S14 — A unit that only merged landed work in is delivered
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A unit whose only commits beyond the integration branch are merges joining commits the integration branch already holds is judged delivered and reaped like any other delivered unit."
+- Delivered: x00878 S4, S6 and S8 landed through #879, which carried them, and their units stood for good as `idle`: each had merged develop in before a publish that was refused, and that merge commit — joining two commits develop holds — was the one thing develop lacked. `carriesNothingBeyond` reads every commit past the integration branch and accepts only merges whose parents are integrated or among those merges; the unit verdict and the reaper's empty-unit rule (S9) both use it. The spec fails without the change.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
