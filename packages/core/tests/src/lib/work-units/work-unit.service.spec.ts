@@ -427,6 +427,32 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
+	it('takes the next free directory when another unit still stands in the default one', async () => {
+		const root = repoWith(PINNED);
+		const taken = join(root, '.cache/delendai/.worktrees/glm-5-new-all');
+		mkdirSync(taken, { recursive: true });
+		writeFileSync(join(taken, 'held.md'), 'a renamed unit\n');
+
+		const entered = await command.run(
+			[
+				'enter',
+				'--proposal=new',
+				'--slice=all',
+				'--agent=glm-5',
+				'--topic=the-next-one',
+			],
+			contextFor(root),
+		);
+
+		expect(entered.code).toBe(0);
+		expect(String((entered.data as { path?: unknown }).path)).toBe(
+			join(
+				realpathSync(root),
+				'.cache/delendai/.worktrees/glm-5-new-all-2',
+			),
+		);
+	});
+
 	it('gives an agent its own worktree, and finds it again', async () => {
 		const root = repoWith(PINNED);
 		const created = await command.run(

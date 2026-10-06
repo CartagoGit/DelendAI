@@ -62,11 +62,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S3 — A created proposal releases the reservation and directory of its `new` unit
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/new-proposal-unit.service.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/free-directory.helper.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "After `proposals create` names a `new` unit's proposal, the `new/all` reservation and the `<agent>-new-all` worktree directory are free: a second new proposal can be started without `--alongside` or `--dir`."
+- Delivered: two holds outlived the `new` unit. Its slice reservation (`refs/delendai/claims/slice/new/all`) named a unit that no longer existed once it took its proposal's id, and was released only by the reaper hours later; renaming the unit now releases it. And the renamed unit keeps standing in the `<agent>-new-all` directory, which the next `work enter --proposal=new` was refused; a default directory something already occupies now gives way to the first free `<dir>-<n>` (resuming a unit finds its own worktree before this point). Both specs fail without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A review reservation ends with its unit
 - **Status**: review
