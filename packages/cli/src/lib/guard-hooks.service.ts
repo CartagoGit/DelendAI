@@ -73,6 +73,11 @@ export const lefthookConfiguredHooks = (
 	return hooks;
 };
 
+/** Hooks whose guard may be asked under another hook's name. */
+const GUARD_HOOK_ALIASES: Readonly<Record<string, readonly string[]>> = {
+	'commit-msg': ['pre-commit'],
+};
+
 /**
  * Whether lefthook runs `guard <hook>` in that hook's section: the way a
  * lefthook project installs the guard, since lefthook regenerates the hook
@@ -90,7 +95,14 @@ export const lefthookRunsGuard = (
 		const rest = text.slice(start + hook.length + 1);
 		const end = rest.search(/^[a-z][a-z-]*:/mu);
 		const section = end === -1 ? rest : rest.slice(0, end);
-		if (new RegExp(`\\bguard\\s+${hook}\\b`, 'u').test(section))
+		// `commit-msg` judges the commit `pre-commit` judges, and a project
+		// may ask it under that name (older CLIs know no other).
+		const names = [hook, ...(GUARD_HOOK_ALIASES[hook] ?? [])];
+		if (
+			names.some((name) =>
+				new RegExp(`\\bguard\\s+${name}\\b`, 'u').test(section),
+			)
+		)
 			return true;
 	}
 	return false;
@@ -226,6 +238,10 @@ export const installGuardHooks = (
 		dir: location.dir,
 		hooks: GUARDED_HOOKS.map((hook) => {
 			if (managed.has(hook)) {
+				// Already guarded through lefthook.yml: nothing to add.
+				if (lefthookRunsGuard(workspaceRoot, hook)) {
+					return { hook, state: 'unchanged' };
+				}
 				return {
 					hook,
 					state: 'unsupported',

@@ -327,7 +327,6 @@
 				},
 				"push": {
 					"enabled": true,
-					"onCommit": true,
 					"force": "with-lease",
 					"protectedBranches": ["main", "master"],
 					"remote": "origin"
