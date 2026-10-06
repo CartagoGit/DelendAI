@@ -260,18 +260,16 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 7d96f5155980, validate exit 0, tests 8/8 — Delivered by the merge naming x00875-S19-g1 (f769b78803af) and last carried by 7d96f5155980. sliceSectionOf narrows the review evidence to one slice section and reviewedByEntrant tests the reviewer name against that section only, so an agent is kept out of the slice it judged and not of the whole proposal. No acceptance bullet is declared for this slice. Gate reviewed-proposal.service.spec.ts 8/8 exit 0.
 
 ### S20 — A verdict written through the CLI is committed, or says why not
-- **Status**: done
-- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/shared`
+- **Status**: review
+- **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/contracts/interfaces/mcp-transport.interface.ts`, `packages/client/tests/transport/mcp-stdio-client.connect.spec.ts`, `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/contracts/constants/stdio-context.constant.ts`
+- **Gate**: `npx vitest run packages/client/tests/transport/mcp-stdio-client.connect.spec.ts`
 - Found 2026-10-06, not yet explained: `proposals review <id> <slice> --action=submit --workspace=<unit>` writes the slice's review lines and leaves the document staged and uncommitted, most of the time (x00875 S17, S18, S19; f00643 S2) but not always (x00875 S15, f00509 S1 committed with the `chore(delendai): … submit` subject). Established: the unit's branch resolves (`unitBranchOf`), the path is staged, so `git add` ran and `git commit` failed; the same `withCallWritesCommitted` run in-process on the same change commits. The note it writes on a failed commit reaches neither the CLI's output nor its stderr, so the caller learns nothing. Seen again for S21–S26 the same day, in three forms: committed by the tool (S21, S22, S24, S25), left staged (S23), and left unstaged (S26), which means the tool's commit step did not run at all for that call: the cause is upstream of `commitPaths`, in whether the call is bound to the unit.
 - acceptance:
   - "The cause is reproduced by a spec that drives the CLI against a unit, and fixed."
   - "A commit that fails is reported in what the CLI prints, not only on the server's stderr."
-- review-state: done
+- Delivered: the cause was the client, not the committer. The CLI talks to a server it starts, through the MCP SDK, whose default gives a tool call one minute. A verdict's write is committed inside the call, behind the project's pre-commit hooks (one regenerates the agent catalog), and on a loaded machine they ran past the minute: the CLI gave up, closed the server, and the commit was cut off, staged or not yet staged, its lock still held for a while (seen on x00877 S1: `index.lock: File exists`, the document staged, the catalog modified). The client now takes `requestTimeoutMs`, passed to every call, and the CLI waits thirty minutes (`CLI_TOOL_CALL_TIMEOUT_MS`), the answer its caller is waiting for anyway. The spec fails without the change.
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: minimax-3
-- review-log: approved by minimax-3 — verified at 68b22cd6fd11, validate exit 0, tests 548/549 — Delivered by the merge naming x00875-S27-g1 and carried through 68b22cd6fd11. withCallWritesCommitted now returns the outcome of its commit to the caller instead of leaving the note server-side, and commit-call-writes is covered by packages/core/tests/src/lib/shared (46 files, 548 passed / 1 skipped, exit 0, DELENDAI_AGENT_ID unset). Scope note: this slice's own field note says the three observed forms (committed by the tool, left staged, left unstaged) put the cause upstream of commitPaths, in whether the call is bound to the unit; I approve what is delivered and implemented, not that the whole note is closed.
-- review-attribution: claude-opus-5-5 from commit 68b22cd6fd11 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00875-S27-g1/a-generation-once-used-is-spent (68b22cd6fd11f3f254543516aa413f70384e9a88), opened by minimax-3
 
 ### S21 — A slice not yet integrated has no reviewer
 - **Status**: done
@@ -363,6 +361,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-implementer: claude-opus-5-5
 - review-reviewer: minimax-3
 - review-log: approved by minimax-3 — verified at 57a631db9ae8, validate exit 0, tests 8/8 — Delivered by 57a631db9ae8, the newest delivery touching the slice's files (no merge names x00875-S28-g1, so the attribution is by declared files). The forge phase skips a commit the forge answers 422 for, so a commit only this machine has reports no runs instead of degrading the boot; any other failure, a 404 included, still reports unavailable. Gate forge-seam.service.spec.ts 8/8 exit 0. No acceptance bullet is declared for this slice.
+
+### S29 — A close pass supersedes the one it built on
+- **Status**: review
+- **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`
+- **Gate**: `npx vitest run tools/scripts/proposals/close-approved-proposals.script.spec.ts`
+- Found 2026-10-06, right after S27 landed: the closer had two pull requests open closing the same five proposals (#846 from `batch-all-g2`, #848 from `batch-all-g4`). Each pass merges the open publication into its unit and publishes; under one reused generation that updated the same pull request, and with a generation per unit (S27) it opened a new one and left the old beside it. A pass with nothing new to close also republished, only to bring the open one level with the integration branch, which is the candidates' refresh's job. Now a pass publishes only when it closed something, and then retires the publication it merged (its tip kept, its pull request closed with the reason). #846 was retired by hand as superseded by #848, which contains it. Seen again before it landed: passes went on publishing beside each other (g15, g20, g21, g22 on top of g4), so a pass now merges every open publication of the closer, not the first, and retires all of them once its own is published. The four superseded ones were retired by hand for #866, which carries their closes. And none of them could ever land: `closed-with-independent-approval` refuses a review pack that changes proposals it did not claim, and the closer's close commit claimed nothing, so every pass's pull request was red in `lint-governance` and x00770, x00799, x00868, x00870 and x00873 stayed in review. The close commit now carries a `Claims:` trailer for each proposal it closes.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

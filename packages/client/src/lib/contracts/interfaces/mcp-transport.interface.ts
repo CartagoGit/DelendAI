@@ -29,10 +29,14 @@ export interface IMcpToolDescriptor {
 }
 
 export interface IMcpTransport {
-	callTool(input: {
-		readonly name: string;
-		readonly arguments?: object;
-	}): Promise<IMcpToolCallResult>;
+	callTool(
+		input: {
+			readonly name: string;
+			readonly arguments?: object;
+		},
+		resultSchema?: undefined,
+		options?: { readonly timeout?: number },
+	): Promise<IMcpToolCallResult>;
 	listTools?(): Promise<{ readonly tools: readonly IMcpToolDescriptor[] }>;
 	/** What the server told its agents when the client connected. */
 	getInstructions?(): string | undefined;
@@ -58,4 +62,11 @@ export interface IMcpStdioClientOptions {
 	 * surface without contaminating MCP stdout.
 	 */
 	readonly onStderr?: (chunk: string) => void;
+	/**
+	 * How long one tool call may take before the client gives up. Unset,
+	 * the MCP SDK's default applies (one minute). A caller that waits for
+	 * the answer anyway sets it longer: given up on, a call that was still
+	 * committing in the server was cut off half done.
+	 */
+	readonly requestTimeoutMs?: number;
 }
