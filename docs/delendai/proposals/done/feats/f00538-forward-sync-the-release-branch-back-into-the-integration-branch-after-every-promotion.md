@@ -2,7 +2,7 @@
 id: f00538
 title: "Forward-sync the release branch back into the integration branch after every promotion"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-15
@@ -11,9 +11,9 @@ tags:
     - branches
     - release
     - automation
-last-transition-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
-last-correlation-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
-last-transition-from: in-progress
+last-transition-id: 325ce73a-b879-4153-ae8b-c216068ac146
+last-correlation-id: 325ce73a-b879-4153-ae8b-c216068ac146
+last-transition-from: review
 shipped-in:
   - "0bf0fe61e015"
   - "7dfa7abc3476102c786e172126e750286090d948"
@@ -97,10 +97,15 @@ fast-forwards a local clone and never touches the forge.
 
 ### S3 — Run it on every move of the release branch
 
-- **Status**: done — `forward-sync-release.yml` runs on a push to `main` and on `workflow_dispatch`, with `contents`, `pull-requests` and `actions` write and full history. `ci.yml` gains `workflow_dispatch`, the one event a workflow token may start, so the candidate's required check can run. The forge resolves both workflows from the default branch (`main`), so they take effect from the next promotion.
+- **Status**: done
 - **Files**: [`.github/workflows/forward-sync-release.yml`, `.github/workflows/ci.yml`]
 - **Gate**: `bun run lint:workflow-yaml && bun run lint:workflow-runner-bootstrap && bun run lint:workflow-bootstrap`
 - shipped-in: `0bf0fe61e015`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: Illyria
+- review-log: approved by Illyria — verified at d615fc5a2, validate exit 0, tests 3/3 — Independently verified (reviewer Illyria; implementer claude-opus-5-5). Attributed from Git via d615fc5a2, which cites f00538 and touches both of this slice's declared files (.github/workflows/forward-sync-release.yml and ci.yml); the slice's shipped-in 0bf0fe61e015 is a merge commit no attribution reads through. Declared gate 'bun run lint:workflow-yaml && bun run lint:workflow-runner-bootstrap && bun run lint:workflow-bootstrap' => all three green, exit 0 (16 workflow files parse and have the expected shape; every job installs what its steps run; every job using a local action checks out first). Delivery verified line by line: forward-sync-release.yml triggers on 'push: branches: [main]' and on workflow_dispatch; permissions are contents: write, pull-requests: write, actions: write; the setup action runs fetch-depth: '0' so the ancestry question has full history; ci.yml gained workflow_dispatch, the one event a workflow token may start. Exactly the slice's claim, and the no-admin-token non-goal holds (GH_TOKEN: ${{ github.token }}). changedSince is truncated; newest are 429c2a77f, 5b137f5de, f50aea1ba - later CI work, not defects of this slice.
+- review-attribution: unrecorded — nothing in Git names who delivered d615fc5a2550b5079967172e87fd4792720d43e4: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by Illyria
 
 ### S4 — Let the workflow token open the pull request
 
