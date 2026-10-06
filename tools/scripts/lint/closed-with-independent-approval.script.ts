@@ -26,8 +26,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
+	approvalsAdded,
+	approvalsNotBy,
 	type IReviewIndependence,
 	unapprovedSlices,
+	unclaimedProposals,
 } from '@delendai/proposals/public';
 
 import { declaredBranches } from '../lib/declared-branches';
@@ -38,6 +41,8 @@ const DONE_PREFIX = 'docs/delendai/proposals/done/';
 // The rule lives in the proposals plugin, the same one every path to
 // `done` applies (x00718).
 export { unapprovedSlices } from '@delendai/proposals/public';
+// So do the predicates `review finish` asks before a pack is published.
+export { approvalsAdded, approvalsNotBy, unclaimedProposals };
 
 /**
  * The project's review policy, read where the proposals plugin reads it:
@@ -86,33 +91,6 @@ export const agentOfRef = (
 	}
 	return undefined;
 };
-
-/**
- * The approvals a diff adds that are not its author's (x00715).
- *
- * `reviewer ≠ implementer` compares names an agent declares. An approval
- * that enters the integration branch through the pull request of its
- * reviewer's own unit ties the declared name to the unit that did the
- * review: approving as someone else then means entering, publishing and
- * approving under that name, and any mismatch between the three is caught
- * here, on every host.
- */
-export const approvalsNotBy = (
-	unifiedDiff: string,
-	author: string,
-): readonly string[] =>
-	approvalsAdded(unifiedDiff).filter(
-		(approver) => approver.toLowerCase() !== author.toLowerCase(),
-	);
-
-/** Every approval a unified diff adds, by its approver. */
-export const approvalsAdded = (unifiedDiff: string): readonly string[] =>
-	unifiedDiff.split('\n').flatMap((line) => {
-		const approver = line.match(
-			/^\+[-*]\s*review-log:\s*approved by\s+(\S+)/iu,
-		)?.[1];
-		return approver === undefined ? [] : [approver];
-	});
 
 /**
  * The kind of work a ref names: the segment after its agent
@@ -220,36 +198,6 @@ const pullRequestLabels = async (): Promise<readonly string[]> => {
 	} catch {
 		return fromEvent.labels;
 	}
-};
-
-/**
- * The proposals a review pack changes without having claimed them.
- *
- * A pack is its reviewer's verdicts on the proposals it took. One pull
- * request of a swarm described twenty verdicts and two moves and carried
- * the edits of three other packs: nothing in it said which were its
- * author's, so nothing could be checked against what it claimed.
- * `changedPaths` are the proposal documents the pack touches, and
- * `claimed` the ids of the `Claims` trailers of its own commits.
- */
-export const unclaimedProposals = (
-	changedPaths: readonly string[],
-	claimed: readonly string[],
-): readonly string[] => {
-	const mine = new Set(claimed.map((id) => id.trim().toLowerCase()));
-	return [
-		...new Set(
-			changedPaths
-				.map((path) =>
-					/^([a-z]\d{5})-/iu
-						.exec(path.split('/').at(-1) ?? '')?.[1]
-						?.toLowerCase(),
-				)
-				.filter(
-					(id): id is string => id !== undefined && !mine.has(id),
-				),
-		),
-	].sort();
 };
 
 const git = (root: string, args: readonly string[]): string =>

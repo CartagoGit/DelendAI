@@ -13,6 +13,23 @@ import { integrationBase, readGit } from './work-unit-shared.service';
 import { namespacedRef } from './namespaced-ref.helper';
 
 /**
+ * Whether `commit` changes no file against where it left the integration
+ * branch: a review pack retired before its first verdict holds only its
+ * claim and release commits, which are empty, and keeps nothing.
+ */
+const changesNothing = (
+	root: string,
+	commit: string,
+	base: string,
+): boolean => {
+	const from = readGit(root, ['merge-base', base, commit]);
+	return (
+		from !== undefined &&
+		readGit(root, ['diff', '--name-only', from, commit]) === ''
+	);
+};
+
+/**
  * The retired refs of `remote` whose commit the integration branch
  * contains, dropped when `apply`. A forge that cannot be reached, or a
  * commit that cannot be read, drops nothing.
@@ -58,7 +75,7 @@ export const reapLandedRetired = (input: {
 				'--is-ancestor',
 				each.commit,
 				base,
-			]) !== undefined,
+			]) !== undefined || changesNothing(root, each.commit, base),
 	);
 	if (landed.length === 0) return [];
 	if (!input.apply) {

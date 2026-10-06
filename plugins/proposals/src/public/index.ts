@@ -294,6 +294,12 @@ export {
 	unapprovedSlices,
 } from '../lib/shared/independent-approval';
 export type { IReviewIndependence } from '../lib/contracts/interfaces/review-independence.interface';
+export {
+	approvalsAdded,
+	approvalsNotBy,
+	packRefusals,
+	unclaimedProposals,
+} from '../lib/services/pack-governance.service';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

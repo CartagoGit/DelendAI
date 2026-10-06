@@ -77,11 +77,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S5 — A pack that cannot land is refused before it is published
-- **Status**: pending
-- **Files**: `packages/cli/src/commands/review.command.ts`
+- **Status**: in-progress
+- **Files**: `plugins/proposals/src/lib/services/pack-governance.service.ts`, `plugins/proposals/src/public/index.ts`, `plugins/proposals/tests/src/lib/services/pack-governance.service.spec.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-pack-check.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`review finish` (and `review next` when it publishes a full pack) runs the pack's governance checks (independent approval, claimed proposals, cited commits) before publishing, and refuses with what to fix, so a reviewer is never told its pack is done while CI will refuse it."
+- Delivered: the predicates `closed-with-independent-approval` applied only in CI (approvals by someone other than the pack's author, proposals changed without a claim) now live in the proposals plugin (`packRefusals`), and the gate reads them from there; `review finish --session` asks them of the unit's own commits before `work publish`, and refuses with each reason and nothing published. #873 is the case: approvals signed by GPT-5.4 in a unit named for claude-opus-5-5, published and red for good. The spec fails without the change. Not covered: a pack published with the `work` tool directly, and the cited-commit check, which needs the forge.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — An open publication is a generation in use
 - **Status**: review
@@ -159,6 +162,34 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "A publication that does not merge trivially and whose author's unit has been abandoned (past the lease windows) is reported once as adoptable, with the exact `work enter` + merge + `work retire --unowned` steps, instead of `its author decides` on every pass; after a further window with nobody adopting it, its pull request is closed with that reason, and S10 retires it."
 - Found 2026-10-06: after the swarm stopped, #856, #857 and #858 sat on the forge, two of them conflicted, each reported on every hydration as "its author decides" by an author that was gone. Done by hand that day: #857's verdicts were adopted into a pack of the orchestrator's (less one approval that judged an earlier definition of x00875 S20), #858 was retired (signed `illyria`, a name of no model; its q00010 changes superseded), and #856 duplicates the queue's own close pass #878.
+
+### S14 — A unit that only merged landed work in is delivered
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A unit whose only commits beyond the integration branch are merges joining commits the integration branch already holds is judged delivered and reaped like any other delivered unit."
+- Delivered: x00878 S4, S6 and S8 landed through #879, which carried them, and their units stood for good as `idle`: each had merged develop in before a publish that was refused, and that merge commit — joining two commits develop holds — was the one thing develop lacked. `carriesNothingBeyond` reads every commit past the integration branch and accepts only merges whose parents are integrated or among those merges; the unit verdict and the reaper's empty-unit rule (S9) both use it. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S15 — A retired pack that changes no file is dropped
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`work reap --apply` drops from the forge a retired tip whose commits change no file against where it left the integration branch (a pack retired before its first verdict holds only empty claim and release commits); a retired tip that changes a file is kept."
+- Delivered: six of the fifteen retired refs left after the swarm were review packs that never recorded a verdict, each a claim commit or two, and the landed-retired reaper kept them because empty commits are never contained in the integration branch. They are now dropped with the landed ones. The same afternoon, by hand and with a reason each, the other spent ones went too (contents identical on develop, closes landed through #878, a slice that landed under its next generation): fifty-two retired refs became four, each holding verdicts that have not landed. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S16 — A submit through the CLI is committed, or the CLI says why
+- **Status**: pending
+- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`
+- **Gate**: type
+- acceptance:
+  - "`proposals review <id> <slice> --action=submit --workspace=<unit>` commits the review lines it writes in the unit, every time; when the commit fails, the reason is in what the CLI prints (today it is only a text note beside the structured result, which the CLI does not print)."
+- Found 2026-10-07, after x00875 S20's timeout fix landed: of seven submits in this proposal's units, S9, S12, S3 and S5 were committed by the tool, and S10, S11, S14 and S15 were left staged — `git add` ran, the commit did not — with an `ok: true` result and no word of it. The same `git commit -- <path>` run by hand in the unit, with the agent's environment, passes every hook. Each was committed by hand with the tool's subject.
 
 ## acceptance
 
