@@ -1567,6 +1567,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-19"
+			},
+			{
+				"id": "x00877",
+				"title": "An upgrade leaves the project as its configuration says, and nothing else",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-06"
 			}
 		]
 	}
