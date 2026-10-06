@@ -121,6 +121,32 @@ describe('review_queue', () => {
 		expect(answer.body.procedure).toContain('judged on what it delivered');
 	});
 
+	it('cites first the later delivery of the same slice, which is what an approval must name', async () => {
+		const first = repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+			'feat: x00001 the work',
+			'Merge pull request #7 from Owner/x00001-S1-g1',
+		);
+		const fix = repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g2/the-fix',
+			'fix: x00001 the review asked for this',
+			'Merge pull request #8 from Owner/x00001-S1-g2',
+		);
+		const merged = repo.git('rev-parse', 'develop');
+		// The slice still records the first delivery as its own.
+		repo.proposalInReview(
+			`${SLICE_S1('review')}- shipped-in: \`${first.slice(0, 12)}\`\n`,
+		);
+
+		const [slice] = slicesOf(await queue(), 'x00001');
+
+		// The fix or the merge that landed it: either is what an approval
+		// is accepted with, the first delivery is not.
+		expect([fix, merged]).toContain(slice?.candidates[0]?.commit);
+	});
+
 	it('says when more later commits changed the slice than it lists', async () => {
 		repo.deliverThroughPullRequest(
 			'src/a.ts',

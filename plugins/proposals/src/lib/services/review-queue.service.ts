@@ -39,6 +39,7 @@ import type {
 	IReviewQueueSlice,
 } from '../contracts/interfaces/review-queue.interface';
 import { parseProposalSlicePlan } from '../swarm/proposal-slice-plan';
+import { supersedingDelivery } from './review-verdict-evidence';
 import { readShippingCommit } from '../swarm/slice-shipping-record';
 import { listShippedIn } from './review-attribution';
 import {
@@ -105,7 +106,7 @@ const reviewProposal = async (
 		const found = blocks.get(slice.sliceId.toLowerCase());
 		const block = found?.block ?? '';
 		const recorded = readShippingCommit(block);
-		const candidates = dedupe([
+		const gathered = dedupe([
 			...(recorded === undefined
 				? []
 				: [{ commit: recorded, source: 'slice shipped-in' }]),
@@ -113,6 +114,27 @@ const reviewProposal = async (
 			...shippedIn,
 			...citing,
 		]);
+		// The approval refuses a commit a later delivery of the same files
+		// superseded, and names that one instead: the call the queue hands
+		// out cites it first, so a reviewer who follows it is not refused.
+		const first = gathered[0]?.commit;
+		const newer =
+			first === undefined
+				? undefined
+				: await supersedingDelivery(
+						input.run,
+						input.integration,
+						entry.id,
+						slice.files,
+						first,
+					);
+		const candidates =
+			newer === undefined
+				? gathered
+				: dedupe([
+						{ commit: newer, source: 'latest delivery' },
+						...gathered,
+					]);
 		slices.push(
 			await settleSlice(
 				input,
