@@ -17,6 +17,7 @@ import {
 	scalarArg,
 	usage,
 } from './group-helpers';
+import { CRITERION_SEPARATOR } from '../../contracts/constants/review-command.constant';
 
 /**
  * Parse an optional JSON-valued flag into a value, or undefined. Never
@@ -438,10 +439,37 @@ const integerArg = (
  * The evidence an approval carries, from flags. Absent unless at least
  * one evidence flag was given, so a submit or a status call sends none.
  */
+/**
+ * Every `--criterion="<criterion> => <evidence>"`, in order. A slice that
+ * declares acceptance criteria is approved only with evidence for each,
+ * and the command line had no way to give it: from a shell, no such slice
+ * could be approved at all.
+ */
+const criteriaArgs = (
+	args: readonly string[],
+): readonly { readonly criterion: string; readonly evidence: string }[] =>
+	args
+		.filter((arg) => arg.startsWith('--criterion='))
+		.map((arg) => arg.slice('--criterion='.length))
+		.map((value) => {
+			// The first separator: evidence is free text, a criterion is not.
+			const at = value.indexOf(CRITERION_SEPARATOR);
+			return at < 0
+				? { criterion: value.trim(), evidence: '' }
+				: {
+						criterion: value.slice(0, at).trim(),
+						evidence: value
+							.slice(at + CRITERION_SEPARATOR.length)
+							.trim(),
+					};
+		});
+
 export const evidenceArgs = (
 	args: readonly string[],
 ): Record<string, unknown> | undefined => {
+	const criteria = criteriaArgs(args);
 	const evidence = {
+		...(criteria.length === 0 ? {} : { acceptanceCriteria: criteria }),
 		...(scalarArg(args, 'commit') === undefined
 			? {}
 			: { commitHash: scalarArg(args, 'commit') }),
@@ -459,7 +487,7 @@ export const evidenceArgs = (
 };
 
 const REVIEW_USAGE =
-	'proposals review <proposalId> <sliceId> --action=<submit|approve|request_changes|status> --agent=<who> [--note=<n>] [--commit=<sha>] [--validate-exit=0 --tests-passing=<n> --tests-total=<n>]';
+	'proposals review <proposalId> <sliceId> --action=<submit|approve|request_changes|status> --agent=<who> [--note=<n>] [--commit=<sha>] [--validate-exit=0 --tests-passing=<n> --tests-total=<n>] [--criterion="<criterion> => <evidence>" …]';
 
 const reviewCommand: ICliCommand = {
 	name: 'proposals review',
@@ -472,6 +500,7 @@ const reviewCommand: ICliCommand = {
 		'validate-exit',
 		'tests-passing',
 		'tests-total',
+		'criterion',
 	],
 	summary:
 		'Peer-review a slice: submit/approve/request_changes/status. --commit names the delivering commit (and opens the round a delivery never opened); approve also needs --validate-exit, --tests-passing and --tests-total.',
