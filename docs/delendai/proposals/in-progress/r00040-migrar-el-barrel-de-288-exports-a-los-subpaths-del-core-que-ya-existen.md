@@ -2,7 +2,7 @@
 id: r00040
 title: "Migrar el barrel de 288 exports a los subpaths del core que ya existen"
 kind: refactor
-status: review
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-29
@@ -13,9 +13,11 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, r00041]
-last-transition-id: 982a690d-7910-4a5c-804c-21d1dd259175
-last-correlation-id: 982a690d-7910-4a5c-804c-21d1dd259175
-last-transition-from: in-progress
+last-transition-id: d4b94ca0-a7e2-4351-a024-da69ecccf596
+last-correlation-id: d4b94ca0-a7e2-4351-a024-da69ecccf596
+last-transition-from: review
+shipped-in:
+  - "f2b416c4e241"
 ---
 
 # r00040 — Migrar el barrel de 288 exports a los subpaths del core que ya existen
@@ -127,7 +129,7 @@ public/index.ts queda como:
 
 ### S1 — Clasificar los 288 exports por nivel de estabilidad y subpath destino
 
-- **Status**: done (verified 2026-09-02 — see Notes; barrel annotation comments not added, report+spec do the classification)
+- **Status**: done
 - **Files**:
     - `packages/core/src/public/index.ts` (anotar cada export con un
       comentario `@stable <subpath>` / `@experimental` / `@internal`)
@@ -136,10 +138,15 @@ public/index.ts queda como:
     - `packages/core/tests/src/public/surface-classification.spec.ts` (nuevo)
 - **Gate**: `bun tools/scripts/report/core-public-surface-report.script.ts`
 - shipped-in: `d3eaef32a`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at f2b416c4e241, validate exit 0, tests 4/4 — Verified the current delivered barrel state at merge commit f2b416c4e241. The classification report exits 0 and the focused surface-classification spec still passes 4/4, so the classification behavior remains intact in the latest delivery.
+- review-attribution: claude-opus-5-5 from commit f2b416c4e241 names refs/heads/delendai/wip/claude-opus-5-5/implement/r00040-S2-g1/cli-only-exports-move-to-the-cli-entry (f2b416c4e24193d153c563053b58212d0f4a479e), opened by gpt-5.4
 
 ### S2 — Migrar el dominio de mayor volumen a su subpath (o a uno nuevo si no encaja)
 
-- **Status**: review
+- **Status**: in-progress
 - **Gate**: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public`
 - **Files**:
     - `packages/core/src/public/index.ts`
@@ -165,6 +172,11 @@ public/index.ts queda como:
   barrel, and 117 with no importer outside core. Neither is plugin
   surface; both belong with x00541 (exports with no importer).
 - shipped-in: `f2b416c4e241`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — I cannot approve this slice as it stands in 25fafc647c2c. The proposal's acceptance still says that after S2 no migrated subpath should exceed roughly 60 exports, but the delivered note for S2 says 112 exports moved into @delendai/core/cli, so the declared acceptance is not met by the implementation as documented. The declared gate is also currently red on the latest delivery: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public` fails in `tests/src/public/deprecation.spec.ts` with `TypeError: Cannot read properties of undefined (reading 'ES2022')` at line 43. Please either narrow/update the acceptance to match the intended audience-based split and restore the gate to green, or change the delivery so the migrated subpath stays within the accepted bound.
+- review-attribution: claude-opus-5-5 from commit 25fafc647c2c names refs/heads/delendai/wip/claude-opus-5-5/implement/r00040-all-g1/the-public-entry-is-not-deprecated (25fafc647c2c038fe26c9090588939d93204fa14), opened by gpt-5.4
 
 ### S3 — Marcar el barrel como deprecado con fecha
 
