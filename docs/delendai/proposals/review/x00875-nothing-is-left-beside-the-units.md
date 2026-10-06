@@ -288,6 +288,8 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`
 - **Gate**: `npx vitest run tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - Found 2026-10-06, right after S27 landed: the closer had two pull requests open closing the same five proposals (#846 from `batch-all-g2`, #848 from `batch-all-g4`). Each pass merges the open publication into its unit and publishes; under one reused generation that updated the same pull request, and with a generation per unit (S27) it opened a new one and left the old beside it. A pass with nothing new to close also republished, only to bring the open one level with the integration branch, which is the candidates' refresh's job. Now a pass publishes only when it closed something, and then retires the publication it merged (its tip kept, its pull request closed with the reason). #846 was retired by hand as superseded by #848, which contains it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
