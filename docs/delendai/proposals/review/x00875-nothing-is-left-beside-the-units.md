@@ -266,6 +266,23 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S27 — A generation once used is spent, and the closer publishes
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`, `config/delendai/repair-resolutions.json`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit.service.spec.ts tools/scripts/proposals/close-approved-proposals.script.spec.ts`
+- Found 2026-10-06 in the owner's MCP log: every boot was DEGRADED by the queue's closer. Each pass entered `delendai-queue/review/batch-all-g1/close-approved-<time>`, its publication was refused at the pre-push typecheck because the unit's worktree had no dependencies, and the pass deleted its branch with `branch -D`. So x00770, x00799, x00868, x00870 and x00873, approved and ready, were never closed; the reconciler found the first pass's checkpoint vanished, and each later pass, which reused generation 1 under another name, reported as history rewritten.
+- Delivered: `work enter` takes a generation no unit of that identity used before: one the integration branch merged (its merge names the publication) or the remote keeps retired is spent, whatever its name was; a generation with a live ref is still the unit to go back to. The closer installs the repository's dependencies in its unit before publishing, and a pass whose publication is not on the forge is retired with its reason instead of deleted. The two boot findings are resolved with their reasons. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S28 — A commit the forge does not know has no runs
+- **Status**: review
+- **Files**: `tools/scripts/host/forge-seam.service.ts`, `tools/scripts/host/forge-seam.constant.ts`, `tools/scripts/host/forge-seam.service.spec.ts`
+- **Gate**: `npx vitest run tools/scripts/host/forge-seam.service.spec.ts`
+- Found 2026-10-06 in the owner's MCP log: a boot was DEGRADED with `forge.unavailable: check-runs: … HTTP 422 for 0e9578db7…`. The forge phase asks for the check runs of every candidate commit, including one only this machine had (a unit committed, not pushed yet), and the forge answers such a commit with 422. It has no runs to read, so it is skipped now; any other failure, a 404 included (also how the forge answers a repository it will not show), is still `unavailable`. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.

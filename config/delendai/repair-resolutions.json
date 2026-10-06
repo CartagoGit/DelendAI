@@ -82,6 +82,14 @@
 			"decidedAt": "2026-09-27T21:51:45.162Z"
 		},
 		{
+			"taskId": "530ef3ba5f6af1589e9419afb15c971f",
+			"evidenceDigest": "fd7906212f315645531b4246ec63978d",
+			"decision": "accepted-loss",
+			"reason": "A close pass of the queue's closer that never published (its unit had no dependencies, so the pre-push typecheck refused it). Its only content was the close of five approved proposals, which every pass recomputes from develop; x00875 S27 lets the closer publish and retires a pass that does not.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T15:23:01.787Z"
+		},
+		{
 			"taskId": "593fd173544d841c22d9a37777cc8344",
 			"evidenceDigest": "662e3a41011d9781b7a6a260d5b4fe34",
 			"decision": "not-a-problem",
@@ -144,6 +152,14 @@
 			"reason": "minimax-3 r00043 S2: redone after review; r00043 is in review with every slice delivered.",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-10-06T02:05:09.128Z"
+		},
+		{
+			"taskId": "9f340bed16e33a18faa5ec3da3281f95",
+			"evidenceDigest": "7e506f45d52a267ba5fdfc667f977fbb",
+			"decision": "not-a-problem",
+			"reason": "Not rewritten history: a new close pass reused generation g1 under another name after the previous pass's unit ended. x00875 S27 makes a generation once merged or retired spent, so no two refs share an identity.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T15:23:07.281Z"
 		},
 		{
 			"taskId": "ae6adfa91c81793f321162c4073f8f8a",
