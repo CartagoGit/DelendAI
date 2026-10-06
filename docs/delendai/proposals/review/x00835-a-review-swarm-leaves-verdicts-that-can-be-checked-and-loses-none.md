@@ -24,6 +24,7 @@ shipped-in:
   - "7fa7e95db68420cfe10ded78ec9144e3e82243f9"
   - "17d1fa53353c7b4de9ad67392f75e198b301c26d"
   - "657da3ff96183e12acf10efe5cef4ee54b54273f"
+  - "345f73884420995774374681a50ff8ea6d827777"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -968,7 +969,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S32 — A review pack changes only the proposals it claimed
 
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - CI refuses a review pack whose diff changes a proposal none of its
@@ -982,6 +983,11 @@ the good verdicts' shape (P1) becomes the required shape.
 - Entering your own unit from another directory is refused as "another
   session"; the refusal now says how to get back in.
 - shipped-in: `00b2fc1256b6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 345f73884420, validate exit 0, tests 295/295 — Deliver merge 345f73884420995774374681a50ff8ea6d827777; the proposal's shipped-in was superseded by this later publication of the same unit (attribution reported 'delivered again by 345f73884420'). Declared gate run batched green: 34 test files / 295 tests, exit 0. Behaviour pinned by named specs.
+- review-attribution: claude-opus-5-5 from commit 345f73884420 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S37-g1/a-session-re-enters-its-own-unit (345f73884420995774374681a50ff8ea6d827777), opened by minimax-3
 
 ### S33 — A slice delivered from a unit of another name is still found
 
