@@ -81,4 +81,49 @@ describe('queueForReviewer', () => {
 		expect(queueForReviewer(mixed, 'model-a-9', 'instance')).toBe(mixed);
 		expect(queueForReviewer(mixed, 'model-a-9', undefined)).toBe(mixed);
 	});
+
+	it('leaves to another reviewer a slice the asker delivered under another submitter', () => {
+		// The round names the agent that submitted; the asker's own unit
+		// delivered part of it too, so it is one of its implementers.
+		const coAuthored = queue([
+			slice('S1', 'model-b-2', {
+				candidates: [
+					{
+						commit: 'a1',
+						source: 'merge (pr/model-b-2/x00001-S1-g1/one)',
+						agent: 'model-b-2',
+					},
+					{
+						commit: 'b2',
+						source: 'merge (pr/model-a-9/x00001-S1-g2/two)',
+						agent: 'model-a-9',
+					},
+				],
+			}),
+			slice('S2', 'model-b-2', {
+				candidates: [
+					{ commit: 'c3', source: 'merge', agent: 'model-b-2' },
+				],
+			}),
+		]);
+		for (const independence of ['model', 'instance'] as const) {
+			const view = queueForReviewer(
+				coAuthored,
+				'model-a-9',
+				independence,
+			);
+			expect(verdicts(view)).toEqual([
+				'needs-another-reviewer',
+				'needs-verdict',
+			]);
+			expect(view.totals.needsVerdict).toBe(1);
+			expect(view.proposals[0]?.slices[0]?.nextAction).toContain(
+				'Your own unit of work (model-a-9)',
+			);
+		}
+		// Another instance of the same model did not deliver it.
+		expect(
+			queueForReviewer(coAuthored, 'model-a-9-other', 'instance'),
+		).toBe(coAuthored);
+	});
 });

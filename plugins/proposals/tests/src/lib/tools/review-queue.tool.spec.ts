@@ -74,6 +74,25 @@ describe('review_queue', () => {
 		expect(slice?.nextAction).toContain('<you — not agent-a>');
 	});
 
+	it('offers nobody a slice a unit of their own delivered, the whole-proposal unit included', async () => {
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		repo.deliverThroughPullRequest(
+			'src/b.ts',
+			'delendai/pr/agent-b/x00001-all-g1/the-rest',
+		);
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const [forB] = slicesOf(await queue({ agent: 'agent-b' }), 'x00001');
+		expect(forB?.verdict).toBe('needs-another-reviewer');
+		expect(forB?.nextAction).toContain('Your own unit of work (agent-b)');
+
+		const [forC] = slicesOf(await queue({ agent: 'agent-c' }), 'x00001');
+		expect(forC?.verdict).toBe('needs-verdict');
+	});
+
 	it('asks for no verdict on a slice given up on purpose, whoever Git names', async () => {
 		repo.deliverThroughPullRequest(
 			'src/a.ts',

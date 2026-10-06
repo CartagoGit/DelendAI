@@ -1034,6 +1034,7 @@ export interface DelendaiProposalsReviewQueueOutput {
 			candidates?: {
 				commit: string;
 				source: string;
+				agent?: string;
 			}[];
 			gate?: string;
 			files?: string[];
