@@ -92,14 +92,15 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S7 — A claim holds while its holder lives, for every kind of work
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/services/review-claims.service.ts`
+- **Status**: in-progress
+- **Files**: `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/services/claim-liveness.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A claim on a proposal or a slice (review, implementation, any unit kind) holds only while the unit that made it has a live lease (its heartbeat within the lease window); without one it no longer blocks another agent, and the queue and `work enter` say so."
   - "Two windows, not one: the exclusive claim lapses on a short window, the unit's work is judged abandoned on the conservative one; a lapsed claim frees the work, it never deletes it (the unit becomes recoverable, its commits and branch stay)."
   - "A unit whose publication is open keeps its claim whatever its heartbeat: its verdicts or its work can still land, and another agent must not duplicate them (states live, recoverable, published, integrated)."
   - "A taken-over claim carries a higher generation; a write by the previous holder after the takeover is refused as stale (fencing), so an agent that comes back cannot write over the one that adopted its work."
+- Progress 2026-10-06, reviews: the review queue reads a claim through core's verdict on its unit (`claimHolding`, from `readUnitStandings`: the lease's heartbeat, or the unit's last commit where no lease is visible on this machine). A claim holds while its unit is live or its publication is open; a unit idle past its lease window, abandoned or delivered holds nothing, and its work stays where it is; a unit core has no verdict for holds. Still to do: implementation units (`work enter` holds a slice for an `idle` unit through `isUnitHolding`; the short window should apply there too), the verdict and claim tools reading the same predicate, and fencing (a taken-over claim's generation refusing the previous holder's writes).
 
 ## acceptance
 
