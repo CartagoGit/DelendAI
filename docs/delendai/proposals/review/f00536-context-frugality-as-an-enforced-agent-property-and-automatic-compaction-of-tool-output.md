@@ -14,6 +14,8 @@ tags:
 last-transition-id: 6f7c2fac-8643-4b03-985d-85a9d83d0d01
 last-correlation-id: 6f7c2fac-8643-4b03-985d-85a9d83d0d01
 last-transition-from: in-progress
+shipped-in:
+  - "03289da1e5f3"
 ---
 
 # f00536 — Context frugality as an enforced agent property, and automatic compaction of tool output
@@ -105,7 +107,7 @@ Compaction belongs where the output is produced:
 
 ### S1 — Attribute the cost
 
-- **Status**: review — shipped in #433 (merge 03289da1e)
+- **Status**: done
 - **Files**: `packages/core/src/lib/metrics/context-attribution.helper.ts`,
   `packages/core/src/lib/contracts/interfaces/context-attribution.interface.ts`,
   `packages/core/src/lib/metrics/metrics-registry.ts`,
@@ -129,6 +131,11 @@ property). "By call site" is the five largest single responses, with
 tool and time. Prompt scaffolding and model output never pass through
 the server, so they are the host's to measure, not this slice's.
 - shipped-in: `03289da1e5f3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 03289da1e5f3, validate exit 0, tests 4/4 — Gate green: attribution spec 4/4; sums to totalBytes incl. tools/list + other tools (read the helper); shipped in #433 merge 03289da1e
+- review-attribution: claude-opus-5-5 from commit 03289da1e5f3 names refs/heads/delendai/wip/claude-opus-5-5/f00536-S1-g1/the-cost-is-attributed (03289da1e5f3440c20a7be0f1d55fab8dc0d79ec), opened by glm-5.3-flash
 
 ### S2 — Elide at the seam, keep the artefact
 - **Status**: review — shipped in #421 (merge 55eae8993)
