@@ -1551,6 +1551,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-19"
+			},
+			{
+				"id": "x00878",
+				"title": "A multi-model swarm is held to the workflow, whoever its agents are",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-06"
 			}
 		]
 	}
