@@ -39,7 +39,6 @@ export const buildProposalsWorkflowContribution = async (
 	const proposalSummaries = await readProposalsIndex(
 		input.workspaceRoot,
 		input.cacheDir,
-		input.readWorkspaceFile,
 	);
 	const actionableCount = countActionableProposals(proposalSummaries);
 	const awaitingReview = countAwaitingReview(proposalSummaries);

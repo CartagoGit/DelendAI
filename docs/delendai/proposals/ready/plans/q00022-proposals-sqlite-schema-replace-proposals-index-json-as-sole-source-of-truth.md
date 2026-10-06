@@ -281,6 +281,11 @@ that the audit calls obligatory.
   - `plugins/proposals/src/lib/proposals/registry-export.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/registry-entry.interface.ts`
   - `plugins/proposals/tests/src/lib/proposals/registry-export.service.spec.ts`
+  - `plugins/proposals/src/lib/proposals/proposal-summaries.service.ts`
+  - `plugins/proposals/tests/src/lib/proposals/proposal-summaries.service.spec.ts`
+  - `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`
+  - `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`
+  - `tools/scripts/catalog/generate-agent-catalog.script.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -471,6 +476,24 @@ generator call. That last one is also the core↔proposals inversion
 `lint:core-proposals-boundary` keeps as a dated exception: it moves to the
 plugin once the plugin's reader can return a summary (title, track, kind,
 date), not only `id`, `file` and `status`.
+
+**Phase 3, second reader 2026-10-06 — the workflow summaries.** r00043
+S8 moved `readProposalsIndex` into the plugin
+(`plugins/proposals/src/lib/proposals/proposal-summaries.service.ts`),
+still parsing the registry. The plugin's reader now returns what a
+summary needs: `IProposalIndexEntry` carries optional `title`, `track`,
+`kind` and `date`, and the SQL read selects them (migration 0021 already
+stored them). `readProposalsIndex` reads through `readProposalIndex`, so
+the workflow contribution behind the overview is served by the state
+database by default. The mapping is its own pure function,
+`toProposalSummaries`, and the agent-catalog generator applies it to the
+registry it already scans from the markdown in memory: the catalog is
+checked in and compared byte for byte, so it is built from the authority,
+never from a cache on the machine that generates it (reading the
+registry from disk instead gave a catalog with no proposals in a fresh
+unit). Its specs write a registry into a real workspace instead of
+answering an injected file read the summaries no longer make. Readers of
+the registry left: the JSON fallback and the token dashboard's wait.
 
 Acceptance:
 
