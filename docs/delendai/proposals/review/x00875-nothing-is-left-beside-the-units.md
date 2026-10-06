@@ -348,12 +348,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 68b22cd6fd11, validate exit 0, tests 54/54 — Delivered by the merge naming x00875-S27-g1. endedGenerations collects generations already merged or retired and chooseGeneration skips a generation with no live refs, marking it spent, so a proposal cited from any status folder is found and a spent publication is retired rather than left dangling; close-approved-proposals installs dependencies before publishing and retires an unpublished pass. No acceptance bullet is declared for this slice. Gate: work-unit.service.spec.ts 46/46 + close-approved-proposals.script.spec.ts 8/8, exit 0, both re-run with DELENDAI_AGENT_ID unset.
 
 ### S28 — A commit the forge does not know has no runs
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/host/forge-seam.service.ts`, `tools/scripts/host/forge-seam.constant.ts`, `tools/scripts/host/forge-seam.service.spec.ts`
 - **Gate**: `npx vitest run tools/scripts/host/forge-seam.service.spec.ts`
 - Found 2026-10-06 in the owner's MCP log: a boot was DEGRADED with `forge.unavailable: check-runs: … HTTP 422 for 0e9578db7…`. The forge phase asks for the check runs of every candidate commit, including one only this machine had (a unit committed, not pushed yet), and the forge answers such a commit with 422. It has no runs to read, so it is skipped now; any other failure, a 404 included (also how the forge answers a repository it will not show), is still `unavailable`. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 57a631db9ae8, validate exit 0, tests 8/8 — Delivered by 57a631db9ae8, the newest delivery touching the slice's files (no merge names x00875-S28-g1, so the attribution is by declared files). The forge phase skips a commit the forge answers 422 for, so a commit only this machine has reports no runs instead of degrading the boot; any other failure, a 404 included, still reports unavailable. Gate forge-seam.service.spec.ts 8/8 exit 0. No acceptance bullet is declared for this slice.
 
 ## acceptance
 
