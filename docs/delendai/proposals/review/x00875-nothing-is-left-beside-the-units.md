@@ -280,6 +280,8 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Files**: `tools/scripts/host/forge-seam.service.ts`, `tools/scripts/host/forge-seam.constant.ts`, `tools/scripts/host/forge-seam.service.spec.ts`
 - **Gate**: `npx vitest run tools/scripts/host/forge-seam.service.spec.ts`
 - Found 2026-10-06 in the owner's MCP log: a boot was DEGRADED with `forge.unavailable: check-runs: … HTTP 422 for 0e9578db7…`. The forge phase asks for the check runs of every candidate commit, including one only this machine had (a unit committed, not pushed yet), and the forge answers such a commit with 422. It has no runs to read, so it is skipped now; any other failure, a 404 included (also how the forge answers a repository it will not show), is still `unavailable`. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
