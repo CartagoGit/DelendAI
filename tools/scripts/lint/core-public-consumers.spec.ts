@@ -7,11 +7,17 @@
  * and — the property the ratchet rests on — one that was already
  * unmoored yesterday.
  */
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
 	ADOPTER_API_TAG,
 	annotatedNames,
+	consumerNames,
 	judgeConsumers,
 } from './core-public-consumers.script';
 
@@ -113,5 +119,28 @@ describe('judging an export against its callers', () => {
 
 		expect(report.resolved).toEqual(['wasUnmoored']);
 		expect(report.newlyUnmoored).toEqual([]);
+	});
+});
+
+describe('consumerNames', () => {
+	it('reads a component file, which imports from the barrel too', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'core-consumers-'));
+		try {
+			mkdirSync(join(root, 'apps', 'web', 'src', 'pages'), {
+				recursive: true,
+			});
+			writeFileSync(
+				join(root, 'apps', 'web', 'src', 'pages', 'presets.astro'),
+				"---\nimport { describeStackPacks } from '@delendai/core/public';\n---\n",
+			);
+			execFileSync('git', ['init', '-q'], { cwd: root });
+			execFileSync('git', ['add', '-A'], { cwd: root });
+
+			expect((await consumerNames(root)).has('describeStackPacks')).toBe(
+				true,
+			);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });

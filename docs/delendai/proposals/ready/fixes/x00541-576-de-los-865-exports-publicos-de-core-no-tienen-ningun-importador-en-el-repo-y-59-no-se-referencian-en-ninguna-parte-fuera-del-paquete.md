@@ -101,6 +101,14 @@ real se quedaron.
   anotación."
 - **Gate**: `bun run validate`
 
+### S4 — A consumer in a component file counts
+- **Status**: review
+- **Files**: [`tools/scripts/lint/core-public-consumers.script.ts`, `tools/scripts/lint/core-public-consumers.spec.ts`]
+- **Gate**: `npx vitest run --project tools tools/scripts/lint/core-public-consumers.spec.ts`
+- Found 2026-10-06 by S1's sweep: `lint:core-public-consumers` read TypeScript only, so `describeStackPacks` and `IStackPackMeta`, which only `apps/web/src/pages/presets.astro` imports, were taken for unused; removed from the barrel, they broke `lint:web`. The lint now also reads the tracked `.astro`, `.vue` and `.svelte` files of the consumer roots; with it, three exports baselined as unused turned out to have a caller.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## Acceptance
 
 - La superficie pública declara qué parte es promesa externa.
