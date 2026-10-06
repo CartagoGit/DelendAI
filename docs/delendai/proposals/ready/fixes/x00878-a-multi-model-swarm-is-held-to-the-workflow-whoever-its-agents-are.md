@@ -77,11 +77,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S5 — A pack that cannot land is refused before it is published
-- **Status**: pending
-- **Files**: `packages/cli/src/commands/review.command.ts`
+- **Status**: in-progress
+- **Files**: `plugins/proposals/src/lib/services/pack-governance.service.ts`, `plugins/proposals/src/public/index.ts`, `plugins/proposals/tests/src/lib/services/pack-governance.service.spec.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-pack-check.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`review finish` (and `review next` when it publishes a full pack) runs the pack's governance checks (independent approval, claimed proposals, cited commits) before publishing, and refuses with what to fix, so a reviewer is never told its pack is done while CI will refuse it."
+- Delivered: the predicates `closed-with-independent-approval` applied only in CI (approvals by someone other than the pack's author, proposals changed without a claim) now live in the proposals plugin (`packRefusals`), and the gate reads them from there; `review finish --session` asks them of the unit's own commits before `work publish`, and refuses with each reason and nothing published. #873 is the case: approvals signed by GPT-5.4 in a unit named for claude-opus-5-5, published and red for good. The spec fails without the change. Not covered: a pack published with the `work` tool directly, and the cited-commit check, which needs the forge.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — An open publication is a generation in use
 - **Status**: review
