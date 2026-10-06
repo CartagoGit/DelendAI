@@ -172,7 +172,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-implementer: claude-opus-5-5
 
 ### S17 — A read is not refused as a write
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/tool-registration.interface.ts`, `packages/core/src/lib/shared/bind-write-root.ts`, `packages/core/tests/src/lib/shared/bind-write-root.spec.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
 - Found 2026-10-06: `proposals review <id> <slice> --action=status` in the shared checkout was refused with `shared-checkout-write-refused`, so the only way to ask whether a slice had a round was to open a unit for it. The refusal is decided per tool: `proposal_review` declares `caller-checkout` because submit, approve and request_changes write, and its `status` read was refused with them. A registration now declares `readsOnly(input)`, the calls that write nothing, and the binding never refuses those in the shared checkout; `proposal_review` answers it for `status`. Its writes are refused as before, which the spec pins in the same call sequence.
