@@ -1,5 +1,8 @@
 /** Constants for `./state-dir.migrator`. */
 
+/** Stable id recorded in the journal. */
+export const STATE_DIR_MIGRATOR_ID = 'stateDirectoryMigrator:v1';
+
 /** Where the state databases lived before they moved under the cache. */
 export const LEGACY_STATE_SEGMENTS: readonly string[] = ['.delendai', 'state'];
 
