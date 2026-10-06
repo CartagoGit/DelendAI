@@ -26,6 +26,22 @@
 			"decidedAt": "2026-09-27T09:33:02.570Z"
 		},
 		{
+			"taskId": "245dbeb0069e4dc5f61d7046874deb78",
+			"evidenceDigest": "619824876a964e80bf57f08ad9cb6169",
+			"decision": "resolved-elsewhere",
+			"reason": "delendai-queue close pass retired with a reason, then dropped from the forge after analysis on 2026-10-07: every proposal it closed is closed on develop (#878), so the tip kept nothing",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:30.178Z"
+		},
+		{
+			"taskId": "285183da11cea0eab7e42f7686b4a230",
+			"evidenceDigest": "2a0a32a3dfcc7b345fab1c0ad6cbac9e",
+			"decision": "resolved-elsewhere",
+			"reason": "delendai-queue close pass retired with a reason, then dropped from the forge after analysis on 2026-10-07: every proposal it closed is closed on develop (#878), so the tip kept nothing",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:35.791Z"
+		},
+		{
 			"taskId": "33bbdd0d34ddcb854dafc519345805b9",
 			"evidenceDigest": "377c2df78082b7ef9628e68b36820973",
 			"decision": "resolved-elsewhere",
@@ -48,6 +64,22 @@
 			"reason": "Investigated in x00546: the x00545-S1 work was discarded deliberately in an earlier session and its SHAs are recorded there; commit 9421185e is not in develop and never will be.",
 			"decidedBy": "cartago",
 			"decidedAt": "2026-09-19T12:27:03.041Z"
+		},
+		{
+			"taskId": "3fd20b0cae225af5290464a2bc1999e7",
+			"evidenceDigest": "773045d231d77d1038f32f100bd32ff8",
+			"decision": "resolved-elsewhere",
+			"reason": "delendai-queue close pass retired with a reason, then dropped from the forge after analysis on 2026-10-07: every proposal it closed is closed on develop (#878), so the tip kept nothing",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:41.427Z"
+		},
+		{
+			"taskId": "4852fd7961036f90b6d29b9a2dc1332c",
+			"evidenceDigest": "2d55ab5723144425c2d3b6c7ff0c7c13",
+			"decision": "accepted-loss",
+			"reason": "illyria (ChatGPT Luna 6.0 under a name of no model) review pack batch-all-g1: its q00010 edits are superseded on develop and its f00538 verdicts were signed with a fake identity, so they go back to the queue; its publication was retired (#858) and the tip is still kept at refs/delendai/retired/illyria/review/batch-all-g1/verdicts",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:52.750Z"
 		},
 		{
 			"taskId": "48ef92d37fd1a7d2f12a98388cc6ee62",
@@ -240,6 +272,14 @@
 			"reason": "claude-opus-5-5 review pack batch-all-g2: its claim of x00835 and the S18 verdict were carried into batch-all-g1 and published in #803.",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-10-06T02:05:28.441Z"
+		},
+		{
+			"taskId": "e09a6eb4c4d13be6c29618b312726c42",
+			"evidenceDigest": "406885baae0b0db96487548003af03aa",
+			"decision": "resolved-elsewhere",
+			"reason": "delendai-queue close pass retired with a reason, then dropped from the forge after analysis on 2026-10-07: every proposal it closed is closed on develop (#878), so the tip kept nothing",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:47.196Z"
 		},
 		{
 			"taskId": "e1c21bdea93a137cbdd4451c9850340d",
