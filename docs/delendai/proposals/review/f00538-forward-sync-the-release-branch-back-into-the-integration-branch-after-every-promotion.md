@@ -18,6 +18,7 @@ shipped-in:
   - "0bf0fe61e015"
   - "7dfa7abc3476102c786e172126e750286090d948"
   - "20d9a0277167"
+  - "d615fc5a2"
 ---
 
 # f00538 — Forward-sync the release branch back into the integration branch after every promotion
@@ -84,10 +85,15 @@ fast-forwards a local clone and never touches the forge.
 
 ### S2 — A history-only sync is a delivery, and only that one
 
-- **Status**: done — `lint:candidate-delivers` accepts a zero-file pull request only when the release tip is in the candidate's history and not in its base's. It asks the forge's compare API in CI and falls back to `git merge-base --is-ancestor`. A fact it cannot establish exempts nothing, so the #100 shape (empty, with no release tip) is still refused.
+- **Status**: done
 - **Files**: [`tools/scripts/lint/candidate-delivers.script.ts`, `tools/scripts/lint/candidate-delivers.script.spec.ts`]
 - **Gate**: `npx vitest run tools/scripts/lint/candidate-delivers.script.spec.ts`
 - shipped-in: `0bf0fe61e015`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: Illyria
+- review-log: approved by Illyria — verified at d615fc5a2, validate exit 0, tests 22/22 — Independently verified (reviewer Illyria; implementer claude-opus-5-5, attributed from Git via d615fc5a2 'feat(forge): carry the release branch back into develop after every promotion', which cites f00538 and touches exactly this slice's two declared files). The slice's shipped-in 0bf0fe61e015 is a merge commit, so no attribution reads through it; d615fc5a2 is the delivery it merged. Gate 'npx vitest run tools/scripts/lint/candidate-delivers.script.spec.ts' => 22/22 passed, exit 0. Claim verified: a zero-file pull request is accepted only when the release tip is in the candidate's history and not in its base's; a fact the script cannot establish exempts nothing, so the #100 shape (empty, no release tip) is still refused. That is also proposal acceptance item 3, the non-goal this slice exists to protect. No acceptance items declared on the slice.
+- review-attribution: unrecorded — nothing in Git names who delivered d615fc5a2550b5079967172e87fd4792720d43e4: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by Illyria
 
 ### S3 — Run it on every move of the release branch
 
