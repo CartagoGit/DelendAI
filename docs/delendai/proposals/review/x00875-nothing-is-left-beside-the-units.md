@@ -15,6 +15,7 @@ shipped-in:
   - "d86b383aca470163a16051827bef7ae3b1602ca3"
   - "7d96f51559804495246013d71095f90a05b6184d"
   - "db62951444bdb537e371e0c1b7ce54fb056e35e4"
+  - "4708525975eab47a589336724f7abcb814fdc25d"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -280,12 +281,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-implementer: claude-opus-5-5
 
 ### S26 — A pull request is titled by its own slice
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - Found 2026-10-06: #839, the publication of x00875 S23, opened titled "the review queue cites the delivery an approval is accepted with (x00835 S39)": the unit had merged S39's publication to build on it, and a pull request was titled by its oldest delivering commit. The title now prefers the deliveries that cite the unit its branch names (`<proposal> <slice>`, or the proposal for `all`); with none, it is titled as before. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 4708525975ea, validate exit 0, tests 9/9 — Delivered by the merge naming x00875-S26-g1. citesUnitOf reads proposal and slice out of the unit branch name and pullRequestText prefers that delivery over other deliveries folded into the same branch, so a pull request is titled by its own slice. No acceptance bullet is declared for this slice. Gate: publication-pull-request.service.spec.ts 9/9 exit 0.
 
 ### S27 — A generation once used is spent, and the closer publishes
 - **Status**: review
