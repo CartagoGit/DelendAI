@@ -25,7 +25,10 @@
 import { execFileSync } from 'node:child_process';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
-import { REVIEW_COMMAND } from '../contracts/constants/review-command.constant';
+import {
+	RELEASE_TRAILER,
+	REVIEW_COMMAND,
+} from '../contracts/constants/review-command.constant';
 import type {
 	ICliCommand,
 	ICliCommandContext,
@@ -39,6 +42,7 @@ import type {
 	IUnit,
 } from '../contracts/interfaces/review-queue-view.interface';
 import { briefFor } from '../lib/review/review-brief.service';
+import { releasedElsewhere } from '../lib/review/review-releases.service';
 import { usage } from './groups/group-helpers';
 import { evidenceArgs } from './groups/proposals';
 import { workCommand } from './work.command';
@@ -48,9 +52,6 @@ const REVIEW_UNIT = ['--kind=review', '--proposal=batch', '--slice=all'];
 
 /** The trailer `review_queue` reads a claim from. */
 const CLAIM_TRAILER = 'Claims';
-
-/** The trailer `review release` gives a claim back with. */
-const RELEASE_TRAILER = 'Releases';
 
 const QUEUE_TOOL = 'delendai_proposals_review_queue';
 const VERDICT_TOOL = 'delendai_proposals_proposal_review';
@@ -132,7 +133,6 @@ const gitIn = (
 	}
 };
 
-/** The proposals this unit has claimed: its own commits' claim trailers. */
 /** Merge the integration branch's remote tip into the unit, or nothing. */
 const catchUp = (unit: IUnit, integration: string): void => {
 	gitIn(unit.path, ['fetch', '--quiet', 'origin', integration]);
@@ -238,7 +238,8 @@ const next = async (
 			claimed.includes(proposal.id.toLowerCase()) &&
 			needsVerdict(proposal),
 	);
-	const released = releasesOf(unit, policy.branches.integration);
+	// What this reviewer gave back in any of its units, this one included.
+	const released = releasedElsewhere(unit.path, agent, policy.branches);
 	const free = queue.find(
 		(proposal) =>
 			proposal.claimedBy === undefined &&

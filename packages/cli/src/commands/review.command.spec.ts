@@ -216,6 +216,52 @@ describe('delendai review', () => {
 		expect(second.proposal).toBe('x00002');
 	});
 
+	it('honours a release made in another unit, until the proposal changes', async () => {
+		const root = repo();
+		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
+		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			proposal: string;
+			session: string;
+		};
+		expect(first.proposal).toBe('x00001');
+		await run(
+			ctx,
+			'release',
+			'x00001',
+			'--agent=minimax-m3',
+			`--session=${first.session}`,
+			'--note=I changed the code it delivered',
+		);
+
+		// A new session is a new unit: the release is in the old one.
+		const fresh = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			proposal: string;
+		};
+		expect(fresh.proposal).toBe('x00002');
+
+		// The proposal changes after the release: it is offered again.
+		execFileSync('mkdir', [
+			'-p',
+			join(root, 'docs/delendai/proposals/review'),
+		]);
+		writeFileSync(
+			join(root, 'docs/delendai/proposals/review/x00001-a.md'),
+			'# x00001, reworked\n',
+		);
+		git(root, 'add', '-A');
+		execFileSync('git', ['commit', '-q', '-m', 'x00001 reworked'], {
+			cwd: root,
+			env: {
+				...process.env,
+				GIT_COMMITTER_DATE: new Date(Date.now() + 60_000).toISOString(),
+			},
+		});
+		const again = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			proposal: string;
+		};
+		expect(again.proposal).toBe('x00001');
+	});
+
 	it('enters the unit, claims the first free proposal, and says how to answer', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [
