@@ -289,6 +289,8 @@ that the audit calls obligatory.
   - `tools/scripts/report/token-budget-report-lib.ts`
   - `plugins/proposals/src/index.ts`
   - `plugins/proposals/tests/src/lib/proposals/index-reader-db-resolution.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-location.spec.ts`
+  - `plugins/proposals/src/lib/tools/db-status.tool.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -518,7 +520,7 @@ declares its index file's layout once when it lays out its paths
 (`declareProposalIndexFile`, in `index-reader-location.ts`); a relative
 layout holds in any checkout of the workspace, a unit's worktree
 included, and a path that does not end in it is still nobody's guess.
-`index-reader-db-resolution.spec.ts` fails without the change.
+`index-reader-db-resolution.spec.ts` fails without the change. (Corrected the same day: CI's changed-file coverage measured the declared layout as untested, because only that bun-owned spec reached it. The declared layout no longer waits on the database package's import, which it does not need, and `index-reader-location.spec.ts` covers it under vitest; `db_status` takes only the two reads it makes, so the plugin no longer builds four stubs for it.)
 
 Acceptance:
 

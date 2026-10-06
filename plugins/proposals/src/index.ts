@@ -1089,10 +1089,6 @@ export default definePlugin({
 						reader: {
 							count: sqlLifecycleReaders.count,
 							lastSync: sqlLifecycleReaders.lastSync,
-							get: async () => undefined,
-							list: async () => [],
-							search: async () => [],
-							suggest: async () => [],
 						},
 					}),
 					buildDbDoctorToolRegistration({
