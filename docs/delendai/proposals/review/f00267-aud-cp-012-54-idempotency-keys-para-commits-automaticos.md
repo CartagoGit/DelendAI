@@ -2,7 +2,7 @@
 id: f00267
 title: "AUD-CP-012/§54 — Idempotency keys para commits automáticos"
 kind: feat
-status: blocked
+status: review
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -18,6 +18,9 @@ related:
     - q00006
     - f00266 # engine usa processedEvents internamente
     - t00021 # test de replay
+last-transition-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
+last-correlation-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
+last-transition-from: in-progress
 ---
 
 # f00267 — Idempotency keys para commits automáticos
@@ -170,12 +173,24 @@ Política:
   - "I/O error de lectura → STORE_READ_ERROR, no commit"
 - review-state: in_review
 - review-implementer: copilot
+- shipped-in: `a3a56ccaeba9`
+### S2 — The store stays bounded, and a question costs a stat
+- **Status**: review
+- **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/processed-events.interface.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
+- **Gate**: `npx vitest run --project commit-policy plugins/commit-policy/tests/src/lib/processed-events.spec.ts plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`
+- Measured 2026-10-05 against S1 as shipped. The file is not append-only: every write rewrites the map atomically, one line per key, so a key is never stored twice and the file grows only with distinct events, trimmed by the TTL. What the acceptance asked of "rotation" is a ceiling: `maxBytes` (default 4 MiB) drops the oldest records first, before their TTL, and records keep the order they were last written in.
+- `has(key)` re-read and re-parsed the whole file on every call, so each question cost as much as the history was long. It now asks only whether the file changed (size and modification time) and re-reads it then; another process's write is still seen at once. Over 10,000 records, 200 calls average under 5 ms (spec).
+- The replay suite the acceptance named, `t00021`, never existed. Replay is covered by `plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`, which this slice's gate runs.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `a3a56ccaeba9`
+
 ## acceptance
 
-- Tests de `t00021` (replay) pasan.
-- `processed-events.jsonl` solo crece con append, rota al alcanzar
-  tamaño configurable.
-- Bajo carga, `has(key)` ≤ 5ms (in-memory + lazy load).
+- The replay specs pass (`plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`; `t00021`, named first, never existed).
+- `processed-events.jsonl` holds one line per key and stays under a
+  configurable ceiling (`maxBytes`), dropping the oldest first.
+- Under load, `has(key)` ≤ 5 ms (it re-reads the file only when it changed).
 - `bun run lint` verde; `tsc --noEmit` verde.
 - Sin dependencias npm nuevas.
 
