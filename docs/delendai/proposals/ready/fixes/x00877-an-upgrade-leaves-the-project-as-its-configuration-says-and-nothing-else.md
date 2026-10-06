@@ -48,7 +48,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 
 ### S2 — The legacy proposal state is moved, and no copy of it stays behind
 - **Status**: review
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/proposals-state.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/proposals-state.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/proposals-state.migrator.spec.ts`
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/state-dir.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/state-dir.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/state-dir.migrator.spec.ts`, `packages/proposals-sqlite/tests/src/lib/state-dir-agreement.spec.ts`, `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`, `plugins/proposals/tests/src/lib/proposals/sync-legacy-registry.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`migrate run` moves `.delendai/state/proposals.sqlite` and its `-wal`/`-shm` sidecars to `.cache/delendai/state/` when nothing is there yet, and removes the emptied legacy directory."
@@ -56,9 +56,9 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "After it, the proposals tools open the database without the manual remedy."
   - "A committed `docs/<docsDir>/proposals/index.json` (the old location) is removed by `migrate run`; it is regenerable and nothing reads it."
   - "The comments that still describe it as a committed variant are corrected."
-- Delivered: `proposalsStateMigrator:v1`, registered before the development-policy migrator. It moves `proposals.sqlite` and its `-wal`/`-shm` sidecars from `.delendai/state/` to `.cache/delendai/state/` (sidecars first, the main file last), removes the emptied legacy directory, and removes the registry's committed copy at `<docsDir>/proposals/index.json` (and its folder only if nothing else is in it). A database already at the current place is kept and the legacy one is reported as a conflict, never overwritten. The spec pins that its state directory is the one `@delendai/proposals-sqlite` resolves. Probed end to end in a throwaway project: `migrate run` left the database at the current place, no `.delendai/state/` and no committed registry, the proposal files untouched.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- Delivered, split by owner (core may know nothing of the proposals plugin's storage, which `lint:core-proposals-boundary` enforces and which the first version broke): core's `stateDirectoryMigrator:v1` moves every file of its legacy state directory `.delendai/state/` to `.cache/delendai/state/` (SQLite sidecars before their database), never over a file already there, and removes the emptied directory; `state-dir-agreement.spec.ts` in `@delendai/proposals-sqlite` pins that its database opens there. The registry's old committed copy beside the proposals is the plugin's to remove: a full sync deletes `<proposalsDir>/index.json` (an index-only sync, which makes no tracked change, leaves it). Probed end to end before the split in a throwaway project; the specs fail without the change.
 
 ### S3 — Every host file and instruction file names delendai
 - **Status**: pending
