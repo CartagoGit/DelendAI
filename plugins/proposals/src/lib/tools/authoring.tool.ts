@@ -2065,6 +2065,44 @@ export const buildCloseSliceRegistration = (
 });
 
 /**
+ * Whether the review rules refuse this verdict on the slice as the
+ * document has it now. Read-only: it decides only whether the proposal is
+ * claimed before the verdict is recorded.
+ */
+const verdictWouldBeRefused = async (
+	docPath: string,
+	args: {
+		readonly sliceId: string;
+		readonly action: 'approve' | 'request_changes';
+		readonly agent: string;
+	},
+	quorum: number,
+): Promise<boolean> => {
+	const md = await readTextOrNull(docPath);
+	if (md === null) return false;
+	const block = md.match(
+		new RegExp(
+			`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+			'm',
+		),
+	);
+	if (block === null) return false;
+	const state = parseReviewState(block[2] ?? '');
+	// With no round open the verdict opens one, which the path below
+	// decides; only a round already open has rules to break.
+	if (state.status === 'none') return false;
+	return !reviewTransition(
+		state,
+		args.action,
+		args.agent,
+		'',
+		args.action === 'approve'
+			? { enforceDistinctAgentName: false, quorum }
+			: { quorum },
+	).ok;
+};
+
+/**
  * `proposal_review` — peer-review loop for a slice. An implementer
  * `submit`s a finished slice for review (it is NOT done yet); a DIFFERENT
  * agent `approve`s it (→ done + lock released) or `request_changes` with an
@@ -2174,12 +2212,28 @@ export const buildReviewRegistration = (
 						);
 					}
 					const branches = scoped.developmentPolicy?.branches;
+					// A verdict the review rules will refuse claims nothing:
+					// claimed first, it left the refused reviewer holding the
+					// proposal, so the reviewer it was refused FOR could not
+					// take it. The refusal itself comes from the path below,
+					// with its own reason.
 					const refusal = await verdictClaimRefusal(
 						scoped.run ?? createGitRunner(scoped.workspaceRoot),
 						branches,
 						entry.id,
 						branches?.integration ?? 'HEAD',
 						options.namespacePrefix,
+						{
+							claim: !(await verdictWouldBeRefused(
+								docPath,
+								{
+									sliceId: args.sliceId,
+									action: args.action,
+									agent: args.agent,
+								},
+								quorumForReview(scoped.reviewPanel),
+							)),
+						},
 					);
 					if (refusal !== undefined) {
 						return toolError(refusal.reason, refusal.nextAction);
