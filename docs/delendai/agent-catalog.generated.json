@@ -1521,14 +1521,6 @@
 				"date": "2026-08-27"
 			},
 			{
-				"id": "q00018",
-				"title": "State Engine foundation: pure deterministic project/swarm scopes, generation rebuild and shadow equivalence",
-				"track": "swarm-scope-v1",
-				"status": "in-progress",
-				"kind": "plan",
-				"date": "2026-09-05"
-			},
-			{
 				"id": "q00019",
 				"title": "State Engine Phase 1 — SQLite shadow driver + parity sampler (no behaviour change, only shadow verifies legacy)",
 				"track": "swarm-scope-v1",
