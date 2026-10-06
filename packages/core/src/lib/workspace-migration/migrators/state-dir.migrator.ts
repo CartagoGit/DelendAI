@@ -23,10 +23,9 @@ import type {
 import {
 	LEGACY_STATE_SEGMENTS,
 	SQLITE_SIDECAR_SUFFIXES,
+	STATE_DIR_MIGRATOR_ID,
 	STATE_SEGMENTS,
 } from './state-dir.constant';
-
-export const STATE_DIR_MIGRATOR_ID = 'stateDirectoryMigrator:v1';
 
 const exists = async (path: string): Promise<boolean> =>
 	access(path).then(
