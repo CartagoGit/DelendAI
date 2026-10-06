@@ -191,6 +191,30 @@ describe('createForgeSeam check runs', () => {
 		expect(read.payload[1]?.workflow).toBe('unknown');
 	});
 
+	it('reads no runs for a commit the forge does not have, and goes on', async () => {
+		const seam = createForgeSeam({
+			repositorySlug: SLUG,
+			run: fakeCli((args) =>
+				args.some((arg) => arg.includes('sha-local'))
+					? answer(
+							422,
+							[],
+							'{"message":"No commit found for SHA: sha-local"}',
+							1,
+						)
+					: answer(200, [], CHECKS),
+			).run,
+		});
+		const read = await seam.listCheckRuns({
+			shas: ['sha-local', 'sha-ok'],
+		});
+		if (read.kind !== 'payload') throw new Error('expected a payload');
+		expect(read.payload.every((run) => run.candidateSha === 'sha-ok')).toBe(
+			true,
+		);
+		expect(read.payload.length).toBeGreaterThan(0);
+	});
+
 	it('answers unavailable as a whole when one sha cannot be read', async () => {
 		const seam = createForgeSeam({
 			repositorySlug: SLUG,
