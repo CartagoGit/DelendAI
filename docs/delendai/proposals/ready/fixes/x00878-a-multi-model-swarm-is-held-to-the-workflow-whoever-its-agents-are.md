@@ -77,6 +77,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "`review finish` (and `review next` when it publishes a full pack) runs the pack's governance checks (independent approval, claimed proposals, cited commits) before publishing, and refuses with what to fix, so a reviewer is never told its pack is done while CI will refuse it."
 - Delivered: the predicates `closed-with-independent-approval` applied only in CI (approvals by someone other than the pack's author, proposals changed without a claim) now live in the proposals plugin (`packRefusals`), and the gate reads them from there; `review finish --session` asks them of the unit's own commits before `work publish`, and refuses with each reason and nothing published. #873 is the case: approvals signed by GPT-5.4 in a unit named for claude-opus-5-5, published and red for good. The spec fails without the change. Not covered: a pack published with the `work` tool directly, and the cited-commit check, which needs the forge.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — An open publication is a generation in use
 - **Status**: pending
