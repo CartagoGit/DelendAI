@@ -71,6 +71,8 @@ real se quedaron.
   con la API que el proyecto declara soportar."
 - Shipped 2026-10-06: the last 117 unmoored exports each got a decision. 31 are A (kept, under an `@adopter-api` note: config and manifest shapes, the phased plugin lifecycle, PluginState and PluginStateError, capability and dry-run validators a plugin author calls) and 86 are B (describeStackPacks and IStackPackMeta stayed under an adopter note because the web app imports them from an .astro file the consumer scan does not read) (left the barrel; their importers in core, all specs plus one source file, now import the `lib/` module). Rule: A only when a plugin, config or host author outside this repository needs the name to write a plugin, manifest, config or tool registration or to handle an error delendai throws; everything else is internal. The baseline is 0 and the budget is 422.
 - **Gate**: `bun run lint:core-public-surface-budget && bun run lint:core-public-consumers`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Una puerta que exija justificación, no sólo cuenta
 
@@ -102,6 +104,8 @@ real se quedaron.
   anotación."
 - Progress 2026-10-06: the baseline is now empty (0 of 422 exports lack both an importer and an `@adopter-api` note), which meets the acceptance.
 - **Gate**: `bun run lint:core-public-consumers`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## Acceptance
 
