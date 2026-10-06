@@ -2,13 +2,15 @@
 id: x00797
 title: "A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: 0960d810-fb71-43b5-9dc7-dce08667f1e6
-last-correlation-id: 0960d810-fb71-43b5-9dc7-dce08667f1e6
-last-transition-from: in-progress
+last-transition-id: 5e486202-df54-4158-afba-33098e186ee6
+last-correlation-id: 5e486202-df54-4158-afba-33098e186ee6
+last-transition-from: review
+shipped-in:
+  - "0442b28de"
 ---
 
 # x00797 — A checkpoint inside a unit worktree is refused, and a publication opens its pull request from a checkout that survives
@@ -37,7 +39,7 @@ Two bugs found by agents. A checkpoint run from inside the unit worktree wrote t
 - global_gate: none
 
 ### S1 — Checkpoint and publish are safe from inside the unit worktree
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/wip-engine/checkpoint.ts`
   - `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`
@@ -48,9 +50,11 @@ Two bugs found by agents. A checkpoint run from inside the unit worktree wrote t
   - `packages/core/tests/src/lib/wip-engine/checkpoint.spec.ts`
   - `packages/core/tests/src/lib/work-units/work-unit-profiles.spec.ts`
 - **Gate**: type
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `0442b28dee5d`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 0442b28de, validate exit 0, tests 36/36 — Delivered by #710 (merge 0442b28de). Proposal acceptance, run for each profile in work-unit-profiles.spec: 'checkpoint from inside the unit worktree is refused and leaves it exactly as it was'; 'publish from inside the unit worktree removes it and opens the pull request of an ssh-style origin'; 'names the URL it saw when the remote is not GitHub, and never invites opening the pull request by hand'. checkpoint, publication-pull-request and work-unit-profiles specs 36/36.
 
 ## acceptance
 

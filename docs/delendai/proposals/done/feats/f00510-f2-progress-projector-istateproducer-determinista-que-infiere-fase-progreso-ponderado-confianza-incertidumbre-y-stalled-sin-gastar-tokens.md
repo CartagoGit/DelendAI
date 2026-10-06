@@ -2,7 +2,7 @@
 id: f00510
 title: "F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-06
@@ -16,9 +16,11 @@ tags:
     - state-engine
     - projector
     - non-llm
-last-transition-id: 998403ca-e038-4b0f-a8fd-b7e1f6981598
-last-correlation-id: 998403ca-e038-4b0f-a8fd-b7e1f6981598
-last-transition-from: in-progress
+last-transition-id: 0857370d-69b3-4e34-b86d-50567d9c5417
+last-correlation-id: 0857370d-69b3-4e34-b86d-50567d9c5417
+last-transition-from: review
+shipped-in:
+  - "2f3bfc2e7"
 ---
 
 # f00510 — F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens
@@ -43,7 +45,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
 - global_gate: type
 
 ### S1 — `IWorkProgressProducer` + tabla `progress_snapshots` (un IStateProducer real)
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [f00509]
 - **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-producer.service.spec.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.spec.ts`, `packages/state-telemetry/src/lib/projector/contracts/constants/work-progress.constant.ts`, `packages/state-telemetry/src/lib/projector/contracts/interfaces/work-progress.interface.ts`, `packages/state-telemetry/src/lib/projector/test-support.helper.ts`, `packages/state-telemetry/vitest.config.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts`, `tools/scripts/lint/state-telemetry-purity.script.spec.ts`, `package.json`
 - **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector && bunx vitest run tools/scripts/lint/state-telemetry-purity.script.spec.ts
@@ -53,12 +55,14 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "Property test `reconcile`-in-chunks equals a clean `rebuild` over 200 seeded random sequences of 60 events (200 keeps the CI run short; the PRNG is a small seeded generator, no new dependency)."
   - "The snapshot's `stalled` is true when the same failure hash (the payload hash of a `tool_error` event) repeats k >= 3 times in a row (configurable, default 3); a different hash or a code change restarts the run."
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` covers `packages/state-telemetry/src/lib/projector/**`, rejects any `await` inside `rebuild`/`reconcile` and any persistent I/O import, and is chained into `lint:architecture`."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `f1da8103c5dc`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 2f3bfc2e7, validate exit 0, tests 103/103 — Delivered by #807 (merge 2f3bfc2e7). state-telemetry vitest 103/103.
 
 ### S2 — `phase-inference.ts` — tabla declarativa read→investigating, edit→implementing, test→testing, fix→fixing, validate→validating, review→reviewing, push→reconciling
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [F2-S1]
 - **Files**: `packages/state-telemetry/src/lib/projector/phase-inference.service.ts`, `packages/state-telemetry/src/lib/projector/phase-inference.service.spec.ts`, `packages/state-telemetry/src/lib/projector/phase-rules.service.ts`, `packages/state-telemetry/src/lib/projector/contracts/constants/phase-rules.constant.ts`
 - **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector
@@ -67,12 +71,14 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "The default table maps the event kinds that exist on the bus: tool_called/tool_finished/claims -> investigating; git_change -> implementing; test_started -> testing; git_change right after test_finished or tool_error -> fixing; slice_changes_requested -> fixing; stale_acceptance -> validating; slice_submitted -> reviewing; slice_approved -> reconciling. The bus has no read/write, validate or push kinds, so those rows of the original table are not expressible. `blocked` and `done` come from the item's status."
   - "`phase-inference.service.spec.ts` holds 32 hand-labelled streams and requires at least 95% to infer the labelled phase."
   - "The phase is monotonic forward: the fold keeps the highest rank seen, so a later `tool_called` never rewinds `implementing`."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `f1da8103c5dc`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 2f3bfc2e7, validate exit 0, tests 103/103 — Delivered by #807 (merge 2f3bfc2e7).
 
 ### S3 — `confidence-model.ts` — confidence + uncertainty derivados de la varianza de los últimos N eventos y de la completitud del `work_items.acceptance_criteria`
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [F2-S1]
 - **Files**: `packages/state-telemetry/src/lib/projector/confidence-model.service.ts`, `packages/state-telemetry/src/lib/projector/confidence-model.service.spec.ts`
 - **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector
@@ -81,12 +87,14 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "`uncertainty = 1 - confidence` by definition; `confidence-model.service.spec.ts` checks it on every scenario."
   - "`confidence-model.service.spec.ts` covers 12 scenarios with exact expected values (no events gives confidence 0 and uncertainty 1; ten coherent events give 1 before the cap; alternating extremes give 0; and so on)."
   - "Confidence and uncertainty are always present in the snapshot so a view can show them beside the percentage."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `8681776edb26`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 2f3bfc2e7, validate exit 0, tests 103/103 — Delivered by #807 (merge 2f3bfc2e7).
 
 ### S4 — `progress-weighting.ts` — Σ(completion × weight) / Σ(weight), con pesos por defecto derivados de la posición de la slice en la proposal y override opcional en frontmatter
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [F2-S1]
 - **Files**: `packages/state-telemetry/src/lib/projector/progress-weighting.service.ts`, `packages/state-telemetry/src/lib/projector/progress-weighting.service.spec.ts`
 - **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector
@@ -95,12 +103,14 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "The aggregated proposal progress is Sum(progress x weight) / Sum(weight), summed in canonical slice-id order."
   - "Test: three slices weighing 1, 4 and 8 report 100 at 100/100/100 and 300/13 (about 23.08) at 100/50/0. The original example claimed 37.5, which is not what (100x1 + 50x4 + 0x8) / 13 equals."
   - "A slice with no acceptance criteria weighs 1 and reports progress 100 (the scale is 0..100 throughout) when its status is `done`, and 0 otherwise."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `8681776edb26`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 2f3bfc2e7, validate exit 0, tests 103/103 — Delivered by #807 (merge 2f3bfc2e7).
 
 ### S5 — API pública `getSnapshot`, `getSnapshotsForProposal`, `subscribe` + propiedad `incremental === cleanRebuild` verde
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [F2-S1, F2-S2, F2-S3, F2-S4]
 - **Files**: `packages/state-telemetry/src/lib/projector/work-progress-api.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-api.service.spec.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/state-telemetry/package.json`, `packages/state-telemetry/tests/integration/projector-ratchet.spec.ts`, `packages/state-telemetry/tests/integration/incremental-equiv-rebuild.spec.ts`
 - **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector && bunx vitest run --root packages/state-telemetry tests/integration
@@ -109,9 +119,11 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "`subscribe` applies back-pressure by coalescing per `workItemId`: at most one delivery per item per second (configurable), only the newest held snapshot is kept, and the host calls `flush()` on its own tick. The clock is injected, so specs use no real timers."
   - "Property test: for 50 seeded random sequences of 100 events appended in uneven chunks, the incremental service equals a clean rebuild. Only the in-memory path is covered: the SQLite shadow of the earlier State Engine plan does not exist."
   - "`projector-ratchet.spec.ts` checks over 50 random streams that no event lowers the phase rank, with the default rules and with a caller rule that points backwards."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `f1da8103c5dc`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 2f3bfc2e7, validate exit 0, tests 103/103 — Delivered by #807 (merge 2f3bfc2e7).
 
 ## acceptance
 

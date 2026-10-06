@@ -29,6 +29,7 @@ import {
 	lefthookConfiguredHooks,
 	locateHooks,
 	uninstallGuardHooks,
+	durableEntry,
 	lefthookRunsGuard,
 } from './guard-hooks.service';
 
@@ -393,4 +394,29 @@ describe('the installed guard enforces the declared policy', () => {
 		execFileSync('git', ['stash', 'drop', '-q'], { cwd: root, env: agent });
 		expect(count()).toBe(0);
 	}, 60_000);
+});
+
+describe('durableEntry', () => {
+	it("records the main checkout's twin of a CLI run from inside a unit", () => {
+		const root = repo();
+		const cli = join('packages', 'cli', 'src', 'index.ts');
+		mkdirSync(join(root, 'packages', 'cli', 'src'), { recursive: true });
+		writeFileSync(join(root, cli), '\n');
+		const unit = `${root}-unit`;
+		roots.push(unit);
+		execFileSync('git', ['worktree', 'add', '-q', '-b', 'unit', unit], {
+			cwd: root,
+		});
+		mkdirSync(join(unit, 'packages', 'cli', 'src'), { recursive: true });
+		writeFileSync(join(unit, cli), '\n');
+
+		expect(durableEntry(unit, join(unit, cli))).toBe(
+			join(resolve(root), cli),
+		);
+		// No twin in the main checkout: the entry is kept as given.
+		expect(durableEntry(unit, join(unit, 'only-here.ts'))).toBe(
+			join(unit, 'only-here.ts'),
+		);
+		expect(durableEntry(root, join(root, cli))).toBe(join(root, cli));
+	});
 });
