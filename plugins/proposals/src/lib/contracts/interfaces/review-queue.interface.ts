@@ -10,6 +10,8 @@ import type { IWorkRefShape } from './review-attribution.interface';
 export interface IDeliveryCandidate {
 	readonly commit: string;
 	readonly source: string;
+	/** The agent whose unit of work delivered it, when its ref names one. */
+	readonly agent?: string | undefined;
 }
 
 /**

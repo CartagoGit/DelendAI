@@ -75,6 +75,7 @@ export const indexDeliveries = (
 		known.push({
 			commit: record.delivered,
 			source: `${record.subject} (${mention.ref})`,
+			...(mention.agent.length > 0 ? { agent: mention.agent } : {}),
 		});
 		deliveries.set(key, known);
 	}

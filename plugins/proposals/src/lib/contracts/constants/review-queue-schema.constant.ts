@@ -31,6 +31,7 @@ export const REVIEW_QUEUE_INPUT_SCHEMA = z.object({
 const CANDIDATE_SCHEMA = z.object({
 	commit: z.string(),
 	source: z.string(),
+	agent: z.string().optional(),
 });
 
 const SLICE_SCHEMA = z.object({
