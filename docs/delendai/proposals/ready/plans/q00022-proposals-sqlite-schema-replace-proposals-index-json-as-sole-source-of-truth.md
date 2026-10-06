@@ -281,6 +281,12 @@ that the audit calls obligatory.
   - `plugins/proposals/src/lib/proposals/registry-export.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/registry-entry.interface.ts`
   - `plugins/proposals/tests/src/lib/proposals/registry-export.service.spec.ts`
+  - `plugins/proposals/src/lib/proposals/proposal-summaries.service.ts`
+  - `plugins/proposals/tests/src/lib/proposals/proposal-summaries.service.spec.ts`
+  - `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`
+  - `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`
+  - `tools/scripts/catalog/generate-agent-catalog.script.ts`
+  - `tools/scripts/report/token-budget-report-lib.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -444,6 +450,61 @@ rebuild before it gives up, not by keeping the fallback:
   `source: 'sql'` or `DELENDAI_PROPOSAL_INDEX_SOURCE=sql` still refuses
   it. A corrupt database refuses under both.
 - Still open: phase 3 (the registry leaves the read path entirely).
+
+**Phase 3, first reader 2026-10-05 — commit-policy's slice listener.**
+(Corrected 2026-10-06: the first version recognised a document only by a
+file name of five digits, and CI's auto-work e2e, whose fixture is
+`p9995`, timed out waiting for a commit that never came. A document's id
+is now its frontmatter's `id`, or the file name before its first dash: no
+shape of id is assumed.)
+It read the registry for the list of documents, then read every document
+for its slices, because the registry carries none: 1,174 files a second.
+The list it read them by was a projection that had fallen behind (in the
+shared checkout on 2026-10-05 it lacked `x00835` and seven newer
+proposals, and still listed `f00509` under `in-progress/`). The listener
+now lists the proposals folder itself and parses a document again only
+when its size or modification time changed
+(`plugins/commit-policy/src/lib/triggers/slice-snapshot.service.ts`), so
+it reads the authority and reads it once. Its specs wrote a registry
+with inline slices, a shape the registry never has; they now write
+proposal documents through one fixture
+(`tests/src/lib/triggers/proposal-documents.fixture.ts`). Readers of the
+registry left (after the fix below): `readProposalIndex`'s JSON fallback for layouts outside
+the canonical one; the token dashboard's wait for its fixture; and core's
+own `readProposalsIndex` (`packages/core/src/lib/cli/read-proposals-index.ts`),
+which the proposals plugin's workflow contribution and the agent-catalog
+generator call. That last one is also the core↔proposals inversion
+`lint:core-proposals-boundary` keeps as a dated exception: it moves to the
+plugin once the plugin's reader can return a summary (title, track, kind,
+date), not only `id`, `file` and `status`.
+
+**Phase 3, second reader 2026-10-06 — the workflow summaries.** r00043
+S8 moved `readProposalsIndex` into the plugin
+(`plugins/proposals/src/lib/proposals/proposal-summaries.service.ts`),
+still parsing the registry. The plugin's reader now returns what a
+summary needs: `IProposalIndexEntry` carries optional `title`, `track`,
+`kind` and `date`, and the SQL read selects them (migration 0021 already
+stored them). `readProposalsIndex` reads through `readProposalIndex`, so
+the workflow contribution behind the overview is served by the state
+database by default. The mapping is its own pure function,
+`toProposalSummaries`, and the agent-catalog generator applies it to the
+registry it already scans from the markdown in memory: the catalog is
+checked in and compared byte for byte, so it is built from the authority,
+never from a cache on the machine that generates it (reading the
+registry from disk instead gave a catalog with no proposals in a fresh
+unit). Its specs write a registry into a real workspace instead of
+answering an injected file read the summaries no longer make. Readers of
+the registry left: the JSON fallback and the token dashboard's wait.
+
+**Phase 3, third reader 2026-10-06 — the token dashboard's wait.** The
+dashboard syncs its fixture workspace and waits until the fixture
+proposal is listed before it measures `auto_work`. It waited on the
+registry's text while `auto_work` reads through `readProposalIndex`, so
+the wait could pass on a file the tool never consulted. It now waits
+through the same reader (`tools/scripts/report/token-budget-report-lib.ts`),
+and `tokens:dashboard:check` stays in sync. The only reader of the
+registry left is `readProposalIndex`'s JSON fallback, for a layout with
+no database.
 
 Acceptance:
 

@@ -26,7 +26,6 @@ every deviation the run showed is either refused by the tools or reported by
 them. Every way the run below departed from the intended workflow is treated
 as a defect of the system, not of the agent that happened to hit it.
 
-
 A swarm of reviewers from other model families, less capable than the ones
 that wrote the work, produces verdicts a person can re-check, records them
 where they survive, signs them with one identity per model, and never removes
@@ -874,7 +873,12 @@ the good verdicts' shape (P1) becomes the required shape.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
-<<<<<<< HEAD
+### S38 — A retired slice waits for no verdict
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/services/review-queue-slice.service.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
+- **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue.tool.spec.ts`
+- Found 2026-10-05: `review next` offered this proposal's S25, retired that morning, as a slice needing a verdict, attributed to `claude-sonnet-5-5` from Git. A retired slice has no review round, so the queue asked Git who delivered its files and sent a reviewer to approve work that was given up on purpose. A slice whose status is `retired` is now settled in the queue, with a sentence that says why. What one slice needs from a reviewer moved to `review-queue-slice.service.ts`, which keeps the queue's service under 400 lines.
+
 ### S39 — The queue cites the delivery an approval is accepted with
 - **Status**: review
 - **Files**: `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
@@ -882,13 +886,19 @@ the good verdicts' shape (P1) becomes the required shape.
 - Found 2026-10-05 reviewing `x00770`: the approve call `review next` handed out cited each slice's recorded `shipped-in`, and every approval came back "is not the slice as it stands: x00770 was delivered again by aa99eb781d2f". The approval checks for a later delivery of the same files and the queue did not, so a reviewer who followed the call to the letter was refused five times.
 - The queue now asks the same question (`supersedingDelivery`) of the first candidate and, when a later delivery superseded it, cites that one first. The spec reproduces the case (a slice recording its first delivery, delivered again) and fails without the change.
 =======
+
+### S37 — A session goes back to its own unit, whatever generation it is
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- Found 2026-10-05: I retired my stale review unit `batch-all-g1` and kept working in `batch-all-g2`. The next `review next --session=<g2's session>` entered a new `batch-all-g1` and claimed `x00870` there, and the approval of `x00870` with the same session went to `g2`, which had claimed nothing, and was refused. `chooseGeneration` took the first generation no other session held, so a generation freed by a retirement came before the one the session was in.
+- A session that holds a unit of that agent, proposal and slice now goes back to it, whichever generation; only a session that holds none takes the first free one. The spec fails without the change.
 ### S36 — A reviewer can give the evidence each criterion asks for
 - **Status**: review
 - **Files**: `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `packages/cli/src/contracts/interfaces/review-queue-view.interface.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
 - Found 2026-10-05 approving `x00870` S1: "approve requires empirical evidence: evidence.acceptanceCriteria must cover every declared criterion". The tool asks for one piece of evidence per declared criterion, and neither `delendai review approve` nor `delendai proposals review` could pass any. From a shell, no slice that declares acceptance criteria could be approved at all, whatever the reviewer had verified.
 - Both commands take `--criterion="<criterion> => <evidence>"`, once per criterion; the first ` => ` separates them, since evidence is free text. The call `review next` hands a reviewer now carries one `--criterion` per declared criterion, with the criterion already written, so a reviewer of any model fills in evidence instead of guessing a format. The brief moved to `lib/review/review-brief.service.ts` and the queue's shapes to `contracts/interfaces/`, which brings `review.command.ts` from 404 to 349 lines.
->>>>>>> 2bfb40a0a0d277bf4cd09dfef33ff97c12b71bfb
 
 ## acceptance
 

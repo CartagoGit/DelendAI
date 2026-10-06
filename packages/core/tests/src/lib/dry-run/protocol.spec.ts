@@ -11,8 +11,8 @@ import {
 	buildDryRunResult,
 	dryRunRequiredFor,
 	isDryRunResult,
-	validateDryRunResult,
 } from '@delendai/core/public';
+import { validateDryRunResult } from '@delendai/core/lib/dry-run/protocol';
 
 describe('f00189 — dry-run protocol (Track F)', () => {
 	it('isDryRunResult narrows on the dryRun literal', () => {

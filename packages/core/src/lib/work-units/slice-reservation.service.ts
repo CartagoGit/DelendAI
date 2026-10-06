@@ -25,6 +25,7 @@ import {
 	readGit,
 	refused,
 } from './work-unit-shared.service';
+import { namespacedRef } from './namespaced-ref.helper';
 
 /** The slice that holds every other slice of its proposal. */
 const WHOLE_PROPOSAL = 'all';
@@ -43,7 +44,8 @@ const holderOf = (
 export const sliceReservationPrefix = (
 	namespace: string,
 	proposal: string,
-): string => `refs/${namespace}/claims/slice/${proposal.toLowerCase()}/`;
+): string =>
+	`${namespacedRef(namespace, 'claims', 'slice', proposal.toLowerCase())}/`;
 
 /**
  * Reserve `slice` of `proposal` for the unit `unit`. `unitBranches` are

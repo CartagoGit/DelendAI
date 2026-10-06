@@ -18,15 +18,17 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	WILDCARD_RANGE,
+	parseCapabilityRequirement,
+	type IVersionedCapability,
+} from '@delendai/core/public';
+import {
 	buildAvailableVersions,
 	checkCapabilityRequirements,
 	formatCapabilityVersionRefusal,
 	legacyVersionedCapability,
-	parseCapabilityRequirement,
 	resolveAllCapabilityVersions,
 	resolveCapabilityVersion,
-	type IVersionedCapability,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/capabilities/versioning';
 
 const PROVIDED: readonly IVersionedCapability[] = [
 	{ capability: 'git:read', version: '1.0.0', transport: 'inline' },

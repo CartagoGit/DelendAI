@@ -1,3 +1,7 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -10,6 +14,20 @@ import {
 	registerProposalsWorkflowContribution,
 } from '@delendai/proposals/lib/skills/proposals-workflow-contribution';
 
+const roots: string[] = [];
+
+/** A workspace whose registry under `.cache` holds `index`. */
+const workspaceWith = (index: unknown): string => {
+	const root = mkdtempSync(join(tmpdir(), 'workflow-contribution-'));
+	roots.push(root);
+	mkdirSync(join(root, '.cache', 'proposals'), { recursive: true });
+	writeFileSync(
+		join(root, '.cache', 'proposals', 'index.json'),
+		JSON.stringify(index),
+	);
+	return root;
+};
+
 describe('proposals workflow contribution', () => {
 	beforeEach(() => {
 		resetWorkflowContributionRegistryForTests();
@@ -17,36 +35,35 @@ describe('proposals workflow contribution', () => {
 
 	afterEach(() => {
 		resetWorkflowContributionRegistryForTests();
+		for (const root of roots.splice(0))
+			rmSync(root, { recursive: true, force: true });
 	});
 
 	it('builds a workflow contribution from the proposals index and preserves the current recommended action', async () => {
 		const contribution = await buildProposalsWorkflowContribution({
-			workspaceRoot: '/workspace',
+			workspaceRoot: workspaceWith({
+				proposals: [
+					{
+						id: 'r00043',
+						title: 'Make workflow assembly agnostic',
+						track: 'packages/core',
+						status: 'in-progress',
+						kind: 'refactor',
+						date: '2026-08-30',
+					},
+					{
+						id: 'x00263',
+						title: 'Close peer review loop',
+						track: 'plugins/proposals',
+						status: 'done',
+						kind: 'fix',
+						date: '2026-08-29',
+					},
+				],
+			}),
 			cacheDir: '.cache',
 			corePrefix: 'delendai',
-			readWorkspaceFile: async (path) => {
-				expect(path).toBe('/workspace/.cache/proposals/index.json');
-				return JSON.stringify({
-					proposals: [
-						{
-							id: 'r00043',
-							title: 'Make workflow assembly agnostic',
-							track: 'packages/core',
-							status: 'in-progress',
-							kind: 'refactor',
-							date: '2026-08-30',
-						},
-						{
-							id: 'x00263',
-							title: 'Close peer review loop',
-							track: 'plugins/proposals',
-							status: 'done',
-							kind: 'fix',
-							date: '2026-08-29',
-						},
-					],
-				});
-			},
+			readWorkspaceFile: async () => undefined,
 		});
 
 		expect(contribution.proposalSummaries).toHaveLength(2);
@@ -87,30 +104,29 @@ describe('proposals workflow contribution', () => {
 
 	it('counts the proposals awaiting review and points a reviewer at the queue (x00646)', async () => {
 		const contribution = await buildProposalsWorkflowContribution({
-			workspaceRoot: '/workspace',
+			workspaceRoot: workspaceWith({
+				proposals: [
+					{
+						id: 'x00001',
+						title: 'a',
+						track: 't',
+						status: 'review',
+						kind: 'fix',
+						date: '2026-09-01',
+					},
+					{
+						id: 'x00002',
+						title: 'b',
+						track: 't',
+						status: 'ready',
+						kind: 'fix',
+						date: '2026-09-02',
+					},
+				],
+			}),
 			cacheDir: '.cache',
 			corePrefix: 'delendai',
-			readWorkspaceFile: async () =>
-				JSON.stringify({
-					proposals: [
-						{
-							id: 'x00001',
-							title: 'a',
-							track: 't',
-							status: 'review',
-							kind: 'fix',
-							date: '2026-09-01',
-						},
-						{
-							id: 'x00002',
-							title: 'b',
-							track: 't',
-							status: 'ready',
-							kind: 'fix',
-							date: '2026-09-02',
-						},
-					],
-				}),
+			readWorkspaceFile: async () => undefined,
 		});
 
 		expect(contribution.summary?.detail).toBe(

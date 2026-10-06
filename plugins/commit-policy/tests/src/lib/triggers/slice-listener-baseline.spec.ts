@@ -17,7 +17,7 @@
  * did. These tests pin the distinction so it cannot be flattened again.
  */
 
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -29,6 +29,7 @@ import {
 	createSliceListener,
 	type ITriggerEvent,
 } from '../../../../src/lib/triggers/slice-listener';
+import { writeProposalDocuments } from './proposal-documents.fixture';
 
 const SLICE_TRIGGER = { kind: 'slice' as const, onStatuses: ['done'] };
 
@@ -37,8 +38,6 @@ describe('slice listener first-poll baseline', () => {
 
 	/** Write an index.json holding `count` done slices. */
 	const seedIndex = async (count: number): Promise<void> => {
-		const cacheDir = join(workspace, '.cache', 'delendai');
-		await mkdir(join(cacheDir, 'proposals'), { recursive: true });
 		const proposals = Array.from({ length: count }, (_unused, index) => ({
 			id: `p${String(index).padStart(5, '0')}`,
 			slices: [
@@ -49,10 +48,9 @@ describe('slice listener first-poll baseline', () => {
 				},
 			],
 		}));
-		await writeFile(
-			join(cacheDir, 'proposals', 'index.json'),
-			JSON.stringify({ proposals }),
-			'utf8',
+		await writeProposalDocuments(
+			join(workspace, '.cache', 'delendai', 'proposals'),
+			proposals,
 		);
 	};
 
@@ -172,19 +170,14 @@ describe('slice listener first-poll baseline', () => {
 describe('slice listener later polls', () => {
 	let workspace = '';
 	const writeStatus = async (status: string): Promise<void> => {
-		const dir = join(workspace, '.cache', 'delendai', 'proposals');
-		await mkdir(dir, { recursive: true });
-		await writeFile(
-			join(dir, 'index.json'),
-			JSON.stringify({
-				proposals: [
-					{
-						id: 'p1',
-						slices: [{ id: 'S1', status, files: ['a.ts'] }],
-					},
-				],
-			}),
-			'utf8',
+		await writeProposalDocuments(
+			join(workspace, '.cache', 'delendai', 'proposals'),
+			[
+				{
+					id: 'p00001',
+					slices: [{ id: 'S1', status, files: ['a.ts'] }],
+				},
+			],
 		);
 	};
 	/** Baseline over `ready`, flip to `done`, and report what was emitted. */
@@ -242,19 +235,14 @@ describe('slice listener delivery bounds', () => {
 	let workspace = '';
 
 	const seedOneDoneSlice = async (root: string): Promise<void> => {
-		const cacheDir = join(root, '.cache', 'delendai');
-		await mkdir(join(cacheDir, 'proposals'), { recursive: true });
-		await writeFile(
-			join(cacheDir, 'proposals', 'index.json'),
-			JSON.stringify({
-				proposals: [
-					{
-						id: 'p00001',
-						slices: [{ id: 'S1', status: 'done', files: ['a.ts'] }],
-					},
-				],
-			}),
-			'utf8',
+		await writeProposalDocuments(
+			join(root, '.cache', 'delendai', 'proposals'),
+			[
+				{
+					id: 'p00001',
+					slices: [{ id: 'S1', status: 'done', files: ['a.ts'] }],
+				},
+			],
 		);
 	};
 

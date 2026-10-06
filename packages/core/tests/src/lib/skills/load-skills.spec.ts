@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { loadSkills } from '@delendai/core/public';
+import { loadSkills } from '@delendai/core/lib/skills/load-skills';
 
 let dir: string;
 let manifestPath: string;

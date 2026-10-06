@@ -1385,10 +1385,10 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00510",
-				"title": "F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens",
+				"id": "f00509",
+				"title": "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-09-06"
 			},
@@ -1476,7 +1476,7 @@
 				"id": "f00643",
 				"title": "The startup forge and journal phases run in a real host",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-09-26"
 			},
@@ -1543,22 +1543,6 @@
 				"status": "ready",
 				"kind": "plan",
 				"date": "2026-09-07"
-			},
-			{
-				"id": "r00056",
-				"title": "SQLite storage modes and canonical proposals DB wiring",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-09-08"
-			},
-			{
-				"id": "x00541",
-				"title": "576 de los 865 exports públicos de core no tienen ningún importador en el repo y 59 no se referencian en ninguna parte fuera del paquete",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-09-10"
 			},
 			{
 				"id": "x00554",

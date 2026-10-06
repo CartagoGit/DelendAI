@@ -48,7 +48,7 @@
 	"packages/core/tests/src/lib/bootstrap/drift-tool.spec.ts": 1,
 	"packages/core/tests/src/lib/bootstrap/init-config-tool.spec.ts": 1,
 	"packages/core/tests/src/lib/bootstrap/plan-tool.spec.ts": 2,
-	"packages/core/tests/src/lib/capabilities/adversarial.spec.ts": 7,
+	"packages/core/tests/src/lib/capabilities/adversarial.spec.ts": 6,
 	"packages/core/tests/src/lib/capabilities/shim.spec.ts": 2,
 	"packages/core/tests/src/lib/capabilities/versioning.spec.ts": 1,
 	"packages/core/tests/src/lib/catalog/agent-discovery-catalog.spec.ts": 1,

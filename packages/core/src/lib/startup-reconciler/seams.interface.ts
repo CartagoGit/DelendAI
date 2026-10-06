@@ -106,6 +106,24 @@ export interface IStartupGitSeam {
 	}): Promise<IGitOutcome>;
 	/** All refs under a namespace, sorted by name. */
 	listRefs(prefix: string): Promise<readonly IObservedRef[]>;
+	/**
+	 * The commits the integration remote keeps as retired work under
+	 * `refs/<namespace>/retired/`. Best effort: offline, or with no
+	 * remote, the answer is empty and nothing is concluded from it.
+	 */
+	listRetiredTips?(
+		namespace: string,
+		integrationBranch: string,
+	): Promise<readonly string[]>;
+	/**
+	 * The coordination journal published under `refs/<namespace>/journal`
+	 * on the integration remote, at or after `sinceOccurredAt`.
+	 */
+	readJournal?(
+		namespace: string,
+		integrationBranch: string,
+		sinceOccurredAt: number | undefined,
+	): Promise<IForgeRead<readonly IJournalSourceEvent[]>>;
 	/** Resolve a ref to a SHA; undefined when it does not exist. */
 	resolveRef(name: string): Promise<string | undefined>;
 	/** Describe a work ref against the integration head. */

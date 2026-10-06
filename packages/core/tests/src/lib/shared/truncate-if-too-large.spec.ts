@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { truncateIfTooLarge, toolJsonBounded } from '@delendai/core/public';
 import {
 	DEFAULT_COMPACT_RESPONSE_BYTES,
 	DEFAULT_MAX_RESPONSE_BYTES,
 	MAX_RESPONSE_BYTES_CEILING,
-	truncateIfTooLarge,
-	toolJsonBounded,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/contracts/constants/response-byte-budget.constant';
 
 /**
  * truncate-if-too-large.spec.ts — pins the byte-budget contract for

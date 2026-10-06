@@ -51,4 +51,9 @@ export interface IProcessedEventsOptions {
 	readonly path?: string;
 	/** Prune every N adds. Default 100. */
 	readonly pruneEvery?: number;
+	/**
+	 * Most bytes the file may hold. Past it the oldest records go first,
+	 * before their TTL. Default 4 MiB.
+	 */
+	readonly maxBytes?: number;
 }

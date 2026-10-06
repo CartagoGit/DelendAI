@@ -117,6 +117,104 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S10 — A retired unit is not reported as lost
+- **Status**: review
+- **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`, `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/retired-tips.service.ts`, `packages/core/src/lib/startup-reconciler/seams.interface.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.constant.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/work-retire.service.ts`, `packages/core/src/lib/work-units/work-retired-drop.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/worktree-husks.service.ts`, `config/delendai/repair-resolutions.json`, `packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/startup-reconciler packages/core/tests/src/lib/work-units`
+- Found 2026-10-06 by the owner restarting the server: the boot came up DEGRADED with mutations blocked, on 21 `integration-evidence.ref-vanished` blockers. They were units of the 2026-10-03 swarm and of this session, retired with `work retire` and, after being read, dropped with S5. The reconciler records the checkpoint of every local unit it sees; when the ref is gone and the checkpoint is not in the integration branch it may not guess, and it did not. But a retired unit was kept on the forge, and the reconciler never looked there.
+- At boot the reconciler now lists the integration remote's `refs/<namespace>/retired/*` (best effort: offline or with no remote it lists nothing and concludes nothing). A vanished ref whose checkpoint is a retired tip is a note, `integration-evidence.checkpoint-retired`, not a blocker. Once the retired copy is dropped too, nothing keeps it, and the boot asks a person again, as it should. The spec covers both, against real repositories.
+- The 21 blockers were each checked (all landed, reconciled, or redone by another unit) and recorded as `resolved-elsewhere` in `config/delendai/repair-resolutions.json` with their reasons.
+- Found writing the spec: every hidden ref was built as `refs/${namespace}/…`, which is `refs//retired/…` in a project with no namespace; git refuses it, so retiring, keeping a husk and reserving a slice failed there outright. `namespacedRef` builds them all now.
+
+### S12 — Nothing the clone keeps points into a unit, or collides with one
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-retire.service.spec.ts && npx vitest run --project @delendai/cli packages/cli/src/lib/guard-hooks.service.spec.ts`
+- Found 2026-10-06 retiring review units: a generation is reused once its unit is gone, and `work retire` of the new `batch-all-g2` was refused because the forge already kept the old `batch-all-g2` under the same retired name, a push that is not a fast-forward. Neither may be lost, so the second is now kept beside the first, named by its commit (`<name>-<12 hex>`). The spec fails without the change.
+- Found the same night: one `guard install` run from inside a unit recorded that unit's CLI as `delendai.guard.entry` in the clone's config. When the unit landed and its worktree was removed, every hook of every worktree called a file that was gone (`Module not found …/x00875-S11/packages/cli/src/index.ts`). An entry inside a linked worktree is now recorded as its twin in the main checkout, which outlives every unit; an entry with no twin is kept as given.
+### S11 — The boot warns only of what is true
+- **Status**: review
+- **Files**: `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `delendai.config.json`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/guard-hooks.service.spec.ts`
+- Found 2026-10-06 in the same boot log as S10. `guard hooks` reported `commit-msg: absent`, although `lefthook.yml` runs the guard there. It asks as `guard pre-commit`, on purpose: `commit-msg` judges the commit `pre-commit` judges, and runs even for an empty commit, which `pre-commit` skips. The detection accepted only the hook's own name. `commit-msg` now also counts when it asks as `pre-commit`; no other hook does. And `guard install` reported every hook lefthook declares as `unsupported` — `pre-push` and `post-merge` too — even where `lefthook.yml` already runs the guard; such a hook is now `unchanged`, and the boot lists all six as guarded.
+- The same boot warned `push-automation-contradicts-policy`: this repository's `commit-policy.push.onCommit` pushed the checked-out branch, which `shared-checkout-pr` never pushes from the shared checkout, so every attempt was refused. Units reach the forge through their work ref (`persistence.autoPushAfterCommit`). `onCommit` is removed from the configuration.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S13 — A unit is published to its own pull request, whatever its generation
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- Found 2026-10-06 publishing two review packs of one agent: `batch-all-g4` tried to push into `batch-all-g1`'s pull request and was refused as not a fast-forward. `work publish` chose the target with the generation of its arguments, which defaults to 1, not with the generation of the work ref it was publishing; the second unit of an agent was sent to the first unit's pull request. The generation now comes from the work ref. The spec publishes two packs by their sessions and fails without the change.
+
+### S14 — A released proposal is not handed back to the reviewer who released it
+- **Status**: review
+- **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
+- Found 2026-10-06: I released `f00547`, which I had changed and so could not judge independently, and the very next `review next` gave it back. The release commit sits beside the claim commit in the unit, and `review next` read only the claims, so it resumed the proposal as the unit's own. What a unit holds is now what it claimed less what it released, and a proposal it released is not offered to it again; another reviewer still gets it. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S15 — No tracked file keeps the markers of an unfinished merge
+- **Status**: review
+- **Files**: `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-conflict-markers.script.spec.ts`, `package.json`, `docs/delendai/proposals/review/x00835-a-review-swarm-leaves-verdicts-that-can-be-checked-and-loses-none.md`, `docs/delendai/proposals/review/x00875-nothing-is-left-beside-the-units.md`
+- **Gate**: `bun run lint:no-conflict-markers && npx vitest run --project tools tools/scripts/lint/no-conflict-markers.script.spec.ts`
+- Found 2026-10-06: the documents of `x00835` and of this proposal reached `develop` with `<<<<<<< HEAD` and `>>>>>>>` lines in them. My batch script merged another open pull request of the same proposal into a unit, the merge stopped on a conflict, and the next step committed the tree as it was; every gate passed and the queue merged it. Markdown shows the markers as text, and nothing looked for them.
+- `lint:no-conflict-markers` refuses any tracked file with a line that starts with git's opening or closing marker (not `=======`, which is also a markdown underline), and runs first in `lint:architecture`, which CI runs. Both documents are repaired by keeping every side: each conflict was two pull requests appending different slices.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S16 — A review unit reads the integration branch of now
+- **Status**: review
+- **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
+- Found 2026-10-06: `review next` offered `x00766`, which another pack had approved and the queue had already closed into `done/`. Since S35 the queue is read from the reviewer's unit, where its own verdicts are, and a unit made before other verdicts merged still showed their proposals waiting. `review next` now merges the integration branch's remote tip into the unit before it reads; a merge that would conflict is aborted and changes nothing. Like the hydration of an idle unit, the merge runs without hooks: it brings in only what the integration branch already checked. The spec fails without the change.
+- Also seen, and left as is: a release is recorded in the unit that released, so a reviewer that opens a new unit is offered again what it released in an old one, and must release it again with its reason.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S17 — A read is not refused as a write
+- **Status**: review
+- **Files**: `packages/core/src/lib/contracts/interfaces/tool-registration.interface.ts`, `packages/core/src/lib/shared/bind-write-root.ts`, `packages/core/tests/src/lib/shared/bind-write-root.spec.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
+- Found 2026-10-06: `proposals review <id> <slice> --action=status` in the shared checkout was refused with `shared-checkout-write-refused`, so the only way to ask whether a slice had a round was to open a unit for it. The refusal is decided per tool: `proposal_review` declares `caller-checkout` because submit, approve and request_changes write, and its `status` read was refused with them. A registration now declares `readsOnly(input)`, the calls that write nothing, and the binding never refuses those in the shared checkout; `proposal_review` answers it for `status`. Its writes are refused as before, which the spec pins in the same call sequence.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S18 — A spent publication is retired, not deleted
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- Found 2026-10-06: `work doctor` reported a landed publication (`publications-hold-work`) with the remedy `git push origin --delete <ref>`, the one clean-up S10 and `work retire` exist to replace: a bare delete keeps no tip and records no reason, and the reconciler then has nothing to tell a retired ref from a lost one. Every other invariant already names `work retire`. The remedy now does too, and the spec pins that it names retiring and no `--delete`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S19 — A reviewer is kept out of the slice it judged, not the proposal
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
+- Found 2026-10-06: `x00835` S39 was committed to its work ref on 2026-10-05 and never published; the queue's doctor reported the ref (`no-remote-work-refs`, silent 9 h) and the queue run went red on it. Its implementer could not finish it: `work enter` refused every implement unit on x00835 because the same agent had approved a co-author's S18, and the rule looked for the agent's name anywhere in the document. Independence is per slice, the way the verdict enforces it (reviewer ≠ implementer of that slice). The refusal now reads the section of the slice being entered (`sliceSectionOf`); entering the whole proposal (`all`) still reads the whole document. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S20 — A verdict written through the CLI is committed, or says why not
+- **Status**: pending
+- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/shared`
+- Found 2026-10-06, not yet explained: `proposals review <id> <slice> --action=submit --workspace=<unit>` writes the slice's review lines and leaves the document staged and uncommitted, most of the time (x00875 S17, S18, S19; f00643 S2) but not always (x00875 S15, f00509 S1 committed with the `chore(delendai): … submit` subject). Established: the unit's branch resolves (`unitBranchOf`), the path is staged, so `git add` ran and `git commit` failed; the same `withCallWritesCommitted` run in-process on the same change commits. The note it writes on a failed commit reaches neither the CLI's output nor its stderr, so the caller learns nothing.
+- acceptance:
+  - "The cause is reproduced by a spec that drives the CLI against a unit, and fixed."
+  - "A commit that fails is reported in what the CLI prints, not only on the server's stderr."
+
+
+### S21 — A slice not yet integrated has no reviewer
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
+- Found 2026-10-06, right after S19 landed: `x00835` S39 was still refused. Its block exists only in the unlanded unit, so the integrated document has no S39 section, and S19 read the whole document for a slice it lacks. A slice the integrated document does not have yet was written in a unit that has not landed and nobody has judged it: its section is now empty, and its author goes in. The whole proposal (`all`) still reads the whole document.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.

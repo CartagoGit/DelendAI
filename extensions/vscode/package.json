@@ -23,7 +23,8 @@
 	],
 	"activationEvents": [
 		"onStartupFinished",
-		"workspaceContains:**/delendai.config.json"
+		"workspaceContains:**/delendai.config.json",
+		"onCommand:delendai.adopt"
 	],
 	"contributes": {
 		"viewsContainers": {
@@ -68,6 +69,11 @@
 			]
 		},
 		"commands": [
+			{
+				"command": "delendai.adopt",
+				"title": "Adopt This Project",
+				"category": "DelendAI"
+			},
 			{
 				"command": "delendai.openAgentCatalog",
 				"title": "Open Agent Catalog",

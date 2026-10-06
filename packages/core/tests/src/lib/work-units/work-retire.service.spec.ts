@@ -275,6 +275,43 @@ describe('work retire', () => {
 		expect(retiredOf((await reap('--apply')).data)).toEqual([]);
 	});
 
+	it('keeps a reused name beside the unit retired under it before', async () => {
+		const { root, git, forge, tip } = repository();
+		expect(
+			(
+				await retire(
+					root,
+					`--ref=${PUBLISHED}`,
+					'--reason=first',
+					'--unowned',
+				)
+			).code,
+		).toBe(0);
+		// The generation is free again, and another unit takes the name.
+		git('switch', '-q', '-c', WORK);
+		writeFileSync(join(root, 'verdict.md'), 'changes requested\n');
+		git('add', '-A');
+		git('commit', '-q', '-m', 'docs(review): another verdict');
+		const second = git('rev-parse', 'HEAD');
+		git('push', '-q', 'origin', `${WORK}:${WORK}`);
+		git('switch', '-q', 'develop');
+
+		const again = await retire(
+			root,
+			`--ref=${WORK}`,
+			'--reason=second',
+			'--unowned',
+		);
+
+		expect(again.code).toBe(0);
+		const kept = forge(
+			'for-each-ref',
+			'--format=%(objectname)',
+			'refs/delendai/retired',
+		).split('\n');
+		expect(kept.sort()).toEqual([tip, second].sort());
+	});
+
 	it('removes nothing when the tip cannot be kept on the forge', async () => {
 		const { root, git, forge } = repository();
 		git('remote', 'set-url', '--push', 'origin', join(root, 'nowhere.git'));

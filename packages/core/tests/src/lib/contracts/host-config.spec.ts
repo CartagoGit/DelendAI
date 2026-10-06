@@ -1,24 +1,25 @@
 import { describe, expect, it } from 'vitest';
 
 import type {
-	IHostContent,
-	IHostIdentity,
 	IHostObservability,
-	IHostPaths,
-	IHostRegistrations,
 	IDelendaiHostConfig,
 } from '@delendai/core/public';
 import type {
-	ICorePaths,
+	IHostContent,
+	IHostIdentity,
+	IHostPaths,
+	IHostRegistrations,
+} from '@delendai/core/lib/contracts/interfaces/host-config.interface';
+import type {
 	IKnowledgeEntry,
 	IDelendaiProjectMetadata,
 	IPromptRegistration,
 	IResourceRegistration,
-	IStatusCollector,
 	IToolRegistration,
 	IValidationMatrix,
 	IWorkspacePathProvider,
 } from '@delendai/core/public';
+import type { ICorePaths, IStatusCollector } from '@delendai/core/contracts';
 
 /**
  * Solid-ISP: these tests pin the segregated sub-interfaces of

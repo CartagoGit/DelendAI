@@ -8,7 +8,8 @@
  *
  * The answer is in the document. Every slice a reviewer claimed or judged
  * carries its name, and the document on the integration branch is the one
- * every agent sees.
+ * every agent sees. The refusal is for the slice it judged: an agent that
+ * reviewed a co-author's slice still finishes its own.
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
@@ -47,6 +48,34 @@ export const reviewerNamed = (
 	return reviewersIn(document).find(
 		(reviewer) => lettersOf(reviewer) === letters,
 	);
+};
+
+/** A slice heading, `### S3 — …`, and the id it names. */
+const SLICE_HEADING = /^###\s+(?<slice>\S+)/u;
+
+/**
+ * The part of a proposal document that belongs to `slice`: from its
+ * heading to the next heading of the same or a higher level. The whole
+ * proposal (`all`, or no slice) answers with the whole document. A slice
+ * the integrated document does not have yet answers with nothing: it was
+ * written in a unit that has not landed, and nobody has judged it.
+ */
+export const sliceSectionOf = (
+	document: string,
+	slice: string | undefined,
+): string => {
+	if (slice === undefined || slice === 'all') return document;
+	const lines = document.split('\n');
+	const start = lines.findIndex(
+		(line) => SLICE_HEADING.exec(line)?.groups?.slice === slice,
+	);
+	if (start === -1) return '';
+	const after = lines
+		.slice(start + 1)
+		.findIndex((line) => /^#{1,3}\s/u.test(line));
+	return lines
+		.slice(start, after === -1 ? undefined : start + 1 + after)
+		.join('\n');
 };
 
 /** What a reviewer entering an implementation of its own review is told. */
@@ -116,8 +145,16 @@ export const reviewedByEntrant = async (
 		docsDir: await readWorkspaceDocsDir(root),
 		proposal,
 	});
+	// Independence is per slice, the way the verdict enforces it: the
+	// reviewer of S1 may not write S1, and may still finish the slice it
+	// implemented itself. Entering the whole proposal answers for all.
 	const reviewer =
-		document === undefined ? undefined : reviewerNamed(document, agent);
+		document === undefined
+			? undefined
+			: reviewerNamed(
+					sliceSectionOf(document, scalarArg(args, 'slice')),
+					agent,
+				);
 	return reviewer === undefined
 		? undefined
 		: refused(
