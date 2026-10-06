@@ -16,6 +16,8 @@ related: [q00011, r00041]
 last-transition-id: 982a690d-7910-4a5c-804c-21d1dd259175
 last-correlation-id: 982a690d-7910-4a5c-804c-21d1dd259175
 last-transition-from: in-progress
+shipped-in:
+  - "f2b416c4e241"
 ---
 
 # r00040 — Migrar el barrel de 288 exports a los subpaths del core que ya existen
@@ -127,7 +129,7 @@ public/index.ts queda como:
 
 ### S1 — Clasificar los 288 exports por nivel de estabilidad y subpath destino
 
-- **Status**: done (verified 2026-09-02 — see Notes; barrel annotation comments not added, report+spec do the classification)
+- **Status**: done
 - **Files**:
     - `packages/core/src/public/index.ts` (anotar cada export con un
       comentario `@stable <subpath>` / `@experimental` / `@internal`)
@@ -136,6 +138,11 @@ public/index.ts queda como:
     - `packages/core/tests/src/public/surface-classification.spec.ts` (nuevo)
 - **Gate**: `bun tools/scripts/report/core-public-surface-report.script.ts`
 - shipped-in: `d3eaef32a`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at f2b416c4e241, validate exit 0, tests 4/4 — Verified the current delivered barrel state at merge commit f2b416c4e241. The classification report exits 0 and the focused surface-classification spec still passes 4/4, so the classification behavior remains intact in the latest delivery.
+- review-attribution: claude-opus-5-5 from commit f2b416c4e241 names refs/heads/delendai/wip/claude-opus-5-5/implement/r00040-S2-g1/cli-only-exports-move-to-the-cli-entry (f2b416c4e24193d153c563053b58212d0f4a479e), opened by gpt-5.4
 
 ### S2 — Migrar el dominio de mayor volumen a su subpath (o a uno nuevo si no encaja)
 
