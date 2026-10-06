@@ -194,6 +194,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S17 — A merge leaves the proposal-id counter level with what it brought
+- **Status**: in-progress
+- **Files**: `lefthook.yml`
+- **Gate**: type
+- acceptance:
+  - "After a merge that brings in a proposal created elsewhere, `lint:proposal-id-drift` passes in the merging worktree without anyone reseeding the counter by hand."
+- Delivered: twice on 2026-10-07 a unit's publish was refused by `check-proposal-id-drift` (x00878, then f00756 from another host): the counter is a cache in the clone's common directory, and nothing moved it when a merge brought ids it had not handed out. Since x00868 the allocator takes the highest of the files in every worktree, the forge's reservations and the cache, so a lagging cache hands out no taken id; it only failed the gate. The post-merge hook now reseeds it (`sync-proposal-counters`, which only raises), in the shared checkout and in every unit that merges.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
