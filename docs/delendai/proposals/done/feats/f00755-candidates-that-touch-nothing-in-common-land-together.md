@@ -2,15 +2,17 @@
 id: f00755
 title: "Candidates that touch nothing in common land together"
 kind: feat
-status: review
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-29
 priority: P1
 related: [x00556]
-last-transition-id: 5302b5da-2662-43e4-bd3b-9e45971a7c30
-last-correlation-id: 5302b5da-2662-43e4-bd3b-9e45971a7c30
-last-transition-from: in-progress
+last-transition-id: a5f88e51-f192-42a4-949f-6f76cf22d318
+last-correlation-id: a5f88e51-f192-42a4-949f-6f76cf22d318
+last-transition-from: review
+shipped-in:
+  - "5322de8e5447d45a7c18924135efa03201dd88de"
 ---
 
 # f00755 — Candidates that touch nothing in common land together
@@ -64,7 +66,7 @@ not require it (`develop` has `strict: false`); the queue did.
 
 ### S1 — The queue lands every independent candidate
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/independent-candidates.spec.ts tools/scripts/forge/queue-acceptance.spec.ts`
 - **Files**:
   - `tools/scripts/forge/independent-candidates.ts`
@@ -79,9 +81,11 @@ not require it (`develop` has `strict: false`); the queue did.
   - `tools/scripts/ci/test-zones.script.ts`
 - shipped-in: `230e2af9c73b`
 - review-attribution: unrecorded — no delivering commit was named for f00755 S1; independence could not be verified, opened by gpt-5.4
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
 - review-log: requested_changes by gpt-5.4 — El gate declarado pasa 6/6, pero branchesLandingAsTheyAre calcula integrationSha con rev-parse origin/<integration> antes de hacer fetch y luego decide con ese SHA obsoleto, mientras keep-the-queue-moving decide con certification.sha actual. Si la ref remota local está atrasada, el owner machine puede tratar una candidata como level y no traerla adelante aunque la integración ya cambió zonas/archivos superpuestos. Reproducible en tools/scripts/forge/queue-acceptance.ts: branchesLandingAsTheyAre fija integrationSha antes del fetch y queueAcceptance sólo hace fetch después.
+- review-log: approved by minimax-3 — verified at 5322de8e5447, validate exit 0, tests 8/8 — Delivered by PR #764 (merge 5322de8e5447) on top of 230e2af9c73b. The defect gpt-5.4 recorded on 2026-10-04 is repaired: branchesLandingAsTheyAre now fetches the integration ref BEFORE revParse resolves its SHA, and queue-acceptance.spec.ts carries two regression tests for it (a candidate level with the integration branch lands as it is; it does not once the integration branch moved in the same file although this machine had not fetched). Declared gate green 8/8 (independent-candidates.spec.ts + queue-acceptance.spec.ts): four disjoint candidates accepted level-or-not, a candidate the integration branch changed under it brought forward, an overlapping candidate held even when level, and a change reaching every zone never landed beside another. The third acceptance line cites the 2026-09-29 scenario (#649 level lands, #650 brought forward) which is no longer reproducible as a literal fixture; the mechanism it names is what the level-vs-behind test asserts.
 
 ## dependency graph
 
