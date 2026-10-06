@@ -2,13 +2,13 @@
 id: x00770
 title: "Diagnostics and setup follow the configured profile"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-30
-last-transition-id: 1874e928-2c4c-442c-9cf4-333b2d45afc0
-last-correlation-id: 1874e928-2c4c-442c-9cf4-333b2d45afc0
-last-transition-from: in-progress
+last-transition-id: 34f105b8-6295-46b2-ba35-e2ea103b2570
+last-correlation-id: 34f105b8-6295-46b2-ba35-e2ea103b2570
+last-transition-from: review
 shipped-in:
   - "aa99eb781d2f"
 ---
