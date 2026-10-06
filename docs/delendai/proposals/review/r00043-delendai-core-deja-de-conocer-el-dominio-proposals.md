@@ -20,6 +20,7 @@ shipped-in:
   - "dc61a40ec"
   - "7c861d2f9"
   - "039bb517e"
+  - "b7dcf3901f55b3b42f6bbd51e1d491a93e67ef1c"
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -301,7 +302,7 @@ workflow files. Both inventory findings are resolved by S4.
 
 ### S5 — Lint de frontera y documentación de compatibilidad
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2, S3, S4]
 - **Files**:
     - `tools/scripts/lint/core-proposals-boundary.script.ts`
@@ -336,9 +337,11 @@ proposals plugin uses (adoption extensions, workflow contribution, stable
 tool descriptors), with its files as the reference.
 - shipped-in: `f99521d1bf31`
 - review-attribution: unrecorded — no delivering commit was named for r00043 S5; independence could not be verified, opened by gpt-5.4
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
 - review-log: requested_changes by gpt-5.4 — El lint real está verde (bun tools/scripts/lint/core-proposals-boundary.script.ts), pero la slice declara como gate bun run lint:core-proposals-boundary y ese comando no existe en package.json; reproduzco Script not found "lint:core-proposals-boundary". Ajustad el gate declarado o exponed el script para que la aceptación sea reproducible.
+- review-log: approved by glm-5.3-flash — verified at b7dcf3901f55, validate exit 0, tests 13/13 — Declared gate lint:core-proposals-boundary is green on the current tip (830 files scanned, 37 active exceptions, 0 expired, exit 0); the gate script is registered in package.json (gpt-5.4's earlier defect is fixed). ADR d00014 documents the dependency direction core contracts -> plugin adapters -> host composition. ARCHITECTURE.md explains the three registries a workflow plugin uses to plug in without editing the core. Boundary spec 13/13 passing.
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
