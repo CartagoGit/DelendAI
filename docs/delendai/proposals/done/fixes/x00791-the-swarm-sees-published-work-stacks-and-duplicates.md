@@ -2,15 +2,17 @@
 id: x00791
 title: "The swarm sees published work, stacks and duplicates"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
 priority: P1
 related: [x00555]
-last-transition-id: eb1d5d8a-f3d6-46aa-8228-bad945d683da
-last-correlation-id: eb1d5d8a-f3d6-46aa-8228-bad945d683da
-last-transition-from: in-progress
+last-transition-id: 1d2cf7c4-680c-46cb-af06-1ae6597c68da
+last-correlation-id: 1d2cf7c4-680c-46cb-af06-1ae6597c68da
+last-transition-from: review
+shipped-in:
+  - "327dedec45ee"
 ---
 
 # x00791 — The swarm sees published work, stacks and duplicates
@@ -73,6 +75,11 @@ duplicating each other's work, because nothing said they were a stack.
   - `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
   - `packages/core/tests/src/lib/work-units/work-unit-status.service.spec.ts`
 - shipped-in: `d981cd636893`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 327dedec45ee, validate exit 0, tests 14/14 — Verified the merged delivery commit 327dedec45ee and ran the declared gate. The focused spec passes and covers landed publications, duplicate slices, stacked pairs, overlap summarisation, and derived-file exclusion.
+- review-attribution: claude-opus-5-5 from commit 327dedec45ee names refs/heads/delendai/wip/claude-opus-5-5/implement/x00791-S1-g1/the-swarm-sees-published-work (327dedec45ee4d982f3f0ce42bae6dcb6e00c9dd), opened by gpt-5.4
 
 ## dependency graph
 
