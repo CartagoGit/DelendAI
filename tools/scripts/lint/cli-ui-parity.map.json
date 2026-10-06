@@ -216,6 +216,9 @@
 			"cli": "usage-tracking clear",
 			"note": "both surfaces confirm: the CLI needs --confirm, the command shows a modal"
 		},
+		"delendai.adopt": {
+			"cli": "adopt"
+		},
 		"delendai.showOverview": {
 			"cli": "overview"
 		},
