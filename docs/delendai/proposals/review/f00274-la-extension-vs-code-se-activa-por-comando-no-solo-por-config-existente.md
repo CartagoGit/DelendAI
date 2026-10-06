@@ -114,7 +114,7 @@ extension.ts (activate):
 
 ### S2 — The adopt command asks for a dry-run assessment and shows the plan
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `extensions/vscode/src/commands/adopt.ts`
     - `extensions/vscode/src/test/adopt-command.spec.ts`
@@ -123,8 +123,10 @@ extension.ts (activate):
   command calls `delendai_adopt_project` with `{ analyze: true }` only (never
   `write`), renders the result in a webview and reports failures through
   `showCommandError`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 23915c3db38c, validate exit 0, tests 20/20 — Verified at 23915c3db38c with the S1 run. extensions/vscode/src/commands/adopt.ts exists, invokes ADOPT_PROJECT_TOOL with { analyze: true } and never with 'write' (line 20/22), renders the result through window.createWebviewPanel (:23) and reports failures via showCommandError (:31) - exactly the dry-run-only contract the slice states. adopt-command.spec.ts is green in the run (5 files / 20 tests, exit 0).
 
 ### S3 — Registration of the remaining commands with and without a config
 
