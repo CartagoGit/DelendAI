@@ -101,6 +101,11 @@ export interface IProposalIndexEntry {
 	 * re-reading the frontmatter.
 	 */
 	readonly status?: string;
+	/** What the projection knows besides the status, when it knows it. */
+	readonly title?: string;
+	readonly track?: string;
+	readonly kind?: string;
+	readonly date?: string;
 }
 
 /**
