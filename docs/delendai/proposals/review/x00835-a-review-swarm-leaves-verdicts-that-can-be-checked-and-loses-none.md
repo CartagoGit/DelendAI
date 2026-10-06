@@ -15,6 +15,7 @@ shipped-in:
   - "f83c85addc9e"
   - "70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77"
   - "6f63a52e168e57203553e0858b508c432998ef0e"
+  - "b0f8d072ad9d6d9aff05e76c270ccef1b0218283"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -401,7 +402,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S3 — One model, one identity
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/agent-alias.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/agent-alias.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/agent-alias.service.spec.ts`
 - An agent id that differs from an identity already present in the refs only
@@ -411,6 +412,11 @@ the good verdicts' shape (P1) becomes the required shape.
 - An identity whose refs belong to another orchestrator's session (x00850's
   lease) is refused for review units.
 - shipped-in: `b0f8d072ad9d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at b0f8d072ad9d, validate exit 0, tests 295/295 — Deliver merge b0f8d072ad9d6d9aff05e76c270ccef1b0218283 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit b0f8d072ad9d names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (b0f8d072ad9d6d9aff05e76c270ccef1b0218283), opened by minimax-3
 
 ### S4 — A review pack carries only its own verdicts
 
