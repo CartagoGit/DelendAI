@@ -19,6 +19,10 @@ import {
 	readGit,
 	refused,
 } from './work-unit-shared.service';
+import { namespacedRef } from './namespaced-ref.helper';
+
+/** How much of a commit names a retired tip kept beside another. */
+const SHORT_COMMIT_LENGTH = 12;
 
 /** The caller's word that a unit with no lease is not somebody's. */
 const assertsUnowned = (args: readonly string[]): boolean =>
@@ -182,13 +186,25 @@ export const retired = async (
 			...(uncommitted === undefined ? [] : [uncommitted]),
 		]),
 	];
-	const kept = distinct.map((commit, index) => ({
-		ref:
+	// A generation is reused once its unit is gone, so the forge may
+	// already keep another unit's tip under this name: that one stays, and
+	// this one is kept beside it, named by its commit.
+	const onForge = (ref: string): string | undefined =>
+		readGit(root, ['ls-remote', remote, ref])?.split('\t')[0] || undefined;
+	const kept = distinct.map((commit, index) => {
+		const named =
 			index === 0
 				? plan.retiredRef
-				: `${plan.retiredRef}-${String(index + 1)}`,
-		commit,
-	}));
+				: `${plan.retiredRef}-${String(index + 1)}`;
+		const held = onForge(named);
+		return {
+			ref:
+				held === undefined || held === commit
+					? named
+					: `${named}-${commit.slice(0, SHORT_COMMIT_LENGTH)}`,
+			commit,
+		};
+	});
 	for (const each of kept) {
 		if (
 			readGit(root, ['update-ref', each.ref, each.commit]) === undefined
@@ -308,7 +324,7 @@ export const retiredListed = async (
 	const { policy } = opened;
 	const root = mainWorktreeOf(opened.root);
 	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
-	const prefix = `refs/${policy.branches.namespacePrefix}/retired/`;
+	const prefix = `${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`;
 	const listed = readGit(root, ['ls-remote', remote, `${prefix}*`]);
 	if (listed === undefined) {
 		return refused(

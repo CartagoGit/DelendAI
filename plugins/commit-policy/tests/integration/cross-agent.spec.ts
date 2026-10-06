@@ -14,6 +14,7 @@ import {
 } from '@delendai/commit-policy/lib/triggers/slice-listener';
 
 import { createTempGitRepo, type ITempGitRepo } from './_fixtures/git-tmp';
+import { writeProposalDocuments } from '../src/lib/triggers/proposal-documents.fixture';
 
 type SliceSpec = {
 	readonly id: string;
@@ -101,11 +102,7 @@ const writeProposalIndex = async (
 	repo: ITempGitRepo,
 	proposals: readonly ProposalSpec[],
 ): Promise<void> => {
-	await writeFile(
-		join(repo.cwd, 'proposals', 'index.json'),
-		`${JSON.stringify({ proposals }, null, 2)}\n`,
-		'utf8',
-	);
+	await writeProposalDocuments(join(repo.cwd, 'proposals'), proposals);
 };
 
 const readCommitFiles = async (
@@ -205,7 +202,7 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 		const { result, snapshot } = await runSliceCommit(
 			repo,
 			'b.ts',
-			'p-b',
+			'p00002',
 			'S1',
 		);
 
@@ -233,7 +230,7 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 		const { result, snapshot } = await runSliceCommit(
 			repo,
 			'b.ts',
-			'p-b',
+			'p00002',
 			'S1',
 		);
 
@@ -260,11 +257,11 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 
 		await writeProposalIndex(repo, [
 			{
-				id: 'p-a',
+				id: 'p00001',
 				slices: [{ id: 'S1', status: 'pending', files: ['a.ts'] }],
 			},
 			{
-				id: 'p-b',
+				id: 'p00002',
 				slices: [{ id: 'S1', status: 'pending', files: ['b.ts'] }],
 			},
 		]);
@@ -277,11 +274,11 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 
 		await writeProposalIndex(repo, [
 			{
-				id: 'p-a',
+				id: 'p00001',
 				slices: [{ id: 'S1', status: 'pending', files: ['a.ts'] }],
 			},
 			{
-				id: 'p-b',
+				id: 'p00002',
 				slices: [{ id: 'S1', status: 'done', files: ['b.ts'] }],
 			},
 		]);
@@ -300,11 +297,11 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 		const headBeforeA = await repo.readHead();
 		await writeProposalIndex(repo, [
 			{
-				id: 'p-a',
+				id: 'p00001',
 				slices: [{ id: 'S1', status: 'done', files: ['a.ts'] }],
 			},
 			{
-				id: 'p-b',
+				id: 'p00002',
 				slices: [{ id: 'S1', status: 'done', files: ['b.ts'] }],
 			},
 		]);
@@ -321,7 +318,8 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 			    "a.ts",
 			  ],
 			  "statusAfter": [
-			    "?? proposals/index.json",
+			    "?? proposals/in-progress/p00001-fixture.md",
+			    "?? proposals/in-progress/p00002-fixture.md",
 			    "A  a.ts",
 			  ],
 			}
@@ -329,10 +327,10 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 		expect(headAfterA).not.toBe(headBeforeA);
 		expect(await readCommitFiles(repo, headAfterA)).toEqual(['a.ts']);
 		expect(deliveredA.map((event) => event.proposalId)).toEqual([
-			'p-a',
-			'p-b',
+			'p00001',
+			'p00002',
 		]);
-		expect(deliveredB.map((event) => event.proposalId)).toEqual(['p-b']);
+		expect(deliveredB.map((event) => event.proposalId)).toEqual(['p00002']);
 
 		a.listener.stop();
 		b.listener.stop();
@@ -347,7 +345,7 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 
 		await writeProposalIndex(repo, [
 			{
-				id: 'p-b',
+				id: 'p00002',
 				slices: [{ id: 'S1', status: 'pending', files: ['b.ts'] }],
 			},
 		]);
@@ -360,7 +358,7 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 		await writeRepoFile(repo, 'b.ts', 'export const b = 1;\n');
 		await writeProposalIndex(repo, [
 			{
-				id: 'p-b',
+				id: 'p00002',
 				slices: [{ id: 'S1', status: 'done', files: ['b.ts'] }],
 			},
 		]);
@@ -386,14 +384,14 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 		const [resultA, resultB] = await Promise.all([
 			engineA.handle({
 				kind: 'slice',
-				proposalId: 'p-a',
+				proposalId: 'p00001',
 				sliceId: 'S1',
 				files: ['a.ts'],
 				eventId: 'evt-a',
 			}),
 			engineB.handle({
 				kind: 'slice',
-				proposalId: 'p-b',
+				proposalId: 'p00002',
 				sliceId: 'S1',
 				files: ['b.ts'],
 				eventId: 'evt-b',

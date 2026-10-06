@@ -98,10 +98,24 @@ const contextFor = (
 			if (tool.endsWith('_review_claim')) {
 				// The plugin's review_claim, as its own spec pins it: a
 				// claim commit in the checkout the call names.
-				const { proposalId, checkout } = args as {
+				const { proposalId, checkout, release } = args as {
 					proposalId: string;
 					checkout: string;
+					release?: string;
 				};
+				if (release !== undefined) {
+					git(
+						checkout,
+						'commit',
+						'--allow-empty',
+						'-q',
+						'-m',
+						`chore(review): release ${proposalId}`,
+						'--trailer',
+						`Releases: ${proposalId}`,
+					);
+					return { ok: true, proposalId, released: true } as T;
+				}
 				git(
 					checkout,
 					'commit',
@@ -135,6 +149,35 @@ const claimsIn = (worktree: string): string =>
 		.join('\n');
 
 describe('delendai review', () => {
+	it('offers another proposal after one was released, not the same one again', async () => {
+		const root = repo();
+		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
+		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			proposal: string;
+			session: string;
+		};
+		expect(first.proposal).toBe('x00001');
+
+		await run(
+			ctx,
+			'release',
+			'x00001',
+			'--agent=minimax-m3',
+			`--session=${first.session}`,
+			'--note=cannot run its gate here',
+		);
+		const second = (
+			await run(
+				ctx,
+				'next',
+				'--agent=minimax-m3',
+				`--session=${first.session}`,
+			)
+		).data as { proposal: string };
+
+		expect(second.proposal).toBe('x00002');
+	});
+
 	it('enters the unit, claims the first free proposal, and says how to answer', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [

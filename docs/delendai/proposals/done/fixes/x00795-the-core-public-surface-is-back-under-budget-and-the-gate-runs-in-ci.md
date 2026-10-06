@@ -2,7 +2,7 @@
 id: x00795
 title: "The core public surface is back under budget and the gate runs in CI"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
@@ -11,9 +11,11 @@ related: [x00644, x00541, x00672]
 tags:
     - gates
     - public-surface
-last-transition-id: d5f0b4a3-2e10-493a-a830-7cf7e85a506f
-last-correlation-id: d5f0b4a3-2e10-493a-a830-7cf7e85a506f
-last-transition-from: in-progress
+last-transition-id: 7a674d62-529d-47cd-acb0-dc12ca33d199
+last-correlation-id: 7a674d62-529d-47cd-acb0-dc12ca33d199
+last-transition-from: review
+shipped-in:
+  - "8bbbcf896"
 ---
 
 # x00795 — The core public surface is back under budget and the gate runs in CI
@@ -41,7 +43,7 @@ it as an accepted unreachable lint in its baseline, so CI never saw it.
 
 ### S1 — Move host-only exports to the cli entry, drop restated constants, wire the gate
 
-- **Status**: ready
+- **Status**: done
 - **Gate**: `bun run lint:core-public-surface-budget && bun run lint:core-public-consumers && bun run lint:lints-reach-ci`
 - **Files**:
   - `packages/core/src/public/index.ts`
@@ -60,9 +62,11 @@ it as an accepted unreachable lint in its baseline, so CI never saw it.
   - "The barrel exports at most 645 symbols, with the budget unchanged."
   - "createStaleRuntimeWatch and SHARED_CHECKOUT_WRITE_REFUSED are read from @delendai/core/cli by the host and the verify script."
   - "lint:core-public-surface-budget is chained into lint:architecture and absent from the lints-reach-ci baseline."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `8bbbcf896fa1`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 8bbbcf896, validate exit 0, tests 39/39 — Delivered by #721 (merge 8bbbcf896). verify-probes 22/22, forge release-target-shapes 12/12, git release-target-shapes 5/5; the monorepo typecheck passes on develop.
 
 ## acceptance
 

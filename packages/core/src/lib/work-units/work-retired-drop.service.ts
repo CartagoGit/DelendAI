@@ -21,6 +21,7 @@ import {
 	readGit,
 	refused,
 } from './work-unit-shared.service';
+import { namespacedRef } from './namespaced-ref.helper';
 
 /**
  * `work retired --drop=<unit> --reason=<why>` — remove retired work from
@@ -36,7 +37,7 @@ export const retiredDropped = async (
 	const { policy } = opened;
 	const root = mainWorktreeOf(opened.root);
 	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
-	const prefix = `refs/${policy.branches.namespacePrefix}/retired/`;
+	const prefix = `${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`;
 	const unit = scalarArg(args, 'drop') ?? '';
 	const reason = scalarArg(args, 'reason') ?? '';
 	if (unit.length === 0 || reason.trim().length === 0) {

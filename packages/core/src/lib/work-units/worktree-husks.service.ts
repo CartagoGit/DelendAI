@@ -31,6 +31,7 @@ import {
 	HUSK_SEARCH_DEPTH,
 } from './units-directory.constant';
 import { readGit } from './work-unit-shared.service';
+import { namespacedRef } from './namespaced-ref.helper';
 
 const SKIPPED = new Set(['node_modules', '.git']);
 
@@ -284,7 +285,7 @@ export const reapHusks = async (input: {
 						// both a ref and the folder of another.
 						`${husk.name}--${basename(checkout)}`;
 			keep.push({
-				ref: `refs/${input.namespace}/retired/husk/${name}`,
+				ref: namespacedRef(input.namespace, 'retired', 'husk', name),
 				commit,
 			});
 		}
