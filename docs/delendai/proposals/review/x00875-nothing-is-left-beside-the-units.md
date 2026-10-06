@@ -285,6 +285,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S29 — A close pass supersedes the one it built on
+- **Status**: review
+- **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`
+- **Gate**: `npx vitest run tools/scripts/proposals/close-approved-proposals.script.spec.ts`
+- Found 2026-10-06, right after S27 landed: the closer had two pull requests open closing the same five proposals (#846 from `batch-all-g2`, #848 from `batch-all-g4`). Each pass merges the open publication into its unit and publishes; under one reused generation that updated the same pull request, and with a generation per unit (S27) it opened a new one and left the old beside it. A pass with nothing new to close also republished, only to bring the open one level with the integration branch, which is the candidates' refresh's job. Now a pass publishes only when it closed something, and then retires the publication it merged (its tip kept, its pull request closed with the reason). #846 was retired by hand as superseded by #848, which contains it. Seen again before it landed: passes went on publishing beside each other (g15, g20, g21, g22 on top of g4), so a pass now merges every open publication of the closer, not the first, and retires all of them once its own is published. The four superseded ones were retired by hand for #866, which carries their closes. And none of them could ever land: `closed-with-independent-approval` refuses a review pack that changes proposals it did not claim, and the closer's close commit claimed nothing, so every pass's pull request was red in `lint-governance` and x00770, x00799, x00868, x00870 and x00873 stayed in review. The close commit now carries a `Claims:` trailer for each proposal it closes.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.

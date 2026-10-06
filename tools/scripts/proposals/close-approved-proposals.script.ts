@@ -335,19 +335,23 @@ const main = (): number => {
 		// brings it level with the integration branch; built beside it,
 		// every pass closed the same proposals again and could not push
 		// (x00710), and a red pull request no author moved sat forever.
-		const existing = ownPublications(
+		// Every one of its open publications, not the first: passes that
+		// published beside each other left four pull requests open, each
+		// closing the same proposals.
+		const open = ownPublications(
 			tryRun('git', ['ls-remote', '--heads', 'origin'], root) ?? '',
 			branches.publicationRefPrefix,
-		)[0];
-		if (existing !== undefined) {
-			run('git', ['fetch', '--quiet', 'origin', existing.ref], path);
+		);
+		const existing = open[0];
+		for (const publication of open) {
+			run('git', ['fetch', '--quiet', 'origin', publication.ref], path);
 			if (
 				tryRun('git', ['merge', '--no-edit', 'FETCH_HEAD'], path) ===
 				undefined
 			) {
 				tryRun('git', ['merge', '--abort'], path);
 				console.log(
-					`close-approved-proposals: ${existing.ref} does not merge with ${branches.integration}; a person resolves it.`,
+					`close-approved-proposals: ${publication.ref} does not merge with ${branches.integration}; a person resolves it.`,
 				);
 				return 0;
 			}
@@ -394,16 +398,21 @@ const main = (): number => {
 					`docs(proposals): close ${String(closed.length)} independently approved proposal(s)`,
 					'-m',
 					`${closed.join(', ')}: every finished slice approved by someone other than its implementer; closed by the owner machine after the reviewer's own close was refused.`,
+					// A review pack changes only what it claimed: CI refuses
+					// one that does not, and every close pass was refused for
+					// changing five proposals it had claimed nowhere.
+					...closed.flatMap((id) => ['--trailer', `Claims: ${id}`]),
 				],
 				path,
 			);
 		}
-		const moved =
-			existing !== undefined &&
-			run('git', ['rev-parse', 'HEAD'], path) !== existing.sha;
-		if (closed.length === 0 && !moved) {
+		// Bringing an open publication level with the integration branch is
+		// the candidates' refresh, not a close pass: published from a unit
+		// of its own, it opened a pull request per pass beside the one it
+		// was bringing level.
+		if (closed.length === 0) {
 			console.log(
-				`close-approved-proposals: nothing new to close; ${existing === undefined ? 'no pull request is open' : `${existing.ref} is level`}.`,
+				`close-approved-proposals: nothing new to close; ${existing === undefined ? 'no pull request is open' : `${existing.ref} stays open`}.`,
 			);
 			return 0;
 		}
@@ -420,10 +429,26 @@ const main = (): number => {
 			],
 			root,
 		);
+		// The pass merged its open publications before closing more, so its
+		// own carries everything they did: they are retired, their tips
+		// kept, instead of left open beside it.
+		for (const publication of open) {
+			tryRun(
+				'bun',
+				[
+					...cli,
+					'work',
+					'retire',
+					`--ref=${publication.ref.replace(/^refs\/heads\//u, '')}`,
+					'--reason=superseded by the next close pass, which merged it',
+					`--agent=${AGENT}`,
+					'--unowned',
+				],
+				root,
+			);
+		}
 		console.log(
-			closed.length > 0
-				? `close-approved-proposals: published the close of ${closed.join(', ')}.`
-				: `close-approved-proposals: brought ${existing?.ref ?? ''} level with ${branches.integration}.`,
+			`close-approved-proposals: published the close of ${closed.join(', ')}.`,
 		);
 		return 0;
 	} finally {
