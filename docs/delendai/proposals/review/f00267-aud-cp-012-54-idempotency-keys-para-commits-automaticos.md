@@ -21,6 +21,8 @@ related:
 last-transition-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
 last-correlation-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
 last-transition-from: in-progress
+shipped-in:
+  - "d5dd77f035e659f93c275b1ad314cd506eea5a26"
 ---
 
 # f00267 — Idempotency keys para commits automáticos
@@ -175,15 +177,17 @@ Política:
 - review-implementer: copilot
 - shipped-in: `a3a56ccaeba9`
 ### S2 — The store stays bounded, and a question costs a stat
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/processed-events.interface.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
 - **Gate**: `npx vitest run --project commit-policy plugins/commit-policy/tests/src/lib/processed-events.spec.ts plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`
 - Measured 2026-10-05 against S1 as shipped. The file is not append-only: every write rewrites the map atomically, one line per key, so a key is never stored twice and the file grows only with distinct events, trimmed by the TTL. What the acceptance asked of "rotation" is a ceiling: `maxBytes` (default 4 MiB) drops the oldest records first, before their TTL, and records keep the order they were last written in.
 - `has(key)` re-read and re-parsed the whole file on every call, so each question cost as much as the history was long. It now asks only whether the file changed (size and modification time) and re-reads it then; another process's write is still seen at once. Over 10,000 records, 200 calls average under 5 ms (spec).
 - The replay suite the acceptance named, `t00021`, never existed. Replay is covered by `plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`, which this slice's gate runs.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `a3a56ccaeba9`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: GPT-5.4
+- review-log: approved by GPT-5.4 — verified at d5dd77f035e6, validate exit 0, tests 27/27 — processed-events and slice-replay specs passed 27/27; the store stays bounded by maxBytes, has(key) re-reads only on file change, and the replay suite covers the persisted-event path.
 
 ## acceptance
 
