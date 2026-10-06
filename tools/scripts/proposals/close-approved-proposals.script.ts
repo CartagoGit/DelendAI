@@ -92,6 +92,28 @@ export const ownPublications = (
 };
 
 /** Remove every unit a pass of this closer entered, worktree and branch. */
+/** Whether the publication of `branch` stands on the remote. */
+const publishedOnRemote = (root: string, branch: string): boolean => {
+	const { workRefPrefix, publicationRefPrefix } = declaredBranches(root);
+	const work = workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '');
+	const publication = publicationRefPrefix.replace(
+		/^(refs\/)?(heads\/)?/u,
+		'',
+	);
+	if (!branch.startsWith(work)) return false;
+	const listed = tryRun(
+		'git',
+		[
+			'ls-remote',
+			'--heads',
+			'origin',
+			`${publication}${branch.slice(work.length)}`,
+		],
+		root,
+	);
+	return listed === undefined || listed.trim().length > 0;
+};
+
 const sweepOwnUnits = (root: string): void => {
 	const listed =
 		tryRun('git', ['worktree', 'list', '--porcelain'], root) ?? '';
@@ -100,6 +122,24 @@ const sweepOwnUnits = (root: string): void => {
 		const branch = block.match(/^branch refs\/heads\/(.+)$/mu)?.[1];
 		if (path === undefined || !path.includes(`/${AGENT}-close-approved-`)) {
 			continue;
+		}
+		// A pass that published nothing is retired, not deleted: its tip is
+		// kept and the startup reconciler is told where it went, instead of
+		// finding its checkpoint vanished.
+		if (branch !== undefined && !publishedOnRemote(root, branch)) {
+			tryRun(
+				'bun',
+				[
+					'packages/cli/src/index.ts',
+					'work',
+					'retire',
+					`--ref=${branch}`,
+					'--reason=a close pass that did not publish; the next pass recomputes its closes',
+					`--agent=${AGENT}`,
+					'--unowned',
+				],
+				root,
+			);
 		}
 		tryRun('git', ['worktree', 'remove', '--force', path], root);
 		if (branch !== undefined) tryRun('git', ['branch', '-D', branch], root);
@@ -285,6 +325,11 @@ const main = (): number => {
 	const path = entered.path;
 	if (path === undefined) return 1;
 	try {
+		// Its publication runs the repository's pre-push checks, which need
+		// the repository's dependencies; a fresh worktree has none, and
+		// every pass was refused at the typecheck while five approved
+		// proposals waited to be closed.
+		run('bun', ['install', '--frozen-lockfile', '--ignore-scripts'], path);
 		// The closer's open pull request is where these closes go: the
 		// publisher joins it. Built on it, the push is a fast-forward and
 		// brings it level with the integration branch; built beside it,
