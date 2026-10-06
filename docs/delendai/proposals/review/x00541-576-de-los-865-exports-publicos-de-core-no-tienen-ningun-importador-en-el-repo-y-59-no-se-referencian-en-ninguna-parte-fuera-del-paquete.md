@@ -2,10 +2,13 @@
 id: x00541
 title: "576 de los 865 exports públicos de core no tienen ningún importador en el repo y 59 no se referencian en ninguna parte fuera del paquete"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-10
+last-transition-id: bf8e9d06-1cc0-47d6-b240-c1106f7ccc56
+last-correlation-id: bf8e9d06-1cc0-47d6-b240-c1106f7ccc56
+last-transition-from: in-progress
 ---
 
 # x00541 — La superficie pública de `@delendai/core` no está atada a consumidores
@@ -73,6 +76,7 @@ real se quedaron.
 - **Gate**: `bun run lint:core-public-surface-budget && bun run lint:core-public-consumers`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `f1b6d391fdbd`
 
 ### S2 — Una puerta que exija justificación, no sólo cuenta
 
@@ -90,6 +94,7 @@ real se quedaron.
 - Acceptance: "publicar un símbolo nuevo sin consumidor ni anotación
   falla la puerta; hoy sólo falla si además se cruza un número."
 - **Gate**: `bun run lint:core-public-surface-budget`
+- shipped-in: `f1b6d391fdbd`
 
 ### S3 — Barrer los 59 sin referencia
 
@@ -106,6 +111,7 @@ real se quedaron.
 - **Gate**: `bun run lint:core-public-consumers`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `f1b6d391fdbd`
 
 ## Acceptance
 
