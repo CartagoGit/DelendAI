@@ -10,6 +10,7 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { ILandedRetired } from '../contracts/interfaces/work-retire.interface';
 import { integrationBase, readGit } from './work-unit-shared.service';
+import { namespacedRef } from './namespaced-ref.helper';
 
 /**
  * The retired refs of `remote` whose commit the integration branch
@@ -23,7 +24,7 @@ export const reapLandedRetired = (input: {
 	readonly apply: boolean;
 }): readonly ILandedRetired[] => {
 	const { root, remote } = input;
-	const prefix = `refs/${input.policy.branches.namespacePrefix}/retired/`;
+	const prefix = `${namespacedRef(input.policy.branches.namespacePrefix, 'retired')}/`;
 	const listed = readGit(root, ['ls-remote', remote, `${prefix}*`]);
 	if (listed === undefined || listed.length === 0) return [];
 	const retired = listed
