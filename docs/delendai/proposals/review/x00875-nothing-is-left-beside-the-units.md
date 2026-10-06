@@ -160,11 +160,17 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-attribution: claude-opus-5-5 from commit 68b22cd6fd11 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00875-S27-g1/a-generation-once-used-is-spent (68b22cd6fd11f3f254543516aa413f70384e9a88), opened by minimax-3
 
 ### S12 — Nothing the clone keeps points into a unit, or collides with one
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-retire.service.spec.ts && npx vitest run --project @delendai/cli packages/cli/src/lib/guard-hooks.service.spec.ts`
 - Found 2026-10-06 retiring review units: a generation is reused once its unit is gone, and `work retire` of the new `batch-all-g2` was refused because the forge already kept the old `batch-all-g2` under the same retired name, a push that is not a fast-forward. Neither may be lost, so the second is now kept beside the first, named by its commit (`<name>-<12 hex>`). The spec fails without the change.
 - Found the same night: one `guard install` run from inside a unit recorded that unit's CLI as `delendai.guard.entry` in the clone's config. When the unit landed and its worktree was removed, every hook of every worktree called a file that was gone (`Module not found …/x00875-S11/packages/cli/src/index.ts`). An entry inside a linked worktree is now recorded as its twin in the main checkout, which outlives every unit; an entry with no twin is kept as given.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 12/12 — Delivered by the merge naming x00875-S12-g1 (47baf9c2f491) and last carried by 05f70a3e2588. work-unit-retire gives a reused unit name's second retired ref a short commit suffix instead of overwriting the first, and guard install maps an entry inside a linked worktree to its twin in the main checkout. Nothing the clone keeps points into a disposable unit. No acceptance bullet is declared for this slice. Gate work-retire.service.spec.ts 12/12 exit 0.
+- review-attribution: claude-opus-5-5 from commit 05f70a3e2588 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00875-S10-g1/a-retired-unit-is-not-a-lost-one (05f70a3e258816a2a1bbd437b7c60df283f6c847), opened by minimax-3
+
 ### S11 — The boot warns only of what is true
 - **Status**: done
 - **Files**: `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `delendai.config.json`
