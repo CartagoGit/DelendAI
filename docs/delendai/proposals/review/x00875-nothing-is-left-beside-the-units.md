@@ -21,6 +21,7 @@ shipped-in:
   - "47baf9c2f4915ec6b614560ee262c32e7e64dfb5"
   - "fd5a3aa6ae81279f8b56c2eba7579e56537cf708"
   - "57a631db9ae8a3bbebdde2373d0e9691377fe807"
+  - "907b12101c096e1277c28ca8013d5fef2aa92c1d"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -312,7 +313,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at fd5a3aa6ae81, validate exit 0, tests 11/11 — Delivered by the merge naming x00875-S24-g1 and still the newest delivery touching its files. review-releases.service reads the reviewer's releases from its own review units, its packs on the remote and the merged side of its packs' merges, and a release stands until the proposal's document changes after it; review next filters all of them out of the free queue. Gate review.command.spec.ts 11/11 exit 0, including 'honours a release made in another unit, until the proposal changes'.
 
 ### S25 — A published review pack is not closed behind its author
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
 - **Gate**: `npx vitest run tools/scripts/git/maintain-ref-namespace.script.spec.ts`
 - Found 2026-10-06: pack #836 (only claim and release commits) was closed and its branch deleted at 10:51:56Z by the owner's credentials, seven minutes after `review finish` opened it, with no comment and no retired ref (its tip `5637260bb` survived only as an unreferenced object). `work retire` always comments and keeps the tip, so it was not that. Candidates: a host server or hook process applying a reap or supersede rule to a pack whose commits change no file. Lead: the g2 unit's worktree and local branch were removed too, which is what `work reap --apply` does from the post-merge hook of the main checkout to a unit it judges `delivered`; a unit whose commits change no file may be judged delivered by content.
@@ -320,8 +321,10 @@ Found on 2026-10-05, reading what the last runs left behind.
   - "The process that closed it is identified and a spec reproduces it."
   - "A pack whose commits change no file is never taken for spent or superseded while it carries claims or releases the integration branch lacks."
 - Delivered: the cause is `maintain-ref-namespace`'s reap pass, run from the main checkout's post-merge hook (`hydrate-candidates-after-merge`). It took a ref as spent when its three-dot diff against the integration branch was empty, and a pack of claim and release commits changes no file, so it was spent the moment it was pushed; deleting its branch closed its pull request. A forward sync had been exempted by its name for the same reason (#656, #675). The rule is now general: a ref holding a commit the integration branch lacks that changes no file carries its meaning in that commit, and is spent only once the integration branch contains it (`carriesEmptyCommits`). The spec fails without the change, for the pack and for the forward sync judged without its name.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 907b12101c09, validate exit 0, tests 18/18 — Delivered by the merge naming x00875-S25-g1 and still the newest delivery touching its files. The cause is maintain-ref-namespace's reap pass run from the main checkout's post-merge hook; isSpent no longer judges a ref spent from its diff alone when it carries empty commits, but requires merge-base --is-ancestor against the integration branch, which is exactly a pack of claims and releases. Gate maintain-ref-namespace.script.spec.ts 18/18 exit 0, including 'keeps a review pack of claims and releases until the integration branch contains it'.
 
 ### S26 — A pull request is titled by its own slice
 - **Status**: done
