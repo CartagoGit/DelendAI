@@ -9,6 +9,10 @@ date: 2026-09-05
 last-transition-id: ab632fb4-5a39-4e06-bcb5-31f0438df418
 last-correlation-id: ab632fb4-5a39-4e06-bcb5-31f0438df418
 last-transition-from: ready
+shipped-in:
+  - "99d17f26d"
+  - "50717a0d5"
+  - "e0970e951"
 ---
 
 # q00018 — State Engine foundation
