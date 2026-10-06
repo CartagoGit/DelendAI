@@ -2,7 +2,7 @@
 id: f00274
 title: "La extensión VS Code se activa por comando, no sólo por config existente"
 kind: feat
-status: review
+status: done
 type: proposal
 track: product
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00280, f00272]
-last-transition-id: ffe82d87-405a-4706-bc12-7f21353ff485
-last-correlation-id: ffe82d87-405a-4706-bc12-7f21353ff485
-last-transition-from: in-progress
+last-transition-id: 9eb67c28-196f-49db-b480-8152058b6de5
+last-correlation-id: 9eb67c28-196f-49db-b480-8152058b6de5
+last-transition-from: review
 shipped-in:
   - "23915c3db38c74bba0e740e3153b65b334602c06"
 ---
@@ -130,7 +130,7 @@ extension.ts (activate):
 
 ### S3 — Registration of the remaining commands with and without a config
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `extensions/vscode/src/test/extension-conditional-registration.spec.ts`
 - **Gate**: `cd extensions/vscode && npx vitest run src/test/extension-conditional-registration.spec.ts`
@@ -142,8 +142,10 @@ extension.ts (activate):
   exists, is satisfied by that and is pinned by a spec that activates with no
   server configured, asserts every contributed command is registered and that the
   overview and adoption commands fail softly. No `extension.ts` change was needed.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 23915c3db38c, validate exit 0, tests 20/20 — Verified at 23915c3db38c with the S1/S2 run: extensions/vscode/src/test/extension-conditional-registration.spec.ts exists and passes, so registration of the remaining commands is asserted with and without a config. 5 files / 20 tests, exit 0.
 
 ## dependency graph
 
