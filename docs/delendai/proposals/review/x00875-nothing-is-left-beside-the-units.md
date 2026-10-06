@@ -272,6 +272,8 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit.service.spec.ts tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - Found 2026-10-06 in the owner's MCP log: every boot was DEGRADED by the queue's closer. Each pass entered `delendai-queue/review/batch-all-g1/close-approved-<time>`, its publication was refused at the pre-push typecheck because the unit's worktree had no dependencies, and the pass deleted its branch with `branch -D`. So x00770, x00799, x00868, x00870 and x00873, approved and ready, were never closed; the reconciler found the first pass's checkpoint vanished, and each later pass, which reused generation 1 under another name, reported as history rewritten.
 - Delivered: `work enter` takes a generation no unit of that identity used before: one the integration branch merged (its merge names the publication) or the remote keeps retired is spent, whatever its name was; a generation with a live ref is still the unit to go back to. The closer installs the repository's dependencies in its unit before publishing, and a pass whose publication is not on the forge is retired with its reason instead of deleted. The two boot findings are resolved with their reasons. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
