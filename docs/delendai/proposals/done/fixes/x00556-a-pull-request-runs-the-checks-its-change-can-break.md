@@ -2,7 +2,7 @@
 id: x00556
 title: "A pull request runs the checks its change can break"
 kind: fix
-status: review
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-19
@@ -10,9 +10,9 @@ tags:
     - ci
     - cost
     - gates
-last-transition-id: 64730661-cf16-4a63-8fe6-706211d89466
-last-correlation-id: 64730661-cf16-4a63-8fe6-706211d89466
-last-transition-from: in-progress
+last-transition-id: 77c8d97a-7078-40fb-89c7-4464dc34f0f1
+last-correlation-id: 77c8d97a-7078-40fb-89c7-4464dc34f0f1
+last-transition-from: review
 shipped-in:
   - "b7d8e2c7a084"
   - "35473f596978"
@@ -105,7 +105,7 @@ answerable, reviewable and testable.
 
 ### S2 — A pull request selects, the integration branch does not
 
-- **Status**: done — verified 2026-10-01; it holds by construction and is
+- **Status**: done
   pinned by tests on both selectors.
 - **Gate**: `npx vitest run tools/scripts/ci/job-scope.script.spec.ts tools/scripts/ci/test-zones.script.spec.ts`
 - **Files**:
@@ -124,6 +124,11 @@ answerable, reviewable and testable.
   base, as a dispatch or a push does"). Evidence: CI run 36607216424, a push
   to develop, planned `26/26 job(s)` and ran all 11 test zones.
 - shipped-in: `1191c3a74071`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 35473f596978, validate exit 0, tests 61/61 — Verified the PR-vs-integration selector: plan-scope and plan-tests pass --base only for pull_request events; a push to develop/main, a merge_group run or a dispatch arrives with no base, and with no base job-scope runs every job (jobMustRun: empty change list runs everything) and the test planner runs every zone. Both selectors are pinned by specs (61/61 across job-scope + test-zones + workflow-history-depth on the current tip), and the proposal cites CI run 36607216424 planning 26/26 on a push. It holds by construction as the slice states.
+- review-attribution: claude-opus-5-5 from commit 35473f596978 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00556-S3-g1/every-job-says-why-it-ran-or-not (35473f596978397b5290131b7fad2668281289b8), opened by glm-5.3-flash
 
 ### S3 — The saving is measured, not assumed
 
@@ -172,7 +177,7 @@ answerable, reviewable and testable.
 
 ### S4 — A change outside the workspaces reaches only the zones that read it
 
-- **Status**: done — see the measurements below.
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/ci/zone-reads.spec.ts tools/scripts/ci/test-zones`
 - **Files**: `tools/scripts/lib/record-reads-setup.ts`,
   `vitest.shared.ts`,
@@ -209,10 +214,15 @@ answerable, reviewable and testable.
   still runs every zone, which is where such a miss is caught, as it is
   for the module-graph filter today.
 - shipped-in: `76c3529fb71e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at b7d8e2c7a084, validate exit 0, tests 38/38 — Gate green on the current tip (delivery b7d8e2c7a084 adds the scans rule on top; zone-reads files unchanged by it): zone-reads + zone-reads.script + test-zones suites 3 files / 38 tests passing. The DELENDAI_RECORD_READS setup records which root files each zone touches and zone-reads.generated.json commits the map; a root change reaches the zones that read it, read a sibling, or listed a directory above it; no map or a root/.github file still reaches everything. The proposal documents the partial gains and the subprocess-read limit with develop running every zone as the catch.
+- review-attribution: claude-opus-5-5 from commit b7d8e2c7a084 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00556-S6-g1/a-zone-that-scans-other-workspaces (b7d8e2c7a084d2f9b83b01eb16050f79fb7b8bde), opened by glm-5.3-flash
 
 ### S5 — An edited file reaches only the zones that read it
 
-- **Status**: done — see the measurements below.
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/ci/zone-reads.spec.ts tools/scripts/ci/zone-reads.script.spec.ts tools/scripts/ci/test-zones.script.spec.ts`
 - **Files**:
   - `tools/scripts/ci/zone-reads.ts`
@@ -249,6 +259,11 @@ answerable, reviewable and testable.
   the retired name: `develop` went red on it after the merge (#650). The
   map joins the baselines the sweep already skips for the same reason.
 - shipped-in: `c2cff78d39b7`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at b7d8e2c7a084, validate exit 0, tests 46/46 — Gate green on the current tip: zone-reads + zone-reads.script + test-zones + affected specs 3 files / 46 tests passing. The map records root FILES instead of directories so an edited file reaches only zones that read it; additions/deletions still reach zones listing its directory; the diff is base...head with --name-status --no-renames so a rename counts as delete+add and a candidate behind its base does not inherit the base's later changes. Re-recorded counts (apps 2, core 11, packages 5, plugins 19, proposals 1144, tools 51) match the committed map, and the rebrand-sweep skip for the map is in place.
+- review-attribution: claude-opus-5-5 from commit b7d8e2c7a084 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00556-S6-g1/a-zone-that-scans-other-workspaces (b7d8e2c7a084d2f9b83b01eb16050f79fb7b8bde), opened by glm-5.3-flash
 
 ### S6 — A zone that scans other workspaces is reached by their changes
 
