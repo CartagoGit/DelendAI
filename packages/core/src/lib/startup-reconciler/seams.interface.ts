@@ -115,6 +115,15 @@ export interface IStartupGitSeam {
 		namespace: string,
 		integrationBranch: string,
 	): Promise<readonly string[]>;
+	/**
+	 * The coordination journal published under `refs/<namespace>/journal`
+	 * on the integration remote, at or after `sinceOccurredAt`.
+	 */
+	readJournal?(
+		namespace: string,
+		integrationBranch: string,
+		sinceOccurredAt: number | undefined,
+	): Promise<IForgeRead<readonly IJournalSourceEvent[]>>;
 	/** Resolve a ref to a SHA; undefined when it does not exist. */
 	resolveRef(name: string): Promise<string | undefined>;
 	/** Describe a work ref against the integration head. */
