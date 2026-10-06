@@ -99,6 +99,9 @@ export const runStartupGate = async (
 			? {}
 			: { governance: input.governance }),
 		...(input.forge === undefined ? {} : { forge: input.forge }),
+		...(input.journal === undefined
+			? {}
+			: { journalSource: input.journal }),
 		...(input.allowCreate === undefined
 			? {}
 			: { allowCreate: input.allowCreate }),

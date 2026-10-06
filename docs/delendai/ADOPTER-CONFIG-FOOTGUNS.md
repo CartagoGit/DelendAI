@@ -64,7 +64,7 @@ Boot reaches the running state but reports:
 ```
 
 …followed by `Mutations blocked: true | recovery required: true` and
-`Phases NOT EXECUTED: forge, journal`.
+`Phases NOT EXECUTED: forge, governance` (on a host that binds no forge reader).
 
 ### Why
 

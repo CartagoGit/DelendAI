@@ -19,6 +19,7 @@ import type { IStartupHostFacts } from './environment-seam';
 import type {
 	IStartupForgeSeam,
 	IStartupGovernanceSeam,
+	IStartupJournalSource,
 } from '../startup-reconciler/seams.interface';
 import type { IStatePortsOpener } from './state-database-seam';
 
@@ -63,6 +64,12 @@ export interface IRunStartupGateInput {
 	 * means the forge phase reports NOT EXECUTED, never a quiet pass.
 	 */
 	readonly forge?: IStartupForgeSeam | undefined;
+	/**
+	 * Where the coordination journal is read from: the events a rebuild
+	 * cannot re-derive from git or the forge. Absent means the journal
+	 * phase reports NOT EXECUTED.
+	 */
+	readonly journal?: IStartupJournalSource | undefined;
 	readonly clock?: IStartupClock | undefined;
 	readonly hostFacts?: IStartupHostFacts | undefined;
 	/** False for a diagnose-only run: never bring a database into being. */

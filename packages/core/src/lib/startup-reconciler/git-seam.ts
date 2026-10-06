@@ -32,6 +32,7 @@ import {
 	remoteTrackingNamespace,
 	workRefNamespace,
 } from './work-ref-identity';
+import { journalRefReader } from './journal-ref.service';
 import { retiredTipsLister } from './retired-tips.service';
 
 const lines = (output: string): readonly string[] =>
@@ -368,9 +369,11 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 	};
 
 	const listRetiredTips = retiredTipsLister(run, integrationRemote);
+	const readJournal = journalRefReader(run, integrationRemote);
 
 	return {
 		listRetiredTips,
+		readJournal,
 		pathsChangedBetween,
 		fetch,
 		listRefs,
