@@ -92,6 +92,28 @@ export const ownPublications = (
 };
 
 /** Remove every unit a pass of this closer entered, worktree and branch. */
+/** Whether the publication of `branch` stands on the remote. */
+const publishedOnRemote = (root: string, branch: string): boolean => {
+	const { workRefPrefix, publicationRefPrefix } = declaredBranches(root);
+	const work = workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '');
+	const publication = publicationRefPrefix.replace(
+		/^(refs\/)?(heads\/)?/u,
+		'',
+	);
+	if (!branch.startsWith(work)) return false;
+	const listed = tryRun(
+		'git',
+		[
+			'ls-remote',
+			'--heads',
+			'origin',
+			`${publication}${branch.slice(work.length)}`,
+		],
+		root,
+	);
+	return listed === undefined || listed.trim().length > 0;
+};
+
 const sweepOwnUnits = (root: string): void => {
 	const listed =
 		tryRun('git', ['worktree', 'list', '--porcelain'], root) ?? '';
@@ -100,6 +122,24 @@ const sweepOwnUnits = (root: string): void => {
 		const branch = block.match(/^branch refs\/heads\/(.+)$/mu)?.[1];
 		if (path === undefined || !path.includes(`/${AGENT}-close-approved-`)) {
 			continue;
+		}
+		// A pass that published nothing is retired, not deleted: its tip is
+		// kept and the startup reconciler is told where it went, instead of
+		// finding its checkpoint vanished.
+		if (branch !== undefined && !publishedOnRemote(root, branch)) {
+			tryRun(
+				'bun',
+				[
+					'packages/cli/src/index.ts',
+					'work',
+					'retire',
+					`--ref=${branch}`,
+					'--reason=a close pass that did not publish; the next pass recomputes its closes',
+					`--agent=${AGENT}`,
+					'--unowned',
+				],
+				root,
+			);
 		}
 		tryRun('git', ['worktree', 'remove', '--force', path], root);
 		if (branch !== undefined) tryRun('git', ['branch', '-D', branch], root);
@@ -285,24 +325,33 @@ const main = (): number => {
 	const path = entered.path;
 	if (path === undefined) return 1;
 	try {
+		// Its publication runs the repository's pre-push checks, which need
+		// the repository's dependencies; a fresh worktree has none, and
+		// every pass was refused at the typecheck while five approved
+		// proposals waited to be closed.
+		run('bun', ['install', '--frozen-lockfile', '--ignore-scripts'], path);
 		// The closer's open pull request is where these closes go: the
 		// publisher joins it. Built on it, the push is a fast-forward and
 		// brings it level with the integration branch; built beside it,
 		// every pass closed the same proposals again and could not push
 		// (x00710), and a red pull request no author moved sat forever.
-		const existing = ownPublications(
+		// Every one of its open publications, not the first: passes that
+		// published beside each other left four pull requests open, each
+		// closing the same proposals.
+		const open = ownPublications(
 			tryRun('git', ['ls-remote', '--heads', 'origin'], root) ?? '',
 			branches.publicationRefPrefix,
-		)[0];
-		if (existing !== undefined) {
-			run('git', ['fetch', '--quiet', 'origin', existing.ref], path);
+		);
+		const existing = open[0];
+		for (const publication of open) {
+			run('git', ['fetch', '--quiet', 'origin', publication.ref], path);
 			if (
 				tryRun('git', ['merge', '--no-edit', 'FETCH_HEAD'], path) ===
 				undefined
 			) {
 				tryRun('git', ['merge', '--abort'], path);
 				console.log(
-					`close-approved-proposals: ${existing.ref} does not merge with ${branches.integration}; a person resolves it.`,
+					`close-approved-proposals: ${publication.ref} does not merge with ${branches.integration}; a person resolves it.`,
 				);
 				return 0;
 			}
@@ -349,16 +398,21 @@ const main = (): number => {
 					`docs(proposals): close ${String(closed.length)} independently approved proposal(s)`,
 					'-m',
 					`${closed.join(', ')}: every finished slice approved by someone other than its implementer; closed by the owner machine after the reviewer's own close was refused.`,
+					// A review pack changes only what it claimed: CI refuses
+					// one that does not, and every close pass was refused for
+					// changing five proposals it had claimed nowhere.
+					...closed.flatMap((id) => ['--trailer', `Claims: ${id}`]),
 				],
 				path,
 			);
 		}
-		const moved =
-			existing !== undefined &&
-			run('git', ['rev-parse', 'HEAD'], path) !== existing.sha;
-		if (closed.length === 0 && !moved) {
+		// Bringing an open publication level with the integration branch is
+		// the candidates' refresh, not a close pass: published from a unit
+		// of its own, it opened a pull request per pass beside the one it
+		// was bringing level.
+		if (closed.length === 0) {
 			console.log(
-				`close-approved-proposals: nothing new to close; ${existing === undefined ? 'no pull request is open' : `${existing.ref} is level`}.`,
+				`close-approved-proposals: nothing new to close; ${existing === undefined ? 'no pull request is open' : `${existing.ref} stays open`}.`,
 			);
 			return 0;
 		}
@@ -375,10 +429,26 @@ const main = (): number => {
 			],
 			root,
 		);
+		// The pass merged its open publications before closing more, so its
+		// own carries everything they did: they are retired, their tips
+		// kept, instead of left open beside it.
+		for (const publication of open) {
+			tryRun(
+				'bun',
+				[
+					...cli,
+					'work',
+					'retire',
+					`--ref=${publication.ref.replace(/^refs\/heads\//u, '')}`,
+					'--reason=superseded by the next close pass, which merged it',
+					`--agent=${AGENT}`,
+					'--unowned',
+				],
+				root,
+			);
+		}
 		console.log(
-			closed.length > 0
-				? `close-approved-proposals: published the close of ${closed.join(', ')}.`
-				: `close-approved-proposals: brought ${existing?.ref ?? ''} level with ${branches.integration}.`,
+			`close-approved-proposals: published the close of ${closed.join(', ')}.`,
 		);
 		return 0;
 	} finally {

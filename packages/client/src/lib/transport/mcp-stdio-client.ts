@@ -254,7 +254,10 @@ export class McpStdioClient {
 	private operationTail: Promise<void> = Promise.resolve();
 	private closePromise: Promise<void> | undefined;
 
-	private constructor(private readonly transport: IMcpTransport) {}
+	private constructor(
+		private readonly transport: IMcpTransport,
+		private readonly requestTimeoutMs?: number,
+	) {}
 
 	static fromTransport(transport: IMcpTransport): McpStdioClient {
 		return new McpStdioClient(transport);
@@ -329,7 +332,10 @@ export class McpStdioClient {
 				),
 			);
 		}
-		return new McpStdioClient(client as unknown as IMcpTransport);
+		return new McpStdioClient(
+			client as unknown as IMcpTransport,
+			options.requestTimeoutMs,
+		);
 	}
 
 	async request<TIn extends object, TOut>(
@@ -351,10 +357,13 @@ export class McpStdioClient {
 		return this.enqueue(async () => {
 			let result: IMcpToolCallResult;
 			try {
-				result = await this.transport.callTool({
-					name: tool,
-					arguments: args,
-				});
+				result = await this.transport.callTool(
+					{ name: tool, arguments: args },
+					undefined,
+					this.requestTimeoutMs === undefined
+						? undefined
+						: { timeout: this.requestTimeoutMs },
+				);
 			} catch (error) {
 				throw normalizeTransportError(
 					error,
