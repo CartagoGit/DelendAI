@@ -2,7 +2,7 @@
 id: f00267
 title: "AUD-CP-012/§54 — Idempotency keys para commits automáticos"
 kind: feat
-status: review
+status: done
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -18,9 +18,9 @@ related:
     - q00006
     - f00266 # engine usa processedEvents internamente
     - t00021 # test de replay
-last-transition-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
-last-correlation-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
-last-transition-from: in-progress
+last-transition-id: 4cda67fd-8e34-4808-8da0-30fcbb3c07d0
+last-correlation-id: 4cda67fd-8e34-4808-8da0-30fcbb3c07d0
+last-transition-from: review
 shipped-in:
   - "d5dd77f035e659f93c275b1ad314cd506eea5a26"
 ---
@@ -164,7 +164,7 @@ Política:
 
 ### S1 — `processed-events.ts` con TTL + `CommitPolicyEngine` lo consulta
 
-- **Status**: done — verified 2026-09-15 by an evidence pass (the `in_review` state below never received a recorded review). `processed-events.ts` keeps keys with a configurable TTL (30 days by default) and the engine checks and records them around the commit. Each acceptance point has a passing spec: replaying the same event returns `ALREADY_PROCESSED` without committing (`engine.spec.ts`, including after a restart in `processed-events.spec.ts`), an expired key is processed again, and a store read failure returns `STORE_READ_ERROR` without committing. `processed-events.spec.ts` 20/20 and `engine.spec.ts` 19/19.
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
 - **Gate**: type
 - **Dependency**: `f00266`
@@ -173,9 +173,12 @@ Política:
   - "replay del mismo evento → ALREADY_PROCESSED, sin commit"
   - "TTL expirado → vuelve a procesar (según policy)"
   - "I/O error de lectura → STORE_READ_ERROR, no commit"
-- review-state: in_review
-- review-implementer: copilot
 - shipped-in: `a3a56ccaeba9`
+- review-state: done
+- review-implementer: copilot
+- review-reviewer: GPT-5.4
+- review-log: approved by GPT-5.4 — verified at d5dd77f035e6, validate exit 0, tests 27/27 — Focused replay/idempotency gate passed 27/27 and commit-policy typecheck is clean in the review worktree.
+
 ### S2 — The store stays bounded, and a question costs a stat
 - **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/processed-events.interface.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
