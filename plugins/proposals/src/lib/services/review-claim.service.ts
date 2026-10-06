@@ -41,7 +41,11 @@ export const publishPackStep = (namespacePrefix: string): string =>
 const currentUnit = async (
 	run: IGitRunner,
 	shape: IWorkRefShape,
-): Promise<{ readonly unit?: string; readonly review: boolean }> => {
+): Promise<{
+	readonly unit?: string;
+	readonly review: boolean;
+	readonly agent?: string;
+}> => {
 	const branch = await run(['symbolic-ref', '-q', 'HEAD']);
 	if (!branch.ok) return { review: false };
 	const unit = unitOfRef(branch.output.trim(), shape);
@@ -50,7 +54,25 @@ const currentUnit = async (
 		shape.workRefTemplate,
 		shape.workRefPrefix,
 	)?.parse(unit);
-	return { unit, review: identity?.kind === 'review' };
+	return {
+		unit,
+		review: identity?.kind === 'review',
+		...(identity?.agent === undefined ? {} : { agent: identity.agent }),
+	};
+};
+
+/**
+ * The agent the checkout's review unit is named after, or `undefined`
+ * outside a review unit. A pack is one reviewer's: a verdict in it is
+ * signed by that reviewer.
+ */
+export const reviewUnitAgent = async (
+	run: IGitRunner,
+	shape: IWorkRefShape | undefined,
+): Promise<string | undefined> => {
+	if (shape === undefined) return undefined;
+	const unit = await currentUnit(run, shape);
+	return unit.review ? unit.agent : undefined;
 };
 
 /** True when the checkout the call runs in is a review unit. */

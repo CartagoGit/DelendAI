@@ -146,6 +146,50 @@ describe('a verdict in a review unit', () => {
 		expect(claimsOnHead()).toEqual([]);
 	});
 
+	it('is signed the way its unit names the agent, whatever case the call used', async () => {
+		const commit = repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		repo.proposalInReview(SLICE_S1('review'));
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
+
+		const approved = await repo.review({
+			action: 'approve',
+			agent: 'Agent-B',
+			evidence: { ...EVIDENCE, commitHash: commit.slice(0, 9) },
+		});
+
+		expect(approved.isError).toBe(false);
+		// The last approval closes it: read it wherever it was filed.
+		const doc = repo.git(
+			'grep',
+			'--untracked',
+			'-h',
+			'review-',
+			'--',
+			'docs/delendai/proposals',
+		);
+		expect(doc).toContain('approved by agent-b');
+		expect(doc).not.toContain('Agent-B');
+	});
+
+	it('is refused when signed by another agent than the one its unit is named after', async () => {
+		repo.proposalInReview(SLICE_S1('review'));
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
+		const head = repo.git('rev-parse', 'HEAD');
+
+		const refused = await repo.review({
+			action: 'request_changes',
+			agent: 'agent-c',
+			note: 'the acceptance is not met',
+		});
+
+		expect(refused.isError).toBe(true);
+		expect(refused.text).toContain('not the reviewer of this review unit');
+		expect(repo.git('rev-parse', 'HEAD')).toBe(head);
+	});
+
 	it('is refused outside a review unit, and writes nothing', async () => {
 		repo.proposalInReview(SLICE_S1('review'));
 		repo.git('switch', '-q', '-c', 'somewhere-else');

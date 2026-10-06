@@ -11,7 +11,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
-import { REVIEW_RESERVATION_SECONDS } from '@delendai/proposals/lib/contracts/constants/review-reservation.constant';
+import {
+	REVIEW_RESERVATION_SECONDS,
+	REVIEW_RESERVATION_UNIT_GRACE_SECONDS,
+} from '@delendai/proposals/lib/contracts/constants/review-reservation.constant';
 import {
 	claimForReview,
 	releaseClaim,
@@ -155,6 +158,43 @@ describe('a reservation', () => {
 		expect(await reserveReview(first.run, 'x00001', holder(1))).toEqual({
 			kind: 'reserved',
 		});
+	});
+
+	it('passes on once its unit has ended, and holds while its unit is on the forge', async () => {
+		const afterGrace =
+			Math.floor(Date.now() / 1000) +
+			REVIEW_RESERVATION_UNIT_GRACE_SECONDS +
+			60;
+		// The holder's unit is on the forge: the reservation holds.
+		const live = twoReviewers();
+		live.first.git(
+			'push',
+			'-q',
+			'origin',
+			`HEAD:refs/heads/${UNIT('agent-a')}`,
+		);
+		await reserveReview(live.first.run, 'x00001', holder(1));
+		expect(
+			await reserveReview(
+				live.second.run,
+				'x00001',
+				holder(2),
+				afterGrace,
+			),
+		).toEqual({ kind: 'taken', unit: UNIT('agent-a'), agent: 'agent-a' });
+
+		// Neither its work ref nor a publication is there any more: it has
+		// ended, and the proposal is free long before the hours run out.
+		const ended = twoReviewers();
+		await reserveReview(ended.first.run, 'x00001', holder(1));
+		expect(
+			await reserveReview(
+				ended.second.run,
+				'x00001',
+				holder(2),
+				afterGrace,
+			),
+		).toEqual({ kind: 'reserved' });
 	});
 
 	it('is not asked for where there is no forge', async () => {
