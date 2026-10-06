@@ -50,6 +50,10 @@ import type {
 	IRefAction,
 	IRefNamespaceReport,
 } from './maintain-ref-namespace.interface';
+import {
+	dropReservation,
+	endedReservations,
+} from './ended-reservations.service';
 
 export type {
 	IRefAction,
@@ -463,6 +467,15 @@ const main = (): void => {
 	for (const action of report.actions) {
 		console.log(
 			`maintain-ref-namespace: ${action.kind} ${action.ref} — ${action.detail}${action.applied ? '' : apply ? ' (NOT applied)' : ' (read-only)'}`,
+		);
+	}
+	// Review reservations whose unit has ended (published and merged, or
+	// dropped) leave the claim namespace with it.
+	const remote = process.env.DELENDAI_REMOTE ?? 'origin';
+	for (const reservation of endedReservations(root, remote)) {
+		const dropped = apply && dropReservation(root, remote, reservation);
+		console.log(
+			`maintain-ref-namespace: drop-reservation ${reservation.ref} — its unit ${reservation.unit} has ended${dropped ? '' : apply ? ' (NOT applied)' : ' (read-only)'}`,
 		);
 	}
 	console.log(
