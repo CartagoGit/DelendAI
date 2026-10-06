@@ -27,6 +27,7 @@ import {
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readTextOrNull } from './lib/proposals/index-reader';
+import { declareProposalIndexFile } from './lib/proposals/index-reader-location';
 
 import z from 'zod';
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
@@ -477,6 +478,10 @@ export default definePlugin({
 		);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
+		// The database stays at its canonical place when the cache moves;
+		// readers find this workspace from the index path only if the
+		// layout that placed it is known.
+		declareProposalIndexFile(layout.proposalIndexFile, ctx.workspace.root);
 
 		// Host-specific proposal subfolders (relative to proposalsDir),
 		// e.g. `['paused/demos']`. delendai bakes none — the host injects
