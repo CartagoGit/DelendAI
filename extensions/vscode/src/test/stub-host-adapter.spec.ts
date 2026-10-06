@@ -2,6 +2,19 @@ import { describe, expect, it } from 'vitest';
 
 import { createFakeHostFromVscode } from '../host/stub-host-adapter';
 import type { IVscodeApi } from '../extension';
+import type {
+	ITreeDataProvider,
+	IWebviewViewProvider,
+} from '@delendai/ui-extension/public';
+
+/** Providers the stub accepts and never calls. */
+const inertTree: ITreeDataProvider = {
+	root: [],
+	refresh: () => {},
+	onDidChangeTreeData: () => ({ dispose: () => {} }),
+	getChildren: () => [],
+};
+const inertView: IWebviewViewProvider = { resolveWebviewView: () => {} };
 
 const createVscode = (overrides: Partial<IVscodeApi['window']> = {}) => {
 	const registered: string[] = [];
@@ -98,7 +111,7 @@ describe('stub host adapter', () => {
 		expect(() => host.createStatusBarItem('left', 1)).toThrow(
 			'createStatusBarItem is not supported',
 		);
-		expect(() => host.registerTreeDataProvider('v', {} as never)).toThrow(
+		expect(() => host.registerTreeDataProvider('v', inertTree)).toThrow(
 			'registerTreeDataProvider is not supported',
 		);
 		await expect(host.openTextDocument('/x')).rejects.toThrow(
@@ -121,7 +134,7 @@ describe('stub host adapter', () => {
 		const host = createFakeHostFromVscode(createVscode().vscode);
 		const registration = host.registerWebviewViewProvider?.(
 			'delendai.dashboard',
-			{} as never,
+			inertView,
 		);
 		expect(registration).toBeDefined();
 		expect(() => registration?.dispose()).not.toThrow();

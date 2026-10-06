@@ -24,6 +24,16 @@ import {
 	type IVscodeApi,
 } from '../extension';
 
+/** The launch a configured workspace declares. */
+const LAUNCH_SETTINGS: Readonly<Record<string, unknown>> = {
+	command: 'node',
+	args: ['server.js'],
+};
+
+/** The default tool prefix, and the router the extension falls back through. */
+const PREFIX = 'delendai_';
+const ROUTER_TOOL = `${PREFIX}vertex`;
+
 type TCallTool = (input: {
 	name: string;
 	arguments?: object;
@@ -136,10 +146,11 @@ const createHarness = (options: IHarnessOptions = {}) => {
 					}),
 			getConfiguration: () => ({
 				get<T>(key: string, defaultValue?: T): T | undefined {
-					if (options.configured !== false) {
-						if (key === 'command') return 'node' as unknown as T;
-						if (key === 'args')
-							return ['server.js'] as unknown as T;
+					if (
+						options.configured !== false &&
+						key in LAUNCH_SETTINGS
+					) {
+						return LAUNCH_SETTINGS[key] as T;
 					}
 					if (key === 'development.autoReload') {
 						return (options.autoReload ?? defaultValue) as T;
@@ -209,7 +220,7 @@ describe('resilient client routing', () => {
 				domain?: string;
 				action?: string;
 			};
-			if (input.name !== 'delendai_vertex') {
+			if (input.name !== ROUTER_TOOL) {
 				return { structuredContent: { tools: [] } };
 			}
 			routed.push({
@@ -242,7 +253,7 @@ describe('resilient client routing', () => {
 	it('reports the last router error when no candidate answers', async () => {
 		const harness = createHarness();
 		const client = clientOf(async (input) =>
-			input.name === 'delendai_vertex'
+			input.name === ROUTER_TOOL
 				? {
 						structuredContent: {
 							isError: true,
@@ -398,7 +409,7 @@ describe('untrusted workspace', () => {
 			approved.set(key, value);
 		}) as typeof harness.context.globalState.update;
 		const client = clientOf(async (input) =>
-			input.name === 'delendai_vertex'
+			input.name === ROUTER_TOOL
 				? { structuredContent: { structuredContent: plan } }
 				: { structuredContent: { tools: [] } },
 		);
