@@ -77,6 +77,10 @@ interface IProposalIndexRow {
 	readonly uid: string;
 	readonly status: string;
 	readonly source_path: string | null;
+	readonly title: string | null;
+	readonly track: string | null;
+	readonly kind: string | null;
+	readonly proposal_date: string | null;
 }
 
 /**
@@ -182,7 +186,7 @@ export const readProposalIndexResultFromSql = async (
 		// is what the read actually returns.
 		const rows = db
 			.query<IProposalIndexRow>(
-				`SELECT uid, status, source_path
+				`SELECT uid, status, source_path, title, track, kind, proposal_date
 				 FROM proposals
 				 WHERE deleted_at IS NULL
 				 ORDER BY uid ASC`,
@@ -222,6 +226,12 @@ export const readProposalIndexResultFromSql = async (
 				id: row.uid,
 				file: row.source_path,
 				status: row.status,
+				...(row.title === null ? {} : { title: row.title }),
+				...(row.track === null ? {} : { track: row.track }),
+				...(row.kind === null ? {} : { kind: row.kind }),
+				...(row.proposal_date === null
+					? {}
+					: { date: row.proposal_date }),
 			});
 		}
 		return {

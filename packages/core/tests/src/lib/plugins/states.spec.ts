@@ -7,11 +7,11 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { PluginStateError } from '@delendai/core/public';
 import {
 	canTransition,
 	createPluginStateMachine,
-	PluginStateError,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/plugins/states';
 import type { PluginState } from '@delendai/core/public';
 import { createLazyPluginDiscovery } from '../../../../src/lib/plugins/discovery';
 import type {
