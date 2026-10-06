@@ -2,15 +2,17 @@
 id: x00752
 title: "A slice delivered earlier is found at review entry"
 kind: fix
-status: review
+status: done
 type: proposal
 track: hosts
 date: 2026-09-29
 priority: P1
 related: [x00745, x00747]
-last-transition-id: 3ba41f3e-6ac9-476a-9e5b-47138821fc1e
-last-correlation-id: 3ba41f3e-6ac9-476a-9e5b-47138821fc1e
-last-transition-from: in-progress
+last-transition-id: b7bae786-ad91-4bc5-8160-b737471de742
+last-correlation-id: b7bae786-ad91-4bc5-8160-b737471de742
+last-transition-from: review
+shipped-in:
+  - "a5f83c1ff492"
 ---
 
 # x00752 — A slice delivered earlier is found at review entry
@@ -62,7 +64,7 @@ None.
 
 ### S1 — The merge that landed a slice is its delivery
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-entry.service.ts`
@@ -72,6 +74,11 @@ None.
   - `packages/core/src/lib/development-policy/project-branches.ts`
   - `plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - shipped-in: `8a63df3be824`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at a5f83c1ff492, validate exit 0, tests 10/10 — Gate vitest plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts 10/10 (exit 0). Merge a5f83c1ff492 has feat 8a63df3be824 as ancestor; its ^1..M diff touches exactly the six declared files. deliveringMergeOf scans --first-parent merges, requires the subject to match /<id>-(<slice>|all)-g<N>/ AND the ^1..M diff to touch a declared file. Acceptance pinned verbatim: 'finds a slice delivered by an earlier pull request in the merge that landed it' + 'finds a slice delivered with its whole proposal' (criterion 1) and 'does not take a merge that names the slice but changed none of its files' -> undelivered-slices (criterion 2). Unit name decoded via project ref template, no shape restated. Non-goals respected.
+- review-attribution: claude-opus-5-5 from commit a5f83c1ff492 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00752-S1-g1/an-earlier-delivery-is-found (a5f83c1ff4923078ee1ec3d593c25f07ca08590b), opened by minimax-3
 
 ## dependency graph
 

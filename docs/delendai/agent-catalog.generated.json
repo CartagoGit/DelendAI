@@ -1449,6 +1449,14 @@
 				"date": "2026-09-15"
 			},
 			{
+				"id": "f00547",
+				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
+				"track": "architecture",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-09-16"
+			},
+			{
 				"id": "f00548",
 				"title": "Own the style surface: who may define a selector, and what breaks when it changes",
 				"track": "architecture",
@@ -1559,6 +1567,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-19"
+			},
+			{
+				"id": "x00877",
+				"title": "An upgrade leaves the project as its configuration says, and nothing else",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-06"
 			}
 		]
 	}
