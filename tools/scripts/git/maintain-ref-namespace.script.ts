@@ -188,8 +188,42 @@ export const isSpent = (
 			undefined
 		);
 	}
+	// A commit that changes no file carries its meaning in itself: a review
+	// pack's claims and releases are empty commits with trailers. Judged by
+	// content such a ref is spent the moment it is pushed, and reaping it
+	// closed a review pack seven minutes after it was opened. It is spent
+	// only once the integration branch contains it.
+	if (carriesEmptyCommits(root, integration, sha)) {
+		return (
+			git(root, ['merge-base', '--is-ancestor', sha, integration]) !==
+			undefined
+		);
+	}
 	const diff = git(root, ['diff', '--name-only', `${integration}...${sha}`]);
 	return diff !== undefined && diff.trim().length === 0;
+};
+
+/** Whether `sha` holds a commit the integration branch lacks that changes no file. */
+const carriesEmptyCommits = (
+	root: string,
+	integration: string,
+	sha: string,
+): boolean => {
+	const range = `${integration}..${sha}`;
+	const count = (args: readonly string[]): number =>
+		(git(root, [...args]) ?? '')
+			.split('\n')
+			.filter((line) => line.trim().length > 0).length;
+	const own = count(['rev-list', '--no-merges', range]);
+	const changing = count([
+		'log',
+		'--no-merges',
+		'--format=%H',
+		range,
+		'--',
+		'.',
+	]);
+	return own > changing;
 };
 
 /**
