@@ -133,6 +133,20 @@ const gitIn = (
 };
 
 /** The proposals this unit has claimed: its own commits' claim trailers. */
+/** Merge the integration branch's remote tip into the unit, or nothing. */
+const catchUp = (unit: IUnit, integration: string): void => {
+	gitIn(unit.path, ['fetch', '--quiet', 'origin', integration]);
+	const merged = gitIn(unit.path, [
+		'-c',
+		'core.hooksPath=/dev/null',
+		'merge',
+		'--quiet',
+		'--no-edit',
+		`origin/${integration}`,
+	]);
+	if (!merged.ok) gitIn(unit.path, ['merge', '--abort']);
+};
+
 /** The proposal ids a unit's own commits name under one trailer. */
 const trailerValuesOf = (
 	unit: IUnit,
@@ -207,6 +221,11 @@ const next = async (
 	const unit = await unitOf(agent, sessionOf(args), ctx);
 	if (!isUnit(unit)) return unit;
 	const policy = await readWorkspacePolicy(unit.path);
+	// The queue is read from the unit, where the reviewer's own verdicts
+	// are; a unit made before others' verdicts merged still showed their
+	// proposals as waiting, closed ones included. Integration is brought
+	// in first; a merge that would conflict is undone and changes nothing.
+	catchUp(unit, policy.branches.integration);
 	// The unit, not only the agent: another instance of this model is
 	// another reviewer, and its claims are not ours.
 	const answer = await queueOf(ctx, agent, { unit: unit.ref });
