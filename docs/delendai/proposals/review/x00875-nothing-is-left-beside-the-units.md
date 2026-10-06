@@ -181,6 +181,12 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S18 — A spent publication is retired, not deleted
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- Found 2026-10-06: `work doctor` reported a landed publication (`publications-hold-work`) with the remedy `git push origin --delete <ref>`, the one clean-up S10 and `work retire` exist to replace: a bare delete keeps no tip and records no reason, and the reconciler then has nothing to tell a retired ref from a lost one. Every other invariant already names `work retire`. The remedy now does too, and the spec pins that it names retiring and no `--delete`.
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.

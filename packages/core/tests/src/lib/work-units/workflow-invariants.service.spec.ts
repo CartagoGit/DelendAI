@@ -237,6 +237,9 @@ describe('workflow invariants (x00573)', () => {
 		const result = by(root, 'publications-hold-work');
 		expect(result.holds).toBe(false);
 		expect(result.observed).toContain(spent);
+		// The remedy keeps the tip: retiring, never a bare delete.
+		expect(result.remedy).toContain('delendai work retire --ref=<ref>');
+		expect(result.remedy).not.toContain('--delete');
 
 		writeFileSync(join(root, 'c.txt'), 'c\n');
 		git(root, 'add', '-A');
