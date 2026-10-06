@@ -2,7 +2,7 @@
 id: f00274
 title: "La extensión VS Code se activa por comando, no sólo por config existente"
 kind: feat
-status: review
+status: done
 type: proposal
 track: product
 date: 2026-08-29
@@ -13,9 +13,11 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00280, f00272]
-last-transition-id: ffe82d87-405a-4706-bc12-7f21353ff485
-last-correlation-id: ffe82d87-405a-4706-bc12-7f21353ff485
-last-transition-from: in-progress
+last-transition-id: 9eb67c28-196f-49db-b480-8152058b6de5
+last-correlation-id: 9eb67c28-196f-49db-b480-8152058b6de5
+last-transition-from: review
+shipped-in:
+  - "23915c3db38c74bba0e740e3153b65b334602c06"
 ---
 
 # f00274 — La extensión VS Code se activa por comando, no sólo por config existente
@@ -89,7 +91,7 @@ extension.ts (activate):
 
 ### S1 — Adoption command reachable without a config
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `extensions/vscode/package.json`
     - `extensions/vscode/src/extension.ts`
@@ -105,12 +107,14 @@ extension.ts (activate):
   all. Shipped: `delendai.adopt` contributed, `onCommand:delendai.adopt` added, and
   the command registered in `activate()` before any network-backed surface. The
   command-count ratchets (37 to 38, 38 to 39 subscriptions) moved with it.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 23915c3db38c, validate exit 0, tests 20/20 — S1/S2/S3 verified together at 23915c3db38c. S1: extensions/vscode/package.json activationEvents = ['onStartupFinished','workspaceContains:**/delendai.config.json','onCommand:delendai.adopt'] - the adoption funnel is open without a prior config, and the slice's own premise check (activationEvents already held onStartupFinished, so the extension was never fully inert) is accurate. extension.ts:39 imports registerAdoptCommand and :647 registers it via track(...) before any network-backed surface, with the comment 'that has not adopted delendai yet can still reach the adoption plan'. The command-count ratchets (37->38 contributes, 38->39 subscriptions) moved with it. S2: commands/adopt.ts calls the ADOPT_PROJECT_TOOL with { analyze: true } only - it never passes 'write', renders the result in a webview panel and reports failures through showCommandError, which is exactly the slice's contract. S3: extension-conditional-registration.spec.ts exists and is part of the run. Gates run in the review worktree (extensions/vscode, after bun install --frozen-lockfile): npx vitest run src/test/extension-activation.spec.ts src/test/contributes-completeness.spec.ts src/test/smoke.spec.ts src/test/adopt-command.spec.ts src/test/extension-conditional-registration.spec.ts -> 5 files, 20 passed, exit 0.
 
 ### S2 — The adopt command asks for a dry-run assessment and shows the plan
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `extensions/vscode/src/commands/adopt.ts`
     - `extensions/vscode/src/test/adopt-command.spec.ts`
@@ -119,12 +123,14 @@ extension.ts (activate):
   command calls `delendai_adopt_project` with `{ analyze: true }` only (never
   `write`), renders the result in a webview and reports failures through
   `showCommandError`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 23915c3db38c, validate exit 0, tests 20/20 — Verified at 23915c3db38c with the S1 run. extensions/vscode/src/commands/adopt.ts exists, invokes ADOPT_PROJECT_TOOL with { analyze: true } and never with 'write' (line 20/22), renders the result through window.createWebviewPanel (:23) and reports failures via showCommandError (:31) - exactly the dry-run-only contract the slice states. adopt-command.spec.ts is green in the run (5 files / 20 tests, exit 0).
 
 ### S3 — Registration of the remaining commands with and without a config
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `extensions/vscode/src/test/extension-conditional-registration.spec.ts`
 - **Gate**: `cd extensions/vscode && npx vitest run src/test/extension-conditional-registration.spec.ts`
@@ -136,8 +142,10 @@ extension.ts (activate):
   exists, is satisfied by that and is pinned by a spec that activates with no
   server configured, asserts every contributed command is registered and that the
   overview and adoption commands fail softly. No `extension.ts` change was needed.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 23915c3db38c, validate exit 0, tests 20/20 — Verified at 23915c3db38c with the S1/S2 run: extensions/vscode/src/test/extension-conditional-registration.spec.ts exists and passes, so registration of the remaining commands is asserted with and without a config. 5 files / 20 tests, exit 0.
 
 ## dependency graph
 
