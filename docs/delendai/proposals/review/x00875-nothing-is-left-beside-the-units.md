@@ -9,6 +9,11 @@ date: 2026-10-05
 last-transition-id: e0796df3-f7eb-4576-8f54-7fd19b6c508d
 last-correlation-id: e0796df3-f7eb-4576-8f54-7fd19b6c508d
 last-transition-from: in-progress
+shipped-in:
+  - "9e405f09f7fb33f0a0dd0e055642ef2928955731"
+  - "00128e2debe92950f0a065d9da76064bcf114914"
+  - "d86b383aca470163a16051827bef7ae3b1602ca3"
+  - "7d96f51559804495246013d71095f90a05b6184d"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -39,13 +44,15 @@ Found on 2026-10-05, reading what the last runs left behind.
 - global_gate: none
 
 ### S1 — A proposal not yet written holds nobody out
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/slice-holders.service.ts`, `packages/core/src/lib/work-units/unit-proposal.constant.ts`, `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/slice-holders.service.spec.ts`
 - `holdersOfSlice` returns nobody for the placeholder proposal `new`: each agent under it writes its own document, and the unit takes the proposal's id as soon as it is allocated.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e18619dcb3ae`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 9/9 — Delivered in the whole-proposal merge x00875-all-g1. holdersOfSlice returns [] when the proposal is still the unallocated placeholder, and adoptProposalId renames the create unit to the real id via resolveWorkRef, so two agents each entering --kind=create --proposal=new --slice=all are neither refused nor lumped as one holder. Acceptance bullet 1 met. Gate: slice-holders.service.spec.ts 9/9 exit 0.
 
 ### S2 — A directory beside the units that is no unit is reaped
 - **Status**: review
@@ -58,23 +65,27 @@ Found on 2026-10-05, reading what the last runs left behind.
 - shipped-in: `4542131c19e2`
 
 ### S3 — A route selection explains itself
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/selection-explain.service.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/selection-explain.interface.ts`, `plugins/auto-agent-selector/src/lib/routing/economic-preference.ts`, `plugins/auto-agent-selector/src/public/index.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/selection-explain.service.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/auto-agent-selector tests/src/lib/routing`
 - Ported from the rescued commit `fa510753d` and reshaped to today's conventions. A ranked route keeps the parts of its score (`qualityEvidence`, `alreadyPaidBonus`, `scarcityPenalty`, `headroomTiebreak`, `total`); `explainSelection` names the chosen route, every discarded one with its reasons, and the fallback order.
 - `f00507` S4 now names the files that shipped.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e18619dcb3ae`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 69/69 — Delivered in x00875-all-g1. IRouteScoreComponents carries qualityEvidence, alreadyPaidBonus, scarcityPenalty, headroomTiebreak and total; toRow copies components onto every ranked row; explainSelection returns chosen, discarded and a fallback with order and reason; the public barrel re-exports it. Acceptance bullet 3 met. Gate: plugins/auto-agent-selector tests/src/lib/routing 69/69 exit 0.
 
 ### S4 — A build refuses to write a database a newer build wrote
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/proposals-sqlite/src/lib/schema-guard.service.ts`, `packages/proposals-sqlite/src/lib/schema-guard.interface.ts`, `packages/proposals-sqlite/src/lib/schema-guard.service.spec.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.ts`, `packages/proposals-sqlite/src/lib/work-model/startup-state-ports.ts`, `packages/proposals-sqlite/src/index.ts`
 - **Gate**: `bun test --timeout 30000 packages/proposals-sqlite/src/lib/schema-guard.service.spec.ts packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
 - Ported from the rescued commit `ce0c35eec`. A writable open of a database whose recorded schema version is above the build's throws `SchemaAheadOfRuntimeError` before the migration sweep and before `user_version` is stamped; the file is left as it was. A read-only handle still opens, so the diagnostic is not blinded. Startup binds no port and reports the sentence that says which build to install.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `05515492f69d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 21/21 — Delivered in x00875-all-g1. assertSchemaWithinRuntime throws SchemaAheadOfRuntimeError before migrations or the user_version pragma are applied, so the file is untouched, and openStartupStatePorts reports kind unreadable with describeSchemaAhead. Acceptance bullet 4 met (throws, changes nothing, startup says why). Gate: proposals-sqlite schema-guard + sqlite-driver 21/21 exit 0.
 
 ### S5 — Retired work that was read and is nothing can be dropped
 - **Status**: review
@@ -86,12 +97,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - shipped-in: `dd4b4305f8cd`
 
 ### S6 — A delivery is read however its key was spelled
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/swarm/slice-shipping-record.ts`, `plugins/proposals/tests/src/lib/swarm/slice-shipping-record.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/swarm/slice-shipping-record.spec.ts`
 - Found handing `f00509` to review: its S1 records `- **Shipped-In**: 27c6cf021 feat(…)`, and the hand-off was refused with "nothing records which commit delivered it". The reader took only `- shipped-in:` in lower case with the hash in backticks. It now takes the key in any case, bold or not, and a hash in backticks or bare at the start of the value; a word is still no hash.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 23/23 — Delivered in x00875-all-g1. SHIPPING_LINE_RE accepts shipped-in, Shipped-In and **Shipped-In** case-insensitively, and readShippingCommit accepts the hash bare, backticked or followed by a subject, returning the first that is a commit hash. Acceptance bullet 6 met. Gate: slice-shipping-record.spec.ts 23/23 exit 0.
 
 ### S7 — Retired work the integration branch came to hold is reaped
 - **Status**: review
@@ -110,12 +123,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-implementer: claude-opus-5-5
 
 ### S9 — A cited proposal is found in any status folder
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/proposal-completeness.ts`, `plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/services/proposal-completeness.spec.ts`
 - Found 2026-10-05 handing `x00539` to review: its S4 cites `f00534` by the `ready/` path it had when written, and the hand-off was refused with "declared files do not exist". The repository's lints had been taught the same thing an hour earlier (`f00536`); the plugin's own check, which only spared the proposal's own document, had not. A declared path under `docs/delendai/proposals/` now counts as present when a proposal document of that file name exists in any status folder; any other missing file is still owed.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 00128e2debe9, validate exit 0, tests 20/20 — Delivered by the merge naming x00875-S9-g1. proposal-completeness builds proposalDocumentNames by scanning docs/delendai/proposals recursively and accepts a cited path whose basename exists in another status folder. No acceptance bullet is declared for this slice. Gate: proposal-completeness.spec.ts 20/20 exit 0.
 
 ### S10 — A retired unit is not reported as lost
 - **Status**: review
@@ -182,12 +197,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-implementer: claude-opus-5-5
 
 ### S18 — A spent publication is retired, not deleted
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - Found 2026-10-06: `work doctor` reported a landed publication (`publications-hold-work`) with the remedy `git push origin --delete <ref>`, the one clean-up S10 and `work retire` exist to replace: a bare delete keeps no tip and records no reason, and the reconciler then has nothing to tell a retired ref from a lost one. Every other invariant already names `work retire`. The remedy now does too, and the spec pins that it names retiring and no `--delete`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at d86b383aca47, validate exit 0, tests 19/19 — Delivered by the merge naming x00875-S18-g1. spentPublicationsInvariant now reports 'its commits are already on <integration>: retire it' instead of a bare delete, so a spent publication is retired and not deleted. No acceptance bullet is declared for this slice. Gate: workflow-invariants.service.spec.ts 19/19 exit 0.
 
 ### S19 — A reviewer is kept out of the slice it judged, not the proposal
 - **Status**: review
@@ -208,13 +225,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 
 
 ### S21 — A slice not yet integrated has no reviewer
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - Found 2026-10-06, right after S19 landed: `x00835` S39 was still refused. Its block exists only in the unlanded unit, so the integrated document has no S39 section, and S19 read the whole document for a slice it lacks. A slice the integrated document does not have yet was written in a unit that has not landed and nobody has judged it: its section is now empty, and its author goes in. The whole proposal (`all`) still reads the whole document.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
-
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 7d96f5155980, validate exit 0, tests 8/8 — Delivered by the merge naming x00875-S21-g1. sliceSectionOf returns an empty section for a slice the integrated document does not carry, so reviewedByEntrant finds no reviewer and a slice not yet integrated does not block its author. No acceptance bullet is declared for this slice. Gate: reviewed-proposal.service.spec.ts 8/8 exit 0.
 
 ### S22 — A refused verdict claims nothing
 - **Status**: review
