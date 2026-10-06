@@ -117,13 +117,11 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
-### S13 — Each review pack is its own pull request
+### S13 — A unit is published to its own pull request, whatever its generation
 - **Status**: review
-- **Files**: `packages/core/src/lib/work-units/publication-target.service.ts`, `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
-- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
-- Found 2026-10-06 publishing two review packs of one agent (`batch-all-g1`, `batch-all-g4`): the second tried to push into the first's pull request and was refused as not a fast-forward. Every pack publishes the slice `all` of the proposal `batch`, so the rule "a proposal with a pull request for the whole of it takes this slice too" matched the other unit's pack. Under x00714 each unit has its own pull request. A review batch is now decided before that rule and always gets its own. The spec fails without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
+- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- Found 2026-10-06 publishing two review packs of one agent: `batch-all-g4` tried to push into `batch-all-g1`'s pull request and was refused as not a fast-forward. `work publish` chose the target with the generation of its arguments, which defaults to 1, not with the generation of the work ref it was publishing; the second unit of an agent was sent to the first unit's pull request. The generation now comes from the work ref. The spec publishes two packs by their sessions and fails without the change.
 
 ## acceptance
 

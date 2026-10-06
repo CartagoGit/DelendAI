@@ -190,16 +190,6 @@ export const choosePublicationTarget = (
 		: [];
 	const sliceOf = (ref: string): string | undefined =>
 		pattern?.exec(ref)?.[1];
-	// A review batch is one unit's pack. Another unit of the same agent
-	// also publishes `batch all`, and joining its pull request pushed one
-	// pack over the other, which git refused as not a fast-forward.
-	if (proposal === REVIEW_BATCH_ID) {
-		return {
-			unit: 'slice',
-			publicationRef: own,
-			reason: 'a review batch is published whole, as one pull request for every proposal it reviewed',
-		};
-	}
 	const whole = published.find(
 		(ref) => sliceOf(ref) === WHOLE_PROPOSAL_SLICE,
 	);
@@ -229,6 +219,13 @@ export const choosePublicationTarget = (
 			unit: 'slice',
 			publicationRef: own,
 			reason: `${proposal} was already published slice by slice; this slice is too`,
+		};
+	}
+	if (proposal === REVIEW_BATCH_ID) {
+		return {
+			unit: 'slice',
+			publicationRef: own,
+			reason: 'a review batch is published whole, as one pull request for every proposal it reviewed',
 		};
 	}
 	const sliceCount = proposalSliceCount(root, proposal, request.workRef);
