@@ -1385,6 +1385,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "f00509",
+				"title": "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-09-06"
+			},
+			{
 				"id": "f00511",
 				"title": "F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico",
 				"track": "trust",

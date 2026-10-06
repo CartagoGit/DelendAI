@@ -2,7 +2,7 @@
 id: f00509
 title: "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-06
@@ -15,9 +15,12 @@ tags:
     - event-bus
     - state-engine
     - non-blocking
-last-transition-id: 4f6ec4bc-66fc-48be-bf6d-a2a4a44464b3
-last-correlation-id: 4f6ec4bc-66fc-48be-bf6d-a2a4a44464b3
-last-transition-from: in-progress
+last-transition-id: 6fbf41cd-1fb4-484c-bf52-9e63b9bfebf3
+last-correlation-id: 6fbf41cd-1fb4-484c-bf52-9e63b9bfebf3
+last-transition-from: review
+shipped-in:
+  - "a9cb8d6a4"
+  - "97320d4d7"
 ---
 
 # f00509 — F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease
@@ -42,7 +45,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - global_gate: type
 
 ### S1 — Paquete `packages/state-telemetry` + tabla `work_events` (SQLite + NDJSON fallback)
-- **Status**: done
+- **Status**: in-progress
 - **Shipped-In**: 27c6cf021 feat(state-telemetry): scaffold work event bus
 - **Files**: `packages/state-telemetry/package.json` (sin entrada de subpath público: la declaraba apuntando a un barrel que esta slice no crea, y `lint:tsconfig-paths-coverage` la rechaza con razón — un subpath que no resuelve a nada. F2-S5, que es la dueña del barrel, añade export y barrel juntos), `packages/state-telemetry/tsconfig.json`, `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`
 - **Gate**: lint
@@ -53,10 +56,13 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada."
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` corre en CI y devuelve `0 violations`."
   - "F1-S1 NO crea `tools/scripts/lint/state-telemetry-purity.script.ts`; lo introduce F2-S1 (única slice responsable). Esta slice se limita al bus + tabla + tests, dejando la lint para cuando exista contenido que lintar."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: Persia
+- review-reviewer: claude-opus-5-5
+- review-log: requested_changes by claude-opus-5-5 — Every other criterion holds (work-event-store.spec: the q00020 table, the config switch with NDJSON when absent or malformed, no failure at startup; the purity lint now runs in lint:architecture). Missing: the criterion 'two concurrent writes from different processes produce no duplicate rows' has no test; 'keeps the autoincrement id monotonic across closes' writes from one process in sequence. To approve: a bun-owned spec that spawns two processes appending to one store at once and asserts every id is distinct and every event is present.
+
 ### S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
-- **Status**: review
+- **Status**: done
 - **Blocked by**: a consumer. Nothing in production reads `state-telemetry` events yet (f00510 is pending). Emitting them first is work nobody can see. The write boundary exists: every `caller-checkout` write passes `bindWriteRoot` (core), which is where a `git_change` would hook.
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/git-observer.service.ts`, `packages/state-telemetry/src/lib/observers/git-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/git-observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/git-observer.constant.ts`
@@ -67,12 +73,14 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "No bloquea al agente ni al servidor: lanza `git` con `spawn` asíncrono que la herramienta nunca espera (fire-and-forget), con como mucho una ejecución en vuelo (las peticiones que llegan mientras tanto se funden en una sola repetición al terminar), y si pasan 250 ms mata el proceso y emite `kind: 'git_change_stale'`. Corregido el 2026-09-24: la versión anterior decía `spawnSync` con `timeout: 250ms` y lo llamaba no bloqueante por no hacer `await`; `spawnSync` detiene el event loop de todo el servidor durante esos 250 ms en cada escritura."
   - "Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso."
   - "Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`)."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `a9cb8d6a4b9b`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at a9cb8d6a4, validate exit 0, tests 103/103 — Delivered by #779. state-telemetry vitest 103/103 and the bun-owned store spec 9/9 pass.
 
 ### S3 — `TestObserver` — enganche a `bun test` / `vitest` (start, finish, failure_hash)
-- **Status**: review
+- **Status**: done
 - **Blocked by**: none. The original hook points do not exist (no `preExec` hook, no `IMcpHostSession.events`, the lock engine emits nothing), so this observer is a pure component fed by its consumer; wiring it belongs to f00510.
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/test-observer.service.ts`, `packages/state-telemetry/src/lib/observers/test-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/observer-emitter.service.ts`, `packages/state-telemetry/src/lib/observers/failure-normalizer.helper.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/observer.constant.ts`
@@ -82,12 +90,14 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`failureHash(firstFailure)` is the sha256 of the path plus the normalized message (ANSI stripped, absolute paths made relative, durations, timestamps and line:col numbers removed, whitespace collapsed), so two runs failing for the same cause hash equal; the normalizer is shared with the tool observer."
   - "A run with zero tests (passed + failed = 0) emits neither event, because `started` defers everything to `finished`."
   - "The observer is pure and fire-and-forget: it spawns and hooks nothing, never awaits in the caller and never throws, even when the sink rejects."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `c446c1602e8e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ### S4 — `ToolObserver` — observador del MCP request log (tool_called, tool_finished, tool_error)
-- **Status**: review
+- **Status**: done
 - **Blocked by**: none. The original hook points do not exist (no `preExec` hook, no `IMcpHostSession.events`, the lock engine emits nothing), so this observer is a pure component fed by its consumer; wiring it belongs to f00510.
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/tool-observer.service.ts`, `packages/state-telemetry/src/lib/observers/tool-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/observer-emitter.service.ts`, `packages/state-telemetry/src/lib/observers/failure-normalizer.helper.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/observer.constant.ts`
@@ -97,12 +107,14 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`tool_error` hashes the exit code and the message through the same normalizer as the test observer, so equal errors hash equal."
   - "Attach/detach symmetry is tested: an observer over a no-op sink changes nothing and never mutates the args it is given."
   - "A 1000-call burst lands 1000 events through the NDJSON store in under one second (asserted in `tool-observer.service.spec.ts`)."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `c446c1602e8e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ### S5 — `AgentLeaseObserver` — enganche al lock engine (claim, release, heartbeat)
-- **Status**: review
+- **Status**: done
 - **Blocked by**: none. The original hook points do not exist (no `preExec` hook, no `IMcpHostSession.events`, the lock engine emits nothing), so this observer is a pure component fed by its consumer; wiring it belongs to f00510.
 - **DependsOn**: [F1-S1, F1-S4]
 - **Files**: `packages/state-telemetry/src/lib/observers/agent-lease-observer.service.ts`, `packages/state-telemetry/src/lib/observers/agent-lease-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/observer-emitter.service.ts`, `packages/state-telemetry/src/lib/observers/failure-normalizer.helper.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/observer.constant.ts`
@@ -111,9 +123,11 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`AgentLeaseObserver.claimed`, `heartbeat` and `released` emit `lease_claimed`, `lease_heartbeat` and `lease_released` with a stable `payload_hash`; claim, 4 heartbeats and release make 6 events."
   - "`check(now)` takes the clock from the caller (no timers) and emits `lease_heartbeat_missed` once per lease when 3 heartbeat intervals passed without heartbeat or release: claim, 5 heartbeats and silence make 6 events plus one missed, and a second `check` adds nothing."
   - "Not shipped: `work_assignments.released_at` is left out because no such table exists yet."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `c446c1602e8e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ## acceptance
 
