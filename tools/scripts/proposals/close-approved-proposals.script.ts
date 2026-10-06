@@ -398,12 +398,13 @@ const main = (): number => {
 				path,
 			);
 		}
-		const moved =
-			existing !== undefined &&
-			run('git', ['rev-parse', 'HEAD'], path) !== existing.sha;
-		if (closed.length === 0 && !moved) {
+		// Bringing an open publication level with the integration branch is
+		// the candidates' refresh, not a close pass: published from a unit
+		// of its own, it opened a pull request per pass beside the one it
+		// was bringing level.
+		if (closed.length === 0) {
 			console.log(
-				`close-approved-proposals: nothing new to close; ${existing === undefined ? 'no pull request is open' : `${existing.ref} is level`}.`,
+				`close-approved-proposals: nothing new to close; ${existing === undefined ? 'no pull request is open' : `${existing.ref} stays open`}.`,
 			);
 			return 0;
 		}
@@ -420,10 +421,26 @@ const main = (): number => {
 			],
 			root,
 		);
+		// The pass merged the open publication before closing more, so its
+		// own carries everything that one did: the older one is retired,
+		// its tip kept, instead of left open beside it.
+		if (existing !== undefined) {
+			tryRun(
+				'bun',
+				[
+					...cli,
+					'work',
+					'retire',
+					`--ref=${existing.ref.replace(/^refs\/heads\//u, '')}`,
+					'--reason=superseded by the next close pass, which merged it',
+					`--agent=${AGENT}`,
+					'--unowned',
+				],
+				root,
+			);
+		}
 		console.log(
-			closed.length > 0
-				? `close-approved-proposals: published the close of ${closed.join(', ')}.`
-				: `close-approved-proposals: brought ${existing?.ref ?? ''} level with ${branches.integration}.`,
+			`close-approved-proposals: published the close of ${closed.join(', ')}.`,
 		);
 		return 0;
 	} finally {
