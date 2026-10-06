@@ -163,6 +163,47 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A publication that does not merge trivially and whose author's unit has been abandoned (past the lease windows) is reported once as adoptable, with the exact `work enter` + merge + `work retire --unowned` steps, instead of `its author decides` on every pass; after a further window with nobody adopting it, its pull request is closed with that reason, and S10 retires it."
 - Found 2026-10-06: after the swarm stopped, #856, #857 and #858 sat on the forge, two of them conflicted, each reported on every hydration as "its author decides" by an author that was gone. Done by hand that day: #857's verdicts were adopted into a pack of the orchestrator's (less one approval that judged an earlier definition of x00875 S20), #858 was retired (signed `illyria`, a name of no model; its q00010 changes superseded), and #856 duplicates the queue's own close pass #878.
 
+### S14 — A unit that only merged landed work in is delivered
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A unit whose only commits beyond the integration branch are merges joining commits the integration branch already holds is judged delivered and reaped like any other delivered unit."
+- Delivered: x00878 S4, S6 and S8 landed through #879, which carried them, and their units stood for good as `idle`: each had merged develop in before a publish that was refused, and that merge commit — joining two commits develop holds — was the one thing develop lacked. `carriesNothingBeyond` reads every commit past the integration branch and accepts only merges whose parents are integrated or among those merges; the unit verdict and the reaper's empty-unit rule (S9) both use it. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S15 — A retired pack that changes no file is dropped
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`work reap --apply` drops from the forge a retired tip whose commits change no file against where it left the integration branch (a pack retired before its first verdict holds only empty claim and release commits); a retired tip that changes a file is kept."
+- Delivered: six of the fifteen retired refs left after the swarm were review packs that never recorded a verdict, each a claim commit or two, and the landed-retired reaper kept them because empty commits are never contained in the integration branch. They are now dropped with the landed ones. The same afternoon, by hand and with a reason each, the other spent ones went too (contents identical on develop, closes landed through #878, a slice that landed under its next generation): fifty-two retired refs became four, each holding verdicts that have not landed. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S16 — A submit through the CLI is committed, or the CLI says why
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/core/src/lib/contracts/constants/call-writes.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`, `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/lib/stdio-context.factory.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`proposals review <id> <slice> --action=submit --workspace=<unit>` commits the review lines it writes in the unit, every time; when the commit fails, the reason is in what the CLI prints (today it is only a text note beside the structured result, which the CLI does not print)."
+- Found 2026-10-07, after x00875 S20's timeout fix landed: of seven submits in this proposal's units, S9, S12, S3 and S5 were committed by the tool, and S10, S11, S14 and S15 were left staged — `git add` ran, the commit did not — with an `ok: true` result and no word of it. The same `git commit -- <path>` run by hand in the unit, with the agent's environment, passes every hook. Each was committed by hand with the tool's subject.
+- Delivered: the reason was invisible, so it is made visible first: the server's line saying a call's writes were not committed (`CALL_WRITES_NOT_COMMITTED`) is passed on by the CLI to its own stderr, whole however the server's output is chunked. A commit with a minimal environment like the one the SDK gives the server passes every hook, so the environment is ruled out; every failure here happened while other units of the clone were fetching and committing, so a commit git refuses only because another process holds a lock (`cannot lock ref`, `index.lock`) is now tried again, five times a second apart. The lock case's spec fails without the change. The retry covers the `git add` too, which takes the unit's own index lock: a submit left unstaged (S16's first, run with develop's code) is that step meeting `index.lock`, held for a moment by whatever refreshes the worktree's index (an editor's Git integration watches every worktree). The same submit run again with this unit's code was committed. If a submit is left staged again, the CLI now prints why.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S17 — A merge leaves the proposal-id counter level with what it brought
+- **Status**: in-progress
+- **Files**: `lefthook.yml`
+- **Gate**: type
+- acceptance:
+  - "After a merge that brings in a proposal created elsewhere, `lint:proposal-id-drift` passes in the merging worktree without anyone reseeding the counter by hand."
+- Delivered: twice on 2026-10-07 a unit's publish was refused by `check-proposal-id-drift` (x00878, then f00756 from another host): the counter is a cache in the clone's common directory, and nothing moved it when a merge brought ids it had not handed out. Since x00868 the allocator takes the highest of the files in every worktree, the forge's reservations and the cache, so a lagging cache hands out no taken id; it only failed the gate. The post-merge hook now reseeds it (`sync-proposal-counters`, which only raises), in the shared checkout and in every unit that merges.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

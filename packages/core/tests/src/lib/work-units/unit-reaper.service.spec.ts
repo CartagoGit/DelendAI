@@ -112,6 +112,28 @@ describe('reapDeliveredUnits', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
 	});
 
+	it('removes a delivered unit that merged the integration branch in afterwards', async () => {
+		const { repo, ref, worktree, start } = await deliveredUnit('caught-up');
+		repo.commit(repo.root, 'later.ts');
+		git(
+			worktree,
+			'merge',
+			'-q',
+			'--no-ff',
+			'-m',
+			'merge develop',
+			'develop',
+		);
+		const [reaped] = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped?.outcome).toBe('removed');
+		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
+	});
+
 	it('only reports without --apply', async () => {
 		const { repo, worktree, start } = await deliveredUnit('dry');
 		const [reaped] = await reapDeliveredUnits({

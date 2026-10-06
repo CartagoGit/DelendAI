@@ -17,6 +17,7 @@ import type {
 	IUnitStanding,
 	IUnitStandingEntry,
 } from './unit-lease.interface';
+import { carriesNothingBeyond } from './landed-work.service';
 import { judgeUnit, leaseWindowSeconds } from './unit-verdict.service';
 import { listWorkRefs } from './work-swarm.service';
 import { proposalStillInProgress } from './publication-target.service';
@@ -113,7 +114,11 @@ const deliveryOf = (
 		return { delivered: false, keptForContinuation: false, publication };
 	}
 	const base = integrationBase(root, policy);
-	const inIntegration = base !== undefined && isAncestor(root, sha, base);
+	// A merge of the integration branch into work it already holds adds
+	// nothing: the unit is in it all the same.
+	const inIntegration =
+		base !== undefined &&
+		(isAncestor(root, sha, base) || carriesNothingBeyond(root, sha, base));
 	const delivered = inIntegration || publishedElsewhere(root, policy, sha);
 	return {
 		delivered,
