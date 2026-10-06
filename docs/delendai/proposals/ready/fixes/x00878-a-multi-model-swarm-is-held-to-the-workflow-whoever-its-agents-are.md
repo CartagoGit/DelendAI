@@ -81,11 +81,12 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "`review finish` (and `review next` when it publishes a full pack) runs the pack's governance checks (independent approval, claimed proposals, cited commits) before publishing, and refuses with what to fix, so a reviewer is never told its pack is done while CI will refuse it."
 
 ### S6 — An open publication is a generation in use
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work enter`, with or without `--alongside`, never gives a generation whose publication is open on the forge."
+- Delivered: the rule that kept a review batch from reusing the name of a pack still published now holds for every unit: a generation whose publication is open is skipped, with or without `--alongside`. The spec fails without the change.
 
 ## acceptance
 
