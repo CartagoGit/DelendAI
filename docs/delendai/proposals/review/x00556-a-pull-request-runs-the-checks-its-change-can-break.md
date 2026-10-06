@@ -15,6 +15,7 @@ last-correlation-id: 64730661-cf16-4a63-8fe6-706211d89466
 last-transition-from: in-progress
 shipped-in:
   - "b7d8e2c7a084"
+  - "35473f596978"
 ---
 
 # x00556 — A pull request runs the checks its change can break
@@ -126,7 +127,7 @@ answerable, reviewable and testable.
 
 ### S3 — The saving is measured, not assumed
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/ci/test-zones.script.spec.ts tools/scripts/ci/job-scope.script.spec.ts tools/scripts/lint/workflow-history-depth.script.spec.ts`
 - **Files**:
   - `.github/workflows/ci.yml`
@@ -163,9 +164,11 @@ answerable, reviewable and testable.
   under when it is skipped, `declared always`, or that there is no
   change list and nothing is skipped. It is computed from the same
   table as the plan, and a spec holds the two to the same answer.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1191c3a74071`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 35473f596978, validate exit 0, tests 61/61 — Gate green on this delivery: job-scope + test-zones + workflow-history-depth specs 3 files / 61 tests passing. explainJobs now gives the per-job sentence (changed file under a bound, bound none reached, declared always, or empty change list), computed from the same table as the plan and pinned by the spec. plan-tests fetches PR history so the base diff cannot silently fall back to every zone; workflow-history-depth counts a job handed the PR base as reading history.
 
 ### S4 — A change outside the workspaces reaches only the zones that read it
 
@@ -249,7 +252,7 @@ answerable, reviewable and testable.
 
 ### S6 — A zone that scans other workspaces is reached by their changes
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/ci/test-zones.script.spec.ts`
 - **Files**:
   - `tools/scripts/ci/test-zones.script.ts`
@@ -270,9 +273,11 @@ answerable, reviewable and testable.
 - This costs two more shards on a pull request that changes a plugin and
   nothing else. It is the price of specs that judge other workspaces from
   where they live; moving them next to what they judge would remove it.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b7d8e2c7a084`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at b7d8e2c7a084, validate exit 0, tests 26/26 — Gate green: test-zones.script.spec.ts 26/26 on the current tip. ZONE_RULES gained an optional scans predicate; core declares the four workspace trees its architecture specs walk (plugins/, packages/, apps/, extensions/) excluding packages/core itself, so a plugin-only change now selects the core zone even when nothing imports it — the exact green-PR/red-develop failure the slice found. The interface documents scans and the planner applies it when a scanned path changed.
 
 ## acceptance
 
