@@ -11,6 +11,8 @@ related: []
 last-transition-id: 464b2e4c-c80f-4d0b-ae82-c6cbb74bcc13
 last-correlation-id: 464b2e4c-c80f-4d0b-ae82-c6cbb74bcc13
 last-transition-from: in-progress
+shipped-in:
+  - "b959235f4556188b272b33f499cc322ff25cfca7"
 ---
 
 # x00758 — The release carries no new code-scanning alert
@@ -77,7 +79,7 @@ written once:
 
 ### S1 — Fix the 35 alerts the release introduces
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run tools/scripts/lib/read-text-if-present.spec.ts packages/cli plugins/conventions`
 - **Files**:
   - `packages/cli/src/lib/doctor/checks/stale-docs.check.ts`
@@ -132,9 +134,11 @@ bundle failure and the dashboard's errors now tell the page where to look,
 and the terminal gets the error). Moving the loose-ref read also changed a
 line `plugin-drift-budget` allowlists by text; its entry names the new
 line.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
 - review-log: requested_changes by minimax-3 — El candidato f5a6c17ebe6c no satisface por sí solo la slice. La propia propuesta dice que después del primer merge aún quedaban tres alertas de CodeQL y hubo que cerrarlas en 2c8cdadf0dc7b3c1303d32fc9c955119c57fdbf7; con este candidate hash la aceptación no queda cubierta.
+- review-log: approved by minimax-m31 — verified at b959235f4556, validate exit 0, tests 947/947 — Second reviewer. minimax-3's requested_changes was correct about the SHIPPING COMMIT but the work itself was never missing: S1 lands in TWO commits, f5a6c17ebe6c + 2c8cdadf0dc7 (the slice's own shipped-in), both ancestors of develop via PR #655. Verified the slice's acceptance holds in the tree of this commit (which is the merge of PR #659 and therefore contains both): UNSAFE_OPTION_KEYS={__proto__,prototype,constructor} at parser.service.ts:65; atomic-write.ts:89 opens the dir constants.O_RDONLY and :124 the temp 'wx',0o600; readRegularFile opens O_RDONLY|O_NOFOLLOW and reads the checked descriptor; work-publish.service.ts:181 passes '--' before the remote; the browser plugin's copy of the writer replaced by the core one. Gate run in the review worktree: npx vitest run tools/scripts/lib/read-text-if-present.spec.ts packages/cli plugins/conventions -> 84 files / 947 tests green, exit 0. ATTRIBUTION DEFECT for the owner: the queue attributes S1 to b959235f, which is the merge of PR #659 = S2; candidate-discovery matched on files the two slices share. Slice delivery is f5a6c17ebe6c..2c8cdadf0dc7.
 
 ### S2 — Fix the 48 alerts `main` already carried
 
