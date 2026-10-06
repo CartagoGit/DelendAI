@@ -23,6 +23,7 @@ import {
 	recordUnitEntered,
 } from '@delendai/core/lib/work-units/unit-lease.service';
 import { readUnitLease } from '@delendai/core/lib/work-units/unit-lease.store';
+import { reserveSlice } from '@delendai/core/lib/work-units/slice-reservation.service';
 import { parseWorkSubject } from '@delendai/core/lib/work-units/work-ref-shape.service';
 
 const roots: string[] = [];
@@ -38,6 +39,7 @@ const TEMPLATE =
 const policy = fakePartial<IResolvedDevelopmentPolicy>({
 	branches: fakePartial<IResolvedDevelopmentPolicy['branches']>({
 		integration: 'develop',
+		namespacePrefix: 'delendai',
 		workRefPrefix: 'delendai/wip/',
 		workRefTemplate: TEMPLATE,
 	}),
@@ -97,6 +99,30 @@ const enter = (tree: string, branch: string) =>
 	});
 
 describe('adoptProposalId', () => {
+	it('releases the reservation the `new` unit made, so the next new proposal is not held', async () => {
+		const { main, tree, remote } = unitOn(OLD);
+		await enter(tree, OLD);
+		const reserved = reserveSlice({
+			root: main,
+			remote: 'origin',
+			namespace: 'delendai',
+			proposal: 'new',
+			slice: 'all',
+			unit: OLD.replace('delendai/wip/', ''),
+			agent: 'agent-a',
+			graceSeconds: 3600,
+			branchesOf: () => [],
+		});
+		expect(reserved.kind).toBe('reserved');
+		expect(git(remote, 'for-each-ref', 'refs/delendai/claims/')).not.toBe(
+			'',
+		);
+
+		await adoptProposalId({ cwd: tree, proposal: 'x00001', policy });
+
+		expect(git(remote, 'for-each-ref', 'refs/delendai/claims/')).toBe('');
+	});
+
 	it('names the unit after the proposal: branch, worktree, lease and remote', async () => {
 		const { main, tree, remote } = unitOn(OLD);
 		await enter(tree, OLD);

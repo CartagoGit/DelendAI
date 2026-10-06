@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { isAbsolute, relative, resolve } from 'node:path';
 
 import { sanitizeRefComponent } from '../wip-engine/index';
@@ -55,6 +56,20 @@ import {
  */
 /** How long an entering instance waits for another entering the same unit. */
 const ENTER_WAIT_MS = 60_000;
+
+/**
+ * `dir`, or the first `<dir>-<n>` nothing occupies. The default directory
+ * names the unit as it was entered, and a unit renamed since (a `new`
+ * unit that took its proposal's id) keeps standing in it: the next new
+ * proposal was refused its worktree until `--dir` named another.
+ */
+const freeDirectory = (dir: string): string => {
+	if (!existsSync(dir)) return dir;
+	for (let n = 2; ; n += 1) {
+		const next = `${dir}-${String(n)}`;
+		if (!existsSync(next)) return next;
+	}
+};
 const ENTER_POLL_MS = 200;
 
 /**
@@ -328,11 +343,13 @@ export const enteredHeld = async (
 	// dependencies there pointed every hook in the clone at it.
 	const dir =
 		scalarArg(args, 'dir') ??
-		resolve(
-			sharedCheckout(root) ?? root,
-			scalarArg(args, 'worktrees') ?? DEFAULT_UNITS_DIRECTORY,
-			sanitizeRefComponent(
-				`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`,
+		freeDirectory(
+			resolve(
+				sharedCheckout(root) ?? root,
+				scalarArg(args, 'worktrees') ?? DEFAULT_UNITS_DIRECTORY,
+				sanitizeRefComponent(
+					`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`,
+				),
 			),
 		);
 	// A worktree an agent places in the shared checkout's tree is a loose
