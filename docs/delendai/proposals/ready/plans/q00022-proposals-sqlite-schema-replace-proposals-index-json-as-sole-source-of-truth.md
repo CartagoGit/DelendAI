@@ -287,6 +287,10 @@ that the audit calls obligatory.
   - `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`
   - `tools/scripts/catalog/generate-agent-catalog.script.ts`
   - `tools/scripts/report/token-budget-report-lib.ts`
+  - `plugins/proposals/src/index.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-db-resolution.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-location.spec.ts`
+  - `plugins/proposals/src/lib/tools/db-status.tool.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -505,6 +509,18 @@ through the same reader (`tools/scripts/report/token-budget-report-lib.ts`),
 and `tokens:dashboard:check` stays in sync. The only reader of the
 registry left is `readProposalIndex`'s JSON fallback, for a layout with
 no database.
+
+**Found 2026-10-06 — a relocated cache was always served by the
+registry.** A host may move the cache (`--cacheDir`); the index moves
+with it, the database stays at `.cache/delendai/state`. The reader found
+a workspace from the index path only in the canonical layout, and none of
+the plugin's eight call sites passes `workspaceRoot`, so on such a project
+every read fell back to the registry with a notice. The plugin now
+declares its index file's layout once when it lays out its paths
+(`declareProposalIndexFile`, in `index-reader-location.ts`); a relative
+layout holds in any checkout of the workspace, a unit's worktree
+included, and a path that does not end in it is still nobody's guess.
+`index-reader-db-resolution.spec.ts` fails without the change. (Corrected the same day: CI's changed-file coverage measured the declared layout as untested, because only that bun-owned spec reached it. The declared layout no longer waits on the database package's import, which it does not need, and `index-reader-location.spec.ts` covers it under vitest; `db_status` takes only the two reads it makes, so the plugin no longer builds four stubs for it.)
 
 Acceptance:
 
