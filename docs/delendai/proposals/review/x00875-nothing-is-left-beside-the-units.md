@@ -221,6 +221,8 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - Found 2026-10-06: `review approve f00509 S1` by the reviewer that had asked for its changes was refused (the fix needs a fresh reviewer), and the proposal stayed claimed by it: the verdict claimed before the review rules ran. The claim reached the published pack, so the one reviewer the rule asks for would have found f00509 held. The verdict now asks the same pure rule (`reviewTransition`) first, on a round already open, and claims only a verdict it will accept; the refusal still comes from the path that records verdicts, with its own reason. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S23 — The queue does not offer a reviewer what it delivered
 - **Status**: pending
