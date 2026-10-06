@@ -25,6 +25,7 @@ import type {
 	IStartupReconciliationReport,
 } from '@delendai/core/lib/startup-reconciler/index';
 
+import { fakeForge } from '../startup-reconciler/fakes';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 const REMOTE_URL = 'git@github.com:acme/widgets.git';
@@ -205,6 +206,30 @@ describe('runStartupGate', () => {
 			expect(warning?.severity).toBe('info');
 			expect(warning?.message).toContain('NOT REQUIRED');
 			expect(renderStartupGate(outcome)[0]).toContain('NOT REQUIRED');
+		} finally {
+			removeTestWorkspace(workspace);
+		}
+	});
+
+	it('hands a bound forge seam to the reconciler and stops listing the phase', async () => {
+		const workspace = createTestWorkspace('startup-gate-');
+		try {
+			const forge = fakeForge({});
+			let received: IReconcileStartupInput['forge'];
+			const outcome = await runStartupGate({
+				...gateInput(workspace, 'shared-checkout-pr', async (input) => {
+					received = input.forge;
+					return degradedReport();
+				}),
+				forge,
+			});
+			expect(received).toBe(forge);
+			if (outcome.kind !== 'reconciled')
+				throw new Error('not reconciled');
+			expect(outcome.notExecutedPhases).toEqual([
+				'journal',
+				'governance',
+			]);
 		} finally {
 			removeTestWorkspace(workspace);
 		}

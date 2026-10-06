@@ -172,6 +172,23 @@ describe('repeated startup', () => {
 		expect(countRows(db, 'coordination_journal')).toBe(journalAfterWarmer);
 	});
 
+	it('costs one conditional pull-request request and writes no forge rows on a warm boot', async () => {
+		await boot();
+		const db = database.handle();
+		if (db === undefined) throw new Error('database not opened');
+		const pullsBefore = forge.calls().pulls;
+		const rowsBefore = {
+			pullRequests: countRows(db, 'pull_requests'),
+			ciRuns: countRows(db, 'ci_runs'),
+		};
+		const warm = await boot();
+		expect(forge.calls().pulls - pullsBefore).toBe(1);
+		expect(forge.conditionalHits()).toBe(1);
+		expect(warm.counters.pullRequestsReconciled).toBe(0);
+		expect(countRows(db, 'pull_requests')).toBe(rowsBefore.pullRequests);
+		expect(countRows(db, 'ci_runs')).toBe(rowsBefore.ciRuns);
+	});
+
 	it('re-reads a ref that actually moved, even on the warm path', async () => {
 		await boot();
 		const laptop = origin.clone('laptop-2');
