@@ -1449,6 +1449,14 @@
 				"date": "2026-09-15"
 			},
 			{
+				"id": "f00547",
+				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
+				"track": "architecture",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-09-16"
+			},
+			{
 				"id": "f00548",
 				"title": "Own the style surface: who may define a selector, and what breaks when it changes",
 				"track": "architecture",
@@ -1487,6 +1495,14 @@
 				"status": "ready",
 				"kind": "plan",
 				"date": "2026-08-26"
+			},
+			{
+				"id": "q00010",
+				"title": "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath",
+				"track": "develop-audit-hardening-v4-closeout",
+				"status": "in-progress",
+				"kind": "plan",
+				"date": "2026-08-25"
 			},
 			{
 				"id": "q00011",
@@ -1559,6 +1575,22 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-09-19"
+			},
+			{
+				"id": "x00877",
+				"title": "An upgrade leaves the project as its configuration says, and nothing else",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-06"
+			},
+			{
+				"id": "x00878",
+				"title": "A multi-model swarm is held to the workflow, whoever its agents are",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-10-06"
 			}
 		]
 	}

@@ -9,6 +9,20 @@ date: 2026-10-05
 last-transition-id: e0796df3-f7eb-4576-8f54-7fd19b6c508d
 last-correlation-id: e0796df3-f7eb-4576-8f54-7fd19b6c508d
 last-transition-from: in-progress
+shipped-in:
+  - "9e405f09f7fb33f0a0dd0e055642ef2928955731"
+  - "00128e2debe92950f0a065d9da76064bcf114914"
+  - "d86b383aca470163a16051827bef7ae3b1602ca3"
+  - "7d96f51559804495246013d71095f90a05b6184d"
+  - "db62951444bdb537e371e0c1b7ce54fb056e35e4"
+  - "4708525975eab47a589336724f7abcb814fdc25d"
+  - "68b22cd6fd11f3f254543516aa413f70384e9a88"
+  - "05f70a3e258816a2a1bbd437b7c60df283f6c847"
+  - "47baf9c2f4915ec6b614560ee262c32e7e64dfb5"
+  - "fd5a3aa6ae81279f8b56c2eba7579e56537cf708"
+  - "57a631db9ae8a3bbebdde2373d0e9691377fe807"
+  - "907b12101c096e1277c28ca8013d5fef2aa92c1d"
+  - "97f1cecdb488f4d6187145e16723640fcb37922d"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -39,215 +53,272 @@ Found on 2026-10-05, reading what the last runs left behind.
 - global_gate: none
 
 ### S1 — A proposal not yet written holds nobody out
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/slice-holders.service.ts`, `packages/core/src/lib/work-units/unit-proposal.constant.ts`, `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/slice-holders.service.spec.ts`
 - `holdersOfSlice` returns nobody for the placeholder proposal `new`: each agent under it writes its own document, and the unit takes the proposal's id as soon as it is allocated.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e18619dcb3ae`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 9/9 — Delivered in the whole-proposal merge x00875-all-g1. holdersOfSlice returns [] when the proposal is still the unallocated placeholder, and adoptProposalId renames the create unit to the real id via resolveWorkRef, so two agents each entering --kind=create --proposal=new --slice=all are neither refused nor lumped as one holder. Acceptance bullet 1 met. Gate: slice-holders.service.spec.ts 9/9 exit 0.
 
 ### S2 — A directory beside the units that is no unit is reaped
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/work-units/units-directory.constant.ts`, `packages/core/src/lib/contracts/interfaces/worktree-husks.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/worktree-husks.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/worktree-husks.service.spec.ts`
 - `work doctor` gains `no-husk-directories`: every directory in the units' folder is a registered worktree. A directory written to within one lease window is not counted, so a unit being created is never reported.
 - `work reap` reports husks, and with `--apply` removes them. First, the husk and every checkout found inside it are read as git would read them, under the repository's ignore rules. A tree no commit of this clone has is committed and pushed to `refs/<namespace>/retired/husk/<name>`; only then is the directory removed. A husk git cannot read, or whose files the forge does not take, stays and says why.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `4542131c19e2`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 8/8 — Delivered in x00875-all-g1 (9e405f09f7fb) and last carried by 05f70a3e2588, cited here as the slice now stands. huskDirectories lists directories in the units folder excluding registered worktrees, the no-husk-directories invariant claims every directory beside the units is a unit, and reapHusks first preserves unique content on refs/<ns>/retired/husk/<name> and only then removes the directory. Acceptance bullet 2 met. Gate worktree-husks.service.spec.ts 8/8 exit 0.
 
 ### S3 — A route selection explains itself
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/selection-explain.service.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/selection-explain.interface.ts`, `plugins/auto-agent-selector/src/lib/routing/economic-preference.ts`, `plugins/auto-agent-selector/src/public/index.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/selection-explain.service.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/auto-agent-selector tests/src/lib/routing`
 - Ported from the rescued commit `fa510753d` and reshaped to today's conventions. A ranked route keeps the parts of its score (`qualityEvidence`, `alreadyPaidBonus`, `scarcityPenalty`, `headroomTiebreak`, `total`); `explainSelection` names the chosen route, every discarded one with its reasons, and the fallback order.
 - `f00507` S4 now names the files that shipped.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e18619dcb3ae`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 69/69 — Delivered in x00875-all-g1. IRouteScoreComponents carries qualityEvidence, alreadyPaidBonus, scarcityPenalty, headroomTiebreak and total; toRow copies components onto every ranked row; explainSelection returns chosen, discarded and a fallback with order and reason; the public barrel re-exports it. Acceptance bullet 3 met. Gate: plugins/auto-agent-selector tests/src/lib/routing 69/69 exit 0.
 
 ### S4 — A build refuses to write a database a newer build wrote
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/proposals-sqlite/src/lib/schema-guard.service.ts`, `packages/proposals-sqlite/src/lib/schema-guard.interface.ts`, `packages/proposals-sqlite/src/lib/schema-guard.service.spec.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.ts`, `packages/proposals-sqlite/src/lib/work-model/startup-state-ports.ts`, `packages/proposals-sqlite/src/index.ts`
 - **Gate**: `bun test --timeout 30000 packages/proposals-sqlite/src/lib/schema-guard.service.spec.ts packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
 - Ported from the rescued commit `ce0c35eec`. A writable open of a database whose recorded schema version is above the build's throws `SchemaAheadOfRuntimeError` before the migration sweep and before `user_version` is stamped; the file is left as it was. A read-only handle still opens, so the diagnostic is not blinded. Startup binds no port and reports the sentence that says which build to install.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `05515492f69d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 21/21 — Delivered in x00875-all-g1. assertSchemaWithinRuntime throws SchemaAheadOfRuntimeError before migrations or the user_version pragma are applied, so the file is untouched, and openStartupStatePorts reports kind unreadable with describeSchemaAhead. Acceptance bullet 4 met (throws, changes nothing, startup says why). Gate: proposals-sqlite schema-guard + sqlite-driver 21/21 exit 0.
 
 ### S5 — Retired work that was read and is nothing can be dropped
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-retired-drop.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/work-retire.service.spec.ts`
 - `delendai work retired --drop=<unit> --reason=<why>` removes retired work from the forge, by the name `work retired` lists or by a pattern ending in `*`. It is refused without a reason and for a name that is not there.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dd4b4305f8cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 12/12 — Delivered in x00875-all-g1 (9e405f09f7fb) and last carried by 05f70a3e2588. work retired --drop requires both unit and reason, lists refs under the retired prefix with ls-remote and deletes exactly the refs found. Acceptance bullet 5 met. Gate work-retire.service.spec.ts 12/12 exit 0.
 
 ### S6 — A delivery is read however its key was spelled
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/swarm/slice-shipping-record.ts`, `plugins/proposals/tests/src/lib/swarm/slice-shipping-record.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/swarm/slice-shipping-record.spec.ts`
 - Found handing `f00509` to review: its S1 records `- **Shipped-In**: 27c6cf021 feat(…)`, and the hand-off was refused with "nothing records which commit delivered it". The reader took only `- shipped-in:` in lower case with the hash in backticks. It now takes the key in any case, bold or not, and a hash in backticks or bare at the start of the value; a word is still no hash.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 23/23 — Delivered in x00875-all-g1. SHIPPING_LINE_RE accepts shipped-in, Shipped-In and **Shipped-In** case-insensitively, and readShippingCommit accepts the hash bare, backticked or followed by a subject, returning the first that is a commit hash. Acceptance bullet 6 met. Gate: slice-shipping-record.spec.ts 23/23 exit 0.
 
 ### S7 — Retired work the integration branch came to hold is reaped
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/work-retire.interface.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/work-retire.service.spec.ts`
 - Found using S5 on 2026-10-05: of 62 retired tips, 22 were ancestors of `develop`. A unit given up is often finished by another agent or merged a minute later, and from then on its kept tip keeps nothing. `work reap` now lists the retired refs whose commit the integration branch contains and, with `--apply`, drops them from the forge. A forge that cannot be reached drops nothing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 12/12 — Delivered by the merge naming x00875-S7-g1 (9888fe4f26fb) and last carried by 05f70a3e2588, which touched the same files; that later commit is the slice as it stands. reapLandedRetired lists refs under the retired prefix, fetches commits it does not have, keeps only those the integration branch contains (merge-base --is-ancestor), and with apply deletes exactly those. Acceptance bullet 7 met. Gate work-retire.service.spec.ts 12/12 exit 0.
 
 ### S8 — A slice reservation whose unit is gone is released
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/slice-reservation.interface.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - Found in the audit after the queue emptied on 2026-10-05: eighteen refs under `refs/delendai/claims/slice/` for slices that had landed. A reservation was released only when its unit was retired, and a unit that lands is not retired. They kept nobody out, since an entrant takes over a reservation whose unit is gone, but each delivered slice left a ref for ever. `work reap` now lists the reservations whose unit has no branch on the forge and that are older than an abandoned unit is given and, with `--apply`, releases them.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 5/5 — Delivered by the merge naming x00875-S8-g1 (132456e37941) and last carried by 05f70a3e2588. reapSpentReservations reads the unit out of the claim commit, keeps a reservation whose work or publication branch still exists or whose stamp is inside the grace, and releases only the spent ones. Acceptance bullet 8 met. Gate slice-reservation.service.spec.ts 5/5 exit 0.
 
 ### S9 — A cited proposal is found in any status folder
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/proposal-completeness.ts`, `plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/services/proposal-completeness.spec.ts`
 - Found 2026-10-05 handing `x00539` to review: its S4 cites `f00534` by the `ready/` path it had when written, and the hand-off was refused with "declared files do not exist". The repository's lints had been taught the same thing an hour earlier (`f00536`); the plugin's own check, which only spared the proposal's own document, had not. A declared path under `docs/delendai/proposals/` now counts as present when a proposal document of that file name exists in any status folder; any other missing file is still owed.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 00128e2debe9, validate exit 0, tests 20/20 — Delivered by the merge naming x00875-S9-g1. proposal-completeness builds proposalDocumentNames by scanning docs/delendai/proposals recursively and accepts a cited path whose basename exists in another status folder. No acceptance bullet is declared for this slice. Gate: proposal-completeness.spec.ts 20/20 exit 0.
 
 ### S10 — A retired unit is not reported as lost
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`, `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/retired-tips.service.ts`, `packages/core/src/lib/startup-reconciler/seams.interface.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.constant.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/work-retire.service.ts`, `packages/core/src/lib/work-units/work-retired-drop.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/worktree-husks.service.ts`, `config/delendai/repair-resolutions.json`, `packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/startup-reconciler packages/core/tests/src/lib/work-units`
 - Found 2026-10-06 by the owner restarting the server: the boot came up DEGRADED with mutations blocked, on 21 `integration-evidence.ref-vanished` blockers. They were units of the 2026-10-03 swarm and of this session, retired with `work retire` and, after being read, dropped with S5. The reconciler records the checkpoint of every local unit it sees; when the ref is gone and the checkpoint is not in the integration branch it may not guess, and it did not. But a retired unit was kept on the forge, and the reconciler never looked there.
 - At boot the reconciler now lists the integration remote's `refs/<namespace>/retired/*` (best effort: offline or with no remote it lists nothing and concludes nothing). A vanished ref whose checkpoint is a retired tip is a note, `integration-evidence.checkpoint-retired`, not a blocker. Once the retired copy is dropped too, nothing keeps it, and the boot asks a person again, as it should. The spec covers both, against real repositories.
 - The 21 blockers were each checked (all landed, reconciled, or redone by another unit) and recorded as `resolved-elsewhere` in `config/delendai/repair-resolutions.json` with their reasons.
 - Found writing the spec: every hidden ref was built as `refs/${namespace}/…`, which is `refs//retired/…` in a project with no namespace; git refuses it, so retiring, keeping a husk and reserving a slice failed there outright. `namespacedRef` builds them all now.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 68b22cd6fd11, validate exit 0, tests 450/450 — Delivered by the merge naming x00875-S10-g1 (05f70a3e2588) and last carried by 68b22cd6fd11. integration-evidence adds retiredTips and reports checkpoint-retired when a vanished work ref's checkpoint is under refs/<ns>/retired, so a retired unit is not reported lost; namespaced-ref.helper stops refs// collisions in a repo with no namespace. No acceptance bullet is declared for this slice. Gate: packages/core startup-reconciler + work-units 450/450 exit 0, run with DELENDAI_AGENT_ID unset so no ambient agent leaks into the publish refusal the suite asserts.
+- review-attribution: claude-opus-5-5 from commit 68b22cd6fd11 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00875-S27-g1/a-generation-once-used-is-spent (68b22cd6fd11f3f254543516aa413f70384e9a88), opened by minimax-3
 
 ### S12 — Nothing the clone keeps points into a unit, or collides with one
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-retire.service.spec.ts && npx vitest run --project @delendai/cli packages/cli/src/lib/guard-hooks.service.spec.ts`
 - Found 2026-10-06 retiring review units: a generation is reused once its unit is gone, and `work retire` of the new `batch-all-g2` was refused because the forge already kept the old `batch-all-g2` under the same retired name, a push that is not a fast-forward. Neither may be lost, so the second is now kept beside the first, named by its commit (`<name>-<12 hex>`). The spec fails without the change.
 - Found the same night: one `guard install` run from inside a unit recorded that unit's CLI as `delendai.guard.entry` in the clone's config. When the unit landed and its worktree was removed, every hook of every worktree called a file that was gone (`Module not found …/x00875-S11/packages/cli/src/index.ts`). An entry inside a linked worktree is now recorded as its twin in the main checkout, which outlives every unit; an entry with no twin is kept as given.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 12/12 — Delivered by the merge naming x00875-S12-g1 (47baf9c2f491) and last carried by 05f70a3e2588. work-unit-retire gives a reused unit name's second retired ref a short commit suffix instead of overwriting the first, and guard install maps an entry inside a linked worktree to its twin in the main checkout. Nothing the clone keeps points into a disposable unit. No acceptance bullet is declared for this slice. Gate work-retire.service.spec.ts 12/12 exit 0.
+- review-attribution: claude-opus-5-5 from commit 05f70a3e2588 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00875-S10-g1/a-retired-unit-is-not-a-lost-one (05f70a3e258816a2a1bbd437b7c60df283f6c847), opened by minimax-3
+
 ### S11 — The boot warns only of what is true
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `delendai.config.json`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/guard-hooks.service.spec.ts`
 - Found 2026-10-06 in the same boot log as S10. `guard hooks` reported `commit-msg: absent`, although `lefthook.yml` runs the guard there. It asks as `guard pre-commit`, on purpose: `commit-msg` judges the commit `pre-commit` judges, and runs even for an empty commit, which `pre-commit` skips. The detection accepted only the hook's own name. `commit-msg` now also counts when it asks as `pre-commit`; no other hook does. And `guard install` reported every hook lefthook declares as `unsupported` — `pre-push` and `post-merge` too — even where `lefthook.yml` already runs the guard; such a hook is now `unchanged`, and the boot lists all six as guarded.
 - The same boot warned `push-automation-contradicts-policy`: this repository's `commit-policy.push.onCommit` pushed the checked-out branch, which `shared-checkout-pr` never pushes from the shared checkout, so every attempt was refused. Units reach the forge through their work ref (`persistence.autoPushAfterCommit`). `onCommit` is removed from the configuration.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 47baf9c2f491, validate exit 0, tests 10/10 — Delivered by the merge naming x00875-S11-g1 (26bfd63fa32a) and last carried by 47baf9c2f491. lefthookRunsGuard recognises lefthook invoking the guard as commit-msg running pre-commit, an already-guarded managed hook is left unchanged, and delendai.config.json no longer carries an onCommit push setting. The boot warns only of what is true. No acceptance bullet is declared for this slice. Gate guard-hooks.service.spec.ts 10/10 exit 0.
 
 ### S13 — A unit is published to its own pull request, whatever its generation
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - Found 2026-10-06 publishing two review packs of one agent: `batch-all-g4` tried to push into `batch-all-g1`'s pull request and was refused as not a fast-forward. `work publish` chose the target with the generation of its arguments, which defaults to 1, not with the generation of the work ref it was publishing; the second unit of an agent was sent to the first unit's pull request. The generation now comes from the work ref. The spec publishes two packs by their sessions and fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 68b22cd6fd11, validate exit 0, tests 46/46 — Delivered by the merge naming x00875-S13-g1 (4557d2f09d23) and last carried by 68b22cd6fd11. work-unit-publish parses the generation out of the work ref it is publishing and passes generationOfWorkRef into choosePublicationTarget before any argument fallback, so each generation is published to its own pull request. No acceptance bullet is declared for this slice. Gate work-unit.service.spec.ts 46/46 exit 0 with DELENDAI_AGENT_ID unset; the same file reads 45/46 in a shell that exports it, which is an ambient agent being inferred instead of the missing --agent= refusal, not a defect in this slice.
+- review-attribution: claude-opus-5-5 from commit 68b22cd6fd11 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00875-S27-g1/a-generation-once-used-is-spent (68b22cd6fd11f3f254543516aa413f70384e9a88), opened by minimax-3
 
 ### S14 — A released proposal is not handed back to the reviewer who released it
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
 - Found 2026-10-06: I released `f00547`, which I had changed and so could not judge independently, and the very next `review next` gave it back. The release commit sits beside the claim commit in the unit, and `review next` read only the claims, so it resumed the proposal as the unit's own. What a unit holds is now what it claimed less what it released, and a proposal it released is not offered to it again; another reviewer still gets it. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at fd5a3aa6ae81, validate exit 0, tests 11/11 — Delivered by the merge naming x00875-S14-g1 (f6f632c3f6ad) and last carried by fd5a3aa6ae81. review next defines claimsOf as claimed minus released and filters releasedElsewhere out of the free queue, so a proposal a unit released is not handed back to it. No acceptance bullet is declared for this slice. Gate review.command.spec.ts 11/11 exit 0.
 
 ### S15 — No tracked file keeps the markers of an unfinished merge
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-conflict-markers.script.spec.ts`, `package.json`, `docs/delendai/proposals/review/x00835-a-review-swarm-leaves-verdicts-that-can-be-checked-and-loses-none.md`, `docs/delendai/proposals/review/x00875-nothing-is-left-beside-the-units.md`
 - **Gate**: `bun run lint:no-conflict-markers && npx vitest run --project tools tools/scripts/lint/no-conflict-markers.script.spec.ts`
 - Found 2026-10-06: the documents of `x00835` and of this proposal reached `develop` with `<<<<<<< HEAD` and `>>>>>>>` lines in them. My batch script merged another open pull request of the same proposal into a unit, the merge stopped on a conflict, and the next step committed the tree as it was; every gate passed and the queue merged it. Markdown shows the markers as text, and nothing looked for them.
 - `lint:no-conflict-markers` refuses any tracked file with a line that starts with git's opening or closing marker (not `=======`, which is also a markdown underline), and runs first in `lint:architecture`, which CI runs. Both documents are repaired by keeping every side: each conflict was two pull requests appending different slices.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 57a631db9ae8, validate exit 0, tests 2/2 — Delivered in x00875-all-g1's lineage and last carried by 57a631db9ae8, cited here as the slice now stands. No merge on develop names x00875-S15-g1, so the attribution is inferred from the files: markerLines matches only lines that open or close a git merge marker, main walks the tracked files via git ls-files, and lint:architecture runs it first. No acceptance bullet is declared for this slice. Gate no-conflict-markers.script.spec.ts 2/2 exit 0.
 
 ### S16 — A review unit reads the integration branch of now
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
 - Found 2026-10-06: `review next` offered `x00766`, which another pack had approved and the queue had already closed into `done/`. Since S35 the queue is read from the reviewer's unit, where its own verdicts are, and a unit made before other verdicts merged still showed their proposals waiting. `review next` now merges the integration branch's remote tip into the unit before it reads; a merge that would conflict is aborted and changes nothing. Like the hydration of an idle unit, the merge runs without hooks: it brings in only what the integration branch already checked. The spec fails without the change.
 - Also seen, and left as is: a release is recorded in the unit that released, so a reviewer that opens a new unit is offered again what it released in an old one, and must release it again with its reason.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at fd5a3aa6ae81, validate exit 0, tests 11/11 — Delivered by the merge naming x00875-S16-g1 (728f8c93e47f) and last carried by fd5a3aa6ae81. review next calls catchUp, which fetches and merges the integration branch, before it reads the queue, so a review unit reads the integration branch of now. No acceptance bullet is declared for this slice. Gate review.command.spec.ts 11/11 exit 0.
 
 ### S17 — A read is not refused as a write
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/tool-registration.interface.ts`, `packages/core/src/lib/shared/bind-write-root.ts`, `packages/core/tests/src/lib/shared/bind-write-root.spec.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
 - Found 2026-10-06: `proposals review <id> <slice> --action=status` in the shared checkout was refused with `shared-checkout-write-refused`, so the only way to ask whether a slice had a round was to open a unit for it. The refusal is decided per tool: `proposal_review` declares `caller-checkout` because submit, approve and request_changes write, and its `status` read was refused with them. A registration now declares `readsOnly(input)`, the calls that write nothing, and the binding never refuses those in the shared checkout; `proposal_review` answers it for `status`. Its writes are refused as before, which the spec pins in the same call sequence.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at db62951444bd, validate exit 0, tests 23/23 — Delivered by the merge naming x00875-S17-g1 (22dade1df1b1) and last carried by db62951444bd. IToolRegistration gains readsOnly, bindWriteRoot skips the shared-checkout write refusal when the caller's own predicate says the call is a read, and proposal_review declares status as a read and returns before writing. A read is no longer refused as a write. No acceptance bullet is declared for this slice. Gate bind-write-root.spec.ts 23/23 exit 0.
 
 ### S18 — A spent publication is retired, not deleted
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - Found 2026-10-06: `work doctor` reported a landed publication (`publications-hold-work`) with the remedy `git push origin --delete <ref>`, the one clean-up S10 and `work retire` exist to replace: a bare delete keeps no tip and records no reason, and the reconciler then has nothing to tell a retired ref from a lost one. Every other invariant already names `work retire`. The remedy now does too, and the spec pins that it names retiring and no `--delete`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at d86b383aca47, validate exit 0, tests 19/19 — Delivered by the merge naming x00875-S18-g1. spentPublicationsInvariant now reports 'its commits are already on <integration>: retire it' instead of a bare delete, so a spent publication is retired and not deleted. No acceptance bullet is declared for this slice. Gate: workflow-invariants.service.spec.ts 19/19 exit 0.
 
 ### S19 — A reviewer is kept out of the slice it judged, not the proposal
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - Found 2026-10-06: `x00835` S39 was committed to its work ref on 2026-10-05 and never published; the queue's doctor reported the ref (`no-remote-work-refs`, silent 9 h) and the queue run went red on it. Its implementer could not finish it: `work enter` refused every implement unit on x00835 because the same agent had approved a co-author's S18, and the rule looked for the agent's name anywhere in the document. Independence is per slice, the way the verdict enforces it (reviewer ≠ implementer of that slice). The refusal now reads the section of the slice being entered (`sliceSectionOf`); entering the whole proposal (`all`) still reads the whole document. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 7d96f5155980, validate exit 0, tests 8/8 — Delivered by the merge naming x00875-S19-g1 (f769b78803af) and last carried by 7d96f5155980. sliceSectionOf narrows the review evidence to one slice section and reviewedByEntrant tests the reviewer name against that section only, so an agent is kept out of the slice it judged and not of the whole proposal. No acceptance bullet is declared for this slice. Gate reviewed-proposal.service.spec.ts 8/8 exit 0.
 
 ### S20 — A verdict written through the CLI is committed, or says why not
-- **Status**: pending
-- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`
-- **Gate**: `npx vitest run packages/core/tests/src/lib/shared`
+- **Status**: review
+- **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/contracts/interfaces/mcp-transport.interface.ts`, `packages/client/tests/transport/mcp-stdio-client.connect.spec.ts`, `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/contracts/constants/stdio-context.constant.ts`
+- **Gate**: `npx vitest run packages/client/tests/transport/mcp-stdio-client.connect.spec.ts`
 - Found 2026-10-06, not yet explained: `proposals review <id> <slice> --action=submit --workspace=<unit>` writes the slice's review lines and leaves the document staged and uncommitted, most of the time (x00875 S17, S18, S19; f00643 S2) but not always (x00875 S15, f00509 S1 committed with the `chore(delendai): … submit` subject). Established: the unit's branch resolves (`unitBranchOf`), the path is staged, so `git add` ran and `git commit` failed; the same `withCallWritesCommitted` run in-process on the same change commits. The note it writes on a failed commit reaches neither the CLI's output nor its stderr, so the caller learns nothing. Seen again for S21–S26 the same day, in three forms: committed by the tool (S21, S22, S24, S25), left staged (S23), and left unstaged (S26), which means the tool's commit step did not run at all for that call: the cause is upstream of `commitPaths`, in whether the call is bound to the unit.
 - acceptance:
   - "The cause is reproduced by a spec that drives the CLI against a unit, and fixed."
   - "A commit that fails is reported in what the CLI prints, not only on the server's stderr."
-
+- Delivered: the cause was the client, not the committer. The CLI talks to a server it starts, through the MCP SDK, whose default gives a tool call one minute. A verdict's write is committed inside the call, behind the project's pre-commit hooks (one regenerates the agent catalog), and on a loaded machine they ran past the minute: the CLI gave up, closed the server, and the commit was cut off, staged or not yet staged, its lock still held for a while (seen on x00877 S1: `index.lock: File exists`, the document staged, the catalog modified). The client now takes `requestTimeoutMs`, passed to every call, and the CLI waits thirty minutes (`CLI_TOOL_CALL_TIMEOUT_MS`), the answer its caller is waiting for anyway. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S21 — A slice not yet integrated has no reviewer
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - Found 2026-10-06, right after S19 landed: `x00835` S39 was still refused. Its block exists only in the unlanded unit, so the integrated document has no S39 section, and S19 read the whole document for a slice it lacks. A slice the integrated document does not have yet was written in a unit that has not landed and nobody has judged it: its section is now empty, and its author goes in. The whole proposal (`all`) still reads the whole document.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
-
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 7d96f5155980, validate exit 0, tests 8/8 — Delivered by the merge naming x00875-S21-g1. sliceSectionOf returns an empty section for a slice the integrated document does not carry, so reviewedByEntrant finds no reviewer and a slice not yet integrated does not block its author. No acceptance bullet is declared for this slice. Gate: reviewed-proposal.service.spec.ts 8/8 exit 0.
 
 ### S22 — A refused verdict claims nothing
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - Found 2026-10-06: `review approve f00509 S1` by the reviewer that had asked for its changes was refused (the fix needs a fresh reviewer), and the proposal stayed claimed by it: the verdict claimed before the review rules ran. The claim reached the published pack, so the one reviewer the rule asks for would have found f00509 held. The verdict now asks the same pure rule (`reviewTransition`) first, on a round already open, and claims only a verdict it will accept; the refusal still comes from the path that records verdicts, with its own reason. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at db62951444bd, validate exit 0, tests 7/7 — Delivered by the merge naming x00875-S22-g1. proposal_review computes whether the review rules would refuse the verdict before claiming, and verdictClaimRefusal returns immediately when claim is false, so a refused verdict claims nothing. No acceptance bullet is declared for this slice. Gate: proposal-review-claim.spec.ts 7/7 exit 0.
 
 ### S23 — The queue does not offer a reviewer what it delivered
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-queue-reviewer.service.ts`, `plugins/proposals/src/lib/services/delivery-history.service.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`, `plugins/proposals/src/generated/tool-outputs.ts`, `plugins/proposals/tests/src/lib/services/review-queue-reviewer.service.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts plugins/proposals/tests/src/lib/services/review-queue-reviewer.service.spec.ts`
 - Found 2026-10-06: one `review next` session offered claude-opus-5-5 five proposals it could not judge: f00274 and x00541, whose deliveries include its own publications (`delendai/pr/claude-opus-5-5/...`), and three it had released before in other units. The queue knew a slice's implementer only from `review-implementer`, the agent that submitted; another agent's publication delivering the same slice was not counted, and a unit of the whole proposal (`--slice=all`) was filed under `all` and listed for no slice.
 - Delivered: each delivery candidate carries the agent its unit's ref names (`agent` in the queue's output), a whole-proposal unit's delivery is a candidate of every slice, and the queue marks `needs-another-reviewer` a slice a unit of the asker's own identity delivered, under any independence (and of its own model, where the project asks for another model). Both specs fail without the change.
 - acceptance:
   - "A slice whose delivering merges include a publication by the reviewer is not offered to it."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 97f1cecdb488, validate exit 0, tests 19/19 — Delivered by the merge naming x00875-S23-g1 and still the newest delivery touching its files. indexDeliveries records the delivering agent on each candidate, buildReviewQueue includes the whole-proposal (all) delivery for every slice, and queueForReviewer turns those into needs-another-reviewer, so a reviewer's own publications no longer return as judgeable work. Gate review-queue.tool.spec.ts + review-queue-reviewer.service.spec.ts 19/19 exit 0.
 
 ### S24 — A release is honoured wherever it was recorded
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/lib/review/review-releases.service.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
 - Found 2026-10-06 (split out of S23): a release lives only in the unit that recorded it, so a reviewer that opens a new unit is offered again, one by one, every proposal it released for a reason that still holds (it changed that code). Five releases had to be repeated in one session.
 - acceptance:
   - "A release a reviewer recorded in any of its units, published or retired, keeps the proposal out of that reviewer's queue until the proposal's slices change."
 - Delivered: `review next` reads the reviewer's releases from every ref that names it, since a commit names no agent: its review units here, its packs on the remote, and the merges of its packs on the integration branch (their merged side). A release stands until the proposal's document changes after it, by commit time. A retired pack is not read: its ref is not fetched by a clone, and a retired pack was not delivered. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at fd5a3aa6ae81, validate exit 0, tests 11/11 — Delivered by the merge naming x00875-S24-g1 and still the newest delivery touching its files. review-releases.service reads the reviewer's releases from its own review units, its packs on the remote and the merged side of its packs' merges, and a release stands until the proposal's document changes after it; review next filters all of them out of the free queue. Gate review.command.spec.ts 11/11 exit 0, including 'honours a release made in another unit, until the proposal changes'.
 
 ### S25 — A published review pack is not closed behind its author
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
 - **Gate**: `npx vitest run tools/scripts/git/maintain-ref-namespace.script.spec.ts`
 - Found 2026-10-06: pack #836 (only claim and release commits) was closed and its branch deleted at 10:51:56Z by the owner's credentials, seven minutes after `review finish` opened it, with no comment and no retired ref (its tip `5637260bb` survived only as an unreferenced object). `work retire` always comments and keeps the tip, so it was not that. Candidates: a host server or hook process applying a reap or supersede rule to a pack whose commits change no file. Lead: the g2 unit's worktree and local branch were removed too, which is what `work reap --apply` does from the post-merge hook of the main checkout to a unit it judges `delivered`; a unit whose commits change no file may be judged delivered by content.
@@ -255,31 +326,47 @@ Found on 2026-10-05, reading what the last runs left behind.
   - "The process that closed it is identified and a spec reproduces it."
   - "A pack whose commits change no file is never taken for spent or superseded while it carries claims or releases the integration branch lacks."
 - Delivered: the cause is `maintain-ref-namespace`'s reap pass, run from the main checkout's post-merge hook (`hydrate-candidates-after-merge`). It took a ref as spent when its three-dot diff against the integration branch was empty, and a pack of claim and release commits changes no file, so it was spent the moment it was pushed; deleting its branch closed its pull request. A forward sync had been exempted by its name for the same reason (#656, #675). The rule is now general: a ref holding a commit the integration branch lacks that changes no file carries its meaning in that commit, and is spent only once the integration branch contains it (`carriesEmptyCommits`). The spec fails without the change, for the pack and for the forward sync judged without its name.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 907b12101c09, validate exit 0, tests 18/18 — Delivered by the merge naming x00875-S25-g1 and still the newest delivery touching its files. The cause is maintain-ref-namespace's reap pass run from the main checkout's post-merge hook; isSpent no longer judges a ref spent from its diff alone when it carries empty commits, but requires merge-base --is-ancestor against the integration branch, which is exactly a pack of claims and releases. Gate maintain-ref-namespace.script.spec.ts 18/18 exit 0, including 'keeps a review pack of claims and releases until the integration branch contains it'.
 
 ### S26 — A pull request is titled by its own slice
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - Found 2026-10-06: #839, the publication of x00875 S23, opened titled "the review queue cites the delivery an approval is accepted with (x00835 S39)": the unit had merged S39's publication to build on it, and a pull request was titled by its oldest delivering commit. The title now prefers the deliveries that cite the unit its branch names (`<proposal> <slice>`, or the proposal for `all`); with none, it is titled as before. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 4708525975ea, validate exit 0, tests 9/9 — Delivered by the merge naming x00875-S26-g1. citesUnitOf reads proposal and slice out of the unit branch name and pullRequestText prefers that delivery over other deliveries folded into the same branch, so a pull request is titled by its own slice. No acceptance bullet is declared for this slice. Gate: publication-pull-request.service.spec.ts 9/9 exit 0.
 
 ### S27 — A generation once used is spent, and the closer publishes
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`, `config/delendai/repair-resolutions.json`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit.service.spec.ts tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - Found 2026-10-06 in the owner's MCP log: every boot was DEGRADED by the queue's closer. Each pass entered `delendai-queue/review/batch-all-g1/close-approved-<time>`, its publication was refused at the pre-push typecheck because the unit's worktree had no dependencies, and the pass deleted its branch with `branch -D`. So x00770, x00799, x00868, x00870 and x00873, approved and ready, were never closed; the reconciler found the first pass's checkpoint vanished, and each later pass, which reused generation 1 under another name, reported as history rewritten.
 - Delivered: `work enter` takes a generation no unit of that identity used before: one the integration branch merged (its merge names the publication) or the remote keeps retired is spent, whatever its name was; a generation with a live ref is still the unit to go back to. The closer installs the repository's dependencies in its unit before publishing, and a pass whose publication is not on the forge is retired with its reason instead of deleted. The two boot findings are resolved with their reasons. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 68b22cd6fd11, validate exit 0, tests 54/54 — Delivered by the merge naming x00875-S27-g1. endedGenerations collects generations already merged or retired and chooseGeneration skips a generation with no live refs, marking it spent, so a proposal cited from any status folder is found and a spent publication is retired rather than left dangling; close-approved-proposals installs dependencies before publishing and retires an unpublished pass. No acceptance bullet is declared for this slice. Gate: work-unit.service.spec.ts 46/46 + close-approved-proposals.script.spec.ts 8/8, exit 0, both re-run with DELENDAI_AGENT_ID unset.
 
 ### S28 — A commit the forge does not know has no runs
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/host/forge-seam.service.ts`, `tools/scripts/host/forge-seam.constant.ts`, `tools/scripts/host/forge-seam.service.spec.ts`
 - **Gate**: `npx vitest run tools/scripts/host/forge-seam.service.spec.ts`
 - Found 2026-10-06 in the owner's MCP log: a boot was DEGRADED with `forge.unavailable: check-runs: … HTTP 422 for 0e9578db7…`. The forge phase asks for the check runs of every candidate commit, including one only this machine had (a unit committed, not pushed yet), and the forge answers such a commit with 422. It has no runs to read, so it is skipped now; any other failure, a 404 included (also how the forge answers a repository it will not show), is still `unavailable`. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 57a631db9ae8, validate exit 0, tests 8/8 — Delivered by 57a631db9ae8, the newest delivery touching the slice's files (no merge names x00875-S28-g1, so the attribution is by declared files). The forge phase skips a commit the forge answers 422 for, so a commit only this machine has reports no runs instead of degrading the boot; any other failure, a 404 included, still reports unavailable. Gate forge-seam.service.spec.ts 8/8 exit 0. No acceptance bullet is declared for this slice.
+
+### S29 — A close pass supersedes the one it built on
+- **Status**: review
+- **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`
+- **Gate**: `npx vitest run tools/scripts/proposals/close-approved-proposals.script.spec.ts`
+- Found 2026-10-06, right after S27 landed: the closer had two pull requests open closing the same five proposals (#846 from `batch-all-g2`, #848 from `batch-all-g4`). Each pass merges the open publication into its unit and publishes; under one reused generation that updated the same pull request, and with a generation per unit (S27) it opened a new one and left the old beside it. A pass with nothing new to close also republished, only to bring the open one level with the integration branch, which is the candidates' refresh's job. Now a pass publishes only when it closed something, and then retires the publication it merged (its tip kept, its pull request closed with the reason). #846 was retired by hand as superseded by #848, which contains it. Seen again before it landed: passes went on publishing beside each other (g15, g20, g21, g22 on top of g4), so a pass now merges every open publication of the closer, not the first, and retires all of them once its own is published. The four superseded ones were retired by hand for #866, which carries their closes. And none of them could ever land: `closed-with-independent-approval` refuses a review pack that changes proposals it did not claim, and the closer's close commit claimed nothing, so every pass's pull request was red in `lint-governance` and x00770, x00799, x00868, x00870 and x00873 stayed in review. The close commit now carries a `Claims:` trailer for each proposal it closes.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
