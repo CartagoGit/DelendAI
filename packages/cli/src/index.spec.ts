@@ -112,6 +112,27 @@ describe('runHumanCli', () => {
 		expect(captured.err).toBe('');
 	});
 
+	it('lets `migrate status` and `--dry-run` look without migrating', async () => {
+		// The guard migrates before any other command. Run before `migrate`,
+		// it applied everything, and the dry run a person asked for had
+		// nothing left to show.
+		const root = mkdtempSync(join(tmpdir(), 'cli-entry-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q'], { cwd: root });
+		const legacy = join(root, 'mcp-vertex.config.json');
+		writeFileSync(legacy, '{}\n');
+		capture();
+		expect(
+			await runHumanCli(['migrate', 'status', `--workspace=${root}`]),
+		).toBe(EXIT_CODE.OK);
+		expect(existsSync(legacy)).toBe(true);
+		expect(existsSync(join(root, 'delendai.config.json'))).toBe(false);
+
+		await runHumanCli(['migrate', '--dry-run', `--workspace=${root}`]);
+		expect(existsSync(legacy)).toBe(true);
+		expect(captured.out).not.toContain('not-needed');
+	});
+
 	it('writes the structured envelope on --json', async () => {
 		// The stdout policy (a00087): `--json` always emits, even for a
 		// command that printed its own human recap and asked to suppress
