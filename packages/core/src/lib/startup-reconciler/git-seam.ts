@@ -32,7 +32,7 @@ import {
 	remoteTrackingNamespace,
 	workRefNamespace,
 } from './work-ref-identity';
-import { namespacedRef } from '../work-units/namespaced-ref.helper';
+import { retiredTipsLister } from './retired-tips.service';
 
 const lines = (output: string): readonly string[] =>
 	output
@@ -367,23 +367,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 			.filter((line) => line.length > 0);
 	};
 
-	const listRetiredTips = async (
-		namespace: string,
-		integrationBranch: string,
-	): Promise<readonly string[]> => {
-		const remote = await integrationRemote(integrationBranch);
-		if (remote === undefined) return [];
-		const listed = await run([
-			'ls-remote',
-			remote,
-			namespacedRef(namespace, 'retired', '*'),
-		]);
-		return listed.ok
-			? lines(listed.output)
-					.map((line) => line.split('\t')[0] ?? '')
-					.filter((sha) => sha.length > 0)
-			: [];
-	};
+	const listRetiredTips = retiredTipsLister(run, integrationRemote);
 
 	return {
 		listRetiredTips,
