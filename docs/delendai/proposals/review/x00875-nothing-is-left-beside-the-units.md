@@ -259,14 +259,18 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 7d96f5155980, validate exit 0, tests 8/8 — Delivered by the merge naming x00875-S19-g1 (f769b78803af) and last carried by 7d96f5155980. sliceSectionOf narrows the review evidence to one slice section and reviewedByEntrant tests the reviewer name against that section only, so an agent is kept out of the slice it judged and not of the whole proposal. No acceptance bullet is declared for this slice. Gate reviewed-proposal.service.spec.ts 8/8 exit 0.
 
 ### S20 — A verdict written through the CLI is committed, or says why not
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared`
 - Found 2026-10-06, not yet explained: `proposals review <id> <slice> --action=submit --workspace=<unit>` writes the slice's review lines and leaves the document staged and uncommitted, most of the time (x00875 S17, S18, S19; f00643 S2) but not always (x00875 S15, f00509 S1 committed with the `chore(delendai): … submit` subject). Established: the unit's branch resolves (`unitBranchOf`), the path is staged, so `git add` ran and `git commit` failed; the same `withCallWritesCommitted` run in-process on the same change commits. The note it writes on a failed commit reaches neither the CLI's output nor its stderr, so the caller learns nothing. Seen again for S21–S26 the same day, in three forms: committed by the tool (S21, S22, S24, S25), left staged (S23), and left unstaged (S26), which means the tool's commit step did not run at all for that call: the cause is upstream of `commitPaths`, in whether the call is bound to the unit.
 - acceptance:
   - "The cause is reproduced by a spec that drives the CLI against a unit, and fixed."
   - "A commit that fails is reported in what the CLI prints, not only on the server's stderr."
-
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 68b22cd6fd11, validate exit 0, tests 548/549 — Delivered by the merge naming x00875-S27-g1 and carried through 68b22cd6fd11. withCallWritesCommitted now returns the outcome of its commit to the caller instead of leaving the note server-side, and commit-call-writes is covered by packages/core/tests/src/lib/shared (46 files, 548 passed / 1 skipped, exit 0, DELENDAI_AGENT_ID unset). Scope note: this slice's own field note says the three observed forms (committed by the tool, left staged, left unstaged) put the cause upstream of commitPaths, in whether the call is bound to the unit; I approve what is delivered and implemented, not that the whole note is closed.
+- review-attribution: claude-opus-5-5 from commit 68b22cd6fd11 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00875-S27-g1/a-generation-once-used-is-spent (68b22cd6fd11f3f254543516aa413f70384e9a88), opened by minimax-3
 
 ### S21 — A slice not yet integrated has no reviewer
 - **Status**: done
