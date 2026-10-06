@@ -232,6 +232,8 @@ Found on 2026-10-05, reading what the last runs left behind.
 - Delivered: each delivery candidate carries the agent its unit's ref names (`agent` in the queue's output), a whole-proposal unit's delivery is a candidate of every slice, and the queue marks `needs-another-reviewer` a slice a unit of the asker's own identity delivered, under any independence (and of its own model, where the project asks for another model). Both specs fail without the change.
 - acceptance:
   - "A slice whose delivering merges include a publication by the reviewer is not offered to it."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S24 — A release is honoured wherever it was recorded
 - **Status**: pending
