@@ -31,13 +31,13 @@ Si al leer el código real una solución más simple o más correcta resulta evi
 
 ## why
 
-El repo ya sabe qué ha enviado y ya sabe cuánto costó, pero no sabe qué había prometido. Ese hueco tiene tresPj concrete manifestations:
+El repo ya sabe qué ha enviado y ya sabe cuánto costó, pero no sabe qué había prometido. Ese hueco tiene tres manifestaciones concretas:
 
 1. **La versión es correcta y la promesa es invisible.** `derive-version.script.ts` calcula el bump desde los commits, y `release_plan` lo previsualiza — pero nada responde "¿esto era lo que se dijo que haría la 0.5.0?". Un minor se infiere del mensaje del commit; no de si las ideas que lo justifican se cumplen.
 
 2. **La promoción a `main` no tiene evidencia de completitud.** `main` exige `release-pr-gate` + `delendai-validate` ([`branch-protection.ts`](../../../.github/branch-protection.ts), proyección generada de `delendai.config.json`). Esa gate comprueba que el código está sano, no que las condiciones de la versión se hayan entregado. La política de ramas ya es declarativa y configurable (`development.branches`); lo que falta es poder **exigir** que un conjunto de condiciones esté en verde antes de promover.
 
-3. **La reconciliación de release ya existe y se reutiliza.** [`reconcileRelease`](../../../plugins/git/src/lib/release-finalize/index.ts) resuelve hotfix en release → forward-sync a integration, parametrizado por `integrationBranch`. "Consolidar antes de producción" está resuelto; no hay que reimplementarlo, hay que给它 evidencia.
+3. **La reconciliación de release ya existe y se reutiliza.** [`reconcileRelease`](../../../plugins/git/src/lib/release-finalize/index.ts) resuelve hotfix en release → forward-sync a integration, parametrizado por `integrationBranch`. "Consolidar antes de producción" está resuelto; no hay que reimplementarlo, hay que darle evidencia.
 
 Piezas que existen y que esta propuesta **conecta** en lugar de reescribir:
 
@@ -54,6 +54,16 @@ Por qué **markdown como autoridad y SQLite como timeline**: un `.db` no se pued
 
 Por qué **la estimación de fecha es informativa y nunca bloqueante**: una fecha escrita a mano y no verificable no es una estimación, es una promesa que nadie audita, y en un roadmap produce el peor fallo posible — la gente planifica contra ella y el roadmap se desacredita solo. El campo `estimate` lleva siempre su `basis` (de dónde sale) y su `confidence`, y jamás aparece en el cálculo de readiness.
 
+## why this design
+
+Tres decisiones que no son obvias y que conviene tener justificadas antes de escribir una línea:
+
+**1. El `.md` es la autoridad, SQLite es el timeline.** Podría haber sido al revés — SQLite como fuente y el `.md` como informe. Se elige así por una razón concreta: la definición de la versión tiene que ser **revisable en el pull request**. Si el "qué prometemos para la 0.6.0" vive en un binario, nadie lo lee antes de aprobar el código que lo cumple, y la gate de promoción no tiene nada contra qué comprobar. El `.md` tiene una limitación estructural e irreparable (el diff muestra el cambio neto, no la historia), y esa limitación es precisamente la que SQLite resuelve. Cada capa hace lo único que sabe hacer bien.
+
+**2. El roadmap es un `IStateProducer`, no un almacén bespoke.** El State Engine ya da lo que un roadmap necesita y que es caro conseguir de otra forma: pureza (el estado derivado no puede corromper la fuente), `ProjectFingerprint` para saber si está obsoleto, `canonicalStateHash` para detectar deriva, y el acceptance `incremental ≡ cleanRebuild` que obliga a que la vista cacheada y la reconstruida coincidan. Montar eso a mano sería reimplementar el motor.
+
+**3. La promoción informa; no ejecuta.** Es tentador que el plugin haga el merge cuando los gates están verdes. No debe, por dos razones concretas: la CI ya tiene el punto de bloqueo correcto (`release-pr-gate` en la rama de release), y un plugin con `git-write` convierte un fallo de configuración en un push a una rama protegida. La información que el plugin produce es exactamente la que la gate necesita.
+
 ## non-goals
 
 - **No decide la versión.** `derive-version.script.ts` sigue siendo la autoridad única del semver. Si el roadmap sugiere `minor` y los commits dicen `patch`, gana `derive-version` y el roadmap registra la discrepancia como dato, no como error.
@@ -62,8 +72,42 @@ Por qué **la estimación de fecha es informativa y nunca bloqueante**: una fech
 - **No reimplementa** `inferBump`, `parseConventionalCommit`, `reconcileRelease`, `PUBLISH_ORDER` ni el contrato `IStateRegistry`. Los importa de sus paquetes.
 - **No reescribe la historia.** Un cambio de alcance es un evento `superseded`, no un `sed` sobre el fichero. Los finales `deferred`, `dropped` y `superseded` son válidos y obligatorios de registrar — un roadmap que sólo avanza hacia delante es un roadmap de fantasía.
 - **No fuerza la verificación.** La primera versión declara las condiciones en el roadmap pero no las ejecuta. El conector de verificación es trabajo futuro, no parte de este alcance.
-- **No toca la計算 de la versión ni el flujo de release existente.** Cualquier cambio en `derive-version.script.ts` o `release-plan.ts` que no sea estrictamente de lectura queda fuera.
+- **No toca el cálculo de la versión ni el flujo de release existente.** Cualquier cambio en `derive-version.script.ts` o `release-plan.ts` que no sea estrictamente de lectura queda fuera.
 - **No es dogfooding de sí mismo.** Usar el roadmap de delendai en delendai es una slice opcional posterior, no un requisito de esta.
+
+## architecture
+
+Tres capas con una regla cada una, y una regla global que las atraviesa:
+
+```
+   ROADMAP.md / .yaml  (git, trackeado, revisable)   ← AUTORIDAD
+          │
+          ├─► timeline SQLite / markdown             ← historial, "cuándo y por qué"
+          ├─► IStateProducer → canonicalStateHash    ← caché derivada, en .cache
+          └─► roadmaps.json (generado)               ← proyección para la web
+                    │
+                    ├─► apps/web  (estático, patrón proposals.astro)
+                    └─► extensions/vscode webview (estado vivo, misma proyección)
+```
+
+- **Autoridad**: se edita a mano, entra por PR, se revisa, se gatea. Es el único sitio donde se decide la intención.
+- **Timeline**: append-only. Responde cuándo se añadió, quién y por qué. Derivado, regenerable.
+- **Proyección**: todo lo que se muestra (web, extensión, JSON) se deriva del fichero de autoridad y se regenera. Un guard falla si divergen; el remedio siempre es regenerar, nunca editar el artefacto.
+
+El estado por defecto de una entrada es `unknown`, no `fail`. La ausencia de datos no es un incumplimiento, y confundirlo con uno es como un roadmap se vuelve inútil: la primera vez que falta evidencia, alguien mete una excepción, y a partir de ahí la excepción es lo normal.
+
+### El criterio de agnóstico
+
+Éste es el requisito que más fácilmente se rompe sin querer, así que se hace explícito y se testea:
+
+| No se hardcodea | De dónde sale |
+|---|---|
+| Nombres de rama (`develop`, `main`, `trunk`, `release/2.x`) | `development.branches` en `delendai.config.json` |
+| Ruta del fichero de roadmap | `development.roadmap.file` |
+| Qué condiciones bloquean la promoción | `development.roadmap.promotion.blockingGates` |
+| Qué hacer con lo que no se cumplió | `development.roadmap.promotion.deferralPolicy` |
+
+Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene ninguna herramienta de este plugin y no recibe ningún diagnóstico.** Dogfooding significa que delendai declara su propia configuración y se la come; no significa que los valores por defecto sean los de delendai.
 
 ## slices
 
@@ -201,6 +245,34 @@ Por qué **la estimación de fecha es informativa y nunca bloqueante**: una fech
   - "Hay un e2e contra un servidor MCP en memoria que ejercita el ciclo completo: init → transición → readiness → delta → close."
   - "Documentado para un adoptante: qué esdogfooding en delendai y qué debe replicar él en su proyecto."
 
+## dependency graph
+
+```
+S1 (contratos + máquina de estados)
+ ├── S2 (gates + bump intent)
+ └── S3 (store de la autoridad)
+      ├── S4 (timeline sin binario) ── S5 (driver SQLite)
+      └── S6 (IStateProducer)
+              ├── S7 (herramientas de lectura) ─┐
+              └── S8 (herramientas de escritura) ─┤
+                                                   S9 (manifest + config + barrels)
+S3 + S9 ─────────────────────────────────────► S10 (proyección JSON + guard de deriva)
+                                                   │
+                                                 S11 (web + extensión)
+                                                   │
+                                      S9 + S11 ─► S12 (agnosticismo + cierre editorial)
+```
+
+Paralelizables sin conflicto de ficheros: S2 ∥ S3 ∥ S4 ∥ S5, y S10 ∥ S11 una vez cerrada S9.
+
+**Secuenciales obligadas.** Solapan contratos, no sólo ficheros:
+
+- **S3 → S6 → S7/S8** — el producer, las herramientas y el store comparten los contratos; no se pueden repartir.
+- **S7 + S8 → S9** — el manifiesto declara las herramientas que existen.
+- **S9 → S10 → S11 → S12** — la deriva se comprueba antes de que la web y la extensión consuman la proyección.
+
+Si al reescribir el reparto esto deja de ser cierto, es que el reparto estaba mal, no que el grafo esté mal.
+
 ## acceptance
 
 - El esquema Zod es `.strict()` y rechaza claves desconocidas en entrada, en gates y en la estimación.
@@ -251,4 +323,27 @@ Por qué **la estimación de fecha es informativa y nunca bloqueante**: una fech
 - El test carga una configuración sintética con `trunk → release/2.x` y verifica que ninguna ruta de código asume `develop`/`main`.
 - El test carga una configuración sintética con un solo esquema de versión (sin rama de release) y verifica que el plugin no falla.
 - Hay un e2e contra un servidor MCP en memoria que ejercita el ciclo completo: init → transición → readiness → delta → close.
-- Documentado para un adoptante: qué esdogfooding en delendai y qué debe replicar él en su proyecto.
+- Documentado para un adoptante: qué es dogfooding en delendai y qué debe replicar él en su proyecto.
+
+## risks and mitigations
+
+| Riesgo | Mitigación |
+|---|---|
+| **Dos verdades sobre la versión** (roadmap frente a `derive-version`) | Campo `authority` obligatorio en todo payload que mencione un bump, non-goal explícito, y un test que falla si el roadmap intenta escribir una versión. |
+| **Divergencia entre SQLite y markdown** | Markdown manda; SQLite es proyección. `roadmap_sync` más un guard de deriva que falla el build. |
+| **CI se queda sin binario SQLite** | La variante markdown del timeline (S4) sube **antes** que el driver SQLite: CI nunca depende de él para leer. |
+| **Roadmap que miente porque el fichero miente** | El fichero se valida en el mismo PR que el código. No hay forma de cambiar el ámbito sin que alguien lo lea. |
+| **Agnosticismo falso** (hardcodear `develop`/`main`) | Test con una configuración sintética de otro esquema de ramas (S12) y la tabla explícita de `architecture`. |
+| **Coste de tokens** (varias herramientas nuevas en una superficie lazy) | `roadmap_show` devuelve resumen y el detalle va bajo demanda; presupuesto del manifiesto medido. |
+| **Un roadmap que nadie mantiene se abandona** | Por eso `deferred`/`dropped`/`superseded` son finales válidos y registrados, y por eso la fecha nunca bloquea: un roadmap que exige disciplina de calendario se abandona el primer trimestre. |
+| **Colisión de vocabulario con `audit`**, que ya emite un "roadmap P0/P1/P2" en su informe | Son cosas distintas: el del audit es contenido narrativo dentro de un informe; éste es estado durable y consultable. Los nombres de herramienta no colisionan. |
+
+## notes
+
+**Para quien implemente.** La autoridad para reescribir el reparto en slices es explícita y está en el `## goal`: lo que se fija son las invariantes, no la secuencia. Si algo de este documento resulta más complejo de lo que el código real exige, sobra.
+
+**Estado de planificación.** La propuesta entra en `ready`. Qué slice se empieza, en qué orden y con qué ritmo es decisión de quien la implementa; aquí no se compromete ningún calendario.
+
+**Sobre el tamaño.** Doce slices es un número alto y probablemente se puede reducir fusionando las de contrato y store. Está así para que el paralelismo sea evidente desde el principio y para que ninguna slice tenga que tocar ficheros de otra. Si al reescribir el reparto queda más pequeño y más claro, mejor.
+
+**Deuda asumida a propósito.** La primera versión declara las condiciones pero no las verifica: no hay conector entre un gate y `delendai-validate`. Es una decisión consciente — un gate que se declara y luego se ignora es peor que un gate ausente, así que hasta que exista el conector los gates se reportan como `unknown`, que es exactamente lo que ese estado significa.
