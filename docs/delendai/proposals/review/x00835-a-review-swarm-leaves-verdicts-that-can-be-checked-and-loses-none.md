@@ -22,6 +22,8 @@ shipped-in:
   - "fa48b1c9f7fd69b1f13b4a97c8f70f4f83f33f11"
   - "27b60933038a5913ccecf4856cecc24e02b33a4e"
   - "7fa7e95db68420cfe10ded78ec9144e3e82243f9"
+  - "17d1fa53353c7b4de9ad67392f75e198b301c26d"
+  - "657da3ff96183e12acf10efe5cef4ee54b54273f"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -876,7 +878,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S27 — A reviewer that ran nothing records nothing, in the project's language
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `plugins/proposals/src/lib/contracts/constants/review-claim-schema.constant.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
 - A reviewer that could not inspect or run what it claimed gives the claim
@@ -888,6 +890,11 @@ the good verdicts' shape (P1) becomes the required shape.
   E10).
 - The language of a verdict's text is S30.
 - shipped-in: `cef6142b3105`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 17d1fa53353c, validate exit 0, tests 295/295 — Deliver merge 17d1fa53353c7b4de9ad67392f75e198b301c26d; the proposal's shipped-in was superseded by this later publication of the same unit (attribution reported 'delivered again by 17d1fa53353c'). Declared gate run batched green: 34 test files / 295 tests, exit 0. Behaviour pinned by named specs.
+- review-attribution: claude-opus-5-5 from commit 17d1fa53353c names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S36-g1/a-reviewer-can-cite-each-criterion (17d1fa53353c7b4de9ad67392f75e198b301c26d), opened by minimax-3
 
 ### S28 — A retired slice owes nothing, and a proposal's own document is never a missing file
 
@@ -927,7 +934,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S30 — A project declares its documentation language and who counts as another reviewer
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/documentation-language.service.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/index.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `delendai.config.json`, `plugins/proposals/tests/src/lib/services/documentation-language.service.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/documentation-language.service.spec.ts`
 - `documentationLanguage: "en"` (proposals plugin option): a verdict whose
@@ -938,6 +945,11 @@ the good verdicts' shape (P1) becomes the required shape.
   work, as long as the two instances are seen to differ (S13). A project
   that wants another model sets `model`; this repository does.
 - shipped-in: `00b2fc1256b6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 657da3ff9618, validate exit 0, tests 295/295 — Deliver merge 657da3ff96183e12acf10efe5cef4ee54b54273f; the proposal's shipped-in was superseded by this later publication of the same unit (attribution reported 'delivered again by 657da3ff9618'). Declared gate run batched green: 34 test files / 295 tests, exit 0. Behaviour pinned by named specs.
+- review-attribution: claude-opus-5-5 from commit 657da3ff9618 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (657da3ff96183e12acf10efe5cef4ee54b54273f), opened by minimax-3
 
 ### S31 — A claim takes the worktree with it
 
