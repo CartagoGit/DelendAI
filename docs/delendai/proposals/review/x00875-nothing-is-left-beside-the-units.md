@@ -14,6 +14,7 @@ shipped-in:
   - "00128e2debe92950f0a065d9da76064bcf114914"
   - "d86b383aca470163a16051827bef7ae3b1602ca3"
   - "7d96f51559804495246013d71095f90a05b6184d"
+  - "db62951444bdb537e371e0c1b7ce54fb056e35e4"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -235,12 +236,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 7d96f5155980, validate exit 0, tests 8/8 — Delivered by the merge naming x00875-S21-g1. sliceSectionOf returns an empty section for a slice the integrated document does not carry, so reviewedByEntrant finds no reviewer and a slice not yet integrated does not block its author. No acceptance bullet is declared for this slice. Gate: reviewed-proposal.service.spec.ts 8/8 exit 0.
 
 ### S22 — A refused verdict claims nothing
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - Found 2026-10-06: `review approve f00509 S1` by the reviewer that had asked for its changes was refused (the fix needs a fresh reviewer), and the proposal stayed claimed by it: the verdict claimed before the review rules ran. The claim reached the published pack, so the one reviewer the rule asks for would have found f00509 held. The verdict now asks the same pure rule (`reviewTransition`) first, on a round already open, and claims only a verdict it will accept; the refusal still comes from the path that records verdicts, with its own reason. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at db62951444bd, validate exit 0, tests 7/7 — Delivered by the merge naming x00875-S22-g1. proposal_review computes whether the review rules would refuse the verdict before claiming, and verdictClaimRefusal returns immediately when claim is false, so a refused verdict claims nothing. No acceptance bullet is declared for this slice. Gate: proposal-review-claim.spec.ts 7/7 exit 0.
 
 ### S23 — The queue does not offer a reviewer what it delivered
 - **Status**: review
