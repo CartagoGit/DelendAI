@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 420
+Total exports: 422
 
 | Maturity | Count |
 | --- | --- |
-| stable | 417 |
+| stable | 419 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -74,6 +74,7 @@ Total exports: 420
 | `definePluginManifest` | const | stable | `../lib/manifest/define-plugin-manifest` |
 | `deriveDefaultProtectedBranches` | const | stable | `../lib/development-policy/protected-branches` |
 | `describeStableTool` | const | stable | `../lib/api/stable-facade` |
+| `describeStackPacks` | const | stable | `../lib/plugins/pack-defaults-overlay` |
 | `Detail` | type | stable | `../lib/contracts/detail.contract` |
 | `DETAIL_LEVELS` | const | stable | `../lib/contracts/detail.contract` |
 | `DetailProjection` | type | stable | `../lib/contracts/detail.contract` |
@@ -250,6 +251,7 @@ Total exports: 420
 | `IStableManifest` | type | stable | `../lib/api/stable-manifest` |
 | `IStableManifestTool` | type | stable | `../lib/api/stable-manifest` |
 | `IStableToolDescriptor` | type | stable | `../lib/api/stable-facade` |
+| `IStackPackMeta` | type | stable | `../lib/plugins/pack-defaults-overlay` |
 | `IStartupStatePorts` | type | stable | `../lib/startup-reconciler/index` |
 | `IStep` | type | stable | `../lib/transactions/types` |
 | `isTimelineLog` | const | stable | `../lib/observability/timeline` |

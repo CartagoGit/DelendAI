@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type IHostCapabilityManifest } from '@delendai/core/public';
+import type { IHostCapabilityManifest } from '@delendai/core/public';
 import { buildHostCapabilityPlan } from '@delendai/core/lib/hosts/host-capability-profile';
 import { createHostCapabilityRegistry } from '@delendai/core/lib/host/host-capability-registry';
 import {

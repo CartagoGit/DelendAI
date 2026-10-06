@@ -172,6 +172,10 @@ export { buildStartupReport } from '../lib/startup-report';
 
 // S2: monorepo-wiring writer for first-party plugins.
 export { pluginDir } from '../lib/scaffold/wire-plugin';
+// @adopter-api the website's presets page renders the stack packs; it is an .astro file, which the consumer scan does not read
+export { describeStackPacks } from '../lib/plugins/pack-defaults-overlay';
+// @adopter-api same consumer as describeStackPacks
+export type { IStackPackMeta } from '../lib/plugins/pack-defaults-overlay';
 // S4: wiring-doctor (verifier) for first-party plugins.
 export { runDoctor } from '../lib/cli/run-cli';
 // @adopter-api a project config author types the matching section of delendai's config with this shape
