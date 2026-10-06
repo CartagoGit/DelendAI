@@ -125,6 +125,8 @@ Found on 2026-10-05, reading what the last runs left behind.
 - At boot the reconciler now lists the integration remote's `refs/<namespace>/retired/*` (best effort: offline or with no remote it lists nothing and concludes nothing). A vanished ref whose checkpoint is a retired tip is a note, `integration-evidence.checkpoint-retired`, not a blocker. Once the retired copy is dropped too, nothing keeps it, and the boot asks a person again, as it should. The spec covers both, against real repositories.
 - The 21 blockers were each checked (all landed, reconciled, or redone by another unit) and recorded as `resolved-elsewhere` in `config/delendai/repair-resolutions.json` with their reasons.
 - Found writing the spec: every hidden ref was built as `refs/${namespace}/…`, which is `refs//retired/…` in a project with no namespace — git refuses it, so retiring, keeping a husk and reserving a slice failed there outright. `namespacedRef` builds them all now.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
