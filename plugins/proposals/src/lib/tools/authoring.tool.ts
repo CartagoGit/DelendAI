@@ -2147,7 +2147,7 @@ export const buildReviewRegistration = (
 				evidence?: IProposalReviewEvidence | undefined;
 				commitHash?: string | undefined;
 			}) => {
-				let args = rawArgs;
+				const args = { ...rawArgs };
 				const scoped = scopeToCaller(options);
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
@@ -2237,7 +2237,7 @@ export const buildReviewRegistration = (
 						// One agent, one spelling: the verdict is signed the
 						// way its unit's ref names the agent (`GPT-5.4` and
 						// `gpt-5.4` were two reviewers to every reader).
-						args = { ...args, agent: unitAgent };
+						args.agent = unitAgent;
 					}
 					// A verdict the review rules will refuse claims nothing:
 					// claimed first, it left the refused reviewer holding the
