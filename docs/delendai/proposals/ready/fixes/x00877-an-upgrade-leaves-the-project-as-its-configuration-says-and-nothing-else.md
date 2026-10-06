@@ -68,6 +68,8 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "The root `.mcp.json` is migrated like `.vscode/mcp.json`."
   - "Root `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` are migrated like the agent folders."
 - Delivered: the host-config migrator rewrites every project MCP config a host reads, the editor's `.vscode/mcp.json` and the root `.mcp.json`; the agent-files migrator also walks the root instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`). Both specs fail without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — No ignore line or moved file keeps the old name
 - **Status**: pending
