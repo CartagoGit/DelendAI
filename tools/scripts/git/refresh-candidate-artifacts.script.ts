@@ -38,8 +38,6 @@ import {
 	currentQueueFacts,
 	currentQueueOrder,
 } from '../forge/keep-the-queue-moving.script';
-import { abandonedAfterSeconds } from '@delendai/core/lib/work-units/forge-work-refs.service';
-
 import { branchesLandingAsTheyAre } from '../forge/queue-acceptance';
 import { repoRoot } from '../lib/repo-root';
 import {
@@ -217,6 +215,12 @@ const takeRegeneratedSide = (
 };
 
 /**
+ * How long a publication whose unit is gone from the forge goes without a
+ * push before its conflict is nobody's: a day, far past any lease.
+ */
+const ORPHANED_AFTER_SECONDS = 24 * 60 * 60;
+
+/**
  * What to say of a candidate that does not merge trivially. Its author
  * decides — while there is one: a publication whose unit is gone from
  * the forge and that nobody has pushed to for longer than an abandoned
@@ -328,9 +332,7 @@ export const refreshCandidate = (input: {
 								`${remote}/${candidate}`,
 							]) ?? '0',
 						),
-					abandonedAfter: abandonedAfterSeconds(
-						policy.coordination.leaseTtlMinutes,
-					),
+					abandonedAfter: ORPHANED_AFTER_SECONDS,
 					unitOnForge: unitStillOnForge(
 						root,
 						remote,
