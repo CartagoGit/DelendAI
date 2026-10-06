@@ -64,7 +64,8 @@ export interface IDbStatusToolOptions {
 	 * alongside it are NOT what the plugin reads (r00049).
 	 */
 	readonly runtimeIndexPathAbs?: string;
-	readonly reader: IProposalReader;
+	/** The status reads only these two; a caller supplies nothing else. */
+	readonly reader: Pick<IProposalReader, 'count' | 'lastSync'>;
 	readonly indexFiles?: readonly string[];
 	/**
 	 * Optional materializer reference. Present only as a runtime
