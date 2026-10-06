@@ -13,6 +13,8 @@ tags:
 last-transition-id: 64730661-cf16-4a63-8fe6-706211d89466
 last-correlation-id: 64730661-cf16-4a63-8fe6-706211d89466
 last-transition-from: in-progress
+shipped-in:
+  - "b7d8e2c7a084"
 ---
 
 # x00556 — A pull request runs the checks its change can break
@@ -57,7 +59,7 @@ answerable, reviewable and testable.
 
 ### S1 — Each job declares the paths it can be broken by
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `bun run lint:job-scope && bun run test:sqlite:real-tree`
 - **Files**:
   - `.github/workflows/ci.yml`
@@ -94,9 +96,11 @@ answerable, reviewable and testable.
   S5 and S6 took, in the test zones, where the inputs are measured. An
   explicit `always` with its reason is this slice's "declared input
   set" for these jobs.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `9d241a3dbba1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at b7d8e2c7a084, validate exit 0, tests 1/1 — Both gates green in my worktree: bun run lint:job-scope prints 26 jobs declared, every job in ci.yml has an entry, exit 0; bun run test:sqlite:real-tree passes (1/1, real-tree-projection e2e). The proposal-tree input left the sqlite-cutover-ready job and real-tree-projection runs as test:sqlite:real-tree in lint-governance on every change, as the slice found and decided. Jobs declared always keep an explicit reason. (Initial failure was my worktree missing node_modules, not the code; bun install fixed it.)
 
 ### S2 — A pull request selects, the integration branch does not
 

@@ -2,7 +2,7 @@
 id: r00043
 title: "`@delendai/core` deja de conocer el dominio `proposals`"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-08-30
@@ -13,9 +13,9 @@ audit-source:
     finding: AUD-E05
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 related: [q00011, r00040, r00041, r00042, r00034]
-last-transition-id: 3a18803f-e028-4ca4-ae61-ade2700db73a
-last-correlation-id: 3a18803f-e028-4ca4-ae61-ade2700db73a
-last-transition-from: in-progress
+last-transition-id: a92aa169-1ca4-42ac-af37-22056333d148
+last-correlation-id: a92aa169-1ca4-42ac-af37-22056333d148
+last-transition-from: review
 shipped-in:
   - "dc61a40ec"
   - "7c861d2f9"
@@ -416,12 +416,14 @@ registro de contribuciones y que adopción tenga un proveedor real para
 validar la composición. S5 ratifica la frontera después de las migraciones.
 
 ### S8 — The proposals index reader lives in the plugin
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-summaries.service.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-summaries.service.spec.ts`, `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`, `tools/scripts/catalog/generate-agent-catalog.script.ts`, `packages/core/src/public/index.ts`, `tools/scripts/lint/core-proposals-boundary.script.ts`, `tools/scripts/inspect/core-proposals-boundary.script.ts`, `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/architecture/core-proposals-boundary.spec.ts`
 - Done 2026-10-05. `readProposalsIndex` read the proposals plugin's registry from core and was exported by core's barrel; its callers were the plugin itself and the agent-catalog generator. It moved to the plugin (`proposal-summaries.service.ts`) with its spec, and both callers import it from there. Core no longer knows where the plugin keeps its registry or what its entries hold. The two dated exceptions `lint:core-proposals-boundary` kept for it are gone (nothing matched them any more), and the boundary inventory marks its 17 entries resolved by this slice. `IProposalSummary` stays in core: it is the agent catalog's contract, not the plugin's.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at b7dcf3901f55, validate exit 0, tests 37/37 — Declared gate green: core project boundary spec 13/13. readProposalsIndex now lives in plugins/proposals/src/lib/proposals/proposal-summaries.service.ts with its 24-test spec passing; its two callers (proposals-workflow-contribution, generate-agent-catalog script) import it from the plugin. Core public barrel no longer exports it (0 matches). The two dated lint exceptions for it are gone and the boundary lint stays green. IProposalSummary remains in core as the agent-catalog contract, as the slice states.
 
 ## Acceptance
 
