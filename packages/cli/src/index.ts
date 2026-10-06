@@ -136,10 +136,14 @@ export const runHumanCli = async (
 	// pipeline.
 	// `guard` runs from git hooks on every commit and push: it reads git and
 	// the project's configuration only, and must never start a server.
+	// `migrate` reads and writes the workspace's files itself; the server
+	// it used to start ran the migration guard as it booted, so `migrate
+	// status` and `--dry-run` found everything already applied.
 	const isOffline =
 		command.name === 'init' ||
 		command.name === 'init:default' ||
-		command.name === 'guard';
+		command.name === 'guard' ||
+		command.name === 'migrate';
 	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
 	try {
 		// a00061: `init`/`init:default` read ONLY `ctx.cwd` to resolve
@@ -316,7 +320,10 @@ export const runEntry = async (
 	//
 	// `guard` runs inside git hooks on every commit and push: it must not
 	// migrate (and so write to) the workspace while git holds its locks.
-	if (argv[0] !== 'guard') {
+	// `migrate` decides itself when to apply: its `status` and `--dry-run`
+	// are how a person looks before anything changes, and the guard had
+	// already applied everything by the time they answered.
+	if (argv[0] !== 'guard' && argv[0] !== 'migrate') {
 		const migrated = await ensureMigrated(workspaceRoot);
 		// A migration that edits the project's own configuration says so.
 		for (const line of await adoptionReportLines(migrated, workspaceRoot)) {
