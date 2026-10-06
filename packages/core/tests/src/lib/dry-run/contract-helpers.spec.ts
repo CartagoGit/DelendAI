@@ -21,10 +21,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import {
-	enforceDryRunReturnContract,
-	validateToolDryRunManifest,
-} from '@delendai/core/public';
+import { validateToolDryRunManifest } from '@delendai/core/public';
+import { enforceDryRunReturnContract } from '@delendai/core/lib/dry-run/enforce';
 
 describe('f00189 — dry-run contract helpers (pure, unit-level)', () => {
 	it('flags a write tool that did not declare dryRunSupported', () => {

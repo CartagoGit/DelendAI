@@ -18,12 +18,14 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
-	buildProjectPluginsCreateToolRegistration,
-	buildProjectPluginsInspectToolRegistration,
-	buildProjectPluginsRepairToolRegistration,
 	createWorkspacePathProvider,
 	type IToolRegistration,
 } from '@delendai/core/public';
+import {
+	buildProjectPluginsCreateToolRegistration,
+	buildProjectPluginsInspectToolRegistration,
+	buildProjectPluginsRepairToolRegistration,
+} from '@delendai/core/lib/scaffold/project-plugins';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 import { bindWriteRoot } from '../../../../src/lib/shared/bind-write-root';

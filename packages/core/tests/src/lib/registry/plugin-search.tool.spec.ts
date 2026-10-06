@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildPluginSearchRegistration } from '@delendai/core/public';
-import type { IPluginRegistrySource } from '@delendai/core/public';
+import { buildPluginSearchRegistration } from '@delendai/core/lib/registry/plugin-search.tool';
+import type { IPluginRegistrySource } from '@delendai/core/lib/contracts/interfaces/plugin-registry.interface';
 
 const parseToolResult = (
 	result: unknown,
