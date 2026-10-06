@@ -217,13 +217,15 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 57a631db9ae8, validate exit 0, tests 2/2 — Delivered in x00875-all-g1's lineage and last carried by 57a631db9ae8, cited here as the slice now stands. No merge on develop names x00875-S15-g1, so the attribution is inferred from the files: markerLines matches only lines that open or close a git merge marker, main walks the tracked files via git ls-files, and lint:architecture runs it first. No acceptance bullet is declared for this slice. Gate no-conflict-markers.script.spec.ts 2/2 exit 0.
 
 ### S16 — A review unit reads the integration branch of now
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
 - Found 2026-10-06: `review next` offered `x00766`, which another pack had approved and the queue had already closed into `done/`. Since S35 the queue is read from the reviewer's unit, where its own verdicts are, and a unit made before other verdicts merged still showed their proposals waiting. `review next` now merges the integration branch's remote tip into the unit before it reads; a merge that would conflict is aborted and changes nothing. Like the hydration of an idle unit, the merge runs without hooks: it brings in only what the integration branch already checked. The spec fails without the change.
 - Also seen, and left as is: a release is recorded in the unit that released, so a reviewer that opens a new unit is offered again what it released in an old one, and must release it again with its reason.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at fd5a3aa6ae81, validate exit 0, tests 11/11 — Delivered by the merge naming x00875-S16-g1 (728f8c93e47f) and last carried by fd5a3aa6ae81. review next calls catchUp, which fetches and merges the integration branch, before it reads the queue, so a review unit reads the integration branch of now. No acceptance bullet is declared for this slice. Gate review.command.spec.ts 11/11 exit 0.
 
 ### S17 — A read is not refused as a write
 - **Status**: review
