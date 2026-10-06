@@ -38,16 +38,17 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - global_gate: none
 
 ### S1 — migrate status only reads
-- **Status**: pending
-- **Files**: `packages/cli/src/commands/migrate.command.ts`
+- **Status**: review
+- **Files**: `packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`migrate status` and `migrate --dry-run` write nothing: the tree, the config and `.delendai/migrations-applied.json` are byte-identical before and after."
   - "Only `migrate run` applies a migration."
+- Delivered: two causes. `migrate` started an MCP server to run, and that server applied the migration guard as it booted; and the CLI's own guard ran before the command too. `migrate` is now an offline command (like `init` and `guard`), and the guard skips it: `migrate run` is the only way it applies. Probed in a throwaway mcp-vertex project: `status` and `--dry-run` leave it byte-identical, `run` migrates and writes its manifest and backup. The spec fails without the change.
 
 ### S2 — The legacy proposal state is moved, and no copy of it stays behind
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/proposals-state.migrator.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/state-dir.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/state-dir.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/state-dir.migrator.spec.ts`, `packages/proposals-sqlite/tests/src/lib/state-dir-agreement.spec.ts`, `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`, `plugins/proposals/tests/src/lib/proposals/sync-legacy-registry.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`migrate run` moves `.delendai/state/proposals.sqlite` and its `-wal`/`-shm` sidecars to `.cache/delendai/state/` when nothing is there yet, and removes the emptied legacy directory."
@@ -55,14 +56,20 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "After it, the proposals tools open the database without the manual remedy."
   - "A committed `docs/<docsDir>/proposals/index.json` (the old location) is removed by `migrate run`; it is regenerable and nothing reads it."
   - "The comments that still describe it as a committed variant are corrected."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- Delivered, split by owner (core may know nothing of the proposals plugin's storage, which `lint:core-proposals-boundary` enforces and which the first version broke): core's `stateDirectoryMigrator:v1` moves every file of its legacy state directory `.delendai/state/` to `.cache/delendai/state/` (SQLite sidecars before their database), never over a file already there, and removes the emptied directory; `state-dir-agreement.spec.ts` in `@delendai/proposals-sqlite` pins that its database opens there. The registry's old committed copy beside the proposals is the plugin's to remove: a full sync deletes `<proposalsDir>/index.json` (an index-only sync, which makes no tracked change, leaves it). Probed end to end before the split in a throwaway project; the specs fail without the change.
 
 ### S3 — Every host file and instruction file names delendai
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/agent-files.migrator.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The root `.mcp.json` is migrated like `.vscode/mcp.json`."
   - "Root `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` are migrated like the agent folders."
+- Delivered: the host-config migrator rewrites every project MCP config a host reads, the editor's `.vscode/mcp.json` and the root `.mcp.json`; the agent-files migrator also walks the root instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`). Both specs fail without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — No ignore line or moved file keeps the old name
 - **Status**: pending
@@ -81,11 +88,14 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "Hooks and `delendai.guard.*` keys follow the profile: installed where it needs them, removed where it does not."
 
 ### S6 — The generated-files merge driver exists where it is configured
-- **Status**: pending
-- **Files**: `packages/cli/src/contracts/constants/generated-merge-driver.constant.ts`
+- **Status**: review
+- **Files**: `packages/cli/src/lib/generated-merge-driver.service.ts`, `packages/cli/src/lib/generated-merge-driver.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`guard install` in an adopting project configures a merge driver that resolves to a file present there (the shipped CLI), or none."
+- Delivered: `guard install` configures the generated-files merge driver only where its script exists; in a project that does not carry it (every adopting project: it is this repository's tooling) nothing is configured, and a `merge.delendai-generated` section an older install left is removed. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — The host-scope configs are migrated too
 - **Status**: pending

@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
-import { access, mkdir } from 'node:fs/promises';
+import { access, mkdir, rm } from 'node:fs/promises';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
+
+import { LEGACY_REGISTRY_FILE } from '../contracts/constants/proposal-index-source.constant';
 
 // `safeRename` supersedes the bare `rename` import for the
 // post-`git mv` fallback path. The bare import is still used by
@@ -1303,6 +1305,13 @@ export async function syncProposalRegistry(
 			// Missing or unreadable index means the generated file will be new.
 		}
 		await writeFileAtomic(indexPath, nextText);
+		// The registry was once committed beside the proposals; it is a
+		// cache now, and the old copy is read by nothing. It is a tracked
+		// change, so only a sync allowed to make those removes it.
+		const legacyRegistry = join(proposalsDir, LEGACY_REGISTRY_FILE);
+		if (!indexOnly && legacyRegistry !== indexPath) {
+			await rm(legacyRegistry, { force: true });
+		}
 		// One act, both projections. Every tool that changes a proposal
 		// ends here, so the database cannot be left behind by any of them.
 		// Inside the index lock, so the two views are taken from the same

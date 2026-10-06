@@ -42,8 +42,15 @@ import {
 	stringHasLegacyIdentity,
 } from './identity-renames';
 
-/** The single file this migrator owns. Stable for the lifetime of v1. */
+/** The editor's project MCP config. Stable for the lifetime of v1. */
 export const HOST_CONFIG_NAME = '.vscode/mcp.json';
+
+/**
+ * Every project MCP config a host reads: the editor's, and the root
+ * `.mcp.json` other hosts read. The root one kept running the old CLI
+ * after a migration that rewrote only the editor's.
+ */
+const HOST_CONFIG_NAMES = [HOST_CONFIG_NAME, '.mcp.json'] as const;
 
 /** Stable id recorded in the journal. NOT a number, by design. */
 export const HOST_CONFIG_MIGRATOR_ID = 'hostConfigMigrator:v1';
@@ -228,39 +235,47 @@ const rewriteHostConfig = (
  * free until `apply` is called.
  */
 export const createHostConfigMigrator = (): IMigration => {
-	const absoluteHostConfigPath = (ctx: IMigrationContext): string =>
-		join(ctx.workspaceRoot, HOST_CONFIG_NAME);
+	const present = async (ctx: IMigrationContext): Promise<string[]> => {
+		const found: string[] = [];
+		for (const name of HOST_CONFIG_NAMES) {
+			if (await pathExists(join(ctx.workspaceRoot, name)))
+				found.push(name);
+		}
+		return found;
+	};
 
 	return {
 		id: HOST_CONFIG_MIGRATOR_ID,
 
-		detect: async (ctx) => pathExists(absoluteHostConfigPath(ctx)),
+		detect: async (ctx) => (await present(ctx)).length > 0,
 
 		plan: async (ctx): Promise<readonly IMigrationPlanStep[]> => {
-			const absolute = absoluteHostConfigPath(ctx);
-			if (!(await pathExists(absolute))) return [];
-			const config = await readHostConfig(absolute);
-			const { changed } = rewriteHostConfig(config);
-			if (!changed) return [];
-			return [
-				{
+			const steps: IMigrationPlanStep[] = [];
+			for (const name of await present(ctx)) {
+				const config = await readHostConfig(
+					join(ctx.workspaceRoot, name),
+				);
+				if (!rewriteHostConfig(config).changed) continue;
+				steps.push({
 					kind: 'rewrite-host-config',
-					detail: `${HOST_CONFIG_NAME}: legacy server / namespace / path rewritten`,
-				},
-			];
+					detail: `${name}: legacy server / namespace / path rewritten`,
+				});
+			}
+			return steps;
 		},
 
 		apply: async (ctx) => {
-			const absolute = absoluteHostConfigPath(ctx);
-			if (!(await pathExists(absolute))) return;
-			const config = await readHostConfig(absolute);
-			const { changed, next } = rewriteHostConfig(config);
-			if (!changed) return;
-			await writeFile(
-				absolute,
-				`${JSON.stringify(next, null, '\t')}\n`,
-				'utf8',
-			);
+			for (const name of await present(ctx)) {
+				const absolute = join(ctx.workspaceRoot, name);
+				const config = await readHostConfig(absolute);
+				const { changed, next } = rewriteHostConfig(config);
+				if (!changed) continue;
+				await writeFile(
+					absolute,
+					`${JSON.stringify(next, null, '\t')}\n`,
+					'utf8',
+				);
+			}
 		},
 	};
 };
