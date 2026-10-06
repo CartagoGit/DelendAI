@@ -258,6 +258,12 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S26 — A pull request is titled by its own slice
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
+- Found 2026-10-06: #839, the publication of x00875 S23, opened titled "the review queue cites the delivery an approval is accepted with (x00835 S39)": the unit had merged S39's publication to build on it, and a pull request was titled by its oldest delivering commit. The title now prefers the deliveries that cite the unit its branch names (`<proposal> <slice>`, or the proposal for `all`); with none, it is titled as before. The spec fails without the change.
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.

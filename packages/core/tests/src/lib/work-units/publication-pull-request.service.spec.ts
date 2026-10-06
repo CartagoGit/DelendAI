@@ -157,6 +157,32 @@ describe('pullRequestText', () => {
 		expect(text.body).not.toContain('Merge ');
 	});
 
+	it('is titled by its own slice when it carries another unit merged in', () => {
+		// Newest first, as `git log` lists them: S39's commit came in with
+		// the publication this unit merged, and is the oldest.
+		const { title } = pullRequestText(
+			[
+				'chore(delendai): delendai_proposals_proposal_review x00875 S23 submit',
+				'fix(proposals): the queue offers no reviewer a slice its own unit delivered (x00875 S23)',
+				'fix(proposals): the review queue cites the delivery an approval is accepted with (x00835 S39)',
+			],
+			'delendai/pr/claude-opus-5-5/implement/x00875-S23-g1/the-queue-does-not-offer',
+			'fallback',
+		);
+		expect(title).toBe(
+			'fix(proposals): the queue offers no reviewer a slice its own unit delivered (x00875 S23)',
+		);
+	});
+
+	it('keeps the oldest delivery when none cites the unit', () => {
+		const { title } = pullRequestText(
+			['fix: second', 'fix: first'],
+			'delendai/pr/agent/implement/x00001-S1-g1/topic',
+			'fallback',
+		);
+		expect(title).toBe('fix: first (+1 more)');
+	});
+
 	it('takes the oldest meaningful commit when none follows the delivery types', () => {
 		expect(
 			pullRequestText(
