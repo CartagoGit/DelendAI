@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mergeServerEntry } from '@delendai/core/public';
+import { mergeServerEntry } from '@delendai/core/lib/install/merge-config';
 
 const ENTRY = {
 	command: 'npx',

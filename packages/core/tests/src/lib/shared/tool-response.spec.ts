@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	toolErrorWithLogHint,
 	toolJson,
 	toolJsonWithSummary,
 	toolOk,
 	toolError,
 } from '@delendai/core/public';
+import { toolErrorWithLogHint } from '@delendai/core/lib/shared/tool-response';
 
 describe('tool-response helpers — MCP modern structuredContent', async () => {
 	it('toolJson mirrors an object payload into structuredContent', async () => {

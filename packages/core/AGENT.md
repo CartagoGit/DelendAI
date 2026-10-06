@@ -7,20 +7,20 @@
 
 ## Public API
 
-- __resetShutdownGuardForTests
 - createMcpProject
-- planRegistrationOrder
 - createWorkspacePathProvider
 - projectValue
 - createInMemoryHandleStore
-- buildHostCapabilityPlan
-- createHostCapabilityRegistry
 - classifyPath
 - DEFAULT_TS_RULES
 - endsWithBasename
 - hasSegment
 - assembleCliConfig
 - REPOSITORY_SLUG
+- PERMISSION_CATEGORIES
+- PERMISSION_RISK_WEIGHTS
+- isFirstPartySpecifier
+- resolvePublicToolIdentity
 
 ## Depends on
 

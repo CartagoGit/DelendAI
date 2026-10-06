@@ -17,13 +17,15 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import {
-	createCapabilityGate,
 	isCapability,
 	parseCapability,
-	parseCapabilityList,
-	resolveCapabilityAccess,
 	splitCapability,
 } from '@delendai/core/public';
+import {
+	createCapabilityGate,
+	resolveCapabilityAccess,
+} from '@delendai/core/lib/capabilities/inject';
+import { parseCapabilityList } from '@delendai/core/lib/capabilities/schema';
 import { CAPABILITIES } from '@delendai/core/cli';
 
 import { createCapabilityContext } from '../../../../src/lib/capabilities/inject';
