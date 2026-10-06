@@ -228,12 +228,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at fd5a3aa6ae81, validate exit 0, tests 11/11 — Delivered by the merge naming x00875-S16-g1 (728f8c93e47f) and last carried by fd5a3aa6ae81. review next calls catchUp, which fetches and merges the integration branch, before it reads the queue, so a review unit reads the integration branch of now. No acceptance bullet is declared for this slice. Gate review.command.spec.ts 11/11 exit 0.
 
 ### S17 — A read is not refused as a write
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/tool-registration.interface.ts`, `packages/core/src/lib/shared/bind-write-root.ts`, `packages/core/tests/src/lib/shared/bind-write-root.spec.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
 - Found 2026-10-06: `proposals review <id> <slice> --action=status` in the shared checkout was refused with `shared-checkout-write-refused`, so the only way to ask whether a slice had a round was to open a unit for it. The refusal is decided per tool: `proposal_review` declares `caller-checkout` because submit, approve and request_changes write, and its `status` read was refused with them. A registration now declares `readsOnly(input)`, the calls that write nothing, and the binding never refuses those in the shared checkout; `proposal_review` answers it for `status`. Its writes are refused as before, which the spec pins in the same call sequence.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at db62951444bd, validate exit 0, tests 23/23 — Delivered by the merge naming x00875-S17-g1 (22dade1df1b1) and last carried by db62951444bd. IToolRegistration gains readsOnly, bindWriteRoot skips the shared-checkout write refusal when the caller's own predicate says the call is a read, and proposal_review declares status as a read and returns before writing. A read is no longer refused as a write. No acceptance bullet is declared for this slice. Gate bind-write-root.spec.ts 23/23 exit 0.
 
 ### S18 — A spent publication is retired, not deleted
 - **Status**: done
