@@ -18,6 +18,7 @@ import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
+import { CALL_WRITES_NOT_COMMITTED } from '../contracts/constants/call-writes.constant';
 import { unitBranchOf } from '../development-policy/project-branches';
 import { createGitRunner } from './git-write';
 
@@ -185,6 +186,37 @@ const commitPaths = async (
 	return git(['commit', '-q', '-m', subject, '--', ...committable]);
 };
 
+/** A git refusal that is another process holding a lock, not a verdict. */
+const LOCK_HELD =
+	/\.lock'?:? File exists|cannot lock ref|Unable to create '.*\.lock'/iu;
+
+/** How often, and how far apart, a commit refused by a held lock is tried. */
+const LOCK_ATTEMPTS = 5;
+const LOCK_PAUSE_MS = 1000;
+
+/**
+ * Run `commit` again while git refuses it only because another process
+ * holds a lock: a fetch or a commit in another worktree of the clone
+ * takes the shared refs' locks for a moment, and a verdict's commit that
+ * met one was left staged for good.
+ */
+const commitRetryingLocks = async (
+	commit: () => Promise<{ readonly ok: boolean; readonly reason?: string }>,
+): Promise<{ readonly ok: boolean; readonly reason?: string }> => {
+	let outcome = await commit();
+	for (
+		let attempt = 1;
+		attempt < LOCK_ATTEMPTS &&
+		!outcome.ok &&
+		LOCK_HELD.test(outcome.reason ?? '');
+		attempt += 1
+	) {
+		await new Promise((done) => setTimeout(done, LOCK_PAUSE_MS));
+		outcome = await commit();
+	}
+	return outcome;
+};
+
 /** Calls in one worktree run one after another, so each commits its own. */
 const inFlight = new Map<string, Promise<unknown>>();
 
@@ -225,10 +257,13 @@ export const withCallWritesCommitted = async (
 		const paths = pathsTheCallChanged(before, after);
 		if (paths.length === 0) return result;
 		const subject = commitSubjectFor(tool, args);
-		const committed = await commitPaths(git, root, paths, subject);
+		const committed = await commitRetryingLocks(() =>
+			commitPaths(git, root, paths, subject),
+		);
 		if (committed.ok) return result;
-		const note = `delendai could not commit what this call wrote to ${branch} (${committed.reason ?? 'git refused'}). Commit it yourself before going on: git -C ${root} add -A -- ${paths.join(' ')} && git -C ${root} commit -m "${subject}"`;
-		process.stderr.write(`[delendai] ${note}\n`);
+		const said = `${CALL_WRITES_NOT_COMMITTED} what this call wrote to ${branch} (${(committed.reason ?? 'git refused').replace(/\s+/gu, ' ').trim()}). Commit it yourself before going on: git -C ${root} add -A -- ${paths.join(' ')} && git -C ${root} commit -m "${subject}"`;
+		const note = said.slice('[delendai] '.length);
+		process.stderr.write(`${said}\n`);
 		return withNote(result, note);
 	});
 };

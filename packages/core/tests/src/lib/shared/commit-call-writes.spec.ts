@@ -98,6 +98,28 @@ describe('a write in a unit of work is committed as it happens', () => {
 		expect(git(unit, 'status', '--porcelain')).toBe('?? mine.txt');
 	});
 
+	it('commits once another process lets go of the lock it met', async () => {
+		const { shared, unit } = project();
+		const lock = join(
+			shared,
+			'.git/refs/heads/delendai/wip/qwen/review/batch-g1/backlog.lock',
+		);
+		writeFileSync(lock, '');
+		setTimeout(() => rmSync(lock, { force: true }), 1500);
+
+		await withCallWritesCommitted(
+			unit,
+			'proposal_review',
+			{ proposalId: 'x00001', sliceId: 'S1', action: 'submit' },
+			writing(unit, { 'proposal.md': 'status: review\nsubmitted\n' }),
+		);
+
+		expect(git(unit, 'log', '-1', '--format=%s')).toBe(
+			'chore(delendai): proposal_review x00001 S1 submit',
+		);
+		expect(git(unit, 'status', '--porcelain')).toBe('');
+	});
+
 	it('commits a new file, and a file the agent had already changed', async () => {
 		const { unit } = project();
 		writeFileSync(join(unit, 'proposal.md'), 'the agent edited it\n');

@@ -187,12 +187,25 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S16 — A submit through the CLI is committed, or the CLI says why
-- **Status**: pending
-- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/core/src/lib/contracts/constants/call-writes.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`, `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/lib/stdio-context.factory.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`proposals review <id> <slice> --action=submit --workspace=<unit>` commits the review lines it writes in the unit, every time; when the commit fails, the reason is in what the CLI prints (today it is only a text note beside the structured result, which the CLI does not print)."
 - Found 2026-10-07, after x00875 S20's timeout fix landed: of seven submits in this proposal's units, S9, S12, S3 and S5 were committed by the tool, and S10, S11, S14 and S15 were left staged — `git add` ran, the commit did not — with an `ok: true` result and no word of it. The same `git commit -- <path>` run by hand in the unit, with the agent's environment, passes every hook. Each was committed by hand with the tool's subject.
+- Delivered: the reason was invisible, so it is made visible first: the server's line saying a call's writes were not committed (`CALL_WRITES_NOT_COMMITTED`) is passed on by the CLI to its own stderr, whole however the server's output is chunked. A commit with a minimal environment like the one the SDK gives the server passes every hook, so the environment is ruled out; every failure here happened while other units of the clone were fetching and committing, so a commit git refuses only because another process holds a lock (`cannot lock ref`, `index.lock`) is now tried again, five times a second apart. The lock case's spec fails without the change. The retry covers the `git add` too, which takes the unit's own index lock: a submit left unstaged (S16's first, run with develop's code) is that step meeting `index.lock`, held for a moment by whatever refreshes the worktree's index (an editor's Git integration watches every worktree). The same submit run again with this unit's code was committed. If a submit is left staged again, the CLI now prints why.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S17 — A merge leaves the proposal-id counter level with what it brought
+- **Status**: in-progress
+- **Files**: `lefthook.yml`
+- **Gate**: type
+- acceptance:
+  - "After a merge that brings in a proposal created elsewhere, `lint:proposal-id-drift` passes in the merging worktree without anyone reseeding the counter by hand."
+- Delivered: twice on 2026-10-07 a unit's publish was refused by `check-proposal-id-drift` (x00878, then f00756 from another host): the counter is a cache in the clone's common directory, and nothing moved it when a merge brought ids it had not handed out. Since x00868 the allocator takes the highest of the files in every worktree, the forge's reservations and the cache, so a lagging cache hands out no taken id; it only failed the gate. The post-merge hook now reseeds it (`sync-proposal-counters`, which only raises), in the shared checkout and in every unit that merges.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
