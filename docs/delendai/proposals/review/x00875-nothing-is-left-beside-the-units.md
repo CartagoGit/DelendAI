@@ -22,6 +22,7 @@ shipped-in:
   - "fd5a3aa6ae81279f8b56c2eba7579e56537cf708"
   - "57a631db9ae8a3bbebdde2373d0e9691377fe807"
   - "907b12101c096e1277c28ca8013d5fef2aa92c1d"
+  - "97f1cecdb488f4d6187145e16723640fcb37922d"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -293,15 +294,17 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at db62951444bd, validate exit 0, tests 7/7 — Delivered by the merge naming x00875-S22-g1. proposal_review computes whether the review rules would refuse the verdict before claiming, and verdictClaimRefusal returns immediately when claim is false, so a refused verdict claims nothing. No acceptance bullet is declared for this slice. Gate: proposal-review-claim.spec.ts 7/7 exit 0.
 
 ### S23 — The queue does not offer a reviewer what it delivered
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-queue-reviewer.service.ts`, `plugins/proposals/src/lib/services/delivery-history.service.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`, `plugins/proposals/src/generated/tool-outputs.ts`, `plugins/proposals/tests/src/lib/services/review-queue-reviewer.service.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts plugins/proposals/tests/src/lib/services/review-queue-reviewer.service.spec.ts`
 - Found 2026-10-06: one `review next` session offered claude-opus-5-5 five proposals it could not judge: f00274 and x00541, whose deliveries include its own publications (`delendai/pr/claude-opus-5-5/...`), and three it had released before in other units. The queue knew a slice's implementer only from `review-implementer`, the agent that submitted; another agent's publication delivering the same slice was not counted, and a unit of the whole proposal (`--slice=all`) was filed under `all` and listed for no slice.
 - Delivered: each delivery candidate carries the agent its unit's ref names (`agent` in the queue's output), a whole-proposal unit's delivery is a candidate of every slice, and the queue marks `needs-another-reviewer` a slice a unit of the asker's own identity delivered, under any independence (and of its own model, where the project asks for another model). Both specs fail without the change.
 - acceptance:
   - "A slice whose delivering merges include a publication by the reviewer is not offered to it."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 97f1cecdb488, validate exit 0, tests 19/19 — Delivered by the merge naming x00875-S23-g1 and still the newest delivery touching its files. indexDeliveries records the delivering agent on each candidate, buildReviewQueue includes the whole-proposal (all) delivery for every slice, and queueForReviewer turns those into needs-another-reviewer, so a reviewer's own publications no longer return as judgeable work. Gate review-queue.tool.spec.ts + review-queue-reviewer.service.spec.ts 19/19 exit 0.
 
 ### S24 — A release is honoured wherever it was recorded
 - **Status**: done
