@@ -2,7 +2,7 @@
  * slice-listener.spec.ts — covers the diffing + dedupe behavior.
  */
 
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -13,30 +13,16 @@ import {
 	readCurrentSliceSnapshot,
 } from '@delendai/commit-policy/lib/triggers/slice-listener';
 
-const writeIndex = async (
+import {
+	type IFixtureProposal,
+	writeProposalDocuments,
+} from './proposal-documents.fixture';
+
+const writeIndex = (
 	dir: string,
-	proposals: readonly {
-		id: string;
-		slices: readonly {
-			id: string;
-			status: string;
-			/**
-			 * x00263: every test fixture must declare the files a
-			 * slice owns — the listener refuses transitions where
-			 * `files` is missing, so the previous implicit-empty
-			 * shape is no longer valid.
-			 */
-			files?: readonly string[];
-		}[];
-	}[],
-): Promise<void> => {
-	await mkdir(join(dir, 'docs', 'proposals'), { recursive: true });
-	await writeFile(
-		join(dir, 'docs', 'proposals', 'index.json'),
-		JSON.stringify({ proposals }, null, 2),
-		'utf8',
-	);
-};
+	proposals: readonly IFixtureProposal[],
+): Promise<void> =>
+	writeProposalDocuments(join(dir, 'docs', 'proposals'), proposals);
 
 describe('slice listener', () => {
 	let workspace = '';

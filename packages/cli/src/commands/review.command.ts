@@ -49,6 +49,9 @@ const REVIEW_UNIT = ['--kind=review', '--proposal=batch', '--slice=all'];
 /** The trailer `review_queue` reads a claim from. */
 const CLAIM_TRAILER = 'Claims';
 
+/** The trailer `review release` gives a claim back with. */
+const RELEASE_TRAILER = 'Releases';
+
 const QUEUE_TOOL = 'delendai_proposals_review_queue';
 const VERDICT_TOOL = 'delendai_proposals_proposal_review';
 const CLAIM_TOOL = 'delendai_proposals_review_claim';
@@ -130,7 +133,12 @@ const gitIn = (
 };
 
 /** The proposals this unit has claimed: its own commits' claim trailers. */
-const claimsOf = (unit: IUnit, integration: string): readonly string[] => {
+/** The proposal ids a unit's own commits name under one trailer. */
+const trailerValuesOf = (
+	unit: IUnit,
+	integration: string,
+	key: string,
+): readonly string[] => {
 	// Only the unit's own commits: not those the integration branch
 	// holds, here or on the remote, whichever of the two exist.
 	const integrated = [
@@ -141,7 +149,7 @@ const claimsOf = (unit: IUnit, integration: string): readonly string[] => {
 	);
 	const log = gitIn(unit.path, [
 		'log',
-		`--format=%(trailers:key=${CLAIM_TRAILER},valueonly)`,
+		`--format=%(trailers:key=${key},valueonly)`,
 		'HEAD',
 		...(integrated.length === 0 ? [] : ['--not', ...integrated]),
 		'--',
@@ -156,6 +164,23 @@ const claimsOf = (unit: IUnit, integration: string): readonly string[] => {
 		),
 	];
 };
+
+/**
+ * What the unit still holds: what it claimed, less what it gave back. A
+ * released claim stays in the unit's history, and `review next` resumed
+ * it as the unit's own, handing the reviewer straight back the proposal
+ * it had just released.
+ */
+const claimsOf = (unit: IUnit, integration: string): readonly string[] => {
+	const released = new Set(releasesOf(unit, integration));
+	return trailerValuesOf(unit, integration, CLAIM_TRAILER).filter(
+		(id) => !released.has(id),
+	);
+};
+
+/** What the unit gave back: never offered to it again. */
+const releasesOf = (unit: IUnit, integration: string): readonly string[] =>
+	trailerValuesOf(unit, integration, RELEASE_TRAILER);
 
 const needsVerdict = (proposal: IQueueProposal): boolean =>
 	proposal.slices.some((slice) => slice.verdict === 'needs-verdict');
@@ -194,10 +219,12 @@ const next = async (
 			claimed.includes(proposal.id.toLowerCase()) &&
 			needsVerdict(proposal),
 	);
+	const released = releasesOf(unit, policy.branches.integration);
 	const free = queue.find(
 		(proposal) =>
 			proposal.claimedBy === undefined &&
 			!claimed.includes(proposal.id.toLowerCase()) &&
+			!released.includes(proposal.id.toLowerCase()) &&
 			needsVerdict(proposal),
 	);
 	const chosen = resumed ?? free;
