@@ -1,6 +1,8 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -96,6 +98,85 @@ describe('SqliteWorkEventStore (f00509 S1)', () => {
 		});
 		expect(second.id).toBe(2);
 		reopened.close();
+	});
+
+	it('two processes appending at once write every event once, each with its own id', async () => {
+		const dbPath = join(dir, 'shared.sqlite');
+		const eventsPerProcess = 200;
+		const storeModule = join(
+			dirname(fileURLToPath(import.meta.url)),
+			'work-event-store.sqlite.ts',
+		);
+		// Each writer announces itself and spins until its peer has too, so
+		// both open the store and append inside the same window.
+		const writerScript = join(dir, 'writer.ts');
+		writeFileSync(
+			writerScript,
+			`import { existsSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { SqliteWorkEventStore } from ${JSON.stringify(storeModule)};
+
+const [dbFile, dir, name, peer, total] = process.argv.slice(2);
+writeFileSync(join(dir, name + '.ready'), '');
+while (!existsSync(join(dir, peer + '.ready'))) Bun.sleepSync(1);
+const store = new SqliteWorkEventStore({ path: dbFile });
+for (let index = 0; index < Number(total); index += 1) {
+	store.append({
+		work_item_id: name,
+		actor_id: null,
+		kind: 'git_change',
+		payload_hash: String(index),
+	});
+}
+store.close();
+`,
+		);
+		const runWriter = (
+			name: string,
+			peer: string,
+		): Promise<number | null> =>
+			new Promise((resolve, reject) => {
+				const child = spawn(
+					process.execPath,
+					[
+						writerScript,
+						dbPath,
+						dir,
+						name,
+						peer,
+						String(eventsPerProcess),
+					],
+					{ stdio: 'inherit' },
+				);
+				child.on('error', reject);
+				child.on('exit', resolve);
+			});
+
+		const [firstExit, secondExit] = await Promise.all([
+			runWriter('writer-a', 'writer-b'),
+			runWriter('writer-b', 'writer-a'),
+		]);
+		expect([firstExit, secondExit]).toEqual([0, 0]);
+
+		const shared = new SqliteWorkEventStore({ path: dbPath });
+		try {
+			expect(shared.count()).toBe(eventsPerProcess * 2);
+			const perWriter = ['writer-a', 'writer-b'].map((name) =>
+				shared.listByWorkItem(asWorkItemId(name)),
+			);
+			const ids = perWriter.flat().map((event) => event.id);
+			expect(new Set(ids).size).toBe(eventsPerProcess * 2);
+			for (const events of perWriter) {
+				expect(events).toHaveLength(eventsPerProcess);
+				expect(events.map((event) => event.payload_hash)).toEqual(
+					Array.from({ length: eventsPerProcess }, (_, i) =>
+						String(i),
+					),
+				);
+			}
+		} finally {
+			shared.close();
+		}
 	});
 });
 
