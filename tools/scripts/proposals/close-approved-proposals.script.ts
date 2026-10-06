@@ -398,6 +398,10 @@ const main = (): number => {
 					`docs(proposals): close ${String(closed.length)} independently approved proposal(s)`,
 					'-m',
 					`${closed.join(', ')}: every finished slice approved by someone other than its implementer; closed by the owner machine after the reviewer's own close was refused.`,
+					// A review pack changes only what it claimed: CI refuses
+					// one that does not, and every close pass was refused for
+					// changing five proposals it had claimed nowhere.
+					...closed.flatMap((id) => ['--trailer', `Claims: ${id}`]),
 				],
 				path,
 			);
