@@ -1524,7 +1524,7 @@
 				"id": "q00018",
 				"title": "State Engine foundation: pure deterministic project/swarm scopes, generation rebuild and shadow equivalence",
 				"track": "swarm-scope-v1",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "plan",
 				"date": "2026-09-05"
 			},

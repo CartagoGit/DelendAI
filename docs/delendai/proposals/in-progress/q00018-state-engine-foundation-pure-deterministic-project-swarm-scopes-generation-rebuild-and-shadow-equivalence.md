@@ -255,7 +255,7 @@ El State Engine nunca es ese camino.
 ### S1 — Crear el paquete `packages/state` (`@delendai/state`)
 
 - **Status**: done
-- **Files**: `packages/state/{package.json,tsconfig.json,README.md,src/index.ts,src/index.d.ts,src/lib/*.ts,src/lib/*.d.ts,tests/src/*.spec.ts}`, `tsconfig.base.json` (sin cambios), `package.json#workspaces` (sin cambios porque ya apunta a `packages/*`).
+- **Files**: `packages/state/package.json`, `packages/state/tsconfig.json`, `packages/state/README.md`, `packages/state/src/index.ts`, `packages/state/tests/src/no-node-imports.spec.ts`, `tools/scripts/lint/no-node-imports-in-state.script.ts`
 - **Gate**: `typecheck`
 - Paquete con la misma forma que `@delendai/contracts`: pure
   TypeScript cuando es posible, subpaths `"./scope"`, `"./producer"`,
@@ -269,7 +269,7 @@ El State Engine nunca es ese camino.
 ### S2 — Contratos: `IStateScope`, `IStateProducer`, `ProjectFingerprint`, `canonicalStateHash`
 
 - **Status**: done
-- **Files**: `packages/state/src/lib/{scope,fingerprint,producer,hash,generation,registry}.{ts,d.ts}`
+- **Files**: `packages/state/src/lib/scope.ts`, `packages/state/src/lib/fingerprint.ts`, `packages/state/src/lib/producer.ts`, `packages/state/src/lib/hash.ts`, `packages/state/tests/src/scope.spec.ts`, `packages/state/tests/src/fingerprint.spec.ts`, `packages/state/tests/src/hash.spec.ts`
 - **Gate**: `typecheck` + `test`
 - `IStateScope` (4 miembros del union: `project` | `swarm` |
   `shared-content-cache` | `worktree-cache`), cada uno con su
@@ -293,7 +293,7 @@ El State Engine nunca es ese camino.
 ### S3 — `IStateRegistry` + `InMemoryStateRegistry` (driver inicial)
 
 - **Status**: done
-- **Files**: `packages/state/src/lib/{registry,driver-in-memory,generation}.{ts,d.ts}`
+- **Files**: `packages/state/src/lib/registry.ts`, `packages/state/src/lib/driver-in-memory.ts`, `packages/state/tests/src/registry.spec.ts`, `packages/state/tests/src/phase-0.2.spec.ts`
 - **Gate**: `typecheck` + `test`
 - API:
   - `registerProducer(producer)` — registra y deja el producer
@@ -314,7 +314,7 @@ El State Engine nunca es ese camino.
 ### S4 — Generaciones, fencing, GC
 
 - **Status**: done
-- **Files**: `packages/state/src/lib/generation.ts`, `tests/src/lib/generation.spec.ts`
+- **Files**: `packages/state/src/lib/generation.ts`, `packages/state/tests/src/generation.spec.ts`
 - **Gate**: `test`
 - `IStateGeneration` con `id`, `parentId?`, `fingerprint`,
   `createdAt` (metadata local, fuera del canonical hash),
@@ -335,7 +335,7 @@ El State Engine nunca es ese camino.
 ### S5 — Property tests: `incremental ≡ cleanRebuild` + determinism + corrupción
 
 - **Status**: done
-- **Files**: `packages/state/tests/src/property/{equivalence,determinism,corruption}.spec.ts`
+- **Files**: `packages/state/tests/src/property/equivalence.spec.ts`, `packages/state/tests/src/property/determinism.spec.ts`, `packages/state/tests/src/property/corruption.spec.ts`
 - **Gate**: `test`
 - Dependencia: `fast-check` (la misma que ya usa el repo para
   property tests). Una suite por propiedad.
@@ -358,8 +358,8 @@ El State Engine nunca es ese camino.
 - **Status**: done
 - **Files**: `tools/scripts/lint/state-engine-purity.script.ts`,
   `packages/core/src/lib/plugins/plugin-contract.ts`,
-  `packages/core/src/lib/bootstrap/assemble.ts`,
-  `packages/state/src/index.ts` (subpath público).
+  `packages/core/src/lib/cli/assemble.ts`,
+  `packages/state/src/index.ts`.
 - **Gate**: `lint` + `test`
 - Lint que rechaza cualquier read/write fuera del cache de
   DelendAI dentro de `packages/state/src/**` y
