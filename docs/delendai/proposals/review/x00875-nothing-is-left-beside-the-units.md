@@ -125,12 +125,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 12/12 — Delivered by the merge naming x00875-S7-g1 (9888fe4f26fb) and last carried by 05f70a3e2588, which touched the same files; that later commit is the slice as it stands. reapLandedRetired lists refs under the retired prefix, fetches commits it does not have, keeps only those the integration branch contains (merge-base --is-ancestor), and with apply deletes exactly those. Acceptance bullet 7 met. Gate work-retire.service.spec.ts 12/12 exit 0.
 
 ### S8 — A slice reservation whose unit is gone is released
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/slice-reservation.interface.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - Found in the audit after the queue emptied on 2026-10-05: eighteen refs under `refs/delendai/claims/slice/` for slices that had landed. A reservation was released only when its unit was retired, and a unit that lands is not retired. They kept nobody out, since an entrant takes over a reservation whose unit is gone, but each delivered slice left a ref for ever. `work reap` now lists the reservations whose unit has no branch on the forge and that are older than an abandoned unit is given and, with `--apply`, releases them.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 5/5 — Delivered by the merge naming x00875-S8-g1 (132456e37941) and last carried by 05f70a3e2588. reapSpentReservations reads the unit out of the claim commit, keeps a reservation whose work or publication branch still exists or whose stamp is inside the grace, and releases only the spent ones. Acceptance bullet 8 met. Gate slice-reservation.service.spec.ts 5/5 exit 0.
 
 ### S9 — A cited proposal is found in any status folder
 - **Status**: done
