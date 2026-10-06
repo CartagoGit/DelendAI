@@ -2,7 +2,7 @@
 id: f00275
 title: "`delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría"
 kind: feat
-status: review
+status: done
 type: proposal
 track: product
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00276]
-last-transition-id: 3748813e-47c4-4977-ad5e-ce6966fde219
-last-correlation-id: 3748813e-47c4-4977-ad5e-ce6966fde219
-last-transition-from: in-progress
+last-transition-id: ad2bd49f-467e-43a0-915d-a02d86fa635e
+last-correlation-id: ad2bd49f-467e-43a0-915d-a02d86fa635e
+last-transition-from: review
 shipped-in:
   - "236586bbf31cad066853b7ba4431f8be3136ea0e"
 ---
@@ -134,7 +134,7 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
 
 ### S2 — `--offline`: marcar y saltar checks que requieren red
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `packages/cli/src/commands/groups/doctor.ts`
     - `packages/cli/src/contracts/constants/doctor-modes.constant.ts`
@@ -144,13 +144,15 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
     - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
 - Shipped: `--offline` skips the checks that need the network and reports each as `not-applicable` with a `skipped:` finding, never as passed. Premise note: no check in the pure registry opens a socket today (`network.check.ts` is already not-applicable), so no `requiresNetwork` property was needed there. The one network-bound section is the plugins/tools overview when `--remote` is set; it is skipped offline. `requiresNetwork` exists on deep checks, and the spec asserts a marked check is not run.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `66b124669ad9`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: GPT-5.4
+- review-log: approved by GPT-5.4 — verified at 236586bbf31c, validate exit 0, tests 49/49 — Gate green in review worktree; offline marks remote sections skipped, preserves local checks, and deep network-bound checks remain not-applicable.
 
 ### S3 — `--deep`: registro de checks caros + primer check (error-reporting self-test)
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `packages/cli/src/commands/groups/doctor.ts`
     - `packages/cli/src/contracts/constants/doctor-modes.constant.ts`
@@ -160,9 +162,11 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
     - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
 - Shipped: `defaultDeepChecks()` registry and the `error-reporting-self-test` check. The plugin is imported by a computed specifier so the CLI takes no static dependency; if it cannot be loaded the section is a `warn` that says it was skipped. Offline it passes `live: false`, so the `gh` checks come back marked skipped. The spec injects a runner with a fake exec and asserts zero `gh issue create` calls. File names follow the lints (`*.service.ts`), not the names drafted here.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `66b124669ad9`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: GPT-5.4
+- review-log: approved by GPT-5.4 — verified at 236586bbf31c, validate exit 0, tests 49/49 — Gate green in review worktree; deep self-test is isolated behind a computed import, reports skips offline, and tests confirm it never creates a GitHub issue.
 
 ## dependency graph
 
