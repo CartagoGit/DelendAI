@@ -967,7 +967,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S33 — A slice delivered from a unit of another name is still found
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-entry.service.ts`, `plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - Handing a proposal to review records each slice's delivery. When no merge
@@ -981,6 +981,11 @@ the good verdicts' shape (P1) becomes the required shape.
   (`packages/core/src/lib/work-units/work-publish.service.ts`,
   `packages/core/src/lib/work-units/work-unit-land.service.ts`).
 - shipped-in: `70f0d67de5cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 70f0d67de5cd, validate exit 0, tests 295/295 — Deliver merge 70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 70f0d67de5cd names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77), opened by minimax-3
 
 ## dependency graph
 
