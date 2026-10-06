@@ -203,6 +203,48 @@ describe('bindWriteRoot', () => {
 		expect(result.structuredContent.error.reason).toContain('develop');
 	});
 
+	it('runs a call the tool declares a read in the shared checkout, and still refuses its writes', async () => {
+		const actions: string[] = [];
+		const registration: IToolRegistration = {
+			...toolReportingItsRoot('caller-checkout'),
+			readsOnly: (input) =>
+				(input as { readonly action?: unknown }).action === 'status',
+			register: async (server) => {
+				server.registerTool(
+					'review',
+					{ inputSchema: z.object({ action: z.string() }) },
+					async (args: { readonly action: string }) => {
+						actions.push(args.action);
+						return toolOk();
+					},
+				);
+			},
+		};
+		const { handler } = await registerOn(
+			bindWriteRoot(
+				registration,
+				SERVER,
+				sameRepository,
+				async () => 'this is the shared checkout on develop',
+			),
+		);
+		const read = (await handler({ action: 'status' })) as {
+			readonly isError?: boolean;
+		};
+		const write = (await handler({ action: 'submit' })) as {
+			readonly isError?: boolean;
+			readonly structuredContent: {
+				readonly error: { readonly code?: string };
+			};
+		};
+		expect(read.isError).not.toBe(true);
+		expect(write.isError).toBe(true);
+		expect(write.structuredContent.error.code).toBe(
+			SHARED_CHECKOUT_WRITE_REFUSED,
+		);
+		expect(actions).toEqual(['status']);
+	});
+
 	describe('the next step of a write refused in the shared checkout', () => {
 		const nextActionOf = async (
 			registration: IToolRegistration,
