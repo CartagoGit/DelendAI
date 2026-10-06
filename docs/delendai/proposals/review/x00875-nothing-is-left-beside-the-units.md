@@ -183,10 +183,15 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 47baf9c2f491, validate exit 0, tests 10/10 — Delivered by the merge naming x00875-S11-g1 (26bfd63fa32a) and last carried by 47baf9c2f491. lefthookRunsGuard recognises lefthook invoking the guard as commit-msg running pre-commit, an already-guarded managed hook is left unchanged, and delendai.config.json no longer carries an onCommit push setting. The boot warns only of what is true. No acceptance bullet is declared for this slice. Gate guard-hooks.service.spec.ts 10/10 exit 0.
 
 ### S13 — A unit is published to its own pull request, whatever its generation
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - Found 2026-10-06 publishing two review packs of one agent: `batch-all-g4` tried to push into `batch-all-g1`'s pull request and was refused as not a fast-forward. `work publish` chose the target with the generation of its arguments, which defaults to 1, not with the generation of the work ref it was publishing; the second unit of an agent was sent to the first unit's pull request. The generation now comes from the work ref. The spec publishes two packs by their sessions and fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 68b22cd6fd11, validate exit 0, tests 46/46 — Delivered by the merge naming x00875-S13-g1 (4557d2f09d23) and last carried by 68b22cd6fd11. work-unit-publish parses the generation out of the work ref it is publishing and passes generationOfWorkRef into choosePublicationTarget before any argument fallback, so each generation is published to its own pull request. No acceptance bullet is declared for this slice. Gate work-unit.service.spec.ts 46/46 exit 0 with DELENDAI_AGENT_ID unset; the same file reads 45/46 in a shell that exports it, which is an ambient agent being inferred instead of the missing --agent= refusal, not a defect in this slice.
+- review-attribution: claude-opus-5-5 from commit 68b22cd6fd11 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00875-S27-g1/a-generation-once-used-is-spent (68b22cd6fd11f3f254543516aa413f70384e9a88), opened by minimax-3
 
 ### S14 — A released proposal is not handed back to the reviewer who released it
 - **Status**: review
