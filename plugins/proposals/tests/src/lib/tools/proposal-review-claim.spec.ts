@@ -116,6 +116,36 @@ describe('a verdict in a review unit', () => {
 		).toBe(before);
 	});
 
+	it('claims nothing when the review rules refuse the verdict', async () => {
+		// The reviewer that asked for changes may not judge the fix. Claimed
+		// before that rule ran, the proposal stayed held by the one reviewer
+		// the rule had just turned away.
+		const commit = repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		repo.proposalInReview(
+			`${SLICE_S1('review')}- review-state: in_review
+- review-implementer: agent-a
+- review-log: requested_changes by agent-b — a test is missing
+- review-log: resubmitted by agent-a — the test is there
+`,
+		);
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
+
+		const refused = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: commit.slice(0, 9) },
+		});
+
+		expect(refused.isError).toBe(true);
+		expect(refused.text).toContain(
+			'different agent than the previous reviewer',
+		);
+		expect(claimsOnHead()).toEqual([]);
+	});
+
 	it('is refused outside a review unit, and writes nothing', async () => {
 		repo.proposalInReview(SLICE_S1('review'));
 		repo.git('switch', '-q', '-c', 'somewhere-else');
