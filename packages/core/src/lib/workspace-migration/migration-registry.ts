@@ -57,6 +57,7 @@ import { createDevelopmentPolicyMigrator } from './migrators/development-policy.
 import { createHostConfigMigrator } from './migrators/host-config.migrator';
 import { createPackageManifestMigrator } from './migrators/package-manifest.migrator';
 import { createVscodeMigrator } from './migrators/vscode.migrator';
+import { createProposalsStateMigrator } from './migrators/proposals-state.migrator';
 import {
 	DELENDAI_TO_DELENDAI_V1_ID,
 	delendaiToDelendAIV1,
@@ -97,6 +98,9 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	createHostConfigMigrator(),
 	createAgentFilesMigrator(),
 	createVscodeMigrator(),
+	// The proposal state an older delendai left (its database under
+	// `.delendai/state`, its registry committed under the documents).
+	createProposalsStateMigrator(),
 	// Last, and deliberately so: it reads the config file the earlier
 	// migrators may still be renaming, and it is the only entry that
 	// PROPOSES something rather than renaming what is already there.
