@@ -2,13 +2,13 @@
 id: x00850
 title: "A unit of work has an owner and a heartbeat, so a live unit is never mistaken for an abandoned one"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-01
-last-transition-id: 1bc9cdc1-5a24-4d0b-b0a9-5e863788c42a
-last-correlation-id: 1bc9cdc1-5a24-4d0b-b0a9-5e863788c42a
-last-transition-from: in-progress
+last-transition-id: b615ae16-7574-4af1-a32e-504224902345
+last-correlation-id: b615ae16-7574-4af1-a32e-504224902345
+last-transition-from: review
 shipped-in:
   - "61c98cfd5"
 ---
@@ -62,7 +62,7 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
 - review-log: approved by claude-opus-5-5 — verified at 61c98cfd5, validate exit 0, tests 51/51 — Delivered by #726 (merge 61c98cfd5).
 
 ### S3 — The guard refuses a second ref of a unit and agents are told how a unit ends
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/lib/development-policy/git-guard-shape.ts`, `packages/core/src/lib/development-policy/git-guard-unit.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`, `packages/core/src/lib/work-units/unit-ref-facts.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-unit.spec.ts`
 - **Gate**: type
@@ -70,8 +70,10 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
   - "pushing delendai/wip/<agent>/<kind>/<unit>/sim-a while the unit holds another ref is refused"
   - "served instructions say a unit ends in publish or retire"
 - shipped-in: `955914412aa0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 61c98cfd5, validate exit 0, tests 44/44 — Delivered by #726 (merge 61c98cfd5).
 
 ## acceptance
 
