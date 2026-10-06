@@ -110,6 +110,8 @@ export const reviewClaims = async (
 	run: IGitRunner,
 	shape: IWorkRefShape,
 	integration?: string,
+	/** Whether the unit at a ref still holds what it claimed; all do when absent. */
+	holding?: (ref: string) => boolean,
 ): Promise<ReadonlyMap<string, readonly IReviewClaimHolder[]>> => {
 	const claims = new Map<string, IReviewClaimHolder[]>();
 	const parser = compileWorkRefParser(
@@ -136,6 +138,8 @@ export const reviewClaims = async (
 		// A unit checked out in a worktree is live even before its first
 		// commit, when its tip is still the integration branch's.
 		if (worktree.length === 0 && ended.has(name)) continue;
+		// A unit whose holder has gone quiet holds nothing; its work stays.
+		if (holding !== undefined && !holding(name)) continue;
 		const ref = workRefFor(name, work, publication);
 		if (ref === undefined) continue;
 		const identity = parser.parse(ref);

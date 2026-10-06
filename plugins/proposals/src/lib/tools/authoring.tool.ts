@@ -16,6 +16,7 @@ import {
 	toolOk,
 	withFileMutex,
 	writeFileAtomic,
+	resolveWorkAgentId,
 } from '@delendai/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
@@ -27,7 +28,10 @@ import {
 	deliveredCommitOf,
 	supersedingDelivery,
 } from '../services/review-verdict-evidence';
-import { verdictClaimRefusal } from '../services/review-claim.service';
+import {
+	reviewUnitAgent,
+	verdictClaimRefusal,
+} from '../services/review-claim.service';
 import { canonicalRoleOf } from '../shared/agent-conventions';
 import { toolErrorEnvelope } from '../shared/tool-envelope';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
@@ -2134,7 +2138,7 @@ export const buildReviewRegistration = (
 				inputSchema: REVIEW_INPUT_SCHEMA,
 				outputSchema: REVIEW_OUTPUT_SCHEMA,
 			},
-			async (args: {
+			async (rawArgs: {
 				proposalId: string;
 				sliceId: string;
 				action: 'submit' | 'approve' | 'request_changes' | 'status';
@@ -2143,6 +2147,7 @@ export const buildReviewRegistration = (
 				evidence?: IProposalReviewEvidence | undefined;
 				commitHash?: string | undefined;
 			}) => {
+				let args = rawArgs;
 				const scoped = scopeToCaller(options);
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
@@ -2212,6 +2217,28 @@ export const buildReviewRegistration = (
 						);
 					}
 					const branches = scoped.developmentPolicy?.branches;
+					// A pack is one reviewer's: a verdict in a review unit is
+					// signed by the agent the unit is named after, never by a
+					// name chosen at the call.
+					const unitAgent = await reviewUnitAgent(
+						scoped.run ?? createGitRunner(scoped.workspaceRoot),
+						branches,
+					);
+					if (unitAgent !== undefined) {
+						if (
+							unitAgent !==
+							resolveWorkAgentId({ model: args.agent }).id
+						) {
+							return toolError(
+								`"${args.agent}" is not the reviewer of this review unit, which is ${unitAgent}'s.`,
+								`Record the verdict as ${unitAgent}, the model this unit was entered as, or enter a review unit of your own.`,
+							);
+						}
+						// One agent, one spelling: the verdict is signed the
+						// way its unit's ref names the agent (`GPT-5.4` and
+						// `gpt-5.4` were two reviewers to every reader).
+						args = { ...args, agent: unitAgent };
+					}
 					// A verdict the review rules will refuse claims nothing:
 					// claimed first, it left the refused reviewer holding the
 					// proposal, so the reviewer it was refused FOR could not
