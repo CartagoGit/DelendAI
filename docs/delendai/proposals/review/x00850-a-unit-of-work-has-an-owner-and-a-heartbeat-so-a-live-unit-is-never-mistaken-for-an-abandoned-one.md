@@ -9,6 +9,8 @@ date: 2026-10-01
 last-transition-id: 1bc9cdc1-5a24-4d0b-b0a9-5e863788c42a
 last-correlation-id: 1bc9cdc1-5a24-4d0b-b0a9-5e863788c42a
 last-transition-from: in-progress
+shipped-in:
+  - "61c98cfd5"
 ---
 
 # x00850 — A unit of work has an owner and a heartbeat, so a live unit is never mistaken for an abandoned one
@@ -31,7 +33,7 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
 - global_gate: none
 
 ### S1 — A unit has a lease and one verdict
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-lease.constant.ts`, `packages/core/src/lib/work-units/unit-lease.store.ts`, `packages/core/src/lib/work-units/unit-lease.service.ts`, `packages/core/src/lib/work-units/unit-verdict.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-removal.service.ts`, `packages/core/src/lib/work-units/unit-worktree-state.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/tools/overview-tool.ts`, `packages/core/src/lib/tools/overview-summary.helper.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/tests/src/lib/work-units/unit-repo.helper.ts`, `packages/core/tests/src/lib/work-units/unit-verdict.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-standings.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,11 +41,13 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
   - "two sessions of one agent hold separate leases"
   - "the lease survives the CLI process that wrote it"
 - shipped-in: `955914412aa0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 61c98cfd5, validate exit 0, tests 41/41 — Delivered by #726 (merge 61c98cfd5). Core specs 41/41, reclaim-orphans 10/10, guard.command 44/44.
 
 ### S2 — Reclaim, remedies and reaping follow the verdict
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, ``packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `tools/scripts/reclaim/reclaim-orphans.script.ts`, `tools/scripts/reclaim/reclaim-orphans.script.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-lease.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/reconcile-standing.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: type
@@ -52,8 +56,10 @@ reclaim:orphans listed three units of a live session next to three abandoned by 
   - "remedies for an abandoned unit name work retire, and no second exit exists"
   - "a delivered unit loses its worktree and branch, a dirty one reports what is dirty"
 - shipped-in: `14da2e90af7d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 61c98cfd5, validate exit 0, tests 51/51 — Delivered by #726 (merge 61c98cfd5).
 
 ### S3 — The guard refuses a second ref of a unit and agents are told how a unit ends
 - **Status**: pending
