@@ -228,6 +228,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "The work-checkout publisher writes a pass's report to the server's log only when it differs from the previous pass's."
 - Delivered: after the swarm stopped, the MCP server's log carried the same `work-checkouts.published` line — four empty units, "no commits of its own yet" — every five minutes for a day, burying the boot reports that mattered. The server's report writer now keeps the last line and writes a new one only when the outcome changes. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
