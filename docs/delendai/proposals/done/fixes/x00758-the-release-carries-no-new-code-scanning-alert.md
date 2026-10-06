@@ -2,15 +2,15 @@
 id: x00758
 title: "The release carries no new code-scanning alert"
 kind: fix
-status: review
+status: done
 type: proposal
 track: security
 date: 2026-09-29
 priority: P0
 related: []
-last-transition-id: 464b2e4c-c80f-4d0b-ae82-c6cbb74bcc13
-last-correlation-id: 464b2e4c-c80f-4d0b-ae82-c6cbb74bcc13
-last-transition-from: in-progress
+last-transition-id: 46538c42-460d-46ea-9707-fba787521dd7
+last-correlation-id: 46538c42-460d-46ea-9707-fba787521dd7
+last-transition-from: review
 shipped-in:
   - "b959235f4556188b272b33f499cc322ff25cfca7"
 ---
@@ -142,7 +142,7 @@ line.
 
 ### S2 — Fix the 48 alerts `main` already carried
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/ui-extension plugins/proposals/tests/src/lib/agents packages/core/tests/src/lib/services/shell packages/core/tests/src/lib/shared tools/tests/ci/local-repro.spec.ts`
 - **Files**:
   - `apps/web/scripts/fetch-brand-logos.ts`
@@ -224,6 +224,11 @@ at its cause:
   (`continue`) instead of counting the lock as released, as it did before
   the read moved to `readLockText`.
 - shipped-in: `b959235f4556`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at b959235f4556, validate exit 0, tests 1047/1048 — Candidate b959235f4556 is the merge of PR #659 and does carry this slice. Spot-verified each fix class at that tree: terminal-probe.service.ts runs probes through a fixed SAFE_BASH=/bin/bash (line 62) rather than an arbitrary $SHELL; configuration-center.service.ts refuses __proto__/constructor/prototype at the write (lines 30, 251, 296); ui-extension/src/dashboard/format.ts:51 exports the shared escapeHtml used by the interpolated panels; with-file-mutex.ts:20 LOCK_FILE_MODE=0o600; local-repro.script.ts:556 REPRO_PROGRAMS = [bun,bunx,node,npm,npx]; the dev page parses with DOMParser (configuration-center.ts:24); settings-panel.ts:345 documents and forwards only cwd to /api/setup/status. Gate run in the review worktree: npx vitest run packages/ui-extension plugins/proposals/tests/src/lib/agents packages/core/tests/src/lib/services/shell packages/core/tests/src/lib/shared tools/tests/ci/local-repro.spec.ts -> 104 files, 1047 passed / 1 skipped (1048), exit 0. Not independently re-run against the CodeQL CLI, so the 48->0 alert count is taken from the slice's own measurement.
+- review-attribution: claude-opus-5-5 from commit b959235f4556 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00758-S2-g1/no-code-scanning-alert-remains (b959235f4556188b272b33f499cc322ff25cfca7), opened by minimax-m31
 
 ## dependency graph
 
