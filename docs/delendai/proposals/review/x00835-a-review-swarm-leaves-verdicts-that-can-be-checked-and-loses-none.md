@@ -13,6 +13,8 @@ last-correlation-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
 last-transition-from: in-progress
 shipped-in:
   - "f83c85addc9e"
+  - "70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77"
+  - "6f63a52e168e57203553e0858b508c432998ef0e"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -367,7 +369,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S1 — A verdict names the commit it judged and the gate it ran
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - `approve` writes the commit, the gate's exit code and the test counts it
@@ -375,10 +377,15 @@ the good verdicts' shape (P1) becomes the required shape.
   hold is refused. `request_changes` on delivered work names the commit it
   objects to, or is refused (E3, C1).
 - shipped-in: `70f0d67de5cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 70f0d67de5cd, validate exit 0, tests 295/295 — Deliver 70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77; feat ancestors verified; declared gate batched green 34 files / 295 tests exit 0.
+- review-attribution: claude-opus-5-5 from commit 70f0d67de5cd names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77), opened by minimax-3
 
 ### S2 — A verdict is written in the reviewer's own unit, or not at all
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-worktree.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - `review approve|changes|next` already write in the reviewer's unit. The
@@ -386,6 +393,11 @@ the good verdicts' shape (P1) becomes the required shape.
   work refs, `approve` and `request_changes` outside a review unit are now
   refused, name the unit to enter, and write nothing (E2, E7).
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6f63a52e168e, validate exit 0, tests 295/295 — Deliver merge 6f63a52e168e57203553e0858b508c432998ef0e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6f63a52e168e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (6f63a52e168e57203553e0858b508c432998ef0e), opened by minimax-3
 
 ### S3 — One model, one identity
 
