@@ -17,6 +17,7 @@ shipped-in:
   - "db62951444bdb537e371e0c1b7ce54fb056e35e4"
   - "4708525975eab47a589336724f7abcb814fdc25d"
   - "68b22cd6fd11f3f254543516aa413f70384e9a88"
+  - "05f70a3e258816a2a1bbd437b7c60df283f6c847"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -58,14 +59,16 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 9/9 — Delivered in the whole-proposal merge x00875-all-g1. holdersOfSlice returns [] when the proposal is still the unallocated placeholder, and adoptProposalId renames the create unit to the real id via resolveWorkRef, so two agents each entering --kind=create --proposal=new --slice=all are neither refused nor lumped as one holder. Acceptance bullet 1 met. Gate: slice-holders.service.spec.ts 9/9 exit 0.
 
 ### S2 — A directory beside the units that is no unit is reaped
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/work-units/units-directory.constant.ts`, `packages/core/src/lib/contracts/interfaces/worktree-husks.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/worktree-husks.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/worktree-husks.service.spec.ts`
 - `work doctor` gains `no-husk-directories`: every directory in the units' folder is a registered worktree. A directory written to within one lease window is not counted, so a unit being created is never reported.
 - `work reap` reports husks, and with `--apply` removes them. First, the husk and every checkout found inside it are read as git would read them, under the repository's ignore rules. A tree no commit of this clone has is committed and pushed to `refs/<namespace>/retired/husk/<name>`; only then is the directory removed. A husk git cannot read, or whose files the forge does not take, stays and says why.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `4542131c19e2`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 8/8 — Delivered in x00875-all-g1 (9e405f09f7fb) and last carried by 05f70a3e2588, cited here as the slice now stands. huskDirectories lists directories in the units folder excluding registered worktrees, the no-husk-directories invariant claims every directory beside the units is a unit, and reapHusks first preserves unique content on refs/<ns>/retired/husk/<name> and only then removes the directory. Acceptance bullet 2 met. Gate worktree-husks.service.spec.ts 8/8 exit 0.
 
 ### S3 — A route selection explains itself
 - **Status**: done
