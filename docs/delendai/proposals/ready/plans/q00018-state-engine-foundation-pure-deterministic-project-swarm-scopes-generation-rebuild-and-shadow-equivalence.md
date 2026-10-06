@@ -251,7 +251,7 @@ El State Engine nunca es ese camino.
 
 ### S1 — Crear el paquete `packages/state` (`@delendai/state`)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state/{package.json,tsconfig.json,README.md,src/index.ts,src/index.d.ts,src/lib/*.ts,src/lib/*.d.ts,tests/src/*.spec.ts}`, `tsconfig.base.json` (sin cambios), `package.json#workspaces` (sin cambios porque ya apunta a `packages/*`).
 - **Gate**: `typecheck`
 - Paquete con la misma forma que `@delendai/contracts`: pure
@@ -261,10 +261,11 @@ El State Engine nunca es ese camino.
   desde plugins/browser sin arrastrar Node.
 - `package.json#scripts.test` y `typecheck` siguiendo el patrón del
   monorepo.
+- Delivered (reconciled 2026-10-07 against the tree): `packages/state` (`@delendai/state` 0.1.0) with the `./scope`, `./fingerprint`, `./producer`, `./hash`, `./generation` and `./registry` subpaths, and the no-Node-imports rule pinned by `tests/src/no-node-imports.spec.ts` and `lint:no-node-imports-in-state`. Shipped in `99d17f26d` (2026-09-05).
 
 ### S2 — Contratos: `IStateScope`, `IStateProducer`, `ProjectFingerprint`, `canonicalStateHash`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state/src/lib/{scope,fingerprint,producer,hash,generation,registry}.{ts,d.ts}`
 - **Gate**: `typecheck` + `test`
 - `IStateScope` (4 miembros del union: `project` | `swarm` |
@@ -284,10 +285,11 @@ El State Engine nunca es ese camino.
   (`generated_at`, `hydrated_at`, `pid`, `hostname`, `duration`) y
   calcula un SHA-256 sobre la proyección canónica serializada de
   forma estable (orden de claves).
+- Delivered (reconciled 2026-10-07 against the tree): `packages/state/src/lib/{scope,fingerprint,producer,hash}.ts`, each with its spec; reworked in `50717a0d5` (x00501: typed locators, the fingerprint split, SHA-256).
 
 ### S3 — `IStateRegistry` + `InMemoryStateRegistry` (driver inicial)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state/src/lib/{registry,driver-in-memory,generation}.{ts,d.ts}`
 - **Gate**: `typecheck` + `test`
 - API:
@@ -304,10 +306,11 @@ El State Engine nunca es ese camino.
 - El driver **NO** toca disco. Phase 1 introduce el SQLite driver
   que sí persiste; este driver sólo sirve para tests y para
   prototipar.
+- Delivered (reconciled 2026-10-07 against the tree): `packages/state/src/lib/{registry,driver-in-memory}.ts`, covered by `registry.spec.ts` and `phase-0.2.spec.ts`. Shipped in `99d17f26d`.
 
 ### S4 — Generaciones, fencing, GC
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state/src/lib/generation.ts`, `tests/src/lib/generation.spec.ts`
 - **Gate**: `test`
 - `IStateGeneration` con `id`, `parentId?`, `fingerprint`,
@@ -324,10 +327,11 @@ El State Engine nunca es ese camino.
 - Tests cubren el caso clásico: agente arranca con gen 147, mientras
   piensa otro agente publica gen 148. La escritura del agente 1 es
   rechazada con `STALE_GENERATION` y la del agente 2 tiene éxito.
+- Delivered (reconciled 2026-10-07 against the tree): `packages/state/src/lib/generation.ts`: publish, drain, a strictly increasing lease token, a lease-fenced write that is refused when stale (`IFenceRejected`, the plan's `STALE_GENERATION` under another name) and a GC that reaps, all in `generation.spec.ts`. Shipped in `99d17f26d`.
 
 ### S5 — Property tests: `incremental ≡ cleanRebuild` + determinism + corrupción
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state/tests/src/property/{equivalence,determinism,corruption}.spec.ts`
 - **Gate**: `test`
 - Dependencia: `fast-check` (la misma que ya usa el repo para
@@ -344,10 +348,11 @@ El State Engine nunca es ese camino.
   (`generation.status = 'reaped'` mientras hay readers) → la
   siguiente `hydrate()` reconstruye desde inputs declarados y el
   hash canónico es idéntico al calculado antes de la corrupción.
+- Delivered (reconciled 2026-10-07 against the tree): `packages/state/tests/src/property/{equivalence,determinism,corruption}.spec.ts` (the determinism suite includes the `Date.now()` regression). The default ran 200 sequences where the acceptance asks for at least 1,000; it is 1,000 now (`STATE_PROPERTY_RUNS` still overrides), and the three suites take 4 s instead of 3.
 
 ### S6 — Lint `state-engine-purity` + acceso por `IMcpPluginContext.state`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/state-engine-purity.script.ts`,
   `packages/core/src/lib/plugins/plugin-contract.ts`,
   `packages/core/src/lib/bootstrap/assemble.ts`,
@@ -367,6 +372,7 @@ El State Engine nunca es ese camino.
 - Ningún plugin existente se obliga a usarlo todavía. El acceso
   queda disponible para producers que plugins futuros quieran
   declarar (no en este slice).
+- Delivered (reconciled 2026-10-07 against the tree): `lint:state-engine-purity` with its spec (first in `e0970e951`), `IMcpPluginContext.state?: IStateRegistry` documented in `plugin-contract.ts`, and `assemble.ts` building the in-memory registry and injecting it as `state`.
 
 ## dependency graph
 
