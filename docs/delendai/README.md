@@ -89,7 +89,7 @@ pages. Find yourself below; each row is a complete path, in order.
 | [`delendai://code-map` resource](CODE-MAP.md) | Track H of q00006. |
 | [Configuration Center](CONFIGURATION-CENTER.md) | The Configuration Center is the schema-driven project editor included in the |
 | [Core -> proposals boundary inventory](CORE-PROPOSALS-BOUNDARY-INVENTORY.md) | Inventario ejecutable de acoplamientos presentes hoy en packages/core/src. |
-| [`@delendai/core` public API inventory](CORE-PUBLIC-API-INVENTORY.md) | Total exports: 541 |
+| [`@delendai/core` public API inventory](CORE-PUBLIC-API-INVENTORY.md) | Total exports: 423 |
 | [Cross-IDE guide — building a new `@delendai/<ide>` host](CROSS-IDE.md) | The VS Code extension is the reference implementation of an |
 | [Cross-project setup](CROSS-PROJECT-SETUP.md) | This is the canonical guide for wiring `@delendai/core` into any repository and getting the GitHub `issues` plugin ready for that repo. |
 | [Dependency Versions Policy](DEPENDENCY-VERSIONS.md) | This document is the single source of truth for shared dependency version drift |

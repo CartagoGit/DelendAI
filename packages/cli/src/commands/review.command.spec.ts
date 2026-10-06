@@ -85,6 +85,10 @@ const contextFor = (
 								verdict,
 								implementer: 'claude-opus-5-5',
 								gate: 'npx vitest run a.spec.ts',
+								acceptance: [
+									'the flag is read',
+									'a person is unaffected',
+								],
 								candidates: [{ commit: 'abc1234' }],
 							}),
 						),
@@ -94,10 +98,24 @@ const contextFor = (
 			if (tool.endsWith('_review_claim')) {
 				// The plugin's review_claim, as its own spec pins it: a
 				// claim commit in the checkout the call names.
-				const { proposalId, checkout } = args as {
+				const { proposalId, checkout, release } = args as {
 					proposalId: string;
 					checkout: string;
+					release?: string;
 				};
+				if (release !== undefined) {
+					git(
+						checkout,
+						'commit',
+						'--allow-empty',
+						'-q',
+						'-m',
+						`chore(review): release ${proposalId}`,
+						'--trailer',
+						`Releases: ${proposalId}`,
+					);
+					return { ok: true, proposalId, released: true } as T;
+				}
 				git(
 					checkout,
 					'commit',
@@ -131,6 +149,73 @@ const claimsIn = (worktree: string): string =>
 		.join('\n');
 
 describe('delendai review', () => {
+	it('brings the integration branch into the unit before reading the queue', async () => {
+		const root = repo();
+		git(root, 'remote', 'add', 'origin', root);
+		git(root, 'fetch', '-q', 'origin');
+		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
+		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			worktree: string;
+			session: string;
+		};
+		// Another reviewer's verdicts land on the integration branch.
+		git(
+			root,
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			'merge of another pack',
+		);
+		const landed = git(root, 'rev-parse', 'HEAD');
+
+		await run(
+			ctx,
+			'next',
+			'--agent=minimax-m3',
+			`--session=${first.session}`,
+		);
+
+		expect(
+			git(
+				first.worktree,
+				'merge-base',
+				'--is-ancestor',
+				landed,
+				'HEAD',
+			) === '',
+		).toBe(true);
+	});
+
+	it('offers another proposal after one was released, not the same one again', async () => {
+		const root = repo();
+		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
+		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			proposal: string;
+			session: string;
+		};
+		expect(first.proposal).toBe('x00001');
+
+		await run(
+			ctx,
+			'release',
+			'x00001',
+			'--agent=minimax-m3',
+			`--session=${first.session}`,
+			'--note=cannot run its gate here',
+		);
+		const second = (
+			await run(
+				ctx,
+				'next',
+				'--agent=minimax-m3',
+				`--session=${first.session}`,
+			)
+		).data as { proposal: string };
+
+		expect(second.proposal).toBe('x00002');
+	});
+
 	it('enters the unit, claims the first free proposal, and says how to answer', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [
@@ -156,6 +241,11 @@ describe('delendai review', () => {
 			`delendai review approve x00002 S1 --agent=minimax-m3 --session=${answer.session} --commit=abc1234`,
 		);
 		expect(answer.slices[0]?.changes).toContain('review changes x00002 S1');
+		// One `--criterion` per declared criterion: an approval without
+		// evidence for each is refused, so the call says how to give it.
+		expect(answer.slices[0]?.approve).toContain(
+			'--criterion="the flag is read => <how you verified it>" --criterion="a person is unaffected => <how you verified it>"',
+		);
 	});
 
 	it('finishes the proposal it claimed before taking another', async () => {
@@ -225,6 +315,8 @@ describe('delendai review', () => {
 			'--validate-exit=0',
 			'--tests-passing=12',
 			'--tests-total=12',
+			'--criterion=the flag is read => guard.spec reads it',
+			'--criterion=a person is unaffected => a => in the evidence stays => person.spec',
 		);
 		const changes = await run(
 			ctx,
@@ -253,6 +345,17 @@ describe('delendai review', () => {
 					validateExitCode: 0,
 					testsPassing: 12,
 					testsTotal: 12,
+					acceptanceCriteria: [
+						{
+							criterion: 'the flag is read',
+							evidence: 'guard.spec reads it',
+						},
+						{
+							criterion: 'a person is unaffected',
+							evidence:
+								'a => in the evidence stays => person.spec',
+						},
+					],
 				},
 				commitHash: 'abc1234',
 				checkout: started.worktree,

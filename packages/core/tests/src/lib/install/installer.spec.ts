@@ -10,12 +10,12 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { runInstall } from '@delendai/core/public';
 import {
 	buildServerEntry,
 	detectOs,
 	installToTarget,
-	runInstall,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/install/installer';
 import { targetById } from '@delendai/core/cli';
 
 describe('IDE installer (M39)', async () => {

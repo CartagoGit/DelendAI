@@ -22,7 +22,8 @@
  *   live unit that carries the proposal it names when exactly one does
  *   (a proposal exists only there until its work lands), and otherwise is
  *   refused with the step that writes it canonically
- *   (`integrationCheckoutRefusal`);
+ *   (`integrationCheckoutRefusal`). A call the registration declares
+ *   `readsOnly` writes nothing, so it is never refused there;
  * - a checkout that is not a working tree of this repository is refused
  *   before the handler runs — always, including for a tool that declared
  *   `checkout` itself. A schema field is not proof that the handler
@@ -119,6 +120,7 @@ const boundHandler =
 		refusalFor: (root: string) => Promise<string | undefined>,
 		unitFor: IUnitFor,
 		defaultNextStep: string,
+		readsOnly: ((input: unknown) => boolean) | undefined,
 	): IHandler =>
 	async (...callArgs) => {
 		const requested = (callArgs[0] as { checkout?: unknown } | undefined)
@@ -132,7 +134,10 @@ const boundHandler =
 		if (resolved.ok) {
 			// The shared checkout on the integration branch is no unit's
 			// working tree: a write there is committed by nobody.
-			const refusal = await refusalFor(resolved.root);
+			const refusal =
+				readsOnly?.(callArgs[0]) === true
+					? undefined
+					: await refusalFor(resolved.root);
 			let unitRoot: string | undefined;
 			let nextStep = defaultNextStep;
 			const proposal =
@@ -223,6 +228,7 @@ export const bindWriteRoot = (
 						refusalFor,
 						unitFor,
 						registration.refusedWriteNextStep ?? WORK_REF_NEXT_STEP,
+						registration.readsOnly,
 					) as never,
 				);
 			}) as McpServer['registerTool'];

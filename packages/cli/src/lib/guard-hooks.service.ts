@@ -73,6 +73,11 @@ export const lefthookConfiguredHooks = (
 	return hooks;
 };
 
+/** Hooks whose guard may be asked under another hook's name. */
+const GUARD_HOOK_ALIASES: Readonly<Record<string, readonly string[]>> = {
+	'commit-msg': ['pre-commit'],
+};
+
 /**
  * Whether lefthook runs `guard <hook>` in that hook's section: the way a
  * lefthook project installs the guard, since lefthook regenerates the hook
@@ -90,7 +95,14 @@ export const lefthookRunsGuard = (
 		const rest = text.slice(start + hook.length + 1);
 		const end = rest.search(/^[a-z][a-z-]*:/mu);
 		const section = end === -1 ? rest : rest.slice(0, end);
-		if (new RegExp(`\\bguard\\s+${hook}\\b`, 'u').test(section))
+		// `commit-msg` judges the commit `pre-commit` judges, and a project
+		// may ask it under that name (older CLIs know no other).
+		const names = [hook, ...(GUARD_HOOK_ALIASES[hook] ?? [])];
+		if (
+			names.some((name) =>
+				new RegExp(`\\bguard\\s+${name}\\b`, 'u').test(section),
+			)
+		)
 			return true;
 	}
 	return false;
@@ -131,6 +143,36 @@ export const portableInvocation = (
 				? ''
 				: inside.split(sep).join('/'),
 	};
+};
+
+/**
+ * The entry as the clone can keep reaching it. One run from inside a
+ * unit's worktree names that worktree's CLI, and the worktree is removed
+ * when the unit lands: every hook of the clone then called a file that
+ * was gone. The same path in the main checkout outlives every unit.
+ */
+export const durableEntry = (workspaceRoot: string, entry: string): string => {
+	let listed = '';
+	try {
+		listed = execFileSync('git', ['worktree', 'list', '--porcelain'], {
+			cwd: workspaceRoot,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		});
+	} catch {
+		return entry;
+	}
+	const worktrees = listed
+		.split('\n')
+		.filter((line) => line.startsWith('worktree '))
+		.map((line) => resolve(line.slice('worktree '.length)));
+	const [main, ...linked] = worktrees;
+	if (main === undefined) return entry;
+	const absolute = resolve(entry);
+	const holder = linked.find((path) => absolute.startsWith(`${path}${sep}`));
+	if (holder === undefined) return entry;
+	const twin = join(main, relative(holder, absolute));
+	return existsSync(twin) ? twin : entry;
 };
 
 /** Remember, per clone, exactly how this machine reaches the CLI. */
@@ -179,7 +221,10 @@ export const installGuardHooks = (
 	// reaches nobody else. That is the property the tracked hook file
 	// could never have, and the reason it used to carry somebody's home
 	// directory to all of their colleagues.
-	recordGuardCommand(workspaceRoot, invocation);
+	recordGuardCommand(workspaceRoot, {
+		...invocation,
+		entry: durableEntry(workspaceRoot, invocation.entry),
+	});
 	// Under lefthook, the hooks it declares are its own: it rewrites those
 	// files, so they stay `unsupported` with the instruction to add the
 	// guard to lefthook.yml. A hook it does not declare is not its file,
@@ -193,6 +238,10 @@ export const installGuardHooks = (
 		dir: location.dir,
 		hooks: GUARDED_HOOKS.map((hook) => {
 			if (managed.has(hook)) {
+				// Already guarded through lefthook.yml: nothing to add.
+				if (lefthookRunsGuard(workspaceRoot, hook)) {
+					return { hook, state: 'unchanged' };
+				}
 				return {
 					hook,
 					state: 'unsupported',

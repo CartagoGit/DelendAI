@@ -10,10 +10,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import {
-	enforceDryRunReturnContract,
-	validateToolDryRunManifest,
-} from '@delendai/core/public';
+import { validateToolDryRunManifest } from '@delendai/core/public';
+import { enforceDryRunReturnContract } from '@delendai/core/lib/dry-run/enforce';
 
 describe('enforceDryRunReturnContract', () => {
 	it('forwards the result untouched when the caller did not ask for a dryRun', () => {

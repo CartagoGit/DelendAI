@@ -193,7 +193,22 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // `deriveDefaultProtectedBranches(undefined)` returns). A new export that a
 // plugin needs belongs in the barrel; one that only the CLI, the host or a
 // script reads belongs in `@delendai/core/cli`.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 645;
+//
+// Lowered to 509 (2026-10-05, x00541 S3): the surface had fallen to 541
+// under a budget of 645, so 104 exports could have come back unasked.
+// Thirty-two more left the barrel: fourteen that nothing outside
+// `packages/core/src` names, and eighteen whose only users are core's own
+// specs, which import them by their `lib/` path. The budget is the
+// surface: a new export is a decision, not slack.
+//
+// Lowered to 422 (2026-10-06, x00541 S1): the last 117 exports with no
+// consumer outside `packages/core` each got a decision. Eighty-six left
+// the barrel, because only core's own specs used them and those now import
+// them by their `lib/` path; thirty-one stayed under an adopter note.
+// One of the eighty-six came back: a scaffolded host imports
+// `buildStandaloneCoreToolRegistrations` from the barrel, a consumer the
+// scan could not see while it skipped the templates core generates.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 423;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

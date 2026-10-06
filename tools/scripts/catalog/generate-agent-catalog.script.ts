@@ -24,12 +24,9 @@
 import { dirname, join, resolve } from 'node:path';
 import { mkdir, rm } from 'node:fs/promises';
 
-import {
-	assembleCliConfig,
-	parseCliArgs,
-	readProposalsIndex,
-} from '@delendai/core/public';
+import { assembleCliConfig, parseCliArgs } from '@delendai/core/public';
 import { ACTIONABLE_PROPOSAL_STATUSES, buildCatalog } from '@delendai/core/cli';
+import { toProposalSummaries } from '../../../plugins/proposals/src/lib/proposals/proposal-summaries.service';
 import { scanProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import type {
@@ -64,6 +61,9 @@ export interface ISkillManifestFile {
 
 interface IProposalIndexFile {
 	readonly generated_at?: string;
+	readonly proposals?: readonly Parameters<
+		typeof toProposalSummaries
+	>[0][number][];
 }
 
 export interface IArtifactSkill {
@@ -292,13 +292,11 @@ const readProposalSummaries = async (
 		readText,
 		'proposal index',
 	);
-	// The host's own reader, so the catalog and the running server cannot
-	// disagree about a proposal's kind or status.
-	const proposals = await readProposalsIndex(
-		root,
-		dirname(dirname(DEFAULT_PROPOSALS_INDEX_PATH)),
-		(absolutePath) => readText(absolutePath),
-	);
+	// The host's own mapping, so the catalog and the running server cannot
+	// disagree about a proposal's kind or status. It maps the registry
+	// scanned above: the catalog is checked in and compared byte for byte,
+	// so it is built from the markdown, never from a cache on this machine.
+	const proposals = toProposalSummaries(parsed.proposals ?? []);
 	return {
 		proposals,
 		generatedAt: parsed.generated_at ?? '1970-01-01T00:00:00.000Z',

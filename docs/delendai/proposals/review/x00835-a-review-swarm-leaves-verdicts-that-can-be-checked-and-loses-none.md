@@ -11,6 +11,8 @@ related: [x00831, x00834, x00850]
 last-transition-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
 last-correlation-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
 last-transition-from: in-progress
+shipped-in:
+  - "f83c85addc9e"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -23,7 +25,6 @@ the integration branch everyone starts from is the one the forge has; and
 every deviation the run showed is either refused by the tools or reported by
 them. Every way the run below departed from the intended workflow is treated
 as a defect of the system, not of the agent that happened to hit it.
-
 
 A swarm of reviewers from other model families, less capable than the ones
 that wrote the work, produces verdicts a person can re-check, records them
@@ -594,7 +595,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S18 — The run reports its own incidents
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/workflow-kpis.interface.ts`, `packages/core/src/lib/work-units/workflow-kpis.service.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.interface.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts`, `plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts`, `plugins/project-kpis/tests/src/kpi-workflow.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts plugins/project-kpis/tests/src/kpi-workflow.spec.ts`
 - The KPI snapshot carries an optional `workflow` block read from what core
@@ -607,6 +608,11 @@ the good verdicts' shape (P1) becomes the required shape.
   public surface; the plugin reimplements no check. Outside a git repository
   the block is omitted, and snapshots without it still parse.
 - shipped-in: `f83c85addc9e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at f83c85addc9e, validate exit 0, tests 6/6 — Read #773: readWorkflowKpis composes runWorkflowDoctor (checkout scope), readSwarm and rosterOf without recomputing any check; the plugin's optional workflow block parses with and without it. The declared gate (both specs) passes 6/6.
+- review-attribution: claude-sonnet-5-5 from commit f83c85addc9e names refs/heads/delendai/wip/claude-sonnet-5-5/implement/x00835-S18-g1/a-review-swarm-leaves-verdicts-that-can-be (f83c85addc9e1282447e57daaab7ed0d86c0a0a0), opened by claude-opus-5-5
 
 ### S19 — A unit's name says what it is
 
@@ -857,6 +863,33 @@ the good verdicts' shape (P1) becomes the required shape.
 - `review_queue` now answers for the agent that asks. Under model independence, a slice waiting for a verdict that the asker's model delivered is `needs-another-reviewer`, with a sentence that says so, and it is not counted in `needsVerdict`. `review next` reads the same field, so it skips those proposals with no change of its own. Where another instance of the model may review, or the delivery is unrecorded, nothing changes: the approval decides.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+
+### S35 — A reviewer's queue is read from its own unit
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-unit-tree.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
+- **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
+- Found 2026-10-05: after `review approve x00835 S18` the very next `review next` offered S18 again. The verdict was a commit in the reviewer's unit; the queue read the shared checkout, where the slice still waited for one. A reviewer that trusted the queue would review the same slice for ever.
+- When the caller names its unit (`review next` always does), `review_queue` reads the proposals from that unit's worktree. A unit not checked out on this machine, or a proposals folder outside the workspace, reads as before.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S38 — A retired slice waits for no verdict
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/services/review-queue-slice.service.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
+- **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue.tool.spec.ts`
+- Found 2026-10-05: `review next` offered this proposal's S25, retired that morning, as a slice needing a verdict, attributed to `claude-sonnet-5-5` from Git. A retired slice has no review round, so the queue asked Git who delivered its files and sent a reviewer to approve work that was given up on purpose. A slice whose status is `retired` is now settled in the queue, with a sentence that says why. What one slice needs from a reviewer moved to `review-queue-slice.service.ts`, which keeps the queue's service under 400 lines.
+### S37 — A session goes back to its own unit, whatever generation it is
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- Found 2026-10-05: I retired my stale review unit `batch-all-g1` and kept working in `batch-all-g2`. The next `review next --session=<g2's session>` entered a new `batch-all-g1` and claimed `x00870` there, and the approval of `x00870` with the same session went to `g2`, which had claimed nothing, and was refused. `chooseGeneration` took the first generation no other session held, so a generation freed by a retirement came before the one the session was in.
+- A session that holds a unit of that agent, proposal and slice now goes back to it, whichever generation; only a session that holds none takes the first free one. The spec fails without the change.
+### S36 — A reviewer can give the evidence each criterion asks for
+- **Status**: review
+- **Files**: `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `packages/cli/src/contracts/interfaces/review-queue-view.interface.ts`, `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
+- Found 2026-10-05 approving `x00870` S1: "approve requires empirical evidence: evidence.acceptanceCriteria must cover every declared criterion". The tool asks for one piece of evidence per declared criterion, and neither `delendai review approve` nor `delendai proposals review` could pass any. From a shell, no slice that declares acceptance criteria could be approved at all, whatever the reviewer had verified.
+- Both commands take `--criterion="<criterion> => <evidence>"`, once per criterion; the first ` => ` separates them, since evidence is free text. The call `review next` hands a reviewer now carries one `--criterion` per declared criterion, with the criterion already written, so a reviewer of any model fills in evidence instead of guessing a format. The brief moved to `lib/review/review-brief.service.ts` and the queue's shapes to `contracts/interfaces/`, which brings `review.command.ts` from 404 to 349 lines.
 
 ## acceptance
 

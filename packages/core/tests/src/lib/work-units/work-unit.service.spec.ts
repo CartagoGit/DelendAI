@@ -917,6 +917,99 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
+	it('sends a session back to its own unit when an older generation was given up', async () => {
+		const root = repoWith(PINNED);
+		const enter = (extra: readonly string[]) =>
+			command.run(
+				[
+					'enter',
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					...extra,
+				],
+				contextFor(root),
+			);
+		const first = (await enter(['--topic=a'])).data as {
+			branch: string;
+			path: string;
+		};
+		const second = (await enter(['--topic=b'])).data as {
+			branch: string;
+			session: string;
+		};
+		expect(second.branch).toBe(
+			'delendai/wip/minimax-m3/review/batch-all-g2/b',
+		);
+		// The first unit is given up: its generation is free again.
+		execFileSync('git', ['worktree', 'remove', '--force', first.path], {
+			cwd: root,
+		});
+		execFileSync('git', ['branch', '-D', first.branch], { cwd: root });
+
+		const again = await enter([`--session=${second.session}`]);
+
+		expect(again.code).toBe(0);
+		expect(again.data).toMatchObject({
+			created: false,
+			branch: second.branch,
+			session: second.session,
+		});
+	});
+
+	it('publishes the second review pack of one agent to its own pull request', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		const run = (sub: string, extra: readonly string[]) =>
+			command.run(
+				[
+					sub,
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					...extra,
+				],
+				contextFor(root),
+			);
+		const units = [];
+		for (const topic of ['a', 'b']) {
+			const entered = (await run('enter', [`--topic=${topic}`])).data as {
+				path: string;
+				session: string;
+			};
+			execFileSync(
+				'git',
+				['commit', '-q', '--allow-empty', '-m', `review ${topic}`],
+				{
+					cwd: entered.path,
+				},
+			);
+			units.push(entered);
+		}
+		const [first, second] = units;
+		if (first === undefined || second === undefined)
+			throw new Error('no units');
+		expect(
+			await run('publish', [`--session=${first.session}`]),
+		).toMatchObject({ data: { published: true } });
+
+		expect(
+			await run('publish', [`--session=${second.session}`]),
+		).toMatchObject({
+			data: {
+				published: true,
+				publication: {
+					ref: 'refs/heads/delendai/pr/minimax-m3/review/batch-all-g2/b',
+				},
+			},
+		});
+	});
+
 	it('refuses a second instance on a slice another instance works, and leaves no branch (x00714)', async () => {
 		const root = repoWith(PINNED);
 		const enter = (topic: string) =>

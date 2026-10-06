@@ -7,7 +7,7 @@
 export const REVIEW_COMMAND = {
 	summary:
 		'Review proposals in four commands: next (your unit and the next proposal, claimed), approve, changes, finish.',
-	usage: 'review <next|approve|changes|release|finish> [<proposalId> <sliceId>] --agent=<you> [--session=<s>] [--note=<why>] [--commit=<sha> --validate-exit=<n> --tests-passing=<n> --tests-total=<n>]',
+	usage: 'review <next|approve|changes|release|finish> [<proposalId> <sliceId>] --agent=<you> [--session=<s>] [--note=<why>] [--commit=<sha> --validate-exit=<n> --tests-passing=<n> --tests-total=<n> --criterion="<criterion> => <evidence>" …]',
 	flags: [
 		'agent',
 		'session',
@@ -16,5 +16,9 @@ export const REVIEW_COMMAND = {
 		'validate-exit',
 		'tests-passing',
 		'tests-total',
+		'criterion',
 	],
 } as const;
+
+/** What separates a criterion from the evidence a reviewer gives for it. */
+export const CRITERION_SEPARATOR = ' => ';

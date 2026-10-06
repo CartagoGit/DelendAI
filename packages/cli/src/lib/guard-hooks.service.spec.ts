@@ -29,6 +29,7 @@ import {
 	lefthookConfiguredHooks,
 	locateHooks,
 	uninstallGuardHooks,
+	durableEntry,
 	lefthookRunsGuard,
 } from './guard-hooks.service';
 
@@ -211,6 +212,27 @@ describe('what the guard does not write into', () => {
 		);
 	});
 
+	it('counts commit-msg as guarded when it asks the guard as pre-commit, and nothing else under another name', () => {
+		const root = repo();
+		writeFileSync(
+			join(root, 'lefthook.yml'),
+			[
+				'commit-msg:',
+				'  commands:',
+				'    delendai-guard:',
+				'      run: delendai guard pre-commit',
+				'post-checkout:',
+				'  commands:',
+				'    delendai-guard:',
+				'      run: delendai guard pre-commit',
+				'',
+			].join('\n'),
+		);
+
+		expect(lefthookRunsGuard(root, 'commit-msg')).toBe(true);
+		expect(lefthookRunsGuard(root, 'post-checkout')).toBe(false);
+	});
+
 	it('counts a hook as guarded when lefthook runs the guard in it, and says how to add it where it does not', () => {
 		const root = repo();
 		writeFileSync(
@@ -372,4 +394,29 @@ describe('the installed guard enforces the declared policy', () => {
 		execFileSync('git', ['stash', 'drop', '-q'], { cwd: root, env: agent });
 		expect(count()).toBe(0);
 	}, 60_000);
+});
+
+describe('durableEntry', () => {
+	it("records the main checkout's twin of a CLI run from inside a unit", () => {
+		const root = repo();
+		const cli = join('packages', 'cli', 'src', 'index.ts');
+		mkdirSync(join(root, 'packages', 'cli', 'src'), { recursive: true });
+		writeFileSync(join(root, cli), '\n');
+		const unit = `${root}-unit`;
+		roots.push(unit);
+		execFileSync('git', ['worktree', 'add', '-q', '-b', 'unit', unit], {
+			cwd: root,
+		});
+		mkdirSync(join(unit, 'packages', 'cli', 'src'), { recursive: true });
+		writeFileSync(join(unit, cli), '\n');
+
+		expect(durableEntry(unit, join(unit, cli))).toBe(
+			join(resolve(root), cli),
+		);
+		// No twin in the main checkout: the entry is kept as given.
+		expect(durableEntry(unit, join(unit, 'only-here.ts'))).toBe(
+			join(unit, 'only-here.ts'),
+		);
+		expect(durableEntry(root, join(root, cli))).toBe(join(root, cli));
+	});
 });

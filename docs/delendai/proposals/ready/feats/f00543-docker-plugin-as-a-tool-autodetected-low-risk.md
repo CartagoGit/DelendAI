@@ -31,7 +31,7 @@ P4 lets the agent **run inside** Docker; P5 lets the agent **use** Docker as a t
 
 ### S1 — Contract and repo autodetection
 - **Status**: pending
-- **Files**: `plugins/docker/contract.ts`, `plugins/docker/adapter/cli.ts`, `plugins/docker/adapter/socket.ts`, `plugins/docker/repo-detector.ts`, `plugins/docker/package.json`, `plugins/docker/tests/detect.spec.ts`
+- **Files**: `plugins/docker/src/lib/contracts/interfaces/docker.interface.ts`, `plugins/docker/adapter/cli.ts`, `plugins/docker/src/lib/adapter/socket.service.ts`, `plugins/docker/src/lib/repo-detector.service.ts`, `plugins/docker/package.json`, `plugins/docker/tests/detect.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Autodetect only enables active tools when Dockerfile, docker-compose.yml, compose.yaml, or .devcontainer/ exist at the repo root."
@@ -49,7 +49,7 @@ P4 lets the agent **run inside** Docker; P5 lets the agent **use** Docker as a t
 
 ### S3 — Compose awareness (parser + tools)
 - **Status**: pending
-- **Files**: `plugins/docker/compose-parser.ts`, `plugins/docker/tools/compose.ts`, `plugins/docker/tests/compose.spec.ts`
+- **Files**: `plugins/docker/src/lib/compose-parser.service.ts`, `plugins/docker/tools/compose.ts`, `plugins/docker/tests/compose.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Parser handles compose YAML to the extent needed to enumerate services, ports, env, mounts."
