@@ -39,6 +39,7 @@ import { runForgePhase } from './phases/reconcile-forge';
 import { runGovernancePhase } from './phases/inspect-governance';
 import { runIntegrationEvidencePhase } from './phases/integration-evidence';
 import { runJournalPhase } from './phases/import-journal';
+import { journalSourceFor } from './journal-ref.service';
 import { runLeasePhase } from './phases/reap-leases';
 import { runStateDatabasePhase } from './phases/open-state';
 import { runCheckoutPhase } from './phases/verify-checkout';
@@ -259,15 +260,16 @@ const reconcileUnderLock = async (args: {
 	const newestKnownEvent = ports.journal
 		.listAll()
 		.reduce((max, event) => Math.max(max, event.occurredAt), 0);
+	const journalSource = journalSourceFor(input, policy.branches);
 	const journal = await runJournalPhase({
-		source: input.journalSource,
+		source: journalSource,
 		ports,
 		mode,
 		since: newestKnownEvent > 0 ? newestKnownEvent : undefined,
 	});
 	collect(phases, {
 		phase: 'journal',
-		ran: input.journalSource !== undefined,
+		ran: journalSource !== undefined,
 		counters: journal.counters,
 		findings: journal.findings,
 	});

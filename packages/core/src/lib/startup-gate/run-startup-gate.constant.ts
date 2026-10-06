@@ -14,8 +14,9 @@ import type { IStartupPhase } from '../startup-reconciler/index';
  * the report say "NOT EXECUTED" instead of leaving a reader to infer a
  * pass from the absence of findings.
  */
+// The journal is not optional: the git seam reads the project's journal
+// ref, so the phase runs on every boot.
 export const OPTIONAL_STARTUP_PHASES = [
 	'forge',
-	'journal',
 	'governance',
 ] as const satisfies readonly IStartupPhase[];
