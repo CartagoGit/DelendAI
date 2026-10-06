@@ -61,12 +61,13 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-implementer: claude-opus-5-5
 
 ### S3 — Every host file and instruction file names delendai
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/agent-files.migrator.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The root `.mcp.json` is migrated like `.vscode/mcp.json`."
   - "Root `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` are migrated like the agent folders."
+- Delivered: the host-config migrator rewrites every project MCP config a host reads, the editor's `.vscode/mcp.json` and the root `.mcp.json`; the agent-files migrator also walks the root instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`). Both specs fail without the change.
 
 ### S4 — No ignore line or moved file keeps the old name
 - **Status**: pending
