@@ -170,6 +170,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "A unit whose only commits beyond the integration branch are merges joining commits the integration branch already holds is judged delivered and reaped like any other delivered unit."
 - Delivered: x00878 S4, S6 and S8 landed through #879, which carried them, and their units stood for good as `idle`: each had merged develop in before a publish that was refused, and that merge commit — joining two commits develop holds — was the one thing develop lacked. `carriesNothingBeyond` reads every commit past the integration branch and accepts only merges whose parents are integrated or among those merges; the unit verdict and the reaper's empty-unit rule (S9) both use it. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
