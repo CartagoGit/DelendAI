@@ -67,10 +67,14 @@ describe('sliceSectionOf', () => {
 		]);
 	});
 
-	it('is the whole document for the whole proposal or a slice it lacks', () => {
+	it('is the whole document for the whole proposal', () => {
 		expect(sliceSectionOf(document, 'all')).toBe(document);
 		expect(sliceSectionOf(document, undefined)).toBe(document);
-		expect(sliceSectionOf(document, 'S9')).toBe(document);
+	});
+
+	it('is nothing for a slice the integrated document does not have yet', () => {
+		// Written in a unit that has not landed: nobody has judged it.
+		expect(sliceSectionOf(document, 'S9')).toBe('');
 	});
 });
 
@@ -147,5 +151,9 @@ describe('work enter by the reviewer of the proposal', () => {
 		expect(
 			(await enter(root, 'glm-5.3-flash', 'implement', 'S2')).code,
 		).toBe(0);
+		// A slice only an unlanded unit has: its author finishes it.
+		expect((await enter(root, 'minimax-m3', 'implement', 'S9')).code).toBe(
+			0,
+		);
 	});
 });
