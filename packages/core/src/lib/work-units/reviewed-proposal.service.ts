@@ -55,9 +55,10 @@ const SLICE_HEADING = /^###\s+(?<slice>\S+)/u;
 
 /**
  * The part of a proposal document that belongs to `slice`: from its
- * heading to the next heading of the same or a higher level. A slice the
- * document does not have, and the whole proposal (`all`, or no slice),
- * answer with the whole document.
+ * heading to the next heading of the same or a higher level. The whole
+ * proposal (`all`, or no slice) answers with the whole document. A slice
+ * the integrated document does not have yet answers with nothing: it was
+ * written in a unit that has not landed, and nobody has judged it.
  */
 export const sliceSectionOf = (
 	document: string,
@@ -68,7 +69,7 @@ export const sliceSectionOf = (
 	const start = lines.findIndex(
 		(line) => SLICE_HEADING.exec(line)?.groups?.slice === slice,
 	);
-	if (start === -1) return document;
+	if (start === -1) return '';
 	const after = lines
 		.slice(start + 1)
 		.findIndex((line) => /^#{1,3}\s/u.test(line));

@@ -206,6 +206,15 @@ Found on 2026-10-05, reading what the last runs left behind.
   - "The cause is reproduced by a spec that drives the CLI against a unit, and fixed."
   - "A commit that fails is reported in what the CLI prints, not only on the server's stderr."
 
+
+### S21 — A slice not yet integrated has no reviewer
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
+- Found 2026-10-06, right after S19 landed: `x00835` S39 was still refused. Its block exists only in the unlanded unit, so the integrated document has no S39 section, and S19 read the whole document for a slice it lacks. A slice the integrated document does not have yet was written in a unit that has not landed and nobody has judged it: its section is now empty, and its author goes in. The whole proposal (`all`) still reads the whole document.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.
