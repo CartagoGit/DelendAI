@@ -27,6 +27,7 @@ import {
 
 import type { IWorkCheckoutPublication } from '../../../../src/lib/wip-engine/work-checkout-publisher.interface';
 import {
+	changedReports,
 	publishWorkCheckouts,
 	startWorkCheckoutPublisher,
 	workCheckoutCadenceMinutes,
@@ -379,5 +380,24 @@ describe('when the policy asks for it', () => {
 		expect(workCheckoutRefs(porcelain, 'refs/heads/wip')).toEqual([
 			'refs/heads/wip/a/x1-S1-g1/work',
 		]);
+	});
+});
+
+describe('changedReports', () => {
+	it('writes a report once, and again only when it changes', () => {
+		const lines: string[] = [];
+		const report = changedReports((line) => lines.push(line));
+		const idle = [
+			{
+				ref: 'r',
+				outcome: 'skipped',
+				reason: 'no commits of its own yet',
+			},
+		];
+		report(idle);
+		report(idle);
+		report([{ ref: 'r', outcome: 'published' }]);
+		report(idle);
+		expect(lines).toHaveLength(3);
 	});
 });
