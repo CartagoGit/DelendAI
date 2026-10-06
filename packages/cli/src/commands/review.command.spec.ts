@@ -149,6 +149,44 @@ const claimsIn = (worktree: string): string =>
 		.join('\n');
 
 describe('delendai review', () => {
+	it('brings the integration branch into the unit before reading the queue', async () => {
+		const root = repo();
+		git(root, 'remote', 'add', 'origin', root);
+		git(root, 'fetch', '-q', 'origin');
+		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
+		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			worktree: string;
+			session: string;
+		};
+		// Another reviewer's verdicts land on the integration branch.
+		git(
+			root,
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			'merge of another pack',
+		);
+		const landed = git(root, 'rev-parse', 'HEAD');
+
+		await run(
+			ctx,
+			'next',
+			'--agent=minimax-m3',
+			`--session=${first.session}`,
+		);
+
+		expect(
+			git(
+				first.worktree,
+				'merge-base',
+				'--is-ancestor',
+				landed,
+				'HEAD',
+			) === '',
+		).toBe(true);
+	});
+
 	it('offers another proposal after one was released, not the same one again', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);

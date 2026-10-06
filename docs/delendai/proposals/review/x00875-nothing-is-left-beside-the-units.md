@@ -156,6 +156,13 @@ Found on 2026-10-05, reading what the last runs left behind.
 - Found 2026-10-06: the documents of `x00835` and of this proposal reached `develop` with `<<<<<<< HEAD` and `>>>>>>>` lines in them. My batch script merged another open pull request of the same proposal into a unit, the merge stopped on a conflict, and the next step committed the tree as it was; every gate passed and the queue merged it. Markdown shows the markers as text, and nothing looked for them.
 - `lint:no-conflict-markers` refuses any tracked file with a line that starts with git's opening or closing marker (not `=======`, which is also a markdown underline), and runs first in `lint:architecture`, which CI runs. Both documents are repaired by keeping every side: each conflict was two pull requests appending different slices.
 
+### S16 — A review unit reads the integration branch of now
+- **Status**: review
+- **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
+- Found 2026-10-06: `review next` offered `x00766`, which another pack had approved and the queue had already closed into `done/`. Since S35 the queue is read from the reviewer's unit, where its own verdicts are, and a unit made before other verdicts merged still showed their proposals waiting. `review next` now merges the integration branch's remote tip into the unit before it reads; a merge that would conflict is aborted and changes nothing. Like the hydration of an idle unit, the merge runs without hooks: it brings in only what the integration branch already checked. The spec fails without the change.
+- Also seen, and left as is: a release is recorded in the unit that released, so a reviewer that opens a new unit is offered again what it released in an old one, and must release it again with its reason.
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.
