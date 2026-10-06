@@ -445,6 +445,28 @@ rebuild before it gives up, not by keeping the fallback:
   it. A corrupt database refuses under both.
 - Still open: phase 3 (the registry leaves the read path entirely).
 
+**Phase 3, first reader 2026-10-05 — commit-policy's slice listener.**
+It read the registry for the list of documents, then read every document
+for its slices, because the registry carries none: 1,174 files a second.
+The list it read them by was a projection that had fallen behind (in the
+shared checkout on 2026-10-05 it lacked `x00835` and seven newer
+proposals, and still listed `f00509` under `in-progress/`). The listener
+now lists the proposals folder itself and parses a document again only
+when its size or modification time changed
+(`plugins/commit-policy/src/lib/triggers/slice-snapshot.service.ts`), so
+it reads the authority and reads it once. Its specs wrote a registry
+with inline slices, a shape the registry never has; they now write
+proposal documents through one fixture
+(`tests/src/lib/triggers/proposal-documents.fixture.ts`). Readers of the
+registry left: `readProposalIndex`'s JSON fallback for layouts outside
+the canonical one; the token dashboard's wait for its fixture; and core's
+own `readProposalsIndex` (`packages/core/src/lib/cli/read-proposals-index.ts`),
+which the proposals plugin's workflow contribution and the agent-catalog
+generator call. That last one is also the core↔proposals inversion
+`lint:core-proposals-boundary` keeps as a dated exception: it moves to the
+plugin once the plugin's reader can return a summary (title, track, kind,
+date), not only `id`, `file` and `status`.
+
 Acceptance:
 
 - After a proposal tool writes, the database and the registry agree
