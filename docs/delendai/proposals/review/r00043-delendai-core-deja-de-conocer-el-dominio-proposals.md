@@ -21,6 +21,7 @@ shipped-in:
   - "7c861d2f9"
   - "039bb517e"
   - "b7dcf3901f55b3b42f6bbd51e1d491a93e67ef1c"
+  - "522aabfc31e6"
 ---
 
 # r00043 — `@delendai/core` deja de conocer el dominio `proposals`
@@ -345,7 +346,7 @@ tool descriptors), with its files as the reference.
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
@@ -396,6 +397,11 @@ Delivered:
   now wires issues. Before, it did nothing. That is the point of the
   slice: the wiring belongs to issues, not to proposals.
 - shipped-in: `522aabfc31e6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 522aabfc31e6, validate exit 0, tests 75/75 — Slice gate green: adopt+manifest+adoption suites 9 files / 75 tests passing. The GitHub-issues adoption hint and wiring moved into IPluginAdoption on the issues plugin manifest (repo field, plugins.issues.options.repo option, both case texts); from-manifests carries it into the first-party index and declaredAdoptions applies it. No setup_github hint or issues wiring remains in packages/core/src or the proposals adapter; core spec drives declaredAdoptions with a fictional plugin. Minimax-3 approved the slice commit; b7dcf3901f55 only added inventory/docs churn and S8 code.
+- review-attribution: claude-opus-5-5 from commit 522aabfc31e6 names refs/heads/delendai/wip/claude-opus-5-5/r00043-S6-g1/the-issues-hint-comes-from-its-manifest (522aabfc31e65d303e7e77fbf16f6cd6f4c84fdf), opened by glm-5.3-flash
 
 ## Dependency graph
 
