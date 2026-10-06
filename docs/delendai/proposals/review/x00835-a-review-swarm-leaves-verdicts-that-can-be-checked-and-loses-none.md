@@ -886,6 +886,8 @@ the good verdicts' shape (P1) becomes the required shape.
 - Found 2026-10-05 reviewing `x00770`: the approve call `review next` handed out cited each slice's recorded `shipped-in`, and every approval came back "is not the slice as it stands: x00770 was delivered again by aa99eb781d2f". The approval checks for a later delivery of the same files and the queue did not, so a reviewer who followed the call to the letter was refused five times.
 - The queue now asks the same question (`supersedingDelivery`) of the first candidate and, when a later delivery superseded it, cites that one first. The spec reproduces the case (a slice recording its first delivery, delivered again) and fails without the change.
 =======
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S37 — A session goes back to its own unit, whatever generation it is
 - **Status**: review
