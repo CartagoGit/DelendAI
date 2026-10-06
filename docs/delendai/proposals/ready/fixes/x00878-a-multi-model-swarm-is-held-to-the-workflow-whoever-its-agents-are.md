@@ -29,6 +29,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - **2026-10-06 ~20:00, what the swarm left when its agents said they were done.** The review queue still held 20 proposals (44 slices needing a verdict, 16 claimed by others, 9 approved and not closed), where a swarm that worked would have left none. On the forge: publications `minimax-3` ×5, `glm-5.3-flash` ×2, `illyria` ×1, work refs `minimax-3` ×2 and `gpt-5.4` ×1, and 43 review reservations, 25 of them naming a unit whose work ref and publication no longer exist. A reservation lapses only after its hours (`REVIEW_RESERVATION_SECONDS`), not when its unit ends, so a finished agent kept proposals out of every other reviewer's hands, and nothing deletes the ref afterwards.
 - **2026-10-06, swarm packs that cannot land.** `lint-governance` refused #851 (`glm-5.3-flash`: it closes a proposal whose slices lack an approval by someone other than their implementer), #856 (`minimax-3`: it closes x00770, x00799, x00868, x00870 and x00873, which it never claimed) and #858 (`illyria`: `proposal-cited-commits`, it cites commits that do not exist). Each pack waits for a person, and its verdicts with it; the agents reported done. The owner machine's closer was refused the same way (x00875 S29 fixes that one).
 - **2026-10-06, `--alongside` reused a generation an open publication held.** `work enter --alongside` gave `x00875-S29-g1` while `delendai/pr/…/x00875-S29-g1/…` (#861) was open, a second ref with the same identity; only `--generation=2` avoided it. An open publication is a generation in use.
+- **2026-10-06, the owner's analysis: a claim is an existing ref, not a living holder.** Every claim the proposals plugin reads (a review's `Claims:` commits in its unit, a slice's reservation, the forge's review reservation) means "a ref exists". A ref survives its agent: one that ran out of quota, crashed or lost its context leaves a unit that looks like work in progress. The repository already has what a claim should mean (the owner names it lease-based claims with heartbeat, fencing and recovery): unit leases with owner, session and `heartbeatAt` and the live / idle / abandoned / delivered verdict (`unit-lease.service.ts`, `unit-verdict.service.ts`), leases with `expires_at` and `releaseClaimsOfExpiredLeases` in the state database, the startup reconciler turning a vanished owner's unit RECOVERABLE without deleting its work, and fencing tokens (`STALE_SWARM_LEASE`). The proposals plugin's claims do not read them. S4 ties a review reservation to its unit's existence; S7 ties every claim to its holder's life.
 - **2026-10-06, a `new` unit keeps its slot after it names its proposal.** Once `proposals create` turned `new/all` into x00877, the `new/all` reservation and the `claude-opus-5-5-new-all` directory still blocked the next new proposal: `work enter --proposal=new` was refused until given `--alongside` and `--dir`.
 
 ## non-goals
@@ -89,6 +90,16 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Delivered: the rule that kept a review batch from reusing the name of a pack still published now holds for every unit: a generation whose publication is open is skipped, with or without `--alongside`. The spec fails without the change.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+
+### S7 — A claim holds while its holder lives, for every kind of work
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/services/review-claims.service.ts`
+- **Gate**: type
+- acceptance:
+  - "A claim on a proposal or a slice (review, implementation, any unit kind) holds only while the unit that made it has a live lease (its heartbeat within the lease window); without one it no longer blocks another agent, and the queue and `work enter` say so."
+  - "Two windows, not one: the exclusive claim lapses on a short window, the unit's work is judged abandoned on the conservative one; a lapsed claim frees the work, it never deletes it (the unit becomes recoverable, its commits and branch stay)."
+  - "A unit whose publication is open keeps its claim whatever its heartbeat: its verdicts or its work can still land, and another agent must not duplicate them (states live, recoverable, published, integrated)."
+  - "A taken-over claim carries a higher generation; a write by the previous holder after the takeover is refused as stale (fencing), so an agent that comes back cannot write over the one that adopted its work."
 
 ## acceptance
 
