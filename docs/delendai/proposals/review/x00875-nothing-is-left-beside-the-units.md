@@ -115,12 +115,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 23/23 — Delivered in x00875-all-g1. SHIPPING_LINE_RE accepts shipped-in, Shipped-In and **Shipped-In** case-insensitively, and readShippingCommit accepts the hash bare, backticked or followed by a subject, returning the first that is a commit hash. Acceptance bullet 6 met. Gate: slice-shipping-record.spec.ts 23/23 exit 0.
 
 ### S7 — Retired work the integration branch came to hold is reaped
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/work-retire.interface.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/work-retire.service.spec.ts`
 - Found using S5 on 2026-10-05: of 62 retired tips, 22 were ancestors of `develop`. A unit given up is often finished by another agent or merged a minute later, and from then on its kept tip keeps nothing. `work reap` now lists the retired refs whose commit the integration branch contains and, with `--apply`, drops them from the forge. A forge that cannot be reached drops nothing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 12/12 — Delivered by the merge naming x00875-S7-g1 (9888fe4f26fb) and last carried by 05f70a3e2588, which touched the same files; that later commit is the slice as it stands. reapLandedRetired lists refs under the retired prefix, fetches commits it does not have, keeps only those the integration branch contains (merge-base --is-ancestor), and with apply deletes exactly those. Acceptance bullet 7 met. Gate work-retire.service.spec.ts 12/12 exit 0.
 
 ### S8 — A slice reservation whose unit is gone is released
 - **Status**: review
