@@ -183,11 +183,10 @@ export const chooseGeneration = (
 			// request is open: its claims are read back to that name, and a
 			// new unit under it took the published pack's proposals for its
 			// own.
-			if (
-				proposal !== REVIEW_BATCH_ID ||
-				!publishedUnder(root, policy, exact)
-			)
-				return { generation };
+			// Nor is any unit's while its publication is open: a second
+			// work ref with the identity of an open pull request is two
+			// refs the startup reconciler cannot tell apart.
+			if (!publishedUnder(root, policy, exact)) return { generation };
 			continue;
 		}
 		if (proposal !== REVIEW_BATCH_ID) {
