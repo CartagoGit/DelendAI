@@ -111,6 +111,9 @@ const reviewProposal = async (
 				? []
 				: [{ commit: recorded, source: 'slice shipped-in' }]),
 			...(deliveries.get(unitKey(entry.id, slice.sliceId)) ?? []),
+			// A unit of the whole proposal (`--slice=all`) delivered this
+			// slice too: it names who else implemented it.
+			...(deliveries.get(unitKey(entry.id, 'all')) ?? []),
 			...shippedIn,
 			...citing,
 		]);
