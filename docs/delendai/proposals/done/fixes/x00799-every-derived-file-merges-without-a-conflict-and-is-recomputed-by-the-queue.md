@@ -2,13 +2,13 @@
 id: x00799
 title: "Every derived file merges without a conflict and is recomputed by the queue"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-01
-last-transition-id: ce9b31d3-df3b-4ba5-9f3b-a277ba5a4056
-last-correlation-id: ce9b31d3-df3b-4ba5-9f3b-a277ba5a4056
-last-transition-from: in-progress
+last-transition-id: a1aae00b-060b-41a0-92df-7f92ae46a584
+last-correlation-id: a1aae00b-060b-41a0-92df-7f92ae46a584
+last-transition-from: review
 shipped-in:
   - "ee5530f05"
 ---
