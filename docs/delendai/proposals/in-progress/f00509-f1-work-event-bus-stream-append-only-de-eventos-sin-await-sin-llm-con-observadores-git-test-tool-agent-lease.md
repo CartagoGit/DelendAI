@@ -2,7 +2,7 @@
 id: f00509
 title: "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-06
@@ -15,9 +15,9 @@ tags:
     - event-bus
     - state-engine
     - non-blocking
-last-transition-id: 4f6ec4bc-66fc-48be-bf6d-a2a4a44464b3
-last-correlation-id: 4f6ec4bc-66fc-48be-bf6d-a2a4a44464b3
-last-transition-from: in-progress
+last-transition-id: 6fbf41cd-1fb4-484c-bf52-9e63b9bfebf3
+last-correlation-id: 6fbf41cd-1fb4-484c-bf52-9e63b9bfebf3
+last-transition-from: review
 shipped-in:
   - "a9cb8d6a4"
   - "97320d4d7"
@@ -45,7 +45,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - global_gate: type
 
 ### S1 — Paquete `packages/state-telemetry` + tabla `work_events` (SQLite + NDJSON fallback)
-- **Status**: done
+- **Status**: in-progress
 - **Shipped-In**: 27c6cf021 feat(state-telemetry): scaffold work event bus
 - **Files**: `packages/state-telemetry/package.json` (sin entrada de subpath público: la declaraba apuntando a un barrel que esta slice no crea, y `lint:tsconfig-paths-coverage` la rechaza con razón — un subpath que no resuelve a nada. F2-S5, que es la dueña del barrel, añade export y barrel juntos), `packages/state-telemetry/tsconfig.json`, `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`
 - **Gate**: lint
@@ -56,8 +56,11 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada."
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` corre en CI y devuelve `0 violations`."
   - "F1-S1 NO crea `tools/scripts/lint/state-telemetry-purity.script.ts`; lo introduce F2-S1 (única slice responsable). Esta slice se limita al bus + tabla + tests, dejando la lint para cuando exista contenido que lintar."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: Persia
+- review-reviewer: claude-opus-5-5
+- review-log: requested_changes by claude-opus-5-5 — Every other criterion holds (work-event-store.spec: the q00020 table, the config switch with NDJSON when absent or malformed, no failure at startup; the purity lint now runs in lint:architecture). Missing: the criterion 'two concurrent writes from different processes produce no duplicate rows' has no test; 'keeps the autoincrement id monotonic across closes' writes from one process in sequence. To approve: a bun-owned spec that spawns two processes appending to one store at once and asserts every id is distinct and every event is present.
+
 ### S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
 - **Status**: done
 - **Blocked by**: a consumer. Nothing in production reads `state-telemetry` events yet (f00510 is pending). Emitting them first is work nobody can see. The write boundary exists: every `caller-checkout` write passes `bindWriteRoot` (core), which is where a `git_change` would hook.
