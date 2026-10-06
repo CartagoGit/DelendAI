@@ -56,9 +56,9 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada."
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` corre en CI y devuelve `0 violations`."
   - "F1-S1 NO crea `tools/scripts/lint/state-telemetry-purity.script.ts`; lo introduce F2-S1 (única slice responsable). Esta slice se limita al bus + tabla + tests, dejando la lint para cuando exista contenido que lintar."
-- review-state: changes_requested
-- review-implementer: Persia
-- review-reviewer: claude-opus-5-5
+- Two-process test: `work-event-store.spec.ts` spawns two `bun` writers that wait for each other, open one store and append 200 events each at once; it asserts both exit 0, the count is 400, every id is distinct and each writer's events are all present in order. It exposed that opening the store could fail with SQLITE_BUSY, so `busy_timeout` is now set before the WAL switch and the boot statements retry on a busy file.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 - review-log: requested_changes by claude-opus-5-5 — Every other criterion holds (work-event-store.spec: the q00020 table, the config switch with NDJSON when absent or malformed, no failure at startup; the purity lint now runs in lint:architecture). Missing: the criterion 'two concurrent writes from different processes produce no duplicate rows' has no test; 'keeps the autoincrement id monotonic across closes' writes from one process in sequence. To approve: a bun-owned spec that spawns two processes appending to one store at once and asserts every id is distinct and every event is present.
 
 ### S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
