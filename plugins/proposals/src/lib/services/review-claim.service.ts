@@ -147,6 +147,8 @@ export const verdictClaimRefusal = async (
 	proposalId: string,
 	integration: string,
 	namespacePrefix: string,
+	/** `claim: false` checks where the verdict is written and claims nothing. */
+	options: { readonly claim?: boolean } = {},
 ): Promise<IVerdictClaimRefusal | undefined> => {
 	if (!(await inReviewUnit(run, shape))) {
 		// A project with no work refs has no unit to write in. One that has
@@ -160,6 +162,7 @@ export const verdictClaimRefusal = async (
 					nextAction: `Enter your review unit — the \`work\` tool { action: "enter", kind: "review", proposal: "batch", slice: "all", agent } (or \`delendai review next --agent=<you>\`) — and pass the worktree it gives you as \`checkout\`. Nothing was written here.`,
 				};
 	}
+	if (options.claim === false) return undefined;
 	const outcome = await claimForReview(run, shape, proposalId, integration);
 	if (outcome.kind === 'held') {
 		return {
