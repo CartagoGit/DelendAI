@@ -2,13 +2,13 @@
 id: x00874
 title: "A proposal is created in a unit that takes its id"
 kind: fix
-status: review
+status: done
 type: proposal
 track: workflow
 date: 2026-10-05
-last-transition-id: 8cf500e9-53d9-4eff-90c3-7ae72735eb54
-last-correlation-id: 8cf500e9-53d9-4eff-90c3-7ae72735eb54
-last-transition-from: in-progress
+last-transition-id: bf9cb4e2-2b4c-462d-9d13-a9fef615ac2e
+last-correlation-id: bf9cb4e2-2b4c-462d-9d13-a9fef615ac2e
+last-transition-from: review
 shipped-in:
   - "de537057ed79"
 ---
@@ -102,14 +102,16 @@ capitalised, where the canonical order is lower case.
 
 ### S3 — A created document has the canonical headings
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/create-proposal-retry.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/create-proposal-retry.spec.ts`
 - `create` writes `## goal`, `## why`, `## non-goals`, `## Slices`,
   `## acceptance` in the canonical order and case.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `54e58a2d6954`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at de537057ed79, validate exit 0, tests 4/4 — Gate green: create-proposal-retry spec 4/4 canonical headings; full delivery commit de537057ed79
 
 ## dependency graph
 
