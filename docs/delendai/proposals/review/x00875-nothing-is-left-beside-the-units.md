@@ -19,6 +19,7 @@ shipped-in:
   - "68b22cd6fd11f3f254543516aa413f70384e9a88"
   - "05f70a3e258816a2a1bbd437b7c60df283f6c847"
   - "47baf9c2f4915ec6b614560ee262c32e7e64dfb5"
+  - "fd5a3aa6ae81279f8b56c2eba7579e56537cf708"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -194,12 +195,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-attribution: claude-opus-5-5 from commit 68b22cd6fd11 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00875-S27-g1/a-generation-once-used-is-spent (68b22cd6fd11f3f254543516aa413f70384e9a88), opened by minimax-3
 
 ### S14 — A released proposal is not handed back to the reviewer who released it
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
 - Found 2026-10-06: I released `f00547`, which I had changed and so could not judge independently, and the very next `review next` gave it back. The release commit sits beside the claim commit in the unit, and `review next` read only the claims, so it resumed the proposal as the unit's own. What a unit holds is now what it claimed less what it released, and a proposal it released is not offered to it again; another reviewer still gets it. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at fd5a3aa6ae81, validate exit 0, tests 11/11 — Delivered by the merge naming x00875-S14-g1 (f6f632c3f6ad) and last carried by fd5a3aa6ae81. review next defines claimsOf as claimed minus released and filters releasedElsewhere out of the free queue, so a proposal a unit released is not handed back to it. No acceptance bullet is declared for this slice. Gate review.command.spec.ts 11/11 exit 0.
 
 ### S15 — No tracked file keeps the markers of an unfinished merge
 - **Status**: review
