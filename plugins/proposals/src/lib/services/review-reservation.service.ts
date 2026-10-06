@@ -19,6 +19,7 @@ import { randomUUID } from 'node:crypto';
 import {
 	REVIEW_RESERVATION_NAMESPACE,
 	REVIEW_RESERVATION_SECONDS,
+	REVIEW_RESERVATION_UNIT_GRACE_SECONDS,
 } from '../contracts/constants/review-reservation.constant';
 import type {
 	IReviewReservation,
@@ -78,7 +79,11 @@ export const reserveReview = async (
 	if (!shown.ok) return { kind: 'unavailable' };
 	const [stamp = '0', ...body] = shown.output.split('\n');
 	const theirs = holderOf(body.join('\n'));
-	const lapsed = now - Number(stamp) > REVIEW_RESERVATION_SECONDS;
+	const age = now - Number(stamp);
+	const lapsed =
+		age > REVIEW_RESERVATION_SECONDS ||
+		(age > REVIEW_RESERVATION_UNIT_GRACE_SECONDS &&
+			(await unitEnded(run, remote, theirs)));
 	if (theirs.unit !== holder.unit && !lapsed) {
 		return { kind: 'taken', ...theirs };
 	}
@@ -96,6 +101,24 @@ export const reserveReview = async (
 	return replaced.ok
 		? { kind: 'reserved' }
 		: { kind: 'taken', unit: theirs.unit, agent: theirs.agent };
+};
+
+/**
+ * Whether the unit a reservation names has ended: neither its work ref nor
+ * its publication is on the forge. Both end in the same `<agent>/…` path,
+ * which `ls-remote` matches from the end. A reservation that outlives its
+ * unit kept a proposal from every other reviewer for hours after a swarm's
+ * agents had finished.
+ */
+const unitEnded = async (
+	run: IGitRunner,
+	remote: string,
+	holder: { readonly unit: string; readonly agent: string },
+): Promise<boolean> => {
+	const at = holder.unit.indexOf(`/${holder.agent}/`);
+	if (holder.agent.length === 0 || at === -1) return false;
+	const listed = await run(['ls-remote', remote, holder.unit.slice(at + 1)]);
+	return listed.ok && listed.output.trim().length === 0;
 };
 
 /** Give a reservation back: the proposal is free for the next reviewer. */

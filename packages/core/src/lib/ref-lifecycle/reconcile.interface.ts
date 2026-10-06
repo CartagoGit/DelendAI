@@ -14,6 +14,14 @@
  */
 export const DEFAULT_ADOPTION_GRACE_SECONDS = 1800;
 
+/**
+ * How long a publication whose pull request was closed without merging
+ * stays where it is before it is retired: time for its author to reopen
+ * the request. Past it the tip is kept under the retired namespace and
+ * the branch goes, so a closed request leaves no branch on the forge.
+ */
+export const DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS = 3600;
+
 import type { IUnitStanding } from '../work-units/unit-lease.interface';
 
 /** A branch as the forge reports it. */
@@ -48,6 +56,8 @@ export interface IObservedPullRequest {
 	readonly number: number;
 	readonly headRefName: string;
 	readonly state: 'open' | 'merged' | 'closed';
+	/** Seconds since the epoch it was closed, when the forge reports it. */
+	readonly closedAt?: number | undefined;
 }
 
 /** What a ref turned out to be. */
@@ -60,8 +70,9 @@ export const REF_ROLES = [
 	'publication-spent',
 	/**
 	 * A publication ref whose pull request was closed without merging.
-	 * Its commits may exist nowhere else, so it is kept for its author to
-	 * reopen or to end (x00697); deleting it was a loss nothing recorded.
+	 * Its commits may exist nowhere else, so it is never deleted (x00697):
+	 * it is kept for its author to reopen, and past the grace it is
+	 * retired — its tip kept under the retired namespace, its branch gone.
 	 */
 	'publication-closed',
 	/** A publication ref with no pull request at all. */
@@ -126,6 +137,11 @@ export interface IReconcileOptions {
 	 * it counts as abandoned rather than in-flight.
 	 */
 	readonly adoptionGraceSeconds?: number | undefined;
+	/**
+	 * How long a publication closed without merging is left for its
+	 * author before it is retired.
+	 */
+	readonly closedRetirementGraceSeconds?: number | undefined;
 }
 
 /** What a reconcile pass concluded, split by what may be done about it. */
@@ -138,6 +154,11 @@ export interface IRefReconciliation {
 	 * with no pull request may be the only copy of something.
 	 */
 	readonly needsAttention: readonly IRefVerdict[];
+	/**
+	 * Publications closed without merging, past the grace: retired, never
+	 * deleted — the tip is kept where `work retired` finds it.
+	 */
+	readonly retirable: readonly IRefVerdict[];
 	/**
 	 * Refs that are not yet anybody's problem: published inside the
 	 * adoption grace and still waiting for their pull request. Reported

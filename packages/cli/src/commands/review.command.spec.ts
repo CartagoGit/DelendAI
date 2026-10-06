@@ -262,6 +262,27 @@ describe('delendai review', () => {
 		expect(again.proposal).toBe('x00001');
 	});
 
+	it('opens no unit for an agent that asks while nothing is waiting', async () => {
+		// One agent asking every few minutes, with no session, left an empty
+		// unit per question.
+		const root = repo();
+		const { ctx } = contextFor(root, [
+			{ id: 'x00001', verdicts: ['approved'] },
+			{ id: 'x00002', claimedBy: ['other-agent'] },
+		]);
+		for (let ask = 0; ask < 3; ask += 1) {
+			const answer = (await run(ctx, 'next', '--agent=minimax-m3'))
+				.data as {
+				next: string;
+				worktree?: string;
+			};
+			expect(answer.next).toBe('Nothing is waiting for your verdict.');
+			expect(answer.worktree).toBeUndefined();
+		}
+		expect(git(root, 'branch', '--list', '*review*')).toBe('');
+		expect(git(root, 'worktree', 'list').split('\n')).toHaveLength(1);
+	});
+
 	it('enters the unit, claims the first free proposal, and says how to answer', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [
