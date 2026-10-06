@@ -2,13 +2,13 @@
 id: x00873
 title: "Proposal files are judged against the file conventions when written"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-05
-last-transition-id: a10ff19e-ccb9-42f1-86b2-fa07307d1dc3
-last-correlation-id: a10ff19e-ccb9-42f1-86b2-fa07307d1dc3
-last-transition-from: in-progress
+last-transition-id: 5bd19839-8473-4781-837f-e75828c12093
+last-correlation-id: 5bd19839-8473-4781-837f-e75828c12093
+last-transition-from: review
 shipped-in:
   - "496d1721d"
 ---
