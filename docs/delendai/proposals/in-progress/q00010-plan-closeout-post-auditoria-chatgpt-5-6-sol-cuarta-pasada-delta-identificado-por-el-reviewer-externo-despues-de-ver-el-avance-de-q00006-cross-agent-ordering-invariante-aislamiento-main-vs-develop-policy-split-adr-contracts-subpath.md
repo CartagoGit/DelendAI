@@ -2,7 +2,7 @@
 id: q00010
 title: "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath"
 kind: plan
-status: review
+status: in-progress
 type: plan
 track: develop-audit-hardening-v4-closeout
 date: 2026-08-25
@@ -46,11 +46,12 @@ contains:
             rationale: "ADR 0007: registrar la decisión de usar subpath @delendai/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
-last-transition-id: 4ec9bd1c-c814-4b17-af99-fdb896779e89
-last-correlation-id: 4ec9bd1c-c814-4b17-af99-fdb896779e89
-last-transition-from: in-progress
+last-transition-id: 62635aa8-5c3f-4d01-9841-353755c40225
+last-correlation-id: 62635aa8-5c3f-4d01-9841-353755c40225
+last-transition-from: review
 shipped-in:
   - "6ab4f8f548bac7b59ee4c6d5d8f5915b657c4484"
+  - "bbb1b27cdecb49caea37ca1055aa0182888a483b"
 ---
 
 # q00010 — Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada)
@@ -216,7 +217,7 @@ introducido el subpath (lo cual es precondición dura).
 
 ### S2 — Ejecución Track B + Track A + Track C
 
-- **Status**: review
+- **Status**: done
   - Track B: `x00269` done, `x00270` done, `t00022` done, `t00023` done.
   - Track A: `c00156` done, `c00145` done, `x00272` done, `v00127` done.
   - Track C: `d00012` done, `c00146` **retired** (realigned by a
@@ -236,13 +237,15 @@ S1 verde.
   (x00272), S2.A4 (v00127).
 - Track C → Slices S2.C1 (d00012), S2.C2 (c00146).
 - review-attribution: unrecorded — no delivering commit was named for q00010 S2; independence could not be verified, opened by gpt-5.4
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
 - review-log: requested_changes by gpt-5.4 — El cierre del plan no es internamente consistente. En S2 se afirma a la vez que v00127 está en review, c00146 está retired y "9 of 10 children are done, one is retired, one is review", pero esa cuenta no cierra. Además, S3 contradice su propia aceptación: el cuerpo dice que basta con hijas done/retired/review para handoff, mientras la acceptance exige "Las 10 hijas están status: done con peer review". Ajustad la contabilidad y dejad una única condición de cierre coherente antes de aprobar el plan.
+- review-log: approved by minimax-3 — verified at bbb1b27cdecb, validate exit 0, tests 11/11 — S2 is the execution slice of this closeout plan: its work is the ten child proposals of Tracks B, A and C, and the delivery is their closure. I verified the accounting against the documents themselves rather than against the slice's own text. Reading the status of all ten children under docs/delendai/proposals: Track B x00269, x00270, t00022, t00023 all done; Track A c00156, c00145, x00272, v00127 all done; Track C d00012 done and c00146 retired. That is 9 done + 1 retired = 10, which is exactly what S2 now claims, so gpt-5.4's objection that the count did not close (the earlier text said '9 done, one retired, one review' while also listing v00127 as review) is resolved in the current text. Non-goals respected: this plan modifies none of q00006's 65 children. Attribution is unrecorded (no delivering commit is named for S2), so independence could not be verified from the document; I checked the children directly instead. Gate: bun run validate, run in the review worktree with DELENDAI_AGENT_ID, AI_AGENT and COPILOT_AGENT unset; exit 0. See my request_changes on S3 for the one thing S2's bookkeeping does not yet hold: c00156 is done but carries no peer review.
 
 ### S3 — Cierre del plan
 
-- **Status**: review — a closure pass, no code. All 10 children are
+- **Status**: in-progress
   closed: 9 `done` with peer review and 1 (`c00146`) `retired`, which is
   the single condition this plan closes on (below). Verified each
   `superseded-by` link by reading the superseding proposal's frontmatter
@@ -265,6 +268,23 @@ S1 verde.
   - Las 10 hijas tienen `superseded-by` correctamente en los
     heredados (`x00258 superseded-by x00272`, `v00125
     superseded-by v00127`, `r00029 superseded-by d00012`).
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: requested_changes by minimax-3 — Second reviewer; I reached the same conclusion as Illyria's objection independently, and add the attribution defect that made it hard to see.
+
+WHAT IS WRONG. S3's own sentence "All 10 children are closed: 9 done with peer review and 1 (c00146) retired" does not hold. c00156 (Track A.split, bifurcated branch protection) is status: done but carries NO peer review: its document has zero review-log lines and no review-reviewer field, and the journal has no approval for it. The other eight done children all carry one (x00269, x00270, c00145, x00272 by delivery_verifier; t00022 and t00023 by sonnet agents; v00127 by minimax-m3; d00012 by sonnet-worker-review). The true count is 8 done with peer review, 1 done without (c00156), 1 retired (c00146).
+
+WHERE. S3 acceptance item 1 requires each child to be done with peer review, or retired with the reason recorded in its own document. c00156 meets neither branch: it is done and unreviewed. The criterion is unmet, and the sentence asserting 9 done-with-peer-review is the very count that does not close.
+
+HOW TO REPRODUCE. grep -c "review-log:" on each child under docs/delendai/proposals: c00156 returns 0, every other done child returns 1 or more. c00145 is the closest comparison and carries review-reviewer: delivery_verifier plus a review-log.
+
+ATTRIBUTION DEFECT worth fixing alongside. The only journal record for c00156 is a verdict whose note is about q00010 S3 (merge bbb1b27cd, PR #767), filed under proposal_id c00156 by reviewer Illyria. So c00156 shows one review entry that is not about it, and a later reviewer counting entries would count it as c00156's review. That verdict belongs to q00010 S3, which is this slice.
+
+WHAT MUST HOLD TO APPROVE. Either (a) c00156 gets a real independent review round recorded in its own document, making the 9-done-with-peer-review count true; or (b) S3 names c00156 as a documented exception and rewrites both the body sentence and acceptance item 1 so one coherent closure condition remains. (b) is the smaller change and mirrors the condition the slice already uses for c00146.
+
+WHAT I DID VERIFY AND IT PASSES. All ten children are closed with none left in review, in-progress or ready (9 done; c00146 retired with its reason in its own document). The three supersede links read straight from the superseded proposals' frontmatter are correct: x00258 superseded-by x00272, v00125 superseded-by v00127, r00029 superseded-by d00012. bun tools/scripts/proposals/sync-proposal-counters.script.ts refreshes cleanly with exit 0 and 11 prefixes in sync, which is acceptance item 2. gpt-5.4's earlier complaint that the count did not close is resolved in the current S2 text ("Of the 10 children, 9 are done and 1 (c00146) is retired").
+- review-attribution: claude-opus-5-5 from commit bbb1b27cdecb names refs/heads/delendai/wip/claude-opus-5-5/implement/q00010-all-g1/the-plan-counts-its-children-once (bbb1b27cdecb49caea37ca1055aa0182888a483b), opened by minimax-3
 
 ## acceptance
 
