@@ -70,6 +70,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A reservation whose unit has neither a work ref nor a publication on the forge is free at once, whatever its hours, and the queue does not count it as held."
   - "Such a reservation ref is deleted by the reaper that already removes finished units, so none outlives its unit on the forge."
 - Delivered: a reservation whose unit is on the forge neither as a work ref nor as a publication (one `ls-remote` of the path after the agent matches both), and that is older than `REVIEW_RESERVATION_UNIT_GRACE_SECONDS` (15 minutes, the time a fresh unit needs to be pushed), counts as lapsed: the next reviewer takes it over at once. The namespace maintenance that runs after every merge drops such reservations from the forge, each only if it is still the commit it read. A dry run on this repository's forge found 14 to drop. Both specs fail without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A pack that cannot land is refused before it is published
 - **Status**: pending
