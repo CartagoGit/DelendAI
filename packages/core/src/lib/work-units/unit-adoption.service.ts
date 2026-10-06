@@ -27,6 +27,7 @@ import {
 import { gitCommonDirOf } from './unit-lease.service';
 import { UNALLOCATED_PROPOSAL } from './unit-proposal.constant';
 import { renameUnitRef } from './unit-ref-rename.service';
+import { releaseSlices } from './slice-reservation.service';
 import { parseWorkSubject } from './work-ref-shape.service';
 import { identityOf } from './work-swarm.service';
 import { integrationRemote, readGit } from './work-unit-shared.service';
@@ -135,6 +136,15 @@ export const adoptProposalId = async (input: {
 		return { status: 'refused', branch, reason: renamed.reason };
 	}
 	const leaseMoved = await moveLease(cwd, branch, to);
+	// The `new` unit no longer exists under that name: its reservation
+	// would hold the slot of every next new proposal for hours.
+	releaseSlices({
+		root: cwd,
+		remote: integrationRemote(cwd, policy),
+		namespace: policy.branches.namespacePrefix,
+		proposal: UNALLOCATED_PROPOSAL,
+		unit: branch.slice(shortName(policy.branches.workRefPrefix).length),
+	});
 	return {
 		status: 'renamed',
 		from: branch,
