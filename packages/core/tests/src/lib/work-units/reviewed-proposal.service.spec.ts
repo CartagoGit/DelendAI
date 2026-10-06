@@ -18,6 +18,7 @@ import {
 	describeReviewedProposal,
 	reviewerNamed,
 	reviewersIn,
+	sliceSectionOf,
 } from '@delendai/core/lib/work-units/reviewed-proposal.service';
 
 const document = [
@@ -57,6 +58,22 @@ describe('reviewerNamed', () => {
 	});
 });
 
+describe('sliceSectionOf', () => {
+	it('is the slice from its heading to the next one', () => {
+		const section = sliceSectionOf(document, 'S2');
+		expect(section).toBe('### S2 — second\n- review-reviewer: minimax-m3');
+		expect(reviewersIn(sliceSectionOf(document, 'S3'))).toEqual([
+			'glm-5.3-flash',
+		]);
+	});
+
+	it('is the whole document for the whole proposal or a slice it lacks', () => {
+		expect(sliceSectionOf(document, 'all')).toBe(document);
+		expect(sliceSectionOf(document, undefined)).toBe(document);
+		expect(sliceSectionOf(document, 'S9')).toBe(document);
+	});
+});
+
 describe('work enter by the reviewer of the proposal', () => {
 	const roots: string[] = [];
 	afterEach(() => {
@@ -65,12 +82,12 @@ describe('work enter by the reviewer of the proposal', () => {
 		}
 	});
 
-	const enter = (root: string, agent: string, kind: string) =>
+	const enter = (root: string, agent: string, kind: string, slice = 'S1') =>
 		runWorkUnit(
 			[
 				'enter',
 				'--proposal=x00001',
-				'--slice=S1',
+				`--slice=${slice}`,
 				`--kind=${kind}`,
 				`--agent=${agent}`,
 			],
@@ -119,5 +136,16 @@ describe('work enter by the reviewer of the proposal', () => {
 		expect((await enter(root, 'claude-opus-5-5', 'implement')).code).toBe(
 			0,
 		);
+		// glm-5.3-flash judged S3 only: it is kept out of S3 and of the
+		// whole proposal, and implements a slice it did not judge.
+		expect(
+			(await enter(root, 'glm-5.3-flash', 'implement', 'S3')).code,
+		).not.toBe(0);
+		expect(
+			(await enter(root, 'glm-5.3-flash', 'implement', 'all')).code,
+		).not.toBe(0);
+		expect(
+			(await enter(root, 'glm-5.3-flash', 'implement', 'S2')).code,
+		).toBe(0);
 	});
 });
