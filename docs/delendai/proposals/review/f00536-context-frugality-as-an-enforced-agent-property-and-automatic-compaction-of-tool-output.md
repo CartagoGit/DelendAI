@@ -14,6 +14,11 @@ tags:
 last-transition-id: 6f7c2fac-8643-4b03-985d-85a9d83d0d01
 last-correlation-id: 6f7c2fac-8643-4b03-985d-85a9d83d0d01
 last-transition-from: in-progress
+shipped-in:
+  - "03289da1e5f3"
+  - "55eae8993498"
+  - "c6b96a4d0c19"
+  - "7fbff952e89c"
 ---
 
 # f00536 — Context frugality as an enforced agent property, and automatic compaction of tool output
@@ -105,7 +110,7 @@ Compaction belongs where the output is produced:
 
 ### S1 — Attribute the cost
 
-- **Status**: review — shipped in #433 (merge 03289da1e)
+- **Status**: done
 - **Files**: `packages/core/src/lib/metrics/context-attribution.helper.ts`,
   `packages/core/src/lib/contracts/interfaces/context-attribution.interface.ts`,
   `packages/core/src/lib/metrics/metrics-registry.ts`,
@@ -129,9 +134,14 @@ property). "By call site" is the five largest single responses, with
 tool and time. Prompt scaffolding and model output never pass through
 the server, so they are the host's to measure, not this slice's.
 - shipped-in: `03289da1e5f3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 03289da1e5f3, validate exit 0, tests 4/4 — Gate green: attribution spec 4/4; sums to totalBytes incl. tools/list + other tools (read the helper); shipped in #433 merge 03289da1e
+- review-attribution: claude-opus-5-5 from commit 03289da1e5f3 names refs/heads/delendai/wip/claude-opus-5-5/f00536-S1-g1/the-cost-is-attributed (03289da1e5f3440c20a7be0f1d55fab8dc0d79ec), opened by glm-5.3-flash
 
 ### S2 — Elide at the seam, keep the artefact
-- **Status**: review — shipped in #421 (merge 55eae8993)
+- **Status**: done
 - **Files**: [`packages/core/src/lib/context-budget/elide-tool-result.service.ts`, `packages/core/src/lib/shared/tool-response.ts`, `packages/core/src/lib/contracts/interfaces/truncation.interface.ts`, `packages/core/src/lib/contracts/constants/response-byte-budget.constant.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/tests/src/lib/context-budget/elide-tool-result.spec.ts`]
 The capping and the stated elision already existed (`truncateIfTooLarge`:
 original size, cap and a structural head, never a cut mid-JSON). What
@@ -145,8 +155,14 @@ back as a stated elision without the path.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget/elide-tool-result.spec.ts`
 - **Expect**: the elision is stated and the named artefact holds the full output.
 - shipped-in: `55eae8993498`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 55eae8993498, validate exit 0, tests 7/7 — Gate green: elide spec 7/7; full output kept content-addressed + artifact path inside cap, failed write drops path honestly (read service); shipped in #421 merge 55eae8993
+- review-attribution: claude-opus-5-5 from commit 55eae8993498 names refs/heads/delendai/wip/claude-opus-5-5/f00536-S2-g1/elided-output-stays-addressable (55eae8993498be67c655bb4b65c07e84846e7f1c), opened by glm-5.3-flash
+
 ### S3 — Summarise the shapes that dominate
-- **Status**: review — shipped in #422 (merge c6b96a4d0)
+- **Status**: done
 - **Files**: [`packages/core/src/lib/context-budget/summarise-ci-log.helper.ts`, `packages/core/src/lib/contracts/interfaces/ci-log-summary.interface.ts`, `packages/core/tests/src/lib/context-budget/summarise-ci-log.spec.ts`]
 `summariseCiLog` reduces a job log or a test run to the job, the step
 that failed, the tally, and each failing test with the first line that
@@ -158,9 +174,15 @@ job log becomes under 1 KB with the failing assertion and job intact.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget/summarise-ci-log.spec.ts`
 - **Expect**: the failing assertion and its job name survive the summarisation.
 - shipped-in: `c6b96a4d0c19`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at c6b96a4d0c19, validate exit 0, tests 4/4 — Gate green: summarise-ci-log spec 4/4; unknown runner honest, dedupes failure+assertion, fixtures match CI shapes (read helper); shipped in #422 merge c6b96a4d0
+- review-attribution: claude-opus-5-5 from commit c6b96a4d0c19 names refs/heads/delendai/wip/claude-opus-5-5/f00536-S3-g1/a-ci-log-comes-back-as-structure (c6b96a4d0c19f277faddbf9aed3ec24bac54e8b1), opened by glm-5.3-flash
+
 ### S4 — State the rules
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`docs/delendai/AGENT-BOOTSTRAP.md`]
 - **Gate**: `bun run lint:prompt-size && bun run lint:bootstrap-canonical`
 
@@ -171,6 +193,11 @@ assertion from a CI log, keep commit bodies short, and never re-read a
 file just written or re-run a check that passed. The bootstrap stays
 inside its 32,000 B budget (31,922 B).
 - shipped-in: `7fbff952e89c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 7fbff952e89c, validate exit 0, tests 1/1 — Gates green: lint:prompt-size 31944B<=32000B + bootstrap-canonical ok; diff replaces re-read discipline with concrete habits (grep|head, line ranges, no re-verify); shipped in #471 merge 7fbff952e
+- review-attribution: claude-opus-5-5 from commit 7fbff952e89c names refs/heads/delendai/wip/claude-opus-5-5/f00536-S4-g1/the-frugality-rules-are-stated (7fbff952e89c318b38ef039bd27db146733e9a17), opened by glm-5.3-flash
 
 ### S5 — Enforce them against a run's own transcript
 

@@ -13,6 +13,18 @@ last-correlation-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
 last-transition-from: in-progress
 shipped-in:
   - "f83c85addc9e"
+  - "70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77"
+  - "6f63a52e168e57203553e0858b508c432998ef0e"
+  - "b0f8d072ad9d6d9aff05e76c270ccef1b0218283"
+  - "aefe63385650e029adf6b7618599e1675f13be96"
+  - "cef6142b3105dc7896c396e953507acd90769795"
+  - "6839c65ecf19b69cc2cf7511bceb29728e309903"
+  - "fa48b1c9f7fd69b1f13b4a97c8f70f4f83f33f11"
+  - "27b60933038a5913ccecf4856cecc24e02b33a4e"
+  - "7fa7e95db68420cfe10ded78ec9144e3e82243f9"
+  - "17d1fa53353c7b4de9ad67392f75e198b301c26d"
+  - "657da3ff96183e12acf10efe5cef4ee54b54273f"
+  - "345f73884420995774374681a50ff8ea6d827777"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -367,7 +379,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S1 — A verdict names the commit it judged and the gate it ran
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - `approve` writes the commit, the gate's exit code and the test counts it
@@ -375,10 +387,15 @@ the good verdicts' shape (P1) becomes the required shape.
   hold is refused. `request_changes` on delivered work names the commit it
   objects to, or is refused (E3, C1).
 - shipped-in: `70f0d67de5cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 70f0d67de5cd, validate exit 0, tests 295/295 — Deliver 70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77; feat ancestors verified; declared gate batched green 34 files / 295 tests exit 0.
+- review-attribution: claude-opus-5-5 from commit 70f0d67de5cd names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77), opened by minimax-3
 
 ### S2 — A verdict is written in the reviewer's own unit, or not at all
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-worktree.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - `review approve|changes|next` already write in the reviewer's unit. The
@@ -386,10 +403,15 @@ the good verdicts' shape (P1) becomes the required shape.
   work refs, `approve` and `request_changes` outside a review unit are now
   refused, name the unit to enter, and write nothing (E2, E7).
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6f63a52e168e, validate exit 0, tests 295/295 — Deliver merge 6f63a52e168e57203553e0858b508c432998ef0e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6f63a52e168e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (6f63a52e168e57203553e0858b508c432998ef0e), opened by minimax-3
 
 ### S3 — One model, one identity
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/agent-alias.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/agent-alias.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/agent-alias.service.spec.ts`
 - An agent id that differs from an identity already present in the refs only
@@ -399,10 +421,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - An identity whose refs belong to another orchestrator's session (x00850's
   lease) is refused for review units.
 - shipped-in: `b0f8d072ad9d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at b0f8d072ad9d, validate exit 0, tests 295/295 — Deliver merge b0f8d072ad9d6d9aff05e76c270ccef1b0218283 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit b0f8d072ad9d names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (b0f8d072ad9d6d9aff05e76c270ccef1b0218283), opened by minimax-3
 
 ### S4 — A review pack carries only its own verdicts
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/review-pack-scope.service.ts`, `packages/core/src/lib/contracts/interfaces/review-pack.interface.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
 - A review unit starts from the integration branch. Publishing a review pack
@@ -412,20 +439,30 @@ the good verdicts' shape (P1) becomes the required shape.
 - `work swarm`'s duplicate relation (x00791) covers review packs that carry
   the same verdict.
 - shipped-in: `aefe63385650`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at aefe63385650, validate exit 0, tests 295/295 — Deliver merge aefe63385650e029adf6b7618599e1675f13be96 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit aefe63385650 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (aefe63385650e029adf6b7618599e1675f13be96), opened by minimax-3
 
 ### S5 — A review pack never deletes a proposal
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/review-pack-deletions.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/review-pack-deletions.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/review-pack-deletions.service.spec.ts`
 - The review-scope check refuses a pack that deletes a proposal file without
   adding it elsewhere in the same pack (a move), naming the file and the
   commit (#744).
 - shipped-in: `aefe63385650`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at aefe63385650, validate exit 0, tests 295/295 — Deliver merge aefe63385650e029adf6b7618599e1675f13be96 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit aefe63385650 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (aefe63385650e029adf6b7618599e1675f13be96), opened by minimax-3
 
 ### S6 — The CLI an agent runs is not behind the code it judges
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/stale-build.service.ts`, `packages/cli/src/contracts/interfaces/stale-build.interface.ts`, `packages/cli/src/index.ts`, `packages/cli/src/lib/stale-build.service.spec.ts`
 - **Gate**: `npx vitest run packages/cli/src/lib/stale-build.service.spec.ts`
 - A CLI started from `dist` inside the repository compares its build stamp
@@ -433,10 +470,15 @@ the good verdicts' shape (P1) becomes the required shape.
   sources moved on, naming `bun packages/cli/src/index.ts` as the way to run
   the current rules (E1, E6).
 - shipped-in: `aefe63385650`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at aefe63385650, validate exit 0, tests 295/295 — Deliver merge aefe63385650e029adf6b7618599e1675f13be96 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit aefe63385650 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (aefe63385650e029adf6b7618599e1675f13be96), opened by minimax-3
 
 ### S7 — A unit starts from the integration branch the forge has
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/tests/src/lib/work-units/integration-base.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/integration-base.spec.ts`
 - `integrationBase` uses the remote-tracking integration branch whenever the
@@ -445,19 +487,29 @@ the good verdicts' shape (P1) becomes the required shape.
   to report, never a base to build on (E12, C6). `work status` and the
   doctor name the divergence and the backup to restore from.
 - shipped-in: `aefe63385650`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at aefe63385650, validate exit 0, tests 295/295 — Deliver merge aefe63385650e029adf6b7618599e1675f13be96 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit aefe63385650 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (aefe63385650e029adf6b7618599e1675f13be96), opened by minimax-3
 
 ### S8 — A publication that did not land says so loudly
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-failure.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit-publish-failure.spec.ts`
 - `work publish` exits non-zero when the publication was not proved on the
   remote, and its first line says why and what to merge (C5).
 - shipped-in: `aefe63385650`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at aefe63385650, validate exit 0, tests 295/295 — Deliver merge aefe63385650e029adf6b7618599e1675f13be96 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit aefe63385650 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (aefe63385650e029adf6b7618599e1675f13be96), opened by minimax-3
 
 ### S11 — A claim is one shared reservation
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-reservation.service.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-reservation.interface.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
 - Claiming a proposal for review first creates
@@ -471,10 +523,15 @@ the good verdicts' shape (P1) becomes the required shape.
   the claim works as before.
 - Reserving a slice for implementation the same way is S26.
 - shipped-in: `cef6142b3105`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at cef6142b3105, validate exit 0, tests 295/295 — Deliver merge cef6142b3105dc7896c396e953507acd90769795 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit cef6142b3105 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (cef6142b3105dc7896c396e953507acd90769795), opened by minimax-3
 
 ### S12 — A run ends with nothing hanging
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - `work doctor` already named a work ref with no worktree, a worktree with
@@ -482,10 +539,15 @@ the good verdicts' shape (P1) becomes the required shape.
   that holds nothing the integration branch lacks, and a local integration
   branch carrying commits the forge lacks, each with its remedy.
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6f63a52e168e, validate exit 0, tests 295/295 — Deliver merge 6f63a52e168e57203553e0858b508c432998ef0e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6f63a52e168e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (6f63a52e168e57203553e0858b508c432998ef0e), opened by minimax-3
 
 ### S9 — An automatic commit is made once, by an agent, of the slice's files
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/persistence.interface.ts`, `plugins/commit-policy/src/lib/services/work-ref-naming.service.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`
 - **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`
 - A slice event reaches every server connected to the workspace. A server
@@ -496,20 +558,30 @@ the good verdicts' shape (P1) becomes the required shape.
 - What a checkpoint carries stays the claim of the event; narrowing it to
   the files the slice declares is S25.
 - shipped-in: `b0f8d072ad9d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at b0f8d072ad9d, validate exit 0, tests 295/295 — Deliver merge b0f8d072ad9d6d9aff05e76c270ccef1b0218283 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit b0f8d072ad9d names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (b0f8d072ad9d6d9aff05e76c270ccef1b0218283), opened by minimax-3
 
 ### S10 — A reviewer does not implement what it reviews
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - An agent holding a review claim on a proposal, or that recorded a verdict on
   it, is refused an `implement` unit on that proposal (E14). A review verdict
   committed in a non-review unit is refused at publication.
 - shipped-in: `b0f8d072ad9d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at b0f8d072ad9d, validate exit 0, tests 295/295 — Deliver merge b0f8d072ad9d6d9aff05e76c270ccef1b0218283 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit b0f8d072ad9d names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (b0f8d072ad9d6d9aff05e76c270ccef1b0218283), opened by minimax-3
 
 ### S13 — Independence is proved, or the review does not close
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/shared/independent-approval.ts`, `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/shared/independent-approval.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/shared/independent-approval.spec.ts`
 - Models are compared by their letters and digits, so an alias is the same
@@ -522,10 +594,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - A slice whose implementer is `unrecorded` does not reach `done`, whoever
   approved it: the delivering commit has to be named first (G2).
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6f63a52e168e, validate exit 0, tests 295/295 — Deliver merge 6f63a52e168e57203553e0858b508c432998ef0e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6f63a52e168e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (6f63a52e168e57203553e0858b508c432998ef0e), opened by minimax-3
 
 ### S14 — A verdict applies to the revision it was made on
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - The revision a verdict is about is the delivery it names: the commit, and
@@ -541,10 +618,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - A pack that describes itself, and the settlement of packs that went
   stale, are S32.
 - shipped-in: `70f0d67de5cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 70f0d67de5cd, validate exit 0, tests 295/295 — Deliver merge 70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 70f0d67de5cd names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77), opened by minimax-3
 
 ### S15 — Recovery runs need no global git identity, and read-only writes nothing
 
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.constant.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - The merge and the commits a refresh makes name their committer with
@@ -556,10 +638,15 @@ the good verdicts' shape (P1) becomes the required shape.
   `tools/scripts/forge/refresh-candidates.script.spec.ts`): the job still
   printed "empty ident name" after the first fix, from a second script.
 - shipped-in: `6839c65ecf19`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6839c65ecf19, validate exit 0, tests 295/295 — Deliver merge 6839c65ecf19b69cc2cf7511bceb29728e309903 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6839c65ecf19 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (6839c65ecf19b69cc2cf7511bceb29728e309903), opened by minimax-3
 
 ### S16 — The run knows who joined it
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/swarm-roster.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/contracts/interfaces/swarm-roster.interface.ts`, `packages/core/tests/src/lib/work-units/swarm-roster.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/swarm-roster.service.spec.ts`
 - Every agent that enters a unit leaves a lease, whether or not it commits.
@@ -570,10 +657,15 @@ the good verdicts' shape (P1) becomes the required shape.
   declared id is the model actually running needs the host to state it;
   nothing here can tell `qwen3-flash` from the model it is (E18).
 - shipped-in: `b0f8d072ad9d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at b0f8d072ad9d, validate exit 0, tests 295/295 — Deliver merge b0f8d072ad9d6d9aff05e76c270ccef1b0218283 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit b0f8d072ad9d names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (b0f8d072ad9d6d9aff05e76c270ccef1b0218283), opened by minimax-3
 
 ### S17 — A storm can be replayed
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
 - A fixture reproduces this run in a scratch repository: five reviewers of one
@@ -592,6 +684,11 @@ the good verdicts' shape (P1) becomes the required shape.
   mistakes (bare approval, superseded delivery, double claim, same-instance
   approval) are replayed by the proposals plugin's own specs.
 - shipped-in: `fa48b1c9f7fd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at fa48b1c9f7fd, validate exit 0, tests 295/295 — Deliver merge fa48b1c9f7fd69b1f13b4a97c8f70f4f83f33f11 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit fa48b1c9f7fd names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (fa48b1c9f7fd69b1f13b4a97c8f70f4f83f33f11), opened by minimax-3
 
 ### S18 — The run reports its own incidents
 
@@ -616,7 +713,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S19 — A unit's name says what it is
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/unit-topic.service.ts`, `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/src/lib/contracts/constants/work-topic.constant.ts`, `packages/core/tests/src/lib/work-units/unit-topic.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/unit-topic.service.spec.ts`
 - A review pack has one topic, derived by the tools, not chosen per agent; an
@@ -625,10 +722,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - A pull request of several deliveries says how many it holds instead of
   taking its oldest commit's subject as if it were the whole.
 - shipped-in: `b0f8d072ad9d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at b0f8d072ad9d, validate exit 0, tests 295/295 — Deliver merge b0f8d072ad9d6d9aff05e76c270ccef1b0218283 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit b0f8d072ad9d names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (b0f8d072ad9d6d9aff05e76c270ccef1b0218283), opened by minimax-3
 
 ### S20 — A verdict names the newest commit, and a reviewer that ran nothing records none
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - An approval names a commit; the pull request that brought that commit in
@@ -640,10 +742,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - A reviewer that ran nothing, and the language of a verdict's text, are
   S27.
 - shipped-in: `70f0d67de5cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 70f0d67de5cd, validate exit 0, tests 295/295 — Deliver merge 70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 70f0d67de5cd names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77), opened by minimax-3
 
 ### S21 — The queue goes red while something hangs on the forge
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `tools/scripts/git/check-workflow-invariants.script.ts`, `.github/workflows/keep-the-queue-moving.yml`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - A lease lives in the clone that entered the unit, so a runner has none.
@@ -656,10 +763,15 @@ the good verdicts' shape (P1) becomes the required shape.
   candidate still behind is reported and not counted, since bringing it
   forward is what the queue has just started (`--except=`).
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6f63a52e168e, validate exit 0, tests 295/295 — Deliver merge 6f63a52e168e57203553e0858b508c432998ef0e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6f63a52e168e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (6f63a52e168e57203553e0858b508c432998ef0e), opened by minimax-3
 
 ### S22 — A unit that will not land is retired, with its work kept
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/contracts/interfaces/work-retire.interface.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/lib/tools/work-unit-roots.helper.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `docs/delendai/TOKEN-BUDGETS.md`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - `work retire --ref=<branch> --reason=<why>` writes the unit's tip to
@@ -681,10 +793,15 @@ the good verdicts' shape (P1) becomes the required shape.
   `packages/core/src/lib/work-units/stray-refs.service.ts`,
   `packages/core/src/lib/work-units/idle-units.service.ts`).
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 7fa7e95db684, validate exit 0, tests 295/295 — Deliver merge 7fa7e95db68420cfe10ded78ec9144e3e82243f9; the proposal's shipped-in was superseded by this later publication of the same unit (attribution reported 'delivered again by 7fa7e95db684'). Declared gate run batched green: 34 test files / 295 tests, exit 0. Behaviour pinned by named specs.
+- review-attribution: claude-opus-5-5 from commit 7fa7e95db684 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S34-g1/the-queue-offers-no-work-of-the-reviewer-s-own (7fa7e95db68420cfe10ded78ec9144e3e82243f9), opened by minimax-3
 
 ### S23 — A kept unit is brought forward or named, and retiring asks nobody to tidy first
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - `work enter` on a unit that holds no commit of its own and is behind
@@ -702,10 +819,15 @@ the good verdicts' shape (P1) becomes the required shape.
   (`lefthook.yml`): a unit whose work the merge brought in is collected
   without waiting for a person.
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6f63a52e168e, validate exit 0, tests 295/295 — Deliver merge 6f63a52e168e57203553e0858b508c432998ef0e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6f63a52e168e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (6f63a52e168e57203553e0858b508c432998ef0e), opened by minimax-3
 
 ### S24 — Only the main checkout installs the clone's hooks
 
-- **Status**: review
+- **Status**: done
 - **Files**: `package.json`, `bun.lock`, `tools/scripts/git/refresh-candidate-artifacts.constant.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`, `tools/scripts/git/prepare-clone.script.spec.ts`
 - **Gate**: `npx vitest run tools/scripts/git/prepare-clone.script.spec.ts tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - `trustedDependencies` names the packages whose install scripts run, and
@@ -714,6 +836,11 @@ the good verdicts' shape (P1) becomes the required shape.
 - The queue's refresh installs with `--ignore-scripts` and merges with no
   hooks: a throwaway worktree writes nothing into the clone it belongs to.
 - shipped-in: `6839c65ecf19`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6839c65ecf19, validate exit 0, tests 295/295 — Deliver merge 6839c65ecf19b69cc2cf7511bceb29728e309903 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6839c65ecf19 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-swarm-run-that-can-be-checked (6839c65ecf19b69cc2cf7511bceb29728e309903), opened by minimax-3
 
 ### S25 — An automatic commit carries the slice's files, not the event's
 
@@ -731,7 +858,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S26 — An implementation unit reserves its slice on the forge
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/contracts/interfaces/slice-reservation.interface.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - `work enter` for implementation reserves the slice with the same push only
@@ -744,10 +871,15 @@ the good verdicts' shape (P1) becomes the required shape.
   was never pushed; `work retire` gives it back. `--alongside` skips it, and
   where there is no forge nothing is reserved.
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6f63a52e168e, validate exit 0, tests 295/295 — Deliver merge 6f63a52e168e57203553e0858b508c432998ef0e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6f63a52e168e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (6f63a52e168e57203553e0858b508c432998ef0e), opened by minimax-3
 
 ### S27 — A reviewer that ran nothing records nothing, in the project's language
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `plugins/proposals/src/lib/contracts/constants/review-claim-schema.constant.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
 - A reviewer that could not inspect or run what it claimed gives the claim
@@ -759,10 +891,15 @@ the good verdicts' shape (P1) becomes the required shape.
   E10).
 - The language of a verdict's text is S30.
 - shipped-in: `cef6142b3105`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 17d1fa53353c, validate exit 0, tests 295/295 — Deliver merge 17d1fa53353c7b4de9ad67392f75e198b301c26d; the proposal's shipped-in was superseded by this later publication of the same unit (attribution reported 'delivered again by 17d1fa53353c'). Declared gate run batched green: 34 test files / 295 tests, exit 0. Behaviour pinned by named specs.
+- review-attribution: claude-opus-5-5 from commit 17d1fa53353c names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S36-g1/a-reviewer-can-cite-each-criterion (17d1fa53353c7b4de9ad67392f75e198b301c26d), opened by minimax-3
 
 ### S28 — A retired slice owes nothing, and a proposal's own document is never a missing file
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/proposal-completeness.ts`, `plugins/proposals/src/lib/services/review-entry.service.ts`, `plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`
 - `retired` is a slice status the tools read. A retired slice is settled:
@@ -771,10 +908,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - A slice file that is the proposal's own document, in whatever status
   folder, is never reported as missing.
 - shipped-in: `70f0d67de5cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 70f0d67de5cd, validate exit 0, tests 295/295 — Deliver merge 70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 70f0d67de5cd names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77), opened by minimax-3
 
 ### S29 — Work nobody can see is named, and retired work can be read
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/hidden-work.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/hidden-work.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/hidden-work.service.spec.ts packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - `work doctor` gains three invariants: `no-stashed-work`,
@@ -785,10 +927,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - `work retired` lists what the forge keeps of units that did not land and
   of work rescued from nowhere, and says how to read one and bring it back.
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 6f63a52e168e, validate exit 0, tests 295/295 — Deliver merge 6f63a52e168e57203553e0858b508c432998ef0e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 6f63a52e168e names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (6f63a52e168e57203553e0858b508c432998ef0e), opened by minimax-3
 
 ### S30 — A project declares its documentation language and who counts as another reviewer
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/documentation-language.service.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/src/index.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `delendai.config.json`, `plugins/proposals/tests/src/lib/services/documentation-language.service.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/documentation-language.service.spec.ts`
 - `documentationLanguage: "en"` (proposals plugin option): a verdict whose
@@ -799,20 +946,30 @@ the good verdicts' shape (P1) becomes the required shape.
   work, as long as the two instances are seen to differ (S13). A project
   that wants another model sets `model`; this repository does.
 - shipped-in: `00b2fc1256b6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 657da3ff9618, validate exit 0, tests 295/295 — Deliver merge 657da3ff96183e12acf10efe5cef4ee54b54273f; the proposal's shipped-in was superseded by this later publication of the same unit (attribution reported 'delivered again by 657da3ff9618'). Declared gate run batched green: 34 test files / 295 tests, exit 0. Behaviour pinned by named specs.
+- review-attribution: claude-opus-5-5 from commit 657da3ff9618 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (657da3ff96183e12acf10efe5cef4ee54b54273f), opened by minimax-3
 
 ### S31 — A claim takes the worktree with it
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-claim.service.ts`, `packages/core/tests/src/lib/work-units/work-claim.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-claim.service.spec.ts`
 - `work claim` on a unit that has a worktree points that worktree at the
   new name before the old one is removed, so a stalled unit changes hands
   in one step and is left under one name (E31).
 - shipped-in: `27b60933038a`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 27b60933038a, validate exit 0, tests 295/295 — Deliver merge 27b60933038a5913ccecf4856cecc24e02b33a4e (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 27b60933038a names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (27b60933038a5913ccecf4856cecc24e02b33a4e), opened by minimax-3
 
 ### S32 — A review pack changes only the proposals it claimed
 
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`
 - **Gate**: `npx vitest run tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - CI refuses a review pack whose diff changes a proposal none of its
@@ -826,10 +983,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - Entering your own unit from another directory is refused as "another
   session"; the refusal now says how to get back in.
 - shipped-in: `00b2fc1256b6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 345f73884420, validate exit 0, tests 295/295 — Deliver merge 345f73884420995774374681a50ff8ea6d827777; the proposal's shipped-in was superseded by this later publication of the same unit (attribution reported 'delivered again by 345f73884420'). Declared gate run batched green: 34 test files / 295 tests, exit 0. Behaviour pinned by named specs.
+- review-attribution: claude-opus-5-5 from commit 345f73884420 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S37-g1/a-session-re-enters-its-own-unit (345f73884420995774374681a50ff8ea6d827777), opened by minimax-3
 
 ### S33 — A slice delivered from a unit of another name is still found
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-entry.service.ts`, `plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - Handing a proposal to review records each slice's delivery. When no merge
@@ -843,6 +1005,11 @@ the good verdicts' shape (P1) becomes the required shape.
   (`packages/core/src/lib/work-units/work-publish.service.ts`,
   `packages/core/src/lib/work-units/work-unit-land.service.ts`).
 - shipped-in: `70f0d67de5cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 70f0d67de5cd, validate exit 0, tests 295/295 — Deliver merge 70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77 (proposal shipped-in); its feat commits are ancestors of the merge and every declared file exists on develop. Declared gate run batched green: 34 test files / 295 tests, exit 0 (core work-units 183, proposals+commit-policy+kpis+storm 72, cli review.command 11, proposals-root swarm 29). Behaviour pinned by named specs, not by the slice file list alone.
+- review-attribution: claude-opus-5-5 from commit 70f0d67de5cd names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-all-g1/a-review-swarm-leaves-verdicts-that-can-be (70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77), opened by minimax-3
 
 ## dependency graph
 
