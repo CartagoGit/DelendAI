@@ -2,7 +2,7 @@
 id: q00010
 title: "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath"
 kind: plan
-status: review
+status: in-progress
 type: plan
 track: develop-audit-hardening-v4-closeout
 date: 2026-08-25
@@ -46,9 +46,9 @@ contains:
             rationale: "ADR 0007: registrar la decisión de usar subpath @delendai/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
-last-transition-id: 4ec9bd1c-c814-4b17-af99-fdb896779e89
-last-correlation-id: 4ec9bd1c-c814-4b17-af99-fdb896779e89
-last-transition-from: in-progress
+last-transition-id: 07c6ebb6-70d4-433e-b93f-1f38e27c274f
+last-correlation-id: 07c6ebb6-70d4-433e-b93f-1f38e27c274f
+last-transition-from: review
 shipped-in:
   - "6ab4f8f548bac7b59ee4c6d5d8f5915b657c4484"
 ---
@@ -242,7 +242,7 @@ S1 verde.
 
 ### S3 — Cierre del plan
 
-- **Status**: review — a closure pass, no code. All 10 children are
+- **Status**: in-progress
   closed: 9 `done` with peer review and 1 (`c00146`) `retired`, which is
   the single condition this plan closes on (below). Verified each
   `superseded-by` link by reading the superseding proposal's frontmatter
@@ -265,6 +265,21 @@ S1 verde.
   - Las 10 hijas tienen `superseded-by` correctamente en los
     heredados (`x00258 superseded-by x00272`, `v00125
     superseded-by v00127`, `r00029 superseded-by d00012`).
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: Illyria
+- review-log: requested_changes by Illyria — Independent review (reviewer Illyria). Objection is about what bbb1b27cd landed ('docs(proposals): q00010 counts its ten children once and closes on one condition', merge of #767): that commit fixed the counting complaint gpt-5.4 raised, but the count it wrote is still wrong.
+
+WHAT IS WRONG. S3 now states 'All 10 children are closed: 9 done with peer review and 1 (c00146) retired'. That count does not hold. c00156 (Track A.split, bifurcated branch protection) is status: done but carries NO peer review at all: zero review-log entries and no review-reviewer line. The other eight done children all do - x00269, x00270, c00145 and x00272 by delivery_verifier; t00022 by sonnet-reviewer-t00022; t00023 by sonnet-worker-tests-2; v00127 by minimax-m3; d00012 by sonnet-worker-review. So it is 8 done with peer review, 1 done without (c00156), 1 retired (c00146).
+
+WHERE. S3 acceptance item 1 requires exactly 'done with peer review, or retired with the reason recorded in its own document'. c00156 meets neither branch: it is done and unreviewed. The criterion is unmet, and the sentence asserting 9 done-with-peer-review is the very count that does not close.
+
+HOW TO REPRODUCE. grep -c 'review-log:' on each child under docs/delendai/proposals: c00156 returns 0, every other done child returns 1 or more. c00145 is the closest comparison and does carry review-reviewer: delivery_verifier plus a review-log.
+
+WHAT MUST HOLD TO APPROVE. Either (a) c00156 gets a real independent review round recorded in its own document, making the 9-done-with-peer-review count true; or (b) S3 names c00156 as the single documented exception and rewrites both the body sentence and acceptance item 1 so one coherent closure condition remains. Option (b) is the smaller change and is what I would do: it mirrors the condition the slice already uses for c00146.
+
+Everything else I verified and it passes: all 10 children are closed with none left in review, in-progress or ready; c00146 records its reason in its own document ('superseded-reason ... see ADR 0007 (d00012)'); the three supersede links read straight from the superseded proposals' frontmatter are correct (x00258 superseded-by x00272, v00125 superseded-by v00127, r00029 superseded-by d00012); ADR docs/delendai/adr/0007-core-contracts-subpath-vs-package.md exists and is linked from AGENT-BOOTSTRAP.md; verify-main-health.script.ts runs from .github/workflows/verify-develop-health.yml on cron '15 5 * * *'; sync-proposal-counters.script.ts refreshed cleanly with 11 prefixes in sync; and t00022's real-Git E2E passes 3/3. I am running a full 'bun run validate' for the declared gate and will report its result on resubmission.
+- review-attribution: claude-opus-5-5 from commit bbb1b27cdecb names refs/heads/delendai/wip/claude-opus-5-5/implement/q00010-all-g1/the-plan-counts-its-children-once (bbb1b27cdecb49caea37ca1055aa0182888a483b), opened by Illyria
 
 ## acceptance
 
