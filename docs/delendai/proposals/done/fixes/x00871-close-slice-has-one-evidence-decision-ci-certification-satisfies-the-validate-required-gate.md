@@ -2,13 +2,15 @@
 id: x00871
 title: "close_slice has one evidence decision: CI certification satisfies the validate-required gate"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-03
-last-transition-id: 4c5aa72c-18fb-46fa-9a31-bcf7912aaad1
-last-correlation-id: 4c5aa72c-18fb-46fa-9a31-bcf7912aaad1
-last-transition-from: in-progress
+last-transition-id: 4e90b02d-ed76-424e-b6b9-e3485904a4fd
+last-correlation-id: 4e90b02d-ed76-424e-b6b9-e3485904a4fd
+last-transition-from: review
+shipped-in:
+  - "f448f46e0"
 ---
 
 # x00871 — close_slice has one evidence decision: CI certification satisfies the validate-required gate
@@ -31,7 +33,7 @@ Merged proposals with green CI could not close type/e2e-gated slices: the older 
 - global_gate: none
 
 ### S1 — Unify the validate-evidence decision
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/tests/src/lib/e2e/close-slice-ci-evidence.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,9 +41,11 @@ Merged proposals with green CI could not close type/e2e-gated slices: the older 
   - "a different tree is refused with a nextAction that never mentions force"
   - "explicit validateEvidence is still accepted"
   - "a red CI result blocks"
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `f448f46e0e6a`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at f448f46e0, validate exit 0, tests 5/5 — Delivered by #754 (merge f448f46e0). The e2e spec runs the real close_slice against a repository: 5/5.
 
 ## acceptance
 
