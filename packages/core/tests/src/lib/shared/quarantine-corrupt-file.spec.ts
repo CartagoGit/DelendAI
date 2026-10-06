@@ -11,11 +11,8 @@ import { basename, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import {
-	CorruptFileError,
-	quarantineCorruptFile,
-	quarantineCorruptFileSync,
-} from '@delendai/core/public';
+import { CorruptFileError, quarantineCorruptFile } from '@delendai/core/public';
+import { quarantineCorruptFileSync } from '@delendai/core/lib/shared/quarantine-corrupt-file';
 
 describe('quarantineCorruptFile', async () => {
 	let dir = '';

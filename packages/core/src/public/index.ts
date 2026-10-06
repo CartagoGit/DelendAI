@@ -9,18 +9,11 @@
  */
 
 // --- server assembly -------------------------------------------------------
-export { __resetShutdownGuardForTests } from '../lib/cli/graceful-shutdown';
-export {
-	createMcpProject,
-	planRegistrationOrder,
-} from '../lib/project/create-mcp-project';
+export { createMcpProject } from '../lib/project/create-mcp-project';
 export type { IDelendaiProject } from '../contracts';
 
 // --- workspace + paths -----------------------------------------------------
-export type {
-	ICorePaths,
-	IWorkspacePathProvider,
-} from '../contracts';
+export type { IWorkspacePathProvider } from '../contracts';
 export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
 
 // --- projection + handles (v00133 S2) ------------------------------------
@@ -37,23 +30,19 @@ export type {
 
 // --- contracts -------------------------------------------------------------
 export type {
-	IHostContent,
-	IHostIdentity,
 	IHostObservability,
-	IHostPaths,
-	IHostRegistrations,
 	IDelendaiHostConfig,
 } from '../lib/contracts/interfaces/host-config.interface';
 export type {
 	IHostCapabilities,
 	IKnowledgeEntry,
 	ISkillEntry,
-	IDelendaiProjectMetadata,
-	IStatusCollector,
 	IPromptRegistration,
 	IResourceRegistration,
 	IToolRegistration,
 } from '../contracts';
+// @adopter-api a project config author types the matching section of delendai's config with this shape
+export type { IDelendaiProjectMetadata } from '../contracts';
 export type {
 	IToolIdentityRegistry,
 	IToolRegistryEntry,
@@ -61,19 +50,17 @@ export type {
 	SafeToolId,
 	ToolOwner,
 } from '../lib/contracts/interfaces/safe-tool-identity.interface';
+// @adopter-api a project config author types the matching section of delendai's config with this shape
 export type {
 	IQualityGate,
 	IQualityGateExpect,
 	IQualityGateLanguage,
 	IQualityGateList,
 } from '../lib/contracts/interfaces/quality-gate.interface';
-export type {
-	IValidationCommand,
-	IValidationMatrix,
-} from '../lib/contracts/interfaces/validation-matrix.interface';
+export type { IValidationCommand } from '../lib/contracts/interfaces/validation-matrix.interface';
+// @adopter-api a project config author types the matching section of delendai's config with this shape
+export type { IValidationMatrix } from '../lib/contracts/interfaces/validation-matrix.interface';
 export type { IEvidenceStore } from '../lib/contracts/interfaces/evidence.interface';
-export { buildHostCapabilityPlan } from '../lib/hosts/host-capability-profile';
-export { createHostCapabilityRegistry } from '../lib/host/host-capability-registry';
 export type {
 	IHostCapabilityManifest,
 	IHostCapabilityProjection,
@@ -97,10 +84,6 @@ export type {
 export { assembleCliConfig } from '../lib/cli/assemble';
 export { REPOSITORY_SLUG } from '../lib/contracts/constants/repository-identity.constant';
 export type {
-	IActivationSources,
-	ILoadedPluginFacts,
-} from '../lib/contracts/interfaces/activation-report.interface';
-export type {
 	ConfigurationArtifactKind,
 	IConfigurationArtifact,
 	IConfigurationCenterResult,
@@ -109,8 +92,9 @@ export type {
 	PluginOrigin,
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
-	IPhasedLifecycle,
 } from '../contracts';
+// @adopter-api a plugin author implements the phased lifecycle or calls these to drive and tear it down in a test host
+export type { IPhasedLifecycle } from '../contracts';
 export {
 	PERMISSION_CATEGORIES,
 	PERMISSION_RISK_WEIGHTS,
@@ -132,13 +116,8 @@ import { nodeDynamicImport as nodeDynamicImportImpl } from '../node';
  * Will be removed in the next minor release.
  */
 export const nodeDynamicImport = nodeDynamicImportImpl;
-export {
-	PACK_DEFAULTS,
-	resolveSearchHybridWeights,
-} from '../lib/plugins/pack-defaults';
-export { describeStackPacks } from '../lib/plugins/pack-defaults-overlay';
-export type { IStackPackMeta } from '../lib/plugins/pack-defaults-overlay';
 export { parseCliArgs } from '../plugin';
+// @adopter-api a plugin author implements the phased lifecycle or calls these to drive and tear it down in a test host
 export { adaptLegacyPlugin } from '../lib/plugins/lifecycle';
 export { definePlugin } from '../plugin';
 export type {
@@ -146,6 +125,7 @@ export type {
 	IPluginConfigurationValidationInput,
 } from '../lib/plugins/plugin-contract';
 // (Track D): phased plugin lifecycle.
+// @adopter-api a plugin author implements the phased lifecycle or calls these to drive and tear it down in a test host
 export {
 	hasPhasedLifecycle,
 	runLifecycle,
@@ -191,18 +171,10 @@ export { buildStartupReport } from '../lib/startup-report';
 // and cost ten of this barrel's budget. (x00567)
 
 // S2: monorepo-wiring writer for first-party plugins.
-export {
-	buildTsconfigPathsEntry,
-	pluginDir,
-	wirePluginIntoMonorepo,
-	writePluginDefaults,
-	writePresetCatalog,
-	writePublishOrder,
-	writeTsconfigBase,
-	writeVitestShared,
-} from '../lib/scaffold/wire-plugin';
+export { pluginDir } from '../lib/scaffold/wire-plugin';
 // S4: wiring-doctor (verifier) for first-party plugins.
 export { runDoctor } from '../lib/cli/run-cli';
+// @adopter-api a project config author types the matching section of delendai's config with this shape
 export type {
 	IBootstrapPatternOverride,
 	IBootstrapPatternOverrides,
@@ -216,31 +188,9 @@ export type {
 
 // --- scaffolding kit ("tools to create tools/plugins") ---------------------
 export {
-	buildCreatePluginToolRegistration,
-	CREATE_PLUGIN_INPUT_SCHEMA,
-} from '../lib/scaffold/create-plugin.tool';
-export type { IRegenerateCatalogArgs } from '../lib/scaffold/create-plugin.tool';
-export {
-	buildProjectPluginsCreateToolRegistration,
-	buildProjectPluginsInspectToolRegistration,
-	buildProjectPluginsRepairToolRegistration,
-	PROJECT_PLUGINS_CREATE_INPUT_SCHEMA,
-} from '../lib/scaffold/project-plugins';
-export {
-	detectExistingDelendaiInstall,
-	findDelendaiServerName,
-	isDelendaiLaunchShape,
-} from '../lib/scaffold/detect-existing-install';
-export {
 	scaffoldAgentFile,
-	scaffoldClaudeAgentFile,
-	scaffoldCodexAgentFile,
 	scaffoldPluginFiles,
-	scaffoldSkillFile,
 } from '../lib/scaffold/scaffold-host';
-export { buildScaffoldReport } from '../lib/scaffold/scaffold-tool';
-export { buildStandaloneCoreToolRegistrations } from '../lib/scaffold/standalone-core-tools';
-export type { IScaffoldToolOptions } from '../lib/scaffold/scaffold-tool';
 
 // --- shared filesystem helpers ---------------------------------------------
 export {
@@ -329,23 +279,12 @@ export {
 } from '../lib/shared/safe-list-dir';
 export { redactSecrets } from '../lib/shared/redact';
 export type { IRedactResult } from '../lib/shared/redact';
-export {
-	UNICODE_TOKEN_LEGEND,
-	decodeUnicodeFromAgent,
-	inspectUnicodeForAgent,
-	rewriteUnicodeForAgent,
-} from '../lib/shared/unicode-safe-text';
+export { rewriteUnicodeForAgent } from '../lib/shared/unicode-safe-text';
 export { runArgv, runCommand } from '../lib/shared/run-command';
 export { walkAllowedFiles } from '../lib/shared/walk-allowed-files';
 
 // --- IDE install helper (`delendai init`) ---------------------------------
-export {
-	buildServerEntry,
-	detectOs,
-	installToTarget,
-	runInstall,
-} from '../lib/install/installer';
-export { mergeServerEntry } from '../lib/install/merge-config';
+export { runInstall } from '../lib/install/installer';
 export type { IMcpConfigKind } from '../lib/install/merge-config';
 
 export {
@@ -385,9 +324,7 @@ export { AGENT_IDENTITY_LIMITS } from '../lib/contracts/interfaces/agent-identit
 export type { AgentHost, IAgentIdentity } from '../contracts';
 export {
 	assertReleaseMetadata,
-	assertReleaseSlug,
 	releaseBranch,
-	slugifyRelease,
 	nextVersion,
 } from '../lib/contracts/release';
 export type {
@@ -426,45 +363,33 @@ export type {
 export { CAPABILITY_TAGS } from '../lib/contracts/interfaces/provider-capabilities.interface';
 
 // --- f00188 (Track F / security): capability schema + enforcement ----
+export { splitCapability } from '../lib/capabilities/schema';
+// @adopter-api a plugin author validates a capability string or version range before writing it into a manifest
 export {
 	isCapability,
 	parseCapability,
-	parseCapabilityList,
-	splitCapability,
 } from '../lib/capabilities/schema';
-export {
-	createCapabilityGate,
-	parseDeclaredCapabilities,
-	resolveCapabilityAccess,
-	summariseLegacyShimWarning,
-} from '../lib/capabilities/inject';
 
 // --- f00194 (Track K / capability versioning): semver-aware requires ---
+// @adopter-api a plugin author validates a capability string or version range before writing it into a manifest
 export {
 	WILDCARD_RANGE,
-	buildAvailableVersions,
-	checkCapabilityRequirements,
-	formatCapabilityVersionRefusal,
-	legacyVersionedCapability,
 	parseCapabilityRequirement,
-	resolveAllCapabilityVersions,
-	resolveCapabilityVersion,
 } from '../lib/capabilities/versioning';
+// @adopter-api a plugin author validates a capability string or version range before writing it into a manifest
 export type { IVersionedCapability } from '../lib/capabilities/versioning';
 
 // --- f00189 (Track F / security): dryRun transversal protocol -------
+export { buildDryRunResult } from '../lib/dry-run/protocol';
+// @adopter-api a plugin author registering a mutating tool checks its dry-run manifest and result against the protocol delendai enforces
 export {
-	buildDryRunResult,
 	dryRunRequiredFor,
 	isDryRunResult,
-	validateDryRunResult,
 } from '../lib/dry-run/protocol';
 export type { IDryRunResult } from '../lib/dry-run/protocol';
-export {
-	enforceDryRunReturnContract,
-	planDryRun,
-	validateToolDryRunManifest,
-} from '../lib/dry-run/enforce';
+export { planDryRun } from '../lib/dry-run/enforce';
+// @adopter-api a plugin author registering a mutating tool checks its dry-run manifest and result against the protocol delendai enforces
+export { validateToolDryRunManifest } from '../lib/dry-run/enforce';
 export {
 	DryRunEffectRefusedError,
 	guardEffectCapability,
@@ -473,24 +398,14 @@ export {
 // The mandatory capability-injection layer — the ambient
 // dry-run scope + the typed effects surface handed to plugins via
 // `IMcpPluginContext.effects`.
-export {
-	getActiveDryRunFlag,
-	runWithDryRunScope,
-} from '../lib/dry-run/dry-run-scope.helper';
+export { runWithDryRunScope } from '../lib/dry-run/dry-run-scope.helper';
 export { createDryRunGatedGitRunner } from '../lib/dry-run/effect-capability-factory.helper';
 export type { IPluginEffectsCapability } from '../lib/contracts/interfaces/effect-capabilities.interface';
 // r00037 S1 — post-hoc dry-run violations, bounded ring buffer keyed by
 // the plugin/tool responsible. Detection, not prevention (see the
 // EffectBroker exports below for prevention).
-export {
-	clearDryRunViolationsForTests,
-	listDryRunViolations,
-	recordDryRunViolation,
-} from '../lib/dry-run/dry-run-violation-log.service';
-export type { IDryRunContractViolationRecord } from '../lib/contracts/interfaces/dry-run-violation.interface';
 // r00037 S2/S3 — the EffectBroker: the single point of construction for
 // every ambient-dry-run-gated capability a plugin context hands out.
-export { createEffectBroker } from '../lib/capabilities/effect-broker.factory';
 export type {
 	CapabilityTag,
 	CostTier,
@@ -508,13 +423,11 @@ export type {
 export {
 	CorruptFileError,
 	quarantineCorruptFile,
-	quarantineCorruptFileSync,
 } from '../lib/shared/quarantine-corrupt-file';
 
 // --- shared tool-response helpers (compact JSON + error envelope) ----------
 export {
 	toolError,
-	toolErrorWithLogHint,
 	toolJson,
 	toolJsonWithSummary,
 	toolJsonBounded,
@@ -525,11 +438,6 @@ export type {
 	IToolErrorLogHint,
 	IToolTextResult,
 } from '../lib/shared/tool-response';
-export {
-	DEFAULT_COMPACT_RESPONSE_BYTES,
-	DEFAULT_MAX_RESPONSE_BYTES,
-	MAX_RESPONSE_BYTES_CEILING,
-} from '../lib/contracts/constants/response-byte-budget.constant';
 export { TOKEN_BUDGETS } from '../lib/contracts/constants/token-budgets.constant';
 export type { ITokenBudgetCeiling } from '../lib/contracts/constants/token-budgets.constant';
 // — transversal `detail: compact | normal | full` contract.
@@ -547,10 +455,6 @@ export { TokenBudgetRegistry } from '../lib/budgets/registry';
 export type { IRegistryOptions } from '../lib/budgets/registry';
 export type { Surface } from '../lib/budgets/types';
 // — Token ROI per plugin (KPI).
-export {
-	paginateFileExcerpt,
-	paginateItems,
-} from '../lib/shared/pagination.helper';
 export type { ITruncatedEnvelope } from '../lib/contracts/interfaces/truncation.interface';
 // — Cost-aware routing utility (Track L, P2).
 export {
@@ -604,10 +508,7 @@ export {
 	TimelineBuffer,
 	formatEventTimestamp,
 	isTimelineLog,
-	mergeTimelineLogs,
-	nowEvent,
 	redactFreeText,
-	truncateRedactor,
 } from '../lib/observability/timeline';
 export type {
 	ITimelineEvent,
@@ -616,9 +517,6 @@ export type {
 } from '../lib/observability/timeline';
 export { MigrationError, runMigrations } from '../lib/migrations/migrate';
 export type { IMigrator } from '../lib/migrations/migrate';
-export { migrateJsonFile } from '../lib/migrations/migrate-file';
-export { buildCodeMapResourceRegistration } from '../lib/code-map/resource';
-export { CODE_MAP_SCHEMA_VERSION } from '../lib/code-map/generator';
 export { buildStatusToolRegistration } from '../lib/tools/status-tool';
 
 // --- hybrid project analyzer (bootstrap) -----------------------------------
@@ -638,7 +536,6 @@ export { buildAdoptionAssessment } from '../lib/adopt/adoption-assessment.servic
 export { buildAdoptProjectPlan } from '../lib/adopt/adopt-project.tool';
 
 // --- versioned skill bundles (f00029 S4; f00065 S1: skills owned by package/plugin) ------
-export { loadSkills } from '../lib/skills/load-skills';
 export { skillOwnerRoots } from '../lib/skills/skill-paths';
 
 // --- cross-project setup engine (f00030 S2) -------------------------------
@@ -690,7 +587,6 @@ export { runExternalTool } from '../lib/external-tool/run-external-tool';
 export { runGhCli } from '../lib/external-tool/gh-cli.service';
 
 // --- plugin registry (f00141 S1) ---
-export type { IPluginRegistrySource } from '../lib/contracts/interfaces/plugin-registry.interface';
 /**
  * @adopter-api a plugin declares, in its manifest, which copy of each
  * fact it keeps is the authority — including facts it keeps in an
@@ -708,21 +604,17 @@ export { resolveTokenBudget } from '../lib/contracts/interfaces/plugin-token-bud
 export type { IPluginToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
 export { resolveToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
 // (Track D): plugin state machine.
-export {
-	canTransition,
-	createPluginStateMachine,
-	PluginStateError,
-} from '../lib/plugins/states';
+// @adopter-api a host outside this repository catches PluginStateError and reads PluginState to report why a plugin refused to move
+export { PluginStateError } from '../lib/plugins/states';
+// @adopter-api a host outside this repository catches PluginStateError and reads PluginState to report why a plugin refused to move
 export type { PluginState } from '../lib/plugins/states';
 export { definePluginManifest } from '../lib/manifest/define-plugin-manifest';
 export { FIRST_PARTY_PLUGIN_INDEX } from '../lib/registry/first-party-index';
-export { buildPluginSearchRegistration } from '../lib/registry/plugin-search.tool';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';
 
 // --- f00152 S5 (L3): feature flags ---
-export { coreFeatureFlag } from '../lib/plugins/feature-flags';
 export type { IFeatureFlagEntry } from '../lib/plugins/feature-flags';
 
 // --- f00152 S2 (L4): stable API facade ---
@@ -773,14 +665,13 @@ export type { IWalkTsFilesOptions } from '../lib/scan';
 export type { IErrorSink } from '../lib/error-collection/sink.interface';
 export type { ICapturedError } from '../lib/error-collection/types';
 export { createErrorCollector } from '../lib/error-collection/collector.service';
-export { ConsoleErrorSink } from '../lib/error-collection/console-sink';
 export { BufferingErrorSink } from '../lib/error-collection/buffering-sink';
 export { withErrorCollection } from '../lib/error-collection/with-error-collection';
 export { createDefaultRedactionPolicy } from '../lib/error-collection/redaction-policy';
 // (Track N): generic mutation idempotency store.
 
 // --- f00201 (Track O / q00006 §55): workflow transactions -----------
-export { plan, execute, computePlanRisk } from '../lib/transactions/plan';
+export { plan, execute } from '../lib/transactions/plan';
 export type {
 	IStep,
 	ITransactionResult,

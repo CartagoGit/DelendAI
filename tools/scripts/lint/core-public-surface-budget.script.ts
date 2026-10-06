@@ -200,7 +200,12 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // `packages/core/src` names, and eighteen whose only users are core's own
 // specs, which import them by their `lib/` path. The budget is the
 // surface: a new export is a decision, not slack.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 509;
+//
+// Lowered to 420 (2026-10-06, x00541 S1): the last 117 exports with no
+// consumer outside `packages/core` each got a decision. Eighty-eight left
+// the barrel, because only core's own specs used them and those now import
+// them by their `lib/` path; twenty-nine stayed under an adopter note.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 420;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

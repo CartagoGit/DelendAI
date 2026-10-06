@@ -20,12 +20,14 @@ import {
 	TimelineBuffer,
 	formatEventTimestamp,
 	isTimelineLog,
-	mergeTimelineLogs,
-	nowEvent,
 	redactFreeText,
-	truncateRedactor,
 	type ITimelineLog,
 } from '@delendai/core/public';
+import {
+	mergeTimelineLogs,
+	nowEvent,
+	truncateRedactor,
+} from '@delendai/core/lib/observability/timeline';
 
 describe('f00192 — observability.timeline (Track J)', () => {
 	describe('redactFreeText (R1.1)', () => {

@@ -11,12 +11,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import {
-	computePlanRisk,
-	execute,
-	plan,
-	type IStep,
-} from '@delendai/core/public';
+import { execute, plan, type IStep } from '@delendai/core/public';
+import { computePlanRisk } from '@delendai/core/lib/transactions/plan';
 
 // ---------------------------------------------------------------------------
 // Helpers.

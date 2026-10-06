@@ -61,15 +61,16 @@ real se quedaron.
 
 ### S1 — Marcar la intención de cada export
 
-- **Status**: pending
-- **Files**: [`packages/core/src/public/index.ts`, `tools/scripts/inspect/core-public-inventory.script.ts`]
+- **Status**: review
+- **Files**: [`packages/core/src/public/index.ts`, `tools/scripts/lint/core-public-consumers.baseline.json`, `tools/scripts/lint/core-public-surface-budget.script.ts`, `docs/delendai/CORE-PUBLIC-API-INVENTORY.md`]
 - El inventario ya distingue `stable` / `experimental` / `internal` /
   `deprecated` (hoy: 863 / 0 / 1 / 1, que es no distinguir nada).
   Marcar como `internal` lo que sólo existe para consumo intra-repo, de
   modo que la cifra de `stable` sea la promesa real.
 - Acceptance: "el inventario reporta un recuento `stable` que coincide
   con la API que el proyecto declara soportar."
-- **Gate**: `bun run lint:core-public-surface-budget`
+- Shipped 2026-10-06: the last 117 unmoored exports each got a decision. 29 are A (kept, under an `@adopter-api` note: config and manifest shapes, the phased plugin lifecycle, PluginState and PluginStateError, capability and dry-run validators a plugin author calls) and 88 are B (left the barrel; their importers in core, all specs plus one source file, now import the `lib/` module). Rule: A only when a plugin, config or host author outside this repository needs the name to write a plugin, manifest, config or tool registration or to handle an error delendai throws; everything else is internal. The baseline is 0 and the budget is 420.
+- **Gate**: `bun run lint:core-public-surface-budget && bun run lint:core-public-consumers`
 
 ### S2 — Una puerta que exija justificación, no sólo cuenta
 
@@ -90,7 +91,7 @@ real se quedaron.
 
 ### S3 — Barrer los 59 sin referencia
 
-- **Status**: pending — progress 2026-09-15 at `0db72ccb2`. Re-measured before cutting: of the 635 baselined exports, none appeared only in the barrel, and 22 appeared exactly twice in the repository (their definition and the barrel line), with no caller, spec or document anywhere. Those 22 left the barrel (they stay exported from their `lib/` modules); the `core-public-consumers` baseline went 635 → 613 and `DEFAULT_MAX_CORE_PUBLIC_EXPORTS` went 1098 → 1076. This is not blind trimming: `@delendai/core` has never been published to npm (the registry returns 404 for every version), so no external adopter could depend on them, and `DEPRECATION-POLICY.md` governs MCP tools and facade shapes, not TypeScript exports. The acceptance is still unmet: 613 exports have neither an importer nor an `@adopter-api` note, and each needs the per-symbol judgement S1's markers are meant to make possible.
+- **Status**: review — progress 2026-09-15 at `0db72ccb2`. Re-measured before cutting: of the 635 baselined exports, none appeared only in the barrel, and 22 appeared exactly twice in the repository (their definition and the barrel line), with no caller, spec or document anywhere. Those 22 left the barrel (they stay exported from their `lib/` modules); the `core-public-consumers` baseline went 635 → 613 and `DEFAULT_MAX_CORE_PUBLIC_EXPORTS` went 1098 → 1076. This is not blind trimming: `@delendai/core` has never been published to npm (the registry returns 404 for every version), so no external adopter could depend on them, and `DEPRECATION-POLICY.md` governs MCP tools and facade shapes, not TypeScript exports. The acceptance is still unmet: 613 exports have neither an importer nor an `@adopter-api` note, and each needs the per-symbol judgement S1's markers are meant to make possible.
   Progress 2026-09-27: re-measured the 603 baselined exports against every reference outside `packages/core/src`, not counting the hand-kept `CORE-PUBLIC-API-INVENTORY.md` (it lists the barrel, so it is no evidence of use), and counting a core spec only when it imports the symbol through the barrel. 459 had no reference at all; the 434 of them written as plain barrel entries left it (the other 25 are exported in forms left for the per-symbol pass). They stay exported from their `lib/` modules. The repository typechecks unchanged, `DEFAULT_MAX_CORE_PUBLIC_EXPORTS` went 1080 → 645, and the `core-public-consumers` baseline went 603 → 154. The acceptance is still unmet for those 154, which each need S1's judgement.
   Progress 2026-10-05: of the 149 baselined exports, 14 had no reference outside `packages/core/src` and 24 were named only by core's own specs, through their `lib/` paths. The 32 of them written as plain barrel entries left it (six in other forms wait for the per-symbol pass); they stay exported from their `lib/` modules. The surface is 509 (from 541); the consumer baseline 149 → 117; `DEFAULT_MAX_CORE_PUBLIC_EXPORTS` 645 → 509, so the budget is the surface again. The 111 left are used through the barrel only by core's own specs: the next pass points those specs at `lib/` paths, after which each export either has a consumer outside core or leaves.
 - **Files**: [`packages/core/src/public/index.ts`, `tools/scripts/lint/core-public-surface-budget.script.ts`, `tools/scripts/lint/core-public-consumers.baseline.json`, `docs/delendai/CORE-PUBLIC-API-INVENTORY.md`]
@@ -99,7 +100,8 @@ real se quedaron.
   `@delendai/core/lib/...` para el propio repo.
 - Acceptance: "ningún export `stable` carece a la vez de importador y de
   anotación."
-- **Gate**: `bun run validate`
+- Progress 2026-10-06: the baseline is now empty (0 of 420 exports lack both an importer and an `@adopter-api` note), which meets the acceptance.
+- **Gate**: `bun run lint:core-public-consumers`
 
 ## Acceptance
 
