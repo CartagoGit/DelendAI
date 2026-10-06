@@ -180,7 +180,7 @@ describe('runStartupGate', () => {
 			// The optional phases had no collaborator; the report must say
 			// so rather than let a reader infer that they passed.
 			expect(warnings[0]?.message).toContain(
-				'phases NOT EXECUTED: forge, journal, governance',
+				'phases NOT EXECUTED: forge, governance',
 			);
 
 			const lines = renderStartupGate(outcome);
@@ -226,10 +226,27 @@ describe('runStartupGate', () => {
 			expect(received).toBe(forge);
 			if (outcome.kind !== 'reconciled')
 				throw new Error('not reconciled');
-			expect(outcome.notExecutedPhases).toEqual([
-				'journal',
-				'governance',
-			]);
+			expect(outcome.notExecutedPhases).toEqual(['governance']);
+		} finally {
+			removeTestWorkspace(workspace);
+		}
+	});
+
+	it('hands a given journal source to the reconciler', async () => {
+		const workspace = createTestWorkspace('startup-gate-');
+		try {
+			const journal = {
+				read: async () => ({ kind: 'payload' as const, payload: [] }),
+			};
+			let received: IReconcileStartupInput['journalSource'];
+			await runStartupGate({
+				...gateInput(workspace, 'shared-checkout-pr', async (input) => {
+					received = input.journalSource;
+					return degradedReport();
+				}),
+				journal,
+			});
+			expect(received).toBe(journal);
 		} finally {
 			removeTestWorkspace(workspace);
 		}
