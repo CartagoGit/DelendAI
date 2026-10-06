@@ -72,12 +72,13 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-implementer: claude-opus-5-5
 
 ### S4 — No ignore line or moved file keeps the old name
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/cache-and-docs.migrator.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/gitignore.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/gitignore.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/gitignore.migrator.spec.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`, `packages/cli/src/contracts/interfaces/residual-report.interface.ts`
 - **Gate**: type
 - acceptance:
   - "A `.gitignore` line naming a renamed directory names the new one; a duplicate is not added."
   - "`migrate status` reports any legacy spelling the scanner still finds in live files, so a leftover is never silent."
+- Delivered: a `gitignoreMigrator:v1`, right after the directory renames, rewrites each `.gitignore` line naming a path they rename (`.cache/mcp-vertex/`, `docs/mcp-vertex`, `mcp-vertex.config.json`) to the new one, keeping its leading `/`, its `!` and its tail, and drops it instead where the new line is already there; nothing else in the file moves. `migrate status` now carries `residual`: how many live legacy spellings the scanner finds and the first twenty (file, line, spelling), skipping `.git`, `node_modules` and `.cache`; it takes two seconds on this repository, which, being the migration's own source, reports 2,201. Both specs fail without the change.
 
 ### S5 — A profile change leaves nothing of the old mode unowned
 - **Status**: pending
