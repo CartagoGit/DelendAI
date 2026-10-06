@@ -16,6 +16,7 @@ last-correlation-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
 last-transition-from: in-progress
 shipped-in:
   - "0bf0fe61e015"
+  - "7dfa7abc3476102c786e172126e750286090d948"
 ---
 
 # f00538 — Forward-sync the release branch back into the integration branch after every promotion
@@ -70,10 +71,15 @@ fast-forwards a local clone and never touches the forge.
 
 ### S1 — Decide what carrying the release branch back amounts to, then open it
 
-- **Status**: done — `forwardSyncVerdict` classifies the gap as `in-sync`, `ancestry-only`, `content` or `conflict` from measured facts. The trial merge runs in a throwaway worktree. With `--apply` the script pushes `delendai/pr/forward-sync-<sha9>`, opens the pull request and arms auto-merge; inside a workflow it also dispatches `ci.yml` so the required check reports. It never force-pushes over an existing ref. A dry run against the forge on 2026-09-15 reported `ancestry-only` for `c7eda197a`. Branch names come from the development policy through `declaredBranches`, which `ref-lifecycle-guard` now shares instead of its private copy.
+- **Status**: done
 - **Files**: [`tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.interface.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/lib/declared-branches.ts`, `tools/scripts/lib/declared-branches.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `package.json`]
 - **Gate**: `npx vitest run tools/scripts/forge/forward-sync-release.script.spec.ts tools/scripts/lib/declared-branches.spec.ts`
 - shipped-in: `e07b21b26b02`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: Illyria
+- review-log: approved by Illyria — verified at 7dfa7abc3476, validate exit 0, tests 21/21 — Independently verified (reviewer Illyria; implementer attributed from Git as claude-opus-5-5). Gate 'npx vitest run tools/scripts/forge/forward-sync-release.script.spec.ts tools/scripts/lib/declared-branches.spec.ts' => 21/21 passed, exit 0. Delivered state confirms every claim: forwardSyncVerdict returns exactly in-sync/conflict/content/ancestry-only from measured facts (script lines 75-77); ref namespace is FORWARD_SYNC_REF_PREFIX='delendai/pr/forward-sync-'; no --force anywhere in the 460-line script, so it never force-pushes; branch names come from the shared declaredBranches() (line 299) rather than a private copy; --apply pushes the ref, opens the PR, arms auto-merge and dispatches ci.yml inside a workflow. Non-goals hold: only a PR ref is pushed, never the protected branch; a conflict prints a 'needs a person' summary with the next action (line 178) instead of resolving; the workflow carries GH_TOKEN github.token with no admin token. No acceptance items declared. Later commits touching these files (67e5c70bb, f1da8103c, 207557e21, 7dfa7abc) are not defects of this slice.
+- review-attribution: claude-opus-5-5 from commit 7dfa7abc3476 names refs/heads/delendai/wip/claude-opus-5-5/implement/f00538-S5-g1/the-sync-merge-commits-with-its-hooks (7dfa7abc3476102c786e172126e750286090d948), opened by Illyria
 
 ### S2 — A history-only sync is a delivery, and only that one
 
