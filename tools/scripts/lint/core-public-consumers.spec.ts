@@ -123,6 +123,40 @@ describe('judging an export against its callers', () => {
 });
 
 describe('consumerNames', () => {
+	it('counts what a scaffold template imports, and nothing else core uses', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'core-consumers-'));
+		try {
+			const scaffold = join(
+				root,
+				'packages',
+				'core',
+				'src',
+				'lib',
+				'scaffold',
+			);
+			mkdirSync(scaffold, { recursive: true });
+			writeFileSync(
+				join(scaffold, 'scaffold-host.ts'),
+				"export const host = `import { buildStandaloneCoreToolRegistrations } from '@delendai/core/public';\nimport type { IDelendaiHostConfig } from '@delendai/core/public';`;\nconst unrelated = coreOnlyHelper;\n",
+			);
+			writeFileSync(
+				join(root, 'packages', 'core', 'src', 'lib', 'other.ts'),
+				"import { coreOnlyHelper } from '@delendai/core/public';\n",
+			);
+			execFileSync('git', ['init', '-q'], { cwd: root });
+			execFileSync('git', ['add', '-A'], { cwd: root });
+
+			const names = await consumerNames(root);
+			expect(names.has('buildStandaloneCoreToolRegistrations')).toBe(
+				true,
+			);
+			expect(names.has('IDelendaiHostConfig')).toBe(true);
+			expect(names.has('coreOnlyHelper')).toBe(false);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
 	it('reads a component file, which imports from the barrel too', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'core-consumers-'));
 		try {
