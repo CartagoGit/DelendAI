@@ -21,6 +21,7 @@ shipped-in:
   - "6839c65ecf19b69cc2cf7511bceb29728e309903"
   - "fa48b1c9f7fd69b1f13b4a97c8f70f4f83f33f11"
   - "27b60933038a5913ccecf4856cecc24e02b33a4e"
+  - "7fa7e95db68420cfe10ded78ec9144e3e82243f9"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -767,7 +768,7 @@ the good verdicts' shape (P1) becomes the required shape.
 
 ### S22 — A unit that will not land is retired, with its work kept
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/contracts/interfaces/work-retire.interface.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/lib/tools/work-unit-roots.helper.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `docs/delendai/TOKEN-BUDGETS.md`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - `work retire --ref=<branch> --reason=<why>` writes the unit's tip to
@@ -789,6 +790,11 @@ the good verdicts' shape (P1) becomes the required shape.
   `packages/core/src/lib/work-units/stray-refs.service.ts`,
   `packages/core/src/lib/work-units/idle-units.service.ts`).
 - shipped-in: `6f63a52e168e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 7fa7e95db684, validate exit 0, tests 295/295 — Deliver merge 7fa7e95db68420cfe10ded78ec9144e3e82243f9; the proposal's shipped-in was superseded by this later publication of the same unit (attribution reported 'delivered again by 7fa7e95db684'). Declared gate run batched green: 34 test files / 295 tests, exit 0. Behaviour pinned by named specs.
+- review-attribution: claude-opus-5-5 from commit 7fa7e95db684 names refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S34-g1/the-queue-offers-no-work-of-the-reviewer-s-own (7fa7e95db68420cfe10ded78ec9144e3e82243f9), opened by minimax-3
 
 ### S23 — A kept unit is brought forward or named, and retiring asks nobody to tidy first
 
