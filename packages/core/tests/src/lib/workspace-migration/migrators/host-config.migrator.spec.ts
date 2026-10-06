@@ -233,3 +233,29 @@ describe('host-config.migrator — apply (failure modes and idempotency)', () =>
 		expect(second).toBe(first);
 	});
 });
+
+describe('host-config.migrator — the root .mcp.json', () => {
+	it('rewrites the root config other hosts read, as it does the editor one', async () => {
+		const root = join(workspaceRoot, '.mcp.json');
+		await writeFile(
+			root,
+			pretty({
+				mcpServers: {
+					'mcp-vertex': { command: 'npx', args: ['@mcp-vertex/cli'] },
+				},
+			}),
+			'utf8',
+		);
+		const migrator = createHostConfigMigrator();
+		expect(await migrator.detect(ctx(workspaceRoot))).toBe(true);
+		expect((await migrator.plan(ctx(workspaceRoot)))[0]?.detail).toContain(
+			'.mcp.json',
+		);
+
+		await migrator.apply(ctx(workspaceRoot));
+
+		const after = await readFile(root, 'utf8');
+		expect(after).not.toMatch(/mcp-vertex/u);
+		expect(after).toContain('delendai');
+	});
+});

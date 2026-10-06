@@ -73,3 +73,6 @@ export const PROPOSAL_INDEX_SOURCE_ENV_VAR = 'DELENDAI_PROPOSAL_INDEX_SOURCE';
 
 /** Environment override for the database path (tests, odd layouts). */
 export const PROPOSAL_INDEX_DB_PATH_ENV_VAR = 'DELENDAI_PROPOSALS_DB_PATH';
+
+/** The registry's old committed name, beside the proposals it listed. */
+export const LEGACY_REGISTRY_FILE = 'index.json';
