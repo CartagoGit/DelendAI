@@ -206,6 +206,8 @@ Found on 2026-10-05, reading what the last runs left behind.
   - "The cause is reproduced by a spec that drives the CLI against a unit, and fixed."
   - "A commit that fails is reported in what the CLI prints, not only on the server's stderr."
 - Delivered: the cause was the client, not the committer. The CLI talks to a server it starts, through the MCP SDK, whose default gives a tool call one minute. A verdict's write is committed inside the call, behind the project's pre-commit hooks (one regenerates the agent catalog), and on a loaded machine they ran past the minute: the CLI gave up, closed the server, and the commit was cut off, staged or not yet staged, its lock still held for a while (seen on x00877 S1: `index.lock: File exists`, the document staged, the catalog modified). The client now takes `requestTimeoutMs`, passed to every call, and the CLI waits thirty minutes (`CLI_TOOL_CALL_TIMEOUT_MS`), the answer its caller is waiting for anyway. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S21 — A slice not yet integrated has no reviewer
 - **Status**: review
