@@ -211,6 +211,27 @@ describe('what the guard does not write into', () => {
 		);
 	});
 
+	it('counts commit-msg as guarded when it asks the guard as pre-commit, and nothing else under another name', () => {
+		const root = repo();
+		writeFileSync(
+			join(root, 'lefthook.yml'),
+			[
+				'commit-msg:',
+				'  commands:',
+				'    delendai-guard:',
+				'      run: delendai guard pre-commit',
+				'post-checkout:',
+				'  commands:',
+				'    delendai-guard:',
+				'      run: delendai guard pre-commit',
+				'',
+			].join('\n'),
+		);
+
+		expect(lefthookRunsGuard(root, 'commit-msg')).toBe(true);
+		expect(lefthookRunsGuard(root, 'post-checkout')).toBe(false);
+	});
+
 	it('counts a hook as guarded when lefthook runs the guard in it, and says how to add it where it does not', () => {
 		const root = repo();
 		writeFileSync(

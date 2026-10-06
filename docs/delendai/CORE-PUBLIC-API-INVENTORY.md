@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 509
+Total exports: 508
 
 | Maturity | Count |
 | --- | --- |
-| stable | 506 |
+| stable | 505 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -396,7 +396,6 @@ Total exports: 509
 | `rankCandidates` | const | stable | `../lib/routing/utility` |
 | `readAbsoluteTextSafe` | const | stable | `../lib/filesystem/safe-workspace-reader.helpers` |
 | `readMetricsSnapshot` | const | stable | `../lib/metrics/payload-percentile` |
-| `readProposalsIndex` | const | stable | `../lib/cli/read-proposals-index` |
 | `readWorkflowKpis` | const | stable | `../lib/work-units/workflow-kpis.service` |
 | `realpathContained` | const | stable | `../lib/shared/contain-realpath` |
 | `realProbeDeps` | const | stable | `../lib/external-tool/probe` |

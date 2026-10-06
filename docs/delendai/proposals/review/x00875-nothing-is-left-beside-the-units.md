@@ -117,6 +117,15 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S11 — The boot warns only of what is true
+- **Status**: review
+- **Files**: `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `delendai.config.json`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/guard-hooks.service.spec.ts`
+- Found 2026-10-06 in the same boot log as S10. `guard hooks` reported `commit-msg: absent`, although `lefthook.yml` runs the guard there. It asks as `guard pre-commit`, on purpose: `commit-msg` judges the commit `pre-commit` judges, and runs even for an empty commit, which `pre-commit` skips. The detection accepted only the hook's own name. `commit-msg` now also counts when it asks as `pre-commit`; no other hook does. And `guard install` reported every hook lefthook declares as `unsupported` — `pre-push` and `post-merge` too — even where `lefthook.yml` already runs the guard; such a hook is now `unchanged`, and the boot lists all six as guarded.
+- The same boot warned `push-automation-contradicts-policy`: this repository's `commit-policy.push.onCommit` pushed the checked-out branch, which `shared-checkout-pr` never pushes from the shared checkout, so every attempt was refused. Units reach the forge through their work ref (`persistence.autoPushAfterCommit`). `onCommit` is removed from the configuration.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - Two agents each enter `--kind=create --proposal=new --slice=all` and neither is refused.
