@@ -20,6 +20,9 @@ import {
 	refused,
 } from './work-unit-shared.service';
 
+/** How much of a commit names a retired tip kept beside another. */
+const SHORT_COMMIT_LENGTH = 12;
+
 /** The caller's word that a unit with no lease is not somebody's. */
 const assertsUnowned = (args: readonly string[]): boolean =>
 	args.includes('--unowned') || args.includes('--with-worktree');
@@ -182,13 +185,25 @@ export const retired = async (
 			...(uncommitted === undefined ? [] : [uncommitted]),
 		]),
 	];
-	const kept = distinct.map((commit, index) => ({
-		ref:
+	// A generation is reused once its unit is gone, so the forge may
+	// already keep another unit's tip under this name: that one stays, and
+	// this one is kept beside it, named by its commit.
+	const onForge = (ref: string): string | undefined =>
+		readGit(root, ['ls-remote', remote, ref])?.split('\t')[0] || undefined;
+	const kept = distinct.map((commit, index) => {
+		const named =
 			index === 0
 				? plan.retiredRef
-				: `${plan.retiredRef}-${String(index + 1)}`,
-		commit,
-	}));
+				: `${plan.retiredRef}-${String(index + 1)}`;
+		const held = onForge(named);
+		return {
+			ref:
+				held === undefined || held === commit
+					? named
+					: `${named}-${commit.slice(0, SHORT_COMMIT_LENGTH)}`,
+			commit,
+		};
+	});
 	for (const each of kept) {
 		if (
 			readGit(root, ['update-ref', each.ref, each.commit]) === undefined
