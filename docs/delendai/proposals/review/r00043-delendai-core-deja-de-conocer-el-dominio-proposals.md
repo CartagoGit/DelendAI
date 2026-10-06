@@ -406,6 +406,14 @@ S2 y S3 son independientes después de S1. S4 necesita que exista el
 registro de contribuciones y que adopción tenga un proveedor real para
 validar la composición. S5 ratifica la frontera después de las migraciones.
 
+### S8 — The proposals index reader lives in the plugin
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/proposals/proposal-summaries.service.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-summaries.service.spec.ts`, `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`, `tools/scripts/catalog/generate-agent-catalog.script.ts`, `packages/core/src/public/index.ts`, `tools/scripts/lint/core-proposals-boundary.script.ts`, `tools/scripts/inspect/core-proposals-boundary.script.ts`, `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/architecture/core-proposals-boundary.spec.ts`
+- Done 2026-10-05. `readProposalsIndex` read the proposals plugin's registry from core and was exported by core's barrel; its callers were the plugin itself and the agent-catalog generator. It moved to the plugin (`proposal-summaries.service.ts`) with its spec, and both callers import it from there. Core no longer knows where the plugin keeps its registry or what its entries hold. The two dated exceptions `lint:core-proposals-boundary` kept for it are gone (nothing matched them any more), and the boundary inventory marks its 17 entries resolved by this slice. `IProposalSummary` stays in core: it is the agent catalog's contract, not the plugin's.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## Acceptance
 
 Durante la migración se mantienen estas garantías:

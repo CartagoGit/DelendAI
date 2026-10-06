@@ -20,6 +20,8 @@ related:
 last-transition-id: f82d5c4f-3e21-4c2a-8447-25753c9cfc74
 last-correlation-id: f82d5c4f-3e21-4c2a-8447-25753c9cfc74
 last-transition-from: in-progress
+shipped-in:
+  - "8fd88fed0"
 ---
 
 # f00271 — `detail: compact | normal | full` transversal
@@ -146,9 +148,6 @@ cualquier tool a partir de un solo campo de input.
 - **Status**: done
 - **Files**: `plugins/project-health/src/lib/tools/project-health.tool.ts`, `plugins/project-health/tests/src/project-health.tool.spec.ts`, `plugins/deps/src/lib/tools/tools.ts`, `plugins/deps/tests/src/lib/deps.spec.ts`, `plugins/search/src/lib/tools/search.tool.ts`, `plugins/search/tests/src/lib/tools/search.tool.spec.ts`, `tools/scripts/lint/detail-levels-coverage.script.ts`, `tools/scripts/lint/detail-levels-coverage.script.spec.ts`, `package.json`
 - **Gate**: type
-- review-state: in_review
-- review-implementer: copilot-f00271-s2
-- review-log: requested_changes by delivery_verifier — Corregir tres puntos: 1) detail-levels-coverage debe evaluar cada tool registrado, no solo el archivo, para no marcar adopciones parciales como completas; 2) cablear el lint advisory en la batería de scripts/validate dentro del alcance permitido o dejar evidencia explícita de por qué requiere una hija separada; 3) añadir tests focalizados para compact/normal/full y schema/runtime en project-health, deps y search, preservando payload legado cuando detail se omite.
 - **Evidence (2026-09-15)**, point by point against the review:
   1. The lint already judged each `server.registerTool` block (per-block `detail` input and `projectDetail` projection, with the file-wide `DETAIL_LEVELS`/`DetailSchema` markers). It now takes the repo root as a parameter, and `detail-levels-coverage.script.spec.ts` pins that behaviour on fixtures: a file with one adopted and one legacy registration reports one adopted and one pending tool, with only the two per-tool reasons. On the real tree it first reported 13 adopted and 265 pending across 278 registrations, and that count was too low. It only recognised core's `DETAIL_LEVELS` constant, so tools that kept their own `z.enum(['compact', 'normal', 'full'])` or took `detail` from a sibling contract counted as pending. Since 2026-09-15 it also accepts a literal detail enum (local or inline), follows an input schema imported from a sibling module one import deep, and counts a handler that reads `detail` as a projection. The same tree then reports 18 adopted and 260 pending, with nothing lost and five registrations gained: `audit_run`, `advise_routing`, `advise_spend`, `invoke` and `proposal_get`. The spec covers each form, plus a tool whose imported schema has no `detail` field and still reports all three gaps.
   2. It is wired as `lint:detail-levels-coverage:advisory` inside `validate:run`, next to `verify:plugin-wiring:advisory`, and chained at the end of `lint:architecture`, so CI's `lint-architecture` job prints it too (`lint:lints-reach-ci` requires every lint script to reach a workflow). It always exits 0: the rollout is gradual, and a blocking gate would fail on the 260 pending tools. `lint:no-silent-gates` and `lint:referenced-scripts-exist` pass with it in the chain.
@@ -181,6 +180,12 @@ cualquier tool a partir de un solo campo de input.
     - *Not measured.* `audit_run`, `invoke` and `proposal_get` need arguments (targets, a provider task, a view) that the fixture does not provide.
   - **Consequence.** The table answers the intent of acceptance 2, but it is not yet reproducible from the repository: the probe that produced it is not a committed script. Three adopted tools are unmeasured, and the log rows depend on run state. Until a committed measurement exists, with fixed log fixtures and arguments for the three missing tools, the proposal stays out of `done/`.
 - shipped-in: `8fd88fed02a3`
+- review-state: done
+- review-implementer: copilot-f00271-s2
+- review-reviewer: claude-opus-5-5
+- review-log: requested_changes by delivery_verifier — Corregir tres puntos: 1) detail-levels-coverage debe evaluar cada tool registrado, no solo el archivo, para no marcar adopciones parciales como completas; 2) cablear el lint advisory en la batería de scripts/validate dentro del alcance permitido o dejar evidencia explícita de por qué requiere una hija separada; 3) añadir tests focalizados para compact/normal/full y schema/runtime en project-health, deps y search, preservando payload legado cuando detail se omite.
+- review-log: approved by claude-opus-5-5 — verified at 8fd88fed0, validate exit 0, tests 195/195 — Delivered by #224 and #231 (merge 8fd88fed0). The three points of the earlier review hold: (1) detail-levels-coverage.script.spec 'judges each registration in a file separately' and 'still reports a tool whose imported schema has no detail field' (7/7); (2) lint:detail-levels-coverage:advisory is chained into lint:architecture, which CI runs; (3) project-health 9/9, deps 73/73 and search 106/106 pass, covering detail omitted, compact, normal and full.
+
 ## acceptance
 
 - 8 plugins objetivo aceptan `detail` (incluyendo `proposals` y
