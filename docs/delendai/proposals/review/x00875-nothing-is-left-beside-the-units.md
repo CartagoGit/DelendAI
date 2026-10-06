@@ -225,13 +225,30 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-implementer: claude-opus-5-5
 
 ### S23 — The queue does not offer a reviewer what it delivered
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/services/review-queue-slice.service.ts`
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
-- Found 2026-10-06: one `review next` session offered claude-opus-5-5 five proposals it could not judge: f00274 and x00541, whose deliveries include its own publications (`delendai/pr/claude-opus-5-5/...`), and three it had released before in other units. The queue knows a slice's implementer only from `review-implementer`, the agent that submitted; another agent's publication delivering the same slice is not counted, and a release lives only in the unit that made it.
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-queue-reviewer.service.ts`, `plugins/proposals/src/lib/services/delivery-history.service.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`, `plugins/proposals/src/generated/tool-outputs.ts`, `plugins/proposals/tests/src/lib/services/review-queue-reviewer.service.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts plugins/proposals/tests/src/lib/services/review-queue-reviewer.service.spec.ts`
+- Found 2026-10-06: one `review next` session offered claude-opus-5-5 five proposals it could not judge: f00274 and x00541, whose deliveries include its own publications (`delendai/pr/claude-opus-5-5/...`), and three it had released before in other units. The queue knew a slice's implementer only from `review-implementer`, the agent that submitted; another agent's publication delivering the same slice was not counted, and a unit of the whole proposal (`--slice=all`) was filed under `all` and listed for no slice.
+- Delivered: each delivery candidate carries the agent its unit's ref names (`agent` in the queue's output), a whole-proposal unit's delivery is a candidate of every slice, and the queue marks `needs-another-reviewer` a slice a unit of the asker's own identity delivered, under any independence (and of its own model, where the project asks for another model). Both specs fail without the change.
 - acceptance:
   - "A slice whose delivering merges include a publication by the reviewer is not offered to it."
-  - "A release a reviewer recorded in any unit that reached the integration branch is honoured by the queue."
+
+### S24 — A release is honoured wherever it was recorded
+- **Status**: pending
+- **Files**: `packages/cli/src/commands/review.command.ts`
+- **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
+- Found 2026-10-06 (split out of S23): a release lives only in the unit that recorded it, so a reviewer that opens a new unit is offered again, one by one, every proposal it released for a reason that still holds (it changed that code). Five releases had to be repeated in one session.
+- acceptance:
+  - "A release a reviewer recorded in any of its units, published or retired, keeps the proposal out of that reviewer's queue until the proposal's slices change."
+
+### S25 — A published review pack is not closed behind its author
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/services/review-pack.service.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
+- Found 2026-10-06, cause not yet found: pack #836 (only claim and release commits) was closed and its branch deleted at 10:51:56Z by the owner's credentials, seven minutes after `review finish` opened it, with no comment and no retired ref (its tip `5637260bb` survived only as an unreferenced object). `work retire` always comments and keeps the tip, so it was not that. Candidates: a host server or hook process applying a reap or supersede rule to a pack whose commits change no file.
+- acceptance:
+  - "The process that closed it is identified and a spec reproduces it."
+  - "A pack whose commits change no file is never taken for spent or superseded while it carries claims or releases the integration branch lacks."
 
 ## acceptance
 
