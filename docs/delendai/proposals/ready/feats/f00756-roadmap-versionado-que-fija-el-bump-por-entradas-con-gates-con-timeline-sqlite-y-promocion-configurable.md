@@ -115,7 +115,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 
 ### S1 — Contratos, esquema y máquina de estados del roadmap
 - **Status**: pending
-- **Files**: `packages/roadmap/package.json`, `packages/roadmap/tsconfig.json`, `packages/roadmap/vitest.config.ts`, `packages/roadmap/src/lib/contracts/interfaces/roadmap.interface.ts`, `packages/roadmap/src/lib/contracts/schemas/roadmap.schema.ts`, `packages/roadmap/src/lib/contracts/constants/roadmap.constants.ts`, `packages/roadmap/src/lib/state-machine/roadmap-state-machine.ts`, `packages/roadmap/src/lib/state-machine/roadmap-state-machine.spec.ts`, `packages/roadmap/tests/src/lib/contracts/roadmap.schema.spec.ts`
+- **Files**: `packages/roadmap/package.json`, `packages/roadmap/tsconfig.json`, `packages/roadmap/vitest.config.ts`, `packages/roadmap/src/lib/contracts/interfaces/roadmap.interface.ts`, `packages/roadmap/src/lib/contracts/schemas/roadmap.schema.ts`, `packages/roadmap/src/lib/contracts/constants/roadmap.constants.ts`, `packages/roadmap/src/lib/state-machine/roadmap-state-machine.service.ts`, `packages/roadmap/src/lib/state-machine/roadmap-state-machine.spec.ts`, `packages/roadmap/tests/src/lib/contracts/roadmap.schema.spec.ts`
 - **Gate**: type
 - acceptance:
   - "El esquema Zod es `.strict()` y rechaza claves desconocidas en entrada, en gates y en la estimación."
@@ -126,7 +126,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 ### S2 — Álgebra de gates y derivación de la intención de bump
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/roadmap/src/lib/gates/gate-evaluator.ts`, `packages/roadmap/src/lib/gates/gate-evaluator.spec.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.spec.ts`
+- **Files**: `packages/roadmap/src/lib/gates/gate-evaluator.service.ts`, `packages/roadmap/src/lib/gates/gate-evaluator.spec.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.service.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Cada gate devuelve un estado ternario (`pass` | `fail` | `unknown`) con un motivo; nunca un booleano desnudo."
@@ -160,7 +160,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 ### S5 — Driver SQLite del timeline
 - **Status**: pending
 - **DependsOn**: [S4]
-- **Files**: `packages/roadmap-sqlite/package.json`, `packages/roadmap-sqlite/tsconfig.json`, `packages/roadmap-sqlite/vitest.config.ts`, `packages/roadmap-sqlite/src/lib/schema.ts`, `packages/roadmap-sqlite/src/lib/migrations.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`, `packages/roadmap-sqlite/tests/src/lib/sqlite-timeline.store.spec.ts`
+- **Files**: `packages/roadmap-sqlite/package.json`, `packages/roadmap-sqlite/tsconfig.json`, `packages/roadmap-sqlite/vitest.config.ts`, `packages/roadmap-sqlite/src/lib/schema.ts`, `packages/roadmap-sqlite/src/lib/migrations.service.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`, `packages/roadmap-sqlite/tests/src/lib/sqlite-timeline.store.spec.ts`
 - **Gate**: type
 - acceptance:
   - "El driver implementa la MISMA interfaz del timeline en S4, intercambiable con la variante markdown sin que ningún consumidor cambie."
@@ -171,7 +171,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 ### S6 — El roadmap como IStateProducer del State Engine
 - **Status**: pending
 - **DependsOn**: [S3, S4]
-- **Files**: `packages/roadmap/src/lib/state/roadmap.producer.ts`, `packages/roadmap/src/lib/state/roadmap.projection.ts`, `packages/roadmap/tests/src/lib/state/roadmap.producer.spec.ts`, `packages/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts`
+- **Files**: `packages/roadmap/src/lib/state/roadmap.producer.service.ts`, `packages/roadmap/src/lib/state/roadmap.projection.service.ts`, `packages/roadmap/tests/src/lib/state/roadmap.producer.spec.ts`, `packages/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts`
 - **Gate**: type
 - acceptance:
   - "El producer declara sus `inputs` explícitamente (fichero de roadmap + índice de proposals) y `rebuild` no muta markdown, git ni código."
