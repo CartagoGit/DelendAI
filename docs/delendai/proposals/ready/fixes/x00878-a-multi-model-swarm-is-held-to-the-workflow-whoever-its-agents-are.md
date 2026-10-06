@@ -235,12 +235,13 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S20 — Everyday listings show live work, not what was given up
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work status`, `work swarm` and the overview list live, waiting-for-review and adoptable units by default; retired, superseded and collectable ones are counted on one line and listed only with `--all`, so an agent asking what to do next is not paid for the history of every swarm."
 - Found 2026-10-07 by the external audit of the second swarm (ChatGPT, `.cache/chat-with-llms/2026_10_07_01:08_…`): after a swarm, the default listings enumerate every ended unit, a token cost on each call and a distraction for the next agent.
+- Delivered, for `work swarm`: units the verdict calls delivered or abandoned are counted on one line (`… N ended (delivered or abandoned); --all lists them`) and listed only with `--all`; `--json` still carries every unit. On this repository it folds three. `work status` already prints counts only. The overview is not changed. The spec fails without the change.
 
 ## acceptance
 

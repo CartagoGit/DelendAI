@@ -97,7 +97,7 @@ export const runWorkUnit = async (
 		await pruneEndedLeases(ctx);
 		return result;
 	}
-	if (sub === 'swarm') return swarm(ctx);
+	if (sub === 'swarm') return swarm(ctx, args);
 	if (sub === 'doctor') return doctored(args, ctx);
 	if (sub === 'claim') return claimed(args, ctx);
 	if (sub === 'retire') return retired(args, ctx);
