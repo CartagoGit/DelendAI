@@ -244,13 +244,14 @@ Found on 2026-10-05, reading what the last runs left behind.
   - "A release a reviewer recorded in any of its units, published or retired, keeps the proposal out of that reviewer's queue until the proposal's slices change."
 
 ### S25 — A published review pack is not closed behind its author
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/services/review-pack.service.ts`
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
-- Found 2026-10-06, cause not yet found: pack #836 (only claim and release commits) was closed and its branch deleted at 10:51:56Z by the owner's credentials, seven minutes after `review finish` opened it, with no comment and no retired ref (its tip `5637260bb` survived only as an unreferenced object). `work retire` always comments and keeps the tip, so it was not that. Candidates: a host server or hook process applying a reap or supersede rule to a pack whose commits change no file. Lead: the g2 unit's worktree and local branch were removed too, which is what `work reap --apply` does from the post-merge hook of the main checkout to a unit it judges `delivered`; a unit whose commits change no file may be judged delivered by content.
+- **Status**: review
+- **Files**: `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
+- **Gate**: `npx vitest run tools/scripts/git/maintain-ref-namespace.script.spec.ts`
+- Found 2026-10-06: pack #836 (only claim and release commits) was closed and its branch deleted at 10:51:56Z by the owner's credentials, seven minutes after `review finish` opened it, with no comment and no retired ref (its tip `5637260bb` survived only as an unreferenced object). `work retire` always comments and keeps the tip, so it was not that. Candidates: a host server or hook process applying a reap or supersede rule to a pack whose commits change no file. Lead: the g2 unit's worktree and local branch were removed too, which is what `work reap --apply` does from the post-merge hook of the main checkout to a unit it judges `delivered`; a unit whose commits change no file may be judged delivered by content.
 - acceptance:
   - "The process that closed it is identified and a spec reproduces it."
   - "A pack whose commits change no file is never taken for spent or superseded while it carries claims or releases the integration branch lacks."
+- Delivered: the cause is `maintain-ref-namespace`'s reap pass, run from the main checkout's post-merge hook (`hydrate-candidates-after-merge`). It took a ref as spent when its three-dot diff against the integration branch was empty, and a pack of claim and release commits changes no file, so it was spent the moment it was pushed; deleting its branch closed its pull request. A forward sync had been exempted by its name for the same reason (#656, #675). The rule is now general: a ref holding a commit the integration branch lacks that changes no file carries its meaning in that commit, and is spent only once the integration branch contains it (`carriesEmptyCommits`). The spec fails without the change, for the pack and for the forward sync judged without its name.
 
 ## acceptance
 

@@ -137,6 +137,42 @@ describe('isSpent (x00564)', () => {
 	});
 });
 
+describe('isSpent — a commit that changes no file is its own content', () => {
+	it('keeps a review pack of claims and releases until the integration branch contains it', () => {
+		const { root } = repo();
+		const head = git(root, 'rev-parse', 'HEAD');
+		const tree = git(root, 'rev-parse', 'HEAD^{tree}');
+		const claim = git(
+			root,
+			'commit-tree',
+			tree,
+			'-p',
+			head,
+			'-m',
+			'chore(review): claim x00001\n\nClaims: x00001',
+		);
+		const release = git(
+			root,
+			'commit-tree',
+			tree,
+			'-p',
+			claim,
+			'-m',
+			'chore(review): release x00001\n\nReleases: x00001',
+		);
+		expect(isSpent(root, 'refs/remotes/origin/develop', release)).toBe(
+			false,
+		);
+
+		git(root, 'merge', '--no-edit', '--no-ff', '-q', release);
+		git(root, 'push', '-q', 'origin', 'develop');
+		git(root, 'fetch', '-q', 'origin');
+		expect(isSpent(root, 'refs/remotes/origin/develop', release)).toBe(
+			true,
+		);
+	});
+});
+
 describe('isSpent — a forward sync is history, not content', () => {
 	it('keeps a forward-sync ref that changes no file until the integration branch contains it', () => {
 		const { root } = repo();
@@ -165,8 +201,9 @@ describe('isSpent — a forward sync is history, not content', () => {
 			'forward-sync',
 		);
 		const name = 'delendai/pr/forward-sync-0720e8436';
-		// By content alone it would read as spent: it adds no file.
-		expect(isSpent(root, 'refs/remotes/origin/develop', sync)).toBe(true);
+		// It adds no file, and its release commit changes none: that is
+		// history, kept until the integration branch holds it, by name or not.
+		expect(isSpent(root, 'refs/remotes/origin/develop', sync)).toBe(false);
 		expect(isSpent(root, 'refs/remotes/origin/develop', sync, name)).toBe(
 			false,
 		);
