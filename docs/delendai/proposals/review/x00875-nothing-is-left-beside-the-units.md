@@ -16,6 +16,7 @@ shipped-in:
   - "7d96f51559804495246013d71095f90a05b6184d"
   - "db62951444bdb537e371e0c1b7ce54fb056e35e4"
   - "4708525975eab47a589336724f7abcb814fdc25d"
+  - "68b22cd6fd11f3f254543516aa413f70384e9a88"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -291,13 +292,15 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 4708525975ea, validate exit 0, tests 9/9 — Delivered by the merge naming x00875-S26-g1. citesUnitOf reads proposal and slice out of the unit branch name and pullRequestText prefers that delivery over other deliveries folded into the same branch, so a pull request is titled by its own slice. No acceptance bullet is declared for this slice. Gate: publication-pull-request.service.spec.ts 9/9 exit 0.
 
 ### S27 — A generation once used is spent, and the closer publishes
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`, `config/delendai/repair-resolutions.json`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit.service.spec.ts tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - Found 2026-10-06 in the owner's MCP log: every boot was DEGRADED by the queue's closer. Each pass entered `delendai-queue/review/batch-all-g1/close-approved-<time>`, its publication was refused at the pre-push typecheck because the unit's worktree had no dependencies, and the pass deleted its branch with `branch -D`. So x00770, x00799, x00868, x00870 and x00873, approved and ready, were never closed; the reconciler found the first pass's checkpoint vanished, and each later pass, which reused generation 1 under another name, reported as history rewritten.
 - Delivered: `work enter` takes a generation no unit of that identity used before: one the integration branch merged (its merge names the publication) or the remote keeps retired is spent, whatever its name was; a generation with a live ref is still the unit to go back to. The closer installs the repository's dependencies in its unit before publishing, and a pass whose publication is not on the forge is retired with its reason instead of deleted. The two boot findings are resolved with their reasons. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 68b22cd6fd11, validate exit 0, tests 54/54 — Delivered by the merge naming x00875-S27-g1. endedGenerations collects generations already merged or retired and chooseGeneration skips a generation with no live refs, marking it spent, so a proposal cited from any status folder is found and a spent publication is retired rather than left dangling; close-approved-proposals installs dependencies before publishing and retires an unpublished pass. No acceptance bullet is declared for this slice. Gate: work-unit.service.spec.ts 46/46 + close-approved-proposals.script.spec.ts 8/8, exit 0, both re-run with DELENDAI_AGENT_ID unset.
 
 ## acceptance
 
