@@ -191,6 +191,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "`proposals review <id> <slice> --action=submit --workspace=<unit>` commits the review lines it writes in the unit, every time; when the commit fails, the reason is in what the CLI prints (today it is only a text note beside the structured result, which the CLI does not print)."
 - Found 2026-10-07, after x00875 S20's timeout fix landed: of seven submits in this proposal's units, S9, S12, S3 and S5 were committed by the tool, and S10, S11, S14 and S15 were left staged — `git add` ran, the commit did not — with an `ok: true` result and no word of it. The same `git commit -- <path>` run by hand in the unit, with the agent's environment, passes every hook. Each was committed by hand with the tool's subject.
 - Delivered: the reason was invisible, so it is made visible first: the server's line saying a call's writes were not committed (`CALL_WRITES_NOT_COMMITTED`) is passed on by the CLI to its own stderr, whole however the server's output is chunked. A commit with a minimal environment like the one the SDK gives the server passes every hook, so the environment is ruled out; every failure here happened while other units of the clone were fetching and committing, so a commit git refuses only because another process holds a lock (`cannot lock ref`, `index.lock`) is now tried again, five times a second apart. The lock case's spec fails without the change. If a submit is left staged again, the CLI now prints why.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
