@@ -286,6 +286,43 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
+	it('does not reuse a generation whose unit was merged, so no two refs share an identity', async () => {
+		const root = repoWith(PINNED);
+		const enter = [
+			'enter',
+			'--proposal=x00001',
+			'--slice=S1',
+			'--agent=glm-5',
+			'--topic=first',
+		];
+		const first = await command.run(enter, contextFor(root));
+		const data = first.data as { path: string; branch: string };
+		expect(data.branch).toContain('x00001-S1-g1/');
+		// Landed the way a forge lands it: a merge naming the publication,
+		// then the unit's branch and worktree are gone.
+		git(data.path, 'commit', '-q', '--allow-empty', '-m', 'feat: the work');
+		git(
+			root,
+			'merge',
+			'-q',
+			'--no-ff',
+			'-m',
+			`Merge pull request #1 from owner/${data.branch.replace('/wip/', '/pr/')}`,
+			data.branch,
+		);
+		git(root, 'worktree', 'remove', '--force', data.path);
+		git(root, 'branch', '-D', data.branch);
+
+		const again = await command.run(
+			[...enter.slice(0, -1), '--topic=second'],
+			contextFor(root),
+		);
+
+		expect((again.data as { branch: string }).branch).toContain(
+			'x00001-S1-g2/second',
+		);
+	});
+
 	it('refuses to publish a review unit that changed the product', async () => {
 		const root = repoWith(PINNED);
 		const entered = await command.run(
