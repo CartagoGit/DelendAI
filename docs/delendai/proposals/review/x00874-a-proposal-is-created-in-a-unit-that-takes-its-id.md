@@ -9,6 +9,8 @@ date: 2026-10-05
 last-transition-id: 8cf500e9-53d9-4eff-90c3-7ae72735eb54
 last-correlation-id: 8cf500e9-53d9-4eff-90c3-7ae72735eb54
 last-transition-from: in-progress
+shipped-in:
+  - "de537057ed79"
 ---
 
 # x00874 — A proposal is created in a unit that takes its id
@@ -70,19 +72,21 @@ capitalised, where the canonical order is lower case.
 
 ### S1 — The refusal to create a proposal in the shared checkout names the way in
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/bind-write-root.ts`, `packages/core/src/lib/contracts/interfaces/tool-registration.interface.ts`, `plugins/proposals/src/lib/contracts/constants/create-proposal.constant.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `packages/core/tests/src/lib/shared/bind-write-root.spec.ts`, `plugins/proposals/tests/src/lib/create-proposal-retry.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
 - A registration's `refusedWriteNextStep` replaces the generic advice in a
   refused write. The create tool's says: enter a `create` unit for `new`,
   then create there.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `54e58a2d6954`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at de537057ed79, validate exit 0, tests 23/23 — Gate green: bind-write-root spec 23/23; refusal names the create unit (bind-write-root.ts:112); full delivery commit de537057ed79
 
 ### S2 — A unit takes the id of the proposal created in it, and a renamed unit keeps its lease
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/unit-ref-rename.service.ts`, `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-claim.service.ts`, `packages/core/src/lib/work-units/work-unit-claim.service.ts`, `packages/core/src/lib/contracts/interfaces/unit-ref-rename.interface.ts`, `packages/core/src/lib/contracts/interfaces/unit-adoption.interface.ts`, `packages/core/src/public/index.ts`, `plugins/proposals/src/lib/services/created-proposal-unit.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/created-proposal-unit.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts packages/core/tests/src/lib/work-units/work-claim.service.spec.ts`
 - Creating a proposal in a unit entered for `new` renames the unit to the
@@ -90,9 +94,11 @@ capitalised, where the canonical order is lower case.
   answer of `create` names the unit's new name.
 - `work claim` carries the lease and drops the forge's old name the same
   way, so a claimed unit is one unit.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b94d0a9818fa`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at de537057ed79, validate exit 0, tests 18/18 — Gate green: unit-adoption + work-claim specs 18/18; renameUnitRef + created-proposal-unit adoption wired; full delivery commit de537057ed79
 
 ### S3 — A created document has the canonical headings
 
