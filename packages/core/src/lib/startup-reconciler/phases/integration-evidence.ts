@@ -51,6 +51,12 @@ export const runIntegrationEvidencePhase = async (input: {
 	 * work ref, which is not a loss (x00702).
 	 */
 	readonly keptBy?: readonly string[];
+	/**
+	 * Commits the forge keeps as retired work. A unit given up with
+	 * `work retire` is kept there, so its work ref is gone and nothing is
+	 * lost.
+	 */
+	readonly retiredTips?: readonly string[];
 	readonly now: number;
 }): Promise<IIntegrationPhaseResult> => {
 	const findings: IStartupFinding[] = [];
@@ -125,6 +131,21 @@ export const runIntegrationEvidencePhase = async (input: {
 						kept = true;
 						break;
 					}
+				}
+				const retired =
+					!kept &&
+					(input.retiredTips ?? []).includes(generation.wipHeadSha);
+				if (retired) {
+					findings.push(
+						finding({
+							code: 'integration-evidence.checkpoint-retired',
+							phase: 'integration-evidence',
+							kind: 'note',
+							subject: generation.wipRef,
+							message: `The ref ${generation.wipRef} is gone and its checkpoint ${generation.wipHeadSha} is kept on the forge as retired work: it was given up on purpose, not lost.`,
+						}),
+					);
+					continue;
 				}
 				if (kept) {
 					findings.push(

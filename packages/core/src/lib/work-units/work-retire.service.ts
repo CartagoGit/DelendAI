@@ -18,6 +18,7 @@
  * publication are one unit under two prefixes.
  */
 import type { IRetirementPlan } from '../contracts/interfaces/work-retire.interface';
+import { namespacedRef } from './namespaced-ref.helper';
 
 /** The namespace prefix as it appears in a branch name. */
 const bare = (prefix: string): string =>
@@ -47,7 +48,7 @@ export const planRetirement = (input: {
 		unit,
 		workBranch: `${work}${unit}`,
 		publicationBranch: `${publication}${unit}`,
-		retiredRef: `refs/${input.namespace}/retired/${unit}`,
+		retiredRef: namespacedRef(input.namespace, 'retired', unit),
 	};
 };
 
