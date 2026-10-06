@@ -33,12 +33,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
+import { planDryRun } from '@delendai/core/public';
 import {
 	clearDryRunViolationsForTests,
-	enforceDryRunReturnContract,
 	listDryRunViolations,
-	planDryRun,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/dry-run/dry-run-violation-log.service';
+import { enforceDryRunReturnContract } from '@delendai/core/lib/dry-run/enforce';
 
 const makeHandle = () => ({
 	enabled: true,

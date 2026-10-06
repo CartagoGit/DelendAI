@@ -187,6 +187,28 @@ const componentFiles = (root: string): readonly string[] => {
 	}
 };
 
+/** Where core keeps the code it generates for an adopting project. */
+const SCAFFOLD_DIR = 'packages/core/src/lib/scaffold/';
+
+const BARREL_IMPORT =
+	/import\s+(?:type\s+)?\{([^}]*)\}\s+from\s+'@delendai\/core\/public'/gu;
+
+/** The names a generated file imports from the barrel. */
+const generatedBarrelImports = (root: string, file: string): string[] => {
+	let text: string;
+	try {
+		text = readFileSync(join(root, file), 'utf8');
+	} catch {
+		return [];
+	}
+	return [...text.matchAll(BARREL_IMPORT)].flatMap((match) =>
+		(match[1] ?? '')
+			.split(',')
+			.map((part) => part.replace(/^\s*type\s+/u, '').trim())
+			.filter((name) => name.length > 0),
+	);
+};
+
 /** Names referenced anywhere outside `packages/core`. */
 export const consumerNames = async (
 	root: string,
@@ -205,7 +227,16 @@ export const consumerNames = async (
 	for (const file of files) {
 		// The package cannot be its own consumer: an export that only
 		// `packages/core` uses is exactly what this gate is looking for.
-		if (file.startsWith(coreDir) || file.includes(`/${coreDir}`)) continue;
+		// What core writes INTO an adopting project is the exception: a
+		// scaffolded host imports from the barrel, and that project is a
+		// consumer this repository only holds as a template.
+		if (file.startsWith(coreDir) || file.includes(`/${coreDir}`)) {
+			if (file.includes(SCAFFOLD_DIR)) {
+				for (const name of generatedBarrelImports(root, file))
+					found.add(name);
+			}
+			continue;
+		}
 		let text: string;
 		try {
 			text = readFileSync(join(root, file), 'utf8');
