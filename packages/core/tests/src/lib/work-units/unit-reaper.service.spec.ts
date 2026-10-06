@@ -275,3 +275,73 @@ describe('a landed unit whose proposal awaits its hand-off', () => {
 		expect(await standing()).toBe('delivered');
 	});
 });
+
+describe('a unit whose owner left before committing anything', () => {
+	/** Entered, never committed to, quiet for `silentMinutes`. */
+	const emptyUnit = async (agent: string, silentMinutes: number) => {
+		const repo = unitRepo();
+		const start = wall();
+		const ref = unitRef(agent);
+		const worktree = repo.enter(ref);
+		await recordUnitEntered({
+			cwd: repo.root,
+			ref,
+			owner: { agent, session: 's' },
+			worktree,
+			now: start - silentMinutes * MINUTE,
+		});
+		return { repo, ref, worktree, start };
+	};
+
+	it('is removed once it is abandoned: its branch holds nothing', async () => {
+		const { repo, ref, worktree, start } = await emptyUnit('gone', 600);
+		const [reaped] = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped?.outcome).toBe('removed');
+		expect(existsSync(worktree)).toBe(false);
+		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
+	});
+
+	it('is left while it is only idle: its owner may still start', async () => {
+		const { repo, worktree, start } = await emptyUnit('quiet', 90);
+		const reaped = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped).toEqual([]);
+		expect(existsSync(worktree)).toBe(true);
+	});
+
+	it('is left when it carries a commit of its own, however long it is quiet', async () => {
+		const { repo, ref, worktree, start } = await emptyUnit('wrote', 600);
+		repo.commit(worktree, 'unmerged.ts');
+		const reaped = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped).toEqual([]);
+		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
+	});
+
+	it('keeps an edit its owner left uncommitted, and says which', async () => {
+		const { repo, worktree, start } = await emptyUnit('drafted', 600);
+		writeFileSync(join(worktree, 'draft.ts'), 'export {};\n');
+		const [reaped] = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped?.outcome).toBe('kept');
+		expect(reaped?.edited).toContain('draft.ts');
+		expect(existsSync(worktree)).toBe(true);
+	});
+});

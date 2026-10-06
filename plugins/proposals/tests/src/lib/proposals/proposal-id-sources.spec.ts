@@ -245,6 +245,26 @@ describe('createGitProposalIdSources against a real repository', () => {
 		expect((await a.elsewhere()).x).toBe(812);
 	});
 
+	it('releases the reservations a higher one supersedes, and only those', async () => {
+		const { clone, remote } = cloneWithRemote();
+		const sources = createGitProposalIdSources(
+			join(clone, 'docs/delendai/proposals'),
+		);
+		expect(await sources.reserve('x00811')).toBe('reserved');
+		expect(await sources.reserve('f00811')).toBe('reserved');
+		expect(await sources.reserve('x00812')).toBe('reserved');
+		const left = git(clone, 'ls-remote', remote, 'refs/delendai/ids/*')
+			.split('\n')
+			.map((line) => line.split('\t')[1])
+			.filter((ref) => ref !== undefined)
+			.sort();
+		expect(left).toEqual([
+			'refs/delendai/ids/f00811',
+			'refs/delendai/ids/x00812',
+		]);
+		expect((await sources.elsewhere()).x).toBe(812);
+	});
+
 	it('says nothing could be decided when there is no remote', async () => {
 		const { clone } = cloneWithRemote();
 		git(clone, 'remote', 'remove', 'origin');

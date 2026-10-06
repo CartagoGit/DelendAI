@@ -183,7 +183,12 @@ export const buildReviewQueue = async (
 	const claims =
 		input.refShape === undefined
 			? new Map<string, readonly IReviewClaimHolder[]>()
-			: await reviewClaims(input.run, input.refShape, input.integration);
+			: await reviewClaims(
+					input.run,
+					input.refShape,
+					input.integration,
+					input.holding,
+				);
 	// Your own claims do not count against you. A unit says who you are
 	// exactly; an agent name is shared by every instance of a model, so it
 	// is only the fallback when no unit is named (x00739).

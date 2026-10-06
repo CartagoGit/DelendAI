@@ -39,6 +39,7 @@ import {
 	type IObservedPullRequest,
 } from '@delendai/core/lib/ref-lifecycle/reconcile.service';
 import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
+import { planRetirement } from '@delendai/core/lib/work-units/work-retire.service';
 
 // `monorepo-paths` rather than a hardcoded path: the layout convention
 // is that every consumer of these paths imports the path module. This
@@ -315,6 +316,78 @@ export const containsWith = (
 	}
 };
 
+/**
+ * Where a publication closed without merging is kept once it is retired,
+ * or `undefined` while its unit's work branch is still on the forge: the
+ * author is still holding the unit, and retiring it is theirs to do.
+ */
+export const closedPublicationRetirement = (
+	name: string,
+	branches: {
+		readonly namespacePrefix: string;
+		readonly workRefPrefix: string;
+		readonly publicationRefPrefix: string;
+	},
+	onForge: ReadonlySet<string>,
+): string | undefined => {
+	const plan = planRetirement({
+		branch: name,
+		namespace: branches.namespacePrefix,
+		workRefPrefix: branches.workRefPrefix,
+		publicationRefPrefix: branches.publicationRefPrefix,
+	});
+	if (plan === undefined || plan.publicationBranch !== shortRef(name)) {
+		return undefined;
+	}
+	return onForge.has(plan.workBranch) ? undefined : plan.retiredRef;
+};
+
+/**
+ * Keep `sha` at `retiredRef` on the forge, then delete the publication.
+ * A retired ref already there with another tip is left, and so is the
+ * publication: nothing is overwritten to make room.
+ */
+const retireOnForge = (
+	name: string,
+	sha: string,
+	retiredRef: string,
+): boolean => {
+	try {
+		execFileSync(
+			'gh',
+			[
+				'api',
+				'-X',
+				'POST',
+				`repos/${REPOSITORY_SLUG}/git/refs`,
+				'-f',
+				`ref=${retiredRef}`,
+				'-f',
+				`sha=${sha}`,
+			],
+			{ stdio: 'ignore' },
+		);
+	} catch {
+		let kept = '';
+		try {
+			kept = ghScalar(
+				`repos/${REPOSITORY_SLUG}/git/ref/${retiredRef.replace(/^refs\//u, '')}`,
+				'.object.sha',
+			);
+		} catch {
+			// Not there either: the forge refused for another reason.
+		}
+		if (kept !== sha) return false;
+	}
+	execFileSync('gh', [
+		'api',
+		'-X',
+		'DELETE',
+		`repos/${REPOSITORY_SLUG}/git/refs/heads/${name}`,
+	]);
+	return true;
+};
+
 const main = (): void => {
 	const branches = declaredBranches(repoRoot());
 	const observed = (
@@ -366,13 +439,21 @@ const main = (): void => {
 			readonly number: number;
 			readonly state: string;
 			readonly merged_at: string | null;
+			readonly closed_at?: string | null;
 			readonly head: { readonly ref: string };
 		}[]
-	).map((request) => ({
-		number: request.number,
-		headRefName: request.head.ref,
-		state: pullRequestState(request),
-	}));
+	).map((request) => {
+		const closedAt =
+			request.closed_at === null || request.closed_at === undefined
+				? Number.NaN
+				: Math.floor(Date.parse(request.closed_at) / 1000);
+		return {
+			number: request.number,
+			headRefName: request.head.ref,
+			state: pullRequestState(request),
+			...(Number.isNaN(closedAt) ? {} : { closedAt }),
+		};
+	});
 
 	// Two passes on purpose. The first costs nothing and tells us which
 	// refs are worth asking the forge about; the second is the verdict,
@@ -423,6 +504,35 @@ const main = (): void => {
 		]);
 		deleted.add(verdict.name);
 		console.log(`ref-lifecycle: deleted ${verdict.name} (${evidence}).`);
+	}
+
+	// A publication closed without merging is retired, not deleted: its tip
+	// may be the only copy, and it stays where `work retired` lists it.
+	const onForge = new Set(observed.map((branch) => branch.name));
+	for (const verdict of result.retirable) {
+		const retiredRef = closedPublicationRetirement(
+			verdict.name,
+			branches,
+			onForge,
+		);
+		const sha = shaOf.get(verdict.name);
+		if (retiredRef === undefined || sha === undefined) continue;
+		const evidence = `#${String(verdict.pullRequest)} closed without merging`;
+		if (!REAP) {
+			console.log(
+				`ref-lifecycle: ${verdict.name} is retirable (${evidence}) — run with --reap to keep its tip at ${retiredRef} and delete it.`,
+			);
+			continue;
+		}
+		if (retireOnForge(verdict.name, sha, retiredRef)) {
+			console.log(
+				`ref-lifecycle: retired ${verdict.name} to ${retiredRef} (${evidence}).`,
+			);
+		} else {
+			console.log(
+				`ref-lifecycle: ${verdict.name} left: ${retiredRef} already holds another tip.`,
+			);
+		}
 	}
 
 	// A ref this pass just reaped is resolved, not outstanding: reporting it

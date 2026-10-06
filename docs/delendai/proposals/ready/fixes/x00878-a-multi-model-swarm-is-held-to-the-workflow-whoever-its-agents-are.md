@@ -20,7 +20,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### Findings log
 
-- **2026-10-06 17:50, identities on the forge.** Review units appeared as `minimax-3` (two units), `minimax-m31`, `glm-5.3-flash` (four units, g1–g4), `gpt-5.4` and `illyria`. `minimax-3` names a family, not the model the agent runs (MiniMax M3.1, as the owner reports); `minimax-m31` is that model with its dot dropped, so the same model has two spellings; `illyria` is no model at all. Every one was accepted, and the name is now recorded as the reviewer in proposal documents (`review-reviewer: minimax-3` on x00752), which is where model independence (`reviewIndependence: model`) is judged.
+- **2026-10-06 17:50, identities on the forge.** Review units appeared as `minimax-3` (two units), `minimax-m31`, `glm-5.3-flash` (four units, g1–g4), `gpt-5.4` and `illyria`. `minimax-3` names a family, not the model the agent runs (MiniMax M3.1, as the owner reports); `minimax-m31` is that model with its dot dropped, so the same model has two spellings; `illyria` is no model at all: the owner reports that agent was ChatGPT Luna 6.0, so it signed with a name it invented. Every one was accepted, and the name is now recorded as the reviewer in proposal documents (`review-reviewer: minimax-3` on x00752), which is where model independence (`reviewIndependence: model`) is judged.
 - **2026-10-06 17:44, a verdict committed by hand.** `minimax-3` committed `chore(review): approve x00752 S1 — …`, moving the proposal to `done` with its review lines, under a message of its own instead of the review tool's record (`chore(delendai): delendai_proposals_proposal_review …`). Nothing distinguishes it from a verdict the tool checked.
 - **2026-10-06 17:49, one agent, two spellings, two record shapes.** `gpt-5.4`'s unit recorded `review-reviewer: GPT-5.4` and `approved by GPT-5.4` (f00275): the ref and the document disagree on case. Its verdicts were committed under two subjects, `chore(delendai): delendai_proposals_proposal_review f00275 S1 approve` and `chore(delendai): delendai review approve f00275`; a check that tells a tool's record from a hand-written one needs one shape (or a trailer), not a subject that varies with the entry point.
 - **2026-10-06 18:50, a commit says more than it did.** `minimax-3` committed `chore(review): approve x00835 S1-S33 — …`; the commit adds one approval (one slice). A reader of the history, or a reviewer counting verdicts, is told thirty-three.
@@ -29,6 +29,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - **2026-10-06 ~20:00, what the swarm left when its agents said they were done.** The review queue still held 20 proposals (44 slices needing a verdict, 16 claimed by others, 9 approved and not closed), where a swarm that worked would have left none. On the forge: publications `minimax-3` ×5, `glm-5.3-flash` ×2, `illyria` ×1, work refs `minimax-3` ×2 and `gpt-5.4` ×1, and 43 review reservations, 25 of them naming a unit whose work ref and publication no longer exist. A reservation lapses only after its hours (`REVIEW_RESERVATION_SECONDS`), not when its unit ends, so a finished agent kept proposals out of every other reviewer's hands, and nothing deletes the ref afterwards.
 - **2026-10-06, swarm packs that cannot land.** `lint-governance` refused #851 (`glm-5.3-flash`: it closes a proposal whose slices lack an approval by someone other than their implementer), #856 (`minimax-3`: it closes x00770, x00799, x00868, x00870 and x00873, which it never claimed) and #858 (`illyria`: `proposal-cited-commits`, it cites commits that do not exist). Each pack waits for a person, and its verdicts with it; the agents reported done. The owner machine's closer was refused the same way (x00875 S29 fixes that one).
 - **2026-10-06, `--alongside` reused a generation an open publication held.** `work enter --alongside` gave `x00875-S29-g1` while `delendai/pr/…/x00875-S29-g1/…` (#861) was open, a second ref with the same identity; only `--generation=2` avoided it. An open publication is a generation in use.
+- **2026-10-06, the owner's analysis: a claim is an existing ref, not a living holder.** Every claim the proposals plugin reads (a review's `Claims:` commits in its unit, a slice's reservation, the forge's review reservation) means "a ref exists". A ref survives its agent: one that ran out of quota, crashed or lost its context leaves a unit that looks like work in progress. The repository already has what a claim should mean (the owner names it lease-based claims with heartbeat, fencing and recovery): unit leases with owner, session and `heartbeatAt` and the live / idle / abandoned / delivered verdict (`unit-lease.service.ts`, `unit-verdict.service.ts`), leases with `expires_at` and `releaseClaimsOfExpiredLeases` in the state database, the startup reconciler turning a vanished owner's unit RECOVERABLE without deleting its work, and fencing tokens (`STALE_SWARM_LEASE`). The proposals plugin's claims do not read them. S4 ties a review reservation to its unit's existence; S7 ties every claim to its holder's life.
+- **2026-10-06 ~21:00, the swarm ran in this very repository, and left its units in it.** Its worktrees are under `.cache/delendai/.worktrees/`: thirty with no commit and no change (25 of `glm-5.3-flash`, g1–g30, three of `minimax-3`, one of `illyria`, one of `gpt-5.4`), retired by hand except four still inside their holder's lease. One agent asking `review next` without its session every few minutes opened a unit per question (S8). `gpt-5.4` finished with a unit holding three approvals (f00267, r00056, f00275) it never published; adopted with `work claim` so they can land under its own signature. A temporary worktree of the candidates' refresh (`/tmp/candidate-refresh-*`, detached) was left behind too.
 - **2026-10-06, a `new` unit keeps its slot after it names its proposal.** Once `proposals create` turned `new/all` into x00877, the `new/all` reservation and the `claude-opus-5-5-new-all` directory still blocked the next new proposal: `work enter --proposal=new` was refused until given `--alongside` and `--dir`.
 
 ## non-goals
@@ -41,12 +43,13 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - global_gate: none
 
 ### S1 — An agent signs with the model it runs as
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/agent-identity.service.ts`
+- **Status**: in-progress
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs."
   - "One model has one spelling everywhere: the ref segment, the verdict line and the review lines agree (`minimax-m3.1`, not `minimax-m31` in the ref and something else in the document)."
+- Progress 2026-10-06: a verdict is signed with the same canonical spelling the unit's ref uses (`resolveWorkAgentId`: `GPT-5.4` and `gpt-5.4` are one reviewer), and a verdict recorded in a review unit is refused unless it is signed by the agent the unit is named after, so a pack has one reviewer and a name cannot be chosen per call. Both specs fail without the change. Still open: an identity that names no model (`illyria`, which was ChatGPT Luna 6.0) or a family without its version (`minimax-3` for MiniMax M3.1) cannot be told from a real model id by its spelling; that needs the identity to come from the host, which knows the model it runs (its declared agent id), rather than from the agent's own words.
 
 ### S2 — A verdict reaches the document only through the review tool
 - **Status**: pending
@@ -63,12 +66,15 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "After `proposals create` names a `new` unit's proposal, the `new/all` reservation and the `<agent>-new-all` worktree directory are free: a second new proposal can be started without `--alongside` or `--dir`."
 
 ### S4 — A review reservation ends with its unit
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/services/review-reservation.service.ts`
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-reservation.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`, `tools/scripts/git/ended-reservations.service.ts`, `tools/scripts/git/ended-reservations.service.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`
 - **Gate**: type
 - acceptance:
   - "A reservation whose unit has neither a work ref nor a publication on the forge is free at once, whatever its hours, and the queue does not count it as held."
   - "Such a reservation ref is deleted by the reaper that already removes finished units, so none outlives its unit on the forge."
+- Delivered: a reservation whose unit is on the forge neither as a work ref nor as a publication (one `ls-remote` of the path after the agent matches both), and that is older than `REVIEW_RESERVATION_UNIT_GRACE_SECONDS` (15 minutes, the time a fresh unit needs to be pushed), counts as lapsed: the next reviewer takes it over at once. The namespace maintenance that runs after every merge drops such reservations from the forge, each only if it is still the commit it read. A dry run on this repository's forge found 14 to drop. Both specs fail without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A pack that cannot land is refused before it is published
 - **Status**: pending
@@ -78,11 +84,81 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "`review finish` (and `review next` when it publishes a full pack) runs the pack's governance checks (independent approval, claimed proposals, cited commits) before publishing, and refuses with what to fix, so a reviewer is never told its pack is done while CI will refuse it."
 
 ### S6 — An open publication is a generation in use
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work enter`, with or without `--alongside`, never gives a generation whose publication is open on the forge."
+- Delivered: the rule that kept a review batch from reusing the name of a pack still published now holds for every unit: a generation whose publication is open is skipped, with or without `--alongside`. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S7 — A claim holds while its holder lives, for every kind of work
+- **Status**: in-progress
+- **Files**: `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/services/claim-liveness.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A claim on a proposal or a slice (review, implementation, any unit kind) holds only while the unit that made it has a live lease (its heartbeat within the lease window); without one it no longer blocks another agent, and the queue and `work enter` say so."
+  - "Two windows, not one: the exclusive claim lapses on a short window, the unit's work is judged abandoned on the conservative one; a lapsed claim frees the work, it never deletes it (the unit becomes recoverable, its commits and branch stay)."
+  - "A unit whose publication is open keeps its claim whatever its heartbeat: its verdicts or its work can still land, and another agent must not duplicate them (states live, recoverable, published, integrated)."
+  - "A taken-over claim carries a higher generation; a write by the previous holder after the takeover is refused as stale (fencing), so an agent that comes back cannot write over the one that adopted its work."
+- Progress 2026-10-06, reviews: the review queue reads a claim through core's verdict on its unit (`claimHolding`, from `readUnitStandings`: the lease's heartbeat, or the unit's last commit where no lease is visible on this machine). A claim holds while its unit is live or its publication is open; a unit idle past its lease window, abandoned or delivered holds nothing, and its work stays where it is; a unit core has no verdict for holds. Still to do: implementation units (`work enter` holds a slice for an `idle` unit through `isUnitHolding`; the short window should apply there too), the verdict and claim tools reading the same predicate, and fencing (a taken-over claim's generation refusing the previous holder's writes).
+
+### S8 — Asking the queue opens no unit
+- **Status**: review
+- **Files**: `packages/cli/src/lib/review/review-peek.service.ts`, `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: type
+- `review next` without a session reads the queue first and enters a unit only when a proposal waits for a verdict that nobody holds; otherwise it answers that nothing is waiting, and no ref, worktree or lease is made. The spec (three questions, no unit) fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S9 — A unit nobody holds leaves nothing behind
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A unit whose owner is gone (abandoned: past the lease windows) and that carries no commit beyond the integration branch has its worktree and local branch removed by `work reap --apply`, which the post-merge hook already runs; one holding an uncommitted edit is kept and reported with the paths, and one carrying a commit of its own is left alone."
+- Delivered: the reaper only ever removed delivered units, and a unit entered and never committed to is never delivered, so every reviewer of a swarm that stopped before its first verdict left a full copy of the repository and a branch behind (four `glm-5.3-flash` units here, each at the integration tip, clean). Such a unit is now reaped once it is abandoned; an idle one is left for its owner, and the edit and own-commit cases are unchanged. The removal case fails without the change; the three that keep a unit pin what must not change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S10 — A publication closed without merging is retired, not left
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/tests/src/lib/ref-lifecycle/reconcile.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A publication whose pull request was closed without merging, an hour or more ago, with no open request and no work branch of its unit on the forge, is retired by the queue's reap pass: its tip is kept under the retired namespace (where `work retired` lists it and `work retired --drop` ends it) and its branch is deleted. It is never deleted outright."
+- Delivered: x00697 stopped deleting such publications, since the tip may be the only copy, and kept them "for the author to reopen or end". Nobody ended them, and every swarm pack closed as a duplicate stayed on the forge (`delendai/pr/minimax-3/review/batch-all-g4/verdicts`, #860, closed by its own author). The reconcile now lists them as retirable after `DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS`, and `lint:ref-lifecycle --reap`, which the queue already runs, writes the retired ref through the forge API before deleting the branch; a retired ref already holding another tip leaves both alone. A dry run here names #860 and nothing else. The reconcile case and the helper's cases fail without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S11 — An id reservation ends when a higher one supersedes it
+- **Status**: in-progress
+- **Files**: `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Reserving an id releases the forge's reservations of the same prefix below it, so the forge holds at most one id reservation per prefix; the counter every clone reads is unchanged."
+- Delivered: an id is reserved as `refs/delendai/ids/<id>` and nothing ever removed one: a ref per proposal created piled up on the forge (nine after one afternoon). Only the highest reservation of a prefix feeds the counter — the allocator hands out the next one above it — so a successful reservation now deletes the lower ones of its prefix in the same `send-pack` way it was made; a failure to delete leaves them, harmless. The spec (three reservations, two left, the counter still 812) fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S12 — A retired close pass ends once its closes have landed
+- **Status**: in-progress
+- **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`, `tools/scripts/proposals/close-approved-proposals.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Each run of the closer drops from the forge its own retired passes whose every closed proposal is in `done/` on the integration branch; a pass with a close that has not landed is kept."
+- Delivered: thirty-seven passes of the closer were retired on the forge after an afternoon, each holding the close of the same five proposals. The reaper of landed retired work drops a tip the integration branch contains, and a pass's commits never are contained: its copy of each close differs from the one that lands in the transition ids it stamped. The closer now reads its own retired passes, the proposals each added under `done/`, and drops (`work retired --drop`) those whose closes are all on the integration branch. The helpers' spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S13 — A publication its author left in conflict is adopted or retired, not left
+- **Status**: pending
+- **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+- **Gate**: type
+- acceptance:
+  - "A publication that does not merge trivially and whose author's unit has been abandoned (past the lease windows) is reported once as adoptable, with the exact `work enter` + merge + `work retire --unowned` steps, instead of `its author decides` on every pass; after a further window with nobody adopting it, its pull request is closed with that reason, and S10 retires it."
+- Found 2026-10-06: after the swarm stopped, #856, #857 and #858 sat on the forge, two of them conflicted, each reported on every hydration as "its author decides" by an author that was gone. Done by hand that day: #857's verdicts were adopted into a pack of the orchestrator's (less one approval that judged an earlier definition of x00875 S20), #858 was retired (signed `illyria`, a name of no model; its q00010 changes superseded), and #856 duplicates the queue's own close pass #878.
 
 ## acceptance
 

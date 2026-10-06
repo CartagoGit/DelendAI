@@ -148,6 +148,11 @@ export interface IBuildReviewQueueInput {
 	 * ask at the same moment, before any has claimed, start apart.
 	 */
 	readonly spread?: number | undefined;
+	/**
+	 * Whether the unit at a ref still holds what it claimed (its holder is
+	 * live, or its publication is open). Every claim holds when absent.
+	 */
+	readonly holding?: ((ref: string) => boolean) | undefined;
 }
 
 /** A proposal in review, as its file names it. */
