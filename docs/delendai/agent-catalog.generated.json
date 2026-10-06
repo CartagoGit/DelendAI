@@ -1449,6 +1449,14 @@
 				"date": "2026-09-15"
 			},
 			{
+				"id": "f00547",
+				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
+				"track": "architecture",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-09-16"
+			},
+			{
 				"id": "f00548",
 				"title": "Own the style surface: who may define a selector, and what breaks when it changes",
 				"track": "architecture",
