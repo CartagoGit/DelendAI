@@ -94,13 +94,15 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 9e405f09f7fb, validate exit 0, tests 21/21 — Delivered in x00875-all-g1. assertSchemaWithinRuntime throws SchemaAheadOfRuntimeError before migrations or the user_version pragma are applied, so the file is untouched, and openStartupStatePorts reports kind unreadable with describeSchemaAhead. Acceptance bullet 4 met (throws, changes nothing, startup says why). Gate: proposals-sqlite schema-guard + sqlite-driver 21/21 exit 0.
 
 ### S5 — Retired work that was read and is nothing can be dropped
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-retired-drop.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/work-units/work-retire.service.spec.ts`
 - `delendai work retired --drop=<unit> --reason=<why>` removes retired work from the forge, by the name `work retired` lists or by a pattern ending in `*`. It is refused without a reason and for a name that is not there.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dd4b4305f8cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 05f70a3e2588, validate exit 0, tests 12/12 — Delivered in x00875-all-g1 (9e405f09f7fb) and last carried by 05f70a3e2588. work retired --drop requires both unit and reason, lists refs under the retired prefix with ls-remote and deletes exactly the refs found. Acceptance bullet 5 met. Gate work-retire.service.spec.ts 12/12 exit 0.
 
 ### S6 — A delivery is read however its key was spelled
 - **Status**: done
