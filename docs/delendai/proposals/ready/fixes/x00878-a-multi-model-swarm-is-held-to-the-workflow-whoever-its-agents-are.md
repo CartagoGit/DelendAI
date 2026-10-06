@@ -218,6 +218,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A checkpoint the reconciler once saw kept as retired work is not reported as vanished after its retired ref is dropped; one dropped before this clone ever saw it retired still is."
 - Found 2026-10-07 in the MCP server's boot log: after S12 and the analysed drops of the same day, every boot was DEGRADED with mutations blocked, on five `integration-evidence.ref-vanished` blockers — close passes of the queue and the `illyria` pack, retired with a reason and dropped once their content was on develop or judged worthless. Seeing a checkpoint retired only wrote a note on each boot, so the moment its tip went, the work looked lost.
 - Delivered: the first time the reconciler sees a checkpoint kept as retired work, it records that in the journal (`recovery-decision`, `retired`, with the commit), and a checkpoint so recorded is reported as retired, not vanished, after the ref is dropped: dropping is itself the decision (`work retired --drop --reason`, or the reapers' evidence). A checkpoint this clone never saw retired still asks. The five that were already blocking are resolved in `config/delendai/repair-resolutions.json` with what each held. The spec that asked again after a drop now pins the new contract, and a new case pins the one that still asks.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
