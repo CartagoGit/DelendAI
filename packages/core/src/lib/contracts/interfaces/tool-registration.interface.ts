@@ -88,6 +88,13 @@ export interface IToolRegistration {
 	 */
 	readonly refusedWriteNextStep?: string | undefined;
 	/**
+	 * Whether a call writes nothing, decided by its input. A
+	 * `caller-checkout` tool whose actions include a read (a status, a
+	 * listing) answers `true` for those: a read is never refused in the
+	 * shared checkout as a write would be. Omit when every call can write.
+	 */
+	readonly readsOnly?: ((input: unknown) => boolean) | undefined;
+	/**
 	 * f00189 (Track F / security): when `true`, the tool honours
 	 * the transversal `dryRun` protocol — accepts `args.dryRun`
 	 * and returns an `IDryRunResult` instead of executing side
