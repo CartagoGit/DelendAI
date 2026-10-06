@@ -32,6 +32,8 @@ const repo = (): string => {
 	const root = mkdtempSync(join(tmpdir(), 'driver-host-'));
 	roots.push(root);
 	execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });
+	// The script the driver runs, as a project that carries it has.
+	writeFileSync(join(root, 'driver.ts'), '');
 	return root;
 };
 
@@ -141,5 +143,41 @@ describe('the driver runs whatever installed it (x00574 S2)', () => {
 			script: '/repo/driver.ts',
 		});
 		expect(command).toBe('/opt/bun /repo/driver.ts %O %A %B %P');
+	});
+});
+
+describe('a project without the driver script', () => {
+	it('configures no driver, and removes one an older install left', () => {
+		const root = mkdtempSync(join(tmpdir(), 'driver-adopter-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });
+		const absent = join(
+			root,
+			'tools/scripts/git/generated-merge-driver.script.ts',
+		);
+		const fresh = installGeneratedMergeDriver(root, {
+			runner: process.execPath,
+			explicitRunner: '/opt/bun',
+			script: absent,
+		});
+		expect(fresh.state).toBe('absent');
+		expect(configured(root)).toBe('');
+
+		execFileSync(
+			'git',
+			[
+				'config',
+				`merge.${GENERATED_MERGE_DRIVER}.driver`,
+				'bun missing.ts %O %A %B %P',
+			],
+			{ cwd: root },
+		);
+		const stale = installGeneratedMergeDriver(root, {
+			runner: process.execPath,
+			explicitRunner: '/opt/bun',
+			script: absent,
+		});
+		expect(stale.state).toBe('removed');
+		expect(configured(root)).toBe('');
 	});
 });

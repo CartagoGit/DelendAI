@@ -323,6 +323,39 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
+	it('does not reuse the generation of an open publication, alongside or not', async () => {
+		const root = repoWith(PINNED);
+		const enter = [
+			'enter',
+			'--proposal=x00001',
+			'--slice=S1',
+			'--agent=glm-5',
+		];
+		const first = await command.run(
+			[...enter, '--topic=first'],
+			contextFor(root),
+		);
+		const data = first.data as { path: string; branch: string };
+		// Published: its pull request's ref stands, the unit is gone.
+		git(
+			root,
+			'update-ref',
+			`refs/heads/${data.branch.replace('/wip/', '/pr/')}`,
+			'HEAD',
+		);
+		git(root, 'worktree', 'remove', '--force', data.path);
+		git(root, 'update-ref', '-d', `refs/heads/${data.branch}`);
+
+		const next = await command.run(
+			[...enter, '--topic=second', '--alongside'],
+			contextFor(root),
+		);
+
+		expect((next.data as { branch: string }).branch).toContain(
+			'x00001-S1-g2/second',
+		);
+	});
+
 	it('refuses to publish a review unit that changed the product', async () => {
 		const root = repoWith(PINNED);
 		const entered = await command.run(

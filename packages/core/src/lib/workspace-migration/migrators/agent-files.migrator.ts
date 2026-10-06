@@ -60,6 +60,17 @@ const AGENT_DIRECTORIES = [
 	'.codex/agents',
 ] as const;
 
+/**
+ * The instruction files a host reads at the root of the project, outside
+ * any agent folder. They kept the old name after a migration that walked
+ * only the folders.
+ */
+const ROOT_INSTRUCTION_FILES = [
+	'AGENTS.md',
+	'CLAUDE.md',
+	'.github/copilot-instructions.md',
+] as const;
+
 /** Frontmatter fields the migrator walks. Other keys pass through. */
 const AGENT_FRONTMATTER_FIELDS = ['name', 'description', 'model'] as const;
 
@@ -247,6 +258,10 @@ const listAgentFiles = async (
 			if (!entry.name.endsWith('.md')) continue;
 			results.push(join(absoluteDir, entry.name));
 		}
+	}
+	for (const relFile of ROOT_INSTRUCTION_FILES) {
+		const absoluteFile = join(workspaceRoot, relFile);
+		if (await pathExists(absoluteFile)) results.push(absoluteFile);
 	}
 	return results;
 };

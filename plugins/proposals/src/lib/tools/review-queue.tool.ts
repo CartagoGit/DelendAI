@@ -19,6 +19,7 @@ import { buildReviewQueue } from '../services/review-queue.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
 import type { IAuthoringToolOptions } from './authoring-options';
+import { claimHolding } from '../services/claim-liveness.service';
 
 /** Proposals returned in full per call; totals always cover the backlog. */
 const DEFAULT_QUEUE_PAGE = 10;
@@ -73,6 +74,16 @@ export const buildReviewQueueRegistration = (
 						scoped.developmentPolicy?.branches.integration ??
 						'HEAD',
 					refShape: scoped.developmentPolicy?.branches,
+					// A claim holds while its holder lives (or its pack is
+					// published): a finished agent's unit holds nothing.
+					...(scoped.developmentPolicy === undefined
+						? {}
+						: {
+								holding: await claimHolding(
+									scoped.workspaceRoot,
+									scoped.developmentPolicy,
+								),
+							}),
 					proposalId: args.proposalId,
 					limit: args.limit ?? DEFAULT_QUEUE_PAGE,
 					offset: args.offset,

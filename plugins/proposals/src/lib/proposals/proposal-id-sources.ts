@@ -92,6 +92,39 @@ export const countersFromReservations = (
 	return counters;
 };
 
+/**
+ * The reservations of `id`'s prefix below it. Only the highest one feeds
+ * the counter, so the others keep no id from anybody; left in place, one
+ * ref per proposal ever created piled up on the forge.
+ */
+export const supersededReservations = (
+	output: string,
+	id: string,
+): readonly string[] => {
+	const own = /^([a-z])(\d+)$/u.exec(id);
+	if (own === null) return [];
+	return output.split('\n').flatMap((line) => {
+		const match = RESERVATION_REF.exec(line);
+		if (match === null || match[1] !== own[1]) return [];
+		return Number(match[2]) < Number(own[2])
+			? [`${RESERVATION_NAMESPACE}${match[1]}${match[2]}`]
+			: [];
+	});
+};
+
+/** Drop what `id`'s reservation superseded; a failure leaves them, harmless. */
+const releaseSuperseded = async (
+	git: IGitRunner,
+	url: string,
+	id: string,
+): Promise<void> => {
+	const listed = await git(['ls-remote', url, `${RESERVATION_NAMESPACE}*`]);
+	if (!listed.ok) return;
+	const spent = supersededReservations(listed.output, id);
+	if (spent.length === 0) return;
+	await git(['send-pack', url, ...spent.map((ref) => `:${ref}`)]);
+};
+
 const lines = (output: string): readonly string[] =>
 	output
 		.split('\n')
@@ -210,7 +243,10 @@ export const createGitProposalIdSources = (
 				url.output.trim(),
 				`${commit.output.trim()}:${ref}`,
 			]);
-			if (sent.ok) return 'reserved';
+			if (sent.ok) {
+				await releaseSuperseded(git, url.output.trim(), id);
+				return 'reserved';
+			}
 			const held = await git(['ls-remote', url.output.trim(), ref]);
 			return held.ok && held.output.trim() !== ''
 				? 'taken'

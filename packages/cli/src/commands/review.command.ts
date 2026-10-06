@@ -43,6 +43,7 @@ import type {
 } from '../contracts/interfaces/review-queue-view.interface';
 import { briefFor } from '../lib/review/review-brief.service';
 import { packRefusalsIn } from '../lib/review/review-pack-check.service';
+import { anythingWaiting } from '../lib/review/review-peek.service';
 import { releasedElsewhere } from '../lib/review/review-releases.service';
 import { usage } from './groups/group-helpers';
 import { evidenceArgs } from './groups/proposals';
@@ -219,6 +220,8 @@ const next = async (
 	const agent = agentOf(args);
 	if (agent === undefined)
 		return usage('review next --agent=<you> [--session=<s>]');
+	if (!sessionOf(args) && !(await anythingWaiting(() => queueOf(ctx, agent))))
+		return data({ next: 'Nothing is waiting for your verdict.' });
 	const unit = await unitOf(agent, sessionOf(args), ctx);
 	if (!isUnit(unit)) return unit;
 	const policy = await readWorkspacePolicy(unit.path);
