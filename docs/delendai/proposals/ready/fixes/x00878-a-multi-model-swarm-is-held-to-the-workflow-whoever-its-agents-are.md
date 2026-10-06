@@ -58,6 +58,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "A commit that changes a slice's review lines or a proposal's status without the review tool's record (its commit, or its trailer) fails a gate, so a verdict written by hand cannot pass for one the tool checked."
 - Delivered: `lint:verdicts-through-the-tool`, run in CI's governance job and in `validate:run`, reads every non-merge commit of the branch that touches the proposals directory and fails one that adds a `review-*` line under a subject other than a tool's own (`chore(delendai): <namespace>_<tool> …`), naming the commit and the lines. Run on the swarm's `q00010 S3 requested changes` commit (`chore(review): …`, signed Illyria) it names all five lines; on this branch it passes. Removing review lines is not a verdict and passes. Not covered: a proposal's `status:` moved by hand, and a hand commit that borrows the tool's subject — the subject is the record, and it can be typed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A created proposal releases the reservation and directory of its `new` unit
 - **Status**: pending
