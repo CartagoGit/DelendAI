@@ -260,6 +260,54 @@ describe('which pull request a slice goes to', () => {
 		});
 	});
 
+	it('gives each review pack of one agent its own pull request', () => {
+		const policy = policyWith();
+		const { root, base } = setup(2);
+		const packRef = (generation: number): string =>
+			resolveWorkRef(policy.branches.workRefTemplate, {
+				agent: 'agent-a',
+				kind: 'review',
+				proposal: 'batch',
+				slice: 'all',
+				generation,
+				topic: 'verdicts',
+			});
+		const pack = (generation: number) =>
+			choosePublicationTarget({
+				root,
+				policy,
+				remote: 'origin',
+				agent: 'agent-a',
+				proposal: 'batch',
+				slice: 'all',
+				generation,
+				kind: 'review',
+				topic: 'verdicts',
+				base,
+				workRef: packRef(generation),
+			});
+		commitWork(root, packRef(1), base, 3);
+		const first = pack(1);
+		if (!('publicationRef' in first)) throw new Error(first.refusal);
+		git(
+			root,
+			'push',
+			'-q',
+			'origin',
+			`${packRef(1)}:${first.publicationRef}`,
+		);
+
+		commitWork(root, packRef(2), base, 3);
+		const second = pack(2);
+
+		expect('publicationRef' in second && second.publicationRef).toContain(
+			'batch-all-g2',
+		);
+		expect('publicationRef' in second && second.publicationRef).not.toBe(
+			first.publicationRef,
+		);
+	});
+
 	it('publishes alone, and says why, when the proposal file is missing', () => {
 		const policy = policyWith();
 		const { root, base } = setup(2);
