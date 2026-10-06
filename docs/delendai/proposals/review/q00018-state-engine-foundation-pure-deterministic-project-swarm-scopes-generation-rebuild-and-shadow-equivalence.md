@@ -2,13 +2,13 @@
 id: q00018
 title: "State Engine foundation: pure deterministic project/swarm scopes, generation rebuild and shadow equivalence"
 kind: plan
-status: in-progress
+status: review
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-05
-last-transition-id: ab632fb4-5a39-4e06-bcb5-31f0438df418
-last-correlation-id: ab632fb4-5a39-4e06-bcb5-31f0438df418
-last-transition-from: ready
+last-transition-id: 305c969b-c21b-4158-8479-36fa304c5484
+last-correlation-id: 305c969b-c21b-4158-8479-36fa304c5484
+last-transition-from: in-progress
 shipped-in:
   - "99d17f26d"
   - "50717a0d5"
@@ -269,6 +269,8 @@ El State Engine nunca es ese camino.
 - `package.json#scripts.test` y `typecheck` siguiendo el patrón del
   monorepo.
 - Delivered (reconciled 2026-10-07 against the tree): `packages/state` (`@delendai/state` 0.1.0) with the `./scope`, `./fingerprint`, `./producer`, `./hash`, `./generation` and `./registry` subpaths, and the no-Node-imports rule pinned by `tests/src/no-node-imports.spec.ts` and `lint:no-node-imports-in-state`. Shipped in `99d17f26d` (2026-09-05).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Contratos: `IStateScope`, `IStateProducer`, `ProjectFingerprint`, `canonicalStateHash`
 
@@ -293,6 +295,8 @@ El State Engine nunca es ese camino.
   calcula un SHA-256 sobre la proyección canónica serializada de
   forma estable (orden de claves).
 - Delivered (reconciled 2026-10-07 against the tree): `packages/state/src/lib/{scope,fingerprint,producer,hash}.ts`, each with its spec; reworked in `50717a0d5` (x00501: typed locators, the fingerprint split, SHA-256).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — `IStateRegistry` + `InMemoryStateRegistry` (driver inicial)
 
@@ -314,6 +318,8 @@ El State Engine nunca es ese camino.
   que sí persiste; este driver sólo sirve para tests y para
   prototipar.
 - Delivered (reconciled 2026-10-07 against the tree): `packages/state/src/lib/{registry,driver-in-memory}.ts`, covered by `registry.spec.ts` and `phase-0.2.spec.ts`. Shipped in `99d17f26d`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Generaciones, fencing, GC
 
@@ -335,6 +341,8 @@ El State Engine nunca es ese camino.
   piensa otro agente publica gen 148. La escritura del agente 1 es
   rechazada con `STALE_GENERATION` y la del agente 2 tiene éxito.
 - Delivered (reconciled 2026-10-07 against the tree): `packages/state/src/lib/generation.ts`: publish, drain, a strictly increasing lease token, a lease-fenced write that is refused when stale (`IFenceRejected`, the plan's `STALE_GENERATION` under another name) and a GC that reaps, all in `generation.spec.ts`. Shipped in `99d17f26d`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Property tests: `incremental ≡ cleanRebuild` + determinism + corrupción
 
@@ -356,6 +364,9 @@ El State Engine nunca es ese camino.
   siguiente `hydrate()` reconstruye desde inputs declarados y el
   hash canónico es idéntico al calculado antes de la corrupción.
 - Delivered (reconciled 2026-10-07 against the tree): `packages/state/tests/src/property/{equivalence,determinism,corruption}.spec.ts` (the determinism suite includes the `Date.now()` regression). The default ran 200 sequences where the acceptance asks for at least 1,000; it is 1,000 now (`STATE_PROPERTY_RUNS` still overrides), and the three suites take 4 s instead of 3.
+- shipped-in: `60ea92e6db1d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Lint `state-engine-purity` + acceso por `IMcpPluginContext.state`
 
@@ -380,6 +391,8 @@ El State Engine nunca es ese camino.
   queda disponible para producers que plugins futuros quieran
   declarar (no en este slice).
 - Delivered (reconciled 2026-10-07 against the tree): `lint:state-engine-purity` with its spec (first in `e0970e951`), `IMcpPluginContext.state?: IStateRegistry` documented in `plugin-contract.ts`, and `assemble.ts` building the in-memory registry and injecting it as `state`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## dependency graph
 
