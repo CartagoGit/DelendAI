@@ -19,6 +19,7 @@ import {
 	readGit,
 	refused,
 } from './work-unit-shared.service';
+import { namespacedRef } from './namespaced-ref.helper';
 
 /** The caller's word that a unit with no lease is not somebody's. */
 const assertsUnowned = (args: readonly string[]): boolean =>
@@ -308,7 +309,7 @@ export const retiredListed = async (
 	const { policy } = opened;
 	const root = mainWorktreeOf(opened.root);
 	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
-	const prefix = `refs/${policy.branches.namespacePrefix}/retired/`;
+	const prefix = `${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`;
 	const listed = readGit(root, ['ls-remote', remote, `${prefix}*`]);
 	if (listed === undefined) {
 		return refused(
