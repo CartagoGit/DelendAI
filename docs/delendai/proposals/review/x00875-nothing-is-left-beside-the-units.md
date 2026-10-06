@@ -248,12 +248,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at d86b383aca47, validate exit 0, tests 19/19 — Delivered by the merge naming x00875-S18-g1. spentPublicationsInvariant now reports 'its commits are already on <integration>: retire it' instead of a bare delete, so a spent publication is retired and not deleted. No acceptance bullet is declared for this slice. Gate: workflow-invariants.service.spec.ts 19/19 exit 0.
 
 ### S19 — A reviewer is kept out of the slice it judged, not the proposal
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - Found 2026-10-06: `x00835` S39 was committed to its work ref on 2026-10-05 and never published; the queue's doctor reported the ref (`no-remote-work-refs`, silent 9 h) and the queue run went red on it. Its implementer could not finish it: `work enter` refused every implement unit on x00835 because the same agent had approved a co-author's S18, and the rule looked for the agent's name anywhere in the document. Independence is per slice, the way the verdict enforces it (reviewer ≠ implementer of that slice). The refusal now reads the section of the slice being entered (`sliceSectionOf`); entering the whole proposal (`all`) still reads the whole document. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3
+- review-log: approved by minimax-3 — verified at 7d96f5155980, validate exit 0, tests 8/8 — Delivered by the merge naming x00875-S19-g1 (f769b78803af) and last carried by 7d96f5155980. sliceSectionOf narrows the review evidence to one slice section and reviewedByEntrant tests the reviewer name against that section only, so an agent is kept out of the slice it judged and not of the whole proposal. No acceptance bullet is declared for this slice. Gate reviewed-proposal.service.spec.ts 8/8 exit 0.
 
 ### S20 — A verdict written through the CLI is committed, or says why not
 - **Status**: pending
