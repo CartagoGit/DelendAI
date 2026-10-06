@@ -19,6 +19,8 @@ tags:
 last-transition-id: 998403ca-e038-4b0f-a8fd-b7e1f6981598
 last-correlation-id: 998403ca-e038-4b0f-a8fd-b7e1f6981598
 last-transition-from: in-progress
+shipped-in:
+  - "2f3bfc2e7"
 ---
 
 # f00510 — F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens
@@ -43,7 +45,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
 - global_gate: type
 
 ### S1 — `IWorkProgressProducer` + tabla `progress_snapshots` (un IStateProducer real)
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [f00509]
 - **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-producer.service.spec.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.spec.ts`, `packages/state-telemetry/src/lib/projector/contracts/constants/work-progress.constant.ts`, `packages/state-telemetry/src/lib/projector/contracts/interfaces/work-progress.interface.ts`, `packages/state-telemetry/src/lib/projector/test-support.helper.ts`, `packages/state-telemetry/vitest.config.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts`, `tools/scripts/lint/state-telemetry-purity.script.spec.ts`, `package.json`
 - **Gate**: bunx vitest run --root packages/state-telemetry src/lib/projector && bunx vitest run tools/scripts/lint/state-telemetry-purity.script.spec.ts
@@ -53,9 +55,11 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "Property test `reconcile`-in-chunks equals a clean `rebuild` over 200 seeded random sequences of 60 events (200 keeps the CI run short; the PRNG is a small seeded generator, no new dependency)."
   - "The snapshot's `stalled` is true when the same failure hash (the payload hash of a `tool_error` event) repeats k >= 3 times in a row (configurable, default 3); a different hash or a code change restarts the run."
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` covers `packages/state-telemetry/src/lib/projector/**`, rejects any `await` inside `rebuild`/`reconcile` and any persistent I/O import, and is chained into `lint:architecture`."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `f1da8103c5dc`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 2f3bfc2e7, validate exit 0, tests 103/103 — Delivered by #807 (merge 2f3bfc2e7). state-telemetry vitest 103/103.
 
 ### S2 — `phase-inference.ts` — tabla declarativa read→investigating, edit→implementing, test→testing, fix→fixing, validate→validating, review→reviewing, push→reconciling
 - **Status**: review
