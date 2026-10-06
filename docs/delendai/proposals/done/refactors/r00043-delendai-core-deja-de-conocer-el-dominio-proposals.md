@@ -261,10 +261,11 @@ not part of this delivery; it moves to S6.
     - Se mantiene la versión y la garantía semver del manifiesto durante la
       ventana de compatibilidad.
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
 - review-log: approved by gpt-5.4 — Verifiqué que stable-facade usa un registro genérico y que proposals aporta sus descriptores desde el plugin; gate declarado de S3 verde: 14/14.
-- review-attribution: unrecorded — nothing in Git names who delivered 7c861d2f9e0762dfdcaa3e11e9017c62ab6b40af: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by gpt-5.4
+- review-attribution: claude-opus-5-5 from Merge pull request #717 from CartagoGit/delendai/pr/claude-opus-5-5/implement/r00043-all-g1/core-no-longer-knows-proposals-goes-to-review (docs(proposals): r00043 records which commits delivered S0, S1 and S3 names 7c861d2f9 as S3's delivery), recorded by glm-5.3-flash 2026-10-06
+- review-log: approved by glm-5.3-flash — independent re-approval recorded 2026-10-06 after the closed-with-independent-approval lint flagged the unrecorded implementer. Verified on delivery commit 7c861d2f9: stable-facade no longer enumerates plugin: proposals descriptors in core; the generic stable-facade-registry holds contributions and the proposals plugin registers them via proposals-stable-tools. Gates re-run green: stable-facade.spec 11/11 (core) + proposals-stable-tools.spec 3/3 (plugin).
 
 ### S4 — Hacer agnóstico el ensamblado de skills y recommendedNextAction
 
