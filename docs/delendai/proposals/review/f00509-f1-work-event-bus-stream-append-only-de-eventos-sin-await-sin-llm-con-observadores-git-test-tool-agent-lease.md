@@ -94,7 +94,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ### S4 — `ToolObserver` — observador del MCP request log (tool_called, tool_finished, tool_error)
-- **Status**: review
+- **Status**: done
 - **Blocked by**: none. The original hook points do not exist (no `preExec` hook, no `IMcpHostSession.events`, the lock engine emits nothing), so this observer is a pure component fed by its consumer; wiring it belongs to f00510.
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/tool-observer.service.ts`, `packages/state-telemetry/src/lib/observers/tool-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/observer-emitter.service.ts`, `packages/state-telemetry/src/lib/observers/failure-normalizer.helper.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/observer.constant.ts`
@@ -104,9 +104,11 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`tool_error` hashes the exit code and the message through the same normalizer as the test observer, so equal errors hash equal."
   - "Attach/detach symmetry is tested: an observer over a no-op sink changes nothing and never mutates the args it is given."
   - "A 1000-call burst lands 1000 events through the NDJSON store in under one second (asserted in `tool-observer.service.spec.ts`)."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `c446c1602e8e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ### S5 — `AgentLeaseObserver` — enganche al lock engine (claim, release, heartbeat)
 - **Status**: review
