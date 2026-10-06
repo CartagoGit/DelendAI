@@ -24,12 +24,9 @@
 import { dirname, join, resolve } from 'node:path';
 import { mkdir, rm } from 'node:fs/promises';
 
-import {
-	assembleCliConfig,
-	parseCliArgs,
-	readProposalsIndex,
-} from '@delendai/core/public';
+import { assembleCliConfig, parseCliArgs } from '@delendai/core/public';
 import { ACTIONABLE_PROPOSAL_STATUSES, buildCatalog } from '@delendai/core/cli';
+import { readProposalsIndex } from '../../../plugins/proposals/src/lib/proposals/proposal-summaries.service';
 import { scanProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import type {
