@@ -45,6 +45,8 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "`migrate status` and `migrate --dry-run` write nothing: the tree, the config and `.delendai/migrations-applied.json` are byte-identical before and after."
   - "Only `migrate run` applies a migration."
 - Delivered: two causes. `migrate` started an MCP server to run, and that server applied the migration guard as it booted; and the CLI's own guard ran before the command too. `migrate` is now an offline command (like `init` and `guard`), and the guard skips it: `migrate run` is the only way it applies. Probed in a throwaway mcp-vertex project: `status` and `--dry-run` leave it byte-identical, `run` migrates and writes its manifest and backup. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The legacy proposal state is moved, and no copy of it stays behind
 - **Status**: pending
