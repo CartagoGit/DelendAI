@@ -1385,14 +1385,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00510",
-				"title": "F2 — Progress Projector: IStateProducer determinista que infiere fase, progreso ponderado, confianza, incertidumbre y stalled sin gastar tokens",
-				"track": "trust",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-06"
-			},
-			{
 				"id": "f00511",
 				"title": "F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico",
 				"track": "trust",
@@ -1476,7 +1468,7 @@
 				"id": "f00643",
 				"title": "The startup forge and journal phases run in a real host",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-09-26"
 			},

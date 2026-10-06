@@ -276,6 +276,61 @@ describe('createProcessedEventsStore', () => {
 		expect(raw).toContain('"sha":"sha1"');
 	});
 
+	it('sees what another process wrote, and reads the file only when it changed', async () => {
+		const reader = createProcessedEventsStore({ workspaceRoot: workspace });
+		const writer = createProcessedEventsStore({ workspaceRoot: workspace });
+		expect(await reader.has('k1')).toBe(false);
+		await writer.add('k1', 'sha1', now);
+		expect(await reader.has('k1')).toBe(true);
+		await reader.dispose();
+		expect(await reader.has('k1')).toBe(true);
+	});
+
+	it('keeps the file under its ceiling, dropping the oldest records first', async () => {
+		const store = createProcessedEventsStore({
+			workspaceRoot: workspace,
+			maxBytes: 400,
+		});
+		for (let index = 0; index < 20; index += 1) {
+			await store.add(
+				`key-${String(index)}`,
+				`sha-${String(index)}`,
+				now + index,
+			);
+		}
+		const raw = await readFile(
+			join(workspace, '.commit-policy/processed-events.jsonl'),
+			'utf8',
+		);
+		expect(raw.length).toBeLessThanOrEqual(400);
+		expect(await store.has('key-19')).toBe(true);
+		expect(await store.has('key-0')).toBe(false);
+	});
+
+	it('answers has() within 5 ms on a history of 10,000 records', async () => {
+		const lines = Array.from({ length: 10_000 }, (_unused, index) =>
+			JSON.stringify({
+				key: `key-${String(index)}`,
+				sha: 'abc',
+				ts: now,
+				outcome: 'APPLIED',
+			}),
+		);
+		await mkdir(join(workspace, '.commit-policy'), { recursive: true });
+		await writeFile(
+			join(workspace, '.commit-policy/processed-events.jsonl'),
+			`${lines.join('\n')}\n`,
+		);
+		const store = createProcessedEventsStore({ workspaceRoot: workspace });
+		expect(await store.has('key-0')).toBe(true);
+		const asked = 200;
+		const started = performance.now();
+		for (let index = 0; index < asked; index += 1) {
+			await store.has(`key-${String(index * 37)}`);
+		}
+		expect((performance.now() - started) / asked).toBeLessThan(5);
+	});
+
 	it('reloads the in-memory map from disk on next call', async () => {
 		const storeA = createProcessedEventsStore({ workspaceRoot: workspace });
 		await storeA.add('k1', 'sha1', now);

@@ -16,7 +16,10 @@ import type {
 	IStartupPhase,
 } from '../startup-reconciler/index';
 import type { IStartupHostFacts } from './environment-seam';
-import type { IStartupGovernanceSeam } from '../startup-reconciler/seams.interface';
+import type {
+	IStartupForgeSeam,
+	IStartupGovernanceSeam,
+} from '../startup-reconciler/seams.interface';
 import type { IStatePortsOpener } from './state-database-seam';
 
 /** The boot's answer about reconciliation. */
@@ -55,6 +58,11 @@ export interface IRunStartupGateInput {
 	 * is the honest answer for a host that was given no way to look.
 	 */
 	readonly governance?: IStartupGovernanceSeam | undefined;
+	/**
+	 * Read-only forge reader for pull requests and check runs. Absent
+	 * means the forge phase reports NOT EXECUTED, never a quiet pass.
+	 */
+	readonly forge?: IStartupForgeSeam | undefined;
 	readonly clock?: IStartupClock | undefined;
 	readonly hostFacts?: IStartupHostFacts | undefined;
 	/** False for a diagnose-only run: never bring a database into being. */
