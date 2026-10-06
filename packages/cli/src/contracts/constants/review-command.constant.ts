@@ -22,3 +22,6 @@ export const REVIEW_COMMAND = {
 
 /** What separates a criterion from the evidence a reviewer gives for it. */
 export const CRITERION_SEPARATOR = ' => ';
+
+/** The trailer `review release` gives a claim back with. */
+export const RELEASE_TRAILER = 'Releases';
