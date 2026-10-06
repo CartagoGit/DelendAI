@@ -257,6 +257,100 @@ export const refusalOf = (error: unknown): string => {
 	);
 };
 
+const DONE_DIR = 'docs/delendai/proposals/done/';
+
+/** The proposal ids a pass closes: the files it added under `done/`. */
+export const idsClosedBy = (added: string): readonly string[] => [
+	...new Set(
+		added
+			.split('\n')
+			.map((path) => path.trim())
+			.filter((path) => path.startsWith(DONE_DIR) && path.endsWith('.md'))
+			.map((path) => (path.split('/').at(-1) ?? '').slice(0, 6))
+			.filter((id) => /^[a-z]\d{5}$/u.test(id)),
+	),
+];
+
+/**
+ * Whether a retired pass keeps nothing: every proposal it closes is
+ * closed on the integration branch. Its own copy of each close differs
+ * from the one that landed only in the transition ids it stamped, so its
+ * commits never become ancestors of the integration branch, and the
+ * reaper that drops landed retired work never saw it as landed.
+ */
+export const passIsSpent = (
+	closes: readonly string[],
+	doneIds: ReadonlySet<string>,
+): boolean => closes.every((id) => doneIds.has(id));
+
+/** Drop this closer's retired passes whose closes have all landed. */
+const dropSpentPasses = (root: string, integration: string): void => {
+	const { namespacePrefix } = declaredBranches(root);
+	// `refs/retired/` for a project that declares no namespace.
+	const prefix = `${['refs', namespacePrefix, 'retired'].filter((part) => part.length > 0).join('/')}/`;
+	const listed =
+		tryRun('git', ['ls-remote', 'origin', `${prefix}${AGENT}/*`], root) ??
+		'';
+	const doneIds = new Set(
+		idsClosedBy(
+			tryRun(
+				'git',
+				['ls-tree', '-r', '--name-only', integration, DONE_DIR],
+				root,
+			) ?? '',
+		),
+	);
+	for (const line of listed.split('\n')) {
+		const [sha = '', ref = ''] = line.trim().split(/\s+/u);
+		if (sha.length === 0 || !ref.startsWith(prefix)) continue;
+		if (
+			tryRun('git', ['cat-file', '-e', `${sha}^{commit}`], root) ===
+			undefined
+		) {
+			tryRun(
+				'git',
+				['fetch', '--quiet', '--no-tags', 'origin', sha],
+				root,
+			);
+		}
+		const base = tryRun('git', ['merge-base', integration, sha], root);
+		if (base === undefined) continue;
+		const added = tryRun(
+			'git',
+			[
+				'diff',
+				'--name-only',
+				'--diff-filter=A',
+				base,
+				sha,
+				'--',
+				DONE_DIR,
+			],
+			root,
+		);
+		if (added === undefined || !passIsSpent(idsClosedBy(added), doneIds)) {
+			continue;
+		}
+		const unit = ref.slice(prefix.length);
+		const dropped = tryRun(
+			'bun',
+			[
+				'packages/cli/src/index.ts',
+				'work',
+				'retired',
+				`--drop=${unit}`,
+				'--reason=every proposal this close pass closes is closed on the integration branch',
+			],
+			root,
+		);
+		if (dropped !== undefined) {
+			console.log(
+				`close-approved-proposals: dropped the spent pass ${unit}.`,
+			);
+		}
+	}
+};
+
 const main = (): number => {
 	const root = repoRoot();
 	// The remote-tracking ref when the clone keeps one, else the local
@@ -278,6 +372,7 @@ const main = (): number => {
 	if (apply) {
 		sweepOwnUnits(root);
 		sweepRemoteUnits(root, integration, declaredBranches(root));
+		dropSpentPasses(root, integration);
 	}
 	const candidates = run(
 		'git',
