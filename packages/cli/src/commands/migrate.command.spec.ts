@@ -4,6 +4,9 @@ import { join } from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import type { ITransactionOutcome } from '@delendai/core/cli';
+import { fakePartial } from '@delendai/test-kit';
+
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import { createMigrateCommand } from './migrate.command';
@@ -98,13 +101,13 @@ describe('migrate command (b00239 S6)', () => {
 		const applyHost = vi.fn(async () => ({
 			writtenFiles: ['~/.claude.json'],
 		}));
-		const runTransaction = vi.fn(async () => ({
-			status: 'committed' as const,
-		}));
+		const runTransaction = vi.fn(async () =>
+			fakePartial<ITransactionOutcome>({ status: 'committed' }),
+		);
 		const cmd = createMigrateCommand({
 			planHost,
 			applyHost,
-			runTransaction: runTransaction as never,
+			runTransaction,
 			scanResidual: async () => ({ live: 0, hits: [] }),
 		});
 
