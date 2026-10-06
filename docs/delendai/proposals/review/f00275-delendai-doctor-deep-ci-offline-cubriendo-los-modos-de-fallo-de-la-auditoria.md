@@ -16,6 +16,8 @@ related: [q00011, f00276]
 last-transition-id: 3748813e-47c4-4977-ad5e-ce6966fde219
 last-correlation-id: 3748813e-47c4-4977-ad5e-ce6966fde219
 last-transition-from: in-progress
+shipped-in:
+  - "236586bbf31cad066853b7ba4431f8be3136ea0e"
 ---
 
 # f00275 — `delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría
@@ -114,7 +116,7 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
 
 ### S1 — `--ci`: salida estructurada + exit codes documentados
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `packages/cli/src/commands/groups/doctor.ts`
     - `packages/cli/src/contracts/constants/doctor-modes.constant.ts`
@@ -124,9 +126,11 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
     - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
 - Shipped: `--ci` adds a `ci` block (`exitCode`, `meaning`, `failing`, `skipped`) to the report and does not write the human recap. Exit codes stay 0/4/5 and are documented in `DOCTOR_CI_EXIT_MEANING`. Premise note: the file is still `groups/doctor.ts` (`commands/doctor.ts` is a dead duplicate, left untouched); the new flags are declared through the command's `flags` list.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `66b124669ad9`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: GPT-5.4
+- review-log: approved by GPT-5.4 — verified at 236586bbf31c, validate exit 0, tests 49/49 — Gate green in review worktree; --ci emits structured ci block, no human recap, and exit code mapping remains documented.
 
 ### S2 — `--offline`: marcar y saltar checks que requieren red
 
