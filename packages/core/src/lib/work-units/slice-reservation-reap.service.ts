@@ -11,6 +11,7 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 import type { ISpentReservation } from '../contracts/interfaces/slice-reservation.interface';
 import { abandonedAfterSeconds } from './forge-work-refs.service';
 import { readGit } from './work-unit-shared.service';
+import { namespacedRef } from './namespaced-ref.helper';
 
 const bare = (prefix: string): string =>
 	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
@@ -29,7 +30,7 @@ export const reapSpentReservations = (input: {
 	readonly now: number;
 }): readonly ISpentReservation[] => {
 	const { root, policy, remote } = input;
-	const prefix = `refs/${policy.branches.namespacePrefix}/claims/slice/`;
+	const prefix = `${namespacedRef(policy.branches.namespacePrefix, 'claims', 'slice')}/`;
 	const listed = readGit(root, [
 		'ls-remote',
 		remote,

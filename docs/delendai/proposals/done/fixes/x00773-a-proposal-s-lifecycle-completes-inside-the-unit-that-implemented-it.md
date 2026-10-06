@@ -2,13 +2,15 @@
 id: x00773
 title: "A proposal's lifecycle completes inside the unit that implemented it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-30
-last-transition-id: a3d989fd-7b9c-43ff-b060-0b4ebb37aa97
-last-correlation-id: a3d989fd-7b9c-43ff-b060-0b4ebb37aa97
-last-transition-from: in-progress
+last-transition-id: 1aaeeded-333b-4626-a2b7-de4cd7248954
+last-correlation-id: 1aaeeded-333b-4626-a2b7-de4cd7248954
+last-transition-from: review
+shipped-in:
+  - "97e521a46"
 ---
 
 # x00773 — A proposal's lifecycle completes inside the unit that implemented it
@@ -35,7 +37,7 @@ A proposal created or implemented in a unit exists only on that unit's ref until
 - global_gate: none
 
 ### S1 — Proposal tools act in the unit that carries the proposal
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/live-proposal-unit.interface.ts`
   - `packages/core/src/lib/work-units/proposal-branch.service.ts`
@@ -46,9 +48,11 @@ A proposal created or implemented in a unit exists only on that unit's ref until
   - `plugins/proposals/tests/src/lib/e2e/assembled-proposals-server.ts`
   - `plugins/proposals/tests/src/lib/e2e/proposal-lifecycle-in-unit.e2e.spec.ts`
 - **Gate**: type
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `97e521a4668f`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 97e521a46, validate exit 0, tests 37/37 — Delivered by #704 (merge 97e521a46). Proposal acceptance: proposal-lifecycle-in-unit.e2e.spec runs 'moves the proposal in the unit that carries it, and commits it there' for shared-checkout-pr, shared-checkout-merge and worktree-pr, asserting the shared checkout stays clean and holds no commit of it; 'proposal lifecycle in a project that commits directly' covers shared-direct; 'does not guess between two units that carry the proposal' and bind-write-root.spec 'refuses, naming the candidates, when several units carry it'. Core specs 30/30, e2e 7/7.
 
 ## acceptance
 

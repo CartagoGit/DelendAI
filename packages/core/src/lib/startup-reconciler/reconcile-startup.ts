@@ -280,6 +280,11 @@ const reconcileUnderLock = async (args: {
 		liveRefs: new Set(fetched.refs.map((ref) => ref.name)),
 		// Every ref that can hold a checkpoint once its work ref is gone:
 		// the work refs themselves and their publications (x00702).
+		retiredTips:
+			(await input.git.listRetiredTips?.(
+				policy.branches.namespacePrefix,
+				policy.branches.integration,
+			)) ?? [],
 		keptBy: [
 			...fetched.refs.map((ref) => ref.sha),
 			...(policy.branches.publicationRefPrefix.length > 0
