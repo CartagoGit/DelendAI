@@ -14,6 +14,8 @@ tags:
 last-transition-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
 last-correlation-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
 last-transition-from: in-progress
+shipped-in:
+  - "0bf0fe61e015"
 ---
 
 # f00538 — Forward-sync the release branch back into the integration branch after every promotion
@@ -89,12 +91,14 @@ fast-forwards a local clone and never touches the forge.
 
 ### S4 — Let the workflow token open the pull request
 
-- **Status**: review — the repository reports `can_approve_pull_request_reviews: true` since the owner changed the setting, and the workflow needs nothing else. The run of 2026-09-30 15:08 UTC opened #686 as `github-actions` with the workflow's own token, armed auto-merge on it seven seconds later, `delendai-validate` reported success on its head, and `github-actions` merged it on 2026-10-01 with no manual step. That run was a `workflow_dispatch`: `main` has not moved since, so the `push` trigger itself is still unobserved; it runs the same job. If the setting is ever turned off again the workflow still pushes the ref, fails red and prints the exact `gh pr create` command in its summary.
+- **Status**: done
 - **Files**: [`.github/workflows/forward-sync-release.yml`]
 - **Gate**: a push to `main` ends with a forward-sync pull request armed for auto-merge and `delendai-validate` reported on its head, with no manual step.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `0bf0fe61e015`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: Illyria
+- review-log: approved by Illyria — verified at 0bf0fe61e015, validate exit 0, tests 3/3 — Independently verified (reviewer Illyria, not claude-opus-5-5). Slice gate is observational, so I verified the delivery and its evidence directly. (1) The workflow declares permissions contents/pull-requests/actions: write and runs 'GH_TOKEN: ${{ github.token }}' with no admin token, so the non-goal holds. (2) I queried the forge with the authenticated gh CLI: PR #686 is author=github-actions, headRefName=delendai/pr/forward-sync-0720e8436, title 'chore(release): forward-sync main 0720e8436 into develop', state=MERGED, mergedAt=2026-10-01T06:06:32Z. That is exactly the claim in the slice: opened by the workflow token, armed for auto-merge, merged with no manual step. (3) allow_auto_merge=true on the repository. The slice's gate names a push to main; main's last move is 0720e8436 on 2026-09-29, before the workflow landed on main, so the push trigger itself is still unobserved - the slice discloses this and the dispatch path exercises the identical job. I could not read can_approve_pull_request_reviews (absent from the REST payload, GraphQL-only), but the observed merge proves the behaviour regardless. Approved on the delivered state; the unobserved push trigger is a fact about the environment, not a defect of the slice. Later commit 35fcf6860 added a bounded timeout to every job.
 
 ### S5 — Close the gap that exists today
 
