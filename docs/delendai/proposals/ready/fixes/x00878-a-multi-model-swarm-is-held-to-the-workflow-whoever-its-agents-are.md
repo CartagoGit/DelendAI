@@ -113,44 +113,36 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S9 — A unit nobody holds leaves nothing behind
-- **Status**: review
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A unit whose owner is gone (abandoned: past the lease windows) and that carries no commit beyond the integration branch has its worktree and local branch removed by `work reap --apply`, which the post-merge hook already runs; one holding an uncommitted edit is kept and reported with the paths, and one carrying a commit of its own is left alone."
 - Delivered: the reaper only ever removed delivered units, and a unit entered and never committed to is never delivered, so every reviewer of a swarm that stopped before its first verdict left a full copy of the repository and a branch behind (four `glm-5.3-flash` units here, each at the integration tip, clean). Such a unit is now reaped once it is abandoned; an idle one is left for its owner, and the edit and own-commit cases are unchanged. The removal case fails without the change; the three that keep a unit pin what must not change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 
 ### S10 — A publication closed without merging is retired, not left
-- **Status**: review
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/tests/src/lib/ref-lifecycle/reconcile.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A publication whose pull request was closed without merging, an hour or more ago, with no open request and no work branch of its unit on the forge, is retired by the queue's reap pass: its tip is kept under the retired namespace (where `work retired` lists it and `work retired --drop` ends it) and its branch is deleted. It is never deleted outright."
 - Delivered: x00697 stopped deleting such publications, since the tip may be the only copy, and kept them "for the author to reopen or end". Nobody ended them, and every swarm pack closed as a duplicate stayed on the forge (`delendai/pr/minimax-3/review/batch-all-g4/verdicts`, #860, closed by its own author). The reconcile now lists them as retirable after `DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS`, and `lint:ref-lifecycle --reap`, which the queue already runs, writes the retired ref through the forge API before deleting the branch; a retired ref already holding another tip leaves both alone. A dry run here names #860 and nothing else. The reconcile case and the helper's cases fail without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 
 ### S11 — An id reservation ends when a higher one supersedes it
-- **Status**: review
+- **Status**: in-progress
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Reserving an id releases the forge's reservations of the same prefix below it, so the forge holds at most one id reservation per prefix; the counter every clone reads is unchanged."
 - Delivered: an id is reserved as `refs/delendai/ids/<id>` and nothing ever removed one: a ref per proposal created piled up on the forge (nine after one afternoon). Only the highest reservation of a prefix feeds the counter — the allocator hands out the next one above it — so a successful reservation now deletes the lower ones of its prefix in the same `send-pack` way it was made; a failure to delete leaves them, harmless. The spec (three reservations, two left, the counter still 812) fails without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 
 ### S12 — A retired close pass ends once its closes have landed
-- **Status**: review
+- **Status**: in-progress
 - **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`, `tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Each run of the closer drops from the forge its own retired passes whose every closed proposal is in `done/` on the integration branch; a pass with a close that has not landed is kept."
 - Delivered: thirty-seven passes of the closer were retired on the forge after an afternoon, each holding the close of the same five proposals. The reaper of landed retired work drops a tip the integration branch contains, and a pass's commits never are contained: its copy of each close differs from the one that lands in the transition ids it stamped. The closer now reads its own retired passes, the proposals each added under `done/`, and drops (`work retired --drop`) those whose closes are all on the integration branch. The helpers' spec fails without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 
 ## acceptance
 
