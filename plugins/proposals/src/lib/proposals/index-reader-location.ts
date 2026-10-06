@@ -5,7 +5,7 @@
  * the index belongs to, and the database inside it.
  */
 
-import { basename, dirname } from 'node:path';
+import { basename, dirname, isAbsolute, join, sep } from 'node:path';
 
 import { PROPOSAL_INDEX_DB_PATH_ENV_VAR } from '../contracts/constants/proposal-index-source.constant';
 import type { IProposalIndexReadOptions } from './index-reader';
@@ -41,10 +41,51 @@ const workspaceRootFromIndexPath = (
 };
 
 /**
+ * Index files the plugin placed where the host's layout put them, each
+ * with the workspace it belongs to. A host may move the cache
+ * (`--cacheDir`), and the index moves with it while the database stays at
+ * its canonical place, so the canonical derivation below cannot see the
+ * root of a relocated index. The plugin knows both when it lays out its
+ * paths, and says so once.
+ */
+const declaredIndexFiles = new Map<string, string>();
+
+/**
+ * Record where this workspace keeps its proposal index. A relative
+ * `indexFile` is the layout's own path, valid in any checkout of the
+ * workspace (a unit of work's worktree included); an absolute one names
+ * this checkout only.
+ */
+export const declareProposalIndexFile = (
+	indexFile: string,
+	workspaceRoot: string,
+): void => {
+	declaredIndexFiles.set(indexFile, workspaceRoot);
+};
+
+/** The root a declared layout implies for `indexPathAbs`, if any does. */
+const workspaceRootFromDeclaredLayout = (
+	indexPathAbs: string,
+): string | null => {
+	for (const [indexFile, workspaceRoot] of declaredIndexFiles) {
+		if (isAbsolute(indexFile)) {
+			if (indexFile === indexPathAbs) return workspaceRoot;
+			continue;
+		}
+		const suffix = `${sep}${join(indexFile)}`;
+		if (indexPathAbs.endsWith(suffix)) {
+			return indexPathAbs.slice(0, -suffix.length);
+		}
+	}
+	return null;
+};
+
+/**
  * The workspace a read belongs to: an explicit `workspaceRoot` is the
  * caller's own word and wins; otherwise the root is derived from
- * `indexPathAbs` and verified against the canonical layout. `null` when
- * neither names one. An explicit `databasePath` does not answer this —
+ * `indexPathAbs` and verified against the canonical layout, or against
+ * the layout the plugin declared for a relocated cache. `null` when none
+ * names one. An explicit `databasePath` does not answer this —
  * the database and the workspace are independent facts.
  */
 export const resolveWorkspaceRoot = async (
@@ -53,17 +94,20 @@ export const resolveWorkspaceRoot = async (
 ): Promise<string | null> => {
 	const declared = options?.workspaceRoot;
 	if (declared !== undefined && declared.length > 0) return declared;
+	let canonical: string | null = null;
 	try {
 		const { resolveProposalsDbPaths } = await import(
 			'@delendai/proposals-sqlite'
 		);
-		return workspaceRootFromIndexPath(
+		canonical = workspaceRootFromIndexPath(
 			indexPathAbs,
 			(candidate) => resolveProposalsDbPaths(candidate).stateDir,
 		);
 	} catch {
-		return null;
+		// The canonical layout cannot be checked here; a declared one is
+		// a matter of paths alone.
 	}
+	return canonical ?? workspaceRootFromDeclaredLayout(indexPathAbs);
 };
 
 /**

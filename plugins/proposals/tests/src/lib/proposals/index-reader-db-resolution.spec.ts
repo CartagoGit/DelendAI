@@ -20,6 +20,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
 
 import { readProposalIndex } from '../../../../src/lib/proposals/index-reader';
+import { declareProposalIndexFile } from '../../../../src/lib/proposals/index-reader-location';
 
 const roots: string[] = [];
 
@@ -84,6 +85,30 @@ describe('resolving which database a read belongs to', () => {
 		expect(await askedPaths(indexPath)).toEqual([
 			resolveProposalsDbPaths(root).databasePath,
 		]);
+	});
+
+	it('finds the workspace of an index the host relocated with its cache', async () => {
+		// `--cacheDir` moves the index; the database stays at its canonical
+		// place. Before the plugin declared its layout, every read of such
+		// an index was served by the registry. The declaration is relative,
+		// so it holds in any checkout of the workspace, a unit's included.
+		const relative = join(
+			'var',
+			'delendai-cache',
+			'proposals',
+			'index.json',
+		);
+		declareProposalIndexFile(relative, '/unused-for-a-relative-layout');
+		const root = makeRoot();
+		const indexPath = join(root, relative);
+		mkdirSync(dirname(indexPath), { recursive: true });
+		writeFileSync(indexPath, JSON.stringify({ proposals: [] }), 'utf8');
+
+		expect(await askedPaths(indexPath)).toEqual([
+			resolveProposalsDbPaths(root).databasePath,
+		]);
+		// A path the layout does not end in is still nobody's guess.
+		expect(await askedPaths(join(makeRoot(), 'index.json'))).toEqual([]);
 	});
 
 	it('does not guess the project from the process working directory', async () => {
