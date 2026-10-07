@@ -1,4 +1,4 @@
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { realReadLocalCorrelateDeps } from '../correlate';
 import type { IRuntimeMetricsRegistry } from '../contracts/interfaces/observability.interface';

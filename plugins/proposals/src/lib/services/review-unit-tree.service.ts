@@ -10,7 +10,7 @@
  */
 import { join, relative } from 'node:path';
 
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 /** The worktree that has `unit` checked out, if any. */
 const worktreeOf = async (

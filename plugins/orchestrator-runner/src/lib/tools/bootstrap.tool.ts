@@ -14,7 +14,8 @@
  * patch only ADDS providers whose id is not already confirmed. Effects:
  * `spawn` (probes) + `write` (the draft). Never spends on a model.
  */
-import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import {

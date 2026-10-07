@@ -7,7 +7,7 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toScanResult, toolJson } from '@delendai/core/public';
 import {
 	realLicenseDeps,

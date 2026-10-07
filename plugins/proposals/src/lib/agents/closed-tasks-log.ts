@@ -14,12 +14,12 @@
 
 import { basename, dirname } from 'node:path';
 
+import { quarantineCorruptFile } from '@delendai/core/public';
 import {
-	quarantineCorruptFile,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 import z from 'zod';
 
 // ---------------------------------------------------------------------------

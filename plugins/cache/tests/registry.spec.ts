@@ -16,7 +16,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { createCacheEvictionRegistry } from '@delendai/core/lib/cache/eviction-registry';
-import type { ICacheEvictionRegistry } from '@delendai/core/public';
+import type { ICacheEvictionRegistry } from '@delendai/core/contracts';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { registerStaticRules } from '../src/lib/registry';

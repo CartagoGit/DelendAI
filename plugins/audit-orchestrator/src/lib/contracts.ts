@@ -2,7 +2,7 @@ import type {
 	IDispatchPort,
 	IPlanOutcome,
 } from '@delendai/agent-orchestrator/public';
-import type { IWorkspacePathProvider } from '@delendai/core/public';
+import type { IWorkspacePathProvider } from '@delendai/core/contracts';
 
 export interface IAuditPlanChild {
 	readonly id: string;

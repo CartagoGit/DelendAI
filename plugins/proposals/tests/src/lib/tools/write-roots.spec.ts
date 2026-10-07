@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import plugin from '@delendai/proposals';
 

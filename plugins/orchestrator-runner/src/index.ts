@@ -12,7 +12,8 @@
  *
  * Load with `delendai --plugins=usage-tracking,orchestrator-runner`.
  */
-import { definePlugin, joinRel, runCommand } from '@delendai/core/public';
+import { joinRel, runCommand } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import type { IProviderCapabilities } from '@delendai/core/public';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';

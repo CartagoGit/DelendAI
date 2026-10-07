@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { withFileMutex } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 const LOCK_PATH = 'git-write';
 

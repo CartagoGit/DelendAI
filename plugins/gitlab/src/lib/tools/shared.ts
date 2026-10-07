@@ -2,8 +2,9 @@ import { mkdir } from 'node:fs/promises';
 import { isAbsolute, join, resolve as resolvePath, sep } from 'node:path';
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
-import { toolError, toolJson, writeFileAtomic } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { toolError, toolJson } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
 
 import type { GitLabRequestError } from '../client';
 import type { IGitLabProviderContext } from '../config';

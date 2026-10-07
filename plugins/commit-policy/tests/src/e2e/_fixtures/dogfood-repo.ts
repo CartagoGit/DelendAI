@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 
 import { createWriteGitRunner } from '@delendai/core/public';
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 const execFileAsync = promisify(execFile);
 

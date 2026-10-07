@@ -1,4 +1,4 @@
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 import { effectiveMockStyle, type ITestConvention } from '../convention';
 import type { IRunnerInfo } from './runners';

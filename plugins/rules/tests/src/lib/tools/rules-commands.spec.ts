@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IFileReader,
 	IWorkspacePathProvider,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import {
 	buildApplyRulesRegistration,

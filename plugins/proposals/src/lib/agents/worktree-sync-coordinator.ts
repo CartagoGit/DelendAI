@@ -29,7 +29,7 @@
  * `registryMutexPath` and gets the `withFileMutex`-backed coordinator.
  */
 
-import { withFileMutex } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 export interface IWorktreeSyncCoordinator {
 	/**

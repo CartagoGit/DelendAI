@@ -2,8 +2,9 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
-import { toolJson, writeFileAtomic } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { toolJson } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
 
 import {
 	PLAYWRIGHT_INSTALL_HINT,

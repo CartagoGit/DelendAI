@@ -3,11 +3,11 @@ import { DELENDAI_VERSION } from '@delendai/core/version';
 import reporterPackageJson from '../package.json';
 
 import {
-	definePlugin,
 	redactSecrets,
 	type IPluginLogsHelper,
 	type IToolIdentityRegistry,
 } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 
 import { OptionsSchema } from './lib/contracts/constants/options.constant';
 import type { ISafeDelendaiReport } from './lib/contracts/interfaces/reporter.interface';

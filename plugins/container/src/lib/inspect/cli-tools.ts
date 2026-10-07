@@ -1,5 +1,5 @@
 /** Declarative CLI descriptors for the container plugin. */
-import type { IExternalTool } from '@delendai/core/public';
+import type { IExternalTool } from '@delendai/core/contracts';
 
 export const DOCKER_TOOL: IExternalTool = {
 	id: 'docker',

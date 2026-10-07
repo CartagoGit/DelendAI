@@ -14,7 +14,8 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 
 import { decideAutoCompaction } from '../compaction/auto-compaction-policy.helper';

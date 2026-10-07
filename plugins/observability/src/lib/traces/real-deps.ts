@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type {
 	IReadReleaseHealthDeps,
