@@ -16,8 +16,10 @@ on:
   # landed on develop.
   push:
     branches: [main, develop]
+  # Into develop only: the push run already analyses a develop → main
+  # candidate's commit, and a second run would report it twice.
   pull_request:
-    branches: [main, develop]
+    branches: [develop]
   workflow_dispatch:
 
 # Cancel superseded runs on the same ref.
