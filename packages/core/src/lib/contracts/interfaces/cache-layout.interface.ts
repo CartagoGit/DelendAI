@@ -10,6 +10,8 @@
  * It changes only when a path or a format that an OLDER build persisted
  * stops being the one the current build reads.
  */
+import type { ILifecycleStateStore } from '@delendai/state';
+
 import type {
 	IMigration,
 	IMigrationContext,
@@ -47,10 +49,15 @@ export interface ICacheLayoutManifest {
 	readonly artifacts: readonly ICacheArtifactDescriptor[];
 }
 
+/**
+ * `moved`: the destination was free. `skipped-conflict`: it already
+ * exists, so nothing moved and the source is untouched. `skipped-missing-source`:
+ * there was nothing to move.
+ */
 export type IMoveIfDestinationMissingOutcome =
 	| 'moved'
-	| 'kept-source'
-	| 'skipped-conflict';
+	| 'skipped-conflict'
+	| 'skipped-missing-source';
 
 /**
  * The only filesystem operations a layout migration may perform. Each
@@ -93,4 +100,50 @@ export interface ICacheLayoutMigration extends Pick<IMigration, 'id'> {
 		ctx: ICacheLayoutMigrationContext,
 	) => Promise<readonly IMigrationPlanStep[]>;
 	readonly apply: (ctx: ICacheLayoutMigrationContext) => Promise<void>;
+}
+
+/** One step of the chain that found something to do. */
+export interface ICacheLayoutPlannedStep {
+	readonly id: string;
+	readonly fromEpoch: number;
+	readonly toEpoch: number;
+	readonly steps: readonly IMigrationPlanStep[];
+}
+
+export type ICacheLayoutRunResult =
+	/** The recorded epoch already matches: nothing was inspected. */
+	| { readonly status: 'current' }
+	/** This build ships no layout migrations, so there is no history to run. */
+	| { readonly status: 'unregistered' }
+	| {
+			readonly status: 'planned';
+			readonly fromEpoch: number;
+			readonly toEpoch: number;
+			readonly pending: readonly ICacheLayoutPlannedStep[];
+	  }
+	| {
+			readonly status: 'migrated';
+			readonly fromEpoch: number;
+			readonly toEpoch: number;
+			readonly applied: readonly ICacheLayoutPlannedStep[];
+	  }
+	| {
+			readonly status: 'failed';
+			readonly id: string;
+			readonly reason: string;
+	  };
+
+export interface ICacheLayoutRunInput {
+	readonly workspaceRoot: string;
+	readonly store: ILifecycleStateStore;
+	readonly migrations: readonly ICacheLayoutMigration[];
+	/**
+	 * Called only when there is something to carry, so a workspace that is
+	 * already current never pays to read its configuration.
+	 */
+	readonly resolveCacheDirAbs: () => Promise<string>;
+	/** Defaults to this build's epoch. */
+	readonly targetEpoch?: number;
+	/** Detect and plan only; write nothing, record nothing. */
+	readonly dryRun?: boolean;
 }
