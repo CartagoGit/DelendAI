@@ -298,6 +298,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S26 — A queue whose candidates are all behind still moves
+- **Status**: pending
+- **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`, `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
+- **Gate**: type
+- acceptance:
+  - "When every open candidate is behind the integration branch and none can land as it is, the owner machine brings them forward within one cadence, without waiting for a merge: the queue never waits on itself."
+- Found 2026-10-07: for three hours nothing merged. The queue arms only candidates that land as they are; all six were behind, so it armed none and reported "refresh it from the machine that owns it". The owner machine brings candidates forward after a merge (the post-merge hydration), and nothing had merged — a cycle with no way out but a person running `forge:refresh --apply`. The orchestrator's own pump now refreshes on start and every 30 minutes; the product needs the same cadence where the owner machine already runs one (the server's work-checkout publisher), so it does not depend on an operator's script.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

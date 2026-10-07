@@ -23,6 +23,12 @@ import {
 
 const FILE = /^mcp-server\.(\d{4}-\d{2}-\d{2})\.log$/u;
 
+/** The writes in flight, so a caller can wait for them (a test, a shutdown). */
+let pending: Promise<void> = Promise.resolve();
+
+/** Resolves once every line recorded so far is on disk. */
+export const serverLogWritten = (): Promise<void> => pending;
+
 /** The day's file name for `at`. */
 export const serverLogName = (at: Date): string =>
 	`mcp-server.${at.toISOString().slice(0, 10)}.log`;
@@ -65,7 +71,6 @@ export const startServerLog = async (input: {
 		return;
 	}
 	const prefix = `${input.label}#${String(process.pid)}`;
-	let pending = Promise.resolve();
 	let partial = '';
 	const record = (text: string): void => {
 		const lines = `${partial}${text}`.split('\n');

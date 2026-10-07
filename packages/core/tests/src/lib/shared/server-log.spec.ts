@@ -18,6 +18,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
 	expiredServerLogs,
 	serverLogName,
+	serverLogWritten,
 	startServerLog,
 } from '@delendai/core/lib/shared/server-log';
 
@@ -68,7 +69,7 @@ describe('startServerLog', () => {
 		});
 		process.stderr.write('[delendai] booted\nhalf a ');
 		process.stderr.write('line\n');
-		await new Promise((done) => setTimeout(done, 50));
+		await serverLogWritten();
 
 		const files = readdirSync(dir).sort();
 		expect(files).toHaveLength(10);
