@@ -263,6 +263,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A `create` unit (and its open publication) does not hold the slices of the proposal it wrote: another agent's `work enter --kind=implement` on one of them is not refused for it; a second `create` unit on the same proposal still is."
 - Found 2026-10-07: an implementer dispatched to f00757 S1 was refused, "already being worked on by another agent", because the proposal's `create` publication (#892) is named `f00757-all` and `all` covers every slice. The proposal was not even on the integration branch yet, so nobody could start any of its slices until the document's pull request merged. The only way round it, `--alongside`, is the deliberate-duplicate escape, and an agent's permission classifier rightly refused it.
 - Delivered: `holdersOfSlice` leaves a `create` unit out unless the asker is creating too. The existing case that used a `create` unit as its whole-proposal example now uses an `implement` one, which is what holds every slice. The new case fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
