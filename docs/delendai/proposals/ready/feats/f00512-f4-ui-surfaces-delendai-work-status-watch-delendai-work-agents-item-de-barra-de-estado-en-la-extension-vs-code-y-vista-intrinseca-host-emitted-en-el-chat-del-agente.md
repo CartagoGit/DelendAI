@@ -21,7 +21,9 @@ tags:
 
 # f00512 — F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente
 
-## status 2026-10-07
+## notes
+
+Status on 2026-10-07.
 
 Not started, on purpose. Two things come first, found while implementing f00511:
 
