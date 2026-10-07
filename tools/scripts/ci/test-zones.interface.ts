@@ -84,4 +84,10 @@ export interface IRootChange {
 	readonly path: string;
 	/** Added or deleted (a rename is both): the directory now lists differently. */
 	readonly listing: boolean;
+	/**
+	 * For a workflow file: whether the change touches what runs the test
+	 * zones. Absent means unknown, and an unknown workflow change still
+	 * runs every zone.
+	 */
+	readonly runnerChanged?: boolean | undefined;
 }
