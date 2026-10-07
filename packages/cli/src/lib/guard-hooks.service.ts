@@ -175,6 +175,30 @@ export const durableEntry = (workspaceRoot: string, entry: string): string => {
 	return existsSync(twin) ? twin : entry;
 };
 
+/** The per-clone keys that say how the guard reaches the CLI. */
+const GUARD_CONFIG_KEYS = [
+	'delendai.guard.runner',
+	'delendai.guard.entry',
+] as const;
+
+/**
+ * Forget how this machine reached the CLI. Removing the hooks and leaving
+ * these left the clone saying it was guarded, to anything that reads its
+ * config, after the guard was gone.
+ */
+const forgetGuardCommand = (workspaceRoot: string): void => {
+	for (const key of GUARD_CONFIG_KEYS) {
+		try {
+			execFileSync('git', ['config', '--local', '--unset-all', key], {
+				cwd: workspaceRoot,
+				stdio: 'ignore',
+			});
+		} catch {
+			// Already absent: nothing to forget.
+		}
+	}
+};
+
 /** Remember, per clone, exactly how this machine reaches the CLI. */
 const recordGuardCommand = (
 	workspaceRoot: string,
@@ -269,6 +293,7 @@ export const uninstallGuardHooks = (
 	workspaceRoot: string,
 ): IGuardHooksReport => {
 	const location = locateHooks(workspaceRoot);
+	forgetGuardCommand(workspaceRoot);
 	return {
 		dir: location.dir,
 		hooks: GUARDED_HOOKS.map((hook) => {
