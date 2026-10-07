@@ -23,6 +23,9 @@ import { unitKeyOf } from './work-swarm.service';
 /** Unit kinds that read work rather than do it. */
 const READING_KINDS: ReadonlySet<string> = new Set(['review']);
 
+/** The kind of unit that writes a proposal's document. */
+const WRITING_KIND = 'create';
+
 /** The slice that holds every other slice of its proposal. */
 const WHOLE_PROPOSAL = 'all';
 
@@ -75,6 +78,12 @@ export const holdersOfSlice = (input: {
 		return (
 			held !== undefined &&
 			!READING_KINDS.has(held.kind) &&
+			// A unit that wrote the proposal holds its document, not the
+			// slices it lists: its publication stood open with the whole
+			// proposal (`all`) under its name, and nobody else could start
+			// a slice of a proposal that was not even on the integration
+			// branch yet.
+			(held.kind !== WRITING_KIND || input.kind === WRITING_KIND) &&
 			held.proposal === input.proposal &&
 			covers(held.slice, input.slice)
 		);
