@@ -71,7 +71,7 @@ export const reserveSlice = (input: {
 	const tree = readGit(root, ['rev-parse', 'HEAD^{tree}']);
 	if (url === undefined || tree === undefined) return { kind: 'unavailable' };
 	const prefix = sliceReservationPrefix(input.namespace, input.proposal);
-	const listed = readGit(root, ['ls-remote', url, `${prefix}*`]);
+	const listed = readGit(root, ['ls-remote', '--', url, `${prefix}*`]);
 	if (listed === undefined) return { kind: 'unavailable' };
 	const now = input.now ?? Math.floor(Date.now() / 1000);
 	const stale: { ref: string; commit: string }[] = [];
@@ -79,7 +79,7 @@ export const reserveSlice = (input: {
 		const [commit = '', ref = ''] = line.split('\t');
 		const slice = ref.slice(prefix.length);
 		if (!covers(slice, input.slice.toLowerCase())) continue;
-		if (readGit(root, ['fetch', '--quiet', url, ref]) === undefined) {
+		if (readGit(root, ['fetch', '--quiet', '--', url, ref]) === undefined) {
 			return { kind: 'unavailable' };
 		}
 		const shown = readGit(root, ['log', '-1', '--format=%ct%n%B', commit]);
@@ -97,6 +97,7 @@ export const reserveSlice = (input: {
 					(
 						readGit(root, [
 							'ls-remote',
+							'--',
 							url,
 							`refs/heads/${branch}`,
 						]) ?? ''
@@ -131,16 +132,17 @@ export const reserveSlice = (input: {
 					'core.hooksPath=/dev/null',
 					'push',
 					'--quiet',
+					'--',
 					`--force-with-lease=${ref}:${own.commit}`,
 					url,
 					`${mine}:${ref}`,
 				]);
 	if (pushed !== undefined) return { kind: 'reserved' };
 	// Lost the push to somebody who reserved at the same moment.
-	const winner = readGit(root, ['ls-remote', url, ref]) ?? '';
+	const winner = readGit(root, ['ls-remote', '--', url, ref]) ?? '';
 	const commit = winner.split('\t')[0] ?? '';
 	if (commit.length === 0) return { kind: 'unavailable' };
-	readGit(root, ['fetch', '--quiet', url, ref]);
+	readGit(root, ['fetch', '--quiet', '--', url, ref]);
 	const holder = holderOf(
 		readGit(root, ['log', '-1', '--format=%B', commit]) ?? '',
 	);
@@ -159,11 +161,11 @@ export const releaseSlices = (input: {
 	const url = readGit(root, ['remote', 'get-url', input.remote]);
 	if (url === undefined) return 0;
 	const prefix = sliceReservationPrefix(input.namespace, input.proposal);
-	const listed = readGit(root, ['ls-remote', url, `${prefix}*`]) ?? '';
+	const listed = readGit(root, ['ls-remote', '--', url, `${prefix}*`]) ?? '';
 	let released = 0;
 	for (const line of listed.split('\n').filter((each) => each.length > 0)) {
 		const [commit = '', ref = ''] = line.split('\t');
-		if (readGit(root, ['fetch', '--quiet', url, ref]) === undefined)
+		if (readGit(root, ['fetch', '--quiet', '--', url, ref]) === undefined)
 			continue;
 		const holder = holderOf(
 			readGit(root, ['log', '-1', '--format=%B', commit]) ?? '',
@@ -175,6 +177,7 @@ export const releaseSlices = (input: {
 				'core.hooksPath=/dev/null',
 				'push',
 				'--quiet',
+				'--',
 				`--force-with-lease=${ref}:${commit}`,
 				url,
 				`:${ref}`,

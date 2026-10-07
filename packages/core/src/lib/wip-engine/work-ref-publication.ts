@@ -35,7 +35,7 @@ export const publishWorkRef = async (
 	const remote = await resolveDurabilityRemote(run, remoteOption);
 	if (remote === undefined)
 		return { ok: false, reason: DURABILITY_REMOTE_MISSING };
-	const before = await run(['ls-remote', remote, ref]);
+	const before = await run(['ls-remote', '--', remote, ref]);
 	if (!before.ok)
 		return {
 			ok: false,
@@ -55,6 +55,7 @@ export const publishWorkRef = async (
 	const pushed = await run([
 		'push',
 		'--porcelain',
+		'--',
 		`--force-with-lease=${ref}:${remoteSha ?? ''}`,
 		remote,
 		`${commit}:${ref}`,
@@ -64,7 +65,7 @@ export const publishWorkRef = async (
 			ok: false,
 			reason: pushed.reason ?? `could not push ${ref} to ${remote}`,
 		};
-	const observed = await run(['ls-remote', '--exit-code', remote, ref]);
+	const observed = await run(['ls-remote', '--exit-code', '--', remote, ref]);
 	const observedSha = observed.ok
 		? observed.output.trim().split(/\s+/u)[0]
 		: undefined;

@@ -190,7 +190,8 @@ export const retired = async (
 	// already keep another unit's tip under this name: that one stays, and
 	// this one is kept beside it, named by its commit.
 	const onForge = (ref: string): string | undefined =>
-		readGit(root, ['ls-remote', remote, ref])?.split('\t')[0] || undefined;
+		readGit(root, ['ls-remote', '--', remote, ref])?.split('\t')[0] ||
+		undefined;
 	const kept = distinct.map((commit, index) => {
 		const named =
 			index === 0
@@ -221,6 +222,7 @@ export const retired = async (
 			: readGit(root, [
 					'push',
 					'--quiet',
+					'--',
 					remote,
 					...kept.map((each) => `${each.ref}:${each.ref}`),
 				]);
@@ -273,8 +275,14 @@ export const retired = async (
 		);
 		if (
 			onForge &&
-			readGit(root, ['push', '--quiet', remote, '--delete', branch]) !==
-				undefined
+			readGit(root, [
+				'push',
+				'--quiet',
+				'--delete',
+				'--',
+				remote,
+				branch,
+			]) !== undefined
 		) {
 			removed.push(`${remote}/${branch}`);
 		}
@@ -325,7 +333,7 @@ export const retiredListed = async (
 	const root = mainWorktreeOf(opened.root);
 	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
 	const prefix = `${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`;
-	const listed = readGit(root, ['ls-remote', remote, `${prefix}*`]);
+	const listed = readGit(root, ['ls-remote', '--', remote, `${prefix}*`]);
 	if (listed === undefined) {
 		return refused(
 			`Could not ask \`${remote}\` for the retired work.`,

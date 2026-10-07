@@ -81,7 +81,7 @@ export const journalRefReader =
 		const remote = await integrationRemote(integrationBranch);
 		if (remote === undefined) return { kind: 'payload', payload: [] };
 		const ref = namespacedRef(namespace, JOURNAL_REF_LEAF);
-		const listed = await run(['ls-remote', remote, ref]);
+		const listed = await run(['ls-remote', '--', remote, ref]);
 		if (!listed.ok)
 			return unavailable(`${remote} could not be asked for ${ref}`);
 		if (listed.output.trim().length === 0) {
@@ -91,6 +91,7 @@ export const journalRefReader =
 			'fetch',
 			'-q',
 			'--no-write-fetch-head',
+			'--',
 			remote,
 			`+${ref}:${ref}`,
 		]);
