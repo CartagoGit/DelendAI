@@ -32,3 +32,9 @@ export {
 	type IAppendResult,
 	type TWorkEventBackend,
 } from './work-event-store.facade';
+
+export { drainWorkEventJournal } from './work-event-journal-drain.service';
+export type {
+	IWorkEventDrainResult,
+	IWorkEventSink,
+} from './contracts/interfaces/work-event-journal-drain.interface';
