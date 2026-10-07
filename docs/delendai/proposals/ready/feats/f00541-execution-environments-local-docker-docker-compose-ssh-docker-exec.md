@@ -38,6 +38,8 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Contract exposes id, label, capabilities(), prepare(), exec(), putFile(), getFile(), teardown(), env()."
   - "ExecutionCapability union includes persistent-workspace, isolated-filesystem, isolated-network, shell-bash, shell-pwsh, suspend-resume, forward-secrets, preserve-between-slices."
   - "Registry accepts registrations by id."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Local adapter baseline
 - **Status**: pending
