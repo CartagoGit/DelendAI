@@ -5,7 +5,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	HYDRATION_LOG_MAX_BYTES,
 	HYDRATION_STEPS,
+	logIsFull,
 	skipReason,
 } from './hydrate-candidates-after-merge.script';
 
@@ -78,5 +80,16 @@ describe('what bringing the candidates forward runs', () => {
 			'tools/scripts/git/refresh-candidate-artifacts.script.ts',
 		);
 		expect(scripts.join(' ')).not.toContain('refresh-candidates');
+	});
+});
+
+describe('the hydration log', () => {
+	it('is set aside once it outgrows its limit', () => {
+		expect(logIsFull(HYDRATION_LOG_MAX_BYTES + 1)).toBe(true);
+	});
+
+	it('keeps being written while within it, or when it does not exist yet', () => {
+		expect(logIsFull(HYDRATION_LOG_MAX_BYTES)).toBe(false);
+		expect(logIsFull(undefined)).toBe(false);
 	});
 });
