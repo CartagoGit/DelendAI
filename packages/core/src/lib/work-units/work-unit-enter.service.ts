@@ -23,6 +23,7 @@ import {
 	topicForNewUnit,
 } from './reviewed-proposal.service';
 import { scalarArg } from './command-args.helper';
+import { journalEnteredUnit } from './work-event-journal.service';
 
 import {
 	agentFor,
@@ -125,7 +126,9 @@ export const enteredLocked = async (
 		});
 		if (held.kind === 'acquired') {
 			try {
-				return await enteredHeld(args, ctx);
+				const entry = await enteredHeld(args, ctx);
+				await journalEnteredUnit(workspaceOf(ctx), args, entry);
+				return entry;
 			} finally {
 				await held.release();
 			}
