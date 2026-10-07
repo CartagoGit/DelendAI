@@ -55,6 +55,7 @@ export const publishWorkRef = async (
 	const pushed = await run([
 		'push',
 		'--porcelain',
+		'--',
 		`--force-with-lease=${ref}:${remoteSha ?? ''}`,
 		'--',
 		remote,
