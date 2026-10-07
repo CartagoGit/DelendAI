@@ -158,15 +158,16 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 
 ### S4 — Timeline append-only sin binario (variante CI-safe)
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
-- **Files**: `packages/roadmap/src/lib/store/timeline-store.interface.ts`, `packages/roadmap/src/lib/store/markdown-timeline.store.ts`, `packages/roadmap/src/lib/store/in-memory-timeline.store.ts`, `packages/roadmap/tests/src/lib/store/markdown-timeline.store.spec.ts`, `packages/roadmap/tests/src/lib/store/in-memory-timeline.store.spec.ts`
-- **Gate**: type
+- **Files**: `packages/roadmap/AGENT.md`, `packages/roadmap/src/public/index.ts`, `packages/roadmap/src/lib/contracts/constants/timeline.constant.ts`, `packages/roadmap/src/lib/contracts/interfaces/timeline.interface.ts`, `packages/roadmap/src/lib/contracts/schemas/timeline.schema.ts`, `packages/roadmap/src/lib/timeline/timeline-query.helper.ts`, `packages/roadmap/src/lib/timeline/timeline-replay.service.ts`, `packages/roadmap/src/lib/timeline/roadmap-diff.service.ts`, `packages/roadmap/src/lib/timeline/timeline-seal.helper.ts`, `packages/roadmap/src/lib/store/in-memory-timeline.store.ts`, `packages/roadmap/src/lib/store/markdown-timeline.store.ts`, `packages/roadmap/tests/src/lib/timeline/timeline-fixtures.helper.ts`, `packages/roadmap/tests/src/lib/timeline/timeline-replay.service.spec.ts`, `packages/roadmap/tests/src/lib/store/timeline-store.contract.spec.ts`, `packages/roadmap/tests/src/lib/store/markdown-timeline.store.spec.ts`
+- **Gate**: `bun x vitest run --root packages/roadmap`
 - acceptance:
   - "`IRoadmapStore` es la abstracción y existen al menos dos implementaciones intercambiables (markdown + in-memory), lo que demuestra que la agnostismo no depende del backend."
   - "El timeline es append-only: no existe ninguna operación que borre o reescriba un evento pasado."
   - "La variante markdown permite responder "cuándo se añadió esta entrada" sin ningún binario, para que CI pueda auditar sin SQLite."
   - "Reconstruir el estado actual desde el timeline produce el mismo resultado que leer el fichero de autoridad directamente."
+- shipped: the append-only timeline contract (IRoadmapTimelineStore: append and list, nothing that removes or rewrites), an in-memory and a markdown backend that pass the same contract spec, diffRoadmaps (the events between two roadmaps), replayTimeline (the roadmap a history describes) and the whenAdded query. Re-cut: the abstraction is named IRoadmapTimelineStore because S3 already uses IRoadmapStore for the authority file; the markdown timeline is one JSON event per list line so it can be searched as text and audited by CI; replay equals the authority file once both are put in canonical order.
 
 ### S5 — Driver SQLite del timeline
 - **Status**: pending
