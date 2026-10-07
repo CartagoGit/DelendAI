@@ -580,6 +580,8 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Gate**: `bun run lint:proposals` (the annex parses and every link resolves).
 - **Aceptación**: firmado por el `proposal_guardian` o un reviewer que **no** sea el autor.
 - **Shipped**: already delivered before this unit, in commit `c54547404` (`chore(proposals): close c00527 inventory annex`). The deliverable lives in the annex `c00527`, not in the `ready/chores/f00513-inventory.md` path this block used to declare (that file never existed; the annex was archived under `done/chores/`). Its table covers epochs 1-9 and eight sections (r00010, f00065, f00080, x00052, rebrand, workflow refactors, q00019, q00020), each row with its introducing proposal or commit and a safe-to-delete verdict. This unit only corrects the declared path and records the shipping commit.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S1 — Contratos puros (entregable: `f00526`)
 - **Status**: pending
