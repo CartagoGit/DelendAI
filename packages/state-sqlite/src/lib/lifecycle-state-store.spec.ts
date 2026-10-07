@@ -10,6 +10,12 @@ import { SqliteLifecycleStateStore } from './lifecycle-state-store';
 const memory = (): SqliteLifecycleStateStore =>
 	new SqliteLifecycleStateStore(new Database(':memory:'), () => 1_000);
 
+// Enough turns of the event loop for a caller that is not locked out to
+// run its own steps in the middle of ours; no clock is involved.
+const yieldToOthers = async (): Promise<void> => {
+	for (let turn = 0; turn < 20; turn += 1) await Promise.resolve();
+};
+
 describe('SqliteLifecycleStateStore', () => {
 	it('reports null before any epoch is written', async () => {
 		expect(await memory().getAppliedEpoch('cache-layout')).toBeNull();
@@ -57,7 +63,7 @@ describe('SqliteLifecycleStateStore', () => {
 		const run = (name: string) =>
 			store.withMigrationLock(async () => {
 				trace.push(`${name}:start`);
-				await new Promise((resolve) => setTimeout(resolve, 10));
+				await yieldToOthers();
 				trace.push(`${name}:end`);
 			});
 		await Promise.all([run('a'), run('b')]);

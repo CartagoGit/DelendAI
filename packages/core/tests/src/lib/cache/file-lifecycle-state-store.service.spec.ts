@@ -7,6 +7,12 @@ import { createFileLifecycleStateStore } from '@delendai/core/lib/cache/file-lif
 import { CACHE_LAYOUT_MARKER_PATH } from '@delendai/core/lib/contracts/constants/cache-layout.constant';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
+// Enough turns of the event loop for a caller that is not locked out to
+// run its own steps in the middle of ours; no clock is involved.
+const yieldToOthers = async (): Promise<void> => {
+	for (let turn = 0; turn < 20; turn += 1) await Promise.resolve();
+};
+
 const workspaces: string[] = [];
 
 const workspace = (): string => {
@@ -87,7 +93,7 @@ describe('createFileLifecycleStateStore', () => {
 		const run = (name: string) =>
 			store.withMigrationLock(async () => {
 				trace.push(`${name}:start`);
-				await new Promise((resolve) => setTimeout(resolve, 30));
+				await yieldToOthers();
 				trace.push(`${name}:end`);
 			});
 		await Promise.all([run('a'), run('b')]);
@@ -113,7 +119,7 @@ describe('createFileLifecycleStateStore', () => {
 				const applied = await store.getAppliedEpoch('cache-layout');
 				seen.push(applied);
 				if (applied === 9) return;
-				await new Promise((resolve) => setTimeout(resolve, 20));
+				await yieldToOthers();
 				await store.setAppliedEpoch('cache-layout', 9);
 			});
 		await Promise.all([migrate(first), migrate(second)]);
