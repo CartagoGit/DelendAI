@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/public';
+import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/runtime';
 
 import {
 	EVIDENCE_FILE_NAME,

@@ -26,7 +26,7 @@
  */
 import type { z } from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 /**
  * Solid-ISP: the narrowest shape a test needs after capturing a

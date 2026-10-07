@@ -3,13 +3,13 @@ import { join } from 'node:path';
 import z from 'zod';
 
 import {
-	SafeWorkspaceReader,
 	resolveExistingWorkspaceContained,
 	safeListDir,
 	toolError,
 	toolJson,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { IDocsToolOptions } from './tools';
 import {

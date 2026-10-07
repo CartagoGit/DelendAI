@@ -2,7 +2,7 @@ import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import type { IFinding } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { IBacklog } from '../../../../src/lib/contracts/interfaces/backlog.interface';

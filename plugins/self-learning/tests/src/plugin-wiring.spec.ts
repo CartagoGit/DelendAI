@@ -21,7 +21,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 import { fakePartial } from '@delendai/test-kit';
 
 import plugin from '../../src/index';

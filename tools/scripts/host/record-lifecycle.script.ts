@@ -11,8 +11,8 @@ import { basename, dirname, join } from 'node:path';
 import {
 	redactSecrets,
 	resolveWorkspaceContained,
-	withFileMutex,
 } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 import { DEFAULT_CORE_PATHS } from '@delendai/core/cli';
 
 const LIFECYCLE_FILE = 'host-lifecycle.claude-code.jsonl';

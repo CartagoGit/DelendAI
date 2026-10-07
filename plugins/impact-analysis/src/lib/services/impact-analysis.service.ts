@@ -3,7 +3,7 @@ import { basename, extname } from 'node:path';
 import {
 	SafeWorkspaceReader,
 	WorkspaceContainmentError,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import {
 	POLICY_GUIDANCE,

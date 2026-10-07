@@ -2,15 +2,15 @@ import { dirname, join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	callerCheckout,
 	resolveExistingWorkspaceContained,
-	SafeWorkspaceReader,
 	runCommand,
 	toolError,
 	toolJson,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 /**
  * Write-side dependency management — `package_install` / `package_run_script`.

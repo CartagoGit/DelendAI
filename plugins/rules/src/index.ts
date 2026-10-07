@@ -1,8 +1,5 @@
-import {
-	createWorkspaceFileReader,
-	definePlugin,
-	joinRel,
-} from '@delendai/core/public';
+import { createWorkspaceFileReader, joinRel } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import z from 'zod';
 
 import { buildApplyingRulesKnowledge } from './lib/knowledge/applying-rules';

@@ -5,13 +5,13 @@
 import { resolve as resolvePath } from 'node:path';
 import {
 	createWriteGitRunner,
-	definePlugin,
 	type IPluginConfigurationIssue,
 	type IPluginConfigurationValidationInput,
 	type IPluginRuntime,
-	type IToolRegistration,
 	joinRel,
 } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { hostname } from 'node:os';
 

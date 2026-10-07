@@ -17,7 +17,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 import plugin, { buildSqlLifecycleReaders } from '@delendai/proposals';
 import { createFakeToolServer, fakePartial } from '@delendai/test-kit/public';
 

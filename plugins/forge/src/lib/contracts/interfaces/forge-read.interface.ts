@@ -2,7 +2,7 @@ import type {
 	IExternalTool,
 	IExternalToolRun,
 	IRunExternalToolInput,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 export type IForgeProvider = 'github' | 'gitlab';
 

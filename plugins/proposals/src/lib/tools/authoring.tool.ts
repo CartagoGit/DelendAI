@@ -4,7 +4,8 @@ import { languageRefusal } from '../services/documentation-language.service';
 import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
-import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../contracts/constants/create-proposal.constant';
 import { adoptCreatedProposalUnit } from '../services/created-proposal-unit.service';
 import {
@@ -14,10 +15,9 @@ import {
 	sharedCheckout,
 	toolError,
 	toolOk,
-	withFileMutex,
-	writeFileAtomic,
 	resolveWorkAgentId,
 } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentNames } from './agent-names.tool';

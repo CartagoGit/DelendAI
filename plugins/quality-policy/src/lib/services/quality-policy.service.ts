@@ -2,11 +2,11 @@
 import { basename } from 'node:path';
 
 import {
-	SafeWorkspaceReader,
 	createWorkspaceFileReader,
 	parseConfigFile,
-	type IFileReader,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import type { IFileReader } from '@delendai/core/contracts';
 import { classifyPath } from '@delendai/conventions/public';
 import { resolveScopes } from '@delendai/quality/public';
 import { detectPresetForArea } from '@delendai/rules/public';

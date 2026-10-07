@@ -1,9 +1,9 @@
 import {
 	summarizeFindings,
 	type FindingSeverity,
-	type IFinding,
 	worstSeverity,
 } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 import type {
 	IReadonlyTraceRecord,

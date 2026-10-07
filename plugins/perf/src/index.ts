@@ -1,4 +1,4 @@
-import { definePlugin } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import z from 'zod';
 
 import { buildPerfBenchRegistration } from './lib/tools/perf-bench.tool';

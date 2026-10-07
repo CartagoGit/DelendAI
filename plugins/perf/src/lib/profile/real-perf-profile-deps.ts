@@ -11,14 +11,16 @@ import { mkdir, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
-	type IExternalTool,
-	type IMcpPluginContext,
 	probeTool,
 	realProbeDeps,
 	resolveExecPath,
 	runExternalTool,
 	withEphemeralExec,
 } from '@delendai/core/public';
+import type {
+	IExternalTool,
+	IMcpPluginContext,
+} from '@delendai/core/contracts';
 import type {
 	IPerfProfileExecution,
 	IPerfProfileDeps,

@@ -1,4 +1,5 @@
-import { definePlugin, joinRel } from '@delendai/core/public';
+import { joinRel } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import z from 'zod';
 
 import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool';

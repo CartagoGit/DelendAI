@@ -1,4 +1,4 @@
-import type { AgentHost } from '@delendai/core/public';
+import type { AgentHost } from '@delendai/core/contracts';
 
 export type IValidationActivityState =
 	| 'active'

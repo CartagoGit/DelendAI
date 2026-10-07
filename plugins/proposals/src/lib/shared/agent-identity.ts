@@ -18,11 +18,8 @@
  * once and threads the result in.
  */
 
-import {
-	AGENT_IDENTITY_LIMITS,
-	type AgentHost,
-	type IAgentIdentity,
-} from '@delendai/core/public';
+import { AGENT_IDENTITY_LIMITS } from '@delendai/core/public';
+import type { AgentHost, IAgentIdentity } from '@delendai/core/contracts';
 
 /** Canonical slug table for the known hosts. The string is the
  * final branch-component (no prefix, no separators). */

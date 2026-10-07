@@ -11,7 +11,7 @@
  * Values are NEVER included in findings — only the key + the
  * inferred type mismatch.
  */
-import type { IFinding } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 import type {
 	IEnvEntry,
