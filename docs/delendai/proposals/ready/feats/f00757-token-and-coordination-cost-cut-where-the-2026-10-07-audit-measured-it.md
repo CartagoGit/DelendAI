@@ -59,11 +59,12 @@ The tools an agent sees are what it pays for on every request, and the proposals
   - "A swarm-run summary records agents, units, accepted slices, invalid verdicts, orphans left, manual interventions and coordination_tax = (merge + generated + bookkeeping commits) / all commits, and the KPI shows its trend across runs."
 
 ### S5 — Tool output size is measured per tool
-- **Status**: pending
-- **Files**: `plugins/usage-tracking/src/lib/tool-output-size.service.ts`
+- **Status**: in-progress
+- **Files**: `plugins/usage-tracking/src/lib/result-size-ranking.helper.ts`, `plugins/usage-tracking/src/lib/contracts/result-size-ranking.interface.ts`, `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/usage-tracking/tests/src/lib/result-size-ranking.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Each tool call records its output bytes; p50, p95 and p99 per tool appear in the KPIs, so the tools worth an artifact handle or a compact default are chosen by measurement."
+- Delivered: most of this was there — every invocation record carries `responseBytes`, the KPIs give per-plugin p50/p95, and `usage_report` ranks tools by total and by largest result. Each ranked tool now carries its own `p50Bytes`, `p95Bytes` and `p99Bytes` too, so a tool whose every answer is big is told from one with a single huge answer. The ranking spec pins them.
 
 ## acceptance
 
