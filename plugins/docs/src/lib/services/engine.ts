@@ -1,8 +1,8 @@
 import {
 	resolveExistingWorkspaceContained,
-	SafeWorkspaceReader,
 	walkAllowedFiles,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import { stat } from 'node:fs/promises';
 import { relative, sep } from 'node:path';
 

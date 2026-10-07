@@ -16,7 +16,7 @@ import {
 } from '@delendai/git/lib/services/git';
 import type { IGitRunner } from '@delendai/git/lib/services/git';
 import plugin from '@delendai/git';
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 
 describe('git parsers', async () => {
 	it('parses porcelain status with branch', async () => {

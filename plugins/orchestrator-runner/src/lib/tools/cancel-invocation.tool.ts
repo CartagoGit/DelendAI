@@ -7,7 +7,8 @@
  * `subscription` → best-effort no-op. Cancelling an unknown/settled id is a
  * no-op that returns `cancelled:false` — never an error.
  */
-import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import type { InvocationManager } from '../invoke/manager';

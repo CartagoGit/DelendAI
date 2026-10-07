@@ -1,16 +1,12 @@
 import {
 	compactOutputSchema,
 	createWorkspaceFileReader,
-	definePlugin,
 	toolError,
 	toolJson,
 } from '@delendai/core/public';
-import type {
-	FindingSeverity,
-	IFinding,
-	IFindingCounts,
-	IToolRegistration,
-} from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
+import type { FindingSeverity, IFindingCounts } from '@delendai/core/public';
+import type { IFinding, IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import { createCommandRunner } from './lib/services/runner';

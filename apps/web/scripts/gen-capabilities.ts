@@ -44,11 +44,8 @@ import {
 } from './lib/discover-troubleshooting';
 import { languages as supportedLanguages } from '../src/i18n/shared';
 
-import {
-	assembleCliConfig,
-	createMcpProject,
-	parseCliArgs,
-} from '@delendai/core/public';
+import { assembleCliConfig, createMcpProject } from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/plugin';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root

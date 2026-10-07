@@ -21,14 +21,13 @@ import z from 'zod';
 
 import { basename, dirname } from 'node:path';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
-	SafeWorkspaceReader,
 	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
-	writeFileAtomic,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/runtime';
 
 import {
 	planRename,

@@ -5,7 +5,7 @@ import { execFile } from 'node:child_process';
 // Only the contract is shared; the runner implementation below stays local so
 // `proposals` remains loadable without depending on the `git` plugin.
 export type { IGitRunner, IGitRunResult } from '@delendai/core/public';
-import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 import { callerCheckout } from '@delendai/core/public';
 
 /**

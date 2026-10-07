@@ -9,10 +9,8 @@
  */
 import { readdir } from 'node:fs/promises';
 
-import {
-	resolveExistingWorkspaceContained,
-	SafeWorkspaceReader,
-} from '@delendai/core/public';
+import { resolveExistingWorkspaceContained } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type { IDirEntry, IScanReader } from './scan';
 

@@ -8,13 +8,9 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
-import {
-	toolError,
-	toolOk,
-	withFileMutex,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { toolError, toolOk } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 export interface IClearToolOptions {
 	readonly namespacePrefix: string;

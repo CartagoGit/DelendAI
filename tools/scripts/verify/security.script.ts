@@ -3,7 +3,8 @@ import { access, readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { summarizeFindings, type IFinding } from '@delendai/core/public';
+import { summarizeFindings } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 import { parseAuditJson, runAuditCommand } from '@delendai/security/public';
 import {

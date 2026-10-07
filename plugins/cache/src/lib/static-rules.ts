@@ -24,7 +24,7 @@
  * without forking this module: each rule's effective age is
  * `min(builtin, maxAgeDays)`.
  */
-import type { ICacheEvictionRule } from '@delendai/core/public';
+import type { ICacheEvictionRule } from '@delendai/core/contracts';
 
 /** Tuning surfaced from `config.cache` (f00072 S3). */
 export interface IStaticRuleOptions {

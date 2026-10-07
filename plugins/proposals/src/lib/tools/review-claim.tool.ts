@@ -9,11 +9,8 @@
  * reviewers could read the same proposal. `delendai review next` claims
  * through this tool too, so a claim is made one way.
  */
-import {
-	toolError,
-	toolOk,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolError, toolOk } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
 	REVIEW_CLAIM_INPUT_SCHEMA,

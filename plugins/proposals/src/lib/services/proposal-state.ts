@@ -16,7 +16,7 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 export type IDoneToReviewRegressionResult =
 	| { ok: true }

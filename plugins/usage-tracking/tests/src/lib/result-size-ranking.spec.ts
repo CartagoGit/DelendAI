@@ -8,7 +8,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 import { rankToolResultSizes } from '../../../src/lib/result-size-ranking.helper';

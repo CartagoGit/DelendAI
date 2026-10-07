@@ -34,7 +34,7 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { withOkEnvelope } from '@delendai/core/plugin';
 import { toolOk } from '@delendai/core/public';
 import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';

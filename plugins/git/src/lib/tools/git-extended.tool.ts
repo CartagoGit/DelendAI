@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import type { IArgvExec, IToolRegistration } from '@delendai/core/public';
+import type { IArgvExec, IToolRegistration } from '@delendai/core/contracts';
 import { runExternalTool, toolError, toolJson } from '@delendai/core/public';
 
 const GIT_TOOL = {

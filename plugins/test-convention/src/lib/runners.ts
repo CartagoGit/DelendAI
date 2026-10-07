@@ -1,4 +1,4 @@
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 export type RunnerName = 'vitest' | 'jest' | 'unknown';
 

@@ -3,9 +3,9 @@ import z from 'zod';
 import {
 	toolError,
 	toolJson,
-	type IToolRegistration,
 	type IToolTextResult,
 } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { ITestConvention } from '../../convention';
 import { suggestSpecPath } from '../../suggest';

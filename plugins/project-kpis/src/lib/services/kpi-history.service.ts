@@ -1,13 +1,12 @@
 // effect-boundary-authorized: Owns the persisted KPI history store and pairs direct filesystem reads with atomic writes under a file mutex.
 import { access } from 'node:fs/promises';
 
+import { joinUnderRoot, resolveAgainstRoots } from '@delendai/core/public';
 import {
-	joinUnderRoot,
-	resolveAgainstRoots,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import type {
 	IKpiEconomicsValue,

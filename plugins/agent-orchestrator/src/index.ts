@@ -23,7 +23,8 @@
  */
 import { z } from 'zod';
 
-import { definePlugin, toolError } from '@delendai/core/public';
+import { toolError } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 
 import { TaskClassifier } from './lib/classifier/task-classifier.js';
 import type { IDispatchPort } from './lib/dispatch/contracts.js';

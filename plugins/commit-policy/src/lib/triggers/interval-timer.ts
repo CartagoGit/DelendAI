@@ -6,7 +6,7 @@
  * so the driver stages the same set that crossed the threshold.
  */
 
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 import { gitDirtyFilePaths } from '../services/git-extra';
 import type { ITriggerEvent } from './trigger-types';

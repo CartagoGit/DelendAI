@@ -16,7 +16,7 @@ import { z } from 'zod';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { compactOutputSchema, toolError, toolOk } from '@delendai/core/public';
 
 import { hostname } from 'node:os';
