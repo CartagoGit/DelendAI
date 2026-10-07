@@ -207,6 +207,8 @@ The gap this closes: nothing emitted work events at runtime, so any status view 
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-event-journal.service.spec.ts` and `npx vitest run --root packages/state-telemetry src/lib/events`
 - Unit enter journals `slice_claimed`; a successful publish journals `slice_submitted`.
 - `drainWorkEventJournal` validates the closed kinds and appends to any sink that has `append`.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Runtime events: proposal transitions and review submissions
 
