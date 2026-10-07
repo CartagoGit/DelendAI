@@ -646,6 +646,8 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The registry is empty in this slice and an empty registry makes the runner a no-op (`unregistered`, no read, no write): recording epoch 5 before the migrators of S4 exist would mark workspaces migrated that were never migrated.
   - Known limit: when `cacheDir` was just changed in the configuration, the layout step runs against the new directory before the config transition moves the old cache into it.
   - The cache directory is resolved lazily, only when there is something to carry, so the fast path never parses the configuration.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — Migraciones históricas (entregable: `f00529`)
 - **Status**: pending
