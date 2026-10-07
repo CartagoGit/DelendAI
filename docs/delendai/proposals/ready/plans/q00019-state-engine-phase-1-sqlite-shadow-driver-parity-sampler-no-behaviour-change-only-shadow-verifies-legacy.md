@@ -304,6 +304,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 - En cada diff, log estructurado al sink del plugin `logs`.
 - Resultado: `state-parity-report.json` con `{ runs, divergences
   }` + lista de generaciones divergentes.
+- Reconciled 2026-10-07 against the tree: the sampling itself shipped inside `@delendai/state-sqlite` — `createRegistryFacade` (`packages/state-sqlite/src/lib/registry-facade.ts`, `sampleNow`, `samplerIntervalMs`), and `registry-facade.spec.ts` drives 1,000 operations through the in-memory and SQLite registries in parity. Still to do: the standalone sampler (`tools/scripts/state/parity-sampler.script.ts`), its `state-parity-report.json` with `driverParityDivergences`, `replayDeterminismDivergences` and `executionDeterminismDivergences` counted apart, and a nightly run that uploads it.
 
 ### S3 — `@delendai/state` shadow harness
 
@@ -317,6 +318,7 @@ un `parity-report.json` que el `state_health` plugin lee.
   corruption) contra el driver SQLite también.
 - Si el driver SQLite no está disponible, el suite se salta
   con un mensaje claro.
+- Reconciled 2026-10-07: not started — no `packages/state/tests/src/shadow/parity.spec.ts`; the property suites (`equivalence`, `determinism`, `corruption`, 1,000 sequences by default since q00018 S5) run against the in-memory driver only.
 
 ### S4 — `@delendai/state-facade` + assemble wiring
 
@@ -337,6 +339,7 @@ un `parity-report.json` que el `state_health` plugin lee.
   primary y, si shadow está presente, replican en shadow;
   `validateSnapshot` corre en ambos lados; el resultado de
   cada call devuelve la respuesta del primary.
+- Reconciled 2026-10-07: the facade shipped in `@delendai/state-sqlite` (`createRegistryFacade`), not as a `state-facade` package, which this plan itself says is not needed until a producer reads `ctx.state`; `assemble.ts` accepts `deps.stateRegistry` and defaults to the in-memory registry. Still to do: the `state.parity.shadow.enabled` key (default false) and assemble building the facade and loading the SQLite driver only when it is set — worth doing once a first producer (q00020, q00021, f00510) calls `ctx.state`.
 
 ### S5 — Lint del boundary del nuevo paquete
 
