@@ -2,16 +2,13 @@ import z from 'zod';
 import { listAgentNames } from '../shared/agent-names-list';
 import { randomUUID } from 'node:crypto';
 
+import type { IToolTextResult } from '@delendai/core/public';
 import type {
 	IResolvedHostIdentity,
 	IToolRegistration,
-	IToolTextResult,
-} from '@delendai/core/public';
-import {
-	CorruptFileError,
-	toolJson,
-	withFileMutex,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
+import { CorruptFileError, toolJson } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 import {
 	enqueue,

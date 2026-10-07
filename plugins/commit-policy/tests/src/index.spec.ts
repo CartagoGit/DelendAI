@@ -20,7 +20,7 @@ import type {
 import type {
 	IExternalToolRun,
 	IMcpPluginContext,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 import * as corePublic from '@delendai/core/public';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({

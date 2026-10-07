@@ -7,7 +7,7 @@
  */
 import { posix } from 'node:path';
 
-import type { IFinding } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 import type {
 	IExtractedLink,

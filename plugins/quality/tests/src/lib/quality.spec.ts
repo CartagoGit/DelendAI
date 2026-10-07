@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 import { runScope } from '@delendai/quality/lib/services/runner';
 import type { ICommandRunner } from '@delendai/quality/lib/services/runner';
 import { resolveScopes } from '@delendai/quality/lib/services/scopes';
 import plugin from '@delendai/quality';
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const jsonSchemaBytesOf = (schema: unknown): number => {

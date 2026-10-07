@@ -1,5 +1,5 @@
 import z from 'zod';
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 import { listTombstones, type ITombstoneRecord } from '../services/resurrect';
 

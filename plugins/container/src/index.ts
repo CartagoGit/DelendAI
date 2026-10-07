@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { definePlugin } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 
 import { buildContainerInspectToolRegistrations } from './lib/tools/container-inspect.tool';
 import {

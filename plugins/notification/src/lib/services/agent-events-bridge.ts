@@ -2,12 +2,12 @@ import { basename, dirname, join } from 'node:path';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
+import { realpathContained } from '@delendai/core/public';
 import {
-	realpathContained,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import {
 	watchAgentHeartbeat,

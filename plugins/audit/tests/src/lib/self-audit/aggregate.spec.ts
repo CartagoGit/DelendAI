@@ -24,7 +24,8 @@ import type {
 	ISelfAuditScannerRef,
 	ISelfAuditScannerRunner,
 } from '../../../../src/lib/contracts/interfaces/self-audit.interface';
-import type { IFinding, IScanResult } from '@delendai/core/public';
+import type { IScanResult } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 // ---------------------------------------------------------------------------
 // Test helpers

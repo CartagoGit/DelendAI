@@ -4,7 +4,7 @@
  * `conventions_check` behind a single factory the plugin's `register`
  * calls — the only place the production `node:fs` reader is wired.
  */
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
 	createFsArchitectureReader,

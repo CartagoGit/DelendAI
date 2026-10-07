@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { runSwarmHygieneEngine } from '../shared/swarm-hygiene-engine';

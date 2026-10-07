@@ -8,7 +8,7 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolError, toolOk } from '@delendai/core/public';
 
 import { RECOMMENDING_FORCES } from '../contracts/constants/knowledge-cache.constant';

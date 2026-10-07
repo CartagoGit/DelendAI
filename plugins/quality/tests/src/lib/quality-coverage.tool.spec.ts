@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader, IToolTextResult } from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 import { buildQualityCoverageToolRegistration } from '../../../src/lib/tools/quality-coverage.tool';
 

@@ -3,11 +3,9 @@ import { resolve } from 'node:path';
 
 import z from 'zod';
 
-import {
-	toolJsonBounded,
-	writeFileAtomic,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolJsonBounded } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import type { IRemoteProviderError } from '@delendai/contracts/remote-provider';
 
 import { GitHubRequestError } from '../client';

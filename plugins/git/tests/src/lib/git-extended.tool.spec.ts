@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IArgvExec, IToolTextResult } from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IArgvExec } from '@delendai/core/contracts';
 
 import { buildGitExtendedToolRegistrations } from '../../../src/lib/tools/git-extended.tool';
 import plugin from '../../../src';

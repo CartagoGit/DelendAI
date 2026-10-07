@@ -12,7 +12,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
 
 const submitted: unknown[] = [];

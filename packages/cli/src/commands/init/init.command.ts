@@ -22,7 +22,7 @@ import type {
 } from '../../contracts/interfaces/cli-command.interface';
 import type { IInitFlags } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
-import type { IFinding } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 import type { IEnvRequirement } from '@delendai/env/public';
 import type {
 	IEnvWarningReport,
@@ -32,11 +32,8 @@ import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
 } from '../../lib/init/host-entry-resolver.service';
-import {
-	nodeDynamicImport,
-	parseConfigFile,
-	resolvePluginSpecifier,
-} from '@delendai/core/public';
+import { nodeDynamicImport, parseConfigFile } from '@delendai/core/public';
+import { resolvePluginSpecifier } from '@delendai/core/plugin';
 import {
 	managedPluginEnvironmentRequirements,
 	parseJsonc,

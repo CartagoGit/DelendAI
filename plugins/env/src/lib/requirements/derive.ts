@@ -1,7 +1,5 @@
-import {
-	nodeDynamicImport,
-	resolvePluginSpecifier,
-} from '@delendai/core/public';
+import { nodeDynamicImport } from '@delendai/core/public';
+import { resolvePluginSpecifier } from '@delendai/core/plugin';
 
 import type { IEnvSchema, IEnvVarSchema } from '../validate/env-schema';
 import { extractRequirements, type IZodLike } from './extract';

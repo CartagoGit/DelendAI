@@ -24,7 +24,8 @@
 import { dirname, join, resolve } from 'node:path';
 import { mkdir, rm } from 'node:fs/promises';
 
-import { assembleCliConfig, parseCliArgs } from '@delendai/core/public';
+import { assembleCliConfig } from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/plugin';
 import { ACTIONABLE_PROPOSAL_STATUSES, buildCatalog } from '@delendai/core/cli';
 import { toProposalSummaries } from '../../../plugins/proposals/src/lib/proposals/proposal-summaries.service';
 import { scanProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
@@ -33,7 +34,7 @@ import type {
 	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 import type { ICatalogSources } from '@delendai/core/cli';
 
 export const DEFAULT_OUTPUT_PATH = 'docs/delendai/agent-catalog.generated.json';
