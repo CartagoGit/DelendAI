@@ -86,6 +86,8 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "El producer llama a `computeEta` UNA vez por snapshot, en `reconcile` (no en `rebuild`, para no recalcular al rehidratar)."
   - "El test `tests/integration/telemetry-no-tokens.spec.ts` (acceptance del plan) demuestra que pintar un snapshot con ETA no añade tokens al LLM."
   - "`f00504` (Progress Watchdog) puede consumir `eta_p80_ms` para distinguir “stalled pero cerca de terminar” de “stalled al 5%”: tests de integración demuestran que el watchdog cambia su decisión en función de la ETA."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
