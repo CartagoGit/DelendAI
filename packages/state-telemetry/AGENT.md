@@ -14,6 +14,8 @@
 - aggregateProgress
 - createWorkProgressProducer
 - createWorkProgressService
+- drainWorkEventJournal
+- WorkEventStoreFacade
 
 ## Depends on
 
