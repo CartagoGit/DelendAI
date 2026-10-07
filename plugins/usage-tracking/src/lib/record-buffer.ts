@@ -18,7 +18,8 @@
 import { open } from 'node:fs/promises';
 
 import type { IPluginLogsHelper } from '@delendai/core/public';
-import { redactSecrets, withFileMutex } from '@delendai/core/public';
+import { redactSecrets } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 export interface IRecordBufferOptions {
 	/** Flush no later than this many ms after the first buffered record. */

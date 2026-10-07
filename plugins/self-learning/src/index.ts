@@ -1,8 +1,6 @@
-import {
-	definePlugin,
-	joinRel,
-	SafeWorkspaceReader,
-} from '@delendai/core/public';
+import { joinRel } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
 import z from 'zod';
 

@@ -10,7 +10,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolError, toolJson, toolOk } from '@delendai/core/public';
 
 import {

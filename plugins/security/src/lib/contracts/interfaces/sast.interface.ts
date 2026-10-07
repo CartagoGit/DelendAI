@@ -1,11 +1,10 @@
+import type { FindingSeverity, ProjectPackKind } from '@delendai/core/public';
 import type {
 	IExternalToolRun,
 	IProbeDeps,
 	IRunExternalToolInput,
-	FindingSeverity,
 	IFinding,
-	ProjectPackKind,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 export type SastLanguage =
 	| 'generic'

@@ -24,11 +24,8 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import {
-	redactSecrets,
-	withFileMutex,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import { redactSecrets } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 export const PENDING_ACKS_SCHEMA =
 	'delendai/external-mcps/pending-acks/1' as const;

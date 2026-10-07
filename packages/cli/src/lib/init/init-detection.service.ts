@@ -33,8 +33,8 @@ import type {
 import {
 	createWorkspaceFileReader,
 	createWorkspacePathProvider,
-	type IFileReader,
 } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 import { analyzeProject, type IProjectAnalysis } from '@delendai/core/cli';
 
 import type { IInitAnswers } from './init-answers.types';

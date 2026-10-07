@@ -1,12 +1,8 @@
 import { dirname, join } from 'node:path';
 
-import {
-	SafeWorkspaceReader,
-	safeListDirNames,
-	toolJson,
-	type IToolRegistration,
-	withFileMutex,
-} from '@delendai/core/public';
+import { safeListDirNames, toolJson } from '@delendai/core/public';
+import { SafeWorkspaceReader, withFileMutex } from '@delendai/core/runtime';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import {

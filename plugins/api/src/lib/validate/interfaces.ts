@@ -1,8 +1,5 @@
-import type {
-	FindingSeverity,
-	IFinding,
-	IFindingCounts,
-} from '@delendai/core/public';
+import type { FindingSeverity, IFindingCounts } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 import type {
 	IJsonSchema,

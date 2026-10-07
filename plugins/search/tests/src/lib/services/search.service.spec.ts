@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { searchWorkspace } from '@delendai/search/lib/services/search-engine.service';
 import { buildSearchToolRegistrations } from '@delendai/search/lib/tools/search.tool';
 import plugin from '@delendai/search';
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 
 const write = (root: string, rel: string, body: string): void => {
 	const abs = join(root, rel);

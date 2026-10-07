@@ -17,7 +17,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 import { lintProposalMarkdown } from '@delendai/proposals/lib/proposals/proposal-scaffold-linter';
 
 import { renderAdoptionPlan } from './init-migrate-offer.service';

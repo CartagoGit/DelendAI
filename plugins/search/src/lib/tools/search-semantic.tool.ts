@@ -2,7 +2,8 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import { SafeWorkspaceReader, joinUnderRoot } from '@delendai/core/public';
+import { joinUnderRoot } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type { IRankedHit } from '../contracts/interfaces/hybrid-rank.interface';
 import {

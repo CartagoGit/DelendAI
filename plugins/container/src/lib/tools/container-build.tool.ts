@@ -12,7 +12,7 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	probeTool,
 	realProbeDeps,
@@ -20,7 +20,7 @@ import {
 	toolJson,
 } from '@delendai/core/public';
 
-import type { IArgvExec, IProbeDeps } from '@delendai/core/public';
+import type { IArgvExec, IProbeDeps } from '@delendai/core/contracts';
 import { DOCKER_TOOL, KUBECTL_TOOL } from '../inspect/cli-tools';
 
 export interface IContainerBuildToolOptions {

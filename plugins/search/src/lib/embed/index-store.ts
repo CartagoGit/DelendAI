@@ -1,11 +1,11 @@
 import { basename, dirname, join } from 'node:path';
 
+import { joinUnderRoot } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
-	joinUnderRoot,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 export interface IEmbedIndexEntry {
 	readonly path: string;

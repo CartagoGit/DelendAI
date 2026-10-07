@@ -6,8 +6,8 @@ import {
 	toolError,
 	toolJson,
 	type Detail,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { IEmbedder } from '../embed/embedder';
 import { discoverProviders, type IEmbedProviderId } from '../embed/providers';

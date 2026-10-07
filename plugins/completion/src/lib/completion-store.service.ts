@@ -2,12 +2,12 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { realpathContained } from '@delendai/core/public';
 import {
-	realpathContained,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 /**
  * A durable declaration that an agent finished its ORIGINAL task, reviewed

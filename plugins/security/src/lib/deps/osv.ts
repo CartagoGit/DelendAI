@@ -1,4 +1,4 @@
-import type { IFinding } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 import { isHostAllowed } from '@delendai/web-fetch/public';
 
 export interface IOsvPackage {

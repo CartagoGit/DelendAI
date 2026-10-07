@@ -18,7 +18,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IWorkspacePathProvider } from '@delendai/core/public';
+import type { IWorkspacePathProvider } from '@delendai/core/contracts';
 
 import { readAuditPlan } from '../../../src/lib/plan-reader';
 

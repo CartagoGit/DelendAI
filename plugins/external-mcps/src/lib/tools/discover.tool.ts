@@ -21,11 +21,8 @@
  * candidates. Applying anything stays with the suggest → validate → ack
  * chain.
  */
-import {
-	toolError,
-	toolJson,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolError, toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 /** Hard cap on rows per call (token-lean mandate). */
