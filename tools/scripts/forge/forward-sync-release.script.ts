@@ -60,8 +60,16 @@ export type {
 
 const APPLY = process.argv.includes('--apply');
 
-/** Inside the one namespace the forge lets anyone create refs in. */
-export const FORWARD_SYNC_REF_PREFIX = 'delendai/pr/forward-sync-';
+/**
+ * Inside the one namespace the forge lets anyone create refs in, and in
+ * the shape every publication there has: agent, kind, unit with its
+ * generation, topic. The system is the agent. It used to be the flat
+ * `delendai/pr/forward-sync-<sha>`, which the doctor's
+ * `publications-canonical` invariant reported as broken for as long as
+ * the sync was open (#913, 2026-10-07): a branch DelendAI made failed
+ * the rule DelendAI holds every agent's branches to.
+ */
+export const FORWARD_SYNC_REF_PREFIX = 'delendai/pr/delendai/sync/forward-';
 
 /**
  * What carrying the release tip back amounts to, from facts alone.
@@ -93,7 +101,7 @@ export const mergeOutcome = (input: {
 
 /** One candidate per release tip, so a rerun finds the one it opened. */
 export const forwardSyncRef = (releaseSha: string): string =>
-	`${FORWARD_SYNC_REF_PREFIX}${releaseSha.slice(0, 9)}`;
+	`${FORWARD_SYNC_REF_PREFIX}${releaseSha.slice(0, 9)}-g1/carries-the-release-back`;
 
 /** The one-line reason, so the verdict never travels without it. */
 export const forwardSyncExplanation = (

@@ -273,7 +273,11 @@ describe('branchModelPulls', () => {
 		const found = branchModelPulls(
 			[
 				open(641, 'develop', 'main'),
-				open(642, 'delendai/pr/forward-sync-abc123', 'develop'),
+				open(
+					642,
+					'delendai/pr/delendai/sync/forward-abc123-g1/carries-the-release-back',
+					'develop',
+				),
 				open(643, 'delendai/pr/a/implement/x1-S1-g1/t', 'develop'),
 				open(644, 'develop', 'feature'),
 			],
