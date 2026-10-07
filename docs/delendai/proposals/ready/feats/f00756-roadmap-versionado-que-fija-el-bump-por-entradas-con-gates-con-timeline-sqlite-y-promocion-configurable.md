@@ -128,16 +128,17 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 
 ### S2 — Álgebra de gates y derivación de la intención de bump
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - note: this slice also owns the `IRoadmapBumpDeriver` the S1 validator receives: kinds become synthetic conventional commits and `inferBump` decides.
-- **Files**: `packages/roadmap/src/lib/gates/gate-evaluator.service.ts`, `packages/roadmap/src/lib/gates/gate-evaluator.spec.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.service.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.spec.ts`
-- **Gate**: type
+- **Files**: `packages/roadmap/package.json`, `bun.lock`, `packages/roadmap/AGENT.md`, `packages/roadmap/src/public/index.ts`, `packages/roadmap/src/lib/contracts/constants/gate.constant.ts`, `packages/roadmap/src/lib/contracts/constants/bump-intent.constant.ts`, `packages/roadmap/src/lib/contracts/interfaces/gate.interface.ts`, `packages/roadmap/src/lib/contracts/interfaces/bump-intent.interface.ts`, `packages/roadmap/src/lib/gates/gate-evaluator.service.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.service.ts`, `packages/roadmap/tests/src/lib/gates/gate-evaluator.service.spec.ts`, `packages/roadmap/tests/src/lib/bump/roadmap-bump-intent.service.spec.ts`
+- **Gate**: `bun x vitest run --root packages/roadmap`
 - acceptance:
   - "Cada gate devuelve un estado ternario (`pass` | `fail` | `unknown`) con un motivo; nunca un booleano desnudo."
   - "Un gate sin evidencia devuelve `unknown`, no `fail` — la ausencia de datos no es un incumplimiento."
   - "La intención de bump se deriva calling `inferBump` de `@delendai/changelog/public`; un test falla si el paquete se reimplementa localmente en lugar de importarse."
   - "El payload de bump nombra siempre su `authority` (`@delendai/changelog::inferBump`) para que ningún consumidor pueda leerlo como permiso para escribir una versión."
+- shipped: gate evaluator (ternary verdicts, unknown without evidence) and the bump intent built on the changelog plugin's inferBump, carrying its authority. The spec mocks the plugin to prove the bump is delegated, not recomputed.
 
 ### S3 — Store de la autoridad: lectura y escritura durable del fichero de roadmap
 - **Status**: pending

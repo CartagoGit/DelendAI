@@ -20,3 +20,16 @@ export {
 	validateBumpHints,
 } from '../lib/validation/bump-hint-validator.service';
 export { readRoadmap } from '../lib/validation/roadmap-reader.service';
+export * from '../lib/contracts/constants/bump-intent.constant';
+export * from '../lib/contracts/constants/gate.constant';
+export type * from '../lib/contracts/interfaces/bump-intent.interface';
+export type * from '../lib/contracts/interfaces/gate.interface';
+export {
+	buildBumpIntent,
+	deriveBumpFromKinds,
+	inferBumpForKinds,
+} from '../lib/bump/roadmap-bump-intent.service';
+export {
+	evaluateEntryGates,
+	evaluateGate,
+} from '../lib/gates/gate-evaluator.service';

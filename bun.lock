@@ -211,6 +211,7 @@
       "name": "@delendai/roadmap",
       "version": "0.1.0",
       "dependencies": {
+        "@delendai/changelog": "workspace:*",
         "zod": "^4.4.3",
       },
       "devDependencies": {

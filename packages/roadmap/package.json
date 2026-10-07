@@ -37,6 +37,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/roadmap"
 	},
 	"dependencies": {
+		"@delendai/changelog": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

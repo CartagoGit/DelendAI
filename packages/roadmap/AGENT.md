@@ -17,9 +17,14 @@
 - promisedKinds
 - validateBumpHints
 - readRoadmap
+- buildBumpIntent
+- deriveBumpFromKinds
+- inferBumpForKinds
+- evaluateEntryGates
 
 ## Depends on
 
+- @delendai/changelog
 - zod
 
 ## Writes
@@ -32,9 +37,10 @@ _(none)_
 
 ## Tests
 
+- packages/roadmap/tests/src/lib/bump/roadmap-bump-intent.service.spec.ts
 - packages/roadmap/tests/src/lib/contracts/roadmap.schema.spec.ts
+- packages/roadmap/tests/src/lib/gates/gate-evaluator.service.spec.ts
 - packages/roadmap/tests/src/lib/state-machine/roadmap-state-machine.service.spec.ts
-- packages/roadmap/tests/src/lib/validation/bump-hint-validator.spec.ts
 
 ## Do not
 
