@@ -28,6 +28,7 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import {
 	RELEASE_TRAILER,
 	REVIEW_COMMAND,
+	REVIEWED_PROPOSALS_DIR,
 } from '../contracts/constants/review-command.constant';
 import type {
 	ICliCommand,
@@ -42,6 +43,10 @@ import type {
 	IUnit,
 } from '../contracts/interfaces/review-queue-view.interface';
 import { briefFor } from '../lib/review/review-brief.service';
+import {
+	readProposalIn,
+	sliceSections,
+} from '../lib/review/slice-sections.service';
 import { packRefusalsIn } from '../lib/review/review-pack-check.service';
 import { anythingWaiting } from '../lib/review/review-peek.service';
 import { releasedElsewhere } from '../lib/review/review-releases.service';
@@ -299,7 +304,21 @@ const next = async (
 			checkout: unit.path,
 		});
 	}
-	return data({ ...session, ...briefFor(chosen, unit, agent) });
+	const markdown = await readProposalIn(
+		unit.path,
+		chosen.file,
+		REVIEWED_PROPOSALS_DIR,
+	);
+	const sections =
+		markdown === undefined
+			? {}
+			: sliceSections(
+					markdown,
+					chosen.slices
+						.filter((slice) => slice.verdict === 'needs-verdict')
+						.map((slice) => slice.sliceId),
+				);
+	return data({ ...session, ...briefFor(chosen, unit, agent, sections) });
 };
 
 const verdict = async (

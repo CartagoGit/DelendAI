@@ -63,6 +63,9 @@ const ToolResultSizeSchema = z.object({
 	calls: z.number(),
 	totalBytes: z.number(),
 	largestBytes: z.number(),
+	p50Bytes: z.number(),
+	p95Bytes: z.number(),
+	p99Bytes: z.number(),
 });
 
 const TokenTaxSchema = z.object({
