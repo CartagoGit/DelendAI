@@ -67,6 +67,30 @@ The owner promotes develop to main only from a stable point, and main is where G
   - "CodeQL runs on pushes to the integration branch and on pull requests into it, not only on the release branch, so an alert is reported when it is introduced and develop reaches main with none open."
 - Delivered: CodeQL runs on pushes to develop and main, on pull requests into develop, and on demand; not on pull requests into main, since the push run already analyses a develop → main candidate's commit (`lint:no-duplicate-release-triggers`).
 
+### S6 — Code scanning must pass to merge into develop
+- **Status**: in-progress
+- **Files**: `delendai.config.json`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/settings.yml`, `tools/scripts/lint/branch-protection-guard.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`CodeQL` is a required check of the integration branch, beside `delendai-validate`: a pull request that introduces a code scanning alert does not merge, so develop — and what it promotes to main — stays at zero."
+- Asked by the owner on 2026-10-07: code scanning is a validation that must always hold, so a feature, a fix or a refactor cannot bring a new alert in. The policy's `integration.requiredChecks` gains `CodeQL` (the check CodeQL reports on a pull request, seen on #903), and `forge-settings --write` projects it into the generated protection files; the live protection is applied through the repository's bootstrap path. Main's required checks are unchanged: CodeQL does not run on pull requests into main (S5 — the push to develop already analyses that commit), so requiring it there would block every promotion, and main only ever receives what develop let through.
+
+### S7 — Every certified develop is scanned
+- **Status**: in-progress
+- **Files**: `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "Each full run that certifies the integration branch dispatches CodeQL on it, so a merge made by the queue (whose token starts no workflow on push) is analysed all the same."
+- Found 2026-10-07 right after #903 landed: S5's push trigger never fired for develop, because the queue merges with the workflow token and a push made with it starts no workflow — the same reason the full run is dispatched after each merge. `release-the-queue`, which already runs once per certified develop tip, now also dispatches `codeql.yml` on develop.
+
+### S8 — Remote names, urls and refs never parse as git options
+- **Status**: in-progress
+- **Files**: `extensions/vscode/src/test/configuration-center-dev-page.spec.ts`, `packages/cli/src/commands/review.command.ts`, `packages/core/src/lib/integration-engine/git-operations.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/journal-ref.service.ts`, `packages/core/src/lib/startup-reconciler/retired-tips.service.ts`, `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`, `packages/core/src/lib/wip-engine/work-ref-publication.ts`, `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/src/lib/work-units/work-retired-drop.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy-required-checks.ts`, `plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`, `plugins/commit-policy/src/lib/services/work-ref-checkpoint.service.ts`, `plugins/git/src/lib/tools/write-tools.ts`, `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/src/lib/services/review-reservation.service.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `tools/scripts/forge/advance-queue.script.ts`, `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/open-publication-prs.script.ts`, `tools/scripts/forge/publish-candidate.script.ts`, `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/refresh-candidates.script.ts`, `tools/scripts/forge/sync-with-integration.script.ts`, `tools/scripts/git/ended-reservations.service.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`, `tools/scripts/reclaim/reclaim-local.script.ts`
+- **Gate**: type
+- acceptance:
+  - "Every git ls-remote, fetch and push that passes a remote, url or ref taken from data ends its options with `--` first, so js/second-order-command-line-injection (#422-#434) no longer applies; the aggregate-job pattern is anchored as a whole (#435) and the test page's end-tag filters accept attributes and whitespace (#421)."
+- Found 2026-10-07 in the first analysis of develop (15 open alerts once #903 made it scanned). Fixed as a class, not per alert: every such call in core, the CLI, the plugins and the repository scripts, including the git plugin's push tool, whose remote comes from tool input (`--receive-pack=<cmd>` was a first-order injection there).
+
 ## acceptance
 
 - The alerts js/insecure-temporary-file (#420, #166-#169), js/shell-command-injection-from-environment (#269) and js/indirect-command-line-injection (#366) no longer apply to the code: temporary files are created exclusively with restrictive modes, and no command string built from the environment or arguments reaches a shell.
@@ -74,3 +98,4 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Every open alert under tools/scripts and apps/web/scripts (regex anchors and hostname, tag filters, temporary files, command-line injection, stack-trace exposure, file-system races, a missing space) no longer applies.
 - The useless assignments and expressions, the incompatible comparison, the unneeded defensive code and the specs' file-system races and tag filters the scanner reports no longer apply.
 - CodeQL runs on pushes to the integration branch and on pull requests into it, not only on the release branch, so an alert is reported when it is introduced and develop reaches main with none open.
+- Every git network call that takes a remote, url or ref from data separates it from the options with `--`, and code scanning on develop reports no open alert.

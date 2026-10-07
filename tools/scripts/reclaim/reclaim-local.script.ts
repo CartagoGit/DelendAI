@@ -223,7 +223,7 @@ const main = (): number => {
 	// Prune first: a remote-tracking ref for a branch the forge deleted
 	// is what makes a spent mirror look live. Judging before pruning
 	// would keep every branch forever and call it caution.
-	git(['fetch', '--prune', '--quiet', 'origin']);
+	git(['fetch', '--prune', '--quiet', '--', 'origin']);
 
 	const report = reclaimLocal(observe(), protectedBranches());
 	for (const verdict of report.verdicts) {

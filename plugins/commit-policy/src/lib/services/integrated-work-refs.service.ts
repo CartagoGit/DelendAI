@@ -77,7 +77,7 @@ const remoteWorkRefs = async (
 	remote: string,
 	namespace: string,
 ): Promise<Array<{ ref: string; sha: string }>> => {
-	const listed = await run(['ls-remote', remote, `${namespace}*`]);
+	const listed = await run(['ls-remote', '--', remote, `${namespace}*`]);
 	if (!listed.ok) return [];
 	return lines(listed.output).flatMap((line) => {
 		const [sha, ref] = line.split(/\s+/u);
@@ -127,6 +127,7 @@ export const reapIntegratedWorkRefs = async (
 				'push',
 				'--porcelain',
 				`--force-with-lease=${ref}:${sha}`,
+				'--',
 				input.remote,
 				`:${ref}`,
 			]);

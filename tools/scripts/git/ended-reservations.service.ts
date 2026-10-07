@@ -43,6 +43,7 @@ export const endedReservations = (
 ): readonly IEndedReservation[] => {
 	const listed = git(root, [
 		'ls-remote',
+		'--',
 		remote,
 		`${REVIEW_RESERVATION_NAMESPACE}*`,
 	]);
@@ -56,6 +57,7 @@ export const endedReservations = (
 				'fetch',
 				'--quiet',
 				'--no-write-fetch-head',
+				'--',
 				remote,
 				sha,
 			]);
@@ -70,7 +72,12 @@ export const endedReservations = (
 		const agent = /^Agent: (.+)$/mu.exec(text)?.[1]?.trim() ?? '';
 		const at = unit.indexOf(`/${agent}/`);
 		if (agent.length === 0 || at === -1) continue;
-		const alive = git(root, ['ls-remote', remote, unit.slice(at + 1)]);
+		const alive = git(root, [
+			'ls-remote',
+			'--',
+			remote,
+			unit.slice(at + 1),
+		]);
 		if (alive === undefined || alive.length > 0) continue;
 		ended.push({ ref, sha, unit });
 	}
@@ -89,6 +96,7 @@ export const dropReservation = (
 		'push',
 		'--quiet',
 		`--force-with-lease=${reservation.ref}:${reservation.sha}`,
+		'--',
 		remote,
 		`:${reservation.ref}`,
 	]) !== undefined;

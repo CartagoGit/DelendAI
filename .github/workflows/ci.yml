@@ -1339,3 +1339,14 @@ jobs:
                   gh workflow run keep-the-queue-moving.yml \
                     --ref develop --repo "${GITHUB_REPOSITORY}" \
                     || echo "::warning::could not dispatch keep-the-queue-moving; the hourly schedule will pick it up"
+            # The queue merges with the workflow token, and a push made with
+            # it starts no workflow: CodeQL never analysed a merged develop
+            # (x00879 S7). The certified tip is analysed here instead.
+            - name: Dispatch code scanning on the integration branch
+              if: ${{ github.ref == 'refs/heads/develop' }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh workflow run codeql.yml \
+                    --ref develop --repo "${GITHUB_REPOSITORY}" \
+                    || echo "::warning::could not dispatch code scanning on develop"

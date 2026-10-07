@@ -102,7 +102,13 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 					]
 				: []),
 		];
-		const result = await run(['fetch', '--prune', remote, ...refspecs]);
+		const result = await run([
+			'fetch',
+			'--prune',
+			'--',
+			remote,
+			...refspecs,
+		]);
 		if (!result.ok) {
 			return { ok: false, reason: result.reason ?? 'git fetch failed' };
 		}
@@ -120,6 +126,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		const mirror = await run([
 			'fetch',
 			'--prune',
+			'--',
 			remote,
 			`+${namespace}/*:${remoteTrackingNamespace(remote, namespace)}/*`,
 		]);

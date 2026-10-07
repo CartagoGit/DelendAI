@@ -261,6 +261,7 @@ export const publishProposalOnRef = async (
 
 	const pushed = await run([
 		'push',
+		'--',
 		request.remote ?? 'origin',
 		`${committed.sha}:refs/heads/${ref}`,
 	]);

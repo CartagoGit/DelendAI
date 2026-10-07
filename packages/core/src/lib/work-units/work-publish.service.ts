@@ -156,6 +156,7 @@ export const publishWorkUnit = (
 	const pushFrom = worktreeFor(root, workRef) ?? root;
 	const pushed = git(pushFrom, [
 		'push',
+		'--',
 		remote,
 		`${workRef}:${publicationRef}`,
 	]);
@@ -286,7 +287,7 @@ export const endWorkRef = (request: {
 		if (!removed.ok) return { removed: false, steps };
 	}
 
-	const remoteWork = git(root, ['push', remote, '--delete', workRef]);
+	const remoteWork = git(root, ['push', '--delete', '--', remote, workRef]);
 	step(
 		'remove-remote-work-ref',
 		remoteWork.ok,

@@ -19,7 +19,7 @@ export interface IQueuedCandidate {
 
 const fetched = (root: string, remote: string, ref: string): boolean => {
 	try {
-		execFileSync('git', ['fetch', '-q', remote, ref], {
+		execFileSync('git', ['fetch', '-q', '--', remote, ref], {
 			cwd: root,
 			stdio: 'ignore',
 		});

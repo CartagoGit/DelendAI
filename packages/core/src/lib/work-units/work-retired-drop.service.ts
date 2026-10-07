@@ -46,7 +46,12 @@ export const retiredDropped = async (
 			'delendai work retired --drop=<unit> --reason=<what you read in it, and why it is not work>',
 		);
 	}
-	const listed = readGit(root, ['ls-remote', remote, `${prefix}${unit}`]);
+	const listed = readGit(root, [
+		'ls-remote',
+		'--',
+		remote,
+		`${prefix}${unit}`,
+	]);
 	if (listed === undefined) {
 		return refused(
 			`Could not ask \`${remote}\` for the retired work.`,
@@ -70,6 +75,7 @@ export const retiredDropped = async (
 	const pushed = readGit(root, [
 		'push',
 		'--quiet',
+		'--',
 		remote,
 		...found.map((each) => `:${each.ref}`),
 	]);

@@ -26,6 +26,7 @@ branches:
               strict: false
               contexts:
                   - delendai-validate
+                  - CodeQL
           required_pull_request_reviews:
               required_approving_review_count: 0
           required_conversation_resolution: false

@@ -39,11 +39,17 @@ const dropForgeBranch = (
 	branch: string,
 ): IAdoptedForgeBranch => {
 	const remote = integrationRemote(cwd, policy);
-	const listed = readGit(cwd, ['ls-remote', '--heads', remote, branch]);
+	const listed = readGit(cwd, ['ls-remote', '--heads', '--', remote, branch]);
 	if (listed === undefined) return 'left';
 	if (listed.length === 0) return 'absent';
-	return readGit(cwd, ['push', '--quiet', remote, '--delete', branch]) ===
-		undefined
+	return readGit(cwd, [
+		'push',
+		'--quiet',
+		'--delete',
+		'--',
+		remote,
+		branch,
+	]) === undefined
 		? 'left'
 		: 'removed';
 };
