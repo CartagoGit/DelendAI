@@ -42,7 +42,7 @@
 - plugins/execution-env/tests/src/lib/adapters/docker-cli.spec.ts
 - plugins/execution-env/tests/src/lib/adapters/docker-compose.spec.ts
 - plugins/execution-env/tests/src/lib/adapters/local.spec.ts
-- plugins/execution-env/tests/src/lib/helpers/compose-parser.spec.ts
+- plugins/execution-env/tests/src/lib/adapters/ssh.spec.ts
 
 ## Do not
 

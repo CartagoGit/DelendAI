@@ -56,3 +56,16 @@ export {
 	parseComposeFile,
 	parseMemoryLimit,
 } from '../lib/helpers/compose-parser.helper';
+export { SshExecutionEnvironment } from '../lib/adapters/ssh.service';
+export { CommandOnlyEnvironment } from '../lib/adapters/command-only-environment.service';
+export type {
+	ISshExecutionOptions,
+	ISshJumpHost,
+	ISshRemoteDialect,
+} from '../lib/contracts/interfaces/ssh-execution.interface';
+export {
+	buildRemoteCommand,
+	quotePosix,
+	quotePowerShell,
+	quoteWord,
+} from '../lib/helpers/shell-quoting.helper';
