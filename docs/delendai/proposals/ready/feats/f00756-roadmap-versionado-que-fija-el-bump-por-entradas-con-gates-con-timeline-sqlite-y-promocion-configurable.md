@@ -248,7 +248,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 ### S13 — A promotion is opened on the cadence the project declares
 - **Status**: pending
 - **DependsOn**: [S7, S9]
-- **Files**: `plugins/roadmap/src/lib/promotion/promotion-readiness.ts`, `plugins/roadmap/tests/src/lib/promotion/promotion-readiness.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/forge/forge-settings.script.ts`
+- **Files**: `packages/roadmap/src/lib/promotion/promotion-readiness.ts`, `packages/roadmap/tests/src/lib/promotion/promotion-readiness.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/governance/forge-settings.lib.ts`
 - **Gate**: type
 - acceptance:
   - "A project that declares `development.roadmap.promotion.schedule` (a cron expression, or `on-ready`) gets a workflow, projected from that configuration like the other forge settings, that opens the release pull request from the integration branch into the release branch when the cadence comes round and the promotion is ready: the integration branch's last full run is green, code scanning reports no open alert on it, and the roadmap's blocking gates for the next version pass."
