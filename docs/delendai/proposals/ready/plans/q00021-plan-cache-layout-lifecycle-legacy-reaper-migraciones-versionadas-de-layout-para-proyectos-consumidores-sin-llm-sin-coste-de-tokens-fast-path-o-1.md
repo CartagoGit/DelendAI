@@ -625,18 +625,27 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-implementer: claude-sonnet-5-5
 
 ### S3 — Integración en bootstrap (entregable: `f00528`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/cache/cache-layout-bootstrap.ts`
-  - `packages/core/src/lib/cache/cache-layout-bootstrap.spec.ts`
-  - extender `packages/core/src/lib/cli/assemble.ts` (insertar el hook antes del `runPendingMigrations` de `b00239`)
-- **Tarea**: hook que abre lifecycle state, lee epoch, decide, ejecuta. Cache en memoria durante la vida del proceso.
-- **Gate**: metadata reads ≤ 1; filesystem enumerations = 0; filesystem writes = 0; network calls = 0.
-  - `metadata reads ≤ 1`
-  - `filesystem enumerations = 0`
-  - `filesystem writes = 0`
-  - `network calls = 0`
-- **Aceptación funcional**: dos boots consecutivos, el segundo no toca filesystem. Test que mockea el `IMigrationContext` y verifica que `detect()` no se invoca cuando `applied === CACHE_LAYOUT_EPOCH`.
+  - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
+  - `packages/core/src/lib/cache/cache-layout-helpers.service.ts`
+  - `packages/core/src/lib/cache/cache-layout-migrations.registry.ts`
+  - `packages/core/src/lib/workspace-migration/cache-layout-step.service.ts`
+  - `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`
+  - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/tests/src/lib/cache/run-pending-cache-layout-migrations.service.spec.ts`
+  - `packages/core/tests/src/lib/cache/cache-layout-helpers.service.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/cache-layout-step.service.spec.ts`
+- **Tarea**: `runPendingCacheLayoutMigrations` lee el epoch una vez, sale si coincide (y lo recuerda por proceso), y si no recorre la cadena completa bajo `withMigrationLock`, registrando el epoch solo al final. `createCacheLayoutHelpers` implementa las primitivas (contención léxica y por realpath, sin seguir symlinks, `dropDerived` que falla en records/operational, sin sobrescritura, todo rechazado en dry run). `ensureWorkspaceMigrated` ejecuta el paso antes de los migrators de identidad y traduce el resultado al vocabulario `IMigrationOutcome`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache packages/core/tests/src/lib/workspace-migration` (fast path: 1 lectura, 0 escrituras, árbol idéntico; segundo y tercer boot no tocan nada; crash no avanza el epoch y el reintento termina; dos procesos ejecutan una vez; cacheDir custom; hueco y downgrade fallan con mensaje).
+- **Corrections to the design, following the code**:
+  - The hook is `ensureWorkspaceMigrated` (core), which every entrypoint already calls after the adoption check, not `assemble.ts` (that runs after the server is already assembled) nor the CLI's `ensureMigrated` (a thin wrapper of the same function).
+  - `CACHE_LAYOUT_EPOCH` is 5, not 9. Epochs 6 to 8 of the table were planned SQLite stores that have not shipped; a build cannot carry a workspace through steps that do not exist, and numbering ahead of them would force no-op steps forever. Each future store takes the next number when it lands. A workspace with no recorded epoch is taken as epoch 0 and walks `0 -> 5`, one step per landed layout change (f00065, f00080, r00010, x00052, rebrand), each a detect-driven probe.
+  - The file name `cache-layout-bootstrap.ts` was already taken by the directory bootstrap, so the runner has its own name.
+  - The registry is empty in this slice and an empty registry makes the runner a no-op (`unregistered`, no read, no write): recording epoch 5 before the migrators of S4 exist would mark workspaces migrated that were never migrated.
+  - Known limit: when `cacheDir` was just changed in the configuration, the layout step runs against the new directory before the config transition moves the old cache into it.
+  - The cache directory is resolved lazily, only when there is something to carry, so the fast path never parses the configuration.
 
 ### S4 — Migraciones históricas (entregable: `f00529`)
 - **Status**: pending

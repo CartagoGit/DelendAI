@@ -11,7 +11,7 @@ import { dirname, join, sep } from 'node:path';
 
 import type {
 	ICacheLayoutHelpers,
-	ICacheLayoutManifest,
+	ICacheLayoutHelpersOptions,
 } from '../contracts/interfaces/cache-layout.interface';
 import {
 	assertContainedRelativePath,
@@ -45,13 +45,6 @@ const realpathOfNearestAncestor = async (path: string): Promise<string> => {
 		}
 	}
 };
-
-export interface ICacheLayoutHelpersOptions {
-	readonly cacheDirAbs: string;
-	readonly manifest: ICacheLayoutManifest;
-	/** A rehearsal: every helper that would change the disk refuses. */
-	readonly dryRun: boolean;
-}
 
 /**
  * The only way a layout migration touches the disk.

@@ -147,3 +147,10 @@ export interface ICacheLayoutRunInput {
 	/** Detect and plan only; write nothing, record nothing. */
 	readonly dryRun?: boolean;
 }
+
+export interface ICacheLayoutHelpersOptions {
+	readonly cacheDirAbs: string;
+	readonly manifest: ICacheLayoutManifest;
+	/** A rehearsal: every helper that would change the disk refuses. */
+	readonly dryRun: boolean;
+}

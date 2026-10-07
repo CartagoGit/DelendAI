@@ -1,7 +1,7 @@
 import { isAbsolute, relative } from 'node:path';
 
 import { createFileLifecycleStateStore } from '../cache/file-lifecycle-state-store.service';
-import { defaultCacheLayoutMigrations } from '../cache/cache-layout-migration-registry';
+import { defaultCacheLayoutMigrations } from '../cache/cache-layout-migrations.registry';
 import { runPendingCacheLayoutMigrations } from '../cache/run-pending-cache-layout-migrations.service';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { ICacheLayoutRunResult } from '../contracts/interfaces/cache-layout.interface';
@@ -45,24 +45,20 @@ const resolveConfiguredCacheDirAbs = async (
 export const cacheLayoutOutcomes = (
 	result: ICacheLayoutRunResult,
 ): readonly IMigrationOutcome[] => {
-	switch (result.status) {
-		case 'current':
-		case 'unregistered':
-			return [];
-		case 'planned':
-			return result.pending.map((step) => ({
-				status: 'planned',
-				id: step.id,
-				steps: step.steps,
-			}));
-		case 'migrated':
-			return result.applied.map((step) => ({
-				status: 'migrated',
-				id: step.id,
-			}));
-		case 'failed':
-			return [{ status: 'failed', id: result.id, reason: result.reason }];
-	}
+	if (result.status === 'planned')
+		return result.pending.map((step) => ({
+			status: 'planned',
+			id: step.id,
+			steps: step.steps,
+		}));
+	if (result.status === 'migrated')
+		return result.applied.map((step) => ({
+			status: 'migrated',
+			id: step.id,
+		}));
+	if (result.status === 'failed')
+		return [{ status: 'failed', id: result.id, reason: result.reason }];
+	return [];
 };
 
 /** Run the cache layout lifecycle for a workspace with the shipped registry. */
