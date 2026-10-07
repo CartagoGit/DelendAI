@@ -2,11 +2,8 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import {
-	quarantineCorruptFile,
-	withFileMutex,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import { quarantineCorruptFile } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import type {
 	IHydratedStormBucket,

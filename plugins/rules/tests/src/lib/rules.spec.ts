@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 import { detectPresetForArea } from '@delendai/rules/lib/frameworks/detect-framework';
 import { buildRulesManifest } from '@delendai/rules/lib/frameworks/manifest';

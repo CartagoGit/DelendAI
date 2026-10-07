@@ -8,11 +8,9 @@
  * name its MCP client reports at the handshake, and the slice title in
  * the proposal.
  */
-import {
-	type IGitRunner,
-	resolveWorkAgentId,
-	SafeWorkspaceReader,
-} from '@delendai/core/public';
+import { resolveWorkAgentId } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type {
 	IWorkRefAgentId,

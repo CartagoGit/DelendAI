@@ -20,7 +20,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 import { bindWriteRoot } from '@delendai/core/lib/shared/bind-write-root';
 import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
 

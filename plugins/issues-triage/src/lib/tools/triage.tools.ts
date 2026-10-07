@@ -1,10 +1,8 @@
 import { join } from 'node:path';
 
-import {
-	toolJsonBounded,
-	writeFileAtomic,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolJsonBounded } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { allocateNextProposalId } from '@delendai/proposals/public';
 import z from 'zod';
 

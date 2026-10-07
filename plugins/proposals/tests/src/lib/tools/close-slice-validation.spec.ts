@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	buildCloseSliceRegistration,
 	runCloseSliceValidation,

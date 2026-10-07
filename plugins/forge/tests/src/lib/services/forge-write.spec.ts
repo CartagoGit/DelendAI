@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IExternalToolRun,
 	IRunExternalToolInput,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import {
 	buildPrBody,

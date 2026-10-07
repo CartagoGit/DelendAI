@@ -8,7 +8,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { createSliceSnapshotReader } from '../../../../src/lib/triggers/slice-snapshot.service';
 import { writeProposalDocuments } from './proposal-documents.fixture';

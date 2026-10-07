@@ -1,4 +1,4 @@
-import type { IFinding } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 type SastSource = 'semgrep' | 'ast-grep' | 'fallback';
 

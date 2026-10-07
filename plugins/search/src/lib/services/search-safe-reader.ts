@@ -1,10 +1,10 @@
 import type { Stats } from 'node:fs';
 
+import type { ContainedPathResult } from '@delendai/core/public';
 import {
 	type SafeWorkspaceReader,
 	WorkspaceContainmentError,
-	type ContainedPathResult,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 const SEARCH_SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build']);
 

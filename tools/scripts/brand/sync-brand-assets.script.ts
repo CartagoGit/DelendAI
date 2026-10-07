@@ -24,7 +24,7 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-import { withFileMutex } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 const REPO_ROOT = process.cwd();
 const SOURCE_DIR = resolve(REPO_ROOT, 'apps/shared/brand');

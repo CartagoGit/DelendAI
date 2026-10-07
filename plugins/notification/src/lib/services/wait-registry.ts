@@ -4,7 +4,7 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import { WAIT_ENTRY_TTL_MS } from '../contracts/constants/wait-registry.constant';
 

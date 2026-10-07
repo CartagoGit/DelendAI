@@ -6,15 +6,14 @@ import z from 'zod';
 import type { IPeerPluginRegistry } from '@delendai/core/public';
 import {
 	DETAIL_LEVELS,
-	projectDetail,
-	SafeWorkspaceReader,
-	// Read path: physical. Write path (proposals dir): lexical until S3.
+	projectDetail, // Read path: physical. Write path (proposals dir): lexical until S3.
 	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
 	type Detail,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
 	consolidateAudits,

@@ -21,7 +21,7 @@
 
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type { IProposalFrontmatter } from '../proposals/proposal-document';
 import { parseProposalDocument } from '../proposals/proposal-document';

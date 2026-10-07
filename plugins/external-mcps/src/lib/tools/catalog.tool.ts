@@ -9,11 +9,8 @@
  * pinned example, env var NAMES). Pure and read-only: the tool never
  * touches the network, the filesystem or the config.
  */
-import {
-	toolError,
-	toolJson,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolError, toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import {

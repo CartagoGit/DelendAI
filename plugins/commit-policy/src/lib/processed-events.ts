@@ -18,7 +18,7 @@
 import { mkdir, readFile, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import type { IEngineEvent } from './engine';
 

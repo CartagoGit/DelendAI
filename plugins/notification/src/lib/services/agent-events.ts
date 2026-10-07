@@ -1,6 +1,6 @@
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 export type IAgentEventKind = 'agent-alive' | 'agent-idle' | 'agent-dead';
 

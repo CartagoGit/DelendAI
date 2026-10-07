@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 
 import { DEFAULT_BRANCH_POLICY } from '@delendai/commit-policy/lib/contracts/branch';
 

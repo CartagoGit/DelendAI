@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentLoopDetectorService } from '@delendai/proposals/lib/agents/loop-detector-service';
 import { createWorkspacePathProvider } from '@delendai/core/public';
-import type { IGitRunner, IMcpPluginContext } from '@delendai/core/public';
+import type { IGitRunner, IMcpPluginContext } from '@delendai/core/contracts';
 
 describe('AgentLoopDetectorService', async () => {
 	let dir = '';
