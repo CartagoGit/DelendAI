@@ -374,6 +374,11 @@ jobs:
                   bun run lint:closed-frozen-guard
                   # x00696 — a close carries an independent approval.
                   bun run lint:closed-with-independent-approval
+                  # The old product name in a live file. Its spec walks the
+                  # whole tree, so a selection by changed imports skipped it
+                  # on the pull request that brought one in, and develop
+                  # went red after the merge (x00877 S8).
+                  bun run migrate:rebrand:check
                   # x00878 S2 — a review line is written by the review tool.
                   bun run lint:verdicts-through-the-tool
                   bun run lint:user-markers
