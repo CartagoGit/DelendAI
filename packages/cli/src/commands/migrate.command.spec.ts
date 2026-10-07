@@ -1,3 +1,7 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -23,6 +27,7 @@ describe('migrate command (b00239 S6)', () => {
 	it('returns journal state + latest manifest for `status`', async () => {
 		const cmd = createMigrateCommand({
 			readJournal: async () => ['delendaiToDelendAI:v1'],
+			scanResidual: async () => ({ live: 0, hits: [] }),
 			readLatestManifest: async () => ({
 				path: '/workspace/.delendai/migration-manifests/m.json',
 				manifest: {
@@ -46,6 +51,46 @@ describe('migrate command (b00239 S6)', () => {
 			workspaceRoot: '/workspace',
 			applied: ['delendaiToDelendAI:v1'],
 		});
+	});
+
+	it('reports the old name a live file still carries', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'migrate-residual-'));
+		try {
+			writeFileSync(
+				join(root, 'package.json'),
+				'{ "scripts": { "serve": "mcp-vertex serve" } }\n',
+			);
+			mkdirSync(join(root, 'node_modules', 'mcp-vertex'), {
+				recursive: true,
+			});
+			writeFileSync(
+				join(root, 'node_modules', 'mcp-vertex', 'index.js'),
+				'module.exports = "mcp-vertex";\n',
+			);
+			const cmd = createMigrateCommand({
+				readJournal: async () => [],
+				readLatestManifest: async () => null,
+			});
+
+			const result = await cmd.run(['status'], mkCtx(root));
+
+			const residual = (
+				result.data as {
+					residual: { live: number; hits: { file: string }[] };
+				}
+			).residual;
+			expect(residual.live).toBeGreaterThan(0);
+			expect(residual.hits.map((hit) => hit.file)).toEqual(
+				expect.arrayContaining(['package.json']),
+			);
+			expect(
+				residual.hits.some((hit) =>
+					hit.file.startsWith('node_modules'),
+				),
+			).toBe(false);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 
 	it('returns the dry-run plan for `--dry-run`', async () => {
