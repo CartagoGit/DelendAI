@@ -50,6 +50,8 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Wraps Bun child_process with proper stdio piping."
   - "env() returns process.env filtered through a redaction policy."
   - "prepare and teardown are no-ops but return successfully."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Docker CLI adapter
 - **Status**: pending
