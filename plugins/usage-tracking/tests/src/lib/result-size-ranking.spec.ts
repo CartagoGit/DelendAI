@@ -63,6 +63,10 @@ describe('rankToolResultSizes', () => {
 			calls: 3,
 			totalBytes: 900_000,
 			largestBytes: 400_000,
+			// The typical answer and its tail, not only the worst one.
+			p50Bytes: 300_000,
+			p95Bytes: 400_000,
+			p99Bytes: 400_000,
 		});
 	});
 
