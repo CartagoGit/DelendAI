@@ -125,6 +125,14 @@ The owner promotes develop to main only from a stable point, and main is where G
   - "On a push to main the Pages workflow builds the site in strict mode whether or not GitHub Pages is enabled, and publishes it only when it is; with Pages off it ends green with a notice saying how to enable it."
 - Found 2026-10-07 after the promotion: `Pages → build site` failed with "Get Pages site failed: Not Found" because Pages is not enabled on the repository. Enabling it publishes a public site, which is the owner's decision; until then the check the workflow exists for (the strict site build) still runs.
 
+### S13 — The integrated sweep runs off the promotion path
+- **Status**: in-progress
+- **Files**: `.github/workflows/quality-gate.yml`
+- **Gate**: type
+- acceptance:
+  - "`quality-gate.yml` no longer runs on pull requests into the release branch or in the merge queue; it sweeps the integration branch daily and on request, with a limit it fits in."
+- Found 2026-10-07 on the promotion #911, and the same on #641: the workflow was never a required check of `main`, repeated the CI matrix that is required there, and hit its 30-minute limit on every promotion, leaving a red run that blocked nothing. What only it does, running every lint script including ones no workflow wires, is kept as a daily sweep; its last run had found `proposal-already-implemented` failing on twelve slices, recorded for the backlog reconciliation.
+
 ## acceptance
 
 - The alerts js/insecure-temporary-file (#420, #166-#169), js/shell-command-injection-from-environment (#269) and js/indirect-command-line-injection (#366) no longer apply to the code: temporary files are created exclusively with restrictive modes, and no command string built from the environment or arguments reaches a shell.
