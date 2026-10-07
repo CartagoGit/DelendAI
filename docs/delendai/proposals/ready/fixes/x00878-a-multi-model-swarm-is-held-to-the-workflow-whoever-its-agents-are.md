@@ -324,6 +324,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "When an armed candidate's workflow run finished as a failure with no check failing and a required check absent, the queue runs it again once and says so; a run that loses its checks a second time is reported and not run a third time."
 - Found 2026-10-07 on #907: the forge concluded its run `failure` having created 35 of the workflow's 37 jobs, all green; `tests` and `delendai-validate` were never created. The candidate was armed and BLOCKED with nothing red on it, so the queue (which moves red candidates to their authors and waits on green ones) waited on it for good. A full re-run created all 37 jobs and the candidate merged. The queue now notices that shape, the same way it already releases runs the forge parks.
 
+### S29 — An approved proposal closes on the integration branch's certified run
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/services/validate-blocker.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`
+- **Gate**: type
+- acceptance:
+  - "Closing an approved proposal accepts, as its validate evidence, the integration branch's full CI run at the commit that carries the proposal's work, when that run is green; a local journalled validate run still counts, and neither a red nor a missing certification closes anything."
+- Found 2026-10-07 in the hydration log: `close-approved-proposals` failed 218 times with "x00834 refused — validate required: No validate run has been journalled for this workspace". Approved proposals waited for a local `validate` (the whole chain, about ten minutes, that nobody runs on the owner machine) while the integration branch's certified full run, a stronger proof of the same tree, sat green.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
