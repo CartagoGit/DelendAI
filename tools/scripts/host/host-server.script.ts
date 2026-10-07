@@ -36,7 +36,7 @@ import {
 	runStartupGate,
 	startupGateWarnings,
 } from '@delendai/core/cli';
-import { startCheckoutHydration } from '@delendai/core/cli';
+import { startCheckoutHydration, startServerLogIn } from '@delendai/core/cli';
 import type { IMigrationRunResult } from '@delendai/core/cli';
 import {
 	openStartupStatePorts,
@@ -237,6 +237,9 @@ const run = async (): Promise<void> => {
 		explicitWorkspace !== undefined && explicitWorkspace !== ''
 			? explicitWorkspace
 			: process.cwd();
+	// Everything this server says from here on is kept in the workspace
+	// too, for any agent to read back.
+	await startServerLogIn(cwd, 'host-server');
 	if (explicitWorkspace === undefined || explicitWorkspace === '') {
 		process.stderr.write('[delendai] warning: using cwd as workspace\n');
 	}
@@ -505,6 +508,13 @@ if (import.meta.main) {
 	// The process a host starts supervises a server child, which it moves
 	// onto the checkout's current code when that changes (x00756).
 	if (shouldSupervise(process.env)) {
+		// The supervisor's own lines (restarts onto new code) are kept too.
+		void startServerLogIn(
+			resolveWorkspaceFlag(process.argv.slice(2)) ??
+				process.env.DELENDAI_WORKSPACE ??
+				process.cwd(),
+			'host-supervisor',
+		);
 		runSupervised(fileURLToPath(import.meta.url), process.argv.slice(2));
 	} else {
 		run().catch(handleBootFailure);

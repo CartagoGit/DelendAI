@@ -310,3 +310,4 @@ if (import.meta.main) {
 }
 
 export { CALL_WRITES_NOT_COMMITTED } from './lib/contracts/constants/call-writes.constant';
+export { startServerLogIn } from './lib/shared/server-log';
