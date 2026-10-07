@@ -1,11 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
-import {
-	toolError,
-	toolOk,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolError, toolOk } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type {
 	BranchProtectionAdapter,

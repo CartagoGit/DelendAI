@@ -1,12 +1,11 @@
 import z from 'zod';
 
+import { toolError, toolJson } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
 	WorkspaceContainmentError,
-	toolError,
-	toolJson,
-	type IToolRegistration,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { listContainedTypeScriptFiles } from '../services/search-safe-reader';
 import type { ISearchToolOptions } from './search.tool';

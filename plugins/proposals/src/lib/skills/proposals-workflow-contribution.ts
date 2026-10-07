@@ -1,4 +1,4 @@
-import type { IProposalSummary } from '@delendai/core/public';
+import type { IProposalSummary } from '@delendai/core/contracts';
 import type { IWorkflowContribution } from '@delendai/core/public';
 import {
 	registerWorkflowContribution,

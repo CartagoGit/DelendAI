@@ -7,7 +7,8 @@
  * two agents polling status concurrently can never race the registry's
  * spawn step.
  */
-import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import type { ExternalServerRegistry } from '../subprocess/server-registry';

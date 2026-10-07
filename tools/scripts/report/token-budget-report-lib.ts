@@ -13,9 +13,9 @@ import {
 	assembleCliConfig,
 	createMcpProject,
 	nodeDynamicImport,
-	parseCliArgs,
 	type IPresetKind,
 } from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/plugin';
 import {
 	SKILL_MANIFEST_REL,
 	type IMcpToolSurfaceMode,

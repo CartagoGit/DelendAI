@@ -36,7 +36,7 @@
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import {
 	appendValidateJournalEntry,
 	buildValidateJournalEntry,

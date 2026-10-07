@@ -1,7 +1,5 @@
-import {
-	definePlugin,
-	deriveDefaultProtectedBranches,
-} from '@delendai/core/public';
+import { deriveDefaultProtectedBranches } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import type { IPluginEffectsCapability } from '@delendai/core/public';
 import z from 'zod';
 

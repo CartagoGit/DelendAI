@@ -18,7 +18,7 @@
 import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import { dirname, join } from 'node:path';
 
-import type { ICommitAuthorResolution } from '@delendai/core/public';
+import type { ICommitAuthorResolution } from '@delendai/core/contracts';
 
 import type { IReviewPanelOptions } from '../swarm/review-panel-policy.js';
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';

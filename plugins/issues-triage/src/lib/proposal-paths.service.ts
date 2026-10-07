@@ -7,10 +7,8 @@
  */
 import { join } from 'node:path';
 
-import {
-	callerCheckout,
-	type IWorkspacePathProvider,
-} from '@delendai/core/public';
+import { callerCheckout } from '@delendai/core/public';
+import type { IWorkspacePathProvider } from '@delendai/core/contracts';
 
 export const triageProposalPaths = (
 	workspace: IWorkspacePathProvider,

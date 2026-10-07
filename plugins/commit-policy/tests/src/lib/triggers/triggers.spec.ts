@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 
 import { createThresholdTracker } from '@delendai/commit-policy/lib/triggers/threshold-tracker';
 import { createIntervalTimer } from '@delendai/commit-policy/lib/triggers/interval-timer';

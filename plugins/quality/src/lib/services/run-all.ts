@@ -1,10 +1,7 @@
 import z from 'zod';
 
-import type {
-	IFileReader,
-	ILogsSink,
-	IToolRegistration,
-} from '@delendai/core/public';
+import type { ILogsSink } from '@delendai/core/public';
+import type { IFileReader, IToolRegistration } from '@delendai/core/contracts';
 import {
 	compactOutputSchema,
 	toolError,

@@ -12,7 +12,7 @@
  * twice (e.g. a host that reloads the plugin) leaves exactly one copy
  * of each rule.
  */
-import type { ICacheEvictionRegistry } from '@delendai/core/public';
+import type { ICacheEvictionRegistry } from '@delendai/core/contracts';
 
 import { buildStaticRules, type IStaticRuleOptions } from './static-rules';
 

@@ -14,7 +14,7 @@ import {
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 describe('polyglot manifests (M33)', async () => {
 	it('parses PEP 621 dependencies + Poetry groups from pyproject.toml', async () => {
