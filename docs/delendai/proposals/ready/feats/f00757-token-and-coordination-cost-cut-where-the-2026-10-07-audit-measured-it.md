@@ -46,11 +46,12 @@ The tools an agent sees are what it pays for on every request, and the proposals
   - "work publish regenerates the derived views it knows (agent catalog, token budgets, agent instructions) and commits them with the work, so two publications do not go stale against each other and no separate chore(generated) commit follows."
 
 ### S3 — A plan document has a generated compact view
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/proposals/plan-compact-view.service.ts`
+- **Status**: in-progress
+- **Files**: `packages/cli/src/lib/review/slice-sections.service.ts`, `packages/cli/src/lib/review/slice-sections.service.spec.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`
 - **Gate**: type
 - acceptance:
   - "Each plan or proposal over a size threshold has a generated view of its open slices, dependencies and remaining acceptance, and work enter and the review brief read that view instead of the whole document."
+- Delivered, for the review brief: `review next` hands the reviewer each waiting slice's own section of the document (`section`, cut at the next heading) and tells it to open the whole file only where a section refers to another part of it. On x00875, the two slices waiting for a verdict are 4,224 characters of a 56,074-character document: 92 % less to read before judging. Still to do: the same view for `work enter`'s briefing, which reads the proposal through core and so needs the section from the proposals plugin.
 
 ### S4 — The coordination cost of a swarm is measured
 - **Status**: pending
