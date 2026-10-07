@@ -235,12 +235,58 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S20 — Everyday listings show live work, not what was given up
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work status`, `work swarm` and the overview list live, waiting-for-review and adoptable units by default; retired, superseded and collectable ones are counted on one line and listed only with `--all`, so an agent asking what to do next is not paid for the history of every swarm."
 - Found 2026-10-07 by the external audit of the second swarm (ChatGPT, `.cache/chat-with-llms/2026_10_07_01:08_…`): after a swarm, the default listings enumerate every ended unit, a token cost on each call and a distraction for the next agent.
+- Delivered, for `work swarm`: units the verdict calls delivered or abandoned are counted on one line (`… N ended (delivered or abandoned); --all lists them`) and listed only with `--all`; `--json` still carries every unit. On this repository it folds three. `work status` already prints counts only. The overview is not changed. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S21 — The forge reaper sees a branch whose only extra commit merged landed work
+- **Status**: in-progress
+- **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A work branch whose only commits beyond the integration branch are merges of commits it already holds is reapable by `lint:ref-lifecycle --reap`, the same way S14 made it delivered for the local reaper."
+- Delivered: after #879 landed x00878 S4, S6 and S8 through S9's publication, their three work branches stayed on the forge for good: each held one merge of develop that develop did not, so `containedInGit` said no. It now asks `carriesNothingBeyond` (S14's predicate, one source) when the tip is not an ancestor. A dry run named exactly those three and `--reap` deleted them. A branch carried by another slice's open publication (x00877 S7 inside #891) is still left until that publication lands: only a unit's own publication proves it ended. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S22 — The unit that wrote a proposal holds none of its slices
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/slice-holders.service.ts`, `packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A `create` unit (and its open publication) does not hold the slices of the proposal it wrote: another agent's `work enter --kind=implement` on one of them is not refused for it; a second `create` unit on the same proposal still is."
+- Found 2026-10-07: an implementer dispatched to f00757 S1 was refused, "already being worked on by another agent", because the proposal's `create` publication (#892) is named `f00757-all` and `all` covers every slice. The proposal was not even on the integration branch yet, so nobody could start any of its slices until the document's pull request merged. The only way round it, `--alongside`, is the deliberate-duplicate escape, and an agent's permission classifier rightly refused it.
+- Delivered: `holdersOfSlice` leaves a `create` unit out unless the asker is creating too. The existing case that used a `create` unit as its whole-proposal example now uses an `implement` one, which is what holds every slice. The new case fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S23 — The boot sees a checkpoint whose only extra commit merged landed work
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/checkpoint-containment.ts`, `packages/core/tests/src/lib/work-units/landed-work.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A checkpoint whose only commits beyond the integration branch are merges of commits it holds is integration evidence at boot, so the unit's ref going (S21's reaper, or anyone's) is not reported as vanished."
+- Found 2026-10-07 in the MCP log: right after S21's reaper deleted x00878 S4, S6 and S8 from the forge, the next boot was DEGRADED with mutations blocked, on three `ref-vanished` blockers for exactly those units. The reconciler judges containment its own way — ancestry, or the same content at every path — and develop had changed those files again since, so a branch S14 and S21 call delivered looked lost to it.
+- Delivered: the rule is one predicate now. `parentsOutsideMerges` (pure) says which parents a merge-only tip needs the base to hold; `carriesNothingBeyond` (reapers, unit verdict) and the reconciler's git seam (asynchronous) both ask it. On the three real tips it answers yes. The spec pins the reading.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S24 — A unit another unit of its agent published ends with that publication
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/carried-units.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/carried-units.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "When `work publish` publishes a unit, every other work ref of the same agent and proposal whose tip the publication contains is ended the way the published one is (clean worktree removed, remote copy and local ref deleted); a unit of another agent, and one entered on top and not committed to yet, are left alone."
+- Found 2026-10-07 by the owner: `origin/delendai/wip/claude-opus-5-5/implement/x00877-S7-g1/…` stayed on the forge after x00877 S5 merged it in and published it as #891. The forge reaper takes only a unit's own publication as proof, deliberately — a unit stacked on another's publication starts at its tip and is not finished — and S5 had been fast-forwarded onto S7, so git cannot tell the two cases apart from the outside.
+- Delivered: the publisher, which knows what it carried, ends the carried units of its own agent and proposal (`endCarriedUnits`, reported as `carried-*` steps in the publish result). A unit whose tip is still the commit it was entered at (its lease's `entrySha`) is a fresh stack, not carried work, and is kept; `endWorkRef` keeps any worktree with uncommitted changes. x00877 S7 itself was retired by hand with that reason; once #891 lands the landed-retired reaper drops it. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
