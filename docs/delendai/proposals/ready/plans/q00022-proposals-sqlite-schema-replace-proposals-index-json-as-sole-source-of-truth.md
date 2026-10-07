@@ -533,6 +533,8 @@ Acceptance:
 - A person's direct edit of a proposal file is what the next read
   returns, after one reconcile.
 
+**Phase 3, 2026-10-07 — a stale export is not a divergence.** Every boot of the MCP server said `proposal index: serving the SQLite projection …; .cache/delendai/proposals/index.json differs on x00643, x00644, x00645`. The projection reconciles on its own; the registry export is written only by a full sync, which in a shared checkout nobody runs — units sync in their own worktrees — so the file there was a day old and every comparison reported the work done since as divergence. The SQL read now carries when its reconcile completed (`reconciledAt`, from `reconciliation_runs.completed_at`), and a registry generated before that is not compared: the read is counted as `sql-registry-stale` (parity `not-compared`) and says nothing. A registry newer than the projection is still compared. `index-reader-stale-registry.spec.ts` pins both; `test:sqlite` 417 pass. This narrows the registry's role to what phase 3 wants it to be, an export for the rollback; removing it from the read path entirely is still open.
+
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
 - **Status**: review — every acceptance item now has a spec; see the
