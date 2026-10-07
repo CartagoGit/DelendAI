@@ -295,6 +295,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "Every line a server writes to stderr is also kept in `<cacheDir>/logs/mcp-server/mcp-server.<day>.log`, stamped with the time and the process (`cli-serve`, `host-server` or `host-supervisor`), whatever host started it; the logs of the last ten days are kept and older ones are removed when a server starts."
 - Asked by the owner on 2026-10-07: what a boot reported (DEGRADED, the repair tasks, a restart onto new code) lived only where the host put its stderr — VS Code's per-window log under the user's application data — and reached an agent only when a person pasted it. The server now copies its stderr into the workspace's cache, one file per day, so an agent can read back the boots after its own changes or another agent's and see how they reacted. A brief `__serve` here wrote the day's file with the guard and boot lines. The spec covers the copy, partial lines and the ten days kept.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
