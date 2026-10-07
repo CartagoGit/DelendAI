@@ -226,8 +226,9 @@ describe('f00188 — capability gate adversarial (Track F)', () => {
 			fs: { read: () => 'ok' },
 		});
 		expectTypeOf(ctx.fs.read).toBeFunction();
-		// @ts-expect-error — git is not part of CapabilitiesToCtx<'fs:read'>
-		ctx.git.write;
+		// git is not part of CapabilitiesToCtx<'fs:read'>: asserted on the
+		// type, not by a bare expression the scanner reads as dead code.
+		expectTypeOf(ctx).not.toHaveProperty('git');
 	});
 
 	it('type-level: CapabilitiesToCtx maps a multi-group union to its shape', () => {
