@@ -15,7 +15,7 @@
 			"namespacePrefix": "delendai"
 		},
 		"integration": {
-			"requiredChecks": ["delendai-validate"],
+			"requiredChecks": ["delendai-validate", "CodeQL"],
 			"releaseRequiredChecks": ["delendai-validate", "release-pr-gate"],
 			"requiredApprovals": 0,
 			"releaseRequiredApprovals": 0
