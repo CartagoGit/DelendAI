@@ -168,6 +168,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La variante markdown permite responder "cuándo se añadió esta entrada" sin ningún binario, para que CI pueda auditar sin SQLite."
   - "Reconstruir el estado actual desde el timeline produce el mismo resultado que leer el fichero de autoridad directamente."
 - shipped: the append-only timeline contract (IRoadmapTimelineStore: append and list, nothing that removes or rewrites), an in-memory and a markdown backend that pass the same contract spec, diffRoadmaps (the events between two roadmaps), replayTimeline (the roadmap a history describes) and the whenAdded query. Re-cut: the abstraction is named IRoadmapTimelineStore because S3 already uses IRoadmapStore for the authority file; the markdown timeline is one JSON event per list line so it can be searched as text and audited by CI; replay equals the authority file once both are put in canonical order.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — Driver SQLite del timeline
 - **Status**: pending
