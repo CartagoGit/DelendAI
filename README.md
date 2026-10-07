@@ -140,6 +140,7 @@ docs as the delivery and verification surfaces around that core.
 | `plugins/docs` | `@delendai/docs` | Doc generation, search, and rendered catalog. |
 | `plugins/env` | `@delendai/env` | Environment config validation (.env check + schema + env_explains). |
 | `plugins/error-reporting` | `@delendai/error-reporting` | Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off. |
+| `plugins/execution-env` | `@delendai/execution-env` | Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container. |
 | `plugins/external-mcps` | `@delendai/external-mcps` | Compose third-party MCP servers through the catalog + human ack. |
 | `plugins/forge` | `@delendai/forge` | Forge (GitHub/GitLab) wrappers — PRs, CI, issues. |
 | `plugins/framework-knowledge` | `@delendai/framework-knowledge` | Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code. |
