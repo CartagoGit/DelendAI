@@ -12,7 +12,7 @@ import {
 	findOwningArtifact,
 	isContainedRelativePath,
 	resolveMigrationChain,
-	validateManifest,
+	validateCacheLayoutManifest,
 } from '@delendai/core/lib/cache/cache-layout-migration.helper';
 
 import type { ICacheLayoutMigration } from '@delendai/core/lib/contracts/interfaces/cache-layout.interface';
@@ -29,7 +29,7 @@ const step = (fromEpoch: number): ICacheLayoutMigration => ({
 describe('the cache layout manifest', () => {
 	it('declares the build epoch and a sound, classified artifact list', () => {
 		expect(CACHE_LAYOUT_MANIFEST.epoch).toBe(CACHE_LAYOUT_EPOCH);
-		expect(validateManifest(CACHE_LAYOUT_MANIFEST)).toEqual([]);
+		expect(validateCacheLayoutManifest(CACHE_LAYOUT_MANIFEST)).toEqual([]);
 		for (const artifact of CACHE_LAYOUT_MANIFEST.artifacts)
 			expect(CACHE_ARTIFACT_CLASSES).toContain(artifact.class);
 	});
@@ -42,7 +42,7 @@ describe('the cache layout manifest', () => {
 	});
 
 	it('reports duplicate ids, duplicate paths and escaping paths', () => {
-		const problems = validateManifest({
+		const problems = validateCacheLayoutManifest({
 			epoch: 1,
 			artifacts: [
 				{ id: 'a', owner: 'x', path: 'one', class: 'derived' },
@@ -111,17 +111,14 @@ describe('assertDroppable', () => {
 		);
 	});
 
-	it.each([
-		'proposals/index.json',
-		'verify-tmp',
-		'logs',
-		'memory',
-		'old/dir',
-	])('allows dropping %s', (path) => {
-		expect(() =>
-			assertDroppable(CACHE_LAYOUT_MANIFEST, path),
-		).not.toThrow();
-	});
+	it.each(['verify-tmp', 'logs', 'memory', 'old/dir'])(
+		'allows dropping %s',
+		(path) => {
+			expect(() =>
+				assertDroppable(CACHE_LAYOUT_MANIFEST, path),
+			).not.toThrow();
+		},
+	);
 
 	it('refuses an escaping path before looking at the manifest', () => {
 		expect(() => assertDroppable(CACHE_LAYOUT_MANIFEST, '../x')).toThrow(

@@ -32,19 +32,15 @@ export const CACHE_PERSISTENT_CLASSES: readonly ICacheArtifactClass[] = [
 
 /**
  * The layout the current build reads, written down so that changing it
- * without a migration is visible in review. It is documentation, not an
- * allow-list: nothing is deleted because it is missing here, and TTL
+ * without a migration is visible in review. It lists what core owns or
+ * what a plugin declares through `cacheNamespace`; artifacts that a
+ * domain plugin keeps in its own directory are that plugin's to declare.
+ * It is documentation, not an allow-list: nothing is deleted because it is missing here, and TTL
  * retention stays with the cache eviction registry.
  */
 export const CACHE_LAYOUT_MANIFEST: ICacheLayoutManifest = {
 	epoch: CACHE_LAYOUT_EPOCH,
 	artifacts: [
-		{
-			id: 'proposal-index',
-			owner: 'proposals',
-			path: 'proposals/index.json',
-			class: 'derived',
-		},
 		{
 			id: 'verify-tmp',
 			owner: 'core',
@@ -61,18 +57,6 @@ export const CACHE_LAYOUT_MANIFEST: ICacheLayoutManifest = {
 			id: 'agents-lock',
 			owner: 'agent-orchestrator',
 			path: 'agents.lock.json',
-			class: 'operational',
-		},
-		{
-			id: 'proposal-id-counters',
-			owner: 'proposals',
-			path: 'proposal-id-counters.json',
-			class: 'operational',
-		},
-		{
-			id: 'peer-review-log',
-			owner: 'proposals',
-			path: 'peer-review.log',
 			class: 'operational',
 		},
 		{

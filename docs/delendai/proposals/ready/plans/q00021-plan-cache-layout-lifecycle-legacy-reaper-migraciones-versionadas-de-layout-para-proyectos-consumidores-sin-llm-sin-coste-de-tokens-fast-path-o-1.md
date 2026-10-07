@@ -594,7 +594,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - `ICacheLayoutMigration` does not `extends IMigration`: its `detect`/`plan`/`apply` take a narrower context (`ICacheLayoutMigrationContext`), and a function property cannot narrow its parameter in a subtype. It reuses `IMigration['id']` and `IMigrationPlanStep`, and S3 adapts a chain to the engine's journal.
   - The context carries no `lifecycleState`: only the bootstrap reads and writes the epoch; a migration that could write it could skip its own successors.
   - `migrateStore` and `importStoreToSqlite` are not in `ICacheLayoutHelpers`. No store moves to SQLite yet (epochs 6-8 are future work of q00019/q00020), so they would be untested surface; they arrive with the first migration that needs them.
-  - The manifest lists only artifacts present in the code today (`progress/` is q00020 and does not exist yet). It lives in `contracts/constants/` because the file-conventions lint requires exported constants there.
+  - The manifest lists only artifacts present in the code today (`progress/` is q00020 and does not exist yet) and none that belong to the proposals domain: `lint:core-proposals-boundary` forbids core from naming that domain, so the proposal index, id counters and peer-review log are declared by the proposals plugin, not here. It lives in `contracts/constants/` because the file-conventions lint requires exported constants there.
 
 ### S2 — Lifecycle state store (entregable: `f00527`)
 - **Status**: pending

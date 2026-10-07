@@ -97,7 +97,7 @@ export const assertDroppable = (
 };
 
 /** Problems that make a manifest unfit to document a layout. */
-export const validateManifest = (
+export const validateCacheLayoutManifest = (
 	manifest: ICacheLayoutManifest,
 ): readonly string[] => {
 	const problems: string[] = [];
