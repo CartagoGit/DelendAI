@@ -7,6 +7,7 @@
  * never wait on the network.
  */
 import type { IWorkflowKpis } from '../contracts/interfaces/workflow-kpis.interface';
+import { readCoordinationCost } from './coordination-cost.service';
 import { rosterOf } from './swarm-roster.service';
 import { readUnitStandings } from './unit-standings.service';
 import { readSwarm } from './work-swarm.service';
@@ -15,6 +16,14 @@ import {
 	runWorkflowDoctor,
 	sharedCheckoutOf,
 } from './workflow-doctor.service';
+
+/** The days the coordination cost is measured over. */
+const COORDINATION_WINDOW_DAYS = 7;
+
+const withCoordination = (
+	cost: ReturnType<typeof readCoordinationCost>,
+): { readonly coordination?: NonNullable<typeof cost> } =>
+	cost === undefined ? {} : { coordination: cost };
 
 /** The work model's numbers, or undefined outside a git repository. */
 export const readWorkflowKpis = async (
@@ -43,5 +52,12 @@ export const readWorkflowKpis = async (
 		agents: roster.length,
 		agentsThatProducedNothing: roster.filter((each) => each.producedNothing)
 			.length,
+		...withCoordination(
+			readCoordinationCost(
+				root,
+				policy.branches.integration,
+				COORDINATION_WINDOW_DAYS,
+			),
+		),
 	};
 };

@@ -53,11 +53,12 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - Delivered, for the review brief: `review next` hands the reviewer each waiting slice's own section of the document (`section`, cut at the next heading) and tells it to open the whole file only where a section refers to another part of it. On x00875, the two slices waiting for a verdict are 4,224 characters of a 56,074-character document: 92 % less to read before judging. Still to do: the same view for `work enter`'s briefing, which reads the proposal through core and so needs the section from the proposals plugin.
 
 ### S4 — The coordination cost of a swarm is measured
-- **Status**: pending
-- **Files**: `plugins/project-kpis/src/lib/swarm-run-summary.service.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/coordination-cost.service.ts`, `packages/core/tests/src/lib/work-units/coordination-cost.service.spec.ts`, `packages/core/src/lib/contracts/interfaces/workflow-kpis.interface.ts`, `packages/core/src/lib/work-units/workflow-kpis.service.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts`
 - **Gate**: type
 - acceptance:
   - "A swarm-run summary records agents, units, accepted slices, invalid verdicts, orphans left, manual interventions and coordination_tax = (merge + generated + bookkeeping commits) / all commits, and the KPI shows its trend across runs."
+- Progress 2026-10-07: the workflow KPIs (`readWorkflowKpis`, read by `project-kpis`'s snapshot) carry `coordination`: over the integration branch's last 7 days, the commits, the merges, the bookkeeping commits (`chore(generated|delendai|review)`: regenerated views and the tools' own records) and `tax = (merges + bookkeeping) / commits`. Measured here on 2026-10-07: 1,450 commits, 610 merges, 454 bookkeeping, tax 0.734 — the audit's 74.5 %. Still to do: the per-run summary (agents, units, accepted slices, invalid verdicts, orphans left, manual interventions) and the trend across runs, which the KPI history can carry once the snapshot records this field.
 
 ### S5 — Tool output size is measured per tool
 - **Status**: in-progress
