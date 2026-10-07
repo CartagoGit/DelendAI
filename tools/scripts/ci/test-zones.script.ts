@@ -31,13 +31,21 @@ import { repoRoot } from '../lib/repo-root';
 import { buildGraph, computeAffected, gitDiffChanges } from './affected.script';
 import {
 	TARGET_SPECS_PER_JOB,
+	TEST_WORKFLOW,
 	ZONE_READ_MAP_PATH,
 	ZONE_RULES,
 } from './test-zones.constant';
-import type { IZoneJob, IZoneReadMap, IZoneRule } from './test-zones.interface';
+import type {
+	IRootChange,
+	IZoneJob,
+	IZoneReadMap,
+	IZoneRule,
+} from './test-zones.interface';
 import {
 	parseZoneReadMap,
+	isWorkflowFile,
 	runsEverything,
+	testRunnerChanged,
 	zonesReadingRootFiles,
 } from './zone-reads';
 
@@ -174,6 +182,14 @@ export const reachableZones = (
 		 * not see the base.
 		 */
 		readonly explain?: (reason: string) => void;
+		/**
+		 * A file's content where the change left its base and at its end;
+		 * `undefined` when absent there. Read only for the test workflow.
+		 */
+		readonly contentAt?: (
+			side: 'base' | 'head',
+			path: string,
+		) => string | undefined;
 	} = {
 		buildGraph,
 		computeAffected,
@@ -219,11 +235,38 @@ export const reachableZones = (
 	// for a root-level configuration file, it still runs everything.
 	const roots = new Set(affected.rootFiles);
 	const readMap = roots.size === 0 ? undefined : deps.readMap?.();
+	const rootChanges = changes
+		.filter((change) => roots.has(change.path))
+		.map(
+			(change): IRootChange =>
+				!isWorkflowFile(change.path)
+					? change
+					: {
+							...change,
+							// Only the test workflow runs the zones; another workflow's
+							// edit reaches the zones that read it, like any root file.
+							runnerChanged:
+								change.path !== TEST_WORKFLOW
+									? false
+									: deps.contentAt === undefined
+										? undefined
+										: testRunnerChanged(
+												deps.contentAt(
+													'base',
+													change.path,
+												),
+												deps.contentAt(
+													'head',
+													change.path,
+												),
+											),
+						},
+		);
 	const rootReached =
 		roots.size === 0
 			? new Set<string>()
 			: zonesReadingRootFiles(
-					changes.filter((change) => roots.has(change.path)),
+					rootChanges,
 					readMap,
 					ownPathsOf(rules, [...graph.dirToName.keys()]),
 				);
@@ -231,7 +274,10 @@ export const reachableZones = (
 		return everyZone(
 			readMap === undefined
 				? 'no zone read map says which zones read the changed files outside every workspace'
-				: `a root file or a workflow can reach any zone (${[...roots].filter(runsEverything).join(', ')})`,
+				: `a root file or a workflow can reach any zone (${rootChanges
+						.filter(runsEverything)
+						.map((change) => change.path)
+						.join(', ')})`,
 		);
 	}
 
@@ -283,6 +329,35 @@ const ownPathsOf = (
 		rules.map((rule) => [rule.id, rule.paths(workspaceDirs)]),
 	);
 
+/** Where `head` left `base`, or the base itself when git cannot say. */
+const mergeBaseOf = (base: string, rootDir: string): string => {
+	try {
+		return execFileSync('git', ['merge-base', base, 'HEAD'], {
+			encoding: 'utf8',
+			cwd: rootDir,
+		}).trim();
+	} catch {
+		return base;
+	}
+};
+
+/** A file's content at a revision, or `undefined` when it is not there. */
+const contentAt = (
+	revision: string,
+	path: string,
+	rootDir: string,
+): string | undefined => {
+	try {
+		return execFileSync('git', ['show', `${revision}:${path}`], {
+			encoding: 'utf8',
+			cwd: rootDir,
+			stdio: ['ignore', 'pipe', 'ignore'],
+		});
+	} catch {
+		return undefined;
+	}
+};
+
 const committedReadMap = (rootDir: string): IZoneReadMap | undefined => {
 	try {
 		return parseZoneReadMap(
@@ -324,6 +399,12 @@ const main = (): number => {
 				computeAffected,
 				diff: gitDiffChanges,
 				readMap: () => committedReadMap(rootDir),
+				contentAt: (side, path) =>
+					contentAt(
+						side === 'base' ? mergeBaseOf(base, rootDir) : 'HEAD',
+						path,
+						rootDir,
+					),
 				explain: (reason) => {
 					everyZoneBecause = reason;
 				},
