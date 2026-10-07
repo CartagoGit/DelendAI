@@ -1,0 +1,63 @@
+# AGENT.md — package `packages/core`
+
+> Below the `<!-- delendai:begin agent-md -->
+## Purpose
+
+- Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.
+
+## Public API
+
+- createMcpProject
+- createWorkspacePathProvider
+- projectValue
+- createInMemoryHandleStore
+- classifyPath
+- DEFAULT_TS_RULES
+- endsWithBasename
+- hasSegment
+- assembleCliConfig
+- REPOSITORY_SLUG
+- PERMISSION_CATEGORIES
+- PERMISSION_RISK_WEIGHTS
+- isFirstPartySpecifier
+- resolvePublicToolIdentity
+
+## Depends on
+
+- @delendai/contracts
+- @delendai/state
+- @modelcontextprotocol/sdk
+- jsonc-parser
+- zod
+
+## Writes
+
+_(none)_
+
+## Entry points
+
+- ./dist/index.js
+
+## Tests
+
+- packages/core/tests/config-schema.spec.ts
+- packages/core/tests/derive-version.spec.ts
+- packages/core/tests/lint-proposals.spec.ts
+- packages/core/tests/release-finalize/index.spec.ts
+
+## Do not
+
+- An agent does not run `git stash`: git refuses it for agents (`delendai guard`, reference-transaction), because every worktree shares one stash and stashed work is invisible to the work model. Commit, or checkpoint to your work ref, instead.
+- Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
+- Do not introduce project-specific code; `@delendai/core` is project-agnostic.
+- Do not read files via `node:fs`; always go through the `IFileReader` abstraction.
+
+## Token hotspots
+
+- `delendai_configuration_center` — 3,796 B total, 3,334 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_adopt_project` — 3,649 B total, 3,001 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_create_project` — 3,632 B total, 343 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_metrics` — 2,813 B total, 2,505 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+
+<!-- delendai:end agent-md -->
+

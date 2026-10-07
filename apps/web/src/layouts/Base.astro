@@ -1,0 +1,212 @@
+---
+import SiteNav from '#COMPONENTS/SiteNav.astro';
+import SiteFooter from '#COMPONENTS/SiteFooter.astro';
+import Config from '#COMPONENTS/Config.astro';
+import Search from '#COMPONENTS/Search.astro';
+import '../styles/styles.scss';
+import { ClientRouter } from 'astro:transitions';
+import { renderRuntime } from '@delendai/ui-extension/components/runtime';
+import { dictsByLang, languages, rtlLangs, type Lang } from '#I18N/ui';
+
+interface Props {
+	lang: Lang;
+	title?: string;
+	description?: string;
+}
+
+const {
+	lang,
+	title = '@delendai/core — agnostic MCP server core',
+	description = 'A project-agnostic Model Context Protocol server core + CLI plugin loader. Runs under Node, Deno and bun.',
+} = Astro.props;
+const dir = rtlLangs.includes(lang) ? 'rtl' : 'ltr';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// a00084 F33: NAV_BY_LANG/FOOTER_BY_LANG used to be a hand-duplicated
+// 12-language literal in the client-side <script> below — any future
+// copy edit to the canonical i18n dict silently never propagated to
+// this runtime chrome-refresh table. Derived here at build time from
+// the SAME dictsByLang the rest of the site uses, then handed to the
+// client script via define:vars (no second source of truth). The one
+// non-1:1 mapping (`home` reads `nav.concept`) mirrors SiteNav.astro's
+// own `{ key: 'home', label: t.nav.concept }` association. `api`/`cli`
+// are the same literal in every language, matching SiteNav.astro's own
+// hardcoded `label: 'API'` / `label: 'CLI'`.
+const NAV_BY_LANG = Object.fromEntries(
+	languages.map(({ code }) => {
+		const t = dictsByLang[code].nav;
+		return [
+			code,
+			{
+				home: t.concept,
+				install: t.install,
+				tools: t.tools,
+				benchmarks: t.benchmarks,
+				plugins: t.plugins,
+				prompts: t.prompts,
+				resources: t.resources,
+				knowledge: t.knowledge,
+				guide: t.guide,
+				api: 'API',
+				more: t.more,
+				firstFiveMinutes: t.firstFiveMinutes,
+				troubleshooting: t.troubleshooting,
+			},
+		];
+	}),
+);
+const FOOTER_BY_LANG = Object.fromEntries(
+	languages.map(({ code }) => {
+		const t = dictsByLang[code].footer;
+		return [
+			code,
+			{
+				tagline: t.tagline,
+				madeBy: t.madeBy,
+				sections: t.sections,
+				resources: t.resources,
+				creatorsRepo: t.creatorsRepo,
+				creatorsNpm: t.creatorsNpm,
+				built: t.built,
+			},
+		];
+	}),
+);
+---
+
+<!doctype html>
+<html lang={lang} dir={dir}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href={`${base}/logo.svg`} />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta name="theme-color" content="#0d1117" />
+		{/* Named slot for per-page head injection (e.g. hreflang tags on the
+		    root negotiator). Pages that don't pass `slot="head"` content
+		    simply skip this — no marker element is rendered. */}
+		<slot name="head" />
+		{/* Enable the View Transitions API. The header, footer and settings
+		    modal are mounted once in this layout and persist across navigations
+		    via `transition:persist`, so they never remount and never "jump". */}
+		<ClientRouter />
+		{/* Shared UI runtime from `@delendai/ui-extension`. Drives every
+		    `[data-delendai-toggle="dropdown"]` and `[data-delendai-action]` host
+		    gesture on the page (the "More" dropdown in the nav, any
+		    `[data-delendai-toast-ttl]`, etc.). Without this, dropdowns are
+		    markup-only and never open. The script is idempotent and
+		    survives View Transitions because it binds once on
+		    `document`, not on the persisting element. */}
+		<Fragment set:html={renderRuntime()} />
+		<script>
+			// Apply the saved theme/motion before paint (no flash of default
+			// theme), and re-apply it after every View Transition. The original
+			// `is:inline` shim only runs once because Astro cannot re-execute
+			// the same inline bytes after a swap; promoting it to a real
+			// `<script>` lets us register an `astro:after-swap` listener that
+			// re-runs the same restore on every navigation.
+			const KEY_THEME = 'delendai-theme';
+			const KEY_MOTION = 'delendai-motion';
+			const applyTheme = () => {
+				try {
+					const t = localStorage.getItem(KEY_THEME);
+					if (t) document.documentElement.dataset.theme = t;
+					const m = localStorage.getItem(KEY_MOTION);
+					if (m === 'off' || m === 'reduced') document.documentElement.dataset.motion = 'off';
+					else document.documentElement.removeAttribute('data-motion');
+				} catch {}
+			};
+			applyTheme();
+			document.addEventListener('astro:after-swap', applyTheme);
+
+			// x124 S2 — Re-bind nav and footer hrefs after every view
+			// transition. The chrome is mounted once with
+			// `transition:persist`, so the SSR-rendered hrefs (in the
+			// original language) would otherwise stick around after a
+			// language change. We read the active locale from
+			// `<html lang>` and rewrite the href of every in-page link
+			// inside the nav and the footer so the user can keep
+			// navigating in the new locale from any persisted chrome
+			// surface.
+			const LOCALE_CODES = new Set([
+				'en', 'es', 'fr', 'de', 'pt', 'it', 'zh', 'hi', 'ar', 'ja', 'vi', 'th',
+			]);
+			const stripLocale = (path: string) => {
+				const segs = path.split('/').filter(Boolean);
+				if (segs[0] && LOCALE_CODES.has(segs[0]) && segs[0] !== 'en') {
+					return '/' + segs.slice(1).join('/');
+				}
+				return path || '/';
+			};
+			const rewireHrefs = () => {
+				const lang = document.documentElement.lang || 'en';
+				const targets = document.querySelectorAll(
+					'.nav__links a, .sitefoot a[href]',
+				);
+				for (const a of targets) {
+					const href = a.getAttribute('href') || '';
+					// Skip external / mailto / anchor / absolute URLs — only
+					// rewrite in-site relative links.
+					if (
+						!/^\/(?!\/)/.test(href) ||
+						href.startsWith('//') ||
+						href.startsWith('/api/') ||
+						href.startsWith('/flags/') ||
+						href.startsWith('/logos/')
+					) {
+						continue;
+					}
+					const cleanHref = href.split('#')[0] || '/';
+					// Extract the segment path (strip the locale prefix if
+					// present, then re-add the new locale's prefix).
+					const targetRel = stripLocale(cleanHref);
+					const next = lang === 'en' ? targetRel : `/${lang}${targetRel === '/' ? '/' : targetRel}`;
+					if (a.getAttribute('href') !== next) a.setAttribute('href', next);
+				}
+			};
+			rewireHrefs();
+			document.addEventListener('astro:after-swap', rewireHrefs);
+		</script>
+		{/* x126 S2 / a00084 F33 — Re-translate the persist-mounted chrome
+		    after every view transition. NAV_BY_LANG/FOOTER_BY_LANG are
+		    generated at build time (Base.astro frontmatter) above from the
+		    SAME canonical dictsByLang every other page uses, and handed in
+		    via define:vars — no second, hand-duplicated source of truth to
+		    drift out of sync with a copy edit. A separate, plain-JS script
+		    tag: define:vars demotes the WHOLE script it's on to is:inline,
+		    which would break the TypeScript syntax in the script above. */}
+		<script is:inline define:vars={{ NAV_BY_LANG, FOOTER_BY_LANG }}>
+			const refreshChrome = () => {
+				const lang = document.documentElement.lang || 'en';
+				const navTable = NAV_BY_LANG[lang] ?? NAV_BY_LANG.en;
+				const footerTable = FOOTER_BY_LANG[lang] ?? FOOTER_BY_LANG.en;
+				for (const el of document.querySelectorAll('[data-nav-key]')) {
+					const key = el.getAttribute('data-nav-key');
+					const value = key && navTable[key];
+					if (typeof value === 'string' && el.textContent !== value) {
+						el.textContent = value;
+					}
+				}
+				for (const el of document.querySelectorAll('[data-footer-key]')) {
+					const key = el.getAttribute('data-footer-key');
+					const value = key && footerTable[key];
+					if (typeof value === 'string' && el.textContent !== value) {
+						el.textContent = value;
+					}
+				}
+			};
+			refreshChrome();
+			document.addEventListener('astro:after-swap', refreshChrome);
+		</script>
+	</head>
+	<body>
+		<SiteNav lang={lang} />
+		<main id="main" data-pagefind-body transition:animate="fade"><slot /></main>
+		<SiteFooter lang={lang} />
+		<Config lang={lang} />
+		<Search lang={lang} />
+	</body>
+</html>

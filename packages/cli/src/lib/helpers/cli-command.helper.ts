@@ -1,0 +1,92 @@
+/**
+ * cli-command.helper.ts — single source of truth for the pure-function
+ * helpers every CLI surface reuses (groups/*.ts, registry.ts,
+ * init/*.ts).
+ *
+ * Extracted in f00046 follow-up / a00036 follow-up so `data`,
+ * `scalarArg`, `hasFlag`, `request`, and the type guard `isRecord`
+ * stop being copy-pasted across `git.ts` and `registry.ts`. The thin
+ * wrappers in `commands/groups/group-helpers.ts` (`positionalArg`,
+ * `listArg`, `numberArg`, `usage`) extend this base set; the group
+ * file therefore re-exports both so each consumer keeps a single
+ * import site.
+ *
+ * Why this is a `helper` and not a `service` (f00093):
+ *
+ *   - These functions have **no state**, no IO, and no business logic.
+ *     They are reference-style wrappers and parsers around the
+ *     `ICliCommand` contract — exactly what f00093 calls a "helper".
+ *   - Inflating them into `.service.ts` misrepresents the role; the
+ *     f00037 table documents `.service.ts` as "stateful business
+ *     logic", which these do not satisfy.
+ *
+ * SOLID:
+ *   - Single responsibility: argument parsing + result shaping +
+ *     type guards for the CLI surface. No domain logic.
+ *   - Open/closed: add a new helper here, re-export from
+ *     `group-helpers.ts` if a group needs it; the call sites do not
+ *     change.
+ *   - Interface segregation: every helper is a pure function with a
+ *     minimal signature — no shared state, no god-object.
+ *   - Dependency inversion: helpers depend on the public contracts
+ *     (`ICliCommandContext`, `ICliCommandResult`) — no upward
+ *     dependency on the call sites.
+ */
+import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
+import { isRecord, scalarArg } from '@delendai/core/cli';
+
+export { isRecord, scalarArg };
+import {
+	type IResolvedCapability,
+	isUnexposedHere,
+	requalify,
+	resolverFor,
+	serverPrefix,
+	unwrapResolved,
+} from './tool-request.service';
+import type {
+	ICliCommandContext,
+	ICliCommandResult,
+} from '../../contracts/interfaces/cli-command.interface';
+
+/** Wrap a tool payload as a successful (or coded) CLI data result. */
+export const data = (
+	value: unknown,
+	code: ICliCommandResult['code'] = EXIT_CODE.OK,
+): ICliCommandResult => ({ code, data: value });
+
+/** True when a boolean `--name` flag is present. */
+export const hasFlag = (args: readonly string[], name: string): boolean =>
+	args.includes(`--${name}`);
+
+/**
+ * Delegate to a registered MCP tool through the CLI transport.
+ *
+ * A tool the managed surface keeps hidden is not exposed to `tools/call`,
+ * and every CLI command whose tool is hidden used to fail with
+ * `returned an error` and no cause. The direct call stays first — a
+ * visible tool costs one round trip — and a `not found` means "this one
+ * lives behind the resolver", which is what the resolver is for.
+ */
+export const request = async <TOut>(
+	ctx: ICliCommandContext,
+	tool: string,
+	args: object = {},
+): Promise<TOut> => {
+	try {
+		return await ctx.request<TOut>(tool, args);
+	} catch (error) {
+		if (!isUnexposedHere(error)) throw error;
+		// The namespace comes from the server's own surface, not from the
+		// name this caller happened to write: a project that renamed its
+		// namespace has a server whose tools no call site can spell.
+		const prefix = await serverPrefix(ctx);
+		if (prefix === undefined) throw error;
+		const qualifiedName = requalify(tool, prefix);
+		const resolved = await ctx.request<IResolvedCapability>(
+			resolverFor(prefix),
+			{ qualifiedName, args },
+		);
+		return unwrapResolved<TOut>(qualifiedName, resolved);
+	}
+};

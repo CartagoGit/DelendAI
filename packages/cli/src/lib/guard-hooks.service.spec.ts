@@ -1,0 +1,422 @@
+/**
+ * Installing the guard beside a project's own hooks, over real
+ * repositories: a plain one, one shaped like the observed adopter project
+ * (`core.hooksPath=.husky` with existing hooks that read stdin), and ones
+ * managed by tools that rewrite hook files.
+ */
+import { isAgentEnvironmentVariable } from '@delendai/core/cli';
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+	chmodSync,
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { afterEach, describe, expect, it } from 'vitest';
+
+import {
+	inspectGuardHooks,
+	installGuardHooks,
+	lefthookConfiguredHooks,
+	locateHooks,
+	uninstallGuardHooks,
+	durableEntry,
+	lefthookRunsGuard,
+} from './guard-hooks.service';
+
+const roots: string[] = [];
+afterEach(() => {
+	for (const root of roots.splice(0)) {
+		rmSync(root, { recursive: true, force: true });
+	}
+});
+
+const repo = (): string => {
+	const root = mkdtempSync(join(tmpdir(), 'guard-install-'));
+	roots.push(root);
+	const git = (...args: string[]) =>
+		execFileSync('git', args, { cwd: root, encoding: 'utf8' });
+	git('init', '-q', '-b', 'develop');
+	git('config', 'user.email', 'install@example.com');
+	git('config', 'user.name', 'Install');
+	git('config', 'commit.gpgsign', 'false');
+	writeFileSync(join(root, 'README.md'), '# r\n');
+	git('add', '-A');
+	git('commit', '-q', '-m', 'base');
+	return root;
+};
+
+const CLI_ENTRY = resolve(
+	fileURLToPath(new URL('.', import.meta.url)),
+	'..',
+	'index.ts',
+);
+const invocation = { runner: 'bun', entry: CLI_ENTRY };
+/**
+ * Environments for the process running git: a person's shell has no
+ * agent marker, an agent's has one. Built explicitly, so a test does not
+ * depend on whether whoever runs it is an agent.
+ */
+const personEnv = (): Record<string, string | undefined> => {
+	const env: Record<string, string | undefined> = { ...process.env };
+	for (const name of Object.keys(env)) {
+		if (isAgentEnvironmentVariable(name) || name === 'DELENDAI_SESSION') {
+			delete env[name];
+		}
+	}
+	return env;
+};
+const agentEnv = (): Record<string, string | undefined> => ({
+	...personEnv(),
+	AI_AGENT: 'some-runtime_1_agent',
+});
+
+describe('installing into a plain repository', () => {
+	it('creates every guarded hook, is idempotent, and uninstalls without a trace', () => {
+		const root = repo();
+		const hooksDir = locateHooks(root).dir;
+		const before = readdirSync(hooksDir).sort();
+
+		const first = installGuardHooks(root, invocation);
+		expect(first.hooks.map((h) => h.state)).toEqual([
+			'created',
+			'created',
+			'created',
+			'created',
+			'created',
+			'created',
+		]);
+		for (const hook of [
+			'pre-commit',
+			'commit-msg',
+			'reference-transaction',
+			'pre-push',
+			'post-checkout',
+			'post-merge',
+		]) {
+			expect(statSync(join(hooksDir, hook)).mode & 0o111).not.toBe(0);
+		}
+		expect(
+			installGuardHooks(root, invocation).hooks.map((h) => h.state),
+		).toEqual([
+			'unchanged',
+			'unchanged',
+			'unchanged',
+			'unchanged',
+			'unchanged',
+			'unchanged',
+		]);
+		expect(
+			inspectGuardHooks(root).hooks.every((h) => h.state === 'installed'),
+		).toBe(true);
+
+		expect(uninstallGuardHooks(root).hooks.map((h) => h.state)).toEqual([
+			'removed',
+			'removed',
+			'removed',
+			'removed',
+			'removed',
+			'removed',
+		]);
+		expect(readdirSync(hooksDir).sort()).toEqual(before);
+		expect(
+			inspectGuardHooks(root).hooks.every((h) => h.state === 'absent'),
+		).toBe(true);
+	});
+});
+
+describe('installing beside existing hooks under core.hooksPath', () => {
+	it('keeps the project hooks running with their stdin, and restores them byte for byte', () => {
+		const root = repo();
+		const husky = join(root, '.husky');
+		mkdirSync(husky);
+		execFileSync('git', ['config', 'core.hooksPath', '.husky'], {
+			cwd: root,
+		});
+		const seen = join(root, 'pre-push-saw.txt');
+		const prePush = `#!/usr/bin/env bash\n# project hook\nwhile read -r local_ref local_sha remote_ref remote_sha; do\n  echo "$remote_ref" >> "${seen}"\ndone\n`;
+		const refTx = '#!/usr/bin/env bash\n# bumps versions on tags\nexit 0\n';
+		writeFileSync(join(husky, 'pre-push'), prePush);
+		writeFileSync(join(husky, 'reference-transaction'), refTx);
+		chmodSync(join(husky, 'pre-push'), 0o755);
+		chmodSync(join(husky, 'reference-transaction'), 0o755);
+
+		const report = installGuardHooks(root, invocation);
+		expect(report.dir).toBe(husky);
+		expect(report.hooks.map((h) => [h.hook, h.state])).toEqual([
+			['pre-commit', 'created'],
+			['commit-msg', 'created'],
+			['reference-transaction', 'updated'],
+			['pre-push', 'updated'],
+			['post-checkout', 'created'],
+			['post-merge', 'created'],
+		]);
+
+		// A bare remote, and a push the project's own pre-push must still see.
+		const remote = mkdtempSync(join(tmpdir(), 'guard-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		const pushed = spawnSync('git', ['push', '-q', 'origin', 'develop'], {
+			cwd: root,
+			encoding: 'utf8',
+		});
+		expect(pushed.status).toBe(0);
+		expect(readFileSync(seen, 'utf8')).toBe('refs/heads/develop\n');
+
+		uninstallGuardHooks(root);
+		expect(readFileSync(join(husky, 'pre-push'), 'utf8')).toBe(prePush);
+		expect(readFileSync(join(husky, 'reference-transaction'), 'utf8')).toBe(
+			refTx,
+		);
+		expect(existsSync(join(husky, 'pre-commit'))).toBe(false);
+	}, 60_000);
+});
+
+describe('what the guard does not write into', () => {
+	it('leaves the hooks lefthook declares to lefthook, and installs only the others', () => {
+		const root = repo();
+		writeFileSync(
+			join(root, 'lefthook.yml'),
+			'pre-commit:\n  commands: {}\npre-push:\n  commands: {}\n',
+		);
+		const report = installGuardHooks(root, invocation);
+		const state = (hook: string) =>
+			report.hooks.find((entry) => entry.hook === hook)?.state;
+		// Lefthook rewrites these files, so they are its own.
+		expect(state('pre-commit')).toBe('unsupported');
+		expect(state('pre-push')).toBe('unsupported');
+		expect(
+			report.hooks.find((h) => h.hook === 'pre-commit')?.reason,
+		).toContain('lefthook');
+		expect(existsSync(join(locateHooks(root).dir, 'pre-commit'))).toBe(
+			false,
+		);
+		// A hook lefthook does not declare is not its file; it lives in
+		// `.git/hooks`, which is never committed.
+		expect(state('reference-transaction')).toBe('created');
+		expect(
+			existsSync(join(locateHooks(root).dir, 'reference-transaction')),
+		).toBe(true);
+		expect(lefthookConfiguredHooks(root)).toEqual(
+			new Set(['pre-commit', 'pre-push']),
+		);
+	});
+
+	it('counts commit-msg as guarded when it asks the guard as pre-commit, and nothing else under another name', () => {
+		const root = repo();
+		writeFileSync(
+			join(root, 'lefthook.yml'),
+			[
+				'commit-msg:',
+				'  commands:',
+				'    delendai-guard:',
+				'      run: delendai guard pre-commit',
+				'post-checkout:',
+				'  commands:',
+				'    delendai-guard:',
+				'      run: delendai guard pre-commit',
+				'',
+			].join('\n'),
+		);
+
+		expect(lefthookRunsGuard(root, 'commit-msg')).toBe(true);
+		expect(lefthookRunsGuard(root, 'post-checkout')).toBe(false);
+	});
+
+	it('counts a hook as guarded when lefthook runs the guard in it, and says how to add it where it does not', () => {
+		const root = repo();
+		writeFileSync(
+			join(root, 'lefthook.yml'),
+			[
+				'pre-commit:',
+				'  commands:',
+				'    delendai-guard:',
+				'      run: delendai guard pre-commit',
+				'pre-push:',
+				'  commands:',
+				'    lint:',
+				'      run: bun run lint',
+				'post-merge:',
+				'  commands:',
+				'    regenerate:',
+				'      run: delendai guard post-merge',
+				'',
+			].join('\n'),
+		);
+
+		expect(lefthookRunsGuard(root, 'pre-commit')).toBe(true);
+		// `guard post-merge` in another hook's section does not count.
+		expect(lefthookRunsGuard(root, 'pre-push')).toBe(false);
+		const report = inspectGuardHooks(root);
+		const entry = (hook: string) =>
+			report.hooks.find((item) => item.hook === hook);
+		expect(entry('pre-commit')?.state).toBe('installed');
+		expect(entry('pre-push')?.state).toBe('absent');
+		expect(entry('pre-push')?.reason).toContain('lefthook.yml');
+	});
+
+	it('reports husky v9, whose hooks directory it regenerates', () => {
+		const root = repo();
+		execFileSync('git', ['config', 'core.hooksPath', '.husky/_'], {
+			cwd: root,
+		});
+		const report = installGuardHooks(root, invocation);
+		expect(report.hooks.every((h) => h.state === 'unsupported')).toBe(true);
+		expect(report.hooks[0]?.reason).toContain('husky v9');
+	});
+
+	it('reports a hook that is not a shell script, and installs the others', () => {
+		const root = repo();
+		const dir = locateHooks(root).dir;
+		const nodeHook = '#!/usr/bin/env node\nprocess.exit(0)\n';
+		writeFileSync(join(dir, 'pre-push'), nodeHook);
+		const report = installGuardHooks(root, invocation);
+		expect(report.hooks.map((h) => h.state)).toEqual([
+			'created',
+			'created',
+			'created',
+			'unsupported',
+			'created',
+			'created',
+		]);
+		expect(readFileSync(join(dir, 'pre-push'), 'utf8')).toBe(nodeHook);
+	});
+});
+
+describe('the installed guard enforces the declared policy', () => {
+	it('refuses a hand-made branch and a direct commit once installed', () => {
+		const root = repo();
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "development": { "profile": "shared-checkout-merge", "guard": { "unknownActor": "person" } } }',
+		);
+		installGuardHooks(root, invocation);
+		const branch = spawnSync('git', ['switch', '-c', 'agent/x/y'], {
+			cwd: root,
+			encoding: 'utf8',
+			env: agentEnv(),
+		});
+		expect(branch.status).not.toBe(0);
+		expect(branch.stderr).toContain('refused');
+		const commit = spawnSync(
+			'git',
+			['commit', '-q', '-am', 'feat: direct'],
+			{
+				cwd: root,
+				encoding: 'utf8',
+				env: agentEnv(),
+			},
+		);
+		// Nothing staged would also fail; the guard's reason proves which.
+		writeFileSync(join(root, 'a.ts'), 'export {};\n');
+		spawnSync('git', ['add', 'a.ts'], { cwd: root });
+		const direct = spawnSync(
+			'git',
+			['commit', '-q', '-m', 'feat: direct'],
+			{
+				cwd: root,
+				encoding: 'utf8',
+				env: agentEnv(),
+			},
+		);
+		expect(commit.status).not.toBe(0);
+		expect(direct.status).not.toBe(0);
+		expect(direct.stderr).toContain(
+			'forbids committing directly to `develop`',
+		);
+
+		// The same operations by a person go through: delendai governs
+		// agents, not how somebody uses their own repository.
+		const mine = spawnSync('git', ['switch', '-c', 'feature/mine'], {
+			cwd: root,
+			encoding: 'utf8',
+			env: personEnv(),
+		});
+		expect(mine.status).toBe(0);
+		const personCommit = spawnSync(
+			'git',
+			['commit', '-q', '-m', 'feat: a person commits'],
+			{ cwd: root, encoding: 'utf8', env: personEnv() },
+		);
+		expect(personCommit.status).toBe(0);
+	}, 60_000);
+
+	it('makes git refuse an agent stash, first and later, and leaves a person free to stash (x00626)', () => {
+		const root = repo();
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "development": { "profile": "worktree-pr" } }',
+		);
+		installGuardHooks(root, invocation);
+		const readme = join(root, 'README.md');
+		const person = personEnv();
+		const agent = agentEnv();
+		const stash = (env: Record<string, string | undefined>) =>
+			spawnSync('git', ['stash'], { cwd: root, encoding: 'utf8', env });
+		const count = () =>
+			execFileSync('git', ['stash', 'list'], {
+				cwd: root,
+				encoding: 'utf8',
+			})
+				.split('\n')
+				.filter((line) => line.length > 0).length;
+
+		writeFileSync(readme, '# changed\n');
+		const refused = stash(agent);
+		expect(refused.status).not.toBe(0);
+		expect(refused.stderr).toContain('refs/stash');
+		expect(refused.stderr).toContain('AI_AGENT');
+		expect(count()).toBe(0);
+		// The work is still where it was, not hidden.
+		expect(readFileSync(readme, 'utf8')).toBe('# changed\n');
+
+		// A person stashes as they always could.
+		expect(stash(person).status).toBe(0);
+		expect(count()).toBe(1);
+
+		// A stash on top of an existing one updates the ref instead of
+		// creating it; an agent is refused there too.
+		writeFileSync(readme, '# changed again\n');
+		expect(stash(agent).status).not.toBe(0);
+		expect(count()).toBe(1);
+
+		// Cleaning up is not hiding anything, so it stays possible.
+		execFileSync('git', ['stash', 'drop', '-q'], { cwd: root, env: agent });
+		expect(count()).toBe(0);
+	}, 60_000);
+});
+
+describe('durableEntry', () => {
+	it("records the main checkout's twin of a CLI run from inside a unit", () => {
+		const root = repo();
+		const cli = join('packages', 'cli', 'src', 'index.ts');
+		mkdirSync(join(root, 'packages', 'cli', 'src'), { recursive: true });
+		writeFileSync(join(root, cli), '\n');
+		const unit = `${root}-unit`;
+		roots.push(unit);
+		execFileSync('git', ['worktree', 'add', '-q', '-b', 'unit', unit], {
+			cwd: root,
+		});
+		mkdirSync(join(unit, 'packages', 'cli', 'src'), { recursive: true });
+		writeFileSync(join(unit, cli), '\n');
+
+		expect(durableEntry(unit, join(unit, cli))).toBe(
+			join(resolve(root), cli),
+		);
+		// No twin in the main checkout: the entry is kept as given.
+		expect(durableEntry(unit, join(unit, 'only-here.ts'))).toBe(
+			join(unit, 'only-here.ts'),
+		);
+		expect(durableEntry(root, join(root, cli))).toBe(join(root, cli));
+	});
+});

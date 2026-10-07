@@ -1,0 +1,200 @@
+/**
+ * rollup.spec.ts — groupby folds + durable summary write.
+ */
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import {
+	bucketBy,
+	buildSummary,
+	computeTotals,
+	readInvocations,
+	regenerateSummary,
+	withinWindow,
+} from '../../../src/lib/rollup';
+import type { IInvocationRecord } from '../../../src/lib/types';
+
+const rec = (
+	over: Partial<IInvocationRecord> & { ts: string },
+): IInvocationRecord => ({
+	sessionId: 's',
+	agent: { id: 'copilot-1', kind: 'copilot', extension: 'vscode-copilot' },
+	plugin: 'proposals',
+	tool: 'auto_work',
+	model: null,
+	usage: null,
+	costUsd: null,
+	durationMs: null,
+	outcome: 'success',
+	fallbackFrom: null,
+	error: null,
+	autoBypassed: false,
+	...over,
+});
+
+describe('rollup', () => {
+	let dir = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'ut-roll-'));
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('reads NDJSON and skips a torn tail line', async () => {
+		const path = join(dir, 'invocations.jsonl');
+		writeFileSync(
+			path,
+			`${JSON.stringify(rec({ ts: '2026-06-25T00:00:00.000Z' }))}\n{"partial":`,
+			'utf8',
+		);
+		const records = await readInvocations(path);
+		expect(records).toHaveLength(1);
+	});
+
+	it('returns [] for a missing log', async () => {
+		expect(await readInvocations(join(dir, 'nope.jsonl'))).toEqual([]);
+	});
+
+	it('buckets by every axis and totals usage/cost/errors', () => {
+		const now = Date.parse('2026-06-25T12:00:00.000Z');
+		const records = [
+			rec({
+				ts: '2026-06-25T11:00:00.000Z',
+				plugin: 'proposals',
+				model: {
+					provider: 'copilot-m3',
+					modelId: 'm3',
+					kind: 'subscription',
+				},
+				usage: { inputTokens: 100, outputTokens: 20, totalTokens: 120 },
+				costUsd: 1,
+			}),
+			rec({
+				ts: '2026-06-25T11:30:00.000Z',
+				plugin: 'docs',
+				outcome: 'error',
+				error: { code: 'x', message: 'y' },
+				costUsd: 2,
+			}),
+		];
+		const totals = computeTotals(records);
+		expect(totals.calls).toBe(2);
+		expect(totals.costUsd).toBe(3);
+		expect(totals.errors).toBe(1);
+		expect(totals.totalTokens).toBe(120);
+		expect(totals.tokensSaved).toBe(0);
+
+		const byPlugin = bucketBy(records, 'plugin', 'costUsd');
+		expect(byPlugin[0]?.key).toBe('docs');
+		expect(byPlugin[0]?.costUsd).toBe(2);
+
+		const byProvider = bucketBy(records, 'provider', 'calls');
+		const providers = byProvider.map((b) => b.key).sort();
+		expect(providers).toEqual(['copilot-m3', 'unknown']);
+
+		const summary = buildSummary(records, 7, now);
+		expect(summary.totals.calls).toBe(2);
+		expect(summary.byExtension[0]?.key).toBe('vscode-copilot');
+	});
+
+	it('groups by model (provider/modelId), unattributed for model: null (f00106 S1a)', () => {
+		const records = [
+			rec({
+				ts: '2026-06-25T11:00:00.000Z',
+				model: {
+					provider: 'openai',
+					modelId: 'gpt-5-codex',
+					kind: 'api',
+				},
+				usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+				costUsd: 2,
+			}),
+			rec({
+				ts: '2026-06-25T11:30:00.000Z',
+				model: {
+					provider: 'anthropic',
+					modelId: 'claude-sonnet',
+					kind: 'cli',
+				},
+				usage: { inputTokens: 40, outputTokens: 10, totalTokens: 50 },
+				costUsd: 1,
+			}),
+			// No model → the explicit `unattributed` bucket, never dropped.
+			rec({ ts: '2026-06-25T11:45:00.000Z', costUsd: 3 }),
+		];
+		const byModel = bucketBy(records, 'model', 'costUsd');
+		const keys = byModel.map((b) => b.key).sort();
+		expect(keys).toEqual([
+			'anthropic/claude-sonnet',
+			'openai/gpt-5-codex',
+			'unattributed',
+		]);
+		// Per-model buckets + unattributed sum to the session totals (nothing lost).
+		const totalCalls = byModel.reduce((n, b) => n + b.calls, 0);
+		const totalCost = byModel.reduce((n, b) => n + b.costUsd, 0);
+		expect(totalCalls).toBe(3);
+		expect(totalCost).toBe(6);
+		expect(
+			byModel.find((b) => b.key === 'openai/gpt-5-codex')?.totalTokens,
+		).toBe(150);
+	});
+
+	it('sums per-model savings to the session total without double counting', () => {
+		const records = [
+			rec({
+				ts: '2026-06-25T11:00:00.000Z',
+				model: { provider: 'openai', modelId: 'gpt-5', kind: 'api' },
+				usage: { totalTokens: 100 },
+				tokensSaved: 25,
+			}),
+			rec({
+				ts: '2026-06-25T11:30:00.000Z',
+				model: {
+					provider: 'anthropic',
+					modelId: 'sonnet',
+					kind: 'api',
+				},
+				usage: { totalTokens: 50 },
+				tokensSaved: 10,
+			}),
+			rec({ ts: '2026-06-25T11:45:00.000Z', tokensSaved: 5 }),
+		];
+		const buckets = bucketBy(records, 'model', 'tokensSaved');
+		const totals = computeTotals(records);
+		expect(
+			buckets.reduce((sum, bucket) => sum + bucket.tokensSaved, 0),
+		).toBe(totals.tokensSaved);
+		expect(totals.tokensSaved).toBe(40);
+		expect(totals.savingsPercent).toBe(27);
+		expect(buckets[0]).toMatchObject({
+			key: 'openai/gpt-5',
+			tokensSaved: 25,
+			savingsPercent: 25,
+		});
+	});
+
+	it('windows out records older than windowDays', () => {
+		const now = Date.parse('2026-06-25T00:00:00.000Z');
+		const records = [
+			rec({ ts: '2026-06-24T00:00:00.000Z' }), // in window
+			rec({ ts: '2026-05-01T00:00:00.000Z' }), // out of window
+		];
+		expect(withinWindow(records, 7, now)).toHaveLength(1);
+	});
+
+	it('regenerates and persists usage-summary.json durably', async () => {
+		const log = join(dir, 'invocations.jsonl');
+		const summaryPath = join(dir, 'usage-summary.json');
+		writeFileSync(
+			log,
+			`${JSON.stringify(rec({ ts: new Date().toISOString(), costUsd: 5 }))}\n`,
+			'utf8',
+		);
+		const summary = await regenerateSummary(log, summaryPath, 7);
+		expect(summary.totals.calls).toBe(1);
+		const onDisk = JSON.parse(readFileSync(summaryPath, 'utf8'));
+		expect(onDisk.totals.costUsd).toBe(5);
+	});
+});

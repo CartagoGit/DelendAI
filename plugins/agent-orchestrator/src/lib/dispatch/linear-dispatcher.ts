@@ -1,0 +1,391 @@
+/**
+ * Sequential executor for an `IModePlan`. One subagent at a time, in
+ * order. Honors `dependsOn` by skipping steps whose dependencies
+ * failed (fail-fast on the first terminal failure).
+ *
+ * Rotation: for every step that calls `spawn`, the dispatcher
+ *   - keeps invoking the port up to `maxIterationsPerSubagent` times,
+ *   - each iteration evaluates the `LoopDetector`,
+ *   - rotates only if the verdict reason is in `allow[ ]`,
+ *   - stops when the verdict is `null` (clean output) or when the
+ *     rotation budget is exhausted.
+ *
+ * The dispatcher is pure with respect to I/O: the port is the only
+ * place that touches the host. Pure-traceable: same port scripts
+ * ⇒ same outcomes.
+ *
+ * Limits enforced before the port is even called:
+ *   - `BudgetTracker.orchestratorExhausted()` ⇒ bail with
+ *     `ok: false` (fail-closed)
+ *   - per-subagent cap via `BudgetTracker.subagentExhausted(id)`
+ *
+ * Concurrent dispatch lands in S3.
+ */
+import { BudgetTracker } from '../budget/budget-tracker.js';
+import { LoopDetector } from '../rotation/loop-detector.js';
+import type { IModePlan, IPlanStep } from '../policy/types.js';
+import { InMemoryTelemetrySink, TelemetryEvent } from '../telemetry/event.js';
+import type { ITelemetrySink } from '../telemetry/event.js';
+import type {
+	IDispatchPort,
+	IPlanOutcome,
+	IStepOutcome,
+	ISubagentResult,
+} from './contracts.js';
+
+/** Generate a stable, deterministic, host-independent slot id. */
+function makeSlotId(order: number, role: string): string {
+	return `slot-${order}-${role}`;
+}
+
+/** New subagent id inside a rotation slot. */
+function makeSubagentId(slotId: string, iter: number): string {
+	return `${slotId}#${iter}`;
+}
+
+/**
+ * Public façade. Construct once per plan, then call `run()`.
+ * Reusable across plans (the budget + detector are local, not
+ * shared).
+ */
+export class LinearDispatcher {
+	readonly #port: IDispatchPort;
+	readonly #budget: BudgetTracker;
+	readonly #detector: LoopDetector;
+	readonly #plan: IModePlan;
+	readonly #taskId: string;
+	readonly #telemetry: ITelemetrySink;
+	readonly #orchestratorTokens: () => number;
+	readonly #ingestionsBySlot = new Map<string, number>();
+
+	/**
+	 * `telemetry` defaults to a private, throwaway sink so the
+	 * dispatcher stays constructible without a real one (unit tests
+	 * that only care about `IPlanOutcome`). A host wiring `_dispatch`
+	 * passes in the same sink instance the `_events` tool reads, so
+	 * dispatch/rotate events actually reach it.
+	 */
+	constructor(
+		plan: IModePlan,
+		port: IDispatchPort,
+		taskId: string,
+		telemetry: ITelemetrySink = new InMemoryTelemetrySink(),
+		orchestratorTokens: () => number = () => 1,
+	) {
+		this.#plan = plan;
+		this.#port = port;
+		this.#taskId = taskId;
+		this.#telemetry = telemetry;
+		this.#orchestratorTokens = orchestratorTokens;
+		this.#budget = new BudgetTracker(plan.budget);
+		this.#detector = new LoopDetector();
+		this.#detector.setBudgetCap(plan.budget.maxTokensPerSubagent);
+	}
+
+	/** Snapshot the budget at any time. */
+	budget(): BudgetTracker {
+		return this.#budget;
+	}
+
+	async run(): Promise<IPlanOutcome> {
+		const stepOutcomes: IStepOutcome[] = [];
+		const failedOrders = new Set<number>();
+		const stepsByOrder = new Map(
+			this.#plan.steps.map((step) => [step.order, step]),
+		);
+
+		for (const step of this.#plan.steps) {
+			const dependsOnFailed = (step.dependsOn ?? []).some((dependency) =>
+				dependsOnFailedTransitively(
+					dependency,
+					failedOrders,
+					stepsByOrder,
+				),
+			);
+			if (dependsOnFailed) {
+				stepOutcomes.push(emptyStepOutcome(step));
+				failedOrders.add(step.order);
+				continue;
+			}
+
+			const outcome = await this.#runStep(step);
+			stepOutcomes.push(outcome);
+			if (!outcome.ok) {
+				failedOrders.add(step.order);
+			}
+		}
+
+		const snap = this.#budget.snapshot();
+		// `ok` means: at least one step succeeded AND no step that was
+		// supposed to run failed. Steps skipped due to a failed dep
+		// count as failures for the purpose of the top-level signal —
+		// we don't want a 3-step plan that skipped the middle step to
+		// report `ok: true` because the verify step passed.
+		const nonSkipped = stepOutcomes.filter(
+			(s) => s.kind === 'spawn' || s.kind === 'orchestrate',
+		);
+		const allOk = stepOutcomes.every(
+			(s) =>
+				s.ok ||
+				s.kind === 'verify' /* verify is informational, never blocks */,
+		);
+		const ok = allOk && nonSkipped.some((s) => s.ok);
+		const error = ok
+			? undefined
+			: `plan "${this.#plan.mode}" did not produce a successful step`;
+
+		return {
+			mode: this.#plan.mode,
+			steps: stepOutcomes,
+			budget: snap,
+			ok,
+			...(error !== undefined ? { error } : {}),
+		};
+	}
+
+	async #runStep(step: IPlanStep): Promise<IStepOutcome> {
+		// Count the step first, whatever its kind. `recordOrchestrator`
+		// below also bumps the counter, so only non-orchestrator kinds
+		// need it here — a `spawn`-only plan reported `budget.steps: 0`
+		// while its subagents were charged for real work, and the budget
+		// read-back then answered 0 for a task that had just run.
+		if (step.kind !== 'orchestrate' && step.kind !== 'verify') {
+			this.#budget.recordStep();
+		}
+		// Orchestrator-only or verify-only steps don't touch subagents —
+		// they're the orchestrator's own budget spend, recorded below.
+		if (step.kind === 'orchestrate' || step.kind === 'verify') {
+			// We don't have a subagent budget for orchestrator work, but
+			// we still record a single orchestrator tick so the budget
+			// surface stays honest. Tokens for orchestrator work are
+			// reported via the orchestrator itself; the dispatcher here
+			// records 0 for the step (the host logs them at the tool
+			// boundary).
+			this.#budget.recordOrchestrator(this.#orchestratorTokens());
+			return {
+				order: step.order,
+				kind: step.kind,
+				slotId: makeSlotId(step.order, 'orchestrator'),
+				subagentIds: [],
+				result: null,
+				rotations: [],
+				ok: true,
+			};
+		}
+
+		if (this.#budget.orchestratorExhausted()) {
+			return {
+				order: step.order,
+				kind: step.kind,
+				slotId: makeSlotId(step.order, step.subagentRole ?? 'spawn'),
+				subagentIds: [],
+				result: null,
+				rotations: [],
+				ok: false,
+			};
+		}
+
+		const role = step.subagentRole ?? 'implementer';
+		const slotId = makeSlotId(step.order, role);
+		const subagentIds: string[] = [];
+		const rotations: { subagentId: string; reason: string }[] = [];
+		let lastResult: ISubagentResult | null = null;
+		let ok = false;
+
+		const maxIter = this.#plan.rotation.maxIterationsPerSubagent;
+		for (let iter = 1; iter <= maxIter; iter += 1) {
+			const subagentId = makeSubagentId(slotId, iter);
+			subagentIds.push(subagentId);
+			this.#budget.recordSubagent(subagentId, 0);
+
+			let result: ISubagentResult;
+			this.#telemetry.emit(TelemetryEvent.dispatchStart(this.#taskId));
+			try {
+				result = await withTimeout(
+					this.#port.spawnSubagent({
+						role,
+						instruction: step.instruction,
+						step,
+						override: {
+							mode: this.#plan.mode,
+							budget: this.#plan.budget.maxTokensPerSubagent,
+							timeoutMs: this.#plan.budget.timeoutMs,
+						},
+						budget: this.#plan.budget.maxTokensPerSubagent,
+						slotId,
+					}),
+					this.#plan.budget.timeoutMs,
+				);
+			} catch (err) {
+				// A thrown port call still settles the dispatch — the end
+				// event must fire on the failure path too, not just on
+				// success.
+				this.#telemetry.emit(
+					TelemetryEvent.dispatchEnd(this.#taskId, false, 0),
+				);
+				const msg = err instanceof Error ? err.message : String(err);
+				if (!this.#plan.rotation.allow.includes('error-storm')) {
+					return failure(step, slotId, subagentIds, [
+						...rotations,
+						{
+							subagentId,
+							reason: `forbidden: error-storm: ${msg}`,
+						},
+					]);
+				}
+				rotations.push({ subagentId, reason: `error-storm: ${msg}` });
+				if (iter === maxIter) {
+					return failure(step, slotId, subagentIds, rotations);
+				}
+				this.#telemetry.emit(
+					TelemetryEvent.rotate(
+						this.#taskId,
+						subagentId,
+						`error-storm: ${msg}`,
+					),
+				);
+				continue;
+			}
+
+			this.#telemetry.emit(
+				TelemetryEvent.dispatchEnd(
+					this.#taskId,
+					!result.hadError,
+					result.tokensUsed,
+				),
+			);
+			this.#budget.recordSubagent(subagentId, result.tokensUsed);
+			lastResult = result;
+
+			this.#detector.ingest(
+				{
+					subagentId,
+					slotId,
+					output: result.output,
+					schemaOk: result.schemaOk,
+					hadError: result.hadError,
+				},
+				this.#budget.snapshot(),
+				this.#plan.budget.maxTokensPerSubagent,
+			);
+			const ingestionCount =
+				(this.#ingestionsBySlot.get(slotId) ?? 0) + 1;
+			this.#ingestionsBySlot.set(slotId, ingestionCount);
+			// Require a warmup, baseline, and candidate observation before
+			// accepting a clean result. This avoids treating the first stable
+			// response as proof that a later loop cannot occur.
+			if (ingestionCount < 3) continue;
+			const verdict = this.#detector.evaluate(slotId);
+			if (verdict.reason === null) {
+				ok = true;
+				break;
+			}
+
+			// Verdict present ⇒ check the rotation allowlist.
+			const allowed = this.#plan.rotation.allow.includes(verdict.reason);
+			if (!allowed) {
+				// Trigger not allowed ⇒ fail the step, fail-closed.
+				return failure(step, slotId, subagentIds, [
+					...rotations,
+					{ subagentId, reason: `forbidden: ${verdict.reason}` },
+				]);
+			}
+
+			rotations.push({ subagentId, reason: verdict.reason });
+			if (iter === maxIter) {
+				// Rotation budget exhausted.
+				return failure(step, slotId, subagentIds, rotations);
+			}
+			// Continue rotating on the next iter.
+			this.#telemetry.emit(
+				TelemetryEvent.rotate(this.#taskId, subagentId, verdict.reason),
+			);
+		}
+
+		return {
+			order: step.order,
+			kind: step.kind,
+			slotId,
+			subagentIds,
+			result: lastResult,
+			rotations,
+			ok,
+		};
+	}
+}
+
+async function withTimeout<T>(
+	promise: Promise<T>,
+	timeoutMs: number,
+): Promise<T> {
+	if (timeoutMs === 0) return promise;
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	try {
+		return await Promise.race([
+			promise,
+			new Promise<T>((_, reject) => {
+				timer = setTimeout(
+					() =>
+						reject(
+							new Error(
+								`dispatch timed out after ${timeoutMs}ms`,
+							),
+						),
+					timeoutMs,
+				);
+			}),
+		]);
+	} finally {
+		if (timer !== undefined) clearTimeout(timer);
+	}
+}
+
+function dependsOnFailedTransitively(
+	order: number,
+	failedOrders: ReadonlySet<number>,
+	stepsByOrder: ReadonlyMap<number, IPlanStep>,
+	visiting = new Set<number>(),
+): boolean {
+	if (failedOrders.has(order)) return true;
+	if (visiting.has(order)) return false;
+	const step = stepsByOrder.get(order);
+	if (!step) return false;
+	visiting.add(order);
+	return (step.dependsOn ?? []).some((dependency) =>
+		dependsOnFailedTransitively(
+			dependency,
+			failedOrders,
+			stepsByOrder,
+			visiting,
+		),
+	);
+}
+
+function emptyStepOutcome(step: IPlanStep): IStepOutcome {
+	return {
+		order: step.order,
+		kind: step.kind,
+		slotId: makeSlotId(step.order, step.subagentRole ?? 'orchestrator'),
+		subagentIds: [],
+		result: null,
+		rotations: [],
+		ok: false,
+	};
+}
+
+function failure(
+	step: IPlanStep,
+	slotId: string,
+	subagentIds: readonly string[],
+	rotations: readonly { subagentId: string; reason: string }[],
+): IStepOutcome {
+	return {
+		order: step.order,
+		kind: step.kind,
+		slotId,
+		subagentIds: [...subagentIds],
+		rotations: [...rotations],
+		result: null,
+		ok: false,
+	};
+}

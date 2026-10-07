@@ -1,0 +1,1275 @@
+/**
+ * GENERATED FILE — DO NOT EDIT.
+ *
+ * Typed `structuredContent` shapes for this package's MCP tools,
+ * generated from each tool's Zod `outputSchema` by:
+ *
+ *     bun run types:generate
+ *
+ * The drift guard in the test suite fails if this file is stale, so any
+ * change to a tool's `outputSchema` must be accompanied by a regenerate.
+ * Action-multiplexed tools whose schema is intentionally permissive
+ * surface as `Record<string, unknown>`.
+ */
+
+export interface DelendaiProposalsAgentLockOutput {
+	$schema?: string;
+	description?: string;
+	tool?: string;
+	action?: "claim" | "heartbeat" | "release" | "status" | "gc";
+	path?: string;
+	lock_path?: string;
+	task_id?: string;
+	agent?: string;
+	error?: string | {
+		reason: string;
+		nextAction?: string;
+	};
+	blockerType?: string;
+	nextAction?: string;
+	summary?: string;
+	refreshed?: boolean;
+	ownership_count?: number;
+	heldFiles?: string[];
+	added_files?: string[];
+	not_granted?: {
+		file: string;
+		conflicting_task: string;
+	}[];
+	cross_process_release?: boolean;
+	original_pid?: number;
+	blocked?: boolean;
+	blocked_reason?: string;
+	conflicting_task?: string;
+	conflicting_agent?: string;
+	overlapping_files?: string[];
+	claimed?: boolean;
+	released?: boolean;
+	removed?: number;
+	exists?: boolean;
+	active_write_lanes?: number;
+	dropped?: number;
+	version?: number;
+	stale_after_minutes?: number;
+	in_flight?: {
+		task_id: string;
+		agent: string;
+		ownership: string[];
+		started_at: string;
+		last_seen: string;
+		parent_task_id?: string;
+		host?: string;
+		pid?: number;
+	}[];
+	last_seen?: string;
+	reason?: string;
+	held_ms?: number;
+	ok: boolean;
+	session?: {
+		claims: number;
+		releases: number;
+		imbalance: number;
+	};
+	identity?: {
+		host?: string;
+		model?: string;
+		agent_name?: string;
+		task_id?: string;
+	};
+}
+
+export interface DelendaiProposalsAgentLockReleaseOrphanOutput {
+	ok: boolean;
+	taskId: string;
+	agent: string;
+	released: boolean;
+}
+
+export interface DelendaiProposalsAgentNamesOutput {
+	error?: string;
+	nextAction?: string;
+	blocked?: boolean;
+	blockerType?: string;
+	reason?: string;
+	agent?: string;
+	status?: string;
+	task_id?: string;
+	agent_name?: string;
+	agent_slot?: string;
+	summary?: unknown;
+	released?: string[];
+	assignments?: unknown;
+	tree?: unknown;
+	adopted?: unknown;
+	[key: string]: unknown;
+}
+
+export interface DelendaiProposalsAgentWorktreeOutput {
+	ok: boolean;
+	action: "create" | "list" | "remove";
+	reason?: string;
+	path?: string;
+	branch?: string;
+	created?: boolean;
+	removed?: boolean;
+	strandedPurge?: {
+		dryRun: boolean;
+		candidates: {
+			branch: string;
+			ahead: number;
+			behind: number;
+			lastCommitIso: string;
+			worktreePath: string;
+		}[];
+		deleted: string[];
+		skipped: {
+			branch: string;
+			reason: string;
+		}[];
+	};
+	worktrees?: {
+		path: string;
+		head: string;
+		branch?: string;
+		detached: boolean;
+		locked: boolean;
+	}[];
+}
+
+export interface DelendaiProposalsAgentsLockDiagnoseOutput {
+	ok: true;
+	zombies: {
+		task_id: string;
+		agent: string;
+		ownership: string[];
+		started_at: string;
+		last_seen: string;
+		age_seconds: number;
+		parent_task_id?: string;
+	}[];
+	tmpOrphans: {
+		absPath: string;
+		relName: string;
+		mtime: string;
+		ageSeconds: number;
+	}[];
+	logGaps: {
+		task_id: string;
+		lock_last_seen: string;
+		latest_log_ts: string;
+		gap_seconds: number;
+	}[];
+	waits: {
+		waiter: string;
+		waitingOnTaskId: string;
+		holder: string;
+		waitingForSeconds: number;
+	}[];
+	deadlocks: string[][];
+}
+
+export interface DelendaiProposalsAutoFixQueueOutput {
+	ok: true;
+	autoFixable: unknown;
+	needsHuman: unknown;
+	deduped: number;
+	totalClusters: number;
+	written?: number;
+	files?: string[];
+	indexCount?: number;
+}
+
+export interface DelendaiProposalsAutoWorkOutput {
+	state: "idle" | "work";
+	idleStreak?: number;
+	reason?: string;
+	stop?: true;
+	handoffPath?: string;
+	nextAction?: string;
+	proposalId?: string;
+	file?: string;
+	pickedFromPaused?: true;
+	orchestration?: unknown;
+	validationCommand?: string;
+	persist?: unknown;
+	claimReady?: unknown;
+	action?: "close";
+	steps?: string[];
+	branchStatusWarnings?: string[];
+	executionMode?: "normal" | "confirm-required" | "blocked";
+	hygieneBlockers?: string[];
+	hygieneActions?: string[];
+	hygieneWarnings?: string[];
+	stashes?: unknown;
+	rescueCandidates?: unknown;
+	smokeResiduals?: unknown;
+	ok?: boolean;
+	blockers?: string[];
+}
+
+export interface DelendaiProposalsBranchGcOutput {
+	ok: boolean;
+	reason?: string;
+	baseBranch?: string;
+	dryRun?: boolean;
+	staleMinutes?: number;
+	removed?: Array<{
+		path: string;
+		branch: string;
+		reason: "merged-and-clean" | "merged-and-clean-with-force" | "behind-only" | "no-branch";
+		dirtyFiles: number;
+		untrackedFiles: number;
+		outOfCache: boolean;
+		ageLabel: string;
+	}>;
+	skipped?: Array<{
+		path: string;
+		branch: string;
+		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch" | "undelivered";
+		detail: string;
+	}>;
+	summary?: {
+		removedCount: number;
+		skippedCount: number;
+		dryRunRemovedCount: number;
+	};
+}
+
+export interface DelendaiProposalsBranchStatusOutput {
+	ok: boolean;
+	reason?: string;
+	baseBranch?: string;
+	branches?: unknown;
+	stranded?: unknown;
+	worktrees?: unknown;
+	mainCheckoutBranch?: string;
+	mainCheckoutDrift?: boolean;
+	summary?: unknown;
+	generatedAt?: string;
+}
+
+export interface DelendaiProposalsCloseSliceOutput {
+	ok: boolean;
+	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown" | "validation-error" | "quality-failed" | "gate-pending" | "gate-unverifiable" | "peer-review-required";
+	already_closed?: boolean;
+	entity?: {
+		id: string;
+		entity: "proposal" | "plan" | "slice";
+		status?: string;
+		path?: string;
+		sliceId?: string;
+	};
+	blockerType?: string;
+	gate?: {
+		state: "pass" | "fail" | "pending" | "unverifiable";
+		reused: boolean;
+		handle?: string;
+		tree?: string;
+		certifiedBy?: "forge-check" | "landing-certification" | "recorded-gate";
+		evidence?: string;
+		nextAction?: string;
+	};
+	blockerDetail?: {
+		ok: boolean;
+		severity: "ok" | "error";
+		findings: string[];
+		summary?: {
+			ok: boolean;
+			scopes: number;
+		};
+		gate?: {
+			state: "pass" | "fail" | "pending" | "unverifiable";
+			reused: boolean;
+			handle?: string;
+			tree?: string;
+			certifiedBy?: "forge-check" | "landing-certification" | "recorded-gate";
+			evidence?: string;
+			nextAction?: string;
+		};
+	};
+	error?: {
+		reason: string;
+		nextAction?: string;
+		kind?: string;
+		output?: string;
+	};
+	proposalId?: string;
+	sliceId?: string;
+	closed?: boolean;
+	validationDecision?: {
+		mode: "scoped" | "full" | "blocked";
+		resolvedScopes: string[];
+		snapshotId: string;
+		reason: string;
+		blockingReasons?: string[];
+		nextAction?: string;
+	};
+	lockReleased?: boolean;
+	assignmentReleased?: boolean;
+	persist?: {
+		committed: boolean;
+		pushed: boolean;
+		mode: "none" | "commit" | "commit-and-push";
+		hash?: string;
+		reason?: string;
+	};
+	pendingIntegrationBranch?: string;
+	validationOutput?: string;
+	idempotencyKey?: string;
+}
+
+export interface DelendaiProposalsCompactStatusOutput {
+	locks?: {
+		active: number;
+	};
+	queue?: {
+		queued: number;
+		promoted: number;
+		waiterOrphans: number;
+		threshold: string;
+	};
+	proposals?: {
+		total: number;
+		actionable: number;
+		byStatus: Record<string, number>;
+	};
+}
+
+export interface DelendaiProposalsContinueProposalOutput {
+	kind: "next-proposal" | "no-proposal" | "all-claimed" | "slice-mode-error" | "slice-plan" | "slice-claim-rejected" | "slice-claim";
+	reason?: string;
+	nextAction?: string;
+	proposalId?: string;
+	file?: string;
+	status?: string;
+	relaunchCommand?: string;
+	guide?: string[];
+	plan?: unknown;
+	disjointnessIssues?: unknown;
+	claimableSliceIds?: string[];
+	action?: "close";
+	sliceId?: string;
+	validation?: unknown;
+	slice?: unknown | null;
+	executionGuide?: unknown;
+	cascadeTrace?: unknown;
+	error?: string;
+	blockedBy?: string[];
+	pickedFromPaused?: boolean;
+}
+
+export interface DelendaiProposalsCreateProposalOutput {
+	ok: true;
+	id: string;
+	file: string;
+	path: string;
+	disjointnessIssues: {
+		first: string;
+		second: string;
+		file: string;
+	}[];
+	indexCount: number;
+	redactedSecrets?: number;
+	nextAction: string;
+	published: boolean;
+	publishedRef?: string;
+	publishReason?: string;
+	unitBranch?: string;
+	unitRenamedFrom?: string;
+}
+
+export interface DelendaiProposalsDelegateOutput {
+	ok: boolean;
+	stage?: "assign" | "worktree" | "lock";
+	detail?: Record<string, unknown>;
+	agent?: string;
+	reason?: string;
+	errorId?: string;
+	cancelled?: boolean;
+	alternatives?: string[];
+	errorLogged?: boolean;
+	taskId?: string;
+	slot?: string;
+	files?: string[];
+	locked?: boolean;
+	subscriptionId?: string;
+	worktree?: {
+		path: string;
+		branch: string;
+		created: boolean;
+	};
+	cwd?: string;
+	instruction?: string;
+}
+
+export interface DelendaiProposalsGetProposalWorkflowOutput {
+	families: {
+		prefix: string;
+		kind?: string;
+		description: string;
+		cascadePriority: number;
+	}[];
+	locations: Record<string, string>;
+	naming: string;
+	rules: string[];
+	template: string;
+}
+
+export interface DelendaiProposalsIncidentProposalsOutput {
+	ok: true;
+	drafts: {
+		signature: string;
+		toolName: string;
+		incidentType: string;
+		classification: string;
+		title: string;
+		summary: string;
+		rationale: string;
+		suggestedTrack: string;
+		sourceCluster: {
+			count: number;
+			distinctAgents: number;
+			firstSeen: string;
+			lastSeen: string;
+			sampleSummary: string;
+			sampleError: string;
+			recentEventsCount: number;
+		};
+	}[];
+	deduped: number;
+	totalClusters: number;
+	written?: number;
+	files?: string[];
+	indexCount?: number;
+}
+
+export interface DelendaiProposalsInheritHostInstructionsOutput {
+	ok: true;
+	scope: "repo" | "all";
+	files: string[];
+	totalNonCanonical: number;
+	id: string;
+	file?: string;
+	path?: string;
+	indexCount?: number;
+	redactedSecrets?: number;
+}
+
+export interface DelendaiProposalsPlanOutput {
+	plan: unknown;
+	disjointnessIssues: unknown[];
+	claimableSliceIds: string[];
+}
+
+export interface DelendaiProposalsProposalAdoptOutput {
+	ok: true;
+	root: string;
+	layout: {
+		root: string;
+		files: Record<string, string>;
+		folders: Record<string, string>;
+	};
+	scan: {
+		proposals: Array<{
+			file: string;
+			id: string;
+			kind: "feat" | "breaking" | "fix" | "refactor" | "perf" | "audit" | "chore" | "docs" | "test" | "infra" | "spike" | "legacy" | "resume" | "plan" | "repair";
+			status: string;
+		}>;
+		folders: string[];
+		hasIndex: boolean;
+		hasReadme: boolean;
+		unrecognized: string[];
+		other: string[];
+	};
+	plan: string[];
+	ready: boolean;
+	applied: boolean;
+	created: string[];
+	skipped: string[];
+	migration?: {
+		migrated: {
+			source: string;
+			target: string;
+			id: string;
+			title: string;
+		}[];
+		skipped: {
+			source: string;
+			reason: string;
+		}[];
+	};
+}
+
+export interface DelendaiProposalsProposalBoardOutput {
+	proposals: {
+		id: string;
+		status: string;
+		slices?: {
+			sliceId: string;
+			status: string;
+			owner: string;
+		}[];
+		sliceCount?: number;
+		claimableSliceIds?: string[];
+		unreadable?: string;
+	}[];
+	next?: string;
+}
+
+export interface DelendaiProposalsProposalDiagnoseOutput {
+	ok: boolean;
+	id: string;
+	file: string;
+	folder: string;
+	status: string;
+	lockOwners: string[];
+	staleTaskIds: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies: string[];
+	suggestedActions: string[];
+	crossProposal?: boolean;
+	crossProposalStaleTaskIds: string[];
+	crossProposalStaleAgents: string[];
+}
+
+export interface DelendaiProposalsProposalForceTransitionOutput {
+	ok: boolean;
+	id: string;
+	from: string;
+	to: string;
+	reason: string;
+	lockReleased: boolean;
+	movedTo: string;
+	warning?: string;
+}
+
+export interface DelendaiProposalsProposalGetOutput {
+	view?: "list" | "detail" | "history" | "slices" | "review";
+	proposals?: {
+		id: string;
+		status: string;
+		kind: string;
+		track: string;
+		title: string;
+		summary: string;
+		progress: string;
+		next: string;
+	}[];
+	nextCursor?: string;
+	level?: "compact" | "normal" | "full";
+	proposal?: {
+		id: string;
+		status: string;
+		kind: string;
+		track: string;
+		title: string;
+		summary: string;
+		progress: string;
+		next: string;
+		priority: string;
+		parentPlan: string;
+		auditSection: string;
+		related: string[];
+		slices: {
+			id: string;
+			status: string;
+			title?: string;
+		}[];
+		acceptance: {
+			command: string;
+			expect: string;
+		}[];
+	};
+	history?: {
+		timestamp: string;
+		action: string;
+		agent?: string;
+		note?: string;
+	}[];
+	slices?: {
+		id: string;
+		status: string;
+		title?: string;
+	}[];
+	reviews?: Array<{
+		timestamp: string;
+		action: "submit" | "approve" | "request_changes";
+		agent: string;
+		note?: string;
+	}>;
+}
+
+export interface DelendaiProposalsProposalReconcileFolderOutput {
+	ok: boolean;
+	id: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	wouldChange?: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
+	}>;
+	wouldRun?: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
+	risk?: "low" | "medium" | "high";
+	from?: string;
+	to?: string;
+	movedTo?: string;
+	warning?: string;
+}
+
+export interface DelendaiProposalsProposalReviewOutput {
+	ok: true;
+	proposalId: string;
+	sliceId: string;
+	action: string;
+	status: "none" | "in_review" | "changes_requested" | "done";
+	implementer: string;
+	reviewer: string;
+	rounds: Array<{
+		verdict: "requested_changes" | "approved" | "resubmitted";
+		agent: string;
+		note: string;
+	}>;
+	lockReleased: boolean;
+	assignmentReleased: boolean;
+	redactedSecrets: number;
+	quorum?: number;
+	approvalsStanding?: string[];
+	quorumMessage?: string;
+	attributedTo?: string;
+	proposalClosed?: boolean;
+	proposalCloseBlocker?: string;
+	proposalReopened?: boolean;
+}
+
+export interface DelendaiProposalsProposalStaleListOutput {
+	ok: boolean;
+	count: number;
+	zombies: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+}
+
+export interface DelendaiProposalsProposalTransitionOutput {
+	ok: boolean;
+	code?: string;
+	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown";
+	already_closed?: boolean;
+	entity?: {
+		id: string;
+		entity: "proposal" | "plan" | "slice";
+		status?: string;
+		path?: string;
+		sliceId?: string;
+	};
+	previousOutcome?: {
+		kind: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown";
+		entity: {
+			id: string;
+			entity: "proposal" | "plan" | "slice";
+			status?: string;
+			path?: string;
+			sliceId?: string;
+		};
+	};
+	error?: {
+		reason: string;
+		nextAction?: string;
+		code?: string;
+		blockerType?: string;
+		nextHops?: string[];
+	};
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	currentStatus?: string;
+	nextHops?: string[];
+	transitionId?: string;
+	correlationId?: string;
+	idempotencyKey?: string;
+	idempotentReplay?: boolean;
+	movedFrom?: string;
+	movedTo?: string;
+	warning?: string;
+	indexSynced?: boolean;
+	filesRewritten?: number;
+	duplicateResolved?: string;
+}
+
+export interface DelendaiProposalsProposalsClosePlanOutput {
+	dryRun: boolean;
+	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown";
+	already_closed?: boolean;
+	entity?: {
+		id: string;
+		entity: "proposal" | "plan" | "slice";
+		status?: string;
+		path?: string;
+		sliceId?: string;
+	};
+	previousOutcome?: {
+		kind: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown";
+		entity: {
+			id: string;
+			entity: "proposal" | "plan" | "slice";
+			status?: string;
+			path?: string;
+			sliceId?: string;
+		};
+	};
+	from?: string;
+	to?: string;
+	reason?: string;
+	currentStatus?: string;
+	code?: string;
+	idempotencyKey?: string;
+	wouldChange?: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
+	}>;
+	wouldRun?: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
+	risk?: "low" | "medium" | "high";
+	note?: string;
+	ok?: boolean;
+	planId?: string;
+	closable?: boolean;
+	blockers?: Array<{
+		ref: string;
+		kind: "proposal" | "plan" | "slice";
+		code: "not-done" | "not-peer-reviewed" | "self-cycle" | "unknown-ref";
+		message: string;
+	}>;
+	preview?: {
+		from: string;
+		to: string;
+		movedFrom?: string;
+		movedTo?: string;
+	};
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+}
+
+export interface DelendaiProposalsProposalsCompileContextOutput {
+	task: string;
+	maxTokens: number;
+	tokens: number;
+	bands: Record<string, Array<{
+		uid: string;
+		band: "L0" | "L1" | "L2" | "L3" | "L4" | "L5";
+		text: string;
+		tokens: number;
+		score: number;
+	}>>;
+}
+
+export interface DelendaiProposalsProposalsConflictsOutput {
+	conflicts: Array<{
+		entityType: "proposal" | "plan" | "slice";
+		entityUid: string;
+		currentRevision: number;
+		expectedRevision: number;
+	}>;
+	checkedAt: number;
+	ok: true;
+}
+
+export interface DelendaiProposalsProposalsDbDiffOutput {
+	fromSha: string;
+	untilSha: string;
+	entries: Array<{
+		path: string;
+		fromDigest: string;
+		untilDigest: string;
+		change: "added" | "removed" | "changed" | "unchanged";
+	}>;
+	ok: true;
+}
+
+export interface DelendaiProposalsProposalsDbDoctorOutput {
+	checks: Array<{
+		name: string;
+		severity: "ok" | "warning" | "error";
+		message: string;
+		affectedUids?: string[];
+	}>;
+	healthy: boolean;
+	checkedAt: number;
+}
+
+export interface DelendaiProposalsProposalsDbQuarantineListOutput {
+	entries: Array<{
+		id: number;
+		sourcePath: string;
+		blobSha: string;
+		entityGuess: string;
+		errorCode: string;
+		errorMessage: string;
+		rawMetadata: string;
+		runId: number;
+		status: "pending" | "resolved" | "ignored";
+		createdAt: number;
+		updatedAt: number;
+		resolvedAt: number | null;
+		resolvedBy: string;
+		resolutionNote: string;
+	}>;
+	total: number;
+	runCount: number;
+}
+
+export interface DelendaiProposalsProposalsDbQuarantineRepairOutput {
+	entries: Array<{
+		id: number;
+		sourcePath: string;
+		blobSha: string;
+		entityGuess: string;
+		errorCode: string;
+		errorMessage: string;
+		rawMetadata: string;
+		runId: number;
+		status: "pending" | "resolved" | "ignored";
+		createdAt: number;
+		updatedAt: number;
+		resolvedAt: number | null;
+		resolvedBy: string;
+		resolutionNote: string;
+	}>;
+	total: number;
+	runCount: number;
+}
+
+export interface DelendaiProposalsProposalsDbRebuildOutput {
+	status: "ok" | "rejected";
+	created: boolean;
+	dryRun: boolean;
+	databasePath: string;
+	stagingPath: string;
+	statePath: string;
+	sourceCommit: string;
+	logicalDigest: string;
+	filesScanned: number;
+	filesReconciled: number;
+	proposals: number;
+	plans: number;
+	slices: number;
+	staged: {
+		proposals: number;
+		plans: number;
+		slices: number;
+	};
+	excluded: {
+		path: string;
+		code: string;
+		message: string;
+	}[];
+	excludedCount: number;
+	integrity: "ok" | "failed" | "not-run";
+	foreignKey: "ok" | "failed" | "not-run";
+	reason: string;
+	startedAt: number;
+	durationMs: number;
+	applied: boolean;
+	proposedSha: string;
+	confirmationRequired: boolean;
+	ok: true;
+}
+
+export interface DelendaiProposalsProposalsDbReconcileOutput {
+	status: "ok" | "rejected";
+	created: boolean;
+	dryRun: boolean;
+	databasePath: string;
+	stagingPath: string;
+	statePath: string;
+	sourceCommit: string;
+	logicalDigest: string;
+	filesScanned: number;
+	filesReconciled: number;
+	proposals: number;
+	plans: number;
+	slices: number;
+	staged: {
+		proposals: number;
+		plans: number;
+		slices: number;
+	};
+	excluded: Array<{
+		path: string;
+		code: "unparseable" | "missing_kind" | "missing_status" | "kind_not_projectable" | "status_not_projectable" | "duplicate_id";
+		message: string;
+	}>;
+	excludedCount: number;
+	integrity: "ok" | "failed" | "not-run";
+	foreignKey: "ok" | "failed" | "not-run";
+	reason: string;
+	startedAt: number;
+	durationMs: number;
+	drift: {
+		from: string;
+		to: string;
+		reason: "ref-moved" | "ref-gone";
+	} | null;
+	ok: true;
+}
+
+export interface DelendaiProposalsProposalsDbResurrectOutput {
+	uid: string;
+	entityType: "proposal" | "plan" | "slice";
+	revision: number;
+	sourcePath: string;
+	lifecycleEventId: number;
+}
+
+export interface DelendaiProposalsProposalsDbStatusOutput {
+	exists: boolean;
+	proposals: number;
+	plans: number;
+	slices: number;
+	indexes: {
+		runtime: boolean;
+		runtimePath: string;
+		root: boolean;
+		plans: boolean;
+		slices: boolean;
+	};
+	lastSyncAt: number | null;
+	sourceCommit: string;
+	quarantineCount: number;
+	databasePath: string;
+	databaseSizeBytes: number;
+	checkedAt: number;
+	ok: true;
+}
+
+export interface DelendaiProposalsProposalsDbTombstonesOutput {
+	entries: Array<{
+		uid: string;
+		kind: string;
+		deleted_at: number;
+		last_seen_at: number | null;
+		last_seen_commit: string;
+		reason: string;
+		path_history: string[];
+	}>;
+	total: number;
+}
+
+export interface DelendaiProposalsProposalsDbVerifyOutput {
+	digestBefore: string;
+	digestAfter: string;
+	match: boolean;
+	durationMs: number;
+	sourceCommit: string;
+	ok: true;
+}
+
+export interface DelendaiProposalsProposalsSearchOutput {
+	hits: {
+		uid: string;
+		kind: string;
+		status: string;
+		title: string;
+		snippet: string;
+		score: number;
+	}[];
+	query: string;
+	mode: "fts" | "legacy";
+}
+
+export interface DelendaiProposalsProposalsSummaryBackfillOutput {
+	considered: number;
+	created: number;
+	skipped: number;
+}
+
+export interface DelendaiProposalsReviewClaimOutput {
+	ok: true;
+	proposalId: string;
+	claimed: boolean;
+	commit?: string;
+	released?: boolean;
+}
+
+export interface DelendaiProposalsReviewQueueOutput {
+	ok: true;
+	proposals: Array<{
+		id: string;
+		file: string;
+		date?: string;
+		slices: Array<{
+			sliceId: string;
+			title: string;
+			status: string;
+			reviewState: string;
+			implementer?: string;
+			implementerSource?: "round" | "git" | "unrecorded";
+			candidates?: {
+				commit: string;
+				source: string;
+				agent?: string;
+			}[];
+			gate?: string;
+			files?: string[];
+			acceptance?: string[];
+			verdict: "needs-verdict" | "needs-another-reviewer" | "blocked" | "waiting-on-implementer" | "approved";
+			nextAction?: string;
+			missing?: string;
+			changedSince?: {
+				commit: string;
+				subject: string;
+			}[];
+			changedSinceTruncated?: boolean;
+		}>;
+		close?: string;
+		claimedBy?: string[];
+		drift?: {
+			measured: boolean;
+			reviewAgeDays?: number;
+			commitsSince?: number;
+			filesTouchedSince?: string[];
+			files?: number;
+			driftRatio?: number;
+			reason?: string;
+		};
+		claim?: string;
+	}>;
+	totals: {
+		proposals: number;
+		slices: number;
+		needsVerdict: number;
+		blocked: number;
+		waitingOnImplementer: number;
+		readyToClose: number;
+		claimedByOthers: number;
+	};
+	page: {
+		offset: number;
+		returned: number;
+		total: number;
+		next?: string;
+	};
+	pack?: {
+		size: number;
+		claimed: number;
+		full: boolean;
+		next?: string;
+	};
+	summary: string;
+	procedure: string;
+}
+
+export interface DelendaiProposalsRoundContextOutput {
+	digest: {
+		roundId: string;
+		activeProposalId: string;
+		currentTaskId: string;
+		createdAt: string;
+		digestVersion: 1;
+		[key: string]: unknown;
+	} | null;
+	stale: boolean;
+	recomputedAt: string;
+	digestPath: string;
+	[key: string]: unknown;
+}
+
+export interface DelendaiProposalsStateHealthOutput {
+	locks: {
+		active: number;
+		stale: number;
+		livelocks: number;
+		sessionBalance: {
+			claims: number;
+			releases: number;
+			imbalance: number;
+		};
+		sessionClaims: number;
+		sessionReleases: number;
+		sessionImbalance: number;
+		[key: string]: unknown;
+	};
+	stale: {
+		count: number;
+		[key: string]: unknown;
+	};
+	heartbeatStalls: {
+		count: number;
+		[key: string]: unknown;
+	};
+	peerReviewBypasses: number;
+	autoTransitionRepairs: {
+		count: number;
+		[key: string]: unknown;
+	};
+	queue: {
+		queueLength: number;
+		queuedCount: number;
+		waiterOrphans: number;
+		oldestAgeMinutes: number;
+		threshold: string;
+		[key: string]: unknown;
+	} | null;
+	registry: {
+		orphans: number;
+		threshold: string;
+		[key: string]: unknown;
+	};
+	quarantine: unknown[];
+	healthy: boolean;
+	[key: string]: unknown;
+}
+
+export interface DelendaiProposalsStateRepairOutput {
+	mode: "dry-run" | "execute";
+	diagnosis: unknown;
+	wouldRepair?: unknown;
+	repaired?: unknown;
+	nextAction?: string;
+	[key: string]: unknown;
+}
+
+export interface DelendaiProposalsSwarmHygieneOutput {
+	ok: boolean;
+	reason?: string;
+	baseBranch?: string;
+	generatedAt?: string;
+	rescueCandidates?: unknown;
+	gcEligible?: unknown;
+	outOfCache?: unknown;
+	mainCheckoutBranch?: string;
+	mainCheckoutDrift?: boolean;
+	pendingIntegration?: unknown;
+	nonConformingBranches?: unknown;
+	staleUnmerged?: unknown;
+	summary?: unknown;
+	[key: string]: unknown;
+}
+
+export interface DelendaiProposalsSyncProposalsOutput {
+	projection: "refreshed" | "skipped" | "failed";
+	changed: boolean;
+	count: number;
+	indexPath: string;
+	errors: string[];
+}
+
+export interface DelendaiProposalsTaskQueueOutput {
+	error?: string;
+	taskId?: string;
+	status?: string;
+	queueLength?: number;
+	position?: number;
+	consumedAt?: string;
+	digest?: {
+		digests: {
+			taskId: string;
+			closedAt: string;
+			diffSummary?: string;
+		}[];
+	};
+	digests?: {
+		taskId: string;
+		closedAt: string;
+		diffSummary?: string;
+	}[];
+	pendingTargets?: string[];
+	subscriberId?: string;
+	subscriptionId?: string;
+	leaseUntil?: string;
+	renewed?: boolean;
+	blocked?: boolean;
+	blockerType?: string;
+	nextAction?: string;
+	queuedCount?: number;
+	promotedCount?: number;
+	consumedCount?: number;
+	cancelledCount?: number;
+	expiredCount?: number;
+	waiterOrphans?: number;
+	oldestAgeMinutes?: number;
+	releaseSignalBacklog?: number;
+	threshold?: string;
+	recommendation?: string;
+}
+
+/** Map of this package's MCP tool names to their `structuredContent` type. */
+export interface IProposalsToolOutputs {
+	"delendai_proposals_agent_lock": DelendaiProposalsAgentLockOutput;
+	"delendai_proposals_agent_lock_release_orphan": DelendaiProposalsAgentLockReleaseOrphanOutput;
+	"delendai_proposals_agent_names": DelendaiProposalsAgentNamesOutput;
+	"delendai_proposals_agent_worktree": DelendaiProposalsAgentWorktreeOutput;
+	"delendai_proposals_agents_lock_diagnose": DelendaiProposalsAgentsLockDiagnoseOutput;
+	"delendai_proposals_auto_fix_queue": DelendaiProposalsAutoFixQueueOutput;
+	"delendai_proposals_auto_work": DelendaiProposalsAutoWorkOutput;
+	"delendai_proposals_branch_gc": DelendaiProposalsBranchGcOutput;
+	"delendai_proposals_branch_status": DelendaiProposalsBranchStatusOutput;
+	"delendai_proposals_close_slice": DelendaiProposalsCloseSliceOutput;
+	"delendai_proposals_compact_status": DelendaiProposalsCompactStatusOutput;
+	"delendai_proposals_continue_proposal": DelendaiProposalsContinueProposalOutput;
+	"delendai_proposals_create_proposal": DelendaiProposalsCreateProposalOutput;
+	"delendai_proposals_delegate": DelendaiProposalsDelegateOutput;
+	"delendai_proposals_get_proposal_workflow": DelendaiProposalsGetProposalWorkflowOutput;
+	"delendai_proposals_incident_proposals": DelendaiProposalsIncidentProposalsOutput;
+	"delendai_proposals_inherit_host_instructions": DelendaiProposalsInheritHostInstructionsOutput;
+	"delendai_proposals_plan": DelendaiProposalsPlanOutput;
+	"delendai_proposals_proposal_adopt": DelendaiProposalsProposalAdoptOutput;
+	"delendai_proposals_proposal_board": DelendaiProposalsProposalBoardOutput;
+	"delendai_proposals_proposal_diagnose": DelendaiProposalsProposalDiagnoseOutput;
+	"delendai_proposals_proposal_force_transition": DelendaiProposalsProposalForceTransitionOutput;
+	"delendai_proposals_proposal_get": DelendaiProposalsProposalGetOutput;
+	"delendai_proposals_proposal_reconcile_folder": DelendaiProposalsProposalReconcileFolderOutput;
+	"delendai_proposals_proposal_review": DelendaiProposalsProposalReviewOutput;
+	"delendai_proposals_proposal_stale_list": DelendaiProposalsProposalStaleListOutput;
+	"delendai_proposals_proposal_transition": DelendaiProposalsProposalTransitionOutput;
+	"delendai_proposals_proposals_close_plan": DelendaiProposalsProposalsClosePlanOutput;
+	"delendai_proposals_proposals_compile_context": DelendaiProposalsProposalsCompileContextOutput;
+	"delendai_proposals_proposals_conflicts": DelendaiProposalsProposalsConflictsOutput;
+	"delendai_proposals_proposals_db_diff": DelendaiProposalsProposalsDbDiffOutput;
+	"delendai_proposals_proposals_db_doctor": DelendaiProposalsProposalsDbDoctorOutput;
+	"delendai_proposals_proposals_db_quarantine_list": DelendaiProposalsProposalsDbQuarantineListOutput;
+	"delendai_proposals_proposals_db_quarantine_repair": DelendaiProposalsProposalsDbQuarantineRepairOutput;
+	"delendai_proposals_proposals_db_rebuild": DelendaiProposalsProposalsDbRebuildOutput;
+	"delendai_proposals_proposals_db_reconcile": DelendaiProposalsProposalsDbReconcileOutput;
+	"delendai_proposals_proposals_db_resurrect": DelendaiProposalsProposalsDbResurrectOutput;
+	"delendai_proposals_proposals_db_status": DelendaiProposalsProposalsDbStatusOutput;
+	"delendai_proposals_proposals_db_tombstones": DelendaiProposalsProposalsDbTombstonesOutput;
+	"delendai_proposals_proposals_db_verify": DelendaiProposalsProposalsDbVerifyOutput;
+	"delendai_proposals_proposals_search": DelendaiProposalsProposalsSearchOutput;
+	"delendai_proposals_proposals_summary_backfill": DelendaiProposalsProposalsSummaryBackfillOutput;
+	"delendai_proposals_review_claim": DelendaiProposalsReviewClaimOutput;
+	"delendai_proposals_review_queue": DelendaiProposalsReviewQueueOutput;
+	"delendai_proposals_round_context": DelendaiProposalsRoundContextOutput;
+	"delendai_proposals_state_health": DelendaiProposalsStateHealthOutput;
+	"delendai_proposals_state_repair": DelendaiProposalsStateRepairOutput;
+	"delendai_proposals_swarm_hygiene": DelendaiProposalsSwarmHygieneOutput;
+	"delendai_proposals_sync_proposals": DelendaiProposalsSyncProposalsOutput;
+	"delendai_proposals_task_queue": DelendaiProposalsTaskQueueOutput;
+}

@@ -1,0 +1,37 @@
+# Generated files are not authored, so neither side of a merge is
+# authoritative: the merged TREE is, and a generator is the function from
+# the tree to the file. A merge therefore never stops on one: the driver merges the text when it can and keeps OURS when it
+# cannot, and `delendai guard post-merge` regenerates from the finished
+# tree and commits what moved. A file with a generated region inside it
+# (the two READMEs) has its authored text merged for real.
+#
+# The driver is configured per clone by `delendai guard install`. Without
+# it git simply merges these files as before, so a clone that has not run
+# the installer is no worse off than today.
+#
+# Every `gen:all` step must be routed here; the spec of the driver fails
+# when one is not.
+docs/delendai/agent-catalog.generated.json              merge=delendai-generated
+docs/delendai/host-hints/agent-instructions.generated.md merge=delendai-generated
+AGENT.md                                                merge=delendai-generated
+docs/delendai/generated/plugin-manifests.generated.json merge=delendai-generated
+docs/delendai/generated/plugin-manifests.generated.md   merge=delendai-generated
+docs/delendai/generated/plugin-catalog.generated.md     merge=delendai-generated
+docs/delendai/generated/observability-provenance.generated.md merge=delendai-generated
+docs/delendai/security/permission-matrix.md             merge=delendai-generated
+docs/delendai/security/capability-matrix.md             merge=delendai-generated
+docs/delendai/plugins/auto-generated/**                 merge=delendai-generated
+apps/web/src/data/plugins/catalog.generated.ts          merge=delendai-generated
+apps/web/src/generated/plugin-manifest-catalog.generated.ts merge=delendai-generated
+packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts merge=delendai-generated
+docs/delendai/CORE-PUBLIC-API-INVENTORY.md              merge=delendai-generated
+docs/delendai/TOKEN-BUDGETS.md                          merge=delendai-generated
+packages/core/src/lib/contracts/constants/preset-metadata.generated.ts merge=delendai-generated
+packages/core/schema/delendai.config.schema.json        merge=delendai-generated
+docs/delendai/api/stable.json                           merge=delendai-generated
+packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts merge=delendai-generated
+docs/delendai/AUTHORITIES.md                            merge=delendai-generated
+packages/cli/src/lib/init/init-skill-inventory.generated.ts merge=delendai-generated
+**/src/generated/tool-outputs.ts                        merge=delendai-generated
+docs/delendai/README.md                                 merge=delendai-generated
+/README.md                                              merge=delendai-generated

@@ -1,0 +1,52 @@
+{
+	"name": "@delendai/container",
+	"version": "0.1.1",
+	"type": "module",
+	"description": "Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection via docker/kubectl with install hints.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"container",
+		"docker",
+		"kubernetes",
+		"kubectl",
+		"agent",
+		"ai",
+		"cartago"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/container",
+		"check": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@delendai/core": "workspace:*",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"typescript": "7.0.2"
+	}
+}

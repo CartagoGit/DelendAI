@@ -1,0 +1,505 @@
+import z from 'zod';
+
+import {
+	DETAIL_LEVELS,
+	projectDetail,
+	summarizeFindings,
+	toolError,
+	toolJson,
+	worstSeverity,
+	type Detail,
+	type IArgvExec,
+	type IToolRegistration,
+} from '@delendai/core/public';
+
+import {
+	listDeps,
+	checkDeps,
+	checkOutdated,
+	fetchLatestFromNpm,
+	buildDepTree,
+} from '../services/engine';
+import type { ILatestVersionFetcher } from '../services/engine';
+import { listPolyglotDeps } from '../services/polyglot';
+import { runDepsAudit } from '../services/audit';
+import { realLicenseDeps, scanLicenses } from '../services/licenses';
+import type { ILicenseScanDeps } from '../contracts/interfaces/licenses.interface';
+
+export interface IDepsToolOptions {
+	readonly namespacePrefix: string;
+	readonly workspaceRootAbs: string;
+	/** Manifest path relative to the workspace root. Default `package.json`. */
+	readonly manifest?: string;
+	/**
+	 * Opt-in: also register `deps_outdated` (hits the npm registry, `effects:
+	 * ['network']`). Default false — `deps`/`deps_check`/`deps_list` stay
+	 * offline by design; this is the one deliberate, declared exception.
+	 */
+	readonly allowNetwork?: boolean;
+	/** Injectable for tests; defaults to a real npm registry fetch. */
+	readonly fetchLatest?: ILatestVersionFetcher;
+	/**
+	 * Injectable argv exec for `deps_audit` (tests pass a fake; production
+	 * uses the shared `runArgv` inside `runExternalTool`).
+	 */
+	readonly auditExec?: IArgvExec;
+	/** Injectable license reader for `deps_licenses` (tests pass a fake). */
+	readonly licenseDeps?: ILicenseScanDeps;
+}
+
+const OUTDATED_ENTRY = z.object({
+	name: z.string(),
+	range: z.string(),
+	section: z.string(),
+	wanted: z.string().nullable(),
+	latest: z.string().nullable(),
+	outdated: z.boolean(),
+	error: z.string().optional(),
+});
+
+const SECTION_COUNTS = z.object({
+	dependencies: z.number(),
+	devDependencies: z.number(),
+	peerDependencies: z.number(),
+	optionalDependencies: z.number(),
+});
+
+const DetailSchema = z.enum(DETAIL_LEVELS);
+const DependencyEntrySchema = z.object({
+	name: z.string(),
+	range: z.string(),
+	section: z.string(),
+});
+const PolyglotDependencyEntrySchema = z.object({
+	ecosystem: z.string(),
+	name: z.string(),
+	range: z.string(),
+	section: z.string(),
+});
+const PolyglotManifestSchema = z.object({
+	ecosystem: z.string(),
+	manifest: z.string(),
+	deps: z.array(PolyglotDependencyEntrySchema),
+});
+const DepsListOutputSchema = z.object({
+	detail: DetailSchema.optional(),
+	manifest: z.string(),
+	found: z.boolean(),
+	counts: SECTION_COUNTS,
+	deps: z.array(DependencyEntrySchema),
+});
+const DepsListInputSchema = z.object({
+	manifest: z.string().optional(),
+	detail: DetailSchema.optional(),
+});
+const DepsPolyglotOutputSchema = z.object({
+	detail: DetailSchema.optional(),
+	manifests: z.array(PolyglotManifestSchema),
+});
+const DepsPolyglotInputSchema = z
+	.object({
+		detail: DetailSchema.optional(),
+	})
+	.strict();
+
+type DepsListPayload = Awaited<ReturnType<typeof listDeps>>;
+type DepsPolyglotPayload = {
+	readonly manifests: Awaited<ReturnType<typeof listPolyglotDeps>>;
+};
+
+const projectDepsListPayload = (
+	payload: DepsListPayload,
+	detail: Detail,
+): DepsListPayload =>
+	projectDetail(
+		payload,
+		{
+			compact: (full) => ({
+				...full,
+				deps: [],
+			}),
+			normal: (full) => full,
+			full: (full) => full,
+		},
+		detail,
+	) as DepsListPayload;
+
+const projectDepsPolyglotPayload = (
+	payload: DepsPolyglotPayload,
+	detail: Detail,
+): DepsPolyglotPayload =>
+	projectDetail(
+		payload,
+		{
+			compact: (full) => ({
+				...full,
+				manifests: full.manifests.map((manifest) => ({
+					...manifest,
+					deps: [],
+				})),
+			}),
+			normal: (full) => full,
+			full: (full) => full,
+		},
+		detail,
+	) as DepsPolyglotPayload;
+
+// r00012 shared finding shape, projected as the `deps_audit` output.
+const AUDIT_FINDING = z.object({
+	ruleId: z.string(),
+	severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
+	message: z.string(),
+	fix: z.string().optional(),
+	location: z
+		.object({
+			file: z.string(),
+			line: z.number().optional(),
+			endLine: z.number().optional(),
+		})
+		.optional(),
+});
+
+const AUDIT_RESULT = z.object({
+	tool: z.string(),
+	findings: z.array(AUDIT_FINDING),
+	summary: z.object({
+		critical: z.number(),
+		high: z.number(),
+		medium: z.number(),
+		low: z.number(),
+		info: z.number(),
+	}),
+	ranAt: z.string(),
+	skipped: z.boolean().optional(),
+	note: z.string().optional(),
+	worst: z.string(),
+});
+
+const LICENSES_RESULT = z.object({
+	tool: z.string(),
+	findings: z.array(AUDIT_FINDING),
+	summary: z.object({
+		critical: z.number(),
+		high: z.number(),
+		medium: z.number(),
+		low: z.number(),
+		info: z.number(),
+	}),
+	worst: z.string(),
+});
+
+/**
+ * Dependency inventory + offline health for the project manifest.
+ * `deps_list` enumerates declared deps; `deps_check` flags missing
+ * lockfile, unpinned ranges and cross-section duplicates. No network.
+ */
+export const buildDepsToolRegistrations = (
+	options: IDepsToolOptions,
+): readonly IToolRegistration[] => {
+	const prefix = options.namespacePrefix;
+	const manifest = options.manifest ?? 'package.json';
+	return [
+		{
+			id: 'deps_list',
+			summary:
+				'Inventory the manifest dependencies (name, range, section).',
+			tags: ['deps', 'orientation', 'lazy'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_deps_list`,
+					{
+						description:
+							'List the declared dependencies from package.json across dependencies/devDependencies/peerDependencies/optionalDependencies, each with its version range. Read-only, offline. When `detail` is omitted the tool preserves the legacy payload; `compact` keeps counts while suppressing the dependency rows, and `normal`/`full` return the same shape.',
+						inputSchema: DepsListInputSchema,
+						outputSchema: DepsListOutputSchema,
+					},
+					async (args: {
+						manifest?: string | undefined;
+						detail?: Detail | undefined;
+					}) => {
+						const parsed = DepsListInputSchema.safeParse(args);
+						if (!parsed.success) {
+							return toolError(
+								parsed.error.message,
+								'Pass manifest as a string and detail as compact|normal|full.',
+							);
+						}
+						const payload = await listDeps(
+							options.workspaceRootAbs,
+							parsed.data.manifest ?? manifest,
+						);
+						if (parsed.data.detail === undefined) {
+							return toolJson(payload);
+						}
+						return toolJson({
+							detail: parsed.data.detail,
+							...projectDepsListPayload(
+								payload,
+								parsed.data.detail,
+							),
+						});
+					},
+				);
+			},
+		},
+		{
+			id: 'deps_check',
+			summary:
+				'Offline dependency health: missing lockfile, unpinned ranges, cross-section duplicates.',
+			tags: ['deps', 'lazy'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_deps_check`,
+					{
+						description:
+							'Report offline dependency health: missing lockfile (non-reproducible builds), unpinned ranges (*, latest) and deps declared in more than one section. Returns {manifest, lockfile, findings, healthy}. No network / no CVE database.',
+						inputSchema: z.object({
+							manifest: z.string().optional(),
+						}),
+						outputSchema: z.object({
+							manifest: z.string(),
+							lockfile: z.object({
+								present: z.boolean(),
+								kind: z.string().nullable(),
+							}),
+							findings: z.array(
+								z.object({
+									kind: z.string(),
+									dep: z.string().optional(),
+									detail: z.string(),
+								}),
+							),
+							healthy: z.boolean(),
+						}),
+					},
+					async (args: { manifest?: string | undefined }) =>
+						toolJson(
+							await checkDeps(
+								options.workspaceRootAbs,
+								args.manifest ?? manifest,
+							),
+						),
+				);
+			},
+		},
+		...(options.allowNetwork
+			? [
+					{
+						id: 'deps_outdated',
+						summary:
+							"Resolve each dep's latest npm version and flag stale ones. Opt-in, network.",
+						tags: ['deps', 'network'],
+						effects: ['network'],
+						register: async (server) => {
+							server.registerTool(
+								`${prefix}_deps_outdated`,
+								{
+									description:
+										"For each manifest dep whose range pins a plain x.y.z baseline, resolve the npm registry's `latest` dist-tag and flag it as outdated when newer. Ranges without a comparable baseline (*, latest, workspace:/npm:/file:/link:, git urls) report wanted:null and are skipped, not errors. Capped at 50 packages per call (truncated:true past the cap). Opt-in (plugins.deps.options.allowNetwork:true) — deps_list/deps_check stay offline.",
+									inputSchema: z.object({
+										manifest: z.string().optional(),
+									}),
+									outputSchema: z.object({
+										manifest: z.string(),
+										checked: z.number(),
+										outdatedCount: z.number(),
+										entries: z.array(OUTDATED_ENTRY),
+										truncated: z.boolean(),
+									}),
+								},
+								async (args: {
+									manifest?: string | undefined;
+								}) =>
+									toolJson(
+										await checkOutdated(
+											options.workspaceRootAbs,
+											args.manifest ?? manifest,
+											options.fetchLatest ??
+												fetchLatestFromNpm,
+										),
+									),
+							);
+						},
+					} satisfies IToolRegistration,
+					{
+						id: 'deps_audit',
+						summary:
+							'Scan dependencies for known CVEs via bun audit (normalized findings). Opt-in, network.',
+						tags: ['deps', 'security', 'network'],
+						effects: ['network'],
+						register: async (server) => {
+							server.registerTool(
+								`${prefix}_deps_audit`,
+								{
+									description:
+										"Scan the project's installed dependencies for known vulnerabilities using `bun audit`, returning normalized findings (severity critical..info, GHSA id, advisory url) and a per-severity summary. Opt-in (plugins.deps.options.allowNetwork:true) — queries the advisory registry. A missing bun binary yields a skipped result with an install hint, never an error.",
+									inputSchema: z.object({}),
+									outputSchema: AUDIT_RESULT,
+								},
+								async () => {
+									const result = await runDepsAudit(
+										options.workspaceRootAbs,
+										options.auditExec,
+									);
+									return toolJson({
+										tool: result.tool,
+										findings: result.findings,
+										summary: result.summary,
+										ranAt: result.ranAt,
+										...(result.skipped !== undefined
+											? { skipped: result.skipped }
+											: {}),
+										...(result.note !== undefined
+											? { note: result.note }
+											: {}),
+										worst:
+											worstSeverity(result.findings) ??
+											'none',
+									});
+								},
+							);
+						},
+					} satisfies IToolRegistration,
+				]
+			: []),
+		{
+			id: 'deps_licenses',
+			summary:
+				'Flag dependencies with copyleft/proprietary/unknown/missing licenses (offline).',
+			tags: ['deps', 'security', 'lazy'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_deps_licenses`,
+					{
+						description:
+							"Classify each declared dependency's license (read from node_modules) and flag the ones worth review: strong copyleft (GPL/AGPL, high), weak copyleft (LGPL/MPL/EPL/CDDL, medium), proprietary/UNLICENSED (high), missing (medium) or unrecognised (low). Permissive licenses (MIT/BSD/Apache/ISC/...) are not flagged. Offline, read-only.",
+						inputSchema: z.object({
+							manifest: z.string().optional(),
+						}),
+						outputSchema: LICENSES_RESULT,
+					},
+					async (args: { manifest?: string | undefined }) => {
+						const licenseDeps =
+							options.licenseDeps ??
+							realLicenseDeps(
+								options.workspaceRootAbs,
+								args.manifest ?? manifest,
+							);
+						const findings = await scanLicenses(licenseDeps);
+						return toolJson({
+							tool: 'licenses',
+							findings,
+							summary: summarizeFindings(findings),
+							worst: worstSeverity(findings) ?? 'none',
+						});
+					},
+				);
+			},
+		},
+		{
+			id: 'deps_polyglot',
+			summary:
+				'List Python/Rust/Go dependencies (pyproject.toml, Cargo.toml, go.mod) if present.',
+			tags: ['deps', 'lazy'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_deps_polyglot`,
+					{
+						description:
+							'List declared dependencies from whichever of pyproject.toml (PEP 621 `[project] dependencies` and/or Poetry `[tool.poetry.dependencies]`), Cargo.toml ([dependencies]/[dev-dependencies]/[build-dependencies]) and go.mod (require) exist at the workspace root. Each entry has {ecosystem,name,range,section}. Read-only, offline, no CVE database — same contract as deps_list, for non-npm ecosystems. When `detail` is omitted the tool preserves the legacy payload; `compact` keeps the detected manifests while suppressing per-dependency rows, and `normal`/`full` return the same shape.',
+						inputSchema: DepsPolyglotInputSchema,
+						outputSchema: DepsPolyglotOutputSchema,
+					},
+					async (args: { detail?: Detail | undefined }) => {
+						const parsed = DepsPolyglotInputSchema.safeParse(args);
+						if (!parsed.success) {
+							return toolError(
+								parsed.error.message,
+								'Pass detail as compact|normal|full when requesting a projection.',
+							);
+						}
+						const payload = {
+							manifests: await listPolyglotDeps(
+								options.workspaceRootAbs,
+							),
+						};
+						if (parsed.data.detail === undefined) {
+							return toolJson(payload);
+						}
+						return toolJson({
+							detail: parsed.data.detail,
+							...projectDepsPolyglotPayload(
+								payload,
+								parsed.data.detail,
+							),
+						});
+					},
+				);
+			},
+		},
+		{
+			id: 'deps_tree',
+			summary:
+				'Build a dependency tree from the manifest + lockfile (capped depth).',
+			tags: ['deps', 'lazy'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_deps_tree`,
+					{
+						description:
+							'Build a dependency tree from the manifest + lockfile (default `bun.lock`): the first level is the declared deps from package.json; each subsequent level comes from the lockfile `packages` block. Capped at depth 6 to keep a single call bounded; `totalNodes` reports the full count of nodes walked (including ones past the cap). Pure over the workspace root. Read-only, offline.',
+						inputSchema: z.object({
+							manifest: z.string().optional(),
+							lockfile: z.string().optional(),
+							maxDepth: z
+								.number()
+								.int()
+								.min(1)
+								.max(20)
+								.optional(),
+						}),
+						outputSchema: z.object({
+							manifest: z.string(),
+							lockfile: z.string(),
+							lockfileFound: z.boolean(),
+							root: z.object({
+								name: z.string(),
+								version: z.string().nullable(),
+								children: z.array(
+									z.object({
+										name: z.string(),
+										version: z.string().nullable(),
+										section: z
+											.enum([
+												'dependencies',
+												'devDependencies',
+												'peerDependencies',
+												'optionalDependencies',
+											])
+											.optional(),
+										children: z.array(z.any()),
+									}),
+								),
+							}),
+							totalNodes: z.number(),
+							maxDepth: z.number(),
+						}),
+					},
+					async (args: {
+						manifest?: string | undefined;
+						lockfile?: string | undefined;
+						maxDepth?: number | undefined;
+					}) => {
+						const report = await buildDepTree(
+							options.workspaceRootAbs,
+							args.manifest ?? manifest,
+							args.lockfile ?? 'bun.lock',
+							args.maxDepth ?? 6,
+						);
+						return toolJson(report);
+					},
+				);
+			},
+		},
+	];
+};

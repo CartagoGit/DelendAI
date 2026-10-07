@@ -1,0 +1,181 @@
+import { DEFAULT_CONFIG_FILENAME, definePlugin } from '@delendai/core/public';
+import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
+import z from 'zod';
+
+import { createGithubSetupDeps } from './lib/github-setup';
+import {
+	createGithubClient,
+	createIssueWriter,
+} from './lib/services/github-client-port.service';
+import { buildIssuesToolRegistrations } from './lib/tools';
+import { buildSetupGithubRegistration } from './lib/tools/setup-github.tool';
+import { createIssuesErrorSinkAdapter } from './lib/services/error-sink-adapter';
+import { buildIssuesErrorCollectorKnowledge } from './lib/knowledge/error-collector';
+
+/** Default scaffold directory (workspace-relative), per the proposal's S3 spec. */
+const DEFAULT_SCAFFOLD_DIR = 'docs/delendai/proposals/retired/issues';
+
+/**
+ * Knowledge entry surfaced when the plugin loads with `--plugins=proposals,issues`
+ * but `plugins.issues.options.repo` is not set in `delendai.config.json`.
+ * Without this entry, the user would see `issues_*` silently missing from
+ * `delendai_overview` and have to read the code to discover the reason.
+ * Surfacing the entry as a discoverable knowledge item makes the failure
+ * mode self-documenting and one `delendai_knowledge` call away.
+ */
+const ISSUES_NEEDS_SETUP_BODY = [
+	'# issues plugin — repo not configured',
+	'',
+	'`plugins/issues` is loaded but `plugins.issues.options.repo` is missing.',
+	'',
+	'Pick one of two paths:',
+	'',
+	'1. **Interactive (recommended for first-time setup)**: run the `setup-github` subcommand once. It detects the repo from `git remote get-url origin`, asks you to confirm, and writes the config atomically.',
+	'',
+	'   ```bash',
+	'   delendai setup-github',
+	'   ```',
+	'',
+	'2. **Manual**: edit `<config-file>` and add',
+	'',
+	'   ```jsonc',
+	'   {',
+	'     "plugins": {',
+	'       "issues": { "options": { "repo": "<owner>/<name>" } }',
+	'     }',
+	'   }',
+	'   ```',
+	'',
+	'Restart the host after either change.',
+].join('\n');
+
+/**
+ * Opt-in GitHub issues plugin. Host-only, single-user productivity
+ * tool (same shape as `plugins/logs` / `plugins/web-fetch`): not part
+ * of the `swarm` preset, never loaded unless the user explicitly adds
+ * `proposals,issues` to `--plugins` or `delendai.config.json`.
+ *
+ * `dependsOn: ['proposals']` is a HARD requirement, not a soft
+ * coupling — every `issues_*` tool reads/writes scaffold files under
+ * `docs/delendai/proposals/retired/issues/**`, which is part of the `proposals`
+ * plugin's managed namespace (see the proposal's "why this design"
+ * section). The loader
+ * (`packages/core/src/lib/plugins/load-plugins.ts`) refuses to
+ * register `issues` at all if `proposals` is not in the same load
+ * set — no partial registration, no silently broken tools.
+ *
+ * The 9 `issues_*` tools (list/list_dependabot/list_code_scanning/
+ * list_secret_scanning/list_advisories/fetch/ingest/analyze/resolve) register
+ * conditionally on the `repo` option being set; without it, the
+ * plugin returns an `IKnowledgeEntry` (`issues-needs-repo-config`) so the
+ * host agent can discover the missing-config situation via
+ * `delendai_overview` or `delendai_knowledge`.
+ */
+export default definePlugin({
+	name: 'issues',
+	version: '0.1.1',
+	describe:
+		'REQUIRES proposals plugin. Opt-in GitHub issues ingest/analyse/promote workflow — host-only, not in the swarm preset.',
+	dependsOn: ['proposals'],
+	optionsSchema: z.object({
+		/** `'owner/name'`; required to register the 9 `issues_*` tools. */
+		repo: z.string().optional(),
+		/** Defaults to `docs/delendai/proposals/retired/issues`. */
+		scaffoldDir: z.string().optional(),
+		/** When `true`, opens a live issue for critical/alert/emergency errors. Default `false`. */
+		autoReport: z.boolean().optional(),
+		/** Maximum live issues opened per rolling hour. Default `5`. */
+		maxReportsPerHour: z.number().int().positive().optional(),
+	}),
+	register(ctx) {
+		const repo =
+			typeof ctx.options.repo === 'string' &&
+			ctx.options.repo.trim() !== ''
+				? ctx.options.repo
+				: undefined;
+		const scaffoldDir =
+			typeof ctx.options.scaffoldDir === 'string' &&
+			ctx.options.scaffoldDir.trim() !== ''
+				? ctx.options.scaffoldDir
+				: DEFAULT_SCAFFOLD_DIR;
+
+		// S2: the setup-github guide is available regardless of
+		// whether `repo` is configured — its whole point is to help the
+		// user reach a configured state.
+		const setupGithubTool = buildSetupGithubRegistration({
+			namespacePrefix: ctx.namespacePrefix,
+			deps: createGithubSetupDeps(
+				ctx.workspace.root,
+				DEFAULT_CONFIG_FILENAME,
+				repo !== undefined,
+			),
+		});
+
+		if (repo === undefined) {
+			// No `repo` configured: register only the setup helper + a
+			// discoverable knowledge entry instead of throwing at boot.
+			// The contract: the rest of the plugin surface stays green
+			// (CI smoke, `--check`), and any agent that boots the server
+			// sees the hint via `delendai_overview` (lists knowledge
+			// ids) or via a direct `delendai_knowledge` call.
+			return {
+				tools: [setupGithubTool],
+				knowledge: [
+					{
+						id: 'issues-needs-repo-config',
+						title: 'issues plugin needs `repo` configured',
+						body: ISSUES_NEEDS_SETUP_BODY,
+					},
+				],
+			};
+		}
+
+		const contained = resolveWorkspaceContainedPhysicalSync(
+			ctx.workspace.root,
+			scaffoldDir,
+		);
+		if (!contained.ok) {
+			throw new Error(
+				`plugin "issues": invalid scaffoldDir option: ${contained.reason}`,
+			);
+		}
+
+		const githubClient = createGithubClient(repo);
+		const tools = buildIssuesToolRegistrations({
+			namespacePrefix: ctx.namespacePrefix,
+			repo,
+			scaffoldDirAbs: contained.abs,
+			repoRoot: ctx.workspace.root,
+			githubClient,
+		});
+
+		// S4: error-sink adapter (safe-mode by default, opt-in autoReport).
+		const errorAdapter = createIssuesErrorSinkAdapter({
+			githubClient: createIssueWriter(repo),
+			scaffoldDir: contained.abs,
+			workspaceRoot: ctx.workspace.root,
+			autoReport:
+				typeof ctx.options.autoReport === 'boolean'
+					? ctx.options.autoReport
+					: false,
+			maxReportsPerHour:
+				typeof ctx.options.maxReportsPerHour === 'number'
+					? ctx.options.maxReportsPerHour
+					: 5,
+		});
+
+		return {
+			tools: [...tools, setupGithubTool],
+			errorSinks: [errorAdapter.sink],
+			knowledge: [
+				{
+					id: 'issues-error-collector',
+					title: 'Error-collector sink adapter (f00251)',
+					body: buildIssuesErrorCollectorKnowledge({
+						prefix: ctx.namespacePrefix,
+					}),
+				},
+			],
+		};
+	},
+});
