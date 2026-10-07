@@ -64,6 +64,8 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Mounts workspace only when explicitly listed."
   - "Capability isolated-filesystem=true; isolated-network only when network=none."
   - "Test skips when docker CLI is not available, never blocks CI."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — Docker Compose adapter
 - **Status**: pending
