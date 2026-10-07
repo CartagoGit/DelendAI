@@ -14,6 +14,23 @@ import type { IZoneRule } from './test-zones.interface';
  */
 export const TARGET_SPECS_PER_JOB = 200;
 
+/** The workflow whose jobs plan, run and merge the test zones. */
+export const TEST_WORKFLOW = '.github/workflows/ci.yml';
+
+/**
+ * What in that workflow decides how a zone's specs run: the jobs that
+ * plan, run and merge them, and the workflow-wide environment and
+ * defaults every job inherits. An edit anywhere else in it (a lint step,
+ * a release job, a comment) changes no spec's outcome.
+ */
+export const TEST_RUNNER_KEYS: {
+	readonly jobs: readonly string[];
+	readonly topLevel: readonly string[];
+} = {
+	jobs: ['plan-tests', 'tests-zone', 'tests'],
+	topLevel: ['env', 'defaults'],
+};
+
 const under =
 	(prefix: string) =>
 	(path: string): boolean =>
