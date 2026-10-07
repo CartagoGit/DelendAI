@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { MemoryDurationHistoryStore } from './duration-history';
-import { drainTransitionDurationJournal } from './duration-journal';
+import { drainTransitionDurationJournal } from './duration-journal.service';
 
 const line = (overrides: Record<string, unknown> = {}): string =>
 	JSON.stringify({
