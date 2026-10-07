@@ -192,7 +192,7 @@ function snapshotForKv(
 	};
 }
 
-const NUM_RUNS = Number(process.env.STATE_PROPERTY_RUNS ?? 200);
+const NUM_RUNS = Number(process.env.STATE_PROPERTY_RUNS ?? 1000);
 
 describe('Property: incremental ≡ clean rebuild from final snapshot (q00018 S3)', () => {
 	it(`matches over ${NUM_RUNS} random op sequences`, () => {
