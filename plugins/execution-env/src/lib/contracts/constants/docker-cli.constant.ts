@@ -21,3 +21,10 @@ export const DOCKER_SOCKET_HOST_PATH = '/var/run/docker.sock';
 
 /** The `Config.Env` array of an inspected container, as JSON. */
 export const DOCKER_INSPECT_ENV_FORMAT = '{{json .Config.Env}}';
+
+/** A container name or id: starts alphanumeric, so it can never be an option. */
+export const DOCKER_CONTAINER_REFERENCE_PATTERN =
+	/^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+
+/** Prints `true` for a container that is running. */
+export const DOCKER_INSPECT_RUNNING_FORMAT = '{{.State.Running}}';

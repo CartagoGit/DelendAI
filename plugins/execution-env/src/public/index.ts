@@ -69,3 +69,5 @@ export {
 	quotePowerShell,
 	quoteWord,
 } from '../lib/helpers/shell-quoting.helper';
+export { DockerExecExecutionEnvironment } from '../lib/adapters/docker-exec.service';
+export type { IDockerExecOptions } from '../lib/contracts/interfaces/docker-exec-execution.interface';

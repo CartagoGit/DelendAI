@@ -93,9 +93,10 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-implementer: claude-sonnet-5-5
 
 ### S6 — Docker Exec adapter for sidecars
-- **Status**: pending
-- **Files**: `plugins/execution-env/src/lib/adapters/docker-exec.service.ts`, `plugins/execution-env/tests/docker-exec.service.spec.ts`
-- **Gate**: type
+- **Status**: review
+- **Files**: `plugins/execution-env/src/lib/adapters/docker-exec.service.ts`, `plugins/execution-env/src/lib/contracts/constants/docker-cli.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/docker-exec-execution.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/adapters/docker-exec.spec.ts`
+- **Gate**: `npx vitest run --root plugins/execution-env`
+- shipped: `DockerExecExecutionEnvironment` runs `docker exec` into an existing container given by name or id (the reference must start alphanumeric, so it cannot be an option). `prepare` only inspects that the container is running. `--user` switches user, `--workdir` sets the directory, the command follows `--`. `env()` reads `docker inspect` and redacts. `teardown` runs nothing: the container was there before and is not ours to stop.
 - acceptance:
   - "Resolves container by name or id, supports user switching."
   - "env() reads container env via docker inspect."
