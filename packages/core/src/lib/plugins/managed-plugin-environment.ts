@@ -15,17 +15,15 @@
  * catalogued and needs nothing.
  */
 
-import {
-	MANAGED_LAZY_PLUGIN_BY_ID,
-	type IManagedLazyPluginCatalogEntry,
-} from './managed-lazy-catalog.generated';
+import type { IManagedLazyPluginCatalogEntry } from './managed-lazy-catalog.generated';
+import { managedLazyPluginEntry } from './managed-lazy-catalog-lookup';
 
 export const managedPluginEnvironmentRequirements = (
 	pluginId: string,
 ):
 	| NonNullable<IManagedLazyPluginCatalogEntry['environmentRequirements']>
 	| undefined => {
-	const entry = MANAGED_LAZY_PLUGIN_BY_ID.get(pluginId);
+	const entry = managedLazyPluginEntry(pluginId);
 	return entry === undefined
 		? undefined
 		: (entry.environmentRequirements ?? []);

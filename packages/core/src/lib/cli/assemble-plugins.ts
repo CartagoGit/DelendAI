@@ -48,10 +48,8 @@ import type { IOverviewToolEntry } from '../tools/overview-tool';
 import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surface.interface';
 import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
 import type { IErrorSink } from '../error-collection/sink.interface';
-import {
-	MANAGED_LAZY_PLUGIN_BY_ID,
-	type MANAGED_LAZY_PLUGIN_CATALOG,
-} from '../plugins/managed-lazy-catalog.generated';
+import type { IManagedLazyPluginCatalogEntry } from '../plugins/managed-lazy-catalog.generated';
+import { managedLazyPluginEntry } from '../plugins/managed-lazy-catalog-lookup';
 import {
 	createManagedLazyRuntime,
 	validateManagedLazyConfiguration,
@@ -255,11 +253,11 @@ const claimSingleSlot = (
 };
 
 const lazyPluginIdFor = (specifier: string): string | undefined => {
-	if (MANAGED_LAZY_PLUGIN_BY_ID.has(specifier)) return specifier;
+	if (managedLazyPluginEntry(specifier) !== undefined) return specifier;
 	const prefix = '@delendai/';
 	if (specifier.startsWith(prefix)) {
 		const id = specifier.slice(prefix.length);
-		return MANAGED_LAZY_PLUGIN_BY_ID.has(id) ? id : undefined;
+		return managedLazyPluginEntry(id) !== undefined ? id : undefined;
 	}
 	return undefined;
 };
@@ -395,9 +393,9 @@ const tryAssembleManagedLazy = async (input: {
 		]),
 	);
 	const definitions = pluginIds
-		.map((id) => MANAGED_LAZY_PLUGIN_BY_ID.get(id))
+		.map((id) => managedLazyPluginEntry(id))
 		.filter(
-			(entry): entry is (typeof MANAGED_LAZY_PLUGIN_CATALOG)[number] =>
+			(entry): entry is IManagedLazyPluginCatalogEntry =>
 				entry !== undefined,
 		);
 	input.peerRegistry.set(pluginIds);
@@ -672,7 +670,7 @@ const tryAssembleManagedLazy = async (input: {
 			disabledConfigPlugins: input.disabledConfigPlugins,
 		}),
 		active: false,
-		toolCount: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.toolIds.length ?? 0,
+		toolCount: managedLazyPluginEntry(id)?.toolIds.length ?? 0,
 	}));
 	const activationReport = buildActivationReport(
 		[],
@@ -688,7 +686,7 @@ const tryAssembleManagedLazy = async (input: {
 	);
 	const configurationPlugins: IConfigurationPlugin[] = pluginIds.map((id) => {
 		const configEntry = pluginConfigFor(input.fileConfig, id);
-		const catalogEntry = MANAGED_LAZY_PLUGIN_BY_ID.get(id);
+		const catalogEntry = managedLazyPluginEntry(id);
 		const permissions = FIRST_PARTY_PLUGIN_INDEX.entries.find(
 			(entry) => entry.id === id,
 		)?.permissions;
@@ -758,13 +756,13 @@ const tryAssembleManagedLazy = async (input: {
 		configurationArtifacts,
 		pluginSummaries: pluginIds.map((id) => ({
 			name: id,
-			describe: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.summary,
+			describe: managedLazyPluginEntry(id)?.summary,
 		})),
 		lazyToolActivators,
 		lazyPluginActivators,
 		lazyPluginPackages: pluginIds.map((id) => ({
 			name: id,
-			resolved: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.packageSpecifier ?? id,
+			resolved: managedLazyPluginEntry(id)?.packageSpecifier ?? id,
 		})),
 		consumeLazyPluginRegistrations: () => {
 			const drained = [...pendingRegistrations.values()];
