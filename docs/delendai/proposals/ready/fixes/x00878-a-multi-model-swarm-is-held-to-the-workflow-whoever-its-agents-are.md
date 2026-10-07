@@ -299,12 +299,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S26 — A queue whose candidates are all behind still moves
-- **Status**: pending
-- **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`, `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
+- **Status**: in-progress
+- **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`, `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When every open candidate is behind the integration branch and none can land as it is, the owner machine brings them forward within one cadence, without waiting for a merge: the queue never waits on itself."
-- Found 2026-10-07: for three hours nothing merged. The queue arms only candidates that land as they are; all six were behind, so it armed none and reported "refresh it from the machine that owns it". The owner machine brings candidates forward after a merge (the post-merge hydration), and nothing had merged — a cycle with no way out but a person running `forge:refresh --apply`. The orchestrator's own pump now refreshes on start and every 30 minutes; the product needs the same cadence where the owner machine already runs one (the server's work-checkout publisher), so it does not depend on an operator's script.
+  - "The hydration log says when each pass ran and is set aside before it outgrows 2 MB."
+- Found 2026-10-07: for three hours nothing merged. The queue arms only candidates that land as they are; all six were behind, so it armed none and reported "refresh it from the machine that owns it".
+- Root cause, read from the hydration log on 2026-10-07: the cadence existed (the host server runs the pass every ten minutes), but every pass failed on the same candidate: the flat forward sync `delendai/pr/forward-sync-<sha>` could not be brought forward, because the pre-push guard refused its shape, 184 times. The candidate never moved and the queue waited on it. That is fixed at its source by x00879 S11 (the forward sync's branch is a canonical publication), not by a second cadence. What this slice adds is what hid it: the log grew to 17 MB and 130,000 lines without a date, so the same refusal repeated for hours unread. Each pass now writes a dated header, and the log is set aside as `.1` past 2 MB.
 
 ### S27 — A stale generated catalog does not stop its own regeneration
 - **Status**: in-progress
@@ -321,6 +323,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "When an armed candidate's workflow run finished as a failure with no check failing and a required check absent, the queue runs it again once and says so; a run that loses its checks a second time is reported and not run a third time."
 - Found 2026-10-07 on #907: the forge concluded its run `failure` having created 35 of the workflow's 37 jobs, all green; `tests` and `delendai-validate` were never created. The candidate was armed and BLOCKED with nothing red on it, so the queue (which moves red candidates to their authors and waits on green ones) waited on it for good. A full re-run created all 37 jobs and the candidate merged. The queue now notices that shape, the same way it already releases runs the forge parks.
+
+### S29 — An approved proposal closes on the integration branch's certified run
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/services/validate-blocker.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`
+- **Gate**: type
+- acceptance:
+  - "Closing an approved proposal accepts, as its validate evidence, the integration branch's full CI run at the commit that carries the proposal's work, when that run is green; a local journalled validate run still counts, and neither a red nor a missing certification closes anything."
+- Found 2026-10-07 in the hydration log: `close-approved-proposals` failed 218 times with "x00834 refused — validate required: No validate run has been journalled for this workspace". Approved proposals waited for a local `validate` (the whole chain, about ten minutes, that nobody runs on the owner machine) while the integration branch's certified full run, a stronger proof of the same tree, sat green.
 
 ## acceptance
 
