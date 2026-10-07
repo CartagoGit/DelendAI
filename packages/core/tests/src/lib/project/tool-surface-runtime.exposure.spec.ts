@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { MANAGED_LAZY_PLUGIN_BY_ID } from '@delendai/core/lib/plugins/managed-lazy-catalog.generated';
+import { managedLazyPluginEntry } from '@delendai/core/lib/plugins/managed-lazy-catalog-lookup';
 import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
 
 const makeHandle = (enabled = true) => ({
@@ -224,7 +224,7 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 		});
 
 		it('preserves proposals disclosure metadata in the managed-lazy catalog', () => {
-			const proposals = MANAGED_LAZY_PLUGIN_BY_ID.get('proposals');
+			const proposals = managedLazyPluginEntry('proposals');
 			expect(proposals?.toolDisclosure?.state_repair).toBe(
 				'administrative',
 			);

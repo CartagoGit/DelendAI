@@ -306,6 +306,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "When every open candidate is behind the integration branch and none can land as it is, the owner machine brings them forward within one cadence, without waiting for a merge: the queue never waits on itself."
 - Found 2026-10-07: for three hours nothing merged. The queue arms only candidates that land as they are; all six were behind, so it armed none and reported "refresh it from the machine that owns it". The owner machine brings candidates forward after a merge (the post-merge hydration), and nothing had merged — a cycle with no way out but a person running `forge:refresh --apply`. The orchestrator's own pump now refreshes on start and every 30 minutes; the product needs the same cadence where the owner machine already runs one (the server's work-checkout publisher), so it does not depend on an operator's script.
 
+### S27 — A stale generated catalog does not stop its own regeneration
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/plugins/managed-lazy-catalog-lookup.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/core/src/lib/plugins/managed-plugin-environment.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `tools/scripts/generate/managed-lazy-catalog.script.ts`, `packages/core/tests/src/lib/plugins/managed-lazy-catalog-lookup.spec.ts`, `packages/core/tests/src/lib/project/tool-surface-runtime.exposure.spec.ts`, `plugins/proposals/tests/src/lib/surface/disclosure.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The generated managed lazy catalog exports one runtime value, the catalog array; what is derived from it (the lookup by id) is computed in authored code, so a stale copy of the file cannot break the import chain of the generator that replaces it."
+- Found 2026-10-07 while repairing two candidates: a merge left an older `managed-lazy-catalog.generated.ts` without `MANAGED_LAZY_PLUGIN_BY_ID`. The generator imports `@delendai/core/public`, which imports `assemble-plugins`, which imported that export, so every generator, gate and pre-push hook failed with "Export named 'MANAGED_LAZY_PLUGIN_BY_ID' not found" and the file could only be restored by hand. The map now lives in `managed-lazy-catalog-lookup.ts`, and a spec holds the generated module to its single export.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
