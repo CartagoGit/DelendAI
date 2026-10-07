@@ -142,7 +142,7 @@ const gitIn = (
 
 /** Merge the integration branch's remote tip into the unit, or nothing. */
 const catchUp = (unit: IUnit, integration: string): void => {
-	gitIn(unit.path, ['fetch', '--quiet', 'origin', integration]);
+	gitIn(unit.path, ['fetch', '--quiet', '--', 'origin', integration]);
 	const merged = gitIn(unit.path, [
 		'-c',
 		'core.hooksPath=/dev/null',

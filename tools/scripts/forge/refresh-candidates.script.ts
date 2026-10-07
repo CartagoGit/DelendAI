@@ -266,7 +266,7 @@ const observe = (
 		'-q',
 		'.nameWithOwner',
 	]);
-	git(['fetch', '--prune', '--quiet', 'origin']);
+	git(['fetch', '--prune', '--quiet', '--', 'origin']);
 	const pulls = JSON.parse(
 		gh(['api', `repos/${slug}/pulls?state=open&per_page=100`]),
 	) as readonly IOpenPull[];
@@ -324,7 +324,7 @@ const refresh = (ref: string, integration: string): void => {
 		'-m',
 		`Merge ${integration} into ${ref}`,
 	]);
-	git(['push', '--quiet', 'origin', `${commit}:refs/heads/${ref}`]);
+	git(['push', '--quiet', '--', 'origin', `${commit}:refs/heads/${ref}`]);
 };
 
 const main = (): number => {

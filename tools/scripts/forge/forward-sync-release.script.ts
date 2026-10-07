@@ -308,6 +308,7 @@ const main = (): number => {
 	must('git', [
 		'fetch',
 		'--quiet',
+		'--',
 		SYNC_REMOTE,
 		branches.integration,
 		branches.release,
@@ -341,7 +342,14 @@ const main = (): number => {
 		return 0;
 	}
 	if (
-		run('git', ['ls-remote', '--exit-code', '--heads', SYNC_REMOTE, ref]).ok
+		run('git', [
+			'ls-remote',
+			'--exit-code',
+			'--heads',
+			'--',
+			SYNC_REMOTE,
+			ref,
+		]).ok
 	) {
 		return refuse([
 			`✗ forward-sync-release: ${ref} exists on the forge with no open pull request.`,
@@ -447,6 +455,7 @@ const main = (): number => {
 		must('git', [
 			'push',
 			'--quiet',
+			'--',
 			SYNC_REMOTE,
 			`${mergedSha}:refs/heads/${ref}`,
 		]);

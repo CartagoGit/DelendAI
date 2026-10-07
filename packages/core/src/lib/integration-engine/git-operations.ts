@@ -41,13 +41,14 @@ const pushArguments = (request: IPushRefRequest): readonly string[] => {
 		return [
 			'push',
 			`--force-with-lease=refs/heads/${request.branch}:${request.expectedRemoteSha}`,
+			'--',
 			request.remote,
 			spec,
 		];
 	}
 	return request.force
-		? ['push', '--force', request.remote, spec]
-		: ['push', request.remote, spec];
+		? ['push', '--force', '--', request.remote, spec]
+		: ['push', '--', request.remote, spec];
 };
 
 /**
@@ -68,7 +69,13 @@ export const createIntegrationGit = async (
 		root,
 		resolveRevision: (revision) => resolveGitRevision(run, revision),
 		fetch: async (remote, refspec) => {
-			const result = await run(['fetch', '--quiet', remote, refspec]);
+			const result = await run([
+				'fetch',
+				'--quiet',
+				'--',
+				remote,
+				refspec,
+			]);
 			return result.ok ? OK : gitFailure(result.reason ?? 'fetch failed');
 		},
 		pushRef: async (request: IPushRefRequest) => {

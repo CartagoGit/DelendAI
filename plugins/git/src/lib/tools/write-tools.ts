@@ -265,9 +265,10 @@ export const runGitPush = async (
 
 	const pushResult = await run([
 		'push',
+		...(args.force === 'with-lease' ? ['--force-with-lease'] : []),
+		'--',
 		...(args.remote !== undefined ? [args.remote] : []),
 		...(args.branch !== undefined ? [args.branch] : []),
-		...(args.force === 'with-lease' ? ['--force-with-lease'] : []),
 	]);
 	if (!pushResult.ok) {
 		return toolError(

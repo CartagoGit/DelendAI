@@ -38,7 +38,7 @@ export const BRANCH_PROTECTION: IBranchProtectionConfig = {
 			// The integration branch: where certified work lands.
 			name: 'develop',
 			protected: true,
-			required_checks: ['delendai-validate'],
+			required_checks: ['delendai-validate', 'CodeQL'],
 		},
 		{
 			// The release branch: the promotion boundary.

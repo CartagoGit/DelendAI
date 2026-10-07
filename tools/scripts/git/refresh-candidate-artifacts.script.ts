@@ -166,12 +166,16 @@ const pushCandidate = (
 	candidate: string,
 ): string | undefined => {
 	try {
-		execFileSync('git', ['push', remote, `HEAD:refs/heads/${candidate}`], {
-			cwd: dir,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'pipe'],
-			env: cleanEnvironment(),
-		});
+		execFileSync(
+			'git',
+			['push', '--', remote, `HEAD:refs/heads/${candidate}`],
+			{
+				cwd: dir,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'pipe'],
+				env: cleanEnvironment(),
+			},
+		);
 		return undefined;
 	} catch (error) {
 		const failed = error as { stdout?: string; stderr?: string };
@@ -256,7 +260,7 @@ const unitStillOnForge = (
 	}
 	const work = `${bare(policy.branches.workRefPrefix)}${candidate.slice(publication.length)}`;
 	// A forge that does not answer leaves the author to decide.
-	const listed = git(root, ['ls-remote', '--heads', remote, work]);
+	const listed = git(root, ['ls-remote', '--heads', '--', remote, work]);
 	return listed === undefined || listed.trim().length > 0;
 };
 

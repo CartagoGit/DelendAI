@@ -816,7 +816,7 @@ const main = (): number => {
 			return 0;
 		}
 
-		git(['push', 'origin', `${commit}:refs/heads/${ref}`]);
+		git(['push', '--', 'origin', `${commit}:refs/heads/${ref}`]);
 		process.stdout.write(
 			report({ kind: 'published', ref, commit, content }),
 		);
@@ -893,13 +893,14 @@ const publishWorkBranch = (input: {
 	// on this path: losing a race must fail loudly, not overwrite.
 	const remoteLine = gitRaw([
 		'ls-remote',
+		'--',
 		'origin',
 		`refs/heads/${workBranch}`,
 	]).trim();
 	const remoteWorkSha =
 		remoteLine === '' ? undefined : remoteLine.split(/\s+/u)[0];
 	if (remoteWorkSha !== undefined) {
-		git(['fetch', '-q', 'origin', `refs/heads/${workBranch}`]);
+		git(['fetch', '-q', '--', 'origin', `refs/heads/${workBranch}`]);
 	}
 	const localSha = revOrUndefined(`refs/heads/${workBranch}^{commit}`);
 	const tipSha = localSha ?? remoteWorkSha;
@@ -957,10 +958,13 @@ const publishWorkBranch = (input: {
 		return 0;
 	}
 
-	git(['push', 'origin', `${tipSha}:refs/heads/${ref}`]);
-	const published = git(['ls-remote', 'origin', `refs/heads/${ref}`]).split(
-		/\s+/u,
-	)[0];
+	git(['push', '--', 'origin', `${tipSha}:refs/heads/${ref}`]);
+	const published = git([
+		'ls-remote',
+		'--',
+		'origin',
+		`refs/heads/${ref}`,
+	]).split(/\s+/u)[0];
 	if (published !== tipSha) {
 		process.stderr.write(
 			report({
@@ -988,8 +992,12 @@ const publishWorkBranch = (input: {
 		worktreeOf !== undefined &&
 		gitRaw(['-C', worktreeOf, 'status', '--porcelain']).trim() !== '';
 	const remoteHas = (): boolean =>
-		gitRaw(['ls-remote', 'origin', `refs/heads/${workBranch}`]).trim() !==
-		'';
+		gitRaw([
+			'ls-remote',
+			'--',
+			'origin',
+			`refs/heads/${workBranch}`,
+		]).trim() !== '';
 	const steps: ICleanupStep[] = [
 		...(plan.deleteRemoteWork
 			? [
@@ -1000,8 +1008,9 @@ const publishWorkBranch = (input: {
 							git([
 								'push',
 								'-q',
-								'origin',
 								'--delete',
+								'--',
+								'origin',
 								workBranch,
 							]);
 						},

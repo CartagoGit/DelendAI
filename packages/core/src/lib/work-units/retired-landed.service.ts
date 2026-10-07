@@ -42,7 +42,7 @@ export const reapLandedRetired = (input: {
 }): readonly ILandedRetired[] => {
 	const { root, remote } = input;
 	const prefix = `${namespacedRef(input.policy.branches.namespacePrefix, 'retired')}/`;
-	const listed = readGit(root, ['ls-remote', remote, `${prefix}*`]);
+	const listed = readGit(root, ['ls-remote', '--', remote, `${prefix}*`]);
 	if (listed === undefined || listed.length === 0) return [];
 	const retired = listed
 		.split('\n')
@@ -64,6 +64,7 @@ export const reapLandedRetired = (input: {
 			'fetch',
 			'--quiet',
 			'--no-tags',
+			'--',
 			remote,
 			...unknown.map((each) => each.commit),
 		]);
@@ -84,6 +85,7 @@ export const reapLandedRetired = (input: {
 	const pushed = readGit(root, [
 		'push',
 		'--quiet',
+		'--',
 		remote,
 		...landed.map((each) => `:${each.ref}`),
 	]);
