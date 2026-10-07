@@ -1,10 +1,6 @@
 # AGENT.md — package `packages/roadmap`
 
-> Below the `<!-- delendai:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- delendai:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - Versioned roadmap: entries with a kind and gates, a bump intent derived through the changelog plugin, a git-tracked authority file and an append-only timeline.
