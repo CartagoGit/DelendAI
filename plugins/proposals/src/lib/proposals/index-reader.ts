@@ -24,7 +24,8 @@
  */
 
 import { DEFAULT_INDEX_FS, type IIndexFs } from './index-reader-fs';
-import { compareIndexEntries, decideIndexSource } from './index-source-policy';
+import { decideIndexSource } from './index-source-policy';
+import { reportRegistryParity } from './index-reader-parity-report';
 import {
 	DEFAULT_PROPOSAL_INDEX_SOURCE,
 	PROPOSAL_INDEX_SOURCE_ENV_VAR,
@@ -153,6 +154,7 @@ export interface IProposalIndexReadOptions {
 		readonly entries: readonly IProposalIndexEntry[];
 		readonly sourceCommit: string | null;
 		readonly logicalDigest: string | null;
+		readonly reconciledAt?: number | null;
 	} | null>;
 	/**
 	 * Absolute path of the markdown proposals tree — the authority a
@@ -229,6 +231,7 @@ export const readFromSqlSource = async (
 	readonly entries: readonly IProposalIndexEntry[];
 	readonly sourceCommit: string | null;
 	readonly logicalDigest: string | null;
+	readonly reconciledAt?: number | null;
 } | null> => {
 	const databasePath = await resolveDatabasePath(indexPathAbs, options);
 	if (databasePath === null) return null;
@@ -319,25 +322,14 @@ const serveStrictSql = async (
 			indexPathAbs,
 		);
 	}
-	// No registry on disk is nothing to compare, not a difference on
-	// every id: a fresh worktree has none, and each read there reported
-	// the whole backlog as divergent.
-	const registry = await readJsonOrNull<IProposalIndexFile>(indexPathAbs, fs);
-	const divergence =
-		registry === null
-			? []
-			: compareIndexEntries(fromSql.entries, registry.proposals ?? []);
-	recordProposalIndexRead(
-		divergence.length > 0 ? 'sql-divergence-reported' : 'sql-parity',
-		divergence.length,
+	reportRegistryParity({
+		entries: fromSql.entries,
+		registry: await readJsonOrNull<IProposalIndexFile>(indexPathAbs, fs),
+		reconciledAt: fromSql.reconciledAt ?? null,
+		indexPathAbs,
 		rebuilt,
-	);
-	if (divergence.length > 0)
-		noticeOnce(
-			`sql-strict-divergence:${indexPathAbs}`,
-			`proposal index: serving the SQLite projection (source pinned to "sql"); ${indexPathAbs} differs on ${divergence.join(', ')}`,
-			log,
-		);
+		log,
+	});
 	return fromSql.entries;
 };
 
