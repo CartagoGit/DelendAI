@@ -574,11 +574,12 @@ Slice independiente. Modifica comportamiento del eviction existente → puede ne
 Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La numeración sigue la convención `S0`-`S7` del pasted text.
 
 ### S0 — Inventario histórico (entregable: `f00513`)
-- **Status**: pending
-- **Files**: `docs/delendai/proposals/ready/chores/f00513-inventory.md`
+- **Status**: review
+- **Files**: `docs/delendai/proposals/done/chores/c00527-anexo-q00021-f00513-inventario-historico-de-cache-layout-epochs-1-9.md`
 - **Tarea**: tabla `old-path / current-path / owner / class / acción / introducido-en / seguro-borrar` para `r00010`, `f00065`, `f00080`, `x00052`, rebrand, proposal workflow refactors, `q00019` (SQLite stores), `q00020` (progress).
-- **Gate**: el documento contiene las 5 secciones L1-L5 con ≥1 entrada cada una, y referencia explícita al commit hash donde se introdujo cada cambio.
+- **Gate**: `bun run lint:proposals` (the annex parses and every link resolves).
 - **Aceptación**: firmado por el `proposal_guardian` o un reviewer que **no** sea el autor.
+- **Shipped**: already delivered before this unit, in commit `c54547404` (`chore(proposals): close c00527 inventory annex`). The deliverable lives in the annex `c00527`, not in the `ready/chores/f00513-inventory.md` path this block used to declare (that file never existed; the annex was archived under `done/chores/`). Its table covers epochs 1-9 and eight sections (r00010, f00065, f00080, x00052, rebrand, workflow refactors, q00019, q00020), each row with its introducing proposal or commit and a safe-to-delete verdict. This unit only corrects the declared path and records the shipping commit.
 
 ### S1 — Contratos puros (entregable: `f00526`)
 - **Status**: pending
