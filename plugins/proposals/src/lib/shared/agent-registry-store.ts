@@ -4,11 +4,14 @@ import {
 	CorruptFileError,
 	quarantineCorruptFile,
 	runMigrations,
+} from '@delendai/core/public';
+import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
-import type { AgentHost, IMigrator } from '@delendai/core/public';
+} from '@delendai/core/runtime';
+import type { IMigrator } from '@delendai/core/public';
+import type { AgentHost } from '@delendai/core/contracts';
 
 import { AGENT_CONVENTIONS } from './agent-conventions';
 

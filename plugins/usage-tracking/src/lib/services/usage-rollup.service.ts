@@ -2,12 +2,8 @@
 import { rm } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
-import {
-	redactSecrets,
-	withFileMutex,
-	writeFileAtomic,
-	safeListDir,
-} from '@delendai/core/public';
+import { redactSecrets, safeListDir } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import type { IInvocationRecordTelemetry } from '../contracts/invocation-record.interface';
 import {

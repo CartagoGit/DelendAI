@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { buildCheckpointPacket } from '@delendai/memory/lib/services/checkpoint-packet';
 import { saveNote } from '@delendai/memory/lib/services/store';
 import { buildCheckpointPacketToolRegistration } from '@delendai/memory/lib/tools/checkpoint-packet.tool';

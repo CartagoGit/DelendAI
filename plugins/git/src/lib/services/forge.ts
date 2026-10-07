@@ -10,7 +10,7 @@
  * never storing or reading a token itself.
  */
 import { runExternalTool } from '@delendai/core/public';
-import type { IArgvExec, IExternalTool } from '@delendai/core/public';
+import type { IArgvExec, IExternalTool } from '@delendai/core/contracts';
 
 import type {
 	IForgeList,

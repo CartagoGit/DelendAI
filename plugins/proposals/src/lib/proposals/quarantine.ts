@@ -1,11 +1,8 @@
 import { mkdir, open } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
-import {
-	SafeWorkspaceReader,
-	safeListDirRequired,
-	withFileMutex,
-} from '@delendai/core/public';
+import { safeListDirRequired } from '@delendai/core/public';
+import { SafeWorkspaceReader, withFileMutex } from '@delendai/core/runtime';
 
 export type TQuarantineReason =
 	| 'invalid_canonical_filename'

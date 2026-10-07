@@ -1,4 +1,5 @@
-import { createWorkspaceFileReader, definePlugin } from '@delendai/core/public';
+import { createWorkspaceFileReader } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import z from 'zod';
 
 import { mergeConvention } from './convention';

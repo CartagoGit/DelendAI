@@ -3,10 +3,10 @@ import z from 'zod';
 
 import {
 	PERMISSION_CATEGORIES,
-	type IToolRegistration,
 	toolError,
 	toolJson,
 } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
 	ADAPTIVE_OPTIMIZER_MAX_CANDIDATES,

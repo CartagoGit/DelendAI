@@ -14,8 +14,8 @@
 
 import { basename, dirname, join } from 'node:path';
 
-import type { IToolRegistration } from '@delendai/core/public';
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import {
 	proposalReadDescription,

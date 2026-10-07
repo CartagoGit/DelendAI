@@ -1,4 +1,5 @@
-import { runExternalTool, type IExternalTool } from '@delendai/core/public';
+import { runExternalTool } from '@delendai/core/public';
+import type { IExternalTool } from '@delendai/core/contracts';
 
 import type {
 	IForgeCheck,

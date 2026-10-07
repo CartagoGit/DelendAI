@@ -6,7 +6,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 
 import type { ICommitPolicyPush } from '@delendai/commit-policy/lib/contracts/options';
 import { createPushScheduler } from '@delendai/commit-policy/lib/services/push-scheduler';

@@ -11,13 +11,15 @@ import { LEGACY_REGISTRY_FILE } from '../contracts/constants/proposal-index-sour
 
 import {
 	SafeRenameTargetExistsError,
-	SafeWorkspaceReader,
 	safeListDirRequired,
 	safeRename,
-	withFileMutex,
 	withFileMutexes,
-	writeFileAtomic,
 } from '@delendai/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@delendai/core/runtime';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import { setFrontmatterStatus } from './proposal-frontmatter-writer';

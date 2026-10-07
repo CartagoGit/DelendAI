@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { withFileMutex } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 import { runAgentLockEngine } from '@delendai/proposals/lib/locks/agent-lock-engine';
 import { tryAcquireFileLocks } from '@delendai/proposals/lib/locks/file-lock-table';
 import {

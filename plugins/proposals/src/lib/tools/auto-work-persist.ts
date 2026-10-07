@@ -37,13 +37,15 @@
  * ```
  */
 import {
-	commitAndPush,
 	type FindingSeverity,
-	type IFinding,
 	type IFindingCounts,
-	type ICommitAuthorResolution,
 	deriveDefaultProtectedBranches,
 } from '@delendai/core/public';
+import { commitAndPush } from '@delendai/core/runtime';
+import type {
+	IFinding,
+	ICommitAuthorResolution,
+} from '@delendai/core/contracts';
 
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { assessStaleAcceptance } from '../services/checkpoint-advisory-stale-acceptance.service';

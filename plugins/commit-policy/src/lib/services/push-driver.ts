@@ -11,11 +11,11 @@ import {
 	deriveDefaultProtectedBranches,
 	distinctReleaseBranch,
 	gitPush,
-	type IGitRunner,
 	type IResolvedDevelopmentPolicy,
 	type IPushAuthorization,
 	type IPushForceMode,
 } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 import type { ICommitPolicyPush, ForceMode } from '../contracts/options';
 import { resolveProtectedBranches } from '../contracts/constants/protected-branches';

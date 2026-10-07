@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import type {
 	IFileReader,
 	IWorkspacePathProvider,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 import {
 	buildCheckRulesRegistration,
 	buildGetRulesRegistration,
