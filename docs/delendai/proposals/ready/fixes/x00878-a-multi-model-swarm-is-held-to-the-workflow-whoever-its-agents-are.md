@@ -285,6 +285,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "When `work publish` publishes a unit, every other work ref of the same agent and proposal whose tip the publication contains is ended the way the published one is (clean worktree removed, remote copy and local ref deleted); a unit of another agent, and one entered on top and not committed to yet, are left alone."
 - Found 2026-10-07 by the owner: `origin/delendai/wip/claude-opus-5-5/implement/x00877-S7-g1/…` stayed on the forge after x00877 S5 merged it in and published it as #891. The forge reaper takes only a unit's own publication as proof, deliberately — a unit stacked on another's publication starts at its tip and is not finished — and S5 had been fast-forwarded onto S7, so git cannot tell the two cases apart from the outside.
 - Delivered: the publisher, which knows what it carried, ends the carried units of its own agent and proposal (`endCarriedUnits`, reported as `carried-*` steps in the publish result). A unit whose tip is still the commit it was entered at (its lease's `entrySha`) is a fresh stack, not carried work, and is kept; `endWorkRef` keeps any worktree with uncommitted changes. x00877 S7 itself was retired by hand with that reason; once #891 lands the landed-retired reaper drops it. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
