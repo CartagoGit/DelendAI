@@ -182,6 +182,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La base vive bajo `ctx.pluginCacheDir`; nunca en la raíz del workspace ni en un dot-folder propio."
   - "Hay un test de upgrade que demuestra que una base de una versión anterior migra correctamente."
 - shipped: the SQLite timeline driver (SqliteTimelineStore) behind the same IRoadmapTimelineStore contract, with versioned idempotent migrations on PRAGMA user_version, append-only triggers inside the database, and the database fixed under the plugin cache directory. Re-cut: the package is Bun-only like proposals-sqlite, so its specs run under test:sqlite (packages/roadmap-sqlite/ is listed in BUN_OWNED_SPECS) and its vitest project is empty. Schema 1 kept only the event JSON and schema 2 adds indexed horizon and entry columns; no schema 1 database exists in the wild, the step is there so the upgrade path is exercised from the first release, and the upgrade spec builds a real schema 1 database by hand.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S6 — El roadmap como IStateProducer del State Engine
 - **Status**: pending
