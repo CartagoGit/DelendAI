@@ -110,6 +110,16 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - acceptance:
   - "The user-level host configs (`~/.claude.json`, `~/.codex/config.toml`) are migrated by an explicit, opt-in host-scope command, never by a workspace `migrate run`, and a dry run lists what it would change."
 
+### S8 — The rebrand check runs on every pull request
+- **Status**: in-progress
+- **Files**: `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "`migrate:rebrand:check` runs in CI's governance job on every pull request, so a live file that spells the old product name fails the pull request that brings it in, not the integration branch after the merge."
+- Found 2026-10-07: #887 brought a spec that spells the old name (it is about it), its pull request was green, and develop's full run went red on `rebrand-propagate.spec.ts`: that spec walks the whole tree, so the tools shard's selection by changed imports skipped it on the pull request. The queue then armed nothing for seven hours. The check takes two seconds; it now runs beside the other governance lints on every pull request.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - `migrate status` and `migrate --dry-run` write nothing: the tree, the config and `.delendai/migrations-applied.json` are byte-identical before and after.
