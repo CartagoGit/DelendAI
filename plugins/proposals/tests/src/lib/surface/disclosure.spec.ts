@@ -19,7 +19,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { measureBootstrapBytes } from '@delendai/core/public';
-import { MANAGED_LAZY_PLUGIN_BY_ID } from '@delendai/core/lib/plugins/managed-lazy-catalog.generated';
+import { managedLazyPluginEntry } from '@delendai/core/lib/plugins/managed-lazy-catalog-lookup';
 
 import {
 	PROPOSALS_ESSENTIAL_TOOL_IDS,
@@ -32,7 +32,7 @@ import {
 import { createAssembledProposalsServer } from '../e2e/assembled-proposals-server';
 
 const REAL_REGISTRATION_IDS =
-	MANAGED_LAZY_PLUGIN_BY_ID.get('proposals')?.toolIds ?? [];
+	managedLazyPluginEntry('proposals')?.toolIds ?? [];
 
 describe('proposals disclosure policy (q00016 S8) — pure', () => {
 	it('has exactly the real registration ids, no more, no fewer', () => {

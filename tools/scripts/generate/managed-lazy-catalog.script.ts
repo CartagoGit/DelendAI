@@ -233,10 +233,6 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		}),
 		'\t];',
 		'',
-		'export const MANAGED_LAZY_PLUGIN_BY_ID = new Map(',
-		'\tMANAGED_LAZY_PLUGIN_CATALOG.map((entry) => [entry.id, entry] as const),',
-		');',
-		'',
 	].join('\n');
 	return execFileSync(
 		'bunx',
