@@ -28,6 +28,7 @@ import {
 	type IWorkflowRun,
 	parkedRuns,
 	armCandidates,
+	runsThatLostTheirChecks,
 } from './keep-the-queue-moving.script';
 
 const run = (name: string, conclusion: string | null): IWorkflowRun => ({
@@ -279,5 +280,88 @@ describe('branchModelPulls', () => {
 			BRANCHES,
 		);
 		expect(found.map((pull) => pull.number)).toEqual([641, 642]);
+	});
+});
+
+describe('runsThatLostTheirChecks', () => {
+	const lost = (attempt: number): IWorkflowRun => ({
+		id: attempt,
+		name: 'CI',
+		conclusion: 'failure',
+		status: 'completed',
+		run_attempt: attempt,
+	});
+	const green = [{ name: 'typecheck', conclusion: 'success' }];
+	const required = ['delendai-validate'];
+
+	it('runs again a finished run whose required check never reported', () => {
+		// #907 on 2026-10-07: 35 of 37 jobs, all green, the aggregate absent.
+		expect(
+			runsThatLostTheirChecks({
+				runs: [lost(1)],
+				checks: green,
+				required,
+			}).rerun,
+		).toEqual([lost(1)]);
+	});
+
+	it('reports a second loss instead of running it a third time', () => {
+		const verdict = runsThatLostTheirChecks({
+			runs: [lost(2)],
+			checks: green,
+			required,
+		});
+		expect(verdict.rerun).toEqual([]);
+		expect(verdict.lostAgain).toEqual([lost(2)]);
+	});
+
+	it('leaves a run alone once its required check reported', () => {
+		expect(
+			runsThatLostTheirChecks({
+				runs: [lost(1)],
+				checks: [
+					...green,
+					{ name: 'delendai-validate', conclusion: 'success' },
+				],
+				required,
+			}).rerun,
+		).toEqual([]);
+	});
+
+	it('leaves a red candidate to its author: something failed', () => {
+		expect(
+			runsThatLostTheirChecks({
+				runs: [lost(1)],
+				checks: [{ name: 'typecheck', conclusion: 'failure' }],
+				required,
+			}).rerun,
+		).toEqual([]);
+	});
+
+	it('leaves a run that is still going', () => {
+		expect(
+			runsThatLostTheirChecks({
+				runs: [
+					{
+						id: 1,
+						name: 'CI',
+						conclusion: null,
+						status: 'in_progress',
+					},
+				],
+				checks: green,
+				required,
+			}).rerun,
+		).toEqual([]);
+	});
+
+	it('asks nothing of a project that requires no check', () => {
+		expect(
+			runsThatLostTheirChecks({
+				runs: [lost(1)],
+				checks: green,
+				required: [],
+			}).rerun,
+		).toEqual([]);
 	});
 });

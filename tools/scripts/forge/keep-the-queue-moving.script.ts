@@ -168,7 +168,7 @@ const mergeState = (number: number): string => {
 	return 'unknown';
 };
 
-interface ICheckRun {
+export interface ICheckRun {
 	readonly name: string;
 	readonly conclusion: string | null;
 }
@@ -200,6 +200,8 @@ export interface IWorkflowRun {
 	readonly id: number;
 	readonly name: string;
 	readonly conclusion: string | null;
+	readonly status?: string;
+	readonly run_attempt?: number;
 }
 
 /**
@@ -222,12 +224,83 @@ export const parkedRuns = (
 ): readonly IWorkflowRun[] =>
 	runs.filter((run) => run.conclusion === 'action_required');
 
+const runsAt = (sha: string): readonly IWorkflowRun[] =>
+	api<{ readonly workflow_runs: readonly IWorkflowRun[] }>(
+		`repos/${REPOSITORY_SLUG}/actions/runs?head_sha=${sha}&per_page=100`,
+	).workflow_runs;
+
 const waitingRuns = (sha: string): readonly IWorkflowRun[] =>
-	parkedRuns(
-		api<{ readonly workflow_runs: readonly IWorkflowRun[] }>(
-			`repos/${REPOSITORY_SLUG}/actions/runs?head_sha=${sha}&per_page=100`,
-		).workflow_runs,
+	parkedRuns(runsAt(sha));
+
+/**
+ * Runs that finished without the required checks they exist to report.
+ *
+ * The forge can conclude a run `failure` with every job it created green
+ * and the aggregate never created: on 2026-10-07 #907's run had 35 of its
+ * 37 jobs, `tests` and `delendai-validate` missing, and the candidate sat
+ * armed, green and BLOCKED, because nothing on it was red. Such a run is
+ * run again, once. A run that loses its checks a second time is the
+ * forge's to explain, and is reported rather than looped on.
+ */
+export const runsThatLostTheirChecks = (input: {
+	readonly runs: readonly IWorkflowRun[];
+	readonly checks: readonly ICheckRun[];
+	readonly required: readonly string[];
+}): {
+	readonly rerun: readonly IWorkflowRun[];
+	readonly lostAgain: readonly IWorkflowRun[];
+} => {
+	const reported = new Set(input.checks.map((check) => check.name));
+	const missing = input.required.some((name) => !reported.has(name));
+	if (!missing || failuresOf(input.checks).length > 0) {
+		return { rerun: [], lostAgain: [] };
+	}
+	const lost = input.runs.filter(
+		(run) => run.status === 'completed' && run.conclusion === 'failure',
 	);
+	return {
+		rerun: lost.filter((run) => (run.run_attempt ?? 1) === 1),
+		lostAgain: lost.filter((run) => (run.run_attempt ?? 1) > 1),
+	};
+};
+
+/** Run again what lost its required checks; returns how many were. */
+const rerunRunsThatLostTheirChecks = (
+	pull: IPullRequest,
+	checks: readonly ICheckRun[],
+	required: readonly string[],
+): number => {
+	const { rerun, lostAgain } = runsThatLostTheirChecks({
+		runs: runsAt(pull.head.sha),
+		checks,
+		required,
+	});
+	let started = 0;
+	for (const run of rerun) {
+		try {
+			gh([
+				'api',
+				'-X',
+				'POST',
+				`repos/${REPOSITORY_SLUG}/actions/runs/${String(run.id)}/rerun`,
+			]);
+			started += 1;
+			console.log(
+				`keep-the-queue-moving: #${String(pull.number)}'s ${run.name} run ended without its required checks (${required.join(', ')}); run again.`,
+			);
+		} catch {
+			console.log(
+				`keep-the-queue-moving: #${String(pull.number)}'s ${run.name} run ended without its required checks and could not be run again; re-run it on the forge.`,
+			);
+		}
+	}
+	for (const run of lostAgain) {
+		console.log(
+			`keep-the-queue-moving: #${String(pull.number)}'s ${run.name} run lost its required checks again on attempt ${String(run.run_attempt)}; it is not run a third time.`,
+		);
+	}
+	return started;
+};
 
 /**
  * Press the button, and say so when the forge will not let us.
@@ -590,6 +663,15 @@ const main = (): void => {
 		released += atHead.released;
 		for (const name of atHead.refused) refusedReleases.add(name);
 		const runs = checksOf(pull.head.sha);
+		if (
+			rerunRunsThatLostTheirChecks(
+				pull,
+				runs,
+				policy.integration.requiredChecks,
+			) > 0
+		) {
+			continue;
+		}
 		const failures = failuresOf(runs);
 		if (failures.length > 0) {
 			// Reported whether or not it is behind. A candidate whose
