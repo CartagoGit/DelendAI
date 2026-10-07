@@ -75,10 +75,12 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "`computeEta` no es un productor del State Engine — es una función pura invocada por `f00510` S5 al construir el snapshot. Esto evita meter cálculo en el `rebuild`/`reconcile`."
 
 ### S4 — Integración con `f00510` — `progress_snapshots` gana campos `eta_p50_ms`, `eta_p80_ms`, `eta_reason`; sin llamada a LLM
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [F3-S3]
-- **Files**: `packages/state-telemetry/src/lib/projector/integration-with-eta.service.ts`, `packages/state-telemetry/src/lib/projector/integration-with-eta.service.spec.ts`, `packages/state-telemetry/tests/integration/eta-integration.spec.ts` (NO toca `work-progress-producer.ts` ni `work-progress-snapshot.ts`; usa un adapter que llama a `computeEta` desde el método del productor sin modificar su shape — la integración se hace en F2-S1 cuando su `reconcile()` consume el adapter, no en este slice)
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/projector/integration-with-eta.service.ts`, `packages/state-telemetry/src/lib/projector/integration-with-eta.service.spec.ts`, `packages/state-telemetry/src/lib/projector/contracts/interfaces/eta-integration.interface.ts`, `packages/state-telemetry/src/lib/projector/contracts/constants/eta-integration.constant.ts`, `packages/state-telemetry/tests/integration/eta-integration.spec.ts`
+- **Gate**: `bunx vitest run --root packages/state-telemetry`
+- shipped: `createEtaIntegration` decorates a snapshot with `eta_p50_ms`, `eta_p80_ms` (null without history) and `eta_reason` (`computed` | `insufficient_history`) by calling `computeEta` once per snapshot a reader receives; the producer and the snapshot shape are untouched. `classifyStalledByEta` turns a stalled item plus its p80 into `near-completion`, `far-from-done` or `unknown`, which is what a watchdog needs to tell a stall at the end of its budget from one at the start.
+- design correction: there is no `progress_snapshots` table (the projection is canonical rows held by the State Engine, with the SQLite shadow still to come), so the three fields live on a decorated snapshot rather than as SQL columns; when the shadow table lands its writer maps these three fields to the columns named in the acceptance. The `f00504` watchdog is not wired here: it consumes `classifyStalledByEta`; the integration spec shows the verdict flipping with the estimate. The no-tokens test named in the acceptance is the S5 spec of f00512, and this slice never calls a model.
 - acceptance:
   - "`progress_snapshots` schema extendido con `eta_p50_ms INTEGER`, `eta_p80_ms INTEGER` (NULL cuando `eta: null`) y `eta_reason TEXT` (`'insufficient_history'` | `'computed'`)."
   - "El producer llama a `computeEta` UNA vez por snapshot, en `reconcile` (no en `rebuild`, para no recalcular al rehidratar)."
