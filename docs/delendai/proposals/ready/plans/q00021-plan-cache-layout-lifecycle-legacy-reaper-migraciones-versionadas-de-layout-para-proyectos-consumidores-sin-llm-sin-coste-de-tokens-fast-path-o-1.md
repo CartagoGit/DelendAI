@@ -581,15 +581,20 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Aceptación**: firmado por el `proposal_guardian` o un reviewer que **no** sea el autor.
 
 ### S1 — Contratos puros (entregable: `f00526`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
-  - `packages/core/src/lib/cache/cache-layout-manifest.ts` (constante inicial, NO destructivo)
-  - `packages/core/src/lib/cache/cache-layout-migration.ts` (helpers tipados)
-  - `packages/core/tests/src/lib/cache/cache-layout-migration.spec.ts`
-- **Tarea**: tipos puros. `IMigration` se reutiliza tal cual (no se duplica); `ICacheLayoutMigration extends IMigration` añade `fromEpoch/toEpoch/helpers`. `ICacheArtifactClass` enum + tabla de clasificación.
-- **Gate**: tests puros verdes (sin filesystem, sin SQLite).
-- **Aceptación**: ningún `fs` import en `cache-layout-migration.ts`. `IMigration.detect` se mantiene como contrato del probe barato.
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/src/lib/cache/cache-layout-migration.helper.ts`
+  - `packages/core/tests/src/lib/cache/cache-layout-migration.helper.spec.ts`
+- **Tarea**: tipos puros. `ICacheArtifactClass` + `ICacheLayoutManifest`, `ICacheLayoutMigration` (`fromEpoch`/`toEpoch`, `detect`/`plan`/`apply` sobre un contexto con `cacheDirAbs` y `helpers`), y las reglas puras: `assertDroppable` (falla en records/operational y en sus ancestros), `resolveMigrationChain` (cadena completa `N -> N+1`, error en hueco/duplicado/downgrade), `validateManifest`, `findOwningArtifact`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/cache-layout-migration.helper.spec.ts` (35 tests puros, sin filesystem ni SQLite).
+- **Aceptación**: ningún `fs` import en `cache-layout-migration.helper.ts`. `IMigration.detect` se mantiene como contrato del probe barato.
+- **Corrections to the design, following the code**:
+  - `ICacheLayoutMigration` does not `extends IMigration`: its `detect`/`plan`/`apply` take a narrower context (`ICacheLayoutMigrationContext`), and a function property cannot narrow its parameter in a subtype. It reuses `IMigration['id']` and `IMigrationPlanStep`, and S3 adapts a chain to the engine's journal.
+  - The context carries no `lifecycleState`: only the bootstrap reads and writes the epoch; a migration that could write it could skip its own successors.
+  - `migrateStore` and `importStoreToSqlite` are not in `ICacheLayoutHelpers`. No store moves to SQLite yet (epochs 6-8 are future work of q00019/q00020), so they would be untested surface; they arrive with the first migration that needs them.
+  - The manifest lists only artifacts present in the code today (`progress/` is q00020 and does not exist yet). It lives in `contracts/constants/` because the file-conventions lint requires exported constants there.
 
 ### S2 — Lifecycle state store (entregable: `f00527`)
 - **Status**: pending
