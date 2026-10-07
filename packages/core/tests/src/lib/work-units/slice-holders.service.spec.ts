@@ -52,6 +52,20 @@ const asking = {
 } as const;
 
 describe('holdersOfSlice', () => {
+	it("leaves a slice free that only the proposal's create unit names", () => {
+		const writer = unit('opus', 'create/x00001-all-g1/the-document');
+		expect(holdersOfSlice({ ...asking, view: view([], [writer]) })).toEqual(
+			[],
+		);
+		expect(
+			holdersOfSlice({
+				...asking,
+				kind: 'create',
+				view: view([], [writer]),
+			}),
+		).toEqual([writer]);
+	});
+
 	it('names another agent on the same slice, live or published', () => {
 		const held = holdersOfSlice({
 			...asking,
@@ -67,7 +81,7 @@ describe('holdersOfSlice', () => {
 		expect(
 			holdersOfSlice({
 				...asking,
-				view: view([unit('codex', 'create/x00001-all-g1/t')]),
+				view: view([unit('codex', 'implement/x00001-all-g1/t')]),
 			}),
 		).toHaveLength(1);
 		expect(

@@ -39,6 +39,7 @@ import {
 	type IObservedPullRequest,
 } from '@delendai/core/lib/ref-lifecycle/reconcile.service';
 import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
+import { carriesNothingBeyond } from '@delendai/core/lib/work-units/landed-work.service';
 import { planRetirement } from '@delendai/core/lib/work-units/work-retire.service';
 
 // `monorepo-paths` rather than a hardcoded path: the layout convention
@@ -267,6 +268,15 @@ export const containedInGit = (
 	run: (args: readonly string[]) => void = (args) => {
 		execFileSync('git', [...args], { stdio: 'ignore' });
 	},
+	/**
+	 * Whether the head adds only merges of commits the base holds. A unit
+	 * that merged the integration branch in after its work was carried by
+	 * another publication has that one merge beyond the base and nothing
+	 * else, and its branch was kept on the forge for good (x00878 S4, S6,
+	 * S8 after #879).
+	 */
+	onlyLandedMerges: (base: string, head: string) => boolean = (base, head) =>
+		carriesNothingBeyond(process.cwd(), head, base),
 ): boolean | undefined => {
 	for (const sha of [baseSha, headSha]) {
 		try {
@@ -282,9 +292,10 @@ export const containedInGit = (
 	} catch (error) {
 		// Exit 1 is git's answer "no"; anything else is git failing to
 		// answer, which must not be read as "no".
-		return (error as { readonly status?: number }).status === 1
-			? false
-			: undefined;
+		if ((error as { readonly status?: number }).status !== 1) {
+			return undefined;
+		}
+		return onlyLandedMerges(baseSha, headSha);
 	}
 };
 

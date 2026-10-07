@@ -331,6 +331,10 @@ export const runEntry = async (
 		}
 	}
 	if (argv[0] === '__serve') {
+		// What the server says is kept in the workspace too, wherever the
+		// host puts its stderr, so an agent can read the boots back.
+		const { startServerLogIn } = await import('@delendai/core/cli');
+		await startServerLogIn(workspaceRoot, 'cli-serve');
 		// Report the guard a project declares; never install it. Starting
 		// a server is not consent to edit the repository it was started
 		// in — `delendai guard install` is.
