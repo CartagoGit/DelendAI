@@ -1,3 +1,5 @@
+import { CREATE_LIFECYCLE_META_TABLE_SQL } from './contracts/constants/lifecycle-meta.constant';
+
 export const STATE_SQLITE_SCHEMA_VERSION = 2;
 
 export const SQLITE_BOOT_PRAGMAS = [
@@ -46,4 +48,5 @@ export const STATE_SQLITE_SCHEMA_SQL = [
 	`CREATE INDEX IF NOT EXISTS idx_generations_fingerprint
 ON generations(fingerprint);`,
 	CREATE_DRIVERS_TABLE_SQL,
+	CREATE_LIFECYCLE_META_TABLE_SQL,
 ] as const;
