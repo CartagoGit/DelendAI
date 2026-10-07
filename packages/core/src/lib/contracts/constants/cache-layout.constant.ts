@@ -14,6 +14,19 @@ import type {
  */
 export const CACHE_LAYOUT_EPOCH = 9;
 
+/**
+ * Where the applied epoch is recorded when the state database is not the
+ * canonical store. Next to the migration journal and for the same reason:
+ * outside the cache directory, which is what a layout migration moves.
+ */
+export const CACHE_LAYOUT_MARKER_PATH = [
+	'.delendai',
+	'cache-layout-applied.json',
+] as const;
+
+/** How long a second process waits for a migration already running. */
+export const CACHE_LAYOUT_LOCK_TIMEOUT_MS = 60_000;
+
 export const CACHE_ARTIFACT_CLASSES: readonly ICacheArtifactClass[] = [
 	'derived',
 	'ephemeral',

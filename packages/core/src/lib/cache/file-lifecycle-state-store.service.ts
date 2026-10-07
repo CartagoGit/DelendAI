@@ -38,7 +38,9 @@ const readMarker = async (markerAbs: string): Promise<IMarkerContent> => {
 		)
 			return {};
 		const epoch = (parsed as IMarkerContent)['cache-layout'];
-		return Number.isInteger(epoch) ? { 'cache-layout': epoch } : {};
+		return typeof epoch === 'number' && Number.isInteger(epoch)
+			? { 'cache-layout': epoch }
+			: {};
 	} catch {
 		return {};
 	}

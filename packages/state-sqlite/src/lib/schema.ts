@@ -1,3 +1,5 @@
+import { CREATE_LIFECYCLE_META_TABLE_SQL } from './contracts/constants/lifecycle-meta.constant';
+
 export const STATE_SQLITE_SCHEMA_VERSION = 2;
 
 export const SQLITE_BOOT_PRAGMAS = [
@@ -37,17 +39,6 @@ CREATE TABLE IF NOT EXISTS drivers (
 	fingerprint TEXT PRIMARY KEY,
 	last_known_state TEXT NOT NULL CHECK (last_known_state IN ('primary','shadow','both')),
 	parity_mismatches INTEGER NOT NULL DEFAULT 0
-);
-`;
-
-// The cache layout epoch per lifecycle scope. Created if missing on every
-// open, so it needs no `user_version` bump: the epoch is its own axis and
-// this table only ever grows rows.
-export const CREATE_LIFECYCLE_META_TABLE_SQL = `
-CREATE TABLE IF NOT EXISTS lifecycle_meta (
-	scope TEXT PRIMARY KEY,
-	applied_epoch INTEGER NOT NULL,
-	updated_at INTEGER NOT NULL
 );
 `;
 

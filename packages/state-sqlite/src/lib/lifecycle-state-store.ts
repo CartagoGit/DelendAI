@@ -2,7 +2,7 @@ import type { Database } from 'bun:sqlite';
 
 import type { ILifecycleScope, ILifecycleStateStore } from '@delendai/state';
 
-import { CREATE_LIFECYCLE_META_TABLE_SQL } from './schema';
+import { CREATE_LIFECYCLE_META_TABLE_SQL } from './contracts/constants/lifecycle-meta.constant';
 
 interface IEpochRow {
 	readonly applied_epoch: number;
