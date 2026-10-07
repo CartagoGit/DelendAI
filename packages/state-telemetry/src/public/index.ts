@@ -20,3 +20,9 @@ export { resolvePhaseRules } from '../lib/projector/phase-rules.service';
 export { aggregateProgress } from '../lib/projector/progress-weighting.service';
 export { createWorkProgressProducer } from '../lib/projector/work-progress-producer.service';
 export { createWorkProgressService } from '../lib/projector/work-progress-api.service';
+export { drainWorkEventJournal } from '../lib/events/work-event-journal-drain.service';
+export { WorkEventStoreFacade } from '../lib/events/work-event-store.facade';
+export type {
+	IWorkEventDrainResult,
+	IWorkEventSink,
+} from '../lib/events/contracts/interfaces/work-event-journal-drain.interface';
