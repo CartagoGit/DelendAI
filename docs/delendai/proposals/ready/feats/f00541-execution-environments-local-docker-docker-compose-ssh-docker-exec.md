@@ -30,9 +30,10 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - global_gate: type
 
 ### S1 — IExecutionEnvironment contract and registry
-- **Status**: pending
-- **Files**: `plugins/execution-env/src/lib/contracts/interfaces/execution-env.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/execution-env-types.interface.ts`, `plugins/execution-env/registry.ts`, `plugins/execution-env/package.json`
-- **Gate**: type
+- **Status**: review
+- **Files**: `plugins/execution-env/package.json`, `plugins/execution-env/plugin.manifest.ts`, `plugins/execution-env/tsconfig.json`, `plugins/execution-env/vitest.config.ts`, `plugins/execution-env/LICENSE`, `plugins/execution-env/AGENT.md`, `plugins/execution-env/src/index.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/src/lib/contracts/constants/execution-capability.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/execution-env.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/execution-env-types.interface.ts`, `plugins/execution-env/src/lib/registry/execution-env-registry.service.ts`, `plugins/execution-env/tests/src/lib/registry/execution-env-registry.spec.ts`, `tsconfig.base.json`
+- **Gate**: `npx vitest run --root plugins/execution-env`
+- shipped: the `execution-env` plugin with the `IExecutionEnvironment` contract (id, label, capabilities, prepare, exec, putFile, getFile, teardown, env), the eight-member capability vocabulary and `ExecutionEnvRegistry`, which registers by id and refuses duplicates. `exec` takes an argument vector so data can never become shell syntax.
 - acceptance:
   - "Contract exposes id, label, capabilities(), prepare(), exec(), putFile(), getFile(), teardown(), env()."
   - "ExecutionCapability union includes persistent-workspace, isolated-filesystem, isolated-network, shell-bash, shell-pwsh, suspend-resume, forward-secrets, preserve-between-slices."
