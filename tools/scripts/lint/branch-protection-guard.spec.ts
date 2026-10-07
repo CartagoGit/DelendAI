@@ -1,10 +1,24 @@
 import { describe, expect, it } from 'vitest';
 
+import { BRANCH_PROTECTION } from '../../../.github/branch-protection.ts';
 import {
 	assertDeclaration,
 	compareLive,
 	parseDeclaration,
 } from './branch-protection-guard.script';
+
+/**
+ * The checks the policy requires on the integration branch, read from
+ * the same projection the guard reads, so the fixtures follow the
+ * policy instead of a copy of it.
+ */
+const REQUIRED_CHECKS =
+	BRANCH_PROTECTION.branches.find(
+		(branch) => branch.protected && branch.name !== 'main',
+	)?.required_checks ?? [];
+const CONTEXTS = REQUIRED_CHECKS.map(
+	(check) => `                  - ${check}`,
+).join('\n');
 
 /**
  * A declaration that agrees with the canonical policy.
@@ -22,7 +36,7 @@ branches:
           required_status_checks:
               strict: true
               contexts:
-                  - delendai-validate
+${CONTEXTS}
           enforce_admins: true
           required_linear_history: false
           allow_force_pushes: false
@@ -34,7 +48,7 @@ const live = {
 	protected: true,
 	required_status_checks: {
 		strict: true,
-		contexts: ['delendai-validate'],
+		contexts: [...REQUIRED_CHECKS],
 	},
 	enforce_admins: { enabled: true },
 	required_linear_history: { enabled: false },
@@ -75,7 +89,7 @@ branches:
           required_status_checks:
               strict: true
               contexts:
-                  - delendai-validate
+${CONTEXTS}
           enforce_admins: false
           required_linear_history: false
           allow_force_pushes: false
@@ -96,7 +110,7 @@ branches:
           required_status_checks:
               strict: true
               contexts:
-                  - delendai-validate
+${CONTEXTS}
           enforce_admins: false
           required_linear_history: true
           allow_force_pushes: true

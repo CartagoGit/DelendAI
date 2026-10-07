@@ -69,7 +69,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 
 ### S6 — Code scanning must pass to merge into develop
 - **Status**: in-progress
-- **Files**: `delendai.config.json`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/settings.yml`
+- **Files**: `delendai.config.json`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/settings.yml`, `tools/scripts/lint/branch-protection-guard.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`CodeQL` is a required check of the integration branch, beside `delendai-validate`: a pull request that introduces a code scanning alert does not merge, so develop — and what it promotes to main — stays at zero."
