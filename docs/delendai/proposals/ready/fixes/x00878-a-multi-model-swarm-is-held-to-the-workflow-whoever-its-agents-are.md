@@ -245,6 +245,16 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S21 — The forge reaper sees a branch whose only extra commit merged landed work
+- **Status**: in-progress
+- **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A work branch whose only commits beyond the integration branch are merges of commits it already holds is reapable by `lint:ref-lifecycle --reap`, the same way S14 made it delivered for the local reaper."
+- Delivered: after #879 landed x00878 S4, S6 and S8 through S9's publication, their three work branches stayed on the forge for good: each held one merge of develop that develop did not, so `containedInGit` said no. It now asks `carriesNothingBeyond` (S14's predicate, one source) when the tip is not an ancestor. A dry run named exactly those three and `--reap` deleted them. A branch carried by another slice's open publication (x00877 S7 inside #891) is still left until that publication lands: only a unit's own publication proves it ended. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

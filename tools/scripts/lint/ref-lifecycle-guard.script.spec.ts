@@ -153,9 +153,25 @@ describe('containedInGit', () => {
 		expect(containedInGit('base', 'head', gitThat({}))).toBe(true);
 	});
 
+	it('answers yes when the head adds only merges of commits the base holds', () => {
+		expect(
+			containedInGit(
+				'base',
+				'head',
+				gitThat({ ancestorExit: 1 }),
+				() => true,
+			),
+		).toBe(true);
+	});
+
 	it('answers no on git exit 1, which is git saying no', () => {
 		expect(
-			containedInGit('base', 'head', gitThat({ ancestorExit: 1 })),
+			containedInGit(
+				'base',
+				'head',
+				gitThat({ ancestorExit: 1 }),
+				() => false,
+			),
 		).toBe(false);
 	});
 
