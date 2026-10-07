@@ -6,6 +6,12 @@ name: Pages
 # drift behind the code.
 #
 # One-time setup: repo Settings → Pages → Source = "GitHub Actions".
+#
+# Until that is done the site is still built in strict mode, which is the
+# check, and the publishing steps are skipped with a notice. They used to
+# run anyway and fail with "Get Pages site failed: Not Found", so every
+# promotion left a red run on main for a setting nobody had chosen yet
+# (2026-10-07, x00879 S12).
 
 on:
     push:
@@ -25,6 +31,8 @@ jobs:
         name: build site
         runs-on: ubuntu-latest
         timeout-minutes: 15
+        outputs:
+            enabled: ${{ steps.pages.outputs.enabled }}
         steps:
             - uses: actions/checkout@v7
 
@@ -36,7 +44,20 @@ jobs:
             - name: Install dependencies
               run: bun install --frozen-lockfile
 
+            - name: Is GitHub Pages enabled?
+              id: pages
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  if gh api "repos/${GITHUB_REPOSITORY}/pages" >/dev/null 2>&1; then
+                    echo "enabled=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "enabled=false" >> "$GITHUB_OUTPUT"
+                    echo "::notice title=Pages not enabled::the site is built and checked, not published. Enable it in Settings → Pages → Source = GitHub Actions."
+                  fi
+
             - name: Configure Pages
+              if: steps.pages.outputs.enabled == 'true'
               uses: actions/configure-pages@v6
 
             # The site imports the public API, which resolves to dist/.
@@ -49,6 +70,7 @@ jobs:
               run: bun run site:strict
 
             - name: Upload Pages artifact
+              if: steps.pages.outputs.enabled == 'true'
               uses: actions/upload-pages-artifact@v5
               # Astro emits the static site to `build/apps/web/` (see AGENTS.md
               # → "Build / dist layout"). The old `apps/web/dist/` path is no
@@ -59,6 +81,7 @@ jobs:
     deploy:
         name: deploy
         needs: build
+        if: needs.build.outputs.enabled == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 15
         environment:

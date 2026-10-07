@@ -2,10 +2,12 @@
 #
 # Automated dependency updates for the delendai monorepo.
 # Two ecosystems are in scope:
-#   - `npm`    → covers the bun-managed `package.json` workspaces
-#                (packages/*, plugins/*, apps/*, extensions/*, examples/*).
-#                Dependabot opens PRs against the manifest; `bun install`
-#                regenerates `bun.lock`.
+#   - `bun`    → covers the `package.json` workspaces (packages/*,
+#                plugins/*, apps/*, extensions/*, examples/*) and updates
+#                `bun.lock` with them. It used to be `npm`, which cannot
+#                update a `bun.lock`: after the 2026-10-07 promotion
+#                Dependabot could not even evaluate the security update
+#                for @modelcontextprotocol/sdk (x00879 S10).
 #   - `github-actions` → keeps `.github/workflows/*.yml` on current
 #                action SHAs.
 #
@@ -21,7 +23,7 @@
 # and a dependency bump is work like any other.
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  - package-ecosystem: "bun"
     directory: "/"
     target-branch: "develop"
     schedule:

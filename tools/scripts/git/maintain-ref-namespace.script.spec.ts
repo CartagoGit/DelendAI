@@ -200,7 +200,8 @@ describe('isSpent — a forward sync is history, not content', () => {
 			'-m',
 			'forward-sync',
 		);
-		const name = 'delendai/pr/forward-sync-0720e8436';
+		const name =
+			'delendai/pr/delendai/sync/forward-0720e8436-g1/carries-the-release-back';
 		// It adds no file, and its release commit changes none: that is
 		// history, kept until the integration branch holds it, by name or not.
 		expect(isSpent(root, 'refs/remotes/origin/develop', sync)).toBe(false);
