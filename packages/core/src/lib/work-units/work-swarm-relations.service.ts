@@ -160,42 +160,65 @@ export const unlandedElsewhere = (
 			!units.some((unit) => sameUnit(unit, publication)),
 	);
 
-/** The swarm as lines a person reads. */
-export const describeSwarm = (view: ISwarmView): readonly string[] => [
-	`integration      ${view.integration}`,
-	`units of work    ${String(view.units.length)}`,
-	...view.units.map(
-		(unit) =>
-			`  ${unit.agent}  ${unit.subject}  +${String(unit.ahead)}/-${String(unit.behind)}  ${String(unit.paths.length)} path(s)`,
-	),
-	`publications     ${String(view.published.length)}`,
-	...view.published.map(
-		(unit) =>
-			`  ${unit.agent}  ${unit.subject}  +${String(unit.ahead)}/-${String(unit.behind)}  ${String(unit.paths.length)} path(s)`,
-	),
-	...(view.overlaps.length === 0
-		? ['overlaps         none']
-		: [
-				`overlaps         ${String(view.overlaps.length)} path(s) more than one unit of work is changing:`,
-				...view.overlaps
-					.slice(0, LISTED_OVERLAPS)
-					.map(
-						(overlap) =>
-							`  ${overlap.path} — ${String(overlap.refs.length)} units`,
-					),
-				...(view.overlaps.length > LISTED_OVERLAPS
-					? [
-							`  … ${String(view.overlaps.length - LISTED_OVERLAPS)} more; --json lists every path and unit`,
-						]
-					: []),
-			]),
-	...(view.relations.length === 0
-		? ['to sort out      nothing']
-		: [
-				`to sort out      ${String(view.relations.length)}:`,
-				...view.relations.flatMap((relation) => [
-					`  ${relation.kind.padEnd(9)} ${relation.detail}`,
-					...relation.refs.map((ref) => `            ${ref}`),
+/**
+ * The swarm as lines a person reads. Units in `ended` (delivered, or left
+ * by their owner) are counted on one line and listed only with `all`: an
+ * agent asking what is going on is not paid for every swarm's history.
+ */
+export const describeSwarm = (
+	view: ISwarmView,
+	options: {
+		readonly ended?: ReadonlySet<string>;
+		readonly all?: boolean;
+	} = {},
+): readonly string[] => {
+	const ended = options.ended ?? new Set<string>();
+	const hidden =
+		options.all === true
+			? []
+			: view.units.filter((unit) => ended.has(unit.ref));
+	const listed = view.units.filter((unit) => !hidden.includes(unit));
+	return [
+		`integration      ${view.integration}`,
+		`units of work    ${String(view.units.length)}`,
+		...listed.map(
+			(unit) =>
+				`  ${unit.agent}  ${unit.subject}  +${String(unit.ahead)}/-${String(unit.behind)}  ${String(unit.paths.length)} path(s)`,
+		),
+		...(hidden.length === 0
+			? []
+			: [
+					`  … ${String(hidden.length)} ended (delivered or abandoned); --all lists them`,
 				]),
-			]),
-];
+		`publications     ${String(view.published.length)}`,
+		...view.published.map(
+			(unit) =>
+				`  ${unit.agent}  ${unit.subject}  +${String(unit.ahead)}/-${String(unit.behind)}  ${String(unit.paths.length)} path(s)`,
+		),
+		...(view.overlaps.length === 0
+			? ['overlaps         none']
+			: [
+					`overlaps         ${String(view.overlaps.length)} path(s) more than one unit of work is changing:`,
+					...view.overlaps
+						.slice(0, LISTED_OVERLAPS)
+						.map(
+							(overlap) =>
+								`  ${overlap.path} — ${String(overlap.refs.length)} units`,
+						),
+					...(view.overlaps.length > LISTED_OVERLAPS
+						? [
+								`  … ${String(view.overlaps.length - LISTED_OVERLAPS)} more; --json lists every path and unit`,
+							]
+						: []),
+				]),
+		...(view.relations.length === 0
+			? ['to sort out      nothing']
+			: [
+					`to sort out      ${String(view.relations.length)}:`,
+					...view.relations.flatMap((relation) => [
+						`  ${relation.kind.padEnd(9)} ${relation.detail}`,
+						...relation.refs.map((ref) => `            ${ref}`),
+					]),
+				]),
+	];
+};

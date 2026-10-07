@@ -251,6 +251,26 @@ describe('describeSwarm', () => {
 		expect(lines).toContain('            two');
 	});
 
+	it('counts ended units on one line, and lists them only when asked', () => {
+		const ended = 'ns/wip/c/review/batch-all-g9/verdicts';
+		const swarm = {
+			...view(0),
+			units: [...view(0).units, unit(ended, [], 0)],
+		};
+		const folded = describeSwarm(swarm, { ended: new Set([ended]) });
+		expect(folded.some((line) => line.includes('batch-all-g9'))).toBe(
+			false,
+		);
+		expect(folded).toContain(
+			'  … 1 ended (delivered or abandoned); --all lists them',
+		);
+		const all = describeSwarm(swarm, {
+			ended: new Set([ended]),
+			all: true,
+		});
+		expect(all.some((line) => line.includes('batch-all-g9'))).toBe(true);
+	});
+
 	it('summarises a long overlap list instead of burying the relations', () => {
 		const lines = describeSwarm(view(14));
 		expect(lines.filter((line) => line.endsWith('— 2 units'))).toHaveLength(

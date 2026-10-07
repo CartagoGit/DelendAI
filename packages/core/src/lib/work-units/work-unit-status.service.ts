@@ -130,19 +130,33 @@ export const statusOf = async (
  */
 export const swarm = async (
 	ctx: IWorkUnitContext,
+	args: readonly string[] = [],
 ): Promise<IWorkUnitResult> => {
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const view = readSwarm({ root: opened.root, policy: opened.policy });
-	const agents = rosterOf(
-		view,
-		await readUnitStandings({ root: opened.root, policy: opened.policy }),
+	const standings = await readUnitStandings({
+		root: opened.root,
+		policy: opened.policy,
+	});
+	const agents = rosterOf(view, standings);
+	const ended = new Set(
+		standings
+			.filter(
+				(entry) =>
+					entry.standing === 'delivered' ||
+					entry.standing === 'abandoned',
+			)
+			.map((entry) => entry.ref),
 	);
 	const data = { ...view, agents };
 	if (ctx.globals.json || ctx.globals.format === 'json') {
 		return { code: EXIT_CODE.OK, data };
 	}
-	const lines = [...describeSwarm(view), ...describeRoster(agents)];
+	const lines = [
+		...describeSwarm(view, { ended, all: args.includes('--all') }),
+		...describeRoster(agents),
+	];
 	process.stdout.write(`${lines.join('\n')}\n`);
 	return { code: EXIT_CODE.OK, data, suppressDefaultPrint: true };
 };
