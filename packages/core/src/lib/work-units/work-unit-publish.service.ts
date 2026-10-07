@@ -26,6 +26,7 @@ import {
 	isReviewUnitBranch,
 	outsideReviewScope,
 } from '../development-policy/git-guard-review-scope';
+import { endCarriedUnits } from './carried-units.service';
 
 import {
 	agentFor,
@@ -231,6 +232,18 @@ export const published = async (
 		keepWorkRef,
 		...(keepWorkRefBecause === undefined ? {} : { keepWorkRefBecause }),
 	});
+	// The other units of this agent and proposal it carried end with it.
+	const carried =
+		outcome.published && outcome.tip !== null
+			? await endCarriedUnits({
+					root,
+					cwd: ctx.cwd,
+					policy,
+					workRef,
+					tip: outcome.tip,
+					remote,
+				})
+			: [];
 	const publication = {
 		unit: target.unit,
 		reason: target.reason,
@@ -294,6 +307,7 @@ export const published = async (
 		...(failure === undefined ? {} : { error: failure }),
 		data: {
 			...outcome,
+			...(carried.length === 0 ? {} : { carried }),
 			publication,
 			...(pullRequest === undefined ? {} : { pullRequest }),
 		},
