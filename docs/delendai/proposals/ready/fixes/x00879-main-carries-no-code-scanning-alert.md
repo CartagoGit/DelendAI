@@ -16,11 +16,12 @@ Develop reaches main with no open code scanning alert: the 48 alerts open on mai
 
 ## why
 
-TODO: why this work matters now.
+The owner promotes develop to main only from a stable point, and main is where GitHub reports code scanning: 48 alerts are open there (3 errors: html built from input, request forgery, command-line injection; 44 warnings; 1 note), every one of them on code develop still carries. CodeQL runs only on pushes and pull requests to main, so develop was last analysed on 2026-09-29 and each alert reached the owner after the code had long landed.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Dismissing an alert to make the count drop: each one is fixed in the code, or, where the scanner is wrong, dismissed on the forge with the reason a reviewer can check.
+- Promoting develop to main: the owner's decision, made once this lands and develop's full run is green.
 
 ## slices
 
