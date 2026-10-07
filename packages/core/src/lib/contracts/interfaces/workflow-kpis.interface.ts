@@ -13,4 +13,17 @@ export interface IWorkflowKpis {
 	readonly agents: number;
 	/** Roster entries that joined and produced nothing. */
 	readonly agentsThatProducedNothing: number;
+	/** What the integration branch took in that coordinated, not delivered. */
+	readonly coordination?: ICoordinationCost | undefined;
+}
+
+/** The commits of a window, and the share that only coordinated. */
+export interface ICoordinationCost {
+	readonly windowDays: number;
+	readonly commits: number;
+	readonly merges: number;
+	/** Regenerated views and the tools' own records (claims, verdicts, transitions). */
+	readonly bookkeeping: number;
+	/** (merges + bookkeeping) / commits, to three decimals; 0 with no commits. */
+	readonly tax: number;
 }
