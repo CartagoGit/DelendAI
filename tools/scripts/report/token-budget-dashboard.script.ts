@@ -6,9 +6,8 @@ import {
 	hydrateKpis,
 	PRESET_CATALOG,
 	TOKEN_BUDGETS,
-	withFileMutex,
-	writeFileAtomic,
 } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 import {
 	createPluginMetrics,
 	type IGovernedToolsListBudget,

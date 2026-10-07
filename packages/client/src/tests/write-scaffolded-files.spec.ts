@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	scaffoldPluginFiles,
-	type IBatchAtomicWriter,
-	type IBatchOperation,
-	type IBatchWriteResult,
-} from '@delendai/core/public';
+import { scaffoldPluginFiles } from '@delendai/core/public';
+import type {
+	IBatchAtomicWriter,
+	IBatchOperation,
+	IBatchWriteResult,
+} from '@delendai/core/contracts';
 import {
 	writeScaffoldedFiles,
 	writeScaffoldedFilesOrThrow,

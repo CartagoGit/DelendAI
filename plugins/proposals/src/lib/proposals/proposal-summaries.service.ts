@@ -12,7 +12,7 @@
  */
 import { join } from 'node:path';
 
-import type { IProposalSummary } from '@delendai/core/public';
+import type { IProposalSummary } from '@delendai/core/contracts';
 
 import {
 	readProposalIndex,

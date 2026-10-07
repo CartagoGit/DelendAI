@@ -2,7 +2,7 @@ import type {
 	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import { escapeHtml } from '../commands/types';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';

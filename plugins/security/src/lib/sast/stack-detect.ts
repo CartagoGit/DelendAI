@@ -1,7 +1,8 @@
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { SafeWorkspaceReader, safeListDir } from '@delendai/core/public';
+import { safeListDir } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type {
 	IDetectedStack,

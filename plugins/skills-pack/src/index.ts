@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { definePlugin } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 
 import { SKILLS_PACK_SKILLS } from './skills/catalog';
 

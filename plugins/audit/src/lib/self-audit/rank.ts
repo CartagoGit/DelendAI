@@ -16,7 +16,8 @@
  *
  * Tie-breaker: same score -> lexicographic ruleId wins.
  */
-import type { FindingSeverity, IFinding } from '@delendai/core/public';
+import type { FindingSeverity } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 import {
 	DEFAULT_BACKLOG_WEIGHTS,

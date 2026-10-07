@@ -22,8 +22,8 @@ import {
 	toolJson,
 	type DetailProjections,
 	type IRoutingDecision,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import type { IProviderCapabilities } from '@delendai/core/public';
 import z from 'zod';
 

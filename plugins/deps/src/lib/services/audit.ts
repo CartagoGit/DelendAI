@@ -9,13 +9,12 @@
  * exactly like `deps_outdated`) — `bun audit` queries the advisory registry.
  */
 import { runExternalTool, toScanResult } from '@delendai/core/public';
+import type { FindingSeverity, IScanResult } from '@delendai/core/public';
 import type {
-	FindingSeverity,
 	IArgvExec,
 	IExternalTool,
 	IFinding,
-	IScanResult,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 /** One advisory entry as emitted by `bun audit --json`. */
 interface IBunAdvisory {

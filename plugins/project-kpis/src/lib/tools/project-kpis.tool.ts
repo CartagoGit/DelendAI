@@ -1,7 +1,7 @@
 // effect-boundary-authorized: Probes for persisted KPI source artifacts before delegating parsing to the owning usage and history readers.
 import { access } from 'node:fs/promises';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	joinUnderRoot,
 	joinRel,

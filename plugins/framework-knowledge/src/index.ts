@@ -1,6 +1,7 @@
 import z from 'zod';
 
-import { definePlugin, joinUnderRoot } from '@delendai/core/public';
+import { joinUnderRoot } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 
 import { buildGuidanceRegistration } from './lib/tools/guidance.tool';
 import { buildSourceRegistration } from './lib/tools/source.tool';
