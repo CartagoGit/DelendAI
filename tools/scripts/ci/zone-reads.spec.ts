@@ -138,7 +138,7 @@ describe('a workflow edit', () => {
 	it('leaves the test runner as it was when only a lint step changed', () => {
 		expect(
 			testRunnerChanged(
-				workflow('bun run lint:docs', 'bun run test'),
+				workflow('bun run lint:brand', 'bun run test'),
 				workflow('bun run lint:privacy', 'bun run test'),
 			),
 		).toBe(false);
@@ -147,8 +147,8 @@ describe('a workflow edit', () => {
 	it('changes the test runner when the zone job changed', () => {
 		expect(
 			testRunnerChanged(
-				workflow('bun run lint:docs', 'bun run test'),
-				workflow('bun run lint:docs', 'bun run test --shard'),
+				workflow('bun run lint:brand', 'bun run test'),
+				workflow('bun run lint:brand', 'bun run test --shard'),
 			),
 		).toBe(true);
 	});
