@@ -57,6 +57,7 @@ import { createDevelopmentPolicyMigrator } from './migrators/development-policy.
 import { createHostConfigMigrator } from './migrators/host-config.migrator';
 import { createPackageManifestMigrator } from './migrators/package-manifest.migrator';
 import { createVscodeMigrator } from './migrators/vscode.migrator';
+import { createGitignoreMigrator } from './migrators/gitignore.migrator';
 import { createStateDirMigrator } from './migrators/state-dir.migrator';
 import {
 	DELENDAI_TO_DELENDAI_V1_ID,
@@ -93,6 +94,8 @@ import {
 export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	delendaiToDelendAIV1,
 	createCacheAndDocsMigrator(),
+	// The ignore lines that named the directories it just renamed.
+	createGitignoreMigrator(),
 	createConfigFileMigrator(),
 	createPackageManifestMigrator(),
 	createHostConfigMigrator(),
