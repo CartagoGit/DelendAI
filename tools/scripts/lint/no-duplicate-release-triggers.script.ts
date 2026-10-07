@@ -17,6 +17,16 @@
  * own. It is a cost and a legibility problem, and those are the ones
  * that accumulate quietly.
  *
+ * One workflow is exempt, and must have the doubled shape: the one that
+ * reports a required check of the release branch. The forge counts a
+ * check towards a pull request only when its run belongs to that pull
+ * request or to a push, and the integration branch no longer gets push
+ * runs: the queue merges with the workflow token, whose pushes start no
+ * workflow, and certifies develop with a dispatched run, which the forge
+ * does not associate with the promotion. On 2026-10-07 the promotion
+ * (#911) sat BLOCKED with `delendai-validate` "expected", although the
+ * dispatched run had reported it green on the very same commit.
+ *
  * The branch names come from the canonical development policy's own
  * projection, not from literals here: a repository that renames its
  * branches must not have to remember this file.
@@ -36,9 +46,11 @@ import { parseWorkflowYaml, type YamlValue } from '../ci/workflow-yaml';
 
 const WORKFLOWS_DIR = join(repoRoot(), '.github/workflows');
 
-const releaseBranch =
-	BRANCH_PROTECTION.branches.find((branch) => branch.name === 'main')?.name ??
-	'main';
+const releasePolicy = BRANCH_PROTECTION.branches.find(
+	(branch) => branch.name === 'main',
+);
+const releaseBranch = releasePolicy?.name ?? 'main';
+const releaseChecks: readonly string[] = releasePolicy?.required_checks ?? [];
 const integrationBranch =
 	BRANCH_PROTECTION.branches.find(
 		(branch) => branch.protected && branch.name !== releaseBranch,
@@ -81,16 +93,56 @@ export const doublesOnRelease = (
 	);
 };
 
+/** The required checks of the release branch this workflow's jobs report. */
+export const releaseChecksReported = (
+	workflow: Record<string, YamlValue>,
+	checks: readonly string[],
+): readonly string[] => {
+	const names = Object.values(asRecord(workflow.jobs)).map(
+		(job) => asRecord(job).name,
+	);
+	return checks.filter((check) => names.includes(check));
+};
+
+/** Whether the workflow runs on pull requests into the release branch. */
+export const runsOnReleasePullRequests = (
+	workflow: Record<string, YamlValue>,
+	release: string,
+): boolean => branchesOf(asRecord(workflow.on).pull_request).includes(release);
+
 export const findDuplicates = (
 	files: readonly { readonly name: string; readonly raw: string }[],
+	checks: readonly string[] = releaseChecks,
 ): readonly IDuplicateTrigger[] =>
 	files
-		.filter((file) =>
-			doublesOnRelease(parseWorkflowYaml(file.raw), {
-				integration: integrationBranch,
-				release: releaseBranch,
-			}),
-		)
+		.filter((file) => {
+			const workflow = parseWorkflowYaml(file.raw);
+			return (
+				releaseChecksReported(workflow, checks).length === 0 &&
+				doublesOnRelease(workflow, {
+					integration: integrationBranch,
+					release: releaseBranch,
+				})
+			);
+		})
+		.map((file) => ({ workflow: file.name }));
+
+/**
+ * Workflows that report a required check of the release branch without
+ * running on its pull requests: the promotion waits on them for good.
+ */
+export const findUnreportedReleaseChecks = (
+	files: readonly { readonly name: string; readonly raw: string }[],
+	checks: readonly string[] = releaseChecks,
+): readonly IDuplicateTrigger[] =>
+	files
+		.filter((file) => {
+			const workflow = parseWorkflowYaml(file.raw);
+			return (
+				releaseChecksReported(workflow, checks).length > 0 &&
+				!runsOnReleasePullRequests(workflow, releaseBranch)
+			);
+		})
 		.map((file) => ({ workflow: file.name }));
 
 export const formatReport = (
@@ -134,7 +186,13 @@ export const main = (): number => {
 	}));
 	const duplicates = findDuplicates(files);
 	console.log(formatReport(duplicates));
-	return duplicates.length === 0 ? 0 : 1;
+	const unreported = findUnreportedReleaseChecks(files);
+	for (const each of unreported) {
+		console.log(
+			`✖ no-duplicate-release-triggers: .github/workflows/${each.workflow} reports a required check of \`${releaseBranch}\` (${releaseChecks.join(', ')}) but does not run on pull requests into it, so the promotion waits for a check that never reports there.`,
+		);
+	}
+	return duplicates.length === 0 && unreported.length === 0 ? 0 : 1;
 };
 
 if (import.meta.main) process.exit(main());
