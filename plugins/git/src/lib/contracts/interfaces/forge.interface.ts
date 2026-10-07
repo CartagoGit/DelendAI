@@ -3,7 +3,7 @@
  * (`pr_list`, `pr_view`; r00012 consumer). Kept under contracts/interfaces
  * per the repo's types-in-contracts convention.
  */
-import type { IArgvExec } from '@delendai/core/public';
+import type { IArgvExec } from '@delendai/core/contracts';
 
 /** A pull request as summarised by `gh pr list`. */
 export interface IPullRequest {

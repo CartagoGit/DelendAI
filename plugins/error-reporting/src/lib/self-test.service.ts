@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { readFile, rm } from 'node:fs/promises';
 
-import { writeFileAtomic } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
 
 import type {
 	ISelfTestCheck,

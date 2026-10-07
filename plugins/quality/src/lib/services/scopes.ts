@@ -1,4 +1,4 @@
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 import { parseConfigFile } from '@delendai/core/public';
 
 import type { IScopeCommand } from './runner';

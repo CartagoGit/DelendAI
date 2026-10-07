@@ -9,7 +9,7 @@
  * minute. Git knows better. A slice whose files have no uncommitted
  * change has nothing left to persist, whoever committed it.
  */
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 /**
  * True when every path the slice names is clean: no staged, unstaged or

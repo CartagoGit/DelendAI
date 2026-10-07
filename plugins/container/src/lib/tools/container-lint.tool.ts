@@ -16,7 +16,7 @@ import { relative, resolve, sep } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolError, toolJson } from '@delendai/core/public';
 
 import { realContainerInspectDeps } from '../inspect/real-container-deps';

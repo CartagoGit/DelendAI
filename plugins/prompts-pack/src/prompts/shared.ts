@@ -1,6 +1,6 @@
 import type z from 'zod';
 
-import type { IPromptRegistration } from '@delendai/core/public';
+import type { IPromptRegistration } from '@delendai/core/contracts';
 
 export interface IPromptArgumentSpec {
 	readonly name: string;

@@ -8,10 +8,8 @@
  * `cancel_invocation`, `format_handoff`, `list_models`, `set_provider_state`
  * (S6). Only `advise_spend` (S7) remains.
  */
-import type {
-	IProviderCapabilities,
-	IToolRegistration,
-} from '@delendai/core/public';
+import type { IProviderCapabilities } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { HealthStore } from '../healthcheck/store';
 import type { ProbeRunner } from '../healthcheck/probe';

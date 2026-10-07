@@ -4,8 +4,9 @@
  * shared `runExternalTool` seam, and file reads come from the filesystem.
  * The only module here that touches the OS.
  */
-import { runExternalTool, SafeWorkspaceReader } from '@delendai/core/public';
-import type { IExternalTool } from '@delendai/core/public';
+import { runExternalTool } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import type { IExternalTool } from '@delendai/core/contracts';
 
 import type { ISecretScanDeps } from '../contracts/interfaces/secrets.interface';
 

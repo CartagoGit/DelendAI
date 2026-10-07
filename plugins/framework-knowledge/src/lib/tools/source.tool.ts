@@ -5,7 +5,7 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolError, toolOk } from '@delendai/core/public';
 
 import type { IKnowledgeToolOptions } from '../contracts/interfaces/knowledge-cache.interface';

@@ -7,7 +7,7 @@
  * `wip-persistence.ts`, so no import site changes.
  */
 
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 import type { IWorkRefAgentId } from '../contracts/interfaces/work-ref-naming.interface';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type {

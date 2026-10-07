@@ -18,7 +18,8 @@
 
 import { basename, dirname } from 'node:path';
 
-import { isLockEntryExpired, SafeWorkspaceReader } from '@delendai/core/public';
+import { isLockEntryExpired } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import type { ILockExpiryPolicy } from '@delendai/core/public';
 
 interface ILiveLockEntry {

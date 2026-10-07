@@ -1,4 +1,4 @@
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 /** What removing integrated work refs needs. */
 export interface IReapIntegratedWorkRefsInput {
