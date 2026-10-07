@@ -308,6 +308,12 @@ export {
 if (import.meta.main) {
 	void runCli(process.argv.slice(2), process.cwd());
 }
+export {
+	applyGlobalConfig,
+	createFileSystemHostConfigIO,
+	defaultHostConfigs,
+	planGlobalConfig,
+} from './lib/workspace-migration/host-scope/global-config.migrator';
 
 export { CALL_WRITES_NOT_COMMITTED } from './lib/contracts/constants/call-writes.constant';
 export { startServerLogIn } from './lib/shared/server-log';
