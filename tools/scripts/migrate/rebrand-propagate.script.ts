@@ -179,6 +179,9 @@ const INTENTIONAL_LEGACY_PATHS = [
 	// mid-commit. The fixture has to be a genuine legacy workspace, which
 	// means the old spelling is the assertion.
 	'packages/cli/src/index.spec.ts',
+	// Proves that `migrate status` reports the old name a live file still
+	// carries, so its fixture has to carry it.
+	'packages/cli/src/commands/migrate.command.spec.ts',
 	// Flags the old shell-completion name wherever it is left behind, so it
 	// has to spell it.
 	'tools/scripts/lint/i18n-english-prose.script.ts',

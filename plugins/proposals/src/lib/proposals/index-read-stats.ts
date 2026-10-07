@@ -62,6 +62,7 @@ const PARITY_BY_OUTCOME: Readonly<
 	'json-pinned': 'not-compared',
 	'sql-parity': 'parity',
 	'sql-divergence-reported': 'divergent',
+	'sql-registry-stale': 'not-compared',
 	'sql-refused': 'unverified',
 	'fallback-unavailable': 'unverified',
 	'fallback-metadata-missing': 'unverified',
