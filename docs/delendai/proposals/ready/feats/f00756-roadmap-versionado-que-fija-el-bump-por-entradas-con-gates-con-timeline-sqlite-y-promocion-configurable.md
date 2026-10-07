@@ -114,25 +114,33 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - global_gate: type
 
 ### S1 — Contratos, esquema y máquina de estados del roadmap
-- **Status**: pending
-- **Files**: `packages/roadmap/package.json`, `packages/roadmap/tsconfig.json`, `packages/roadmap/vitest.config.ts`, `packages/roadmap/src/lib/contracts/interfaces/roadmap.interface.ts`, `packages/roadmap/src/lib/contracts/schemas/roadmap.schema.ts`, `packages/roadmap/src/lib/contracts/constants/roadmap.constants.ts`, `packages/roadmap/src/lib/state-machine/roadmap-state-machine.service.ts`, `packages/roadmap/src/lib/state-machine/roadmap-state-machine.spec.ts`, `packages/roadmap/tests/src/lib/contracts/roadmap.schema.spec.ts`
-- **Gate**: type
+- **Status**: review
+- **Files**: `packages/roadmap/package.json`, `packages/roadmap/tsconfig.json`, `packages/roadmap/vitest.config.ts`, `tsconfig.base.json`, `packages/roadmap/src/index.ts`, `packages/roadmap/src/public/index.ts`, `packages/roadmap/src/lib/contracts/interfaces/roadmap.interface.ts`, `packages/roadmap/src/lib/contracts/schemas/roadmap.schema.ts`, `packages/roadmap/src/lib/contracts/constants/roadmap.constant.ts`, `packages/roadmap/src/lib/state-machine/roadmap-state-machine.service.ts`, `packages/roadmap/src/lib/validation/roadmap-reader.service.ts`, `packages/roadmap/src/lib/validation/bump-hint-validator.service.ts`, `packages/roadmap/tests/src/lib/state-machine/roadmap-state-machine.service.spec.ts`, `packages/roadmap/tests/src/lib/contracts/roadmap.schema.spec.ts`, `packages/roadmap/tests/src/lib/validation/bump-hint-validator.spec.ts`, `packages/roadmap/AGENT.md`
+- **Gate**: `bun x vitest run --root packages/roadmap`
 - acceptance:
   - "El esquema Zod es `.strict()` y rechaza claves desconocidas en entrada, en gates y en la estimación."
   - "La máquina de estados declara explícitamente qué transiciones son legales y devuelve un motivo de rechazo cuando no lo son; no lanza excepciones para una transición inválida."
   - "Existe un validador que rechaza un `bumpHint` incoherente con el conjunto de `kind` presentes en el horizonte."
   - "El esquema declara `schemaVersion` y la lectura rechaza una versión mayor con un motivo accionable, en vez de adivinar."
+- shipped: the `@delendai/roadmap` package with a strict Zod schema, a closed set of entry kinds, states and gate kinds, the state machine (`checkTransition` returns a reason, never throws), `readRoadmap` (refuses a newer `schemaVersion` with the way out) and `validateBumpHints`.
+- re-cut: `validateBumpHints` takes the bump deriver as a parameter instead of computing a bump itself. The code showed that any kind-to-bump mapping inside S1 would be a second copy of the changelog plugin's rule, which the non-goals forbid; S2 supplies the real deriver on top of `inferBump`. Specs live under `tests/src/lib/**` mirroring `src/lib`, because the file conventions give the state machine spec a `.service.spec.ts` name.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Álgebra de gates y derivación de la intención de bump
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
-- **Files**: `packages/roadmap/src/lib/gates/gate-evaluator.service.ts`, `packages/roadmap/src/lib/gates/gate-evaluator.spec.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.service.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.spec.ts`
-- **Gate**: type
+- note: this slice also owns the `IRoadmapBumpDeriver` the S1 validator receives: kinds become synthetic conventional commits and `inferBump` decides.
+- **Files**: `packages/roadmap/package.json`, `bun.lock`, `packages/roadmap/AGENT.md`, `packages/roadmap/src/public/index.ts`, `packages/roadmap/src/lib/contracts/constants/gate.constant.ts`, `packages/roadmap/src/lib/contracts/constants/bump-intent.constant.ts`, `packages/roadmap/src/lib/contracts/interfaces/gate.interface.ts`, `packages/roadmap/src/lib/contracts/interfaces/bump-intent.interface.ts`, `packages/roadmap/src/lib/gates/gate-evaluator.service.ts`, `packages/roadmap/src/lib/bump/roadmap-bump-intent.service.ts`, `packages/roadmap/tests/src/lib/gates/gate-evaluator.service.spec.ts`, `packages/roadmap/tests/src/lib/bump/roadmap-bump-intent.service.spec.ts`
+- **Gate**: `bun x vitest run --root packages/roadmap`
 - acceptance:
   - "Cada gate devuelve un estado ternario (`pass` | `fail` | `unknown`) con un motivo; nunca un booleano desnudo."
   - "Un gate sin evidencia devuelve `unknown`, no `fail` — la ausencia de datos no es un incumplimiento."
   - "La intención de bump se deriva calling `inferBump` de `@delendai/changelog/public`; un test falla si el paquete se reimplementa localmente en lugar de importarse."
   - "El payload de bump nombra siempre su `authority` (`@delendai/changelog::inferBump`) para que ningún consumidor pueda leerlo como permiso para escribir una versión."
+- shipped: gate evaluator (ternary verdicts, unknown without evidence) and the bump intent built on the changelog plugin's inferBump, carrying its authority. The spec mocks the plugin to prove the bump is delegated, not recomputed.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Store de la autoridad: lectura y escritura durable del fichero de roadmap
 - **Status**: pending
