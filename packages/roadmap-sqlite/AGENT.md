@@ -1,10 +1,6 @@
 # AGENT.md — package `packages/roadmap-sqlite`
 
-> Below the `<!-- delendai:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- delendai:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - SQLite driver for the roadmap timeline: the same append-only contract as the markdown timeline, kept in a database under the plugin cache directory.
