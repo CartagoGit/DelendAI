@@ -172,15 +172,16 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 
 ### S5 — Driver SQLite del timeline
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S4]
-- **Files**: `packages/roadmap-sqlite/package.json`, `packages/roadmap-sqlite/tsconfig.json`, `packages/roadmap-sqlite/vitest.config.ts`, `packages/roadmap-sqlite/src/lib/schema.ts`, `packages/roadmap-sqlite/src/lib/migrations.service.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`, `packages/roadmap-sqlite/tests/src/lib/sqlite-timeline.store.spec.ts`
-- **Gate**: type
+- **Files**: `packages/roadmap-sqlite/package.json`, `packages/roadmap-sqlite/tsconfig.json`, `packages/roadmap-sqlite/vitest.config.ts`, `packages/roadmap-sqlite/AGENT.md`, `packages/roadmap-sqlite/src/index.ts`, `packages/roadmap-sqlite/src/public/index.ts`, `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite.constant.ts`, `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite-migrations.constant.ts`, `packages/roadmap-sqlite/src/lib/contracts/interfaces/roadmap-sqlite.interface.ts`, `packages/roadmap-sqlite/src/lib/migrations.service.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`, `packages/roadmap-sqlite/tests/src/lib/sqlite-timeline.store.spec.ts`, `vitest.shared.ts`, `tsconfig.base.json`, `bun.lock`
+- **Gate**: `bun run test:sqlite`
 - acceptance:
   - "El driver implementa la MISMA interfaz del timeline en S4, intercambiable con la variante markdown sin que ningún consumidor cambie."
   - "Las migraciones son versionadas e idempotentes, siguiendo el patrón de `packages/proposals-sqlite/src/lib/migrations.ts`."
   - "La base vive bajo `ctx.pluginCacheDir`; nunca en la raíz del workspace ni en un dot-folder propio."
   - "Hay un test de upgrade que demuestra que una base de una versión anterior migra correctamente."
+- shipped: the SQLite timeline driver (SqliteTimelineStore) behind the same IRoadmapTimelineStore contract, with versioned idempotent migrations on PRAGMA user_version, append-only triggers inside the database, and the database fixed under the plugin cache directory. Re-cut: the package is Bun-only like proposals-sqlite, so its specs run under test:sqlite (packages/roadmap-sqlite/ is listed in BUN_OWNED_SPECS) and its vitest project is empty. Schema 1 kept only the event JSON and schema 2 adds indexed horizon and entry columns; no schema 1 database exists in the wild, the step is there so the upgrade path is exercised from the first release, and the upgrade spec builds a real schema 1 database by hand.
 
 ### S6 — El roadmap como IStateProducer del State Engine
 - **Status**: pending
