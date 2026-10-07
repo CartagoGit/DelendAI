@@ -124,6 +124,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "El esquema declara `schemaVersion` y la lectura rechaza una versión mayor con un motivo accionable, en vez de adivinar."
 - shipped: the `@delendai/roadmap` package with a strict Zod schema, a closed set of entry kinds, states and gate kinds, the state machine (`checkTransition` returns a reason, never throws), `readRoadmap` (refuses a newer `schemaVersion` with the way out) and `validateBumpHints`.
 - re-cut: `validateBumpHints` takes the bump deriver as a parameter instead of computing a bump itself. The code showed that any kind-to-bump mapping inside S1 would be a second copy of the changelog plugin's rule, which the non-goals forbid; S2 supplies the real deriver on top of `inferBump`. Specs live under `tests/src/lib/**` mirroring `src/lib`, because the file conventions give the state machine spec a `.service.spec.ts` name.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Álgebra de gates y derivación de la intención de bump
 - **Status**: pending
