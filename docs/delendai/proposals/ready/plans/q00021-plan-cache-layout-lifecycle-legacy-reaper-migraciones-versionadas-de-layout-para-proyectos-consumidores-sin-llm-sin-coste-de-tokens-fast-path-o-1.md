@@ -584,26 +584,45 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-implementer: claude-sonnet-5-5
 
 ### S1 — Contratos puros (entregable: `f00526`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
-  - `packages/core/src/lib/cache/cache-layout-manifest.ts` (constante inicial, NO destructivo)
-  - `packages/core/src/lib/cache/cache-layout-migration.ts` (helpers tipados)
-  - `packages/core/tests/src/lib/cache/cache-layout-migration.spec.ts`
-- **Tarea**: tipos puros. `IMigration` se reutiliza tal cual (no se duplica); `ICacheLayoutMigration extends IMigration` añade `fromEpoch/toEpoch/helpers`. `ICacheArtifactClass` enum + tabla de clasificación.
-- **Gate**: tests puros verdes (sin filesystem, sin SQLite).
-- **Aceptación**: ningún `fs` import en `cache-layout-migration.ts`. `IMigration.detect` se mantiene como contrato del probe barato.
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/src/lib/cache/cache-layout-migration.helper.ts`
+  - `packages/core/tests/src/lib/cache/cache-layout-migration.helper.spec.ts`
+- **Tarea**: tipos puros. `ICacheArtifactClass` + `ICacheLayoutManifest`, `ICacheLayoutMigration` (`fromEpoch`/`toEpoch`, `detect`/`plan`/`apply` sobre un contexto con `cacheDirAbs` y `helpers`), y las reglas puras: `assertDroppable` (falla en records/operational y en sus ancestros), `resolveMigrationChain` (cadena completa `N -> N+1`, error en hueco/duplicado/downgrade), `validateManifest`, `findOwningArtifact`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/cache-layout-migration.helper.spec.ts` (35 tests puros, sin filesystem ni SQLite).
+- **Aceptación**: ningún `fs` import en `cache-layout-migration.helper.ts`. `IMigration.detect` se mantiene como contrato del probe barato.
+- **Corrections to the design, following the code**:
+  - `ICacheLayoutMigration` does not `extends IMigration`: its `detect`/`plan`/`apply` take a narrower context (`ICacheLayoutMigrationContext`), and a function property cannot narrow its parameter in a subtype. It reuses `IMigration['id']` and `IMigrationPlanStep`, and S3 adapts a chain to the engine's journal.
+  - The context carries no `lifecycleState`: only the bootstrap reads and writes the epoch; a migration that could write it could skip its own successors.
+  - `migrateStore` and `importStoreToSqlite` are not in `ICacheLayoutHelpers`. No store moves to SQLite yet (epochs 6-8 are future work of q00019/q00020), so they would be untested surface; they arrive with the first migration that needs them.
+  - The manifest lists only artifacts present in the code today (`progress/` is q00020 and does not exist yet) and none that belong to the proposals domain: `lint:core-proposals-boundary` forbids core from naming that domain, so the proposal index, id counters and peer-review log are declared by the proposals plugin, not here. It lives in `contracts/constants/` because the file-conventions lint requires exported constants there.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Lifecycle state store (entregable: `f00527`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/contracts/interfaces/lifecycle-state.interface.ts`
+  - `packages/state/src/lib/lifecycle-state.interface.ts`
+  - `packages/state/src/index.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/src/lib/cache/file-lifecycle-state-store.service.ts`
+  - `packages/core/tests/src/lib/cache/file-lifecycle-state-store.service.spec.ts`
   - `packages/state-sqlite/src/lib/lifecycle-state-store.ts`
   - `packages/state-sqlite/src/lib/lifecycle-state-store.spec.ts`
-  - extender `STATE_SQLITE_SCHEMA_SQL` con `CREATE_LIFECYCLE_META_TABLE_SQL`
-- **Tarea**: `SqliteLifecycleStateStore implements ILifecycleStateStore`. Reutiliza la conexión de `packages/state-sqlite/src/lib/sqlite-driver.ts`. `withMigrationLock` usa `BEGIN IMMEDIATE`. Fallback a marker en `.delendai/cache-layout-applied.json` si SQLite no consolidado.
-- **Gate**: tests con SQLite in-memory (existente) + test de fallback con marker.
-- **Aceptación**: `getAppliedEpoch('cache-layout')` con epoch ya escrito retorna exactamente el número (no `null`).
+  - `packages/state-sqlite/src/lib/contracts/constants/lifecycle-meta.constant.ts`
+  - `packages/state-sqlite/src/lib/schema.ts`
+  - `packages/state-sqlite/src/public/index.ts`
+- **Tarea**: `ILifecycleStateStore` con dos implementaciones. `SqliteLifecycleStateStore` (sobre la conexión `bun:sqlite` que se le pasa; `withMigrationLock` = `BEGIN IMMEDIATE`, con cola en proceso) y `createFileLifecycleStateStore` (marker `.delendai/cache-layout-applied.json`, lock con el `withFileMutex` compartido). La tabla `lifecycle_meta` se crea con `IF NOT EXISTS` al abrir, sin tocar `STATE_SQLITE_SCHEMA_VERSION`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/file-lifecycle-state-store.service.spec.ts` y `bun test packages/state-sqlite/src/lib/lifecycle-state-store.spec.ts` (`bun run test:sqlite` lo incluye).
+- **Aceptación**: `getAppliedEpoch('cache-layout')` con epoch ya escrito retorna exactamente el número (no `null`); un marker dañado equivale a ausente; un fallo dentro del lock no avanza el epoch en SQLite.
+- **Corrections to the design, following the code**:
+  - The interface lives in `@delendai/state`, not in core: `@delendai/state-sqlite` depends on `state` and not on core, and both stores must implement the same type.
+  - The marker is the store core actually uses today. Nothing in the product opens `state.sqlite` through core (core has no SQLite driver and the driver is a shadow with no consumer yet), so S3 wires the file store; the SQLite store is ready for the day the state engine hands core a connection.
+  - The marker lock reuses `withFileMutex` (token ownership, heartbeat, stale takeover) rather than a new lock file protocol.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Integración en bootstrap (entregable: `f00528`)
 - **Status**: pending
