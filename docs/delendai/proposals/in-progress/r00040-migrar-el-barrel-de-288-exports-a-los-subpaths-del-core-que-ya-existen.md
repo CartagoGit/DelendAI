@@ -834,10 +834,10 @@ public/index.ts queda como:
   holds an audience (112 exports only the CLI, host and scripts read), so
   it is outside that ceiling by design.
 - shipped-in: `f2b416c4e241`
-- review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
-- review-log: requested_changes by gpt-5.4 — I cannot approve this slice as it stands in 25fafc647c2c. The proposal's acceptance still says that after S2 no migrated subpath should exceed roughly 60 exports, but the delivered note for S2 says 112 exports moved into @delendai/core/cli, so the declared acceptance is not met by the implementation as documented. The declared gate is also currently red on the latest delivery: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public` fails in `tests/src/public/deprecation.spec.ts` with `TypeError: Cannot read properties of undefined (reading 'ES2022')` at line 43. Please either narrow/update the acceptance to match the intended audience-based split and restore the gate to green, or change the delivery so the migrated subpath stays within the accepted bound.
 - review-attribution: claude-opus-5-5 from commit 25fafc647c2c names refs/heads/delendai/wip/claude-opus-5-5/implement/r00040-all-g1/the-public-entry-is-not-deprecated (25fafc647c2c038fe26c9090588939d93204fa14), opened by gpt-5.4
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- review-log: requested_changes by gpt-5.4 — I cannot approve this slice as it stands in 25fafc647c2c. The proposal's acceptance still says that after S2 no migrated subpath should exceed roughly 60 exports, but the delivered note for S2 says 112 exports moved into @delendai/core/cli, so the declared acceptance is not met by the implementation as documented. The declared gate is also currently red on the latest delivery: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public` fails in `tests/src/public/deprecation.spec.ts` with `TypeError: Cannot read properties of undefined (reading 'ES2022')` at line 43. Please either narrow/update the acceptance to match the intended audience-based split and restore the gate to green, or change the delivery so the migrated subpath stays within the accepted bound.
 
 ### S3 — Marcar el barrel como deprecado con fecha
 
