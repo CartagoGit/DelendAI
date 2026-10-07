@@ -183,6 +183,7 @@ describe('publishProposalOnRef', () => {
 		).toBe(false);
 		expect(calls.at(-1)).toEqual([
 			'push',
+			'--',
 			'origin',
 			'c0ffee1234567:refs/heads/delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
 		]);
@@ -280,6 +281,6 @@ describe('publishProposalOnRef', () => {
 
 		await publishProposalOnRef(request({ git: run, remote: 'upstream' }));
 
-		expect(calls.at(-1)?.[1]).toBe('upstream');
+		expect(calls.at(-1)?.[2]).toBe('upstream');
 	});
 });

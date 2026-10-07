@@ -355,7 +355,7 @@ describe('isolation', () => {
 		// ago": there must be no window in which the tree could change
 		// underneath the verdict.
 		const proveAt = code.indexOf('proveCommit(commit');
-		const pushAt = code.indexOf("git(['push', 'origin'");
+		const pushAt = code.indexOf("git(['push', '--', 'origin'");
 		expect(proveAt).toBeGreaterThan(-1);
 		expect(pushAt).toBeGreaterThan(proveAt);
 	});
@@ -395,7 +395,7 @@ describe('the publication path itself', () => {
 	it('proves a work branch before pushing it, and removes it only after the forge confirms', () => {
 		const flow = code.slice(code.indexOf('const publishWorkBranch'));
 		const proveAt = flow.indexOf('proveCommit(tipSha');
-		const pushAt = flow.indexOf("'push', 'origin', `${tipSha}");
+		const pushAt = flow.indexOf("'push', '--', 'origin', `${tipSha}");
 		const verifyAt = flow.indexOf('`refs/heads/${ref}`');
 		const deleteAt = flow.indexOf("'--delete'");
 		expect(proveAt).toBeGreaterThan(-1);
@@ -417,7 +417,7 @@ describe('the publication path itself', () => {
 		expect(push).not.toContain('force');
 		expect(push).not.toContain('-f');
 		expect(code).toContain(
-			"git(['push', 'origin', `${commit}:refs/heads/${ref}`])",
+			"git(['push', '--', 'origin', `${commit}:refs/heads/${ref}`])",
 		);
 	});
 
