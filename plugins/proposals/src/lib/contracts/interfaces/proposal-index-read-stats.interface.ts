@@ -8,6 +8,8 @@
  *
  *   - `json-pinned` — the source is pinned to `json`; SQL was not consulted.
  *   - `sql-parity` — SQL served and matched the JSON index.
+ *   - `sql-registry-stale` — SQL served; the JSON export predates the
+ *     projection's last reconcile, so it was not compared.
  *   - `sql-divergence-reported` — pinned to `sql`: SQL served although the
  *     JSON index disagrees.
  *   - `sql-refused` — pinned to `sql`: the projection could not serve, so
@@ -21,6 +23,7 @@ export type IProposalIndexReadOutcome =
 	| 'json-pinned'
 	| 'sql-parity'
 	| 'sql-divergence-reported'
+	| 'sql-registry-stale'
 	| 'sql-refused'
 	| 'fallback-unavailable'
 	| 'fallback-metadata-missing'

@@ -116,6 +116,8 @@ export interface ISqlProposalIndexResult {
 	readonly skipped: readonly string[];
 	readonly sourceCommit: string | null;
 	readonly logicalDigest: string | null;
+	/** When the run that produced it completed, in ms; null when unknown. */
+	readonly reconciledAt: number | null;
 }
 
 /**
@@ -196,13 +198,15 @@ export const readProposalIndexResultFromSql = async (
 		const skipped: string[] = [];
 		let sourceCommit: string | null = null;
 		let logicalDigest: string | null = null;
+		let reconciledAt: number | null = null;
 		try {
 			const run = db
 				.query<{
 					source_commit: string | null;
 					logical_digest: string | null;
+					completed_at: number | null;
 				}>(
-					`SELECT source_commit, logical_digest
+					`SELECT source_commit, logical_digest, completed_at
 					 FROM reconciliation_runs
 					 WHERE status = 'ok'
 					 ORDER BY completed_at DESC, id DESC
@@ -211,6 +215,7 @@ export const readProposalIndexResultFromSql = async (
 				.all()[0];
 			sourceCommit = run?.source_commit ?? null;
 			logicalDigest = run?.logical_digest ?? null;
+			reconciledAt = run?.completed_at ?? null;
 		} catch {
 			// Older projections may not have reconciliation metadata yet.
 		}
@@ -239,6 +244,7 @@ export const readProposalIndexResultFromSql = async (
 			skipped,
 			sourceCommit,
 			logicalDigest,
+			reconciledAt,
 		};
 	} catch {
 		// A schema that has the version but not the table/columns, a

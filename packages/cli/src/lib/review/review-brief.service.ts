@@ -18,12 +18,17 @@ export const briefFor = (
 	proposal: IQueueProposal,
 	unit: IUnit,
 	agent: string,
+	/** Each waiting slice's section of the document, when it was read. */
+	sections: Readonly<Record<string, string>> = {},
 ) => {
 	const who = `--agent=${agent} --session=${unit.session}`;
+	const withSections = Object.keys(sections).length > 0;
 	return {
 		proposal: proposal.id,
 		file: `${unit.path}/${proposal.file}`,
-		read: 'Read the proposal and, for each slice below, what its candidate commit delivered (`git show <commit>`). Run its gate. Judge it on what it delivered.',
+		read: withSections
+			? 'Read each slice section below and what its candidate commit delivered (`git show <commit>`); open the whole file only where a section refers to another part of it. Run its gate. Judge it on what it delivered.'
+			: 'Read the proposal and, for each slice below, what its candidate commit delivered (`git show <commit>`). Run its gate. Judge it on what it delivered.',
 		slices: proposal.slices
 			.filter((slice) => slice.verdict === 'needs-verdict')
 			.map((slice) => ({
@@ -37,6 +42,9 @@ export const briefFor = (
 				...(slice.acceptance === undefined
 					? {}
 					: { acceptance: slice.acceptance }),
+				...(sections[slice.sliceId] === undefined
+					? {}
+					: { section: sections[slice.sliceId] }),
 				commits: (slice.candidates ?? []).map((each) => each.commit),
 				approve: approveCall(proposal.id, slice, who),
 				changes: `delendai review changes ${proposal.id} ${slice.sliceId} ${who} --note="<what is missing, precisely>"`,
