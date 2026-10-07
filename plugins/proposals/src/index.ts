@@ -66,8 +66,8 @@ import { buildProposalBoardRegistration } from './lib/tools/proposal-board.tool'
 import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
 import type { IAutoWorkPersistMode } from './lib/tools/auto-work-persist';
-import { createDurationHistoryRecorder } from './lib/tools/proposal-transition-duration';
-import { DURATION_HISTORY_CACHE_FILE } from './lib/contracts/constants/transition-duration.constant';
+import { createDurationJournalRecorder } from './lib/tools/proposal-transition-duration';
+import { DURATION_JOURNAL_CACHE_FILE } from './lib/contracts/constants/transition-duration.constant';
 import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
 import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
 import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
@@ -993,9 +993,9 @@ export default definePlugin({
 							getProposalState:
 								sqlLifecycleReaders.getProposalState,
 						},
-						durationRecorder: createDurationHistoryRecorder(
+						durationRecorder: createDurationJournalRecorder(
 							abs(
-								`${ctx.cacheDir}/${DURATION_HISTORY_CACHE_FILE}`,
+								`${ctx.cacheDir}/${DURATION_JOURNAL_CACHE_FILE}`,
 							),
 						),
 					}),

@@ -1,14 +1,24 @@
-import { mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
+import {
+	mkdir,
+	mkdtemp,
+	readFile,
+	rename,
+	rm,
+	writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import type { ITransitionDurationInput } from '@delendai/state-telemetry/public';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IProposalDurationRecorder } from '@delendai/proposals/lib/contracts/interfaces/transition-duration.interface';
+import type {
+	IProposalDurationRecorder,
+	ITransitionDurationSample,
+} from '@delendai/proposals/lib/contracts/interfaces/transition-duration.interface';
 import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 import {
-	featureVectorOfProposal,
+	createDurationJournalRecorder,
+	featureInputsOfProposal,
 	measureTransition,
 } from '@delendai/proposals/lib/tools/proposal-transition-duration';
 import {
@@ -26,6 +36,8 @@ const FAKE_GIT_MV: IGitRunner = async (args) => {
 
 const STARTED_AT = Date.parse('2026-10-07T10:00:00.000Z');
 const FINISHED_AT = STARTED_AT + 90 * 60_000;
+
+const settle = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 
 const BODY = [
 	'## Slices',
@@ -52,7 +64,7 @@ const proposal = (stamp: string | undefined): string =>
 
 describe('transition duration history (f00511 S2)', () => {
 	let root = '';
-	let samples: ITransitionDurationInput[] = [];
+	let samples: ITransitionDurationSample[] = [];
 	let options: IProposalTransitionToolOptions;
 	const recorder: IProposalDurationRecorder = {
 		record: (input) => {
@@ -104,7 +116,7 @@ describe('transition duration history (f00511 S2)', () => {
 		expect(JSON.parse(result.content[0]?.text ?? '{}')).toMatchObject({
 			ok: true,
 		});
-		await Promise.resolve();
+		await settle();
 		expect(samples).toHaveLength(1);
 		expect(samples[0]).toMatchObject({
 			to: 'review',
@@ -112,13 +124,12 @@ describe('transition duration history (f00511 S2)', () => {
 			taskKind: 'feat:review',
 			durationMs: FINISHED_AT - STARTED_AT,
 		});
-		expect(samples[0]?.vector?.slice_count).toBe(2);
+		expect(samples[0]?.features.slice_count).toBe(2);
 	});
 
 	it('stamps the moment of every transition for the next measurement', async () => {
 		await seed(undefined);
 		await transition('review');
-		const { readFile } = await import('node:fs/promises');
 		const moved = await readFile(
 			join(root, 'review', 'f09999-fixture.md'),
 			'utf8',
@@ -126,14 +137,14 @@ describe('transition duration history (f00511 S2)', () => {
 		expect(moved).toContain(
 			`last-transition-at: ${new Date(FINISHED_AT).toISOString()}`,
 		);
-		await Promise.resolve();
+		await settle();
 		expect(samples).toHaveLength(0);
 	});
 
 	it('records nothing for a target that does not close a stretch', async () => {
 		await seed(new Date(STARTED_AT).toISOString());
 		await transition('blocked');
-		await Promise.resolve();
+		await settle();
 		expect(samples).toHaveLength(0);
 	});
 
@@ -148,7 +159,7 @@ describe('transition duration history (f00511 S2)', () => {
 			},
 		};
 		const result = await transition('review');
-		await Promise.resolve();
+		await settle();
 		expect(JSON.parse(result.content[0]?.text ?? '{}')).toMatchObject({
 			ok: true,
 		});
@@ -157,7 +168,7 @@ describe('transition duration history (f00511 S2)', () => {
 
 describe('feature vector of a proposal', () => {
 	it('counts slices, packages, tests and public surfaces from the document', () => {
-		const vector = featureVectorOfProposal(BODY);
+		const vector = featureInputsOfProposal(BODY);
 		expect(vector).toMatchObject({
 			slice_count: 2,
 			affected_packages: 2,
@@ -193,5 +204,33 @@ describe('feature vector of a proposal', () => {
 		});
 		expect(sample?.actorProfile).toBe('unknown');
 		expect(sample?.taskKind).toBe('feat:done');
+	});
+});
+
+describe('duration journal recorder', () => {
+	it('appends one JSON line per sample under the cache', async () => {
+		const dir = await mkdtemp(join(tmpdir(), 'duration-journal-'));
+		try {
+			const path = join(dir, 'telemetry', 'transition-durations.ndjson');
+			const recorder = createDurationJournalRecorder(path);
+			const sample = measureTransition({
+				to: 'done',
+				agent: 'agent-one',
+				nowMs: FINISHED_AT,
+				previousMarkdown: proposal(new Date(STARTED_AT).toISOString()),
+			});
+			expect(sample).toBeDefined();
+			if (sample === undefined) return;
+			await recorder.record(sample);
+			await recorder.record(sample);
+			const lines = (await readFile(path, 'utf8')).trim().split('\n');
+			expect(lines).toHaveLength(2);
+			expect(JSON.parse(lines[0] ?? '{}')).toMatchObject({
+				taskKind: 'feat:done',
+				durationMs: FINISHED_AT - STARTED_AT,
+			});
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
 	});
 });

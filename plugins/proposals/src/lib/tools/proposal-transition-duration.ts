@@ -1,14 +1,4 @@
 import {
-	DurationHistoryFacade,
-	computeFeatureVector,
-	recordTransitionDuration,
-} from '@delendai/state-telemetry/public';
-import type {
-	IWorkFeatureVector,
-	ITransitionDurationInput,
-} from '@delendai/state-telemetry/public';
-
-import {
 	DEFAULT_DURATION_ACTOR,
 	DEFAULT_DURATION_TASK_KIND,
 	DURATION_TARGET_STATUSES,
@@ -17,12 +7,15 @@ import {
 import type {
 	IMeasuredTransition,
 	IProposalDurationRecorder,
+	ITransitionDurationSample,
+	ITransitionFeatureInputs,
 } from '../contracts/interfaces/transition-duration.interface';
+import { BACKTICKED } from '../proposals/expand-declared-files';
 import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
+import { appendPeerReviewJsonl } from '../shared/peer-review-log';
 
 const SLICE_HEADING = /^### S\d+/gm;
 const FILES_LINE = /^- \*\*Files\*\*:(.*)$/gm;
-const BACKTICKED = /`([^`]+)`/g;
 const TEST_FILE = /\.(spec|test)\.[cm]?[jt]sx?$|\/tests?\//;
 const PUBLIC_SURFACE = /\/public\/index\.[cm]?[jt]s$/;
 const PACKAGE_ROOT_SEGMENTS = 2;
@@ -44,22 +37,23 @@ const declaredFiles = (markdown: string): readonly string[] => {
  * those files are tests or public surfaces. Lines changed are unknown
  * at this point and stay zero.
  */
-export const featureVectorOfProposal = (
+export const featureInputsOfProposal = (
 	markdown: string,
-): IWorkFeatureVector => {
+): ITransitionFeatureInputs => {
 	const files = declaredFiles(markdown);
 	const packages = new Set(
 		files.map((file) =>
 			file.split('/').slice(0, PACKAGE_ROOT_SEGMENTS).join('/'),
 		),
 	);
-	return computeFeatureVector({
+	return {
 		slice_count: Math.max(1, (markdown.match(SLICE_HEADING) ?? []).length),
 		affected_packages: packages.size,
 		public_api_changes: files.filter((file) => PUBLIC_SURFACE.test(file))
 			.length,
 		test_count: files.filter((file) => TEST_FILE.test(file)).length,
-	});
+		loc_changed: 0,
+	};
 };
 
 /**
@@ -69,7 +63,7 @@ export const featureVectorOfProposal = (
  */
 export const measureTransition = (
 	input: IMeasuredTransition,
-): ITransitionDurationInput | undefined => {
+): ITransitionDurationSample | undefined => {
 	if (!DURATION_TARGET_STATUSES.includes(input.to)) return undefined;
 	const stamp = readFrontmatterField(
 		input.previousMarkdown,
@@ -79,7 +73,7 @@ export const measureTransition = (
 	if (Number.isNaN(startedMs) || startedMs >= input.nowMs) return undefined;
 	return {
 		to: input.to,
-		vector: featureVectorOfProposal(input.previousMarkdown),
+		features: featureInputsOfProposal(input.previousMarkdown),
 		actorProfile: input.agent ?? DEFAULT_DURATION_ACTOR,
 		// The stretch that ends in review (building) and the one that ends
 		// in done (reviewing) are different work, so they never share a key.
@@ -94,8 +88,8 @@ export const measureTransition = (
 
 /**
  * Hands the sample to the recorder off the critical path: a recorder
- * that throws is swallowed, because an advisory history must never fail
- * the transition that produced it.
+ * that throws or rejects is swallowed, because an advisory history must
+ * never fail the transition that produced it.
  */
 export const recordMeasuredTransition = (
 	recorder: IProposalDurationRecorder | undefined,
@@ -105,28 +99,19 @@ export const recordMeasuredTransition = (
 	const sample = measureTransition(input);
 	if (sample === undefined) return;
 	queueMicrotask(() => {
-		try {
-			recorder.record(sample);
-		} catch {
-			// Best effort by contract.
-		}
+		void Promise.resolve()
+			.then(() => recorder.record(sample))
+			.catch(() => undefined);
 	});
 };
 
 /**
- * The recorder the server wires in: it opens the history only for the
- * moment of writing and closes it again, so no database handle outlives
- * a transition.
+ * The recorder the server wires in: one JSON line per sample in a
+ * journal under the cache. The ETA history ingests that journal, so the
+ * two sides share a file format and nothing else.
  */
-export const createDurationHistoryRecorder = (
-	historyPathAbs: string,
+export const createDurationJournalRecorder = (
+	journalPathAbs: string,
 ): IProposalDurationRecorder => ({
-	record: (input) => {
-		const history = new DurationHistoryFacade({ path: historyPathAbs });
-		try {
-			recordTransitionDuration(history, input);
-		} finally {
-			history.close();
-		}
-	},
+	record: (sample) => appendPeerReviewJsonl(journalPathAbs, sample),
 });

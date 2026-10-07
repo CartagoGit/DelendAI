@@ -26,12 +26,12 @@
 
 - @delendai/state
 - @delendai/proposals-sqlite
-- @delendai/state-telemetry
 - @delendai/error-reporting
 - @delendai/logs
 - @delendai/quality
 - @modelcontextprotocol/sdk
 - zod
+- @delendai/core
 
 ## Writes
 

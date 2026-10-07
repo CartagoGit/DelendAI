@@ -14,13 +14,6 @@
 - aggregateProgress
 - createWorkProgressProducer
 - createWorkProgressService
-- DurationHistoryFacade
-- recordTransitionDuration
-- type IDurationHistoryStore
-- type ITransitionDurationInput
-- computeFeatureVector
-- type IFeatureVectorInputs
-- type IWorkFeatureVector
 
 ## Depends on
 
@@ -37,9 +30,9 @@ _(none)_
 ## Tests
 
 - packages/state-telemetry/src/lib/eta/duration-history.spec.ts
+- packages/state-telemetry/src/lib/eta/duration-journal.spec.ts
 - packages/state-telemetry/src/lib/eta/eta-aggregation.spec.ts
 - packages/state-telemetry/src/lib/eta/eta-engine.spec.ts
-- packages/state-telemetry/src/lib/eta/feature-vector.spec.ts
 
 ## Do not
 

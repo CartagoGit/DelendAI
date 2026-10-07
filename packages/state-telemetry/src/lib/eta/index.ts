@@ -35,6 +35,11 @@ export {
 } from './duration-history';
 
 export {
+	drainTransitionDurationJournal,
+	type IDrainResult,
+} from './duration-journal';
+
+export {
 	median,
 	medianOrUndefined,
 	percentileLinear,
