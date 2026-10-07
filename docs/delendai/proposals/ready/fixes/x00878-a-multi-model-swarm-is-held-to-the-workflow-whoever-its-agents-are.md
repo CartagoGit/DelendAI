@@ -314,6 +314,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "The generated managed lazy catalog exports one runtime value, the catalog array; what is derived from it (the lookup by id) is computed in authored code, so a stale copy of the file cannot break the import chain of the generator that replaces it."
 - Found 2026-10-07 while repairing two candidates: a merge left an older `managed-lazy-catalog.generated.ts` without `MANAGED_LAZY_PLUGIN_BY_ID`. The generator imports `@delendai/core/public`, which imports `assemble-plugins`, which imported that export, so every generator, gate and pre-push hook failed with "Export named 'MANAGED_LAZY_PLUGIN_BY_ID' not found" and the file could only be restored by hand. The map now lives in `managed-lazy-catalog-lookup.ts`, and a spec holds the generated module to its single export.
 
+### S28 — A run that lost its required check runs again
+- **Status**: in-progress
+- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "When an armed candidate's workflow run finished as a failure with no check failing and a required check absent, the queue runs it again once and says so; a run that loses its checks a second time is reported and not run a third time."
+- Found 2026-10-07 on #907: the forge concluded its run `failure` having created 35 of the workflow's 37 jobs, all green; `tests` and `delendai-validate` were never created. The candidate was armed and BLOCKED with nothing red on it, so the queue (which moves red candidates to their authors and waits on green ones) waited on it for good. A full re-run created all 37 jobs and the candidate merged. The queue now notices that shape, the same way it already releases runs the forge parks.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
