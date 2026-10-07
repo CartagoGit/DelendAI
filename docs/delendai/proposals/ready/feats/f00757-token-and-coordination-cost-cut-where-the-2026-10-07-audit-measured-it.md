@@ -65,6 +65,8 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - acceptance:
   - "Each tool call records its output bytes; p50, p95 and p99 per tool appear in the KPIs, so the tools worth an artifact handle or a compact default are chosen by measurement."
 - Delivered: most of this was there — every invocation record carries `responseBytes`, the KPIs give per-plugin p50/p95, and `usage_report` ranks tools by total and by largest result. Each ranked tool now carries its own `p50Bytes`, `p95Bytes` and `p99Bytes` too, so a tool whose every answer is big is told from one with a single huge answer. The ranking spec pins them.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
