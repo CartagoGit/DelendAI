@@ -75,7 +75,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 
 ### S4 — No ignore line or moved file keeps the old name
 - **Status**: in-progress
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/gitignore.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/gitignore.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/gitignore.migrator.spec.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`, `packages/cli/src/contracts/interfaces/residual-report.interface.ts`
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/gitignore.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/gitignore.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/gitignore.migrator.spec.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`, `packages/cli/src/contracts/interfaces/residual-report.interface.ts`, `tools/scripts/migrate/rebrand-propagate.script.ts`
 - **Gate**: type
 - acceptance:
   - "A `.gitignore` line naming a renamed directory names the new one; a duplicate is not added."
@@ -83,6 +83,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - Delivered: a `gitignoreMigrator:v1`, right after the directory renames, rewrites each `.gitignore` line naming a path they rename (`.cache/mcp-vertex/`, `docs/mcp-vertex`, `mcp-vertex.config.json`) to the new one, keeping its leading `/`, its `!` and its tail, and drops it instead where the new line is already there; nothing else in the file moves. `migrate status` now carries `residual`: how many live legacy spellings the scanner finds and the first twenty (file, line, spelling), skipping `.git`, `node_modules` and `.cache`; it takes two seconds on this repository, which, being the migration's own source, reports 2,201. Both specs fail without the change.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- Fix 2026-10-07: the residual spec's fixture spells the old name, as it must, and `rebrand-propagate --check` counted it as a live leftover: develop's full run went red on #887 and the queue stopped arming. The spec is listed with the other files whose subject is the old name (`INTENTIONAL_LEGACY_PATHS`, beside `packages/cli/src/index.spec.ts`), with the reason.
 
 ### S5 — A profile change leaves nothing of the old mode unowned
 - **Status**: pending
@@ -108,6 +109,16 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - **Gate**: type
 - acceptance:
   - "The user-level host configs (`~/.claude.json`, `~/.codex/config.toml`) are migrated by an explicit, opt-in host-scope command, never by a workspace `migrate run`, and a dry run lists what it would change."
+
+### S8 — The rebrand check runs on every pull request
+- **Status**: in-progress
+- **Files**: `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "`migrate:rebrand:check` runs in CI's governance job on every pull request, so a live file that spells the old product name fails the pull request that brings it in, not the integration branch after the merge."
+- Found 2026-10-07: #887 brought a spec that spells the old name (it is about it), its pull request was green, and develop's full run went red on `rebrand-propagate.spec.ts`: that spec walks the whole tree, so the tools shard's selection by changed imports skipped it on the pull request. The queue then armed nothing for seven hours. The check takes two seconds; it now runs beside the other governance lints on every pull request.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

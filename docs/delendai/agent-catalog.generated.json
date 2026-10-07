@@ -1497,6 +1497,14 @@
 				"date": "2026-10-06"
 			},
 			{
+				"id": "f00757",
+				"title": "Token and coordination cost cut where the 2026-10-07 audit measured it",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-10-06"
+			},
+			{
 				"id": "q00009",
 				"title": "Plan: Managed Surface + portable Skills + 5-level Startup Report — separar catálogo, superficie LLM, working set y bajo demanda",
 				"track": "managed-surface-portable-skills-startup-report",
