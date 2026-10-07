@@ -4,6 +4,9 @@ import { join } from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import type { ITransactionOutcome } from '@delendai/core/cli';
+import { fakePartial } from '@delendai/test-kit';
+
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import { createMigrateCommand } from './migrate.command';
@@ -91,6 +94,35 @@ describe('migrate command (b00239 S6)', () => {
 		} finally {
 			rmSync(root, { recursive: true, force: true });
 		}
+	});
+
+	it('migrates the user-level host configs only when asked, and plans them in a dry run', async () => {
+		const planHost = vi.fn(async () => [{ kind: 'rewrite', detail: 'x' }]);
+		const applyHost = vi.fn(async () => ({
+			writtenFiles: ['~/.claude.json'],
+		}));
+		const runTransaction = vi.fn(async () =>
+			fakePartial<ITransactionOutcome>({ status: 'committed' }),
+		);
+		const cmd = createMigrateCommand({
+			planHost,
+			applyHost,
+			runTransaction,
+			scanResidual: async () => ({ live: 0, hits: [] }),
+		});
+
+		const planned = await cmd.run(['host', '--dry-run'], mkCtx('/w'));
+		expect(planned.data).toEqual({
+			plan: [{ kind: 'rewrite', detail: 'x' }],
+		});
+		expect(applyHost).not.toHaveBeenCalled();
+
+		await cmd.run(['run'], mkCtx('/w'));
+		expect(applyHost).not.toHaveBeenCalled();
+
+		const applied = await cmd.run(['host'], mkCtx('/w'));
+		expect(applied.data).toEqual({ writtenFiles: ['~/.claude.json'] });
+		expect(applyHost).toHaveBeenCalledWith('/w');
 	});
 
 	it('returns the dry-run plan for `--dry-run`', async () => {
