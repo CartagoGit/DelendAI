@@ -25,3 +25,6 @@ export const CRITERION_SEPARATOR = ' => ';
 
 /** The trailer `review release` gives a claim back with. */
 export const RELEASE_TRAILER = 'Releases';
+
+/** Where a reviewed proposal's file lives when the queue names it relative to the proposals directory. */
+export const REVIEWED_PROPOSALS_DIR = 'docs/delendai/proposals';
