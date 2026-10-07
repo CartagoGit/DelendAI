@@ -76,6 +76,8 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Parses compose file (basic shape) and exposes per-service prepare and exec."
   - "Invokes docker compose run --rm service bash -lc for shell commands."
   - "Supports workdir, env pass-through, and resource limits per service."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — SSH adapter with keepalive and jump host
 - **Status**: pending
