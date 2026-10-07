@@ -198,6 +198,32 @@ Este plan **no entrega código propio**: orquesta las cuatro propuestas hijas de
 - **Gate**: las cuatro hijas (`f00509`, `f00510`, `f00511`, `f00512`) están en `done/` y `bun run validate` está verde sobre el árbol que tocan (cada hija declara su propio globalGate, ver archivos de cada hija).
 - **Acceptance**: `delendai work status` (CLI) emite el snapshot completo de las cuatro hijas; la barra de estado de la extensión muestra al menos un agente activo; el test de `phase-inference.spec.ts` pasa con ≥95% de acierto sobre los eventos sintéticos del dataset canónico.
 
+### S1 — Runtime events: units journal their claims and publications, a private drain feeds the bus
+
+The gap this closes: nothing emitted work events at runtime, so any status view rendered empty. `@delendai/state-telemetry` stays private, so published code (core, the CLI, plugins) never imports it. Published code appends one JSON line per event to `<cacheDir>/telemetry/work-event-journal.ndjson` (append-only, a failure to record is swallowed and never fails the work); the private package claims that file by renaming it and appends every valid line to the event bus.
+
+- **Status**: review
+- **Files**: `packages/core/src/lib/contracts/constants/work-event-journal.constant.ts`, `packages/core/src/lib/contracts/interfaces/work-event-journal.interface.ts`, `packages/core/src/lib/work-units/work-event-journal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-event-journal.service.spec.ts`, `packages/state-telemetry/src/lib/events/contracts/interfaces/work-event-journal-drain.interface.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`, `packages/state-telemetry/src/public/index.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-event-journal.service.spec.ts` and `npx vitest run --root packages/state-telemetry src/lib/events`
+- Unit enter journals `slice_claimed`; a successful publish journals `slice_submitted`.
+- `drainWorkEventJournal` validates the closed kinds and appends to any sink that has `append`.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S2 — Runtime events: proposal transitions and review submissions
+
+- **Status**: pending
+- **Files**: filled in when the slice ships
+- **Gate**: the proposals plugin specs for transitions and review submissions.
+- `proposal_transition` and the review submit action journal through a core public helper with the proposals plugin as its consumer; core stays free of proposal vocabulary.
+
+### S3 — Duration journal drained into the history
+
+- **Status**: pending
+- **Files**: filled in when the slice ships
+- **Gate**: the state-telemetry drain specs.
+- Depends on the transition-duration journal and `drainTransitionDurationJournal` of f00511 landing. Something calls the drain on demand, next to the work event drain, so the ETA engine has history.
+
 ## dependency graph
 
 ```
