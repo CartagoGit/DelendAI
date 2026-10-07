@@ -183,7 +183,7 @@ export const checkWorkflowInvariants = (input: {
 	// Listed whole and filtered here: a `*` in an `ls-remote` pattern does
 	// not cross a path component, so `pr/*` silently matched only the flat
 	// names — the exact shape this check exists to catch.
-	const heads = lines(git(root, ['ls-remote', '--heads', remote])).map(
+	const heads = lines(git(root, ['ls-remote', '--heads', '--', remote])).map(
 		(line) => line.split('\t')[1]?.replace('refs/heads/', '') ?? '',
 	);
 	const published = heads.filter((ref) => ref.startsWith(pubPrefix));

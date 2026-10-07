@@ -109,16 +109,17 @@ class FakeParsedDocument {
 
 	constructor(html: string) {
 		this.styles = [
-			...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/giu),
+			...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style[^>]*>/giu),
 		].map((match) => {
 			const node = new FakeNode('style');
 			node.textContent = match[1] ?? '';
 			return node;
 		});
-		const body = /<body[^>]*>([\s\S]*)<\/body>/iu.exec(html)?.[1] ?? html;
+		const body =
+			/<body[^>]*>([\s\S]*)<\/body[^>]*>/iu.exec(html)?.[1] ?? html;
 		this.bodyHtml = body;
 		for (const match of body.matchAll(
-			/<script[^>]*>([\s\S]*?)<\/script>/giu,
+			/<script[^>]*>([\s\S]*?)<\/script[^>]*>/giu,
 		)) {
 			const node = new FakeNode('script');
 			node.textContent = match[1] ?? '';

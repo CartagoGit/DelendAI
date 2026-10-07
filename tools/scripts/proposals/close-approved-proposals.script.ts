@@ -106,6 +106,7 @@ const publishedOnRemote = (root: string, branch: string): boolean => {
 		[
 			'ls-remote',
 			'--heads',
+			'--',
 			'origin',
 			`${publication}${branch.slice(work.length)}`,
 		],
@@ -176,20 +177,23 @@ const sweepRemoteUnits = (
 	branches: ReturnType<typeof declaredBranches>,
 ): void => {
 	const listing =
-		tryRun('git', ['ls-remote', '--heads', 'origin'], root) ?? '';
+		tryRun('git', ['ls-remote', '--heads', '--', 'origin'], root) ?? '';
 	const keepers = [
 		integration,
 		...ownPublications(listing, branches.publicationRefPrefix).flatMap(
 			({ ref }) =>
-				tryRun('git', ['fetch', '--quiet', 'origin', ref], root) ===
-				undefined
+				tryRun(
+					'git',
+					['fetch', '--quiet', '--', 'origin', ref],
+					root,
+				) === undefined
 					? []
 					: [run('git', ['rev-parse', 'FETCH_HEAD'], root)],
 		),
 	];
 	for (const ref of ownWorkRefs(listing, branches.workRefPrefix)) {
 		if (
-			tryRun('git', ['fetch', '--quiet', 'origin', ref], root) ===
+			tryRun('git', ['fetch', '--quiet', '--', 'origin', ref], root) ===
 			undefined
 		) {
 			continue;
@@ -221,7 +225,11 @@ const sweepRemoteUnits = (
 			);
 			continue;
 		}
-		tryRun('git', ['push', '--quiet', 'origin', '--delete', ref], root);
+		tryRun(
+			'git',
+			['push', '--quiet', '--delete', '--', 'origin', ref],
+			root,
+		);
 	}
 };
 
@@ -289,8 +297,11 @@ const dropSpentPasses = (root: string, integration: string): void => {
 	// `refs/retired/` for a project that declares no namespace.
 	const prefix = `${['refs', namespacePrefix, 'retired'].filter((part) => part.length > 0).join('/')}/`;
 	const listed =
-		tryRun('git', ['ls-remote', 'origin', `${prefix}${AGENT}/*`], root) ??
-		'';
+		tryRun(
+			'git',
+			['ls-remote', '--', 'origin', `${prefix}${AGENT}/*`],
+			root,
+		) ?? '';
 	const doneIds = new Set(
 		idsClosedBy(
 			tryRun(
@@ -309,7 +320,7 @@ const dropSpentPasses = (root: string, integration: string): void => {
 		) {
 			tryRun(
 				'git',
-				['fetch', '--quiet', '--no-tags', 'origin', sha],
+				['fetch', '--quiet', '--no-tags', '--', 'origin', sha],
 				root,
 			);
 		}
@@ -434,12 +445,16 @@ const main = (): number => {
 		// published beside each other left four pull requests open, each
 		// closing the same proposals.
 		const open = ownPublications(
-			tryRun('git', ['ls-remote', '--heads', 'origin'], root) ?? '',
+			tryRun('git', ['ls-remote', '--heads', '--', 'origin'], root) ?? '',
 			branches.publicationRefPrefix,
 		);
 		const existing = open[0];
 		for (const publication of open) {
-			run('git', ['fetch', '--quiet', 'origin', publication.ref], path);
+			run(
+				'git',
+				['fetch', '--quiet', '--', 'origin', publication.ref],
+				path,
+			);
 			if (
 				tryRun('git', ['merge', '--no-edit', 'FETCH_HEAD'], path) ===
 				undefined

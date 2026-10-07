@@ -170,6 +170,7 @@ describe('reapIntegratedWorkRefs', () => {
 				'push',
 				'--porcelain',
 				'--force-with-lease=refs/heads/wip/d/done:sha-done',
+				'--',
 				'origin',
 				':refs/heads/wip/d/done',
 			],

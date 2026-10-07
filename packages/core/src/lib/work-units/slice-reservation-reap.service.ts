@@ -33,6 +33,7 @@ export const reapSpentReservations = (input: {
 	const prefix = `${namespacedRef(policy.branches.namespacePrefix, 'claims', 'slice')}/`;
 	const listed = readGit(root, [
 		'ls-remote',
+		'--',
 		remote,
 		`${prefix}*`,
 		'refs/heads/*',
@@ -62,6 +63,7 @@ export const reapSpentReservations = (input: {
 			'fetch',
 			'--quiet',
 			'--no-tags',
+			'--',
 			remote,
 			...unknown.map((each) => each.commit),
 		]);
@@ -98,6 +100,7 @@ export const reapSpentReservations = (input: {
 		'core.hooksPath=/dev/null',
 		'push',
 		'--quiet',
+		'--',
 		remote,
 		...spent.map((each) => `:${each.ref}`),
 	]);

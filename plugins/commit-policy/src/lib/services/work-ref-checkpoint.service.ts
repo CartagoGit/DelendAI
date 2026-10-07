@@ -33,7 +33,7 @@ export const publishCheckpoint = async (
 		remoteOption,
 	);
 	if (remote === undefined) throw new Error(DURABILITY_REMOTE_MISSING);
-	const before = await engine.context.run(['ls-remote', remote, ref]);
+	const before = await engine.context.run(['ls-remote', '--', remote, ref]);
 	if (!before.ok)
 		throw new Error(before.reason ?? `could not inspect ${remote}/${ref}`);
 	const remoteSha = before.output.trim().split(/\s+/u)[0] || undefined;
@@ -50,6 +50,7 @@ export const publishCheckpoint = async (
 		'push',
 		'--porcelain',
 		`--force-with-lease=${ref}:${remoteSha ?? ''}`,
+		'--',
 		remote,
 		`${commit}:${ref}`,
 	]);
@@ -60,6 +61,7 @@ export const publishCheckpoint = async (
 	const observed = await engine.context.run([
 		'ls-remote',
 		'--exit-code',
+		'--',
 		remote,
 		ref,
 	]);

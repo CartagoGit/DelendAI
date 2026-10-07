@@ -406,7 +406,7 @@ export const reap = (
 		const live = remoteSha(root, remote, name);
 		if (live !== undefined && live !== expected) return false;
 	}
-	const pushed = git(root, ['push', remote, '--delete', name]);
+	const pushed = git(root, ['push', '--delete', '--', remote, name]);
 	if (pushed === undefined && remoteSha(root, remote, name) !== undefined) {
 		return false;
 	}
@@ -435,7 +435,7 @@ const rename = (
 	// protected pattern, a network that dropped — and accepts the delete
 	// would leave the work reachable from no clone at all. The proof is
 	// the difference between a rename and a loss.
-	git(root, ['push', remote, `refs/heads/${to}:refs/heads/${to}`]);
+	git(root, ['push', '--', remote, `refs/heads/${to}:refs/heads/${to}`]);
 	if (remoteSha(root, remote, to) !== sha) {
 		// Both names still exist: the old one on the remote, the new one
 		// here. Nothing is lost, and the next run tries again.

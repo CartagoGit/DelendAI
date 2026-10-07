@@ -22,6 +22,7 @@ export const retiredTipsLister =
 		if (remote === undefined) return [];
 		const listed = await run([
 			'ls-remote',
+			'--',
 			remote,
 			namespacedRef(namespace, 'retired', '*'),
 		]);

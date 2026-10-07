@@ -18,7 +18,7 @@ import type { IDerivedRequiredChecks } from './development-policy-required-check
 const WORKFLOWS_DIRECTORY = '.github/workflows';
 const RUNS_ON_PULL_REQUESTS = /\bpull_request(_target)?\b/u;
 const AGGREGATE_JOB =
-	/^(ci[-_ ]?)?(complete|all|gate|required|status|success)\b|[-_ ](complete|gate|required)$/iu;
+	/^(?:(?:ci[-_ ]?)?(?:complete|all|gate|required|status|success)\b|.*[-_ ](?:complete|gate|required)$)/iu;
 
 const unquote = (value: string): string =>
 	value
