@@ -259,6 +259,10 @@ jobs:
                   bun run lint:biome-baseline
                   bun run lint:i18n-english-prose
                   bun run lint:no-silent-gates
+                  # A dependency's advisory appears without anybody touching
+                  # the code, so every candidate audits the lockfile (about a
+                  # second); exceptions carry a reason and a review date.
+                  bun run lint:dependency-advisories
                   # x00542 S3 — a per-test literal BELOW its own project's
                   # ceiling reverts a decision that had a measurement
                   # behind it, and the test then fails on load rather

@@ -25,7 +25,13 @@
  */
 
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdirSync, openSync, readFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	openSync,
+	readFileSync,
+	renameSync,
+	statSync,
+} from 'node:fs';
 import { join } from 'node:path';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
@@ -81,6 +87,26 @@ export const skipReason = (input: {
 export const HYDRATION_LOG = '.cache/delendai/hydrate-candidates.log';
 
 /**
+ * The size past which the log is set aside as `<log>.1` before a pass
+ * writes to it. It used to grow for good: 17 MB and 130,000 lines without
+ * a date by 2026-10-07, which is how a refusal repeated 184 times in it
+ * went unread while the queue stood still.
+ */
+export const HYDRATION_LOG_MAX_BYTES = 2 * 1024 * 1024;
+
+/** Whether a log of this size is set aside before the next pass writes. */
+export const logIsFull = (bytes: number | undefined): boolean =>
+	bytes !== undefined && bytes > HYDRATION_LOG_MAX_BYTES;
+
+const sizeOf = (path: string): number | undefined => {
+	try {
+		return statSync(path).size;
+	} catch {
+		return undefined;
+	}
+};
+
+/**
  * What bringing the candidates forward runs, in order, with a timeout
  * each. The namespace maintenance is last because it reads the namespace
  * the refresh just finished moving.
@@ -124,6 +150,7 @@ const main = (): void => {
 		// until it returns. So the hook starts the work and leaves.
 		const log = join(root, HYDRATION_LOG);
 		mkdirSync(join(root, '.cache', 'delendai'), { recursive: true });
+		if (logIsFull(sizeOf(log))) renameSync(log, `${log}.1`);
 		const out = openSync(log, 'a');
 		spawn(process.execPath, [import.meta.path, '--run'], {
 			cwd: root,
@@ -135,6 +162,8 @@ const main = (): void => {
 		);
 		return;
 	}
+	// A dated header per pass, so the log says when each refusal happened.
+	console.log(`== hydration pass ${new Date().toISOString()} ==`);
 	// One writer brings a candidate forward: merge, install, run every
 	// generator, push. `forge:refresh --apply` used to run first and merge
 	// every candidate textually; after it nothing was behind any more, so
