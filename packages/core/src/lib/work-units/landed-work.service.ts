@@ -11,6 +11,28 @@
 import { readGit } from './work-unit-shared.service';
 
 /**
+ * Of `git rev-list --parents <base>..<sha>`, the parents that must be in
+ * the base for `sha` to carry nothing of its own, or `undefined` when a
+ * commit beyond the base is not a merge (it is work). One reading for
+ * every caller, whichever way it asks git about ancestry.
+ */
+export const parentsOutsideMerges = (
+	listing: string,
+): readonly string[] | undefined => {
+	const lines = listing.split('\n').filter((line) => line.length > 0);
+	const beyond = new Set(lines.map((line) => line.split(' ')[0] ?? ''));
+	const outside = new Set<string>();
+	for (const line of lines) {
+		const [, ...parents] = line.split(' ');
+		if (parents.length < 2) return undefined;
+		for (const parent of parents) {
+			if (!beyond.has(parent)) outside.add(parent);
+		}
+	}
+	return [...outside];
+};
+
+/**
  * True when every commit `sha` holds beyond `base` is a merge whose
  * parents are in `base` or among those commits: nothing of its own.
  */
@@ -21,23 +43,13 @@ export const carriesNothingBeyond = (
 ): boolean => {
 	const listed = readGit(root, ['rev-list', '--parents', `${base}..${sha}`]);
 	if (listed === undefined) return false;
-	const lines = listed.split('\n').filter((line) => line.length > 0);
-	if (lines.length === 0) return true;
-	const beyond = new Set(lines.map((line) => line.split(' ')[0] ?? ''));
-	return lines.every((line) => {
-		const [, ...parents] = line.split(' ');
-		return (
-			parents.length > 1 &&
-			parents.every(
-				(parent) =>
-					beyond.has(parent) ||
-					readGit(root, [
-						'merge-base',
-						'--is-ancestor',
-						parent,
-						base,
-					]) !== undefined,
-			)
-		);
-	});
+	const outside = parentsOutsideMerges(listed);
+	return (
+		outside !== undefined &&
+		outside.every(
+			(parent) =>
+				readGit(root, ['merge-base', '--is-ancestor', parent, base]) !==
+				undefined,
+		)
+	);
 };

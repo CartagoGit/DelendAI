@@ -266,6 +266,15 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S23 — The boot sees a checkpoint whose only extra commit merged landed work
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/tests/src/lib/work-units/landed-work.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A checkpoint whose only commits beyond the integration branch are merges of commits it holds is integration evidence at boot, so the unit's ref going (S21's reaper, or anyone's) is not reported as vanished."
+- Found 2026-10-07 in the MCP log: right after S21's reaper deleted x00878 S4, S6 and S8 from the forge, the next boot was DEGRADED with mutations blocked, on three `ref-vanished` blockers for exactly those units. The reconciler judges containment its own way — ancestry, or the same content at every path — and develop had changed those files again since, so a branch S14 and S21 call delivered looked lost to it.
+- Delivered: the rule is one predicate now. `parentsOutsideMerges` (pure) says which parents a merge-only tip needs the base to hold; `carriesNothingBeyond` (reapers, unit verdict) and the reconciler's git seam (asynchronous) both ask it. On the three real tips it answers yes. The spec pins the reading.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

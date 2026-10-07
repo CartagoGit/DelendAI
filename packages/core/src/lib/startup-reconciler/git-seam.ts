@@ -34,6 +34,7 @@ import {
 } from './work-ref-identity';
 import { journalRefReader } from './journal-ref.service';
 import { retiredTipsLister } from './retired-tips.service';
+import { parentsOutsideMerges } from '../work-units/landed-work.service';
 
 const lines = (output: string): readonly string[] =>
 	output
@@ -64,6 +65,24 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		return result.ok;
 	};
 
+	const onlyLandedMerges = async (
+		sha: string,
+		integration: string,
+	): Promise<boolean> => {
+		const listed = await run([
+			'rev-list',
+			'--parents',
+			`${integration}..${sha}`,
+		]);
+		if (!listed.ok) return false;
+		const outside = parentsOutsideMerges(listed.output);
+		if (outside === undefined) return false;
+		for (const parent of outside) {
+			if (!(await isAncestor(parent, integration))) return false;
+		}
+		return true;
+	};
+
 	const contentContained = async (
 		sha: string,
 		integration: string,
@@ -85,6 +104,10 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		// Nothing changed since the fork: an empty checkpoint carries
 		// nothing the integration branch could be missing.
 		if (paths.length === 0) return true;
+		// A checkpoint that only merged the integration branch into work
+		// it already holds adds nothing, even after the integration branch
+		// changed the same files again.
+		if (await onlyLandedMerges(sha, integration)) return true;
 		const same = await run([
 			'diff',
 			'--quiet',
