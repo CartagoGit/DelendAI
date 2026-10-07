@@ -6,11 +6,8 @@
  * record of the last roster the plugin configured for itself. It stores only
  * provider metadata and environment-variable *names* — never key values.
  */
-import {
-	redactSecrets,
-	withFileMutex,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import { redactSecrets } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import type { IDiscoveredRoster } from '../contracts/interfaces/roster.interface';
 

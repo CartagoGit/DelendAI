@@ -6,7 +6,8 @@
  * whatever host it runs in. Read-only; verdicts go through
  * `proposal_review`.
  */
-import { fnv1a, toolOk, type IToolRegistration } from '@delendai/core/public';
+import { fnv1a, toolOk } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
 	REVIEW_QUEUE_INPUT_SCHEMA,

@@ -11,11 +11,10 @@ import {
 	toolError,
 	toolJson,
 	toolOk,
-	withFileMutex,
 	withFileMutexes,
-	writeFileAtomic,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
 	PROPOSAL_STATUSES,

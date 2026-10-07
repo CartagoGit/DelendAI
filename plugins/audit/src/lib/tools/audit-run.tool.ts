@@ -24,13 +24,9 @@
  * Not idempotent across runs (new date prefix, new proposal ids).
  */
 
-import {
-	projectDetail,
-	toolJson,
-	writeFileAtomic,
-	type Detail,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { projectDetail, toolJson, type Detail } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import path from 'node:path';
 
 import {

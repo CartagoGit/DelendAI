@@ -25,7 +25,8 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { assembleCliConfig, parseCliArgs } from '@delendai/core/public';
+import { assembleCliConfig } from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/plugin';
 import type { IAssembleCliDeps, IAssembledCliConfig } from '@delendai/core/cli';
 
 /**

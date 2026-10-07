@@ -29,7 +29,8 @@
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import { realpathContained, writeFileAtomic } from '@delendai/core/public';
+import { realpathContained } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
 
 import {
 	OBSERVATION_KINDS,

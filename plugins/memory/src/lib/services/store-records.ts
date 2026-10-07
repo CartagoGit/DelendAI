@@ -16,7 +16,7 @@
  */
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { redactSecrets } from './redact';
 import { readStore, withStoreLock, writeStore } from './store-io';

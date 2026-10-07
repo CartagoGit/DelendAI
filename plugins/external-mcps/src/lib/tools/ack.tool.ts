@@ -16,11 +16,8 @@
  */
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import {
-	toolError,
-	toolJson,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolError, toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import {

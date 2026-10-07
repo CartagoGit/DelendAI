@@ -18,12 +18,12 @@
 import { basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { redactSecrets } from '@delendai/core/public';
 import {
-	redactSecrets,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import type { IUsageTokens } from './types';
 

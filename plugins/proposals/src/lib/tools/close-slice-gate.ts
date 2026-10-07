@@ -18,7 +18,8 @@
 import { createHash } from 'node:crypto';
 import { isAbsolute, join, relative } from 'node:path';
 
-import { validationGateSteps, withFileMutex } from '@delendai/core/public';
+import { validationGateSteps } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 import { fingerprintTree } from './close-slice-gate-tree';
 import {

@@ -1,13 +1,9 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { join } from 'node:path';
 
-import {
-	redactSecrets,
-	toolError,
-	toolOk,
-	type IToolRegistration,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import { redactSecrets, toolError, toolOk } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { writeFileAtomic } from '@delendai/core/runtime';
 import {
 	createLogStore,
 	logIncidents,

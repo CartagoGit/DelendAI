@@ -1,7 +1,5 @@
-import {
-	resolveExistingWorkspaceContained,
-	SafeWorkspaceReader,
-} from '@delendai/core/public';
+import { resolveExistingWorkspaceContained } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 

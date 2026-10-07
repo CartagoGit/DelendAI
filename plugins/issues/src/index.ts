@@ -1,4 +1,5 @@
-import { DEFAULT_CONFIG_FILENAME, definePlugin } from '@delendai/core/public';
+import { DEFAULT_CONFIG_FILENAME } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
 import z from 'zod';
 

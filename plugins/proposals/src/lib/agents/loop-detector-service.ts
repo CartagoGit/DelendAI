@@ -1,11 +1,8 @@
 import { mkdir, readdir, stat, unlink } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
-import {
-	SafeWorkspaceReader,
-	writeFileAtomic,
-	redactSecrets,
-	type IMcpPluginContext,
-} from '@delendai/core/public';
+import { redactSecrets } from '@delendai/core/public';
+import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/runtime';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
 import { detectAgentLoop } from './agent-loop-detector';
@@ -27,7 +24,7 @@ import {
 	assessContextDrift,
 	type IInteractiveCall,
 } from '../services/checkpoint-advisory-context-drift.service';
-import type { ICheckpointAdvisory } from '@delendai/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/contracts';
 
 export type { ILoopDetectorServiceOptions } from './loop-detector-config';
 

@@ -22,7 +22,7 @@
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { planDryRun, toolError, toolOk } from '@delendai/core/public';
 
 import { parseProposalDocument } from '../proposals/proposal-document';

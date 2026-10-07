@@ -22,7 +22,7 @@ import {
 	type IHandoffEvent,
 } from '@delendai/notification/lib/services/handoff-watcher';
 import plugin from '@delendai/notification';
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 
 const lock = (
 	entries: Array<{

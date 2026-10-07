@@ -3,7 +3,7 @@ import type { IReviewIndependence } from '../contracts/interfaces/review-indepen
 import { isSelfApproval } from './independent-approval';
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader, withFileMutex } from '@delendai/core/public';
+import { SafeWorkspaceReader, withFileMutex } from '@delendai/core/runtime';
 import { isMissingFileErrno } from './errno';
 
 /**

@@ -6,7 +6,8 @@
  * (`reachable` = state === 'available'). Read-only; reads only the mirror, so
  * no per-call fs read on the hot path (AGENTS.md rule 3).
  */
-import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import type { IProviderCapabilities } from '@delendai/core/public';
 import z from 'zod';
 

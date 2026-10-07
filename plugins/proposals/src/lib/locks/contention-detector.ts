@@ -1,6 +1,6 @@
 import { basename, dirname, join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type { ILockFile } from './agent-lock-engine';
 import {

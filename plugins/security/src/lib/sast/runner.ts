@@ -5,16 +5,17 @@ import { join, resolve } from 'node:path';
 import {
 	probeTool,
 	realProbeDeps,
-	SafeWorkspaceReader,
 	resolveExecPath,
 	runExternalTool,
 	safeListDir,
-	writeFileAtomic,
-	type IExternalTool,
-	type IExternalToolRun,
-	type IMcpPluginContext,
 	redactSecrets,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/runtime';
+import type {
+	IExternalTool,
+	IExternalToolRun,
+	IMcpPluginContext,
+} from '@delendai/core/contracts';
 
 import { parseSastJson } from './parsers';
 import { compileRulePattern, matchesLanguage } from './rules';
