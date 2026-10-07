@@ -268,7 +268,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S23 — The boot sees a checkpoint whose only extra commit merged landed work
 - **Status**: in-progress
-- **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/tests/src/lib/work-units/landed-work.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/checkpoint-containment.ts`, `packages/core/tests/src/lib/work-units/landed-work.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A checkpoint whose only commits beyond the integration branch are merges of commits it holds is integration evidence at boot, so the unit's ref going (S21's reaper, or anyone's) is not reported as vanished."
