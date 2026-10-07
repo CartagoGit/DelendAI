@@ -143,16 +143,17 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 
 ### S3 — Store de la autoridad: lectura y escritura durable del fichero de roadmap
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
-- **Files**: `packages/roadmap/src/lib/store/roadmap-store.interface.ts`, `packages/roadmap/src/lib/store/markdown-roadmap.store.ts`, `packages/roadmap/tests/src/lib/store/markdown-roadmap.store.spec.ts`
-- **Gate**: type
+- **Files**: `packages/roadmap/package.json`, `bun.lock`, `packages/roadmap/AGENT.md`, `packages/roadmap/src/public/index.ts`, `packages/roadmap/src/lib/contracts/constants/roadmap-store.constant.ts`, `packages/roadmap/src/lib/contracts/interfaces/roadmap-store.interface.ts`, `packages/roadmap/src/lib/store/roadmap-file-codec.helper.ts`, `packages/roadmap/src/lib/store/markdown-roadmap.store.ts`, `packages/roadmap/src/lib/store/node-roadmap-file-port.service.ts`, `packages/roadmap/tests/src/lib/store/markdown-roadmap.store.spec.ts`, `packages/roadmap/tests/src/lib/store/node-roadmap-file-port.service.spec.ts`
+- **Gate**: `bun x vitest run --root packages/roadmap`
 - acceptance:
   - "La escritura usa `withFileMutex` + `writeFileAtomic`; el ciclo read-mutate-write completo está bajo el mutex."
   - "Un fichero corrupto se pone en cuarentena con `quarantineCorruptFile` en vez de tratarse como vacío, y hay un test que lo demuestra."
   - "El motor es puro sobre un reader inyectado: los tests no tocan el sistema de ficheros real."
   - "Todo texto persistido pasa por `redactSecrets` antes de escribirse."
   - "La ruta del fichero es inyectada, nunca derivada de `process.cwd()`."
+- shipped: the markdown/YAML authority store over an injected file port (atomic write, whole-cycle lock, redaction, quarantine of unparseable files) plus the node port that wires core's withFileMutex, writeFileAtomic and quarantineCorruptFile. Re-cut: only a file that cannot be parsed is quarantined, and only on the write path; a file that parses but breaks the schema or has a newer schemaVersion is reported and left where it is, because it is a reviewable git-tracked file a person is still editing. The data lives in front matter for markdown paths and is the whole file for any other extension; prose after the front matter survives a write.
 
 ### S4 — Timeline append-only sin binario (variante CI-safe)
 - **Status**: pending

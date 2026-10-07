@@ -25,6 +25,8 @@
 ## Depends on
 
 - @delendai/changelog
+- @delendai/core
+- yaml
 - zod
 
 ## Writes

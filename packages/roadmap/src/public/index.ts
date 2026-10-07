@@ -33,3 +33,7 @@ export {
 	evaluateEntryGates,
 	evaluateGate,
 } from '../lib/gates/gate-evaluator.service';
+export * from '../lib/contracts/constants/roadmap-store.constant';
+export type * from '../lib/contracts/interfaces/roadmap-store.interface';
+export { MarkdownRoadmapStore } from '../lib/store/markdown-roadmap.store';
+export { createNodeRoadmapFilePort } from '../lib/store/node-roadmap-file-port.service';
