@@ -91,7 +91,7 @@ describe('a swarm does not degrade the boot (x00702)', () => {
 		);
 	});
 
-	it('does not call a retired unit lost while the forge keeps its tip, and asks once it is dropped too', async () => {
+	it('does not call a retired unit lost while the forge keeps its tip, nor once it is dropped', async () => {
 		const ref = `${WORK}agent-a/implement/f1-s2-g1/given-up`;
 		const laptop = origin.clone('laptop');
 		laptop.write('src/beta.ts', 'export const beta = 2;\n');
@@ -123,10 +123,37 @@ describe('a swarm does not degrade the boot (x00702)', () => {
 			'integration-evidence.checkpoint-retired',
 		);
 
-		// Dropped as well: nothing keeps it now, and a person decides.
+		// Dropped as well (`work retired --drop`, or landed): dropping is
+		// the decision, and this clone saw it retired, so nothing is lost.
 		laptop.push(`:${retired}`);
 		const dropped = await boot(office, database);
-		expect(dropped.blockers.map((item) => item.code)).toContain(
+		expect(dropped.blockers.map((item) => item.code)).not.toContain(
+			'integration-evidence.ref-vanished',
+		);
+		expect(dropped.findings.map((item) => item.code)).toContain(
+			'integration-evidence.checkpoint-retired',
+		);
+	});
+
+	it('still asks about a checkpoint dropped before this clone ever saw it retired', async () => {
+		const ref = `${WORK}agent-a/implement/f1-s3-g1/never-seen`;
+		const laptop = origin.clone('laptop');
+		laptop.write('src/gamma.ts', 'export const gamma = 3;\n');
+		await laptop.checkpoint({
+			ref,
+			paths: ['src/gamma.ts'],
+			message: 'wip',
+		});
+		laptop.push(`${ref}:${ref}`);
+		const office = origin.clone('office');
+		const database = createTestStateDatabase({
+			path: join(office.dir, '.delendai', 'state', 'work.sqlite'),
+		});
+		await boot(office, database);
+
+		laptop.push(`:${ref}`);
+		const gone = await boot(office, database);
+		expect(gone.blockers.map((item) => item.code)).toContain(
 			'integration-evidence.ref-vanished',
 		);
 	});
