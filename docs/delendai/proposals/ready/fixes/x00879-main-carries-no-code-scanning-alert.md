@@ -117,6 +117,14 @@ The owner promotes develop to main only from a stable point, and main is where G
   - "The branch the forward sync opens has the agent, kind, unit-with-generation and topic segments of every publication (`delendai/pr/delendai/sync/forward-<sha>-g1/carries-the-release-back`), so `work doctor --forge` reports `publications-canonical` as holding while it is open."
 - Found 2026-10-07 on the first real forward sync (#913, after the promotion #911): the flat `delendai/pr/forward-sync-<sha>` failed `publications-canonical` and turned two runs of keep-the-queue-moving red while it was open. A branch DelendAI made broke the rule DelendAI holds every agent's branches to; it now has the same shape instead of an exception.
 
+### S12 — A promotion leaves no red run for a setting nobody chose
+- **Status**: in-progress
+- **Files**: `.github/workflows/pages.yml`
+- **Gate**: type
+- acceptance:
+  - "On a push to main the Pages workflow builds the site in strict mode whether or not GitHub Pages is enabled, and publishes it only when it is; with Pages off it ends green with a notice saying how to enable it."
+- Found 2026-10-07 after the promotion: `Pages → build site` failed with \"Get Pages site failed: Not Found\" because Pages is not enabled on the repository. Enabling it publishes a public site, which is the owner's decision; until then the check the workflow exists for (the strict site build) still runs.
+
 ## acceptance
 
 - The alerts js/insecure-temporary-file (#420, #166-#169), js/shell-command-injection-from-environment (#269) and js/indirect-command-line-injection (#366) no longer apply to the code: temporary files are created exclusively with restrictive modes, and no command string built from the environment or arguments reaches a shell.
