@@ -621,6 +621,8 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The interface lives in `@delendai/state`, not in core: `@delendai/state-sqlite` depends on `state` and not on core, and both stores must implement the same type.
   - The marker is the store core actually uses today. Nothing in the product opens `state.sqlite` through core (core has no SQLite driver and the driver is a shadow with no consumer yet), so S3 wires the file store; the SQLite store is ready for the day the state engine hands core a connection.
   - The marker lock reuses `withFileMutex` (token ownership, heartbeat, stale takeover) rather than a new lock file protocol.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Integración en bootstrap (entregable: `f00528`)
 - **Status**: pending
