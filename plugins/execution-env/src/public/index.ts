@@ -20,3 +20,19 @@ export type {
 	ITeardownResult,
 } from '../lib/contracts/interfaces/execution-env-types.interface';
 export { ExecutionEnvRegistry } from '../lib/registry/execution-env-registry.service';
+
+export { REDACTED_VALUE } from '../lib/contracts/constants/env-redaction.constant';
+export type { IEnvRedactionPolicy } from '../lib/contracts/interfaces/env-redaction.interface';
+export type { ILocalExecutionOptions } from '../lib/contracts/interfaces/local-execution.interface';
+export type {
+	IProcessRunOptions,
+	IProcessRunResult,
+	IProcessRunner,
+} from '../lib/contracts/interfaces/process-runner.interface';
+export {
+	defaultEnvRedactionPolicy,
+	redactEnvironment,
+} from '../lib/helpers/env-redaction.helper';
+export { runPlanned } from '../lib/helpers/run-planned.helper';
+export { LocalExecutionEnvironment } from '../lib/adapters/local.service';
+export { createSpawnProcessRunner } from '../lib/runners/spawn-process-runner.service';

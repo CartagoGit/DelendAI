@@ -42,9 +42,10 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-implementer: claude-sonnet-5-5
 
 ### S2 — Local adapter baseline
-- **Status**: pending
-- **Files**: `plugins/execution-env/src/lib/adapters/local.service.ts`, `plugins/execution-env/tests/local.service.spec.ts`
-- **Gate**: type
+- **Status**: review
+- **Files**: `plugins/execution-env/src/lib/adapters/local.service.ts`, `plugins/execution-env/src/lib/runners/spawn-process-runner.service.ts`, `plugins/execution-env/src/lib/helpers/env-redaction.helper.ts`, `plugins/execution-env/src/lib/helpers/run-planned.helper.ts`, `plugins/execution-env/src/lib/contracts/constants/env-redaction.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/env-redaction.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/local-execution.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/process-runner.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/run-planned.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/adapters/fake-process-runner.ts`, `plugins/execution-env/tests/src/lib/adapters/local.spec.ts`, `plugins/execution-env/tests/src/lib/helpers/env-redaction.spec.ts`, `plugins/execution-env/tests/src/lib/runners/spawn-process-runner.spec.ts`
+- **Gate**: `npx vitest run --root plugins/execution-env`
+- shipped: the local adapter over a typed `IProcessRunner` seam. The real runner spawns with `shell: false` behind `guardEffectCapability('spawn')`, so a dry run cannot start a process; `runPlanned` reports the planned argument vector instead. `env()` shows the process environment through a name-based redaction policy while commands still receive the real values. Files are contained to the workspace (safe reader, atomic writer). `prepare` and `teardown` succeed without doing anything.
 - acceptance:
   - "Wraps Bun child_process with proper stdio piping."
   - "env() returns process.env filtered through a redaction policy."
