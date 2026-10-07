@@ -316,3 +316,4 @@ export {
 } from './lib/workspace-migration/host-scope/global-config.migrator';
 
 export { CALL_WRITES_NOT_COMMITTED } from './lib/contracts/constants/call-writes.constant';
+export { startServerLogIn } from './lib/shared/server-log';
