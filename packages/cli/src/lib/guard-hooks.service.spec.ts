@@ -131,6 +131,14 @@ describe('installing into a plain repository', () => {
 		expect(
 			inspectGuardHooks(root).hooks.every((h) => h.state === 'absent'),
 		).toBe(true);
+		// Nor the config that told the hooks where the CLI is.
+		expect(
+			spawnSync(
+				'git',
+				['config', '--local', '--get-regexp', '^delendai\\.guard\\.'],
+				{ cwd: root, encoding: 'utf8' },
+			).stdout.trim(),
+		).toBe('');
 	});
 });
 

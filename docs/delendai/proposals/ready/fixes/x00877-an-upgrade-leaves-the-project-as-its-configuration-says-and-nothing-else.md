@@ -86,12 +86,13 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - Fix 2026-10-07: the residual spec's fixture spells the old name, as it must, and `rebrand-propagate --check` counted it as a live leftover: develop's full run went red on #887 and the queue stopped arming. The spec is listed with the other files whose subject is the old name (`INTENTIONAL_LEGACY_PATHS`, beside `packages/cli/src/index.spec.ts`), with the reason.
 
 ### S5 — A profile change leaves nothing of the old mode unowned
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/work-units/profile-branches.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/profile-branches.service.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "After the development profile changes, every work ref and worktree of the old shape is either still a live unit the new profile sees, or reported by `work doctor` with its remedy (publish or retire); none is invisible."
   - "Hooks and `delendai.guard.*` keys follow the profile: installed where it needs them, removed where it does not."
+- Progress 2026-10-07, the first bullet: `work doctor` gains `branches-in-the-profile`, which asks the ref reconciler (the one source of which names are outside every namespace, `unmanaged`) of the clone's own branches and reports each one an earlier profile or a person left, with the way to end it (enter a unit, merge the branch in, publish, delete it). Work refs of the old shape under the product's namespace were already reported (`no-stray-refs`, `units-hold-work`). It holds on this repository. Of the second bullet: `guard uninstall` removed the hooks and left `delendai.guard.runner` and `.entry` in the clone's config, saying the clone was guarded after the guard was gone; it now unsets them (the uninstall spec checks the config is empty). Open: every built-in profile guards, so no profile change calls for removing the hooks; the one setting that stops installing them, `development.guardHooks: "off"`, is documented as keeping the project's hooks untouched, and removing them there would break that. Whether `off` should also remove what an earlier `install` put in is the owner's call.
 
 ### S6 — The generated-files merge driver exists where it is configured
 - **Status**: review
@@ -104,11 +105,14 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-implementer: claude-opus-5-5
 
 ### S7 — The host-scope configs are migrated too
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/host-scope/global-config.migrator.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/cli.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The user-level host configs (`~/.claude.json`, `~/.codex/config.toml`) are migrated by an explicit, opt-in host-scope command, never by a workspace `migrate run`, and a dry run lists what it would change."
+- Delivered: the global-config migrator (which rewrites only the entries it can prove are this workspace's, and keeps every other key byte for byte) existed and nothing called it. `migrate host --dry-run` lists what it would change in `~/.claude.json` and `~/.codex/config.toml` for this workspace; `migrate host` applies it; `migrate run` never touches them. On this machine the dry run plans nothing. The spec (dry run plans and writes nothing, `run` leaves the host configs alone, `host` applies) fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — The rebrand check runs on every pull request
 - **Status**: in-progress
