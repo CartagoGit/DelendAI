@@ -36,3 +36,12 @@ export {
 export { runPlanned } from '../lib/helpers/run-planned.helper';
 export { LocalExecutionEnvironment } from '../lib/adapters/local.service';
 export { createSpawnProcessRunner } from '../lib/runners/spawn-process-runner.service';
+export { DockerCliExecutionEnvironment } from '../lib/adapters/docker-cli.service';
+export type {
+	IDockerCliOptions,
+	IDockerMount,
+} from '../lib/contracts/interfaces/docker-cli-execution.interface';
+export {
+	inspectContainerEnvironment,
+	parseEnvironmentEntries,
+} from '../lib/helpers/docker-env.helper';

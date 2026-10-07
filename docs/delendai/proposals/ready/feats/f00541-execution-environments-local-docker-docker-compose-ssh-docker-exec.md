@@ -54,9 +54,10 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-implementer: claude-sonnet-5-5
 
 ### S3 — Docker CLI adapter
-- **Status**: pending
-- **Files**: `plugins/execution-env/src/lib/adapters/docker-cli.service.ts`, `plugins/execution-env/tests/docker-cli.service.spec.ts`
-- **Gate**: type
+- **Status**: review
+- **Files**: `plugins/execution-env/src/lib/adapters/docker-cli.service.ts`, `plugins/execution-env/src/lib/helpers/docker-args.helper.ts`, `plugins/execution-env/src/lib/helpers/docker-env.helper.ts`, `plugins/execution-env/src/lib/contracts/constants/docker-cli.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/docker-cli-execution.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/execution-env-types.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/adapters/docker-cli.spec.ts`
+- **Gate**: `npx vitest run --root plugins/execution-env`
+- shipped: `DockerCliExecutionEnvironment` drives the docker CLI by spawn through the `IProcessRunner` seam (no daemon socket). `prepare` runs a detached idle container with `--network=none`, `--user=1000:1000` and `--rm` by default, mounting only what is listed (read-only unless stated) and refusing the docker socket without `allowDockerSocket`. Every option uses the `--flag=value` form and `--` ends options before the image, the container name and the command. Files move over stdin and a constant script with the path as a positional parameter. `env()` reads `docker inspect` and redacts. Dry run returns the planned argument vectors. All specs use a typed fake runner, so none needs a docker CLI and none can block CI.
 - acceptance:
   - "Uses docker CLI via spawn (no daemon socket for portability)."
   - "Defaults are network=none, user=1000:1000, cleanupOnExit=always."

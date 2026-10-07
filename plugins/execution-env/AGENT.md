@@ -16,6 +16,9 @@
 - runPlanned
 - LocalExecutionEnvironment
 - createSpawnProcessRunner
+- DockerCliExecutionEnvironment
+- inspectContainerEnvironment
+- parseEnvironmentEntries
 
 ## Depends on
 
@@ -33,10 +36,10 @@
 
 ## Tests
 
+- plugins/execution-env/tests/src/lib/adapters/docker-cli.spec.ts
 - plugins/execution-env/tests/src/lib/adapters/local.spec.ts
 - plugins/execution-env/tests/src/lib/helpers/env-redaction.spec.ts
 - plugins/execution-env/tests/src/lib/registry/execution-env-registry.spec.ts
-- plugins/execution-env/tests/src/lib/runners/spawn-process-runner.spec.ts
 
 ## Do not
 

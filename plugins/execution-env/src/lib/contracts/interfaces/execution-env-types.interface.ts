@@ -36,6 +36,10 @@ export interface IPrepareResult {
 	/** Why it is not ready; only present when `ok` is false. */
 	readonly reason?: string;
 	readonly durationMs: number;
+	/** True when nothing was started because the call was a dry run. */
+	readonly dryRun?: boolean;
+	/** The host commands that were, or in a dry run would have been, run. */
+	readonly plannedArgv?: readonly (readonly string[])[];
 }
 
 /** What `teardown` reports once the environment is released. */
@@ -43,6 +47,8 @@ export interface ITeardownResult {
 	readonly ok: boolean;
 	readonly reason?: string;
 	readonly durationMs: number;
+	readonly dryRun?: boolean;
+	readonly plannedArgv?: readonly (readonly string[])[];
 }
 
 /** The environment as a caller sees it: variables, redacted. */
