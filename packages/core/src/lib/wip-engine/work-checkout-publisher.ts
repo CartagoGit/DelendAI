@@ -155,7 +155,7 @@ const publishHeld = async (
 			reason: `its commits are already kept by ${heldElsewhere}`,
 		};
 	}
-	const remoteTip = await run(['ls-remote', remote, ref]);
+	const remoteTip = await run(['ls-remote', '--', remote, ref]);
 	if (!remoteTip.ok) {
 		return {
 			ref,

@@ -308,6 +308,7 @@ export const reapHusks = async (input: {
 			readGit(root, [
 				'push',
 				'--quiet',
+				'--',
 				remote,
 				...keep.map((each) => `${each.commit}:${each.ref}`),
 			]) !== undefined;

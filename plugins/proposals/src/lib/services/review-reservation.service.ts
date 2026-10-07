@@ -69,10 +69,10 @@ export const reserveReview = async (
 	if ((await run(['send-pack', remote, `${mine}:${ref}`])).ok) {
 		return { kind: 'reserved' };
 	}
-	const held = await run(['ls-remote', remote, ref]);
+	const held = await run(['ls-remote', '--', remote, ref]);
 	const current = held.ok ? (held.output.split('\t')[0] ?? '').trim() : '';
 	if (current.length === 0) return { kind: 'unavailable' };
-	if (!(await run(['fetch', '--quiet', remote, ref])).ok) {
+	if (!(await run(['fetch', '--quiet', '--', remote, ref])).ok) {
 		return { kind: 'unavailable' };
 	}
 	const shown = await run(['log', '-1', '--format=%ct%n%B', current]);
@@ -95,6 +95,7 @@ export const reserveReview = async (
 		'push',
 		'--quiet',
 		`--force-with-lease=${ref}:${current}`,
+		'--',
 		remote,
 		`${mine}:${ref}`,
 	]);
@@ -117,7 +118,12 @@ const unitEnded = async (
 ): Promise<boolean> => {
 	const at = holder.unit.indexOf(`/${holder.agent}/`);
 	if (holder.agent.length === 0 || at === -1) return false;
-	const listed = await run(['ls-remote', remote, holder.unit.slice(at + 1)]);
+	const listed = await run([
+		'ls-remote',
+		'--',
+		remote,
+		holder.unit.slice(at + 1),
+	]);
 	return listed.ok && listed.output.trim().length === 0;
 };
 
@@ -131,10 +137,10 @@ export const releaseReview = async (
 	if (!url.ok) return false;
 	const remote = url.output.trim();
 	const ref = `${REVIEW_RESERVATION_NAMESPACE}${proposalId.toLowerCase()}`;
-	const held = await run(['ls-remote', remote, ref]);
+	const held = await run(['ls-remote', '--', remote, ref]);
 	const current = held.ok ? (held.output.split('\t')[0] ?? '').trim() : '';
 	if (current.length === 0) return false;
-	if (!(await run(['fetch', '--quiet', remote, ref])).ok) return false;
+	if (!(await run(['fetch', '--quiet', '--', remote, ref])).ok) return false;
 	const shown = await run(['log', '-1', '--format=%B', current]);
 	if (!shown.ok || holderOf(shown.output).unit !== holder.unit) return false;
 	return (
@@ -144,6 +150,7 @@ export const releaseReview = async (
 			'push',
 			'--quiet',
 			`--force-with-lease=${ref}:${current}`,
+			'--',
 			remote,
 			`:${ref}`,
 		])

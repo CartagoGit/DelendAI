@@ -145,7 +145,7 @@ const main = (): number => {
 	// `--prune` is the half that makes the clone honest about deletions:
 	// a merged pull request's branch is gone on the forge, and a stale
 	// remote-tracking ref for it is indistinguishable from live work.
-	git(['fetch', '--prune', '--quiet', SYNC_REMOTE]);
+	git(['fetch', '--prune', '--quiet', '--', SYNC_REMOTE]);
 
 	const measured = counts(branch);
 	const verdict = localSyncVerdict(measured);

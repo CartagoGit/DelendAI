@@ -91,6 +91,7 @@ export const endedGenerations = (
 	const retired =
 		readGit(root, [
 			'ls-remote',
+			'--',
 			'origin',
 			`refs/${policy.branches.namespacePrefix}/retired/*`,
 		]) ?? '';

@@ -45,7 +45,12 @@ const main = (): number => {
 		return 0;
 	}
 	const listed = (
-		run('git', ['ls-remote', 'origin', `refs/heads/${publication}*`]) ?? ''
+		run('git', [
+			'ls-remote',
+			'--',
+			'origin',
+			`refs/heads/${publication}*`,
+		]) ?? ''
 	)
 		.split('\n')
 		.map((line) => line.split('\t'))
@@ -76,7 +81,7 @@ const main = (): number => {
 			console.log(`open-publication-prs: would open ${branch}`);
 			continue;
 		}
-		run('git', ['fetch', '--quiet', 'origin', sha]);
+		run('git', ['fetch', '--quiet', '--', 'origin', sha]);
 		const opened = openPublicationPullRequest({
 			remote: 'origin',
 			base: branches.integration,

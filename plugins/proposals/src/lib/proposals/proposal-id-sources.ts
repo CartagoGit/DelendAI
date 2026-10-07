@@ -118,7 +118,12 @@ const releaseSuperseded = async (
 	url: string,
 	id: string,
 ): Promise<void> => {
-	const listed = await git(['ls-remote', url, `${RESERVATION_NAMESPACE}*`]);
+	const listed = await git([
+		'ls-remote',
+		'--',
+		url,
+		`${RESERVATION_NAMESPACE}*`,
+	]);
 	if (!listed.ok) return;
 	const spent = supersededReservations(listed.output, id);
 	if (spent.length === 0) return;
@@ -204,6 +209,7 @@ export const createGitProposalIdSources = (
 			// proposal has reached any ref this clone has fetched.
 			const reserved = await git([
 				'ls-remote',
+				'--',
 				'origin',
 				`${RESERVATION_NAMESPACE}*`,
 			]);
@@ -247,7 +253,7 @@ export const createGitProposalIdSources = (
 				await releaseSuperseded(git, url.output.trim(), id);
 				return 'reserved';
 			}
-			const held = await git(['ls-remote', url.output.trim(), ref]);
+			const held = await git(['ls-remote', '--', url.output.trim(), ref]);
 			return held.ok && held.output.trim() !== ''
 				? 'taken'
 				: 'unavailable';
