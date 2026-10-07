@@ -245,6 +245,17 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Hay un e2e contra un servidor MCP en memoria que ejercita el ciclo completo: init → transición → readiness → delta → close."
   - "Documentado para un adoptante: qué esdogfooding en delendai y qué debe replicar él en su proyecto."
 
+### S13 — A promotion is opened on the cadence the project declares
+- **Status**: pending
+- **DependsOn**: [S7, S9]
+- **Files**: `packages/roadmap/src/lib/promotion/promotion-readiness.service.ts`, `packages/roadmap/tests/src/lib/promotion/promotion-readiness.service.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/governance/forge-settings.lib.ts`
+- **Gate**: type
+- acceptance:
+  - "A project that declares `development.roadmap.promotion.schedule` (a cron expression, or `on-ready`) gets a workflow, projected from that configuration like the other forge settings, that opens the release pull request from the integration branch into the release branch when the cadence comes round and the promotion is ready: the integration branch's last full run is green, code scanning reports no open alert on it, and the roadmap's blocking gates for the next version pass."
+  - "When it is not ready, the workflow opens nothing and states which condition held it back; it never merges, never bumps and never tags: the release branch's own gate still decides, and the plugin keeps no git-write permission."
+  - "A project with one branch, with no release branch, or with no schedule declared gets no workflow and no diagnostic; branch names, the cadence and the conditions come from the configuration, never from this repository's develop and main."
+- Asked by the owner on 2026-10-07: promotions of develop into main were opened by hand whenever someone noticed develop was stable, and the first one waited for 48 code scanning alerts nobody was tracking on develop. The roadmap already knows what the next version promises; this slice turns "is it time to promote" into a scheduled, evidence-backed pull request. It keeps decision 3 of `## why this design`: the plugin informs (readiness), the forge acts (a workflow that opens a pull request), and the merge stays behind the release gate.
+
 ## dependency graph
 
 ```
