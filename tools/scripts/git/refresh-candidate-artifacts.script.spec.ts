@@ -18,6 +18,7 @@ import {
 } from '@delendai/test-kit/public';
 
 import {
+	conflictDetail,
 	GENERATED_REFRESH_COMMANDS,
 	identityArgs,
 	pushRefusalReason,
@@ -450,5 +451,36 @@ describe('overlappingFiles', () => {
 				'delendai/pr/candidate',
 			),
 		).toEqual([]);
+	});
+});
+
+describe('conflictDetail', () => {
+	const HOUR = 3600;
+	const pack = 'delendai/pr/minimax-3/review/batch-all-g2/verdicts';
+
+	it('leaves the conflict to an author who is still around', () => {
+		for (const input of [
+			{ silentSeconds: 30 * HOUR, unitOnForge: true },
+			{ silentSeconds: 2 * HOUR, unitOnForge: false },
+		]) {
+			expect(
+				conflictDetail({
+					candidate: pack,
+					abandonedAfter: 4 * HOUR,
+					...input,
+				}),
+			).toBe('does not merge trivially; its author decides');
+		}
+	});
+
+	it('says how an orphaned conflict ends once its author is gone', () => {
+		const detail = conflictDetail({
+			candidate: pack,
+			silentSeconds: 30 * HOUR,
+			abandonedAfter: 4 * HOUR,
+			unitOnForge: false,
+		});
+		expect(detail).toContain('its author has been gone 30 h');
+		expect(detail).toContain(`work retire --ref=${pack} --unowned`);
 	});
 });

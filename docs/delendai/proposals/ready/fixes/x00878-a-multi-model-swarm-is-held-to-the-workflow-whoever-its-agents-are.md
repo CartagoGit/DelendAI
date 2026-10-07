@@ -162,12 +162,15 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S13 — A publication its author left in conflict is adopted or retired, not left
-- **Status**: pending
-- **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+- **Status**: in-progress
+- **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A publication that does not merge trivially and whose author's unit has been abandoned (past the lease windows) is reported once as adoptable, with the exact `work enter` + merge + `work retire --unowned` steps, instead of `its author decides` on every pass; after a further window with nobody adopting it, its pull request is closed with that reason, and S10 retires it."
 - Found 2026-10-06: after the swarm stopped, #856, #857 and #858 sat on the forge, two of them conflicted, each reported on every hydration as "its author decides" by an author that was gone. Done by hand that day: #857's verdicts were adopted into a pack of the orchestrator's (less one approval that judged an earlier definition of x00875 S20), #858 was retired (signed `illyria`, a name of no model; its q00010 changes superseded), and #856 duplicates the queue's own close pass #878.
+- Delivered: the hydrator's report of a candidate that does not merge trivially now tells an author still around from one gone: when the candidate's unit is no longer on the forge and nobody has pushed it for a day (far past any lease; a threshold of the hydrator's own, so the queue tooling reaches no core internals), it says how the conflict ends — adopted on its own publication (approvals land only through their reviewer's pull request) or retired with `work retire --unowned`, which keeps the tip — instead of "its author decides" on every pass. Not delivered: closing such a pull request on its own after a further window. Whether to end another agent's work stays a decision someone makes with the report in hand; once it is closed, S10 retires it. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S14 — A unit that only merged landed work in is delivered
 - **Status**: in-progress
@@ -209,6 +212,35 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Delivered: twice on 2026-10-07 a unit's publish was refused by `check-proposal-id-drift` (x00878, then f00756 from another host): the counter is a cache in each worktree's `.cache/delendai/`, and nothing moved it when a merge brought ids it had not handed out. Since x00868 the allocator takes the highest of the files in every worktree, the forge's reservations and the cache, so a lagging cache hands out no taken id; it only failed the gate. The post-merge hook now reseeds it (`sync-proposal-counters`, which only raises), in the shared checkout and in every unit that merges.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+
+### S18 — Retired work that is dropped is not taken for lost work
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`, `packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts`, `config/delendai/repair-resolutions.json`
+- **Gate**: type
+- acceptance:
+  - "A checkpoint the reconciler once saw kept as retired work is not reported as vanished after its retired ref is dropped; one dropped before this clone ever saw it retired still is."
+- Found 2026-10-07 in the MCP server's boot log: after S12 and the analysed drops of the same day, every boot was DEGRADED with mutations blocked, on five `integration-evidence.ref-vanished` blockers — close passes of the queue and the `illyria` pack, retired with a reason and dropped once their content was on develop or judged worthless. Seeing a checkpoint retired only wrote a note on each boot, so the moment its tip went, the work looked lost.
+- Delivered: the first time the reconciler sees a checkpoint kept as retired work, it records that in the journal (`recovery-decision`, `retired`, with the commit), and a checkpoint so recorded is reported as retired, not vanished, after the ref is dropped: dropping is itself the decision (`work retired --drop --reason`, or the reapers' evidence). A checkpoint this clone never saw retired still asks. The five that were already blocking are resolved in `config/delendai/repair-resolutions.json` with what each held. The spec that asked again after a drop now pins the new contract, and a new case pins the one that still asks.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S19 — The server's log says a thing once, not every five minutes
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The work-checkout publisher writes a pass's report to the server's log only when it differs from the previous pass's."
+- Delivered: after the swarm stopped, the MCP server's log carried the same `work-checkouts.published` line — four empty units, "no commits of its own yet" — every five minutes for a day, burying the boot reports that mattered. The server's report writer now keeps the last line and writes a new one only when the outcome changes. The spec fails without the change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S20 — Everyday listings show live work, not what was given up
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
+- **Gate**: type
+- acceptance:
+  - "`work status`, `work swarm` and the overview list live, waiting-for-review and adoptable units by default; retired, superseded and collectable ones are counted on one line and listed only with `--all`, so an agent asking what to do next is not paid for the history of every swarm."
+- Found 2026-10-07 by the external audit of the second swarm (ChatGPT, `.cache/chat-with-llms/2026_10_07_01:08_…`): after a swarm, the default listings enumerate every ended unit, a token cost on each call and a distraction for the next agent.
 
 ## acceptance
 

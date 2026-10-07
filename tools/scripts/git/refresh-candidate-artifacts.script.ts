@@ -215,6 +215,52 @@ const takeRegeneratedSide = (
 };
 
 /**
+ * How long a publication whose unit is gone from the forge goes without a
+ * push before its conflict is nobody's: a day, far past any lease.
+ */
+const ORPHANED_AFTER_SECONDS = 24 * 60 * 60;
+
+/**
+ * What to say of a candidate that does not merge trivially. Its author
+ * decides — while there is one: a publication whose unit is gone from
+ * the forge and that nobody has pushed to for longer than an abandoned
+ * unit is given has nobody left to decide, and was reported as "its
+ * author decides" on every pass after a swarm stopped (#856, #857, #858).
+ * Then the report says how it ends instead.
+ */
+export const conflictDetail = (input: {
+	readonly candidate: string;
+	readonly silentSeconds: number;
+	readonly abandonedAfter: number;
+	readonly unitOnForge: boolean;
+}): string => {
+	if (input.unitOnForge || input.silentSeconds <= input.abandonedAfter) {
+		return 'does not merge trivially; its author decides';
+	}
+	const hours = Math.floor(input.silentSeconds / 3600);
+	return `does not merge trivially, and its author has been gone ${String(hours)} h: adopt it on its own publication (merge the integration branch into it in a detached worktree, resolve, push it back) — an approval lands only through its reviewer's own pull request — or end it with \`delendai work retire --ref=${input.candidate} --unowned --reason=<what it carries and why it will not land>\`, which keeps its tip`;
+};
+
+/** Whether the unit a publication was made from is still on the forge. */
+const unitStillOnForge = (
+	root: string,
+	remote: string,
+	policy: IResolvedDevelopmentPolicy,
+	candidate: string,
+): boolean => {
+	const bare = (prefix: string): string =>
+		prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+	const publication = bare(policy.branches.publicationRefPrefix);
+	if (publication.length === 0 || !candidate.startsWith(publication)) {
+		return true;
+	}
+	const work = `${bare(policy.branches.workRefPrefix)}${candidate.slice(publication.length)}`;
+	// A forge that does not answer leaves the author to decide.
+	const listed = git(root, ['ls-remote', '--heads', remote, work]);
+	return listed === undefined || listed.trim().length > 0;
+};
+
+/**
  * Merge, regenerate, push — in a throwaway worktree, so the shared
  * checkout never moves and a failure leaves nothing behind.
  */
@@ -274,7 +320,26 @@ export const refreshCandidate = (input: {
 			return {
 				candidate,
 				state: 'conflicted',
-				detail: 'does not merge trivially; its author decides',
+				detail: conflictDetail({
+					candidate,
+					silentSeconds:
+						Math.floor(Date.now() / 1000) -
+						Number(
+							git(root, [
+								'log',
+								'-1',
+								'--format=%ct',
+								`${remote}/${candidate}`,
+							]) ?? '0',
+						),
+					abandonedAfter: ORPHANED_AFTER_SECONDS,
+					unitOnForge: unitStillOnForge(
+						root,
+						remote,
+						policy,
+						candidate,
+					),
+				}),
 			};
 		}
 		const failed = GENERATED_REFRESH_COMMANDS.filter(

@@ -309,6 +309,27 @@ export const startWorkCheckoutPublisher = (
 };
 
 /**
+ * A report writer that writes a pass's report only when it differs from
+ * the last one. The publisher runs every few minutes, and four empty units
+ * of a stopped swarm put the same "no commits of its own yet" line into
+ * the server's log every five minutes for a day.
+ */
+export const changedReports = (
+	write: (line: string) => void,
+): ((moved: unknown) => void) => {
+	let last = '';
+	return (moved) => {
+		const line = JSON.stringify({
+			event: 'work-checkouts.published',
+			moved,
+		});
+		if (line === last) return;
+		last = line;
+		write(line);
+	};
+};
+
+/**
  * The publisher a server runs, from its host config: none without a
  * development policy. Reports go to stderr; stdout is the MCP transport.
  */
@@ -326,9 +347,7 @@ export const startServerWorkCheckoutPublisher = (
 				...(config.runtimeBehindCheckout === undefined
 					? {}
 					: { standDown: config.runtimeBehindCheckout }),
-				report: (moved) => {
-					process.stderr.write(
-						`${JSON.stringify({ event: 'work-checkouts.published', moved })}\n`,
-					);
-				},
+				report: changedReports((line) => {
+					process.stderr.write(`${line}\n`);
+				}),
 			});
