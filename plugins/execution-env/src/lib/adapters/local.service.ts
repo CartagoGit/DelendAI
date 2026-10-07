@@ -1,6 +1,6 @@
 // effect-boundary-authorized: the local adapter reads the host process environment; files go through the safe workspace reader and the atomic writer.
 import {
-	resolveWorkspaceContained,
+	resolveWorkspaceContainedEffective,
 	SafeWorkspaceReader,
 	writeFileAtomic,
 } from '@delendai/core/public';
@@ -77,7 +77,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 	}
 
 	async putFile(path: string, content: string): Promise<void> {
-		const target = resolveWorkspaceContained(
+		const target = await resolveWorkspaceContainedEffective(
 			this.options.workspaceRoot,
 			path,
 		);

@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -101,6 +101,19 @@ describe('LocalExecutionEnvironment', () => {
 		await expect(env.putFile('../escape.txt', 'x')).rejects.toThrow(
 			'leaves the workspace',
 		);
+	});
+
+	it('refuses to write through a symlink that points outside the workspace', async () => {
+		const outside = await mkdtemp(join(tmpdir(), 'exec-env-outside-'));
+		try {
+			await symlink(outside, join(root, 'link'));
+			const env = new LocalExecutionEnvironment({ workspaceRoot: root });
+			await expect(env.putFile('link/a.txt', 'x')).rejects.toThrow(
+				'leaves the workspace',
+			);
+		} finally {
+			await rm(outside, { recursive: true, force: true });
+		}
 	});
 
 	it('does not write in a dry run', async () => {
