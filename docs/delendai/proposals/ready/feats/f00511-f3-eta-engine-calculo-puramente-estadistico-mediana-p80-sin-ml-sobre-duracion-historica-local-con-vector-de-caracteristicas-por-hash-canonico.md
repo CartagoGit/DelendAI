@@ -52,15 +52,19 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Test de estabilidad: para 100 propuestas sintéticas con vectores aleatorios, el hash es único y el cálculo es independiente del orden de los campos del input."
 
 ### S2 — `duration-history.ts` — tabla `duration_history` (feature_vector_hash, actor_profile, task_kind, duration_ms, outcome) + insert desde `proposal_transition → done`
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [F3-S1]
-- **Files**: `packages/state-telemetry/src/lib/eta/duration-history.ts`, `packages/state-telemetry/src/lib/eta/duration-history.spec.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts`
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/eta/duration-history.ts`, `packages/state-telemetry/src/lib/eta/duration-history.spec.ts`, `packages/state-telemetry/src/lib/eta/duration-journal.service.ts`, `packages/state-telemetry/src/lib/eta/duration-journal.service.spec.ts`, `packages/state-telemetry/src/lib/eta/index.ts`, `packages/state-telemetry/src/lib/eta/contracts/interfaces/duration-journal.interface.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/proposal-transition-duration.ts`, `plugins/proposals/src/lib/contracts/constants/transition-duration.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/transition-duration.interface.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts`
+- **Gate**: `bunx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts`
+- shipped: the store (`duration_history`, median guard, memory fallback) already existed. `proposal_transition` now stamps `last-transition-at` on every move and, when the target is `done` or `review`, hands a sample (features read from the document, actor = the caller's `agent`, task kind `<kind>:<target>`, duration since the previous stamp) to an injected `durationRecorder` in a microtask after the frontmatter is written; a recorder that throws or rejects is swallowed. The server's recorder appends one JSON line to `<cacheDir>/telemetry/transition-durations.ndjson`; `drainTransitionDurationJournal` in state-telemetry claims that journal by renaming it and records every line into the history.
+- design correction: (1) the proposal says the PK is the triple; the store keeps it as a lookup index with an autoincrement id, because many samples per key are the point (see the header of `duration-history.ts`). (2) The plugin cannot call `recordDuration` directly: `@delendai/proposals` is published and `@delendai/state-telemetry` is private, which `lint:cli-imports` refuses, so the two sides meet in a journal file instead of an import. (3) The transition tool works on whole proposals, so a sample measures the stretch between two status changes, not one slice; the task kind carries the target so building and reviewing never share a key. Nothing calls the drain yet: the reconcile in S4 is its consumer.
 - acceptance:
   - "Tabla `duration_history` creada con la PK compuesta `(feature_vector_hash, actor_profile, task_kind)`."
   - "`recordDuration(vector, actor, kind, durationMs, outcome)` se invoca desde `proposal-transition.tool.ts` cuando `to === 'done'` o `to === 'review'`; sin await en el camino crítico (se ejecuta en background tras el `await writeFileAtomic(frontmatter)`)."
   - "Una transición `done` para un slice con `outcome: 'blocked'` no se inserta (sólo `outcome ∈ {done, review}` cuentan)."
   - "Test: simular 10 transiciones a `done` con vectores distintos produce 10 filas; una undécima con el mismo `(vector, actor, kind)` se acumula en un buffer interno y se inserta como nueva fila sólo si la mediana cambia >5%."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — `eta-engine.ts` — cálculo de mediana + p80 por `(feature_vector_hash, actor_profile)`; fallback a `task_kind` global si la combinación específica tiene <5 muestras
 - **Status**: done — `86bd19eb0`. `eta-engine.ts` and `eta-aggregation.ts` landed with 25 passing specs; `tests/src/lib/eta/eta-fixtures.spec.ts` asserts a median relative p50 error <= 0.35 over 70 synthetic samples, the p80 aggregation, `insufficient_history`, and the task-kind fallback at confidence 0.6 vs 0.9. Verified 2026-09-15.
