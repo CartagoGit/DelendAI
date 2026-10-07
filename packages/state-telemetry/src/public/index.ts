@@ -20,3 +20,14 @@ export { resolvePhaseRules } from '../lib/projector/phase-rules.service';
 export { aggregateProgress } from '../lib/projector/progress-weighting.service';
 export { createWorkProgressProducer } from '../lib/projector/work-progress-producer.service';
 export { createWorkProgressService } from '../lib/projector/work-progress-api.service';
+export {
+	DurationHistoryFacade,
+	recordTransitionDuration,
+	type IDurationHistoryStore,
+	type ITransitionDurationInput,
+} from '../lib/eta/duration-history';
+export {
+	computeFeatureVector,
+	type IFeatureVectorInputs,
+	type IWorkFeatureVector,
+} from '../lib/eta/feature-vector';

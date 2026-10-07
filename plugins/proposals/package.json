@@ -50,6 +50,7 @@
 	"dependencies": {
 		"@delendai/state": "workspace:*",
 		"@delendai/proposals-sqlite": "workspace:*",
+		"@delendai/state-telemetry": "workspace:*",
 		"@delendai/error-reporting": "workspace:*",
 		"@delendai/logs": "workspace:*",
 		"@delendai/quality": "workspace:*",

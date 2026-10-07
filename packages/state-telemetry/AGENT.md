@@ -14,6 +14,13 @@
 - aggregateProgress
 - createWorkProgressProducer
 - createWorkProgressService
+- DurationHistoryFacade
+- recordTransitionDuration
+- type IDurationHistoryStore
+- type ITransitionDurationInput
+- computeFeatureVector
+- type IFeatureVectorInputs
+- type IWorkFeatureVector
 
 ## Depends on
 

@@ -52,10 +52,12 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Test de estabilidad: para 100 propuestas sintéticas con vectores aleatorios, el hash es único y el cálculo es independiente del orden de los campos del input."
 
 ### S2 — `duration-history.ts` — tabla `duration_history` (feature_vector_hash, actor_profile, task_kind, duration_ms, outcome) + insert desde `proposal_transition → done`
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [F3-S1]
-- **Files**: `packages/state-telemetry/src/lib/eta/duration-history.ts`, `packages/state-telemetry/src/lib/eta/duration-history.spec.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts`
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/eta/duration-history.ts`, `packages/state-telemetry/src/lib/eta/duration-history.spec.ts`, `packages/state-telemetry/src/public/index.ts`, `bun.lock`, `plugins/proposals/package.json`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/proposal-transition-duration.ts`, `plugins/proposals/src/lib/contracts/constants/transition-duration.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/transition-duration.interface.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts`
+- **Gate**: `bun run vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts`
+- shipped: the store (`duration_history`, median guard, memory fallback) already existed; this slice wires it. `proposal_transition` stamps `last-transition-at` on every move and, when the target is `done` or `review`, hands a sample (vector read from the document, actor = the caller's `agent`, task kind `<kind>:<target>`, duration since the previous stamp) to an injected `durationRecorder` in a microtask after the frontmatter is written; a recorder that throws is swallowed. The server wires a recorder that opens `<cacheDir>/telemetry/duration-history.sqlite` only for the write.
+- design correction: the proposal says the PK is the triple; the store keeps it as a lookup index and uses an autoincrement id, because many samples per key are the point (see the header of `duration-history.ts`). The transition tool works on whole proposals, so the sample measures the stretch between two status changes, not a single slice; the task kind carries the target so building and reviewing never share a key.
 - acceptance:
   - "Tabla `duration_history` creada con la PK compuesta `(feature_vector_hash, actor_profile, task_kind)`."
   - "`recordDuration(vector, actor, kind, durationMs, outcome)` se invoca desde `proposal-transition.tool.ts` cuando `to === 'done'` o `to === 'review'`; sin await en el camino crítico (se ejecuta en background tras el `await writeFileAtomic(frontmatter)`)."
