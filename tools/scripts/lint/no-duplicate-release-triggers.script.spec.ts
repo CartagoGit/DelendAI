@@ -12,6 +12,8 @@ import { parseWorkflowYaml, type YamlValue } from '../ci/workflow-yaml.ts';
 import {
 	branchesOf,
 	doublesOnRelease,
+	findDuplicates,
+	findUnreportedReleaseChecks,
 	formatReport,
 } from './no-duplicate-release-triggers.script.ts';
 
@@ -113,5 +115,46 @@ describe('formatReport', () => {
 
 	it('says nothing is doubled when nothing is', () => {
 		expect(formatReport([])).toContain('no workflow runs twice');
+	});
+});
+
+describe('the workflow that reports a required check of the release branch', () => {
+	// A dispatched run's check does not count towards a pull request, and
+	// the queue's merges start no push run: the required check of the
+	// promotion has to come from a run of the promotion itself (#911).
+	const reporting = (on: string): { name: string; raw: string } => ({
+		name: 'ci.yml',
+		raw: `name: CI\non:\n${on}\njobs:\n    gate:\n        name: delendai-validate\n        runs-on: ubuntu-latest\n`,
+	});
+	const doubled =
+		'    push:\n        branches: [develop]\n    pull_request:\n        branches: [develop, main]\n';
+	const integrationOnly =
+		'    push:\n        branches: [develop]\n    pull_request:\n        branches: [develop]\n';
+
+	it('may run on both triggers', () => {
+		expect(
+			findDuplicates([reporting(doubled)], ['delendai-validate']),
+		).toEqual([]);
+	});
+
+	it('must run on pull requests into the release branch', () => {
+		expect(
+			findUnreportedReleaseChecks(
+				[reporting(integrationOnly)],
+				['delendai-validate'],
+			),
+		).toEqual([{ workflow: 'ci.yml' }]);
+		expect(
+			findUnreportedReleaseChecks(
+				[reporting(doubled)],
+				['delendai-validate'],
+			),
+		).toEqual([]);
+	});
+
+	it('still flags any other workflow that doubles up', () => {
+		expect(
+			findDuplicates([reporting(doubled)], ['release-pr-gate']),
+		).toEqual([{ workflow: 'ci.yml' }]);
 	});
 });

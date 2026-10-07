@@ -91,6 +91,14 @@ The owner promotes develop to main only from a stable point, and main is where G
   - "Every git ls-remote, fetch and push that passes a remote, url or ref taken from data ends its options with `--` first, so js/second-order-command-line-injection (#422-#434) no longer applies; the aggregate-job pattern is anchored as a whole (#435) and the test page's end-tag filters accept attributes and whitespace (#421)."
 - Found 2026-10-07 in the first analysis of develop (15 open alerts once #903 made it scanned). Fixed as a class, not per alert: every such call in core, the CLI, the plugins and the repository scripts, including the git plugin's push tool, whose remote comes from tool input (`--receive-pack=<cmd>` was a first-order injection there).
 
+### S9 — The promotion carries its own required check
+- **Status**: in-progress
+- **Files**: `.github/workflows/ci.yml`, `tools/scripts/lint/no-duplicate-release-triggers.script.ts`, `tools/scripts/lint/no-duplicate-release-triggers.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The workflow that reports a required check of the release branch runs on pull requests into it, so a promotion whose head no push run built still gets that check; the lint that forbade the doubled trigger exempts that workflow and refuses it when it lacks the trigger."
+- Found 2026-10-07 on the first promotion after this proposal's fixes (#911): `delendai-validate` and `release-pr-gate` were green on its head, yet the forge kept it BLOCKED with `delendai-validate` "expected". The check came from a dispatched certification run, and the forge counts a check towards a pull request only from that pull request's own runs or a push; the queue's merges, made with the workflow token, start no push run. The rule against running CI on both triggers rested on that push run existing.
+
 ## acceptance
 
 - The alerts js/insecure-temporary-file (#420, #166-#169), js/shell-command-injection-from-environment (#269) and js/indirect-command-line-injection (#366) no longer apply to the code: temporary files are created exclusively with restrictive modes, and no command string built from the environment or arguments reaches a shell.

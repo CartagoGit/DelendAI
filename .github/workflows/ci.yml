@@ -6,26 +6,24 @@ name: CI
 on:
     push:
         branches: [develop, main]
-    # Pull requests into `develop` only, NOT into `main`.
+    # Pull requests into `develop`, and the promotion into `main`.
     #
-    # A pull request into `main` is the release promotion, and its head
-    # IS `develop` — the same commit the push trigger above already built.
-    # Running the matrix again for the pull-request event produced a
-    # second, identical set of 35 checks on the same SHA: measured on the
-    # release candidate, 89 check rows of which 48 were distinct names.
-    # Required status checks are evaluated per COMMIT, not per event, so
-    # the push run's `delendai-validate` satisfies `main` on its own;
-    # verified on `3266871`, where both runs reported success against the
-    # same SHA.
+    # The promotion's head IS `develop`, so this used to rely on the push
+    # run of that commit for `main`'s required `delendai-validate`. That
+    # run no longer exists: the queue merges with the workflow token,
+    # whose pushes start no workflow, and certifies `develop` with a
+    # dispatched run, which the forge does not count towards a pull
+    # request. On 2026-10-07 the promotion (#911) sat BLOCKED with the
+    # check "expected" while the dispatched run had reported it green on
+    # the same commit. The promotion now runs the matrix itself
+    # (`lint:no-duplicate-release-triggers` exempts the workflow that
+    # reports the release branch's required check, and requires it to).
     #
-    # A pull request into `main` from anywhere OTHER than `develop` gets
-    # no matrix and therefore no `delendai-validate`, so it cannot merge.
-    # That is the intended direction to be wrong in: the branch model
-    # (ADR 0020) routes every change through `develop`, and a hotfix that
-    # skipped it should stop at a missing check rather than pass on one
-    # nobody ran.
+    # A pull request into `main` from anywhere OTHER than `develop` is
+    # refused by `release-pr-gate`; the matrix running on it changes that
+    # in no way.
     pull_request:
-        branches: [develop]
+        branches: [develop, main]
     # The merge queue runs this same matrix against the batch it intends
     # to merge, which is the only place the "up to date" requirement can
     # be satisfied without somebody refreshing every candidate by hand.
