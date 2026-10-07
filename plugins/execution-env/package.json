@@ -1,0 +1,67 @@
+{
+	"name": "@delendai/execution-env",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Execution environments for @delendai/core: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"execution",
+		"docker",
+		"ssh",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/execution-env"
+	},
+	"peerDependencies": {
+		"@delendai/core": "^0.1.1"
+	},
+	"dependencies": {
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@delendai/core": "workspace:*",
+		"@delendai/test-kit": "workspace:*",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/delendai"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}
