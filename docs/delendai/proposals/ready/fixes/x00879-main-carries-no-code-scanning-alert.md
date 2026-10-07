@@ -109,6 +109,14 @@ The owner promotes develop to main only from a stable point, and main is where G
   - "`lint:dependency-advisories` runs on every candidate in `lint-security` and fails on any advisory of moderate severity or above in the lockfile, unless it is excepted in `config/delendai/advisory-exceptions.json` with a reason and a review date that has not passed."
 - Found 2026-10-07 right after the promotion: Dependabot opened GHSA-6qxp-vccf-f47h on the root and `apps/web` (SDK pinned at 1.30.0), and `bun audit` found 43 advisories in the lockfile, most kept in place by root `overrides` that had pinned versions once patched and since superseded. The overrides now pin the patched versions; braces has no patched release and is excepted until 2026-11-07. Nothing audited the lockfile before a candidate landed.
 
+### S11 — The forward sync's branch is a canonical publication
+- **Status**: in-progress
+- **Files**: `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The branch the forward sync opens has the agent, kind, unit-with-generation and topic segments of every publication (`delendai/pr/delendai/sync/forward-<sha>-g1/carries-the-release-back`), so `work doctor --forge` reports `publications-canonical` as holding while it is open."
+- Found 2026-10-07 on the first real forward sync (#913, after the promotion #911): the flat `delendai/pr/forward-sync-<sha>` failed `publications-canonical` and turned two runs of keep-the-queue-moving red while it was open. A branch DelendAI made broke the rule DelendAI holds every agent's branches to; it now has the same shape instead of an exception.
+
 ## acceptance
 
 - The alerts js/insecure-temporary-file (#420, #166-#169), js/shell-command-injection-from-environment (#269) and js/indirect-command-line-injection (#366) no longer apply to the code: temporary files are created exclusively with restrictive modes, and no command string built from the environment or arguments reaches a shell.
