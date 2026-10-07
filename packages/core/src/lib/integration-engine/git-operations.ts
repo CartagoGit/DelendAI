@@ -40,7 +40,6 @@ const pushArguments = (request: IPushRefRequest): readonly string[] => {
 	if (request.expectedRemoteSha !== undefined) {
 		return [
 			'push',
-			'--',
 			`--force-with-lease=refs/heads/${request.branch}:${request.expectedRemoteSha}`,
 			'--',
 			request.remote,
