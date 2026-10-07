@@ -139,6 +139,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La intención de bump se deriva calling `inferBump` de `@delendai/changelog/public`; un test falla si el paquete se reimplementa localmente en lugar de importarse."
   - "El payload de bump nombra siempre su `authority` (`@delendai/changelog::inferBump`) para que ningún consumidor pueda leerlo como permiso para escribir una versión."
 - shipped: gate evaluator (ternary verdicts, unknown without evidence) and the bump intent built on the changelog plugin's inferBump, carrying its authority. The spec mocks the plugin to prove the bump is delegated, not recomputed.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Store de la autoridad: lectura y escritura durable del fichero de roadmap
 - **Status**: pending
