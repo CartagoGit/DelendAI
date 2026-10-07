@@ -40,10 +40,22 @@ CREATE TABLE IF NOT EXISTS drivers (
 );
 `;
 
+// The cache layout epoch per lifecycle scope. Created if missing on every
+// open, so it needs no `user_version` bump: the epoch is its own axis and
+// this table only ever grows rows.
+export const CREATE_LIFECYCLE_META_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS lifecycle_meta (
+	scope TEXT PRIMARY KEY,
+	applied_epoch INTEGER NOT NULL,
+	updated_at INTEGER NOT NULL
+);
+`;
+
 export const STATE_SQLITE_SCHEMA_SQL = [
 	CREATE_GENERATIONS_TABLE_SQL,
 	CREATE_GENERATIONS_SCOPE_INDEX_SQL,
 	`CREATE INDEX IF NOT EXISTS idx_generations_fingerprint
 ON generations(fingerprint);`,
 	CREATE_DRIVERS_TABLE_SQL,
+	CREATE_LIFECYCLE_META_TABLE_SQL,
 ] as const;
