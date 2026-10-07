@@ -101,6 +101,8 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Resolves container by name or id, supports user switching."
   - "env() reads container env via docker inspect."
   - "teardown does not stop the container (it was existing)."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S7 — Secret resolver
 - **Status**: pending
