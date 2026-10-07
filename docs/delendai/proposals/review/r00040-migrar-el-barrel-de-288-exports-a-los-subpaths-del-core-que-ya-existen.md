@@ -2,7 +2,7 @@
 id: r00040
 title: "Migrar el barrel de 288 exports a los subpaths del core que ya existen"
 kind: refactor
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, r00041]
-last-transition-id: d4b94ca0-a7e2-4351-a024-da69ecccf596
-last-correlation-id: d4b94ca0-a7e2-4351-a024-da69ecccf596
-last-transition-from: review
+last-transition-id: d55a2398-73c5-4dd5-898b-8b378f042c8d
+last-correlation-id: d55a2398-73c5-4dd5-898b-8b378f042c8d
+last-transition-from: in-progress
 shipped-in:
   - "f2b416c4e241"
 ---
