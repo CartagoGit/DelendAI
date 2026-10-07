@@ -98,8 +98,8 @@ export const releaseChecksReported = (
 	workflow: Record<string, YamlValue>,
 	checks: readonly string[],
 ): readonly string[] => {
-	const names = Object.values(asRecord(workflow['jobs'])).map(
-		(job) => asRecord(job)['name'],
+	const names = Object.values(asRecord(workflow.jobs)).map(
+		(job) => asRecord(job).name,
 	);
 	return checks.filter((check) => names.includes(check));
 };
@@ -108,8 +108,7 @@ export const releaseChecksReported = (
 export const runsOnReleasePullRequests = (
 	workflow: Record<string, YamlValue>,
 	release: string,
-): boolean =>
-	branchesOf(asRecord(workflow['on'])['pull_request']).includes(release);
+): boolean => branchesOf(asRecord(workflow.on).pull_request).includes(release);
 
 export const findDuplicates = (
 	files: readonly { readonly name: string; readonly raw: string }[],
