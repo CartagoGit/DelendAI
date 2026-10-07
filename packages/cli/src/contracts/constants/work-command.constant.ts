@@ -7,7 +7,7 @@
 export const WORK_COMMAND = {
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|swarm|doctor|claim|enter|checkpoint|publish|retire|retired|reap> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--alongside] [--workspace=<path>]',
+	usage: 'work <status|swarm|doctor|claim|enter|checkpoint|publish|retire|retired|reap> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--alongside] [--all] [--workspace=<path>]',
 	flags: [
 		'proposal',
 		'slice',
@@ -28,6 +28,8 @@ export const WORK_COMMAND = {
 		'drop',
 		'unowned',
 		'with-worktree',
+		// `work swarm --all` lists the ended units it otherwise folds.
+		'all',
 		'no-pull-request',
 		'forge',
 		'allow-scope-narrowing',
