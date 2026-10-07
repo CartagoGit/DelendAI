@@ -12,7 +12,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 import { CommitPolicyOptionsSchema } from '../../../src/lib/contracts/options';
 import { runCommitDriver } from '../../../src/lib/services/commit-driver';

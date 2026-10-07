@@ -1,13 +1,13 @@
 import { basename, dirname } from 'node:path';
 
+import { joinRel } from '@delendai/core/public';
 import {
-	joinRel,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 import { detectPresetForArea } from './detect-framework';
 import { PRESET_BY_ID, RULE_PRESETS } from './presets';

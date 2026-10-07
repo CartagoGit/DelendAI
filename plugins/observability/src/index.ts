@@ -9,7 +9,7 @@
  */
 import z from 'zod';
 
-import { definePlugin } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 
 import { createRuntimeMetricsRegistry } from './lib/metrics/runtime-metrics-registry';
 import { buildObservabilityToolRegistrations } from './lib/tools/registry';

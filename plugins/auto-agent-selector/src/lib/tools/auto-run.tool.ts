@@ -1,6 +1,7 @@
 import z from 'zod';
 
-import type { IRunArgvOutcome, IToolRegistration } from '@delendai/core/public';
+import type { IRunArgvOutcome } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { runArgv, toolJson } from '@delendai/core/public';
 
 import { discoverRankedProviders } from '../services/discover-ranked-providers.service';

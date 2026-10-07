@@ -2,7 +2,7 @@ import type { z } from 'zod';
 import zImpl from 'zod';
 import { describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import type { IToolEffect } from '@delendai/core/cli';
 
 import {

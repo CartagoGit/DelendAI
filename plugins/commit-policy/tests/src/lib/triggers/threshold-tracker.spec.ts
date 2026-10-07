@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	gitAdd,
-	type IGitRunner,
-	type IGitRunResult,
-} from '@delendai/core/public';
+import { gitAdd } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 
 import { createThresholdTracker } from '@delendai/commit-policy/lib/triggers/threshold-tracker';
 import { gitCachedNames } from '@delendai/commit-policy/lib/services/git-extra';

@@ -24,8 +24,9 @@ import { basename, join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
-import { redactSecrets, toolOk, writeFileAtomic } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { redactSecrets, toolOk } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
 
 import { allocateNextProposalId } from '../proposals/proposal-id-allocator';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';

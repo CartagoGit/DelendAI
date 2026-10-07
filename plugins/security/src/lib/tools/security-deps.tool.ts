@@ -3,14 +3,14 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	summarizeFindings,
 	toolError,
 	toolJson,
 	worstSeverity,
-	type IFinding,
 } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 import { resolveWorkspaceContainedEffective } from '@delendai/core/public';
 import { listDeps, type IDepsInventory } from '@delendai/deps/public';
 

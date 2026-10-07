@@ -1,7 +1,8 @@
 import { readFile as fsReadFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { runExternalTool, type IExternalTool } from '@delendai/core/public';
+import { runExternalTool } from '@delendai/core/public';
+import type { IExternalTool } from '@delendai/core/contracts';
 
 import type {
 	IForgeFailure,

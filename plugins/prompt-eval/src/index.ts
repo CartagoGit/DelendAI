@@ -15,7 +15,7 @@
  */
 import z from 'zod';
 
-import { definePlugin } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import type { ICalibrationStore } from '@delendai/auto-agent-selector/public';
 
 import { buildEvalRunRegistration } from './lib/tools/eval-run.tool';

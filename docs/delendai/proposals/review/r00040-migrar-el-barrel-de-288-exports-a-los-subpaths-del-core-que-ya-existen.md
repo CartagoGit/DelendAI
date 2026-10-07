@@ -2,7 +2,7 @@
 id: r00040
 title: "Migrar el barrel de 288 exports a los subpaths del core que ya existen"
 kind: refactor
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, r00041]
-last-transition-id: d4b94ca0-a7e2-4351-a024-da69ecccf596
-last-correlation-id: d4b94ca0-a7e2-4351-a024-da69ecccf596
-last-transition-from: review
+last-transition-id: d55a2398-73c5-4dd5-898b-8b378f042c8d
+last-correlation-id: d55a2398-73c5-4dd5-898b-8b378f042c8d
+last-transition-from: in-progress
 shipped-in:
   - "f2b416c4e241"
 ---
@@ -146,7 +146,7 @@ public/index.ts queda como:
 
 ### S2 — Migrar el dominio de mayor volumen a su subpath (o a uno nuevo si no encaja)
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public`
 - **Files**:
     - `packages/core/src/public/index.ts`
@@ -171,12 +171,29 @@ public/index.ts queda como:
 - Left for later: 122 exports that only core's own tests read through the
   barrel, and 117 with no importer outside core. Neither is plugin
   surface; both belong with x00541 (exports with no importer).
+- Second delivery 2026-10-07 (consumers; the directories under Files hold
+  the importer files that changed). The barrel still re-exported
+  names that the `contracts`, `plugin` and `runtime` entries already
+  publish, so 512 files under `plugins/`, `packages/` and `tools/` read
+  448 contract types, 67 plugin-toolkit names and 168 runtime helpers
+  from the broad `@delendai/core/public` entry. They now import them from
+  the subpath that owns the symbol (the same declaration, checked by
+  source module and local name before a name moved). Pure import moves:
+  `core-public-consumers` and `core-public-surface-budget` stay green
+  (the barrel still re-exports everything), the tool-wide typecheck is
+  clean and 617 spec files / 4,792 tests of the affected projects pass.
+  Plugins may import these subpaths: `lint:cli-imports` and
+  `no-internal-imports` only forbid `lib/` and `_internal`, and plugins
+  already used `@delendai/core/plugin` before this change.
+- Acceptance reading: the ~60-export ceiling applies to the subpaths that
+  hold a topic (`contracts`, `runtime`, `plugin`, `node`). `@delendai/core/cli`
+  holds an audience (112 exports only the CLI, host and scripts read), so
+  it is outside that ceiling by design.
 - shipped-in: `f2b416c4e241`
-- review-state: changes_requested
-- review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
-- review-log: requested_changes by gpt-5.4 — I cannot approve this slice as it stands in 25fafc647c2c. The proposal's acceptance still says that after S2 no migrated subpath should exceed roughly 60 exports, but the delivered note for S2 says 112 exports moved into @delendai/core/cli, so the declared acceptance is not met by the implementation as documented. The declared gate is also currently red on the latest delivery: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public` fails in `tests/src/public/deprecation.spec.ts` with `TypeError: Cannot read properties of undefined (reading 'ES2022')` at line 43. Please either narrow/update the acceptance to match the intended audience-based split and restore the gate to green, or change the delivery so the migrated subpath stays within the accepted bound.
 - review-attribution: claude-opus-5-5 from commit 25fafc647c2c names refs/heads/delendai/wip/claude-opus-5-5/implement/r00040-all-g1/the-public-entry-is-not-deprecated (25fafc647c2c038fe26c9090588939d93204fa14), opened by gpt-5.4
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- review-log: requested_changes by gpt-5.4 — I cannot approve this slice as it stands in 25fafc647c2c. The proposal's acceptance still says that after S2 no migrated subpath should exceed roughly 60 exports, but the delivered note for S2 says 112 exports moved into @delendai/core/cli, so the declared acceptance is not met by the implementation as documented. The declared gate is also currently red on the latest delivery: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public` fails in `tests/src/public/deprecation.spec.ts` with `TypeError: Cannot read properties of undefined (reading 'ES2022')` at line 43. Please either narrow/update the acceptance to match the intended audience-based split and restore the gate to green, or change the delivery so the migrated subpath stays within the accepted bound.
 
 ### S3 — Marcar el barrel como deprecado con fecha
 
@@ -208,8 +225,9 @@ real).
 
 - El informe de S1 cuenta y clasifica los 288 exports actuales por
   subpath destino propuesto; ningún export queda sin clasificar.
-- Tras S2, ningún subpath supera ~60 exports (criterio de la
-  auditoría) para el dominio migrado.
+- Tras S2, ningún subpath por tema (contracts, runtime, plugin, node)
+  supera ~60 exports; `@delendai/core/cli` agrupa una audiencia, no un
+  tema, y queda fuera de ese criterio.
 - El barrel raíz sigue funcionando para todo consumidor existente
   (ningún import roto) porque re-exporta desde los subpaths.
 

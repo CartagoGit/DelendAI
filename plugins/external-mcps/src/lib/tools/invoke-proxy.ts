@@ -25,7 +25,8 @@
  * refuses unconditionally with `code: 'llm-activation-disabled'` — the
  * model cannot trigger the first boot on its own.
  */
-import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import { decideActivation } from '../activation/activation-policy.helper';

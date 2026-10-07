@@ -40,18 +40,20 @@ import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
-	SafeWorkspaceReader,
 	callerCheckout,
 	projectBranches,
 	safeRename,
 	toolError,
 	toolOk,
-	withFileMutex,
 	withFileMutexes,
-	writeFileAtomic,
 } from '@delendai/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@delendai/core/runtime';
 
 import {
 	PROPOSAL_KIND_BY_PREFIX,

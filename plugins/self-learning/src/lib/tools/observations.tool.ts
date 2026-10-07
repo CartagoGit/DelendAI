@@ -1,6 +1,7 @@
 import z from 'zod';
 
-import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 
 import { collectFromTestJournal } from '../collectors/test-journal.service';

@@ -14,7 +14,7 @@ import { rustAdapter } from '@delendai/rules/lib/frameworks/languages/rust/rust.
 import { ALL_PRESET_DATA } from '@delendai/rules/lib/frameworks/presets/data';
 import { DEFAULT_DOGMA_ADAPTERS } from '@delendai/rules/lib/frameworks/dogmas';
 
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 /**
  * Consistency tests for `buildManifestViaComposition`.

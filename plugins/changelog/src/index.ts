@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { definePlugin } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 
 import { buildChangelogGenerateToolRegistration } from './lib/tools/changelog-generate.tool';
 import { buildReleasePlanToolRegistration } from './lib/tools/release-plan.tool';

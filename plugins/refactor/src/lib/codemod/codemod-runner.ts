@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import {
 	applyCodemodEdits,

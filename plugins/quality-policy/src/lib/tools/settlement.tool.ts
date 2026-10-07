@@ -11,7 +11,7 @@
 
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { compactOutputSchema, toolJson } from '@delendai/core/public';
 
 import { runSettlement } from '../services/settlement-runner';

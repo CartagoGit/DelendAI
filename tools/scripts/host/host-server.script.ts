@@ -13,9 +13,9 @@ import { runSupervised, shouldSupervise } from './host-supervisor-process';
 import {
 	assembleCliConfig,
 	createMcpProject,
-	parseCliArgs,
 	resolveWorkAgentId,
 } from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/plugin';
 import {
 	createFileSystemJournal,
 	DEFAULT_MIGRATIONS,
