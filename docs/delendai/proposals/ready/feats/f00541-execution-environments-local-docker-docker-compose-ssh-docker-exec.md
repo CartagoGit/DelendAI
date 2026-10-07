@@ -89,6 +89,8 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Default keepalive is 30s interval, 4 count max."
   - "Shell quoting is OS-aware (POSIX vs Windows quoting)."
   - "Capability forward-secrets is false unless ssh-agent-forward is configured."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S6 — Docker Exec adapter for sidecars
 - **Status**: pending
