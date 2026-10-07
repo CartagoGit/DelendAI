@@ -63,6 +63,8 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "`recordDuration(vector, actor, kind, durationMs, outcome)` se invoca desde `proposal-transition.tool.ts` cuando `to === 'done'` o `to === 'review'`; sin await en el camino crítico (se ejecuta en background tras el `await writeFileAtomic(frontmatter)`)."
   - "Una transición `done` para un slice con `outcome: 'blocked'` no se inserta (sólo `outcome ∈ {done, review}` cuentan)."
   - "Test: simular 10 transiciones a `done` con vectores distintos produce 10 filas; una undécima con el mismo `(vector, actor, kind)` se acumula en un buffer interno y se inserta como nueva fila sólo si la mediana cambia >5%."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — `eta-engine.ts` — cálculo de mediana + p80 por `(feature_vector_hash, actor_profile)`; fallback a `task_kind` global si la combinación específica tiene <5 muestras
 - **Status**: done — `86bd19eb0`. `eta-engine.ts` and `eta-aggregation.ts` landed with 25 passing specs; `tests/src/lib/eta/eta-fixtures.spec.ts` asserts a median relative p50 error <= 0.35 over 70 synthetic samples, the p80 aggregation, `insufficient_history`, and the task-kind fallback at confidence 0.6 vs 0.9. Verified 2026-09-15.
