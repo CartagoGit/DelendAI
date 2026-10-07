@@ -1,0 +1,11 @@
+{
+	"$comment": "Advisories a dependency carries with no patched version to move to. Each names its reason and the date it is looked at again; an expired one fails lint:dependency-advisories until it is fixed or renewed.",
+	"exceptions": [
+		{
+			"advisory": "GHSA-vfj7-8cjw-p6xm",
+			"package": "braces",
+			"reason": "No version of braces is patched (3.0.3 is the latest and is affected). It reaches the tree through micromatch in build and test tooling, where every pattern is the repository's own.",
+			"until": "2026-11-07"
+		}
+	]
+}
