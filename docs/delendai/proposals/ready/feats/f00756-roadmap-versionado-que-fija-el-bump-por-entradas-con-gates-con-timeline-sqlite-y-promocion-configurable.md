@@ -154,6 +154,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Todo texto persistido pasa por `redactSecrets` antes de escribirse."
   - "La ruta del fichero es inyectada, nunca derivada de `process.cwd()`."
 - shipped: the markdown/YAML authority store over an injected file port (atomic write, whole-cycle lock, redaction, quarantine of unparseable files) plus the node port that wires core's withFileMutex, writeFileAtomic and quarantineCorruptFile. Re-cut: only a file that cannot be parsed is quarantined, and only on the write path; a file that parses but breaks the schema or has a newer schemaVersion is reported and left where it is, because it is a reviewable git-tracked file a person is still editing. The data lives in front matter for markdown paths and is the whole file for any other extension; prose after the front matter survives a write.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — Timeline append-only sin binario (variante CI-safe)
 - **Status**: pending
