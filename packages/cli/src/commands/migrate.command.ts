@@ -3,7 +3,7 @@ import {
 	DEFAULT_MIGRATIONS,
 	createFileSystemJournal,
 } from '@delendai/core/cli';
-import { runPendingMigrations } from '@delendai/core/cli';
+import { runPendingMigrations, scanLegacyIdentity } from '@delendai/core/cli';
 import {
 	readLatestManifestFromDisk,
 	type IStoredMigrationManifest,
@@ -20,6 +20,7 @@ import type {
 	ICliCommand,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
+import type { IResidualReport } from '../contracts/interfaces/residual-report.interface';
 import { data, hasFlag } from '../lib/helpers/cli-command.helper';
 
 export interface IMigrateCommandDeps {
@@ -37,7 +38,15 @@ export interface IMigrateCommandDeps {
 		workspaceRoot: string,
 		manifest: IStoredMigrationManifest,
 	) => Promise<unknown>;
+	/** The legacy spellings still live in the workspace's files. */
+	readonly scanResidual?: (workspaceRoot: string) => Promise<IResidualReport>;
 }
+
+/** How many residual hits `migrate status` lists; the count covers all. */
+const RESIDUAL_HITS_LISTED = 20;
+
+/** Directories the residual scan never reads: installed or regenerable. */
+const RESIDUAL_SCAN_EXCLUDES = ['.git', 'node_modules', '.cache'] as const;
 
 const subcommand = (args: readonly string[]): string | undefined => args[0];
 
@@ -60,6 +69,21 @@ const defaultDeps = (): Required<IMigrateCommandDeps> => {
 				{ workspaceRoot },
 			),
 		readLatestManifest: readLatestManifestFromDisk,
+		scanResidual: async (workspaceRoot) => {
+			const scanned = await scanLegacyIdentity(workspaceRoot, {
+				excludePrefixes: RESIDUAL_SCAN_EXCLUDES,
+			});
+			return {
+				live: scanned.liveHits.length,
+				hits: scanned.liveHits
+					.slice(0, RESIDUAL_HITS_LISTED)
+					.map((hit) => ({
+						file: hit.file,
+						line: hit.line,
+						spelling: hit.spelling,
+					})),
+			};
+		},
 		rollbackLatest: async (workspaceRoot, stored) =>
 			rollbackLatestMigration(
 				{ workspaceRoot },
@@ -95,11 +119,19 @@ export const createMigrateCommand = (
 
 			const sub = subcommand(args);
 			if (sub === undefined || sub === 'status') {
-				const [applied, latestManifest] = await Promise.all([
+				// A leftover the migrators do not own is reported, never
+				// silent: the old name in a live file is something to fix.
+				const [applied, latestManifest, residual] = await Promise.all([
 					resolved.readJournal(workspaceRoot),
 					resolved.readLatestManifest(workspaceRoot),
+					resolved.scanResidual(workspaceRoot),
 				]);
-				return data({ workspaceRoot, applied, latestManifest });
+				return data({
+					workspaceRoot,
+					applied,
+					latestManifest,
+					residual,
+				});
 			}
 
 			if (sub === 'run') {
