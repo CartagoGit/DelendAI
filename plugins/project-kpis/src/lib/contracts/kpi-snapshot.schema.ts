@@ -81,6 +81,16 @@ export const KpiWorkflowSectionSchema = z
 		publicationsWaiting: z.number().int().min(0),
 		agents: z.number().int().min(0),
 		agentsThatProducedNothing: z.number().int().min(0),
+		coordination: z
+			.object({
+				windowDays: z.number().int().positive(),
+				commits: z.number().int().min(0),
+				merges: z.number().int().min(0),
+				bookkeeping: z.number().int().min(0),
+				tax: z.number().min(0).max(1),
+			})
+			.strict()
+			.optional(),
 	})
 	.strict();
 
