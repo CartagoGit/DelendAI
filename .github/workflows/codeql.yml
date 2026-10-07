@@ -1,6 +1,7 @@
 # codeql.yml — f00050 S8.
 #
-# CodeQL static analysis on push and pull_request targeting `main`.
+# CodeQL static analysis on push and pull_request targeting `main` and
+# `develop`, and on demand.
 # Uses the `security-and-quality` query pack so we get both
 #   - security vulns (SQLi, command injection, path traversal, SSRF…)
 #   - quality / maintainability rules (duplicated code, dead code…)
@@ -9,10 +10,15 @@
 name: CodeQL
 
 on:
+  # The integration branch too: an alert is reported when it is introduced,
+  # and develop reaches main with none open (x00879 S5). Before, only main
+  # was analysed, so 48 alerts reached the owner long after their code
+  # landed on develop.
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
+  workflow_dispatch:
 
 # Cancel superseded runs on the same ref.
 concurrency:
