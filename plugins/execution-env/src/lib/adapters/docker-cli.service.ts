@@ -15,7 +15,7 @@ import type {
 	IPrepareResult,
 	ITeardownResult,
 } from '../contracts/interfaces/execution-env-types.interface';
-import type { IExecutionEnvironment } from '../contracts/interfaces/execution-env.interface';
+import { CommandOnlyEnvironment } from './command-only-environment.service';
 import type { IProcessRunner } from '../contracts/interfaces/process-runner.interface';
 import {
 	assertMountsAllowed,
@@ -26,9 +26,6 @@ import { inspectContainerEnvironment } from '../helpers/docker-env.helper';
 import { redactEnvironment } from '../helpers/env-redaction.helper';
 import { runPlanned } from '../helpers/run-planned.helper';
 import { createSpawnProcessRunner } from '../runners/spawn-process-runner.service';
-
-/** Writes stdin to a path; the path arrives as a positional parameter. */
-const WRITE_FILE_SCRIPT = 'mkdir -p -- "$(dirname -- "$1")" && cat > "$1"';
 
 const randomSuffix = (): string =>
 	randomBytes(DOCKER_CONTAINER_NAME_SUFFIX_LENGTH / 2).toString('hex');
@@ -42,7 +39,7 @@ const randomSuffix = (): string =>
  * container removed at teardown, and nothing from the host mounted
  * unless it is listed.
  */
-export class DockerCliExecutionEnvironment implements IExecutionEnvironment {
+export class DockerCliExecutionEnvironment extends CommandOnlyEnvironment {
 	readonly id = 'docker';
 	readonly label = 'Docker';
 
@@ -51,6 +48,7 @@ export class DockerCliExecutionEnvironment implements IExecutionEnvironment {
 	private readonly containerName: string;
 
 	constructor(private readonly options: IDockerCliOptions) {
+		super();
 		if (options.image.trim().length === 0) {
 			throw new Error('a docker execution environment needs an image');
 		}
@@ -122,24 +120,6 @@ export class DockerCliExecutionEnvironment implements IExecutionEnvironment {
 					: { timeoutMs: options.timeoutMs }),
 			},
 		});
-	}
-
-	async putFile(path: string, content: string): Promise<void> {
-		const result = await this.exec(
-			['sh', '-c', WRITE_FILE_SCRIPT, 'sh', path],
-			{ stdin: content },
-		);
-		if (result.exitCode !== 0) {
-			throw new Error(`could not write ${path}: ${result.stderr.trim()}`);
-		}
-	}
-
-	async getFile(path: string): Promise<string> {
-		const result = await this.exec(['cat', '--', path]);
-		if (result.exitCode !== 0) {
-			throw new Error(`could not read ${path}: ${result.stderr.trim()}`);
-		}
-		return result.stdout;
 	}
 
 	async teardown(): Promise<ITeardownResult> {

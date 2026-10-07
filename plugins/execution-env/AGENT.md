@@ -19,10 +19,13 @@
 - DockerCliExecutionEnvironment
 - inspectContainerEnvironment
 - parseEnvironmentEntries
+- DockerComposeExecutionEnvironment
+- parseComposeFile
 
 ## Depends on
 
 - zod
+- yaml
 - @delendai/core
 
 ## Writes
@@ -37,9 +40,9 @@
 ## Tests
 
 - plugins/execution-env/tests/src/lib/adapters/docker-cli.spec.ts
+- plugins/execution-env/tests/src/lib/adapters/docker-compose.spec.ts
 - plugins/execution-env/tests/src/lib/adapters/local.spec.ts
-- plugins/execution-env/tests/src/lib/helpers/env-redaction.spec.ts
-- plugins/execution-env/tests/src/lib/registry/execution-env-registry.spec.ts
+- plugins/execution-env/tests/src/lib/helpers/compose-parser.spec.ts
 
 ## Do not
 

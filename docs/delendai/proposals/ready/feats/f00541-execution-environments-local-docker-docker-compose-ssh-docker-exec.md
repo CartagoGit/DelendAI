@@ -68,9 +68,10 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-implementer: claude-sonnet-5-5
 
 ### S4 — Docker Compose adapter
-- **Status**: pending
-- **Files**: `plugins/execution-env/src/lib/adapters/docker-compose.service.ts`, `plugins/execution-env/tests/docker-compose.service.spec.ts`
-- **Gate**: type
+- **Status**: review
+- **Files**: `plugins/execution-env/src/lib/adapters/docker-compose.service.ts`, `plugins/execution-env/src/lib/adapters/command-only-environment.service.ts`, `plugins/execution-env/src/lib/adapters/docker-cli.service.ts`, `plugins/execution-env/src/lib/helpers/compose-parser.helper.ts`, `plugins/execution-env/src/lib/helpers/compose-args.helper.ts`, `plugins/execution-env/src/lib/helpers/file-transfer.helper.ts`, `plugins/execution-env/src/lib/contracts/constants/compose.constant.ts`, `plugins/execution-env/src/lib/contracts/constants/file-transfer.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/compose-file.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/compose-execution.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/exec-function.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/package.json`, `plugins/execution-env/tests/src/lib/adapters/docker-compose.spec.ts`, `plugins/execution-env/tests/src/lib/helpers/compose-parser.spec.ts`
+- **Gate**: `npx vitest run --root plugins/execution-env`
+- shipped: `parseComposeFile` reads the basic shape of a compose file (services with image, working directory, environment as map or list, ports, volumes, and limits from `mem_limit`, `cpus` or `deploy.resources.limits`). `DockerComposeExecutionEnvironment` is one service: `prepare` reads the file through the safe reader and checks the service exists and that its declared limits are within an optional ceiling; `exec` runs `docker compose run --rm -T --no-deps ... -- service bash -lc 'exec "$@"' bash <command>`, so the command is positional parameters and never shell text. Host variables are forwarded by name only. `CommandOnlyEnvironment` holds file transfer once for the docker and compose adapters. Compose cannot set limits on `run`, so limits are read from the file and enforced as a precondition rather than applied.
 - acceptance:
   - "Parses compose file (basic shape) and exposes per-service prepare and exec."
   - "Invokes docker compose run --rm service bash -lc for shell commands."

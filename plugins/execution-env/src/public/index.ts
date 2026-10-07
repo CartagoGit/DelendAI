@@ -45,3 +45,14 @@ export {
 	inspectContainerEnvironment,
 	parseEnvironmentEntries,
 } from '../lib/helpers/docker-env.helper';
+export { DockerComposeExecutionEnvironment } from '../lib/adapters/docker-compose.service';
+export type { IComposeExecutionOptions } from '../lib/contracts/interfaces/compose-execution.interface';
+export type {
+	IComposeFile,
+	IComposeLimits,
+	IComposeService,
+} from '../lib/contracts/interfaces/compose-file.interface';
+export {
+	parseComposeFile,
+	parseMemoryLimit,
+} from '../lib/helpers/compose-parser.helper';
