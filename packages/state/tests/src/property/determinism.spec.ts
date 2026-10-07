@@ -125,7 +125,7 @@ function clockedNonDeterministicProducer(): IStateProducer & {
 
 const opArb = fc.constantFrom('tick', 'tock') as fc.Arbitrary<string>;
 
-const NUM_RUNS = Number(process.env.STATE_PROPERTY_RUNS ?? 200);
+const NUM_RUNS = Number(process.env.STATE_PROPERTY_RUNS ?? 1000);
 
 describe('Property: determinism (q00018 S3 acceptance #2)', () => {
 	it(`two fresh registries produce identical hash over ${NUM_RUNS} sequences`, () => {
