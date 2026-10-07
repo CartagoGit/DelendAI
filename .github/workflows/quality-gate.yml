@@ -1,19 +1,27 @@
 # quality-gate.yml — c00132 (AUD-P0-002).
 #
-# Required status check on `main` (see `.github/branch-protection.yml`). Runs
-# the integrated quality gate so a release PR cannot merge with regressions.
+# The integrated sweep: typecheck, lint, validate, the whole suite in one
+# process, and EVERY lint script under tools/scripts/lint, wired into a
+# workflow or not. That last part is what nothing else runs, and why the
+# sweep is kept.
+#
+# Not on the pull request path. It ran on every promotion into `main`,
+# where it was never a required check, repeated the CI matrix that IS
+# required there (which runs on the promotion itself since x00879 S9), and
+# hit its 30-minute limit every time: a red run on each promotion that
+# blocked nothing and taught everyone to ignore it (#641, #911). It now
+# sweeps the integration branch once a day and on request, where a
+# finding is somebody's task instead of everybody's wait.
 #
 # Triggers:
-#   pull_request to main.
-#   merge_group (queue).
-#   workflow_dispatch (manual reruns).
+#   schedule (daily; the forge runs the default branch's copy of this file).
+#   workflow_dispatch (on any branch, by hand).
 
 name: quality-gate
 
 on:
-    pull_request:
-        branches: [main]
-    merge_group:
+    schedule:
+        - cron: '17 3 * * *'
     workflow_dispatch:
 
 concurrency:
@@ -31,7 +39,7 @@ jobs:
             fail-fast: false
             matrix:
                 mode: [collect]
-        timeout-minutes: 30
+        timeout-minutes: 60
         steps:
             # Full history, and `proposal-cited-commits` is why.
             #
@@ -43,9 +51,12 @@ jobs:
             # empty and 339 perfectly good citations were reported as
             # orphans. The gate was not wrong about the repository; it was
             # wrong about what it could see.
+            # A scheduled run starts on the default branch (`main`); the
+            # sweep is of the integration branch, where work lands.
             - uses: actions/checkout@v7
               with:
                   fetch-depth: 0
+                  ref: ${{ github.event_name == 'schedule' && 'develop' || github.ref }}
 
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
