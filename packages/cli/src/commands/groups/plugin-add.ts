@@ -5,7 +5,7 @@
  * enforces consent for community entries, and prints the same JSON plan
  * shape the S2 tool returns.
  */
-import { resolvePlugins } from '@delendai/core/public';
+import { resolvePlugins } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {

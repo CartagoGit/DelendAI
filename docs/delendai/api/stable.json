@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-09-28T01:26:09.989Z"
+		"generatedAt": "2026-10-05T06:49:43.532Z"
 	},
 	"tools": [
 		{
@@ -45,6 +45,13 @@
 						"enum": [
 							"steal",
 							"fail"
+						]
+					},
+					"holder": {
+						"type": "string",
+						"enum": [
+							"process",
+							"agent"
 						]
 					},
 					"host": {
@@ -776,6 +783,9 @@
 						"type": "boolean",
 						"const": true
 					},
+					"id": {
+						"type": "string"
+					},
 					"file": {
 						"type": "string"
 					},
@@ -824,10 +834,17 @@
 					},
 					"publishReason": {
 						"type": "string"
+					},
+					"unitBranch": {
+						"type": "string"
+					},
+					"unitRenamedFrom": {
+						"type": "string"
 					}
 				},
 				"required": [
 					"ok",
+					"id",
 					"file",
 					"path",
 					"disjointnessIssues",

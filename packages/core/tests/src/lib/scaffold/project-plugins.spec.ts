@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
+import { createWorkspacePathProvider } from '@delendai/core/public';
 import {
 	PROJECT_PLUGINS_CREATE_INPUT_SCHEMA,
 	buildProjectPluginsCreateToolRegistration,
 	buildProjectPluginsInspectToolRegistration,
 	buildProjectPluginsRepairToolRegistration,
-	createWorkspacePathProvider,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/scaffold/project-plugins';
 import type { IToolRegistration } from '@delendai/core/public';
 
 const registrationNames = async (

@@ -19,7 +19,7 @@ export interface IQueuedCandidate {
 
 const fetched = (root: string, remote: string, ref: string): boolean => {
 	try {
-		execFileSync('git', ['fetch', '-q', remote, ref], {
+		execFileSync('git', ['fetch', '-q', '--', remote, ref], {
 			cwd: root,
 			stdio: 'ignore',
 		});
@@ -97,6 +97,11 @@ export const branchesLandingAsTheyAre = (input: {
 		readonly branch: string;
 	}[];
 }): ReadonlySet<string> => {
+	// Fetched BEFORE it is read: the queue job decides with the integration
+	// branch as it is now, and a remote-tracking ref this machine last
+	// updated an hour ago called a candidate level that the integration
+	// branch had since moved past, in the very files it touches.
+	fetched(input.root, input.remote, input.integration);
 	const integrationSha = revParse(
 		input.root,
 		`${input.remote}/${input.integration}`,

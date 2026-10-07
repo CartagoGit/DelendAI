@@ -257,6 +257,31 @@ describe('runAgentLockEngine — release / status', async () => {
 		]);
 	});
 
+	it('a claim held by the agent records no process, so it survives the one-shot host that took it', async () => {
+		await run(
+			{
+				action: 'claim',
+				task_id: 'cli-task',
+				agent: 'agent-A',
+				files: ['src/cli.ts'],
+				holder: 'agent',
+			},
+			{ nowHostId: () => ({ host: 'host-a', pid: 100 }) },
+		);
+
+		expect(readLockFile().in_flight[0]).not.toHaveProperty('pid');
+		expect(readLockFile().in_flight[0]).not.toHaveProperty('host');
+
+		const released = await releaseAgentSessionClaims({
+			lockPath,
+			nowHostId: () => ({ host: 'host-a', pid: 100 }),
+		});
+		expect(released.releasedTaskIds).toEqual([]);
+
+		const status = await run({ action: 'status' });
+		expect(body(status).in_flight).toHaveLength(1);
+	});
+
 	it('heartbeat refreshes a long-running claim without changing ownership', async () => {
 		await run(
 			{
@@ -415,6 +440,40 @@ describe('runAgentLockEngine — stale GC', async () => {
 			);
 			expect(res.isError).not.toBe(true);
 			expect(readLockFile().in_flight).toHaveLength(1);
+		});
+
+		it('claim with the gate on succeeds from a branch in the project work-ref namespace', async () => {
+			writeFileSync(
+				join(workspace, 'delendai.config.json'),
+				JSON.stringify({
+					development: {
+						profile: 'shared-checkout-pr',
+						branches: { namespacePrefix: 'acme' },
+					},
+				}),
+			);
+			const claim: IAgentLockArgs = {
+				action: 'claim',
+				task_id: 't1',
+				agent: 'a1',
+				files: ['src/a.ts'],
+			};
+			const inUnit = await run(claim, {
+				agentWorktreeEnabled: true,
+				currentBranchOverride: 'acme/wip/a1/implement/x1-S1-g1/topic',
+			});
+			expect(inUnit.isError).not.toBe(true);
+			// The namespace is the project's: the default one is not.
+			const outside = await run(
+				{ ...claim, task_id: 't2', files: ['src/b.ts'] },
+				{
+					agentWorktreeEnabled: true,
+					currentBranchOverride: 'wip/a1/implement/x1-S1-g1/topic',
+				},
+			);
+			expect(outside.isError).toBe(true);
+			expect(body(outside).blockerType).toBe('needs-worktree');
+			expect(String(body(outside).error)).toContain('acme/wip/');
 		});
 
 		it('gate on + unreadable branch (no git repo) refuses with needs-worktree', async () => {

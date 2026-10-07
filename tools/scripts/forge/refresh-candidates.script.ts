@@ -34,6 +34,7 @@ import { join } from 'node:path';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
+import { identityArgs } from '../git/refresh-candidate-artifacts.script';
 import { repoRoot } from '../lib/repo-root';
 
 import type {
@@ -185,6 +186,30 @@ export const shareHistory = (
 	}
 };
 
+/**
+ * The trial merge, as git arguments. A merge makes a commit even when its
+ * result is only read and thrown away, so it needs a committer: on a
+ * runner whose git names nobody it stopped at "empty ident name", and the
+ * candidate was reported as conflicting when nothing had been compared.
+ * No hooks: the worktree has no install, and the content is proved before
+ * it is published, not here.
+ */
+export const trialMergeArgs = (
+	integration: string,
+	configured: {
+		readonly name?: string | undefined;
+		readonly email?: string | undefined;
+	},
+): readonly string[] => [
+	...identityArgs(configured),
+	'-c',
+	'core.hooksPath=/dev/null',
+	'merge',
+	`origin/${integration}`,
+	'--no-edit',
+	'-q',
+];
+
 const mergedTree = (ref: string, integration: string): string | undefined => {
 	const worktree = join(
 		process.env.TMPDIR ?? '/tmp',
@@ -198,19 +223,18 @@ const mergedTree = (ref: string, integration: string): string | undefined => {
 		}).trim();
 	try {
 		run(['worktree', 'add', '--detach', '-q', worktree, `origin/${ref}`]);
-		// `core.hooksPath=/dev/null`: the worktree has no install, so a
-		// commit hook that runs repository tooling would fail on a merge
-		// that is perfectly fine. The content is proved before it is
-		// published, not here.
+		const configured = (key: string): string | undefined => {
+			try {
+				return run(['config', '--get', key], worktree);
+			} catch {
+				return undefined;
+			}
+		};
 		run(
-			[
-				'-c',
-				'core.hooksPath=/dev/null',
-				'merge',
-				`origin/${integration}`,
-				'--no-edit',
-				'-q',
-			],
+			trialMergeArgs(integration, {
+				name: configured('user.name'),
+				email: configured('user.email'),
+			}),
 			worktree,
 		);
 		return run(['rev-parse', 'HEAD^{tree}'], worktree);
@@ -242,7 +266,7 @@ const observe = (
 		'-q',
 		'.nameWithOwner',
 	]);
-	git(['fetch', '--prune', '--quiet', 'origin']);
+	git(['fetch', '--prune', '--quiet', '--', 'origin']);
 	const pulls = JSON.parse(
 		gh(['api', `repos/${slug}/pulls?state=open&per_page=100`]),
 	) as readonly IOpenPull[];
@@ -300,7 +324,7 @@ const refresh = (ref: string, integration: string): void => {
 		'-m',
 		`Merge ${integration} into ${ref}`,
 	]);
-	git(['push', '--quiet', 'origin', `${commit}:refs/heads/${ref}`]);
+	git(['push', '--quiet', '--', 'origin', `${commit}:refs/heads/${ref}`]);
 };
 
 const main = (): number => {

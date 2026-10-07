@@ -225,7 +225,7 @@ export interface DelendaiProposalsBranchGcOutput {
 	skipped?: Array<{
 		path: string;
 		branch: string;
-		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch";
+		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch" | "undelivered";
 		detail: string;
 	}>;
 	summary?: {
@@ -250,7 +250,7 @@ export interface DelendaiProposalsBranchStatusOutput {
 
 export interface DelendaiProposalsCloseSliceOutput {
 	ok: boolean;
-	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown" | "validation-error" | "quality-failed" | "peer-review-required";
+	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown" | "validation-error" | "quality-failed" | "gate-pending" | "gate-unverifiable" | "peer-review-required";
 	already_closed?: boolean;
 	entity?: {
 		id: string;
@@ -260,6 +260,15 @@ export interface DelendaiProposalsCloseSliceOutput {
 		sliceId?: string;
 	};
 	blockerType?: string;
+	gate?: {
+		state: "pass" | "fail" | "pending" | "unverifiable";
+		reused: boolean;
+		handle?: string;
+		tree?: string;
+		certifiedBy?: "forge-check" | "landing-certification" | "recorded-gate";
+		evidence?: string;
+		nextAction?: string;
+	};
 	blockerDetail?: {
 		ok: boolean;
 		severity: "ok" | "error";
@@ -267,6 +276,15 @@ export interface DelendaiProposalsCloseSliceOutput {
 		summary?: {
 			ok: boolean;
 			scopes: number;
+		};
+		gate?: {
+			state: "pass" | "fail" | "pending" | "unverifiable";
+			reused: boolean;
+			handle?: string;
+			tree?: string;
+			certifiedBy?: "forge-check" | "landing-certification" | "recorded-gate";
+			evidence?: string;
+			nextAction?: string;
 		};
 	};
 	error?: {
@@ -342,6 +360,7 @@ export interface DelendaiProposalsContinueProposalOutput {
 
 export interface DelendaiProposalsCreateProposalOutput {
 	ok: true;
+	id: string;
 	file: string;
 	path: string;
 	disjointnessIssues: {
@@ -355,6 +374,8 @@ export interface DelendaiProposalsCreateProposalOutput {
 	published: boolean;
 	publishedRef?: string;
 	publishReason?: string;
+	unitBranch?: string;
+	unitRenamedFrom?: string;
 }
 
 export interface DelendaiProposalsDelegateOutput {
@@ -911,6 +932,11 @@ export interface DelendaiProposalsProposalsDbReconcileOutput {
 	reason: string;
 	startedAt: number;
 	durationMs: number;
+	drift: {
+		from: string;
+		to: string;
+		reason: "ref-moved" | "ref-gone";
+	} | null;
 	ok: true;
 }
 
@@ -989,6 +1015,7 @@ export interface DelendaiProposalsReviewClaimOutput {
 	proposalId: string;
 	claimed: boolean;
 	commit?: string;
+	released?: boolean;
 }
 
 export interface DelendaiProposalsReviewQueueOutput {
@@ -1007,11 +1034,12 @@ export interface DelendaiProposalsReviewQueueOutput {
 			candidates?: {
 				commit: string;
 				source: string;
+				agent?: string;
 			}[];
 			gate?: string;
 			files?: string[];
 			acceptance?: string[];
-			verdict: "needs-verdict" | "blocked" | "waiting-on-implementer" | "approved";
+			verdict: "needs-verdict" | "needs-another-reviewer" | "blocked" | "waiting-on-implementer" | "approved";
 			nextAction?: string;
 			missing?: string;
 			changedSince?: {

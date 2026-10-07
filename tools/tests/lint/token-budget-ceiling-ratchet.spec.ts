@@ -23,7 +23,7 @@ import {
 	isExceptionExpired,
 	type IBudgetCeilingSnapshot,
 } from '../../scripts/lint/token-budget-ceiling-ratchet.script';
-import type { ITokenBudgetRegistry } from '@delendai/core/public';
+import type { ITokenBudgetRegistry } from '@delendai/core/cli';
 
 const baseline: IBudgetCeilingSnapshot = {
 	'presets.minimal.toolsList.hard': 64_000,

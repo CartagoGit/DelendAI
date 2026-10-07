@@ -32,7 +32,7 @@
  *     `IDiscoveredInstructionSource`, `IConsolidationWrite`,
  *     `IConsolidationPlan`).
  */
-import type { IProjectAnalysis } from '@delendai/core/public';
+import type { IProjectAnalysis } from '@delendai/core/cli';
 
 // ----------------------------------------------------------------
 // Operator-facing flags
@@ -121,11 +121,41 @@ export interface IInitWrittenFile {
 	readonly preserved?: readonly string[];
 }
 
+/** The development block init wrote, and why. */
+export interface IInitDevelopmentSummary {
+	readonly profile: string;
+	readonly integration?: string | undefined;
+	readonly requiredChecks: readonly string[];
+	readonly reasons: readonly string[];
+}
+
+/** What installing the guard hooks did, before it is summarised. */
+export type IInitGuardHooks =
+	| {
+			readonly state: 'installed';
+			readonly report: import('./guard-hooks-service.interface').IGuardHooksReport;
+	  }
+	| { readonly state: 'skipped'; readonly reason: string };
+
+/** The outcome of installing the guard hooks. */
+export type IInitGuardHooksSummary =
+	| { readonly state: 'installed'; readonly directory: string }
+	| {
+			readonly state: 'partial';
+			readonly directory: string;
+			readonly reasons: readonly string[];
+	  }
+	| { readonly state: 'skipped'; readonly reason: string };
+
 /** The input the human-summary renderer consumes. */
 export interface IInitHumanInput {
 	readonly answers: import('../../lib/init/init-answers.types').IInitAnswers;
 	readonly written: readonly IInitWrittenFile[];
 	readonly dryRun: boolean;
+	/** The development model init adopted for the project, when it did. */
+	readonly development?: IInitDevelopmentSummary;
+	/** What init did about the guard hooks, when it did anything. */
+	readonly guardHooks?: IInitGuardHooksSummary;
 	/** When `true`, force colour output regardless of TTY.
 	 * When `false`, force plain text.
 	 * When `undefined`, defer to the shared palette (TTY-aware +

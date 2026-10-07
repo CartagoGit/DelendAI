@@ -15,7 +15,10 @@ import {
 } from '@delendai/test-kit/public';
 
 import { GENERATED_REFRESH_PATHS } from '../contracts/constants/generated-refresh.constant';
-import { refreshGeneratedAfterMerge } from './generated-refresh.service';
+import {
+	landedAsFastForward,
+	refreshGeneratedAfterMerge,
+} from './generated-refresh.service';
 
 const roots: string[] = [];
 const GENERATED = GENERATED_REFRESH_PATHS[0] as string;
@@ -323,5 +326,51 @@ describe('the uncommitted work around a refresh (x00635)', () => {
 
 		expect(outcome.committed).toBe(true);
 		expect(workingStateChanges(before)).toEqual([]);
+	});
+});
+
+describe('landedAsFastForward', () => {
+	it('is true for a tip that only moved forward and false for a merge commit', () => {
+		const root = repo();
+		expect(landedAsFastForward(root)).toBe(true);
+		git(root, 'checkout', '-q', '-b', 'side');
+		writeFileSync(join(root, 'side.ts'), 'export const s = 1;\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'side');
+		git(root, 'checkout', '-q', 'develop');
+		writeFileSync(join(root, 'main.ts'), 'export const m = 1;\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'main');
+		git(root, 'merge', '-q', '--no-edit', 'side');
+		expect(landedAsFastForward(root)).toBe(false);
+	});
+});
+
+describe('refreshGeneratedAfterMerge while the merge is still open', () => {
+	it('commits the generated path even though MERGE_HEAD exists', () => {
+		const root = repo();
+		// A post-merge hook runs before git removes MERGE_HEAD, and git
+		// refuses a partial commit then.
+		writeFileSync(
+			join(root, '.git', 'MERGE_HEAD'),
+			`${git(root, 'rev-parse', 'HEAD')}\n`,
+		);
+		writeFileSync(join(root, 'authored.ts'), 'export const a = 2;\n');
+		git(root, 'add', 'authored.ts');
+		const outcome = refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 2\n');
+				return true;
+			},
+		});
+		expect(outcome).toMatchObject({ committed: true, paths: [GENERATED] });
+		expect(git(root, 'show', '--name-only', '--format=', 'HEAD')).toBe(
+			GENERATED,
+		);
+		expect(git(root, 'diff', '--cached', '--name-only')).toBe(
+			'authored.ts',
+		);
 	});
 });

@@ -5,14 +5,15 @@
  * and verdict tools are the ones every other surface calls.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { fakePartial } from '@delendai/test-kit';
 
+import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import { reviewRoundCommand } from './review.command';
 
@@ -85,6 +86,10 @@ const contextFor = (
 								verdict,
 								implementer: 'claude-opus-5-5',
 								gate: 'npx vitest run a.spec.ts',
+								acceptance: [
+									'the flag is read',
+									'a person is unaffected',
+								],
 								candidates: [{ commit: 'abc1234' }],
 							}),
 						),
@@ -94,10 +99,24 @@ const contextFor = (
 			if (tool.endsWith('_review_claim')) {
 				// The plugin's review_claim, as its own spec pins it: a
 				// claim commit in the checkout the call names.
-				const { proposalId, checkout } = args as {
+				const { proposalId, checkout, release } = args as {
 					proposalId: string;
 					checkout: string;
+					release?: string;
 				};
+				if (release !== undefined) {
+					git(
+						checkout,
+						'commit',
+						'--allow-empty',
+						'-q',
+						'-m',
+						`chore(review): release ${proposalId}`,
+						'--trailer',
+						`Releases: ${proposalId}`,
+					);
+					return { ok: true, proposalId, released: true } as T;
+				}
 				git(
 					checkout,
 					'commit',
@@ -131,6 +150,140 @@ const claimsIn = (worktree: string): string =>
 		.join('\n');
 
 describe('delendai review', () => {
+	it('brings the integration branch into the unit before reading the queue', async () => {
+		const root = repo();
+		git(root, 'remote', 'add', 'origin', root);
+		git(root, 'fetch', '-q', 'origin');
+		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
+		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			worktree: string;
+			session: string;
+		};
+		// Another reviewer's verdicts land on the integration branch.
+		git(
+			root,
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			'merge of another pack',
+		);
+		const landed = git(root, 'rev-parse', 'HEAD');
+
+		await run(
+			ctx,
+			'next',
+			'--agent=minimax-m3',
+			`--session=${first.session}`,
+		);
+
+		expect(
+			git(
+				first.worktree,
+				'merge-base',
+				'--is-ancestor',
+				landed,
+				'HEAD',
+			) === '',
+		).toBe(true);
+	});
+
+	it('offers another proposal after one was released, not the same one again', async () => {
+		const root = repo();
+		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
+		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			proposal: string;
+			session: string;
+		};
+		expect(first.proposal).toBe('x00001');
+
+		await run(
+			ctx,
+			'release',
+			'x00001',
+			'--agent=minimax-m3',
+			`--session=${first.session}`,
+			'--note=cannot run its gate here',
+		);
+		const second = (
+			await run(
+				ctx,
+				'next',
+				'--agent=minimax-m3',
+				`--session=${first.session}`,
+			)
+		).data as { proposal: string };
+
+		expect(second.proposal).toBe('x00002');
+	});
+
+	it('honours a release made in another unit, until the proposal changes', async () => {
+		const root = repo();
+		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
+		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			proposal: string;
+			session: string;
+		};
+		expect(first.proposal).toBe('x00001');
+		await run(
+			ctx,
+			'release',
+			'x00001',
+			'--agent=minimax-m3',
+			`--session=${first.session}`,
+			'--note=I changed the code it delivered',
+		);
+
+		// A new session is a new unit: the release is in the old one.
+		const fresh = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			proposal: string;
+		};
+		expect(fresh.proposal).toBe('x00002');
+
+		// The proposal changes after the release: it is offered again.
+		execFileSync('mkdir', [
+			'-p',
+			join(root, 'docs/delendai/proposals/review'),
+		]);
+		writeFileSync(
+			join(root, 'docs/delendai/proposals/review/x00001-a.md'),
+			'# x00001, reworked\n',
+		);
+		git(root, 'add', '-A');
+		execFileSync('git', ['commit', '-q', '-m', 'x00001 reworked'], {
+			cwd: root,
+			env: {
+				...process.env,
+				GIT_COMMITTER_DATE: new Date(Date.now() + 60_000).toISOString(),
+			},
+		});
+		const again = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			proposal: string;
+		};
+		expect(again.proposal).toBe('x00001');
+	});
+
+	it('opens no unit for an agent that asks while nothing is waiting', async () => {
+		// One agent asking every few minutes, with no session, left an empty
+		// unit per question.
+		const root = repo();
+		const { ctx } = contextFor(root, [
+			{ id: 'x00001', verdicts: ['approved'] },
+			{ id: 'x00002', claimedBy: ['other-agent'] },
+		]);
+		for (let ask = 0; ask < 3; ask += 1) {
+			const answer = (await run(ctx, 'next', '--agent=minimax-m3'))
+				.data as {
+				next: string;
+				worktree?: string;
+			};
+			expect(answer.next).toBe('Nothing is waiting for your verdict.');
+			expect(answer.worktree).toBeUndefined();
+		}
+		expect(git(root, 'branch', '--list', '*review*')).toBe('');
+		expect(git(root, 'worktree', 'list').split('\n')).toHaveLength(1);
+	});
+
 	it('enters the unit, claims the first free proposal, and says how to answer', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [
@@ -156,6 +309,11 @@ describe('delendai review', () => {
 			`delendai review approve x00002 S1 --agent=minimax-m3 --session=${answer.session} --commit=abc1234`,
 		);
 		expect(answer.slices[0]?.changes).toContain('review changes x00002 S1');
+		// One `--criterion` per declared criterion: an approval without
+		// evidence for each is refused, so the call says how to give it.
+		expect(answer.slices[0]?.approve).toContain(
+			'--criterion="the flag is read => <how you verified it>" --criterion="a person is unaffected => <how you verified it>"',
+		);
 	});
 
 	it('finishes the proposal it claimed before taking another', async () => {
@@ -225,6 +383,8 @@ describe('delendai review', () => {
 			'--validate-exit=0',
 			'--tests-passing=12',
 			'--tests-total=12',
+			'--criterion=the flag is read => guard.spec reads it',
+			'--criterion=a person is unaffected => a => in the evidence stays => person.spec',
 		);
 		const changes = await run(
 			ctx,
@@ -253,6 +413,17 @@ describe('delendai review', () => {
 					validateExitCode: 0,
 					testsPassing: 12,
 					testsTotal: 12,
+					acceptanceCriteria: [
+						{
+							criterion: 'the flag is read',
+							evidence: 'guard.spec reads it',
+						},
+						{
+							criterion: 'a person is unaffected',
+							evidence:
+								'a => in the evidence stays => person.spec',
+						},
+					],
 				},
 				commitHash: 'abc1234',
 				checkout: started.worktree,
@@ -329,6 +500,45 @@ describe('delendai review', () => {
 		expect(JSON.stringify(finished)).toContain(
 			started.unit.replace(/^refs\/heads\//u, ''),
 		);
+	});
+
+	it("refuses to publish a pack that carries another reviewer's approval", async () => {
+		const root = repo();
+		const { ctx } = contextFor(root, [{ id: 'x00002' }]);
+		const started = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			session: string;
+			unit: string;
+			worktree: string;
+		};
+		const doc = join(
+			started.worktree,
+			'docs/delendai/proposals/x00002-carried.md',
+		);
+		mkdirSync(dirname(doc), { recursive: true });
+		writeFileSync(
+			doc,
+			'# x00002\n- review-log: approved by gpt-5.4 — carried from its pack\n',
+		);
+		git(started.worktree, 'add', '-A');
+		git(
+			started.worktree,
+			'commit',
+			'-q',
+			'-m',
+			'carry a verdict',
+			'--trailer',
+			'Claims: x00002',
+		);
+
+		const finished = await run(
+			ctx,
+			'finish',
+			'--agent=minimax-m3',
+			`--session=${started.session}`,
+		);
+
+		expect(finished.code).toBe(EXIT_CODE.RUNTIME);
+		expect(String(finished.error)).toContain('approvals by gpt-5.4');
 	});
 
 	it('asks for what it needs before doing anything', async () => {

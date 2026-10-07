@@ -8,7 +8,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
@@ -18,7 +18,9 @@ import {
 } from '@delendai/test-kit/public';
 
 import {
+	conflictDetail,
 	GENERATED_REFRESH_COMMANDS,
+	identityArgs,
 	pushRefusalReason,
 	refreshCandidate,
 	shouldAskQueueToRun,
@@ -292,10 +294,56 @@ describe('refreshCandidate (x00565)', () => {
 	});
 });
 
+describe('who the queue commits as', () => {
+	afterEach(() => {
+		vi.unstubAllEnvs();
+	});
+
+	it('leaves a configured identity alone, and names itself where there is none', () => {
+		expect(identityArgs({ name: 'C', email: 'c@example.com' })).toEqual([]);
+		expect(identityArgs({ name: 'C' })).toContain(
+			'user.email=queue@delendai.invalid',
+		);
+		expect(identityArgs({})).toContain('user.name=delendai queue');
+	});
+
+	it('refreshes a candidate on a machine whose git names nobody', () => {
+		const { root } = repoWithCandidate();
+		git(root, 'config', '--unset', 'user.name');
+		git(root, 'config', '--unset', 'user.email');
+		git(root, 'config', 'user.useConfigOnly', 'true');
+		vi.stubEnv('GIT_CONFIG_GLOBAL', '/dev/null');
+		vi.stubEnv('GIT_CONFIG_SYSTEM', '/dev/null');
+
+		const outcome = refreshCandidate({
+			root,
+			policy,
+			remote: 'origin',
+			candidate: 'delendai/pr/candidate',
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, 'derived.json'), '{"count":2}\n');
+				return true;
+			},
+		});
+
+		expect(outcome).toMatchObject({ state: 'refreshed' });
+		git(root, 'fetch', '-q', 'origin');
+		expect(
+			git(
+				root,
+				'log',
+				'-1',
+				'--format=%an',
+				'origin/delendai/pr/candidate',
+			),
+		).toBe('delendai queue');
+	});
+});
+
 describe('what a refreshed candidate regenerates', () => {
 	it('installs from the merged lockfile, then runs gen:all, the one list of generators', () => {
 		expect(GENERATED_REFRESH_COMMANDS).toEqual([
-			'install --frozen-lockfile',
+			'install --frozen-lockfile --ignore-scripts',
 			'run gen:all',
 		]);
 	});
@@ -403,5 +451,36 @@ describe('overlappingFiles', () => {
 				'delendai/pr/candidate',
 			),
 		).toEqual([]);
+	});
+});
+
+describe('conflictDetail', () => {
+	const HOUR = 3600;
+	const pack = 'delendai/pr/minimax-3/review/batch-all-g2/verdicts';
+
+	it('leaves the conflict to an author who is still around', () => {
+		for (const input of [
+			{ silentSeconds: 30 * HOUR, unitOnForge: true },
+			{ silentSeconds: 2 * HOUR, unitOnForge: false },
+		]) {
+			expect(
+				conflictDetail({
+					candidate: pack,
+					abandonedAfter: 4 * HOUR,
+					...input,
+				}),
+			).toBe('does not merge trivially; its author decides');
+		}
+	});
+
+	it('says how an orphaned conflict ends once its author is gone', () => {
+		const detail = conflictDetail({
+			candidate: pack,
+			silentSeconds: 30 * HOUR,
+			abandonedAfter: 4 * HOUR,
+			unitOnForge: false,
+		});
+		expect(detail).toContain('its author has been gone 30 h');
+		expect(detail).toContain(`work retire --ref=${pack} --unowned`);
 	});
 });

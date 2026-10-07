@@ -28,16 +28,27 @@ import type {
 
 export type {
 	ISwarmOverlap,
+	ISwarmRelation,
 	ISwarmUnit,
 	ISwarmView,
 } from '../contracts/interfaces/work-swarm.interface';
+import { relationsOf, unlandedElsewhere } from './work-swarm-relations.service';
 
-const git = (cwd: string, args: readonly string[]): string => {
+export {
+	describeSwarm,
+	relationsOf,
+	unitKeyOf,
+	unlandedElsewhere,
+} from './work-swarm-relations.service';
+
+const git = (cwd: string, args: readonly string[], input?: string): string => {
 	try {
 		return execFileSync('git', args, {
 			cwd,
 			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
+			...(input === undefined
+				? { stdio: ['ignore', 'pipe', 'ignore'] as const }
+				: { input, stdio: ['pipe', 'pipe', 'ignore'] as const }),
 			maxBuffer: 16 * 1024 * 1024,
 		}).trim();
 	} catch {
@@ -53,8 +64,9 @@ const git = (cwd: string, args: readonly string[]): string => {
 export const listWorkRefs = (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
+	refPrefix: string = policy.branches.workRefPrefix,
 ): ReadonlyMap<string, string> => {
-	const prefix = shortName(policy.branches.workRefPrefix);
+	const prefix = shortName(refPrefix);
 	const refs = new Map<string, string>();
 	if (prefix.length === 0) return refs;
 	const listed = git(root, [
@@ -81,8 +93,9 @@ export const listWorkRefs = (
 export const identityOf = (
 	logicalName: string,
 	policy: IResolvedDevelopmentPolicy,
+	refPrefix: string = policy.branches.workRefPrefix,
 ): { readonly agent: string; readonly subject: string } => {
-	const prefix = shortName(policy.branches.workRefPrefix);
+	const prefix = shortName(refPrefix);
 	const tail = logicalName.startsWith(prefix)
 		? logicalName.slice(prefix.length)
 		: logicalName;
@@ -93,7 +106,38 @@ export const identityOf = (
 	};
 };
 
-/** Paths a unit of work changed, against where it branched from. */
+/**
+ * The paths `.gitattributes` marks as derived: `linguist-generated` (the
+ * convention forges read) or `merge=delendai-generated`.
+ */
+const derivedOf = (
+	root: string,
+	paths: readonly string[],
+): ReadonlySet<string> => {
+	if (paths.length === 0) return new Set();
+	const derived = new Set<string>();
+	const report = git(
+		root,
+		['check-attr', '--stdin', 'linguist-generated', 'merge'],
+		`${paths.join('\n')}\n`,
+	);
+	for (const line of report.split('\n')) {
+		const match = /^(.*): (linguist-generated|merge): (.*)$/u.exec(line);
+		if (match === null) continue;
+		const [, path, attribute, value] = match;
+		if (path === undefined) continue;
+		if (
+			(attribute === 'linguist-generated' && value === 'set') ||
+			(attribute === 'linguist-generated' && value === 'true') ||
+			(attribute === 'merge' && value === 'delendai-generated')
+		) {
+			derived.add(path);
+		}
+	}
+	return derived;
+};
+
+/** Authored paths a unit of work changed, against where it branched from. */
 const changedPaths = (
 	root: string,
 	integration: string,
@@ -101,9 +145,33 @@ const changedPaths = (
 ): readonly string[] => {
 	const base = git(root, ['merge-base', integration, sha]);
 	if (base.length === 0) return [];
-	return git(root, ['diff', '--name-only', `${base}..${sha}`])
+	const paths = git(root, ['diff', '--name-only', `${base}..${sha}`])
 		.split('\n')
 		.filter((path) => path.length > 0);
+	const derived = derivedOf(root, paths);
+	return paths.filter((path) => !derived.has(path));
+};
+
+/**
+ * Commits two tips share that the integration branch does not have —
+ * non-zero exactly when one was built on the other's unlanded work.
+ */
+const sharedUnlandedCommits = (
+	root: string,
+	integration: string,
+	left: string,
+	right: string,
+): number => {
+	const base = git(root, ['merge-base', left, right]);
+	if (base.length === 0) return 0;
+	return Number(
+		git(root, [
+			'rev-list',
+			'--count',
+			'--no-merges',
+			`${integration}..${base}`,
+		]) || '0',
+	);
 };
 
 /** How far a unit of work is from the integration branch, both ways. */
@@ -147,31 +215,36 @@ export const readSwarm = (input: {
 }): ISwarmView => {
 	const { root, policy } = input;
 	const integration = policy.branches.integration;
-	const units: ISwarmUnit[] = [...listWorkRefs(root, policy).entries()]
-		.map(([name, sha]): ISwarmUnit => {
-			const identity = identityOf(name, policy);
-			return {
-				ref: name,
-				agent: identity.agent,
-				subject: identity.subject,
-				tip: sha,
-				...distance(root, integration, sha),
-				paths: changedPaths(root, integration, sha),
-			};
-		})
-		.sort((left, right) => (left.ref < right.ref ? -1 : 1));
-	const publications = git(root, [
-		'for-each-ref',
-		'--format=%(refname:short)',
-		`refs/remotes/**/${shortName(policy.branches.publicationRefPrefix)}**`,
-	])
-		.split('\n')
-		.filter((name) => name.length > 0)
-		.map((name) => name.replace(/^[^/]+\//u, ''));
+	const read = (refPrefix: string): ISwarmUnit[] =>
+		[...listWorkRefs(root, policy, refPrefix).entries()]
+			.map(([name, sha]): ISwarmUnit => {
+				const identity = identityOf(name, policy, refPrefix);
+				return {
+					ref: name,
+					agent: identity.agent,
+					subject: identity.subject,
+					tip: sha,
+					...distance(root, integration, sha),
+					paths: changedPaths(root, integration, sha),
+				};
+			})
+			.sort((left, right) => (left.ref < right.ref ? -1 : 1));
+	const units = read(policy.branches.workRefPrefix);
+	const published = read(policy.branches.publicationRefPrefix);
 	return {
 		integration,
 		units,
-		overlaps: overlapsOf(units),
-		publications: [...new Set(publications)].sort(),
+		overlaps: overlapsOf([
+			...units,
+			...unlandedElsewhere(units, published),
+		]),
+		publications: published.map((unit) => unit.ref),
+		published,
+		relations: relationsOf({
+			units,
+			published,
+			sharedUnlanded: (left, right) =>
+				sharedUnlandedCommits(root, integration, left.tip, right.tip),
+		}),
 	};
 };

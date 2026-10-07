@@ -7,3 +7,10 @@
  * name is reserved: no reviewer may use it.
  */
 export const UNRECORDED_IMPLEMENTER = 'unrecorded';
+
+/**
+ * What an approval line carries when the tool saw that its reviewer and
+ * the implementer, one model, were two instances. A document cannot show
+ * an instance, so without it the same model's approval proves nothing.
+ */
+export const ANOTHER_INSTANCE_MARK = '[another instance]';

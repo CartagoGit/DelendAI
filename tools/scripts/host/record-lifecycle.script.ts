@@ -9,11 +9,11 @@ import { appendFile, mkdir } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
 import {
-	DEFAULT_CORE_PATHS,
 	redactSecrets,
 	resolveWorkspaceContained,
 	withFileMutex,
 } from '@delendai/core/public';
+import { DEFAULT_CORE_PATHS } from '@delendai/core/cli';
 
 const LIFECYCLE_FILE = 'host-lifecycle.claude-code.jsonl';
 const USAGE_TRACKING_CACHE_REL = `${DEFAULT_CORE_PATHS.cacheDir}/results/usage-tracking`;

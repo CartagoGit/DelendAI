@@ -81,6 +81,20 @@ export interface IToolRegistration {
 	/** Where the writes land; see `IToolWriteRoot`. */
 	readonly writeRoot?: IToolWriteRoot | undefined;
 	/**
+	 * What to tell a caller whose write was refused in the shared checkout,
+	 * when the generic advice (enter a unit for the proposal the call names)
+	 * cannot be followed. A tool that creates the thing it writes has no id
+	 * to enter a unit for yet.
+	 */
+	readonly refusedWriteNextStep?: string | undefined;
+	/**
+	 * Whether a call writes nothing, decided by its input. A
+	 * `caller-checkout` tool whose actions include a read (a status, a
+	 * listing) answers `true` for those: a read is never refused in the
+	 * shared checkout as a write would be. Omit when every call can write.
+	 */
+	readonly readsOnly?: ((input: unknown) => boolean) | undefined;
+	/**
 	 * f00189 (Track F / security): when `true`, the tool honours
 	 * the transversal `dryRun` protocol — accepts `args.dryRun`
 	 * and returns an `IDryRunResult` instead of executing side

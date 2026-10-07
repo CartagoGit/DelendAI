@@ -3,18 +3,25 @@ import { isAbsolute, relative, resolve } from 'node:path';
 import { sanitizeRefComponent } from '../wip-engine/index';
 import { holdWorkRef } from '../wip-engine/work-ref-lock';
 import { sharedCheckout } from '../shared/shared-checkout';
-import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-
-import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { MAX_WORK_TOPIC_LENGTH } from '../contracts/constants/work-topic.constant';
-import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
-import { briefingFrom, describeBriefing } from './work-briefing.service';
+import { withBriefing } from './work-unit-enter-briefing.service';
+import { hydratedIdleUnit } from './kept-unit-hydration.service';
 import { readSwarm } from './work-swarm.service';
+import { aliasedIdentity, describeAlias } from './agent-alias.service';
+import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
+import { sliceHeldOnForge } from './slice-reservation.service';
+import { isUnitHolding, readUnitStandings } from './unit-standings.service';
+import { DEFAULT_UNITS_DIRECTORY } from './units-directory.constant';
+import { freeDirectory } from './free-directory.helper';
 import { liveProposalBranch } from './proposal-branch.service';
+import {
+	reviewedByEntrant,
+	topicForNewUnit,
+} from './reviewed-proposal.service';
 import { scalarArg } from './command-args.helper';
 
 import {
@@ -38,44 +45,6 @@ import {
 } from './work-unit-generation.service';
 
 /**
- * Hand an entering agent the picture, in whichever form it reads.
- *
- * The briefing is attached to the payload rather than only printed,
- * because the caller is as often a machine as a person: an agent driving
- * `--json` must not have to run a second command to learn what a human
- * would have read on the way in.
- */
-export const withBriefing = (
-	ctx: IWorkUnitContext,
-	root: string,
-	policy: IResolvedDevelopmentPolicy,
-	agent: string,
-	data: IEnteredWorktree,
-): IWorkUnitResult => {
-	const briefing = briefingFrom({
-		agent,
-		view: readSwarm({ root, policy }),
-	});
-	const payload = { ...data, swarm: briefing };
-	if (ctx.globals.json || ctx.globals.format === 'json') {
-		return { code: EXIT_CODE.OK, data: payload };
-	}
-	process.stdout.write(
-		`${[
-			`ref              ${data.ref}`,
-			`worktree         ${data.path ?? '(none)'}`,
-			...(data.session === undefined
-				? []
-				: [
-						`session          ${data.session} (pass --session=${data.session} to enter this unit again)`,
-					]),
-			...describeBriefing(briefing),
-		].join('\n')}\n`,
-	);
-	return { code: EXIT_CODE.OK, data: payload, suppressDefaultPrint: true };
-};
-
-/**
  * Give this agent its own working tree on its own ref.
  *
  * WHY a command and not a paragraph of instructions: an agent told "do
@@ -87,6 +56,7 @@ export const withBriefing = (
  */
 /** How long an entering instance waits for another entering the same unit. */
 const ENTER_WAIT_MS = 60_000;
+
 const ENTER_POLL_MS = 200;
 
 /**
@@ -184,7 +154,7 @@ export const enteredHeld = async (
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
 			'A worktree belongs to one identity and one unit of work.',
-			'work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>]; --agent defaults to DELENDAI_AGENT_ID.',
+			'work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>] [--alongside]; --agent defaults to DELENDAI_AGENT_ID.',
 		);
 	}
 	if (policy.branches.workRefTemplate.length === 0) {
@@ -195,6 +165,47 @@ export const enteredHeld = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
+	const swarm = readSwarm({ root, policy });
+	const respelled = aliasedIdentity(agent, [
+		...new Set(
+			[...swarm.units, ...swarm.published].map((unit) => unit.agent),
+		),
+	]);
+	if (respelled !== undefined) {
+		return refused(
+			'An identity is spelled one way.',
+			describeAlias(agent, respelled),
+		);
+	}
+	const reviewed = await reviewedByEntrant(
+		root,
+		policy,
+		args,
+		agent,
+		proposal,
+	);
+	if (reviewed !== undefined) return reviewed;
+	if (!args.includes('--alongside')) {
+		const onSlice = holdersOfSlice({
+			view: swarm,
+			agent,
+			kind: scalarArg(args, 'kind') ?? 'implement',
+			proposal,
+			slice,
+		});
+		// A unit its owner left, or whose work landed, holds nothing: the
+		// slice is free, and the swarm view still shows the unit.
+		const standings = await readUnitStandings({ root, policy });
+		const holders = onSlice.filter((unit) =>
+			isUnitHolding(standings, unit.ref.replace(/^refs\/heads\//u, '')),
+		);
+		if (holders.length > 0) {
+			return refused(
+				`${proposal} ${slice} is already being worked on by another agent: two units on one slice do the same work twice and collide when they land.`,
+				describeSliceHolders(holders).join('\n'),
+			);
+		}
+	}
 	if (scalarArg(args, 'generation') === undefined) {
 		const chosen = chooseGeneration(
 			root,
@@ -209,7 +220,18 @@ export const enteredHeld = async (
 	}
 	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
 	if (ambiguous !== undefined) return ambiguous;
-	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);
+	let ref = existingWorkRef(root, args, policy, agent, proposal, slice);
+	if (
+		scalarArg(args, 'topic') === undefined &&
+		readGit(root, ['rev-parse', '-q', '--verify', ref]) === undefined
+	) {
+		// A unit nobody named is named for what it is.
+		args = [
+			...args,
+			`--topic=${await topicForNewUnit(root, policy, args, proposal)}`,
+		];
+		ref = existingWorkRef(root, args, policy, agent, proposal, slice);
+	}
 	const branch = ref.replace(/^refs\/heads\//u, '');
 	const base = integrationBase(root, policy);
 	if (base === undefined) {
@@ -239,6 +261,7 @@ export const enteredHeld = async (
 			path: path ?? null,
 			created: false,
 			session: claimed,
+			...hydratedIdleUnit(root, path, ref, base),
 		});
 	}
 	// A proposal in progress keeps one branch: a later slice continues on
@@ -261,6 +284,7 @@ export const enteredHeld = async (
 			path: continued.path,
 			created: false,
 			session: claimed,
+			...hydratedIdleUnit(root, path, continued.ref, base),
 		});
 	}
 	const createdRef =
@@ -271,6 +295,22 @@ export const enteredHeld = async (
 			`The topic is ${String(topic.length)} characters; a unit's topic is at most ${String(MAX_WORK_TOPIC_LENGTH)}.`,
 			'Name the work in a few words (--topic=review-pack-3). A review unit lists what it claims in its commits, not in its name.',
 		);
+	}
+	if (
+		createdRef &&
+		(scalarArg(args, 'kind') ?? 'implement') === 'implement' &&
+		!args.includes('--alongside')
+	) {
+		// The refs this clone has may be a minute old: the forge decides.
+		const reservedElsewhere = sliceHeldOnForge({
+			root,
+			policy,
+			proposal,
+			slice,
+			agent,
+			branch,
+		});
+		if (reservedElsewhere !== undefined) return reservedElsewhere;
 	}
 	if (createdRef) {
 		// From the integration branch, by plumbing: no checkout moves.
@@ -290,13 +330,15 @@ export const enteredHeld = async (
 	// dependencies there pointed every hook in the clone at it.
 	const dir =
 		scalarArg(args, 'dir') ??
-		resolve(
-			sharedCheckout(root) ?? root,
-			scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees',
-			sanitizeRefComponent(
-				`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`,
+		(await freeDirectory(
+			resolve(
+				sharedCheckout(root) ?? root,
+				scalarArg(args, 'worktrees') ?? DEFAULT_UNITS_DIRECTORY,
+				sanitizeRefComponent(
+					`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`,
+				),
 			),
-		);
+		));
 	// A worktree an agent places in the shared checkout's tree is a loose
 	// edit on the integration branch (`?? batch-g5/`) unless git ignores
 	// the path. The default location is delendai's own, self-ignoring.

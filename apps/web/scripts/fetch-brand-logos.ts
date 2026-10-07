@@ -257,7 +257,13 @@ const main = async (): Promise<void> => {
 		fetched += 1;
 		const outName = `${brand.outName}.${extensionForKind(hit.kind)}`;
 		const outPath = join(OUT, outName);
-		const existing = existsSync(outPath) ? readFileSync(outPath) : null;
+		// Read once, no existence check first: the two could see different files.
+		let existing: Buffer | null;
+		try {
+			existing = readFileSync(outPath);
+		} catch {
+			existing = null;
+		}
 		// a00084 F35: byteLength alone treats two DIFFERENT logos that happen
 		// to share a byte count as "unchanged", silently keeping the stale
 		// cached asset. Buffer#equals compares actual content.

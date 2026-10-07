@@ -6,7 +6,7 @@ import {
 	type IInstallOptions,
 	type IInstallReport,
 	type IRunnerVia,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
 	ICliCommandContext,

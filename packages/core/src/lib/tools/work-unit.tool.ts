@@ -16,10 +16,18 @@ import { randomUUID } from 'node:crypto';
 import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IWorkUnitToolOptions } from '../contracts/interfaces/work-unit-context.interface';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { workModelSummary } from '../development-policy/declare-workflow';
 import { runWorkUnit } from '../work-units/work-unit.service';
 import { toolJson } from '../shared/tool-response';
+import {
+	clientRootUris,
+	describeRootsElsewhere,
+	rootsElsewhere,
+	writesToRepository,
+} from './work-unit-roots.helper';
 
 const WORK_UNIT_REGISTRATION_ID = 'work';
 
@@ -32,6 +40,8 @@ const workUnitInputSchema = z.object({
 		'enter',
 		'checkpoint',
 		'publish',
+		'retire',
+		'reap',
 	]),
 	proposal: z.string().min(1).optional(),
 	slice: z.string().min(1).optional(),
@@ -43,8 +53,11 @@ const workUnitInputSchema = z.object({
 	message: z.string().min(1).optional(),
 	paths: z.array(z.string().min(1)).optional(),
 	ref: z.string().min(1).optional(),
+	reason: z.string().min(1).optional(),
+	unowned: z.boolean().optional(),
 	keepWorkRef: z.boolean().optional(),
 	noPullRequest: z.boolean().optional(),
+	apply: z.boolean().optional(),
 });
 
 const workUnitOutputSchema = z.object({
@@ -75,9 +88,27 @@ export const workUnitArgs = (
 		...flag('message', input.message),
 		...flag('paths', input.paths?.join(',')),
 		...flag('ref', input.ref),
+		...flag('reason', input.reason),
+		...(input.unowned === true ? ['--unowned'] : []),
 		...(input.keepWorkRef === true ? ['--keep-work-ref'] : []),
 		...(input.noPullRequest === true ? ['--no-pull-request'] : []),
+		...(input.apply === true ? ['--apply'] : []),
 	];
+};
+
+/**
+ * How `publish` lands the unit differs per profile (pull request, local
+ * merge, nothing), so the sentence comes from the policy; without one it
+ * stays neutral and points at the served work model.
+ */
+export const workUnitDescription = (
+	policy: IResolvedDevelopmentPolicy | undefined,
+): string => {
+	const publish =
+		policy === undefined
+			? '`publish` lands the unit the way this project’s work model declares'
+			: `\`publish\` lands the unit as this project declares (${workModelSummary(policy)})`;
+	return `Your unit of work, from any host: the same operations as \`delendai work\`. \`enter\` gives you your own worktree and work ref (pass it as \`checkout\` to the write tools); ${publish}. The session is this server’s, so your calls keep your unit; pass \`agent\` (your model id) unless DELENDAI_AGENT_ID is set.`;
 };
 
 export const buildWorkUnitToolRegistration = (
@@ -96,12 +127,28 @@ export const buildWorkUnitToolRegistration = (
 				`${options.namespacePrefix}_${WORK_UNIT_REGISTRATION_ID}`,
 				{
 					title: 'DelendAI Unit of Work',
-					description:
-						'Your unit of work, from any host: the same operations as `delendai work`. `enter` gives you your own worktree and work ref (pass it as `checkout` to the write tools); `publish` turns the unit into a pull request. The session is this server’s, so your calls keep your unit; pass `agent` (your model id) unless DELENDAI_AGENT_ID is set.',
+					description: workUnitDescription(options.policy),
 					inputSchema: workUnitInputSchema,
 					outputSchema: workUnitOutputSchema,
 				},
 				async (input: IWorkUnitInput) => {
+					if (writesToRepository(input.action)) {
+						const uris = await clientRootUris(server);
+						const elsewhere =
+							uris === undefined
+								? undefined
+								: rootsElsewhere(uris, options.workspaceRoot);
+						if (elsewhere !== undefined) {
+							return toolJson({
+								ok: false,
+								code: EXIT_CODE.VALIDATION,
+								error: describeRootsElsewhere(
+									elsewhere,
+									options.workspaceRoot,
+								),
+							});
+						}
+					}
 					const result = await runWorkUnit(
 						workUnitArgs(input, session),
 						{

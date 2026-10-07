@@ -1,7 +1,10 @@
 import { existsSync } from 'node:fs';
 
 import { McpStdioClient, serverEnvironment } from '@delendai/client/public';
-import { AGENT_ENVIRONMENT_MARKERS } from '@delendai/core/cli';
+import {
+	CALL_WRITES_NOT_COMMITTED,
+	isAgentEnvironmentVariable,
+} from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IConnectToServer } from '../contracts/interfaces/stdio-context.interface';
@@ -10,6 +13,7 @@ import type {
 	ICliGlobalOptions,
 } from '../contracts/interfaces/cli-command.interface';
 import { buildServerArgs } from './server-args.service';
+import { CLI_TOOL_CALL_TIMEOUT_MS } from '../contracts/constants/stdio-context.constant';
 
 /**
  * The file to spawn as the server.
@@ -65,6 +69,26 @@ const SECRET_WORDS = ['TOKEN', 'SECRET', 'PASSWORD', 'CREDENTIAL'] as const;
 const namesASecret = (name: string): boolean =>
 	SECRET_WORDS.some((word) => name.includes(word)) || name.endsWith('_KEY');
 
+/**
+ * A stderr listener that passes on each whole line saying a tool's writes
+ * were not committed. Chunks split lines anywhere; the tail is kept for
+ * the next one.
+ */
+export const notCommittedForwarder = (
+	write: (text: string) => void = (text) => {
+		process.stderr.write(text);
+	},
+): ((chunk: string) => void) => {
+	let pending = '';
+	return (chunk) => {
+		const lines = `${pending}${chunk}`.split('\n');
+		pending = lines.pop() ?? '';
+		for (const line of lines) {
+			if (line.startsWith(CALL_WRITES_NOT_COMMITTED)) write(`${line}\n`);
+		}
+	};
+};
+
 export const forwardedToServer = (
 	env: Readonly<Record<string, string | undefined>>,
 ): Record<string, string> =>
@@ -72,7 +96,7 @@ export const forwardedToServer = (
 		Object.entries(env).filter(
 			(entry): entry is [string, string] =>
 				entry[1] !== undefined &&
-				(AGENT_ENVIRONMENT_MARKERS.includes(entry[0]) ||
+				(isAgentEnvironmentVariable(entry[0]) ||
 					(entry[0].startsWith('DELENDAI_') &&
 						!namesASecret(entry[0]))),
 		),
@@ -115,6 +139,10 @@ export const createStdioContext = async (
 		cwd,
 		env: serverEnvironment(forwardedToServer(process.env)),
 		stderr: 'pipe',
+		// The server says on stderr when a tool's writes were not
+		// committed; the caller is the one who has to act on it.
+		onStderr: notCommittedForwarder(),
+		requestTimeoutMs: CLI_TOOL_CALL_TIMEOUT_MS,
 	}).catch((error: unknown) => {
 		throw Object.assign(
 			new Error(

@@ -67,6 +67,39 @@ describe('reconcileRefs', () => {
 		expect(closed.needsAttention).toEqual([]);
 	});
 
+	it('retires a publication closed without merging once its author had the grace to reopen it', () => {
+		const now = 1_000_000;
+		const closedAt = (secondsAgo: number) => ({
+			...pr(82, `${PR}withdrawn`, 'closed'),
+			closedAt: now - secondsAgo,
+		});
+		const fresh = reconcileRefs(
+			refs(`${PR}withdrawn`),
+			[closedAt(600)],
+			branches,
+			{ now },
+		);
+		expect(fresh.retirable).toEqual([]);
+		const stale = reconcileRefs(
+			refs(`${PR}withdrawn`),
+			[closedAt(7200)],
+			branches,
+			{ now },
+		);
+		expect(stale.retirable.map((v) => [v.name, v.pullRequest])).toEqual([
+			[`${PR}withdrawn`, 82],
+		]);
+		// Retired, never deleted: the tip may be the only copy.
+		expect(stale.reapable).toEqual([]);
+		const reopened = reconcileRefs(
+			refs(`${PR}withdrawn`),
+			[closedAt(7200), pr(83, `${PR}withdrawn`, 'open')],
+			branches,
+			{ now },
+		);
+		expect(reopened.retirable).toEqual([]);
+	});
+
 	it('recognises a publication ref doing its job', () => {
 		expect(
 			roleOf(`${PR}policy-anchor`, [

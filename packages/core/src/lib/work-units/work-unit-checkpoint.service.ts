@@ -3,6 +3,8 @@ import {
 	anchorRefusal,
 	observeAnchor,
 } from '../wip-engine/index';
+import { shortName } from '../development-policy/git-guard-namespaces';
+import { checkedOutHereReason } from '../wip-engine/checkpoint';
 import { validateScopePaths } from '../../plugin';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -13,12 +15,15 @@ import type {
 import { collisionsWith, describeCollisions } from './scope-collision.service';
 import { readSwarm } from './work-swarm.service';
 import { scalarArg } from './command-args.helper';
+import { touchUnit } from './unit-lease.service';
 
 import {
 	agentFor,
 	integrationBase,
 	kindInAgent,
 	openWork,
+	sessionFor,
+	readGit,
 	refused,
 	unknownKind,
 } from './work-unit-shared.service';
@@ -80,6 +85,16 @@ export const checkpointed = async (
 			describeCollisions(collisions).join('\n'),
 		);
 	}
+	// Standing in a unit's own worktree is the answer to "where do I
+	// commit", not a shared checkout to checkpoint from: git commits there.
+	const here = readGit(root, ['symbolic-ref', '--quiet', 'HEAD']) ?? '';
+	const workPrefix = shortName(policy.branches.workRefPrefix);
+	if (workPrefix.length > 0 && here.startsWith(`refs/heads/${workPrefix}`)) {
+		return refused(
+			checkedOutHereReason(here),
+			'work checkpoint is for a checkout that is not on the work ref; inside a unit worktree, commit with git.',
+		);
+	}
 	// The anchor is the whole point: a checkpoint taken while the shared
 	// checkout sits somewhere else would record a base nobody agreed on.
 	const anchor = anchorRefusal(
@@ -115,6 +130,14 @@ export const checkpointed = async (
 	// `unchanged` is a true answer, not a failure: the scope still hashes
 	// to what the ref already carries.
 	const ok = result.status === 'created' || result.status === 'unchanged';
+	if (ok) {
+		// A checkpoint is the owner saying the unit is alive.
+		await touchUnit({
+			cwd: root,
+			ref,
+			owner: { agent, session: sessionFor(args) ?? null },
+		}).catch(() => undefined);
+	}
 	return {
 		code: ok ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
 		data: result,

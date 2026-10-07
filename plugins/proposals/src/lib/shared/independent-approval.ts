@@ -1,3 +1,7 @@
+import {
+	ANOTHER_INSTANCE_MARK,
+	UNRECORDED_IMPLEMENTER,
+} from '../contracts/constants/review-attribution.constant';
 import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 
 /**
@@ -15,15 +19,43 @@ import type { IReviewIndependence } from '../contracts/interfaces/review-indepen
  * in its own configuration (`requirePeerReview: false`).
  */
 
-/** Whether `approver` approving `implementer`'s work is a self-approval. */
+/** The letters and digits of a model id, in one case. */
+const lettersOf = (agent: string): string =>
+	agent.toLowerCase().replaceAll(/[^a-z0-9]/gu, '');
+
+/**
+ * Whether two ids name one model: `MiniMax-M3` and `minimaxm3` do. A
+ * comparison of the text alone took five spellings of one model for five
+ * reviewers.
+ */
+export const isSameModel = (left: string, right: string): boolean =>
+	lettersOf(left) === lettersOf(right);
+
+/**
+ * Whether `approver` approving `implementer`'s work is a self-approval.
+ *
+ * Another model is another reviewer under either rule: it is necessarily
+ * another instance too. The same model is independent only where the
+ * project accepts another INSTANCE of it, and only when both instances
+ * are known and differ. `instance` used to mean "anybody": with nothing
+ * compared, an agent approved its own work under its own name.
+ */
 export const isSelfApproval = (
 	implementer: string | undefined,
 	approver: string,
 	independence: IReviewIndependence = 'model',
-): boolean =>
-	independence === 'model' &&
-	implementer !== undefined &&
-	implementer.trim().toLowerCase() === approver.trim().toLowerCase();
+	instances?: {
+		readonly implementer?: string | undefined;
+		readonly approver?: string | undefined;
+	},
+): boolean => {
+	if (implementer === undefined) return false;
+	if (!isSameModel(implementer, approver)) return false;
+	if (independence === 'model') return true;
+	const mine = instances?.approver ?? '';
+	const theirs = instances?.implementer ?? '';
+	return !(mine.length > 0 && theirs.length > 0 && mine !== theirs);
+};
 
 /** The finished slices of `markdown` that lack an independent approval. */
 export const unapprovedSlices = (
@@ -52,16 +84,31 @@ export const unapprovedSlices = (
 		const implementer = block
 			.match(/^[-*]\s*\*{0,2}review-implementer\*{0,2}:\s*(\S+)/imu)?.[1]
 			?.toLowerCase();
-		const approvers = [
+		const approvals = [
 			...block.matchAll(
-				/^[-*]\s*\*{0,2}review-log\*{0,2}:\s*approved by\s+(\S+)/gimu,
+				/^[-*]\s*\*{0,2}review-log\*{0,2}:\s*approved by\s+(\S+)([^\n]*)/gimu,
 			),
-		].map((match) => (match[1] ?? '').toLowerCase());
-		const independent = approvers.some(
-			(approver) =>
-				approver.length > 0 &&
-				!isSelfApproval(implementer, approver, independence),
-		);
+		].map((match) => ({
+			approver: (match[1] ?? '').toLowerCase(),
+			anotherInstance: (match[2] ?? '').includes(ANOTHER_INSTANCE_MARK),
+		}));
+		// Work nobody could be named for has no reviewer who is provably
+		// somebody else: it does not reach `done` until its commit is named.
+		const independent =
+			implementer !== UNRECORDED_IMPLEMENTER &&
+			approvals.some(
+				({ approver, anotherInstance }) =>
+					approver.length > 0 &&
+					!isSelfApproval(
+						implementer,
+						approver,
+						independence,
+						// The mark stands for two instances the tool compared.
+						anotherInstance
+							? { implementer: 'recorded', approver: 'another' }
+							: undefined,
+					),
+			);
 		return independent ? [] : [title.length > 0 ? title : '(the proposal)'];
 	});
 };

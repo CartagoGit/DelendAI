@@ -41,6 +41,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
+import { MIGRATION_JOURNAL_PATH } from './migration-journal-path.constant';
 import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 
 import type {
@@ -56,6 +57,8 @@ import { createDevelopmentPolicyMigrator } from './migrators/development-policy.
 import { createHostConfigMigrator } from './migrators/host-config.migrator';
 import { createPackageManifestMigrator } from './migrators/package-manifest.migrator';
 import { createVscodeMigrator } from './migrators/vscode.migrator';
+import { createGitignoreMigrator } from './migrators/gitignore.migrator';
+import { createStateDirMigrator } from './migrators/state-dir.migrator';
 import {
 	DELENDAI_TO_DELENDAI_V1_ID,
 	delendaiToDelendAIV1,
@@ -91,11 +94,15 @@ import {
 export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	delendaiToDelendAIV1,
 	createCacheAndDocsMigrator(),
+	// The ignore lines that named the directories it just renamed.
+	createGitignoreMigrator(),
 	createConfigFileMigrator(),
 	createPackageManifestMigrator(),
 	createHostConfigMigrator(),
 	createAgentFilesMigrator(),
 	createVscodeMigrator(),
+	// The state directory an older delendai kept at `.delendai/state`.
+	createStateDirMigrator(),
 	// Last, and deliberately so: it reads the config file the earlier
 	// migrators may still be renaming, and it is the only entry that
 	// PROPOSES something rather than renaming what is already there.
@@ -107,11 +114,7 @@ export const DEFAULT_MIGRATION_IDS: ReadonlySet<IMigrationId> = new Set(
 	DEFAULT_MIGRATIONS.map((migration) => migration.id),
 );
 
-/** Where the runtime records what has already been applied to a workspace. */
-export const MIGRATION_JOURNAL_PATH = [
-	'.delendai',
-	'migrations-applied.json',
-] as const;
+export { MIGRATION_JOURNAL_PATH };
 
 const journalAbsolutePath = (workspaceRoot: string): string =>
 	join(workspaceRoot, ...MIGRATION_JOURNAL_PATH);

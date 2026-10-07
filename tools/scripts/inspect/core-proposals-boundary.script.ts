@@ -99,19 +99,19 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		note: 'El barrel publico reexporta un schema desde un subpath proposals interno del core.',
 	},
 	{
-		file: 'packages/core/src/public/index.ts',
+		file: 'packages/core/src/cli.ts',
 		symbolOrLiteral: 'ACTIONABLE_PROPOSAL_STATUSES',
 		category: 'type',
 		destination: 'contract',
-		needle: 'ACTIONABLE_PROPOSAL_STATUSES,',
-		note: 'El barrel publico reexporta el vocabulario del workflow con nombre proposals.',
+		needle: "export { ACTIONABLE_PROPOSAL_STATUSES } from './lib/catalog/agent-discovery-types';",
+		note: 'La entrada cli reexporta el vocabulario del workflow con nombre proposals.',
 	},
 	{
 		file: 'packages/core/src/public/index.ts',
 		symbolOrLiteral: 'PROPOSAL_STATUS_VALUES',
 		category: 'type',
 		destination: 'contract',
-		needle: 'PROPOSAL_STATUS_VALUES,',
+		needle: "export { PROPOSAL_STATUS_VALUES } from '../lib/catalog/agent-discovery-types';",
 		note: 'La lista publica de estados usa nomenclatura proposals.',
 	},
 	{
@@ -144,6 +144,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'index-access',
 		destination: 'composition',
 		needle: "export { readProposalsIndex } from '../lib/cli/read-proposals-index';",
+		resolvedBy: 'S8',
 		note: 'Anadido el 2026-09-08 (4f6a18a62). El barrel publico exporta el LECTOR del indice, no solo vocabulario, y su unico consumidor es el propio plugin proposals: la inversion exacta que r00043 quiere eliminar. Sin resolvedBy: es acoplamiento nuevo, no deuda heredada.',
 	},
 
@@ -496,6 +497,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'contract',
 		needle: "import type { IProposalSummary } from '../catalog/agent-discovery-types';",
+		resolvedBy: 'S8',
 		note: 'La forma publica del resumen de workflow aun esta nombrada como proposal.',
 	},
 	{
@@ -504,6 +506,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'adapter',
 		needle: 'interface IProposalIndexFileEntry {',
+		resolvedBy: 'S8',
 		note: 'El schema concreto del indice pertenece al adaptador de proposals.',
 	},
 	{
@@ -512,6 +515,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'adapter',
 		needle: 'interface IProposalIndexFile {',
+		resolvedBy: 'S8',
 		note: 'El contenedor del indice sigue definido en el core.',
 	},
 	{
@@ -520,6 +524,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'index-access',
 		destination: 'adapter',
 		needle: 'readonly proposals?: readonly IProposalIndexFileEntry[];',
+		resolvedBy: 'S8',
 		note: 'El payload cacheado del plugin sigue interpretado directamente por el core.',
 	},
 	{
@@ -528,6 +533,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'adapter',
 		needle: "export const proposalKindFromId = (id: string): IProposalSummary['kind'] => {",
+		resolvedBy: 'S8',
 		note: 'La semantica de ids de proposals no deberia residir en el core.',
 	},
 	{
@@ -536,6 +542,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'adapter',
 		needle: 'export const normalizeProposalStatus = (',
+		resolvedBy: 'S8',
 		note: 'La normalizacion del estado del workflow debe venir del adaptador.',
 	},
 	{
@@ -544,6 +551,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'contract',
 		needle: "): IProposalSummary['status'] => {",
+		resolvedBy: 'S8',
 		note: 'La salida del normalizador sigue expresada con el tipo nominal de proposal.',
 	},
 	{
@@ -552,6 +560,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'index-access',
 		destination: 'adapter',
 		needle: 'export const readProposalsIndex = async (',
+		resolvedBy: 'S8',
 		note: 'El adaptador del indice sigue residiendo fisicamente dentro del core.',
 	},
 	{
@@ -560,6 +569,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'contract',
 		needle: '): Promise<readonly IProposalSummary[]> => {',
+		resolvedBy: 'S8',
 		note: 'La firma del lector devuelve todavia el DTO nominal de proposals.',
 	},
 	{
@@ -568,6 +578,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'adapter',
 		needle: 'let parsed: IProposalIndexFile;',
+		resolvedBy: 'S8',
 		note: 'El core sigue tipando internamente el payload del indice del plugin.',
 	},
 	{
@@ -576,6 +587,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'adapter',
 		needle: 'parsed = JSON.parse(raw) as IProposalIndexFile;',
+		resolvedBy: 'S8',
 		note: 'La deserializacion del indice concreto sigue ocurriendo en el core.',
 	},
 	{
@@ -584,6 +596,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'index-access',
 		destination: 'adapter',
 		needle: "join(workspaceRoot, cacheDir, 'proposals', 'index.json'),",
+		resolvedBy: 'S8',
 		note: 'La ruta del indice cacheado es propia del plugin.',
 	},
 	{
@@ -592,6 +605,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'index-access',
 		destination: 'adapter',
 		needle: 'if (!Array.isArray(parsed.proposals)) return [];',
+		resolvedBy: 'S8',
 		note: 'La validacion estructural sigue mirando directamente la clave proposals.',
 	},
 	{
@@ -600,6 +614,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'index-access',
 		destination: 'adapter',
 		needle: 'return parsed.proposals',
+		resolvedBy: 'S8',
 		note: 'La lectura del array de proposals sigue acoplada a la forma interna del indice.',
 	},
 	{
@@ -608,6 +623,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'adapter',
 		needle: "): entry is Required<Pick<IProposalIndexFileEntry, 'id'>> &",
+		resolvedBy: 'S8',
 		note: 'El narrowing del payload sigue nombrando el schema concreto del plugin.',
 	},
 	{
@@ -616,6 +632,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'type',
 		destination: 'adapter',
 		needle: "IProposalIndexFileEntry => typeof entry.id === 'string',",
+		resolvedBy: 'S8',
 		note: 'El predicado de tipo sigue anclado al entry del indice de proposals.',
 	},
 	{

@@ -8,7 +8,7 @@ import {
 	discoverPluginManifests,
 	loadAllPluginManifests,
 	validatePluginManifest,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 const withFixture = async (
 	callback: (root: string) => Promise<void>,

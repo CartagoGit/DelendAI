@@ -62,11 +62,17 @@ const createVscode = () => {
 	return { vscode, commands, panels };
 };
 
-const stripHtml = (html: string): string =>
-	html
-		.replace(/<[^>]+>/gu, '')
-		.replace(/\s+/gu, ' ')
-		.trim();
+/** The text outside every `<…>`, read one character at a time. */
+const stripHtml = (html: string): string => {
+	let text = '';
+	let inTag = false;
+	for (const ch of html) {
+		if (ch === '<') inTag = true;
+		else if (ch === '>') inTag = false;
+		else if (!inTag) text += ch;
+	}
+	return text.replace(/\s+/gu, ' ').trim();
+};
 
 describe('delendai.openAutoAgentSelector', () => {
 	it('exposes a single command id', () => {

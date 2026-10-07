@@ -32,6 +32,9 @@ import {
 	remoteTrackingNamespace,
 	workRefNamespace,
 } from './work-ref-identity';
+import { journalRefReader } from './journal-ref.service';
+import { retiredTipsLister } from './retired-tips.service';
+import { checkpointContainment } from './checkpoint-containment';
 
 const lines = (output: string): readonly string[] =>
 	output
@@ -62,37 +65,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		return result.ok;
 	};
 
-	const contentContained = async (
-		sha: string,
-		integration: string,
-	): Promise<boolean> => {
-		if (sha.length === 0 || integration.length === 0) return false;
-		const base = await run(['merge-base', sha, integration]);
-		if (!base.ok) return false;
-		const changed = await run([
-			'diff',
-			'--name-only',
-			base.output.trim(),
-			sha,
-		]);
-		if (!changed.ok) return false;
-		const paths = changed.output
-			.split('\n')
-			.map((line) => line.trim())
-			.filter((line) => line.length > 0);
-		// Nothing changed since the fork: an empty checkpoint carries
-		// nothing the integration branch could be missing.
-		if (paths.length === 0) return true;
-		const same = await run([
-			'diff',
-			'--quiet',
-			sha,
-			integration,
-			'--',
-			...paths,
-		]);
-		return same.ok;
-	};
+	const { contentContained } = checkpointContainment(run, isAncestor);
 
 	const fetch = async (request: {
 		readonly integrationBranch: string;
@@ -129,7 +102,13 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 					]
 				: []),
 		];
-		const result = await run(['fetch', '--prune', remote, ...refspecs]);
+		const result = await run([
+			'fetch',
+			'--prune',
+			'--',
+			remote,
+			...refspecs,
+		]);
 		if (!result.ok) {
 			return { ok: false, reason: result.reason ?? 'git fetch failed' };
 		}
@@ -147,6 +126,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		const mirror = await run([
 			'fetch',
 			'--prune',
+			'--',
 			remote,
 			`+${namespace}/*:${remoteTrackingNamespace(remote, namespace)}/*`,
 		]);
@@ -366,7 +346,12 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 			.filter((line) => line.length > 0);
 	};
 
+	const listRetiredTips = retiredTipsLister(run, integrationRemote);
+	const readJournal = journalRefReader(run, integrationRemote);
+
 	return {
+		listRetiredTips,
+		readJournal,
 		pathsChangedBetween,
 		fetch,
 		listRefs,

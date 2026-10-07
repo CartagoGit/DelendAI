@@ -106,12 +106,20 @@ export interface ICreateAssembledProposalsServerOptions {
 	 * smaller surface.
 	 */
 	readonly progressiveDisclosure?: boolean;
+	/**
+	 * Serve a workspace the spec prepared (a git repository, say) instead of
+	 * an empty temporary one. The harness still removes it on `close`.
+	 */
+	readonly workspace?: string;
+	/** The raw `delendai.config.json` the assembled server reads. */
+	readonly workspaceConfig?: string;
 }
 
 export const createAssembledProposalsServer = async (
 	options: ICreateAssembledProposalsServerOptions = {},
 ): Promise<IAssembledProposalsServer> => {
-	const workspace = mkdtempSync(join(tmpdir(), 'proposals-e2e-'));
+	const workspace =
+		options.workspace ?? mkdtempSync(join(tmpdir(), 'proposals-e2e-'));
 	const args = parseCliArgs(
 		[
 			'--plugins=proposals',
@@ -138,14 +146,18 @@ export const createAssembledProposalsServer = async (
 					}>
 			: async () => ({ default: proposalsPlugin }),
 		// No on-disk config file: the harness owns the workspace, the
-		// plugin receives pure defaults from ctx.corePaths.
+		// plugin receives pure defaults from ctx.corePaths. The one thing
+		// it declares is the model the workspace works under, because a
+		// project that declares none is held to the default one, whose
+		// shared checkout belongs to work refs and not to these tools.
 		readFile: async (path) => {
 			if (!path.endsWith('delendai.config.json')) return undefined;
+			if (options.workspaceConfig !== undefined) {
+				return options.workspaceConfig;
+			}
 			const hasPeerReview = options.requirePeerReview !== undefined;
 			const hasDisclosure = options.progressiveDisclosure === true;
 			const hasWorktrees = options.enableAgentWorktree === true;
-			if (!hasPeerReview && !hasDisclosure && !hasWorktrees)
-				return undefined;
 			return JSON.stringify({
 				// `requiredChecks` is not decoration: the profile enforces
 				// governance, and a required-pull-request gate with no
@@ -159,7 +171,7 @@ export const createAssembledProposalsServer = async (
 								},
 							},
 						}
-					: {}),
+					: { development: { profile: 'shared-direct' } }),
 				...(hasDisclosure
 					? { managedSurface: { progressiveDisclosure: true } }
 					: {}),

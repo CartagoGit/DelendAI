@@ -52,6 +52,57 @@ const publishedUnder = (
 	return found !== undefined && found.length > 0;
 };
 
+/** A string as a literal inside a regular expression. */
+const literal = (text: string): string =>
+	text.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+
+/**
+ * The generations of one unit that ended: merged into the integration
+ * branch, or kept retired on the remote. Read once per entry. A number a
+ * unit used is spent: reused, it gave a new unit the identity of one the
+ * startup reconciler had already recorded, which it then reported as
+ * rewritten history, and the old one as vanished.
+ */
+export const endedGenerations = (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	workRef: string,
+): ReadonlySet<number> => {
+	const workPrefix = `refs/heads/${policy.branches.workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '')}`;
+	if (!workRef.startsWith(workPrefix)) return new Set();
+	// `<agent>/<kind>/<proposal>-<slice>-g`: the unit, every generation.
+	const unit = /^(.*-g)\d+\//u.exec(workRef.slice(workPrefix.length))?.[1];
+	if (unit === undefined) return new Set();
+	const integration = policy.branches.integration;
+	const remote = `refs/remotes/origin/${integration}`;
+	const tip =
+		readGit(root, ['rev-parse', '-q', '--verify', remote]) === undefined
+			? integration
+			: remote;
+	const merged =
+		readGit(root, [
+			'log',
+			'--first-parent',
+			'--merges',
+			'--max-count=5000',
+			'--format=%s',
+			tip,
+		]) ?? '';
+	const retired =
+		readGit(root, [
+			'ls-remote',
+			'--',
+			'origin',
+			`refs/${policy.branches.namespacePrefix}/retired/*`,
+		]) ?? '';
+	const ended = new Set<number>();
+	const named = new RegExp(`/${literal(unit)}(\\d+)/`, 'gu');
+	for (const text of [merged, retired]) {
+		for (const match of text.matchAll(named)) ended.add(Number(match[1]));
+	}
+	return ended;
+};
+
 /** The generation these arguments name; 1 when they name none. */
 export const unitGeneration = (args: readonly string[]): number =>
 	Number(scalarArg(args, 'generation') ?? '1');
@@ -74,6 +125,36 @@ export const chooseGeneration = (
 	const session = sessionFor(args);
 	// Occupancy is by unit, whatever topic another instance chose.
 	const unnamed = args.filter((arg) => !arg.startsWith('--topic='));
+	// A session that already holds a unit goes back to it, whichever
+	// generation it is. Taking the first free one instead sent a reviewer
+	// whose older unit had been retired to a new unit, where it claimed
+	// the next proposal, while its verdicts went to the unit its session
+	// named, which had claimed nothing.
+	if (session !== undefined && scalarArg(args, 'generation') === undefined) {
+		const held = unitRefsAnyName(
+			root,
+			unnamed,
+			policy,
+			agent,
+			proposal,
+			slice,
+		)
+			.filter((ref) => sessionHolding(root, ref) === session)
+			.map((ref) => Number(/-g(\d+)\//u.exec(ref)?.[1] ?? Number.NaN))
+			.filter((generation) => Number.isInteger(generation));
+		if (held.length > 0) return { generation: Math.max(...held) };
+	}
+	const ended = endedGenerations(
+		root,
+		policy,
+		workRefFor(
+			[...unnamed, '--generation=1'],
+			policy,
+			agent,
+			proposal,
+			slice,
+		),
+	);
 	for (let generation = 1; ; generation += 1) {
 		const inGeneration = [...unnamed, `--generation=${String(generation)}`];
 		const exact = workRefFor(inGeneration, policy, agent, proposal, slice);
@@ -95,23 +176,25 @@ export const chooseGeneration = (
 			const holder = sessionHolding(root, ref);
 			return holder !== undefined && holder !== session;
 		});
+		// A generation whose unit ended is spent; one with a live ref is a
+		// unit to go back to.
+		if (refs.size === 0 && ended.has(generation)) continue;
 		if (other === undefined) {
 			// A review batch's name is reused by nobody while its pull
 			// request is open: its claims are read back to that name, and a
 			// new unit under it took the published pack's proposals for its
 			// own.
-			if (
-				proposal !== REVIEW_BATCH_ID ||
-				!publishedUnder(root, policy, exact)
-			)
-				return { generation };
+			// Nor is any unit's while its publication is open: a second
+			// work ref with the identity of an open pull request is two
+			// refs the startup reconciler cannot tell apart.
+			if (!publishedUnder(root, policy, exact)) return { generation };
 			continue;
 		}
 		if (proposal !== REVIEW_BATCH_ID) {
 			return {
 				refusal: refused(
 					`${proposal} ${slice} is being worked on by another session of \`${agent}\` (\`${other}\`): two instances on one slice would do the same work twice.`,
-					'Take other work, or pass --generation=<n> to start a deliberate second attempt at it.',
+					'If it is your own unit, enter it from inside its worktree, or pass the --session it gave you when you first entered. Otherwise take other work, or pass --generation=<n> to start a deliberate second attempt at it.',
 				),
 			};
 		}

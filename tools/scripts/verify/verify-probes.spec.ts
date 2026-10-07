@@ -2,7 +2,8 @@ import type { z } from 'zod';
 import zImpl from 'zod';
 import { describe, expect, it } from 'vitest';
 
-import type { IToolEffect, IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolEffect } from '@delendai/core/cli';
 
 import {
 	HAPPY_PATH_PROBE_IDS,
@@ -12,7 +13,7 @@ import {
 	runHappyPathProbe,
 	type IToolHandle,
 } from './verify-probes';
-import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/public';
+import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/cli';
 
 /**
  * Solid-ISP test helper: build an `IToolHandle` from a stub schema +

@@ -252,14 +252,24 @@ that the audit calls obligatory.
 
 ### S4 — One projection chain, then SQLite-only reads (the markdown stays the authority)
 
-- **Status**: pending
+- **Status**: in-progress (phase 2 delivered 2026-09-30; phase 3 remains)
 - **Files**:
   - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
   - `plugins/proposals/src/lib/services/projection-refresh.ts`
   - `plugins/proposals/plugin.manifest.ts`
   - `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`
   - `plugins/proposals/src/lib/proposals/index-reader.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-sql.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-location.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-rebuild.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-rebuild.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-workspace.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/proposal-index-read-stats.interface.ts`
+  - `plugins/proposals/src/lib/proposals/index-read-stats.ts`
   - `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-sql.spec.ts`
+  - `plugins/proposals/tests/src/lib/services/db-doctor/storage-mode.spec.ts`
   - `packages/proposals-sqlite/src/lib/migrations/0021_registry_fields.sql`
   - `packages/proposals-sqlite/src/lib/reconciler-markdown.ts`
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`
@@ -271,6 +281,18 @@ that the audit calls obligatory.
   - `plugins/proposals/src/lib/proposals/registry-export.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/registry-entry.interface.ts`
   - `plugins/proposals/tests/src/lib/proposals/registry-export.service.spec.ts`
+  - `plugins/proposals/src/lib/proposals/proposal-summaries.service.ts`
+  - `plugins/proposals/tests/src/lib/proposals/proposal-summaries.service.spec.ts`
+  - `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`
+  - `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`
+  - `tools/scripts/catalog/generate-agent-catalog.script.ts`
+  - `tools/scripts/report/token-budget-report-lib.ts`
+  - `plugins/proposals/src/index.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-db-resolution.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-location.spec.ts`
+  - `plugins/proposals/src/lib/tools/db-status.tool.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-parity-report.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-stale-registry.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -377,6 +399,131 @@ between by parity. Three phases, each ending with the declaration true:
 3. **The registry leaves the read path.** It remains an export for the
    rollback until a later proposal removes it.
 
+**Phase 2 delivered 2026-09-30.** f00641 S1 (merged) gave the proposals
+database a `node:sqlite` adapter behind `loadDatabaseClass`, closing the
+Node blocker the 2026-09-25 finding recorded. What remained — a
+workspace whose database was never built reading as `sql-refused`
+instead of `auto`'s silent JSON fallback — is closed by making `sql`
+rebuild before it gives up, not by keeping the fallback:
+
+- `readProposalIndex`'s `sql` path (`index-reader.ts`) now distinguishes
+  three reasons the projection cannot serve: MISSING (no file at the
+  resolved database path), UNSTAMPED (the file exists but no reconcile
+  ever promoted into it — opened fine, no `reconciliation_runs` row),
+  and CORRUPT (a file exists but this reader could not open it). Missing
+  and unstamped rebuild once, through the existing leveller
+  (`reconcileProjection`, which never throws) against the markdown — the
+  authority `sql` already defers to for every row it serves — then read
+  again; corrupt still throws immediately, so a real problem is never
+  silently reconciled over. The workspace root itself must exist too,
+  so a synthetic/misconfigured root never triggers a real rebuild
+  attempt.
+- The rebuild is counted, not just logged once:
+  `IProposalIndexReadStats.rebuilds` (`index-read-stats.ts`) increments
+  on every attempt, whether or not the retry ends up serving — the
+  existing one-time notice behaviour is unchanged.
+- `DEFAULT_PROPOSAL_INDEX_SOURCE` moved from `auto` to `sql`
+  (`proposal-index-source.constant.ts`); `json` stays the one-line
+  rollback, `auto` stays selectable.
+- Fixed a real bug the flip surfaced: `readProposalIndexResultFromSql`
+  (`index-reader-sql.ts`) selected every row of the append-only
+  `proposals` table with no `WHERE deleted_at IS NULL`, so a proposal
+  tombstoned by a reconcile (its markdown file removed) kept resurfacing
+  in the index forever, with its last-seen status. `auto` never showed
+  this — any divergence with the (correctly current) JSON registry made
+  it silently serve JSON instead — so it was invisible until `sql` had
+  to serve directly. Caught by
+  `tests/src/lib/e2e/auto-work.e2e.spec.ts` (`resets the idle streak
+  after a work response`) and `tests/src/lib/continue-proposal.spec.ts`
+  ("a stale index is not an empty backlog") going red under the new
+  default; both are green again with the `WHERE` clause added, plus a
+  new regression spec in `index-reader-sql.spec.ts`.
+- Evidence: `bunx vitest run --project proposals` (full project) and
+  `bun run test:sqlite` both green; `bunx tsc --noEmit` clean for
+  `plugins/proposals`. New/updated specs:
+  `index-reader.spec.ts` (rebuild-on-missing/unstamped/corrupt unit
+  cases with injected seams, plus a real end-to-end spec: a fresh temp
+  workspace with a markdown proposals tree and no `.cache` at all reads
+  correctly under the bare default), `index-reader-sql.spec.ts`
+  (tombstone-exclusion regression), `index-read-stats` callers updated
+  for the new `rebuilds` field, `continue-proposal.spec.ts` unchanged: its fixtures are a hand-written
+  `index.json` outside the canonical layout, which the default now serves
+  as JSON (below).
+- Only a chosen `sql` is strict where no projection can be located. An
+  index outside the canonical layout (a project with another shape, a
+  test fixture) has no database path and no workspace to rebuild into;
+  under the default it is served as JSON with a one-time notice, while
+  `source: 'sql'` or `DELENDAI_PROPOSAL_INDEX_SOURCE=sql` still refuses
+  it. A corrupt database refuses under both.
+- Still open: phase 3 (the registry leaves the read path entirely).
+
+**Phase 3, first reader 2026-10-05 — commit-policy's slice listener.**
+(Corrected 2026-10-06: the first version recognised a document only by a
+file name of five digits, and CI's auto-work e2e, whose fixture is
+`p9995`, timed out waiting for a commit that never came. A document's id
+is now its frontmatter's `id`, or the file name before its first dash: no
+shape of id is assumed.)
+It read the registry for the list of documents, then read every document
+for its slices, because the registry carries none: 1,174 files a second.
+The list it read them by was a projection that had fallen behind (in the
+shared checkout on 2026-10-05 it lacked `x00835` and seven newer
+proposals, and still listed `f00509` under `in-progress/`). The listener
+now lists the proposals folder itself and parses a document again only
+when its size or modification time changed
+(`plugins/commit-policy/src/lib/triggers/slice-snapshot.service.ts`), so
+it reads the authority and reads it once. Its specs wrote a registry
+with inline slices, a shape the registry never has; they now write
+proposal documents through one fixture
+(`tests/src/lib/triggers/proposal-documents.fixture.ts`). Readers of the
+registry left (after the fix below): `readProposalIndex`'s JSON fallback for layouts outside
+the canonical one; the token dashboard's wait for its fixture; and core's
+own `readProposalsIndex` (`packages/core/src/lib/cli/read-proposals-index.ts`),
+which the proposals plugin's workflow contribution and the agent-catalog
+generator call. That last one is also the core↔proposals inversion
+`lint:core-proposals-boundary` keeps as a dated exception: it moves to the
+plugin once the plugin's reader can return a summary (title, track, kind,
+date), not only `id`, `file` and `status`.
+
+**Phase 3, second reader 2026-10-06 — the workflow summaries.** r00043
+S8 moved `readProposalsIndex` into the plugin
+(`plugins/proposals/src/lib/proposals/proposal-summaries.service.ts`),
+still parsing the registry. The plugin's reader now returns what a
+summary needs: `IProposalIndexEntry` carries optional `title`, `track`,
+`kind` and `date`, and the SQL read selects them (migration 0021 already
+stored them). `readProposalsIndex` reads through `readProposalIndex`, so
+the workflow contribution behind the overview is served by the state
+database by default. The mapping is its own pure function,
+`toProposalSummaries`, and the agent-catalog generator applies it to the
+registry it already scans from the markdown in memory: the catalog is
+checked in and compared byte for byte, so it is built from the authority,
+never from a cache on the machine that generates it (reading the
+registry from disk instead gave a catalog with no proposals in a fresh
+unit). Its specs write a registry into a real workspace instead of
+answering an injected file read the summaries no longer make. Readers of
+the registry left: the JSON fallback and the token dashboard's wait.
+
+**Phase 3, third reader 2026-10-06 — the token dashboard's wait.** The
+dashboard syncs its fixture workspace and waits until the fixture
+proposal is listed before it measures `auto_work`. It waited on the
+registry's text while `auto_work` reads through `readProposalIndex`, so
+the wait could pass on a file the tool never consulted. It now waits
+through the same reader (`tools/scripts/report/token-budget-report-lib.ts`),
+and `tokens:dashboard:check` stays in sync. The only reader of the
+registry left is `readProposalIndex`'s JSON fallback, for a layout with
+no database.
+
+**Found 2026-10-06 — a relocated cache was always served by the
+registry.** A host may move the cache (`--cacheDir`); the index moves
+with it, the database stays at `.cache/delendai/state`. The reader found
+a workspace from the index path only in the canonical layout, and none of
+the plugin's eight call sites passes `workspaceRoot`, so on such a project
+every read fell back to the registry with a notice. The plugin now
+declares its index file's layout once when it lays out its paths
+(`declareProposalIndexFile`, in `index-reader-location.ts`); a relative
+layout holds in any checkout of the workspace, a unit's worktree
+included, and a path that does not end in it is still nobody's guess.
+`index-reader-db-resolution.spec.ts` fails without the change. (Corrected the same day: CI's changed-file coverage measured the declared layout as untested, because only that bun-owned spec reached it. The declared layout no longer waits on the database package's import, which it does not need, and `index-reader-location.spec.ts` covers it under vitest; `db_status` takes only the two reads it makes, so the plugin no longer builds four stubs for it.)
+
 Acceptance:
 
 - After a proposal tool writes, the database and the registry agree
@@ -387,6 +534,8 @@ Acceptance:
   `DELENDAI_PROPOSAL_INDEX_SOURCE=json` it does.
 - A person's direct edit of a proposal file is what the next read
   returns, after one reconcile.
+
+**Phase 3, 2026-10-07 — a stale export is not a divergence.** Every boot of the MCP server said `proposal index: serving the SQLite projection …; .cache/delendai/proposals/index.json differs on x00643, x00644, x00645`. The projection reconciles on its own; the registry export is written only by a full sync, which in a shared checkout nobody runs — units sync in their own worktrees — so the file there was a day old and every comparison reported the work done since as divergence. The SQL read now carries when its reconcile completed (`reconciledAt`, from `reconciliation_runs.completed_at`), and a registry generated before that is not compared: the read is counted as `sql-registry-stale` (parity `not-compared`) and says nothing. A registry newer than the projection is still compared. `index-reader-stale-registry.spec.ts` pins both; `test:sqlite` 417 pass. This narrows the registry's role to what phase 3 wants it to be, an export for the rollback; removing it from the read path entirely is still open.
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 

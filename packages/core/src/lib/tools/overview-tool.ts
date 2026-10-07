@@ -9,6 +9,11 @@ import type {
 } from '../contracts/interfaces/tool-registration.interface';
 import { toolJsonWithSummary } from '../shared/tool-response';
 import { compactOutputSchema } from '../surface/compact-output-schema.helper';
+import {
+	buildOverviewSummary,
+	compactSummary,
+	countGroupedTools,
+} from './overview-summary.helper';
 
 export interface IOverviewToolEntry {
 	readonly name: string;
@@ -78,6 +83,14 @@ export interface IOverviewSnapshot {
 	readonly activationReport?: IActivationReport | undefined;
 	/** Enabled plugins with tools that have not been invoked this session. */
 	readonly unusedActivePlugins?: readonly string[] | undefined;
+	/**
+	 * How this project starts and lands work, in one line from its
+	 * resolved development policy. In compact mode too: it is the one
+	 * thing an agent cannot discover by looking at the repository, and
+	 * guessing it wrong puts work on the wrong route. Absent when no
+	 * policy resolved.
+	 */
+	readonly workModel?: string | undefined;
 	readonly recommendedNextAction: string;
 }
 
@@ -91,29 +104,6 @@ export interface IOverviewPluginDiagnostic {
 	readonly errors: number;
 }
 
-const MAX_OVERVIEW_SUMMARY_CHARS = 96;
-
-const compactSummary = (summary: string | undefined): string | undefined => {
-	if (summary === undefined) return undefined;
-	if (summary.length <= MAX_OVERVIEW_SUMMARY_CHARS) return summary;
-	return `${summary.slice(0, MAX_OVERVIEW_SUMMARY_CHARS - 3)}...`;
-};
-
-const countGroupedTools = (groupedTools: Record<string, string[]>): number =>
-	Object.values(groupedTools).reduce(
-		(total, group) => total + group.length,
-		0,
-	);
-
-const buildOverviewSummary = (args: {
-	readonly compact: boolean;
-	readonly pluginCount: number;
-	readonly toolCount: number;
-	readonly knowledgeCount: number;
-	readonly activationIncluded: boolean;
-}): string =>
-	`${args.compact ? 'compact ' : ''}overview: ${args.pluginCount} plugins, ${args.toolCount} visible tools, ${args.knowledgeCount} knowledge ids${args.activationIncluded ? ', activation included' : ''}`;
-
 /**
  * The single cold-start entry point. One call returns the visible tool
  * surface plus the brokered catalog counts/runtime state — identity,
@@ -126,6 +116,8 @@ export const buildOverviewToolRegistration = (
 	namespacePrefix: string,
 	snapshot: () => IOverviewSnapshot,
 	runtimeAccess?: IToolSurfaceRuntimeAccess,
+	/** Counts of units needing an action, or undefined when none does. */
+	workUnits?: () => Promise<string | undefined>,
 ): IToolRegistration => ({
 	id: 'overview',
 	summary:
@@ -157,6 +149,7 @@ export const buildOverviewToolRegistration = (
 				activation?: boolean | undefined;
 			}) => {
 				const snap = snapshot();
+				const units = await workUnits?.().catch(() => undefined);
 				const runtime = runtimeAccess?.get();
 				let tools = snap.tools;
 				if (args.tag !== undefined) {
@@ -265,6 +258,10 @@ export const buildOverviewToolRegistration = (
 									};
 								})()
 							: {}),
+						...(snap.workModel !== undefined
+							? { workModel: snap.workModel }
+							: {}),
+						...(units === undefined ? {} : { units }),
 						recommendedNextAction: snap.recommendedNextAction,
 					};
 					return toolJsonWithSummary(
@@ -365,6 +362,10 @@ export const buildOverviewToolRegistration = (
 								};
 							})()
 						: {}),
+					...(snap.workModel !== undefined
+						? { workModel: snap.workModel }
+						: {}),
+					...(units === undefined ? {} : { units }),
 					recommendedNextAction: snap.recommendedNextAction,
 				};
 				return toolJsonWithSummary(

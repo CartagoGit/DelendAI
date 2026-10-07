@@ -92,6 +92,8 @@ export interface IContinueProposalArgs {
 	readonly mode?: 'auto' | 'plan' | 'claim' | undefined;
 	readonly sliceId?: string | undefined;
 	readonly agentName?: string | undefined;
+	/** Who holds the claim: the server process (default) or the agent alone. */
+	readonly holder?: 'process' | 'agent' | undefined;
 }
 
 const json = toolJson;
@@ -515,6 +517,7 @@ export const runContinueProposal = async (
 				task_id: `${doc.id}-${args.sliceId}`,
 				agent,
 				files: [...slice.files],
+				...(args.holder === undefined ? {} : { holder: args.holder }),
 			},
 			{
 				lockPath: options.lockPathAbs,
@@ -865,6 +868,7 @@ export const buildContinueProposalRegistration = (
 					mode: z.enum(['auto', 'plan', 'claim']).optional(),
 					sliceId: z.string().optional(),
 					agentName: z.string().optional(),
+					holder: z.enum(['process', 'agent']).optional(),
 				}),
 			},
 			async (args: IContinueProposalArgs) =>

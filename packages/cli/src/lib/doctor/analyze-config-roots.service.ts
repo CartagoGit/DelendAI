@@ -16,7 +16,12 @@
  * that convention.
  */
 
-export type DoctorSectionStatus = 'ok' | 'warn' | 'error';
+/**
+ * `not-applicable` is a check that does not describe this workspace at
+ * all (a monorepo-only check run in a consumer project). It is neither
+ * healthy nor a problem, so it is shown as itself and never as `ok`.
+ */
+export type DoctorSectionStatus = 'ok' | 'warn' | 'error' | 'not-applicable';
 
 export interface IDoctorSection {
 	readonly name: string;

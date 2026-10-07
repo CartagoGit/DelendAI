@@ -3,7 +3,7 @@
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
 
-import { walkTsFiles } from '@delendai/core/public';
+import { walkTsFiles } from '@delendai/core/cli';
 
 const REPO_ROOT = process.cwd();
 const DEFAULT_SCAN_ROOT = 'packages/core/src';
@@ -117,13 +117,6 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 		},
 		{
 			file: 'packages/core/src/public/index.ts',
-			needle: '../lib/cli/read-proposals-index',
-			until: '2027-03-31',
-			classification: 'compatibility',
-			reason: 'The proposals PLUGIN reads its own index through the core public barrel (plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts), which is the exact inversion r00043 exists to remove. Kept as an explicit, dated exception rather than deleted: removing the export breaks that plugin today, and the replacement is not a swap — the plugin-side reader returns IProposalIndexEntry[] while this returns IProposalSummary[]. r00043 S4 owns the shape reconciliation. No `kind` on purpose: the scanner reports `export ... from` as a literal, not an import, so pinning a kind here would silently stop matching.',
-		},
-		{
-			file: 'packages/core/src/public/index.ts',
 			needle: '../lib/proposals/validate-evidence.schema',
 			until: '2027-03-31',
 			classification: 'compatibility',
@@ -176,14 +169,6 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 			until: '2027-03-31',
 			classification: 'host-composition',
 			reason: 'The discovery snapshot still exposes a dedicated proposals section to hosts.',
-			kind: 'literal',
-		},
-		{
-			file: 'packages/core/src/lib/cli/read-proposals-index.ts',
-			needle: 'proposals',
-			until: '2027-03-31',
-			classification: 'compatibility',
-			reason: 'Legacy compact catalog entries are still sourced from the cached proposals index artifact.',
 			kind: 'literal',
 		},
 		{

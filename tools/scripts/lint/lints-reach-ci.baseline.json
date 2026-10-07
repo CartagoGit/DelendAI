@@ -5,7 +5,6 @@
 		"lint:commit-driver-guard",
 		"lint:commit-msg",
 		"lint:commit-push-strictness",
-		"lint:core-public-surface-budget",
 		"lint:fix",
 		"lint:git-stale-lock",
 		"lint:no-empty-commits",

@@ -13,9 +13,11 @@ import {
 	listArg,
 	positionalArg,
 	request,
+	resolveAgent,
 	scalarArg,
 	usage,
 } from './group-helpers';
+import { CRITERION_SEPARATOR } from '../../contracts/constants/review-command.constant';
 
 /**
  * Parse an optional JSON-valued flag into a value, or undefined. Never
@@ -48,17 +50,23 @@ const autoWorkCommand: ICliCommand = {
 
 const continueCommand: ICliCommand = {
 	name: 'proposals continue',
-	flags: ['id', 'mode', 'slice', 'sliceId'],
+	flags: ['id', 'mode', 'slice', 'sliceId', 'agent'],
 	summary: 'Resolve / plan / claim the next proposal slice.',
 	async run(args, ctx) {
 		const proposalId = positionalArg(args) ?? scalarArg(args, 'id');
 		const mode = scalarArg(args, 'mode');
 		const sliceId = scalarArg(args, 'slice') ?? scalarArg(args, 'sliceId');
+		// Only a claim is held by someone: the agent it is made for.
+		const agentName =
+			mode === 'claim' ? await resolveAgent(args, ctx.cwd) : undefined;
 		return data(
 			await request(ctx, 'delendai_proposals_continue_proposal', {
 				...(proposalId !== undefined ? { proposalId } : {}),
 				...(mode !== undefined ? { mode } : {}),
 				...(sliceId !== undefined ? { sliceId } : {}),
+				...(agentName !== undefined ? { agentName } : {}),
+				// The claim must outlive this one-shot process.
+				...(mode === 'claim' ? { holder: 'agent' } : {}),
 			}),
 		);
 	},
@@ -91,44 +99,72 @@ const createCommand: ICliCommand = {
 	},
 };
 
+const CLOSE_SLICE_USAGE =
+	'proposals close-slice <proposalId> <sliceId> [--checkout=<unit worktree>]';
+
+/**
+ * The checkout a call acts in, when the caller named one. Absent, the
+ * tools bind the call to the caller's live unit on their own, exactly as
+ * they do for an MCP client.
+ */
+const checkoutArgs = (args: readonly string[]): { checkout?: string } => {
+	const checkout = scalarArg(args, 'checkout');
+	return checkout === undefined ? {} : { checkout };
+};
+
 const closeSliceCommand: ICliCommand = {
 	name: 'proposals close-slice',
-	flags: [],
-	summary: 'Mark a slice done + release its lock atomically, then re-sync.',
+	usage: CLOSE_SLICE_USAGE,
+	flags: ['checkout'],
+	summary:
+		'Mark a slice done + release its lock atomically, then re-sync. --checkout names the unit worktree; omitted, the live unit that carries the proposal is used.',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
 		const proposalId = positionals[0];
 		const sliceId = positionals[1];
 		if (proposalId === undefined || sliceId === undefined) {
-			return usage('proposals close-slice <proposalId> <sliceId>');
+			return usage(CLOSE_SLICE_USAGE);
 		}
 		return data(
 			await request(ctx, 'delendai_proposals_close_slice', {
 				proposalId,
 				sliceId,
+				...checkoutArgs(args),
 			}),
 		);
 	},
 };
 
+const TRANSITION_USAGE =
+	'proposals transition <id> <to> --reason=<why> [--agent=<you>] [--checkout=<unit worktree>]';
+
 const transitionCommand: ICliCommand = {
 	name: 'proposals transition',
-	flags: ['reason'],
+	usage: TRANSITION_USAGE,
+	flags: ['reason', 'agent', 'checkout'],
 	summary:
-		'Move a proposal to a new status (DFA-validated; requires reason).',
+		'Move a proposal to a new status (DFA-validated; requires reason). To review, --agent (or DELENDAI_AGENT_ID) names the implementer and opens the review rounds.',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
 		const id = positionals[0];
 		const to = positionals[1];
 		const reason = scalarArg(args, 'reason');
 		if (id === undefined || to === undefined || reason === undefined) {
-			return usage('proposals transition <id> <to> --reason=<why>');
+			return usage(TRANSITION_USAGE);
+		}
+		const agent = await resolveAgent(args, ctx.cwd);
+		if (to === 'review' && agent === undefined) {
+			return usage(
+				`${TRANSITION_USAGE} — a hand-off to review needs the implementer, or no review round opens and reviewers never see the proposal: pass --agent=<you> or set DELENDAI_AGENT_ID`,
+			);
 		}
 		return data(
 			await request(ctx, 'delendai_proposals_proposal_transition', {
 				id,
 				to,
 				reason,
+				...(agent !== undefined ? { agent } : {}),
+				...checkoutArgs(args),
 			}),
 		);
 	},
@@ -199,7 +235,12 @@ const lockCommand: ICliCommand = {
 		if (action === undefined) {
 			return usage('proposals lock --action=claim|release|status|gc');
 		}
-		const agent = scalarArg(args, 'agent');
+		// A claim and its heartbeat are made by someone: the declared
+		// agent stands in when none is named.
+		const agent =
+			action === 'claim' || action === 'heartbeat'
+				? await resolveAgent(args, ctx.cwd)
+				: scalarArg(args, 'agent');
 		const taskId = scalarArg(args, 'task') ?? scalarArg(args, 'taskId');
 		const files = listArg(args, 'files');
 		return data(
@@ -208,6 +249,9 @@ const lockCommand: ICliCommand = {
 				...(agent !== undefined ? { agent } : {}),
 				...(taskId !== undefined ? { task_id: taskId } : {}),
 				...(files !== undefined ? { files } : {}),
+				// This process ends with the call: a claim tied to it would
+				// be gone before the next command could rely on it.
+				...(action === 'claim' ? { holder: 'agent' } : {}),
 			}),
 		);
 	},
@@ -395,10 +439,37 @@ const integerArg = (
  * The evidence an approval carries, from flags. Absent unless at least
  * one evidence flag was given, so a submit or a status call sends none.
  */
+/**
+ * Every `--criterion="<criterion> => <evidence>"`, in order. A slice that
+ * declares acceptance criteria is approved only with evidence for each,
+ * and the command line had no way to give it: from a shell, no such slice
+ * could be approved at all.
+ */
+const criteriaArgs = (
+	args: readonly string[],
+): readonly { readonly criterion: string; readonly evidence: string }[] =>
+	args
+		.filter((arg) => arg.startsWith('--criterion='))
+		.map((arg) => arg.slice('--criterion='.length))
+		.map((value) => {
+			// The first separator: evidence is free text, a criterion is not.
+			const at = value.indexOf(CRITERION_SEPARATOR);
+			return at < 0
+				? { criterion: value.trim(), evidence: '' }
+				: {
+						criterion: value.slice(0, at).trim(),
+						evidence: value
+							.slice(at + CRITERION_SEPARATOR.length)
+							.trim(),
+					};
+		});
+
 export const evidenceArgs = (
 	args: readonly string[],
 ): Record<string, unknown> | undefined => {
+	const criteria = criteriaArgs(args);
 	const evidence = {
+		...(criteria.length === 0 ? {} : { acceptanceCriteria: criteria }),
 		...(scalarArg(args, 'commit') === undefined
 			? {}
 			: { commitHash: scalarArg(args, 'commit') }),
@@ -416,7 +487,7 @@ export const evidenceArgs = (
 };
 
 const REVIEW_USAGE =
-	'proposals review <proposalId> <sliceId> --action=<submit|approve|request_changes|status> --agent=<who> [--note=<n>] [--commit=<sha>] [--validate-exit=0 --tests-passing=<n> --tests-total=<n>]';
+	'proposals review <proposalId> <sliceId> --action=<submit|approve|request_changes|status> --agent=<who> [--note=<n>] [--commit=<sha>] [--validate-exit=0 --tests-passing=<n> --tests-total=<n>] [--criterion="<criterion> => <evidence>" …]';
 
 const reviewCommand: ICliCommand = {
 	name: 'proposals review',
@@ -429,6 +500,7 @@ const reviewCommand: ICliCommand = {
 		'validate-exit',
 		'tests-passing',
 		'tests-total',
+		'criterion',
 	],
 	summary:
 		'Peer-review a slice: submit/approve/request_changes/status. --commit names the delivering commit (and opens the round a delivery never opened); approve also needs --validate-exit, --tests-passing and --tests-total.',
@@ -540,6 +612,8 @@ const delegateCommand: ICliCommand = {
 				taskId,
 				slot,
 				files,
+				// The claim must outlive this one-shot process.
+				holder: 'agent',
 				...(topic !== undefined ? { topic } : {}),
 				...(agentName !== undefined ? { agentName } : {}),
 			}),

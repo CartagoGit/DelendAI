@@ -23,6 +23,7 @@ import type {
 } from '@delendai/core/lib/plugins/plugin-contract';
 
 import { SHARED_CHECKOUT_WRITE_REFUSED } from '../../../../src/lib/contracts/constants/write-refusal.constant';
+import type { ICallerUnit } from '../../../../src/lib/contracts/interfaces/live-proposal-unit.interface';
 import { bindWriteRoot } from '../../../../src/lib/shared/bind-write-root';
 import {
 	executionRootOr,
@@ -200,6 +201,186 @@ describe('bindWriteRoot', () => {
 			SHARED_CHECKOUT_WRITE_REFUSED,
 		);
 		expect(result.structuredContent.error.reason).toContain('develop');
+	});
+
+	it('runs a call the tool declares a read in the shared checkout, and still refuses its writes', async () => {
+		const actions: string[] = [];
+		const registration: IToolRegistration = {
+			...toolReportingItsRoot('caller-checkout'),
+			readsOnly: (input) =>
+				(input as { readonly action?: unknown }).action === 'status',
+			register: async (server) => {
+				server.registerTool(
+					'review',
+					{ inputSchema: z.object({ action: z.string() }) },
+					async (args: { readonly action: string }) => {
+						actions.push(args.action);
+						return toolOk();
+					},
+				);
+			},
+		};
+		const { handler } = await registerOn(
+			bindWriteRoot(
+				registration,
+				SERVER,
+				sameRepository,
+				async () => 'this is the shared checkout on develop',
+			),
+		);
+		const read = (await handler({ action: 'status' })) as {
+			readonly isError?: boolean;
+		};
+		const write = (await handler({ action: 'submit' })) as {
+			readonly isError?: boolean;
+			readonly structuredContent: {
+				readonly error: { readonly code?: string };
+			};
+		};
+		expect(read.isError).not.toBe(true);
+		expect(write.isError).toBe(true);
+		expect(write.structuredContent.error.code).toBe(
+			SHARED_CHECKOUT_WRITE_REFUSED,
+		);
+		expect(actions).toEqual(['status']);
+	});
+
+	describe('the next step of a write refused in the shared checkout', () => {
+		const nextActionOf = async (
+			registration: IToolRegistration,
+		): Promise<string> => {
+			const { handler } = await registerOn(
+				bindWriteRoot(
+					registration,
+					SERVER,
+					sameRepository,
+					async () => 'this is the shared checkout on develop',
+				),
+			);
+			const result = (await handler({})) as {
+				readonly structuredContent: {
+					readonly error: { readonly nextAction: string };
+				};
+			};
+			return result.structuredContent.error.nextAction;
+		};
+
+		it('names the way in that a tool declares, when it creates what it writes', async () => {
+			const nextAction = await nextActionOf({
+				...toolReportingItsRoot('caller-checkout'),
+				refusedWriteNextStep:
+					'Enter a unit with `--proposal=new`, then create there.',
+			});
+			expect(nextAction).toBe(
+				'Enter a unit with `--proposal=new`, then create there.',
+			);
+		});
+
+		it('keeps pointing at a unit for the proposal for a tool that edits one', async () => {
+			const nextAction = await nextActionOf(
+				toolReportingItsRoot('caller-checkout'),
+			);
+			expect(nextAction).toContain('work enter --proposal=<id>');
+			expect(nextAction).not.toContain('--proposal=new');
+		});
+	});
+
+	describe('a call about a proposal, made from the shared checkout on the integration branch', () => {
+		const PROPOSAL_TOOL = z.object({
+			id: z.string(),
+			agent: z.string().optional(),
+		});
+		const unit = {
+			ref: 'refs/heads/delendai/wip/agent-a/implement/x00001-S1-g1/t',
+			path: WORKTREE,
+			agent: 'agent-a',
+			kind: 'implement',
+		};
+		const refusedHere = async () =>
+			'this is the shared checkout on develop';
+
+		const callWith = async (
+			answer: ICallerUnit,
+			args: Record<string, unknown>,
+		) => {
+			const asked: unknown[] = [];
+			let received: unknown;
+			const registration: IToolRegistration = {
+				...toolReportingItsRoot('caller-checkout', PROPOSAL_TOOL),
+				register: async (server) => {
+					server.registerTool(
+						'commit',
+						{ inputSchema: PROPOSAL_TOOL },
+						async (input: unknown) => {
+							received = input;
+							return reportRoot();
+						},
+					);
+				},
+			};
+			const { handler } = await registerOn(
+				bindWriteRoot(
+					registration,
+					SERVER,
+					sameRepository,
+					refusedHere,
+					async (_root, wanted) => {
+						asked.push(wanted);
+						return answer;
+					},
+				),
+			);
+			const result = await handler(args);
+			return { result, asked, received };
+		};
+
+		it('acts in the one unit that carries the proposal, and tells the handler', async () => {
+			const { result, asked, received } = await callWith(
+				{ status: 'found', unit },
+				{ id: 'x00001', agent: 'agent-a' },
+			);
+			expect(await rootIn(result)).toBe(WORKTREE);
+			expect(asked).toEqual([{ proposal: 'x00001', agent: 'agent-a' }]);
+			expect(received).toMatchObject({ checkout: WORKTREE });
+		});
+
+		it('refuses, naming the candidates, when several units carry it', async () => {
+			const other = { ...unit, path: '/tmp/worktrees/other' };
+			const { result } = await callWith(
+				{ status: 'ambiguous', units: [unit, other] },
+				{ id: 'x00001' },
+			);
+			const error = (
+				result as {
+					structuredContent: {
+						error: { code: string; nextAction: string };
+					};
+				}
+			).structuredContent.error;
+			expect(error.code).toBe(SHARED_CHECKOUT_WRITE_REFUSED);
+			expect(error.nextAction).toContain(WORKTREE);
+			expect(error.nextAction).toContain('/tmp/worktrees/other');
+		});
+
+		it('keeps the canonical refusal when no unit carries it', async () => {
+			const { result } = await callWith(
+				{ status: 'none' },
+				{ id: 'x00001' },
+			);
+			expect(
+				(result as { structuredContent: { error: { code: string } } })
+					.structuredContent.error.code,
+			).toBe(SHARED_CHECKOUT_WRITE_REFUSED);
+		});
+
+		it('looks for no unit when the call names no proposal', async () => {
+			const { result, asked } = await callWith(
+				{ status: 'found', unit },
+				{ id: 'not-a-proposal' },
+			);
+			expect(asked).toEqual([]);
+			expect((result as { isError?: boolean }).isError).toBe(true);
+		});
 	});
 
 	it('refuses an invalid checkout even for a tool that declared checkout itself', async () => {

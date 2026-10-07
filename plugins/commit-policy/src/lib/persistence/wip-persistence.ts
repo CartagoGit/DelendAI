@@ -138,6 +138,19 @@ export const createPolicyPersistence = (
 	const persist = async (
 		request: IPersistenceRequest,
 	): Promise<IPersistenceOutcome> => {
+		// A slice event reaches every server connected to the workspace.
+		// Only one of them belongs to the agent that did the work; the rest
+		// used to open a unit each, named after the program that connected,
+		// and commit whatever the event listed.
+		if (options.agentDeclared?.() === false) {
+			return {
+				handled: true,
+				status: 'refused',
+				code: 'WIP_NO_AGENT_IDENTITY',
+				reason: `WIP_NO_AGENT_IDENTITY: no agent declared who it is, so nothing was checkpointed under \`${agentIdOf(options.agentId)}\`: a name taken from the program that connected is not the agent that did the work.`,
+				remedy: 'Declare the agent (DELENDAI_AGENT_ID=<model>, or the `agent` argument of the `work` tool) in the session that did the work; a server that only heard the event has nothing to commit.',
+			};
+		}
 		const classification = classifyCheckpointIntent({
 			triggerKind: request.triggerKind,
 			hasSliceSelector:

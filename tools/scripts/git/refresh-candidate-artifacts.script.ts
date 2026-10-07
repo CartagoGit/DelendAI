@@ -42,6 +42,7 @@ import { branchesLandingAsTheyAre } from '../forge/queue-acceptance';
 import { repoRoot } from '../lib/repo-root';
 import {
 	GENERATED_REFRESH_COMMANDS,
+	QUEUE_COMMIT_IDENTITY,
 	REGENERATED_PROJECTIONS,
 	REGENERATION_COMMIT_SUBJECT,
 } from './refresh-candidate-artifacts.constant';
@@ -77,6 +78,37 @@ const git = (cwd: string, args: readonly string[]): string | undefined => {
 		return undefined;
 	}
 };
+
+/**
+ * The `-c` settings that name the committer, and none when the machine
+ * already names one: a person's identity is theirs, and the queue signs
+ * as itself only where nobody else would.
+ */
+export const identityArgs = (configured: {
+	readonly name?: string | undefined;
+	readonly email?: string | undefined;
+}): readonly string[] =>
+	(configured.name ?? '').length > 0 && (configured.email ?? '').length > 0
+		? []
+		: [
+				'-c',
+				`user.name=${QUEUE_COMMIT_IDENTITY.name}`,
+				'-c',
+				`user.email=${QUEUE_COMMIT_IDENTITY.email}`,
+			];
+
+/** A commit or a merge in `dir`, made under an identity that exists. */
+const gitAsCommitter = (
+	dir: string,
+	args: readonly string[],
+): string | undefined =>
+	git(dir, [
+		...identityArgs({
+			name: git(dir, ['config', '--get', 'user.name']),
+			email: git(dir, ['config', '--get', 'user.email']),
+		}),
+		...args,
+	]);
 
 /** Publication refs the integration branch has moved past. */
 export const staleCandidates = (
@@ -134,12 +166,16 @@ const pushCandidate = (
 	candidate: string,
 ): string | undefined => {
 	try {
-		execFileSync('git', ['push', remote, `HEAD:refs/heads/${candidate}`], {
-			cwd: dir,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'pipe'],
-			env: cleanEnvironment(),
-		});
+		execFileSync(
+			'git',
+			['push', '--', remote, `HEAD:refs/heads/${candidate}`],
+			{
+				cwd: dir,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'pipe'],
+				env: cleanEnvironment(),
+			},
+		);
 		return undefined;
 	} catch (error) {
 		const failed = error as { stdout?: string; stderr?: string };
@@ -173,9 +209,59 @@ const takeRegeneratedSide = (
 	git(dir, ['checkout', '--theirs', '--', ...conflicted]);
 	git(dir, ['add', '--', ...conflicted]);
 	return (
-		git(dir, ['-c', 'core.hooksPath=/dev/null', 'commit', '--no-edit']) !==
-		undefined
+		gitAsCommitter(dir, [
+			'-c',
+			'core.hooksPath=/dev/null',
+			'commit',
+			'--no-edit',
+		]) !== undefined
 	);
+};
+
+/**
+ * How long a publication whose unit is gone from the forge goes without a
+ * push before its conflict is nobody's: a day, far past any lease.
+ */
+const ORPHANED_AFTER_SECONDS = 24 * 60 * 60;
+
+/**
+ * What to say of a candidate that does not merge trivially. Its author
+ * decides — while there is one: a publication whose unit is gone from
+ * the forge and that nobody has pushed to for longer than an abandoned
+ * unit is given has nobody left to decide, and was reported as "its
+ * author decides" on every pass after a swarm stopped (#856, #857, #858).
+ * Then the report says how it ends instead.
+ */
+export const conflictDetail = (input: {
+	readonly candidate: string;
+	readonly silentSeconds: number;
+	readonly abandonedAfter: number;
+	readonly unitOnForge: boolean;
+}): string => {
+	if (input.unitOnForge || input.silentSeconds <= input.abandonedAfter) {
+		return 'does not merge trivially; its author decides';
+	}
+	const hours = Math.floor(input.silentSeconds / 3600);
+	return `does not merge trivially, and its author has been gone ${String(hours)} h: adopt it on its own publication (merge the integration branch into it in a detached worktree, resolve, push it back) — an approval lands only through its reviewer's own pull request — or end it with \`delendai work retire --ref=${input.candidate} --unowned --reason=<what it carries and why it will not land>\`, which keeps its tip`;
+};
+
+/** Whether the unit a publication was made from is still on the forge. */
+const unitStillOnForge = (
+	root: string,
+	remote: string,
+	policy: IResolvedDevelopmentPolicy,
+	candidate: string,
+): boolean => {
+	const bare = (prefix: string): string =>
+		prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+	const publication = bare(policy.branches.publicationRefPrefix);
+	if (publication.length === 0 || !candidate.startsWith(publication)) {
+		return true;
+	}
+	const work = `${bare(policy.branches.workRefPrefix)}${candidate.slice(publication.length)}`;
+	// A forge that does not answer leaves the author to decide.
+	const listed = git(root, ['ls-remote', '--heads', '--', remote, work]);
+	return listed === undefined || listed.trim().length > 0;
 };
 
 /**
@@ -221,7 +307,9 @@ export const refreshCandidate = (input: {
 		) {
 			return { candidate, state: 'failed', detail: 'no worktree' };
 		}
-		const merged = git(dir, [
+		const merged = gitAsCommitter(dir, [
+			'-c',
+			'core.hooksPath=/dev/null',
 			'merge',
 			'--no-edit',
 			`${remote}/${policy.branches.integration}`,
@@ -236,7 +324,26 @@ export const refreshCandidate = (input: {
 			return {
 				candidate,
 				state: 'conflicted',
-				detail: 'does not merge trivially; its author decides',
+				detail: conflictDetail({
+					candidate,
+					silentSeconds:
+						Math.floor(Date.now() / 1000) -
+						Number(
+							git(root, [
+								'log',
+								'-1',
+								'--format=%ct',
+								`${remote}/${candidate}`,
+							]) ?? '0',
+						),
+					abandonedAfter: ORPHANED_AFTER_SECONDS,
+					unitOnForge: unitStillOnForge(
+						root,
+						remote,
+						policy,
+						candidate,
+					),
+				}),
 			};
 		}
 		const failed = GENERATED_REFRESH_COMMANDS.filter(
@@ -251,7 +358,7 @@ export const refreshCandidate = (input: {
 		}
 		if ((git(dir, ['status', '--porcelain']) ?? '').length > 0) {
 			git(dir, ['add', '-A']);
-			git(dir, [
+			gitAsCommitter(dir, [
 				'-c',
 				'core.hooksPath=/dev/null',
 				'commit',

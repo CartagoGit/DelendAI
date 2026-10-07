@@ -273,7 +273,8 @@ If enabled plugins claim the same automatic side effect, startup stops with a
 diagnostic containing the exact configuration keys, effective values,
 precedence, and a JSON patch for `delendai.config.json`. The core remains
 agnostic; each plugin declares only the compatibility rules for its own
-interactions.
+interactions. Two common `delendai.config.json` trip-ups (and their fixes)
+are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
 
 - `bun run validate` is green (typecheck + lint + tests + drift guards).
 - Conventional Commits (`fix:` / `feat:` / `feat!:`) — versioning is
@@ -298,6 +299,11 @@ interactions.
 
 ## 6. Invariants you must not break
 
+- **Every agent is held to the workflow, whatever its model.** Set
+  `DELENDAI_AGENT_ID` to your exact model id before any delendai or git call.
+  An unidentified process is judged per `development.guard.unknownActor`
+  (default `agent` in a shared checkout): never commit on the integration
+  branch; get a unit with `delendai work enter`.
 - **The dogfooding host is a one-shot process.** Keep `.vscode/mcp.json` and
   `.mcp.json` pointed at the repo-local host with
   `bun tools/scripts/host/host-server.script.ts` and the appropriate workspace
@@ -325,24 +331,18 @@ interactions.
   violations (x00080). The check is a lefthook-installed TypeScript hook
   (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
   per rule #10 below.
-- **Agents own work, not branches — git enforces it.** The shared
-  checkout stays on `development.branches.integration` (read the policy;
-  never assume `develop`). No `switch`, no `checkout -b`: a commit from
-  anywhere else there is REFUSED, and the move is reported at once.
-  `delendai work checkpoint --proposal --slice --paths --message` writes
-  your ref from the working tree (HEAD never moves; other agents' dirty
-  files are neither captured nor in the way), `delendai work enter` gives
-  you your own worktree instead — work and commit there, not in an
-  anonymous worktree: at the policy's checkpoint cadence your commits
-  appear on your work ref on the remote — and `delendai work status` says
-  where the checkout stands. A publication ref is never checked out: publish with
-  `forge:publish --from-work-branch` (`lint:ref-lifecycle` fails on
-  leftovers). See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md).
+- **Agents own work, not branches — git enforces it.** How work starts
+  and lands (unit of work, pull request, merge or direct commit) is the
+  project's `development` profile, and the server states it: in its
+  connect-time instructions, `agent_bootstrap`, `overview` (`workModel`)
+  and every refusal. Follow that, never this file or a design doc. The
+  shared checkout never moves; `delendai work status` says where it
+  stands.
 - **No orphaned branches or stashes — always reconcile (this repo).**
-  Before closing a session run `bun run reclaim:orphans` and resolve
-  every orphan: merge it if valuable (fixing it until it works), delete
-  if not. `--apply` removes only lossless branches (`ahead === 0`);
-  stashes and unique-commit branches are never auto-deleted.
+  A unit ends in `delendai work publish` or `delendai work retire`
+  (keeps its tip). Before closing a session run `bun run reclaim:orphans`:
+  live units are no orphans; idle/abandoned ones print their remedy;
+  `--apply` removes lossless branches and delivered units, never stashes.
 - **Slice commits are causally bounded (f00417).** A slice commit is
   only valid if the staged paths are a subset of the **machine-resolved
   scope** at the moment the transition was emitted. The resolver

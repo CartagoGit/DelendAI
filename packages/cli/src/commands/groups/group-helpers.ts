@@ -19,6 +19,14 @@
  *   - Interface segregation: each helper is a pure function with a
  *     minimal signature.
  */
+import { execFileSync } from 'node:child_process';
+
+import { readWorkspacePolicy } from '@delendai/core/cli';
+import {
+	compileWorkRefParser,
+	resolveWorkAgentId,
+} from '@delendai/core/public';
+
 import type { ICliCommandResult } from '../../contracts/interfaces/cli-command.interface';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 // `scalarArg` is imported as a value binding so the local
@@ -72,3 +80,73 @@ export const usage = (line: string): ICliCommandResult => ({
 	code: EXIT_CODE.USAGE,
 	error: `usage: ${line}`,
 });
+
+/**
+ * Who this invocation works as: an explicit `--agent`, then what the
+ * environment declares (`DELENDAI_AGENT_ID`) — the same answer the work
+ * commands and the tools give. `undefined` when nobody declared one; the
+ * machine is never a guess.
+ */
+export const agentArg = (
+	args: readonly string[],
+	env: NodeJS.ProcessEnv = process.env,
+): string | undefined => {
+	const explicit = scalarArg(args, 'agent');
+	const identity = resolveWorkAgentId({
+		...(explicit === undefined ? {} : { model: explicit }),
+		environment: env.DELENDAI_AGENT_ID,
+	});
+	return identity.source === 'none' ? undefined : identity.id;
+};
+
+/**
+ * The agent a unit's ref names: the work-ref template carries an
+ * `${agent}` segment, read back with core's own parser so the reading
+ * cannot drift from the writing. `undefined` when the branch is not a
+ * work ref, or the project declares none.
+ */
+export const agentOfWorkBranch = (
+	template: string | undefined,
+	branch: string,
+): string | undefined => {
+	if (template === undefined || template === '') return undefined;
+	const identity = compileWorkRefParser(template, '')?.parse(
+		`refs/heads/${branch}`,
+	);
+	return identity === undefined || identity.agent === ''
+		? undefined
+		: identity.agent;
+};
+
+const currentBranch = (cwd: string): string | undefined => {
+	try {
+		const branch = execFileSync(
+			'git',
+			['symbolic-ref', '--quiet', '--short', 'HEAD'],
+			{ cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+		).trim();
+		return branch === '' ? undefined : branch;
+	} catch {
+		return undefined;
+	}
+};
+
+/** The agent named by the unit this working tree is on, if it is one. */
+const agentOfCheckout = async (cwd: string): Promise<string | undefined> => {
+	const branch = currentBranch(cwd);
+	if (branch === undefined) return undefined;
+	const policy = await readWorkspacePolicy(cwd).catch(() => undefined);
+	return agentOfWorkBranch(policy?.branches.workRefTemplate, branch);
+};
+
+/**
+ * `agentArg`, then the unit the call runs in: an agent working in its
+ * unit's worktree has already said who it is in the ref's name, and the
+ * CLI should not ask again. Explicit flag and environment still win.
+ */
+export const resolveAgent = async (
+	args: readonly string[],
+	cwd: string,
+	env: NodeJS.ProcessEnv = process.env,
+): Promise<string | undefined> =>
+	agentArg(args, env) ?? (await agentOfCheckout(cwd));

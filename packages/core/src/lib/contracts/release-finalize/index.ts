@@ -44,7 +44,8 @@ export interface IReleaseReconciliationInput {
 
 export interface IHotfixInput {
 	readonly slug: string;
-	readonly source: 'main';
+	/** The release branch the hotfix starts from. */
+	readonly source: string;
 	readonly actor: string;
 }
 

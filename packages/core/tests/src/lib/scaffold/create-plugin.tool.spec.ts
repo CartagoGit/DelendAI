@@ -5,14 +5,15 @@ import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+	createWorkspacePathProvider,
+	type IBatchAtomicWriter,
+} from '@delendai/core/public';
+import {
 	buildCreatePluginToolRegistration,
 	CREATE_PLUGIN_INPUT_SCHEMA,
-	createWorkspacePathProvider,
-	runCreatePlugin,
-	type IBatchAtomicWriter,
-	type IPluginWiringFs,
 	type IRegenerateCatalogArgs,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/scaffold/create-plugin.tool';
+import { runCreatePlugin, type IPluginWiringFs } from '@delendai/core/cli';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const TS_BASE_SEED = `{

@@ -91,12 +91,20 @@ export const WORK_EVENTS_SCHEMA_SQL = [
 	WORK_EVENTS_INDEX_SQL,
 ] as const;
 
+/**
+ * `busy_timeout` comes first: switching to WAL takes a lock of its own,
+ * so a second process opening the same file at that moment would fail
+ * with SQLITE_BUSY if the wait were not already in force.
+ */
 export const WORK_EVENTS_BOOT_PRAGMAS = [
+	'PRAGMA busy_timeout = 5000;',
 	'PRAGMA journal_mode = WAL;',
 	'PRAGMA synchronous = NORMAL;',
-	'PRAGMA busy_timeout = 5000;',
 	'PRAGMA foreign_keys = OFF;',
 ] as const;
+
+const WORK_EVENTS_BOOT_RETRY_MS = 5000;
+const WORK_EVENTS_BOOT_RETRY_STEP_MS = 5;
 
 export interface ISqliteWorkEventStoreOptions {
 	readonly path: string;
@@ -131,9 +139,31 @@ export class SqliteWorkEventStore {
 			create: true,
 			strict: true,
 		});
-		for (const pragma of WORK_EVENTS_BOOT_PRAGMAS) this.db.exec(pragma);
-		for (const statement of WORK_EVENTS_SCHEMA_SQL) this.db.exec(statement);
+		for (const pragma of WORK_EVENTS_BOOT_PRAGMAS)
+			this.execWhenFree(pragma);
+		for (const statement of WORK_EVENTS_SCHEMA_SQL)
+			this.execWhenFree(statement);
 		this.now = options.now ?? (() => Date.now());
+	}
+
+	/**
+	 * Switching the journal to WAL answers SQLITE_BUSY at once when another
+	 * process holds the file, without waiting for `busy_timeout`. Retrying
+	 * for a bounded time lets two processes open the same store together.
+	 */
+	private execWhenFree(statement: string): void {
+		const deadline = Date.now() + WORK_EVENTS_BOOT_RETRY_MS;
+		for (;;) {
+			try {
+				this.db.exec(statement);
+				return;
+			} catch (error) {
+				const busy =
+					(error as { code?: string }).code === 'SQLITE_BUSY';
+				if (!busy || Date.now() >= deadline) throw error;
+				Bun.sleepSync(WORK_EVENTS_BOOT_RETRY_STEP_MS);
+			}
+		}
 	}
 
 	append(event: INewWorkEvent): IWorkEvent {

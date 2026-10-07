@@ -77,6 +77,10 @@ interface IProposalIndexRow {
 	readonly uid: string;
 	readonly status: string;
 	readonly source_path: string | null;
+	readonly title: string | null;
+	readonly track: string | null;
+	readonly kind: string | null;
+	readonly proposal_date: string | null;
 }
 
 /**
@@ -112,6 +116,8 @@ export interface ISqlProposalIndexResult {
 	readonly skipped: readonly string[];
 	readonly sourceCommit: string | null;
 	readonly logicalDigest: string | null;
+	/** When the run that produced it completed, in ms; null when unknown. */
+	readonly reconciledAt: number | null;
 }
 
 /**
@@ -171,10 +177,20 @@ export const readProposalIndexResultFromSql = async (
 	if (db === null) return null;
 	try {
 		if (db.schemaVersion < MIN_INDEX_SCHEMA_VERSION) return null;
+		// `proposals` is an append-only historical record: a file removed
+		// from the tree is tombstoned (`deleted_at` set), not deleted from
+		// the table, so the reconciler never forgets it happened. The
+		// index is a listing of what exists NOW, so a tombstoned row must
+		// be excluded — otherwise a proposal removed from disk keeps
+		// showing up, with whatever status it last had, forever. This was
+		// invisible while `auto` silently served the (correctly current)
+		// JSON registry on any divergence; under `sql` as the default it
+		// is what the read actually returns.
 		const rows = db
 			.query<IProposalIndexRow>(
-				`SELECT uid, status, source_path
+				`SELECT uid, status, source_path, title, track, kind, proposal_date
 				 FROM proposals
+				 WHERE deleted_at IS NULL
 				 ORDER BY uid ASC`,
 			)
 			.all();
@@ -182,13 +198,15 @@ export const readProposalIndexResultFromSql = async (
 		const skipped: string[] = [];
 		let sourceCommit: string | null = null;
 		let logicalDigest: string | null = null;
+		let reconciledAt: number | null = null;
 		try {
 			const run = db
 				.query<{
 					source_commit: string | null;
 					logical_digest: string | null;
+					completed_at: number | null;
 				}>(
-					`SELECT source_commit, logical_digest
+					`SELECT source_commit, logical_digest, completed_at
 					 FROM reconciliation_runs
 					 WHERE status = 'ok'
 					 ORDER BY completed_at DESC, id DESC
@@ -197,6 +215,7 @@ export const readProposalIndexResultFromSql = async (
 				.all()[0];
 			sourceCommit = run?.source_commit ?? null;
 			logicalDigest = run?.logical_digest ?? null;
+			reconciledAt = run?.completed_at ?? null;
 		} catch {
 			// Older projections may not have reconciliation metadata yet.
 		}
@@ -212,6 +231,12 @@ export const readProposalIndexResultFromSql = async (
 				id: row.uid,
 				file: row.source_path,
 				status: row.status,
+				...(row.title === null ? {} : { title: row.title }),
+				...(row.track === null ? {} : { track: row.track }),
+				...(row.kind === null ? {} : { kind: row.kind }),
+				...(row.proposal_date === null
+					? {}
+					: { date: row.proposal_date }),
 			});
 		}
 		return {
@@ -219,6 +244,7 @@ export const readProposalIndexResultFromSql = async (
 			skipped,
 			sourceCommit,
 			logicalDigest,
+			reconciledAt,
 		};
 	} catch {
 		// A schema that has the version but not the table/columns, a

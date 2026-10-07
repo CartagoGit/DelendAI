@@ -13,7 +13,8 @@ import {
 	type IDoctorCommandCheck,
 	type IDoctorCommandCheckContext,
 } from './doctor';
-import { checkBranchProtection } from './doctor-checks/branch-protection';
+import { createBranchProtectionCheck } from './doctor-checks/branch-protection';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { checkCiStatus } from './doctor-checks/ci-status';
 import { checkConfig } from './doctor-checks/config';
 import { checkDeps } from './doctor-checks/deps';
@@ -48,6 +49,10 @@ const buildFs = (files: Record<string, string>): IDoctorFs => ({
 		return [...entries];
 	},
 });
+
+const SOURCE_PACKAGE = {
+	'package.json': '{"name":"@delendai/core-monorepo"}',
+};
 
 const buildCliContext = (
 	options: {
@@ -177,9 +182,20 @@ describe('doctor checks', () => {
 		expect(result).toMatchObject({ name: 'config', status: 'ok' });
 	});
 
+	it('config: accepts the comments init writes into the file', async () => {
+		const result = await checkConfig(
+			buildDoctorContext({
+				'delendai.config.json':
+					'{\n\t// why this plugin\n\t"plugins":{}\n}',
+			}),
+		);
+		expect(result).toMatchObject({ name: 'config', status: 'ok' });
+	});
+
 	it('manifests: flags missing plugin manifests', async () => {
 		const result = await checkManifests(
 			buildDoctorContext({
+				...SOURCE_PACKAGE,
 				'plugins/a/plugin.manifest.ts':
 					'definePluginManifest({ id: "a" })',
 				'plugins/b/package.json': '{}',
@@ -194,6 +210,7 @@ describe('doctor checks', () => {
 	it('plugin-graph: detects local cycles', async () => {
 		const result = await checkPluginGraph(
 			buildDoctorContext({
+				...SOURCE_PACKAGE,
 				'plugins/a/package.json': JSON.stringify({
 					dependencies: { '@delendai/b': 'workspace:*' },
 				}),
@@ -208,7 +225,7 @@ describe('doctor checks', () => {
 
 	it('deps: reports bun.lock presence', async () => {
 		const result = await checkDeps(
-			buildDoctorContext({ 'bun.lock': 'lock' }),
+			buildDoctorContext({ 'package.json': '{}', 'bun.lock': 'lock' }),
 		);
 		expect(result).toMatchObject({ name: 'deps', status: 'ok' });
 	});
@@ -216,18 +233,26 @@ describe('doctor checks', () => {
 	it('token-budgets: parses baseline snapshots', async () => {
 		const result = await checkTokenBudgets(
 			buildDoctorContext({
+				...SOURCE_PACKAGE,
 				'config/metrics-baseline.json': '{"ok":true}',
 			}),
 		);
 		expect(result).toMatchObject({ name: 'token-budgets', status: 'ok' });
 	});
 
-	it('branch-protection: validates local branch policy contract', async () => {
-		const result = await checkBranchProtection(
+	it('branch-protection: judges the projection against the resolved policy', async () => {
+		const policy = resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-pr',
+				integration: { requiredChecks: ['gate'] },
+			},
+		});
+		const check = createBranchProtectionCheck(async () => policy);
+		const result = await check(
 			buildDoctorContext({
 				'.github/branch-protection.ts': `export const BRANCH_PROTECTION = { branches: [
-					{ name: 'develop', protected: false, required_checks: [] },
-					{ name: 'main', protected: true, required_checks: ['ci-complete'] },
+					{ name: '${policy.branches.integration}', protected: true, required_checks: ['gate'] },
+					{ name: '${policy.branches.release}', protected: true, required_checks: ['gate'] },
 				] };`,
 			}),
 		);
@@ -235,6 +260,13 @@ describe('doctor checks', () => {
 			name: 'branch-protection',
 			status: 'ok',
 		});
+	});
+
+	it('branch-protection: a project with no policy is not warned', async () => {
+		const result = await createBranchProtectionCheck(async () => undefined)(
+			buildDoctorContext({}),
+		);
+		expect(result.status).toBe('ok');
 	});
 
 	it('git-status: preserves warn-only semantics for dirty trees', async () => {
@@ -289,6 +321,7 @@ describe('doctor checks', () => {
 	it('schemas: sees plugin schema files', async () => {
 		const result = await checkSchemas(
 			buildDoctorContext({
+				...SOURCE_PACKAGE,
 				'plugins/a/src/output.schema.ts': 'export {};',
 			}),
 		);

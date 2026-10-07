@@ -52,8 +52,11 @@ describe('proposalPublishNextAction', () => {
 		});
 
 		expect(action).toContain(PATH);
-		expect(action).not.toContain('pull request');
-		expect(action).toContain('Merge');
+		// Saying there is NO pull request is the point; telling it to open
+		// one is the failure.
+		expect(action).not.toMatch(/opens? a pull request/iu);
+		expect(action).toContain('opens no pull request');
+		expect(action).toContain('MERGING');
 	});
 
 	it('names no mechanism without a policy, only that the file must not stay untracked', () => {
@@ -65,5 +68,28 @@ describe('proposalPublishNextAction', () => {
 
 		expect(action).toContain('untracked');
 		expect(action).not.toContain('pull request');
+	});
+
+	it('names the create unit and the integration branch the project declares', () => {
+		const action = proposalPublishNextAction({
+			template: undefined,
+			policy: resolveDevelopmentPolicy({
+				development: {
+					profile: 'shared-checkout-merge',
+					branches: { integration: 'trunk', release: 'stable' },
+				},
+			}),
+			workspaceRoot: '/ws',
+			absPath: ABS,
+		});
+
+		expect(action).toContain(
+			`delendai work checkpoint --proposal=f00547 --slice=all --kind=create --paths=${PATH}`,
+		);
+		expect(action).toContain(
+			'delendai work publish --proposal=f00547 --slice=all --kind=create',
+		);
+		expect(action).toContain('on trunk');
+		expect(action).not.toContain('develop');
 	});
 });

@@ -23,6 +23,13 @@ export {
 	PROPOSALS_SQLITE_SCHEMA_VERSION,
 } from './lib/schema';
 export {
+	assertSchemaWithinRuntime,
+	describeSchemaAhead,
+	readSchemaAhead,
+	SchemaAheadOfRuntimeError,
+	type ISchemaAheadFacts,
+} from './lib/schema-guard.service';
+export {
 	LIFECYCLE_STATUS_VOCABULARY,
 	LIFECYCLE_STATUS_ALIASES,
 	PROPOSAL_KIND_VOCABULARY,

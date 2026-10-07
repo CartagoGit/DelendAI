@@ -1,4 +1,5 @@
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import type { IUnitRefFacts } from '@delendai/core/cli';
 
 /** The git hooks `delendai guard` answers for. */
 export type IGuardedHook =
@@ -39,6 +40,24 @@ export interface IGuardFacts {
 	readonly tipKept?: (sha: string, deletedRef: string) => boolean | undefined;
 	/** The worktree that has `ref` checked out, if any. */
 	readonly worktreeOf?: (ref: string) => string | undefined;
+	/**
+	 * The agent that owns the unit `branch` names, from its lease: the
+	 * evidence for a worktree delendai did not stamp.
+	 */
+	readonly leaseAgent?: (branch: string) => Promise<string | undefined>;
+	/**
+	 * The other refs of the unit a pushed work ref belongs to, and the one
+	 * its lease names (async: the leases are files).
+	 */
+	readonly unitRefs?: (
+		policy: IResolvedDevelopmentPolicy,
+		branch: string,
+	) => Promise<IUnitRefFacts | undefined>;
+	/**
+	 * Show life on the unit whose worktree this is; called when a commit
+	 * is allowed to proceed.
+	 */
+	readonly showLife?: (policy: IResolvedDevelopmentPolicy) => Promise<void>;
 	/** The commit `ref` points at now, if it exists (x00703). */
 	readonly refAt?: (ref: string) => string | undefined;
 	/** The paths the commit being made changes; undefined when unknown. */
@@ -48,10 +67,9 @@ export interface IGuardFacts {
 	/** Everything git wrote to the hook's stdin. */
 	readonly stdin: () => Promise<string>;
 	/**
-	 * The policy the project DECLARES, or undefined when its configuration
-	 * has no `development` block: an undeclared policy is never enforced.
+	 * The policy the project works under: the one it declares, or the one
+	 * delendai adopts when it declares none. The same reader `delendai work`
+	 * uses, so the guard enforces the model the instructions describe.
 	 */
-	readonly policy: (
-		workspace: string,
-	) => Promise<IResolvedDevelopmentPolicy | undefined>;
+	readonly policy: (workspace: string) => Promise<IResolvedDevelopmentPolicy>;
 }

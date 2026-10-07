@@ -1,6 +1,9 @@
 // effect-boundary-authorized: access-only probe for the proposals dir; uses node:fs/promises access to decide whether the store is bootstrapped — no mutations. The SQLite probe moved to lib/sql/lifecycle-readers.ts, which carries its own marker.
 import { describeWorkIsolation } from '@delendai/core/plugin';
-import { registerAdoptionExtensions } from '@delendai/core/public';
+import {
+	deriveDefaultProtectedBranches,
+	registerAdoptionExtensions,
+} from '@delendai/core/public';
 import {
 	ProposalsSqliteDriver,
 	SummaryRepo,
@@ -23,6 +26,8 @@ import {
 } from './lib/slice-persistence-owner';
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
+import { readTextOrNull } from './lib/proposals/index-reader';
+import { declareProposalIndexFile } from './lib/proposals/index-reader-location';
 
 import z from 'zod';
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
@@ -55,7 +60,7 @@ import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
 	buildReviewRegistration,
-	runCloseSliceQualityGate,
+	runCloseSliceGateProbe,
 } from './lib/tools/authoring.tool';
 import { buildProposalBoardRegistration } from './lib/tools/proposal-board.tool';
 import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
@@ -64,6 +69,10 @@ import type { IAutoWorkPersistMode } from './lib/tools/auto-work-persist';
 import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
 import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
 import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
+import {
+	createCertificationReader,
+	systemCertificationPorts,
+} from './lib/tools/close-slice-certification';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildDbStatusToolRegistration } from './lib/tools/db-status.tool';
@@ -151,7 +160,7 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 			messageTemplate: z.string().optional(),
 			pushTarget: z.string().optional(),
 			allowForeignChanges: z.boolean().optional(),
-			protectedBranches: z.array(z.string()).default(['main', 'master']),
+			protectedBranches: z.array(z.string()).optional(),
 		})
 		.optional(),
 	orchestration: z
@@ -213,15 +222,32 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	requirePeerReview: z.boolean().optional(),
 	/**
 	 * x00718: what makes a reviewer independent of the implementer —
-	 * `model` (a different model; the default) or `instance` (another
-	 * instance of the same model, reviewing from a unit of its own).
+	 * `instance` (the default: another agent, which may be another instance
+	 * of the same model, so a project with one subscription can review its
+	 * own work) or `model` (always a different model).
 	 */
 	reviewIndependence: z.enum(['model', 'instance']).optional(),
+	/**
+	 * The language this project writes its documents in (`en`). Declared,
+	 * a verdict's text in another language is refused: one proposal is
+	 * read in one language. Undeclared, nothing is checked.
+	 */
+	documentationLanguage: z.enum(['en']).optional(),
 	/**
 	 * Select the validation scope for authoring operations. `scoped` keeps
 	 * each agent on its declared slice files; `global` is for integration.
 	 */
 	validationScope: z.enum(['scoped', 'global']).optional(),
+	/**
+	 * How long one `close_slice` call waits for the declared gate before it
+	 * answers `pending` with a handle to resume (milliseconds).
+	 */
+	closeGateWaitMs: z.number().int().positive().optional(),
+	/**
+	 * How long a gate run may take before it is stopped and reported as
+	 * unverifiable, never as a pass (milliseconds).
+	 */
+	closeGateTimeoutMs: z.number().int().positive().optional(),
 	/**
 	 * Require a passing validation run before lifecycle operations. The
 	 * selected scope applies to `close_slice`; terminal proposal transitions
@@ -452,6 +478,10 @@ export default definePlugin({
 		);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
+		// The database stays at its canonical place when the cache moves;
+		// readers find this workspace from the index path only if the
+		// layout that placed it is known.
+		declareProposalIndexFile(layout.proposalIndexFile, ctx.workspace.root);
 
 		// Host-specific proposal subfolders (relative to proposalsDir),
 		// e.g. `['paused/demos']`. delendai bakes none — the host injects
@@ -482,7 +512,13 @@ export default definePlugin({
 		const reviewPolicy = {
 			requirePeerReview: parsedOptions.data.requirePeerReview ?? true,
 			reviewIndependence:
-				parsedOptions.data.reviewIndependence ?? 'model',
+				parsedOptions.data.reviewIndependence ?? 'instance',
+			...(parsedOptions.data.documentationLanguage === undefined
+				? {}
+				: {
+						documentationLanguage:
+							parsedOptions.data.documentationLanguage,
+					}),
 		} as const;
 		const commitPolicyOptions = ctx.pluginOptions?.get('commit-policy');
 		const commitPolicyPush = commitPolicyOptions?.push;
@@ -495,7 +531,7 @@ export default definePlugin({
 			)
 				? (commitPolicyPush as { protectedBranches: string[] })
 						.protectedBranches
-				: ['main', 'master'];
+				: [...deriveDefaultProtectedBranches(ctx.developmentPolicy)];
 		const configuredPersist = parsedOptions.data.persist;
 		// Same resolution as before — `resolveProposalPersistMode` is
 		// still the authority on the MODE — plus who ends up owning it, so
@@ -627,6 +663,7 @@ export default definePlugin({
 								registryPathAbs: abs(layout.agentRegistryFile),
 								lockPathAbs: abs(layout.lockFile),
 								worktreesDirAbs: abs(layout.worktreesDir),
+								branches: ctx.developmentPolicy?.branches,
 								scopes: await resolveScopes(
 									createWorkspaceFileReader(ctx.workspace),
 									ctx.pluginOptions?.has('quality') === true
@@ -653,14 +690,50 @@ export default definePlugin({
 									: {}),
 							}),
 						runQuality: (input) =>
-							runCloseSliceQualityGate(
-								ctx.workspace.root,
-								undefined,
+							runCloseSliceGateProbe(
 								{
-									...(input?.scopes !== undefined
-										? { scopes: input.scopes }
+									storeRoot: ctx.workspace.resolve(
+										join(
+											ctx.cacheDir,
+											'proposals',
+											'close-gate',
+										),
+									),
+									stateRoots: [
+										ctx.workspace.resolve(ctx.cacheDir),
+									],
+									cwd: callerCheckout.executionRootOr(
+										ctx.workspace.root,
+									),
+									readDeclaration: (relativePath) =>
+										readTextOrNull(
+											ctx.workspace.resolve(relativePath),
+										),
+									certification: createCertificationReader({
+										policy: ctx.developmentPolicy,
+										ports: systemCertificationPorts(
+											callerCheckout.executionRootOr(
+												ctx.workspace.root,
+											),
+										),
+									}),
+									...(parsedOptions.data.closeGateWaitMs !==
+									undefined
+										? {
+												waitMs: parsedOptions.data
+													.closeGateWaitMs,
+											}
+										: {}),
+									...(parsedOptions.data
+										.closeGateTimeoutMs !== undefined
+										? {
+												timeoutMs:
+													parsedOptions.data
+														.closeGateTimeoutMs,
+											}
 										: {}),
 								},
+								input?.scopes ?? [],
 							),
 					}
 				: {}),
@@ -745,8 +818,6 @@ export default definePlugin({
 					buildBranchStatusRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						defaultBaseBranch: 'develop',
-						defaultAgentPrefix: 'agent/',
 						// `layout.worktreesDir` is ALREADY the cache-rooted
 						// workspace-relative path (default
 						// `.cache/delendai/.worktrees`). The previous
@@ -765,7 +836,6 @@ export default definePlugin({
 					buildBranchGcRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						defaultBaseBranch: 'develop',
 						defaultStaleMinutes: 60,
 					}),
 					// read-only swarm hygiene snapshot — rescue
@@ -773,7 +843,6 @@ export default definePlugin({
 					buildSwarmHygieneRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						defaultBaseBranch: 'develop',
 						defaultStaleMinutes: 60,
 					}),
 					buildTaskQueueRegistration({
@@ -1020,10 +1089,6 @@ export default definePlugin({
 						reader: {
 							count: sqlLifecycleReaders.count,
 							lastSync: sqlLifecycleReaders.lastSync,
-							get: async () => undefined,
-							list: async () => [],
-							search: async () => [],
-							suggest: async () => [],
 						},
 					}),
 					buildDbDoctorToolRegistration({

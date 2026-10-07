@@ -10,7 +10,7 @@ import {
 import { constants } from 'node:fs';
 import { mkdir, open, readdir, rename, rm, stat } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 /**
  * Crash-safe, concurrency-safe file write: write to a temp file IN THE
@@ -30,8 +30,43 @@ import { randomBytes } from 'node:crypto';
  * on some platforms (Windows) so its failure never fails the write — the
  * data fsync above is the guarantee that matters.
  */
+/** The longest file name most file systems accept, in bytes. */
+const NAME_MAX_BYTES = 255;
+/** Room for `.<time36>-<12 hex>.tmp` after the stem. */
+const TMP_SUFFIX_BYTES = 32;
+/** Hex characters of the name's hash kept in a shortened stem. */
+const STEM_HASH_CHARS = 12;
+
+/**
+ * The name a temporary of `base` starts with. It is `base` itself when
+ * the temporary's name fits the file system's limit; otherwise the start
+ * of `base`, cut on a character boundary, plus a hash of the whole name.
+ * Appending the suffix to a proposal file named after a long title made a
+ * 242-byte name longer than 255 bytes, and the write failed with
+ * ENAMETOOLONG.
+ */
+export const tmpStemFor = (base: string): string => {
+	if (Buffer.byteLength(base) + TMP_SUFFIX_BYTES <= NAME_MAX_BYTES) {
+		return base;
+	}
+	const hash = createHash('sha256')
+		.update(base)
+		.digest('hex')
+		.slice(0, STEM_HASH_CHARS);
+	const budget = NAME_MAX_BYTES - TMP_SUFFIX_BYTES - hash.length - 1;
+	let kept = '';
+	for (const char of base) {
+		if (Buffer.byteLength(kept + char) > budget) break;
+		kept += char;
+	}
+	return `${kept}~${hash}`;
+};
+
 const tmpPathFor = (absolutePath: string): string =>
-	`${absolutePath}.${Date.now().toString(36)}-${randomBytes(6).toString('hex')}.tmp`;
+	join(
+		dirname(absolutePath),
+		`${tmpStemFor(basename(absolutePath))}.${Date.now().toString(36)}-${randomBytes(6).toString('hex')}.tmp`,
+	);
 
 /** Flush a directory entry to disk so a rename into it is durable. Best-effort. */
 /**
@@ -52,7 +87,7 @@ const ORPHAN_TMP_AGE_MS = 60_000;
  */
 const sweepOrphanTemporaries = async (absolutePath: string): Promise<void> => {
 	const dir = dirname(absolutePath);
-	const prefix = `${basename(absolutePath)}.`;
+	const prefix = `${tmpStemFor(basename(absolutePath))}.`;
 	let names: readonly string[];
 	try {
 		names = await readdir(dir);
@@ -86,7 +121,7 @@ const sweepOrphanTemporaries = async (absolutePath: string): Promise<void> => {
 const fsyncDir = async (dir: string): Promise<void> => {
 	try {
 		// Read-only, never created: a directory is opened only to fsync it.
-		const handle = await open(dir, constants.O_RDONLY);
+		const handle = await open(dir, constants.O_RDONLY, 0o600);
 		try {
 			await handle.sync();
 		} finally {

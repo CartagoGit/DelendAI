@@ -14,8 +14,10 @@
  * single place that should. This reads it, so the last resort is the
  * project's own configuration rather than this repository's habits.
  */
+import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
+import { liveUnitsOfProposal } from '../work-units/proposal-branch.service';
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -23,6 +25,7 @@ import { join, resolve } from 'node:path';
 import { sharedCheckout } from '../shared/shared-checkout';
 import { agentEnvironmentMarker } from '../work-identity/agent-environment.helper';
 
+import { workModelNextStep } from './declare-workflow';
 import { resolveDevelopmentPolicy } from './resolve';
 
 /** The project's declared development block, or nothing. */
@@ -188,7 +191,10 @@ export const integrationCheckoutRefusal = async (
 	}
 	const branch = checkedOutBranch(root);
 	if (branch !== policy.branches.integration) return undefined;
-	return `this call would write into the shared checkout on ${branch}, the integration branch. Under this project's policy work reaches ${branch} only through a work ref and a pull request, so a change written here is committed by nobody and is lost.`;
+	// How work DOES reach the branch is the profile's, not this
+	// sentence's: it once said "a work ref and a pull request" to a
+	// project that merges, and the agent followed a pull-request flow.
+	return `this call would write into the shared checkout on ${branch}, the integration branch, where nothing commits: a change written here is committed by nobody and is lost. ${workModelNextStep(policy)}`;
 };
 
 /**
@@ -213,4 +219,50 @@ export const unitBranchOf = async (
 	}
 	const branch = checkedOutBranch(root);
 	return branch?.startsWith(prefix) === true ? branch : undefined;
+};
+
+/**
+ * The unit of work a proposal's own tools act in.
+ *
+ * A proposal created or implemented in a unit exists only on that unit's
+ * ref until its pull request lands, or its merge, so every later move of
+ * its lifecycle (a slice closed, the hand-off to review) has to happen in
+ * that unit's worktree. Asking the caller to name it by path made each
+ * agent find out, one refusal at a time, where its own work lived; the
+ * work-ref shape already says which unit carries the proposal, so the
+ * answer is read from there. More than one candidate is not guessed.
+ */
+export const callerUnitCheckout = async (
+	root: string,
+	wanted: { readonly proposal: string; readonly agent?: string | undefined },
+): Promise<ICallerUnit> => {
+	const policy = await readPolicyOrNone(root);
+	if (policy === undefined) return { status: 'none' };
+	if (policy.branches.workRefTemplate.length === 0) {
+		return { status: 'none' };
+	}
+	const listing = worktreeListing(root);
+	if (listing === undefined) return { status: 'none' };
+	const units = liveUnitsOfProposal(
+		policy.branches.workRefTemplate,
+		listing,
+		wanted,
+	);
+	const [only, ...others] = units;
+	if (only === undefined) return { status: 'none' };
+	return others.length === 0
+		? { status: 'found', unit: only }
+		: { status: 'ambiguous', units };
+};
+
+const worktreeListing = (root: string): string | undefined => {
+	try {
+		return execFileSync('git', ['worktree', 'list', '--porcelain'], {
+			cwd: root,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		});
+	} catch {
+		return undefined;
+	}
 };

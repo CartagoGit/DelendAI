@@ -29,7 +29,7 @@
 
 import { join } from 'node:path';
 
-import { KIND_TO_DONE_SUBFOLDER } from '../contracts/constants/proposal-glossary.constant';
+import { PROPOSAL_SCAN_FOLDERS } from '../contracts/constants/proposal-glossary.constant';
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import { DEFAULT_PROPOSAL_FS, type IProposalFs } from './locate-fs';
 
@@ -146,21 +146,18 @@ export const locateByIndex = async (
 // ---------------------------------------------------------------------------
 
 /**
- * Directories a proposal `.md` may live in under `proposalsDirAbs`.
- * Includes the 7 status folders plus `done/<kind>/` sub-folders
- * (f00042). Exported for tests.
+ * Directories a proposal `.md` may live in under `proposalsDirAbs`:
+ * the one list the id allocator and the drift lint walk too.
+ *
+ * This used to keep its own list — the status folders plus `done/<kind>/`
+ * — and so never looked in `ready/feats/`, `ready/fixes/` or any other
+ * kind folder outside `done/`. Wherever the JSON registry was absent (a
+ * fresh worktree has none), a ready feature could not be found, and
+ * every transition of it failed with "no proposal with id".
+ * Exported for tests.
  */
-export const proposalScanDirs = (
-	proposalsDirAbs: string,
-): readonly string[] => {
-	const dirs: string[] = PROPOSAL_STATUS_FOLDERS.map((folder) =>
-		join(proposalsDirAbs, folder),
-	);
-	for (const sub of Object.values(KIND_TO_DONE_SUBFOLDER)) {
-		if (sub !== undefined) dirs.push(join(proposalsDirAbs, 'done', sub));
-	}
-	return dirs;
-};
+export const proposalScanDirs = (proposalsDirAbs: string): readonly string[] =>
+	PROPOSAL_SCAN_FOLDERS.map((folder) => join(proposalsDirAbs, folder));
 
 /**
  * Walk the 7 status folders (+ `done/<kind>/` mirrors) and find the

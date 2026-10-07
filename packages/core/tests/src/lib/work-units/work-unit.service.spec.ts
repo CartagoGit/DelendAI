@@ -286,6 +286,76 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
+	it('does not reuse a generation whose unit was merged, so no two refs share an identity', async () => {
+		const root = repoWith(PINNED);
+		const enter = [
+			'enter',
+			'--proposal=x00001',
+			'--slice=S1',
+			'--agent=glm-5',
+			'--topic=first',
+		];
+		const first = await command.run(enter, contextFor(root));
+		const data = first.data as { path: string; branch: string };
+		expect(data.branch).toContain('x00001-S1-g1/');
+		// Landed the way a forge lands it: a merge naming the publication,
+		// then the unit's branch and worktree are gone.
+		git(data.path, 'commit', '-q', '--allow-empty', '-m', 'feat: the work');
+		git(
+			root,
+			'merge',
+			'-q',
+			'--no-ff',
+			'-m',
+			`Merge pull request #1 from owner/${data.branch.replace('/wip/', '/pr/')}`,
+			data.branch,
+		);
+		git(root, 'worktree', 'remove', '--force', data.path);
+		git(root, 'branch', '-D', data.branch);
+
+		const again = await command.run(
+			[...enter.slice(0, -1), '--topic=second'],
+			contextFor(root),
+		);
+
+		expect((again.data as { branch: string }).branch).toContain(
+			'x00001-S1-g2/second',
+		);
+	});
+
+	it('does not reuse the generation of an open publication, alongside or not', async () => {
+		const root = repoWith(PINNED);
+		const enter = [
+			'enter',
+			'--proposal=x00001',
+			'--slice=S1',
+			'--agent=glm-5',
+		];
+		const first = await command.run(
+			[...enter, '--topic=first'],
+			contextFor(root),
+		);
+		const data = first.data as { path: string; branch: string };
+		// Published: its pull request's ref stands, the unit is gone.
+		git(
+			root,
+			'update-ref',
+			`refs/heads/${data.branch.replace('/wip/', '/pr/')}`,
+			'HEAD',
+		);
+		git(root, 'worktree', 'remove', '--force', data.path);
+		git(root, 'update-ref', '-d', `refs/heads/${data.branch}`);
+
+		const next = await command.run(
+			[...enter, '--topic=second', '--alongside'],
+			contextFor(root),
+		);
+
+		expect((next.data as { branch: string }).branch).toContain(
+			'x00001-S1-g2/second',
+		);
+	});
+
 	it('refuses to publish a review unit that changed the product', async () => {
 		const root = repoWith(PINNED);
 		const entered = await command.run(
@@ -357,6 +427,32 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
+	it('takes the next free directory when another unit still stands in the default one', async () => {
+		const root = repoWith(PINNED);
+		const taken = join(root, '.cache/delendai/.worktrees/glm-5-new-all');
+		mkdirSync(taken, { recursive: true });
+		writeFileSync(join(taken, 'held.md'), 'a renamed unit\n');
+
+		const entered = await command.run(
+			[
+				'enter',
+				'--proposal=new',
+				'--slice=all',
+				'--agent=glm-5',
+				'--topic=the-next-one',
+			],
+			contextFor(root),
+		);
+
+		expect(entered.code).toBe(0);
+		expect(String((entered.data as { path?: unknown }).path)).toBe(
+			join(
+				realpathSync(root),
+				'.cache/delendai/.worktrees/glm-5-new-all-2',
+			),
+		);
+	});
+
 	it('gives an agent its own worktree, and finds it again', async () => {
 		const root = repoWith(PINNED);
 		const created = await command.run(
@@ -404,11 +500,17 @@ describe('delendai work (x00553)', () => {
 		}
 	});
 
-	it('says nothing to do when the project declares no policy', async () => {
+	it('reports the adopted default when the project declares no policy', async () => {
 		const root = repoWith(undefined);
-		const result = await command.run(['status'], contextFor(root));
-		expect(result.code).not.toBe(0);
-		expect(result.error).toContain('no development policy');
+		const result = await command.run(
+			['status'],
+			contextFor(root, { json: true }),
+		);
+		expect(result.code).toBe(0);
+		expect(result.data).toMatchObject({
+			profile: 'shared-checkout-merge',
+			policySource: 'default',
+		});
 	});
 
 	it('refuses a work ref under a profile that has none', async () => {
@@ -589,7 +691,7 @@ describe('delendai work (x00553)', () => {
 			}
 		).steps;
 		expect(
-			steps.find((step) => step.name === 'remove-work-ref')?.detail,
+			steps.find((step) => step.name === 'keep-work-ref')?.detail,
 		).toContain('x00553 is still in progress');
 	});
 
@@ -911,6 +1013,99 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
+	it('sends a session back to its own unit when an older generation was given up', async () => {
+		const root = repoWith(PINNED);
+		const enter = (extra: readonly string[]) =>
+			command.run(
+				[
+					'enter',
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					...extra,
+				],
+				contextFor(root),
+			);
+		const first = (await enter(['--topic=a'])).data as {
+			branch: string;
+			path: string;
+		};
+		const second = (await enter(['--topic=b'])).data as {
+			branch: string;
+			session: string;
+		};
+		expect(second.branch).toBe(
+			'delendai/wip/minimax-m3/review/batch-all-g2/b',
+		);
+		// The first unit is given up: its generation is free again.
+		execFileSync('git', ['worktree', 'remove', '--force', first.path], {
+			cwd: root,
+		});
+		execFileSync('git', ['branch', '-D', first.branch], { cwd: root });
+
+		const again = await enter([`--session=${second.session}`]);
+
+		expect(again.code).toBe(0);
+		expect(again.data).toMatchObject({
+			created: false,
+			branch: second.branch,
+			session: second.session,
+		});
+	});
+
+	it('publishes the second review pack of one agent to its own pull request', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		const run = (sub: string, extra: readonly string[]) =>
+			command.run(
+				[
+					sub,
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					...extra,
+				],
+				contextFor(root),
+			);
+		const units = [];
+		for (const topic of ['a', 'b']) {
+			const entered = (await run('enter', [`--topic=${topic}`])).data as {
+				path: string;
+				session: string;
+			};
+			execFileSync(
+				'git',
+				['commit', '-q', '--allow-empty', '-m', `review ${topic}`],
+				{
+					cwd: entered.path,
+				},
+			);
+			units.push(entered);
+		}
+		const [first, second] = units;
+		if (first === undefined || second === undefined)
+			throw new Error('no units');
+		expect(
+			await run('publish', [`--session=${first.session}`]),
+		).toMatchObject({ data: { published: true } });
+
+		expect(
+			await run('publish', [`--session=${second.session}`]),
+		).toMatchObject({
+			data: {
+				published: true,
+				publication: {
+					ref: 'refs/heads/delendai/pr/minimax-m3/review/batch-all-g2/b',
+				},
+			},
+		});
+	});
+
 	it('refuses a second instance on a slice another instance works, and leaves no branch (x00714)', async () => {
 		const root = repoWith(PINNED);
 		const enter = (topic: string) =>
@@ -1146,6 +1341,20 @@ describe('delendai work, as a person reads it', () => {
 		expect(out).toContain('checkout on      develop');
 		expect(out).toContain('anchored         yes');
 	});
+
+	it('says the anchor is not required under a profile that does not anchor the checkout', async () => {
+		const root = repoWith({
+			development: {
+				profile: 'worktree-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		const out = await printed(() =>
+			command.run(['status'], contextFor(root, { json: false })),
+		);
+		expect(out).toContain('anchored         not required');
+		expect(out).not.toContain('anchored         yes');
+	});
 });
 
 describe('instances entering at once each get a unit (x00731)', () => {
@@ -1175,8 +1384,8 @@ describe('instances entering at once each get a unit (x00731)', () => {
 			.map((result) => (result.data as { ref: string }).ref)
 			.sort();
 		expect(refs).toEqual([
-			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/work',
-			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g2/work',
+			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/verdicts',
+			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g2/verdicts',
 		]);
 		// The path it reports is the worktree's own, even for an absolute
 		// --dir, so the session is stamped where the next instance reads it.

@@ -174,17 +174,17 @@ describe('work claim', () => {
 		expect(result.error).toContain('does not resolve');
 	});
 
-	it('refuses a project with no development policy', async () => {
+	it('works under the adopted default for a project with no development policy', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'work-claim-nopolicy-'));
 		roots.push(root);
 		execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });
+		capture();
 
 		const result = await createWorkCommand().run(
 			['claim', '--agent=mine'],
 			ctxFor(root),
 		);
 
-		expect(result.code).toBe(EXIT_CODE.VALIDATION);
-		expect(result.error).toContain('development policy');
+		expect(result.code).toBe(EXIT_CODE.OK);
 	});
 });

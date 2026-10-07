@@ -13,7 +13,10 @@ import { sharedCheckout } from '../shared/shared-checkout';
 
 import type { IInvariantReport } from '../contracts/interfaces/workflow-invariants.interface';
 import { readWorkspacePolicy } from './development-policy.service';
+import { hiddenWorkInvariants } from './hidden-work.service';
+import { leaseWindowSeconds } from './unit-verdict.service';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
+import { huskDirectories, husksInvariant } from './worktree-husks.service';
 
 /**
  * The shared checkout, whichever worktree the caller is standing in.
@@ -48,9 +51,7 @@ export const policyOf = async (
 	root: string,
 ): Promise<IResolvedDevelopmentPolicy> => {
 	try {
-		return (
-			(await readWorkspacePolicy(root)) ?? resolveDevelopmentPolicy({})
-		);
+		return await readWorkspacePolicy(root);
 	} catch {
 		return resolveDevelopmentPolicy({});
 	}
@@ -63,9 +64,35 @@ export const runWorkflowDoctor = async (input: {
 }): Promise<IInvariantReport | undefined> => {
 	const root = sharedCheckoutOf(input.from);
 	if (root === undefined) return undefined;
-	return checkWorkflowInvariants({
+	const policy = await policyOf(root);
+	const report = checkWorkflowInvariants({
 		root,
-		policy: await policyOf(root),
+		policy,
 		...(input.scopes === undefined ? {} : { scopes: input.scopes }),
 	});
+	if (input.scopes !== undefined && !input.scopes.includes('checkout')) {
+		return report;
+	}
+	// Work nobody can see: stashed, never pushed, never committed. Read
+	// here, not with the others, because dating an edit reads the disk.
+	const bare = (prefix: string): string =>
+		prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+	const hidden = await hiddenWorkInvariants({
+		root,
+		remote: 'origin',
+		integration: policy.branches.integration,
+		workPrefix: bare(policy.branches.workRefPrefix),
+		publicationPrefix: bare(policy.branches.publicationRefPrefix),
+		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
+	});
+	// What a removed worktree's path was written into afterwards.
+	const husks = husksInvariant(
+		await huskDirectories({
+			root,
+			now: Math.floor(Date.now() / 1000),
+		}),
+		leaseWindowSeconds(policy.coordination.leaseTtlMinutes),
+	);
+	const results = [...report.results, ...hidden, husks];
+	return { results, broken: results.filter((each) => !each.holds).length };
 };

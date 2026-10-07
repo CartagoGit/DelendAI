@@ -34,6 +34,7 @@ import type { Database } from 'bun:sqlite';
 
 import { PROPOSALS_SQLITE_SCHEMA_VERSION, SQLITE_BOOT_PRAGMAS } from './schema';
 import { applyMigrations, currentSchemaVersion } from './migrations';
+import { assertSchemaWithinRuntime } from './schema-guard.service';
 
 export interface IProposalsSqliteDriverOptions {
 	readonly path: string;
@@ -73,6 +74,18 @@ export class ProposalsSqliteDriver {
 			this.db.exec(pragma);
 		}
 		if (!options.readonly) {
+			// A database a NEWER delendai wrote is refused here, before
+			// the sweep and before `user_version` is stamped. The sweep
+			// cannot notice: every file this build ships is already
+			// recorded, so it reports success.
+			try {
+				assertSchemaWithinRuntime(this.db, options.path);
+			} catch (error) {
+				// A throwing constructor leaves nobody to close the
+				// handle, and a leaked WAL connection keeps the lock.
+				this.db.close();
+				throw error;
+			}
 			(options.apply ?? applyMigrations)(this.db);
 			// Stamp `user_version` after a successful migration
 			// sweep so it can never get ahead of `schema_migrations`.

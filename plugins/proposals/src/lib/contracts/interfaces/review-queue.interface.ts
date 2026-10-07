@@ -10,6 +10,8 @@ import type { IWorkRefShape } from './review-attribution.interface';
 export interface IDeliveryCandidate {
 	readonly commit: string;
 	readonly source: string;
+	/** The agent whose unit of work delivered it, when its ref names one. */
+	readonly agent?: string | undefined;
 }
 
 /**
@@ -19,9 +21,12 @@ export interface IDeliveryCandidate {
  * - `blocked` — no verdict can be recorded until `missing` is supplied.
  * - `waiting-on-implementer` — changes were requested; the fix is not in.
  * - `approved` — nothing left for a reviewer on this slice.
+ * - `needs-another-reviewer` — it needs a verdict, and the asker may not
+ *   give it: its own model delivered the slice.
  */
 export type IReviewQueueVerdict =
 	| 'needs-verdict'
+	| 'needs-another-reviewer'
 	| 'blocked'
 	| 'waiting-on-implementer'
 	| 'approved';
@@ -143,6 +148,11 @@ export interface IBuildReviewQueueInput {
 	 * ask at the same moment, before any has claimed, start apart.
 	 */
 	readonly spread?: number | undefined;
+	/**
+	 * Whether the unit at a ref still holds what it claimed (its holder is
+	 * live, or its publication is open). Every claim holds when absent.
+	 */
+	readonly holding?: ((ref: string) => boolean) | undefined;
 }
 
 /** A proposal in review, as its file names it. */

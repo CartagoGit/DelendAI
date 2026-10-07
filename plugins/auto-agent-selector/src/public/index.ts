@@ -15,6 +15,7 @@ export {
 	type IRosterSnapshotStore,
 } from '../lib/discovery/roster-store';
 export { rankProviders } from '../lib/routing/rank-providers';
+export { explainSelection } from '../lib/routing/selection-explain.service';
 export { buildDashboard } from '../lib/dashboard/view-model';
 export type {
 	IBuildDashboardInput,
@@ -28,6 +29,12 @@ export type {
 	IRankInput,
 	IRankedProvider,
 } from '../lib/contracts/interfaces/ranking.interface';
+export type {
+	IRouteScoreComponents,
+	ISelectionExplanation,
+	ISelectionExplanationRow,
+	ISelectionFallback,
+} from '../lib/contracts/interfaces/selection-explain.interface';
 export type {
 	ICalibrationStore,
 	IOutcomeRecord,

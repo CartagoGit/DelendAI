@@ -6,26 +6,24 @@ name: CI
 on:
     push:
         branches: [develop, main]
-    # Pull requests into `develop` only, NOT into `main`.
+    # Pull requests into `develop`, and the promotion into `main`.
     #
-    # A pull request into `main` is the release promotion, and its head
-    # IS `develop` — the same commit the push trigger above already built.
-    # Running the matrix again for the pull-request event produced a
-    # second, identical set of 35 checks on the same SHA: measured on the
-    # release candidate, 89 check rows of which 48 were distinct names.
-    # Required status checks are evaluated per COMMIT, not per event, so
-    # the push run's `delendai-validate` satisfies `main` on its own;
-    # verified on `3266871`, where both runs reported success against the
-    # same SHA.
+    # The promotion's head IS `develop`, so this used to rely on the push
+    # run of that commit for `main`'s required `delendai-validate`. That
+    # run no longer exists: the queue merges with the workflow token,
+    # whose pushes start no workflow, and certifies `develop` with a
+    # dispatched run, which the forge does not count towards a pull
+    # request. On 2026-10-07 the promotion (#911) sat BLOCKED with the
+    # check "expected" while the dispatched run had reported it green on
+    # the same commit. The promotion now runs the matrix itself
+    # (`lint:no-duplicate-release-triggers` exempts the workflow that
+    # reports the release branch's required check, and requires it to).
     #
-    # A pull request into `main` from anywhere OTHER than `develop` gets
-    # no matrix and therefore no `delendai-validate`, so it cannot merge.
-    # That is the intended direction to be wrong in: the branch model
-    # (ADR 0020) routes every change through `develop`, and a hotfix that
-    # skipped it should stop at a missing check rather than pass on one
-    # nobody ran.
+    # A pull request into `main` from anywhere OTHER than `develop` is
+    # refused by `release-pr-gate`; the matrix running on it changes that
+    # in no way.
     pull_request:
-        branches: [develop]
+        branches: [develop, main]
     # The merge queue runs this same matrix against the batch it intends
     # to merge, which is the only place the "up to date" requirement can
     # be satisfied without somebody refreshing every candidate by hand.
@@ -374,6 +372,13 @@ jobs:
                   bun run lint:closed-frozen-guard
                   # x00696 — a close carries an independent approval.
                   bun run lint:closed-with-independent-approval
+                  # The old product name in a live file. Its spec walks the
+                  # whole tree, so a selection by changed imports skipped it
+                  # on the pull request that brought one in, and develop
+                  # went red after the merge (x00877 S8).
+                  bun run migrate:rebrand:check
+                  # x00878 S2 — a review line is written by the review tool.
+                  bun run lint:verdicts-through-the-tool
                   bun run lint:user-markers
                   bun run lint:proposal-slice-completeness
                   bun run lint:commit-branch
@@ -382,6 +387,11 @@ jobs:
                   # f00644: a pull request is opened from a well-shaped
                   # publication, whatever host opened it.
                   bun run lint:pr-head-shape
+                  # Every proposal in the tree projects into SQLite. It is
+                  # the one part of the SQLite suite a proposal edit can
+                  # break, and it takes seconds; running it here is what
+                  # lets a proposal edit skip `sqlite-cutover-ready`.
+                  bun run test:sqlite:real-tree
 
     typecheck:
         name: typecheck
@@ -503,12 +513,21 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The planner diffs the change against the pull request's
+                  # base. On the default one-commit clone the base is not in
+                  # the object store, the diff fails, and the planner runs
+                  # every zone: every pull request ran all eleven.
+                  fetch-depth: '0'
 
             - name: Plan the test zones
               id: plan
               run: |
                   set -euo pipefail
-                  bun tools/scripts/ci/test-zones.script.ts
+                  # The report is for the same base as the matrix, so the log
+                  # says what was selected and why.
+                  bun tools/scripts/ci/test-zones.script.ts \
+                    --base=${{ github.event.pull_request.base.sha || '' }}
                   {
                     printf 'zones='
                     bun tools/scripts/ci/test-zones.script.ts --matrix \
@@ -653,7 +672,7 @@ jobs:
             contents: read
             # Deleting this run's own shard blobs once they are merged.
             actions: write
-        needs: tests-zone
+        needs: [plan-tests, tests-zone]
         # `always()` so a failed shard still reaches the merge: the
         # coverage verdict is worth having even when a spec is red, and
         # the merge reports the shard failures too rather than hiding them
@@ -671,7 +690,31 @@ jobs:
                   # commit, which a shallow clone does not have.
                   fetch-depth: '0'
 
+            # A change the planner maps to no zone at all — a forward-sync
+            # merge whose content develop already has, say — runs no shard,
+            # so there is no blob to merge and the merge below failed with
+            # ENOENT on every such pull request: the release could never
+            # reach develop. That plan is the verdict, and only a plan that
+            # succeeded, listed its zones and ran none of them counts as
+            # one; anything else still goes through the merge.
+            - name: Check whether the plan ran any zone
+              id: planned
+              env:
+                  PLAN_RESULT: ${{ needs.plan-tests.result }}
+                  ZONES_RESULT: ${{ needs.tests-zone.result }}
+                  ZONES: ${{ needs.plan-tests.outputs.zones }}
+              run: |
+                  set -euo pipefail
+                  if [ "$PLAN_RESULT" = success ] && [ "$ZONES_RESULT" = success ] \
+                    && printf '%s' "$ZONES" | jq -e 'length > 0 and all(.[]; .run == false)' >/dev/null; then
+                    echo "tests: the plan reaches no zone from this change; nothing ran, so there is nothing to merge."
+                    echo "none=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "none=false" >> "$GITHUB_OUTPUT"
+                  fi
+
             - name: Collect every shard's blob report
+              if: steps.planned.outputs.none != 'true'
               uses: actions/download-artifact@v8
               with:
                   pattern: vitest-blob-*
@@ -696,6 +739,7 @@ jobs:
             # keeps the verdict the integration branch's full run gave
             # it, because it did not change.
             - name: Merge the shards and enforce the coverage gate
+              if: steps.planned.outputs.none != 'true'
               env:
                   DELENDAI_COVERAGE_BASE: ${{ github.event.pull_request.base.sha }}
               run: |
@@ -1293,3 +1337,14 @@ jobs:
                   gh workflow run keep-the-queue-moving.yml \
                     --ref develop --repo "${GITHUB_REPOSITORY}" \
                     || echo "::warning::could not dispatch keep-the-queue-moving; the hourly schedule will pick it up"
+            # The queue merges with the workflow token, and a push made with
+            # it starts no workflow: CodeQL never analysed a merged develop
+            # (x00879 S7). The certified tip is analysed here instead.
+            - name: Dispatch code scanning on the integration branch
+              if: ${{ github.ref == 'refs/heads/develop' }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh workflow run codeql.yml \
+                    --ref develop --repo "${GITHUB_REPOSITORY}" \
+                    || echo "::warning::could not dispatch code scanning on develop"

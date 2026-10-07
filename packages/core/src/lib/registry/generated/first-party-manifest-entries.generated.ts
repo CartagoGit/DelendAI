@@ -238,6 +238,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'framework-knowledge',
+			package: '@delendai/framework-knowledge',
+			summary: 'Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.',
+			tags: ['knowledge', 'frameworks', 'policy'],
+			permissions: ['filesystem-read', 'filesystem-write'],
+			tokenBudgetBytes: 2700,
+		},
+		{
+			origin: 'first-party',
 			id: 'git',
 			package: '@delendai/git',
 			summary: 'Git wrappers (PR list/view, diff, changelog, extended).',

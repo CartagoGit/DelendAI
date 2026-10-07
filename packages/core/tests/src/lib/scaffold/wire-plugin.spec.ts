@@ -1,17 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
+import { pluginDir } from '@delendai/core/public';
 import {
 	buildTsconfigPathsEntry,
-	diagnosePluginWiring,
-	pluginDir,
 	wirePluginIntoMonorepo,
 	writePluginDefaults,
 	writePresetCatalog,
 	writePublishOrder,
 	writeTsconfigBase,
 	writeVitestShared,
-	type IPluginWiringFs,
-} from '@delendai/core/public';
+} from '@delendai/core/lib/scaffold/wire-plugin';
+import { diagnosePluginWiring, type IPluginWiringFs } from '@delendai/core/cli';
 
 /**
  * A deterministic, in-memory fs the wiring writers can run against. It

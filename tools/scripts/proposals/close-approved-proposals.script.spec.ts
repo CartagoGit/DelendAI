@@ -4,6 +4,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	idsClosedBy,
+	passIsSpent,
 	ownPublications,
 	ownWorkRefs,
 	readyToClose,
@@ -125,5 +127,26 @@ describe('ownWorkRefs (x00711)', () => {
 				'refs/heads/delendai/wip/delendai-queue/review/batch-all-g1/close-approved-1849',
 			]);
 		}
+	});
+});
+
+describe('a retired close pass whose closes landed', () => {
+	const added = [
+		'docs/delendai/proposals/done/fixes/x00770-diagnostics.md',
+		'docs/delendai/proposals/done/fixes/x00799-derived-files.md',
+		'docs/delendai/proposals/done/README.md',
+		'docs/delendai/proposals/review/x00801-elsewhere.md',
+	].join('\n');
+
+	it('closes the proposals it added under done/', () => {
+		expect(idsClosedBy(added)).toEqual(['x00770', 'x00799']);
+	});
+
+	it('is spent once every one of them is closed on the integration branch', () => {
+		const closes = idsClosedBy(added);
+		expect(
+			passIsSpent(closes, new Set(['x00770', 'x00799', 'x00001'])),
+		).toBe(true);
+		expect(passIsSpent(closes, new Set(['x00770']))).toBe(false);
 	});
 });

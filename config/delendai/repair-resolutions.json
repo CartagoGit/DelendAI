@@ -10,12 +10,52 @@
 			"decidedAt": "2026-09-27T16:01:45.980Z"
 		},
 		{
+			"taskId": "115ffc39c16ede08fec4df74d21eb019",
+			"evidenceDigest": "61680840c78d65b1b4aa32f12e34e890",
+			"decision": "resolved-elsewhere",
+			"reason": "client-delendai-client x00569 S1: a unit named after a host, not an agent; x00569 is done and its files are in develop (only generated files differed). Retired and dropped 2026-10-05 after a file-by-file comparison.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:04:39.340Z"
+		},
+		{
 			"taskId": "234a490ff3d4564f19e041ba7005de81",
 			"evidenceDigest": "3944e86f936b68eb165756b759bb1b45",
 			"decision": "accepted-loss",
 			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-09-27T09:33:02.570Z"
+		},
+		{
+			"taskId": "245dbeb0069e4dc5f61d7046874deb78",
+			"evidenceDigest": "619824876a964e80bf57f08ad9cb6169",
+			"decision": "resolved-elsewhere",
+			"reason": "delendai-queue close pass retired with a reason, then dropped from the forge after analysis on 2026-10-07: every proposal it closed is closed on develop (#878), so the tip kept nothing",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:30.178Z"
+		},
+		{
+			"taskId": "285183da11cea0eab7e42f7686b4a230",
+			"evidenceDigest": "2a0a32a3dfcc7b345fab1c0ad6cbac9e",
+			"decision": "resolved-elsewhere",
+			"reason": "delendai-queue close pass retired with a reason, then dropped from the forge after analysis on 2026-10-07: every proposal it closed is closed on develop (#878), so the tip kept nothing",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:35.791Z"
+		},
+		{
+			"taskId": "33bbdd0d34ddcb854dafc519345805b9",
+			"evidenceDigest": "377c2df78082b7ef9628e68b36820973",
+			"decision": "resolved-elsewhere",
+			"reason": "minimaxm3 review pack batch-all-g8: verdicts of the 2026-10-03 swarm, reconciled in #751 and #756; requested changes were done in r00043, f00755, x00758, q00010 and r00040.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:04:42.679Z"
+		},
+		{
+			"taskId": "3465c80038eb9ad437d22242483c8295",
+			"evidenceDigest": "df2d20a75caa3523d740336295719622",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 review pack batch-all-g1: verdicts of the 2026-10-03 swarm, reconciled in #751 and #756.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:04:46.128Z"
 		},
 		{
 			"taskId": "3ef6bab00c31b1dec6dbdca9e2805133",
@@ -26,12 +66,44 @@
 			"decidedAt": "2026-09-19T12:27:03.041Z"
 		},
 		{
+			"taskId": "3fd20b0cae225af5290464a2bc1999e7",
+			"evidenceDigest": "773045d231d77d1038f32f100bd32ff8",
+			"decision": "resolved-elsewhere",
+			"reason": "delendai-queue close pass retired with a reason, then dropped from the forge after analysis on 2026-10-07: every proposal it closed is closed on develop (#878), so the tip kept nothing",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:41.427Z"
+		},
+		{
+			"taskId": "4852fd7961036f90b6d29b9a2dc1332c",
+			"evidenceDigest": "2d55ab5723144425c2d3b6c7ff0c7c13",
+			"decision": "accepted-loss",
+			"reason": "illyria (ChatGPT Luna 6.0 under a name of no model) review pack batch-all-g1: its q00010 edits are superseded on develop and its f00538 verdicts were signed with a fake identity, so they go back to the queue; its publication was retired (#858) and the tip is still kept at refs/delendai/retired/illyria/review/batch-all-g1/verdicts",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:52.750Z"
+		},
+		{
+			"taskId": "48ef92d37fd1a7d2f12a98388cc6ee62",
+			"evidenceDigest": "f27d2ca1b9539dd62f220a768c283026",
+			"decision": "resolved-elsewhere",
+			"reason": "minimaxm3 review pack batch-all-g6: verdicts of the 2026-10-03 swarm, reconciled in #751 and #756.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:04:49.290Z"
+		},
+		{
 			"taskId": "4e01795d59ce68b10d6ed333dbc42b79",
 			"evidenceDigest": "1071c02ee8c721aa4d65e9b27687b2e3",
 			"decision": "resolved-elsewhere",
 			"reason": "minimax-m3 review unit that closed proposals without an independent review; PR #582 closed unmerged. Commits kept in refs/pull/582/head and in .cache/delendai/evidence/swarm-2026-09-28 (swarm-refs.bundle, verified; MANIFEST.json).",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-09-28T07:15:17.726Z"
+		},
+		{
+			"taskId": "4e16c5bd2ac56ccb631193fcfb235ac1",
+			"evidenceDigest": "f5597bb00f4ececefe8331c0c1e0a55d",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 x00749 S1: x00749 is done; the slice landed through another unit.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:04:52.491Z"
 		},
 		{
 			"taskId": "4eef0c8fe5f1b95e46f526fe8efb865f",
@@ -42,12 +114,28 @@
 			"decidedAt": "2026-09-27T21:51:45.162Z"
 		},
 		{
+			"taskId": "530ef3ba5f6af1589e9419afb15c971f",
+			"evidenceDigest": "fd7906212f315645531b4246ec63978d",
+			"decision": "accepted-loss",
+			"reason": "A close pass of the queue's closer that never published (its unit had no dependencies, so the pre-push typecheck refused it). Its only content was the close of five approved proposals, which every pass recomputes from develop; x00875 S27 lets the closer publish and retires a pass that does not.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T15:23:01.787Z"
+		},
+		{
 			"taskId": "593fd173544d841c22d9a37777cc8344",
 			"evidenceDigest": "662e3a41011d9781b7a6a260d5b4fe34",
 			"decision": "not-a-problem",
 			"reason": "x00699's wip ref was removed by its own publication; the work is kept on its publication (PR #553). x00702 counts publication tips as keeping a checkpoint.",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-09-27T16:01:57.931Z"
+		},
+		{
+			"taskId": "7b3e8b231b2db2346eb20ad54eef16b0",
+			"evidenceDigest": "52d6a9533681e4008417ae918bc6992c",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 x00761 S1: x00761 is done; the slice landed through another unit.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:04:55.857Z"
 		},
 		{
 			"taskId": "7fb60a464799d3f86ae87e6b1dffda89",
@@ -58,6 +146,30 @@
 			"decidedAt": "2026-09-27T09:33:13.974Z"
 		},
 		{
+			"taskId": "87f3e8140a1b36b5726e3ee252902480",
+			"evidenceDigest": "a0899055e427e2e756f4bcabc042399f",
+			"decision": "resolved-elsewhere",
+			"reason": "claude-sonnet-5-5 create unit host-agnostic-agent-guard: it created x00870 (create_proposal checkpoint e9fde0207), which landed and is in review.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:04:59.051Z"
+		},
+		{
+			"taskId": "8a0d39e3a8dcb3b5921da9a9a9ea4e10",
+			"evidenceDigest": "7ea818f410d42b534a5334c58eaf8637",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 r00043 S5: redone after review; r00043 is in review with every slice delivered.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:02.264Z"
+		},
+		{
+			"taskId": "8e2903e1924286680c5cdfc3087d115f",
+			"evidenceDigest": "9fb182f7e2a3d378e8703d66320013b9",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 x00641 S1: x00641 is done; the slice landed through another unit.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:05.478Z"
+		},
+		{
 			"taskId": "96e8c4cd562d58d29663878f48bba0e3",
 			"evidenceDigest": "5658cfafad26115749667c7dfa7c58e5",
 			"decision": "accepted-loss",
@@ -66,12 +178,52 @@
 			"decidedAt": "2026-09-27T21:51:48.300Z"
 		},
 		{
+			"taskId": "9c8b83fce35ff96c5d6273ceb411cabe",
+			"evidenceDigest": "9ef145fc9a61f97a86f99aeb266c5516",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 r00043 S2: redone after review; r00043 is in review with every slice delivered.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:09.128Z"
+		},
+		{
+			"taskId": "9f340bed16e33a18faa5ec3da3281f95",
+			"evidenceDigest": "7e506f45d52a267ba5fdfc667f977fbb",
+			"decision": "not-a-problem",
+			"reason": "Not rewritten history: a new close pass reused generation g1 under another name after the previous pass's unit ended. x00875 S27 makes a generation once merged or retired spent, so no two refs share an identity.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T15:23:07.281Z"
+		},
+		{
+			"taskId": "ae6adfa91c81793f321162c4073f8f8a",
+			"evidenceDigest": "95810276148c84442c603e67b417ea83",
+			"decision": "resolved-elsewhere",
+			"reason": "minimaxm3 review pack batch-all-g1: verdicts of the 2026-10-03 swarm, reconciled in #751 and #756.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:12.320Z"
+		},
+		{
+			"taskId": "b4eae792af3333c6b6ba6edbe8452a06",
+			"evidenceDigest": "8a2239e59cde5f2e1d499d358a98036f",
+			"decision": "resolved-elsewhere",
+			"reason": "claude-sonnet-5-5 create unit named x00767 before its id was allocated: its checkpoint 2c9c7adda (create_proposal) wrote x00771, which is done.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:15.867Z"
+		},
+		{
 			"taskId": "b939802bc4278d0fcb50fa59af7f0c01",
 			"evidenceDigest": "14e7a3de190dcaeae1e970b723f1cd3f",
 			"decision": "accepted-loss",
 			"reason": "MiniMax closed proposals by moving files into done/ by hand (no proposal_transition: no review approval check, no shipped-in, no index/SQLite update). The same hand moves reappear on its later branch (PR #514), which CI rejects. Nothing legitimate is lost; the real closes must go through proposal_transition. Commit kept in the object store.",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-09-27T09:33:05.602Z"
+		},
+		{
+			"taskId": "bfc219546d916bdb501e5e7752fcf87c",
+			"evidenceDigest": "b8ed34a6dfe1f57f662773b422dece50",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 r00043 S6: redone after review; r00043 is in review with every slice delivered.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:19.048Z"
 		},
 		{
 			"taskId": "c3f86dc68828a5596d504d65cf227ac6",
@@ -98,12 +250,84 @@
 			"decidedAt": "2026-09-27T09:33:11.730Z"
 		},
 		{
+			"taskId": "dd39406329c1d30afb631012a68b5884",
+			"evidenceDigest": "53ae26a4f72b1e68d14bc99834ae7ddb",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 r00043 S4: redone after review; r00043 is in review with every slice delivered.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:22.115Z"
+		},
+		{
+			"taskId": "df3fb505f4da4c9e6d7c825ab7494708",
+			"evidenceDigest": "23e197ae9cbc6db3e438e9e6d8a651f9",
+			"decision": "resolved-elsewhere",
+			"reason": "minimaxm3 review pack batch-all-g2: verdicts of the 2026-10-03 swarm, reconciled in #751 and #756.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:25.301Z"
+		},
+		{
+			"taskId": "dfc2c0a9c36aed69d99b66c724f62b05",
+			"evidenceDigest": "ebd9a7882c3eb2131a88d9b13285e48c",
+			"decision": "resolved-elsewhere",
+			"reason": "claude-opus-5-5 review pack batch-all-g2: its claim of x00835 and the S18 verdict were carried into batch-all-g1 and published in #803.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:28.441Z"
+		},
+		{
+			"taskId": "e09a6eb4c4d13be6c29618b312726c42",
+			"evidenceDigest": "406885baae0b0db96487548003af03aa",
+			"decision": "resolved-elsewhere",
+			"reason": "delendai-queue close pass retired with a reason, then dropped from the forge after analysis on 2026-10-07: every proposal it closed is closed on develop (#878), so the tip kept nothing",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T22:58:47.196Z"
+		},
+		{
+			"taskId": "e1c21bdea93a137cbdd4451c9850340d",
+			"evidenceDigest": "fbb60a9b103290e30badcbab0125d6c6",
+			"decision": "resolved-elsewhere",
+			"reason": "client-delendai-client x00738 S1: a unit named after a host, not an agent; x00738 is done and its files are in develop.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:31.561Z"
+		},
+		{
+			"taskId": "e992c688a9f03a3e44640834301666a0",
+			"evidenceDigest": "780b3ff54b2417b5e46b74a8058752eb",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-m3 review pack batch-all-g7: verdicts of the 2026-10-03 swarm, reconciled in #751 and #756.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:34.881Z"
+		},
+		{
 			"taskId": "ea278115e9d2719354dc8712ccb8dada",
 			"evidenceDigest": "04143ba753f9683d188150b1bfc3961b",
 			"decision": "resolved-elsewhere",
 			"reason": "minimax-3 unit that moved all 83 review proposals to done without review; PRs #580/#581 closed unmerged. Commits kept in refs/pull/580/head and in .cache/delendai/evidence/swarm-2026-09-28 (swarm-refs.bundle, verified; MANIFEST.json).",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-09-28T07:15:24.952Z"
+		},
+		{
+			"taskId": "f47afbba98da683b9cad369db33927a2",
+			"evidenceDigest": "a0d98aa74ea0432886bdc8e630ece614",
+			"decision": "resolved-elsewhere",
+			"reason": "claude-opus-5-5 x00811 S1: its last checkpoint 53476d479 is a merge of develop into the unit; x00811 is done.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:38.194Z"
+		},
+		{
+			"taskId": "f9dd849c3520ae084aac20cebcb448fe",
+			"evidenceDigest": "effe2a8a781273135e8ddbe18b6de024",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax-3 f00755 S1: redone after review (f00755 is in review, delivered by another unit).",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:41.583Z"
+		},
+		{
+			"taskId": "ffb6fdb49b5cffa8bf8acf1a85bb3aca",
+			"evidenceDigest": "c4aaeae2dae186b8524e218c0bb05441",
+			"decision": "resolved-elsewhere",
+			"reason": "claude-opus-5-5 review unit settle-stale-review-packs: its checkpoint 87350da79 only syncs the shared checkout with develop; its settlement landed as the owner-reconcile PRs #751 and #756.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-06T02:05:45.366Z"
 		}
 	]
 }

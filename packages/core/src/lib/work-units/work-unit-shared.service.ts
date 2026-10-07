@@ -63,6 +63,17 @@ export const readGit = (
 };
 
 /**
+ * The repository's own checkout: the first entry `git worktree list`
+ * names, which outlives every linked worktree. `cwd` itself when git
+ * cannot say.
+ */
+export const mainWorktreeOf = (cwd: string): string =>
+	(readGit(cwd, ['worktree', 'list', '--porcelain']) ?? '')
+		.split('\n')
+		.find((line) => line.startsWith('worktree '))
+		?.slice('worktree '.length) ?? cwd;
+
+/**
  * `--workspace` is a GLOBAL flag, consumed by the parser before a command
  * sees its arguments; reading it from `args` silently resolved to the
  * process' own directory and created a worktree inside another worktree.
@@ -137,22 +148,42 @@ export const integrationRemote = (
 	return remotes[0] ?? 'origin';
 };
 
+/**
+ * The commit work starts from.
+ *
+ * The local integration branch answers first, then its remote-tracking
+ * copy — except under a model that lands work through pull requests,
+ * when the local branch carries commits the forge does not. There the
+ * local branch can only follow, so such commits are an accident (agents
+ * committing straight onto the shared checkout), and every unit entered
+ * afterwards was built on them: thirty foreign commits in each new unit,
+ * until a gate refused one. The forge's branch is the base then.
+ */
 export const integrationBase = (
 	cwd: string,
 	policy: IResolvedDevelopmentPolicy,
 ): string | undefined => {
 	const branch = policy.branches.integration;
 	const remote = integrationRemote(cwd, policy);
-	for (const candidate of [branch, `refs/remotes/${remote}/${branch}`]) {
+	const commitOf = (ref: string): string | undefined => {
 		const sha = readGit(cwd, [
 			'rev-parse',
 			'-q',
 			'--verify',
-			`${candidate}^{commit}`,
+			`${ref}^{commit}`,
 		]);
-		if (sha !== undefined && sha.length > 0) return sha;
-	}
-	return undefined;
+		return sha !== undefined && sha.length > 0 ? sha : undefined;
+	};
+	const local = commitOf(branch);
+	const forge = commitOf(`refs/remotes/${remote}/${branch}`);
+	if (local === undefined) return forge;
+	if (forge === undefined) return local;
+	const localOnlyFollows =
+		readGit(cwd, ['merge-base', '--is-ancestor', local, forge]) !==
+		undefined;
+	return policy.integration.requiresPullRequest && !localOnlyFollows
+		? forge
+		: local;
 };
 
 export const refused = (reason: string, remedy: string): IWorkUnitResult => ({
@@ -165,12 +196,6 @@ export const openWork = async (
 ): Promise<IWorkContext | IWorkUnitResult> => {
 	const root = workspaceOf(ctx);
 	const policy = await readWorkspacePolicy(root);
-	if (policy === undefined) {
-		return refused(
-			'This project declares no development policy.',
-			'Add a `development` block to delendai.config.json; without one there is no work-ref model to follow.',
-		);
-	}
 	const engine = await createWipEngine(root, anchorFromPolicy(policy));
 	if (engine === undefined) {
 		return refused(

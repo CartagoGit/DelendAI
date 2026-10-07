@@ -3,16 +3,18 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
-	createPluginMetrics,
 	hydrateKpis,
 	PRESET_CATALOG,
 	TOKEN_BUDGETS,
 	withFileMutex,
 	writeFileAtomic,
+} from '@delendai/core/public';
+import {
+	createPluginMetrics,
 	type IGovernedToolsListBudget,
 	type IMcpToolSurfaceMode,
 	type ITokenBudgetSurface,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
 import { marginalVerdict } from '../test/preset-marginal-ceiling';

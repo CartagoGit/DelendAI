@@ -71,6 +71,7 @@ export type IPersistenceRefusalCode =
 	| 'PINNED_CHECKOUT'
 	| 'POLICY_ROUTE_UNSUPPORTED'
 	| 'WIP_SCOPE_NARROWED'
+	| 'WIP_NO_AGENT_IDENTITY'
 	| 'WIP_CHECKPOINT_FAILED';
 
 /** The three routes a resolved policy can select. */

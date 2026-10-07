@@ -87,8 +87,11 @@ describe('openPublicationPullRequest', () => {
 			openPublicationPullRequest({
 				...INPUT,
 				ports: portsWith({ url: '/tmp/bare.git' }),
-			}).status,
-		).toBe('skipped');
+			}),
+		).toMatchObject({
+			status: 'skipped',
+			reason: expect.stringContaining('/tmp/bare.git'),
+		});
 		expect(
 			openPublicationPullRequest({
 				...INPUT,
@@ -96,7 +99,7 @@ describe('openPublicationPullRequest', () => {
 			}),
 		).toMatchObject({
 			status: 'skipped',
-			reason: expect.stringContaining('owner machine opens'),
+			reason: expect.stringContaining('holds the forge credential opens'),
 		});
 		expect(
 			JSON.stringify(
@@ -133,5 +136,60 @@ describe('pullRequestText', () => {
 				'review batch',
 			).title,
 		).toBe('review batch');
+	});
+
+	it('is titled by the oldest commit that delivers, past tool records, regeneration and merges', () => {
+		// Newest first, as `git log` lists them.
+		const text = pullRequestText(
+			[
+				'chore(proposals): x00001 goes to review',
+				"Merge remote-tracking branch 'origin/develop' into HEAD",
+				'chore(generated): recompute the catalog',
+				'fix(release): release tooling follows the configured branches',
+				'chore(delendai): delendai_proposals_create_proposal',
+			],
+			'b',
+			'unit',
+		);
+		expect(text.title).toBe(
+			'fix(release): release tooling follows the configured branches',
+		);
+		expect(text.body).not.toContain('Merge ');
+	});
+
+	it('is titled by its own slice when it carries another unit merged in', () => {
+		// Newest first, as `git log` lists them: S39's commit came in with
+		// the publication this unit merged, and is the oldest.
+		const { title } = pullRequestText(
+			[
+				'chore(delendai): delendai_proposals_proposal_review x00875 S23 submit',
+				'fix(proposals): the queue offers no reviewer a slice its own unit delivered (x00875 S23)',
+				'fix(proposals): the review queue cites the delivery an approval is accepted with (x00835 S39)',
+			],
+			'delendai/pr/claude-opus-5-5/implement/x00875-S23-g1/the-queue-does-not-offer',
+			'fallback',
+		);
+		expect(title).toBe(
+			'fix(proposals): the queue offers no reviewer a slice its own unit delivered (x00875 S23)',
+		);
+	});
+
+	it('keeps the oldest delivery when none cites the unit', () => {
+		const { title } = pullRequestText(
+			['fix: second', 'fix: first'],
+			'delendai/pr/agent/implement/x00001-S1-g1/topic',
+			'fallback',
+		);
+		expect(title).toBe('fix: first (+1 more)');
+	});
+
+	it('takes the oldest meaningful commit when none follows the delivery types', () => {
+		expect(
+			pullRequestText(
+				['chore(deps): bump zod', 'chore(delendai): a tool record'],
+				'b',
+				'unit',
+			).title,
+		).toBe('chore(deps): bump zod');
 	});
 });

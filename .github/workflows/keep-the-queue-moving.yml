@@ -168,8 +168,12 @@ jobs:
             #
             # `--forge` because the checkout-shaped invariants are
             # meaningless on a runner, whose checkout is always clean and
-            # always detached. Read-only, and never blocking: it reports
-            # what is true, and the steps above are what change it.
-            - name: Report whether the workflow invariants hold
+            # always detached. Read-only. It FAILS the run while something
+            # hangs on the forge: a publication that holds nothing, one with
+            # no canonical name, a work ref that landed or was left. It used
+            # to end in `|| true`, and a run that left twenty branches behind
+            # was green. A candidate still behind is not counted: bringing
+            # it forward is what the steps above just started.
+            - name: Fail while something hangs on the forge
               if: always()
-              run: bun run work:doctor -- --forge || true
+              run: bun run work:doctor -- --forge --except=candidates-hydrated

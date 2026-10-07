@@ -39,7 +39,10 @@
 
 import type { IPolicyBranches } from '../contracts/interfaces/development-policy.interface';
 
-import { DEFAULT_ADOPTION_GRACE_SECONDS } from './reconcile.interface';
+import {
+	DEFAULT_ADOPTION_GRACE_SECONDS,
+	DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS,
+} from './reconcile.interface';
 import type {
 	IObservedPullRequest,
 	IObservedRef,
@@ -59,6 +62,7 @@ export type {
 } from './reconcile.interface';
 export {
 	DEFAULT_ADOPTION_GRACE_SECONDS,
+	DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS,
 	REF_ROLES,
 } from './reconcile.interface';
 
@@ -133,6 +137,18 @@ const roleOf = (
 				reason: `its content is already in \`${ref.publishedIn}\`: a work branch ends when it is published, so this copy should be deleted — only the publication ref remains`,
 			};
 		}
+		if (ref.standing === 'idle') {
+			return {
+				role: 'work-idle',
+				reason: 'a work ref whose owner is known and has gone quiet: listed for adoption (`delendai work enter` resumes it), never reaped',
+			};
+		}
+		if (ref.standing === 'abandoned') {
+			return {
+				role: 'work-abandoned',
+				reason: 'a work ref whose owner is gone and which was never published: end it with `delendai work retire`, which keeps its tip, or adopt it and publish',
+			};
+		}
 		return {
 			role: 'work',
 			reason: 'a work ref an agent is developing on: visible before publication on purpose, and never reaped here because no pull request has had the chance to prove it spent',
@@ -170,7 +186,7 @@ const roleOf = (
 				}
 			: {
 					role: 'publication-closed',
-					reason: 'its pull request was closed without merging: the ref may be the only copy of its work, so it is kept for its author to reopen or end',
+					reason: 'its pull request was closed without merging: the ref may be the only copy of its work, so it is kept for its author to reopen, then retired (its tip kept, its branch gone)',
 				};
 	}
 	return {
@@ -192,6 +208,10 @@ export const reconcileRefs = (
 	const now = options.now ?? Math.floor(Date.now() / 1000);
 	const graceStartsAfter =
 		now - (options.adoptionGraceSeconds ?? DEFAULT_ADOPTION_GRACE_SECONDS);
+	const retireClosedBefore =
+		now -
+		(options.closedRetirementGraceSeconds ??
+			DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS);
 	const index = byHeadRef(pullRequests);
 	const verdicts: IRefVerdict[] = refs.map((ref) => {
 		const request = index.get(ref.name);
@@ -224,9 +244,16 @@ export const reconcileRefs = (
 			(v) =>
 				v.role === 'unmanaged' ||
 				v.role === 'publication-unclaimed' ||
+				v.role === 'work-abandoned' ||
 				v.role === 'work-published',
 		),
+		retirable: verdicts.filter((v) => {
+			if (v.role !== 'publication-closed') return false;
+			const closedAt = index.get(v.name)?.closedAt;
+			return closedAt !== undefined && closedAt <= retireClosedBefore;
+		}),
 		awaiting: verdicts.filter((v) => v.role === 'publication-awaiting'),
 		active: verdicts.filter((v) => v.role === 'work'),
+		adoptable: verdicts.filter((v) => v.role === 'work-idle'),
 	};
 };

@@ -131,9 +131,57 @@ describe('workflow invariants (x00573)', () => {
 			'push',
 			'-q',
 			'origin',
-			'HEAD:refs/heads/delendai/pr/claude-opus-5/x1-S1-g1/shaped',
+			'HEAD:refs/heads/delendai/pr/claude-opus-5/implement/x1-S1-g1/shaped',
 		);
 		expect(by(root, 'publications-canonical').holds).toBe(true);
+	});
+
+	it('takes the four-component shape the template names for canonical, and the old three for not', () => {
+		const { root, remote } = repo();
+		git(
+			root,
+			'push',
+			'-q',
+			'origin',
+			'HEAD:refs/heads/delendai/pr/claude-test/x1-S1-g1/before-kind',
+		);
+		expect(by(root, 'publications-canonical').holds).toBe(false);
+		execFileSync(
+			'git',
+			[
+				'update-ref',
+				'-d',
+				'refs/heads/delendai/pr/claude-test/x1-S1-g1/before-kind',
+			],
+			{ cwd: remote },
+		);
+		git(
+			root,
+			'push',
+			'-q',
+			'origin',
+			'HEAD:refs/heads/delendai/pr/claude-test/implement/x1-S1-g1/probe',
+		);
+		expect(by(root, 'publications-canonical').holds).toBe(true);
+	});
+
+	it('does not require the checkout on the integration branch when the profile does not anchor it', () => {
+		const { root } = repo();
+		git(root, 'switch', '-q', '-c', 'somewhere-else');
+		const unanchored = resolveDevelopmentPolicy({
+			development: {
+				profile: 'worktree-pr',
+				branches: {
+					namespacePrefix: 'delendai',
+					integration: 'develop',
+				},
+			},
+		});
+		const result = checkWorkflowInvariants({
+			root,
+			policy: unanchored,
+		}).results.find((each) => each.id === 'checkout-anchored');
+		expect(result?.holds).toBe(true);
 	});
 
 	it('sees a candidate that does not contain the integration branch', () => {
@@ -179,6 +227,103 @@ describe('workflow invariants (x00573)', () => {
 		const result = by(root, 'no-remote-work-refs');
 		expect(result.holds).toBe(false);
 		expect(result.remedy).toContain('publish');
+	});
+
+	it('sees a publication that holds nothing the integration branch lacks', () => {
+		const { root } = repo();
+		const spent = 'delendai/pr/claude-opus-5/x1-S1-g1/landed';
+		git(root, 'push', '-q', 'origin', `HEAD:refs/heads/${spent}`);
+		git(root, 'fetch', '-q', 'origin');
+		const result = by(root, 'publications-hold-work');
+		expect(result.holds).toBe(false);
+		expect(result.observed).toContain(spent);
+		// The remedy keeps the tip: retiring, never a bare delete.
+		expect(result.remedy).toContain('delendai work retire --ref=<ref>');
+		expect(result.remedy).not.toContain('--delete');
+
+		writeFileSync(join(root, 'c.txt'), 'c\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'work');
+		git(root, 'push', '-q', '-f', 'origin', `HEAD:refs/heads/${spent}`);
+		git(root, 'reset', '-q', '--hard', 'origin/develop');
+		git(root, 'fetch', '-q', 'origin');
+		expect(by(root, 'publications-hold-work').holds).toBe(true);
+	});
+
+	it('sees a local integration branch holding commits the forge lacks', () => {
+		const { root } = repo();
+		git(root, 'fetch', '-q', 'origin');
+		expect(by(root, 'integration-follows-forge').holds).toBe(true);
+
+		writeFileSync(join(root, 'd.txt'), 'd\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'made in the shared checkout');
+		const result = by(root, 'integration-follows-forge');
+		expect(result.holds).toBe(false);
+		expect(result.observed).toContain('1 commit(s) only here');
+		expect(result.remedy).toContain('work enter');
+	});
+
+	it('sees a unit kept with nothing in it once the integration branch moved on', () => {
+		const { root } = repo();
+		const kept = 'delendai/wip/claude-opus-5/x1-S1-g1/kept';
+		git(root, 'worktree', 'add', '-q', join(root, 'wt'), '-b', kept);
+		// Just entered, level with the integration branch: not idle.
+		expect(by(root, 'units-hold-work').holds).toBe(true);
+
+		writeFileSync(join(root, 'e.txt'), 'e\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'develop moves');
+		const result = by(root, 'units-hold-work');
+		expect(result.holds).toBe(false);
+		expect(result.observed).toContain(kept);
+		expect(result.remedy).toContain('work retire');
+
+		// A unit with a commit of its own is working, however far behind.
+		writeFileSync(join(root, 'wt', 'f.txt'), 'f\n');
+		git(join(root, 'wt'), 'add', '-A');
+		git(join(root, 'wt'), 'commit', '-q', '-m', 'work');
+		expect(by(root, 'units-hold-work').holds).toBe(true);
+	});
+
+	it("leaves somebody's backup on the forge alone until it has been silent too long", () => {
+		const { root } = repo();
+		const backup = 'delendai/wip/claude-opus-5/x1-S1-g1/elsewhere';
+		git(root, 'switch', '-q', '-c', 'scratch');
+		writeFileSync(join(root, 'g.txt'), 'g\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'work on another machine');
+		git(root, 'push', '-q', 'origin', `HEAD:refs/heads/${backup}`);
+		git(root, 'switch', '-q', 'develop');
+		git(root, 'branch', '-q', '-D', 'scratch');
+		git(root, 'fetch', '-q', 'origin');
+
+		// No worktree here and no lease: a runner sees exactly this.
+		expect(by(root, 'no-remote-work-refs').holds).toBe(true);
+
+		const later = checkWorkflowInvariants({
+			root,
+			policy,
+			now: Math.floor(Date.now() / 1000) + 7 * 24 * 3600,
+		}).results.find((r) => r.id === 'no-remote-work-refs');
+		expect(later?.holds).toBe(false);
+		expect(later?.observed).toContain('silent');
+	});
+
+	it('sees a ref kept by hand, a retired unit copied here, and a remote that is gone', () => {
+		const { root } = repo();
+		expect(by(root, 'no-stray-refs').holds).toBe(true);
+		git(root, 'tag', 'v1');
+		git(root, 'update-ref', 'refs/delendai/ids/x00001', 'HEAD');
+		expect(by(root, 'no-stray-refs').holds).toBe(true);
+
+		git(root, 'update-ref', 'refs/recovery/run/unit', 'HEAD');
+		git(root, 'update-ref', 'refs/delendai/retired/agent/unit', 'HEAD');
+		git(root, 'update-ref', 'refs/remotes/gone/develop', 'HEAD');
+		const result = by(root, 'no-stray-refs');
+		expect(result.holds).toBe(false);
+		expect(result.observed).toContain('3:');
+		expect(result.remedy).toContain('work retire');
 	});
 
 	it('answers about the shared checkout when a hook in a worktree asks', () => {

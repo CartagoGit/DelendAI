@@ -1,3 +1,10 @@
+import { deletedDocuments } from './review-pack-deletions.service';
+import {
+	describeCarriedPacks,
+	otherReviewPacks,
+	packsCarried,
+} from './review-pack-scope.service';
+import { readSwarm } from './work-swarm.service';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	IWorkUnitContext,
@@ -12,12 +19,14 @@ import {
 	proposalStillInProgress,
 } from './publication-target.service';
 import { openPublicationPullRequest } from './publication-pull-request.service';
+import { landWorkUnit } from './work-unit-land.service';
 import { scalarArg } from './command-args.helper';
 import { readWorkspaceDocsDir } from './development-policy.service';
 import {
 	isReviewUnitBranch,
 	outsideReviewScope,
 } from '../development-policy/git-guard-review-scope';
+import { endCarriedUnits } from './carried-units.service';
 
 import {
 	agentFor,
@@ -27,15 +36,23 @@ import {
 	integrationRemote,
 	kindFor,
 	kindInAgent,
+	mainWorktreeOf,
 	openWork,
 	refused,
 	unknownKind,
 } from './work-unit-shared.service';
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
 
+/** The generation a work ref names (`…-g<n>/…`), if it names one. */
+const generationOfWorkRef = (ref: string): number | undefined => {
+	const found = /-g(\d+)\//u.exec(ref)?.[1];
+	return found === undefined ? undefined : Number(found);
+};
+
 /**
- * Hand the work over: the publication ref carries it, and the work ref
- * stops existing. The two halves belong together — doing only the first
+ * Hand the work over: the publication ref carries it — or, under a
+ * profile that integrates by merge, the integration branch does — and
+ * the work ref stops existing. The two halves belong together — doing only the first
  * is what fills a namespace with `wip/` branches that look alive.
  */
 export const published = async (
@@ -44,7 +61,11 @@ export const published = async (
 ): Promise<IWorkUnitResult> => {
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
-	const { root, policy } = opened;
+	const { policy } = opened;
+	// Publishing removes the unit's worktree, which is where this command
+	// may be standing: everything asked of git and the forge is asked from
+	// the repository's own checkout, which stays.
+	const root = mainWorktreeOf(opened.root);
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
 	const agent = agentFor(args);
@@ -108,6 +129,73 @@ export const published = async (
 				'Take those changes out of the unit (revert the commits that made them). A change the product needs is a proposal of its own, implemented in an `implement` unit.',
 			);
 		}
+		const deleted = deletedDocuments(
+			(
+				readGit(root, [
+					'diff',
+					'--name-status',
+					'--no-renames',
+					`${base}...${workRef}`,
+				]) ?? ''
+			)
+				.split('\n')
+				.filter((line) => line.length > 0),
+			await readWorkspaceDocsDir(root),
+		);
+		if (deleted.length > 0) {
+			return refused(
+				`\`${workRef}\` is a unit that records verdicts, and it deletes ${deleted.join(', ')}: a review moves a document, it never removes one.`,
+				`Restore them from the integration branch (\`git checkout ${policy.branches.integration} -- ${deleted.join(' ')}\`), commit, and publish again.`,
+			);
+		}
+		const commitsOver = (tip: string): readonly string[] =>
+			(
+				readGit(root, ['rev-list', '--no-merges', `${base}..${tip}`]) ??
+				''
+			)
+				.split('\n')
+				.filter((commit) => commit.length > 0);
+		const own = commitsOver(workRef);
+		if (own.length === 0) {
+			return refused(
+				`\`${workRef}\` records no verdict of its own: it holds nothing over \`${policy.branches.integration}\` but merges.`,
+				'There is nothing to publish. Record a verdict in this unit; a unit that will record none is removed with its worktree and its branch.',
+			);
+		}
+		const swarm = readSwarm({ root, policy });
+		const carried = packsCarried(
+			own,
+			otherReviewPacks([...swarm.units, ...swarm.published], agent).map(
+				(pack) => ({ ref: pack.ref, commits: commitsOver(pack.tip) }),
+			),
+		);
+		if (carried.length > 0) {
+			return refused(
+				`\`${workRef}\` carries another reviewer's pack: one verdict in two pull requests conflicts with itself when the first one lands.`,
+				describeCarriedPacks(carried, policy.branches.integration),
+			);
+		}
+	}
+	// The branch of a proposal still in progress outlives this
+	// publication: its next slices are committed on it.
+	const inProgress = proposalStillInProgress(root, proposal, workRef);
+	const keepWorkRef = args.includes('--keep-work-ref') || inProgress;
+	const keepWorkRefBecause =
+		inProgress && !args.includes('--keep-work-ref')
+			? `${proposal} is still in progress, and its next slices are committed on this branch`
+			: undefined;
+	// A profile that integrates by merge has no pull request to publish
+	// into: the unit lands here, certified by the local gate, or not at all.
+	if (policy.integration.strategy === 'merge') {
+		return landWorkUnit({
+			root,
+			cwd: ctx.cwd,
+			policy,
+			remote,
+			workRef,
+			keepWorkRef,
+			keepWorkRefBecause,
+		});
 	}
 	// Whether this slice is published alone or joins its proposal's pull
 	// request is the policy's decision (integration.publication).
@@ -118,7 +206,12 @@ export const published = async (
 		agent,
 		proposal,
 		slice,
-		generation: Number(scalarArg(args, 'generation') ?? '1'),
+		// The generation of the ref being published, not the one the
+		// arguments default to: a second unit of one agent was otherwise
+		// published into the first unit's pull request.
+		generation:
+			generationOfWorkRef(workRef) ??
+			Number(scalarArg(args, 'generation') ?? '1'),
 		topic: scalarArg(args, 'topic'),
 		kind: kindFor(args, slice),
 		base,
@@ -130,10 +223,6 @@ export const published = async (
 			'Publish from a work ref under the policy prefix.',
 		);
 	}
-	// The branch of a proposal still in progress outlives this
-	// publication: its next slices are committed on it.
-	const inProgress = proposalStillInProgress(root, proposal, workRef);
-	const keepWorkRef = args.includes('--keep-work-ref') || inProgress;
 	const outcome = await publishWorkUnitExclusively({
 		root,
 		cwd: ctx.cwd,
@@ -141,12 +230,20 @@ export const published = async (
 		publicationRef: target.publicationRef,
 		remote,
 		keepWorkRef,
-		...(inProgress && !args.includes('--keep-work-ref')
-			? {
-					keepWorkRefBecause: `${proposal} is still in progress, and its next slices are committed on this branch`,
-				}
-			: {}),
+		...(keepWorkRefBecause === undefined ? {} : { keepWorkRefBecause }),
 	});
+	// The other units of this agent and proposal it carried end with it.
+	const carried =
+		outcome.published && outcome.tip !== null
+			? await endCarriedUnits({
+					root,
+					cwd: ctx.cwd,
+					policy,
+					workRef,
+					tip: outcome.tip,
+					remote,
+				})
+			: [];
 	const publication = {
 		unit: target.unit,
 		reason: target.reason,
@@ -185,15 +282,32 @@ export const published = async (
 					},
 				})
 			: undefined;
+	// Published but not cleaned up is not a success: the namespace is
+	// left carrying a ref that looks like live work.
+	const landed = outcome.published && (outcome.workRefRemoved || keepWorkRef);
+	// A failure says so in words, first. The reason used to sit only in
+	// the list of steps, and a caller reading the summary took an
+	// unpublished unit for a published one.
+	const failed = outcome.steps.find((step) => !step.ok);
+	const failure = landed
+		? undefined
+		: [
+				outcome.published
+					? `${workRef} was published, but its work ref was not removed.`
+					: `${workRef} was NOT published.`,
+				...(failed === undefined
+					? []
+					: [`${failed.name}: ${failed.detail}`]),
+				...('nextAction' in publication
+					? [publication.nextAction]
+					: []),
+			].join('\n');
 	return {
-		// Published but not cleaned up is not a success: the namespace is
-		// left carrying a ref that looks like live work.
-		code:
-			outcome.published && (outcome.workRefRemoved || keepWorkRef)
-				? EXIT_CODE.OK
-				: EXIT_CODE.VALIDATION,
+		code: landed ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
+		...(failure === undefined ? {} : { error: failure }),
 		data: {
 			...outcome,
+			...(carried.length === 0 ? {} : { carried }),
 			publication,
 			...(pullRequest === undefined ? {} : { pullRequest }),
 		},

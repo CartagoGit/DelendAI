@@ -19,4 +19,24 @@ if (report === undefined) {
 	process.exit(1);
 }
 console.log(renderInvariantReport(report));
-process.exit(report.broken === 0 ? 0 : 1);
+// `--except=<id,id>`: invariants reported and not counted. The queue asks
+// about the forge right after it started bringing candidates forward, so
+// a candidate still behind is its own work in progress, not a hang.
+const excepted = new Set(
+	(
+		process.argv
+			.find((arg) => arg.startsWith('--except='))
+			?.slice('--except='.length) ?? ''
+	)
+		.split(',')
+		.filter((id) => id.length > 0),
+);
+const counted = report.results.filter(
+	(result) => !result.holds && !excepted.has(result.id),
+);
+if (excepted.size > 0) {
+	console.log(
+		`workflow-invariants: ${String(counted.length)} counted (not counting ${[...excepted].join(', ')}).`,
+	);
+}
+process.exit(counted.length === 0 ? 0 : 1);

@@ -25,12 +25,8 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import {
-	assembleCliConfig,
-	parseCliArgs,
-	type IAssembleCliDeps,
-	type IAssembledCliConfig,
-} from '@delendai/core/public';
+import { assembleCliConfig, parseCliArgs } from '@delendai/core/public';
+import type { IAssembleCliDeps, IAssembledCliConfig } from '@delendai/core/cli';
 
 /**
  * Solid-DIP: a tiny adapter that resolves a plugin SPECIFIER to its

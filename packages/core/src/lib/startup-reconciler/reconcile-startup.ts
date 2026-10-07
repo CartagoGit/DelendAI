@@ -39,6 +39,7 @@ import { runForgePhase } from './phases/reconcile-forge';
 import { runGovernancePhase } from './phases/inspect-governance';
 import { runIntegrationEvidencePhase } from './phases/integration-evidence';
 import { runJournalPhase } from './phases/import-journal';
+import { journalSourceFor } from './journal-ref.service';
 import { runLeasePhase } from './phases/reap-leases';
 import { runStateDatabasePhase } from './phases/open-state';
 import { runCheckoutPhase } from './phases/verify-checkout';
@@ -259,15 +260,16 @@ const reconcileUnderLock = async (args: {
 	const newestKnownEvent = ports.journal
 		.listAll()
 		.reduce((max, event) => Math.max(max, event.occurredAt), 0);
+	const journalSource = journalSourceFor(input, policy.branches);
 	const journal = await runJournalPhase({
-		source: input.journalSource,
+		source: journalSource,
 		ports,
 		mode,
 		since: newestKnownEvent > 0 ? newestKnownEvent : undefined,
 	});
 	collect(phases, {
 		phase: 'journal',
-		ran: input.journalSource !== undefined,
+		ran: journalSource !== undefined,
 		counters: journal.counters,
 		findings: journal.findings,
 	});
@@ -280,6 +282,11 @@ const reconcileUnderLock = async (args: {
 		liveRefs: new Set(fetched.refs.map((ref) => ref.name)),
 		// Every ref that can hold a checkpoint once its work ref is gone:
 		// the work refs themselves and their publications (x00702).
+		retiredTips:
+			(await input.git.listRetiredTips?.(
+				policy.branches.namespacePrefix,
+				policy.branches.integration,
+			)) ?? [],
 		keptBy: [
 			...fetched.refs.map((ref) => ref.sha),
 			...(policy.branches.publicationRefPrefix.length > 0

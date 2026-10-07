@@ -27,6 +27,7 @@ import type { IGitRunner } from '../shared/git-runner';
 import type { IAgentNamesToolOptions } from './agent-names.tool';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import type { ICloseSliceQualityResult } from '../contracts/interfaces/close-slice-gate.interface';
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
 
 export interface ICloseSliceValidationDecision {
@@ -141,8 +142,10 @@ export interface IAuthoringToolOptions {
 	 * extending the same gate to every slice of every proposal kind.
 	 */
 	readonly requirePeerReview?: boolean;
-	/** What makes a reviewer independent (x00718); `model` by default. */
+	/** What makes a reviewer independent (x00718); `instance` by default. */
 	readonly reviewIndependence?: IReviewIndependence;
+	/** The language the project's documents are written in, when declared. */
+	readonly documentationLanguage?: string | undefined;
 	/**
 	 * Controls which validation gate applies to `close_slice`.
 	 * `scoped` (the default) validates only the files/scopes owned by the
@@ -189,13 +192,6 @@ export interface IAuthoringToolOptions {
 	 */
 	readonly validationCommand?: string;
 	/**
-	 * a00069 S5: absolute path to the most recent `bun run validate`
-	 * log. `close_slice` reads the last fresh row from this JSONL
-	 * when no inline `validateEvidence` is supplied; hosts that ship
-	 * a non-standard validate store may inject it here.
-	 */
-	readonly validateEvidenceLogPath?: string;
-	/**
 	 * a00069 S5: injectable validation runner. Production path shells out
 	 * to `validationCommand`; tests pass a stub that returns ok/fail.
 	 */
@@ -217,21 +213,15 @@ export interface IAuthoringToolOptions {
 		readonly skipWhenValidateEvidenceFresh?: boolean;
 		readonly scopes?: readonly string[];
 		readonly mode?: 'scoped' | 'full';
-	}) => Promise<{
-		readonly ok: boolean;
-		readonly severity: 'ok' | 'error';
-		readonly findings: readonly string[];
-		readonly summary?: {
-			readonly ok: boolean;
-			readonly scopes: number;
-		};
-	}>;
+	}) => Promise<ICloseSliceQualityResult>;
 	/** f00386: resolve the validation mode for the current slice. */
 	readonly resolveValidationDecision?: (input: {
 		readonly operation: 'close';
 		readonly ownedFiles: readonly string[];
 		readonly proposalId: string;
 		readonly sliceId: string;
+		/** The caller, when it named itself; else the gate resolves one. */
+		readonly agent?: string | undefined;
 	}) => Promise<ICloseSliceValidationDecision>;
 	/**
 	 * f00508 S4: how many independent reviewers a slice needs.

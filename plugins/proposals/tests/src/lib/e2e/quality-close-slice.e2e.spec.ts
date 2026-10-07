@@ -1,132 +1,14 @@
-import {
-	mkdirSync,
-	mkdtempSync,
-	readdirSync,
-	readFileSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { readFileSync, rmSync } from 'node:fs';
+import { waitUntil } from '@delendai/test-kit';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
-import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
-import proposalsPlugin from '@delendai/proposals';
-import qualityPlugin from '@delendai/quality';
-
-const workspaces: string[] = [];
-
-// Direct by name, not through the router. This harness pins `native`
-// and does not opt into progressive disclosure, so every proposals tool
-// is listed and callable — that is precisely what `native` promises. The
-// router is the one tool `native` HIDES, so routing through it here fails
-// with `-32602 ... disabled`.
-const syncProposals = (client: Client) =>
-	client.callTool({
-		name: 'delendai_proposals_sync_proposals',
-		arguments: {},
-	});
-
-const createQualityServer = async (command: string) => {
-	const workspace = mkdtempSync(join(tmpdir(), 'proposals-quality-e2e-'));
-	workspaces.push(workspace);
-	const config = JSON.stringify({
-		plugins: {
-			quality: { options: { scopes: { all: [command] } } },
-			proposals: { options: { requirePeerReview: false } },
-		},
-	});
-	writeFileSync(join(workspace, 'delendai.config.json'), config, 'utf8');
-	mkdirSync(join(workspace, 'tools/scripts/quality'), { recursive: true });
-	writeFileSync(
-		join(workspace, 'tools/scripts/quality/run-quality.script.ts'),
-		`const ok = ${command === 'true'};\nconsole.log(JSON.stringify({ok, severity: ok ? 'ok' : 'error', findings: ok ? [] : ['close: command failed'], summary: {ok, scopes: 1}}));\nprocess.exit(ok ? 0 : 1);\n`,
-		'utf8',
-	);
-	// `close_slice`'s quality gate (`runCloseSliceQualityGate`) shells
-	// `bun run validate --json` in the workspace and parses the structured
-	// output — it does NOT read `plugins.quality.options.scopes`, which
-	// governs the `quality_run_all` TOOL asserted separately below.
-	//
-	// Without this script the gate failed with `Script not found
-	// "validate"`. That made the passing case red, and — worse — made the
-	// FAILING case green for the wrong reason: the slice stayed pending
-	// because the command was missing, so that assertion would have held
-	// with no quality gate wired at all.
-	writeFileSync(
-		join(workspace, 'package.json'),
-		JSON.stringify(
-			{
-				name: 'proposals-quality-e2e',
-				private: true,
-				scripts: {
-					validate: 'bun tools/scripts/quality/run-quality.script.ts',
-				},
-			},
-			null,
-			2,
-		),
-		'utf8',
-	);
-	const args = parseCliArgs(
-		[
-			'--plugins=proposals,quality',
-			`--workspace=${workspace}`,
-			'--surface=native',
-		],
-		workspace,
-	);
-	const { config: hostConfig } = await assembleCliConfig(args, {
-		import: async (specifier) => ({
-			default: specifier.includes('quality')
-				? qualityPlugin
-				: proposalsPlugin,
-		}),
-	});
-	const project = await createMcpProject(hostConfig);
-	const [clientTransport, serverTransport] =
-		InMemoryTransport.createLinkedPair();
-	await project.server.connect(serverTransport);
-	const client = new Client(
-		{ name: 'quality-close-slice-e2e', version: '0.0.0' },
-		{ capabilities: {} },
-	);
-	await client.connect(clientTransport);
-	return { workspace, client, project };
-};
-
-const seedSlice = (workspace: string, id: string): string => {
-	const proposalDir = join(workspace, 'docs/delendai/proposals/ready');
-	mkdirSync(proposalDir, { recursive: true });
-	const proposalPath = join(proposalDir, `${id}-quality.md`);
-	writeFileSync(
-		proposalPath,
-		`---\nid: ${id}\nstatus: ready\ntype: proposal\ntrack: plugins/proposals+tests\ndate: 2026-08-31\nkind: feat\ntitle: quality gate\n---\n\n# ${id} — quality gate\n\n## goal\n\nExercise the quality gate.\n\n## Slices\n\n- global_gate: none\n\n### S1 — quality gate\n- **Status**: pending\n- **Files**: \`src/quality.ts\`\n- **Gate**: none\n`,
-		'utf8',
-	);
-	return proposalPath;
-};
-
-const findProposalPath = (workspace: string, id: string): string => {
-	const proposalsDir = join(workspace, 'docs/delendai/proposals');
-	const entries = readdirSync(proposalsDir, { recursive: true }).filter(
-		(entry): entry is string => typeof entry === 'string',
-	);
-	const relativePath = entries.find(
-		(entry) =>
-			entry.endsWith('.md') &&
-			readFileSync(join(proposalsDir, entry), 'utf8').includes(
-				`id: ${id}`,
-			),
-	);
-	if (relativePath !== undefined) return join(proposalsDir, relativePath);
-	throw new Error(`proposal ${id} was not found under ${proposalsDir}`);
-};
+import {
+	createQualityServer,
+	findProposalPath,
+	seedSlice,
+	syncProposals,
+	workspaces,
+} from './quality-close-slice.harness';
 
 afterEach(async () => {
 	for (const workspace of workspaces.splice(0))
@@ -253,4 +135,67 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			await project.server.close();
 		}
 	});
+
+	it('answers pending with a handle while a slow gate runs, then closes on resume', async () => {
+		const { workspace, client, project } = await createQualityServer(
+			'true',
+			{ validate: 'sleep 2', closeGateWaitMs: 100 },
+		);
+		try {
+			seedSlice(workspace, 'f04202');
+			expect((await syncProposals(client)).isError).toBeFalsy();
+			const claim = await client.callTool({
+				name: 'delendai_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f04202-S1',
+					agent: 'agent-quality-e2e',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(claim.isError).toBeFalsy();
+			const close = () =>
+				client.callTool({
+					name: 'delendai_proposals_close_slice',
+					arguments: {
+						proposalId: 'f04202',
+						sliceId: 'S1',
+						force: true,
+					},
+				});
+
+			const first = await close();
+
+			expect(first.structuredContent).toMatchObject({
+				ok: false,
+				closed: false,
+				blockerType: 'gate-pending',
+				gate: { state: 'pending' },
+			});
+			expect(
+				readFileSync(
+					await findProposalPath(workspace, 'f04202'),
+					'utf8',
+				),
+			).toContain('- **Status**: pending');
+
+			let resumed = first;
+			await waitUntil(
+				'the resumed gate finishes and close_slice stops answering pending',
+				async () => {
+					resumed = await close();
+					return resumed.isError !== true;
+				},
+				{ timeoutMs: 20_000, intervalMs: 250 },
+			);
+
+			expect(resumed.structuredContent).toMatchObject({
+				ok: true,
+				closed: true,
+			});
+		} finally {
+			await client.close();
+			await project.server.close();
+		}
+	}, 30_000);
 });

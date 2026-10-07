@@ -17,14 +17,16 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import {
-	CAPABILITIES,
-	createCapabilityGate,
 	isCapability,
 	parseCapability,
-	parseCapabilityList,
-	resolveCapabilityAccess,
 	splitCapability,
 } from '@delendai/core/public';
+import {
+	createCapabilityGate,
+	resolveCapabilityAccess,
+} from '@delendai/core/lib/capabilities/inject';
+import { parseCapabilityList } from '@delendai/core/lib/capabilities/schema';
+import { CAPABILITIES } from '@delendai/core/cli';
 
 import { createCapabilityContext } from '../../../../src/lib/capabilities/inject';
 import type {
@@ -224,8 +226,9 @@ describe('f00188 — capability gate adversarial (Track F)', () => {
 			fs: { read: () => 'ok' },
 		});
 		expectTypeOf(ctx.fs.read).toBeFunction();
-		// @ts-expect-error — git is not part of CapabilitiesToCtx<'fs:read'>
-		ctx.git.write;
+		// git is not part of CapabilitiesToCtx<'fs:read'>: asserted on the
+		// type, not by a bare expression the scanner reads as dead code.
+		expectTypeOf(ctx).not.toHaveProperty('git');
 	});
 
 	it('type-level: CapabilitiesToCtx maps a multi-group union to its shape', () => {
@@ -235,7 +238,7 @@ describe('f00188 — capability gate adversarial (Track F)', () => {
 		});
 		expectTypeOf(ctx.fs.read).toBeFunction();
 		expectTypeOf(ctx.git.write).toBeFunction();
-		// @ts-expect-error — git.read is not declared, only git.write
-		ctx.git.read;
+		// git.read is not declared, only git.write
+		expectTypeOf(ctx.git).not.toHaveProperty('read');
 	});
 });

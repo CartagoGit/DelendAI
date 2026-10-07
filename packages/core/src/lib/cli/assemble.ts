@@ -24,7 +24,8 @@ import {
 } from '../plugins/load-config-file';
 import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
 import { createStaleRuntimeWatch } from '../development-policy/stale-runtime-advisory';
-import { resolveDevelopmentPolicy } from '../development-policy/resolve';
+import { resolveEffectivePolicy } from '../development-policy/effective-policy';
+import { legacyFieldsOf } from '../work-units/development-policy.service';
 import {
 	validateDevelopmentPolicy,
 	validatePolicyAlignment,
@@ -339,17 +340,6 @@ export const assembleCliConfig = async (
 	const fsAuthorizedRoots = (
 		fileConfig.filesystem?.authorizedRoots ?? []
 	).map((root) => resolve(workspace.root, root));
-	// The LEGACY agent_worktree gate, and only that. Resolution order is
-	// host CLI flag > config file > `false` default. The CLI value is
-	// already a tri-state boolean (`undefined` when the flag is absent),
-	// so a simple nullish cascade gives the documented precedence with a
-	// concrete boolean result that is never `undefined`.
-	//
-	// This is an INPUT to the policy below, never the answer. See the
-	// projection after the resolution for why that distinction matters.
-	const legacyAgentWorktree =
-		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
-
 	// The canonical development policy. Resolved once, here, so every
 	// consumer reads one answer instead of re-deriving it from the raw
 	// config. `agentWorktree` above is now an INPUT to this resolution
@@ -357,22 +347,26 @@ export const assembleCliConfig = async (
 	// exists the compatibility layer maps it (and the commit-policy
 	// options) onto the equivalent policy, so a project that upgrades
 	// without editing its config keeps its historical behaviour.
-	const developmentPolicy = resolveDevelopmentPolicy({
+	// Through the SAME resolver `delendai work` and the guard use, so the
+	// instructions this server serves describe the model they enforce. The
+	// legacy field is passed as written (CLI flag over config file, and
+	// absent when neither names it): a `false` default here made every
+	// project without a `development` block look like one that had
+	// configured the legacy model, so the default profile was never
+	// reachable from this entry point.
+	const developmentPolicy = resolveEffectivePolicy({
 		...(fileConfig.development !== undefined
 			? { development: fileConfig.development }
 			: {}),
-		legacy: {
-			agentWorktree: legacyAgentWorktree,
-			...(pluginConfigFor(fileConfig, 'commit-policy')?.options !==
-			undefined
-				? {
-						commitPolicyOptions: pluginConfigFor(
-							fileConfig,
-							'commit-policy',
-						)?.options as Record<string, unknown>,
-					}
-				: {}),
-		},
+		// The same extraction `delendai work` and the guard use, so the
+		// legacy fields cannot be read two ways.
+		legacy: legacyFieldsOf({
+			...fileConfig,
+			...(args.agentWorktree === undefined
+				? {}
+				: { agentWorktree: args.agentWorktree }),
+		}),
+		workspaceRoot: workspace.root,
 	});
 
 	// Whether agents get worktrees is a WORKSPACE question, and the
@@ -393,15 +387,28 @@ export const assembleCliConfig = async (
 	// is the shape of every bug this file guards against: `#105` added
 	// the conflict detector and wired only half of it, so a config that
 	// said the opposite of its own profile still started cleanly.
-	const policyViolations = [
+	const allPolicyFindings = [
 		...validateDevelopmentPolicy(developmentPolicy),
 		...validatePolicyAlignment(
 			developmentPolicy,
 			pluginConfigFor(fileConfig, 'commit-policy')?.options as
 				| Record<string, unknown>
 				| undefined,
+			pluginConfigFor(fileConfig, 'git')?.options as
+				| Record<string, unknown>
+				| undefined,
 		),
 	];
+	const policyViolations = allPolicyFindings.filter(
+		(finding) => finding.severity !== 'warning',
+	);
+	const policyAdvisoryWarnings = allPolicyFindings
+		.filter((finding) => finding.severity === 'warning')
+		.map((finding) => ({
+			severity: 'warning' as const,
+			code: finding.rule,
+			message: `${finding.path}: ${finding.message} ${finding.remedy}`,
+		}));
 	if (policyViolations.length > 0) {
 		const detail = policyViolations
 			.map(
@@ -781,6 +788,7 @@ export const assembleCliConfig = async (
 		prompts,
 		resources,
 		cacheReconcile,
+		developmentPolicy,
 	});
 	const runtimeEventSink = createJsonlRuntimeEventSink(
 		runtimeEventsPath(cacheDirContained.abs),
@@ -989,7 +997,10 @@ export const assembleCliConfig = async (
 	};
 
 	const config: IDelendaiHostConfig = {
-		instructions: agentPolicyInstructions(fileConfig.core?.agentPolicy),
+		instructions: agentPolicyInstructions(
+			fileConfig.core?.agentPolicy,
+			developmentPolicy,
+		),
 		onClientInitialized: (client) => {
 			handshakeClientName = client.name;
 		},
@@ -1286,6 +1297,7 @@ export const assembleCliConfig = async (
 							},
 						]
 					: []),
+				...policyAdvisoryWarnings,
 				...extraWarnings,
 			],
 			diagnostics: {

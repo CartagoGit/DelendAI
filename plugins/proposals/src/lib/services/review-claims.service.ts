@@ -17,7 +17,7 @@ import { compileWorkRefParser } from '@delendai/core/public';
 
 import {
 	REVIEW_BATCH_ID,
-	REVIEW_CLAIM_TRAILER,
+	CLAIM_TRAILERS_FORMAT,
 } from '../contracts/constants/review-claims.constant';
 import type { IReviewClaimHolder } from '../contracts/interfaces/review-claim-holder.interface';
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
@@ -110,6 +110,8 @@ export const reviewClaims = async (
 	run: IGitRunner,
 	shape: IWorkRefShape,
 	integration?: string,
+	/** Whether the unit at a ref still holds what it claimed; all do when absent. */
+	holding?: (ref: string) => boolean,
 ): Promise<ReadonlyMap<string, readonly IReviewClaimHolder[]>> => {
 	const claims = new Map<string, IReviewClaimHolder[]>();
 	const parser = compileWorkRefParser(
@@ -136,6 +138,8 @@ export const reviewClaims = async (
 		// A unit checked out in a worktree is live even before its first
 		// commit, when its tip is still the integration branch's.
 		if (worktree.length === 0 && ended.has(name)) continue;
+		// A unit whose holder has gone quiet holds nothing; its work stays.
+		if (holding !== undefined && !holding(name)) continue;
 		const ref = workRefFor(name, work, publication);
 		if (ref === undefined) continue;
 		const identity = parser.parse(ref);
@@ -165,6 +169,31 @@ export const reviewClaims = async (
 };
 
 /**
+ * The proposals a unit still holds, from its commits newest first: each
+ * line is one commit's `Claims` ids, a tab, and its `Releases` ids. The
+ * newest word about a proposal decides, so a claim given back and taken
+ * again is held.
+ */
+export const heldFromTrailers = (log: string): readonly string[] => {
+	const decided = new Map<string, boolean>();
+	const idsOf = (field: string): readonly string[] =>
+		field
+			.split(',')
+			.map((id) => id.trim().toLowerCase())
+			.filter((id) => /^[a-z]\d{5}$/u.test(id));
+	for (const line of log.split('\n')) {
+		const [claims = '', releases = ''] = line.split('\t');
+		for (const id of idsOf(releases)) {
+			if (!decided.has(id)) decided.set(id, false);
+		}
+		for (const id of idsOf(claims)) {
+			if (!decided.has(id)) decided.set(id, true);
+		}
+	}
+	return [...decided].filter(([, held]) => held).map(([id]) => id);
+};
+
+/**
  * The proposals a review batch has claimed: the `Claims:` trailers of the
  * commits it carries beyond the integration branch. A batch reviews many
  * proposals on one branch (f00644), so its name cannot say which; its
@@ -179,15 +208,6 @@ const batchClaims = async (
 		integration === undefined || integration.length === 0
 			? ref
 			: `${integration}..${ref}`;
-	const log = await run([
-		'log',
-		`--format=%(trailers:key=${REVIEW_CLAIM_TRAILER},valueonly)`,
-		range,
-	]);
-	if (!log.ok) return [];
-	return log.output
-		.split('\n')
-		.flatMap((line) => line.split(','))
-		.map((id) => id.trim())
-		.filter((id) => /^[a-z]\d{5}$/iu.test(id));
+	const log = await run(['log', CLAIM_TRAILERS_FORMAT, range]);
+	return log.ok ? heldFromTrailers(log.output) : [];
 };

@@ -3,10 +3,8 @@ import type {
 	ClientCapabilities,
 	Implementation,
 } from '@modelcontextprotocol/sdk/types.js';
-import {
-	type IMcpToolSurfaceMode,
-	type IPresetKind,
-} from '@delendai/core/public';
+import { type IPresetKind } from '@delendai/core/public';
+import { type IMcpToolSurfaceMode } from '@delendai/core/cli';
 import {
 	jsonBytes,
 	type IToolComponentBytes,

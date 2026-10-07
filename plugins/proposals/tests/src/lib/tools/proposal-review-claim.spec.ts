@@ -116,18 +116,134 @@ describe('a verdict in a review unit', () => {
 		).toBe(before);
 	});
 
-	it('claims nothing outside a review unit', async () => {
+	it('claims nothing when the review rules refuse the verdict', async () => {
+		// The reviewer that asked for changes may not judge the fix. Claimed
+		// before that rule ran, the proposal stayed held by the one reviewer
+		// the rule had just turned away.
+		const commit = repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		repo.proposalInReview(
+			`${SLICE_S1('review')}- review-state: in_review
+- review-implementer: agent-a
+- review-log: requested_changes by agent-b — a test is missing
+- review-log: resubmitted by agent-a — the test is there
+`,
+		);
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
+
+		const refused = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: commit.slice(0, 9) },
+		});
+
+		expect(refused.isError).toBe(true);
+		expect(refused.text).toContain(
+			'different agent than the previous reviewer',
+		);
+		expect(claimsOnHead()).toEqual([]);
+	});
+
+	it('is signed the way its unit names the agent, whatever case the call used', async () => {
+		const commit = repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
 		repo.proposalInReview(SLICE_S1('review'));
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
+
+		const approved = await repo.review({
+			action: 'approve',
+			agent: 'Agent-B',
+			evidence: { ...EVIDENCE, commitHash: commit.slice(0, 9) },
+		});
+
+		expect(approved.isError).toBe(false);
+		// The last approval closes it: read it wherever it was filed.
+		const doc = repo.git(
+			'grep',
+			'--untracked',
+			'-h',
+			'review-',
+			'--',
+			'docs/delendai/proposals',
+		);
+		expect(doc).toContain('approved by agent-b');
+		expect(doc).not.toContain('Agent-B');
+	});
+
+	it('is refused when signed by another agent than the one its unit is named after', async () => {
+		repo.proposalInReview(SLICE_S1('review'));
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
 		const head = repo.git('rev-parse', 'HEAD');
 
-		const answered = await repo.review({
+		const refused = await repo.review({
+			action: 'request_changes',
+			agent: 'agent-c',
+			note: 'the acceptance is not met',
+		});
+
+		expect(refused.isError).toBe(true);
+		expect(refused.text).toContain('not the reviewer of this review unit');
+		expect(repo.git('rev-parse', 'HEAD')).toBe(head);
+	});
+
+	it('is refused outside a review unit, and writes nothing', async () => {
+		repo.proposalInReview(SLICE_S1('review'));
+		repo.git('switch', '-q', '-c', 'somewhere-else');
+		const head = repo.git('rev-parse', 'HEAD');
+		const file = join(
+			repo.root,
+			'docs/delendai/proposals/review/x00001-work.md',
+		);
+		const before = readFileSync(file, 'utf8');
+
+		const refused = await repo.review({
 			action: 'request_changes',
 			agent: 'agent-b',
 			note: 'the acceptance is not met',
 		});
 
-		expect(answered.isError).toBe(false);
+		expect(refused.isError).toBe(true);
+		expect(refused.text).toContain("the reviewer's own review unit");
+		expect(refused.text).toContain('delendai review next');
 		expect(repo.git('rev-parse', 'HEAD')).toBe(head);
+		expect(readFileSync(file, 'utf8')).toBe(before);
+	});
+});
+
+describe('the language of a verdict', () => {
+	it('is the one the project declared, and a verdict in another writes nothing', async () => {
+		repo.proposalInReview(SLICE_S1('review'));
+		const file = join(
+			repo.root,
+			'docs/delendai/proposals/review/x00001-work.md',
+		);
+		const before = readFileSync(file, 'utf8');
+
+		const refused = await repo.review(
+			{
+				action: 'request_changes',
+				agent: 'agent-b',
+				note: 'El gate declarado no existe, falta el script en package.json',
+			},
+			{ documentationLanguage: 'en' },
+		);
+		expect(refused.isError).toBe(true);
+		expect(refused.text).toContain('English');
+		expect(readFileSync(file, 'utf8')).toBe(before);
+
+		const accepted = await repo.review(
+			{
+				action: 'request_changes',
+				agent: 'agent-b',
+				note: 'The declared gate does not exist: the script is missing.',
+			},
+			{ documentationLanguage: 'en' },
+		);
+		expect(accepted.isError).toBe(false);
 	});
 });
 

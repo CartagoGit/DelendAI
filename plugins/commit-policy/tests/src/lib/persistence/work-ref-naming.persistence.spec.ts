@@ -89,4 +89,35 @@ describe('checkpoint work ref naming', () => {
 			'codex-mcp-client/implement/x00056-S1-g1/tetris-mock-with-occupied-slots',
 		);
 	});
+
+	it('checkpoints nothing for a server whose agent was never declared', async () => {
+		const repo = await repoWithRemote();
+		const wip = await bindWipCheckpointPort(repo.cwd, UNANCHORED);
+		if (wip === undefined) throw new Error('wip engine did not bind');
+		const persistence = createPolicyPersistence({
+			policy: expandProfile('shared-checkout-merge'),
+			run: createWriteGitRunner(repo.cwd),
+			wip,
+			agentId: () => 'client-visual-studio-code',
+			agentDeclared: () => false,
+		});
+		if (persistence === undefined) throw new Error('expected a port');
+
+		const outcome = await persistence.persist({
+			triggerKind: 'slice',
+			proposalId: 'x00001',
+			sliceId: 'S1',
+			message: 'feat(x00001): commit via slice S1',
+			claimedPaths: ['a.txt'],
+			eventId: 'event-1',
+		});
+
+		expect(outcome).toMatchObject({
+			handled: true,
+			status: 'refused',
+			code: 'WIP_NO_AGENT_IDENTITY',
+		});
+		const refs = await repo.git('for-each-ref', 'refs/heads/delendai');
+		expect(refs.trim()).toBe('');
+	});
 });

@@ -5,22 +5,23 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 112
+- Findings: 95
 - Unclassified candidates: 0
 - Missing expected findings: 0
-- Resolved by slices: 24
+- Resolved by slices: 41
 - Regressions (resolved rule still present): 0
 - import: 1
 - path: 5
 - plugin-name: 11
-- type: 67
+- type: 56
 - message: 19
-- index-access: 9
+- index-access: 3
 
 ## Findings
 
 | File | Symbol or literal | Category | Proposed destination | Occurrences | Notes |
 | --- | --- | --- | --- | ---: | --- |
+| packages/core/src/cli.ts | ACTIONABLE_PROPOSAL_STATUSES | type | contract | 1 | La entrada cli reexporta el vocabulario del workflow con nombre proposals. |
 | packages/core/src/contracts/index.ts | IProposalSummary | type | contract | 1 | El barrel de contracts reexporta el mismo DTO nominal que core/public ya expone. `lint:no-core-public-types-in-client` prohibe que packages/client tome tipos de core/public, y hasta ahora nombraba una alternativa que no existia: sin esta reexportacion la regla no tenia destino alcanzable. Mismo acoplamiento que la fila de public/index.ts, no uno nuevo. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | pluginIds: proposals, agent-orchestrator | plugin-name | composition | 1 | La etapa agents del flujo de adopcion activa el plugin proposals por composicion declarativa. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | title: proposals+agents | message | composition | 1 | La etapa agents del flujo de adopcion enumera el workflow de proposals en su titulo visible. |
@@ -66,22 +67,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries compat via workflow state | type | intentional-compat | 1 | El resultado del ensamblado conserva proposalSummaries como compatibilidad de borde hacia la API publica. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries value | type | composition | 1 | La composicion sigue propagando proposalSummaries a la capa superior. |
 | packages/core/src/lib/cli/assemble.ts | proposalSummaries into CLI assembly | type | composition | 2 | El ensamblado CLI sigue transportando proposalSummaries como parte del estado. |
-| packages/core/src/lib/cli/read-proposals-index.ts | Array.isArray(parsed.proposals) | index-access | adapter | 1 | La validacion estructural sigue mirando directamente la clave proposals. |
-| packages/core/src/lib/cli/read-proposals-index.ts | IProposalIndexFile | type | adapter | 1 | El contenedor del indice sigue definido en el core. |
-| packages/core/src/lib/cli/read-proposals-index.ts | IProposalIndexFileEntry | type | adapter | 1 | El schema concreto del indice pertenece al adaptador de proposals. |
-| packages/core/src/lib/cli/read-proposals-index.ts | IProposalIndexFileEntry => typeof entry.id | type | adapter | 1 | El predicado de tipo sigue anclado al entry del indice de proposals. |
-| packages/core/src/lib/cli/read-proposals-index.ts | IProposalSummary import | type | contract | 1 | La forma publica del resumen de workflow aun esta nombrada como proposal. |
-| packages/core/src/lib/cli/read-proposals-index.ts | IProposalSummary['status'] | type | contract | 1 | La salida del normalizador sigue expresada con el tipo nominal de proposal. |
-| packages/core/src/lib/cli/read-proposals-index.ts | JSON.parse(raw) as IProposalIndexFile | type | adapter | 1 | La deserializacion del indice concreto sigue ocurriendo en el core. |
-| packages/core/src/lib/cli/read-proposals-index.ts | normalizeProposalStatus | type | adapter | 1 | La normalizacion del estado del workflow debe venir del adaptador. |
-| packages/core/src/lib/cli/read-proposals-index.ts | parsed: IProposalIndexFile | type | adapter | 1 | El core sigue tipando internamente el payload del indice del plugin. |
-| packages/core/src/lib/cli/read-proposals-index.ts | parsed.proposals | index-access | adapter | 1 | La lectura del array de proposals sigue acoplada a la forma interna del indice. |
-| packages/core/src/lib/cli/read-proposals-index.ts | Promise<IProposalSummary[]> | type | contract | 1 | La firma del lector devuelve todavia el DTO nominal de proposals. |
-| packages/core/src/lib/cli/read-proposals-index.ts | proposalKindFromId | type | adapter | 1 | La semantica de ids de proposals no deberia residir en el core. |
-| packages/core/src/lib/cli/read-proposals-index.ts | proposals[] | index-access | adapter | 1 | El payload cacheado del plugin sigue interpretado directamente por el core. |
-| packages/core/src/lib/cli/read-proposals-index.ts | proposals/index.json | index-access | adapter | 1 | La ruta del indice cacheado es propia del plugin. |
-| packages/core/src/lib/cli/read-proposals-index.ts | readProposalsIndex exported | index-access | adapter | 1 | El adaptador del indice sigue residiendo fisicamente dentro del core. |
-| packages/core/src/lib/cli/read-proposals-index.ts | Required<Pick<IProposalIndexFileEntry, 'id'>> | type | adapter | 1 | El narrowing del payload sigue nombrando el schema concreto del plugin. |
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | IProposalSummary cast | type | intentional-compat | 1 | La proyeccion estructural usa el tipo del catalogo solo para validar la forma. |
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | IProposalSummary import | import | intentional-compat | 1 | El ensamblador conserva el tipo del catalogo como compatibilidad del estado ensamblado. |
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | IProposalSummary[] return | type | intentional-compat | 1 | La firma de extraccion devuelve summaries del catalogo por compatibilidad. |
@@ -128,11 +113,9 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/work-units/publication-target.service.ts | '/proposals/in-progress/' | path | adapter | 1 | The unit-of-work engine (x00735) asks whether a proposal is still in progress by its folder; the status belongs behind an adapter the plugin provides. |
 | packages/core/src/lib/work-units/publication-target.service.ts | file.includes('/proposals/') | path | adapter | 1 | The unit-of-work engine (x00735) finds the proposal a unit belongs to by its path; the proposals layout belongs behind an adapter the plugin provides. |
 | packages/core/src/public/index.ts | ../lib/proposals/validate-evidence.schema | path | contract | 1 | El barrel publico reexporta un schema desde un subpath proposals interno del core. |
-| packages/core/src/public/index.ts | ACTIONABLE_PROPOSAL_STATUSES | type | contract | 1 | El barrel publico reexporta el vocabulario del workflow con nombre proposals. |
 | packages/core/src/public/index.ts | IProposalSummary | type | contract | 1 | Los consumidores externos siguen importando el DTO nominal de proposals desde core/public. |
 | packages/core/src/public/index.ts | PROPOSAL_STATUS_VALUES | type | contract | 1 | La lista publica de estados usa nomenclatura proposals. |
 | packages/core/src/public/index.ts | ProposalStatus | type | contract | 1 | El estado del workflow se exporta con nombre proposals desde el barrel estable. |
-| packages/core/src/public/index.ts | readProposalsIndex | index-access | composition | 1 | Anadido el 2026-09-08 (4f6a18a62). El barrel publico exporta el LECTOR del indice, no solo vocabulario, y su unico consumidor es el propio plugin proposals: la inversion exacta que r00043 quiere eliminar. Sin resolvedBy: es acoplamiento nuevo, no deuda heredada. |
 
 ## Resolved findings
 
@@ -140,6 +123,7 @@ Acoplamientos eliminados de packages/core/src por una slice de la propuesta.
 
 | File | Symbol or literal | Category | Resolved by |
 | --- | --- | --- | --- |
+| packages/core/src/public/index.ts | readProposalsIndex | index-access | S8 |
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | proposals store managed by the delendai | message | S2 |
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | `proposals` plugin | plugin-name | S2 |
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | create_proposal | message | S2 |
@@ -162,5 +146,21 @@ Acoplamientos eliminados de packages/core/src por una slice de la propuesta.
 | packages/core/src/lib/cli/assemble-skills.ts | proposals_auto_work | message | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | do not hand-create proposals | message | S4 |
 | packages/core/src/lib/cli/assemble-core-tools.ts | bootstraps the proposals | message | S2 |
+| packages/core/src/lib/cli/read-proposals-index.ts | IProposalSummary import | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | IProposalIndexFileEntry | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | IProposalIndexFile | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | proposals[] | index-access | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | proposalKindFromId | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | normalizeProposalStatus | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | IProposalSummary['status'] | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | readProposalsIndex exported | index-access | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | Promise<IProposalSummary[]> | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | parsed: IProposalIndexFile | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | JSON.parse(raw) as IProposalIndexFile | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | proposals/index.json | index-access | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | Array.isArray(parsed.proposals) | index-access | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | parsed.proposals | index-access | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | Required<Pick<IProposalIndexFileEntry, 'id'>> | type | S8 |
+| packages/core/src/lib/cli/read-proposals-index.ts | IProposalIndexFileEntry => typeof entry.id | type | S8 |
 | packages/core/src/lib/plugins/plugin-defaults.ts | docs/handoffs | path | S2 |
 | packages/core/src/lib/api/stable-facade.ts | plugin: 'proposals' | plugin-name | S3 |

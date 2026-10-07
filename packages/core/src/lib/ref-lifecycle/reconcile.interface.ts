@@ -14,6 +14,16 @@
  */
 export const DEFAULT_ADOPTION_GRACE_SECONDS = 1800;
 
+/**
+ * How long a publication whose pull request was closed without merging
+ * stays where it is before it is retired: time for its author to reopen
+ * the request. Past it the tip is kept under the retired namespace and
+ * the branch goes, so a closed request leaves no branch on the forge.
+ */
+export const DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS = 3600;
+
+import type { IUnitStanding } from '../work-units/unit-lease.interface';
+
 /** A branch as the forge reports it. */
 export interface IObservedRef {
 	readonly name: string;
@@ -33,6 +43,12 @@ export interface IObservedRef {
 	 * pure.
 	 */
 	readonly proposalInProgress?: boolean | undefined;
+	/**
+	 * For a work ref: the verdict on its unit (owner and heartbeat). Only
+	 * a clone that holds the leases can state it; absent, a work ref is
+	 * judged as it always was.
+	 */
+	readonly standing?: IUnitStanding | undefined;
 }
 
 /** A pull request as the forge reports it, reduced to what matters here. */
@@ -40,6 +56,8 @@ export interface IObservedPullRequest {
 	readonly number: number;
 	readonly headRefName: string;
 	readonly state: 'open' | 'merged' | 'closed';
+	/** Seconds since the epoch it was closed, when the forge reports it. */
+	readonly closedAt?: number | undefined;
 }
 
 /** What a ref turned out to be. */
@@ -52,8 +70,9 @@ export const REF_ROLES = [
 	'publication-spent',
 	/**
 	 * A publication ref whose pull request was closed without merging.
-	 * Its commits may exist nowhere else, so it is kept for its author to
-	 * reopen or to end (x00697); deleting it was a loss nothing recorded.
+	 * Its commits may exist nowhere else, so it is never deleted (x00697):
+	 * it is kept for its author to reopen, and past the grace it is
+	 * retired — its tip kept under the retired namespace, its branch gone.
 	 */
 	'publication-closed',
 	/** A publication ref with no pull request at all. */
@@ -73,6 +92,16 @@ export const REF_ROLES = [
 	 * would prove it spent has not been opened yet.
 	 */
 	'work',
+	/**
+	 * A work ref whose owner is known and quiet: listed for adoption, not
+	 * for removal.
+	 */
+	'work-idle',
+	/**
+	 * A work ref whose owner is gone. Its commits may be the only copy, so
+	 * it ends through `work retire` (which keeps the tip) or `work publish`.
+	 */
+	'work-abandoned',
 	/**
 	 * A work ref whose content is already in a publication ref or the
 	 * integration branch. A work branch ends when it is published: past
@@ -108,6 +137,11 @@ export interface IReconcileOptions {
 	 * it counts as abandoned rather than in-flight.
 	 */
 	readonly adoptionGraceSeconds?: number | undefined;
+	/**
+	 * How long a publication closed without merging is left for its
+	 * author before it is retired.
+	 */
+	readonly closedRetirementGraceSeconds?: number | undefined;
 }
 
 /** What a reconcile pass concluded, split by what may be done about it. */
@@ -121,6 +155,11 @@ export interface IRefReconciliation {
 	 */
 	readonly needsAttention: readonly IRefVerdict[];
 	/**
+	 * Publications closed without merging, past the grace: retired, never
+	 * deleted — the tip is kept where `work retired` finds it.
+	 */
+	readonly retirable: readonly IRefVerdict[];
+	/**
 	 * Refs that are not yet anybody's problem: published inside the
 	 * adoption grace and still waiting for their pull request. Reported
 	 * so a pass is never silent about them, and excluded from
@@ -133,4 +172,16 @@ export interface IRefReconciliation {
 	 * never goes silent about a ref it chose not to act on.
 	 */
 	readonly active: readonly IRefVerdict[];
+	/** Work refs whose owner went quiet: another agent may take them over. */
+	readonly adoptable: readonly IRefVerdict[];
+}
+
+/** What the project's policy says about one branch's delivery. */
+export interface IBranchDeliveryVerdict {
+	/** The ref-lifecycle role the branch was given. */
+	readonly role: string;
+	/** True only when deleting or retiring the branch loses nothing. */
+	readonly delivered: boolean;
+	/** Why, in one sentence an operator can act on. */
+	readonly reason: string;
 }

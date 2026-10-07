@@ -12,11 +12,14 @@ import {
 	REVIEW_QUEUE_INPUT_SCHEMA,
 	REVIEW_QUEUE_OUTPUT_SCHEMA,
 } from '../contracts/constants/review-queue-schema.constant';
+import { queueForReviewer } from '../services/review-queue-reviewer.service';
+import { proposalsDirOfUnit } from '../services/review-unit-tree.service';
 import { compactQueue } from '../services/review-queue-view.service';
 import { buildReviewQueue } from '../services/review-queue.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
 import type { IAuthoringToolOptions } from './authoring-options';
+import { claimHolding } from '../services/claim-liveness.service';
 
 /** Proposals returned in full per call; totals always cover the backlog. */
 const DEFAULT_QUEUE_PAGE = 10;
@@ -56,14 +59,31 @@ export const buildReviewQueueRegistration = (
 				detail?: boolean | undefined;
 			}) => {
 				const scoped = scopeToCaller(options);
-				const queue = await buildReviewQueue({
+				const run = scoped.run ?? createGitRunner(scoped.workspaceRoot);
+				const built = await buildReviewQueue({
 					namespacePrefix: options.namespacePrefix,
-					proposalsDirAbs: scoped.proposalsDirAbs,
-					run: scoped.run ?? createGitRunner(scoped.workspaceRoot),
+					// The reviewer's own verdicts are in its unit, not yet here.
+					proposalsDirAbs: await proposalsDirOfUnit({
+						run,
+						workspaceRoot: scoped.workspaceRoot,
+						proposalsDirAbs: scoped.proposalsDirAbs,
+						unit: args.unit,
+					}),
+					run,
 					integration:
 						scoped.developmentPolicy?.branches.integration ??
 						'HEAD',
 					refShape: scoped.developmentPolicy?.branches,
+					// A claim holds while its holder lives (or its pack is
+					// published): a finished agent's unit holds nothing.
+					...(scoped.developmentPolicy === undefined
+						? {}
+						: {
+								holding: await claimHolding(
+									scoped.workspaceRoot,
+									scoped.developmentPolicy,
+								),
+							}),
 					proposalId: args.proposalId,
 					limit: args.limit ?? DEFAULT_QUEUE_PAGE,
 					offset: args.offset,
@@ -75,6 +95,11 @@ export const buildReviewQueueRegistration = (
 						? {}
 						: { spread: spreadFor(args.agent) }),
 				});
+				const queue = queueForReviewer(
+					built,
+					args.agent,
+					options.reviewIndependence,
+				);
 				// The list by default; the evidence for the one proposal asked
 				// for, or when asked for explicitly.
 				const view =

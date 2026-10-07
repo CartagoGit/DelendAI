@@ -43,6 +43,7 @@
 | forge | public | pr_create | forge-write, network |
 | forge | public | pr_comment | forge-write, network |
 | forge | public | issue_create | forge-write, network |
+| framework-knowledge | public | * | filesystem-read, filesystem-write |
 | git | public | status | git-read |
 | git | public | changed | git-read |
 | git | public | diff | git-read |

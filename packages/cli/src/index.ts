@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
-import { runCli as runServerCli } from '@delendai/core/public';
+import { fileURLToPath } from 'node:url';
+
+import { runCli as runServerCli, serveRefusal } from '@delendai/core/cli';
 
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
@@ -7,12 +9,20 @@ import { resolveWorkAgentId } from '@delendai/core/public';
 
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
+import type { IStaleBuild } from './contracts/interfaces/stale-build.interface';
 import { ensureMigrated } from './lib/cli/entrypoint';
+import {
+	answeredWhenStale,
+	describeStaleBuild,
+	staleBuildOf,
+} from './lib/stale-build.service';
+import { adoptionReportLines } from '@delendai/core/cli';
 import {
 	asksForHelp,
 	renderCommandHelp,
 	unknownFlagRefusal,
 } from './lib/command-flags.service';
+import { markDelendaiSession } from './lib/delendai-session.service';
 import { renderHelp } from './lib/help.service';
 import { parseCliInvocation } from './lib/parser.service';
 import { createStdioContext } from './lib/stdio-context.factory';
@@ -126,10 +136,14 @@ export const runHumanCli = async (
 	// pipeline.
 	// `guard` runs from git hooks on every commit and push: it reads git and
 	// the project's configuration only, and must never start a server.
+	// `migrate` reads and writes the workspace's files itself; the server
+	// it used to start ran the migration guard as it booted, so `migrate
+	// status` and `--dry-run` found everything already applied.
 	const isOffline =
 		command.name === 'init' ||
 		command.name === 'init:default' ||
-		command.name === 'guard';
+		command.name === 'guard' ||
+		command.name === 'migrate';
 	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
 	try {
 		// a00061: `init`/`init:default` read ONLY `ctx.cwd` to resolve
@@ -268,14 +282,32 @@ export const runEntry = async (
 	options: {
 		readonly serve?: (args: readonly string[], root: string) => unknown;
 		readonly report?: (line: string) => void;
+		/** Answers the host's handshake with the refusal; stdio by default. */
+		readonly refuse?: (refusal: string) => Promise<void>;
+		/** How far behind its sources this build is; read from disk by default. */
+		readonly staleBuild?: () => IStaleBuild | undefined;
 	} = {},
 ): Promise<number | undefined> => {
 	const serve = options.serve ?? runServerCli;
+	const refuse = options.refuse ?? serveRefusal;
 	const report =
 		options.report ??
 		((line: string): void => {
 			process.stderr.write(`${line}\n`);
 		});
+	// A build older than the sources beside it applies older rules than the
+	// checkout it works in: it answers what only reads, and refuses the rest
+	// with the command that runs the current rules.
+	const stale = (
+		options.staleBuild ??
+		(() => staleBuildOf(fileURLToPath(import.meta.url)))
+	)();
+	if (stale !== undefined && !answeredWhenStale(argv[0])) {
+		const refusal = describeStaleBuild(stale, argv);
+		report(`[delendai] ${refusal}`);
+		if (argv[0] === '__serve') await refuse(refusal).catch(() => undefined);
+		return EXIT_CODE.VALIDATION;
+	}
 	// Every project-aware entrypoint consults the legacy migration guard
 	// before loading the server and the plugins. The guard is silent on a
 	// workspace with nothing to migrate (the common case), and runs the
@@ -288,8 +320,21 @@ export const runEntry = async (
 	//
 	// `guard` runs inside git hooks on every commit and push: it must not
 	// migrate (and so write to) the workspace while git holds its locks.
-	if (argv[0] !== 'guard') await ensureMigrated(workspaceRoot);
+	// `migrate` decides itself when to apply: its `status` and `--dry-run`
+	// are how a person looks before anything changes, and the guard had
+	// already applied everything by the time they answered.
+	if (argv[0] !== 'guard' && argv[0] !== 'migrate') {
+		const migrated = await ensureMigrated(workspaceRoot);
+		// A migration that edits the project's own configuration says so.
+		for (const line of await adoptionReportLines(migrated, workspaceRoot)) {
+			report(`[delendai] ${line}`);
+		}
+	}
 	if (argv[0] === '__serve') {
+		// What the server says is kept in the workspace too, wherever the
+		// host puts its stderr, so an agent can read the boots back.
+		const { startServerLogIn } = await import('@delendai/core/cli');
+		await startServerLogIn(workspaceRoot, 'cli-serve');
 		// Report the guard a project declares; never install it. Starting
 		// a server is not consent to edit the repository it was started
 		// in — `delendai guard install` is.
@@ -327,13 +372,16 @@ export const runEntry = async (
 		// Still not awaited: serving does not return, and awaiting it would
 		// hold the entrypoint open forever.
 		void Promise.resolve(serve(argv.slice(1), workspaceRoot)).catch(
-			(error: unknown) => {
-				report(
-					`[delendai] cannot start in this workspace: ${
-						error instanceof Error ? error.message : String(error)
-					}`,
-				);
+			async (error: unknown) => {
+				const refusal = `cannot start in this workspace: ${
+					error instanceof Error ? error.message : String(error)
+				}`;
+				report(`[delendai] ${refusal}`);
 				process.exitCode = EXIT_CODE.VALIDATION;
+				// The host discards stderr, and a process that exits shows the
+				// person only a closed connection. Answering the handshake
+				// puts the same sentence, with its remedy, where they read it.
+				await refuse(refusal).catch(() => undefined);
 			},
 		);
 		return undefined;
@@ -342,5 +390,6 @@ export const runEntry = async (
 };
 
 if (import.meta.main) {
+	markDelendaiSession(process.argv.slice(2), process.env);
 	process.exitCode = await runEntry(process.argv.slice(2), process.cwd());
 }

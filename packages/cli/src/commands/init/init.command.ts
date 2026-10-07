@@ -33,18 +33,30 @@ import {
 	resolveHostEntryPath,
 } from '../../lib/init/host-entry-resolver.service';
 import {
-	managedPluginEnvironmentRequirements,
 	nodeDynamicImport,
 	parseConfigFile,
-	parseJsonc,
 	resolvePluginSpecifier,
 } from '@delendai/core/public';
+import {
+	managedPluginEnvironmentRequirements,
+	parseJsonc,
+} from '@delendai/core/cli';
 import {
 	buildSchemaFromRequirements,
 	checkSchema,
 	extractRequirements,
 	parseEnv,
 } from '@delendai/env/public';
+import {
+	adoptDevelopmentForInit,
+	forgePluginExclusions,
+	installGuardHooksForInit,
+} from '../../lib/init/init-development-setup.service';
+import type {
+	IInitDevelopmentSummary,
+	IInitGuardHooks,
+	IInitGuardHooksSummary,
+} from '../../contracts/interfaces/init.interface';
 import { InitAnswers } from '../../lib/init/init-answers.schema';
 import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { detectTargetProject } from '../../lib/init/init-detection.service';
@@ -464,11 +476,60 @@ export const detectAndDecorateAnswers = async (
  * `ctx.globals.extraOptions` overrides (`--options-<plugin>-<k>=<v>`)
  * are applied to the rendered config block before writing.
  */
+const summarizeGuardHooks = (
+	outcome: IInitGuardHooks,
+): IInitGuardHooksSummary => {
+	if (outcome.state === 'skipped') return outcome;
+	const unsupported = outcome.report.hooks.filter(
+		(entry) => entry.state === 'unsupported',
+	);
+	return unsupported.length === 0
+		? { state: 'installed', directory: outcome.report.dir }
+		: {
+				state: 'partial',
+				directory: outcome.report.dir,
+				reasons: [
+					...new Set(
+						unsupported.map((entry) => entry.reason ?? entry.hook),
+					),
+				],
+			};
+};
+
 export const runInitWithAnswers = async (
 	ctx: ICliCommandContext,
 	flags: IInitFlags,
-	answers: IInitAnswers,
+	requested: IInitAnswers,
 ): Promise<ICliCommandResult> => {
+	// The project's own facts decide the development model and which
+	// plugins are worth enabling. A project that already declares a model
+	// keeps it, and keeps the plugin set it chose.
+	const adoption = await adoptDevelopmentForInit(requested.workspaceRoot);
+	const answers: IInitAnswers =
+		adoption === undefined
+			? requested
+			: {
+					...requested,
+					excludedPlugins: [
+						...new Set([
+							...requested.excludedPlugins,
+							...forgePluginExclusions(
+								adoption.forge,
+								requested.extraPlugins,
+							),
+						]),
+					],
+				};
+	const development: IInitDevelopmentSummary | undefined =
+		adoption?.block === undefined
+			? undefined
+			: {
+					profile: adoption.block.profile,
+					integration: adoption.block.branches?.integration,
+					requiredChecks:
+						adoption.block.integration?.requiredChecks ?? [],
+					reasons: adoption.reasons,
+				};
 	// resolve the host entry path before rendering. When
 	// `--delendai-root` is set, it wins; otherwise we probe the
 	// consumer's workspace in priority order (node_modules, dist,
@@ -514,7 +575,12 @@ export const runInitWithAnswers = async (
 	if (!ctx.globals.json) {
 		printEnvWarningBlock(envWarningFindings);
 	}
-	const bundle = await renderInitBundle(answers, { launch });
+	const bundle = await renderInitBundle(answers, {
+		launch,
+		...(adoption?.block === undefined
+			? {}
+			: { development: { ...adoption.block } }),
+	});
 	const currentConfig = parseConfigFile(
 		await readConfigText(answers.workspaceRoot),
 	);
@@ -533,6 +599,7 @@ export const runInitWithAnswers = async (
 					kind: 'written' as const,
 				})),
 				dryRun: true,
+				...(development === undefined ? {} : { development }),
 			});
 		}
 		return {
@@ -540,6 +607,7 @@ export const runInitWithAnswers = async (
 			data: {
 				ok: true,
 				dryRun: true,
+				...(development === undefined ? {} : { development }),
 				files: [...bundle.files, ...skillProjection],
 				summary: bundle.summary,
 			},
@@ -683,6 +751,10 @@ export const runInitWithAnswers = async (
 		written.push(...skillWrites);
 	}
 
+	const guardHooks = summarizeGuardHooks(
+		await installGuardHooksForInit(answers.workspaceRoot),
+	);
+
 	if (!ctx.globals.json) {
 		// The `written` accumulator is already typed with the
 		// recap-side union (path/kind/preserved), so the recap
@@ -691,12 +763,20 @@ export const runInitWithAnswers = async (
 			answers,
 			written,
 			dryRun: false,
+			guardHooks,
+			...(development === undefined ? {} : { development }),
 		});
 	}
 
 	return {
 		code: EXIT_CODE.OK,
-		data: { ok: true, written, summary: bundle.summary },
+		data: {
+			ok: true,
+			written,
+			summary: bundle.summary,
+			guardHooks,
+			...(development === undefined ? {} : { development }),
+		},
 		// printInitHumanSummary above already covers the
 		// non-`--json` case; don't ALSO dump this as JSON.
 		suppressDefaultPrint: !ctx.globals.json,

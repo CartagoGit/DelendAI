@@ -12,6 +12,7 @@
  *   4. Staging failure leaves the active database byte-for-byte intact.
  *   5. Files the projection cannot accept are excluded AND reported.
  */
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
 	existsSync,
@@ -660,5 +661,71 @@ describe('classifyCandidate', () => {
 			'status_not_projectable',
 		);
 		expect(classifyCandidate(candidate('fix', 'ready'))).toBeNull();
+	});
+});
+
+describe('proposals_db_reconcile at a commit (q00023 S1)', () => {
+	const git = (root: string, ...args: string[]): string =>
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.name=Spec',
+				'-c',
+				'user.email=spec@example.invalid',
+				'-c',
+				'commit.gpgsign=false',
+				...args,
+			],
+			{ cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+		).trim();
+
+	it('projects what the commit holds, attributed to its SHA, whatever the worktree did since', () => {
+		const { root, proposalsDir } = makeWorkspace();
+		git(root, 'init', '-q', '-b', 'develop');
+		write(
+			proposalsDir,
+			'ready/feats/q00001-alpha.md',
+			flat('q00001', 'feat', 'ready'),
+		);
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '--no-verify', '-m', 'one proposal');
+		const sha = git(root, 'rev-parse', 'HEAD');
+
+		const first = reconcileProposalsDb({
+			workspaceRoot: root,
+			proposalsDirAbs: proposalsDir,
+			ref: 'develop',
+			now: 1_760_000_000_000,
+		});
+		// The worktree moves on: a new proposal nobody committed.
+		write(
+			proposalsDir,
+			'ready/feats/q00002-beta.md',
+			flat('q00002', 'feat', 'ready'),
+		);
+		const again = reconcileProposalsDb({
+			workspaceRoot: root,
+			proposalsDirAbs: proposalsDir,
+			ref: sha,
+			now: 1_760_000_000_000,
+		});
+		const worktree = reconcileProposalsDb({
+			workspaceRoot: root,
+			proposalsDirAbs: proposalsDir,
+			now: 1_760_000_000_000,
+		});
+
+		expect(first.status).toBe('ok');
+		expect(first.sourceCommit).toBe(sha);
+		expect(first.drift).toBeNull();
+		expect(proposalsDbReconcileOutputSchema.parse(first)).toBeTruthy();
+		expect(first.proposals).toBe(1);
+		expect(again.sourceCommit).toBe(sha);
+		expect(again.proposals).toBe(1);
+		expect(again.logicalDigest).toBe(first.logicalDigest);
+		// Without a ref the worktree is read, a person's edit included.
+		expect(worktree.proposals).toBe(2);
+		expect(worktree.logicalDigest).not.toBe(first.logicalDigest);
 	});
 });

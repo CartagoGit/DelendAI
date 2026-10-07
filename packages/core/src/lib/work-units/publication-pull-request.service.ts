@@ -20,7 +20,20 @@ import type {
 const BOOKKEEPING =
 	/^chore\(review\): claim\b|^docs\(proposals\): .*\bto review$/u;
 
-/** A title and body for the pull request, from the unit's commits. */
+/**
+ * Commits that are not the work either: the record a tool commits for
+ * itself, regenerated files, and merges. Pull requests were titled by a
+ * tool's record when it was a unit's oldest commit.
+ */
+const HOUSEKEEPING = /^(?:Merge\b|chore\((?:delendai|generated)\):)/u;
+
+const isBookkeeping = (subject: string): boolean =>
+	BOOKKEEPING.test(subject) || HOUSEKEEPING.test(subject);
+
+/** A subject that delivers something rather than tidying around it. */
+const DELIVERY =
+	/^(?:feat|fix|refactor|perf|test|docs|build|ci|revert)(?:\([^)]*\))?!?:/u;
+
 /**
  * A GitHub remote, with the host anchored: `https://github.com/…`,
  * `ssh://git@github.com/…` or `git@github.com:…`, and not a host that
@@ -29,15 +42,48 @@ const BOOKKEEPING =
 const GITHUB_REMOTE =
 	/^(?:(?:https?|ssh|git):\/\/(?:[^@/]+@)?|[^@/:]+@)github\.com[:/]/u;
 
+/** The proposal and slice a unit's branch names (`…/x00875-S23-g1/…`). */
+const UNIT_OF_BRANCH =
+	/(?:^|\/)(?<proposal>[a-z]\d{5,})-(?<slice>[^/]+?)-g\d+(?:\/|$)/iu;
+
+/**
+ * Whether `subject` cites the unit `branch` names. A unit that merged
+ * another unit's publication carries its commits too, and was titled by
+ * them when they were the oldest.
+ */
+const citesUnitOf = (subject: string, branch: string): boolean => {
+	const unit = UNIT_OF_BRANCH.exec(branch)?.groups;
+	if (unit?.proposal === undefined || unit.slice === undefined) return false;
+	const cited = subject.toLowerCase();
+	const proposal = unit.proposal.toLowerCase();
+	return unit.slice.toLowerCase() === 'all'
+		? cited.includes(proposal)
+		: cited.includes(`${proposal} ${unit.slice.toLowerCase()}`);
+};
+
 export const pullRequestText = (
 	subjects: readonly string[],
 	branch: string,
 	fallback: string,
 ): { readonly title: string; readonly body: string } => {
 	const oldestFirst = [...subjects].reverse();
+	const meaningful = oldestFirst.filter((subject) => !isBookkeeping(subject));
+	// One delivery titles its pull request; several are counted, so a
+	// pull request of ten slices is not read as its oldest commit alone.
+	// The unit's own deliveries come first: another unit's, merged in, are
+	// that unit's pull request's to name.
+	const delivering = meaningful.filter((subject) => DELIVERY.test(subject));
+	const own = delivering.filter((subject) => citesUnitOf(subject, branch));
+	const deliveries = own.length > 0 ? own : delivering;
+	const first = deliveries[0] ?? meaningful[0] ?? fallback;
 	const title =
-		oldestFirst.find((subject) => !BOOKKEEPING.test(subject)) ?? fallback;
-	const listed = oldestFirst.map((subject) => `- ${subject}`).join('\n');
+		deliveries.length > 1
+			? `${first} (+${String(deliveries.length - 1)} more)`
+			: first;
+	const listed = oldestFirst
+		.filter((subject) => !subject.startsWith('Merge '))
+		.map((subject) => `- ${subject}`)
+		.join('\n');
 	return {
 		title,
 		body: `Opened by \`delendai work publish\` for \`${branch}\`.\n\n${listed}`,
@@ -61,9 +107,14 @@ export const openPublicationPullRequest = (input: {
 	const { ports } = input;
 	const url = ports.git(['remote', 'get-url', input.remote]) ?? '';
 	if (!GITHUB_REMOTE.test(url)) {
+		// Never "open it by hand": a pull request an agent opens is a second
+		// author for one publication. The machine holding the forge
+		// credential opens it after the next merge (open-publication-prs).
+		const seen =
+			url === '' ? `its URL could not be read` : `its URL is \`${url}\``;
 		return {
 			status: 'skipped',
-			reason: `\`${input.remote}\` is not a GitHub remote; open the pull request of \`${input.branch}\` into \`${input.base}\` the way this forge does.`,
+			reason: `\`${input.remote}\` is not recognised as a GitHub remote (${seen}); \`${input.branch}\` stays published, and the machine that holds the forge credential opens its pull request into \`${input.base}\` after the next merge there, so until then it has none.`,
 		};
 	}
 	if (ports.gh(['--version']) === undefined) {
@@ -72,7 +123,7 @@ export const openPublicationPullRequest = (input: {
 			// Never "open it by hand": a pull request an agent opens is a second
 			// author for one publication. The machine holding the forge
 			// credential opens it after the next merge (open-publication-prs).
-			reason: `the \`gh\` CLI is not available here; \`${input.branch}\` stays published, and the owner machine opens its pull request into \`${input.base}\` after the next merge.`,
+			reason: `the \`gh\` CLI is not available here; \`${input.branch}\` stays published, and the machine that holds the forge credential opens its pull request into \`${input.base}\` after the next merge there, so until then it has none.`,
 		};
 	}
 	const existing = ports.gh([

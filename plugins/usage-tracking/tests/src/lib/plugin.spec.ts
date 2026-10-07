@@ -91,6 +91,20 @@ describe('usage-tracking plugin (register + hooks)', () => {
 		expect(row.responseBytes).toBe(0);
 	});
 
+	it('leaves nothing writing into its cache directory once drained', async () => {
+		// Registering starts the tmp sweep, the pricing refresh and the
+		// summary rollup without awaiting them. Removing the directory right
+		// after used to race them into ENOTEMPTY.
+		for (let round = 0; round < 5; round += 1) {
+			await plugin.register(makeCtx());
+			await drainLiveBuffers();
+			rmSync(join(dir, 'usage-tracking'), {
+				recursive: true,
+				force: true,
+			});
+		}
+	});
+
 	it('records an error outcome when the hook carries an error', async () => {
 		const reg = await plugin.register(makeCtx());
 		reg.onToolStart?.('delendai_docs_docs_read', {});

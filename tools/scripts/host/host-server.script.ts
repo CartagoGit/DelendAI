@@ -12,29 +12,32 @@ import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { runSupervised, shouldSupervise } from './host-supervisor-process';
 import {
 	assembleCliConfig,
-	createFileSystemJournal,
-	DEFAULT_MIGRATIONS,
-	ensureWorkspaceMigrated,
 	createMcpProject,
-	gracefulShutdown,
-	hasExplicitPluginSurfaceSelection,
 	parseCliArgs,
 	resolveWorkAgentId,
 } from '@delendai/core/public';
 import {
+	createFileSystemJournal,
+	DEFAULT_MIGRATIONS,
+	ensureWorkspaceMigrated,
+	gracefulShutdown,
+	hasExplicitPluginSurfaceSelection,
+} from '@delendai/core/cli';
+import {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
+import { createWriteGitRunner, REPOSITORY_SLUG } from '@delendai/core/public';
+import { createForgeCliRunner, createForgeSeam } from './forge-seam.service';
 import {
 	createStartupGovernanceSeam,
-	createWriteGitRunner,
 	renderStartupGate,
 	runStartupGate,
-	startCheckoutHydration,
 	startupGateWarnings,
-} from '@delendai/core/public';
-import type { IMigrationRunResult } from '@delendai/core/public';
+} from '@delendai/core/cli';
+import { startCheckoutHydration, startServerLogIn } from '@delendai/core/cli';
+import type { IMigrationRunResult } from '@delendai/core/cli';
 import {
 	openStartupStatePorts,
 	resolveProposalsDbPaths,
@@ -234,6 +237,9 @@ const run = async (): Promise<void> => {
 		explicitWorkspace !== undefined && explicitWorkspace !== ''
 			? explicitWorkspace
 			: process.cwd();
+	// Everything this server says from here on is kept in the workspace
+	// too, for any agent to read back.
+	await startServerLogIn(cwd, 'host-server');
 	if (explicitWorkspace === undefined || explicitWorkspace === '') {
 		process.stderr.write('[delendai] warning: using cwd as workspace\n');
 	}
@@ -334,6 +340,13 @@ const run = async (): Promise<void> => {
 					// it up from the ambient environment itself — and a
 					// forge it cannot reach yields "not read", from
 					// which nothing is inferred.
+					// The pull-request and check-run mirror reads the
+					// same forge through the same CLI session, with the
+					// last ETag, so a warm boot costs one request.
+					forge: createForgeSeam({
+						repositorySlug: REPOSITORY_SLUG,
+						run: createForgeCliRunner(config.workspace.root),
+					}),
 					governance: createStartupGovernanceSeam({
 						cwd: config.workspace.root,
 					}),
@@ -495,6 +508,13 @@ if (import.meta.main) {
 	// The process a host starts supervises a server child, which it moves
 	// onto the checkout's current code when that changes (x00756).
 	if (shouldSupervise(process.env)) {
+		// The supervisor's own lines (restarts onto new code) are kept too.
+		void startServerLogIn(
+			resolveWorkspaceFlag(process.argv.slice(2)) ??
+				process.env.DELENDAI_WORKSPACE ??
+				process.cwd(),
+			'host-supervisor',
+		);
 		runSupervised(fileURLToPath(import.meta.url), process.argv.slice(2));
 	} else {
 		run().catch(handleBootFailure);

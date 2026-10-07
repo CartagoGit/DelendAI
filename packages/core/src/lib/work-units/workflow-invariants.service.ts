@@ -28,6 +28,14 @@ import { execFileSync } from 'node:child_process';
 
 import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
 
+import {
+	hangingForgeWorkRefs,
+	spentPublicationsInvariant,
+} from './forge-work-refs.service';
+import { idleUnitsInvariant } from './idle-units.service';
+import { profileBranchesInvariant } from './profile-branches.service';
+import { strayRefsInvariant } from './stray-refs.service';
+import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import type {
@@ -90,6 +98,8 @@ export const checkWorkflowInvariants = (input: {
 	readonly remote?: string;
 	/** Judge only these scopes. Default: all of them. */
 	readonly scopes?: readonly IInvariantScope[];
+	/** Seconds since the epoch; the clock, unless a test says otherwise. */
+	readonly now?: number | undefined;
 }): IInvariantReport => {
 	const { root, policy } = input;
 	const remote = input.remote ?? 'origin';
@@ -124,7 +134,9 @@ export const checkWorkflowInvariants = (input: {
 		scope: 'checkout',
 		id: 'checkout-anchored',
 		claim: `the shared checkout is on \`${integration}\``,
-		holds: head === integration,
+		holds:
+			!policy.workspace.anchoredToIntegrationBranch ||
+			head === integration,
 		observed: head === '' ? 'detached' : head,
 		remedy: `git switch ${integration}`,
 	});
@@ -164,24 +176,31 @@ export const checkWorkflowInvariants = (input: {
 				: abandoned.length === 0
 					? `${String(localWork.length)} live, none abandoned`
 					: `${String(abandoned.length)}: ${abandoned.slice(0, 3).join(', ')}`,
-		remedy: 'publish it, or delete it once its content is proven elsewhere',
+		remedy: 'publish it (`delendai work publish`), or retire it with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
 
 	// 4. Every published ref is shaped like the work it published.
 	// Listed whole and filtered here: a `*` in an `ls-remote` pattern does
 	// not cross a path component, so `pr/*` silently matched only the flat
 	// names — the exact shape this check exists to catch.
-	const heads = lines(git(root, ['ls-remote', '--heads', remote])).map(
+	const heads = lines(git(root, ['ls-remote', '--heads', '--', remote])).map(
 		(line) => line.split('\t')[1]?.replace('refs/heads/', '') ?? '',
 	);
 	const published = heads.filter((ref) => ref.startsWith(pubPrefix));
-	// `{ns}/pr/{agent}/{proposal}-{slice}-g{n}/{topic}` — two path
-	// components after the prefix, which is exactly what a flat name
-	// lacks.
-	const misshapen = published.filter((ref) => {
-		const tail = ref.slice(pubPrefix.length);
-		return tail.split('/').length !== 3;
-	});
+	// The shape is the policy's own work-ref template, which the
+	// publication ref repeats under its prefix: the count of components
+	// is read from it, so a component added to the template (as `kind`
+	// was) cannot leave this check judging the old shape.
+	const expectedSegments = workRefTailSegments(
+		policy.branches.workRefTemplate,
+	);
+	const misshapen =
+		expectedSegments === 0
+			? []
+			: published.filter((ref) => {
+					const tail = ref.slice(pubPrefix.length);
+					return tail.split('/').length !== expectedSegments;
+				});
 	add({
 		scope: 'forge',
 		id: 'publications-canonical',
@@ -193,7 +212,7 @@ export const checkWorkflowInvariants = (input: {
 				: misshapen.length === 0
 					? `${String(published.length)} ref(s), all canonical`
 					: `${String(misshapen.length)} flat: ${misshapen.slice(0, 3).join(', ')}`,
-		remedy: 'rename on the forge, then reopen the pull request',
+		remedy: `give ${pubPrefix}<name> the agent, slice and generation segments (or delete the flat ref), then publish the unit again with \`delendai work publish\``,
 	});
 
 	// 5. Every candidate contains the integration branch.
@@ -258,10 +277,19 @@ export const checkWorkflowInvariants = (input: {
 	// 7. No work ref is still on the forge once nothing works on it:
 	// publishing ends it. A live unit's ref IS on the forge, on purpose —
 	// the server pushes it so a lost machine loses no work — and calling
-	// that broken told every agent to delete a colleague's backup.
-	const remoteWork = heads.filter(
-		(ref) => ref.startsWith(workPrefix) && !worktreeBranches.has(ref),
-	);
+	// that broken told every agent to delete a colleague's backup. So a
+	// ref hangs only when it landed or has been silent too long, which a
+	// runner with no worktree and no lease can tell as well.
+	const remoteWork = hangingForgeWorkRefs({
+		root,
+		remote,
+		integration,
+		refs: heads.filter(
+			(ref) => ref.startsWith(workPrefix) && !worktreeBranches.has(ref),
+		),
+		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
+		now: input.now,
+	});
 	add({
 		scope: 'forge',
 		id: 'no-remote-work-refs',
@@ -270,9 +298,80 @@ export const checkWorkflowInvariants = (input: {
 		observed:
 			remoteWork.length === 0
 				? 'none'
-				: `${String(remoteWork.length)} ref(s)`,
-		remedy: 'publish the unit (`delendai work publish`); delete the ref only once its commits are on the integration branch or a publication',
+				: `${String(remoteWork.length)}: ${remoteWork
+						.slice(0, 3)
+						.map((each) => `${each.ref} (${each.why})`)
+						.join(', ')}`,
+		remedy: 'publish the unit (`delendai work publish`); one that will not land is retired with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
+
+	// 8. A publication still on the forge holds something the integration
+	// branch lacks.
+	add(spentPublicationsInvariant({ root, remote, integration, published }));
+
+	// 9. The local integration branch only follows the forge's. A commit
+	// it holds that the forge lacks was made in the shared checkout: it
+	// is in no pull request, every unit entered here starts from it, and
+	// the next fast-forward refuses.
+	const ahead = lines(
+		git(root, [
+			'rev-list',
+			`${remote}/${integration}..refs/heads/${integration}`,
+		]),
+	);
+	add({
+		scope: 'checkout',
+		id: 'integration-follows-forge',
+		claim: `the local \`${integration}\` holds nothing the forge's lacks`,
+		holds: !policy.integration.requiresPullRequest || ahead.length === 0,
+		observed:
+			ahead.length === 0
+				? 'level, or behind'
+				: `${String(ahead.length)} commit(s) only here`,
+		remedy: `carry what is worth keeping into a unit (\`delendai work enter\`, then cherry-pick), then \`git reset --hard ${remote}/${integration}\` in the shared checkout`,
+	});
+
+	// 10. A unit somebody holds a worktree for holds something, or stands
+	// where the integration branch is.
+	add(
+		idleUnitsInvariant({
+			integration,
+			units: [...worktreeBranches]
+				.filter((ref) => ref.startsWith(workPrefix))
+				.map((ref) => ({
+					ref,
+					counts: git(root, [
+						'rev-list',
+						'--left-right',
+						'--count',
+						`${integration}...refs/heads/${ref}`,
+					]),
+				})),
+		}),
+	);
+
+	// 11. Nothing in the clone is nobody's.
+	add(
+		strayRefsInvariant({
+			refs: lines(git(root, ['for-each-ref', '--format=%(refname)'])),
+			remotes: lines(git(root, ['remote'])),
+			namespace: policy.branches.namespacePrefix,
+		}),
+	);
+
+	// 12. No branch is outside the profile: what an earlier one left.
+	add(
+		profileBranchesInvariant({
+			branches: lines(
+				git(root, [
+					'for-each-ref',
+					'--format=%(refname:short)',
+					'refs/heads/',
+				]),
+			),
+			policy,
+		}),
+	);
 
 	return { results, broken: results.filter((r) => !r.holds).length };
 };

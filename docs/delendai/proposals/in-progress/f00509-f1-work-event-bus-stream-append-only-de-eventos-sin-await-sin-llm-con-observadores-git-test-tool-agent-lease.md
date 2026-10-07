@@ -15,6 +15,12 @@ tags:
     - event-bus
     - state-engine
     - non-blocking
+last-transition-id: 6fbf41cd-1fb4-484c-bf52-9e63b9bfebf3
+last-correlation-id: 6fbf41cd-1fb4-484c-bf52-9e63b9bfebf3
+last-transition-from: review
+shipped-in:
+  - "a9cb8d6a4"
+  - "97320d4d7"
 ---
 
 # f00509 — F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease
@@ -39,7 +45,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - global_gate: type
 
 ### S1 — Paquete `packages/state-telemetry` + tabla `work_events` (SQLite + NDJSON fallback)
-- **Status**: done
+- **Status**: in-progress
 - **Shipped-In**: 27c6cf021 feat(state-telemetry): scaffold work event bus
 - **Files**: `packages/state-telemetry/package.json` (sin entrada de subpath público: la declaraba apuntando a un barrel que esta slice no crea, y `lint:tsconfig-paths-coverage` la rechaza con razón — un subpath que no resuelve a nada. F2-S5, que es la dueña del barrel, añade export y barrel juntos), `packages/state-telemetry/tsconfig.json`, `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`
 - **Gate**: lint
@@ -50,55 +56,78 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada."
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` corre en CI y devuelve `0 violations`."
   - "F1-S1 NO crea `tools/scripts/lint/state-telemetry-purity.script.ts`; lo introduce F2-S1 (única slice responsable). Esta slice se limita al bus + tabla + tests, dejando la lint para cuando exista contenido que lintar."
+- Two-process test: `work-event-store.spec.ts` spawns two `bun` writers that wait for each other, open one store and append 200 events each at once; it asserts both exit 0, the count is 400, every id is distinct and each writer's events are all present in order. It exposed that opening the store could fail with SQLITE_BUSY, so `busy_timeout` is now set before the WAL switch and the boot statements retry on a busy file.
 - review-state: in_review
-- review-implementer: Persia
+- review-implementer: claude-sonnet-5-5
+- review-log: requested_changes by claude-opus-5-5 — Every other criterion holds (work-event-store.spec: the q00020 table, the config switch with NDJSON when absent or malformed, no failure at startup; the purity lint now runs in lint:architecture). Missing: the criterion 'two concurrent writes from different processes produce no duplicate rows' has no test; 'keeps the autoincrement id monotonic across closes' writes from one process in sequence. To approve: a bun-owned spec that spawns two processes appending to one store at once and asserts every id is distinct and every event is present.
+
 ### S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
-- **Status**: pending
+- **Status**: done
 - **Blocked by**: a consumer. Nothing in production reads `state-telemetry` events yet (f00510 is pending). Emitting them first is work nobody can see. The write boundary exists: every `caller-checkout` write passes `bindWriteRoot` (core), which is where a `git_change` would hook.
 - **DependsOn**: [F1-S1]
-- **Files**: `packages/state-telemetry/src/lib/observers/git-observer.ts`, `packages/state-telemetry/src/lib/observers/git-observer.spec.ts`, `packages/state-telemetry/src/lib/observers/index.ts`
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/observers/git-observer.service.ts`, `packages/state-telemetry/src/lib/observers/git-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/git-observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/git-observer.constant.ts`
+- **Gate**: `bunx vitest run --root packages/state-telemetry src/lib/observers`
+- shipped: `GitObserver` (`notify(trigger)` is fire-and-forget, one run in flight, requests in between fold into one repetition, `git` spawned asynchronously and read-only, killed at 250 ms with `git_change_stale`). A write observes `git status --porcelain` + `git diff --stat HEAD`; a commit observes `git show --name-only/--stat HEAD`. `payload_hash` is the sha256 of `{trigger, branch, paths, diffStat}`. A failing git or a directory that is not a repository emits nothing and never throws. It appends to any sink with the facade's `append` shape. Not wired into `bindWriteRoot` yet: that waits for a consumer (the Blocked-by note), so wiring adds no behaviour to the hook for other consumers.
 - acceptance:
   - "`GitObserver` ingiere `git status --porcelain` cada vez que el agente hace `write_file` o ejecuta `git commit`; emite eventos `kind: 'git_change'` con `payload_hash` del `git diff --stat`."
   - "No bloquea al agente ni al servidor: lanza `git` con `spawn` asíncrono que la herramienta nunca espera (fire-and-forget), con como mucho una ejecución en vuelo (las peticiones que llegan mientras tanto se funden en una sola repetición al terminar), y si pasan 250 ms mata el proceso y emite `kind: 'git_change_stale'`. Corregido el 2026-09-24: la versión anterior decía `spawnSync` con `timeout: 250ms` y lo llamaba no bloqueante por no hacer `await`; `spawnSync` detiene el event loop de todo el servidor durante esos 250 ms en cada escritura."
   - "Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso."
   - "Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`)."
+- shipped-in: `a9cb8d6a4b9b`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at a9cb8d6a4, validate exit 0, tests 103/103 — Delivered by #779. state-telemetry vitest 103/103 and the bun-owned store spec 9/9 pass.
 
 ### S3 — `TestObserver` — enganche a `bun test` / `vitest` (start, finish, failure_hash)
-- **Status**: pending
-- **Blocked by**: a consumer (see S2). The "tool boundary" is `withIncidentLogging` / `bindWriteRoot` in core; there is no `preExec`/`postExec` hook by that name.
+- **Status**: done
+- **Blocked by**: none. The original hook points do not exist (no `preExec` hook, no `IMcpHostSession.events`, the lock engine emits nothing), so this observer is a pure component fed by its consumer; wiring it belongs to f00510.
 - **DependsOn**: [F1-S1]
-- **Files**: `packages/state-telemetry/src/lib/observers/test-observer.ts`, `packages/state-telemetry/src/lib/observers/test-observer.spec.ts`
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/observers/test-observer.service.ts`, `packages/state-telemetry/src/lib/observers/test-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/observer-emitter.service.ts`, `packages/state-telemetry/src/lib/observers/failure-normalizer.helper.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/observer.constant.ts`
+- **Gate**: `bunx vitest run --root packages/state-telemetry src/lib/observers`
 - acceptance:
-  - "`TestObserver` envuelve `bun test` y `vitest run` con un wrapper que emite `kind: 'test_started'` antes y `kind: 'test_finished'` después; el payload incluye `passed`, `failed`, `failure_hash` (sha256 del primer failure path + mensaje normalizado)."
-  - "No añade `await` al cuerpo del agente: la envoltura es un `preExec` / `postExec` en el boundary de la herramienta, no en la herramienta misma."
-  - "El `failure_hash` es estable entre dos ejecuciones que fallan por la misma causa (verificar con fixture `tests/fixtures/test-failure-snapshot.spec.ts`)."
-  - "Una ejecución sin tests no emite `test_started`/`test_finished` espurios (degradación silenciosa, no error)."
+  - "`TestObserver.started(run)` only remembers the run; `finished(run, { passed, failed, firstFailure? })` emits `test_started` (stamped with the start time) and then `test_finished`, each carrying only a sha256 `payload_hash` of a canonical JSON projection."
+  - "`failureHash(firstFailure)` is the sha256 of the path plus the normalized message (ANSI stripped, absolute paths made relative, durations, timestamps and line:col numbers removed, whitespace collapsed), so two runs failing for the same cause hash equal; the normalizer is shared with the tool observer."
+  - "A run with zero tests (passed + failed = 0) emits neither event, because `started` defers everything to `finished`."
+  - "The observer is pure and fire-and-forget: it spawns and hooks nothing, never awaits in the caller and never throws, even when the sink rejects."
+- shipped-in: `c446c1602e8e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ### S4 — `ToolObserver` — observador del MCP request log (tool_called, tool_finished, tool_error)
-- **Status**: pending
-- **Blocked by**: its premise. `IMcpHostSession.events.on('tool_called' | …)` does not exist, and nothing emits `tool_called`, `tool_finished` or `tool_error`. Those kinds exist only in S1's `WORK_EVENT_KINDS`. The real hook is the metrics registry: every instrumented tool call already passes `record(tool, record)` (`packages/core/src/lib/metrics/metrics-registry.ts`), and errors pass `withIncidentLogging`. Rewrite the slice against those before implementing it.
+- **Status**: done
+- **Blocked by**: none. The original hook points do not exist (no `preExec` hook, no `IMcpHostSession.events`, the lock engine emits nothing), so this observer is a pure component fed by its consumer; wiring it belongs to f00510.
 - **DependsOn**: [F1-S1]
-- **Files**: `packages/state-telemetry/src/lib/observers/tool-observer.ts`, `packages/state-telemetry/src/lib/observers/tool-observer.spec.ts`
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/observers/tool-observer.service.ts`, `packages/state-telemetry/src/lib/observers/tool-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/observer-emitter.service.ts`, `packages/state-telemetry/src/lib/observers/failure-normalizer.helper.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/observer.constant.ts`
+- **Gate**: `bunx vitest run --root packages/state-telemetry src/lib/observers`
 - acceptance:
-  - "`ToolObserver` se engancha al `IMcpHostSession.events.on('tool_called' | 'tool_finished' | 'tool_error', …)` que ya existe; emite eventos `kind: 'tool_called'` con `payload_hash` del nombre+argumentos canónicos (sin secretos)."
-  - "El observer es un listener pasivo: añadirlo o quitarlo no cambia el comportamiento del host MCP; se prueba con un test de doble enganche que verifica simetría."
-  - "Tool errors que terminan en `tool_error` también producen `kind: 'tool_error'` con `exit_code` y `failure_hash` del mensaje normalizado."
-  - "El volumen no degrada: un burst de 1000 tool calls produce 1000 filas en `work_events` en < 1s en CI (bench en `tests/perf/tool-observer-bench.spec.ts`)."
+  - "`ToolObserver.called(tool, args)`, `finished(tool, { durationMs })` and `failed(tool, { exitCode, message })` emit `tool_called`, `tool_finished` and `tool_error`; the hash of a call covers the tool name and the key-sorted args with every secret-looking key (token, secret, password, authorization, key, credential, case-insensitive) dropped first."
+  - "`tool_error` hashes the exit code and the message through the same normalizer as the test observer, so equal errors hash equal."
+  - "Attach/detach symmetry is tested: an observer over a no-op sink changes nothing and never mutates the args it is given."
+  - "A 1000-call burst lands 1000 events through the NDJSON store in under one second (asserted in `tool-observer.service.spec.ts`)."
+- shipped-in: `c446c1602e8e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ### S5 — `AgentLeaseObserver` — enganche al lock engine (claim, release, heartbeat)
-- **Status**: pending
-- **Blocked by**: its premise. The agent-lock engine emits no `lease_claimed`, `lease_released` or `lease_heartbeat` events; those kinds exist only in S1's `WORK_EVENT_KINDS`. The engine would have to emit them first.
+- **Status**: done
+- **Blocked by**: none. The original hook points do not exist (no `preExec` hook, no `IMcpHostSession.events`, the lock engine emits nothing), so this observer is a pure component fed by its consumer; wiring it belongs to f00510.
 - **DependsOn**: [F1-S1, F1-S4]
-- **Files**: `packages/state-telemetry/src/lib/observers/agent-lease-observer.ts`, `packages/state-telemetry/src/lib/observers/agent-lease-observer.spec.ts`
-- **Gate**: type
+- **Files**: `packages/state-telemetry/src/lib/observers/agent-lease-observer.service.ts`, `packages/state-telemetry/src/lib/observers/agent-lease-observer.service.spec.ts`, `packages/state-telemetry/src/lib/observers/observer-emitter.service.ts`, `packages/state-telemetry/src/lib/observers/failure-normalizer.helper.ts`, `packages/state-telemetry/src/lib/observers/contracts/interfaces/observer.interface.ts`, `packages/state-telemetry/src/lib/observers/contracts/constants/observer.constant.ts`
+- **Gate**: `bunx vitest run --root packages/state-telemetry src/lib/observers`
 - acceptance:
-  - "`AgentLeaseObserver` escucha los eventos que `agent-lock.engine` ya emite (`lease_claimed`, `lease_released`, `lease_heartbeat`) y los traduce a `work_events` con `kind` `'lease_claimed' | 'lease_released' | 'lease_heartbeat'` y `payload_hash` estable."
-  - "El emparejamiento `lease_claimed → lease_released` se materializa en `work_assignments.released_at` cuando llega el release."
-  - "Si el release no llega (kill -9), el observer emite `lease_heartbeat_missed` cuando han pasado 3 heartbeats sin release; usa el heartbeat interval del lock engine."
-  - "Test: simular claim → 4 heartbeats → release produce 6 eventos; claim → 5 heartbeats → kill produce 5 eventos más `lease_heartbeat_missed`."
+  - "`AgentLeaseObserver.claimed`, `heartbeat` and `released` emit `lease_claimed`, `lease_heartbeat` and `lease_released` with a stable `payload_hash`; claim, 4 heartbeats and release make 6 events."
+  - "`check(now)` takes the clock from the caller (no timers) and emits `lease_heartbeat_missed` once per lease when 3 heartbeat intervals passed without heartbeat or release: claim, 5 heartbeats and silence make 6 events plus one missed, and a second `check` adds nothing."
+  - "Not shipped: `work_assignments.released_at` is left out because no such table exists yet."
+- shipped-in: `c446c1602e8e`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 97320d4d7, validate exit 0, tests 103/103 — Delivered by #792 (merge 97320d4d7).
 
 ## acceptance
 
@@ -111,18 +140,17 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - No bloquea al agente ni al servidor: `git` se lanza con `spawn` asíncrono que la herramienta nunca espera, con una sola ejecución en vuelo (las peticiones intermedias se funden en una repetición), y a los 250 ms se mata el proceso y se emite `kind: 'git_change_stale'`. "Sin `await`" no es "no bloqueante": `spawnSync` detendría el event loop de todo el servidor.
 - Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso.
 - Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`).
-- `TestObserver` envuelve `bun test` y `vitest run` con un wrapper que emite `kind: 'test_started'` antes y `kind: 'test_finished'` después; el payload incluye `passed`, `failed`, `failure_hash` (sha256 del primer failure path + mensaje normalizado).
-- No añade `await` al cuerpo del agente: la envoltura es un `preExec` / `postExec` en el boundary de la herramienta, no en la herramienta misma.
-- El `failure_hash` es estable entre dos ejecuciones que fallan por la misma causa (verificar con fixture `tests/fixtures/test-failure-snapshot.spec.ts`).
-- Una ejecución sin tests no emite `test_started`/`test_finished` espurios (degradación silenciosa, no error).
-- `ToolObserver` se engancha al `IMcpHostSession.events.on('tool_called' | 'tool_finished' | 'tool_error', …)` que ya existe; emite eventos `kind: 'tool_called'` con `payload_hash` del nombre+argumentos canónicos (sin secretos).
-- El observer es un listener pasivo: añadirlo o quitarlo no cambia el comportamiento del host MCP; se prueba con un test de doble enganche que verifica simetría.
-- Tool errors que terminan en `tool_error` también producen `kind: 'tool_error'` con `exit_code` y `failure_hash` del mensaje normalizado.
-- El volumen no degrada: un burst de 1000 tool calls produce 1000 filas en `work_events` en < 1s en CI (bench en `tests/perf/tool-observer-bench.spec.ts`).
-- `AgentLeaseObserver` escucha los eventos que `agent-lock.engine` ya emite (`lease_claimed`, `lease_released`, `lease_heartbeat`) y los traduce a `work_events` con `kind` `'lease_claimed' | 'lease_released' | 'lease_heartbeat'` y `payload_hash` estable.
-- El emparejamiento `lease_claimed → lease_released` se materializa en `work_assignments.released_at` cuando llega el release.
-- Si el release no llega (kill -9), el observer emite `lease_heartbeat_missed` cuando han pasado 3 heartbeats sin release; usa el heartbeat interval del lock engine.
-- Test: simular claim → 4 heartbeats → release produce 6 eventos; claim → 5 heartbeats → kill produce 5 eventos más `lease_heartbeat_missed`.
+- `TestObserver.started(run)` only remembers the run; `finished(run, { passed, failed, firstFailure? })` emits `test_started` (stamped with the start time) and then `test_finished`, each carrying only a sha256 `payload_hash` of a canonical JSON projection.
+- `failureHash(firstFailure)` is the sha256 of the path plus the normalized message (ANSI stripped, absolute paths made relative, durations, timestamps and line:col numbers removed, whitespace collapsed), so two runs failing for the same cause hash equal; the normalizer is shared with the tool observer.
+- A run with zero tests (passed + failed = 0) emits neither event, because `started` defers everything to `finished`.
+- The observer is pure and fire-and-forget: it spawns and hooks nothing, never awaits in the caller and never throws, even when the sink rejects.
+- `ToolObserver.called(tool, args)`, `finished(tool, { durationMs })` and `failed(tool, { exitCode, message })` emit `tool_called`, `tool_finished` and `tool_error`; the hash of a call covers the tool name and the key-sorted args with every secret-looking key (token, secret, password, authorization, key, credential, case-insensitive) dropped first.
+- `tool_error` hashes the exit code and the message through the same normalizer as the test observer, so equal errors hash equal.
+- Attach/detach symmetry is tested: an observer over a no-op sink changes nothing and never mutates the args it is given.
+- A 1000-call burst lands 1000 events through the NDJSON store in under one second (asserted in `tool-observer.service.spec.ts`).
+- `AgentLeaseObserver.claimed`, `heartbeat` and `released` emit `lease_claimed`, `lease_heartbeat` and `lease_released` with a stable `payload_hash`; claim, 4 heartbeats and release make 6 events.
+- `check(now)` takes the clock from the caller (no timers) and emits `lease_heartbeat_missed` once per lease when 3 heartbeat intervals passed without heartbeat or release: claim, 5 heartbeats and silence make 6 events plus one missed, and a second `check` adds nothing.
+- Not shipped: `work_assignments.released_at` is left out because no such table exists yet.
 
 **Checked against the tree on 2026-09-26.** S2–S5 had stood still since
 2026-09-08. S4 and S5 hook into events their text says "already exist";

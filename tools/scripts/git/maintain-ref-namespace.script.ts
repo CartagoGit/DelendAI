@@ -43,12 +43,17 @@ import {
 } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
+import { FORWARD_SYNC_REF_PREFIX } from '../forge/forward-sync-release.script';
 import { repoRoot } from '../lib/repo-root';
 
 import type {
 	IRefAction,
 	IRefNamespaceReport,
 } from './maintain-ref-namespace.interface';
+import {
+	dropReservation,
+	endedReservations,
+} from './ended-reservations.service';
 
 export type {
 	IRefAction,
@@ -172,12 +177,57 @@ export const isSpent = (
 	root: string,
 	integration: string,
 	sha: string,
+	ref = '',
 ): boolean => {
 	const integrationSha = git(root, ['rev-parse', integration]);
 	if (integrationSha === undefined) return false;
 	if (integrationSha === sha) return false;
+	// A forward sync carries the release branch's HISTORY back, usually with
+	// no file changed at all. Judged by content it looks spent the moment it
+	// is opened, and reaping its branch closed its pull request (#656,
+	// #675). It is spent only once the integration branch contains it.
+	if (ref.startsWith(FORWARD_SYNC_REF_PREFIX)) {
+		return (
+			git(root, ['merge-base', '--is-ancestor', sha, integration]) !==
+			undefined
+		);
+	}
+	// A commit that changes no file carries its meaning in itself: a review
+	// pack's claims and releases are empty commits with trailers. Judged by
+	// content such a ref is spent the moment it is pushed, and reaping it
+	// closed a review pack seven minutes after it was opened. It is spent
+	// only once the integration branch contains it.
+	if (carriesEmptyCommits(root, integration, sha)) {
+		return (
+			git(root, ['merge-base', '--is-ancestor', sha, integration]) !==
+			undefined
+		);
+	}
 	const diff = git(root, ['diff', '--name-only', `${integration}...${sha}`]);
 	return diff !== undefined && diff.trim().length === 0;
+};
+
+/** Whether `sha` holds a commit the integration branch lacks that changes no file. */
+const carriesEmptyCommits = (
+	root: string,
+	integration: string,
+	sha: string,
+): boolean => {
+	const range = `${integration}..${sha}`;
+	const count = (args: readonly string[]): number =>
+		(git(root, [...args]) ?? '')
+			.split('\n')
+			.filter((line) => line.trim().length > 0).length;
+	const own = count(['rev-list', '--no-merges', range]);
+	const changing = count([
+		'log',
+		'--no-merges',
+		'--format=%H',
+		range,
+		'--',
+		'.',
+	]);
+	return own > changing;
 };
 
 /**
@@ -288,7 +338,7 @@ export const maintainRefNamespace = (input: {
 			}
 			// Spent first: a ref the integration branch already contains
 			// needs no name and no rebase.
-			if (isSpent(root, integration, sha)) {
+			if (isSpent(root, integration, sha, name)) {
 				actions.push({
 					ref: name,
 					kind: 'reap',
@@ -356,7 +406,7 @@ export const reap = (
 		const live = remoteSha(root, remote, name);
 		if (live !== undefined && live !== expected) return false;
 	}
-	const pushed = git(root, ['push', remote, '--delete', name]);
+	const pushed = git(root, ['push', '--delete', '--', remote, name]);
 	if (pushed === undefined && remoteSha(root, remote, name) !== undefined) {
 		return false;
 	}
@@ -385,7 +435,7 @@ const rename = (
 	// protected pattern, a network that dropped — and accepts the delete
 	// would leave the work reachable from no clone at all. The proof is
 	// the difference between a rename and a loss.
-	git(root, ['push', remote, `refs/heads/${to}:refs/heads/${to}`]);
+	git(root, ['push', '--', remote, `refs/heads/${to}:refs/heads/${to}`]);
 	if (remoteSha(root, remote, to) !== sha) {
 		// Both names still exist: the old one on the remote, the new one
 		// here. Nothing is lost, and the next run tries again.
@@ -417,6 +467,15 @@ const main = (): void => {
 	for (const action of report.actions) {
 		console.log(
 			`maintain-ref-namespace: ${action.kind} ${action.ref} — ${action.detail}${action.applied ? '' : apply ? ' (NOT applied)' : ' (read-only)'}`,
+		);
+	}
+	// Review reservations whose unit has ended (published and merged, or
+	// dropped) leave the claim namespace with it.
+	const remote = process.env.DELENDAI_REMOTE ?? 'origin';
+	for (const reservation of endedReservations(root, remote)) {
+		const dropped = apply && dropReservation(root, remote, reservation);
+		console.log(
+			`maintain-ref-namespace: drop-reservation ${reservation.ref} — its unit ${reservation.unit} has ended${dropped ? '' : apply ? ' (NOT applied)' : ' (read-only)'}`,
 		);
 	}
 	console.log(

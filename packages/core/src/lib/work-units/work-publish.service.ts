@@ -29,9 +29,11 @@ import type {
 	IWorkPublishOutcome,
 	IWorkPublishRequest,
 	IWorkPublishStep,
+	IWorkRefHoldOptions,
 } from '../contracts/interfaces/work-publish.interface';
 
 export type {
+	IWorkRefHoldOptions,
 	IWorkPublishOutcome,
 	IWorkPublishRequest,
 	IWorkPublishStep,
@@ -154,6 +156,7 @@ export const publishWorkUnit = (
 	const pushFrom = worktreeFor(root, workRef) ?? root;
 	const pushed = git(pushFrom, [
 		'push',
+		'--',
 		remote,
 		`${workRef}:${publicationRef}`,
 	]);
@@ -191,14 +194,54 @@ export const publishWorkUnit = (
 	step('prove-publication', true, `${remote} reports it at ${tip.out}.`);
 
 	if (request.keepWorkRef) {
+		// A step of its own, and one that succeeded: reported as a failed
+		// removal, a unit kept on purpose read as a publication gone wrong.
 		step(
-			'remove-work-ref',
-			false,
+			'keep-work-ref',
+			true,
 			`kept: ${request.keepWorkRefBecause ?? '--keep-work-ref was passed'}.`,
 		);
 		return { published: true, workRefRemoved: false, steps, tip: tip.out };
 	}
 
+	const ended = endWorkRef({
+		root,
+		cwd: request.cwd,
+		workRef,
+		tip: tip.out,
+		remote,
+	});
+	steps.push(...ended.steps);
+	return {
+		published: true,
+		workRefRemoved: ended.removed,
+		steps,
+		tip: tip.out,
+	};
+};
+
+/**
+ * End a work ref whose work is carried elsewhere: its worktree when that
+ * is clean, its remote copy, then the ref itself, compare-and-swap on the
+ * tip that was carried. Shared by both ways work leaves a unit — a
+ * publication ref, and a merge into the integration branch — so the ref
+ * lifecycle is the same whichever the profile chose.
+ */
+export const endWorkRef = (request: {
+	readonly root: string;
+	readonly cwd: string;
+	readonly workRef: string;
+	readonly tip: string;
+	readonly remote: string;
+}): {
+	readonly removed: boolean;
+	readonly steps: readonly IWorkPublishStep[];
+} => {
+	const steps: IWorkPublishStep[] = [];
+	const step = (name: string, ok: boolean, detail: string): void => {
+		steps.push({ name, ok, detail });
+	};
+	const { root, workRef, remote } = request;
 	// A worktree still standing on the ref would keep it alive and leave
 	// the agent in a directory whose branch no longer exists.
 	const worktree = worktreeFor(root, workRef);
@@ -212,7 +255,7 @@ export const publishWorkUnit = (
 				? ` It was the current directory: continue from ${root}.`
 				: '';
 		// `--force` would delete a worktree with uncommitted files in it.
-		// Proving that the PUBLISHED commit reached the remote proves
+		// Proving that the carried commit reached the remote proves
 		// nothing about edits made after the checkpoint: an agent that
 		// checkpointed and kept working would lose whatever it had not
 		// checkpointed yet. So the tree is inspected first, and a dirty
@@ -224,12 +267,7 @@ export const publishWorkUnit = (
 				false,
 				`could not read the state of ${worktree}; it was left alone, and so was the work ref.`,
 			);
-			return {
-				published: true,
-				workRefRemoved: false,
-				steps,
-				tip: tip.out,
-			};
+			return { removed: false, steps };
 		}
 		if (dirty.out.length > 0) {
 			const count = dirty.out.split('\n').length;
@@ -238,12 +276,7 @@ export const publishWorkUnit = (
 				false,
 				`${worktree} has ${String(count)} uncommitted change(s) made after the checkpoint; it was left alone, and so was the work ref. Checkpoint or set them aside, then publish again.`,
 			);
-			return {
-				published: true,
-				workRefRemoved: false,
-				steps,
-				tip: tip.out,
-			};
+			return { removed: false, steps };
 		}
 		const removed = git(root, ['worktree', 'remove', worktree]);
 		step(
@@ -251,17 +284,10 @@ export const publishWorkUnit = (
 			removed.ok,
 			removed.ok ? `removed ${worktree}.${leaving}` : removed.out,
 		);
-		if (!removed.ok) {
-			return {
-				published: true,
-				workRefRemoved: false,
-				steps,
-				tip: tip.out,
-			};
-		}
+		if (!removed.ok) return { removed: false, steps };
 	}
 
-	const remoteWork = git(root, ['push', remote, '--delete', workRef]);
+	const remoteWork = git(root, ['push', '--delete', '--', remote, workRef]);
 	step(
 		'remove-remote-work-ref',
 		remoteWork.ok,
@@ -270,18 +296,13 @@ export const publishWorkUnit = (
 			: `${workRef} was not on ${remote} (or could not be deleted): ${remoteWork.out}`,
 	);
 
-	const localWork = git(root, ['update-ref', '-d', workRef, tip.out]);
+	const localWork = git(root, ['update-ref', '-d', workRef, request.tip]);
 	step(
 		'remove-work-ref',
 		localWork.ok,
 		localWork.ok ? `deleted ${workRef}.` : localWork.out,
 	);
-	return {
-		published: true,
-		workRefRemoved: localWork.ok,
-		steps,
-		tip: tip.out,
-	};
+	return { removed: localWork.ok, steps };
 };
 
 /**
@@ -296,55 +317,76 @@ export const publishWorkUnit = (
  */
 export const publishWorkUnitExclusively = async (
 	request: IWorkPublishRequest,
-	options: {
-		readonly hold?: typeof holdWorkRef;
-		readonly waitMs?: number;
-		readonly pollMs?: number;
-	} = {},
+	options: IWorkRefHoldOptions = {},
 ): Promise<IWorkPublishOutcome> => {
-	const refused = (detail: string): IWorkPublishOutcome => ({
-		published: false,
-		workRefRemoved: false,
-		steps: [{ name: 'hold-work-ref', ok: false, detail }],
-		tip: null,
-	});
-	const common = git(request.root, [
+	const held = await withWorkRefHeld(
+		request.root,
+		request.workRef,
+		async () => publishWorkUnit(request),
+		options,
+	);
+	if (!held.held) {
+		return {
+			published: false,
+			workRefRemoved: false,
+			steps: [{ name: 'hold-work-ref', ok: false, detail: held.detail }],
+			tip: null,
+		};
+	}
+	return {
+		...held.value,
+		steps: [
+			{ name: 'hold-work-ref', ok: true, detail: held.detail },
+			...held.value.steps,
+		],
+	};
+};
+
+/**
+ * Run `body` holding the work ref, so the host's cadence push cannot put
+ * the ref back while it is being ended. Waits for another holder up to
+ * the deadline, then refuses without running `body` at all.
+ */
+export const withWorkRefHeld = async <T>(
+	root: string,
+	workRef: string,
+	body: () => Promise<T>,
+	options: IWorkRefHoldOptions = {},
+): Promise<
+	| { readonly held: true; readonly detail: string; readonly value: T }
+	| { readonly held: false; readonly detail: string }
+> => {
+	const common = git(root, [
 		'rev-parse',
 		'--path-format=absolute',
 		'--git-common-dir',
 	]);
 	if (!common.ok || common.out.length === 0) {
-		return refused(
-			`could not locate the git directory to hold ${request.workRef}: ${common.out}`,
-		);
+		return {
+			held: false,
+			detail: `could not locate the git directory to hold ${workRef}: ${common.out}`,
+		};
 	}
 	const hold = options.hold ?? holdWorkRef;
 	const pollMs = options.pollMs ?? WORK_PUBLISH_HOLD_POLL_MS;
 	const deadline = Date.now() + (options.waitMs ?? WORK_PUBLISH_HOLD_WAIT_MS);
-	const attempt = () =>
-		hold({ gitCommonDir: common.out, ref: request.workRef });
+	const attempt = () => hold({ gitCommonDir: common.out, ref: workRef });
 	let held = await attempt();
 	while (held.kind === 'busy' && Date.now() < deadline) {
 		await new Promise((resolve) => setTimeout(resolve, pollMs));
 		held = await attempt();
 	}
 	if (held.kind === 'busy') {
-		return refused(
-			`${request.workRef} is held by ${held.holder}; nothing was published. Publish again once it is released.`,
-		);
+		return {
+			held: false,
+			detail: `${workRef} is held by ${held.holder}; nothing was done. Try again once it is released.`,
+		};
 	}
 	try {
-		const outcome = publishWorkUnit(request);
 		return {
-			...outcome,
-			steps: [
-				{
-					name: 'hold-work-ref',
-					ok: true,
-					detail: `held ${request.workRef} for the whole publication.`,
-				},
-				...outcome.steps,
-			],
+			held: true,
+			detail: `held ${workRef} for the whole operation.`,
+			value: await body(),
 		};
 	} finally {
 		await held.release();

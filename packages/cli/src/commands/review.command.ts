@@ -13,6 +13,7 @@
  *                            claimed for you, and what to check
  *   review approve <id> <s>  the slice holds: recorded and committed
  *   review changes <id> <s>  it does not: recorded, committed, reopened
+ *   review release <id>      you could not judge it: the claim goes back
  *   review finish            your verdicts become one pull request
  *
  * Nothing here decides anything new. The unit is `work enter` / `work
@@ -24,7 +25,11 @@
 import { execFileSync } from 'node:child_process';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
-import { REVIEW_COMMAND } from '../contracts/constants/review-command.constant';
+import {
+	RELEASE_TRAILER,
+	REVIEW_COMMAND,
+	REVIEWED_PROPOSALS_DIR,
+} from '../contracts/constants/review-command.constant';
 import type {
 	ICliCommand,
 	ICliCommandContext,
@@ -32,6 +37,19 @@ import type {
 } from '../contracts/interfaces/cli-command.interface';
 import { readWorkspacePolicy } from '@delendai/core/cli';
 import { data, request, scalarArg } from '../lib/helpers/cli-command.helper';
+import type {
+	IQueue,
+	IQueueProposal,
+	IUnit,
+} from '../contracts/interfaces/review-queue-view.interface';
+import { briefFor } from '../lib/review/review-brief.service';
+import {
+	readProposalIn,
+	sliceSections,
+} from '../lib/review/slice-sections.service';
+import { packRefusalsIn } from '../lib/review/review-pack-check.service';
+import { anythingWaiting } from '../lib/review/review-peek.service';
+import { releasedElsewhere } from '../lib/review/review-releases.service';
 import { usage } from './groups/group-helpers';
 import { evidenceArgs } from './groups/proposals';
 import { workCommand } from './work.command';
@@ -45,38 +63,6 @@ const CLAIM_TRAILER = 'Claims';
 const QUEUE_TOOL = 'delendai_proposals_review_queue';
 const VERDICT_TOOL = 'delendai_proposals_proposal_review';
 const CLAIM_TOOL = 'delendai_proposals_review_claim';
-
-interface IQueueSlice {
-	readonly sliceId: string;
-	readonly title?: string;
-	readonly verdict: string;
-	readonly implementer?: string;
-	readonly gate?: string;
-	readonly files?: readonly string[];
-	readonly acceptance?: readonly string[];
-	readonly candidates?: readonly { readonly commit: string }[];
-	readonly missing?: string;
-}
-
-interface IQueueProposal {
-	readonly id: string;
-	readonly file: string;
-	readonly slices: readonly IQueueSlice[];
-	readonly close?: string;
-	readonly claimedBy?: readonly string[];
-}
-
-interface IQueue {
-	readonly proposals?: readonly IQueueProposal[];
-	/** The unit's pack: published as one pull request once full. */
-	readonly pack?: { readonly full: boolean; readonly size: number };
-}
-
-interface IUnit {
-	readonly path: string;
-	readonly session: string;
-	readonly ref: string;
-}
 
 /** Who reviews: `--agent`, or the declared agent id. */
 const agentOf = (args: readonly string[]): string | undefined =>
@@ -154,8 +140,26 @@ const gitIn = (
 	}
 };
 
-/** The proposals this unit has claimed: its own commits' claim trailers. */
-const claimsOf = (unit: IUnit, integration: string): readonly string[] => {
+/** Merge the integration branch's remote tip into the unit, or nothing. */
+const catchUp = (unit: IUnit, integration: string): void => {
+	gitIn(unit.path, ['fetch', '--quiet', '--', 'origin', integration]);
+	const merged = gitIn(unit.path, [
+		'-c',
+		'core.hooksPath=/dev/null',
+		'merge',
+		'--quiet',
+		'--no-edit',
+		`origin/${integration}`,
+	]);
+	if (!merged.ok) gitIn(unit.path, ['merge', '--abort']);
+};
+
+/** The proposal ids a unit's own commits name under one trailer. */
+const trailerValuesOf = (
+	unit: IUnit,
+	integration: string,
+	key: string,
+): readonly string[] => {
 	// Only the unit's own commits: not those the integration branch
 	// holds, here or on the remote, whichever of the two exist.
 	const integrated = [
@@ -166,7 +170,7 @@ const claimsOf = (unit: IUnit, integration: string): readonly string[] => {
 	);
 	const log = gitIn(unit.path, [
 		'log',
-		`--format=%(trailers:key=${CLAIM_TRAILER},valueonly)`,
+		`--format=%(trailers:key=${key},valueonly)`,
 		'HEAD',
 		...(integrated.length === 0 ? [] : ['--not', ...integrated]),
 		'--',
@@ -181,6 +185,23 @@ const claimsOf = (unit: IUnit, integration: string): readonly string[] => {
 		),
 	];
 };
+
+/**
+ * What the unit still holds: what it claimed, less what it gave back. A
+ * released claim stays in the unit's history, and `review next` resumed
+ * it as the unit's own, handing the reviewer straight back the proposal
+ * it had just released.
+ */
+const claimsOf = (unit: IUnit, integration: string): readonly string[] => {
+	const released = new Set(releasesOf(unit, integration));
+	return trailerValuesOf(unit, integration, CLAIM_TRAILER).filter(
+		(id) => !released.has(id),
+	);
+};
+
+/** What the unit gave back: never offered to it again. */
+const releasesOf = (unit: IUnit, integration: string): readonly string[] =>
+	trailerValuesOf(unit, integration, RELEASE_TRAILER);
 
 const needsVerdict = (proposal: IQueueProposal): boolean =>
 	proposal.slices.some((slice) => slice.verdict === 'needs-verdict');
@@ -197,34 +218,6 @@ const queueOf = async (
 		...extra,
 	});
 
-/** What the reviewer needs to judge one proposal, and how to answer. */
-const briefFor = (proposal: IQueueProposal, unit: IUnit, agent: string) => {
-	const who = `--agent=${agent} --session=${unit.session}`;
-	return {
-		proposal: proposal.id,
-		file: `${unit.path}/${proposal.file}`,
-		read: 'Read the proposal and, for each slice below, what its candidate commit delivered (`git show <commit>`). Run its gate. Judge it on what it delivered.',
-		slices: proposal.slices
-			.filter((slice) => slice.verdict === 'needs-verdict')
-			.map((slice) => ({
-				slice: slice.sliceId,
-				...(slice.title === undefined ? {} : { title: slice.title }),
-				...(slice.implementer === undefined
-					? {}
-					: { implementer: slice.implementer }),
-				...(slice.gate === undefined ? {} : { gate: slice.gate }),
-				...(slice.files === undefined ? {} : { files: slice.files }),
-				...(slice.acceptance === undefined
-					? {}
-					: { acceptance: slice.acceptance }),
-				commits: (slice.candidates ?? []).map((each) => each.commit),
-				approve: `delendai review approve ${proposal.id} ${slice.sliceId} ${who} --commit=${slice.candidates?.[0]?.commit ?? '<sha>'} --validate-exit=<gate exit code> --tests-passing=<n> --tests-total=<n> --note="<what you verified>"`,
-				changes: `delendai review changes ${proposal.id} ${slice.sliceId} ${who} --note="<what is missing, precisely>"`,
-			})),
-		afterwards: `delendai review next ${who}`,
-	};
-};
-
 const next = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
@@ -232,15 +225,16 @@ const next = async (
 	const agent = agentOf(args);
 	if (agent === undefined)
 		return usage('review next --agent=<you> [--session=<s>]');
+	if (!sessionOf(args) && !(await anythingWaiting(() => queueOf(ctx, agent))))
+		return data({ next: 'Nothing is waiting for your verdict.' });
 	const unit = await unitOf(agent, sessionOf(args), ctx);
 	if (!isUnit(unit)) return unit;
 	const policy = await readWorkspacePolicy(unit.path);
-	if (policy === undefined) {
-		return {
-			code: EXIT_CODE.VALIDATION,
-			error: 'This project declares no development policy, so it has no review units.',
-		};
-	}
+	// The queue is read from the unit, where the reviewer's own verdicts
+	// are; a unit made before others' verdicts merged still showed their
+	// proposals as waiting, closed ones included. Integration is brought
+	// in first; a merge that would conflict is undone and changes nothing.
+	catchUp(unit, policy.branches.integration);
 	// The unit, not only the agent: another instance of this model is
 	// another reviewer, and its claims are not ours.
 	const answer = await queueOf(ctx, agent, { unit: unit.ref });
@@ -253,10 +247,13 @@ const next = async (
 			claimed.includes(proposal.id.toLowerCase()) &&
 			needsVerdict(proposal),
 	);
+	// What this reviewer gave back in any of its units, this one included.
+	const released = releasedElsewhere(unit.path, agent, policy.branches);
 	const free = queue.find(
 		(proposal) =>
 			proposal.claimedBy === undefined &&
 			!claimed.includes(proposal.id.toLowerCase()) &&
+			!released.includes(proposal.id.toLowerCase()) &&
 			needsVerdict(proposal),
 	);
 	const chosen = resumed ?? free;
@@ -281,7 +278,7 @@ const next = async (
 				: data({
 						...session,
 						published: published.data,
-						next: 'Nothing else is waiting for a verdict; your pack is published as its pull request.',
+						next: 'Nothing else is waiting for a verdict; your pack is published.',
 					});
 		}
 		// The next pack, in a unit of its own.
@@ -307,7 +304,21 @@ const next = async (
 			checkout: unit.path,
 		});
 	}
-	return data({ ...session, ...briefFor(chosen, unit, agent) });
+	const markdown = await readProposalIn(
+		unit.path,
+		chosen.file,
+		REVIEWED_PROPOSALS_DIR,
+	);
+	const sections =
+		markdown === undefined
+			? {}
+			: sliceSections(
+					markdown,
+					chosen.slices
+						.filter((slice) => slice.verdict === 'needs-verdict')
+						.map((slice) => slice.sliceId),
+				);
+	return data({ ...session, ...briefFor(chosen, unit, agent, sections) });
 };
 
 const verdict = async (
@@ -350,6 +361,37 @@ const verdict = async (
 	});
 };
 
+/**
+ * Give a claim back: for a reviewer that could not inspect or run what it
+ * claimed. It records no verdict, and the proposal returns to the queue.
+ */
+const release = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const [proposalId] = args.filter((arg) => !arg.startsWith('-'));
+	const agent = agentOf(args);
+	const note = scalarArg(args, 'note');
+	if (proposalId === undefined || agent === undefined || note === undefined) {
+		return usage(
+			'review release <proposalId> --agent=<you> --session=<s> --note="<why you could not judge it>"',
+		);
+	}
+	const unit = await unitOf(agent, sessionOf(args), ctx);
+	if (!isUnit(unit)) return unit;
+	const answer = await request<Record<string, unknown>>(ctx, CLAIM_TOOL, {
+		proposalId,
+		agent,
+		release: note,
+		checkout: unit.path,
+	});
+	return data({
+		...answer,
+		unit: unit.ref,
+		next: `delendai review next --agent=${agent} --session=${unit.session}`,
+	});
+};
+
 const finish = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
@@ -357,7 +399,25 @@ const finish = async (
 	const agent = agentOf(args);
 	if (agent === undefined)
 		return usage('review finish --agent=<you> --session=<s>');
-	return workOnUnit('publish', agent, sessionOf(args), ctx);
+	const session = sessionOf(args);
+	if (session !== undefined) {
+		// What CI would refuse is refused here, before the pull request.
+		const unit = await unitOf(agent, session, ctx);
+		if (!isUnit(unit)) return unit;
+		const policy = await readWorkspacePolicy(unit.path);
+		const refusals = packRefusalsIn(
+			unit.path,
+			policy.branches.integration,
+			agent,
+		);
+		if (refusals.length > 0) {
+			return {
+				code: EXIT_CODE.RUNTIME,
+				error: `The pack in ${unit.path} would not land: ${refusals.join(' ')} Nothing was published.`,
+			};
+		}
+	}
+	return workOnUnit('publish', agent, session, ctx);
 };
 
 export const reviewRoundCommand: ICliCommand = {
@@ -368,9 +428,10 @@ export const reviewRoundCommand: ICliCommand = {
 		if (sub === 'next') return next(rest, ctx);
 		if (sub === 'approve') return verdict('approve', rest, ctx);
 		if (sub === 'changes') return verdict('request_changes', rest, ctx);
+		if (sub === 'release') return release(rest, ctx);
 		if (sub === 'finish') return finish(rest, ctx);
 		return usage(
-			'review <next|approve|changes|finish> — start with: delendai review next --agent=<you>',
+			'review <next|approve|changes|release|finish> — start with: delendai review next --agent=<you>',
 		);
 	},
 };

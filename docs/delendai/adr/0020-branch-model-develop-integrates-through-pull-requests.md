@@ -17,6 +17,9 @@ related_proposals:
 
 > Status: **Accepted**. Supersedes ADR 0019.
 > Date: 2026-09-10.
+> Scope: this repository's own branch model. Another project's agents
+> follow the work model the server resolves from that project's
+> `development` block, not this decision.
 
 ## Context
 

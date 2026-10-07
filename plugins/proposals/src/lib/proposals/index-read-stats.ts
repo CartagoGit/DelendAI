@@ -26,17 +26,20 @@ let stats: IProposalIndexReadStats = {
 	fallbacks: 0,
 	last: null,
 	lastDivergence: 0,
+	rebuilds: 0,
 };
 
 export const recordProposalIndexRead = (
 	outcome: IProposalIndexReadOutcome,
 	divergence = 0,
+	rebuilt = false,
 ): void => {
 	stats = {
 		reads: stats.reads + 1,
 		fallbacks: stats.fallbacks + (FALLBACK_OUTCOMES.has(outcome) ? 1 : 0),
 		last: outcome,
 		lastDivergence: divergence,
+		rebuilds: stats.rebuilds + (rebuilt ? 1 : 0),
 	};
 };
 
@@ -44,7 +47,13 @@ export const getProposalIndexReadStats = (): IProposalIndexReadStats => stats;
 
 /** Clears the counters. For tests; production never resets them. */
 export const resetProposalIndexReadStats = (): void => {
-	stats = { reads: 0, fallbacks: 0, last: null, lastDivergence: 0 };
+	stats = {
+		reads: 0,
+		fallbacks: 0,
+		last: null,
+		lastDivergence: 0,
+		rebuilds: 0,
+	};
 };
 
 const PARITY_BY_OUTCOME: Readonly<
@@ -53,6 +62,7 @@ const PARITY_BY_OUTCOME: Readonly<
 	'json-pinned': 'not-compared',
 	'sql-parity': 'parity',
 	'sql-divergence-reported': 'divergent',
+	'sql-registry-stale': 'not-compared',
 	'sql-refused': 'unverified',
 	'fallback-unavailable': 'unverified',
 	'fallback-metadata-missing': 'unverified',

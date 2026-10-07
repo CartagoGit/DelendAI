@@ -34,7 +34,6 @@
  * there and nothing is lost — the ordering is the safety.
  */
 import { shortName } from '../development-policy/git-guard-namespaces';
-import { execFileSync } from 'node:child_process';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { resolveWorkRef } from '../wip-engine/ref-name';
@@ -47,19 +46,13 @@ import {
 	parseWorkSubject,
 	workRefShapeInWords,
 } from './work-ref-shape.service';
+import { renameUnitRef } from './unit-ref-rename.service';
 import { identityOf, listWorkRefs } from './work-swarm.service';
 
 export type {
 	IWorkClaim,
 	IWorkClaimRefusal,
 } from '../contracts/interfaces/work-claim.interface';
-
-const git = (cwd: string, args: readonly string[]): string =>
-	execFileSync('git', args, {
-		cwd,
-		encoding: 'utf8',
-		stdio: ['ignore', 'pipe', 'pipe'],
-	}).trim();
 
 /**
  * What claiming `ref` for `agent` would produce — or why it cannot.
@@ -146,51 +139,13 @@ export const claimableWorkRefs = (input: {
 };
 
 /**
- * Do it: create the new name, prove it resolves to the same commit, and
- * only then remove the old one.
- *
- * The order is the safety. A failed proof leaves both names in place,
- * which is recoverable; deleting first and failing to create is not.
+ * Do it: rename the unit's ref (see `renameUnitRef`, which holds the order
+ * that makes this safe) and hand back the claim that was made.
  */
 export const applyWorkClaim = (
 	root: string,
 	claim: IWorkClaim,
 ): IWorkClaim | IWorkClaimRefusal => {
-	const to = `refs/heads/${claim.to}`;
-	const from = `refs/heads/${claim.from}`;
-	try {
-		git(root, ['update-ref', to, claim.sha]);
-	} catch (error) {
-		return {
-			ref: claim.from,
-			reason: `could not create ${claim.to}: ${error instanceof Error ? error.message : String(error)}`,
-		};
-	}
-	// `rev-parse` THROWS for a ref that resolves to nothing — including
-	// a ref `update-ref` accepted while pointing it at an object this
-	// repository does not have. An unguarded read here turned the
-	// proof step into the thing it was proving against.
-	let landed = '';
-	try {
-		landed = git(root, ['rev-parse', to]);
-	} catch {
-		landed = '';
-	}
-	if (landed !== claim.sha) {
-		return {
-			ref: claim.from,
-			reason: `${claim.to} resolves to ${landed || 'nothing'}, not ${claim.sha}; the old ref was left alone.`,
-		};
-	}
-	try {
-		git(root, ['update-ref', '-d', from, claim.sha]);
-	} catch (error) {
-		return {
-			ref: claim.from,
-			// Both names now point at the work. That is untidy and it is
-			// not a loss, so it is reported rather than repaired blindly.
-			reason: `${claim.to} now holds the work, but ${claim.from} could not be removed: ${error instanceof Error ? error.message : String(error)}`,
-		};
-	}
-	return claim;
+	const renamed = renameUnitRef(root, claim);
+	return 'reason' in renamed ? renamed : claim;
 };

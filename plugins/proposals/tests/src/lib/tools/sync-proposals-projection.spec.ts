@@ -73,6 +73,7 @@ const RECONCILED: IDbReconcileOutput = {
 	reason: null,
 	startedAt: 0,
 	durationMs: 1,
+	drift: null,
 };
 
 describe('the other projection follows the same rebuild (x00601)', () => {

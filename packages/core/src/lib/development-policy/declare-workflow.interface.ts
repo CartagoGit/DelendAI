@@ -30,3 +30,19 @@ export interface IWorkflowDeclaration {
 	readonly releaseBranch: string;
 	readonly steps: readonly IWorkflowStep[];
 }
+
+/** How work starts and how it lands, for a refusal or a compact answer. */
+export interface IWorkModelBrief {
+	readonly profile: string;
+	readonly integrationBranch: string;
+	/** How a unit of work starts and where its commits go. */
+	readonly start: string;
+	/** How finished work reaches the integration branch. */
+	readonly land: string;
+}
+
+/** How a unit of work starts, as the persistence axis decides it. */
+export type IStartRoute = 'branch' | 'wip-ref' | 'direct-commit' | 'none';
+
+/** How finished work lands, as the integration axis decides it. */
+export type ILandRoute = 'pull-request' | 'merge' | 'direct';

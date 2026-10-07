@@ -15,7 +15,7 @@
 			"namespacePrefix": "delendai"
 		},
 		"integration": {
-			"requiredChecks": ["delendai-validate"],
+			"requiredChecks": ["delendai-validate", "CodeQL"],
 			"releaseRequiredChecks": ["delendai-validate", "release-pr-gate"],
 			"requiredApprovals": 0,
 			"releaseRequiredApprovals": 0
@@ -206,7 +206,8 @@
 					"mode": "commit-and-push"
 				},
 				"requirePeerReview": true,
-				"reviewIndependence": "instance"
+				"reviewIndependence": "model",
+				"documentationLanguage": "en"
 			}
 		},
 		"notification": {
@@ -326,7 +327,6 @@
 				},
 				"push": {
 					"enabled": true,
-					"onCommit": true,
 					"force": "with-lease",
 					"protectedBranches": ["main", "master"],
 					"remote": "origin"

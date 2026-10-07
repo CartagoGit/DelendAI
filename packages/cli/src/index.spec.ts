@@ -112,6 +112,27 @@ describe('runHumanCli', () => {
 		expect(captured.err).toBe('');
 	});
 
+	it('lets `migrate status` and `--dry-run` look without migrating', async () => {
+		// The guard migrates before any other command. Run before `migrate`,
+		// it applied everything, and the dry run a person asked for had
+		// nothing left to show.
+		const root = mkdtempSync(join(tmpdir(), 'cli-entry-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q'], { cwd: root });
+		const legacy = join(root, 'mcp-vertex.config.json');
+		writeFileSync(legacy, '{}\n');
+		capture();
+		expect(
+			await runHumanCli(['migrate', 'status', `--workspace=${root}`]),
+		).toBe(EXIT_CODE.OK);
+		expect(existsSync(legacy)).toBe(true);
+		expect(existsSync(join(root, 'delendai.config.json'))).toBe(false);
+
+		await runHumanCli(['migrate', '--dry-run', `--workspace=${root}`]);
+		expect(existsSync(legacy)).toBe(true);
+		expect(captured.out).not.toContain('not-needed');
+	});
+
 	it('writes the structured envelope on --json', async () => {
 		// The stdout policy (a00087): `--json` always emits, even for a
 		// command that printed its own human recap and asked to suppress
@@ -192,6 +213,7 @@ describe('runEntry — what the binary actually does', () => {
 			'{ "development": { "profile": "shared-checkout-merge" } }',
 		);
 		const lines: string[] = [];
+		const refusals: string[] = [];
 		const previousExitCode = process.exitCode;
 
 		await runEntry(['__serve'], root, {
@@ -200,6 +222,9 @@ describe('runEntry — what the binary actually does', () => {
 					new Error('a development policy that cannot be honoured'),
 				),
 			report: (line) => lines.push(line),
+			refuse: async (refusal) => {
+				refusals.push(refusal);
+			},
 		});
 		// The rejection is handled on the microtask queue the catch is
 		// attached to, not inside runEntry: serving never returns, so the
@@ -210,6 +235,9 @@ describe('runEntry — what the binary actually does', () => {
 		expect(lines.join('\n')).toContain('cannot start in this workspace');
 		expect(lines.join('\n')).toContain('cannot be honoured');
 		expect(process.exitCode).not.toBe(0);
+		// The host gets the same sentence through the handshake, not a
+		// closed connection.
+		expect(refusals.join('\n')).toContain('cannot be honoured');
 		process.exitCode = previousExitCode;
 	});
 

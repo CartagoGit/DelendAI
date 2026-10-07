@@ -16,7 +16,7 @@ import {
 	type IProvenanceEventInput,
 	type IProvenanceGraph,
 } from '../../../plugins/observability/src/public';
-import { REPOSITORY_URL } from '@delendai/core/public';
+import { REPOSITORY_URL } from '@delendai/core/cli';
 
 const OUTPUT_REL =
 	'docs/delendai/generated/observability-provenance.generated.md';

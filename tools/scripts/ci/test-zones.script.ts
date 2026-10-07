@@ -35,7 +35,11 @@ import {
 	ZONE_RULES,
 } from './test-zones.constant';
 import type { IZoneJob, IZoneReadMap, IZoneRule } from './test-zones.interface';
-import { parseZoneReadMap, zonesReadingRootFiles } from './zone-reads';
+import {
+	parseZoneReadMap,
+	runsEverything,
+	zonesReadingRootFiles,
+} from './zone-reads';
 
 export { TARGET_SPECS_PER_JOB, ZONE_RULES } from './test-zones.constant';
 export type { IZoneJob, IZoneRule } from './test-zones.interface';
@@ -163,6 +167,13 @@ export const reachableZones = (
 		readonly diff: typeof gitDiffChanges;
 		/** The observed read map; `undefined` means none is available. */
 		readonly readMap?: () => IZoneReadMap | undefined;
+		/**
+		 * Told why, whenever the answer is "every zone". Falling back is
+		 * safe; falling back without saying so is how every pull request
+		 * ran all eleven zones for as long as the planner's checkout could
+		 * not see the base.
+		 */
+		readonly explain?: (reason: string) => void;
 	} = {
 		buildGraph,
 		computeAffected,
@@ -170,18 +181,36 @@ export const reachableZones = (
 		readMap: () => committedReadMap(input.rootDir),
 	},
 ): ReadonlySet<string> | undefined => {
+	const everyZone = (reason: string): undefined => {
+		deps.explain?.(reason);
+		return undefined;
+	};
 	let affected: ReturnType<typeof computeAffected>;
 	let graph: ReturnType<typeof buildGraph>;
 	let changes: ReturnType<typeof gitDiffChanges>;
 	try {
 		graph = deps.buildGraph(input.rootDir);
+	} catch (error) {
+		return everyZone(
+			`the workspace graph could not be built (${messageOf(error)})`,
+		);
+	}
+	try {
 		changes = deps.diff(input.base, input.head ?? 'HEAD', input.rootDir);
+	} catch (error) {
+		return everyZone(
+			`the change could not be diffed against ${input.base} — is the base in the clone? (${messageOf(error)})`,
+		);
+	}
+	try {
 		affected = deps.computeAffected(
 			changes.map((change) => change.path),
 			graph,
 		);
-	} catch {
-		return undefined;
+	} catch (error) {
+		return everyZone(
+			`what the change affects could not be computed (${messageOf(error)})`,
+		);
 	}
 	const rules = input.rules ?? ZONE_RULES;
 	// A change outside every workspace reaches only the zones observed to
@@ -189,15 +218,22 @@ export const reachableZones = (
 	// edited one proposal ran all eleven shards. Without a usable map, or
 	// for a root-level configuration file, it still runs everything.
 	const roots = new Set(affected.rootFiles);
+	const readMap = roots.size === 0 ? undefined : deps.readMap?.();
 	const rootReached =
 		roots.size === 0
 			? new Set<string>()
 			: zonesReadingRootFiles(
 					changes.filter((change) => roots.has(change.path)),
-					deps.readMap?.(),
+					readMap,
 					ownPathsOf(rules, [...graph.dirToName.keys()]),
 				);
-	if (rootReached === undefined) return undefined;
+	if (rootReached === undefined) {
+		return everyZone(
+			readMap === undefined
+				? 'no zone read map says which zones read the changed files outside every workspace'
+				: `a root file or a workflow can reach any zone (${[...roots].filter(runsEverything).join(', ')})`,
+		);
+	}
 
 	// DOWNSTREAM plus what changed directly — never upstream. `affected`
 	// unions both because it answers a build-ordering question: to build
@@ -220,8 +256,23 @@ export const reachableZones = (
 		if (id !== undefined) zones.add(id);
 	}
 	for (const zone of rootReached) zones.add(zone);
+	// A zone whose specs read other workspaces' sources from disk is
+	// reached by a change to them, which the module graph cannot see.
+	for (const rule of rules) {
+		if (
+			rule.scans !== undefined &&
+			changes.some((change) => rule.scans?.(change.path) === true)
+		) {
+			zones.add(rule.id);
+		}
+	}
 	return zones;
 };
+
+const messageOf = (error: unknown): string =>
+	(error instanceof Error ? error.message : String(error))
+		.split('\n')[0]
+		?.trim() ?? '';
 
 /** The paths each zone's own specs live under, per rule. */
 const ownPathsOf = (
@@ -262,11 +313,29 @@ const main = (): number => {
 		return 0;
 	}
 
+	const rootDir = repoRoot();
+	let everyZoneBecause =
+		'no base: a push or a dispatch validates the whole tree';
 	const reach = reachForBase(arg('base'), (base) =>
-		reachableZones({ base, rootDir: repoRoot() }),
+		reachableZones(
+			{ base, rootDir },
+			{
+				buildGraph,
+				computeAffected,
+				diff: gitDiffChanges,
+				readMap: () => committedReadMap(rootDir),
+				explain: (reason) => {
+					everyZoneBecause = reason;
+				},
+			},
+		),
 	);
 
 	if (process.argv.includes('--matrix')) {
+		// stdout is the matrix the workflow reads; the reason goes to the log.
+		if (reach === undefined) {
+			console.error(`test-zones: every zone runs — ${everyZoneBecause}`);
+		}
 		console.log(
 			JSON.stringify(
 				jobs.map((job) => ({
@@ -288,10 +357,13 @@ const main = (): number => {
 
 	// Which zones the change reaches, stated, so a wrong selection is
 	// visible in the log rather than silent.
+	if (reach === undefined) {
+		console.log(`test-zones: every zone runs — ${everyZoneBecause}`);
+	}
 	for (const job of jobs) {
 		const verdict =
 			reach === undefined
-				? 'runs (every zone: no base, or a change that can reach anything)'
+				? 'runs (every zone, see above)'
 				: reach.has(job.zone)
 					? 'runs (the change reaches it)'
 					: 'skipped (the change reaches none of its specs or reads)';

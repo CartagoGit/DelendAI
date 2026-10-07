@@ -16,8 +16,8 @@
 import type {
 	IHostAdapterPack,
 	IHostCapabilityProfile,
-} from '@delendai/core/public';
-import { buildHostAdapterPack } from '@delendai/core/public';
+} from '@delendai/core/cli';
+import { buildHostAdapterPack } from '@delendai/core/cli';
 
 const ALLOWED_ACTION_KINDS = new Set([
 	'connect-mcp',

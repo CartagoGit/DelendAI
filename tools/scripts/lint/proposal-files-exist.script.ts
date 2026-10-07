@@ -26,6 +26,8 @@
  *   bun tools/scripts/lint/proposal-files-exist.script.ts --report   # counts only
  */
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+
+import { declaredPathExists } from './lib/declared-path-exists.lib';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
@@ -49,7 +51,7 @@ const NON_PATH = new Set(['none', 'n/a', 'tbd']);
  *
  * A Files declaration is a bullet, not a phrase.
  */
-const FILES_BLOCK_RE =
+export const FILES_BLOCK_RE =
 	/^\s*-\s+\*\*Files\*\*:\s*([\s\S]*?)(?=\n\s*-\s*\*\*|\n\n|\n#{2,3}\s|$)/gm;
 
 /**
@@ -75,7 +77,7 @@ const pathsFromLine = (line: string): string[] => {
 	return /^\s*-\s/.test(line) ? ticked.slice(0, 1) : ticked;
 };
 
-const extractPathCandidates = (block: string): string[] =>
+export const extractPathCandidates = (block: string): string[] =>
 	block
 		.split('\n')
 		.flatMap(pathsFromLine)
@@ -89,9 +91,10 @@ const extractPathCandidates = (block: string): string[] =>
 			return true;
 		});
 
-const stripLineRefs = (p: string): string => p.replace(/:[\d,\-–]+$/, '');
+export const stripLineRefs = (p: string): string =>
+	p.replace(/:[\d,\-–]+$/, '');
 
-const walkMarkdown = (absDir: string, out: string[]): void => {
+export const walkMarkdown = (absDir: string, out: string[]): void => {
 	for (const entry of readdirSync(absDir, { withFileTypes: true })) {
 		const abs = join(absDir, entry.name);
 		if (entry.isDirectory()) walkMarkdown(abs, out);
@@ -125,7 +128,9 @@ export const isRuntimeStatePath = (candidate: string): boolean =>
  * claims `done` while naming files that do not exist is still a failure,
  * which is the defect this lint exists to catch.
  */
-const PENDING_SLICE_STATUS_RE = /^\s*-\s+\*\*Status\*\*:\s*pending\s*$/i;
+// A retired slice delivered nothing: its files are a plan given up.
+const PENDING_SLICE_STATUS_RE =
+	/^\s*-\s+\*\*Status\*\*:\s*(?:pending\s*$|retired\b)/i;
 
 export const isInsidePendingSlice = (
 	text: string,
@@ -168,7 +173,7 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 					// the only person who can fix it.
 					if (isRuntimeStatePath(p)) continue;
 					const base = stripLineRefs(p);
-					if (!existsSync(join(root, base))) missing.push(p);
+					if (!declaredPathExists(root, base)) missing.push(p);
 				}
 			}
 			if (missing.length > 0) {

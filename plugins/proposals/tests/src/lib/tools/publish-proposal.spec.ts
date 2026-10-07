@@ -183,6 +183,7 @@ describe('publishProposalOnRef', () => {
 		).toBe(false);
 		expect(calls.at(-1)).toEqual([
 			'push',
+			'--',
 			'origin',
 			'c0ffee1234567:refs/heads/delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
 		]);
@@ -199,6 +200,25 @@ describe('publishProposalOnRef', () => {
 		expect(outcome.reason).toMatch(/does not publish proposals/u);
 		// The point: no git ran. Imposing a ref on a host that never
 		// asked for one is not a smaller mistake than not publishing.
+		expect(calls).toEqual([]);
+	});
+
+	it('says a project with work refs and no pull request lands a proposal as a unit, on its own branch', async () => {
+		const { run, calls } = recordingRunner();
+
+		const outcome = await publishProposalOnRef(
+			request({
+				git: run,
+				policy: {
+					requiresPullRequest: false,
+					hasWorkRefs: true,
+					integration: 'trunk',
+				},
+			}),
+		);
+
+		expect(outcome.published).toBe(false);
+		expect(outcome.reason).toContain('merging a unit of work into trunk');
 		expect(calls).toEqual([]);
 	});
 
@@ -261,6 +281,6 @@ describe('publishProposalOnRef', () => {
 
 		await publishProposalOnRef(request({ git: run, remote: 'upstream' }));
 
-		expect(calls.at(-1)?.[1]).toBe('upstream');
+		expect(calls.at(-1)?.[2]).toBe('upstream');
 	});
 });

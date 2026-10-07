@@ -5,15 +5,16 @@
  * judged whoever runs it: an agent through delendai, an agent with a
  * shell, another host's subagent or a human. It runs offline (no MCP
  * server), reads only git and the project's own configuration, and
- * refuses nothing when the project declares no development policy.
+ * judges an undeclared project against the policy delendai adopts for it,
+ * the same one `delendai work` and the served instructions describe.
  */
 import { execFileSync } from 'node:child_process';
 import { resolve as resolvePath } from 'node:path';
 
-import { judgeGitOperation } from '@delendai/core/cli';
+import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
-import { agentEnvironmentMarker } from '@delendai/core/cli';
+import { gitActorMarker } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -27,7 +28,10 @@ import type {
 } from '../contracts/interfaces/guard.interface';
 import {
 	readWorkspaceDocsDir,
+	readLeaseOf,
+	readUnitRefFacts,
 	readWorkspacePolicy,
+	touchUnitOfCheckout,
 	worktreeAgent,
 } from '@delendai/core/cli';
 import {
@@ -39,7 +43,10 @@ import {
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 import type { IGeneratedMergeDriverReport } from '../contracts/interfaces/generated-merge-driver.interface';
 import { GENERATED_MERGE_DRIVER_SCRIPT } from '../contracts/constants/generated-merge-driver.constant';
-import { refreshGeneratedAfterMerge } from '../lib/generated-refresh.service';
+import {
+	landedAsFastForward,
+	refreshGeneratedAfterMerge,
+} from '../lib/generated-refresh.service';
 import { GENERATED_REFRESH_PATHS } from '../contracts/constants/generated-refresh.constant';
 import {
 	inspectGeneratedMergeDriver,
@@ -199,6 +206,12 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 		git(workspace, ['rev-parse', '--git-dir']) ===
 		git(workspace, ['rev-parse', '--git-common-dir']),
 	worktreeAgent: () => worktreeAgent(workspace),
+	leaseAgent: async (branch) =>
+		(await readLeaseOf(workspace, branch))?.owner.agent,
+	unitRefs: (policy, branch) => readUnitRefFacts(workspace, policy, branch),
+	showLife: async (policy) => {
+		await touchUnitOfCheckout(workspace, policy);
+	},
 	refAt: (ref) => git(workspace, ['rev-parse', '--verify', '--quiet', ref]),
 	worktreeOf: (ref) => {
 		const blocks = (
@@ -322,6 +335,7 @@ export const checkoutWarning = (
 		`delendai guard (post-checkout): the shared checkout is now on \`${branch}\`.`,
 		`The \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`, and commits from here will be refused.`,
 		`Return with \`git switch ${policy.branches.integration}\` (your edits stay), then persist work with \`delendai work checkpoint\`, or take your own worktree with \`delendai work enter\`.`,
+		briefWorkModel(policy).land,
 	].join('\n');
 };
 
@@ -495,16 +509,16 @@ export const createGuardCommand = (
 			// recoverable only by noticing later.
 			process.stderr.write(
 				`${[
-					`delendai guard: the development policy is declared but could not be read — ${error instanceof Error ? error.message : String(error)}`,
+					`delendai guard: the development policy could not be read — ${error instanceof Error ? error.message : String(error)}`,
 					'  Nothing was checked, so nothing is authorised: a guard that passes when it cannot read its rules is not a guard.',
-					'  Fix `delendai.config.json`, or remove the `development` block if this project has no policy.',
+					'  Fix `delendai.config.json`.',
 				].join('\n')}\n`,
 			);
 			return { code: EXIT_CODE.VALIDATION };
 		}
-		if (policy === undefined) return { code: EXIT_CODE.OK };
 		// An agent is recognised by its runtime's variable or, whatever the
-		// runtime, by the worktree `work enter` made for it (x00688).
+		// runtime, by the worktree `work enter` made for it. When neither
+		// says, the policy's `guard.unknownActor` decides.
 		// A worktree made before the stamp existed still says whose it is:
 		// a linked worktree on a work branch belongs to the agent the branch
 		// names.
@@ -517,16 +531,21 @@ export const createGuardCommand = (
 			(facts.branch() ?? '').startsWith(workPrefix)
 				? (facts.branch() ?? '').slice(workPrefix.length).split('/')[0]
 				: undefined;
+		const branchName = facts.branch();
 		const stamped =
 			facts.worktreeAgent?.() ??
 			(onWorkBranch !== undefined && onWorkBranch.length > 0
 				? onWorkBranch
-				: undefined);
-		const agentMarker =
-			agentEnvironmentMarker(process.env) ??
-			(stamped === undefined
+				: undefined) ??
+			// The lease names the owner of a unit whatever stamped its tree.
+			(branchName === undefined || facts.inMainWorktree()
 				? undefined
-				: `the worktree delendai made for ${stamped}`);
+				: await facts.leaseAgent?.(branchName));
+		const agentMarker = gitActorMarker({
+			env: process.env,
+			policy,
+			unitAgent: stamped,
+		});
 		if (hook === 'post-checkout') {
 			// A warning is still a limit on how somebody uses their own
 			// checkout; it is for agents, like every other verdict here.
@@ -548,6 +567,7 @@ export const createGuardCommand = (
 		// tree is finished, so the generators run against what landed
 		// (x00559). It never refuses: a merge has already happened.
 		if (hook === 'post-merge') {
+			if (landedAsFastForward(workspace)) return { code: EXIT_CODE.OK };
 			const outcome = refreshGeneratedAfterMerge({
 				root: workspace,
 				paths: GENERATED_REFRESH_PATHS,
@@ -563,11 +583,29 @@ export const createGuardCommand = (
 			// agent would have to explain to itself.
 			if (outcome.paths.length > 0 && !outcome.committed) {
 				process.stderr.write(
-					`delendai guard (post-merge): regenerated ${outcome.paths.join(', ')}, and could not commit ${outcome.paths.length === 1 ? 'it' : 'them'} here. The change is staged; land it through a pull request.\n`,
+					`delendai guard (post-merge): regenerated ${outcome.paths.join(', ')}, and could not commit ${outcome.paths.length === 1 ? 'it' : 'them'} here. The change is staged. ${briefWorkModel(policy).land}\n`,
 				);
 			}
 			return { code: EXIT_CODE.OK };
 		}
+		// A pushed work ref is judged with what is known about its unit.
+		const withUnit = async (
+			operation: IGuardedGitOperation,
+		): Promise<IGuardedGitOperation> => {
+			if (
+				operation.kind !== 'push' ||
+				operation.deleting ||
+				facts.unitRefs === undefined ||
+				!operation.remoteRef.startsWith('refs/heads/')
+			) {
+				return operation;
+			}
+			const unit = await facts.unitRefs(
+				policy,
+				operation.remoteRef.slice('refs/heads/'.length),
+			);
+			return unit === undefined ? operation : { ...operation, unit };
+		};
 		const commits = hook === 'pre-commit' || hook === 'commit-msg';
 		const operations = operationsForHook(
 			hook as IGuardedHook,
@@ -595,9 +633,13 @@ export const createGuardCommand = (
 			},
 		);
 		for (const operation of operations) {
-			const verdict = judgeGitOperation(policy, operation, {
-				agentMarker,
-			});
+			const verdict = judgeGitOperation(
+				policy,
+				await withUnit(operation),
+				{
+					agentMarker,
+				},
+			);
 			if (!verdict.refused) continue;
 			return {
 				code: EXIT_CODE.VALIDATION,
@@ -606,6 +648,11 @@ export const createGuardCommand = (
 					...(verdict.remedy === undefined ? [] : [verdict.remedy]),
 				].join('\n'),
 			};
+		}
+		// A commit that may proceed is a sign of life for its unit; a
+		// heartbeat that fails never refuses the commit.
+		if (hook === 'pre-commit') {
+			await facts.showLife?.(policy).catch(() => undefined);
 		}
 		return { code: EXIT_CODE.OK };
 	},

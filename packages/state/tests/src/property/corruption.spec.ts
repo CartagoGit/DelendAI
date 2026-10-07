@@ -113,7 +113,7 @@ function buildReconcileProducer(): IStateProducer {
 	};
 }
 
-const NUM_RUNS = Number(process.env.STATE_PROPERTY_RUNS ?? 200);
+const NUM_RUNS = Number(process.env.STATE_PROPERTY_RUNS ?? 1000);
 
 describe('Property: corruption recovery WITHOUT replay (q00018 S3)', () => {
 	it(`rebuilds from final snapshot over ${NUM_RUNS} sequences`, () => {

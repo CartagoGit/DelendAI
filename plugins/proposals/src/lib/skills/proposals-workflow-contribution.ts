@@ -4,7 +4,7 @@ import {
 	registerWorkflowContribution,
 	type IAssembleWorkflowContributionsInput,
 } from '@delendai/core/public';
-import { readProposalsIndex } from '@delendai/core/public';
+import { readProposalsIndex } from '../proposals/proposal-summaries.service';
 
 import { PROPOSALS_STABLE_TOOLS } from '../api/proposals-stable-tools';
 
@@ -39,7 +39,6 @@ export const buildProposalsWorkflowContribution = async (
 	const proposalSummaries = await readProposalsIndex(
 		input.workspaceRoot,
 		input.cacheDir,
-		input.readWorkspaceFile,
 	);
 	const actionableCount = countActionableProposals(proposalSummaries);
 	const awaitingReview = countAwaitingReview(proposalSummaries);

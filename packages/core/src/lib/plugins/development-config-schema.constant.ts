@@ -46,6 +46,17 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 		 * report whether they are there, or leave the repository alone.
 		 */
 		guardHooks: z.enum(['install', 'report', 'off']).optional(),
+		/**
+		 * Who the git guard assumes an actor to be when nothing identifies
+		 * it. `agent` (the default for a shared checkout) holds every
+		 * unidentified writer to the workflow; `person` leaves it free.
+		 */
+		guard: z
+			.object({
+				unknownActor: z.enum(['agent', 'person']).optional(),
+			})
+			.strict()
+			.optional(),
 		workRefs: z
 			.object({
 				visibility: z.enum(['visible', 'hidden']).optional(),
@@ -58,7 +69,13 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 				integration: z.string().min(1).optional(),
 				publicationRefPrefix: z.string().optional(),
 				foreignRefPrefixes: z.array(z.string()).optional(),
-				release: z.string().min(1).optional(),
+				release: z
+					.string()
+					.min(1)
+					.describe(
+						'The branch releases land on. Omit it, or name the integration branch, for a project with one branch.',
+					)
+					.optional(),
 				workRefTemplate: z.string().optional(),
 				workRefPrefix: z.string().optional(),
 			})

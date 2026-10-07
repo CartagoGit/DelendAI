@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	blockingRefs,
+	closedPublicationRetirement,
 	containedInGit,
 	containsWith,
 	failingFor,
@@ -152,9 +153,25 @@ describe('containedInGit', () => {
 		expect(containedInGit('base', 'head', gitThat({}))).toBe(true);
 	});
 
+	it('answers yes when the head adds only merges of commits the base holds', () => {
+		expect(
+			containedInGit(
+				'base',
+				'head',
+				gitThat({ ancestorExit: 1 }),
+				() => true,
+			),
+		).toBe(true);
+	});
+
 	it('answers no on git exit 1, which is git saying no', () => {
 		expect(
-			containedInGit('base', 'head', gitThat({ ancestorExit: 1 })),
+			containedInGit(
+				'base',
+				'head',
+				gitThat({ ancestorExit: 1 }),
+				() => false,
+			),
 		).toBe(false);
 	});
 
@@ -357,5 +374,44 @@ describe('failingFor (x00678)', () => {
 				head: undefined,
 			}).failing,
 		).toHaveLength(2);
+	});
+});
+
+describe('closedPublicationRetirement', () => {
+	const policy = {
+		namespacePrefix: 'delendai',
+		workRefPrefix: 'delendai/wip/',
+		publicationRefPrefix: 'delendai/pr/',
+	};
+	const unit = 'minimax-m3.1/review/batch-all-g4/verdicts';
+
+	it('keeps a closed publication under the retired namespace of its unit', () => {
+		expect(
+			closedPublicationRetirement(
+				`delendai/pr/${unit}`,
+				policy,
+				new Set([`delendai/pr/${unit}`]),
+			),
+		).toBe(`refs/delendai/retired/${unit}`);
+	});
+
+	it('leaves it while its unit is still on the forge: the author holds it', () => {
+		expect(
+			closedPublicationRetirement(
+				`delendai/pr/${unit}`,
+				policy,
+				new Set([`delendai/pr/${unit}`, `delendai/wip/${unit}`]),
+			),
+		).toBeUndefined();
+	});
+
+	it('never retires a work ref by this path', () => {
+		expect(
+			closedPublicationRetirement(
+				`delendai/wip/${unit}`,
+				policy,
+				new Set(),
+			),
+		).toBeUndefined();
 	});
 });

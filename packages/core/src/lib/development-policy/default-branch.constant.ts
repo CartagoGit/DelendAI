@@ -23,3 +23,19 @@ export const CONVENTIONAL_TRUNKS = [
 	'develop',
 	'trunk',
 ] as const;
+
+/**
+ * The release branch assumed only when no development policy resolved at
+ * all. With a policy, `branches.release` is the answer and this is never
+ * read.
+ */
+export const UNRESOLVED_POLICY_RELEASE_BRANCH = 'main';
+
+/**
+ * What a plugin protects when no policy resolved: the forge's default
+ * trunk names, kept so a bare host behaves as it always did.
+ */
+export const UNRESOLVED_POLICY_PROTECTED_BRANCHES: readonly string[] = [
+	UNRESOLVED_POLICY_RELEASE_BRANCH,
+	'master',
+];

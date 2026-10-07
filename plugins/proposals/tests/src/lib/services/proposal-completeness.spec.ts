@@ -17,6 +17,7 @@ import {
 	expandDeclaredFiles,
 	guardSlicesComplete,
 	guardTransitionToDone,
+	missingDeclaredFiles,
 	verifyCompletedProposalAsync,
 } from '../../../../src/lib/services/proposal-completeness';
 
@@ -284,6 +285,84 @@ describe('proposal-completeness — proposal-completeness', () => {
 			});
 			expect(result.ok).toBe(false);
 			if (!result.ok) expect(result.code).toBe('missing-declared-files');
+		});
+	});
+
+	describe('what a proposal may leave undelivered', () => {
+		const doc = [
+			'---',
+			'id: x00001',
+			'---',
+			'',
+			'### S1 — the work',
+			'- **Status**: done',
+			'- **Files**: `src/a.ts`, `docs/proposals/review/x00001-the-work.md`',
+			'',
+			'### S2 — given up',
+			'- **Status**: retired — the plan changed',
+			'- **Files**: `src/never-written.ts`',
+			'',
+		].join('\n');
+
+		it('reads a retired slice as retired, and settled', () => {
+			expect(
+				collectSliceStatuses(doc).map((slice) => slice.status),
+			).toEqual(['done', 'retired']);
+		});
+
+		it('owes neither the files of a retired slice nor its own document, wherever that now lives', async () => {
+			await mkdir(join(workdir, 'src'), { recursive: true });
+			await writeFile(join(workdir, 'src/a.ts'), 'export {};\n');
+			expect(await missingDeclaredFiles(doc, workdir)).toEqual([]);
+			// A file of a live slice that is missing is still owed.
+			expect(
+				await missingDeclaredFiles(
+					doc.replace('`src/a.ts`', '`src/gone.ts`'),
+					workdir,
+				),
+			).toEqual(['src/gone.ts']);
+		});
+
+		it('finds another proposal it cites in whichever folder its status moved it to', async () => {
+			await mkdir(join(workdir, 'docs/delendai/proposals/done/feats'), {
+				recursive: true,
+			});
+			await writeFile(
+				join(
+					workdir,
+					'docs/delendai/proposals/done/feats/f00009-other.md',
+				),
+				'---\nid: f00009\n---\n',
+			);
+			const citing = (path: string): string =>
+				[
+					'---',
+					'id: x00001',
+					'---',
+					'',
+					'### S1 — cites',
+					'- **Status**: done',
+					`- **Files**: \`${path}\``,
+					'',
+				].join('\n');
+			expect(
+				await missingDeclaredFiles(
+					citing(
+						'docs/delendai/proposals/ready/feats/f00009-other.md',
+					),
+					workdir,
+				),
+			).toEqual([]);
+			expect(
+				await missingDeclaredFiles(
+					citing(
+						'docs/delendai/proposals/ready/feats/f00010-nowhere.md',
+					),
+					workdir,
+				),
+			).toEqual([
+				'docs/delendai/proposals/ready/feats/f00010-nowhere.md',
+			]);
 		});
 	});
 });

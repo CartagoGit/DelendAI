@@ -59,8 +59,8 @@ Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` ag
 
 | Catalog breakdown snapshot | Tools | Tools/List Bytes | Schema Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes |
 | --- | --- | --- | --- | --- | --- | --- |
-| native core catalog | 31 | 48,242 | 40,101 | 12,704 | 27,397 | 0 |
-| swarm native preset | 152 | 167,939 | 131,006 | 38,948 | 92,058 | 15,811 |
+| native core catalog | 31 | 48,355 | 40,214 | 12,817 | 27,397 | 0 |
+| swarm native preset | 152 | 169,240 | 132,307 | 39,303 | 93,004 | 16,999 |
 
 Task context corpus: `cold start -> search.search -> docs.docs_list -> logs.tail`, measured as `delendai_compact_router { domain: "core", action: "project_context" }` on the `swarm` preset under `managed`.
 
@@ -82,23 +82,23 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 
 | Preset | Title | Measurement Surface | Runtime Surface | Source | Plugins | Tools | Tools/List Bytes | Est. Tokens | Schema Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes | Overview Compact | Round Context | Tools Status | Marginal Status | Load Errors |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| minimal | minimal | native | managed | tokens-gate | 2 | 42 | 56,061 | 14016 | 45,640 | 3,970 | 14,163 | 31,477 | 4,575 | 64 | n/a | within hard | within hard | none |
+| minimal | minimal | native | managed | tokens-gate | 2 | 42 | 56,174 | 14044 | 45,753 | 3,970 | 14,276 | 31,477 | 4,575 | 64 | n/a | within hard | within hard | none |
 | minimal | minimal | adaptive | managed | dynamic-client | 2 | 7 | 6,251 | 1563 | 4,265 | 902 | 997 | 3,268 | 0 | 63 | n/a | within hard | n/a | none |
-| lean | lean | native | managed | tokens-gate | 4 | 55 | 67,031 | 16758 | 53,818 | 4,758 | 16,991 | 36,827 | 8,202 | 64 | n/a | within hard | within hard | none |
+| lean | lean | native | managed | tokens-gate | 4 | 55 | 67,144 | 16786 | 53,931 | 4,758 | 17,104 | 36,827 | 8,202 | 64 | n/a | within hard | within hard | none |
 | lean | lean | adaptive | managed | dynamic-client | 4 | 7 | 6,251 | 1563 | 4,265 | 902 | 997 | 3,268 | 0 | 63 | n/a | within hard | n/a | none |
-| standard | standard | native | managed | tokens-gate | 19 | 107 | 125,028 | 31257 | 98,860 | 9,425 | 28,128 | 70,732 | 10,577 | 67 | n/a | within hard | over warning (9,500B) | none |
+| standard | standard | native | managed | tokens-gate | 19 | 107 | 125,141 | 31286 | 98,973 | 9,425 | 28,241 | 70,732 | 10,577 | 67 | n/a | within hard | over warning (9,500B) | none |
 | standard | standard | adaptive | managed | dynamic-client | 19 | 7 | 6,251 | 1563 | 4,265 | 902 | 997 | 3,268 | 0 | 64 | n/a | within hard | n/a | none |
-| swarm | swarm | native | managed | tokens-gate | 27 | 152 | 167,939 | 41985 | 131,006 | 13,196 | 38,948 | 92,058 | 15,811 | 67 | n/a | within hard | within hard | none |
+| swarm | swarm | native | managed | tokens-gate | 27 | 152 | 169,240 | 42310 | 132,307 | 13,196 | 39,303 | 93,004 | 16,999 | 67 | n/a | within hard | within hard | none |
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 7 | 6,251 | 1563 | 4,265 | 902 | 997 | 3,268 | 0 | 64 | n/a | within hard | n/a | none |
-| full | full | native | managed | tokens-gate | 39 | 182 | 197,311 | 49328 | 153,364 | 15,452 | 45,503 | 107,861 | 15,811 | 67 | n/a | within hard | within hard | none |
+| full | full | native | managed | tokens-gate | 39 | 182 | 198,612 | 49653 | 154,665 | 15,452 | 45,858 | 108,807 | 16,999 | 67 | n/a | within hard | within hard | none |
 | full | full | adaptive | managed | dynamic-client | 39 | 7 | 6,251 | 1563 | 4,265 | 902 | 997 | 3,268 | 0 | 64 | n/a | within hard | n/a | none |
-| dogfood | dogfood | native | managed | tokens-gate | 38 | 227 | 283,839 | 70960 | 225,644 | 21,699 | 63,222 | 162,422 | 77,186 | 67 | 151 | within hard | over warning (70,000B) | none |
+| dogfood | dogfood | native | managed | tokens-gate | 38 | 227 | 285,788 | 71447 | 227,569 | 21,723 | 63,850 | 163,719 | 79,022 | 67 | 151 | within hard | over warning (70,000B) | none |
 | dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,251 | 1563 | 4,265 | 902 | 997 | 3,268 | 0 | 64 | n/a | within hard | n/a | none |
-| web-app | web-app | native | managed | tokens-gate | 18 | 97 | 108,348 | 27087 | 85,058 | 8,183 | 24,740 | 60,318 | 8,202 | 66 | n/a | n/a | n/a | none |
+| web-app | web-app | native | managed | tokens-gate | 18 | 97 | 108,461 | 27116 | 85,171 | 8,183 | 24,853 | 60,318 | 8,202 | 66 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | managed | dynamic-client | 18 | 7 | 6,251 | 1563 | 4,265 | 902 | 997 | 3,268 | 0 | 64 | n/a | n/a | n/a | none |
-| backend-api | backend-api | native | managed | tokens-gate | 16 | 96 | 106,763 | 26691 | 83,696 | 8,140 | 24,771 | 58,925 | 8,202 | 66 | n/a | n/a | n/a | none |
+| backend-api | backend-api | native | managed | tokens-gate | 16 | 96 | 106,876 | 26719 | 83,809 | 8,140 | 24,884 | 58,925 | 8,202 | 66 | n/a | n/a | n/a | none |
 | backend-api | backend-api | adaptive | managed | dynamic-client | 16 | 7 | 6,251 | 1563 | 4,265 | 902 | 997 | 3,268 | 0 | 64 | n/a | n/a | n/a | none |
-| cli-tool | cli-tool | native | managed | tokens-gate | 7 | 62 | 75,950 | 18988 | 60,962 | 5,445 | 18,767 | 42,195 | 8,202 | 64 | n/a | n/a | n/a | none |
+| cli-tool | cli-tool | native | managed | tokens-gate | 7 | 62 | 76,063 | 19016 | 61,075 | 5,445 | 18,880 | 42,195 | 8,202 | 64 | n/a | n/a | n/a | none |
 | cli-tool | cli-tool | adaptive | managed | dynamic-client | 7 | 7 | 6,251 | 1563 | 4,265 | 902 | 997 | 3,268 | 0 | 63 | n/a | n/a | n/a | none |
 
 ## Plugin marginal dashboard — component breakdown by owner
@@ -107,17 +107,17 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 
 | Preset | Measurement Surface | Runtime Surface | Source | Owner | Tools | Tools/List Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Annotations Bytes | Other Bytes | Envelope Bytes | Share of Preset |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| minimal | native | managed | tokens-gate | core | 31 | 48,210 | 3,340 | 12,704 | 27,397 | 0 | 1,639 | 2,387 | 86.1% |
+| minimal | native | managed | tokens-gate | core | 31 | 48,323 | 3,340 | 12,817 | 27,397 | 0 | 1,639 | 2,387 | 86.1% |
 | minimal | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 8.2% |
 | minimal | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 5.8% |
 | minimal | adaptive | managed | dynamic-client | core | 7 | 6,243 | 902 | 997 | 3,268 | 0 | 371 | 539 | 100.0% |
-| lean | native | managed | tokens-gate | core | 31 | 48,210 | 3,340 | 12,704 | 27,397 | 0 | 1,639 | 2,387 | 72.0% |
+| lean | native | managed | tokens-gate | core | 31 | 48,323 | 3,340 | 12,817 | 27,397 | 0 | 1,639 | 2,387 | 72.0% |
 | lean | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 6.8% |
 | lean | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 4.8% |
 | lean | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 12.2% |
 | lean | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 4.1% |
 | lean | adaptive | managed | dynamic-client | core | 7 | 6,243 | 902 | 997 | 3,268 | 0 | 371 | 539 | 100.0% |
-| standard | native | managed | tokens-gate | core | 31 | 48,210 | 3,340 | 12,704 | 27,397 | 0 | 1,639 | 2,387 | 38.6% |
+| standard | native | managed | tokens-gate | core | 31 | 48,323 | 3,340 | 12,817 | 27,397 | 0 | 1,639 | 2,387 | 38.6% |
 | standard | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 3.7% |
 | standard | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 2.6% |
 | standard | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 6.6% |
@@ -136,25 +136,25 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | standard | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 5.5% |
 | standard | native | managed | tokens-gate | agent-orchestrator | 5 | 10,577 | 624 | 1,897 | 7,237 | 0 | 250 | 385 | 8.5% |
 | standard | adaptive | managed | dynamic-client | core | 7 | 6,243 | 902 | 997 | 3,268 | 0 | 371 | 539 | 100.0% |
-| swarm | native | managed | tokens-gate | core | 32 | 49,140 | 3,441 | 12,906 | 27,868 | 0 | 1,693 | 2,464 | 29.3% |
+| swarm | native | managed | tokens-gate | core | 32 | 49,253 | 3,441 | 13,019 | 27,868 | 0 | 1,693 | 2,464 | 29.1% |
 | swarm | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 2.7% |
 | swarm | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 1.9% |
 | swarm | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 4.9% |
 | swarm | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 1.6% |
 | swarm | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 1.5% |
-| swarm | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 3.4% |
-| swarm | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 2.2% |
+| swarm | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 3.3% |
+| swarm | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 2.1% |
 | swarm | native | managed | tokens-gate | refactor | 6 | 6,222 | 319 | 1,696 | 3,226 | 0 | 300 | 462 | 3.7% |
 | swarm | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 3.1% |
 | swarm | native | managed | tokens-gate | test-policy | 2 | 1,784 | 179 | 261 | 1,014 | 0 | 100 | 154 | 1.1% |
 | swarm | native | managed | tokens-gate | database | 5 | 3,927 | 398 | 831 | 1,954 | 0 | 250 | 353 | 2.3% |
-| swarm | native | managed | tokens-gate | container | 5 | 3,295 | 580 | 1,362 | 608 | 0 | 250 | 321 | 2.0% |
-| swarm | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 2.0% |
+| swarm | native | managed | tokens-gate | container | 5 | 3,295 | 580 | 1,362 | 608 | 0 | 250 | 321 | 1.9% |
+| swarm | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 1.9% |
 | swarm | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 2.1% |
 | swarm | native | managed | tokens-gate | error-reporting | 2 | 1,403 | 156 | 750 | 164 | 0 | 100 | 154 | 0.8% |
 | swarm | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 4.1% |
 | swarm | native | managed | tokens-gate | agent-orchestrator | 5 | 10,577 | 624 | 1,897 | 7,237 | 0 | 250 | 385 | 6.3% |
-| swarm | native | managed | tokens-gate | proposals | 8 | 15,811 | 804 | 3,135 | 10,577 | 0 | 400 | 616 | 9.4% |
+| swarm | native | managed | tokens-gate | proposals | 8 | 16,999 | 804 | 3,377 | 11,523 | 0 | 400 | 616 | 10.1% |
 | swarm | native | managed | tokens-gate | notification | 2 | 1,842 | 196 | 227 | 1,094 | 0 | 100 | 154 | 1.1% |
 | swarm | native | managed | tokens-gate | completion | 3 | 2,390 | 396 | 548 | 973 | 0 | 150 | 231 | 1.4% |
 | swarm | native | managed | tokens-gate | logs | 9 | 6,919 | 710 | 2,548 | 2,307 | 0 | 450 | 693 | 4.1% |
@@ -163,15 +163,15 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | swarm | native | managed | tokens-gate | conventions | 5 | 5,065 | 437 | 690 | 3,073 | 0 | 250 | 385 | 3.0% |
 | swarm | native | managed | tokens-gate | forge | 11 | 4,682 | 641 | 2,520 | 0 | 0 | 550 | 671 | 2.8% |
 | swarm | adaptive | managed | dynamic-client | core | 7 | 6,243 | 902 | 997 | 3,268 | 0 | 371 | 539 | 100.0% |
-| full | native | managed | tokens-gate | core | 31 | 48,271 | 3,361 | 12,818 | 27,323 | 0 | 1,640 | 2,387 | 24.5% |
+| full | native | managed | tokens-gate | core | 31 | 48,384 | 3,361 | 12,931 | 27,323 | 0 | 1,640 | 2,387 | 24.4% |
 | full | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 2.3% |
 | full | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 1.6% |
-| full | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 4.2% |
+| full | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 4.1% |
 | full | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 1.4% |
 | full | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 1.3% |
-| full | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 2.9% |
+| full | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 2.8% |
 | full | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 1.8% |
-| full | native | managed | tokens-gate | refactor | 6 | 6,222 | 319 | 1,696 | 3,226 | 0 | 300 | 462 | 3.2% |
+| full | native | managed | tokens-gate | refactor | 6 | 6,222 | 319 | 1,696 | 3,226 | 0 | 300 | 462 | 3.1% |
 | full | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 2.7% |
 | full | native | managed | tokens-gate | test-policy | 2 | 1,784 | 179 | 261 | 1,014 | 0 | 100 | 154 | 0.9% |
 | full | native | managed | tokens-gate | database | 5 | 3,927 | 398 | 831 | 1,954 | 0 | 250 | 353 | 2.0% |
@@ -180,8 +180,8 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | full | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 1.8% |
 | full | native | managed | tokens-gate | error-reporting | 2 | 1,403 | 156 | 750 | 164 | 0 | 100 | 154 | 0.7% |
 | full | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 3.5% |
-| full | native | managed | tokens-gate | agent-orchestrator | 5 | 10,577 | 624 | 1,897 | 7,237 | 0 | 250 | 385 | 5.4% |
-| full | native | managed | tokens-gate | proposals | 8 | 15,811 | 804 | 3,135 | 10,577 | 0 | 400 | 616 | 8.0% |
+| full | native | managed | tokens-gate | agent-orchestrator | 5 | 10,577 | 624 | 1,897 | 7,237 | 0 | 250 | 385 | 5.3% |
+| full | native | managed | tokens-gate | proposals | 8 | 16,999 | 804 | 3,377 | 11,523 | 0 | 400 | 616 | 8.6% |
 | full | native | managed | tokens-gate | notification | 2 | 1,842 | 196 | 227 | 1,094 | 0 | 100 | 154 | 0.9% |
 | full | native | managed | tokens-gate | completion | 3 | 2,390 | 396 | 548 | 973 | 0 | 150 | 231 | 1.2% |
 | full | native | managed | tokens-gate | logs | 9 | 6,919 | 710 | 2,548 | 2,307 | 0 | 450 | 693 | 3.5% |
@@ -189,17 +189,17 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | full | native | managed | tokens-gate | test-convention | 3 | 3,184 | 289 | 533 | 1,859 | 0 | 150 | 231 | 1.6% |
 | full | native | managed | tokens-gate | conventions | 5 | 5,065 | 437 | 690 | 3,073 | 0 | 250 | 385 | 2.6% |
 | full | native | managed | tokens-gate | forge | 11 | 4,682 | 641 | 2,520 | 0 | 0 | 550 | 671 | 2.4% |
-| full | native | managed | tokens-gate | web-fetch | 1 | 891 | 70 | 257 | 407 | 0 | 50 | 77 | 0.5% |
+| full | native | managed | tokens-gate | web-fetch | 1 | 891 | 70 | 257 | 407 | 0 | 50 | 77 | 0.4% |
 | full | native | managed | tokens-gate | issues | 1 | 822 | 65 | 33 | 567 | 0 | 50 | 77 | 0.4% |
 | full | native | managed | tokens-gate | api | 3 | 3,613 | 205 | 1,568 | 1,402 | 0 | 150 | 215 | 1.8% |
 | full | native | managed | tokens-gate | prompt-eval | 2 | 2,514 | 139 | 650 | 1,406 | 0 | 100 | 154 | 1.3% |
 | full | native | managed | tokens-gate | audit-orchestrator | 2 | 1,660 | 159 | 446 | 726 | 0 | 100 | 138 | 0.8% |
 | full | native | managed | tokens-gate | browser | 8 | 5,887 | 502 | 1,800 | 2,352 | 0 | 400 | 568 | 3.0% |
 | full | native | managed | tokens-gate | cache | 2 | 2,057 | 153 | 192 | 1,404 | 0 | 103 | 154 | 1.0% |
-| full | native | managed | tokens-gate | external-mcps | 7 | 7,033 | 620 | 777 | 4,522 | 0 | 350 | 539 | 3.6% |
+| full | native | managed | tokens-gate | external-mcps | 7 | 7,033 | 620 | 777 | 4,522 | 0 | 350 | 539 | 3.5% |
 | full | native | managed | tokens-gate | observability | 5 | 5,734 | 423 | 920 | 3,562 | 0 | 250 | 385 | 2.9% |
 | full | adaptive | managed | dynamic-client | core | 7 | 6,243 | 902 | 997 | 3,268 | 0 | 371 | 539 | 100.0% |
-| dogfood | native | managed | tokens-gate | core | 31 | 48,210 | 3,340 | 12,704 | 27,397 | 0 | 1,639 | 2,387 | 17.0% |
+| dogfood | native | managed | tokens-gate | core | 31 | 48,323 | 3,340 | 12,817 | 27,397 | 0 | 1,639 | 2,387 | 16.9% |
 | dogfood | native | managed | tokens-gate | adaptive-optimizer | 3 | 7,693 | 354 | 1,929 | 4,894 | 0 | 150 | 231 | 2.7% |
 | dogfood | native | managed | tokens-gate | audit | 4 | 9,736 | 800 | 1,757 | 6,557 | 0 | 200 | 308 | 3.4% |
 | dogfood | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 2.4% |
@@ -209,29 +209,29 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | dogfood | native | managed | tokens-gate | container | 5 | 3,295 | 580 | 1,362 | 608 | 0 | 250 | 321 | 1.2% |
 | dogfood | native | managed | tokens-gate | conventions | 5 | 5,065 | 437 | 690 | 3,073 | 0 | 250 | 385 | 1.8% |
 | dogfood | native | managed | tokens-gate | context-for-change | 1 | 1,034 | 99 | 163 | 597 | 0 | 50 | 77 | 0.4% |
-| dogfood | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 1.9% |
-| dogfood | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 1.2% |
+| dogfood | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 1.8% |
+| dogfood | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 1.1% |
 | dogfood | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 1.0% |
 | dogfood | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 1.2% |
-| dogfood | native | managed | tokens-gate | forge | 11 | 4,682 | 641 | 2,520 | 0 | 0 | 550 | 671 | 1.7% |
+| dogfood | native | managed | tokens-gate | forge | 11 | 4,682 | 641 | 2,520 | 0 | 0 | 550 | 671 | 1.6% |
 | dogfood | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 1.6% |
 | dogfood | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 0.9% |
 | dogfood | native | managed | tokens-gate | impact-analysis | 2 | 1,904 | 248 | 300 | 1,018 | 0 | 100 | 154 | 0.7% |
 | dogfood | native | managed | tokens-gate | project-health | 1 | 1,318 | 100 | 175 | 876 | 0 | 50 | 77 | 0.5% |
 | dogfood | native | managed | tokens-gate | quality-policy | 2 | 1,101 | 286 | 317 | 164 | 0 | 100 | 154 | 0.4% |
-| dogfood | native | managed | tokens-gate | link-check | 1 | 1,280 | 112 | 33 | 976 | 0 | 50 | 77 | 0.5% |
+| dogfood | native | managed | tokens-gate | link-check | 1 | 1,280 | 112 | 33 | 976 | 0 | 50 | 77 | 0.4% |
 | dogfood | native | managed | tokens-gate | logs | 9 | 6,919 | 710 | 2,548 | 2,307 | 0 | 450 | 693 | 2.4% |
 | dogfood | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 2.9% |
 | dogfood | native | managed | tokens-gate | notification | 2 | 1,842 | 196 | 227 | 1,094 | 0 | 100 | 154 | 0.6% |
-| dogfood | native | managed | tokens-gate | orchestrator-runner | 11 | 13,242 | 1,028 | 3,579 | 6,738 | 0 | 550 | 847 | 4.7% |
+| dogfood | native | managed | tokens-gate | orchestrator-runner | 11 | 13,242 | 1,028 | 3,579 | 6,738 | 0 | 550 | 847 | 4.6% |
 | dogfood | native | managed | tokens-gate | agent-orchestrator | 5 | 10,577 | 624 | 1,897 | 7,237 | 0 | 250 | 385 | 3.7% |
 | dogfood | native | managed | tokens-gate | perf | 3 | 3,648 | 281 | 969 | 1,952 | 0 | 150 | 215 | 1.3% |
-| dogfood | native | managed | tokens-gate | proposals | 50 | 77,186 | 4,807 | 14,798 | 49,220 | 0 | 2,620 | 3,850 | 27.2% |
+| dogfood | native | managed | tokens-gate | proposals | 50 | 79,022 | 4,831 | 15,313 | 50,517 | 0 | 2,620 | 3,850 | 27.7% |
 | dogfood | native | managed | tokens-gate | project-kpis | 1 | 4,093 | 118 | 996 | 2,816 | 0 | 50 | 77 | 1.4% |
 | dogfood | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 1.3% |
 | dogfood | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 2.0% |
 | dogfood | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 1.1% |
-| dogfood | native | managed | tokens-gate | security | 4 | 5,561 | 370 | 602 | 3,945 | 0 | 200 | 308 | 2.0% |
+| dogfood | native | managed | tokens-gate | security | 4 | 5,561 | 370 | 602 | 3,945 | 0 | 200 | 308 | 1.9% |
 | dogfood | native | managed | tokens-gate | status-marker | 3 | 2,043 | 197 | 417 | 972 | 0 | 150 | 215 | 0.7% |
 | dogfood | native | managed | tokens-gate | tech-debt | 1 | 1,334 | 117 | 82 | 978 | 0 | 50 | 77 | 0.5% |
 | dogfood | native | managed | tokens-gate | test-convention | 3 | 3,184 | 289 | 533 | 1,859 | 0 | 150 | 231 | 1.1% |
@@ -239,14 +239,14 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | dogfood | native | managed | tokens-gate | usage-tracking | 3 | 1,870 | 235 | 795 | 343 | 0 | 150 | 231 | 0.7% |
 | dogfood | native | managed | tokens-gate | error-reporting | 2 | 1,403 | 156 | 750 | 164 | 0 | 100 | 154 | 0.5% |
 | dogfood | adaptive | managed | dynamic-client | core | 7 | 6,243 | 902 | 997 | 3,268 | 0 | 371 | 539 | 100.0% |
-| web-app | native | managed | tokens-gate | core | 31 | 48,210 | 3,340 | 12,704 | 27,397 | 0 | 1,639 | 2,387 | 44.5% |
+| web-app | native | managed | tokens-gate | core | 31 | 48,323 | 3,340 | 12,817 | 27,397 | 0 | 1,639 | 2,387 | 44.6% |
 | web-app | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 4.2% |
 | web-app | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 3.0% |
 | web-app | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 7.6% |
 | web-app | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 2.5% |
 | web-app | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 2.4% |
 | web-app | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 5.2% |
-| web-app | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 3.4% |
+| web-app | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 3.3% |
 | web-app | native | managed | tokens-gate | refactor | 6 | 6,222 | 319 | 1,696 | 3,226 | 0 | 300 | 462 | 5.7% |
 | web-app | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 4.9% |
 | web-app | native | managed | tokens-gate | test-policy | 2 | 1,784 | 179 | 261 | 1,014 | 0 | 100 | 154 | 1.6% |
@@ -257,7 +257,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | web-app | native | managed | tokens-gate | web-fetch | 1 | 891 | 70 | 257 | 407 | 0 | 50 | 77 | 0.8% |
 | web-app | native | managed | tokens-gate | status-marker | 3 | 2,043 | 197 | 417 | 972 | 0 | 150 | 215 | 1.9% |
 | web-app | adaptive | managed | dynamic-client | core | 7 | 6,243 | 902 | 997 | 3,268 | 0 | 371 | 539 | 100.0% |
-| backend-api | native | managed | tokens-gate | core | 31 | 48,210 | 3,340 | 12,704 | 27,397 | 0 | 1,639 | 2,387 | 45.2% |
+| backend-api | native | managed | tokens-gate | core | 31 | 48,323 | 3,340 | 12,817 | 27,397 | 0 | 1,639 | 2,387 | 45.3% |
 | backend-api | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 4.3% |
 | backend-api | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 3.0% |
 | backend-api | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 7.7% |
@@ -273,14 +273,14 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | backend-api | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 3.3% |
 | backend-api | native | managed | tokens-gate | container | 5 | 3,295 | 580 | 1,362 | 608 | 0 | 250 | 321 | 3.1% |
 | backend-api | adaptive | managed | dynamic-client | core | 7 | 6,243 | 902 | 997 | 3,268 | 0 | 371 | 539 | 100.0% |
-| cli-tool | native | managed | tokens-gate | core | 31 | 48,210 | 3,340 | 12,704 | 27,397 | 0 | 1,639 | 2,387 | 63.5% |
+| cli-tool | native | managed | tokens-gate | core | 31 | 48,323 | 3,340 | 12,817 | 27,397 | 0 | 1,639 | 2,387 | 63.6% |
 | cli-tool | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 6.0% |
 | cli-tool | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 4.3% |
 | cli-tool | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 10.8% |
 | cli-tool | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 3.6% |
 | cli-tool | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 4.6% |
 | cli-tool | native | managed | tokens-gate | perf | 3 | 3,648 | 281 | 969 | 1,952 | 0 | 150 | 215 | 4.8% |
-| cli-tool | native | managed | tokens-gate | test-policy | 2 | 1,784 | 179 | 261 | 1,014 | 0 | 100 | 154 | 2.4% |
+| cli-tool | native | managed | tokens-gate | test-policy | 2 | 1,784 | 179 | 261 | 1,014 | 0 | 100 | 154 | 2.3% |
 | cli-tool | adaptive | managed | dynamic-client | core | 7 | 6,243 | 902 | 997 | 3,268 | 0 | 371 | 539 | 100.0% |
 
 ## Top tools by bytes (dogfood preset, native surface)
@@ -291,6 +291,7 @@ The 20 individual tools that cost the most tools/list bytes in the largest gover
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | delendai_adaptive-optimizer_adaptive_facade | adaptive-optimizer | 4,589 | 45 | 127 | 757 | 3,533 | 0 | 50 | 77 |
 | delendai_agent-orchestrator_dispatch | agent-orchestrator | 4,246 | 38 | 113 | 590 | 3,378 | 0 | 50 | 77 |
+| delendai_proposals_close_slice | proposals | 4,216 | 32 | 75 | 932 | 3,050 | 0 | 50 | 77 |
 | delendai_project-kpis_project_kpis | project-kpis | 4,093 | 36 | 118 | 996 | 2,816 | 0 | 50 | 77 |
 | delendai_configuration_center | core | 3,796 | 31 | 92 | 203 | 3,334 | 0 | 59 | 77 |
 | delendai_auto-plugin-selector_plugins_recommend | auto-plugin-selector | 3,726 | 49 | 154 | 1,148 | 2,248 | 0 | 50 | 77 |
@@ -298,17 +299,16 @@ The 20 individual tools that cost the most tools/list bytes in the largest gover
 | delendai_create_project | core | 3,632 | 25 | 114 | 3,021 | 343 | 0 | 52 | 77 |
 | delendai_audit_audit_run | audit | 3,611 | 26 | 277 | 988 | 2,193 | 0 | 50 | 77 |
 | delendai_proposals_proposals_close_plan | proposals | 3,405 | 41 | 141 | 517 | 2,579 | 0 | 50 | 77 |
-| delendai_proposals_review_queue | proposals | 3,345 | 33 | 92 | 276 | 2,817 | 0 | 50 | 77 |
-| delendai_proposals_close_slice | proposals | 3,231 | 32 | 75 | 798 | 2,199 | 0 | 50 | 77 |
+| delendai_proposals_review_queue | proposals | 3,396 | 33 | 92 | 276 | 2,868 | 0 | 50 | 77 |
+| delendai_proposals_agent_lock | proposals | 3,179 | 31 | 136 | 436 | 2,449 | 0 | 50 | 77 |
 | delendai_proposals_proposal_transition | proposals | 3,127 | 40 | 78 | 1,072 | 1,810 | 0 | 50 | 77 |
-| delendai_proposals_agent_lock | proposals | 3,125 | 31 | 136 | 382 | 2,449 | 0 | 50 | 77 |
 | delendai_audit_audit_consolidate | audit | 2,891 | 34 | 269 | 314 | 2,147 | 0 | 50 | 77 |
 | delendai_metrics | core | 2,813 | 18 | 72 | 88 | 2,505 | 0 | 53 | 77 |
 | delendai_scaffold | core | 2,741 | 19 | 103 | 1,756 | 732 | 0 | 54 | 77 |
 | delendai_create_plugin | core | 2,724 | 24 | 194 | 535 | 1,843 | 0 | 51 | 77 |
 | delendai_proposals_proposal_get | proposals | 2,638 | 33 | 44 | 33 | 2,401 | 0 | 50 | 77 |
+| delendai_proposals_proposals_db_reconcile | proposals | 2,584 | 43 | 122 | 284 | 1,989 | 0 | 69 | 77 |
 | delendai_rules_check_rules | rules | 2,576 | 28 | 84 | 86 | 2,251 | 0 | 50 | 77 |
-| delendai_auto-agent-selector_auto_run | auto-agent-selector | 2,572 | 39 | 149 | 513 | 1,744 | 0 | 50 | 77 |
 
 ## CHECK-007 — tokenizer cost by preset
 
@@ -316,23 +316,23 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 
 | Preset | Measurement Surface | Runtime Surface | Source | Tools/List Bytes | gpt-5.4 Tokens | claude-sonnet-4 Tokens | gemini-2.5-pro Tokens | Confidence (per model, in order above) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| minimal | native | managed | tokens-gate | 56,061 | 12878 | 12929 | 14016 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| minimal | native | managed | tokens-gate | 56,174 | 12910 | 12961 | 14044 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | minimal | adaptive | managed | dynamic-client | 6,251 | 1412 | 1419 | 1563 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| lean | native | managed | tokens-gate | 67,031 | 15443 | 15492 | 16758 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| lean | native | managed | tokens-gate | 67,144 | 15475 | 15524 | 16786 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | lean | adaptive | managed | dynamic-client | 6,251 | 1412 | 1419 | 1563 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| standard | native | managed | tokens-gate | 125,028 | 29115 | 29105 | 31257 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| standard | native | managed | tokens-gate | 125,141 | 29147 | 29137 | 31286 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | standard | adaptive | managed | dynamic-client | 6,251 | 1412 | 1419 | 1563 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| swarm | native | managed | tokens-gate | 167,939 | 39240 | 39261 | 41985 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| swarm | native | managed | tokens-gate | 169,240 | 39571 | 39591 | 42310 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | swarm | adaptive | managed | dynamic-client | 6,251 | 1412 | 1419 | 1563 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| full | native | managed | tokens-gate | 197,311 | 46198 | 46204 | 49328 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| full | native | managed | tokens-gate | 198,612 | 46529 | 46534 | 49653 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | adaptive | managed | dynamic-client | 6,251 | 1412 | 1419 | 1563 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| dogfood | native | managed | tokens-gate | 283,839 | 67040 | 66934 | 70960 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| dogfood | native | managed | tokens-gate | 285,788 | 67533 | 67422 | 71447 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | dogfood | adaptive | managed | dynamic-client | 6,251 | 1412 | 1419 | 1563 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| web-app | native | managed | tokens-gate | 108,348 | 25173 | 25222 | 27087 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| web-app | native | managed | tokens-gate | 108,461 | 25205 | 25254 | 27116 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | adaptive | managed | dynamic-client | 6,251 | 1412 | 1419 | 1563 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| backend-api | native | managed | tokens-gate | 106,763 | 24753 | 24800 | 26691 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| backend-api | native | managed | tokens-gate | 106,876 | 24785 | 24832 | 26719 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | backend-api | adaptive | managed | dynamic-client | 6,251 | 1412 | 1419 | 1563 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| cli-tool | native | managed | tokens-gate | 75,950 | 17526 | 17570 | 18988 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| cli-tool | native | managed | tokens-gate | 76,063 | 17558 | 17602 | 19016 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | cli-tool | adaptive | managed | dynamic-client | 6,251 | 1412 | 1419 | 1563 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 
 ## Documented deficits (kept, not auto-bumped)
@@ -345,15 +345,15 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 
 | Preset | Adaptive Bytes | Adaptive Status | Adaptive Deficit | Native Bytes | Native Status | Native Deficit |
 | --- | --- | --- | --- | --- | --- | --- |
-| minimal | 6,251 | ok | — | 56,061 | ok | — |
-| lean | 6,251 | ok | — | 67,031 | ok | — |
-| standard | 6,251 | ok | — | 125,028 | ok | — |
-| swarm | 6,251 | ok | — | 167,939 | ok | — |
-| full | 6,251 | ok | — | 197,311 | ok | — |
-| dogfood | 6,251 | ok | — | 283,839 | ok | — |
-| web-app | 6,251 | n/a | — | 108,348 | n/a | — |
-| backend-api | 6,251 | n/a | — | 106,763 | n/a | — |
-| cli-tool | 6,251 | n/a | — | 75,950 | n/a | — |
+| minimal | 6,251 | ok | — | 56,174 | ok | — |
+| lean | 6,251 | ok | — | 67,144 | ok | — |
+| standard | 6,251 | ok | — | 125,141 | ok | — |
+| swarm | 6,251 | ok | — | 169,240 | ok | — |
+| full | 6,251 | ok | — | 198,612 | ok | — |
+| dogfood | 6,251 | ok | — | 285,788 | ok | — |
+| web-app | 6,251 | n/a | — | 108,461 | n/a | — |
+| backend-api | 6,251 | n/a | — | 106,876 | n/a | — |
+| cli-tool | 6,251 | n/a | — | 76,063 | n/a | — |
 
 Metrics for plugin lifecycle transitions (c00134). Counters are 
 process-local aggregates; the router emits them on each transition 

@@ -38,6 +38,9 @@ import type { IIntegrationPhaseResult } from './integration-evidence.interface';
 
 export type { IIntegrationPhaseResult } from './integration-evidence.interface';
 
+/** The journal's word for a checkpoint kept, and later dropped, as retired work. */
+const RETIRED_DECISION = 'retired';
+
 export const runIntegrationEvidencePhase = async (input: {
 	readonly ports: IStartupStatePorts;
 	readonly git: IStartupGitSeam;
@@ -51,10 +54,35 @@ export const runIntegrationEvidencePhase = async (input: {
 	 * work ref, which is not a loss (x00702).
 	 */
 	readonly keptBy?: readonly string[];
+	/**
+	 * Commits the forge keeps as retired work. A unit given up with
+	 * `work retire` is kept there, so its work ref is gone and nothing is
+	 * lost.
+	 */
+	readonly retiredTips?: readonly string[];
 	readonly now: number;
 }): Promise<IIntegrationPhaseResult> => {
 	const findings: IStartupFinding[] = [];
 	let generationsIntegrated = 0;
+	// Checkpoints once seen kept as retired work. Retired work is dropped
+	// from the forge once somebody reads it and finds it keeps nothing, or
+	// once its content landed; the record that it was given up on purpose
+	// outlives the ref, so dropping it does not turn it into lost work.
+	const seenRetired = new Set(
+		input.ports.journal
+			.listAll()
+			.filter((event) => event.eventKind === 'recovery-decision')
+			.flatMap((event) => {
+				const payload = event.payload as {
+					readonly decision?: unknown;
+					readonly sha?: unknown;
+				} | null;
+				return payload?.decision === RETIRED_DECISION &&
+					typeof payload.sha === 'string'
+					? [payload.sha]
+					: [];
+			}),
+	);
 	if (input.integrationSha.length === 0) {
 		return { findings, counters: { generationsIntegrated } };
 	}
@@ -125,6 +153,38 @@ export const runIntegrationEvidencePhase = async (input: {
 						kept = true;
 						break;
 					}
+				}
+				const keptRetired =
+					!kept &&
+					(input.retiredTips ?? []).includes(generation.wipHeadSha);
+				if (keptRetired && !seenRetired.has(generation.wipHeadSha)) {
+					// Once per checkpoint: the record that outlives the ref.
+					input.ports.journal.append({
+						eventKind: 'recovery-decision',
+						workUnitUid: unit.uid,
+						generation: generation.generation,
+						occurredAt: input.now,
+						payload: {
+							decision: RETIRED_DECISION,
+							sha: generation.wipHeadSha,
+							ref: generation.wipRef,
+						},
+					});
+					seenRetired.add(generation.wipHeadSha);
+				}
+				const retired =
+					keptRetired || seenRetired.has(generation.wipHeadSha);
+				if (retired) {
+					findings.push(
+						finding({
+							code: 'integration-evidence.checkpoint-retired',
+							phase: 'integration-evidence',
+							kind: 'note',
+							subject: generation.wipRef,
+							message: `The ref ${generation.wipRef} is gone and its checkpoint ${generation.wipHeadSha} is kept on the forge as retired work: it was given up on purpose, not lost.`,
+						}),
+					);
+					continue;
 				}
 				if (kept) {
 					findings.push(

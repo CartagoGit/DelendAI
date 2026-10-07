@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -14,6 +14,7 @@ import {
 } from '@delendai/commit-policy/lib/tools/run-tool';
 import { bindWriteRoot } from '@delendai/core/lib/shared/bind-write-root';
 import { createFakeToolServer } from '@delendai/test-kit/public';
+import { writeProposalDocuments } from '../triggers/proposal-documents.fixture';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 
@@ -70,11 +71,9 @@ const writeIndex = async (
 		}[];
 	}[],
 ): Promise<void> => {
-	await mkdir(join(workspaceRoot, 'docs', 'proposals'), { recursive: true });
-	await writeFile(
-		join(workspaceRoot, 'docs', 'proposals', 'index.json'),
-		JSON.stringify({ proposals }, null, 2),
-		'utf8',
+	await writeProposalDocuments(
+		join(workspaceRoot, 'docs', 'proposals'),
+		proposals,
 	);
 };
 
@@ -244,7 +243,14 @@ describe('commit_policy_run reads the slice from the checkout the call names (x0
 		git(parent, 'init', '-q', '-b', 'develop', 'checkout');
 		git(server, 'config', 'user.email', 'spec@example.test');
 		git(server, 'config', 'user.name', 'Spec');
-		git(server, 'commit', '-q', '--allow-empty', '-m', 'chore: base');
+		// Declared, because an undeclared project is held to the default
+		// model, which keeps its shared checkout for work refs.
+		await writeFile(
+			join(server, 'delendai.config.json'),
+			JSON.stringify({ development: { profile: 'shared-direct' } }),
+		);
+		git(server, 'add', 'delendai.config.json');
+		git(server, 'commit', '-q', '-m', 'chore: base');
 		git(server, 'worktree', 'add', '-q', '-b', 'work', worktree);
 		await writeIndex(worktree, [
 			{

@@ -74,6 +74,12 @@ import {
 	type IShadowReconcileInput,
 } from '@delendai/proposals-sqlite';
 
+import type { IRefDrift } from '../contracts/interfaces/proposal-markdown-at-commit.interface';
+import {
+	collectProposalMarkdownAtCommit,
+	refDrift,
+} from '../services/proposal-markdown-at-commit';
+
 /** Wire-level tool name suffix; the namespace prefix is prepended. */
 export const DB_RECONCILE_TOOL_SUFFIX = 'db_reconcile';
 
@@ -130,6 +136,13 @@ export interface IDbReconcileInput {
 	readonly proposalsDirAbs: string;
 	/** Commit the projection is attributed to. Defaults to the repo HEAD. */
 	readonly sourceCommit?: string;
+	/**
+	 * Project the tree as this commit holds it (a branch, tag or SHA),
+	 * resolved to one SHA before anything is read, instead of the
+	 * worktree. Two runs at the same commit read the same bytes; the
+	 * projection is attributed to that SHA.
+	 */
+	readonly ref?: string;
 	/** Build the staging DB and validate it, but never promote. */
 	readonly dryRun?: boolean;
 	/** Injected clock, so specs get a deterministic `updated_at`. */
@@ -190,10 +203,23 @@ export type IDbReconcileOutput = {
 	readonly reason: string | null;
 	readonly startedAt: number;
 	readonly durationMs: number;
+	/**
+	 * Set when `ref` no longer names the commit the run read: the branch
+	 * moved or went away meanwhile. `null` when it did not, or no `ref`
+	 * was given.
+	 */
+	readonly drift: IRefDrift | null;
 };
 
 export const proposalsDbReconcileInputSchema = z.object({
 	sourceCommit: z.string().min(1).optional(),
+	ref: z
+		.string()
+		.min(1)
+		.optional()
+		.describe(
+			'Project the proposals as this commit holds them (branch, tag or SHA), resolved once to a SHA, instead of the working tree.',
+		),
 	dryRun: z.boolean().optional(),
 });
 
@@ -236,6 +262,13 @@ export const proposalsDbReconcileOutputSchema = z.object({
 	reason: z.string().nullable(),
 	startedAt: z.number().int().nonnegative(),
 	durationMs: z.number().int().nonnegative(),
+	drift: z
+		.object({
+			from: z.string(),
+			to: z.string().nullable(),
+			reason: z.enum(['ref-moved', 'ref-gone']),
+		})
+		.nullable(),
 });
 
 /**
@@ -456,13 +489,30 @@ export const reconcileProposalsDb = (
 	const wallStart = Date.now();
 	const startedAt = input.now ?? wallStart;
 	const paths = resolveProposalsDbPaths(input.workspaceRoot);
+	const atCommit =
+		input.ref === undefined
+			? undefined
+			: collectProposalMarkdownAtCommit(
+					input.workspaceRoot,
+					input.proposalsDirAbs,
+					input.ref,
+				);
 	const sourceCommit =
-		input.sourceCommit ?? resolveHeadCommit(input.workspaceRoot);
+		atCommit?.sha ??
+		input.sourceCommit ??
+		resolveHeadCommit(input.workspaceRoot);
 	const dryRun = input.dryRun === true;
 	const created = !existsSync(paths.databasePath);
-	const files = collectProposalMarkdown(input.proposalsDirAbs);
+	const files =
+		atCommit?.files ?? collectProposalMarkdown(input.proposalsDirAbs);
 	const preflight = preflightProposalFiles(files, sourceCommit);
 
+	// Asked when the run is done, so a branch that moved while it read the
+	// commit is reported rather than silently left behind.
+	const driftAfterRun = (): IRefDrift | null =>
+		input.ref === undefined || atCommit === undefined
+			? null
+			: refDrift(input.workspaceRoot, input.ref, atCommit.sha);
 	const base = {
 		created,
 		dryRun,
@@ -512,6 +562,7 @@ export const reconcileProposalsDb = (
 	if (staged.status !== 'ok') {
 		return {
 			...base,
+			drift: driftAfterRun(),
 			status: 'rejected',
 			logicalDigest: staged.stagingDigest,
 			proposals: 0,
@@ -531,6 +582,7 @@ export const reconcileProposalsDb = (
 		removeStagingArtifacts(paths.stagingPath);
 		return {
 			...base,
+			drift: driftAfterRun(),
 			status: 'ok',
 			logicalDigest: staged.stagingDigest,
 			proposals: 0,
@@ -561,6 +613,7 @@ export const reconcileProposalsDb = (
 
 	return {
 		...base,
+		drift: driftAfterRun(),
 		status: applied.status,
 		logicalDigest: applied.logicalDigest ?? staged.stagingDigest,
 		proposals: applied.proposalsApplied,
@@ -592,7 +645,7 @@ export const buildDbReconcileToolRegistration = (
 				{
 					title: 'Reconcile the proposals DB from markdown',
 					description:
-						'Projects the proposal markdown tree into the operational SQLite database (.cache/delendai/state/proposals.sqlite) through the shadow -> validate -> promote pipeline. Markdown stays the source of truth; the database is a derived, deterministically rebuildable projection. Creates the database when it does not exist, updates it when it does, and is idempotent: two runs over the same tree yield the same logical digest and duplicate no rows. When staging validation fails the active database is left untouched and the reason is returned.',
+						'Projects the proposal markdown tree into the operational SQLite database (.cache/delendai/state/proposals.sqlite) through the shadow -> validate -> promote pipeline. Markdown stays the source of truth; the database is a derived, deterministically rebuildable projection. By default it reads the working tree; with `ref` it reads the tree a commit holds, resolved once to a SHA, so two runs at one commit give one projection. Creates the database when it does not exist, updates it when it does, and is idempotent: two runs over the same tree yield the same logical digest and duplicate no rows. When staging validation fails the active database is left untouched and the reason is returned.',
 					inputSchema: proposalsDbReconcileInputSchema,
 					outputSchema: withOkEnvelope(
 						proposalsDbReconcileOutputSchema,
@@ -607,6 +660,9 @@ export const buildDbReconcileToolRegistration = (
 						proposalsDirAbs: options.proposalsDirAbs,
 						...(parsed.sourceCommit !== undefined
 							? { sourceCommit: parsed.sourceCommit }
+							: {}),
+						...(parsed.ref !== undefined
+							? { ref: parsed.ref }
 							: {}),
 						...(parsed.dryRun !== undefined
 							? { dryRun: parsed.dryRun }

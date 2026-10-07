@@ -26,8 +26,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
+	approvalsAdded,
+	approvalsNotBy,
 	type IReviewIndependence,
 	unapprovedSlices,
+	unclaimedProposals,
 } from '@delendai/proposals/public';
 
 import { declaredBranches } from '../lib/declared-branches';
@@ -38,6 +41,8 @@ const DONE_PREFIX = 'docs/delendai/proposals/done/';
 // The rule lives in the proposals plugin, the same one every path to
 // `done` applies (x00718).
 export { unapprovedSlices } from '@delendai/proposals/public';
+// So do the predicates `review finish` asks before a pack is published.
+export { approvalsAdded, approvalsNotBy, unclaimedProposals };
 
 /**
  * The project's review policy, read where the proposals plugin reads it:
@@ -63,7 +68,7 @@ const reviewPolicyOf = (
 	return {
 		requirePeerReview: options.requirePeerReview !== false,
 		reviewIndependence:
-			options.reviewIndependence === 'instance' ? 'instance' : 'model',
+			options.reviewIndependence === 'model' ? 'model' : 'instance',
 	};
 };
 
@@ -86,33 +91,6 @@ export const agentOfRef = (
 	}
 	return undefined;
 };
-
-/**
- * The approvals a diff adds that are not its author's (x00715).
- *
- * `reviewer ≠ implementer` compares names an agent declares. An approval
- * that enters the integration branch through the pull request of its
- * reviewer's own unit ties the declared name to the unit that did the
- * review: approving as someone else then means entering, publishing and
- * approving under that name, and any mismatch between the three is caught
- * here, on every host.
- */
-export const approvalsNotBy = (
-	unifiedDiff: string,
-	author: string,
-): readonly string[] =>
-	approvalsAdded(unifiedDiff).filter(
-		(approver) => approver.toLowerCase() !== author.toLowerCase(),
-	);
-
-/** Every approval a unified diff adds, by its approver. */
-export const approvalsAdded = (unifiedDiff: string): readonly string[] =>
-	unifiedDiff.split('\n').flatMap((line) => {
-		const approver = line.match(
-			/^\+[-*]\s*review-log:\s*approved by\s+(\S+)/iu,
-		)?.[1];
-		return approver === undefined ? [] : [approver];
-	});
 
 /**
  * The kind of work a ref names: the segment after its agent
@@ -311,6 +289,30 @@ const main = async (): Promise<number> => {
 			`✖ closed-with-independent-approval: ${head} is ${kind} work, and adds approvals by ${[...new Set(approvals)].join(', ')}. An approval enters through a review unit: \`delendai review next\`.`,
 		);
 		return 1;
+	}
+	if (kind === 'review') {
+		const unclaimed = unclaimedProposals(
+			git(root, [
+				'diff',
+				'--name-only',
+				'--no-renames',
+				base,
+				'HEAD',
+				'--',
+				'docs/delendai/proposals/',
+			]).split('\n'),
+			git(root, [
+				'log',
+				'--format=%(trailers:key=Claims,valueonly,separator=%x2C)',
+				`${base}..HEAD`,
+			]).split(/[\n,]/u),
+		);
+		if (unclaimed.length > 0) {
+			console.error(
+				`✖ closed-with-independent-approval: ${head} is a review pack, and changes ${unclaimed.join(', ')} without having claimed ${unclaimed.length === 1 ? 'it' : 'them'}. A pack changes the proposals its own commits claim (\`delendai review next\` claims before it reads); what belongs to another pack lands with that pack.`,
+			);
+			return 1;
+		}
 	}
 	if (foreign.length > 0 && !authorized) {
 		console.error(

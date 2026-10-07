@@ -1,7 +1,7 @@
 // effect-boundary-authorized: Reads persisted usage-tracking artifacts to assemble KPI snapshots when source rollups already live on disk.
 import { access } from 'node:fs/promises';
 
-import { truncateIfTooLarge } from '@delendai/core/public';
+import { readWorkflowKpis, truncateIfTooLarge } from '@delendai/core/public';
 import {
 	buildSummary,
 	readInvocations,
@@ -472,6 +472,9 @@ export const buildKpiSnapshot = async (
 	const windowDays = options.windowDays ?? DEFAULT_KPI_WINDOW_DAYS;
 	const maxBytes = options.maxBytes ?? DEFAULT_KPI_MAX_BYTES;
 	const nowMs = now.getTime();
+	const workflow = await (options.readWorkflow ?? readWorkflowKpis)(
+		options.workspaceRootAbs,
+	);
 	const raw = {
 		contract: 'project-kpis.snapshot',
 		version: 1,
@@ -480,6 +483,7 @@ export const buildKpiSnapshot = async (
 		health: await buildHealthSection(options, generatedAt),
 		usage: await buildUsageSection(options, generatedAt, windowDays, nowMs),
 		delivery: buildDeliverySection(),
+		...(workflow !== undefined ? { workflow } : {}),
 	} satisfies Omit<IKpiSnapshot, 'bytes' | 'truncated' | 'originalBytes'>;
 	return fitSnapshotToBudget(raw, maxBytes);
 };

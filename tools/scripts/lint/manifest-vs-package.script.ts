@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import {
 	loadAllPluginManifests,
 	validatePluginManifest,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
 

@@ -10,24 +10,28 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IScaffoldToolOptions } from '@delendai/core/public';
+import type { IScaffoldToolOptions } from '@delendai/core/lib/scaffold/scaffold-tool';
 import {
 	AGENT_TOOL_PROFILES,
 	type IAgentHostTool,
 } from '../../../../src/lib/agents/agent-tool-profiles';
 import {
-	buildScaffoldReport,
-	buildStandaloneCoreToolRegistrations,
 	createWorkspacePathProvider,
 	scaffoldAgentFile,
+	scaffoldPluginFiles,
+} from '@delendai/core/public';
+import { buildScaffoldReport } from '@delendai/core/lib/scaffold/scaffold-tool';
+import { buildStandaloneCoreToolRegistrations } from '@delendai/core/lib/scaffold/standalone-core-tools';
+import {
 	scaffoldClaudeAgentFile,
 	scaffoldCodexAgentFile,
-	scaffoldHostProject,
-	scaffoldPluginFiles,
-	scaffoldPromptFile,
 	scaffoldSkillFile,
+} from '@delendai/core/lib/scaffold/scaffold-host';
+import {
+	scaffoldHostProject,
+	scaffoldPromptFile,
 	scaffoldToolFile,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 const HOST = {
 	projectName: 'Acme Quest',

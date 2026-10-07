@@ -16,6 +16,17 @@ export interface IZoneRule {
 	/** Path filters handed to vitest for this zone. */
 	readonly paths: (workspaceDirs: readonly string[]) => readonly string[];
 	/**
+	 * Sources of OTHER workspaces this zone's specs read from disk.
+	 *
+	 * The module graph selects a zone when something it imports changed. A
+	 * spec that walks a directory and reads the files it finds imports
+	 * none of them: the architecture specs of one zone scan every plugin
+	 * for a forbidden call, and a plugin that added one was not a reason
+	 * to run them. Its pull request was green, and the integration branch
+	 * went red on the next full run.
+	 */
+	readonly scans?: (changedPath: string) => boolean;
+	/**
 	 * How expensive this zone's specs are RELATIVE to the repository's
 	 * average, measured — never guessed. Omitted means 1.
 	 *

@@ -1,8 +1,12 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
-import { isSelfApproval } from '../shared/independent-approval';
+import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
+import { languageRefusal } from '../services/documentation-language.service';
+import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
+import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../contracts/constants/create-proposal.constant';
+import { adoptCreatedProposalUnit } from '../services/created-proposal-unit.service';
 import {
 	VALIDATE_EVIDENCE_SCHEMA,
 	callerCheckout,
@@ -12,12 +16,22 @@ import {
 	toolOk,
 	withFileMutex,
 	writeFileAtomic,
+	resolveWorkAgentId,
 } from '@delendai/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentNames } from './agent-names.tool';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
-import { verdictClaimRefusal } from '../services/review-claim.service';
+import {
+	approvalNote,
+	commitIsIntegrated,
+	deliveredCommitOf,
+	supersedingDelivery,
+} from '../services/review-verdict-evidence';
+import {
+	reviewUnitAgent,
+	verdictClaimRefusal,
+} from '../services/review-claim.service';
 import { canonicalRoleOf } from '../shared/agent-conventions';
 import { toolErrorEnvelope } from '../shared/tool-envelope';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
@@ -40,6 +54,7 @@ import {
 } from '../contracts/schemas/proposal-kind.schema';
 import { readTextOrNull } from '../proposals/index-reader';
 import { appendPeerReviewJsonl } from '../shared/peer-review-log';
+import { findExistingProposal } from '../proposals/existing-proposal';
 import { escapeRegExp, slugFromTitle } from '../shared/string-helpers';
 import {
 	parseProposalSlicePlan,
@@ -95,6 +110,12 @@ import type {
 	IAuthoringToolOptions,
 	ICloseSliceValidationDecision,
 } from './authoring-options';
+import type {
+	ICloseGateDeps,
+	ICloseSliceGateReport,
+	ICloseSliceQualityResult,
+} from '../contracts/interfaces/close-slice-gate.interface';
+import { runCloseSliceGate } from './close-slice-gate';
 import {
 	maybePersistAfterSlice,
 	type IPersistResult,
@@ -120,6 +141,19 @@ export { readActiveLocks } from './authoring-options';
 // close-slice validation below that deadline so callers receive the
 // structured validation error and the document mutex is always released.
 const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
+const CLOSE_SLICE_GATE_SCHEMA = z
+	.object({
+		state: z.enum(['pass', 'fail', 'pending', 'unverifiable']),
+		reused: z.boolean(),
+		handle: z.string().optional(),
+		tree: z.string().optional(),
+		certifiedBy: z
+			.enum(['forge-check', 'landing-certification', 'recorded-gate'])
+			.optional(),
+		evidence: z.string().optional(),
+		nextAction: z.string().optional(),
+	})
+	.optional();
 const ISO_DATE_LENGTH = 10;
 const TIMEOUT_EXIT_CODE = 124;
 
@@ -135,15 +169,12 @@ type ICloseSliceThrownError = Error & {
 	readonly kind?:
 		| 'validation-error'
 		| 'quality-failed'
+		| 'gate-pending'
+		| 'gate-unverifiable'
 		| 'peer-review-required';
 	readonly output?: string;
 	readonly persist?: IPersistResult;
-	readonly detail?: {
-		readonly ok: boolean;
-		readonly severity: 'ok' | 'error';
-		readonly findings: readonly string[];
-		readonly summary?: { readonly ok: boolean; readonly scopes: number };
-	};
+	readonly detail?: ICloseSliceQualityResult;
 	readonly validationDecision?: ICloseSliceValidationDecision;
 };
 
@@ -305,6 +336,46 @@ const requireProposalReviewEvidence = (
 	return null;
 };
 
+/** An approval of a commit the integration branch does not have. */
+const unintegratedEvidenceError = async (
+	run: IGitRunner,
+	integration: string | undefined,
+	commit: string | undefined,
+): Promise<IToolTextResult | null> => {
+	if (integration === undefined || commit === undefined) return null;
+	return (await commitIsIntegrated(run, integration, commit)) !== false
+		? null
+		: toApproveEvidenceError(
+				`evidence.commitHash ${commit} is not on ${integration}: approve what landed, not a commit of a branch that may still change`,
+			);
+};
+
+/** Hex characters of a delivery a person can still tell apart. */
+const SHORT_DELIVERY = 12;
+
+/** An approval of a delivery the same proposal has since replaced. */
+const supersededEvidenceError = async (
+	run: IGitRunner,
+	integration: string | undefined,
+	proposalId: string,
+	files: readonly string[],
+	commit: string | undefined,
+): Promise<IToolTextResult | null> => {
+	if (integration === undefined || commit === undefined) return null;
+	const newer = await supersedingDelivery(
+		run,
+		integration,
+		proposalId,
+		files,
+		commit,
+	);
+	return newer === undefined
+		? null
+		: toApproveEvidenceError(
+				`evidence.commitHash ${commit} is not the slice as it stands: ${proposalId} was delivered again by ${newer.slice(0, SHORT_DELIVERY)}, which changed the same files. Read that one and approve it`,
+			);
+};
+
 type IPeerReviewPersistedEntry = {
 	readonly ts: string;
 	readonly proposal_id: string;
@@ -355,117 +426,35 @@ export const runCloseSliceValidation = async (
 };
 
 /**
- * Pull the quality report out of a command's combined output.
- *
- * `runAcceptanceCriteria` returns stdout AND stderr joined, and `bun run
- * <script>` unconditionally echoes `$ <the command>` on stderr — even
- * when nothing is a TTY. So the captured text is never just the JSON
- * document, and `JSON.parse(whole thing)` threw every single time:
- * `close_slice`'s quality gate could not recognise a PASS at all and
- * refused every close with `quality-failed`, whatever the gate had
- * actually reported.
- *
- * Scan for the report instead of assuming it is alone. Lines are tried
- * newest-first so a report printed after warmup noise still wins, and a
- * candidate only counts when it carries the report's own shape — a bare
- * `{}` or some other tool's JSON is not a verdict.
+ * The quality probe `close_slice` wires: the project's declared gate,
+ * run as a resumable job (see `close-slice-gate.ts`). `gate` tells a
+ * gate that is still running or could not be verified apart from one
+ * that failed, because the caller must answer each differently.
  */
-const extractQualityJson = (
-	output: string,
-):
-	| {
-			ok?: boolean;
-			severity?: 'ok' | 'error';
-			findings?: readonly string[];
-			summary?: { ok?: boolean; scopes?: number };
-	  }
-	| undefined => {
-	const candidates = [output, ...output.split('\n')]
-		.map((line) => line.trim())
-		.filter((line) => line.startsWith('{') && line.endsWith('}'));
-	for (const candidate of candidates.reverse()) {
-		try {
-			const parsed: unknown = JSON.parse(candidate);
-			if (parsed === null || typeof parsed !== 'object') continue;
-			const shape = parsed as Record<string, unknown>;
-			if ('ok' in shape || 'severity' in shape || 'findings' in shape) {
-				return shape;
-			}
-		} catch {
-			// Not this line. Keep looking.
-		}
-	}
-	return undefined;
-};
-
-export const runCloseSliceQualityGate = async (
-	cwd: string,
-	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
-	options: {
-		readonly scopes?: readonly string[];
-	} = {},
-): Promise<{
-	readonly ok: boolean;
-	readonly severity: 'ok' | 'error';
-	readonly findings: readonly string[];
-	readonly summary?: {
-		readonly ok: boolean;
-		readonly scopes: number;
-	};
-}> => {
-	const result = await runAcceptanceCriteria(
-		[
-			{
-				command: [
-					'bun run validate',
-					'--json',
-					...(options.scopes ?? []).map(
-						(scope) => `--scope=${scope}`,
-					),
-				].join(' '),
-				expect: 'exit0',
-				timeoutMs,
-			},
-		],
-		{ cwd },
-	);
-	const verdict = result.results[0];
-	const output = [verdict?.actual, verdict?.reason]
-		.filter(
-			(part): part is string =>
-				typeof part === 'string' && part.length > 0,
-		)
-		.join('\n')
-		.trim();
-	const structured = extractQualityJson(output);
-	if (structured !== undefined) {
-		{
-			const parsed = structured;
-			return {
-				ok: parsed.ok === true,
-				severity: parsed.severity === 'error' ? 'error' : 'ok',
-				findings: [...(parsed.findings ?? [])],
-				...(parsed.summary !== undefined &&
-				typeof parsed.summary.ok === 'boolean' &&
-				typeof parsed.summary.scopes === 'number'
-					? {
-							summary: {
-								ok: parsed.summary.ok,
-								scopes: parsed.summary.scopes,
-							},
-						}
-					: {}),
-			};
-		}
-	}
+export const runCloseSliceGateProbe = async (
+	deps: ICloseGateDeps,
+	scopes: readonly string[] = [],
+): Promise<ICloseSliceQualityResult> => {
+	const verdict = await runCloseSliceGate(deps, scopes);
 	return {
-		ok: false,
-		severity: 'error',
-		findings: [
-			output.length > 0
-				? output
-				: 'quality gate failed without structured output',
-		],
+		ok: verdict.state === 'pass',
+		severity: verdict.state === 'pass' ? 'ok' : 'error',
+		findings: verdict.findings,
+		gate: {
+			state: verdict.state,
+			reused: verdict.reused,
+			...(verdict.handle !== undefined ? { handle: verdict.handle } : {}),
+			...(verdict.tree !== undefined ? { tree: verdict.tree } : {}),
+			...(verdict.certifiedBy !== undefined
+				? { certifiedBy: verdict.certifiedBy }
+				: {}),
+			...(verdict.evidence !== undefined
+				? { evidence: verdict.evidence }
+				: {}),
+			...(verdict.nextAction !== undefined
+				? { nextAction: verdict.nextAction }
+				: {}),
+		},
 	};
 };
 
@@ -520,6 +509,8 @@ export const CREATE_PROPOSAL_INPUT_SCHEMA = z.object({
 
 export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	ok: z.literal(true),
+	/** The id the proposal was given. */
+	id: z.string(),
 	file: z.string(),
 	path: z.string(),
 	disjointnessIssues: z.array(
@@ -547,6 +538,10 @@ export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	publishedRef: z.string().optional(),
 	/** Why publication did not happen, when it did not. */
 	publishReason: z.string().optional(),
+	/** The unit the proposal was written in, under the name it has now. */
+	unitBranch: z.string().optional(),
+	/** The name a unit entered for `new` had before it took the id. */
+	unitRenamedFrom: z.string().optional(),
 });
 
 // emit the canonical slice shape the repo linter validates
@@ -581,37 +576,6 @@ const extractSliceBlockForGate = (
  */
 const isFreshValidateEvidence = (evidence: IValidateEvidence): boolean =>
 	isEvidenceFresh(evidence);
-
-/**
- * a00069 S5 — read the most recent validate.jsonl row for the slice
- * from `.cache/delendai/results/logs/validate.jsonl`. Returns null
- * when no row is fresh enough. Reuses the same shape proposal_transition
- * already accepts.
- */
-const readValidateEvidenceFromDisk = async (
-	options: IAuthoringToolOptions & {
-		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
-	},
-): Promise<IValidateEvidence | null> => {
-	// a00069 S5: read the most recent fresh validate row. Production
-	// path uses the JSONL reader the host injects via `validateEvidenceDeps`;
-	// tests that do not wire deps skip the disk check (return null) and
-	// rely on inline evidence instead.
-	const logPath = options.validateEvidenceLogPath;
-	if (logPath === undefined) return null;
-	const rows = await options.validateEvidenceDeps?.readValidateLog?.(logPath);
-	if (rows === undefined || rows.length === 0) return null;
-	const last = rows[rows.length - 1];
-	if (last === undefined) return null;
-	const lastTs = last.timestamp ?? last.ts;
-	const lastExit = last.exitCode;
-	if (lastTs === undefined || lastExit === undefined) return null;
-	if (lastExit !== 0) return null;
-	if (!isEvidenceFresh({ timestamp: lastTs })) {
-		return null;
-	}
-	return { timestamp: lastTs, exitCode: lastExit, logPath };
-};
 
 /**
  * Regex fragment matching a slice id in either case (`s1`/`S1`), so
@@ -681,6 +645,8 @@ interface ICreateProposalWriteResult {
 	}[];
 	readonly indexCount: number;
 	readonly redactedSecrets: number;
+	/** The proposal was already on disk from an earlier call; nothing was written. */
+	readonly reused?: boolean;
 }
 
 interface ICreateProposalWriteError {
@@ -742,6 +708,34 @@ export const createProposalDocument = async (
 				ok: false,
 				reason: `unknown kind "${args.kind}"`,
 				nextAction: 'Pass a recognised kind, or pass id explicitly.',
+			};
+		}
+		// A repeated create (the first call's answer was lost to a timeout)
+		// finds its own earlier write instead of minting a second id.
+		const earlier = await findExistingProposal({
+			proposalsDirAbs: options.proposalsDirAbs,
+			prefix,
+			slug: slugFromTitle(args.title, ''),
+			title: args.title,
+			status: canonicalStatus(args.status),
+		});
+		if (earlier !== undefined) {
+			const sync = await syncProposalRegistry(
+				options.workspaceRoot,
+				options.layout,
+				options.extraFolders ?? [],
+				undefined,
+				options.folderPolicy,
+			);
+			return {
+				ok: true,
+				id: earlier.id,
+				file: earlier.file,
+				path: join(options.proposalsDirAbs, ...earlier.file.split('/')),
+				disjointnessIssues: [],
+				indexCount: sync.count,
+				redactedSecrets: 0,
+				reused: true,
 			};
 		}
 		id = await allocateNextProposalId(prefix, {
@@ -807,7 +801,7 @@ export const createProposalDocument = async (
 		'',
 		`# ${id} — ${args.title}`,
 		'',
-		'## Goal',
+		'## goal',
 		'',
 		args.goal ?? 'TODO: describe the goal.',
 		'',
@@ -821,7 +815,7 @@ export const createProposalDocument = async (
 			? args.nonGoals.map((goal) => `- ${goal}`)
 			: ['- TODO: what this proposal deliberately skips.']),
 		'',
-		'## Slices',
+		'## slices',
 		'',
 		`- global_gate: ${args.globalGate ?? 'none'}`,
 		'',
@@ -1027,6 +1021,7 @@ export const buildCreateProposalRegistration = (
 	id: 'create_proposal',
 	effects: ['write'],
 	writeRoot: 'caller-checkout',
+	refusedWriteNextStep: CREATE_PROPOSAL_REFUSED_NEXT_STEP,
 	summary:
 		'Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.',
 	tags: ['proposals'],
@@ -1106,7 +1101,7 @@ export const buildCreateProposalRegistration = (
 				// as well put the same file on two refs, the second one a
 				// pull request nobody opened.
 				const unitBranch =
-					git === undefined || forCheckout.source !== 'request'
+					git === undefined
 						? undefined
 						: await workUnitBranch(
 								git,
@@ -1147,6 +1142,12 @@ export const buildCreateProposalRegistration = (
 															.developmentPolicy
 															.integration
 															.requiresPullRequest,
+													hasWorkRefs:
+														options
+															.developmentPolicy
+															.branches
+															.workRefTemplate
+															.length > 0,
 													publicationRefPrefix:
 														options
 															.developmentPolicy
@@ -1169,15 +1170,33 @@ export const buildCreateProposalRegistration = (
 												},
 											}),
 								});
+				// A unit entered for `new` takes the id it was waiting for. The
+				// publication above ran under the old name on purpose: it only
+				// reads which branch the checkout is on.
+				const unit = await adoptCreatedProposalUnit({
+					root:
+						forCheckout.source === 'request'
+							? forCheckout.root
+							: scoped.workspaceRoot,
+					id: created.id,
+					policy: options.developmentPolicy,
+				});
 				return toolOk({
+					id: created.id,
 					file: created.file,
 					path: created.path,
 					disjointnessIssues: created.disjointnessIssues,
 					indexCount: created.indexCount,
 					redactedSecrets: created.redactedSecrets,
-					nextAction:
+					...(unit.unitBranch === undefined
+						? {}
+						: { unitBranch: unit.unitBranch }),
+					...(unit.unitRenamedFrom === undefined
+						? {}
+						: { unitRenamedFrom: unit.unitRenamedFrom }),
+					nextAction: `${unit.note === undefined ? '' : `${unit.note} `}${created.reused === true ? `${created.id} was already written by an earlier call with this title, so nothing was created again. ` : ''}${
 						unitBranch !== undefined
-							? `Commit ${relative(scoped.workspaceRoot, created.path)} in the unit on ${unitBranch} (run \`bun run gen:all\` first if the project derives files from proposals), then publish the unit with \`delendai work publish\`.`
+							? `Commit ${relative(scoped.workspaceRoot, created.path)} in the unit on ${unit.unitBranch ?? unitBranch} (run \`bun run gen:all\` first if the project derives files from proposals), then publish the unit with \`delendai work publish\`.`
 							: proposalPublishNextAction({
 									template: options.publishCommand,
 									policy: options.developmentPolicy,
@@ -1195,7 +1214,8 @@ export const buildCreateProposalRegistration = (
 													?.branches.workRefTemplate,
 										},
 									),
-								}),
+								})
+					}`,
 					published: publication.published,
 					...(publication.ref === undefined
 						? {}
@@ -1366,6 +1386,8 @@ export const buildCloseSliceRegistration = (
 							'unknown',
 							'validation-error',
 							'quality-failed',
+							'gate-pending',
+							'gate-unverifiable',
 							'peer-review-required',
 						])
 						.optional(),
@@ -1380,6 +1402,7 @@ export const buildCloseSliceRegistration = (
 						})
 						.optional(),
 					blockerType: z.string().optional(),
+					gate: CLOSE_SLICE_GATE_SCHEMA,
 					blockerDetail: z
 						.object({
 							ok: z.boolean(),
@@ -1391,6 +1414,7 @@ export const buildCloseSliceRegistration = (
 									scopes: z.number(),
 								})
 								.optional(),
+							gate: CLOSE_SLICE_GATE_SCHEMA,
 						})
 						.optional(),
 					error: z
@@ -1447,11 +1471,18 @@ export const buildCloseSliceRegistration = (
 					validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
 					validationScope: z.enum(['scoped', 'global']).optional(),
 					idempotencyKey: z.string().min(1).optional(),
+					agent: z
+						.string()
+						.optional()
+						.describe(
+							"Who is closing. Absent: DELENDAI_AGENT_ID, then the agent named by the checkout's work ref.",
+						),
 				}),
 			},
 			async (args: {
 				proposalId: string;
 				sliceId: string;
+				agent?: string | undefined;
 				releaseLock?: boolean | undefined;
 				force?: boolean | undefined;
 				validateEvidence?: IValidateEvidence | undefined;
@@ -1511,54 +1542,47 @@ export const buildCloseSliceRegistration = (
 					| ICloseSliceValidationDecision
 					| undefined;
 				let alreadyClosedPayload: Record<string, unknown> | undefined;
+				let closeGate: ICloseSliceGateReport | undefined;
 				let persisted: IPersistResult = {
 					committed: false,
 					pushed: false,
 					mode: 'none',
 				};
-				// a00069 S5: validate-required gate. When the slice block
-				// carries a gate that demands a green validate (type / e2e
-				// / explicit `bun run validate`) and the caller has not
-				// attached FRESH `validateEvidence`, refuse to flip the
-				// slice. Inline-stale evidence is also a blocker so the
-				// caller cannot ship a fake timestamp. `force` and
-				// `requireValidateEvidence: false` remain in effect. Reads
-				// the file OUTSIDE the mutex — the body never changes
-				// between the gate and the write because no other agent
-				// holds the lock yet.
+				// One decision for "is this tree verified": the tree-keyed close
+				// gate (`runQuality`) answers it from the certification that
+				// already exists for the exact tree (the forge's checks, the
+				// landing's) or a recorded local result. Explicit, fresh,
+				// green `validateEvidence` is one more source it accepts, so a
+				// slice whose gate demands a validate closes from it when the
+				// gate gives no verdict; a red verdict still blocks. With no
+				// gate wired, a slice that
+				// demands a validate has no source at all and is refused.
+				let explicitEvidenceAccepted = false;
 				if (
 					args.force !== true &&
 					scoped.requireValidateEvidence !== false
 				) {
 					const gateProbe = await readTextOrNull(docPath);
-					if (gateProbe !== null) {
-						const blockForGate = extractSliceBlockForGate(
-							gateProbe,
-							canonicalId,
-						);
-						const gateDemands = gateHardRequiresValidate(
-							blockForGate ?? '',
-						);
-						const inlineEvidence = args.validateEvidence;
-
-						const inlineOk =
-							inlineEvidence !== undefined &&
-							isFreshValidateEvidence(inlineEvidence);
-						const diskEvidence = gateDemands
-							? await readValidateEvidenceFromDisk(scoped)
-							: null;
-						const diskOk = diskEvidence !== null;
-						// Reject when the gate demands validate AND no fresh
-						// evidence exists anywhere (inline or on disk).
-						if (gateDemands && !inlineOk && !diskOk) {
+					const blockForGate =
+						gateProbe === null
+							? null
+							: extractSliceBlockForGate(gateProbe, canonicalId);
+					if (gateHardRequiresValidate(blockForGate ?? '')) {
+						explicitEvidenceAccepted =
+							args.validateEvidence !== undefined &&
+							isFreshValidateEvidence(args.validateEvidence);
+						if (
+							!explicitEvidenceAccepted &&
+							typeof scoped.runQuality !== 'function'
+						) {
 							return toolErrorEnvelope({
 								ok: false as const,
 								kind: 'validation-error' as const,
 								blockerType: 'validate-required' as const,
 								error: {
-									reason: `slice "${args.sliceId}" requires recent validate evidence before close_slice may flip it (gate requires \`delendai validate\`). Pass { validateEvidence: { timestamp, exitCode: 0, logPath } } or run \`bun run validate\` first, then retry.`,
+									reason: `slice "${args.sliceId}" has a gate that demands a verified tree, and nothing verifies this one: no certification of the tree, no recorded gate result, and no fresh passing validateEvidence.`,
 									nextAction:
-										'Pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path-to-validate.jsonl> } } or set `force: true` to skip the gate.',
+										'Publish the unit (`delendai work publish`), wait for the required checks to certify the exact tree, then retry close_slice; or pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path> } } from a validate run of this tree.',
 									kind: 'validation-error' as const,
 								},
 								proposalId: entry.id,
@@ -1630,6 +1654,9 @@ export const buildCloseSliceRegistration = (
 										ownedFiles: slice.files,
 										proposalId: entry.id,
 										sliceId: canonicalId,
+										...(args.agent !== undefined
+											? { agent: args.agent }
+											: {}),
 									},
 								);
 							const guidance =
@@ -1679,14 +1706,35 @@ export const buildCloseSliceRegistration = (
 										}
 									: undefined,
 							);
-							if (quality.severity === 'error') {
+							closeGate = quality.gate;
+							const gateKind =
+								quality.gate?.state === 'pending'
+									? ('gate-pending' as const)
+									: quality.gate?.state === 'unverifiable'
+										? ('gate-unverifiable' as const)
+										: ('quality-failed' as const);
+							// A red result always blocks. A gate that gave no
+							// verdict (still running, or nothing to verify
+							// with) is exactly what explicit evidence covers.
+							const coveredByExplicitEvidence =
+								explicitEvidenceAccepted &&
+								gateKind !== 'quality-failed';
+							if (
+								quality.severity === 'error' &&
+								!coveredByExplicitEvidence
+							) {
 								const err: ICloseSliceThrownError =
 									Object.assign(
 										new Error(
-											'quality gate reported severity=error',
+											gateKind === 'gate-pending'
+												? 'the gate is still running'
+												: gateKind ===
+														'gate-unverifiable'
+													? 'the gate could not be verified'
+													: 'quality gate reported severity=error',
 										),
 										{
-											kind: 'quality-failed' as const,
+											kind: gateKind,
 											detail: quality,
 										},
 									);
@@ -1865,6 +1913,41 @@ export const buildCloseSliceRegistration = (
 						};
 						return toolErrorEnvelope(envelope);
 					}
+					if (
+						err.kind === 'gate-pending' ||
+						err.kind === 'gate-unverifiable'
+					) {
+						const pending = err.kind === 'gate-pending';
+						const envelope = {
+							ok: false as const,
+							kind: err.kind,
+							blockerType: err.kind,
+							blockerDetail: err.detail,
+							error: {
+								reason: String(err.message),
+								nextAction: [
+									pending
+										? `The gate runs in the background (handle ${err.detail?.gate?.handle ?? 'unknown'}). Call close_slice again to resume it; the slice was NOT marked done and nothing is wrong yet.`
+										: 'The gate did not give a verdict, which is neither a pass nor a failure of the work. Read the findings, then call close_slice again to run it afresh; the slice was NOT marked done.',
+									err.detail?.gate?.nextAction,
+								]
+									.filter(
+										(part): part is string =>
+											part !== undefined,
+									)
+									.join(' '),
+								kind: err.kind,
+								output: (err.detail?.findings ?? []).join('\n'),
+							},
+							...(err.detail?.gate !== undefined
+								? { gate: err.detail.gate }
+								: {}),
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
+						};
+						return toolErrorEnvelope(envelope);
+					}
 					if (err.kind === 'quality-failed') {
 						const envelope = {
 							ok: false as const,
@@ -1874,6 +1957,7 @@ export const buildCloseSliceRegistration = (
 							error: {
 								reason: String(err.message),
 								nextAction:
+									err.detail?.gate?.nextAction ??
 									'Fix the reported quality findings, then retry close_slice. The slice was NOT marked done.',
 								kind: 'quality-failed',
 								output: Array.isArray(err.detail?.findings)
@@ -1977,11 +2061,50 @@ export const buildCloseSliceRegistration = (
 					assignmentReleased,
 					persist: persisted,
 					pendingIntegrationBranch,
+					...(closeGate !== undefined ? { gate: closeGate } : {}),
 				});
 			},
 		);
 	},
 });
+
+/**
+ * Whether the review rules refuse this verdict on the slice as the
+ * document has it now. Read-only: it decides only whether the proposal is
+ * claimed before the verdict is recorded.
+ */
+const verdictWouldBeRefused = async (
+	docPath: string,
+	args: {
+		readonly sliceId: string;
+		readonly action: 'approve' | 'request_changes';
+		readonly agent: string;
+	},
+	quorum: number,
+): Promise<boolean> => {
+	const md = await readTextOrNull(docPath);
+	if (md === null) return false;
+	const block = md.match(
+		new RegExp(
+			`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+			'm',
+		),
+	);
+	if (block === null) return false;
+	const state = parseReviewState(block[2] ?? '');
+	// With no round open the verdict opens one, which the path below
+	// decides; only a round already open has rules to break.
+	if (state.status === 'none') return false;
+	return !reviewTransition(
+		state,
+		args.action,
+		args.agent,
+		'',
+		args.action === 'approve'
+			? { enforceDistinctAgentName: false, quorum }
+			: { quorum },
+	).ok;
+};
 
 /**
  * `proposal_review` — peer-review loop for a slice. An implementer
@@ -1999,6 +2122,10 @@ export const buildReviewRegistration = (
 	id: 'proposal_review',
 	effects: ['write'],
 	writeRoot: 'caller-checkout',
+	// `status` reads the round and changes nothing.
+	readsOnly: (input) =>
+		(input as { readonly action?: unknown } | undefined)?.action ===
+		'status',
 	summary:
 		'Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.',
 	tags: ['proposals'],
@@ -2011,7 +2138,7 @@ export const buildReviewRegistration = (
 				inputSchema: REVIEW_INPUT_SCHEMA,
 				outputSchema: REVIEW_OUTPUT_SCHEMA,
 			},
-			async (args: {
+			async (rawArgs: {
 				proposalId: string;
 				sliceId: string;
 				action: 'submit' | 'approve' | 'request_changes' | 'status';
@@ -2020,6 +2147,7 @@ export const buildReviewRegistration = (
 				evidence?: IProposalReviewEvidence | undefined;
 				commitHash?: string | undefined;
 			}) => {
+				const args = { ...rawArgs };
 				const scoped = scopeToCaller(options);
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
@@ -2071,6 +2199,16 @@ export const buildReviewRegistration = (
 					args.action === 'approve' ||
 					args.action === 'request_changes'
 				) {
+					const wrongLanguage = languageRefusal(
+						args.note ?? '',
+						scoped.documentationLanguage,
+					);
+					if (wrongLanguage !== undefined) {
+						return toolError(
+							wrongLanguage,
+							'Record the same verdict with its note in English. Nothing was written.',
+						);
+					}
 					const role = canonicalRoleOf(args.agent);
 					if (role !== undefined) {
 						return toolError(
@@ -2079,18 +2217,59 @@ export const buildReviewRegistration = (
 						);
 					}
 					const branches = scoped.developmentPolicy?.branches;
+					// A pack is one reviewer's: a verdict in a review unit is
+					// signed by the agent the unit is named after, never by a
+					// name chosen at the call.
+					const unitAgent = await reviewUnitAgent(
+						scoped.run ?? createGitRunner(scoped.workspaceRoot),
+						branches,
+					);
+					if (unitAgent !== undefined) {
+						if (
+							unitAgent !==
+							resolveWorkAgentId({ model: args.agent }).id
+						) {
+							return toolError(
+								`"${args.agent}" is not the reviewer of this review unit, which is ${unitAgent}'s.`,
+								`Record the verdict as ${unitAgent}, the model this unit was entered as, or enter a review unit of your own.`,
+							);
+						}
+						// One agent, one spelling: the verdict is signed the
+						// way its unit's ref names the agent (`GPT-5.4` and
+						// `gpt-5.4` were two reviewers to every reader).
+						args.agent = unitAgent;
+					}
+					// A verdict the review rules will refuse claims nothing:
+					// claimed first, it left the refused reviewer holding the
+					// proposal, so the reviewer it was refused FOR could not
+					// take it. The refusal itself comes from the path below,
+					// with its own reason.
 					const refusal = await verdictClaimRefusal(
 						scoped.run ?? createGitRunner(scoped.workspaceRoot),
 						branches,
 						entry.id,
 						branches?.integration ?? 'HEAD',
 						options.namespacePrefix,
+						{
+							claim: !(await verdictWouldBeRefused(
+								docPath,
+								{
+									sliceId: args.sliceId,
+									action: args.action,
+									agent: args.agent,
+								},
+								quorumForReview(scoped.reviewPanel),
+							)),
+						},
 					);
 					if (refusal !== undefined) {
 						return toolError(refusal.reason, refusal.nextAction);
 					}
 				}
 
+				// Set when the approver and the implementer, one model, were
+				// seen to be two processes: the approval line then says so.
+				let anotherInstance = false;
 				let nextStatus!:
 					| 'none'
 					| 'in_review'
@@ -2169,6 +2348,33 @@ export const buildReviewRegistration = (
 							const namedNoCommit =
 								args.commitHash === undefined &&
 								args.evidence?.commitHash === undefined;
+							const deliveredAt =
+								!derived.ok &&
+								args.action === 'request_changes' &&
+								namedNoCommit
+									? await deliveredCommitOf(
+											scoped.run ??
+												createGitRunner(
+													scoped.workspaceRoot,
+												),
+											scoped.developmentPolicy?.branches
+												.integration ?? 'HEAD',
+											entry.id,
+										)
+									: undefined;
+							if (deliveredAt !== undefined) {
+								// The work is in the integration branch: an
+								// objection to it names the commit it is about.
+								throw Object.assign(
+									new Error('change request names no commit'),
+									{
+										toolError: toolError(
+											`${entry.id} was delivered in ${deliveredAt}, and this change request names no commit: an objection is about what landed.`,
+											`Read that commit, run the slice's declared gate, and pass commitHash: "${deliveredAt}" with the objection. If you could not inspect it, record no verdict and release the claim.`,
+										),
+									},
+								);
+							}
 							if (
 								!derived.ok &&
 								args.action === 'request_changes' &&
@@ -2232,6 +2438,15 @@ export const buildReviewRegistration = (
 											args.agent,
 											scoped.reviewIndependence,
 										);
+							const submittedBy =
+								identityCheck.ok && 'submitter' in identityCheck
+									? (identityCheck.submitter as {
+											readonly agent?: string;
+										} | null)
+									: null;
+							anotherInstance =
+								typeof submittedBy?.agent === 'string' &&
+								isSameModel(submittedBy.agent, args.agent);
 							if (!identityCheck.ok) {
 								if (
 									sameAgentNameAsImplementer &&
@@ -2258,10 +2473,27 @@ export const buildReviewRegistration = (
 									},
 								);
 							}
-							const evidenceError = requireProposalReviewEvidence(
-								args.evidence,
-								acceptanceCriteria,
-							);
+							const evidenceError =
+								requireProposalReviewEvidence(
+									args.evidence,
+									acceptanceCriteria,
+								) ??
+								(await unintegratedEvidenceError(
+									scoped.run ??
+										createGitRunner(scoped.workspaceRoot),
+									scoped.developmentPolicy?.branches
+										.integration,
+									args.evidence?.commitHash,
+								)) ??
+								(await supersededEvidenceError(
+									scoped.run ??
+										createGitRunner(scoped.workspaceRoot),
+									scoped.developmentPolicy?.branches
+										.integration,
+									entry.id,
+									slicePlan?.files ?? [],
+									args.evidence?.commitHash,
+								));
 							if (evidenceError !== null) {
 								throw Object.assign(
 									new Error('missing empirical evidence'),
@@ -2295,7 +2527,10 @@ export const buildReviewRegistration = (
 							state,
 							args.action,
 							args.agent,
-							redactedNote.text,
+							args.action === 'approve' &&
+								args.evidence !== undefined
+								? `${approvalNote(args.evidence, redactedNote.text)}${anotherInstance ? ` ${ANOTHER_INSTANCE_MARK}` : ''}`
+								: redactedNote.text,
 							args.action === 'approve'
 								? { enforceDistinctAgentName: false, quorum }
 								: { quorum },

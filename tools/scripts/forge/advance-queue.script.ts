@@ -62,9 +62,12 @@ const main = (): number => {
 	const root = repoRoot();
 	const integration = declaredBranches(root).integration;
 	const tip =
-		run('git', ['ls-remote', 'origin', `refs/heads/${integration}`]).split(
-			'\t',
-		)[0] ?? '';
+		run('git', [
+			'ls-remote',
+			'--',
+			'origin',
+			`refs/heads/${integration}`,
+		]).split('\t')[0] ?? '';
 	if (tip === '') return 0;
 	const recordPath = join(root, ADVANCED_FOR_PATH);
 	const advancedFor = readTextIfPresent(recordPath)?.trim();

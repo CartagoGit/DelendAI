@@ -7,9 +7,13 @@ import { REPO_AUTHORITIES } from '../gen/repo-authorities.constant';
  * every generator. This used to be a second, shorter list (the catalog
  * and the quantitative block), which is how a candidate could come back
  * with every other derived file stale.
+ *
+ * No install scripts: the worktree is thrown away a minute later, and a
+ * script that writes into the clone it belongs to (a hook manager's own
+ * installer did) leaves the clone pointing at a directory that is gone.
  */
 export const GENERATED_REFRESH_COMMANDS: readonly string[] = [
-	'install --frozen-lockfile',
+	'install --frozen-lockfile --ignore-scripts',
 	'run gen:all',
 ];
 
@@ -36,3 +40,14 @@ export const REGENERATED_PROJECTIONS: ReadonlySet<string> = new Set(
  */
 export const REGENERATION_COMMIT_SUBJECT =
 	'chore(generated): recompute after refreshing the candidate';
+
+/**
+ * Who the queue's own commits are by on a machine whose git names
+ * nobody. A recovery run on a fresh runner has no global identity, and
+ * the merge that was to refresh a candidate stopped at "Author identity
+ * unknown" with the queue reported as moving.
+ */
+export const QUEUE_COMMIT_IDENTITY = {
+	name: 'delendai queue',
+	email: 'queue@delendai.invalid',
+} as const;

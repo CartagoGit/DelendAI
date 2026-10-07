@@ -18,8 +18,12 @@
  *   or the server's root when omitted — and runs the handler inside
  *   `runInExecutionRoot`, which is what runners read when they spawn;
  * - a call that would write into the shared checkout while it sits on the
- *   integration branch, under a policy with a work-ref model, is refused
- *   with the step that writes it canonically (`integrationCheckoutRefusal`);
+ *   integration branch, under a policy with a work-ref model, acts in the
+ *   live unit that carries the proposal it names when exactly one does
+ *   (a proposal exists only there until its work lands), and otherwise is
+ *   refused with the step that writes it canonically
+ *   (`integrationCheckoutRefusal`). A call the registration declares
+ *   `readsOnly` writes nothing, so it is never refused there;
  * - a checkout that is not a working tree of this repository is refused
  *   before the handler runs — always, including for a tool that declared
  *   `checkout` itself. A schema field is not proof that the handler
@@ -34,13 +38,40 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { CHECKOUT_ARG_SCHEMA } from '../contracts/constants/checkout-arg.constant';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import { integrationCheckoutRefusal } from '../development-policy/project-branches';
+import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.interface';
+import {
+	callerUnitCheckout,
+	integrationCheckoutRefusal,
+} from '../development-policy/project-branches';
 import { withCallWritesCommitted } from './commit-call-writes';
 import { runInExecutionRoot } from './execution-root';
 import { resolveWriteRoot } from './shared-checkout';
 import { toolError } from './tool-response';
 
 type IHandler = (...args: unknown[]) => unknown;
+
+type IUnitFor = (
+	root: string,
+	wanted: { readonly proposal: string; readonly agent?: string | undefined },
+) => Promise<ICallerUnit>;
+
+const PROPOSAL_ID = /^[a-z]\d{5,}$/u;
+
+/** The proposal a call is about, by the names the proposals tools use. */
+const proposalOf = (input: unknown): string | undefined => {
+	if (typeof input !== 'object' || input === null) return undefined;
+	for (const key of ['id', 'proposalId', 'proposal']) {
+		const value = (input as Record<string, unknown>)[key];
+		if (typeof value === 'string' && PROPOSAL_ID.test(value)) return value;
+	}
+	return undefined;
+};
+
+/** What a write refused in the shared checkout says about the caller's unit. */
+const unitNextStep = (unit: ICallerUnit): string | undefined =>
+	unit.status !== 'ambiguous'
+		? undefined
+		: `This proposal is carried by more than one of your units (${unit.units.map((each) => each.path).join(', ')}): pass the one you mean as \`checkout\`.`;
 
 interface IObjectSchema {
 	readonly shape: Record<string, unknown>;
@@ -87,6 +118,9 @@ const boundHandler =
 		serverRoot: string,
 		checkoutOf: ((from: string) => string | undefined) | undefined,
 		refusalFor: (root: string) => Promise<string | undefined>,
+		unitFor: IUnitFor,
+		defaultNextStep: string,
+		readsOnly: ((input: unknown) => boolean) | undefined,
 	): IHandler =>
 	async (...callArgs) => {
 		const requested = (callArgs[0] as { checkout?: unknown } | undefined)
@@ -100,18 +134,47 @@ const boundHandler =
 		if (resolved.ok) {
 			// The shared checkout on the integration branch is no unit's
 			// working tree: a write there is committed by nobody.
-			const refusal = await refusalFor(resolved.root);
-			if (refusal !== undefined) {
+			const refusal =
+				readsOnly?.(callArgs[0]) === true
+					? undefined
+					: await refusalFor(resolved.root);
+			let unitRoot: string | undefined;
+			let nextStep = defaultNextStep;
+			const proposal =
+				refusal !== undefined && resolved.source === 'server'
+					? proposalOf(callArgs[0])
+					: undefined;
+			if (proposal !== undefined) {
+				// A call about a proposal acts in the unit that carries it:
+				// that is the only tree the proposal exists in until it lands.
+				const agent = (callArgs[0] as { agent?: unknown }).agent;
+				const unit = await unitFor(resolved.root, {
+					proposal,
+					agent: typeof agent === 'string' ? agent : undefined,
+				});
+				if (unit.status === 'found') unitRoot = unit.unit.path;
+				nextStep = unitNextStep(unit) ?? nextStep;
+			}
+			if (refusal !== undefined && unitRoot === undefined) {
 				return toolError(
 					refusal,
-					WORK_REF_NEXT_STEP,
+					nextStep,
 					SHARED_CHECKOUT_WRITE_REFUSED,
 				);
 			}
-			const root = resolved.root;
+			const root = unitRoot ?? resolved.root;
+			// Handlers resolve `checkout` themselves, so the unit is named in
+			// the arguments they receive.
+			const args =
+				unitRoot === undefined
+					? callArgs
+					: [
+							{ ...(callArgs[0] as object), checkout: unitRoot },
+							...callArgs.slice(1),
+						];
 			return runInExecutionRoot(root, () =>
-				withCallWritesCommitted(root, name, callArgs[0], async () =>
-					handler(...callArgs),
+				withCallWritesCommitted(root, name, args[0], async () =>
+					handler(...args),
 				),
 			);
 		}
@@ -135,6 +198,8 @@ export const bindWriteRoot = (
 	refusalFor: (
 		root: string,
 	) => Promise<string | undefined> = integrationCheckoutRefusal,
+	/** Injectable for tests; defaults to reading the project's worktrees. */
+	unitFor: IUnitFor = callerUnitCheckout,
 ): IToolRegistration => {
 	if (registration.writeRoot !== 'caller-checkout') return registration;
 	return {
@@ -161,6 +226,9 @@ export const bindWriteRoot = (
 						serverRoot,
 						checkoutOf,
 						refusalFor,
+						unitFor,
+						registration.refusedWriteNextStep ?? WORK_REF_NEXT_STEP,
+						registration.readsOnly,
 					) as never,
 				);
 			}) as McpServer['registerTool'];

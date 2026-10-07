@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IHostAdapterPack,
 	IHostCapabilityProfile,
-} from '@delendai/core/public';
+} from '@delendai/core/cli';
 
 import {
 	CANONICAL_PROFILES,

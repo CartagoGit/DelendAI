@@ -11,11 +11,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import {
-	diagnosePluginWiring,
-	wirePluginIntoMonorepo,
-	type IPluginWiringFs,
-} from '@delendai/core/public';
+import { wirePluginIntoMonorepo } from '@delendai/core/lib/scaffold/wire-plugin';
+import { diagnosePluginWiring, type IPluginWiringFs } from '@delendai/core/cli';
 
 const TS_BASE_SEED = `{
 	"compilerOptions": {

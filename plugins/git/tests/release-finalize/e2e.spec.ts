@@ -10,6 +10,14 @@ import {
 } from '../../../forge/src/lib/release-finalize';
 import { reconcileRelease } from '../../src/lib/release-finalize';
 import type { IReleasePrRecord } from '../../../forge/src/lib/release-pr';
+import type { IReleaseTarget } from '@delendai/core/public';
+
+const target: IReleaseTarget = {
+	integrationBranch: 'develop',
+	releaseBranch: 'main',
+	versionManifestPath: 'packages/core/package.json',
+	promotion: 'pull-request',
+};
 
 const candidate = {
 	sourceDevelopSha: 'aaaaaaa',
@@ -34,6 +42,7 @@ describe('release cut to reconcile E2E', () => {
 		} as const;
 		const stabilized = stabilizeRelease(candidate, readiness, 'agent');
 		const pr = await createReleasePullRequest({
+			target,
 			candidate,
 			gates: [],
 			currentBranch: candidate.branch,
@@ -87,6 +96,7 @@ describe('release cut to reconcile E2E', () => {
 			readiness,
 			'agent',
 			String(pr.pr.number),
+			target,
 		);
 		const reconciled = await reconcileRelease(
 			async () => ({ ok: true, output: '' }),
@@ -98,6 +108,7 @@ describe('release cut to reconcile E2E', () => {
 				releaseOnlyFixes: ['version'],
 				actor: 'agent',
 			},
+			'develop',
 		);
 		expect([
 			stabilized.operation,
