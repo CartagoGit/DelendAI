@@ -126,6 +126,9 @@ import {
 	lifecycleEntity,
 	unknownOutcome,
 } from '../services/lifecycle-outcome';
+import { LAST_TRANSITION_AT_FIELD } from '../contracts/constants/transition-duration.constant';
+import type { IProposalDurationRecorder } from '../contracts/interfaces/transition-duration.interface';
+import { recordMeasuredTransition } from './proposal-transition-duration';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
 import { VALIDATE_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
 import { unapprovedSlices } from '../shared/independent-approval';
@@ -256,6 +259,10 @@ export interface IProposalTransitionToolOptions {
 	readonly peerReviewGateDeps?: IPeerReviewGateDeps;
 	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
 	readonly proposalLifecycleStateReader?: import('./authoring-options').IProposalLifecycleStateReader;
+	/** Receives how long each closing stretch took; optional and advisory. */
+	readonly durationRecorder?: IProposalDurationRecorder;
+	/** Injectable clock for the duration stamp; defaults to `Date.now`. */
+	readonly now?: () => number;
 }
 
 /**
@@ -1412,6 +1419,14 @@ export const runProposalTransition = async (
 		options,
 		depId,
 	);
+	if (result.isError !== true) {
+		recordMeasuredTransition(options.durationRecorder, {
+			previousMarkdown: raw,
+			to: finalTo,
+			agent: args.agent,
+			nowMs: (options.now ?? Date.now)(),
+		});
+	}
 	if (
 		result.isError !== true &&
 		finalTo === 'review' &&
@@ -1994,6 +2009,11 @@ const applyTransition = async (
 			updated = shortPass.markdown;
 			filesRewritten = longPass.replacements + shortPass.replacements;
 		}
+		updated = setFrontmatterMetadataField(
+			updated,
+			LAST_TRANSITION_AT_FIELD,
+			new Date((options.now ?? Date.now)()).toISOString(),
+		);
 		await writeFileAtomic(found.absPath, updated);
 
 		if (moved) {
