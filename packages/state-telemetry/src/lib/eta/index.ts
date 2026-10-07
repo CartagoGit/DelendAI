@@ -34,10 +34,8 @@ export {
 	type TSkipReason,
 } from './duration-history';
 
-export {
-	drainTransitionDurationJournal,
-	type IDrainResult,
-} from './duration-journal';
+export { drainTransitionDurationJournal } from './duration-journal';
+export type { IDrainResult } from './contracts/interfaces/duration-journal.interface';
 
 export {
 	median,

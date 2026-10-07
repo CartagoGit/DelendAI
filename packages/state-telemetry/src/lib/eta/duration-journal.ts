@@ -15,16 +15,10 @@ import {
 	recordTransitionDuration,
 	type IDurationHistoryStore,
 } from './duration-history';
+import type { IDrainResult } from './contracts/interfaces/duration-journal.interface';
 import { computeFeatureVector } from './feature-vector';
 
 const CLAIMED_SUFFIX = '.draining';
-
-export interface IDrainResult {
-	/** Lines the history stored as new samples. */
-	readonly recorded: number;
-	/** Lines refused by the history or unreadable. */
-	readonly skipped: number;
-}
 
 interface IJournalLine {
 	readonly to: string;
