@@ -291,6 +291,8 @@ that the audit calls obligatory.
   - `plugins/proposals/tests/src/lib/proposals/index-reader-db-resolution.spec.ts`
   - `plugins/proposals/tests/src/lib/proposals/index-reader-location.spec.ts`
   - `plugins/proposals/src/lib/tools/db-status.tool.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-parity-report.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-stale-registry.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry

@@ -24,7 +24,8 @@
  */
 
 import { DEFAULT_INDEX_FS, type IIndexFs } from './index-reader-fs';
-import { compareIndexEntries, decideIndexSource } from './index-source-policy';
+import { decideIndexSource } from './index-source-policy';
+import { reportRegistryParity } from './index-reader-parity-report';
 import {
 	DEFAULT_PROPOSAL_INDEX_SOURCE,
 	PROPOSAL_INDEX_SOURCE_ENV_VAR,
@@ -321,49 +322,15 @@ const serveStrictSql = async (
 			indexPathAbs,
 		);
 	}
-	// No registry on disk is nothing to compare, not a difference on
-	// every id: a fresh worktree has none, and each read there reported
-	// the whole backlog as divergent.
-	const registry = await readJsonOrNull<IProposalIndexFile>(indexPathAbs, fs);
-	// An export written before the projection's last reconcile describes
-	// an older tree: it differs because it is old, not because the two
-	// disagree. The registry is written only by a full sync, while the
-	// projection reconciles on its own, so in a shared checkout it went
-	// stale within hours and every boot reported "divergence".
-	const stale = registryOlderThan(registry, fromSql.reconciledAt ?? null);
-	const divergence =
-		registry === null || stale
-			? []
-			: compareIndexEntries(fromSql.entries, registry.proposals ?? []);
-	recordProposalIndexRead(
-		stale
-			? 'sql-registry-stale'
-			: divergence.length > 0
-				? 'sql-divergence-reported'
-				: 'sql-parity',
-		divergence.length,
+	reportRegistryParity({
+		entries: fromSql.entries,
+		registry: await readJsonOrNull<IProposalIndexFile>(indexPathAbs, fs),
+		reconciledAt: fromSql.reconciledAt ?? null,
+		indexPathAbs,
 		rebuilt,
-	);
-	if (divergence.length > 0)
-		noticeOnce(
-			`sql-strict-divergence:${indexPathAbs}`,
-			`proposal index: serving the SQLite projection (source pinned to "sql"); ${indexPathAbs} differs on ${divergence.join(', ')}`,
-			log,
-		);
+		log,
+	});
 	return fromSql.entries;
-};
-
-/** Whether the registry was generated before the projection reconciled. */
-const registryOlderThan = (
-	registry: { readonly generated_at?: unknown } | null,
-	reconciledAt: number | null,
-): boolean => {
-	if (registry === null || reconciledAt === null) return false;
-	const generated =
-		typeof registry.generated_at === 'string'
-			? Date.parse(registry.generated_at)
-			: Number.NaN;
-	return !Number.isNaN(generated) && generated < reconciledAt;
 };
 
 export const readProposalIndex = async (
