@@ -45,11 +45,10 @@ export const carriesNothingBeyond = (
 	if (listed === undefined) return false;
 	const outside = parentsOutsideMerges(listed);
 	return (
-		outside !== undefined &&
-		outside.every(
+		outside?.every(
 			(parent) =>
 				readGit(root, ['merge-base', '--is-ancestor', parent, base]) !==
 				undefined,
-		)
+		) ?? false
 	);
 };
