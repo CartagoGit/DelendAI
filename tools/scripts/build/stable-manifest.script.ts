@@ -14,7 +14,7 @@
  *     tests run against the same code path.
  */
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import {
@@ -86,7 +86,8 @@ const assertCanonicalManifest = (
 };
 
 const readExistingManifest = (abs: string): TStableManifest | null => {
-	if (!existsSync(abs)) return null;
+	// Read, don't check then read: a file removed in between is a missing
+	// manifest either way, and the catch already says so.
 	try {
 		return JSON.parse(readFileSync(abs, 'utf8')) as TStableManifest;
 	} catch {
