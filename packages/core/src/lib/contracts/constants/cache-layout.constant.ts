@@ -11,8 +11,22 @@ import type {
  * of every store's own schema. Bump it only when the persisted layout
  * stops being readable by the previous build, and ship the migration
  * `N -> N + 1` in the same change.
+ *
+ * Epochs 1 to 5 are the layout changes that have landed (consolidated
+ * cache, canonical scratch directories, results segregation, the
+ * relocated proposals index, the rebrand). The SQLite stores that were
+ * planned as further epochs have not shipped; each takes the next number
+ * when it does.
  */
-export const CACHE_LAYOUT_EPOCH = 9;
+export const CACHE_LAYOUT_EPOCH = 5;
+
+/**
+ * What a workspace that never recorded an epoch is taken to be at: before
+ * the first layout change. Every probe in the chain then runs once, finds
+ * nothing in a workspace that is already current, and the epoch is
+ * recorded.
+ */
+export const CACHE_LAYOUT_UNRECORDED_EPOCH = 0;
 
 /**
  * Where the applied epoch is recorded when the state database is not the
