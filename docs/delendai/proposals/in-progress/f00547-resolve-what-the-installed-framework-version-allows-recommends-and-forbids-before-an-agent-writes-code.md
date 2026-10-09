@@ -244,6 +244,8 @@ tool counts it in the project (S4) and feeds the result, with its
 confidence, to the resolver, so a project that already does X is told X.
 
 Shipped: a pack rule may carry `pattern` (`directory`, `suffix`, `marker`); the tool counts it for the rules of the asked topic, bounded in depth and files, and feeds `detectConvention`'s result to the resolver. The answer carries the `convention` it weighed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — Trusted-domain adapters stay out; the posture is enforced
 
