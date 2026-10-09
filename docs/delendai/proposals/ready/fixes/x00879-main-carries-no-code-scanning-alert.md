@@ -64,6 +64,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "The useless assignments and expressions, the incompatible comparison, the unneeded defensive code and the specs' file-system races and tag filters the scanner reports no longer apply."
 - Triage 2026-10-07 against develop: the useless assignments (#55, #79, #192, #348), the incompatible comparison (#251), the defensive code (#80) and the specs' races (#40, #341, #367) are already fixed there. #276 is fixed here: the type-level check is `expectTypeOf(ctx).not.toHaveProperty('git')` instead of a bare expression under `@ts-expect-error`. #37 is a spec that plants the lock file on purpose to simulate another process; dismissed as used-in-tests.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Code scanning analyses the integration branch too
 - **Status**: review
