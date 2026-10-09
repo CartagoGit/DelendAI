@@ -43,7 +43,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - global_gate: none
 
 ### S1 — An agent signs with the model it runs as
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -52,7 +52,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Progress 2026-10-06: a verdict is signed with the same canonical spelling the unit's ref uses (`resolveWorkAgentId`: `GPT-5.4` and `gpt-5.4` are one reviewer), and a verdict recorded in a review unit is refused unless it is signed by the agent the unit is named after, so a pack has one reviewer and a name cannot be chosen per call. Both specs fail without the change. Still open: an identity that names no model (`illyria`, which was ChatGPT Luna 6.0) or a family without its version (`minimax-3` for MiniMax M3.1) cannot be told from a real model id by its spelling; that needs the identity to come from the host, which knows the model it runs (its declared agent id), rather than from the agent's own words.
 
 ### S2 — A verdict reaches the document only through the review tool
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/lint/verdicts-through-the-tool.script.ts`, `tools/scripts/lint/verdicts-through-the-tool.script.spec.ts`, `package.json`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -62,7 +62,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S3 — A created proposal releases the reservation and directory of its `new` unit
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/free-directory.helper.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -83,7 +83,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S5 — A pack that cannot land is refused before it is published
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/services/pack-governance.service.ts`, `plugins/proposals/src/public/index.ts`, `plugins/proposals/tests/src/lib/services/pack-governance.service.spec.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-pack-check.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -122,7 +122,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S9 — A unit nobody holds leaves nothing behind
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -132,7 +132,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S10 — A publication closed without merging is retired, not left
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/tests/src/lib/ref-lifecycle/reconcile.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -142,7 +142,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S11 — An id reservation ends when a higher one supersedes it
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -152,7 +152,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S12 — A retired close pass ends once its closes have landed
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`, `tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -162,7 +162,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S13 — A publication its author left in conflict is adopted or retired, not left
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -173,7 +173,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S14 — A unit that only merged landed work in is delivered
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -183,7 +183,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S15 — A retired pack that changes no file is dropped
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -193,7 +193,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S16 — A submit through the CLI is committed, or the CLI says why
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/core/src/lib/contracts/constants/call-writes.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`, `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/lib/stdio-context.factory.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -204,7 +204,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S17 — A merge leaves the proposal-id counter level with what it brought
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `lefthook.yml`
 - **Gate**: type
 - acceptance:
@@ -214,7 +214,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S18 — Retired work that is dropped is not taken for lost work
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`, `packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts`, `config/delendai/repair-resolutions.json`
 - **Gate**: type
 - acceptance:
@@ -225,7 +225,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S19 — The server's log says a thing once, not every five minutes
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -235,7 +235,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S20 — Everyday listings show live work, not what was given up
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -246,7 +246,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S21 — The forge reaper sees a branch whose only extra commit merged landed work
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -256,7 +256,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S22 — The unit that wrote a proposal holds none of its slices
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/slice-holders.service.ts`, `packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -267,7 +267,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S23 — The boot sees a checkpoint whose only extra commit merged landed work
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/checkpoint-containment.ts`, `packages/core/tests/src/lib/work-units/landed-work.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -278,7 +278,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S24 — A unit another unit of its agent published ends with that publication
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/carried-units.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/carried-units.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -289,7 +289,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S25 — The server keeps its own log in the workspace
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/server-log.ts`, `packages/core/src/lib/contracts/constants/server-log.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/server-log.spec.ts`, `packages/cli/src/index.ts`, `tools/scripts/host/host-server.script.ts`
 - **Gate**: type
 - acceptance:
@@ -299,7 +299,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S26 — A queue whose candidates are all behind still moves
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`, `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -309,7 +309,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Root cause, read from the hydration log on 2026-10-07: the cadence existed (the host server runs the pass every ten minutes), but every pass failed on the same candidate: the flat forward sync `delendai/pr/forward-sync-<sha>` could not be brought forward, because the pre-push guard refused its shape, 184 times. The candidate never moved and the queue waited on it. That is fixed at its source by x00879 S11 (the forward sync's branch is a canonical publication), not by a second cadence. What this slice adds is what hid it: the log grew to 17 MB and 130,000 lines without a date, so the same refusal repeated for hours unread. Each pass now writes a dated header, and the log is set aside as `.1` past 2 MB.
 
 ### S27 — A stale generated catalog does not stop its own regeneration
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/plugins/managed-lazy-catalog-lookup.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/core/src/lib/plugins/managed-plugin-environment.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `tools/scripts/generate/managed-lazy-catalog.script.ts`, `packages/core/tests/src/lib/plugins/managed-lazy-catalog-lookup.spec.ts`, `packages/core/tests/src/lib/project/tool-surface-runtime.exposure.spec.ts`, `plugins/proposals/tests/src/lib/surface/disclosure.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -317,7 +317,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Found 2026-10-07 while repairing two candidates: a merge left an older `managed-lazy-catalog.generated.ts` without `MANAGED_LAZY_PLUGIN_BY_ID`. The generator imports `@delendai/core/public`, which imports `assemble-plugins`, which imported that export, so every generator, gate and pre-push hook failed with "Export named 'MANAGED_LAZY_PLUGIN_BY_ID' not found" and the file could only be restored by hand. The map now lives in `managed-lazy-catalog-lookup.ts`, and a spec holds the generated module to its single export.
 
 ### S28 — A run that lost its required check runs again
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -334,7 +334,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Retired 2026-10-07 on reading the code: closing already accepts the integration branch's certified full run as evidence (`certifiedDelivery` in `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, tried after the local journal), when every commit in the proposal's `shipped-in` is contained in a certified tip. The 218 refusals in the hydration log were for x00834 before it had `shipped-in`; it is done, and the passes since report nothing in review ready to close.
 
 ### S30 — A proposal that moves folders keeps the approvals it already had
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -342,7 +342,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Found 2026-10-08 by the agent finishing r00040: its pull request moved the proposal from in-progress to review and rewrote its Files list (645 paths). The move fell under git's 50% rename similarity, read as a deletion and an addition, and the lint refused the implementer for "adding approvals by gpt-5.4" it had only carried; the agent worked around it by listing directories instead of files.
 
 ### S31 — A unit answers for what it deleted, not for what the branch gained
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `tools/scripts/lint/mass-content-removal.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -351,7 +351,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Follow-up 2026-10-09: the lint already had a spec, in `plugins/proposals/tests`, importing the script by a relative path; this slice's first publication (#942) did not see it, changed the diff range, and left the integration branch red on it, because a change under `tools/` does not select the proposals zone. Its cases now live in the spec beside the script, where the planner selects them with it, and the cross-zone copy is gone.
 
 ### S32 — A change reaches the zones of the files that import it by path
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/ci/path-importers.ts`, `tools/scripts/ci/path-importers.spec.ts`, `tools/scripts/ci/test-zones.script.ts`
 - **Gate**: type
 - acceptance:
@@ -359,12 +359,20 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Found 2026-10-09: S31 changed a lint under `tools/`, its older spec sat in the proposals zone and imported the script by path, the planner selected only the tools zone, the pull request (#942) was green and the integration branch went red. The workspace graph follows package names and has no edge for such an import; thirty-four files import across workspaces this way, twelve of them in core.
 
 ### S33 — What the product writes in its cache is not stray
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/lint/check-stray-cache-files.script.ts`
 - **Gate**: type
 - acceptance:
   - "`lint:stray-cache-files` accepts the cache directories the product itself writes: `telemetry/` (the work-event and transition-duration journals) and `logs/` (the server's own log)."
 - Found 2026-10-09: handing a proposal to review wrote the transition journal under `.cache/delendai/telemetry/`, the lint called the directory stray, and the pre-commit hook refused the commit the transition itself needed. The server log directory of S25 was unknown to it in the same way.
+
+### S34 — A slice's reservation ends when its unit's publication lands
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A slice reservation whose unit has no branch on the forge and whose publication a merge on the integration branch names is released at once; one whose unit is simply gone is still kept for the abandonment window."
+- Found 2026-10-10: `work enter --slice=all` on this proposal was refused because S31 was "reserved on the forge", hours after its unit had published and merged (#951). The reaper released a branchless unit's reservation only after the whole abandonment window, which is right for a unit nobody knows the fate of and wrong for one that landed.
 
 ## acceptance
 
