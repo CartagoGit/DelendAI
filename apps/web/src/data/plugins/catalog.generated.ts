@@ -121,6 +121,12 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 		"category": "integration"
 	},
 	{
+		"slug": "execution-env",
+		"displayName": "Execution Env",
+		"purpose": "Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.",
+		"category": "workflow"
+	},
+	{
 		"slug": "external-mcps",
 		"displayName": "External Mcps",
 		"purpose": "Compose third-party MCP servers through the catalog + human ack.",

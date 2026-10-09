@@ -609,6 +609,33 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		}
 	},
 	{
+		"id": "execution-env",
+		"package": "@delendai/execution-env",
+		"summary": "Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.",
+		"tags": [
+			"execution",
+			"docker",
+			"ssh"
+		],
+		"maturity": "experimental",
+		"visibility": "public",
+		"presets": [],
+		"capabilities": [
+			"execution-env"
+		],
+		"permissions": [
+			"filesystem-read",
+			"filesystem-write",
+			"process",
+			"env-read"
+		],
+		"tokenBudget": {
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
 		"id": "external-mcps",
 		"package": "@delendai/external-mcps",
 		"summary": "Compose third-party MCP servers through the catalog + human ack.",
