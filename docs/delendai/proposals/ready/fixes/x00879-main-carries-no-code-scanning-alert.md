@@ -114,6 +114,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "The workflow that reports a required check of the release branch runs on pull requests into it, so a promotion whose head no push run built still gets that check; the lint that forbade the doubled trigger exempts that workflow and refuses it when it lacks the trigger."
 - Found 2026-10-07 on the first promotion after this proposal's fixes (#911): `delendai-validate` and `release-pr-gate` were green on its head, yet the forge kept it BLOCKED with `delendai-validate` "expected". The check came from a dispatched certification run, and the forge counts a check towards a pull request only from that pull request's own runs or a push; the queue's merges, made with the workflow token, start no push run. The rule against running CI on both triggers rested on that push run existing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S10 — No dependency carries a known advisory
 - **Status**: review
