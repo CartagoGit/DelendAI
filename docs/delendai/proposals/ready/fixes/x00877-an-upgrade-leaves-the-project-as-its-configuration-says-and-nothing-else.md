@@ -74,7 +74,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-implementer: claude-opus-5-5
 
 ### S4 — No ignore line or moved file keeps the old name
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/gitignore.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/gitignore.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/gitignore.migrator.spec.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`, `packages/cli/src/contracts/interfaces/residual-report.interface.ts`, `tools/scripts/migrate/rebrand-propagate.script.ts`
 - **Gate**: type
 - acceptance:
@@ -86,13 +86,14 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - Fix 2026-10-07: the residual spec's fixture spells the old name, as it must, and `rebrand-propagate --check` counted it as a live leftover: develop's full run went red on #887 and the queue stopped arming. The spec is listed with the other files whose subject is the old name (`INTENTIONAL_LEGACY_PATHS`, beside `packages/cli/src/index.spec.ts`), with the reason.
 
 ### S5 — A profile change leaves nothing of the old mode unowned
-- **Status**: in-progress
-- **Files**: `packages/core/src/lib/work-units/profile-branches.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/profile-branches.service.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/profile-branches.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/profile-branches.service.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `packages/cli/src/commands/guard.command.ts`
 - **Gate**: type
 - acceptance:
   - "After the development profile changes, every work ref and worktree of the old shape is either still a live unit the new profile sees, or reported by `work doctor` with its remedy (publish or retire); none is invisible."
   - "Hooks and `delendai.guard.*` keys follow the profile: installed where it needs them, removed where it does not."
 - Progress 2026-10-07, the first bullet: `work doctor` gains `branches-in-the-profile`, which asks the ref reconciler (the one source of which names are outside every namespace, `unmanaged`) of the clone's own branches and reports each one an earlier profile or a person left, with the way to end it (enter a unit, merge the branch in, publish, delete it). Work refs of the old shape under the product's namespace were already reported (`no-stray-refs`, `units-hold-work`). It holds on this repository. Of the second bullet: `guard uninstall` removed the hooks and left `delendai.guard.runner` and `.entry` in the clone's config, saying the clone was guarded after the guard was gone; it now unsets them (the uninstall spec checks the config is empty). Open: every built-in profile guards, so no profile change calls for removing the hooks; the one setting that stops installing them, `development.guardHooks: "off"`, is documented as keeping the project's hooks untouched, and removing them there would break that. Whether `off` should also remove what an earlier `install` put in is the owner's call.
+- Finished 2026-10-09, the second bullet: the project already declares what it wants (`development.guardHooks`: `install`, `report` or `off`), so no new setting was needed; what was missing was anything comparing it with the hooks on disk. `guard status` now does (`guardHooksFollowMode`): with `off` and hooks still running the guard it names them and says `delendai guard uninstall`; with `install` and a hook missing it says `delendai guard install`; a hook its manager owns is left to that manager; and it exits non-zero when the two disagree, so a script can gate on it. The open question (whether `off` should be its own setting) is answered by the setting that already existed.
 
 ### S6 — The generated-files merge driver exists where it is configured
 - **Status**: review
@@ -105,7 +106,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-implementer: claude-opus-5-5
 
 ### S7 — The host-scope configs are migrated too
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/cli.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -115,7 +116,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-implementer: claude-opus-5-5
 
 ### S8 — The rebrand check runs on every pull request
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
