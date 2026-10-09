@@ -22,7 +22,7 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 	IToolRegistration,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import { SCORE_DIMENSIONS } from '../../../src/lib/services/audit-brief.service';
 import plugin from '../../../src/index';

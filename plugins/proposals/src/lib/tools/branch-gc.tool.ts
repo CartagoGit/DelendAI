@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { runBranchGcEngine } from '../shared/branch-gc-engine';

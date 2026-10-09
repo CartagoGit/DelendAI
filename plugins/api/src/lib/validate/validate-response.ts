@@ -1,8 +1,5 @@
-import {
-	summarizeFindings,
-	worstSeverity,
-	type IFinding,
-} from '@delendai/core/public';
+import { summarizeFindings, worstSeverity } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 import type { IOpenApiOperation, IOperationResponse } from '../spec/openapi';
 

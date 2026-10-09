@@ -10,7 +10,7 @@ import type {
 	IGitRunResult,
 	IGitRunner,
 	IMcpPluginContext,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 

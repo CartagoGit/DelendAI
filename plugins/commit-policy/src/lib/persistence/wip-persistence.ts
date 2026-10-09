@@ -31,7 +31,7 @@
 
 import { agentIdOf } from '../services/work-ref-naming.service';
 import { reapIntegratedWorkRefs } from '../services/integrated-work-refs.service';
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import {
 	localRefHolds,

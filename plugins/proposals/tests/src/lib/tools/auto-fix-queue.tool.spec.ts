@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import type { ILogIncident } from '@delendai/logs/public';
 
 import type { IIncidentProposalToolOptions } from '@delendai/proposals/lib/contracts/interfaces/incident-proposal-tool-options.interface';

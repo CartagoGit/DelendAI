@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import type { AgentHost } from '@delendai/core/public';
+import type { AgentHost } from '@delendai/core/contracts';
 
 import { AGENT_CONVENTIONS } from '../shared/agent-conventions';
 import { composeIdentity } from '../shared/agent-identity';

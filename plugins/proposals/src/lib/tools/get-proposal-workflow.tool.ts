@@ -1,5 +1,5 @@
 import z from 'zod';
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { IWorkIsolation } from '@delendai/core/plugin';
 

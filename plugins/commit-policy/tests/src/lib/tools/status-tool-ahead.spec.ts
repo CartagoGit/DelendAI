@@ -15,11 +15,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import type {
-	IGitRunResult,
-	IGitRunner,
-	IToolTextResult,
-} from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IGitRunResult, IGitRunner } from '@delendai/core/contracts';
 
 import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
 import { runCommitPolicyStatus } from '@delendai/commit-policy/lib/tools/status-tool';

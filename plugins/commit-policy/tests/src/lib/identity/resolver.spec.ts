@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 
 import type { ICommitPolicyIdentity } from '@delendai/commit-policy/lib/contracts/options';
 import { resolveAuthor } from '@delendai/commit-policy/lib/identity/resolver';

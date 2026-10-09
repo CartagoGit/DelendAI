@@ -7,11 +7,9 @@
  */
 import { basename, extname } from 'node:path';
 
-import {
-	SafeWorkspaceReader,
-	type FindingSeverity,
-	type IFileReader,
-} from '@delendai/core/public';
+import type { FindingSeverity } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import type { IFileReader } from '@delendai/core/contracts';
 import { resolveScopes } from '@delendai/quality/public';
 import { scanMarkers } from '@delendai/tech-debt/public';
 

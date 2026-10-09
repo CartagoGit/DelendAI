@@ -1,6 +1,6 @@
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { appendToClosedTasks } from './closed-tasks-log';
 import { AGENT_CANONICAL_ROLES } from '../shared/agent-conventions';

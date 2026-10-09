@@ -28,7 +28,7 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 export type TValidationResult = 'pass' | 'fail';
 

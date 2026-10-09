@@ -19,7 +19,7 @@ import plugin, {
 	validateCommitPolicyConfiguration,
 } from '@delendai/commit-policy';
 import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({
 	workspace: {

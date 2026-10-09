@@ -4,7 +4,7 @@ import { execFile } from 'node:child_process';
 // re-exported here so this module's existing importers keep their import path.
 // Only the contract is shared; the read-only runner implementation stays local.
 export type { IGitRunner, IGitRunResult } from '@delendai/core/public';
-import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 import { readExpectedReleaseState } from '../release';
 import {
 	assertReleaseMetadata,

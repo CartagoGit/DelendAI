@@ -19,9 +19,9 @@ import { join } from 'node:path';
 import {
 	assembleCliConfig,
 	FIRST_PARTY_PLUGIN_INDEX,
-	parseCliArgs,
-	writeFileAtomic,
 } from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/plugin';
+import { writeFileAtomic } from '@delendai/core/runtime';
 import { extractRequirements } from '@delendai/env/public';
 
 import { repoRoot } from '../lib/monorepo-paths';

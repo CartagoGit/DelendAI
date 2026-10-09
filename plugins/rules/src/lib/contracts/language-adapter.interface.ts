@@ -1,4 +1,4 @@
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 import type { ICommandSetProvider } from './command-set-provider.interface';
 

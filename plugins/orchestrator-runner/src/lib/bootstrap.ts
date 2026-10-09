@@ -21,10 +21,9 @@ import { readFile } from 'node:fs/promises';
 
 import {
 	redactSecrets,
-	withFileMutex,
-	writeFileAtomic,
 	type IProviderCapabilities,
 } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import { probeCli, type ProbeRunner } from './healthcheck/probe';
 import { installHintFor } from './healthcheck/install-hints';

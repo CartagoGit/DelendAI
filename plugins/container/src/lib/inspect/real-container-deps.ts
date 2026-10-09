@@ -1,11 +1,8 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
-import {
-	probeTool,
-	realProbeDeps,
-	type IExternalTool,
-} from '@delendai/core/public';
+import { probeTool, realProbeDeps } from '@delendai/core/public';
+import type { IExternalTool } from '@delendai/core/contracts';
 
 import { DOCKER_TOOL, KUBECTL_TOOL } from './cli-tools';
 import type { IContainerInspectDeps } from './types';
