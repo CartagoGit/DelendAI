@@ -2,10 +2,14 @@
 id: x00879
 title: "Main carries no code scanning alert"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: security
 date: 2026-10-07
+last-transition-id: 4d06e7e3-4493-476f-925c-69d3d2c7184c
+last-correlation-id: 4d06e7e3-4493-476f-925c-69d3d2c7184c
+last-transition-from: ready
+last-transition-at: 2026-10-09T21:22:29.638Z
 ---
 
 # x00879 — Main carries no code scanning alert
