@@ -686,16 +686,22 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Gate**: `bun run validate` falla si un PR nuevo introduce el path legacy `.cache/mcp-vertex/...` en runtime/tooling. El ratchet falla si se modifica `CACHE_LAYOUT_MANIFEST.epoch` o la lista de `artifacts` sin bump de `CACHE_LAYOUT_EPOCH`.
 
 ### S6 — CLI operator (entregable: `f00531`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/cli/src/commands/cache.command.ts`
-  - `packages/cli/src/commands/cache/status.command.ts`
-  - `packages/cli/src/commands/cache/migrate.command.ts`
-  - `packages/cli/src/commands/cache/migrations.command.ts`
-  - `packages/cli/src/commands/cache/gc.command.ts` (delega al cache_gc existente)
-  - tests correspondientes
-- **Tarea**: subcomandos que invocan el engine. **No** añade tool MCP.
-- **Gate**: cada subcomando tiene `--dry-run`. Salida estructurada (JSON opcional) sin texto narrativo.
+  - `packages/cli/src/commands/cache.command.spec.ts`
+  - `packages/cli/src/commands/registry.ts`
+  - `packages/cli/src/commands/registry.spec.ts`
+  - `packages/cli/src/contracts/constants/help-translation.constant.ts`
+  - `packages/core/src/cli.ts`
+  - `packages/core/src/lib/workspace-migration/cache-layout-step.service.ts`
+  - `tools/scripts/lint/cli-ui-parity.map.json`
+- **Tarea**: `delendai cache status|migrations|migrate [--dry-run]|gc [--dry-run|--apply]`, un solo comando con subcomandos sobre el mismo `runCacheLayoutStep`. `status` hace un ensayo (no escribe) y muestra epoch aplicado, epoch objetivo y lo pendiente; `migrations` lista la cadena registrada; `gc` delega en la herramienta `cache_gc` existente y por defecto solo previsualiza. No añade tool MCP.
+- **Gate**: `bun run vitest run --root packages/cli src/commands` (status sin escritura, migrate --dry-run no cambia el árbol, migrate conserva los records, gc dry-run por defecto, subcomando desconocido = USAGE).
+- **Corrections to the design, following the code**:
+  - One command file with subcommands, like `migrate.command.ts`, instead of five files: the subcommands are a few lines each over the same engine.
+  - `gc` previews unless `--apply` is given (the plan only asked for a dry-run flag); eviction deletes by age, so applying it should be deliberate.
+  - This slice builds on the registry that S4 adds (open pull request at the time of writing), so its branch carries that merge.
 
 ### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
 - **Status**: pending
