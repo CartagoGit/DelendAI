@@ -893,3 +893,7 @@ export type { IUnitAdoption } from '../lib/contracts/interfaces/unit-adoption.in
 // proposals plugin has just allocated, so the unit is named after it.
 export { adoptProposalId } from '../lib/work-units/unit-adoption.service';
 export type { IWorkflowKpis } from '../lib/contracts/interfaces/workflow-kpis.interface';
+
+// Work events a plugin observes (a status change, a review submission) are
+// appended to the telemetry journal; the private reader drains it later.
+export { journalWorkEvent } from '../lib/work-units/work-event-journal.service';
