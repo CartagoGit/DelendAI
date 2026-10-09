@@ -2,10 +2,14 @@
 id: f00541
 title: "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-09-15
+last-transition-id: b8cb94de-b4b6-4e21-aecc-0ec4dd84c004
+last-correlation-id: b8cb94de-b4b6-4e21-aecc-0ec4dd84c004
+last-transition-from: in-progress
+last-transition-at: 2026-10-09T15:39:55.779Z
 ---
 
 # f00541 — Execution environments: local, Docker, Docker Compose, SSH, Docker Exec
@@ -40,6 +44,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Registry accepts registrations by id."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `197d9d2cfd61`
 
 ### S2 — Local adapter baseline
 - **Status**: review
@@ -52,6 +57,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "prepare and teardown are no-ops but return successfully."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `197d9d2cfd61`
 
 ### S3 — Docker CLI adapter
 - **Status**: review
@@ -66,6 +72,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Test skips when docker CLI is not available, never blocks CI."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `197d9d2cfd61`
 
 ### S4 — Docker Compose adapter
 - **Status**: review
@@ -78,6 +85,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Supports workdir, env pass-through, and resource limits per service."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `197d9d2cfd61`
 
 ### S5 — SSH adapter with keepalive and jump host
 - **Status**: review
@@ -91,6 +99,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Capability forward-secrets is false unless ssh-agent-forward is configured."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `197d9d2cfd61`
 
 ### S6 — Docker Exec adapter for sidecars
 - **Status**: review
@@ -103,6 +112,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "teardown does not stop the container (it was existing)."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `197d9d2cfd61`
 
 ### S7 — Secret resolver
 - **Status**: review
@@ -115,6 +125,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Redaction policy strips values from any accidental log output."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `e6f2613329ac`
 
 ### S8 — Lifecycle integration in orchestrator-runner
 - **Status**: review
@@ -126,6 +137,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "On prepare failure, the slice is aborted before any code change."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `e1504fba93b0`
 
 ## acceptance
 

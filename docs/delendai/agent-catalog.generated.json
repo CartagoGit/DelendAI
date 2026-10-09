@@ -1409,14 +1409,6 @@
 				"date": "2026-09-06"
 			},
 			{
-				"id": "f00541",
-				"title": "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec",
-				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
 				"id": "f00542",
 				"title": "Delendai language-, IDE-, and OS-agnostic",
 				"track": "general",
