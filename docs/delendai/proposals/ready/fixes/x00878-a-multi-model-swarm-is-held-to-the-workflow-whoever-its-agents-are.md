@@ -358,6 +358,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "The test planner adds, for every changed source file, the zone of each tracked file that imports it by a relative path, in whatever workspace that file lives, so a spec that tests another workspace's script runs when the script changes."
 - Found 2026-10-09: S31 changed a lint under `tools/`, its older spec sat in the proposals zone and imported the script by path, the planner selected only the tools zone, the pull request (#942) was green and the integration branch went red. The workspace graph follows package names and has no edge for such an import; thirty-four files import across workspaces this way, twelve of them in core.
 
+### S33 — What the product writes in its cache is not stray
+- **Status**: in-progress
+- **Files**: `tools/scripts/lint/check-stray-cache-files.script.ts`
+- **Gate**: type
+- acceptance:
+  - "`lint:stray-cache-files` accepts the cache directories the product itself writes: `telemetry/` (the work-event and transition-duration journals) and `logs/` (the server's own log)."
+- Found 2026-10-09: handing a proposal to review wrote the transition journal under `.cache/delendai/telemetry/`, the lint called the directory stray, and the pre-commit hook refused the commit the transition itself needed. The server log directory of S25 was unknown to it in the same way.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

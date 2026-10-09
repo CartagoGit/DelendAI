@@ -1575,14 +1575,6 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-10-06"
-			},
-			{
-				"id": "x00879",
-				"title": "Main carries no code scanning alert",
-				"track": "security",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-07"
 			}
 		]
 	}
