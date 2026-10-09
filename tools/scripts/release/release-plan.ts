@@ -53,6 +53,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/docs',
 	'plugins/env',
 	'plugins/error-reporting',
+	'plugins/execution-env',
 	'plugins/external-mcps',
 	'plugins/forge',
 	'plugins/framework-knowledge',
