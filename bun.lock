@@ -683,6 +683,23 @@
         "@delendai/core": "^0.1.1",
       },
     },
+    "plugins/execution-env": {
+      "name": "@delendai/execution-env",
+      "version": "0.1.0",
+      "dependencies": {
+        "yaml": "2.9.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@delendai/core": "workspace:*",
+        "@delendai/test-kit": "workspace:*",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+      },
+      "peerDependencies": {
+        "@delendai/core": "^0.1.1",
+      },
+    },
     "plugins/external-mcps": {
       "name": "@delendai/external-mcps",
       "version": "0.1.1",
@@ -1637,6 +1654,8 @@
     "@delendai/error-reporting": ["@delendai/error-reporting@workspace:plugins/error-reporting"],
 
     "@delendai/example-wordcount": ["@delendai/example-wordcount@workspace:docs/delendai/examples/custom-plugin"],
+
+    "@delendai/execution-env": ["@delendai/execution-env@workspace:plugins/execution-env"],
 
     "@delendai/external-mcps": ["@delendai/external-mcps@workspace:plugins/external-mcps"],
 

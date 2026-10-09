@@ -122,3 +122,10 @@ export type {
 	ICliProbeResult,
 	ILoopDetectionSeam,
 } from '../lib/types';
+export { runInExecutionEnvironment } from '../lib/services/execution-env.service';
+export type {
+	IEnvironmentLogEntry,
+	IEnvironmentRunOptions,
+	IEnvironmentRunOutcome,
+	ILifecycleEnvironment,
+} from '../lib/contracts/interfaces/execution-env-lifecycle.interface';
