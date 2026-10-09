@@ -379,6 +379,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "`lint:stray-cache-files` accepts the cache directories the product itself writes: `telemetry/` (the work-event and transition-duration journals) and `logs/` (the server's own log)."
 - Found 2026-10-09: handing a proposal to review wrote the transition journal under `.cache/delendai/telemetry/`, the lint called the directory stray, and the pre-commit hook refused the commit the transition itself needed. The server log directory of S25 was unknown to it in the same way.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S34 — A slice's reservation ends when its unit's publication lands
 - **Status**: review
