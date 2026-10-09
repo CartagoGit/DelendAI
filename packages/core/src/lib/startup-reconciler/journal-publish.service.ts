@@ -15,10 +15,10 @@
  * next boot publishes what is still missing.
  */
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
+import { scratchRoot } from '../wip-engine/git-command';
 import {
 	JOURNAL_COMMIT_IDENTITY,
 	JOURNAL_COMMIT_MESSAGE,
@@ -129,7 +129,9 @@ const commitJournal = async (
 	text: string,
 	parent: string | undefined,
 ): Promise<string | undefined> => {
-	const scratch = await mkdtemp(join(tmpdir(), 'delendai-journal-'));
+	// Inside the git directory, like the engine's other scratch: contained,
+	// per repository, and never part of the working tree.
+	const scratch = await mkdtemp(join(await scratchRoot(run), 'journal-'));
 	try {
 		const blobFile = join(scratch, JOURNAL_FILE);
 		await writeFile(blobFile, text, 'utf8');
