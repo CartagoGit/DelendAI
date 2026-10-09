@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -202,7 +202,7 @@ import { SqliteWorkEventStore } from ${JSON.stringify(storeModule)};
 
 const [dbFile, dir, name, total, warmup] = process.argv.slice(2);
 const store = new SqliteWorkEventStore({ path: dbFile });
-writeFileSync(join(dir, name + '.ready'), '');
+console.log('ready');
 while (!existsSync(join(dir, 'start'))) Bun.sleepSync(1);
 for (let index = 0; index < Number(total); index += 1) {
 	store.append({
@@ -211,7 +211,7 @@ for (let index = 0; index < Number(total); index += 1) {
 		kind: 'git_change',
 		payload_hash: String(index),
 	});
-	if (index + 1 === Number(warmup)) writeFileSync(join(dir, name + '.warm'), '');
+	if (index + 1 === Number(warmup)) console.log('warm');
 }
 store.close();
 `,
@@ -227,8 +227,23 @@ store.close();
 					String(total),
 					String(victimWarmup),
 				],
-				{ stdio: 'inherit' },
+				{ stdio: ['ignore', 'pipe', 'inherit'] },
 			);
+			// The child announces its stages on stdout; each stage is a promise
+			// the test awaits instead of polling the clock.
+			const stages = new Map<string, Promise<void>>();
+			const announce = (stage: string): Promise<void> => {
+				let seen = stages.get(stage);
+				if (seen === undefined) {
+					seen = new Promise<void>((resolve) => {
+						child.stdout.on('data', (chunk: Buffer) => {
+							if (chunk.toString().includes(stage)) resolve();
+						});
+					});
+					stages.set(stage, seen);
+				}
+				return seen;
+			};
 			const exit = new Promise<{
 				code: number | null;
 				signal: NodeJS.Signals | null;
@@ -236,23 +251,16 @@ store.close();
 				child.on('error', reject);
 				child.on('exit', (code, signal) => resolve({ code, signal }));
 			});
-			return { child, exit };
+			return { child, exit, announce };
 		};
-		const waitFor = async (file: string): Promise<void> => {
-			const deadline = Date.now() + 30_000;
-			while (!existsSync(join(dir, file))) {
-				if (Date.now() > deadline)
-					throw new Error(`timed out: ${file}`);
-				await new Promise((resolve) => setTimeout(resolve, 5));
-			}
-		};
-
 		const runs = survivors.map((name) => launch(name, eventsPerSurvivor));
 		const doomed = launch(victim, victimBurst);
-		for (const name of [...survivors, victim])
-			await waitFor(`${name}.ready`);
+		// Listeners go on before any output can arrive.
+		const ready = [...runs, doomed].map((run) => run.announce('ready'));
+		const warm = doomed.announce('warm');
+		await Promise.all(ready);
 		writeFileSync(join(dir, 'start'), '');
-		await waitFor(`${victim}.warm`);
+		await warm;
 		doomed.child.kill('SIGKILL');
 
 		expect((await doomed.exit).signal).toBe('SIGKILL');
