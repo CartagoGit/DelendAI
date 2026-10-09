@@ -113,6 +113,8 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Resolves env(file references), file(content references), and ssh-agent-forward (using $SSH_AUTH_SOCK)."
   - "Never writes resolved secrets to disk."
   - "Redaction policy strips values from any accidental log output."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S8 — Lifecycle integration in orchestrator-runner
 - **Status**: pending
