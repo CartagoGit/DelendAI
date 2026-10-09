@@ -96,6 +96,8 @@ const repositoryWithWorktree = (): {
 		'utf8',
 	);
 	writeFileSync(join(checkout, 'README.md'), '# delivered\n', 'utf8');
+	// A project ignores its cache, where the work telemetry journal lives.
+	writeFileSync(join(checkout, '.gitignore'), '.cache/\n', 'utf8');
 	git(checkout, ['add', '-A']);
 	git(checkout, ['commit', '-m', 'the proposal in progress']);
 	const worktree = join(parent, 'worktree');
