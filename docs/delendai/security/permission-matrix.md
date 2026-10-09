@@ -32,6 +32,7 @@
 | docs | public | * | filesystem-read, filesystem-write |
 | env | public | * | filesystem-read, env-read |
 | error-reporting | public | report_status | network, forge-write |
+| execution-env | public | * | filesystem-read, filesystem-write, process, env-read |
 | external-mcps | public | * | filesystem-read, process, network, env-read |
 | forge | public | pr_list | forge-read, network |
 | forge | public | pr_show | forge-read, network |
