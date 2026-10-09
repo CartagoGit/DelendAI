@@ -1481,14 +1481,6 @@
 				"date": "2026-09-20"
 			},
 			{
-				"id": "f00643",
-				"title": "The startup forge and journal phases run in a real host",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-26"
-			},
-			{
 				"id": "f00756",
 				"title": "Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable",
 				"track": "architecture",
