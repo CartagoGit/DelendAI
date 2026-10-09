@@ -3,7 +3,7 @@
  * variables the enabled plugins need.
  */
 
-import type { IFinding } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 import type { IEnvRequirement } from '@delendai/env/public';
 
 export interface IEnvWarningSources {

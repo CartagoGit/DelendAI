@@ -9,10 +9,8 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import {
-	resolveDevelopmentPolicy,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 import {
 	buildReviewRegistration,

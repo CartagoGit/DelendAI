@@ -13,11 +13,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
-import {
-	createWriteGitRunner,
-	type IGitRunner,
-	type IGitRunResult,
-} from '@delendai/core/public';
+import { createWriteGitRunner } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 
 import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
 export type IParsedOptions = ICommitPolicyOptions;

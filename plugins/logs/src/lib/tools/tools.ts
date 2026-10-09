@@ -9,8 +9,8 @@ import {
 	toolJson,
 	toolJsonWithSummary,
 	type Detail,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { ILogToolStores } from '../contracts/interfaces/tools.interface';
 import { correlateEvents } from '../services/correlate';

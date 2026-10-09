@@ -15,7 +15,7 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { classifyPath, toolError, toolOk } from '@delendai/core/public';
 
 type ISuggestPathArgs = {

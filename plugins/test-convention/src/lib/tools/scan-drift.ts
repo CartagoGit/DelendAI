@@ -1,10 +1,7 @@
 import z from 'zod';
 
-import {
-	toolJson,
-	type IToolRegistration,
-	type IToolTextResult,
-} from '@delendai/core/public';
+import { toolJson, type IToolTextResult } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { ITestConvention } from '../../convention';
 import { scanDrift, type IScanReader } from '../../scan';

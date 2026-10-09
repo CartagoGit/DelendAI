@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
-import { createWriteGitRunner, type IGitRunner } from '@delendai/core/public';
+import { createWriteGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 const execFileAsync = promisify(execFile);
 

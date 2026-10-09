@@ -19,7 +19,7 @@ import {
 import { loadLock, removeStale, writeLock } from './lock-store';
 import { resolveCallerHostId } from './release-audit';
 import { sweepStaleAgentLockTmpFiles } from './tmp-file-sweeper';
-import { withFileMutex } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 export const pruneFileLocksForTasks = async (
 	taskIds: readonly string[],

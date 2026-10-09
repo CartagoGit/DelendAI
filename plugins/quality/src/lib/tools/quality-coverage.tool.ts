@@ -4,8 +4,8 @@ import {
 	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { IQualityToolOptions } from './tools';
 import { summarizeCoverage } from './coverage';

@@ -13,7 +13,7 @@
  * reason }` with a human-readable message for the agent.
  */
 
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 import type { ICommitPolicyIdentity } from '../contracts/options';
 

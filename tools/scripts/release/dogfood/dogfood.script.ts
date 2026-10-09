@@ -41,8 +41,6 @@ import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import type {
-	IGitRunResult,
-	IGitRunner,
 	IReleaseCandidateMetadata,
 	ReleaseType,
 	IExpectedReleaseState,
@@ -56,6 +54,7 @@ import type {
 	IReleaseReconciliationInput,
 	IReleaseTarget,
 } from '@delendai/core/public';
+import type { IGitRunResult, IGitRunner } from '@delendai/core/contracts';
 import { readWorkspacePolicy, resolveReleaseTarget } from '@delendai/core/cli';
 import type { IForgePullRequestDetail } from '../../../../plugins/forge/src/lib/contracts/interfaces/forge-read.interface';
 import {

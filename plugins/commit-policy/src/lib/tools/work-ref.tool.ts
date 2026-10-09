@@ -16,10 +16,10 @@ import {
 	anchorRefusal,
 	compactOutputSchema,
 	observeAnchor,
-	type IToolRegistration,
 	toolError,
 	toolOk,
 } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import type { IWorkRefToolOptions } from '../contracts/interfaces/work-ref-tool.interface';
 import { WORK_REF_INPUT_SCHEMA } from '../contracts/constants/work-ref.constant';
 import {

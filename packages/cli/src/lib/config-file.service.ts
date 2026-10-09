@@ -3,9 +3,8 @@ import {
 	DEFAULT_CONFIG_FILENAME,
 	redactSecrets,
 	resolveWorkspaceContained,
-	withFileMutex,
-	writeFileAtomic,
 } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 import { diagnoseConfigFile, parseJsonc } from '@delendai/core/cli';
 
 import type { IConfigSetPlan } from '../contracts/interfaces/config-file.interface';

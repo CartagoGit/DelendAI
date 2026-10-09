@@ -7,7 +7,7 @@
  * Each helper takes an `IGitRunner` so the tests can stub git.
  */
 
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 /** Radix for `Number.parseInt` of `git rev-list --count` output. */
 const DEC_RADIX = 10;

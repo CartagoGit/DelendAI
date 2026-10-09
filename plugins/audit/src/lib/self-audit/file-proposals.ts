@@ -6,7 +6,8 @@
 import { access, mkdir, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { type IFinding, writeFileAtomic } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
+import { writeFileAtomic } from '@delendai/core/runtime';
 
 import type { IBacklog } from '../contracts/interfaces/backlog.interface';
 

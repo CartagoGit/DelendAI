@@ -15,7 +15,7 @@ import { spawn } from 'node:child_process';
 import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import { readJsonOrNull } from '../../../plugins/proposals/src/lib/proposals/index-reader';
 import { repoRoot } from '../lib/monorepo-paths';

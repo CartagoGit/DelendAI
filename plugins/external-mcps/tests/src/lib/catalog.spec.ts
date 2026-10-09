@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IMcpPluginRegistrations,
 	IToolRegistration,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import plugin from '../../../src/index';
 import {

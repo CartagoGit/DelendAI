@@ -10,7 +10,7 @@
  * folder. Now the folder itself is listed, and a document is read again
  * only when its size or modification time changed since the last poll.
  */
-import type { SafeWorkspaceReader } from '@delendai/core/public';
+import type { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type {
 	ISliceSnapshotEntry,

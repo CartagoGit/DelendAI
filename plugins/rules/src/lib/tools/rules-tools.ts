@@ -6,7 +6,7 @@ import type {
 	IFileReader,
 	IToolRegistration,
 	IWorkspacePathProvider,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 import { toolError, toolJson } from '@delendai/core/public';
 
 import { buildManifestViaComposition } from '../frameworks/manifest-via-composition';

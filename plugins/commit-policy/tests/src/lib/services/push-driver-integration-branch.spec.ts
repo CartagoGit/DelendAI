@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 
 import type { ICommitPolicyPush } from '@delendai/commit-policy/lib/contracts/options';
 import { runPushDriver } from '@delendai/commit-policy/lib/services/push-driver';

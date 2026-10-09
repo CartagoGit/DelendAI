@@ -28,7 +28,8 @@
  */
 import { basename, dirname, join } from 'node:path';
 
-import { SafeWorkspaceReader, sharedCheckout } from '@delendai/core/public';
+import { sharedCheckout } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { INTEGRATION_CERTIFICATION_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
 import type { IGitRunner } from '../shared/git-runner';

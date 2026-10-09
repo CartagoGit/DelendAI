@@ -9,7 +9,7 @@
  * changed already has the same content there. Anything else stays, so
  * unintegrated work is never lost.
  */
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 import type {
 	IReapIntegratedWorkRefsInput,

@@ -8,8 +8,8 @@ import {
 	DEFAULT_FRAMEWORK_RULES,
 	matchFramework,
 	resolveFrameworkVersion,
-	SafeWorkspaceReader,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import type { ILockfileRef } from '@delendai/core/public';
 
 import { LOCKFILE_NAMES } from '../contracts/constants/knowledge-cache.constant';

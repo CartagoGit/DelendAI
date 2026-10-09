@@ -1,4 +1,4 @@
-import type { IResourceRegistration } from '@delendai/core/public';
+import type { IResourceRegistration } from '@delendai/core/contracts';
 
 import type { IWorkIsolation } from '@delendai/core/plugin';
 
