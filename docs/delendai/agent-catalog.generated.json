@@ -1553,28 +1553,12 @@
 				"date": "2026-09-19"
 			},
 			{
-				"id": "x00877",
-				"title": "An upgrade leaves the project as its configuration says, and nothing else",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-06"
-			},
-			{
 				"id": "x00878",
 				"title": "A multi-model swarm is held to the workflow, whoever its agents are",
 				"track": "trust",
 				"status": "ready",
 				"kind": "fix",
 				"date": "2026-10-06"
-			},
-			{
-				"id": "x00879",
-				"title": "Main carries no code scanning alert",
-				"track": "security",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-07"
 			}
 		]
 	}
