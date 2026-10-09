@@ -18,7 +18,14 @@ const bare = (prefix: string): string =>
 
 /**
  * The slice reservations of `remote` whose unit has no branch there and
- * that are older than an abandoned unit is given, released when `apply`.
+ * either landed on the integration branch or is older than an abandoned
+ * unit is given, released when `apply`.
+ *
+ * A unit that published and merged has no branch and nothing left to do,
+ * yet its reservation used to hold the slice for the whole abandonment
+ * window: hours in which the next unit on that slice was refused for
+ * colliding with work that had already landed. The merge that carried
+ * the publication names its branch, so it is read from there.
  * A forge that cannot be reached releases nothing. `now` is seconds
  * since the epoch.
  */
@@ -71,6 +78,28 @@ export const reapSpentReservations = (input: {
 	const grace = abandonedAfterSeconds(policy.coordination.leaseTtlMinutes);
 	const work = bare(policy.branches.workRefPrefix);
 	const publication = bare(policy.branches.publicationRefPrefix);
+	const integration = `refs/remotes/${remote}/${policy.branches.integration}`;
+	readGit(root, [
+		'fetch',
+		'--quiet',
+		'--no-tags',
+		'--',
+		remote,
+		policy.branches.integration,
+	]);
+	/** Whether a merge on the integration branch names this unit's publication. */
+	const landed = (unit: string): boolean =>
+		unit.length > 0 &&
+		(
+			readGit(root, [
+				'log',
+				'-1',
+				'--format=%H',
+				'--fixed-strings',
+				`--grep=${publication}${unit}`,
+				integration,
+			]) ?? ''
+		).trim().length > 0;
 	const spent = claims.flatMap((claim) => {
 		const shown = readGit(root, [
 			'log',
@@ -86,7 +115,7 @@ export const reapSpentReservations = (input: {
 		const held =
 			branches.has(`${work}${unit}`) ||
 			branches.has(`${publication}${unit}`) ||
-			input.now - Number(stamp) <= grace;
+			(input.now - Number(stamp) <= grace && !landed(unit));
 		return held
 			? []
 			: [{ slice: claim.ref.slice(prefix.length), ref: claim.ref, unit }];
