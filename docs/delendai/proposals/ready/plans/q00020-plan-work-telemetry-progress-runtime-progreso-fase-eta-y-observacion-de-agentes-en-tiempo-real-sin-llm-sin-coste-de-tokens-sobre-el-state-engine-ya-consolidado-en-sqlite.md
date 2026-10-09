@@ -213,9 +213,9 @@ The gap this closes: nothing emitted work events at runtime, so any status view 
 ### S2 — Runtime events: proposal transitions and review submissions
 
 - **Status**: review
-- **Files**: `packages/core/src/public/index.ts`, `plugins/proposals/src/lib/tools/proposal-work-events.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-work-events.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/proposal-work-events.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-work-events.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
 - **Gate**: `npx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-work-events.spec.ts plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
-- A successful `proposal_transition` journals `proposal_transition` (work item `<id>/all`); a review `submit` journals `slice_submitted`. Both go through core's public `journalWorkEvent` with a plain `kind` string, so core names no proposals vocabulary.
+- A successful `proposal_transition` journals `proposal_transition` (work item `<id>/all`); a review `submit` journals `slice_submitted`. Both go by appending to the same journal file the core helper writes (core's public surface is at its budget, so no new export); core names no proposals vocabulary.
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
