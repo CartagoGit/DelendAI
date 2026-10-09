@@ -75,6 +75,8 @@ export interface ICacheLayoutHelpers {
 	/** Remove a directory only when nothing is left in it. */
 	readonly removeEmptyDirectory: (relPath: string) => Promise<void>;
 	readonly pathExists: (relPath: string) => Promise<boolean>;
+	/** Names directly inside a directory, sorted; empty if it is absent. */
+	readonly listDirectory: (relPath: string) => Promise<readonly string[]>;
 	/** Throws when the path would escape the cache directory. */
 	readonly assertContained: (relPath: string) => void;
 }
@@ -115,6 +117,12 @@ export type ICacheLayoutRunResult =
 	| { readonly status: 'current' }
 	/** This build ships no layout migrations, so there is no history to run. */
 	| { readonly status: 'unregistered' }
+	/**
+	 * Something there is to carry but the cache directory is not known (the
+	 * configuration is unreadable). Nothing was touched or recorded; the
+	 * next boot tries again.
+	 */
+	| { readonly status: 'skipped'; readonly reason: string }
 	| {
 			readonly status: 'planned';
 			readonly fromEpoch: number;
