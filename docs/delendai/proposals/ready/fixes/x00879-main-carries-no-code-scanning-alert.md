@@ -146,6 +146,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "On a push to main the Pages workflow builds the site in strict mode whether or not GitHub Pages is enabled, and publishes it only when it is; with Pages off it ends green with a notice saying how to enable it."
 - Found 2026-10-07 after the promotion: `Pages → build site` failed with "Get Pages site failed: Not Found" because Pages is not enabled on the repository. Enabling it publishes a public site, which is the owner's decision; until then the check the workflow exists for (the strict site build) still runs.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S13 — The integrated sweep runs off the promotion path
 - **Status**: review
