@@ -39,12 +39,14 @@
 	"dependencies": {
 		"@delendai/changelog": "workspace:*",
 		"@delendai/core": "workspace:*",
+		"@delendai/state": "workspace:*",
 		"yaml": "2.9.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "4.1.11",
+		"fast-check": "3.23.2"
 	}
 }

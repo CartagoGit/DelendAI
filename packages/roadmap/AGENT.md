@@ -26,6 +26,7 @@
 
 - @delendai/changelog
 - @delendai/core
+- @delendai/state
 - yaml
 - zod
 
@@ -39,10 +40,10 @@ _(none)_
 
 ## Tests
 
+- packages/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts
 - packages/roadmap/tests/src/lib/bump/roadmap-bump-intent.service.spec.ts
 - packages/roadmap/tests/src/lib/contracts/roadmap.schema.spec.ts
 - packages/roadmap/tests/src/lib/gates/gate-evaluator.service.spec.ts
-- packages/roadmap/tests/src/lib/state-machine/roadmap-state-machine.service.spec.ts
 
 ## Do not
 
