@@ -197,35 +197,34 @@ export const ensureWorkspaceMigrated = async (input: {
 	if (!(await hasAdopted(input.workspaceRoot))) {
 		return { outcomes: [{ status: 'not-needed' }], acted: false };
 	}
-	// The cache layout comes first: it classifies what an older build left
-	// in the cache before the identity migrators rename the directory that
-	// holds it. A workspace already at this build's epoch costs one read.
-	const layoutOutcomes = cacheLayoutOutcomes(
-		await runCacheLayoutStep(input.workspaceRoot, false),
-	);
-	if (layoutOutcomes.some((outcome) => outcome.status === 'failed')) {
-		const failed: IMigrationRunResult = {
-			outcomes: layoutOutcomes,
-			acted: true,
-		};
-		input.report?.(failed);
-		return failed;
-	}
 	const identity = await runPendingMigrations({
 		migrations: input.migrations,
 		journal: input.journal,
 		ctx: { workspaceRoot: input.workspaceRoot, dryRun: false },
 	});
+	// The cache layout runs after the identity migrators, not before: they
+	// are what move an older build's cache directory to its current name,
+	// and the layout steps work on the cache directory the configuration
+	// names. Run first, they would find an empty directory, record the
+	// epoch, and the records inside the renamed one would never be moved.
+	// A workspace already at this build's epoch costs one read.
+	const layoutOutcomes = identity.outcomes.some(
+		(outcome) => outcome.status === 'failed',
+	)
+		? []
+		: cacheLayoutOutcomes(
+				await runCacheLayoutStep(input.workspaceRoot, false),
+			);
 	const migrated: IMigrationRunResult =
 		layoutOutcomes.length === 0
 			? identity
 			: {
 					...identity,
 					outcomes: [
-						...layoutOutcomes,
 						...identity.outcomes.filter(
 							(outcome) => outcome.status !== 'not-needed',
 						),
+						...layoutOutcomes,
 					],
 					acted: true,
 				};
