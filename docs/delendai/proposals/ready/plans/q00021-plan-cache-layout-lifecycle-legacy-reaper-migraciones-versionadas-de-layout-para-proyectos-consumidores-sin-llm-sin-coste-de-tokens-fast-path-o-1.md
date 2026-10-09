@@ -650,19 +650,29 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-implementer: claude-sonnet-5-5
 
 ### S4 — Migraciones históricas (entregable: `f00529`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/cache/migrations/logs-to-results.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/memory-to-results.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/usage-tracking-to-results.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/legacy-non-canonical-cache.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/old-ephemeral-paths.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/rebrand-root.migrator.ts`
-  - `packages/core/tests/src/lib/cache/migrations/` (uno por migrator)
-  - `packages/core/src/lib/cache/cache-layout-migrations-registry.ts`
-- **Tarea**: implementar L1-L5 del §2. Cada migrator: `detect()` (probe barato, sin enumerar), `plan()` (qué haría), `apply()` (ejecuta la acción de su clase). Clasificación por `class` de cada descriptor en `CACHE_LAYOUT_MANIFEST`.
-- **Gate**: tests con fixtures que simulan el layout viejo; `results/memory` nunca se borra genéricamente; coexistencia origen/destino sin overwrite.
-- **Aceptación**: las migraciones `r00010` corre sin tocar contenido de `results/` (los registros sobreviven).
+  - `packages/core/src/lib/cache/migrations/results-segregation.migration.ts`
+  - `packages/core/src/lib/cache/migrations/canonical-scratch.migration.ts`
+  - `packages/core/src/lib/cache/migrations/unchanged-in-cache.migration.ts`
+  - `packages/core/src/lib/cache/cache-layout-migrations.registry.ts`
+  - `packages/core/src/lib/cache/cache-layout-helpers.service.ts`
+  - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout-migration.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
+  - `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`
+  - `packages/core/tests/src/lib/cache/migrations/cache-layout-history.spec.ts`
+  - `packages/core/tests/src/lib/cache/run-pending-cache-layout-migrations.service.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/cache-layout-step.service.spec.ts`
+- **Tarea**: la cadena `0 -> 5` real. `2 -> 3` (L1, r00010) mueve `logs`, `logs-errors`, `memory` y `usage-tracking` bajo `results/`, entrada por entrada, sin sobrescribir: un conflicto deja ambas copias y el origen. `1 -> 2` (L3) renombra `.verify-tmp` y `.commit-policy` dentro del cache. Los pasos `0 -> 1`, `3 -> 4` y `4 -> 5` no tienen nada que mover dentro del cache y existen para que la cadena sea un epoch por paso.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache packages/core/tests/src/lib/workspace-migration` (records sobreviven con su contenido, merge sin overwrite, desconocidos/operational intactos, dry run no cambia el árbol, cacheDir custom, symlink fuera del cache no se sigue, segundo run no-op).
+- **Corrections to the design, following the code**:
+  - The lifecycle step runs AFTER the identity migrators, not before. Those are what rename an older build's cache directory; run first, the layout would find an empty directory, record the epoch, and the records inside the legacy-named directory would never be moved.
+  - L2 (`tools/scripts/.cache`, `subproject/.cache`, `app/.cache`) and L4 (`docs/.../proposals/index.json`) live outside the cache directory. The lifecycle helpers are contained to the cache directory by design, and deleting files in a user's source tree on a hard-coded list is the kind of guess this proposal rules out, so those two are not deleted; their epochs are pass-through steps. L5 is the identity engine's rename.
+  - A workspace with nothing to carry is not recorded: a clean project is left byte-identical (the contract of the identity engine), and pays the chain's `lstat` probes once per process. A rehearsal runs before the lock is taken, because taking it creates `.delendai/`.
+  - An unreadable configuration makes the step `skipped` (nothing touched, nothing recorded), not failed: a broken config file must not report a migration failure on every boot.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
 - **Status**: pending
