@@ -1596,7 +1596,7 @@
 				"id": "x00879",
 				"title": "Main carries no code scanning alert",
 				"track": "security",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-07"
 			}
