@@ -10,7 +10,7 @@
  * whenever the artifacts changed.
  */
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
@@ -64,17 +64,27 @@ export const judgeRatchet = (
 	return { ok: true };
 };
 
+const readRecorded = (
+	path: string,
+): ICacheLayoutRatchetSnapshot | undefined => {
+	let raw: string;
+	try {
+		raw = readFileSync(path, 'utf8');
+	} catch {
+		return undefined;
+	}
+	return JSON.parse(raw) as ICacheLayoutRatchetSnapshot;
+};
+
 if (import.meta.main) {
 	const path = join(process.cwd(), CACHE_LAYOUT_RATCHET_SNAPSHOT_PATH);
 	const current: ICacheLayoutRatchetSnapshot = {
 		epoch: CACHE_LAYOUT_EPOCH,
 		checksum: manifestChecksum(CACHE_LAYOUT_MANIFEST),
 	};
-	const recorded = existsSync(path)
-		? (JSON.parse(
-				readFileSync(path, 'utf8'),
-			) as ICacheLayoutRatchetSnapshot)
-		: undefined;
+	// Read and catch, rather than ask whether the file exists and then act
+	// on an answer that may have changed by the time it is written.
+	const recorded = readRecorded(path);
 	if (process.argv.includes('--update')) {
 		if (recorded !== undefined) {
 			const verdict = judgeRatchet(recorded, current);
