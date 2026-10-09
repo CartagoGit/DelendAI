@@ -124,6 +124,8 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - acceptance:
   - "Runner calls prepare before slice and teardown after, reporting durations in the slice log."
   - "On prepare failure, the slice is aborted before any code change."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
