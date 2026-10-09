@@ -27,7 +27,13 @@ export interface INdjsonWorkEventStoreOptions {
 const parseLine = (line: string, fallbackId: number): IWorkEvent | null => {
 	const trimmed = line.trim();
 	if (trimmed.length === 0) return null;
-	const candidate = JSON.parse(trimmed) as Partial<IWorkEvent>;
+	let candidate: Partial<IWorkEvent>;
+	try {
+		candidate = JSON.parse(trimmed) as Partial<IWorkEvent>;
+	} catch {
+		// A writer killed mid-line leaves a torn tail; it is not an event.
+		return null;
+	}
 	if (
 		typeof candidate.work_item_id !== 'string' ||
 		typeof candidate.created_at !== 'number' ||
@@ -68,6 +74,8 @@ export class NdjsonWorkEventStore {
 			throw new Error(`unknown work event kind: ${event.kind}`);
 		}
 		const createdAt = event.created_at ?? this.now();
+		// Best effort for the caller: `list()` renumbers by file position,
+		// which is what stays unique across processes.
 		const id = this.nextId++;
 		const record: IWorkEvent = {
 			id,
@@ -93,7 +101,11 @@ export class NdjsonWorkEventStore {
 		const lines = raw.split('\n');
 		for (let index = 0; index < lines.length; index += 1) {
 			const parsed = parseLine(lines[index] ?? '', index + 1);
-			if (parsed !== null) events.push(parsed);
+			// Processes append to the same file and each counts from one, so
+			// the id a writer stamped can repeat. A line's position in the
+			// append-only file is the one order every process agrees on.
+			if (parsed !== null)
+				events.push({ ...parsed, id: events.length + 1 });
 		}
 		return events;
 	}
