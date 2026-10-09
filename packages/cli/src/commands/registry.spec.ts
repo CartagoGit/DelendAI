@@ -51,6 +51,7 @@ const EXPECTED_COMMANDS = [
 	'alias',
 	'bridge',
 	'migrate',
+	'cache',
 	'metrics',
 	'validate-matrix',
 	'validate',

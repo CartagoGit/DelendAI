@@ -82,6 +82,12 @@ export const createCacheLayoutHelpers = (
 		pathExists: async (relPath) =>
 			(await lstatOrUndefined(await resolveInside(relPath))) !==
 			undefined,
+		listDirectory: async (relPath) => {
+			const abs = await resolveInside(relPath);
+			const info = await lstatOrUndefined(abs);
+			if (info === undefined || !info.isDirectory()) return [];
+			return (await readdir(abs)).sort();
+		},
 		dropDerived: async (relPath) => {
 			refuseInDryRun('dropDerived');
 			assertDroppable(options.manifest, relPath);

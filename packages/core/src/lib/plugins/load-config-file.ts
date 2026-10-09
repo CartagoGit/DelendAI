@@ -255,6 +255,12 @@ export interface IDelendaiCachePolicyConfig {
 	 * `'apply'` deletes the evictable entries; `'off'` runs nothing.
 	 */
 	readonly runOnBoot?: 'dry-run' | 'apply' | 'off';
+	/**
+	 * Minimum time between two boot sweeps, in milliseconds. Omitted or 0
+	 * keeps the sweep on every boot; a project with a large cache sets it
+	 * (86400000 is a day) so a restart does not pay for another walk.
+	 */
+	readonly evictionIntervalMs?: number;
 	/** Upper cap (days) applied to every `olderThanDays` rule. Default 30. */
 	readonly maxAgeDays?: number;
 	/** Orphan-worktree sweeper tuning (f00072 S5). */
