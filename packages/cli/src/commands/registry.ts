@@ -283,6 +283,18 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
+		// Lazy-import like `migrate`: the layout engine is not paid for by
+		// a user who runs `delendai status`.
+		name: 'cache',
+		summary:
+			'Inspect and carry the cache layout: status, registered migrations, migrate, and eviction (gc).',
+		usage: 'cache [status|migrations|migrate [--dry-run]|gc [--dry-run|--apply]]  [--workspace=<path>]',
+		async run(args, ctx) {
+			const { cacheCommand } = await import('./cache.command');
+			return cacheCommand.run(args, ctx);
+		},
+	},
+	{
 		name: 'metrics',
 		summary: 'Show per-tool metrics.',
 		async run(args, ctx) {

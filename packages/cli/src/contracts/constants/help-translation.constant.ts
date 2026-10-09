@@ -197,6 +197,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	bridge: 'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
 	migrate:
 		'Run the transactional rebrand migration with explicit backup, validation, and rollback.',
+	cache: 'Inspect and carry the cache layout: status, registered migrations, migrate, and eviction (gc).',
 	guard: 'Refuse the git operations the project development policy forbids (called from git hooks).',
 	repair: 'List and record the human decisions that close startup repair tasks the reconciler may not close.',
 	work: 'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
