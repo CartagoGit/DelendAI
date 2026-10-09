@@ -37,6 +37,10 @@ export const SAFE_FINDING_CODES = [
 	'forge.ci-reconciled',
 	/** A journal event was replayed into the local view. */
 	'journal.event-imported',
+	/** Local journal events were published to the journal ref. */
+	'journal.published',
+	/** The journal could not be published; the next boot tries again. */
+	'journal.publication-failed',
 	/** A checkpoint is already contained in the integration branch. */
 	'integration-evidence.checkpoint-integrated',
 	/** A work ref is gone AND its content is proven merged. */

@@ -32,6 +32,7 @@ import {
 	remoteTrackingNamespace,
 	workRefNamespace,
 } from './work-ref-identity';
+import { journalRefPublisher } from './journal-publish.service';
 import { journalRefReader } from './journal-ref.service';
 import { retiredTipsLister } from './retired-tips.service';
 import { checkpointContainment } from './checkpoint-containment';
@@ -348,10 +349,12 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 
 	const listRetiredTips = retiredTipsLister(run, integrationRemote);
 	const readJournal = journalRefReader(run, integrationRemote);
+	const publishJournal = journalRefPublisher(run, integrationRemote);
 
 	return {
 		listRetiredTips,
 		readJournal,
+		publishJournal,
 		pathsChangedBetween,
 		fetch,
 		listRefs,
