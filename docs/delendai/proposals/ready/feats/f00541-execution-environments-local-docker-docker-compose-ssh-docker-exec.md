@@ -117,9 +117,10 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-implementer: claude-sonnet-5-5
 
 ### S8 — Lifecycle integration in orchestrator-runner
-- **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/services/execution-env.service.ts`, `plugins/orchestrator-runner/tests/execution-env.service.spec.ts`
-- **Gate**: type
+- **Status**: review
+- **Files**: `plugins/orchestrator-runner/src/lib/services/execution-env.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/execution-env-lifecycle.interface.ts`, `plugins/orchestrator-runner/src/public/index.ts`, `plugins/orchestrator-runner/tests/execution-env.service.spec.ts`
+- **Gate**: `npx vitest run --root plugins/orchestrator-runner tests/execution-env.service.spec.ts`
+- shipped: `runInExecutionEnvironment` prepares an environment, runs the slice, then tears down, logging each phase with its duration (and passing it to an `onLog` sink). When `prepare` fails or throws the slice is never called; teardown runs whenever prepare was attempted, also after a failing slice; a failed teardown after a good slice is reported as a failure. The environment is described by a two-method structural interface, so the runner takes no package dependency on the environment plugin.
 - acceptance:
   - "Runner calls prepare before slice and teardown after, reporting durations in the slice log."
   - "On prepare failure, the slice is aborted before any code change."
