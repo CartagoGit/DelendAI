@@ -46,6 +46,43 @@ export const guardHooksMode = async (
 	return 'report';
 };
 
+/**
+ * Whether the hooks on disk are what the declared mode asks for, and the
+ * command that makes them so.
+ *
+ * A project that turns the guard off, or changes to a profile that does
+ * not use it, kept the hooks an earlier mode installed: nothing compared
+ * the two, so a clone said it was guarded by a policy that no longer
+ * asked for a guard. `report` and an absent policy ask for nothing either
+ * way, so they always follow.
+ */
+export const guardHooksFollowMode = (
+	report: IGuardHooksReport,
+	mode: IGuardHooksMode | 'absent',
+): { readonly follows: boolean; readonly remedy?: string } => {
+	const installed = report.hooks.filter(
+		(entry) => entry.state === 'installed',
+	);
+	if (mode === 'off' && installed.length > 0) {
+		return {
+			follows: false,
+			remedy: `\`development.guardHooks\` is "off" and ${installed.map((entry) => entry.hook).join(', ')} still run${installed.length === 1 ? 's' : ''} the guard: \`delendai guard uninstall\``,
+		};
+	}
+	// A hook its manager owns is installed through that manager's
+	// configuration; its own reason already says so.
+	const missing = report.hooks.filter(
+		(entry) => entry.state === 'absent' && entry.reason === undefined,
+	);
+	if (mode === 'install' && missing.length > 0) {
+		return {
+			follows: false,
+			remedy: `\`development.guardHooks\` is "install" and ${missing.map((entry) => entry.hook).join(', ')} ${missing.length === 1 ? 'does' : 'do'} not run the guard: \`delendai guard install\``,
+		};
+	}
+	return { follows: true };
+};
+
 const describe = (report: IGuardHooksReport): string[] => [
 	`guard hooks ${report.dir}`,
 	...report.hooks.map(
