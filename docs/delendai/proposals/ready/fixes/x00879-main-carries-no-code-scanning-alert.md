@@ -74,6 +74,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "CodeQL runs on pushes to the integration branch and on pull requests into it, not only on the release branch, so an alert is reported when it is introduced and develop reaches main with none open."
 - Delivered: CodeQL runs on pushes to develop and main, on pull requests into develop, and on demand; not on pull requests into main, since the push run already analyses a develop → main candidate's commit (`lint:no-duplicate-release-triggers`).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Code scanning must pass to merge into develop
 - **Status**: review
