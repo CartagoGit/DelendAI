@@ -34,6 +34,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "The alerts js/insecure-temporary-file (#420, #166-#169), js/shell-command-injection-from-environment (#269) and js/indirect-command-line-injection (#366) no longer apply to the code: temporary files are created exclusively with restrictive modes, and no command string built from the environment or arguments reaches a shell."
 - Triage 2026-10-07 against develop: #420, #166–#169 and #366 are already fixed there — temporary files sit beside their target and are created `wx` with mode 0o600 (`LOCK_FILE_MODE` in the mutex), and the probed shell comes from a fixed list (`launchableShell`). #269 stays: running a caller's command string is `run-command`'s purpose, through an explicit `/bin/bash --noprofile --norc -c` on POSIX; it is dismissed as won't-fix with that reason once develop is analysed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Client, extension and dashboard build no markup or request from untrusted input
 - **Status**: review
