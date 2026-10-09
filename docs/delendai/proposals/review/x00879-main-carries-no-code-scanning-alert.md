@@ -2,14 +2,14 @@
 id: x00879
 title: "Main carries no code scanning alert"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-10-07
-last-transition-id: 4d06e7e3-4493-476f-925c-69d3d2c7184c
-last-correlation-id: 4d06e7e3-4493-476f-925c-69d3d2c7184c
-last-transition-from: ready
-last-transition-at: 2026-10-09T21:22:29.638Z
+last-transition-id: f6a98be9-c98c-48f4-af7f-e8671cb663c5
+last-correlation-id: f6a98be9-c98c-48f4-af7f-e8671cb663c5
+last-transition-from: in-progress
+last-transition-at: 2026-10-09T21:23:38.326Z
 ---
 
 # x00879 — Main carries no code scanning alert
@@ -62,6 +62,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Triage 2026-10-07 against develop: all but two are already fixed there (plain host comparison instead of domain regexes, `\b[^>]*>` closing tags, `writeFileAtomic`, an allowlisted repro program, no stack in HTTP responses, read-then-compare writes). #329 is fixed here: `readExistingManifest` reads and catches instead of checking `existsSync` first. #384 is a false positive (a `::warning title=…::` workflow command wants no space after `::`); dismissed with that reason if the analysis of develop still reports it.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `bf7ca511a5af`
 
 ### S4 — Specs and remaining sources carry no dead or unsafe code
 - **Status**: review
@@ -72,6 +73,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Triage 2026-10-07 against develop: the useless assignments (#55, #79, #192, #348), the incompatible comparison (#251), the defensive code (#80) and the specs' races (#40, #341, #367) are already fixed there. #276 is fixed here: the type-level check is `expectTypeOf(ctx).not.toHaveProperty('git')` instead of a bare expression under `@ts-expect-error`. #37 is a spec that plants the lock file on purpose to simulate another process; dismissed as used-in-tests.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `bf7ca511a5af`
 
 ### S5 — Code scanning analyses the integration branch too
 - **Status**: review
@@ -82,6 +84,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Delivered: CodeQL runs on pushes to develop and main, on pull requests into develop, and on demand; not on pull requests into main, since the push run already analyses a develop → main candidate's commit (`lint:no-duplicate-release-triggers`).
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `bf7ca511a5af`
 
 ### S6 — Code scanning must pass to merge into develop
 - **Status**: review
@@ -92,6 +95,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Asked by the owner on 2026-10-07: code scanning is a validation that must always hold, so a feature, a fix or a refactor cannot bring a new alert in. The policy's `integration.requiredChecks` gains `CodeQL` (the check CodeQL reports on a pull request, seen on #903), and `forge-settings --write` projects it into the generated protection files; the live protection is applied through the repository's bootstrap path. Main's required checks are unchanged: CodeQL does not run on pull requests into main (S5 — the push to develop already analyses that commit), so requiring it there would block every promotion, and main only ever receives what develop let through.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `e93e4f19e616`
 
 ### S7 — Every certified develop is scanned
 - **Status**: review
@@ -102,6 +106,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Found 2026-10-07 right after #903 landed: S5's push trigger never fired for develop, because the queue merges with the workflow token and a push made with it starts no workflow — the same reason the full run is dispatched after each merge. `release-the-queue`, which already runs once per certified develop tip, now also dispatches `codeql.yml` on develop.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `dc50669b9dd4`
 
 ### S8 — Remote names, urls and refs never parse as git options
 - **Status**: review
@@ -112,6 +117,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Found 2026-10-07 in the first analysis of develop (15 open alerts once #903 made it scanned). Fixed as a class, not per alert: every such call in core, the CLI, the plugins and the repository scripts, including the git plugin's push tool, whose remote comes from tool input (`--receive-pack=<cmd>` was a first-order injection there).
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `e93e4f19e616`
 
 ### S9 — The promotion carries its own required check
 - **Status**: review
@@ -122,6 +128,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Found 2026-10-07 on the first promotion after this proposal's fixes (#911): `delendai-validate` and `release-pr-gate` were green on its head, yet the forge kept it BLOCKED with `delendai-validate` "expected". The check came from a dispatched certification run, and the forge counts a check towards a pull request only from that pull request's own runs or a push; the queue's merges, made with the workflow token, start no push run. The rule against running CI on both triggers rested on that push run existing.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `bdd1e619c0f4`
 
 ### S10 — No dependency carries a known advisory
 - **Status**: review
@@ -134,6 +141,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Found 2026-10-07 right after the promotion: Dependabot opened GHSA-6qxp-vccf-f47h on the root and `apps/web` (SDK pinned at 1.30.0), and `bun audit` found 43 advisories in the lockfile, most kept in place by root `overrides` that had pinned versions once patched and since superseded. The overrides now pin the patched versions; braces has no patched release and is excepted until 2026-11-07. Nothing audited the lockfile before a candidate landed.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `dc50669b9dd4`
 
 ### S11 — The forward sync's branch is a canonical publication
 - **Status**: review
@@ -144,6 +152,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Found 2026-10-07 on the first real forward sync (#913, after the promotion #911): the flat `delendai/pr/forward-sync-<sha>` failed `publications-canonical` and turned two runs of keep-the-queue-moving red while it was open. A branch DelendAI made broke the rule DelendAI holds every agent's branches to; it now has the same shape instead of an exception.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `dc50669b9dd4`
 
 ### S12 — A promotion leaves no red run for a setting nobody chose
 - **Status**: review
@@ -154,6 +163,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Found 2026-10-07 after the promotion: `Pages → build site` failed with "Get Pages site failed: Not Found" because Pages is not enabled on the repository. Enabling it publishes a public site, which is the owner's decision; until then the check the workflow exists for (the strict site build) still runs.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `dc50669b9dd4`
 
 ### S13 — The integrated sweep runs off the promotion path
 - **Status**: review
@@ -164,6 +174,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Found 2026-10-07 on the promotion #911, and the same on #641: the workflow was never a required check of `main`, repeated the CI matrix that is required there, and hit its 30-minute limit on every promotion, leaving a red run that blocked nothing. What only it does, running every lint script including ones no workflow wires, is kept as a daily sweep; its last run had found `proposal-already-implemented` failing on twelve slices, recorded for the backlog reconciliation.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `dc50669b9dd4`
 
 ## acceptance
 
