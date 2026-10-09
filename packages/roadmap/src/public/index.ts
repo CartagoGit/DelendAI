@@ -37,3 +37,25 @@ export * from '../lib/contracts/constants/roadmap-store.constant';
 export type * from '../lib/contracts/interfaces/roadmap-store.interface';
 export { MarkdownRoadmapStore } from '../lib/store/markdown-roadmap.store';
 export { createNodeRoadmapFilePort } from '../lib/store/node-roadmap-file-port.service';
+export * from '../lib/contracts/constants/timeline.constant';
+export type * from '../lib/contracts/interfaces/timeline.interface';
+export {
+	timelineDraftSchema,
+	timelineEventSchema,
+} from '../lib/contracts/schemas/timeline.schema';
+export { InMemoryTimelineStore } from '../lib/store/in-memory-timeline.store';
+export { MarkdownTimelineStore } from '../lib/store/markdown-timeline.store';
+export { diffRoadmaps } from '../lib/timeline/roadmap-diff.service';
+export {
+	filterTimeline,
+	whenAdded,
+} from '../lib/timeline/timeline-query.helper';
+export {
+	canonicalRoadmap,
+	replayTimeline,
+} from '../lib/timeline/timeline-replay.service';
+export { sealDrafts } from '../lib/timeline/timeline-seal.helper';
+export * from '../lib/contracts/constants/roadmap-producer.constant';
+export type * from '../lib/contracts/interfaces/roadmap-producer.interface';
+export { createRoadmapProducer } from '../lib/state/roadmap.producer.service';
+export { projectRoadmap } from '../lib/state/roadmap.projection.service';

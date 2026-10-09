@@ -1,9 +1,9 @@
 {
-	"name": "@delendai/roadmap",
+	"name": "@delendai/roadmap-sqlite",
 	"version": "0.1.0",
 	"type": "module",
 	"private": true,
-	"description": "Versioned roadmap: entries with a kind and gates, a bump intent derived through the changelog plugin, a git-tracked authority file and an append-only timeline.",
+	"description": "SQLite driver for the roadmap timeline: the same append-only contract as the markdown timeline, kept in a database under the plugin cache directory.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -11,7 +11,8 @@
 		"delendai",
 		"roadmap",
 		"release",
-		"timeline"
+		"timeline",
+		"sqlite"
 	],
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -32,21 +33,16 @@
 		}
 	},
 	"scripts": {
-		"test": "vitest run",
+		"test": "bun test --timeout 30000 tests",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
-		"build": "bun ../../tools/scripts/compile/build.script.ts packages/roadmap"
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/roadmap-sqlite"
 	},
 	"dependencies": {
-		"@delendai/changelog": "workspace:*",
-		"@delendai/core": "workspace:*",
-		"@delendai/state": "workspace:*",
-		"yaml": "2.9.0",
-		"zod": "^4.4.3"
+		"@delendai/roadmap": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11",
-		"fast-check": "3.23.2"
+		"vitest": "4.1.11"
 	}
 }
