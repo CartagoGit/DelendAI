@@ -2,10 +2,14 @@
 id: x00877
 title: "An upgrade leaves the project as its configuration says, and nothing else"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-10-06
+last-transition-id: 05ef5495-9be9-4314-b73f-bbe880f685b7
+last-correlation-id: 05ef5495-9be9-4314-b73f-bbe880f685b7
+last-transition-from: ready
+last-transition-at: 2026-10-09T21:34:38.842Z
 ---
 
 # x00877 — An upgrade leaves the project as its configuration says, and nothing else
