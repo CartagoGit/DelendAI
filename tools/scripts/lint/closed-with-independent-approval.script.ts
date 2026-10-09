@@ -203,6 +203,46 @@ const pullRequestLabels = async (): Promise<readonly string[]> => {
 const git = (root: string, args: readonly string[]): string =>
 	execFileSync('git', [...args], { cwd: root, encoding: 'utf8' }).trim();
 
+/** A proposal's id, from its path: the file name up to its first dash. */
+const proposalIdOf = (path: string): string =>
+	(path.split('/').pop() ?? path).split('-')[0] ?? path;
+
+/**
+ * The lines each changed proposal gained, as `+` lines, with its old and
+ * new versions paired by proposal id rather than by git's rename
+ * detection.
+ *
+ * A proposal that moves folders (in-progress to review) while its content
+ * changes a lot falls under git's 50% similarity and reads as a deletion
+ * and an addition: every approval line already in it then counted as
+ * added by the pull request that moved it, and r00040's own implementer
+ * was refused for "adding approvals by gpt-5.4" it had only carried.
+ */
+export const linesAddedPerProposal = (
+	changes: readonly { readonly status: string; readonly path: string }[],
+	read: (side: 'base' | 'head', path: string) => string,
+): string => {
+	const before = new Map<string, string>();
+	for (const change of changes) {
+		if (change.status === 'D' || change.status === 'M') {
+			before.set(proposalIdOf(change.path), read('base', change.path));
+		}
+	}
+	const added: string[] = [];
+	for (const change of changes) {
+		if (change.status !== 'A' && change.status !== 'M') continue;
+		const old = (before.get(proposalIdOf(change.path)) ?? '').split('\n');
+		const counts = new Map<string, number>();
+		for (const line of old) counts.set(line, (counts.get(line) ?? 0) + 1);
+		for (const line of read('head', change.path).split('\n')) {
+			const left = counts.get(line) ?? 0;
+			if (left > 0) counts.set(line, left - 1);
+			else added.push(`+${line}`);
+		}
+	}
+	return added.join('\n');
+};
+
 const main = async (): Promise<number> => {
 	const root = repoRoot();
 	const baseArg = process.argv
@@ -248,15 +288,25 @@ const main = async (): Promise<number> => {
 		branches.publicationRefPrefix,
 		branches.workRefPrefix,
 	]);
-	const addedHere = git(root, [
-		'diff',
-		'-U0',
-		'-M',
-		base,
-		'HEAD',
-		'--',
-		'docs/delendai/proposals/',
-	]);
+	const addedHere = linesAddedPerProposal(
+		git(root, [
+			'diff',
+			'--name-status',
+			'--no-renames',
+			base,
+			'HEAD',
+			'--',
+			'docs/delendai/proposals/',
+		])
+			.split('\n')
+			.filter((line) => line.endsWith('.md'))
+			.map((line) => {
+				const [status = '', path = ''] = line.split('\t');
+				return { status, path };
+			}),
+		(side, path) =>
+			git(root, ['show', `${side === 'base' ? base : 'HEAD'}:${path}`]),
+	);
 	const foreign =
 		author === undefined ? [] : approvalsNotBy(addedHere, author);
 	// An approval is a reviewer's: it enters through a review unit. The
