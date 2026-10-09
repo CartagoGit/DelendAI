@@ -71,3 +71,15 @@ export {
 } from '../lib/helpers/shell-quoting.helper';
 export { DockerExecExecutionEnvironment } from '../lib/adapters/docker-exec.service';
 export type { IDockerExecOptions } from '../lib/contracts/interfaces/docker-exec-execution.interface';
+export type {
+	IResolvedSecrets,
+	ISecretAgentReference,
+	ISecretEnvReference,
+	ISecretFileReference,
+	ISecretReference,
+	ISecretSources,
+} from '../lib/contracts/interfaces/secret-resolver.interface';
+export {
+	hostSecretSources,
+	resolveSecrets,
+} from '../lib/secret-resolver.service';

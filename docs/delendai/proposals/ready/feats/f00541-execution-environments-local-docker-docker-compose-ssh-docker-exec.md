@@ -105,9 +105,10 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-implementer: claude-sonnet-5-5
 
 ### S7 — Secret resolver
-- **Status**: pending
-- **Files**: `plugins/execution-env/src/lib/secret-resolver.service.ts`, `plugins/execution-env/tests/secret-resolver.service.spec.ts`
-- **Gate**: type
+- **Status**: review
+- **Files**: `plugins/execution-env/src/lib/secret-resolver.service.ts`, `plugins/execution-env/src/lib/contracts/interfaces/secret-resolver.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/secret-resolver.spec.ts`
+- **Gate**: `npx vitest run --root plugins/execution-env`
+- shipped: `resolveSecrets` turns references into in-memory values: `env` (host variable, optionally under another name), `file` (content, one trailing newline dropped) and `ssh-agent-forward` (the socket from `SSH_AUTH_SOCK`, an error when unset). Sources are injected so specs need no real host. Errors name the reference, never the value. The module has no write path, and a spec proves resolving from the real host leaves the directory unchanged. The returned `redact` removes every resolved value (longest first) and then applies the core secret redactor, for any text about to be logged.
 - acceptance:
   - "Resolves env(file references), file(content references), and ssh-agent-forward (using $SSH_AUTH_SOCK)."
   - "Never writes resolved secrets to disk."
