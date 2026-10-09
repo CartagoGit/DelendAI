@@ -2,6 +2,8 @@
 
 import { spawnSync } from 'node:child_process';
 
+import { declaredBranches } from '../lib/declared-branches';
+
 const DEFAULT_THRESHOLD = 5;
 const IGNORED_SEGMENTS = new Set([
 	'node_modules',
@@ -53,7 +55,7 @@ export const summarizeMassContentRemoval = (input: {
 	};
 };
 
-interface IGitRunner {
+export interface IGitRunner {
 	readonly run: (args: readonly string[]) => {
 		readonly ok: boolean;
 		readonly output: string;
@@ -83,6 +85,7 @@ const currentBranch = (git: IGitRunner): string | null => {
 const recentBranches = (
 	git: IGitRunner,
 	sinceIso: string,
+	integration: string,
 ): readonly string[] => {
 	const result = git.run([
 		'for-each-ref',
@@ -102,23 +105,31 @@ const recentBranches = (
 			if (Number.isNaN(ts) || ts < sinceMs) return [];
 			return [branch];
 		})
-		.filter((branch) => branch !== 'develop')
+		.filter((branch) => branch !== integration)
 		.sort((a, b) => a.localeCompare(b));
 };
 
 export const collectMassContentRemovalFindings = (input: {
 	readonly branches: readonly string[];
+	/** The integration branch a unit left; the project's declared one when omitted. */
+	readonly integration?: string;
 	readonly threshold?: number;
 	readonly git?: IGitRunner;
 }): readonly IMassContentRemovalFinding[] => {
 	const git = input.git ?? defaultGitRunner;
+	const integration = input.integration ?? declaredBranches().integration;
 	const findings: IMassContentRemovalFinding[] = [];
 	for (const branch of input.branches) {
 		const diff = git.run([
 			'diff',
 			'--name-only',
 			'--diff-filter=D',
-			`develop..${branch}`,
+			// Three dots: what the branch deleted since it LEFT the
+			// integration branch. Two dots compared the tips, so every file
+			// the integration branch gained afterwards read as deleted by a
+			// branch that had never seen it, and a unit one merge behind was
+			// refused for a mass removal it did not make (2026-10-08).
+			`${integration}...${branch}`,
 			'--',
 			'plugins',
 			'packages/core/src/lib',
@@ -146,10 +157,12 @@ const main = async (argv: readonly string[]): Promise<number> => {
 	);
 	const auditMode = argv.includes('--audit-removed');
 	const git = defaultGitRunner;
+	const integration = declaredBranches().integration;
 	const branches = auditMode
 		? recentBranches(
 				git,
 				new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+				integration,
 			)
 		: (() => {
 				const branch = currentBranch(git);
@@ -157,6 +170,7 @@ const main = async (argv: readonly string[]): Promise<number> => {
 			})();
 	const findings = collectMassContentRemovalFindings({
 		branches,
+		integration,
 		threshold: Number.isNaN(threshold) ? DEFAULT_THRESHOLD : threshold,
 		git,
 	});
