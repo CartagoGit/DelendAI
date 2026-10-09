@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IFileReader, IToolTextResult } from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 import { buildQualityComplexityToolRegistration } from '../../../src/lib/tools/quality-complexity.tool';
 

@@ -17,7 +17,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 import { fakePartial } from '@delendai/test-kit';
 
 import plugin from '../src/index';

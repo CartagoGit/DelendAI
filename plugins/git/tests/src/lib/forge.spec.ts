@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IArgvExec } from '@delendai/core/public';
+import type { IArgvExec } from '@delendai/core/contracts';
 
 import {
 	listOpenPrs,

@@ -1,8 +1,6 @@
-import {
-	SafeWorkspaceReader,
-	resolveExistingWorkspaceContained,
-	type IWorkspacePathProvider,
-} from '@delendai/core/public';
+import { resolveExistingWorkspaceContained } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import type { IWorkspacePathProvider } from '@delendai/core/contracts';
 
 import type {
 	IAuditPlanChild,

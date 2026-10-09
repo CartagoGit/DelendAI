@@ -3,7 +3,8 @@
  */
 import { basename, dirname, join } from 'node:path';
 
-import { SafeWorkspaceReader, safeListDir } from '@delendai/core/public';
+import { safeListDir } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type { IReviewBacklogEntry } from '../contracts/interfaces/review-queue.interface';
 import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';

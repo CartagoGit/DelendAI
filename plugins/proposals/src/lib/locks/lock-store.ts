@@ -21,7 +21,7 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 import { basename, dirname } from 'node:path';
 import { DEFAULT_STALE_AFTER_MINUTES } from '../shared/branch-tool-helpers';
 

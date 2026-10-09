@@ -2,11 +2,8 @@
  * perf.interface.ts — types for the perf plugin's bundle-size budgets. Kept
  * under contracts/interfaces per the types-in-contracts convention.
  */
-import type {
-	FindingSeverity,
-	IProbeDeps,
-	IToolProbeResult,
-} from '@delendai/core/public';
+import type { FindingSeverity } from '@delendai/core/public';
+import type { IProbeDeps, IToolProbeResult } from '@delendai/core/contracts';
 
 /** One measured file and its size in bytes. */
 export interface IFileSize {

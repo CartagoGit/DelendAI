@@ -11,11 +11,8 @@
  * script to a shell (`curl … | sh`) is flagged `dangerous: true` +
  * `pipeTo: 'sh'` (CRITICAL I4).
  */
-import {
-	toolJson,
-	type IProviderCapabilities,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolJson, type IProviderCapabilities } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import {

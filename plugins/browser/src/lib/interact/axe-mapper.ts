@@ -7,7 +7,8 @@
  * `IFinding` per affected node so the host's CLI + extension renderers
  * can show a precise "where to fix".
  */
-import type { IFinding, FindingSeverity } from '@delendai/core/public';
+import type { FindingSeverity } from '@delendai/core/public';
+import type { IFinding } from '@delendai/core/contracts';
 
 import type { IAxeNode, IAxeViolation } from './iaction-driver';
 

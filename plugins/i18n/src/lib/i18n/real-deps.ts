@@ -6,11 +6,8 @@
 
 import { join, relative } from 'node:path';
 
-import {
-	joinUnderRoot,
-	SafeWorkspaceReader,
-	safeListDir,
-} from '@delendai/core/public';
+import { joinUnderRoot, safeListDir } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type {
 	II18nScanDeps,

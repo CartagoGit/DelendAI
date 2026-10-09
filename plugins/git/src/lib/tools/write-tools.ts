@@ -14,15 +14,16 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
-	commitAndPush,
 	gitLastCommitAuthor,
 	toolError,
 	toolOk,
-	type ICommitAuthorResolution,
 	deriveDefaultProtectedBranches,
 } from '@delendai/core/public';
+import { commitAndPush } from '@delendai/core/runtime';
+import type { ICommitAuthorResolution } from '@delendai/core/contracts';
 
 import { checkRepo } from '../services/git';
 import type { IGitRunner } from '../services/git';

@@ -3,7 +3,7 @@ import z from 'zod';
 import type {
 	IResolvedHostIdentity,
 	IToolRegistration,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import { dirname, basename } from 'node:path';
 

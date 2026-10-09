@@ -1,4 +1,4 @@
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { IAuthoringToolOptions } from './authoring-options';
 import {

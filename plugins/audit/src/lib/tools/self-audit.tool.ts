@@ -3,12 +3,8 @@
  * S2 wires the S1 aggregator plus the pure ranker; scanner injection
  * stays on the default empty map until S3 plugs real scanners in.
  */
-import {
-	toolError,
-	toolJson,
-	type IFinding,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolError, toolJson } from '@delendai/core/public';
+import type { IFinding, IToolRegistration } from '@delendai/core/contracts';
 
 import z from 'zod';
 

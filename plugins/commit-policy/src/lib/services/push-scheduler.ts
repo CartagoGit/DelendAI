@@ -22,10 +22,8 @@
  * commit-tool handler and from any future engine wrapper.
  */
 
-import type {
-	IGitRunner,
-	IResolvedDevelopmentPolicy,
-} from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import { classifyRefusal } from '../contracts/branch';

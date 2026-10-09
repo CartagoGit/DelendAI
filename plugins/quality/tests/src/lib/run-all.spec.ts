@@ -5,7 +5,8 @@ import {
 	buildRunAllToolRegistration,
 	runAllScopes,
 } from '@delendai/quality/lib/services/run-all';
-import type { IFileReader, ILogsSink, ISinkEvent } from '@delendai/core/public';
+import type { ILogsSink, ISinkEvent } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const reader = (files: Record<string, string>): IFileReader => ({

@@ -2,7 +2,8 @@ import {
 	resolveDispatchPort,
 	type IDispatchPort,
 } from '@delendai/agent-orchestrator/public';
-import { definePlugin, toolError } from '@delendai/core/public';
+import { toolError } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import z from 'zod';
 
 import {

@@ -19,14 +19,9 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
-import {
-	redactSecrets,
-	toolError,
-	toolOk,
-	withFileMutex,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { redactSecrets, toolError, toolOk } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import { parseScaffold, serializeScaffold } from '../issue-scaffold';
 import { findExistingScaffoldFile } from './ingest-issue.tool';

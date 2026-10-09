@@ -9,7 +9,7 @@ import {
 	ProposalsSqliteDriver,
 	resolveProposalsDbPaths,
 } from '@delendai/proposals-sqlite';
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 
 import {

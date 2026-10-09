@@ -23,7 +23,7 @@
  * auto-promoter only touches 'queued' entries.
  */
 
-import { writeFileAtomic, withFileMutex } from '@delendai/core/public';
+import { writeFileAtomic, withFileMutex } from '@delendai/core/runtime';
 
 import type {
 	IPersistentTaskEntry,

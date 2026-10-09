@@ -30,7 +30,7 @@ import { execFile } from 'node:child_process';
 import { relative, resolve, sep } from 'node:path';
 import { promisify } from 'node:util';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import {
 	DEFAULT_IGNORE_DIRS,

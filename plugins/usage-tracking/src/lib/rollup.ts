@@ -16,10 +16,9 @@ import { basename, dirname, join } from 'node:path';
 import {
 	readAbsoluteTextSafe,
 	redactSecrets,
-	withFileMutex,
-	writeFileAtomic,
 	safeListDir,
 } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import { countAutoBypassed } from './auto-bypass';
 import {

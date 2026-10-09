@@ -1,6 +1,7 @@
 import { readFile as fsReadFile } from 'node:fs/promises';
 
-import { toolJsonBounded, type IToolRegistration } from '@delendai/core/public';
+import { toolJsonBounded } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
 	FORGE_ISSUE_CREATE_INPUT_SCHEMA,

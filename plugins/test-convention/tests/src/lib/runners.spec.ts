@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 import { detectRunner } from '@delendai/test-convention/public';
 

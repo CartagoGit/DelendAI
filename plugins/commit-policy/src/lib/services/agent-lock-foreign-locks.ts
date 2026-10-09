@@ -1,6 +1,6 @@
 import { basename, dirname, join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 // The expiry rule lives in core's internal shared module (not the
 // public surface, which is budgeted) precisely so every reader of this
 // file agrees on when a claim stops counting as held.

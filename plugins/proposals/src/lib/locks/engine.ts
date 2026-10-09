@@ -8,7 +8,8 @@
  * `DEFAULT_PATH_LAYOUT`.
  */
 
-import { LockContentionError, withFileMutex } from '@delendai/core/public';
+import { LockContentionError } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 // r00042 S3: the vocabulary moved to contracts/interfaces; re-exported
 // here so no importer of `engine.ts` had to change.

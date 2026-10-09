@@ -10,13 +10,12 @@
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { quarantineCorruptFile, redactSecrets } from '@delendai/core/public';
 import {
-	quarantineCorruptFile,
-	redactSecrets,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import { isTestPolicyMode, type ITestPolicyMode } from './policy';
 

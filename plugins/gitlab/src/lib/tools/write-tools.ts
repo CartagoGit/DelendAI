@@ -2,7 +2,7 @@ import type {
 	IRemoteMutationError,
 	RemoteMutationResult,
 } from '@delendai/contracts/remote-mutations';
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 import type { IRemoteHttpClientDeps } from '@delendai/remote-provider-core';
 import z from 'zod';
