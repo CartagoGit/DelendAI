@@ -19,15 +19,17 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
-	withFileMutex,
 	gitAdd,
 	gitCommit,
 	gitHeadShortHash,
 	stripAnsi,
-	type ICommitAndPushResult,
-	type IGitRunner,
-	type IGitRunResult,
 } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
+import type {
+	ICommitAndPushResult,
+	IGitRunner,
+	IGitRunResult,
+} from '@delendai/core/contracts';
 
 import { appendAuditTrailer, type IAuditAgent } from '../audit/trailer';
 import {

@@ -8,9 +8,8 @@ import {
 	toolJson,
 	worstSeverity,
 	type Detail,
-	type IArgvExec,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import type { IArgvExec, IToolRegistration } from '@delendai/core/contracts';
 
 import {
 	listDeps,

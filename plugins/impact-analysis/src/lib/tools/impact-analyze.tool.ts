@@ -1,11 +1,8 @@
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
-import {
-	toolError,
-	toolJson,
-	WorkspaceContainmentError,
-} from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { toolError, toolJson } from '@delendai/core/public';
+import { WorkspaceContainmentError } from '@delendai/core/runtime';
 
 import {
 	IMPACT_ANALYSIS_DEPENDS_ON,

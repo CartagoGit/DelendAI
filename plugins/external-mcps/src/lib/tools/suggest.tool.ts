@@ -18,7 +18,8 @@
  *
  * Pure and read-only: no filesystem, no network, no state.
  */
-import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import type { ICatalogEntry } from '../catalog/catalog-data';

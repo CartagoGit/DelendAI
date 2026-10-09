@@ -21,6 +21,17 @@ tags:
 
 # f00512 — F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente
 
+## notes
+
+Status on 2026-10-07.
+
+Not started, on purpose. Two things come first, found while implementing f00511:
+
+- **Something must emit work events.** Nothing records events at runtime yet, so `status` and `agents` would always render empty. That is q00020's first slice (work telemetry), now in progress; this proposal depends on it.
+- **Published code never imports `@delendai/state-telemetry`.** It stays private: the CLI, core and every published plugin write append-only journal files under the cache directory, and the private package reads and projects them (the transition-duration journal of f00511 S2 is the pattern). The CLI surfaces here read projections through that boundary, not by importing the package.
+
+Two corrections for the slices when they start: `delendai work status` already exists with another meaning (the checkout and policy report), so the progress view needs its own name (for example `work progress`) or an explicit extension of `status`; and the declared `commands/groups/work.ts` does not exist (`work` is `commands/work.command.ts`, which delegates to core).
+
 ## Goal
 
 Materializar la proyección de `f00510` (snapshots) y `f00511` (ETA) en tres superficies read-only, sin añadir coste de tokens al LLM: (a) `delendai work status [--watch] [proposalId|sliceId]` en CLI, (b) item persistente en la barra de estado de la extensión VS Code con icono dinámico, y (c) bloque intrínseco emitido por el host en el chat del agente (no por el modelo). Las tres superficies consumen la misma `IWorkProgressSnapshot` y la misma regla `source: 'sqlite-shadow' | 'git-fallback'`; nunca bloquean al agente ni le piden texto.

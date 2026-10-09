@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { cp, mkdir, readdir, readFile, rm } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
-import { writeFileAtomic } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
 
 /**
  * Maps each rewritable `@delendai/*` package name to the version its OWN

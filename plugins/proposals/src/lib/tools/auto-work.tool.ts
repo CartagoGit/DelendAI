@@ -3,12 +3,13 @@ import { relative, resolve } from 'node:path';
 
 import z from 'zod';
 
+import type { IToolTextResult } from '@delendai/core/public';
 import type {
 	IToolRegistration,
-	IToolTextResult,
 	ICommitAuthorResolution,
-} from '@delendai/core/public';
-import { SafeWorkspaceReader, toolJson } from '@delendai/core/public';
+} from '@delendai/core/contracts';
+import { toolJson } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { runContinueProposal } from './continue-proposal.tool';
 import type { IContinueProposalToolOptions } from './continue-proposal.tool';

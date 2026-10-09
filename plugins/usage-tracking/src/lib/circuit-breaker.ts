@@ -15,11 +15,8 @@
  * the rollup; the durable `degradations` log is appended here through the same
  * mutex + atomic + redact pipeline every other write in this plugin uses.
  */
-import {
-	redactSecrets,
-	withFileMutex,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import { redactSecrets } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import { EMPTY_LIMITS_STATUS } from './contracts/constants/empty-limits-status.constant';
 import { readSummaryFile } from './summary-file.service';

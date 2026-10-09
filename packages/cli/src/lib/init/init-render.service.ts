@@ -18,8 +18,8 @@ import {
 	createWorkspacePathProvider,
 	FIRST_PARTY_PLUGIN_INDEX,
 	resolvePresetMembers,
-	type IFileReader,
 } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 import {
 	applyJsoncEdits,
 	deriveSourceRoots,

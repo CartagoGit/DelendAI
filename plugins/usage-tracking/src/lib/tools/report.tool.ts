@@ -14,8 +14,8 @@ import {
 	projectDetail,
 	toolJson,
 	type Detail,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
 	bucketBy,

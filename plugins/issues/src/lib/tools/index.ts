@@ -4,7 +4,7 @@
  * this module only composes — each tool's own logic lives in its
  * dedicated `*.tool.ts` file.
  */
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { callerCheckout } from '@delendai/core/public';
 
 import { buildAnalyzeIssueRegistration } from './analyze-issue.tool';

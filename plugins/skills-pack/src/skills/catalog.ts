@@ -1,4 +1,4 @@
-import type { ISkillEntry } from '@delendai/core/public';
+import type { ISkillEntry } from '@delendai/core/contracts';
 
 export interface ISkillsPackSkillDescriptor extends ISkillEntry {
 	readonly title: string;

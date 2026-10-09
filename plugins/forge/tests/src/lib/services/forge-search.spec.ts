@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IExternalToolRun,
 	IRunExternalToolInput,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import { searchCode } from '../../../../src/lib/services/forge-search';
 import type { IForgeSearchExec } from '../../../../src/lib/contracts/interfaces/forge-search.interface';

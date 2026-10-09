@@ -32,7 +32,8 @@
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 
-import { withFileMutex, type LockContentionError } from '@delendai/core/public';
+import type { LockContentionError } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 const REPO_ROOT = resolve(import.meta.dir, '..', '..', '..');
 // Test-only escape hatch: specs need an isolated scratch lock so they don't

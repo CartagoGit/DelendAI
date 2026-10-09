@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { IDelendaiConfigFile } from '@delendai/core/public';
+import type { IDelendaiConfigFile } from '@delendai/core/contracts';
 
 import {
 	LOOP_DETECTOR_DEFAULTS,

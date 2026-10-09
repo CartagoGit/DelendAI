@@ -15,7 +15,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 import type { IGhExec } from '../src/lib/contracts/interfaces/github.interface';

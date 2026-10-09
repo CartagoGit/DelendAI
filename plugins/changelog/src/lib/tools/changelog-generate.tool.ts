@@ -6,7 +6,7 @@ import type {
 	IGitRunner,
 	IGitRunResult,
 	IToolRegistration,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 
 import {

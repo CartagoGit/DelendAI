@@ -10,7 +10,8 @@
 import apiPackageJson from '../package.json';
 import z from 'zod';
 
-import { definePlugin, resolvePresetMembers } from '@delendai/core/public';
+import { resolvePresetMembers } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 
 import { buildApiCallToolRegistration } from './lib/tools/api-call.tool';
 import { buildApiMockToolRegistration } from './lib/tools/api-mock.tool';

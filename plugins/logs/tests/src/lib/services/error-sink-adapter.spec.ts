@@ -17,7 +17,7 @@ import {
 	createErrorCollector,
 	type ICapturedError,
 } from '@delendai/core/public';
-import type { ICacheEvictionRule } from '@delendai/core/public';
+import type { ICacheEvictionRule } from '@delendai/core/contracts';
 import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
 
 import logsPlugin from '../../../../src/index';

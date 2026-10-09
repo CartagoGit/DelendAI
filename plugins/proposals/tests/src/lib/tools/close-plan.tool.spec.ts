@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ZodType } from 'zod';
 
-import type { IGitRunResult, IGitRunner } from '@delendai/core/public';
+import type { IGitRunResult, IGitRunner } from '@delendai/core/contracts';
 import { VALIDATE_LOG_RELATIVE_PATH } from '@delendai/proposals/lib/contracts/constants/proposal-paths.constant';
 import * as planClosureEngine from '@delendai/proposals/lib/swarm/plan-closure.engine';
 import {

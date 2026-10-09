@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IFileReader, IToolRegistration } from '@delendai/core/public';
+import type { IFileReader, IToolRegistration } from '@delendai/core/contracts';
 
 import { buildInheritHostInstructionsRegistration } from '@delendai/proposals/lib/tools/inherit-host-instructions.tool';
 import type { IInheritHostInstructionsToolOptions } from '@delendai/proposals/lib/contracts/interfaces/inherit-host-instructions-options.interface';

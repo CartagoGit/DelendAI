@@ -1,8 +1,5 @@
-import {
-	toolJsonBounded,
-	compactOutputSchema,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolJsonBounded, compactOutputSchema } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import {

@@ -15,7 +15,7 @@ import {
 	createUserHomeReader,
 	scanHostInstructions,
 } from '@delendai/proposals/lib/tools/scan-host-instructions.tool';
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 import type {
 	IHostInstructionFile,
 	IUserHomeReader,

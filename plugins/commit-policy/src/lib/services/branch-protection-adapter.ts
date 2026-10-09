@@ -1,8 +1,5 @@
-import {
-	runExternalTool,
-	type IExternalTool,
-	type IExternalToolRun,
-} from '@delendai/core/public';
+import { runExternalTool } from '@delendai/core/public';
+import type { IExternalTool, IExternalToolRun } from '@delendai/core/contracts';
 
 import type { ICommitPolicyPush } from '../contracts/options';
 
