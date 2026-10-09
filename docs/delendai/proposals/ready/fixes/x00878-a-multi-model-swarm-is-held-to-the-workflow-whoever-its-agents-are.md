@@ -389,6 +389,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "A slice reservation whose unit has no branch on the forge and whose publication a merge on the integration branch names is released at once; one whose unit is simply gone is still kept for the abandonment window."
 - Found 2026-10-10: `work enter --slice=all` on this proposal was refused because S31 was "reserved on the forge", hours after its unit had published and merged (#951). The reaper released a branchless unit's reservation only after the whole abandonment window, which is right for a unit nobody knows the fate of and wrong for one that landed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
