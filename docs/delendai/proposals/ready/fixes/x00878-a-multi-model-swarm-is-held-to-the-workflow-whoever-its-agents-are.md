@@ -329,6 +329,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "When an armed candidate's workflow run finished as a failure with no check failing and a required check absent, the queue runs it again once and says so; a run that loses its checks a second time is reported and not run a third time."
 - Found 2026-10-07 on #907: the forge concluded its run `failure` having created 35 of the workflow's 37 jobs, all green; `tests` and `delendai-validate` were never created. The candidate was armed and BLOCKED with nothing red on it, so the queue (which moves red candidates to their authors and waits on green ones) waited on it for good. A full re-run created all 37 jobs and the candidate merged. The queue now notices that shape, the same way it already releases runs the forge parks.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S29 — An approved proposal closes on the integration branch's certified run
 - **Status**: retired
@@ -346,6 +348,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "`lint:closed-with-independent-approval` pairs a proposal's old and new versions by its id, so a proposal that changes folder and much of its content in one pull request does not have its existing approvals counted as added by that pull request; an approval that is new in it still is."
 - Found 2026-10-08 by the agent finishing r00040: its pull request moved the proposal from in-progress to review and rewrote its Files list (645 paths). The move fell under git's 50% rename similarity, read as a deletion and an addition, and the lint refused the implementer for "adding approvals by gpt-5.4" it had only carried; the agent worked around it by listing directories instead of files.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S31 — A unit answers for what it deleted, not for what the branch gained
 - **Status**: review
@@ -355,6 +359,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "`lint:mass-content-removal` measures a branch from where it left the integration branch, read from the project's declared branches, so files the integration branch gained afterwards are not counted as deleted by a unit that never had them."
 - Found 2026-10-08 by the agent on f00757 S1: its unit, one merge behind, was refused for a mass removal of eight files it had never touched; they had landed on the integration branch after the unit left. The lint compared the two tips (`develop..branch`) and named the branch `develop` in code. It had no spec of its own; it has one now.
 - Follow-up 2026-10-09: the lint already had a spec, in `plugins/proposals/tests`, importing the script by a relative path; this slice's first publication (#942) did not see it, changed the diff range, and left the integration branch red on it, because a change under `tools/` does not select the proposals zone. Its cases now live in the spec beside the script, where the planner selects them with it, and the cross-zone copy is gone.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S32 — A change reaches the zones of the files that import it by path
 - **Status**: review
