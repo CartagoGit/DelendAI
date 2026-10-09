@@ -44,6 +44,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "The alerts js/prototype-polluting-assignment (#262-#264), js/file-system-race (#265), js/client-side-request-forgery (#74, #75), js/bad-tag-filter (#59, #60), js/incomplete-multi-character-sanitization (#58) and js/html-constructed-from-input (#358-#360) no longer apply."
 - Triage 2026-10-07 against develop: #262–#265, #58–#60, #74, #75 and #23 are already fixed there (prototype keys refused before assignment, a handle-based read, DOM parsing instead of tag regexes, a fixed same-origin path with an encoded query). #358–#360 are false positives: every value the dashboard interpolates passes through `escapeHtml` in its builders; dismissed with that reason once develop is analysed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Repository scripts are free of the scanner's findings
 - **Status**: review
