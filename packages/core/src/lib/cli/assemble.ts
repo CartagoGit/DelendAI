@@ -86,6 +86,7 @@ import {
 } from '../shared/checkpoint-advisory';
 import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
+import { runThrottledBootSweep } from '../cache/boot-eviction-throttle.service';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
 import {
 	createJsonlRuntimeEventSink,
@@ -1370,7 +1371,12 @@ export const assembleCliConfig = async (
 					errors: [],
 					rulesEvaluated: 0,
 				}
-			: await cacheEvictionRegistry.run({ dryRun: !cacheEvictionApply });
+			: await runThrottledBootSweep({
+					registry: cacheEvictionRegistry,
+					workspaceRoot: workspace.root,
+					dryRun: !cacheEvictionApply,
+					intervalMs: fileConfig.cache?.evictionIntervalMs,
+				});
 	const evidenceCleanupReport = await evidenceStore.cleanup(
 		fileConfig.evidence?.cleanup ?? 'on-boot',
 	);
