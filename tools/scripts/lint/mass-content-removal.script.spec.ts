@@ -8,6 +8,7 @@ import {
 	collectMassContentRemovalFindings,
 	type IGitRunner,
 	isMassRemovalTrackedPath,
+	parseDeletedFilesFromDiff,
 	summarizeMassContentRemoval,
 } from './mass-content-removal.script';
 
@@ -82,5 +83,51 @@ describe('what counts as removed content', () => {
 				threshold: 7,
 			}),
 		).toBeNull();
+	});
+});
+
+describe('what a branch is held to', () => {
+	it('passes with no tracked deletion, or a single one', () => {
+		expect(
+			summarizeMassContentRemoval({
+				branch: 'agent/x',
+				deletedFiles: [],
+			}),
+		).toBeNull();
+		expect(
+			summarizeMassContentRemoval({
+				branch: 'agent/x',
+				deletedFiles: ['plugins/search/src/lib/tools/one.ts'],
+			}),
+		).toBeNull();
+	});
+
+	it('is a same-agent-mass-removal finding at the default threshold', () => {
+		const deletedFiles = DELETED.slice(0, 5);
+		expect(
+			summarizeMassContentRemoval({ branch: 'agent/x', deletedFiles }),
+		).toEqual({
+			branch: 'agent/x',
+			code: 'same-agent-mass-removal',
+			count: 5,
+			deletedFiles,
+		});
+	});
+
+	it('filters ignored and out-of-scope deletions before counting', () => {
+		expect(
+			parseDeletedFilesFromDiff(
+				[
+					'plugins/search/src/lib/tools/a.ts',
+					'plugins/search/dist/b.ts',
+					'packages/core/src/lib/c.ts',
+					'packages/core/coverage/d.ts',
+					'readme.md',
+				].join('\n'),
+			),
+		).toEqual([
+			'packages/core/src/lib/c.ts',
+			'plugins/search/src/lib/tools/a.ts',
+		]);
 	});
 });
