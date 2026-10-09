@@ -260,6 +260,8 @@ no preset. Fetching rules from the web is not part of this proposal; a
 future adapter would be its own, allow-listed proposal.
 
 Shipped: the spec scans every source of the plugin for a network module import or a network call and fails on any.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
