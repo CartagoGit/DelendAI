@@ -126,6 +126,8 @@ The owner promotes develop to main only from a stable point, and main is where G
   - "Dependabot updates the `bun` ecosystem, which reads and rewrites `bun.lock`."
   - "`lint:dependency-advisories` runs on every candidate in `lint-security` and fails on any advisory of moderate severity or above in the lockfile, unless it is excepted in `config/delendai/advisory-exceptions.json` with a reason and a review date that has not passed."
 - Found 2026-10-07 right after the promotion: Dependabot opened GHSA-6qxp-vccf-f47h on the root and `apps/web` (SDK pinned at 1.30.0), and `bun audit` found 43 advisories in the lockfile, most kept in place by root `overrides` that had pinned versions once patched and since superseded. The overrides now pin the patched versions; braces has no patched release and is excepted until 2026-11-07. Nothing audited the lockfile before a candidate landed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S11 — The forward sync's branch is a canonical publication
 - **Status**: review
