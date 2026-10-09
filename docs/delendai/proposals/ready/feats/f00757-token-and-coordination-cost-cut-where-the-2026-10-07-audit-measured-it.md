@@ -57,6 +57,8 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - acceptance:
   - "Each plan or proposal over a size threshold has a generated view of its open slices, dependencies and remaining acceptance, and work enter and the review brief read that view instead of the whole document."
 - Delivered, for the review brief: `review next` hands the reviewer each waiting slice's own section of the document (`section`, cut at the next heading) and tells it to open the whole file only where a section refers to another part of it. On x00875, the two slices waiting for a verdict are 4,224 characters of a 56,074-character document: 92 % less to read before judging. Still to do: the same view for `work enter`'s briefing, which reads the proposal through core and so needs the section from the proposals plugin.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The coordination cost of a swarm is measured
 - **Status**: review
