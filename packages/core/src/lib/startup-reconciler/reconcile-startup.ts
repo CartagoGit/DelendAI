@@ -38,7 +38,7 @@ import { runFetchPhase } from './phases/fetch-refs';
 import { runForgePhase } from './phases/reconcile-forge';
 import { runGovernancePhase } from './phases/inspect-governance';
 import { runIntegrationEvidencePhase } from './phases/integration-evidence';
-import { runJournalStep } from './journal-publish.service';
+import { finishJournal, runJournalStep } from './journal-publish.service';
 import { journalSourceFor } from './journal-ref.service';
 import { runLeasePhase } from './phases/reap-leases';
 import { runStateDatabasePhase } from './phases/open-state';
@@ -262,14 +262,6 @@ const reconcileUnderLock = async (args: {
 		source: journalSource,
 		ports,
 		mode,
-		git: input.git,
-		branches: policy.branches,
-	});
-	collect(phases, {
-		phase: 'journal',
-		ran: journalSource !== undefined,
-		counters: journal.counters,
-		findings: journal.findings,
 	});
 
 	const evidence = await runIntegrationEvidencePhase({
@@ -351,16 +343,6 @@ const reconcileUnderLock = async (args: {
 		forgeEtag: forge.etag,
 		refs: fetched.refs,
 	});
-	const report = finish({
-		phases,
-		startedAt,
-		completedAt: input.clock.now(),
-		machineId: environment.environment.machineId,
-		mode,
-		fingerprint,
-		resolutions,
-	});
-
 	// The fingerprint is written only when it MOVED. A boot that changed
 	// nothing appends nothing, so "start the server twenty times" does not
 	// grow the journal by twenty events.
@@ -381,6 +363,26 @@ const reconcileUnderLock = async (args: {
 			}),
 		});
 	}
+
+	collect(
+		phases,
+		await finishJournal({
+			imported: journal,
+			ran: journalSource !== undefined,
+			git: input.git,
+			journal: ports.journal,
+			branches: policy.branches,
+		}),
+	);
+	const report = finish({
+		phases,
+		startedAt,
+		completedAt: input.clock.now(),
+		machineId: environment.environment.machineId,
+		mode,
+		fingerprint,
+		resolutions,
+	});
 
 	ports.reconciliation.complete({
 		id: run.id,

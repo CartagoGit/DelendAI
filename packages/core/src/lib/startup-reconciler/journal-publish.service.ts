@@ -19,22 +19,20 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
-import { namespacedRef } from '../work-units/namespaced-ref.helper';
 import {
 	JOURNAL_COMMIT_IDENTITY,
 	JOURNAL_COMMIT_MESSAGE,
 	JOURNAL_FILE,
 	JOURNAL_FILE_MODE,
 	JOURNAL_PUBLISH_ATTEMPTS,
-	JOURNAL_REF_LEAF,
 } from './journal-ref.constant';
-import { journalRefReader } from './journal-ref.service';
+import { journalRefName, journalRefReader } from './journal-ref.service';
 import { finding } from './finding-catalog';
 import {
 	runJournalPhase,
 	type IJournalPhaseResult,
 } from './phases/import-journal';
-import type { IStartupFinding } from './contracts';
+import type { IStartupFinding, IStartupPhaseResult } from './contracts';
 import type {
 	IJournalPublication,
 	IJournalSourceEvent,
@@ -44,7 +42,6 @@ import type {
 import type {
 	IJournalEventView,
 	IStartupJournalPort,
-	IStartupStatePorts,
 } from './state-ports.interface';
 
 const sortedPayload = (payload: unknown): string =>
@@ -187,7 +184,7 @@ export const journalRefPublisher =
 	): Promise<IJournalPublication> => {
 		const remote = await integrationRemote(integrationBranch);
 		if (remote === undefined) return { kind: 'unchanged' };
-		const ref = namespacedRef(namespace, JOURNAL_REF_LEAF);
+		const ref = journalRefName(namespace);
 		const read = journalRefReader(run, integrationRemote);
 		let reason = `${ref} was rejected on every attempt`;
 		for (
@@ -292,39 +289,42 @@ export const publishPendingJournal = async (input: {
 };
 
 /**
- * The journal phase as a boot runs it: replay what the source holds that
- * the database lacks (it asks only for what happened after the newest
- * event it has), then publish what the database holds that the ref lacks.
+ * The import half of the journal phase as a boot runs it: replay what the
+ * source holds that the database lacks, asking only for what happened
+ * after the newest event the database already has.
  */
-export const runJournalStep = async (input: {
+export const runJournalStep = (input: {
 	readonly source: IStartupJournalSource | undefined;
-	readonly ports: Pick<IStartupStatePorts, 'journal'> &
-		Parameters<typeof runJournalPhase>[0]['ports'];
+	readonly ports: Parameters<typeof runJournalPhase>[0]['ports'];
 	readonly mode: 'full' | 'incremental';
-	readonly git: Pick<IStartupGitSeam, 'publishJournal'>;
-	readonly branches: {
-		readonly namespacePrefix: string;
-		readonly integration: string;
-	};
 }): Promise<IJournalPhaseResult> => {
 	const newestKnownEvent = input.ports.journal
 		.listAll()
 		.reduce((max, event) => Math.max(max, event.occurredAt), 0);
-	const imported = await runJournalPhase({
+	return runJournalPhase({
 		source: input.source,
 		ports: input.ports,
 		mode: input.mode,
 		since: newestKnownEvent > 0 ? newestKnownEvent : undefined,
 	});
-	return {
-		...imported,
-		findings: [
-			...imported.findings,
-			...(await publishPendingJournal({
-				git: input.git,
-				journal: input.ports.journal,
-				branches: input.branches,
-			})),
-		],
-	};
 };
+
+/**
+ * The journal phase's result once publication has run. It runs last in a
+ * boot, after the outcome event is appended, so that event goes out too;
+ * a failure is a note on the phase.
+ */
+export const finishJournal = async (
+	input: Parameters<typeof publishPendingJournal>[0] & {
+		readonly imported: IJournalPhaseResult;
+		readonly ran: boolean;
+	},
+): Promise<IStartupPhaseResult> => ({
+	phase: 'journal',
+	ran: input.ran,
+	counters: input.imported.counters,
+	findings: [
+		...input.imported.findings,
+		...(await publishPendingJournal(input)),
+	],
+});

@@ -34,5 +34,12 @@ export const JOURNAL_COMMIT_IDENTITY: readonly string[] = [
 	'commit.gpgsign=false',
 ];
 
+/**
+ * The namespace the journal ref lives under when the project has none:
+ * git refuses a ref with fewer than three parts (`refs/journal`), so the
+ * journal of a project with no namespace would otherwise never publish.
+ */
+export const JOURNAL_FALLBACK_NAMESPACE = 'delendai';
+
 /** The file mode of the journal blob inside the ref's tree. */
 export const JOURNAL_FILE_MODE = '100644';
