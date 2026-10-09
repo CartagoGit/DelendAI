@@ -118,3 +118,9 @@ export const CACHE_LAYOUT_MANIFEST: ICacheLayoutManifest = {
 		},
 	],
 };
+
+/** Where the time of the last boot sweep is kept; outside the cache it sweeps. */
+export const CACHE_EVICTION_STAMP_PATH = [
+	'.delendai',
+	'cache-eviction-at.json',
+] as const;

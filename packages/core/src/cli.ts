@@ -269,6 +269,11 @@ export {
 	runPendingMigrations,
 	ensureWorkspaceMigrated,
 } from './lib/workspace-migration/legacy-migration.service';
+export {
+	listCacheLayoutMigrations,
+	readCacheLayoutStatus,
+	runCacheLayoutStep,
+} from './lib/workspace-migration/cache-layout-step.service';
 export type { IMigrationRunResult } from './lib/contracts/interfaces/workspace-migration.interface';
 export { readLatestManifestFromDisk } from './lib/workspace-migration/transaction/migration-manifest';
 export type { IStoredMigrationManifest } from './lib/workspace-migration/transaction/migration-manifest';

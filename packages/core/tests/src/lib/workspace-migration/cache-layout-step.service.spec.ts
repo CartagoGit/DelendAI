@@ -1,4 +1,4 @@
-import { mkdir, readdir, writeFile } from 'node:fs/promises';
+import { readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -16,18 +16,14 @@ afterEach(() => {
 });
 
 describe('runCacheLayoutStep', () => {
-	it('writes nothing in an adopted workspace while the build ships no layout history', async () => {
+	it('leaves a clean adopted workspace byte-identical', async () => {
 		const root = createTestWorkspace('delendai-step-');
 		workspaces.push(root);
-		await mkdir(join(root, '.cache', 'delendai'), { recursive: true });
 		await writeFile(join(root, 'delendai.config.json'), '{}', 'utf8');
 		expect(await runCacheLayoutStep(root, false)).toEqual({
-			status: 'unregistered',
+			status: 'current',
 		});
-		expect((await readdir(root)).sort()).toEqual([
-			'.cache',
-			'delendai.config.json',
-		]);
+		expect(await readdir(root)).toEqual(['delendai.config.json']);
 	});
 });
 
