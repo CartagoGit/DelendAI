@@ -72,7 +72,7 @@ This is infrastructure. f00548 (style architecture) and f00549
 
 ### S1 — Resolve the installed version, not just the framework id
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: [`packages/core/src/lib/bootstrap/framework-version.ts`, `packages/core/tests/src/lib/bootstrap/framework-version.spec.ts`, `packages/core/src/lib/contracts/interfaces/framework-version.interface.ts`]
 
 Read the resolved version from the lockfile first and the manifest range
@@ -98,11 +98,11 @@ packages/core/tests/src/lib/bootstrap/framework-version.spec.ts`);
 coverage on `framework-version.ts` is 100% statements/functions/lines,
 88.88% branches (threshold 82/83/83/69).
 - shipped-in: `97ed3389c329`
-- review-state: changes_requested
-- review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-flash
-- review-log: requested_changes by glm-5.3-flash — The proposal-level acceptance is broader than the delivered S1-S5 scope: it requires framework_guidance and framework_source behavior, cache invalidation, refusal of removed rules with version evidence, and network restriction to trusted adapter domains. The proposal has no slice for trusted-domain adapters/cache population and its S5 notes state the cache is not populated yet and convention is not wired into tools. S1-S5 tests pass, but these global criteria are not implemented or gated; reconcile scope/acceptance before approval.
+- Reconciled 2026-10-09 for the reviewer's request: the proposal-level acceptance that S1-S5 did not cover now has slices of its own, S6 (rules as project-owned packs seeding the version-keyed cache, offline), S7 (the detected convention as an input) and S8 (the no-network posture enforced by a spec). S1 itself is unchanged.
 - review-attribution: claude-opus-5-5 from commit d6ecc216abea names refs/heads/delendai/wip/claude-opus-5-5/review/batch-all-g2/verdicts (d6ecc216abeaace3f90fcb00209a0facab278d9c), opened by glm-5.3-flash
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- review-log: requested_changes by glm-5.3-flash — The proposal-level acceptance is broader than the delivered S1-S5 scope: it requires framework_guidance and framework_source behavior, cache invalidation, refusal of removed rules with version evidence, and network restriction to trusted adapter domains. The proposal has no slice for trusted-domain adapters/cache population and its S5 notes state the cache is not populated yet and convention is not wired into tools. S1-S5 tests pass, but these global criteria are not implemented or gated; reconcile scope/acceptance before approval.
 
 ### S2 — A knowledge record with its evidence and its force
 
@@ -212,6 +212,44 @@ keeps summary and evidence apart so the common path stays cheap.
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 - shipped-in: `f75161fa8386`
+
+### S6 — Knowledge packs: rules as data, selected by version, seeding the cache offline
+
+- **Status**: pending
+- **Files**: [`plugins/framework-knowledge/src/lib/packs/pack-loader.service.ts`, `plugins/framework-knowledge/src/lib/packs/version-range.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-pack.interface.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/tests/src/lib/packs/pack-loader.spec.ts`]
+- **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/packs`
+
+S5 left the cache with no producer. A pack is a JSON file the project owns
+(`.delendai/knowledge/<framework>.json`): rules, each with the version range
+it applies to, its force, its topic, and the source and retrieval date it
+was written from. `framework_guidance` selects the rules whose range
+contains the RESOLVED version, seeds the version-keyed cache from them and
+answers from it; a changed lockfile entry reseeds. Frameworks are data, not
+branches in code, and nothing here touches the network. Every answer names
+the lockfile entry the version was read from and the pack file the rules
+came from.
+
+### S7 — The detected convention is an input of the answer
+
+- **Status**: pending
+- **Files**: [`plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/detect/scan-convention.service.ts`, `plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`]
+- **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`
+
+A pack rule may name a countable pattern (a file glob and a marker). The
+tool counts it in the project (S4) and feeds the result, with its
+confidence, to the resolver, so a project that already does X is told X.
+
+### S8 — Trusted-domain adapters stay out; the posture is enforced
+
+- **Status**: pending
+- **Files**: [`plugins/framework-knowledge/tests/src/no-network.spec.ts`]
+- **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/no-network.spec.ts`
+
+The acceptance line "no network access outside a per-framework adapter's
+trusted domains" is met by having none: a spec fails if any source of the
+plugin imports a network module or calls `fetch`, and the plugin stays in
+no preset. Fetching rules from the web is not part of this proposal; a
+future adapter would be its own, allow-listed proposal.
 
 ## acceptance
 
