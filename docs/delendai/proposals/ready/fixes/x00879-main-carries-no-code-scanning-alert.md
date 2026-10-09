@@ -156,6 +156,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "`quality-gate.yml` no longer runs on pull requests into the release branch or in the merge queue; it sweeps the integration branch daily and on request, with a limit it fits in."
 - Found 2026-10-07 on the promotion #911, and the same on #641: the workflow was never a required check of `main`, repeated the CI matrix that is required there, and hit its 30-minute limit on every promotion, leaving a red run that blocked nothing. What only it does, running every lint script including ones no workflow wires, is kept as a daily sweep; its last run had found `proposal-already-implemented` failing on twelve slices, recorded for the backlog reconciliation.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
