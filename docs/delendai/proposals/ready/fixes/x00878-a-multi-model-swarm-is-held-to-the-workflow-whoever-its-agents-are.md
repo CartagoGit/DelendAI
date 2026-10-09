@@ -333,6 +333,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Found 2026-10-07 in the hydration log: `close-approved-proposals` failed 218 times with "x00834 refused — validate required: No validate run has been journalled for this workspace". Approved proposals waited for a local `validate` (the whole chain, about ten minutes, that nobody runs on the owner machine) while the integration branch's certified full run, a stronger proof of the same tree, sat green.
 - Retired 2026-10-07 on reading the code: closing already accepts the integration branch's certified full run as evidence (`certifiedDelivery` in `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, tried after the local journal), when every commit in the proposal's `shipped-in` is contained in a certified tip. The 218 refusals in the hydration log were for x00834 before it had `shipped-in`; it is done, and the passes since report nothing in review ready to close.
 
+### S30 — A proposal that moves folders keeps the approvals it already had
+- **Status**: in-progress
+- **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`lint:closed-with-independent-approval` pairs a proposal's old and new versions by its id, so a proposal that changes folder and much of its content in one pull request does not have its existing approvals counted as added by that pull request; an approval that is new in it still is."
+- Found 2026-10-08 by the agent finishing r00040: its pull request moved the proposal from in-progress to review and rewrote its Files list (645 paths). The move fell under git's 50% rename similarity, read as a deletion and an addition, and the lint refused the implementer for "adding approvals by gpt-5.4" it had only carried; the agent worked around it by listing directories instead of files.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
