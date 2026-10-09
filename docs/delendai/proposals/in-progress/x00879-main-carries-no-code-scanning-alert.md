@@ -40,6 +40,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Triage 2026-10-07 against develop: #420, #166–#169 and #366 are already fixed there — temporary files sit beside their target and are created `wx` with mode 0o600 (`LOCK_FILE_MODE` in the mutex), and the probed shell comes from a fixed list (`launchableShell`). #269 stays: running a caller's command string is `run-command`'s purpose, through an explicit `/bin/bash --noprofile --norc -c` on POSIX; it is dismissed as won't-fix with that reason once develop is analysed.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `8e7c04483e60d78c9edec255947754a7d3054772`
 
 ### S2 — Client, extension and dashboard build no markup or request from untrusted input
 - **Status**: review
@@ -50,6 +51,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - Triage 2026-10-07 against develop: #262–#265, #58–#60, #74, #75 and #23 are already fixed there (prototype keys refused before assignment, a handle-based read, DOM parsing instead of tag regexes, a fixed same-origin path with an encoded query). #358–#360 are false positives: every value the dashboard interpolates passes through `escapeHtml` in its builders; dismissed with that reason once develop is analysed.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `8e7c04483e60d78c9edec255947754a7d3054772`
 
 ### S3 — Repository scripts are free of the scanner's findings
 - **Status**: review
