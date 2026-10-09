@@ -671,6 +671,8 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - L2 (`tools/scripts/.cache`, `subproject/.cache`, `app/.cache`) and L4 (`docs/.../proposals/index.json`) live outside the cache directory. The lifecycle helpers are contained to the cache directory by design, and deleting files in a user's source tree on a hard-coded list is the kind of guess this proposal rules out, so those two are not deleted; their epochs are pass-through steps. L5 is the identity engine's rename.
   - A workspace with nothing to carry is not recorded: a clean project is left byte-identical (the contract of the identity engine), and pays the chain's `lstat` probes once per process. A rehearsal runs before the lock is taken, because taking it creates `.delendai/`.
   - An unreadable configuration makes the step `skipped` (nothing touched, nothing recorded), not failed: a broken config file must not report a migration failure on every boot.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
 - **Status**: pending
