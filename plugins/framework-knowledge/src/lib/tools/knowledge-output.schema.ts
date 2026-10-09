@@ -37,6 +37,18 @@ export const GuidanceOutputSchema = z.object({
 			reason: z.string().optional(),
 		})
 		.optional(),
+	/** Where the version and the rules were read from. */
+	provenance: z
+		.object({ lockEntry: z.string(), pack: z.string().optional() })
+		.optional(),
+	/** What the project was counted doing, when a rule can be counted. */
+	convention: z
+		.object({
+			ruleId: z.string(),
+			confidence: z.number(),
+			sample: z.number(),
+		})
+		.optional(),
 	note: z.string().optional(),
 });
 
