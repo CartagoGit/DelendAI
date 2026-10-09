@@ -203,16 +203,17 @@ describe('runPendingCacheLayoutMigrations', () => {
 		expect(probe.applied.length).toBe(3);
 	});
 
-	it('skips a step that finds nothing and still records the epoch', async () => {
+	it('skips steps that find nothing and writes nothing', async () => {
 		const root = newWorkspace();
 		const store = createFileLifecycleStateStore(root);
 		const probe = chain({ idle: [0, 1, 2] });
 		const result = await runPendingCacheLayoutMigrations(
 			input(root, store, probe),
 		);
-		expect(result).toMatchObject({ status: 'migrated', applied: [] });
+		expect(result).toEqual({ status: 'current' });
 		expect(probe.applied).toEqual([]);
-		expect(await store.getAppliedEpoch('cache-layout')).toBe(TARGET);
+		expect(await store.getAppliedEpoch('cache-layout')).toBeNull();
+		expect(await everything(root)).toEqual([]);
 	});
 
 	it('leaves the epoch alone when a step crashes, and a retry finishes cleanly', async () => {
@@ -328,8 +329,7 @@ describe('runPendingCacheLayoutMigrations', () => {
 			},
 		});
 		expect(result).toEqual({
-			status: 'failed',
-			id: 'cache-layout',
+			status: 'skipped',
 			reason: 'config unreadable',
 		});
 		expect(await store.getAppliedEpoch('cache-layout')).toBeNull();

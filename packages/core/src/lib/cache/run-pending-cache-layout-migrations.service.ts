@@ -94,11 +94,7 @@ const carry = async (
 			}),
 		};
 	} catch (error) {
-		return {
-			status: 'failed',
-			id: 'cache-layout',
-			reason: describeError(error),
-		};
+		return { status: 'skipped', reason: describeError(error) };
 	}
 	const walked = await walkChain(chain, ctx);
 	if (!walked.ok)
@@ -110,6 +106,15 @@ const carry = async (
 			toEpoch: target,
 			pending: walked.done,
 		};
+	// A workspace with nothing from an older layout is left byte-identical:
+	// recording would conjure a file into a project that had no reason to
+	// grow one, the same rule the identity engine follows. It pays the
+	// chain's cheap probes once per process instead, and the process
+	// remembers the answer.
+	if (walked.done.length === 0) {
+		confirmedCurrent.set(input.workspaceRoot, target);
+		return { status: 'current' };
+	}
 	// Last, and only after the whole chain: a crash anywhere above leaves
 	// the epoch where it was, and the next boot repeats an idempotent walk.
 	await input.store.setAppliedEpoch('cache-layout', target);
@@ -144,6 +149,15 @@ export const runPendingCacheLayoutMigrations = async (
 	// A rehearsal takes no lock: it changes nothing a second process could
 	// trip over.
 	if (input.dryRun === true) return carry(input, target, applied);
+	// Look before locking: taking the lock creates the directory that holds
+	// the marker, and a workspace with nothing to carry must not grow one.
+	const rehearsal = await carry({ ...input, dryRun: true }, target, applied);
+	if (rehearsal.status === 'failed' || rehearsal.status === 'skipped')
+		return rehearsal;
+	if (rehearsal.status === 'planned' && rehearsal.pending.length === 0) {
+		confirmedCurrent.set(input.workspaceRoot, target);
+		return { status: 'current' };
+	}
 	return input.store.withMigrationLock(async () => {
 		// Read again inside the lock: a process that waited here finds the
 		// epoch the first one recorded and leaves.
