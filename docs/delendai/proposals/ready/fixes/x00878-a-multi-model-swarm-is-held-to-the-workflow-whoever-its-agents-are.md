@@ -350,6 +350,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - Found 2026-10-08 by the agent on f00757 S1: its unit, one merge behind, was refused for a mass removal of eight files it had never touched; they had landed on the integration branch after the unit left. The lint compared the two tips (`develop..branch`) and named the branch `develop` in code. It had no spec of its own; it has one now.
 - Follow-up 2026-10-09: the lint already had a spec, in `plugins/proposals/tests`, importing the script by a relative path; this slice's first publication (#942) did not see it, changed the diff range, and left the integration branch red on it, because a change under `tools/` does not select the proposals zone. Its cases now live in the spec beside the script, where the planner selects them with it, and the cross-zone copy is gone.
 
+### S32 — A change reaches the zones of the files that import it by path
+- **Status**: in-progress
+- **Files**: `tools/scripts/ci/path-importers.ts`, `tools/scripts/ci/path-importers.spec.ts`, `tools/scripts/ci/test-zones.script.ts`
+- **Gate**: type
+- acceptance:
+  - "The test planner adds, for every changed source file, the zone of each tracked file that imports it by a relative path, in whatever workspace that file lives, so a spec that tests another workspace's script runs when the script changes."
+- Found 2026-10-09: S31 changed a lint under `tools/`, its older spec sat in the proposals zone and imported the script by path, the planner selected only the tools zone, the pull request (#942) was green and the integration branch went red. The workspace graph follows package names and has no edge for such an import; thirty-four files import across workspaces this way, twelve of them in core.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

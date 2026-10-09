@@ -29,6 +29,7 @@ import { join } from 'node:path';
 import { repoRoot } from '../lib/repo-root';
 
 import { buildGraph, computeAffected, gitDiffChanges } from './affected.script';
+import { pathImportersOf } from './path-importers';
 import {
 	TARGET_SPECS_PER_JOB,
 	TEST_WORKFLOW,
@@ -190,6 +191,11 @@ export const reachableZones = (
 			side: 'base' | 'head',
 			path: string,
 		) => string | undefined;
+		/**
+		 * Tracked files that import one of these changed paths by a
+		 * relative path, across workspaces included.
+		 */
+		readonly importersOf?: (paths: readonly string[]) => readonly string[];
 	} = {
 		buildGraph,
 		computeAffected,
@@ -312,6 +318,14 @@ export const reachableZones = (
 			zones.add(rule.id);
 		}
 	}
+	// A file that imports a changed one by its path is reached by the
+	// change wherever it lives: the workspace graph follows package names
+	// and does not see it.
+	for (const importer of deps.importersOf?.(
+		changes.map((change) => change.path),
+	) ?? []) {
+		zones.add(zoneOf(importer, rules));
+	}
 	return zones;
 };
 
@@ -399,6 +413,7 @@ const main = (): number => {
 				computeAffected,
 				diff: gitDiffChanges,
 				readMap: () => committedReadMap(rootDir),
+				importersOf: (paths) => pathImportersOf(rootDir, paths),
 				contentAt: (side, path) =>
 					contentAt(
 						side === 'base' ? mergeBaseOf(base, rootDir) : 'HEAD',
