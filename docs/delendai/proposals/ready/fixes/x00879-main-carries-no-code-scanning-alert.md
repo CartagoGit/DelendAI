@@ -84,6 +84,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "`CodeQL` is a required check of the integration branch, beside `delendai-validate`: a pull request that introduces a code scanning alert does not merge, so develop — and what it promotes to main — stays at zero."
 - Asked by the owner on 2026-10-07: code scanning is a validation that must always hold, so a feature, a fix or a refactor cannot bring a new alert in. The policy's `integration.requiredChecks` gains `CodeQL` (the check CodeQL reports on a pull request, seen on #903), and `forge-settings --write` projects it into the generated protection files; the live protection is applied through the repository's bootstrap path. Main's required checks are unchanged: CodeQL does not run on pull requests into main (S5 — the push to develop already analyses that commit), so requiring it there would block every promotion, and main only ever receives what develop let through.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — Every certified develop is scanned
 - **Status**: review
@@ -92,6 +94,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "Each full run that certifies the integration branch dispatches CodeQL on it, so a merge made by the queue (whose token starts no workflow on push) is analysed all the same."
 - Found 2026-10-07 right after #903 landed: S5's push trigger never fired for develop, because the queue merges with the workflow token and a push made with it starts no workflow — the same reason the full run is dispatched after each merge. `release-the-queue`, which already runs once per certified develop tip, now also dispatches `codeql.yml` on develop.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — Remote names, urls and refs never parse as git options
 - **Status**: review
