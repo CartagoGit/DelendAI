@@ -104,6 +104,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "Every git ls-remote, fetch and push that passes a remote, url or ref taken from data ends its options with `--` first, so js/second-order-command-line-injection (#422-#434) no longer applies; the aggregate-job pattern is anchored as a whole (#435) and the test page's end-tag filters accept attributes and whitespace (#421)."
 - Found 2026-10-07 in the first analysis of develop (15 open alerts once #903 made it scanned). Fixed as a class, not per alert: every such call in core, the CLI, the plugins and the repository scripts, including the git plugin's push tool, whose remote comes from tool input (`--receive-pack=<cmd>` was a first-order injection there).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — The promotion carries its own required check
 - **Status**: review
