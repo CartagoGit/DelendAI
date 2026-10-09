@@ -2,14 +2,14 @@
 id: x00877
 title: "An upgrade leaves the project as its configuration says, and nothing else"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-06
-last-transition-id: 05ef5495-9be9-4314-b73f-bbe880f685b7
-last-correlation-id: 05ef5495-9be9-4314-b73f-bbe880f685b7
-last-transition-from: ready
-last-transition-at: 2026-10-09T21:34:38.842Z
+last-transition-id: 74b4140b-ea9c-468a-86c3-6841218c2d9c
+last-correlation-id: 74b4140b-ea9c-468a-86c3-6841218c2d9c
+last-transition-from: in-progress
+last-transition-at: 2026-10-09T21:35:03.577Z
 ---
 
 # x00877 — An upgrade leaves the project as its configuration says, and nothing else
@@ -51,6 +51,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - Delivered: two causes. `migrate` started an MCP server to run, and that server applied the migration guard as it booted; and the CLI's own guard ran before the command too. `migrate` is now an offline command (like `init` and `guard`), and the guard skips it: `migrate run` is the only way it applies. Probed in a throwaway mcp-vertex project: `status` and `--dry-run` leave it byte-identical, `run` migrates and writes its manifest and backup. The spec fails without the change.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `38b68714aebe`
 
 ### S2 — The legacy proposal state is moved, and no copy of it stays behind
 - **Status**: review
@@ -65,6 +66,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 - Delivered, split by owner (core may know nothing of the proposals plugin's storage, which `lint:core-proposals-boundary` enforces and which the first version broke): core's `stateDirectoryMigrator:v1` moves every file of its legacy state directory `.delendai/state/` to `.cache/delendai/state/` (SQLite sidecars before their database), never over a file already there, and removes the emptied directory; `state-dir-agreement.spec.ts` in `@delendai/proposals-sqlite` pins that its database opens there. The registry's old committed copy beside the proposals is the plugin's to remove: a full sync deletes `<proposalsDir>/index.json` (an index-only sync, which makes no tracked change, leaves it). Probed end to end before the split in a throwaway project; the specs fail without the change.
+- shipped-in: `3f9e395cd57c`
 
 ### S3 — Every host file and instruction file names delendai
 - **Status**: review
@@ -76,6 +78,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - Delivered: the host-config migrator rewrites every project MCP config a host reads, the editor's `.vscode/mcp.json` and the root `.mcp.json`; the agent-files migrator also walks the root instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`). Both specs fail without the change.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `38b68714aebe`
 
 ### S4 — No ignore line or moved file keeps the old name
 - **Status**: review
@@ -88,6 +91,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 - Fix 2026-10-07: the residual spec's fixture spells the old name, as it must, and `rebrand-propagate --check` counted it as a live leftover: develop's full run went red on #887 and the queue stopped arming. The spec is listed with the other files whose subject is the old name (`INTENTIONAL_LEGACY_PATHS`, beside `packages/cli/src/index.spec.ts`), with the reason.
+- shipped-in: `01e0713ced6d`
 
 ### S5 — A profile change leaves nothing of the old mode unowned
 - **Status**: review
@@ -100,6 +104,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - Finished 2026-10-09, the second bullet: the project already declares what it wants (`development.guardHooks`: `install`, `report` or `off`), so no new setting was needed; what was missing was anything comparing it with the hooks on disk. `guard status` now does (`guardHooksFollowMode`): with `off` and hooks still running the guard it names them and says `delendai guard uninstall`; with `install` and a hook missing it says `delendai guard install`; a hook its manager owns is left to that manager; and it exits non-zero when the two disagree, so a script can gate on it. The open question (whether `off` should be its own setting) is answered by the setting that already existed.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `85e411e0c1eb`
 
 ### S6 — The generated-files merge driver exists where it is configured
 - **Status**: review
@@ -110,6 +115,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - Delivered: `guard install` configures the generated-files merge driver only where its script exists; in a project that does not carry it (every adopting project: it is this repository's tooling) nothing is configured, and a `merge.delendai-generated` section an older install left is removed. The spec fails without the change.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `38b68714aebe`
 
 ### S7 — The host-scope configs are migrated too
 - **Status**: review
@@ -120,6 +126,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - Delivered: the global-config migrator (which rewrites only the entries it can prove are this workspace's, and keeps every other key byte for byte) existed and nothing called it. `migrate host --dry-run` lists what it would change in `~/.claude.json` and `~/.codex/config.toml` for this workspace; `migrate host` applies it; `migrate run` never touches them. On this machine the dry run plans nothing. The spec (dry run plans and writes nothing, `run` leaves the host configs alone, `host` applies) fails without the change.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `a6095f9df9cd`
 
 ### S8 — The rebrand check runs on every pull request
 - **Status**: review
@@ -130,6 +137,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - Found 2026-10-07: #887 brought a spec that spells the old name (it is about it), its pull request was green, and develop's full run went red on `rebrand-propagate.spec.ts`: that spec walks the whole tree, so the tools shard's selection by changed imports skipped it on the pull request. The queue then armed nothing for seven hours. The check takes two seconds; it now runs beside the other governance lints on every pull request.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `46a8640284a9`
 
 ## acceptance
 
