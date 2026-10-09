@@ -188,7 +188,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 ### S6 — El roadmap como IStateProducer del State Engine
 - **Status**: review
 - **DependsOn**: [S3, S4]
-- **Files**: `packages/roadmap/package.json`, `bun.lock`, `packages/roadmap/AGENT.md`, `packages/roadmap/src/public/index.ts`, `packages/roadmap/src/lib/contracts/constants/roadmap-producer.constant.ts`, `packages/roadmap/src/lib/contracts/interfaces/roadmap-producer.interface.ts`, `packages/roadmap/src/lib/state/roadmap.projection.service.ts`, `packages/roadmap/src/lib/state/roadmap.producer.service.ts`, `packages/roadmap/tests/src/lib/state/roadmap.producer.service.spec.ts`, `packages/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts`
+- **Files**: `packages/roadmap/package.json`, `bun.lock`, `packages/roadmap/AGENT.md`, `packages/roadmap/src/public/index.ts`, `packages/roadmap/src/lib/contracts/constants/roadmap-producer.constant.ts`, `packages/roadmap/src/lib/contracts/interfaces/roadmap-producer.interface.ts`, `packages/roadmap/src/lib/state/roadmap.projection.service.ts`, `packages/roadmap/src/lib/state/roadmap.producer.service.ts`, `packages/roadmap/tests/src/lib/state/roadmap.producer.service.spec.ts`, `packages/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts`, `plugins/changelog/package.json`, `apps/web/public/logos/plugin-roadmap.svg`, `apps/web/public/logos/plugin-roadmap-sqlite.svg`
 - **Gate**: `bun x vitest run --root packages/roadmap`
 - acceptance:
   - "El producer declara sus `inputs` explícitamente (fichero de roadmap + índice de proposals) y `rebuild` no muta markdown, git ni código."
@@ -198,6 +198,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - shipped: the roadmap as a State Engine producer (createRoadmapProducer) declaring two inputs, the roadmap file at a locator taken from its options and the proposal index, plus the pure projection (bump intent through inferBump, per-entry gate verdicts, counts). The property spec runs random operation sequences through a real in-memory registry and shows incremental and clean rebuild give the same canonicalStateHash. Re-cut: reconcile recomputes from the new inputs, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; where the derived state is cached is the registry driver's decision under its cacheRoot, the producer writes nothing, and a spec checks its sources import no file-system module. The property spec sits at tests/property/ as the slice listed.
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- build wiring: the changelog plugin now exports `./public` from its manifest so a clean build of the roadmap package resolves it, and both new packages have brand logos.
 
 ### S7 — Herramientas de lectura: show, sync, readiness y delta
 - **Status**: pending
