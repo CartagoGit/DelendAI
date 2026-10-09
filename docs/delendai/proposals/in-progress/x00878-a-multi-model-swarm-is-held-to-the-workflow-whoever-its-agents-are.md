@@ -2,10 +2,14 @@
 id: x00878
 title: "A multi-model swarm is held to the workflow, whoever its agents are"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-10-06
+last-transition-id: ddb060d5-c100-44f3-8dbf-c0795cc2b808
+last-correlation-id: ddb060d5-c100-44f3-8dbf-c0795cc2b808
+last-transition-from: ready
+last-transition-at: 2026-10-09T22:29:16.500Z
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
