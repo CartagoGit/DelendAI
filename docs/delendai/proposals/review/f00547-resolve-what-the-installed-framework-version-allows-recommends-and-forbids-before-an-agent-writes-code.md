@@ -2,7 +2,7 @@
 id: f00547
 title: "Resolve what the installed framework version allows, recommends and forbids before an agent writes code"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,9 +11,10 @@ tags:
     - frameworks
     - policy
     - tokens
-last-transition-id: 646af143-edf6-4133-9c1f-d6f8e3724c84
-last-correlation-id: 646af143-edf6-4133-9c1f-d6f8e3724c84
-last-transition-from: review
+last-transition-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
+last-correlation-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
+last-transition-from: in-progress
+last-transition-at: 2026-10-09T21:10:50.048Z
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -146,6 +147,8 @@ file contributes nothing to either side of the ratio). `FORCE_VALUES`
 and the interface file respectively, per `lint:types-in-contracts`
 (caught by `gates.sh`, not something the proposal anticipated).
 - shipped-in: `f75161fa8386`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Resolve project policy against framework force
 
@@ -161,6 +164,8 @@ recommendation; it does not win over `removed`, which resolves to
 
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts`
 - shipped-in: `7cf206f4d2f8`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Detected convention as an input, with its confidence
 
@@ -177,6 +182,8 @@ instead of its own habits.
   no convention: a weak habit fed to the resolver would outrank the
   framework's own recommendation.
 - shipped-in: `30680e32ef2b`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — The two tools, and a cache keyed by resolved version
 
@@ -215,8 +222,8 @@ keeps summary and evidence apart so the common path stays cheap.
 
 ### S6 — Knowledge packs: rules as data, selected by version, seeding the cache offline
 
-- **Status**: pending
-- **Files**: [`plugins/framework-knowledge/src/lib/packs/pack-loader.service.ts`, `plugins/framework-knowledge/src/lib/packs/version-range.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-pack.interface.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/tests/src/lib/packs/pack-loader.spec.ts`]
+- **Status**: review
+- **Files**: `plugins/framework-knowledge/src/lib/packs/pack-loader.service.ts`, `plugins/framework-knowledge/src/lib/packs/version-range.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-pack.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-pack.constant.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/knowledge-output.schema.ts`, `plugins/framework-knowledge/tests/src/lib/packs/pack-loader.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/packs`
 
 S5 left the cache with no producer. A pack is a JSON file the project owns
@@ -229,20 +236,30 @@ branches in code, and nothing here touches the network. Every answer names
 the lockfile entry the version was read from and the pack file the rules
 came from.
 
+Shipped: a pack is `.delendai/knowledge/<framework>.json`; `framework_guidance` selects the rules whose range (`*` or comparators such as `>=17 <19`) holds the resolved version, seeds the version-keyed cache from them when it holds nothing usable, and answers with a `provenance` naming the lockfile entry and the pack file. A malformed rule is reported by the loader, not dropped silently.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `1e177dd3ce32`
+
 ### S7 — The detected convention is an input of the answer
 
-- **Status**: pending
-- **Files**: [`plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/detect/scan-convention.service.ts`, `plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`]
+- **Status**: review
+- **Files**: `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/detect/scan-convention.service.ts`, `plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`
 
 A pack rule may name a countable pattern (a file glob and a marker). The
 tool counts it in the project (S4) and feeds the result, with its
 confidence, to the resolver, so a project that already does X is told X.
 
+Shipped: a pack rule may carry `pattern` (`directory`, `suffix`, `marker`); the tool counts it for the rules of the asked topic, bounded in depth and files, and feeds `detectConvention`'s result to the resolver. The answer carries the `convention` it weighed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `1e177dd3ce32`
+
 ### S8 — Trusted-domain adapters stay out; the posture is enforced
 
-- **Status**: pending
-- **Files**: [`plugins/framework-knowledge/tests/src/no-network.spec.ts`]
+- **Status**: review
+- **Files**: `plugins/framework-knowledge/tests/src/no-network.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/no-network.spec.ts`
 
 The acceptance line "no network access outside a per-framework adapter's
@@ -250,6 +267,11 @@ trusted domains" is met by having none: a spec fails if any source of the
 plugin imports a network module or calls `fetch`, and the plugin stays in
 no preset. Fetching rules from the web is not part of this proposal; a
 future adapter would be its own, allow-listed proposal.
+
+Shipped: the spec scans every source of the plugin for a network module import or a network call and fails on any.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `1e177dd3ce32`
 
 ## acceptance
 
