@@ -55,3 +55,7 @@ export {
 	replayTimeline,
 } from '../lib/timeline/timeline-replay.service';
 export { sealDrafts } from '../lib/timeline/timeline-seal.helper';
+export * from '../lib/contracts/constants/roadmap-producer.constant';
+export type * from '../lib/contracts/interfaces/roadmap-producer.interface';
+export { createRoadmapProducer } from '../lib/state/roadmap.producer.service';
+export { projectRoadmap } from '../lib/state/roadmap.projection.service';

@@ -172,26 +172,33 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 
 ### S5 — Driver SQLite del timeline
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S4]
-- **Files**: `packages/roadmap-sqlite/package.json`, `packages/roadmap-sqlite/tsconfig.json`, `packages/roadmap-sqlite/vitest.config.ts`, `packages/roadmap-sqlite/src/lib/schema.ts`, `packages/roadmap-sqlite/src/lib/migrations.service.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`, `packages/roadmap-sqlite/tests/src/lib/sqlite-timeline.store.spec.ts`
-- **Gate**: type
+- **Files**: `packages/roadmap-sqlite/package.json`, `packages/roadmap-sqlite/tsconfig.json`, `packages/roadmap-sqlite/vitest.config.ts`, `packages/roadmap-sqlite/AGENT.md`, `packages/roadmap-sqlite/src/index.ts`, `packages/roadmap-sqlite/src/public/index.ts`, `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite.constant.ts`, `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite-migrations.constant.ts`, `packages/roadmap-sqlite/src/lib/contracts/interfaces/roadmap-sqlite.interface.ts`, `packages/roadmap-sqlite/src/lib/migrations.service.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`, `packages/roadmap-sqlite/tests/src/lib/sqlite-timeline.store.spec.ts`, `vitest.shared.ts`, `tsconfig.base.json`, `bun.lock`
+- **Gate**: `bun run test:sqlite`
 - acceptance:
   - "El driver implementa la MISMA interfaz del timeline en S4, intercambiable con la variante markdown sin que ningún consumidor cambie."
   - "Las migraciones son versionadas e idempotentes, siguiendo el patrón de `packages/proposals-sqlite/src/lib/migrations.ts`."
   - "La base vive bajo `ctx.pluginCacheDir`; nunca en la raíz del workspace ni en un dot-folder propio."
   - "Hay un test de upgrade que demuestra que una base de una versión anterior migra correctamente."
+- shipped: the SQLite timeline driver (SqliteTimelineStore) behind the same IRoadmapTimelineStore contract, with versioned idempotent migrations on PRAGMA user_version, append-only triggers inside the database, and the database fixed under the plugin cache directory. Re-cut: the package is Bun-only like proposals-sqlite, so its specs run under test:sqlite (packages/roadmap-sqlite/ is listed in BUN_OWNED_SPECS) and its vitest project is empty. Schema 1 kept only the event JSON and schema 2 adds indexed horizon and entry columns; no schema 1 database exists in the wild, the step is there so the upgrade path is exercised from the first release, and the upgrade spec builds a real schema 1 database by hand.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S6 — El roadmap como IStateProducer del State Engine
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S3, S4]
-- **Files**: `packages/roadmap/src/lib/state/roadmap.producer.service.ts`, `packages/roadmap/src/lib/state/roadmap.projection.service.ts`, `packages/roadmap/tests/src/lib/state/roadmap.producer.spec.ts`, `packages/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts`
-- **Gate**: type
+- **Files**: `packages/roadmap/package.json`, `bun.lock`, `packages/roadmap/AGENT.md`, `packages/roadmap/src/public/index.ts`, `packages/roadmap/src/lib/contracts/constants/roadmap-producer.constant.ts`, `packages/roadmap/src/lib/contracts/interfaces/roadmap-producer.interface.ts`, `packages/roadmap/src/lib/state/roadmap.projection.service.ts`, `packages/roadmap/src/lib/state/roadmap.producer.service.ts`, `packages/roadmap/tests/src/lib/state/roadmap.producer.service.spec.ts`, `packages/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts`, `plugins/changelog/package.json`, `apps/web/public/logos/plugin-roadmap.svg`, `apps/web/public/logos/plugin-roadmap-sqlite.svg`
+- **Gate**: `bun x vitest run --root packages/roadmap`
 - acceptance:
   - "El producer declara sus `inputs` explícitamente (fichero de roadmap + índice de proposals) y `rebuild` no muta markdown, git ni código."
   - "El test de propiedad demuestra `incremental ≡ cleanRebuild`: la misma secuencia de operaciones produce el mismo `canonicalStateHash`."
   - "El lint de pureza del State Engine (`tools/scripts/lint/state-engine-purity.script.ts`) pasa sin excepciones."
   - "El estado derivado se cachea bajo `.cache/delendai/state/**` y nunca dentro del árbol de fuentes."
+- shipped: the roadmap as a State Engine producer (createRoadmapProducer) declaring two inputs, the roadmap file at a locator taken from its options and the proposal index, plus the pure projection (bump intent through inferBump, per-entry gate verdicts, counts). The property spec runs random operation sequences through a real in-memory registry and shows incremental and clean rebuild give the same canonicalStateHash. Re-cut: reconcile recomputes from the new inputs, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; where the derived state is cached is the registry driver's decision under its cacheRoot, the producer writes nothing, and a spec checks its sources import no file-system module. The property spec sits at tests/property/ as the slice listed.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- build wiring: the changelog plugin now exports `./public` from its manifest so a clean build of the roadmap package resolves it, and both new packages have brand logos.
 
 ### S7 — Herramientas de lectura: show, sync, readiness y delta
 - **Status**: pending
