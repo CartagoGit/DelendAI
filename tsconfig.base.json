@@ -69,6 +69,18 @@
 				"./packages/state-telemetry/src/public/index.ts"
 			],
 			"@delendai/state-telemetry/*": ["./packages/state-telemetry/src/*"],
+			"@delendai/roadmap": ["./packages/roadmap/src/index.ts"],
+			"@delendai/roadmap/public": [
+				"./packages/roadmap/src/public/index.ts"
+			],
+			"@delendai/roadmap/*": ["./packages/roadmap/src/*"],
+			"@delendai/roadmap-sqlite": [
+				"./packages/roadmap-sqlite/src/index.ts"
+			],
+			"@delendai/roadmap-sqlite/public": [
+				"./packages/roadmap-sqlite/src/public/index.ts"
+			],
+			"@delendai/roadmap-sqlite/*": ["./packages/roadmap-sqlite/src/*"],
 			"@delendai/proposals-sqlite": [
 				"./packages/proposals-sqlite/src/index.ts"
 			],
