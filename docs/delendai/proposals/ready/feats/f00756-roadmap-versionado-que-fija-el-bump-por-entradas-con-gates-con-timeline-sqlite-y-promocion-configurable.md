@@ -196,6 +196,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "El lint de pureza del State Engine (`tools/scripts/lint/state-engine-purity.script.ts`) pasa sin excepciones."
   - "El estado derivado se cachea bajo `.cache/delendai/state/**` y nunca dentro del árbol de fuentes."
 - shipped: the roadmap as a State Engine producer (createRoadmapProducer) declaring two inputs, the roadmap file at a locator taken from its options and the proposal index, plus the pure projection (bump intent through inferBump, per-entry gate verdicts, counts). The property spec runs random operation sequences through a real in-memory registry and shows incremental and clean rebuild give the same canonicalStateHash. Re-cut: reconcile recomputes from the new inputs, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; where the derived state is cached is the registry driver's decision under its cacheRoot, the producer writes nothing, and a spec checks its sources import no file-system module. The property spec sits at tests/property/ as the slice listed.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S7 — Herramientas de lectura: show, sync, readiness y delta
 - **Status**: pending
