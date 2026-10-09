@@ -107,17 +107,22 @@ export type IProposalsToolId =
 export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	Record<IProposalsToolId, IProposalsDisclosureLevel>
 > = {
-	// --- essential (8): start/status/continue/claim/close ---
+	// --- essential (4): start, status, continue ---
+	// Authoring and claiming verbs (`create_proposal`, `proposal_adopt`,
+	// `close_slice`, `agent_lock`) are contextual: `auto_work` and
+	// `continue_proposal` name them as the exact next action, and a
+	// session that only reads proposals never pays for their schemas.
+	// Packs (`packs.ts`) name the groups these belong to.
 	auto_work: 'essential',
 	get_proposal_workflow: 'essential',
 	compact_status: 'essential',
 	continue_proposal: 'essential',
-	proposal_adopt: 'essential',
-	close_slice: 'essential',
-	create_proposal: 'essential',
-	agent_lock: 'essential',
 
-	// --- contextual (15): relevant once a proposal is active ---
+	// --- contextual: relevant once a proposal is active ---
+	proposal_adopt: 'contextual',
+	close_slice: 'contextual',
+	create_proposal: 'contextual',
+	agent_lock: 'contextual',
 	proposal_review: 'contextual',
 	review_queue: 'contextual',
 	review_claim: 'contextual',
