@@ -136,6 +136,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "The branch the forward sync opens has the agent, kind, unit-with-generation and topic segments of every publication (`delendai/pr/delendai/sync/forward-<sha>-g1/carries-the-release-back`), so `work doctor --forge` reports `publications-canonical` as holding while it is open."
 - Found 2026-10-07 on the first real forward sync (#913, after the promotion #911): the flat `delendai/pr/forward-sync-<sha>` failed `publications-canonical` and turned two runs of keep-the-queue-moving red while it was open. A branch DelendAI made broke the rule DelendAI holds every agent's branches to; it now has the same shape instead of an exception.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S12 — A promotion leaves no red run for a setting nobody chose
 - **Status**: review
