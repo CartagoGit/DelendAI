@@ -369,6 +369,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "The test planner adds, for every changed source file, the zone of each tracked file that imports it by a relative path, in whatever workspace that file lives, so a spec that tests another workspace's script runs when the script changes."
 - Found 2026-10-09: S31 changed a lint under `tools/`, its older spec sat in the proposals zone and imported the script by path, the planner selected only the tools zone, the pull request (#942) was green and the integration branch went red. The workspace graph follows package names and has no edge for such an import; thirty-four files import across workspaces this way, twelve of them in core.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S33 — What the product writes in its cache is not stray
 - **Status**: review
