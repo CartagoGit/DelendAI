@@ -2,7 +2,7 @@
 id: f00509
 title: "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-06
@@ -15,12 +15,13 @@ tags:
     - event-bus
     - state-engine
     - non-blocking
-last-transition-id: 6fbf41cd-1fb4-484c-bf52-9e63b9bfebf3
-last-correlation-id: 6fbf41cd-1fb4-484c-bf52-9e63b9bfebf3
-last-transition-from: review
+last-transition-id: 44276a97-98b7-4acf-b804-2eb576b3fa02
+last-correlation-id: 44276a97-98b7-4acf-b804-2eb576b3fa02
+last-transition-from: in-progress
 shipped-in:
   - "a9cb8d6a4"
   - "97320d4d7"
+last-transition-at: 2026-10-09T15:10:15.989Z
 ---
 
 # f00509 — F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease
