@@ -219,12 +219,14 @@ The gap this closes: nothing emitted work events at runtime, so any status view 
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
-### S3 — Duration journal drained into the history
+### S3 — Journals drained into the stores, on demand
 
-- **Status**: pending
-- **Files**: filled in when the slice ships
-- **Gate**: the state-telemetry drain specs.
-- Depends on the transition-duration journal and `drainTransitionDurationJournal` of f00511 landing. Something calls the drain on demand, next to the work event drain, so the ETA engine has history.
+- **Status**: review
+- **Files**: `packages/state-telemetry/src/lib/drain/contracts/constants/telemetry-journal.constant.ts`, `packages/state-telemetry/src/lib/drain/contracts/interfaces/telemetry-drain.interface.ts`, `packages/state-telemetry/src/lib/drain/telemetry-drain.service.ts`, `packages/state-telemetry/src/lib/drain/telemetry-drain.service.spec.ts`, `packages/state-telemetry/src/public/index.ts`, `tools/scripts/telemetry/drain-telemetry.script.ts`, `package.json`
+- **Gate**: `npx vitest run --root packages/state-telemetry src/lib/drain`
+- `drainTelemetryJournals` reads the work event journal into the event bus and the proposals plugin's transition-duration journal into the ETA duration history. `bun run telemetry:drain` is the on-demand caller (it resolves the shared checkout from any worktree and prints both counts). A status view or the CLI later calls the same function from private code.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## dependency graph
 

@@ -26,3 +26,9 @@ export type {
 	IWorkEventDrainResult,
 	IWorkEventSink,
 } from '../lib/events/contracts/interfaces/work-event-journal-drain.interface';
+export { drainTelemetryJournals } from '../lib/drain/telemetry-drain.service';
+export type {
+	ITelemetryDrainInput,
+	ITelemetryDrainResult,
+} from '../lib/drain/contracts/interfaces/telemetry-drain.interface';
+export { DurationHistoryFacade } from '../lib/eta/duration-history';
