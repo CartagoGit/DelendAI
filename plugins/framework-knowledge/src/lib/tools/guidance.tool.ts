@@ -2,9 +2,13 @@
  * `<prefix>_framework_guidance` — what the installed framework version
  * says about one topic, as a small resolved answer.
  *
- * It reads the cache's summary only. The evidence behind each rule is
+ * It answers from the cache's summary. The evidence behind each rule is
  * a separate call (`framework_source`), so the common path stays cheap.
- * When the version cannot be resolved it says so instead of guessing.
+ * When the cache holds nothing for the resolved version it is seeded from
+ * the project's knowledge pack, offline; a changed lockfile entry makes
+ * the cached set stale and seeds it again. When the version cannot be
+ * resolved it says so instead of guessing. Every answer names the lockfile
+ * entry the version was read from and the pack the rules came from.
  */
 import z from 'zod';
 
@@ -16,7 +20,11 @@ import type {
 	IKnowledgeSummaryEntry,
 	IKnowledgeToolOptions,
 } from '../contracts/interfaces/knowledge-cache.interface';
-import { readSummary } from '../cache/knowledge-cache.service';
+import type { IDetectedConventionInput } from '../contracts/interfaces/policy.interface';
+import { readSummary, writeKnowledge } from '../cache/knowledge-cache.service';
+import { detectConvention } from '../detect/detect-convention.helper';
+import { scanConvention } from '../detect/scan-convention.service';
+import { loadPack } from '../packs/pack-loader.service';
 import { resolvePolicy } from '../policy/resolve-policy.helper';
 import { resolveInstalledFramework } from '../resolve/installed-framework.helper';
 import { GuidanceOutputSchema } from './knowledge-output.schema';
@@ -42,7 +50,10 @@ const pickRecommendation = (
 	return undefined;
 };
 
-const resolveEntries = (entries: readonly IKnowledgeSummaryEntry[]) => {
+const resolveEntries = (
+	entries: readonly IKnowledgeSummaryEntry[],
+	detectedConvention: IDetectedConventionInput | undefined,
+) => {
 	const recommendation = pickRecommendation(entries);
 	const fallback =
 		recommendation ??
@@ -55,6 +66,7 @@ const resolveEntries = (entries: readonly IKnowledgeSummaryEntry[]) => {
 			value: entry.id,
 			force: entry.force,
 		})),
+		detectedConvention,
 		frameworkRecommendation: recommendation,
 		defaultValue: fallback,
 	});
@@ -83,29 +95,78 @@ export const runFrameworkGuidance = async (
 			note: 'The installed version is not resolved: no lockfile entry and no exact pin. Install dependencies, then ask again.',
 		});
 	}
-	const summary = await readSummary(
+	const key = {
+		frameworkId: installed.frameworkId,
+		version: installed.version,
+	};
+	const pack = await loadPack(
+		options.workspaceRootAbs,
+		installed.frameworkId,
+		installed.version,
+	);
+	const provenance = {
+		lockEntry: installed.lockEntry,
+		...(pack === undefined ? {} : { pack: pack.packFile }),
+	};
+	let summary = await readSummary(
 		options.cacheRootAbs,
-		{ frameworkId: installed.frameworkId, version: installed.version },
+		key,
 		installed.lockEntry,
 		args.topic,
 	);
+	if (!summary.hit && pack !== undefined && pack.records.length > 0) {
+		await writeKnowledge(options.cacheRootAbs, {
+			key,
+			lockEntry: installed.lockEntry,
+			records: pack.records,
+		});
+		summary = await readSummary(
+			options.cacheRootAbs,
+			key,
+			installed.lockEntry,
+			args.topic,
+		);
+	}
 	if (!summary.hit || summary.entries.length === 0) {
 		return toolOk({
 			status: 'no-knowledge',
 			framework: installed.frameworkId,
 			version: installed.version,
 			topic: args.topic,
+			provenance,
 			note: summary.hit
 				? 'The cache holds nothing for this topic at this version.'
 				: `No usable knowledge is cached for this version (${summary.reason}).`,
 		});
 	}
-	const resolution = resolveEntries(summary.entries);
+	// What the project already does, for the rules of this topic that can
+	// be counted: a clear habit outranks the framework's recommendation.
+	const ruleIds = new Set(summary.entries.map((entry) => entry.id));
+	const countable = Object.fromEntries(
+		Object.entries(pack?.patterns ?? {}).filter(([id]) => ruleIds.has(id)),
+	);
+	const convention =
+		Object.keys(countable).length === 0
+			? undefined
+			: detectConvention(
+					await scanConvention(options.workspaceRootAbs, countable),
+				);
+	const resolution = resolveEntries(summary.entries, convention);
 	return toolOk({
 		status: 'resolved',
 		framework: installed.frameworkId,
 		version: installed.version,
 		topic: args.topic,
+		provenance,
+		...(convention === undefined
+			? {}
+			: {
+					convention: {
+						ruleId: convention.value,
+						confidence: convention.confidence,
+						sample: convention.sample,
+					},
+				}),
 		rules: summary.entries.map(({ id, statement, force }) => ({
 			id,
 			statement,
