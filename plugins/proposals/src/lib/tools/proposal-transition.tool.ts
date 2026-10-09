@@ -130,6 +130,7 @@ import {
 } from '../services/lifecycle-outcome';
 import { LAST_TRANSITION_AT_FIELD } from '../contracts/constants/transition-duration.constant';
 import type { IProposalDurationRecorder } from '../contracts/interfaces/transition-duration.interface';
+import { journalProposalTransition } from './proposal-work-events';
 import { recordMeasuredTransition } from './proposal-transition-duration';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
 import { VALIDATE_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
@@ -1422,6 +1423,13 @@ export const runProposalTransition = async (
 		depId,
 	);
 	if (result.isError !== true) {
+		await journalProposalTransition(
+			options.workspaceRoot,
+			args.id,
+			from,
+			finalTo,
+			args.agent,
+		);
 		recordMeasuredTransition(options.durationRecorder, {
 			previousMarkdown: raw,
 			to: finalTo,
