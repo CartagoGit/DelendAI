@@ -29,6 +29,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `docs` | `@delendai/docs` | Doc generation, search, and rendered catalog. | manifest |
 | `env` | `@delendai/env` | Environment config validation (.env check + schema + env_explains). | manifest |
 | `error-reporting` | `@delendai/error-reporting` | Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off. | manifest |
+| `execution-env` | `@delendai/execution-env` | Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container. | manifest |
 | `external-mcps` | `@delendai/external-mcps` | Compose third-party MCP servers through the catalog + human ack. | manifest |
 | `forge` | `@delendai/forge` | Forge (GitHub/GitLab) wrappers — PRs, CI, issues. | manifest |
 | `framework-knowledge` | `@delendai/framework-knowledge` | Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code. | manifest |
@@ -92,6 +93,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `docs` | `@delendai/docs` | 0.1.1 | manifest |
 | `env` | `@delendai/env` | 0.1.1 | manifest |
 | `error-reporting` | `@delendai/error-reporting` | 0.1.0 | manifest |
+| `execution-env` | `@delendai/execution-env` | 0.1.0 | manifest |
 | `external-mcps` | `@delendai/external-mcps` | 0.1.1 | manifest |
 | `forge` | `@delendai/forge` | 0.1.1 | manifest |
 | `framework-knowledge` | `@delendai/framework-knowledge` | 0.1.0 | manifest |
@@ -155,6 +157,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `docs` | none | lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | `env` | none | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | `error-reporting` | none | standard, swarm, full, dogfood |
+| `execution-env` | none | none |
 | `external-mcps` | none | full |
 | `forge` | none | swarm, full, dogfood |
 | `framework-knowledge` | none | none |
@@ -218,6 +221,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `docs` | manifest | docs, catalog |
 | `env` | manifest | env, config |
 | `error-reporting` | manifest | error-reporting, github, issues |
+| `execution-env` | manifest | execution-env |
 | `external-mcps` | manifest | external-mcps, composition |
 | `forge` | manifest | forge, git, ci |
 | `framework-knowledge` | manifest | not declared (index-only) |
