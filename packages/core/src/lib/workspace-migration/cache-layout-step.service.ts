@@ -3,6 +3,7 @@ import { isAbsolute, relative } from 'node:path';
 import { createFileLifecycleStateStore } from '../cache/file-lifecycle-state-store.service';
 import { defaultCacheLayoutMigrations } from '../cache/cache-layout-migrations.registry';
 import { runPendingCacheLayoutMigrations } from '../cache/run-pending-cache-layout-migrations.service';
+import { CACHE_LAYOUT_EPOCH } from '../contracts/constants/cache-layout.constant';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { ICacheLayoutRunResult } from '../contracts/interfaces/cache-layout.interface';
 import type { IMigrationOutcome } from '../contracts/interfaces/workspace-migration.interface';
@@ -73,3 +74,32 @@ export const runCacheLayoutStep = (
 		resolveCacheDirAbs: () => resolveConfiguredCacheDirAbs(workspaceRoot),
 		dryRun,
 	});
+
+/** What `cache status` shows: the recorded epoch against this build's. */
+export const readCacheLayoutStatus = async (
+	workspaceRoot: string,
+): Promise<{
+	readonly appliedEpoch: number | null;
+	readonly targetEpoch: number;
+	readonly pending: ICacheLayoutRunResult;
+}> => ({
+	appliedEpoch:
+		await createFileLifecycleStateStore(workspaceRoot).getAppliedEpoch(
+			'cache-layout',
+		),
+	targetEpoch: CACHE_LAYOUT_EPOCH,
+	// A rehearsal: it lists what a run would do and writes nothing.
+	pending: await runCacheLayoutStep(workspaceRoot, true),
+});
+
+/** The shipped steps, in the order a run applies them. */
+export const listCacheLayoutMigrations = (): readonly {
+	readonly id: string;
+	readonly fromEpoch: number;
+	readonly toEpoch: number;
+}[] =>
+	defaultCacheLayoutMigrations().map(({ id, fromEpoch, toEpoch }) => ({
+		id,
+		fromEpoch,
+		toEpoch,
+	}));
