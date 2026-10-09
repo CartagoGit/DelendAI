@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -178,6 +178,127 @@ store.close();
 			shared.close();
 		}
 	});
+
+	it('keeps ids unique, ordered and gap-free per writer when one of several processes is killed mid-burst', async () => {
+		const dbPath = join(dir, 'killed.sqlite');
+		const survivors = ['writer-a', 'writer-b', 'writer-c'];
+		const victim = 'writer-victim';
+		const eventsPerSurvivor = 150;
+		const victimBurst = 1_000_000;
+		const victimWarmup = 40;
+		const storeModule = join(
+			dirname(fileURLToPath(import.meta.url)),
+			'work-event-store.sqlite.ts',
+		);
+		// Every writer opens the store, then waits for the start file so the
+		// bursts overlap. The victim reports progress and is killed once it is
+		// well into its burst, with a write possibly in flight.
+		const writerScript = join(dir, 'burst-writer.ts');
+		writeFileSync(
+			writerScript,
+			`import { existsSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { SqliteWorkEventStore } from ${JSON.stringify(storeModule)};
+
+const [dbFile, dir, name, total, warmup] = process.argv.slice(2);
+const store = new SqliteWorkEventStore({ path: dbFile });
+writeFileSync(join(dir, name + '.ready'), '');
+while (!existsSync(join(dir, 'start'))) Bun.sleepSync(1);
+for (let index = 0; index < Number(total); index += 1) {
+	store.append({
+		work_item_id: name,
+		actor_id: null,
+		kind: 'git_change',
+		payload_hash: String(index),
+	});
+	if (index + 1 === Number(warmup)) writeFileSync(join(dir, name + '.warm'), '');
+}
+store.close();
+`,
+		);
+		const launch = (name: string, total: number) => {
+			const child = spawn(
+				process.execPath,
+				[
+					writerScript,
+					dbPath,
+					dir,
+					name,
+					String(total),
+					String(victimWarmup),
+				],
+				{ stdio: 'inherit' },
+			);
+			const exit = new Promise<{
+				code: number | null;
+				signal: NodeJS.Signals | null;
+			}>((resolve, reject) => {
+				child.on('error', reject);
+				child.on('exit', (code, signal) => resolve({ code, signal }));
+			});
+			return { child, exit };
+		};
+		const waitFor = async (file: string): Promise<void> => {
+			const deadline = Date.now() + 30_000;
+			while (!existsSync(join(dir, file))) {
+				if (Date.now() > deadline)
+					throw new Error(`timed out: ${file}`);
+				await new Promise((resolve) => setTimeout(resolve, 5));
+			}
+		};
+
+		const runs = survivors.map((name) => launch(name, eventsPerSurvivor));
+		const doomed = launch(victim, victimBurst);
+		for (const name of [...survivors, victim])
+			await waitFor(`${name}.ready`);
+		writeFileSync(join(dir, 'start'), '');
+		await waitFor(`${victim}.warm`);
+		doomed.child.kill('SIGKILL');
+
+		expect((await doomed.exit).signal).toBe('SIGKILL');
+		for (const run of runs) expect((await run.exit).code).toBe(0);
+
+		const shared = new SqliteWorkEventStore({ path: dbPath });
+		try {
+			const byWriter = [...survivors, victim].map((name) =>
+				shared.listByWorkItem(asWorkItemId(name)),
+			);
+			const all = byWriter.flat();
+			// No id is handed out twice, whoever wrote the row.
+			expect(new Set(all.map((event) => event.id ?? 0)).size).toBe(
+				all.length,
+			);
+			expect(shared.count()).toBe(all.length);
+			// Within one writer the ids only grow and the payloads form an
+			// unbroken run from zero: nothing lost, nothing written twice.
+			for (const events of byWriter) {
+				const ids = events.map((event) => event.id ?? 0);
+				expect(ids).toEqual([...ids].sort((a, b) => a - b));
+				expect(events.map((event) => event.payload_hash)).toEqual(
+					events.map((_, i) => String(i)),
+				);
+			}
+			for (const events of byWriter.slice(0, survivors.length))
+				expect(events).toHaveLength(eventsPerSurvivor);
+			// The killed writer got at least its warm-up in, and no more than
+			// it could have attempted; a torn write leaves no partial row.
+			const victimEvents = byWriter[survivors.length] ?? [];
+			expect(victimEvents.length).toBeGreaterThanOrEqual(victimWarmup);
+			expect(victimEvents.length).toBeLessThan(victimBurst);
+			// A fresh append after the crash continues past every existing id.
+			const next = shared.append({
+				work_item_id: asWorkItemId('after-crash'),
+				actor_id: null,
+				kind: 'git_change',
+				payload_hash: 'next',
+			});
+			expect(next.id ?? 0).toBeGreaterThan(
+				Math.max(...all.map((e) => e.id ?? 0)),
+			);
+		} finally {
+			shared.close();
+		}
+	});
 });
 
 describe('NdjsonWorkEventStore (f00509 S1)', () => {
@@ -206,6 +327,40 @@ describe('NdjsonWorkEventStore (f00509 S1)', () => {
 		const events = await store.list();
 		expect(events).toHaveLength(1);
 		expect(events[0]?.kind).toBe('git_change');
+	});
+	it('lists unique, ordered ids even when two processes appended to the same file', async () => {
+		const file = join(dir, 'shared.ndjson');
+		const storeModule = join(
+			dirname(fileURLToPath(import.meta.url)),
+			'work-event-store.ndjson.ts',
+		);
+		const writerScript = join(dir, 'ndjson-writer.ts');
+		writeFileSync(
+			writerScript,
+			`import { NdjsonWorkEventStore } from ${JSON.stringify(storeModule)};
+const [file, name, total] = process.argv.slice(2);
+const store = new NdjsonWorkEventStore({ path: file });
+for (let index = 0; index < Number(total); index += 1) {
+	await store.append({ work_item_id: name, actor_id: null, kind: 'git_change', payload_hash: String(index) });
+}
+`,
+		);
+		const run = (name: string): Promise<number | null> =>
+			new Promise((resolve, reject) => {
+				const child = spawn(
+					process.execPath,
+					[writerScript, file, name, '100'],
+					{ stdio: 'inherit' },
+				);
+				child.on('error', reject);
+				child.on('exit', resolve);
+			});
+		expect(await Promise.all([run('one'), run('two')])).toEqual([0, 0]);
+		const events = await new NdjsonWorkEventStore({ path: file }).list();
+		expect(events).toHaveLength(200);
+		expect(events.map((event) => event.id)).toEqual(
+			events.map((_, i) => i + 1),
+		);
 	});
 });
 

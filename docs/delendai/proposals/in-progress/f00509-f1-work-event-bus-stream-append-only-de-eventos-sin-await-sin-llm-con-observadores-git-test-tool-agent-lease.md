@@ -45,10 +45,10 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - global_gate: type
 
 ### S1 — Paquete `packages/state-telemetry` + tabla `work_events` (SQLite + NDJSON fallback)
-- **Status**: in-progress
+- **Status**: review
 - **Shipped-In**: 27c6cf021 feat(state-telemetry): scaffold work event bus
 - **Files**: `packages/state-telemetry/package.json` (sin entrada de subpath público: la declaraba apuntando a un barrel que esta slice no crea, y `lint:tsconfig-paths-coverage` la rechaza con razón — un subpath que no resuelve a nada. F2-S5, que es la dueña del barrel, añade export y barrel juntos), `packages/state-telemetry/tsconfig.json`, `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`
-- **Gate**: lint
+- **Gate**: `bun test packages/state-telemetry/src/lib/events/work-event-store.spec.ts`
 - acceptance:
   - "`bunx vitest run packages/state-telemetry` verde sobre SQLite shadow (cuando `q00019` consolidado) y sobre NDJSON (cuando no)."
   - "Tabla `work_events` creada con el schema documentado en `q00020`, columnas `id, work_item_id, actor_id, kind, payload_hash, created_at`."
@@ -57,7 +57,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` corre en CI y devuelve `0 violations`."
   - "F1-S1 NO crea `tools/scripts/lint/state-telemetry-purity.script.ts`; lo introduce F2-S1 (única slice responsable). Esta slice se limita al bus + tabla + tests, dejando la lint para cuando exista contenido que lintar."
 - Two-process test: `work-event-store.spec.ts` spawns two `bun` writers that wait for each other, open one store and append 200 events each at once; it asserts both exit 0, the count is 400, every id is distinct and each writer's events are all present in order. It exposed that opening the store could fail with SQLITE_BUSY, so `busy_timeout` is now set before the WAL switch and the boot statements retry on a busy file.
-- review-state: in_review
+- Concurrency proof (second delivery): `work-event-store.spec.ts` now also spawns three `bun` writers plus a fourth that appends an unbounded burst to the same SQLite file and is killed with SIGKILL once it is past a warm-up. It asserts the killed writer exits by signal, the survivors exit 0 and keep all 150 events each, no id repeats across all rows, ids only grow within each writer, every writer's payloads form an unbroken run from zero (no loss, no duplicate, no torn row), and a fresh append after the crash gets an id above every existing one. The SQLite store needed no change. The NDJSON fallback did: each process counted ids from one, so two processes wrote the same ids; `list()` now numbers events by their position in the append-only file and skips a torn last line, with a two-process spec.
 - review-implementer: claude-sonnet-5-5
 - review-log: requested_changes by claude-opus-5-5 — Every other criterion holds (work-event-store.spec: the q00020 table, the config switch with NDJSON when absent or malformed, no failure at startup; the purity lint now runs in lint:architecture). Missing: the criterion 'two concurrent writes from different processes produce no duplicate rows' has no test; 'keeps the autoincrement id monotonic across closes' writes from one process in sequence. To approve: a bun-owned spec that spawns two processes appending to one store at once and asserts every id is distinct and every event is present.
 
