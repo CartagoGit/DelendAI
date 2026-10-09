@@ -682,6 +682,8 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Corrections to the design, following the code**:
   - The ratchet is a script with a JSON snapshot in `tools/scripts/lint`, not a rule in `packages/rules` with a spec under `tests/cache`: every other repository-wide ratchet is a script plus a baseline file, and the manifest lives in core, which `packages/rules` does not import.
   - The lint is not wired into `validate` directly but into `lint:architecture`, which CI runs; a lint reachable only from `validate:run` fails `lints-reach-ci`.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S6 — CLI operator (entregable: `f00531`)
 - **Status**: pending
