@@ -348,6 +348,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "`lint:mass-content-removal` measures a branch from where it left the integration branch, read from the project's declared branches, so files the integration branch gained afterwards are not counted as deleted by a unit that never had them."
 - Found 2026-10-08 by the agent on f00757 S1: its unit, one merge behind, was refused for a mass removal of eight files it had never touched; they had landed on the integration branch after the unit left. The lint compared the two tips (`develop..branch`) and named the branch `develop` in code. It had no spec of its own; it has one now.
+- Follow-up 2026-10-09: the lint already had a spec, in `plugins/proposals/tests`, importing the script by a relative path; this slice's first publication (#942) did not see it, changed the diff range, and left the integration branch red on it, because a change under `tools/` does not select the proposals zone. Its cases now live in the spec beside the script, where the planner selects them with it, and the cross-zone copy is gone.
 
 ## acceptance
 
