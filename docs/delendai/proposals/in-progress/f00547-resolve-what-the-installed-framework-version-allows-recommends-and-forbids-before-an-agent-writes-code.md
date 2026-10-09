@@ -99,11 +99,10 @@ coverage on `framework-version.ts` is 100% statements/functions/lines,
 88.88% branches (threshold 82/83/83/69).
 - shipped-in: `97ed3389c329`
 - Reconciled 2026-10-09 for the reviewer's request: the proposal-level acceptance that S1-S5 did not cover now has slices of its own, S6 (rules as project-owned packs seeding the version-keyed cache, offline), S7 (the detected convention as an input) and S8 (the no-network posture enforced by a spec). S1 itself is unchanged.
-- review-state: changes_requested
-- review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-flash
-- review-log: requested_changes by glm-5.3-flash — The proposal-level acceptance is broader than the delivered S1-S5 scope: it requires framework_guidance and framework_source behavior, cache invalidation, refusal of removed rules with version evidence, and network restriction to trusted adapter domains. The proposal has no slice for trusted-domain adapters/cache population and its S5 notes state the cache is not populated yet and convention is not wired into tools. S1-S5 tests pass, but these global criteria are not implemented or gated; reconcile scope/acceptance before approval.
 - review-attribution: claude-opus-5-5 from commit d6ecc216abea names refs/heads/delendai/wip/claude-opus-5-5/review/batch-all-g2/verdicts (d6ecc216abeaace3f90fcb00209a0facab278d9c), opened by glm-5.3-flash
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+- review-log: requested_changes by glm-5.3-flash — The proposal-level acceptance is broader than the delivered S1-S5 scope: it requires framework_guidance and framework_source behavior, cache invalidation, refusal of removed rules with version evidence, and network restriction to trusted adapter domains. The proposal has no slice for trusted-domain adapters/cache population and its S5 notes state the cache is not populated yet and convention is not wired into tools. S1-S5 tests pass, but these global criteria are not implemented or gated; reconcile scope/acceptance before approval.
 
 ### S2 — A knowledge record with its evidence and its force
 
