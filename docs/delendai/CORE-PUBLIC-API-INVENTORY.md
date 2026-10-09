@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 423
+Total exports: 424
 
 | Maturity | Count |
 | --- | --- |
-| stable | 420 |
+| stable | 421 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -284,6 +284,7 @@ Total exports: 423
 | `IWorktreeImpactPolicyVerdict` | type | stable | `../lib/contracts` |
 | `joinRel` | const | stable | `../lib/shared/paths` |
 | `joinUnderRoot` | const | stable | `../lib/shared/join-under-root` |
+| `journalWorkEvent` | const | stable | `../lib/work-units/work-event-journal.service` |
 | `killProcessGroup` | const | stable | `../lib/commands/process-group` |
 | `killProcessTree` | const | stable | `../lib/commands/process-group` |
 | `lineOf` | const | stable | `../lib/scan` |
