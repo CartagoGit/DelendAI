@@ -12,6 +12,13 @@
 			"types": "./src/index.ts",
 			"import": "./src/index.ts"
 		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		},
 		"./*": {
 			"types": "./src/*",
 			"import": "./src/*"
