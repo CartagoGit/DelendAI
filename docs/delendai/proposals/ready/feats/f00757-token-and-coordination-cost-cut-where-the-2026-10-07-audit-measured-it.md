@@ -80,7 +80,6 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
-
 ### S6 — A workflow edit runs the tests it can reach
 - **Status**: review
 - **Files**: `tools/scripts/ci/zone-reads.ts`, `tools/scripts/ci/zone-reads.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.constant.ts`, `tools/scripts/ci/test-zones.interface.ts`
