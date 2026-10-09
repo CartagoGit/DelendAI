@@ -1,7 +1,6 @@
-// effect-boundary-authorized: reads secret files from the host into memory only; nothing is ever written, and the values are returned to the caller instead of being stored.
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
-import { redactSecrets } from '@delendai/core/public';
+import { redactSecrets, SafeWorkspaceReader } from '@delendai/core/public';
 
 import { REDACTED_VALUE } from './contracts/constants/env-redaction.constant';
 import type {
@@ -20,7 +19,12 @@ const MIN_REDACTABLE_LENGTH = 4;
 /** The host as it is, read from the process and the filesystem. */
 export const hostSecretSources = (): ISecretSources => ({
 	env: process.env,
-	readFile: (path) => readFile(path, 'utf8'),
+	// A secret file may live outside the workspace (a mounted secrets
+	// directory), so the reader is rooted at the file's own directory:
+	// it still refuses symlinks that lead anywhere else.
+	readFile: async (path) =>
+		(await new SafeWorkspaceReader(dirname(path)).readText(basename(path)))
+			.content,
 });
 
 const assertName = (name: string): void => {
