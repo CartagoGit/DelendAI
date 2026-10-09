@@ -230,6 +230,8 @@ the lockfile entry the version was read from and the pack file the rules
 came from.
 
 Shipped: a pack is `.delendai/knowledge/<framework>.json`; `framework_guidance` selects the rules whose range (`*` or comparators such as `>=17 <19`) holds the resolved version, seeds the version-keyed cache from them when it holds nothing usable, and answers with a `provenance` naming the lockfile entry and the pack file. A malformed rule is reported by the loader, not dropped silently.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — The detected convention is an input of the answer
 
