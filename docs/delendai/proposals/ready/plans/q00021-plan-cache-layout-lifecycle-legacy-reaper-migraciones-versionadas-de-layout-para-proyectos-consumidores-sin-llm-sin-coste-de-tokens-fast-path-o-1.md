@@ -665,15 +665,23 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Aceptación**: las migraciones `r00010` corre sin tocar contenido de `results/` (los registros sobreviven).
 
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `tools/scripts/lint/no-legacy-cache-paths.script.ts`
-  - `packages/rules/src/rules/cache-layout-ratchet.rule.ts`
+  - `tools/scripts/lint/no-legacy-cache-paths.constant.ts`
+  - `tools/scripts/lint/no-legacy-cache-paths.interface.ts`
   - `tools/scripts/lint/no-legacy-cache-paths.script.spec.ts`
-  - `packages/rules/tests/src/rules/cache-layout-ratchet.rule.spec.ts`
-  - Whitelist documentada en cada rule.
-- **Tarea**: pasar `rg` y clasificar cada hit. Eliminar los que sean runtime/tooling. Whitelist para migrators, fixtures y docs.
-- **Gate**: `bun run validate` falla si un PR nuevo introduce el path legacy `.cache/mcp-vertex/...` en runtime/tooling. El ratchet falla si se modifica `CACHE_LAYOUT_MANIFEST.epoch` o la lista de `artifacts` sin bump de `CACHE_LAYOUT_EPOCH`.
+  - `tools/scripts/lint/cache-layout-ratchet.script.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.constant.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.interface.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.script.spec.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.snapshot.json`
+  - `package.json`
+- **Tarea**: la pasada de `git grep` sobre `packages plugins tools apps extensions` no encontró ningún literal `.cache/<nombre retirado>` en código runtime/tooling fuera de los migrators (y comentarios de ellos), así que no hubo nada que erradicar; el lint lo mantiene así. `lint:no-legacy-cache-paths` escanea los fuentes versionados (falla si no escanea nada) con whitelist de migrators, migraciones de cache, tests y fixtures. `lint:cache-layout-ratchet` compara epoch y checksum de los artefactos del manifest con un snapshot; cambiar artefactos sin subir el epoch falla, y `--update` se niega a grabar ese caso. Ambos van encadenados en `lint:architecture`, que corre en CI.
+- **Gate**: `bun run vitest run tools/scripts/lint/no-legacy-cache-paths.script.spec.ts tools/scripts/lint/cache-layout-ratchet.script.spec.ts` y `bun run lint:no-legacy-cache-paths && bun run lint:cache-layout-ratchet`.
+- **Corrections to the design, following the code**:
+  - The ratchet is a script with a JSON snapshot in `tools/scripts/lint`, not a rule in `packages/rules` with a spec under `tests/cache`: every other repository-wide ratchet is a script plus a baseline file, and the manifest lives in core, which `packages/rules` does not import.
+  - The lint is not wired into `validate` directly but into `lint:architecture`, which CI runs; a lint reachable only from `validate:run` fails `lints-reach-ci`.
 
 ### S6 — CLI operator (entregable: `f00531`)
 - **Status**: pending
