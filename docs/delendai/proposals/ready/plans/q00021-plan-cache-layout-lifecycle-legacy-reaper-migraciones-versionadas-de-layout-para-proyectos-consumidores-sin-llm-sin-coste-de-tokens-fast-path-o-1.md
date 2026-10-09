@@ -688,12 +688,21 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Gate**: cada subcomando tiene `--dry-run`. Salida estructurada (JSON opcional) sin texto narrativo.
 
 ### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
-- **Status**: pending
-- **Files**: plugin `cache` (extender), config schema, tests.
-- **Tarea**: `lastCacheEvictionAt` + `cacheEvictionIntervalMs`. Aplica sólo si el eviction registry tiene reglas con `runOnBoot`.
-- **Gate**: dry-run respeta el throttle. Test de clock virtual avanza 24h y verifica que el GC corre.
-
----
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/cache/boot-eviction-throttle.service.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/src/lib/plugins/load-config-file.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/schema/delendai.config.schema.json`
+  - `packages/core/tests/src/lib/cache/boot-eviction-throttle.service.spec.ts`
+- **Tarea**: `cache.evictionIntervalMs` (opt-in; ausente o 0 = comportamiento de siempre). Con intervalo, el barrido de arranque comprueba `.delendai/cache-eviction-at.json` y no corre si el último fue hace menos del intervalo; el sello se escribe solo después de que el barrido corrió.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/boot-eviction-throttle.service.spec.ts` (sin intervalo no escribe nada; dry-run respeta el throttle; un reloj virtual que avanza 24 h hace correr el barrido; un fallo no sella).
+- **Corrections to the design, following the code**:
+  - The throttle sits in core around the boot sweep (`assemble.ts`), not in the `cache` plugin: the sweep and its `runOnBoot` posture are core's, and the plugin only contributes rules. The `cache_gc` tool and `delendai cache gc` are on-demand and are never throttled.
+  - The default is no throttle, not 24 h: a default would change what every existing project's boot does. A project opts in with the value it wants.
+  - The stamp lives in `.delendai/`, not in the cache directory the sweep evicts from.
 
 ## acceptance
 
