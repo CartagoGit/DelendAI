@@ -341,6 +341,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "`lint:closed-with-independent-approval` pairs a proposal's old and new versions by its id, so a proposal that changes folder and much of its content in one pull request does not have its existing approvals counted as added by that pull request; an approval that is new in it still is."
 - Found 2026-10-08 by the agent finishing r00040: its pull request moved the proposal from in-progress to review and rewrote its Files list (645 paths). The move fell under git's 50% rename similarity, read as a deletion and an addition, and the lint refused the implementer for "adding approvals by gpt-5.4" it had only carried; the agent worked around it by listing directories instead of files.
 
+### S31 — A unit answers for what it deleted, not for what the branch gained
+- **Status**: in-progress
+- **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `tools/scripts/lint/mass-content-removal.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`lint:mass-content-removal` measures a branch from where it left the integration branch, read from the project's declared branches, so files the integration branch gained afterwards are not counted as deleted by a unit that never had them."
+- Found 2026-10-08 by the agent on f00757 S1: its unit, one merge behind, was refused for a mass removal of eight files it had never touched; they had landed on the integration branch after the unit left. The lint compared the two tips (`develop..branch`) and named the branch `develop` in code. It had no spec of its own; it has one now.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
