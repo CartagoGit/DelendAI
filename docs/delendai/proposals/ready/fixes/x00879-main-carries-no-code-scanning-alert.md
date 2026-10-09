@@ -54,6 +54,8 @@ The owner promotes develop to main only from a stable point, and main is where G
 - acceptance:
   - "Every open alert under tools/scripts and apps/web/scripts (regex anchors and hostname, tag filters, temporary files, command-line injection, stack-trace exposure, file-system races, a missing space) no longer applies."
 - Triage 2026-10-07 against develop: all but two are already fixed there (plain host comparison instead of domain regexes, `\b[^>]*>` closing tags, `writeFileAtomic`, an allowlisted repro program, no stack in HTTP responses, read-then-compare writes). #329 is fixed here: `readExistingManifest` reads and catches instead of checking `existsSync` first. #384 is a false positive (a `::warning title=…::` workflow command wants no space after `::`); dismissed with that reason if the analysis of develop still reports it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Specs and remaining sources carry no dead or unsafe code
 - **Status**: review
