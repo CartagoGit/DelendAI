@@ -702,6 +702,8 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - One command file with subcommands, like `migrate.command.ts`, instead of five files: the subcommands are a few lines each over the same engine.
   - `gc` previews unless `--apply` is given (the plan only asked for a dry-run flag); eviction deletes by age, so applying it should be deliberate.
   - This slice builds on the registry that S4 adds (open pull request at the time of writing), so its branch carries that merge.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
 - **Status**: pending
