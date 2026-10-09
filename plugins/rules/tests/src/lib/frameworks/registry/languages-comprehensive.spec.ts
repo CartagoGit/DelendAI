@@ -3,7 +3,7 @@ import { detectPresetForArea } from '@delendai/rules/lib/frameworks/detect-frame
 import { buildManifestViaComposition } from '@delendai/rules/lib/frameworks/manifest-via-composition';
 import { buildDefaultComposition } from '@delendai/rules/lib/frameworks/registry/factory';
 import { DEFAULT_DOGMA_ADAPTERS } from '@delendai/rules/lib/frameworks/dogmas';
-import type { IFileReader } from '@delendai/core/public';
+import type { IFileReader } from '@delendai/core/contracts';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

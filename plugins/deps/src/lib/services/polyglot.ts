@@ -1,7 +1,5 @@
-import {
-	resolveExistingWorkspaceContained,
-	SafeWorkspaceReader,
-} from '@delendai/core/public';
+import { resolveExistingWorkspaceContained } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 /**
  * Polyglot dependency listing (M33) — minimal, hand-rolled parsers for the

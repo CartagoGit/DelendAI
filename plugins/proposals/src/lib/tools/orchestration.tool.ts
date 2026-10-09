@@ -5,8 +5,9 @@ import { randomUUID } from 'node:crypto';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
-import { toolJson, withFileMutex } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { toolJson } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';

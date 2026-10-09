@@ -27,12 +27,12 @@ import { randomUUID } from 'node:crypto';
 
 import z from 'zod';
 
+import { quarantineCorruptFile } from '@delendai/core/public';
 import {
-	quarantineCorruptFile,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import {
 	enqueue,

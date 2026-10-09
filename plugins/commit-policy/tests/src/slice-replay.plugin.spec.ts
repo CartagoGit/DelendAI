@@ -21,7 +21,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { waitUntil } from '@delendai/test-kit';
 
 import plugin from '@delendai/commit-policy';
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 
 import { createTempGitRepo } from '../integration/_fixtures/git-tmp';
 import { writeProposalDocuments } from './lib/triggers/proposal-documents.fixture';

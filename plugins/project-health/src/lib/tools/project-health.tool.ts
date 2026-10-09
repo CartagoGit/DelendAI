@@ -6,8 +6,8 @@ import {
 	toolError,
 	toolJson,
 	type Detail,
-	type IToolRegistration,
 } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { PROJECT_HEALTH_DOMAINS } from '../contracts/interfaces/project-health.interface';
 import type {

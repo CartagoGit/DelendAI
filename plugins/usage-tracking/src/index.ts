@@ -1,10 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
-import {
-	definePlugin,
-	joinRel,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { joinRel } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { estimateResponseBytes } from '@delendai/core/public';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';

@@ -9,7 +9,7 @@
  * "predicate = action" invariant.
  */
 
-import type { IGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/contracts';
 
 import { gitDirtyFilePaths } from '../services/git-extra';
 import type { ThresholdEvent } from './trigger-types';

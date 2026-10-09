@@ -14,10 +14,8 @@ import { promisify } from 'node:util';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ITriggerEvent } from '@delendai/commit-policy/lib/triggers/slice-listener';
-import {
-	resolveDevelopmentPolicy,
-	type IMcpPluginContext,
-} from '@delendai/core/public';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 
 import { createTempGitRepo } from '../integration/_fixtures/git-tmp';
 

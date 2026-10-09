@@ -5,7 +5,7 @@
 import { access } from 'node:fs/promises';
 
 import z from 'zod';
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import { levelProjection } from '../services/projection-refresh';

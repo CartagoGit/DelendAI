@@ -13,7 +13,7 @@ import plugin from '@delendai/docs';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 const write = (root: string, rel: string, body: string): void => {
 	const abs = join(root, rel);

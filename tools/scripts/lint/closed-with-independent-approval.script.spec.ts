@@ -9,6 +9,7 @@ import {
 	kindOfRef,
 	approvalsNotBy,
 	labelsInEvent,
+	linesAddedPerProposal,
 	OWNER_RECONCILE_LABEL,
 	ownerAuthorizedReconcile,
 	unapprovedSlices,
@@ -194,5 +195,81 @@ describe('unclaimedProposals', () => {
 			),
 		).toEqual([]);
 		expect(unclaimedProposals([], [])).toEqual([]);
+	});
+});
+
+describe('linesAddedPerProposal', () => {
+	const approved = '- review-log: approved by gpt-5.4';
+	const files: Record<string, string> = {
+		'base:docs/delendai/proposals/in-progress/r00040-barrel.md': [
+			'# r00040',
+			approved,
+		].join('\n'),
+		'head:docs/delendai/proposals/review/r00040-barrel.md': [
+			'# r00040',
+			approved,
+			...Array.from(
+				{ length: 40 },
+				(_, index) => `- file ${String(index)}`,
+			),
+		].join('\n'),
+	};
+	const read = (side: 'base' | 'head', path: string): string =>
+		files[`${side}:${path}`] ?? '';
+
+	it('does not count an approval a moved proposal already carried', () => {
+		// The move falls under git's rename similarity once the content
+		// changes this much, so it arrives as a deletion and an addition.
+		const added = linesAddedPerProposal(
+			[
+				{
+					status: 'D',
+					path: 'docs/delendai/proposals/in-progress/r00040-barrel.md',
+				},
+				{
+					status: 'A',
+					path: 'docs/delendai/proposals/review/r00040-barrel.md',
+				},
+			],
+			read,
+		);
+		expect(approvalsAdded(added)).toEqual([]);
+		expect(added).toContain('+- file 0');
+	});
+
+	it('counts an approval that is new in the moved proposal', () => {
+		const added = linesAddedPerProposal(
+			[
+				{
+					status: 'D',
+					path: 'docs/delendai/proposals/in-progress/r00040-barrel.md',
+				},
+				{
+					status: 'A',
+					path: 'docs/delendai/proposals/review/r00040-barrel.md',
+				},
+			],
+			(side, path) =>
+				side === 'head'
+					? `${read(side, path)}\n- review-log: approved by minimax-3`
+					: read(side, path),
+		);
+		expect(approvalsAdded(added)).toEqual(['minimax-3']);
+	});
+
+	it('counts every approval of a proposal that did not exist before', () => {
+		expect(
+			approvalsAdded(
+				linesAddedPerProposal(
+					[
+						{
+							status: 'A',
+							path: 'docs/delendai/proposals/review/r00040-barrel.md',
+						},
+					],
+					read,
+				),
+			),
+		).toEqual(['gpt-5.4']);
 	});
 });

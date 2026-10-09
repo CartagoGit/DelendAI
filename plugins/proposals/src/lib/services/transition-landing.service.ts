@@ -10,7 +10,7 @@
  */
 import { basename, dirname, join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 /**
  * The document's path relative to `proposalsDirAbs`: the reported one

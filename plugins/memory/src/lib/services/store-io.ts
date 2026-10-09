@@ -13,13 +13,12 @@
  */
 import { basename, dirname } from 'node:path';
 
+import { CorruptFileError, quarantineCorruptFile } from '@delendai/core/public';
 import {
-	CorruptFileError,
-	quarantineCorruptFile,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import type { INote } from './store-types';
 

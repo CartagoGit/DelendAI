@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IRunExternalToolInput } from '@delendai/core/public';
+import type { IRunExternalToolInput } from '@delendai/core/contracts';
 
 import {
 	buildForgeReleaseToolRegistrations,

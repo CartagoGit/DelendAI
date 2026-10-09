@@ -3,15 +3,14 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	resolveExistingWorkspaceContained,
-	SafeWorkspaceReader,
 	safeListDirNames,
 	toolError,
 	toolOk,
-	writeFileAtomic,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/runtime';
 
 import {
 	analyzeProposals,

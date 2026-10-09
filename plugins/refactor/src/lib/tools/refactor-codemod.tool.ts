@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolError, toolJson } from '@delendai/core/public';
 
 import { runCodemod, type ICodemodRunnerDeps } from '../codemod/codemod-runner';

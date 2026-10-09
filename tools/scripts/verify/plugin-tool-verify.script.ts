@@ -32,10 +32,8 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import {
-	type IToolRegistration,
-	resolveWorkspaceContained,
-} from '@delendai/core/public';
+import { resolveWorkspaceContained } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { assemblePluginForTest } from '../lib/plugin-test-bed';
 import { captureToolRegistration } from '../lib/test-mcp-server';

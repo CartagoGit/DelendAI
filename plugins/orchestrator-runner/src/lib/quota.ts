@@ -21,11 +21,8 @@
  * (`{updatedAt, providers: {<id>: [{window, limit, used, resetAt}]}}`),
  * durably: `withFileMutex` → `redactSecrets` → `writeFileAtomic`.
  */
-import {
-	redactSecrets,
-	withFileMutex,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import { redactSecrets } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 /** The quota window an observation belongs to. Mandatory (CRITICAL I3). */
 export type QuotaWindow = 'hourly' | 'weekly' | 'monthly';

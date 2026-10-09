@@ -18,8 +18,8 @@ import {
 	assembleCliConfig,
 	createMcpProject,
 	measureBootstrapBytes,
-	parseCliArgs,
 } from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/plugin';
 
 const MODES = ['native', 'adaptive', 'compact'] as const;
 

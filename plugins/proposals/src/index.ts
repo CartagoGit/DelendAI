@@ -17,8 +17,8 @@ import type {
 import {
 	callerCheckout,
 	createWorkspaceFileReader,
-	definePlugin,
 } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import { createLogStore, logIncidents } from '@delendai/logs/public';
 import {
 	announceSlicePersistence,

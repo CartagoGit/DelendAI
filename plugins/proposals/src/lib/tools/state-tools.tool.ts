@@ -1,10 +1,9 @@
 import z from 'zod';
 
-import type {
-	IPluginLogsHelper,
-	IToolRegistration,
-} from '@delendai/core/public';
-import { toolJson, withFileMutex } from '@delendai/core/public';
+import type { IPluginLogsHelper } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { toolJson } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
 
 import type { ILockEntry, ILockFile } from '../locks/agent-lock-engine';
 import {

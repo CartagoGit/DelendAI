@@ -19,13 +19,12 @@
  *      tests inject a stub, production uses `node:fs` via
  *      `createFsConfigFileReader()`.
  */
-import {
-	joinRel,
-	parseConfigFile,
-	SafeWorkspaceReader,
-	type IDelendaiConfigFile,
-	type IWorkspacePathProvider,
-} from '@delendai/core/public';
+import { joinRel, parseConfigFile } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import type {
+	IDelendaiConfigFile,
+	IWorkspacePathProvider,
+} from '@delendai/core/contracts';
 
 /** The fully-resolved options consumed by `AgentLoopDetectorService`. */
 export interface ILoopDetectorServiceOptions {

@@ -23,7 +23,8 @@ import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { IPeerPluginRegistry } from '@delendai/core/public';
-import { realpathContained, writeFileAtomic } from '@delendai/core/public';
+import { realpathContained } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
 
 import type { IConsolidation } from '../contracts/interfaces/audit.interface';
 
