@@ -3,7 +3,8 @@
 export const RESULTS_SEGREGATION_STEP_ID = 'cacheLayout:results-segregation';
 export const CANONICAL_SCRATCH_STEP_ID = 'cacheLayout:canonical-scratch';
 export const CONSOLIDATED_CACHE_STEP_ID = 'cacheLayout:consolidated-cache';
-export const PROPOSALS_INDEX_STEP_ID = 'cacheLayout:proposals-index';
+export const DERIVED_INDEX_RELOCATED_STEP_ID =
+	'cacheLayout:derived-index-relocated';
 export const REBRAND_STEP_ID = 'cacheLayout:rebrand';
 
 /** Legacy cache-relative directory -> where it lives now. Records. */
