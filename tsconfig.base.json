@@ -367,6 +367,11 @@
 				"./plugins/changelog/src/public/index.ts"
 			],
 			"@delendai/changelog/*": ["./plugins/changelog/src/*"],
+			"@delendai/execution-env": ["./plugins/execution-env/src/index.ts"],
+			"@delendai/execution-env/public": [
+				"./plugins/execution-env/src/public/index.ts"
+			],
+			"@delendai/execution-env/*": ["./plugins/execution-env/src/*"],
 			"@delendai/self-learning": ["./plugins/self-learning/src/index.ts"],
 			"@delendai/self-learning/public": [
 				"./plugins/self-learning/src/public/index.ts"

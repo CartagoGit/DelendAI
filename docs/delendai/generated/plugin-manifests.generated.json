@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-10-05T00:13:37.709Z",
+	"generatedAt": "2026-10-07T18:32:00.282Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -835,6 +835,38 @@
 				"issues"
 			],
 			"startupActivation": true
+		},
+		{
+			"id": "execution-env",
+			"package": "@delendai/execution-env",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.",
+			"tags": [
+				"execution",
+				"docker",
+				"ssh"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"env-read"
+			],
+			"presets": [],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@delendai/core",
+				"zod"
+			],
+			"capabilities": [
+				"execution-env"
+			]
 		},
 		{
 			"id": "external-mcps",
@@ -2798,6 +2830,24 @@
 		},
 		{
 			"origin": "first-party",
+			"id": "execution-env",
+			"package": "@delendai/execution-env",
+			"summary": "Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.",
+			"tags": [
+				"execution",
+				"docker",
+				"ssh"
+			],
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"env-read"
+			],
+			"tokenBudgetBytes": 2700
+		},
+		{
+			"origin": "first-party",
 			"id": "external-mcps",
 			"package": "@delendai/external-mcps",
 			"summary": "Compose third-party MCP servers through the catalog + human ack.",
@@ -4296,6 +4346,33 @@
 			}
 		},
 		{
+			"id": "execution-env",
+			"package": "@delendai/execution-env",
+			"summary": "Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.",
+			"tags": [
+				"execution",
+				"docker",
+				"ssh"
+			],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": [],
+			"capabilities": [
+				"execution-env"
+			],
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"env-read"
+			],
+			"tokenBudget": {
+				"warning": 2700,
+				"hard": 3000,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
 			"id": "external-mcps",
 			"package": "@delendai/external-mcps",
 			"summary": "Compose third-party MCP servers through the catalog + human ack.",
@@ -5485,6 +5562,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "execution-env",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "external-mcps",
 			"warning": 2700,
 			"hard": 3000,
@@ -5910,6 +5993,15 @@
 					"forge-write"
 				]
 			}
+		},
+		{
+			"id": "execution-env",
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"env-read"
+			]
 		},
 		{
 			"id": "external-mcps",
@@ -7683,6 +7775,69 @@
 		},
 		{
 			"pluginId": "error-reporting",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "dogfood",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
