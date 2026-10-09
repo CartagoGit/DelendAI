@@ -343,7 +343,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S31 — A unit answers for what it deleted, not for what the branch gained
 - **Status**: in-progress
-- **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `tools/scripts/lint/mass-content-removal.script.spec.ts`, `plugins/proposals/tests/src/lib/mass-removal.spec.ts`
+- **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `tools/scripts/lint/mass-content-removal.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`lint:mass-content-removal` measures a branch from where it left the integration branch, read from the project's declared branches, so files the integration branch gained afterwards are not counted as deleted by a unit that never had them."
