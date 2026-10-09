@@ -319,6 +319,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "The generated managed lazy catalog exports one runtime value, the catalog array; what is derived from it (the lookup by id) is computed in authored code, so a stale copy of the file cannot break the import chain of the generator that replaces it."
 - Found 2026-10-07 while repairing two candidates: a merge left an older `managed-lazy-catalog.generated.ts` without `MANAGED_LAZY_PLUGIN_BY_ID`. The generator imports `@delendai/core/public`, which imports `assemble-plugins`, which imported that export, so every generator, gate and pre-push hook failed with "Export named 'MANAGED_LAZY_PLUGIN_BY_ID' not found" and the file could only be restored by hand. The map now lives in `managed-lazy-catalog-lookup.ts`, and a spec holds the generated module to its single export.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S28 — A run that lost its required check runs again
 - **Status**: review
