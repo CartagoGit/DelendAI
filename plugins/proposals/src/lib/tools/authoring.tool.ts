@@ -1,4 +1,5 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
+import { journalReviewSubmission } from './proposal-work-events';
 import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
 import { languageRefusal } from '../services/documentation-language.service';
 import { isSameModel, isSelfApproval } from '../shared/independent-approval';
@@ -2772,6 +2773,14 @@ export const buildReviewRegistration = (
 								}),
 					},
 				});
+				if (args.action === 'submit') {
+					await journalReviewSubmission(
+						scoped.workspaceRoot,
+						entry.id,
+						args.sliceId,
+						args.agent,
+					);
+				}
 				return toolOk({
 					proposalId: entry.id,
 					sliceId: args.sliceId,
