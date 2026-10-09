@@ -87,6 +87,9 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - acceptance:
   - "An edit of a workflow file that leaves the test-running jobs of the test workflow (plan, zones, merge) and its workflow-wide `env` and `defaults` as they were reaches only the zones observed to read that file; an edit of those jobs, of a composite action, of a root file, or one whose effect cannot be read, still runs every zone."
 - Asked by the owner on 2026-10-07: a pull request waited for checks that had nothing to do with its change. Measured on #912, which changed one trigger of `ci.yml`, a lint script and its spec: the planner ran all eleven shards ("a root file or a workflow can reach any zone"), the proposals zone alone taking eleven minutes. Replayed on the same diff, the planner now selects the tools zone only.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - The proposals tools are registered in packs (read, author, review, work, repair) that the managed surface activates on first use; a session that only reads proposals pays for no author, review or repair schema.
