@@ -2,7 +2,7 @@
 id: q00021
 title: "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)"
 kind: plan
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-07
@@ -42,10 +42,10 @@ contains:
         - { id: b00239 S10, rationale: "Cuando entre el epoch cache-layout post-rebrand, el cierre de b00239 deja de tener que llevar el `LegacyMigrationManager` como pieza separada — todo cuelga del engine IMigration ya consolidado." }
         - { id: q00019, rationale: "El JsonToSqliteMigration (queue/progress/counters/checkpoint) reusa el epoch cache-layout y la conexión SqliteLifecycleStateStore; el lifecycle es la palanca que justifica pasar stores a SQLite." }
         - { id: q00020, rationale: "Si el layout de progress cambia (p.ej. de JSON a SQLite), la migración está versionada; progress deja de poder ser tratado accidentalmente como TTL cache." }
-last-transition-id: 77a6d4aa-6699-48c7-9cc7-d4e7c353fccc
-last-correlation-id: 77a6d4aa-6699-48c7-9cc7-d4e7c353fccc
-last-transition-from: ready
-last-transition-at: 2026-10-10T23:51:41.165Z
+last-transition-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
+last-correlation-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
+last-transition-from: in-progress
+last-transition-at: 2026-10-10T23:53:48.591Z
 ---
 
 # q00021 — Plan — Cache Layout Lifecycle & Legacy Reaper
@@ -743,6 +743,8 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The throttle sits in core around the boot sweep (`assemble.ts`), not in the `cache` plugin: the sweep and its `runOnBoot` posture are core's, and the plugin only contributes rules. The `cache_gc` tool and `delendai cache gc` are on-demand and are never throttled.
   - The default is no throttle, not 24 h: a default would change what every existing project's boot does. A project opts in with the value it wants.
   - The stamp lives in `.delendai/`, not in the cache directory the sweep evicts from.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
