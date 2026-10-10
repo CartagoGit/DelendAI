@@ -510,6 +510,8 @@ touched nothing near it. The test registers the real plugin, whose
 summary is regenerated in the background with no way to wait for it; a
 file it wrote while `afterEach` was emptying the directory failed the
 removal, and with it the run.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
