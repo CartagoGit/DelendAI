@@ -1,0 +1,563 @@
+import {
+	existsSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
+import { basename, join } from 'node:path';
+import { tmpdir } from 'node:os';
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { watchMock } = vi.hoisted(() => ({ watchMock: vi.fn() }));
+
+vi.mock('node:fs', async () => ({
+	...(await vi.importActual<typeof import('node:fs')>('node:fs')),
+	watch: watchMock,
+}));
+
+import {
+	getRecallMetricsSnapshot,
+	readStore,
+	recall,
+	resetRecallMetrics,
+	removeNote,
+	saveNote,
+} from '@delendai/memory/lib/services/store';
+import plugin from '@delendai/memory';
+import { buildMemoryToolRegistrations } from '@delendai/memory/lib/tools';
+import { CorruptFileError } from '@delendai/core/public';
+import type {
+	IMcpPluginContext,
+	IToolRegistration,
+} from '@delendai/core/contracts';
+
+const captureHandler = async (
+	reg: IToolRegistration,
+): Promise<(a: unknown) => Promise<{ content: Array<{ text: string }> }>> => {
+	let handler: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
+	await reg.register({
+		registerTool: (_n: string, _d: unknown, h: typeof handler) => {
+			handler = h;
+		},
+	} as never);
+	return handler!;
+};
+
+describe('memory store', async () => {
+	let dir = '';
+	let store = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'mem-'));
+		store = join(dir, 'notes.json');
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('upserts by title and recalls by query/tags', async () => {
+		await saveNote(store, {
+			title: 'DB choice',
+			body: 'we use mysql',
+			tags: ['db'],
+		});
+		await saveNote(store, {
+			title: 'DB choice',
+			body: 'we use mysql2',
+			tags: ['db'],
+		});
+		expect(await readStore(store)).toHaveLength(1); // upsert, not duplicate
+		expect((await recall(store, { query: 'mysql2' }))[0]?.title).toBe(
+			'DB choice',
+		);
+		expect(await recall(store, { tags: ['db'] })).toHaveLength(1);
+		expect(await recall(store, { tags: ['missing'] })).toHaveLength(0);
+	});
+
+	it('forgets by id', async () => {
+		const { note } = await saveNote(store, { title: 'Temp', body: 'x' });
+		expect(await removeNote(store, note.id)).toBe(true);
+		expect(await readStore(store)).toHaveLength(0);
+	});
+
+	// Mutex serialises 5 concurrent saves with O_EXCL + polling backoff; under
+	// heavy parallel-suite CPU load that can exceed the 5s default, so this
+	// inherently-slow contention test gets a wider timeout. (Correctness is
+	// the assertion below; the wait is just scheduling, not a hang.)
+	it('keeps every note when saved concurrently (mutex, no lost update)', async () => {
+		await Promise.all(
+			['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'].map((title) =>
+				saveNote(store, { title, body: title }),
+			),
+		);
+		expect(await readStore(store)).toHaveLength(5);
+	});
+
+	it('treats missing/empty store as empty, not corrupt', async () => {
+		expect(await readStore(store)).toEqual([]);
+		writeFileSync(store, '   \n');
+		expect(await readStore(store)).toEqual([]);
+	});
+
+	// f00090 S3: recall surfaces the newest `session-digest:*` note so a
+	// resumed turn rehydrates the distilled state instead of re-reading the
+	// dropped tail. Wires the pure `selectLatestSessionDigest` into the live
+	// recall tool.
+	it('recall surfaces the latest session digest (f00090 S3)', async () => {
+		resetRecallMetrics();
+		const regs = buildMemoryToolRegistrations({
+			namespacePrefix: 'memory',
+			storePathAbs: store,
+			bm25K1: 1.5,
+			bm25B: 0.75,
+			titleWeight: 2,
+			maxNotes: 1000,
+		});
+		const recallHandler = await captureHandler(
+			regs.find((r) => r.id === 'recall')!,
+		);
+		const parse = async (args: unknown) =>
+			JSON.parse(
+				(await recallHandler(args)).content[0]?.text ?? '{}',
+			) as {
+				notes: Array<{ title: string }>;
+				sessionDigest?: {
+					title: string;
+					topic: string;
+					body: string;
+				};
+			};
+
+		// No digest yet → the field is omitted entirely.
+		await saveNote(store, { title: 'A plain note', body: 'hello' });
+		expect((await parse({})).sessionDigest).toBeUndefined();
+
+		// Two digests → the newest (by createdAt) wins.
+		await saveNote(store, {
+			title: 'session-digest:old-topic',
+			body: 'stale digest',
+		});
+		await new Promise((r) => setTimeout(r, 5));
+		await saveNote(store, {
+			title: 'session-digest:current',
+			body: 'fresh working state',
+		});
+
+		const out = await parse({ query: 'plain' });
+		expect(out.sessionDigest?.topic).toBe('current');
+		expect(out.sessionDigest?.body).toBe('fresh working state');
+		// The digest surfaces even though the query matched a different note.
+		expect(out.notes.some((n) => n.title === 'A plain note')).toBe(true);
+		const metrics = getRecallMetricsSnapshot();
+		expect(metrics.recallCalls).toBe(2);
+		expect(metrics.notesReturned).toBe(2);
+		expect(metrics.digestReused).toBe(1);
+		expect(metrics.bytesAvoided).toBeGreaterThan(0);
+	});
+
+	// f00090 S2: the compaction-check tool is the live surface of the pure
+	// evaluateCompactionTrigger heuristic — the WHEN half of the loop.
+	it('memory_compaction_check reports when to compact (f00090 S2)', async () => {
+		const regs = buildMemoryToolRegistrations({
+			namespacePrefix: 'memory',
+			storePathAbs: store,
+			bm25K1: 1.5,
+			bm25B: 0.75,
+			titleWeight: 2,
+			maxNotes: 1000,
+		});
+		const handler = await captureHandler(
+			regs.find((r) => r.id === 'compaction_check')!,
+		);
+		const check = async (args: unknown) =>
+			JSON.parse((await handler(args)).content[0]?.text ?? '{}') as {
+				shouldCompact: boolean;
+				reason: string;
+				hint: string;
+			};
+
+		// Below both thresholds → no compaction.
+		expect(
+			await check({
+				carriedTailTokens: 100,
+				turnsSinceLastCompaction: 3,
+			}),
+		).toMatchObject({ shouldCompact: false, reason: 'below-threshold' });
+
+		// Token pressure trips and wins the tie-break.
+		expect(
+			await check({
+				carriedTailTokens: 9000,
+				turnsSinceLastCompaction: 30,
+			}),
+		).toMatchObject({ shouldCompact: true, reason: 'token-threshold' });
+
+		// Turn threshold alone trips when tokens are low.
+		expect(
+			await check({
+				carriedTailTokens: 10,
+				turnsSinceLastCompaction: 40,
+			}),
+		).toMatchObject({ shouldCompact: true, reason: 'turn-threshold' });
+
+		// Custom thresholds are honoured.
+		expect(
+			await check({
+				carriedTailTokens: 500,
+				turnsSinceLastCompaction: 1,
+				tokenThreshold: 400,
+			}),
+		).toMatchObject({ shouldCompact: true, reason: 'token-threshold' });
+	});
+});
+
+describe('memory recall — relevance ranking (N22)', async () => {
+	let dir = '';
+	let store = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'mem-rank-'));
+		store = join(dir, 'notes.json');
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('ranks the more relevant note first (not just recency)', async () => {
+		// Older note is highly relevant; newer note barely mentions the term.
+		await saveNote(
+			store,
+			{
+				title: 'Postgres indexing',
+				body: 'index index index on postgres',
+			},
+			() => '2026-01-01T00:00:00.000Z',
+		);
+		await saveNote(
+			store,
+			{ title: 'Deploy notes', body: 'we mention index once' },
+			() => '2026-06-01T00:00:00.000Z',
+		);
+		const hits = await recall(store, { query: 'index' });
+		expect(hits[0]?.title).toBe('Postgres indexing'); // relevance > recency
+		expect(hits).toHaveLength(2);
+	});
+
+	it('weights title matches over body matches', async () => {
+		await saveNote(store, {
+			title: 'auth flow',
+			body: 'unrelated text here',
+		});
+		await saveNote(store, {
+			title: 'misc',
+			body: 'a passing mention of auth',
+		});
+		const hits = await recall(store, { query: 'auth' });
+		expect(hits[0]?.title).toBe('auth flow');
+	});
+
+	it('keeps a substring floor (partial-token match)', async () => {
+		await saveNote(store, { title: 'DB', body: 'we use mysql2 here' });
+		// "mysql" is not a standalone token (the body has "mysql2") — the
+		// substring floor must still surface it.
+		expect((await recall(store, { query: 'mysql' }))[0]?.title).toBe('DB');
+	});
+
+	it('tags remain a hard filter alongside a query', async () => {
+		await saveNote(store, {
+			title: 'A',
+			body: 'cache strategy',
+			tags: ['ops'],
+		});
+		await saveNote(store, {
+			title: 'B',
+			body: 'cache strategy',
+			tags: ['dev'],
+		});
+		const hits = await recall(store, { query: 'cache', tags: ['ops'] });
+		expect(hits.map((h) => h.title)).toEqual(['A']);
+	});
+
+	it('returns nothing when no note matches the query', async () => {
+		await saveNote(store, { title: 'A', body: 'nothing relevant' });
+		expect(await recall(store, { query: 'zzzznomatch' })).toEqual([]);
+	});
+
+	it('with no query, falls back to newest-first', async () => {
+		await saveNote(
+			store,
+			{ title: 'old', body: 'x' },
+			() => '2026-01-01T00:00:00.000Z',
+		);
+		await saveNote(
+			store,
+			{ title: 'new', body: 'y' },
+			() => '2026-06-01T00:00:00.000Z',
+		);
+		expect((await recall(store, {}))[0]?.title).toBe('new');
+	});
+});
+
+describe('memory recall — adversarial inputs (N23)', async () => {
+	let dir = '';
+	let store = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'mem-adv-'));
+		store = join(dir, 'notes.json');
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('regex-special queries are treated literally, never as regex (no throw)', async () => {
+		await saveNote(store, {
+			title: 'Globs',
+			body: 'pattern a.*b (group) [set] $end',
+		});
+		for (const q of ['.*', '(', '[', '\\', '$end', 'a.*b', '(group)']) {
+			await expect(recall(store, { query: q })).resolves.toBeDefined();
+		}
+		// the literal substring `a.*b` is present → surfaced via the floor
+		expect((await recall(store, { query: 'a.*b' }))[0]?.title).toBe(
+			'Globs',
+		);
+	});
+
+	it('handles unicode and a very long query without throwing', async () => {
+		await saveNote(store, { title: 'café', body: '☕ über naïve façade' });
+		expect((await recall(store, { query: 'café' }))[0]?.title).toBe('café');
+		await expect(
+			recall(store, { query: 'x'.repeat(50_000) }),
+		).resolves.toBeDefined();
+	});
+
+	it('round-trips unicode/control-ish content through save+recall', async () => {
+		await saveNote(store, {
+			title: 'Tab\tnote',
+			body: 'line1\nline2 — emoji 🚀',
+		});
+		const hits = await recall(store, { query: 'emoji' });
+		expect(hits[0]?.body).toContain('🚀');
+	});
+});
+
+describe('memory store — corrupt ≠ empty (M10)', async () => {
+	let dir = '';
+	let store = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'mem-corrupt-'));
+		store = join(dir, 'notes.json');
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	const backupOf = (): string | undefined =>
+		readdirSync(dir).find((f) =>
+			f.startsWith(`${basename(store)}.corrupt-`),
+		);
+
+	it('preserves invalid JSON to a .corrupt backup and throws', async () => {
+		writeFileSync(store, '{ this is not json');
+		await expect(readStore(store)).rejects.toThrow(CorruptFileError);
+		// original bytes preserved under a backup, original gone
+		expect(existsSync(store)).toBe(false);
+		const backup = backupOf();
+		expect(backup).toBeDefined();
+		expect(readFileSync(join(dir, backup!), 'utf8')).toBe(
+			'{ this is not json',
+		);
+	});
+
+	it('rejects valid JSON with the wrong shape', async () => {
+		writeFileSync(store, JSON.stringify({ wrong: true }));
+		await expect(readStore(store)).rejects.toThrow(CorruptFileError);
+		expect(backupOf()).toBeDefined();
+	});
+
+	it('CorruptFileError carries the backup path', async () => {
+		writeFileSync(store, 'not json');
+		try {
+			await readStore(store);
+			expect.unreachable('should have thrown');
+		} catch (err) {
+			expect(err).toBeInstanceOf(CorruptFileError);
+			const e = err as CorruptFileError;
+			expect(e.backupPath).toContain('.corrupt-');
+			expect(existsSync(e.backupPath!)).toBe(true);
+		}
+	});
+
+	it('saveNote refuses to overwrite a corrupt store (no data loss)', async () => {
+		writeFileSync(store, '{{{');
+		await expect(
+			saveNote(store, { title: 'X', body: 'y' }),
+		).rejects.toThrow(CorruptFileError);
+	});
+
+	it('recovers after the corrupt backup is moved aside', async () => {
+		writeFileSync(store, 'broken');
+		await expect(readStore(store)).rejects.toThrow(CorruptFileError);
+		// the original path is now free; a fresh save works
+		const { note } = await saveNote(store, { title: 'Fresh', body: 'ok' });
+		expect(await readStore(store)).toHaveLength(1);
+		expect(note.title).toBe('Fresh');
+	});
+
+	it('memory tools return a structured error naming the backup', async () => {
+		const regs = buildMemoryToolRegistrations({
+			namespacePrefix: 'memory',
+			storePathAbs: store,
+			bm25K1: 1.5,
+			bm25B: 0.75,
+			titleWeight: 2,
+			maxNotes: 1000,
+		});
+		const byId = (id: string): IToolRegistration =>
+			regs.find((r) => r.id === id)!;
+
+		const cases: Array<[string, unknown]> = [
+			['recall', {}],
+			['list', {}],
+			['save', { title: 'X', body: 'y' }],
+			['forget', { id: 'x' }],
+		];
+
+		for (const [id, args] of cases) {
+			// each handler quarantines the corrupt file, so re-seed it per case
+			writeFileSync(store, '{ broken');
+			const handler = await captureHandler(byId(id));
+			const res = await handler(args);
+			const body = JSON.parse(res.content[0]?.text ?? '{}') as {
+				ok: boolean;
+				error?: { reason: string; nextAction?: string };
+			};
+			expect(res, id).toMatchObject({ isError: true });
+			expect(body.ok, id).toBe(false);
+			expect(body.error?.reason, id).toContain('corrupt');
+			// a00070 hardening: the quarantine calls `rename` with up to
+			// 6 exponential-backoff retries. Under heavy parallel fs load
+			// (full `bun run validate` with 4600+ tests) the rename can
+			// legitimately fail with EAGAIN/EMFILE and the tool surfaces
+			// the "Could not back up; inspect it manually" hint instead of
+			// the .corrupt-<ts> path. Both are valid user-facing outcomes;
+			// what matters is the agent sees an actionable nextAction.
+			expect(body.error?.nextAction, id).toMatch(
+				/\.corrupt-|inspect it manually/,
+			);
+		}
+		// The 4 case-loop exercises the quarantine 4× back-to-back. With
+		// the a00070 6-attempt backoff window (~310ms worst case) the
+		// whole test can take ~1.5s under load — well above the 5s
+		// default in normal conditions, but the 5s vitest default
+		// occasionally flips this test. Bumping to 30s keeps the
+		// assertion sharp without flaking on slow CI.
+	}, 30_000);
+});
+
+describe('memory plugin', async () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('registers the memory tools + knowledge', async () => {
+		const ctx = {
+			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
+			corePaths: {
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
+			},
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
+			keepLegacy: false,
+			pluginCacheDir: '.cache/delendai/memory',
+			pluginDocsDir: 'docs/delendai/memory',
+			namespacePrefix: 'memory',
+			options: {},
+			args: {},
+		} satisfies IMcpPluginContext;
+		const reg = await plugin.register(ctx);
+		expect(reg.tools?.map((t) => t.id)).toEqual([
+			'compact',
+			'compaction_check',
+			'checkpoint_packet',
+			'save',
+			'recall',
+			'list',
+			'forget',
+			'export',
+			'import',
+		]);
+		// The registered MCP names are single-prefixed (`memory_save`, …),
+		// not double-prefixed (`memory_memory_save`). [e2e regression guard]
+		expect(reg.knowledge?.[0]?.id).toBe('memory-usage');
+	});
+
+	it('disposes the watcher lifecycle and cancels pending debounce timers', async () => {
+		vi.useFakeTimers();
+		const dir = mkdtempSync(join(tmpdir(), 'mem-plugin-'));
+
+		// t00016 (MEM-001 regression guard) — pin that the watcher the
+		// plugin creates is the one being closed on dispose. We spy on
+		// `fs.watch` BEFORE register() runs, capture the FSWatcher the
+		// plugin takes ownership of, and assert `close()` was called on
+		// the SAME instance after dispose. The ESM live binding for
+		// `import { watch } from 'node:fs'` inside the plugin reflects
+		// the spied implementation; if the plugin ever stops using
+		// `fs.watch` (or stops calling dispose on the returned watcher)
+		// the assertion fails.
+		const closeSpy = vi.fn();
+		const unrefSpy = vi.fn();
+		watchMock.mockClear();
+		watchMock.mockImplementation((() => ({
+			close: closeSpy,
+			unref: unrefSpy,
+		})) as unknown as typeof import('node:fs').watch);
+		try {
+			const ctx = {
+				workspace: {
+					root: dir,
+					resolve: (p: string) => join(dir, p),
+				},
+				corePaths: {
+					cacheDir: '.cache/delendai',
+					docsDir: 'docs/delendai',
+				},
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
+				keepLegacy: false,
+				pluginCacheDir: '.cache/delendai/memory',
+				pluginDocsDir: 'docs/delendai/memory',
+				namespacePrefix: 'memory',
+				options: {},
+				args: {},
+			} satisfies IMcpPluginContext;
+			const reg = await plugin.register(ctx);
+
+			// The plugin must have created exactly one watcher (the store
+			// watcher). The primitive's `unref?.()` call right after
+			// `watch(...)` is the regression marker for "non-blocking
+			// watcher installed".
+			expect(watchMock).toHaveBeenCalledTimes(1);
+			expect(unrefSpy).toHaveBeenCalledTimes(1);
+			expect(closeSpy).not.toHaveBeenCalled();
+
+			reg.onToolCall?.(
+				'memory_save',
+				{ title: 'session-digest:test' },
+				{
+					content: [{ text: JSON.stringify({ persisted: true }) }],
+				},
+			);
+			// freshnessDebouncer.schedule() set a pending setTimeout.
+			expect(vi.getTimerCount()).toBeGreaterThan(0);
+
+			if ('dispose' in reg) {
+				await reg.dispose?.();
+				// Second dispose must be idempotent — calling close on the
+				// already-closed watcher is the historical leak vector.
+				await reg.dispose?.();
+			}
+			// freshnessDebouncer.cancel() cleared the pending timer.
+			expect(vi.getTimerCount()).toBe(0);
+			// storeWatcher.dispose() closed the underlying fs.watch handle.
+			expect(closeSpy).toHaveBeenCalledTimes(1);
+		} finally {
+			watchMock.mockReset();
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+});

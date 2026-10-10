@@ -1,0 +1,2814 @@
+import { scopeToCaller } from '../services/scope-to-caller.service';
+import { journalReviewSubmission } from './proposal-work-events';
+import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
+import { languageRefusal } from '../services/documentation-language.service';
+import { isSameModel, isSelfApproval } from '../shared/independent-approval';
+import { join, relative } from 'node:path';
+import z from 'zod';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../contracts/constants/create-proposal.constant';
+import { adoptCreatedProposalUnit } from '../services/created-proposal-unit.service';
+import {
+	VALIDATE_EVIDENCE_SCHEMA,
+	callerCheckout,
+	redactSecrets,
+	sharedCheckout,
+	toolError,
+	toolOk,
+	resolveWorkAgentId,
+} from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
+
+import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import { runAgentNames } from './agent-names.tool';
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
+import {
+	approvalNote,
+	commitIsIntegrated,
+	deliveredCommitOf,
+	supersedingDelivery,
+} from '../services/review-verdict-evidence';
+import {
+	reviewUnitAgent,
+	verdictClaimRefusal,
+} from '../services/review-claim.service';
+import { canonicalRoleOf } from '../shared/agent-conventions';
+import { toolErrorEnvelope } from '../shared/tool-envelope';
+import { createPendingIntegrationStore } from '../shared/pending-integration-store';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
+import { PEER_REVIEW_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
+import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import {
+	allocateNextProposalId,
+	prefixForKind,
+} from '../proposals/proposal-id-allocator';
+import { runAcceptanceCriteria } from '../proposals/proposal-acceptance';
+import {
+	PROPOSAL_KIND_BY_PREFIX,
+	type IProposalKind,
+} from '../contracts/constants/proposal-glossary.constant';
+import { proposalFolderFor } from '../contracts/proposal-folder-policy';
+import {
+	kindMatchesId,
+	newProposalIdSchema,
+} from '../contracts/schemas/proposal-kind.schema';
+import { readTextOrNull } from '../proposals/index-reader';
+import { appendPeerReviewJsonl } from '../shared/peer-review-log';
+import { findExistingProposal } from '../proposals/existing-proposal';
+import { escapeRegExp, slugFromTitle } from '../shared/string-helpers';
+import {
+	parseProposalSlicePlan,
+	planDisjointnessIssues,
+} from '../swarm/proposal-slice-plan';
+import {
+	parseReviewState,
+	renderReviewLines,
+	withClosingLines,
+	reviewTransition,
+	type IReviewRound,
+} from '../swarm/proposal-review';
+import { recordShippingCommit } from '../swarm/slice-shipping-record';
+import {
+	describeApprovalOutcome,
+	quorumForReview,
+	shouldAutoTransitionOnReviewState,
+	type IApprovalOutcome,
+} from '../swarm/proposal-review-tool-quorum';
+import { recordProposalReviewAction } from '../shared/peer-review-log';
+import {
+	buildReviewIdentity,
+	checkApproveIdentity,
+	recordReviewSubmitIdentity,
+} from '../services/review-identity';
+import { markProposalDoneForAutoTransition } from '../services/auto-transition';
+import {
+	buildCloseSliceAlreadyClosedResult,
+	buildCloseSliceClosedResult,
+} from '../services/close-slice.service';
+import type { IValidateEvidenceDeps } from './proposal-transition.tool';
+import {
+	attributeDelivery,
+	checkAttributedApprover,
+	everySliceReviewed,
+	needsAttributedRound,
+	openAttributedRound,
+	renderAttributionLine,
+	unrecordedAttribution,
+	withShippedIn,
+	type IReviewAttribution,
+} from '../services/review-attribution';
+import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
+import { moveProposalAfterVerdict } from './review-verdict-lifecycle';
+import { movesStayOutOfTheIndex } from '../shared/index-free-git-runner';
+import { buildCloseBlockerGuidance } from '../services/close-blocker';
+import {
+	isEvidenceFresh,
+	type IValidateEvidence,
+} from '../services/transition-evidence';
+import { resolveIndexedDoc } from './authoring-options';
+import type {
+	IAuthoringToolOptions,
+	ICloseSliceValidationDecision,
+} from './authoring-options';
+import type {
+	ICloseGateDeps,
+	ICloseSliceGateReport,
+	ICloseSliceQualityResult,
+} from '../contracts/interfaces/close-slice-gate.interface';
+import { runCloseSliceGate } from './close-slice-gate';
+import {
+	maybePersistAfterSlice,
+	type IPersistResult,
+} from './auto-work-persist';
+import { proposalPublishNextAction } from './proposal-publish-next-action';
+import {
+	createPrivateIndexCommitPort,
+	publicationRefFor,
+	publishProposalOnRef,
+} from './publish-proposal';
+
+type ICloseSlicePersistConfig = {
+	readonly mode: 'none' | 'commit' | 'commit-and-push';
+	readonly messageTemplate?: string;
+	readonly pushTarget?: string;
+	readonly protectedBranches?: readonly string[];
+};
+
+export type { IAuthoringToolOptions } from './authoring-options';
+export { readActiveLocks } from './authoring-options';
+
+// MCP hosts commonly cancel a tool call after one minute. Keep the
+// close-slice validation below that deadline so callers receive the
+// structured validation error and the document mutex is always released.
+const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
+const CLOSE_SLICE_GATE_SCHEMA = z
+	.object({
+		state: z.enum(['pass', 'fail', 'pending', 'unverifiable']),
+		reused: z.boolean(),
+		handle: z.string().optional(),
+		tree: z.string().optional(),
+		certifiedBy: z
+			.enum(['forge-check', 'landing-certification', 'recorded-gate'])
+			.optional(),
+		evidence: z.string().optional(),
+		nextAction: z.string().optional(),
+	})
+	.optional();
+const ISO_DATE_LENGTH = 10;
+const TIMEOUT_EXIT_CODE = 124;
+
+/**
+ * x00156 S5 — the `close_slice` write-path throws a plain `Error`
+ * decorated with these extra fields (quality-gate failure, or a
+ * validation-error kind checked defensively though nothing currently
+ * throws it) instead of a dedicated Error subclass. Named once and
+ * shared between the throw site and the catch site so neither needs
+ * `catch (err: any)`.
+ */
+type ICloseSliceThrownError = Error & {
+	readonly kind?:
+		| 'validation-error'
+		| 'quality-failed'
+		| 'gate-pending'
+		| 'gate-unverifiable'
+		| 'peer-review-required';
+	readonly output?: string;
+	readonly persist?: IPersistResult;
+	readonly detail?: ICloseSliceQualityResult;
+	readonly validationDecision?: ICloseSliceValidationDecision;
+};
+
+const isCloseSliceThrownError = (
+	value: unknown,
+): value is ICloseSliceThrownError => value instanceof Error;
+
+/**
+ * x00156 S5 — the review-transition write-path (`approve` /
+ * `request_changes`) throws a plain `Error` decorated with a
+ * pre-built `toolError(...)` envelope (see the identity-check guard
+ * above) so the catch site can re-surface it verbatim.
+ */
+type IToolErrorCarryingError = Error & { readonly toolError?: IToolTextResult };
+
+const isToolErrorCarryingError = (
+	value: unknown,
+): value is IToolErrorCarryingError => value instanceof Error;
+
+export const REVIEW_APPROVE_COMMIT_HASH_MIN_LEN = 7;
+export const REVIEW_APPROVE_COMMIT_HASH_MAX_LEN = 40;
+export const REVIEW_APPROVE_COMMIT_HASH_RE = new RegExp(
+	`^[0-9a-f]{${REVIEW_APPROVE_COMMIT_HASH_MIN_LEN},${REVIEW_APPROVE_COMMIT_HASH_MAX_LEN}}$`,
+	'i',
+);
+
+export interface IProposalReviewEvidence {
+	readonly commitHash: string;
+	readonly validateExitCode: number;
+	readonly testsPassing: number;
+	readonly testsTotal: number;
+	readonly acceptanceCriteria?:
+		| readonly {
+				readonly criterion: string;
+				readonly evidence: string;
+		  }[]
+		| undefined;
+}
+
+const ACCEPTANCE_EVIDENCE_SCHEMA = z.object({
+	criterion: z.string().trim().min(1),
+	evidence: z.string().trim().min(1),
+});
+
+export const REVIEW_EVIDENCE_SCHEMA = z
+	.object({
+		commitHash: z
+			.string()
+			.regex(
+				REVIEW_APPROVE_COMMIT_HASH_RE,
+				`evidence.commitHash must be ${REVIEW_APPROVE_COMMIT_HASH_MIN_LEN}-${REVIEW_APPROVE_COMMIT_HASH_MAX_LEN} hex characters`,
+			),
+		validateExitCode: z
+			.number()
+			.int()
+			.refine((value) => value === 0, {
+				message: 'evidence.validateExitCode must be 0',
+			}),
+		testsPassing: z
+			.number()
+			.int()
+			.min(1, 'evidence.testsPassing must be >= 1'),
+		testsTotal: z.number().int().min(1, 'evidence.testsTotal must be >= 1'),
+		acceptanceCriteria: z.array(ACCEPTANCE_EVIDENCE_SCHEMA).optional(),
+	})
+	.refine((value) => value.testsPassing <= value.testsTotal, {
+		message: 'evidence.testsPassing must be <= evidence.testsTotal',
+		path: ['testsPassing'],
+	});
+
+export const REVIEW_INPUT_SCHEMA = z.object({
+	proposalId: z.string(),
+	sliceId: z.string(),
+	action: z.enum(['submit', 'approve', 'request_changes', 'status']),
+	agent: z.string().min(1),
+	note: z.string().optional(),
+	evidence: REVIEW_EVIDENCE_SCHEMA.optional(),
+	/**
+	 * The commit that delivered the slice. Needed only when no review
+	 * round was ever opened for it: the implementer is then derived from
+	 * the pull request that merged this commit, never named by the
+	 * reviewer. On approve, `evidence.commitHash` serves the same purpose.
+	 */
+	commitHash: z.string().optional(),
+});
+
+export const REVIEW_OUTPUT_SCHEMA = z.object({
+	ok: z.literal(true),
+	proposalId: z.string(),
+	sliceId: z.string(),
+	action: z.string(),
+	status: z.enum(['none', 'in_review', 'changes_requested', 'done']),
+	implementer: z.string().nullable(),
+	reviewer: z.string().nullable(),
+	rounds: z.array(
+		z.object({
+			// `resubmitted` is emitted by S1 when a submit lands on a
+			// slice that already had standing approvals: it is the round
+			// that voids them, and leaving it out of the schema made a
+			// legitimate resubmit fail validation rather than record.
+			verdict: z.enum(['requested_changes', 'approved', 'resubmitted']),
+			agent: z.string(),
+			note: z.string(),
+		}),
+	),
+	lockReleased: z.boolean(),
+	assignmentReleased: z.boolean(),
+	redactedSecrets: z.number().int().nonnegative(),
+	// f00508 S4. Present only on approve, so a single-reviewer flow pays
+	// nothing for them. `approvalsRemaining` is deliberately absent: it
+	// is `quorum - approvalsStanding.length`, and a field that restates
+	// two others is output-schema weight for no information.
+	quorum: z.number().int().positive().optional(),
+	approvalsStanding: z.array(z.string()).optional(),
+	quorumMessage: z.string().optional(),
+	/** Present when the round was opened from Git for this verdict. */
+	attributedTo: z.string().optional(),
+	/** The approval ended the proposal and `review → done` ran. */
+	proposalClosed: z.boolean().optional(),
+	/** Why that transition was refused, when it was. */
+	proposalCloseBlocker: z.string().optional(),
+	/** A change request sent the proposal back to `in-progress`. */
+	proposalReopened: z.boolean().optional(),
+});
+
+const toApproveEvidenceError = (reason: string): IToolTextResult =>
+	toolError(`approve requires empirical evidence: ${reason}`);
+
+const requireProposalReviewEvidence = (
+	evidence: IProposalReviewEvidence | undefined,
+	acceptanceCriteria: readonly string[] = [],
+): IToolTextResult | null => {
+	if (evidence === undefined) {
+		return toApproveEvidenceError(
+			'provide evidence.commitHash, evidence.validateExitCode=0, evidence.testsPassing>=1, and evidence.testsTotal>=1',
+		);
+	}
+	const parsed = REVIEW_EVIDENCE_SCHEMA.safeParse(evidence);
+	if (!parsed.success) {
+		return toApproveEvidenceError(
+			parsed.error.issues[0]?.message ?? 'invalid evidence payload',
+		);
+	}
+	if (acceptanceCriteria.length === 0) return null;
+	const covered = new Map(
+		(parsed.data.acceptanceCriteria ?? []).map((entry) => [
+			entry.criterion.trim(),
+			entry.evidence.trim(),
+		]),
+	);
+	const missing = acceptanceCriteria.filter(
+		(criterion) => covered.get(criterion.trim()) === undefined,
+	);
+	if (missing.length > 0) {
+		return toApproveEvidenceError(
+			`evidence.acceptanceCriteria must cover every declared criterion; missing: ${missing.join(' | ')}`,
+		);
+	}
+	return null;
+};
+
+/** An approval of a commit the integration branch does not have. */
+const unintegratedEvidenceError = async (
+	run: IGitRunner,
+	integration: string | undefined,
+	commit: string | undefined,
+): Promise<IToolTextResult | null> => {
+	if (integration === undefined || commit === undefined) return null;
+	return (await commitIsIntegrated(run, integration, commit)) !== false
+		? null
+		: toApproveEvidenceError(
+				`evidence.commitHash ${commit} is not on ${integration}: approve what landed, not a commit of a branch that may still change`,
+			);
+};
+
+/** Hex characters of a delivery a person can still tell apart. */
+const SHORT_DELIVERY = 12;
+
+/** An approval of a delivery the same proposal has since replaced. */
+const supersededEvidenceError = async (
+	run: IGitRunner,
+	integration: string | undefined,
+	proposalId: string,
+	files: readonly string[],
+	commit: string | undefined,
+): Promise<IToolTextResult | null> => {
+	if (integration === undefined || commit === undefined) return null;
+	const newer = await supersedingDelivery(
+		run,
+		integration,
+		proposalId,
+		files,
+		commit,
+	);
+	return newer === undefined
+		? null
+		: toApproveEvidenceError(
+				`evidence.commitHash ${commit} is not the slice as it stands: ${proposalId} was delivered again by ${newer.slice(0, SHORT_DELIVERY)}, which changed the same files. Read that one and approve it`,
+			);
+};
+
+type IPeerReviewPersistedEntry = {
+	readonly ts: string;
+	readonly proposal_id: string;
+	readonly slice_id: string;
+	readonly agent: string;
+	readonly verdict: 'approved' | 'request_changes';
+	readonly note?: string;
+};
+
+const appendPeerReviewLog = async (
+	logPathAbs: string,
+	entry: IPeerReviewPersistedEntry,
+): Promise<void> => appendPeerReviewJsonl(logPathAbs, entry);
+
+export const runCloseSliceValidation = async (
+	command: string,
+	cwd: string,
+	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
+): Promise<{
+	readonly ok: boolean;
+	readonly output: string;
+	readonly exitCode: number;
+}> => {
+	const result = await runAcceptanceCriteria(
+		[{ command, expect: 'exit0', timeoutMs }],
+		{ cwd },
+	);
+	const verdict = result.results[0];
+	if (verdict === undefined) {
+		return {
+			ok: false,
+			output: 'validation command produced no result',
+			exitCode: 1,
+		};
+	}
+	return {
+		ok: verdict.passed,
+		output: [verdict.actual, verdict.reason]
+			.filter(
+				(part): part is string =>
+					typeof part === 'string' && part.length > 0,
+			)
+			.join('\n'),
+		exitCode:
+			verdict.exitCode ??
+			(verdict.reason?.startsWith('timeout:') ? TIMEOUT_EXIT_CODE : 1),
+	};
+};
+
+/**
+ * The quality probe `close_slice` wires: the project's declared gate,
+ * run as a resumable job (see `close-slice-gate.ts`). `gate` tells a
+ * gate that is still running or could not be verified apart from one
+ * that failed, because the caller must answer each differently.
+ */
+export const runCloseSliceGateProbe = async (
+	deps: ICloseGateDeps,
+	scopes: readonly string[] = [],
+): Promise<ICloseSliceQualityResult> => {
+	const verdict = await runCloseSliceGate(deps, scopes);
+	return {
+		ok: verdict.state === 'pass',
+		severity: verdict.state === 'pass' ? 'ok' : 'error',
+		findings: verdict.findings,
+		gate: {
+			state: verdict.state,
+			reused: verdict.reused,
+			...(verdict.handle !== undefined ? { handle: verdict.handle } : {}),
+			...(verdict.tree !== undefined ? { tree: verdict.tree } : {}),
+			...(verdict.certifiedBy !== undefined
+				? { certifiedBy: verdict.certifiedBy }
+				: {}),
+			...(verdict.evidence !== undefined
+				? { evidence: verdict.evidence }
+				: {}),
+			...(verdict.nextAction !== undefined
+				? { nextAction: verdict.nextAction }
+				: {}),
+		},
+	};
+};
+
+const SLICE_IN = z.object({
+	sliceId: z.string(),
+	title: z.string().optional(),
+	files: z.array(z.string()),
+	gate: z.enum(['lint', 'type', 'e2e', 'none']).optional(),
+	dependsOn: z.array(z.string()).optional(),
+	acceptance: z.array(z.string()).optional(),
+});
+
+export const CREATE_PROPOSAL_INPUT_SCHEMA = z.object({
+	id: z.string().optional(),
+	kind: z
+		.enum([
+			'feat',
+			'breaking',
+			'fix',
+			'refactor',
+			'perf',
+			'audit',
+			'chore',
+			'docs',
+			'test',
+			'infra',
+			'spike',
+			'legacy',
+			'resume',
+			// x00513 — expose the cross-cutting proposal kinds (`plan`,
+			// `repair`) declared in `proposal-glossary.constant.ts` so
+			// callers do not have to fall back to `chore` (which uses
+			// prefix `c`) just to mint a `qNNNNN-...` plan proposal. The
+			// downstream `prefixForKind` resolution already honours both;
+			// only the input schema was lagging.
+			'plan',
+			'repair',
+		])
+		.optional(),
+	title: z.string(),
+	goal: z.string().optional(),
+	status: z
+		.enum(['pending', 'ready', 'in_progress', 'in-progress'])
+		.optional(),
+	track: z.string().optional(),
+	why: z.string().optional(),
+	nonGoals: z.array(z.string()).optional(),
+	globalGate: z.enum(['lint', 'type', 'e2e', 'none']).optional(),
+	slices: z.array(SLICE_IN).optional(),
+	checkout: callerCheckout.arg.optional(),
+});
+
+export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
+	ok: z.literal(true),
+	/** The id the proposal was given. */
+	id: z.string(),
+	file: z.string(),
+	path: z.string(),
+	disjointnessIssues: z.array(
+		z.object({
+			first: z.string(),
+			second: z.string(),
+			file: z.string(),
+		}),
+	),
+	indexCount: z.number(),
+	redactedSecrets: z.number().int().nonnegative().optional(),
+	/** How to publish the file just written; never optional, see the helper. */
+	nextAction: z.string(),
+	/**
+	 * Whether the tool itself got the proposal onto its publication ref.
+	 *
+	 * `nextAction` alone was advice, and advice is what an agent skips —
+	 * twice in one week a proposal was left untracked in a shared
+	 * checkout. When this is `true` the work already reached the remote
+	 * and `publishedRef` names where; when it is `false`,
+	 * `publishReason` says why, and `nextAction` is still owed.
+	 */
+	published: z.boolean(),
+	/** The ref the proposal was published on, when one was derived. */
+	publishedRef: z.string().optional(),
+	/** Why publication did not happen, when it did not. */
+	publishReason: z.string().optional(),
+	/** The unit the proposal was written in, under the name it has now. */
+	unitBranch: z.string().optional(),
+	/** The name a unit entered for `new` had before it took the id. */
+	unitRenamedFrom: z.string().optional(),
+});
+
+// emit the canonical slice shape the repo linter validates
+// (`**Status**`/`**Files**`/`**Gate**` bullets); the plan parser reads
+// both this and the legacy lowercase form.
+// The repo linter only accepts uppercase slice headings (`### S1 — …`),
+// so normalise whatever case the caller passed (a00053: callers passing
+// `s1` produced documents the linter rejected).
+const canonicalSliceId = (id: string): string => id.replace(/^s(?=\d)/, 'S');
+
+/**
+ * Pull just the `### S<n>` slice block for the gate probe. Mirrors the
+ * slice-block matcher used inside the file-mutex write so a slice that
+ * is in the proposal file lights up the gate check.
+ */
+const extractSliceBlockForGate = (
+	markdown: string,
+	canonicalId: string,
+): string | null => {
+	const escaped = canonicalId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const re = new RegExp(
+		`(^### ${escaped}\\s+[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+		'm',
+	);
+	const m = markdown.match(re);
+	return m === null ? null : (m[2] ?? null);
+};
+
+/**
+ * a00069 S5 — is the caller's inline `validateEvidence` fresh enough
+ * (≤ 24 h old, exitCode 0) to satisfy the gate?
+ */
+const isFreshValidateEvidence = (evidence: IValidateEvidence): boolean =>
+	isEvidenceFresh(evidence);
+
+/**
+ * Regex fragment matching a slice id in either case (`s1`/`S1`), so
+ * close_slice keeps finding blocks in legacy lowercase documents and in
+ * the canonical uppercase form regardless of how the caller spelled it.
+ */
+const sliceIdPattern = (id: string): string =>
+	/^[sS]\d+$/.test(id)
+		? `[sS]${escapeRegExp(id.slice(1))}`
+		: escapeRegExp(id);
+
+const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
+	const lines = [
+		`### ${canonicalSliceId(s.sliceId)} — ${s.title ?? s.sliceId}`,
+	];
+	lines.push('- **Status**: pending');
+	if (s.dependsOn && s.dependsOn.length > 0) {
+		lines.push(
+			`- **DependsOn**: [${s.dependsOn.map(canonicalSliceId).join(', ')}]`,
+		);
+	}
+	lines.push(`- **Files**: ${s.files.map((f) => `\`${f}\``).join(', ')}`);
+	lines.push(`- **Gate**: ${s.gate ?? 'none'}`);
+	if (s.acceptance && s.acceptance.length > 0) {
+		lines.push('- acceptance:');
+		for (const a of s.acceptance) lines.push(`  - "${a}"`);
+	}
+	return lines.join('\n');
+};
+
+type ICreateProposalSlice = z.infer<typeof SLICE_IN>;
+
+type IFrontmatterPrimitive = boolean | number | string;
+
+interface ICreateProposalRequest {
+	readonly id?: string | undefined;
+	readonly kind?: string | undefined;
+	readonly title: string;
+	readonly goal?: string | undefined;
+	readonly status?: string | undefined;
+	readonly track?: string | undefined;
+	readonly why?: string | undefined;
+	readonly nonGoals?: readonly string[] | undefined;
+	readonly globalGate?: 'lint' | 'type' | 'e2e' | 'none' | undefined;
+	readonly slices?: readonly ICreateProposalSlice[] | undefined;
+	readonly extraFrontmatter?:
+		| Readonly<Record<string, IFrontmatterPrimitive>>
+		| undefined;
+}
+
+interface ICreateProposalWriteResult {
+	readonly ok: true;
+	/**
+	 * The allocated (or supplied) proposal id.
+	 *
+	 * Carried explicitly because callers need it to name the publication
+	 * ref, and re-deriving it by slicing the filename is a regex that
+	 * silently breaks the first time the naming convention moves.
+	 */
+	readonly id: string;
+	readonly file: string;
+	readonly path: string;
+	readonly disjointnessIssues: readonly {
+		readonly first: string;
+		readonly second: string;
+		readonly file: string;
+	}[];
+	readonly indexCount: number;
+	readonly redactedSecrets: number;
+	/** The proposal was already on disk from an earlier call; nothing was written. */
+	readonly reused?: boolean;
+}
+
+interface ICreateProposalWriteError {
+	readonly ok: false;
+	readonly reason: string;
+	readonly nextAction: string;
+}
+
+const serializeFrontmatterValue = (value: IFrontmatterPrimitive): string =>
+	typeof value === 'string' ? JSON.stringify(value) : String(value);
+
+const renderExtraFrontmatter = (
+	frontmatter: Readonly<Record<string, IFrontmatterPrimitive>> | undefined,
+): string[] =>
+	Object.entries(frontmatter ?? {})
+		.filter(([, value]) => value !== undefined)
+		.sort(([left], [right]) => left.localeCompare(right))
+		.map(([key, value]) => `${key}: ${serializeFrontmatterValue(value)}`);
+
+export const createProposalDocument = async (
+	args: ICreateProposalRequest,
+	options: Pick<
+		IAuthoringToolOptions,
+		| 'workspaceRoot'
+		| 'proposalsDirAbs'
+		| 'counterPathAbs'
+		| 'layout'
+		| 'extraFolders'
+		| 'folderPolicy'
+	>,
+): Promise<ICreateProposalWriteResult | ICreateProposalWriteError> => {
+	let id: string;
+	if (args.id !== undefined) {
+		id = args.id;
+		const idResult = newProposalIdSchema.safeParse(id);
+		if (!idResult.success) {
+			return {
+				ok: false,
+				reason: `invalid proposal id "${id}" — ${idResult.error.issues[0]?.message ?? 'malformed'}`,
+				nextAction:
+					'Use one lowercase family prefix followed by exactly five digits (for example f00001), or omit id and pass kind for race-safe allocation.',
+			};
+		}
+		if (args.kind !== undefined) {
+			const match = kindMatchesId(args.kind, id);
+			if (!match.ok) {
+				return {
+					ok: false,
+					reason: match.reason,
+					nextAction:
+						'Ensure the ID prefix matches the specified kind.',
+				};
+			}
+		}
+	} else if (args.kind !== undefined) {
+		const prefix = prefixForKind(args.kind);
+		if (prefix === null) {
+			return {
+				ok: false,
+				reason: `unknown kind "${args.kind}"`,
+				nextAction: 'Pass a recognised kind, or pass id explicitly.',
+			};
+		}
+		// A repeated create (the first call's answer was lost to a timeout)
+		// finds its own earlier write instead of minting a second id.
+		const earlier = await findExistingProposal({
+			proposalsDirAbs: options.proposalsDirAbs,
+			prefix,
+			slug: slugFromTitle(args.title, ''),
+			title: args.title,
+			status: canonicalStatus(args.status),
+		});
+		if (earlier !== undefined) {
+			const sync = await syncProposalRegistry(
+				options.workspaceRoot,
+				options.layout,
+				options.extraFolders ?? [],
+				undefined,
+				options.folderPolicy,
+			);
+			return {
+				ok: true,
+				id: earlier.id,
+				file: earlier.file,
+				path: join(options.proposalsDirAbs, ...earlier.file.split('/')),
+				disjointnessIssues: [],
+				indexCount: sync.count,
+				redactedSecrets: 0,
+				reused: true,
+			};
+		}
+		id = await allocateNextProposalId(prefix, {
+			proposalsDirAbs: options.proposalsDirAbs,
+			counterPathAbs: options.counterPathAbs,
+		});
+	} else {
+		return {
+			ok: false,
+			reason: 'either id or kind is required',
+			nextAction:
+				'Pass an explicit id, or pass kind to auto-allocate the next one (f00016 S13).',
+		};
+	}
+	const slices = [...(args.slices ?? [])];
+	const plan = {
+		proposalId: id,
+		globalGate: (args.globalGate ?? 'none') as
+			| 'lint'
+			| 'type'
+			| 'e2e'
+			| 'none',
+		slices: slices.map((s) => ({
+			proposalId: id,
+			sliceId: s.sliceId,
+			title: s.title ?? s.sliceId,
+			owner: null,
+			files: s.files,
+			dependsOn: s.dependsOn ?? [],
+			gate: (s.gate ?? 'none') as 'lint' | 'type' | 'e2e' | 'none',
+			status: 'pending' as const,
+			acceptanceCriteria: s.acceptance ?? [],
+		})),
+	};
+	const issues = planDisjointnessIssues(plan);
+	if (issues.length > 0) {
+		return {
+			ok: false,
+			reason: `slices share files: ${issues.map((i) => `${i.first}/${i.second}:${i.file}`).join(', ')}`,
+			nextAction: 'Make each slice edit a disjoint set of files.',
+		};
+	}
+	const inferredKind: IProposalKind =
+		args.kind !== undefined && prefixForKind(args.kind) !== null
+			? (args.kind as IProposalKind)
+			: (PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] ?? 'feat');
+	const date = new Date().toISOString().slice(0, ISO_DATE_LENGTH);
+	const status = canonicalStatus(args.status);
+	const acceptanceLines = slices.flatMap((s) =>
+		(s.acceptance ?? []).map((acceptance) => `- ${acceptance}`),
+	);
+	const body = [
+		'---',
+		`id: ${id}`,
+		`title: ${JSON.stringify(args.title)}`,
+		`kind: ${inferredKind}`,
+		`status: ${status}`,
+		'type: proposal',
+		`track: ${args.track ?? 'general'}`,
+		`date: ${date}`,
+		...renderExtraFrontmatter(args.extraFrontmatter),
+		'---',
+		'',
+		`# ${id} — ${args.title}`,
+		'',
+		'## goal',
+		'',
+		args.goal ?? 'TODO: describe the goal.',
+		'',
+		'## why',
+		'',
+		args.why ?? 'TODO: why this work matters now.',
+		'',
+		'## non-goals',
+		'',
+		...(args.nonGoals && args.nonGoals.length > 0
+			? args.nonGoals.map((goal) => `- ${goal}`)
+			: ['- TODO: what this proposal deliberately skips.']),
+		'',
+		'## slices',
+		'',
+		`- global_gate: ${args.globalGate ?? 'none'}`,
+		'',
+		...(slices.length > 0
+			? slices.map(renderSlice).join('\n\n').split('\n')
+			: [
+					'### S1 — TODO',
+					'- **Status**: pending',
+					'- **Files**: `TODO`',
+					'- **Gate**: none',
+				]),
+		'',
+		'## acceptance',
+		'',
+		...(acceptanceLines.length > 0
+			? acceptanceLines
+			: ['- TODO: observable acceptance criteria.']),
+		'',
+	].join('\n');
+	const fileRel = `${proposalFolderFor(status, inferredKind, options.folderPolicy)}/${id}-${slugFromTitle(args.title, id)}.md`;
+	const absPath = join(options.proposalsDirAbs, ...fileRel.split('/'));
+	// f00016 / reviewer 2026-09-06: refuse to write a non-canonical
+	// filename. Pre-fix, an exotic title that survived kebab() could
+	// produce a filename that sync_proposals silently dropped. We
+	// validate against the same regex filename-linter uses
+	// (`^([a-z])(\d{5,})-[a-z0-9-]+\.md$`) and return ok:false if
+	// anything is off, so the tool handler reports a `toolError(reason)`
+	// instead of leaving an orphan on disk.
+	const fileName = fileRel.split('/').pop() ?? '';
+	if (!/^([a-z])(\d{5,})-[a-z0-9-]+\.md$/.test(fileName)) {
+		return {
+			ok: false,
+			reason: `computed filename "${fileName}" does not match the canonical pattern \`<prefix><NNNNN>-<kebab-slug>.md\` — slug derived from "${args.title}" sanitised to a malformed string`,
+			nextAction:
+				'Pass a title whose kebab-case is non-empty (e.g. avoid punctuation-only / non-Latin titles) so the slug + id produce a canonical filename.',
+		};
+	}
+	const { text: safeBody, redactions } = redactSecrets(body);
+	await writeFileAtomic(absPath, safeBody);
+	const sync = await syncProposalRegistry(
+		options.workspaceRoot,
+		options.layout,
+		options.extraFolders ?? [],
+		undefined,
+		options.folderPolicy,
+	);
+	const syncEntry = sync.proposals.find((proposal) => proposal.id === id);
+	const finalFileRel = syncEntry ? syncEntry.file : fileRel;
+	const finalAbsPath = syncEntry
+		? join(options.proposalsDirAbs, ...finalFileRel.split('/'))
+		: absPath;
+	return {
+		ok: true,
+		id,
+		file: finalFileRel,
+		path: finalAbsPath,
+		disjointnessIssues: issues,
+		indexCount: sync.count,
+		redactedSecrets: redactions,
+	};
+};
+
+/**
+ * x00098 S2: flip a slice block's status bullet to done, whichever of
+ * the two accepted spellings the document uses (`- **Status**:` is the
+ * canonical form the generator emits; `- status:` is the legacy one).
+ * Appends the canonical bullet when the block has neither.
+ */
+const flipSliceStatusDone = (block: string): string => {
+	if (/^[-*]\s*\*\*Status\*\*:/m.test(block)) {
+		return block.replace(
+			/^[-*]\s*\*\*Status\*\*:.*$/m,
+			'- **Status**: done',
+		);
+	}
+	if (/^[-*]\s*status:/m.test(block)) {
+		return block.replace(/^[-*]\s*status:.*$/m, '- status: done');
+	}
+	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
+};
+
+/** A slice a reviewer sent back is open work again, whatever it claimed. */
+const flipSliceStatusInProgress = (block: string): string =>
+	block
+		.replace(/^([-*]\s*\*\*Status\*\*:).*$/m, '$1 in-progress')
+		.replace(/^([-*]\s*status:).*$/m, '$1 in-progress');
+
+const isSliceStatusDone = (block: string): boolean =>
+	/^[-*]\s*\*\*Status\*\*:\s*done\s*$/im.test(block) ||
+	/^[-*]\s*status:\s*done\s*$/im.test(block);
+
+/**
+ * a00069 S5 — strict variant: does this slice block require a FRESH
+ * validate before close_slice may flip it? True only for the hard gates
+ * (`type` / `e2e`). Free-form gates like `bun run validate`, lint, or
+ * acceptance-list commands are NOT enforced by this helper — those live
+ * behind the integration gate (`validationScope: 'global'`).
+ */
+export const gateHardRequiresValidate = (block: string): boolean => {
+	const gateMatch = block.match(
+		/^[-*]\s*(?:\*\*Gate\*\*|gate):\s*([^\n]+)$/im,
+	);
+	const gate = (gateMatch?.[1] ?? 'none').trim().toLowerCase();
+	return gate === 'type' || gate === 'e2e';
+};
+
+/**
+ * a00069 S5 — does this slice block require a green `bun run validate`
+ * (or the host's `validationCommand`) before close_slice may flip it?
+ *
+ * Require when gate is `type` / `e2e`. Skip bare `none` / `lint` unless
+ * the slice's acceptance section lists a full-suite command (`bun test`,
+ * `bun run validate`, or the host `validationCommand`).
+ */
+export const sliceRequiresValidation = (
+	block: string,
+	validationCommand = 'bun run validate',
+): boolean => {
+	const gateMatch = block.match(
+		/^[-*]\s*(?:\*\*Gate\*\*|gate):\s*([^\n]+)$/im,
+	);
+	const gate = (gateMatch?.[1] ?? 'none').trim().toLowerCase();
+	if (gate === 'type' || gate === 'e2e') return true;
+	// Free-form gates that explicitly demand full validate (proposal docs
+	// often write `- **Gate**: bun run validate`).
+	if (
+		gate !== 'none' &&
+		gate !== 'lint' &&
+		(gate.includes('validate') ||
+			gate.includes('bun run test') ||
+			gate === 'test')
+	) {
+		return true;
+	}
+
+	// Acceptance surfaces (any of):
+	//   - acceptance:
+	//       - bun run validate
+	//   - **Acceptance**: bun run test
+	//   - { command: bun run validate, expect: exit0 }
+	const needles = [
+		validationCommand.toLowerCase(),
+		'bun run validate',
+		'bun run test',
+		'bun test',
+	];
+	const blockLower = block.toLowerCase();
+	// YAML-style criterion objects anywhere in the slice block.
+	if (
+		needles.some(
+			(n) =>
+				blockLower.includes(`command: ${n}`) ||
+				blockLower.includes(`command:${n}`),
+		)
+	) {
+		return true;
+	}
+	// Narrative **Acceptance** / acceptance bullets.
+	const acceptLines = [
+		...block.matchAll(
+			/^[-*]\s*(?:\*\*Acceptance\*\*|acceptance):\s*([^\n]+)$/gim,
+		),
+	].map((m) => (m[1] ?? '').trim().toLowerCase());
+	if (acceptLines.some((line) => needles.some((n) => line.includes(n)))) {
+		return true;
+	}
+	// Nested acceptance list under a bare `acceptance:` header.
+	const acceptSection = block.match(
+		/^[-*]\s*acceptance:\s*\n((?:\s+[-*].*\n?)*)/im,
+	);
+	const acceptBody = acceptSection?.[1] ?? '';
+	const nested = [
+		...acceptBody.matchAll(/^\s+[-*]\s+"?([^"\n]+)"?\s*$/gm),
+	].map((m) => (m[1] ?? '').trim().toLowerCase());
+	return nested.some((line) => needles.some((n) => line.includes(n)));
+};
+
+/**
+ * x00098 S2: the linter's status vocabulary is hyphenated and every
+ * status lives in its own folder. Accept the historical underscore
+ * spelling on input but never write it; `pending` (not a linter status)
+ * authors as `ready`.
+ */
+const canonicalStatus = (
+	status: string | undefined,
+): 'ready' | 'in-progress' => {
+	if (status === 'in_progress' || status === 'in-progress')
+		return 'in-progress';
+	return 'ready';
+};
+
+/**
+ * `create_proposal` — author a proposal markdown (frontmatter + Goal +
+ * a parseable `## Slices` section) so multi-agent slice work is correct
+ * by construction. Validates file disjointness, writes atomically and
+ * re-syncs the index. No more hand-editing fragile markdown.
+ */
+export const buildCreateProposalRegistration = (
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
+): IToolRegistration => ({
+	id: 'create_proposal',
+	effects: ['write'],
+	writeRoot: 'caller-checkout',
+	refusedWriteNextStep: CREATE_PROPOSAL_REFUSED_NEXT_STEP,
+	summary:
+		'Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.',
+	tags: ['proposals'],
+	register: async (server) => {
+		server.registerTool(
+			`${options.namespacePrefix}_create_proposal`,
+			{
+				outputSchema: CREATE_PROPOSAL_OUTPUT_SCHEMA,
+				description:
+					'Create a proposal document with frontmatter, a Goal and a parseable `## Slices` section (one slice per parallelisable, file-disjoint unit). Validates disjointness, writes atomically and re-syncs the index. Returns the file path and any overlap issues.',
+				inputSchema: CREATE_PROPOSAL_INPUT_SCHEMA,
+			},
+			async (args: {
+				id?: string | undefined;
+				kind?: string | undefined;
+				title: string;
+				goal?: string | undefined;
+				status?: string | undefined;
+				track?: string | undefined;
+				why?: string | undefined;
+				nonGoals?: string[] | undefined;
+				globalGate?: string | undefined;
+				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
+				checkout?: string | undefined;
+			}) => {
+				// The document belongs in the caller's working
+				// tree. The content tree and its per-tree derivatives move
+				// with the checkout; the id counter and the lock do not —
+				// those are facts about the repository, and a per-worktree
+				// copy of either would hand out the same id twice.
+				const forCheckout = callerCheckout.writeRoot({
+					root: 'caller-checkout',
+					serverRoot: options.workspaceRoot,
+					requested: args.checkout,
+				});
+				if (!forCheckout.ok) {
+					return toolError(
+						forCheckout.refusal,
+						'Pass the absolute path of a working tree of this repository, or omit `checkout` to write in the server\u2019s own root.',
+					);
+				}
+				const scoped =
+					forCheckout.source === 'request'
+						? callerCheckout.scopePaths(options, forCheckout.root, [
+								'proposalsDirAbs',
+								'indexPathAbs',
+							])
+						: options;
+				const created = await createProposalDocument(
+					{
+						...args,
+						globalGate: (args.globalGate ?? 'none') as
+							| 'lint'
+							| 'type'
+							| 'e2e'
+							| 'none',
+					},
+					scoped,
+				);
+				if (!created.ok) {
+					return toolError(created.reason, created.nextAction);
+				}
+				// Publication is the tool's job, not an instruction the
+				// caller may skip: a proposal only in someone's working
+				// copy is invisible to every other agent. Failures are
+				// reported, never thrown — the document exists either way.
+				// A runner the server built for its own root would commit
+				// in the wrong tree. When the caller named a checkout, the
+				// commit belongs there; when it did not, nothing changes.
+				const serverGit = options.run ?? options.persistGit;
+				const git =
+					serverGit !== undefined && forCheckout.source === 'request'
+						? createGitRunner(forCheckout.root)
+						: serverGit;
+				// Written into a unit's worktree, the proposal travels with
+				// that unit's publication. Publishing it on a ref of its own
+				// as well put the same file on two refs, the second one a
+				// pull request nobody opened.
+				const unitBranch =
+					git === undefined
+						? undefined
+						: await workUnitBranch(
+								git,
+								options.developmentPolicy?.branches
+									.workRefPrefix,
+							);
+				const publication =
+					unitBranch !== undefined
+						? {
+								published: false,
+								reason: `written in the unit on ${unitBranch}: commit it there, and it is published with the unit (\`delendai work publish\`)`,
+							}
+						: git === undefined
+							? {
+									published: false,
+									reason: 'no git runner is available to this host, so the file must be published by the step in nextAction',
+								}
+							: await publishProposalOnRef({
+									proposalId: created.id,
+									title: args.title,
+									relativePath: relative(
+										scoped.workspaceRoot,
+										created.path,
+									),
+									message: `docs(proposals): add ${created.id}`,
+									git,
+									commit: createPrivateIndexCommitPort(
+										forCheckout.source === 'request'
+											? forCheckout.root
+											: scoped.workspaceRoot,
+									),
+									...(options.developmentPolicy === undefined
+										? {}
+										: {
+												policy: {
+													requiresPullRequest:
+														options
+															.developmentPolicy
+															.integration
+															.requiresPullRequest,
+													hasWorkRefs:
+														options
+															.developmentPolicy
+															.branches
+															.workRefTemplate
+															.length > 0,
+													publicationRefPrefix:
+														options
+															.developmentPolicy
+															.branches
+															.publicationRefPrefix,
+													workRefTemplate:
+														options
+															.developmentPolicy
+															.branches
+															.workRefTemplate,
+													integration:
+														options
+															.developmentPolicy
+															.branches
+															.integration,
+													release:
+														options
+															.developmentPolicy
+															.branches.release,
+												},
+											}),
+								});
+				// A unit entered for `new` takes the id it was waiting for. The
+				// publication above ran under the old name on purpose: it only
+				// reads which branch the checkout is on.
+				const unit = await adoptCreatedProposalUnit({
+					root:
+						forCheckout.source === 'request'
+							? forCheckout.root
+							: scoped.workspaceRoot,
+					id: created.id,
+					policy: options.developmentPolicy,
+				});
+				return toolOk({
+					id: created.id,
+					file: created.file,
+					path: created.path,
+					disjointnessIssues: created.disjointnessIssues,
+					indexCount: created.indexCount,
+					redactedSecrets: created.redactedSecrets,
+					...(unit.unitBranch === undefined
+						? {}
+						: { unitBranch: unit.unitBranch }),
+					...(unit.unitRenamedFrom === undefined
+						? {}
+						: { unitRenamedFrom: unit.unitRenamedFrom }),
+					nextAction: `${unit.note === undefined ? '' : `${unit.note} `}${created.reused === true ? `${created.id} was already written by an earlier call with this title, so nothing was created again. ` : ''}${
+						unitBranch !== undefined
+							? `Commit ${relative(scoped.workspaceRoot, created.path)} in the unit on ${unit.unitBranch ?? unitBranch} (run \`bun run gen:all\` first if the project derives files from proposals), then publish the unit with \`delendai work publish\`.`
+							: proposalPublishNextAction({
+									template: options.publishCommand,
+									policy: options.developmentPolicy,
+									workspaceRoot: scoped.workspaceRoot,
+									absPath: created.path,
+									ref: publicationRefFor(
+										options.developmentPolicy?.branches
+											.publicationRefPrefix ??
+											'delendai/pr/',
+										created.id,
+										{
+											title: args.title,
+											template:
+												options.developmentPolicy
+													?.branches.workRefTemplate,
+										},
+									),
+								})
+					}`,
+					published: publication.published,
+					...(publication.ref === undefined
+						? {}
+						: { publishedRef: publication.ref }),
+					...(publication.reason === undefined
+						? {}
+						: { publishReason: publication.reason }),
+				});
+			},
+		);
+	},
+});
+
+/**
+ * The branch a checkout is on when it is a unit of work: under the
+ * policy's work-ref prefix. `undefined` for anything else, or when the
+ * policy names no work refs.
+ */
+const workUnitBranch = async (
+	run: IGitRunner,
+	workRefPrefix: string | undefined,
+): Promise<string | undefined> => {
+	const prefix = (workRefPrefix ?? '')
+		.replace(/^refs\/heads\//u, '')
+		.replace(/^heads\//u, '');
+	if (prefix.length === 0) return undefined;
+	const result = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+	if (!result.ok) return undefined;
+	const branch = result.output.trim();
+	return branch.startsWith(prefix) ? branch : undefined;
+};
+
+/**
+ * f00091 S2: resolve the current branch and, if it is an `agent/*`
+ * branch, return it (else `null`). Read-only (`git rev-parse`); never a
+ * git mutation. Any failure degrades to `null` so `close_slice` never
+ * throws over a branch-integration detail.
+ */
+const resolveAgentBranch = async (run: IGitRunner): Promise<string | null> => {
+	const result = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+	if (!result.ok) return null;
+	const branch = result.output.trim();
+	if (branch.length === 0 || branch === 'HEAD') return null;
+	return branch.startsWith(AGENT_BRANCH_PREFIX) ? branch : null;
+};
+
+/** f00091 S2: resolve the worktree top-level dir (read-only). */
+const resolveWorktreeTopLevel = async (run: IGitRunner): Promise<string> => {
+	const result = await run(['rev-parse', '--show-toplevel']);
+	return result.ok ? result.output.trim() : '';
+};
+
+type ICloseSliceValidateOptions = IAuthoringToolOptions & {
+	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	readonly persist?: ICloseSlicePersistConfig;
+	readonly persistGit?: IGitRunner;
+};
+
+interface IAgentLockReleaseResult {
+	readonly removed?: number;
+}
+
+/**
+ * Releases a slice's agent-lock claim on close/approve. `auto_work`'s
+ * `claimReady.agent_lock_args` (see `auto-work.tool.ts`) tells callers to
+ * claim with the composite `${proposalId}-${canonicalSliceId}` task_id
+ * (canonical uppercase, e.g. "f00082-S1") — the form that stays
+ * unambiguous when two different proposals both have a slice named e.g.
+ * "S1". Try that convention first (both the canonical-case and the
+ * caller's-own-case spelling, since `close_slice` itself accepts either),
+ * then fall back to the bare sliceId for callers that claimed without
+ * the proposal prefix.
+ *
+ * `runAgentLockEngine`'s release action reports `ok:true` even when NO
+ * entry matched (it is a no-op release, not an error) — a caller that
+ * only checks for a thrown error, without inspecting `removed`, will
+ * wrongly believe the lock was released. Every existing call site here
+ * used to do exactly that (hardcode `lockReleased = true`); this helper
+ * inspects the actual result so the reported flag is honest.
+ */
+const releaseSliceLock = async (
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
+	proposalId: string,
+	sliceId: string,
+): Promise<boolean> => {
+	const deps = {
+		lockPath: options.lockPathAbs,
+		toolName: `${options.namespacePrefix}_agent_lock`,
+	};
+	const candidates = new Set([
+		`${proposalId}-${canonicalSliceId(sliceId)}`,
+		`${proposalId}-${sliceId}`,
+		sliceId,
+	]);
+	for (const taskId of candidates) {
+		const result = await runAgentLockEngine(
+			{ action: 'release', task_id: taskId },
+			deps,
+		);
+		const body = JSON.parse(
+			result.content[0]?.text ?? '{}',
+		) as IAgentLockReleaseResult;
+		if ((body.removed ?? 0) > 0) return true;
+	}
+	return false;
+};
+
+const releaseSliceAssignment = async (
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
+	proposalId: string,
+	sliceId: string,
+): Promise<boolean> => {
+	if (options.agentNames === undefined) return false;
+	const candidates = new Set([
+		`${proposalId}-${canonicalSliceId(sliceId)}`,
+		`${proposalId}-${sliceId}`,
+		sliceId,
+	]);
+	for (const taskId of candidates) {
+		const result = await runAgentNames(
+			{ action: 'release', task_id: taskId },
+			options.agentNames,
+		);
+		const body = JSON.parse(result.content[0]?.text ?? '{}') as {
+			released?: readonly string[];
+		};
+		if (body.released?.includes(taskId) === true) return true;
+	}
+	return false;
+};
+
+/**
+ * `close_slice` — mark a slice `done` in the proposal doc AND release its
+ * agent lock, atomically. Closes the loop crisply so the next agent sees
+ * accurate state.
+ */
+export const buildCloseSliceRegistration = (
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
+): IToolRegistration => ({
+	id: 'close_slice',
+	effects: ['write'],
+	writeRoot: 'caller-checkout',
+	summary:
+		'Mark a slice done in its proposal + release its agent lock, then re-sync.',
+	tags: ['proposals'],
+	register: async (server) => {
+		server.registerTool(
+			`${options.namespacePrefix}_close_slice`,
+			{
+				outputSchema: z.object({
+					ok: z.boolean(),
+					// Every top-level kind the handler returns, blocked closes
+					// included: a client that listed tools validates error
+					// results against this schema too.
+					kind: z
+						.enum([
+							'closed',
+							'already_closed',
+							'conflict',
+							'invalid_transition',
+							'quarantined',
+							'unknown',
+							'validation-error',
+							'quality-failed',
+							'gate-pending',
+							'gate-unverifiable',
+							'peer-review-required',
+						])
+						.optional(),
+					already_closed: z.boolean().optional(),
+					entity: z
+						.object({
+							id: z.string(),
+							entity: z.enum(['proposal', 'plan', 'slice']),
+							status: z.string().optional(),
+							path: z.string().optional(),
+							sliceId: z.string().optional(),
+						})
+						.optional(),
+					blockerType: z.string().optional(),
+					gate: CLOSE_SLICE_GATE_SCHEMA,
+					blockerDetail: z
+						.object({
+							ok: z.boolean(),
+							severity: z.enum(['ok', 'error']),
+							findings: z.array(z.string()),
+							summary: z
+								.object({
+									ok: z.boolean(),
+									scopes: z.number(),
+								})
+								.optional(),
+							gate: CLOSE_SLICE_GATE_SCHEMA,
+						})
+						.optional(),
+					error: z
+						.object({
+							reason: z.string(),
+							nextAction: z.string().optional(),
+							kind: z.string().optional(),
+							output: z.string().optional(),
+						})
+						.optional(),
+					proposalId: z.string().optional(),
+					sliceId: z.string().optional(),
+					closed: z.boolean().optional(),
+					validationDecision: z
+						.object({
+							mode: z.enum(['scoped', 'full', 'blocked']),
+							resolvedScopes: z.array(z.string()),
+							snapshotId: z.string(),
+							reason: z.string(),
+							// Present on `blocked`. Without them the caller
+							// gets one abstract sentence and no way to act.
+							blockingReasons: z.array(z.string()).optional(),
+							nextAction: z.string().optional(),
+						})
+						.optional(),
+					lockReleased: z.boolean().optional(),
+					assignmentReleased: z.boolean().optional(),
+					persist: z
+						.object({
+							committed: z.boolean(),
+							pushed: z.boolean(),
+							mode: z.enum(['none', 'commit', 'commit-and-push']),
+							hash: z.string().optional(),
+							reason: z.string().optional(),
+						})
+						.optional(),
+					// the branch (if any) recorded for deliberate
+					// integration by the non-destructive branch-integration
+					// step. `null` when agentWorktree is off, the active
+					// branch is not an `agent/*` branch, or the branch could
+					// not be resolved — in all those cases nothing is
+					// recorded and behaviour is byte-identical to pre-f00091.
+					pendingIntegrationBranch: z.string().nullable().optional(),
+					validationOutput: z.string().optional(),
+					idempotencyKey: z.string().optional(),
+				}),
+				description:
+					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. By default, validation evidence is scoped to the slice files; the global integration gate is requested explicitly with validationScope: "global". When requirePeerReview is on (the default), the slice must already have review-state: done from proposal_review action=approve by a different agent — implementers submit via proposal_review, they do not close their own slice. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write).',
+				inputSchema: z.object({
+					proposalId: z.string(),
+					sliceId: z.string(),
+					releaseLock: z.boolean().optional(),
+					force: z.boolean().optional(),
+					validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
+					validationScope: z.enum(['scoped', 'global']).optional(),
+					idempotencyKey: z.string().min(1).optional(),
+					agent: z
+						.string()
+						.optional()
+						.describe(
+							"Who is closing. Absent: DELENDAI_AGENT_ID, then the agent named by the checkout's work ref.",
+						),
+				}),
+			},
+			async (args: {
+				proposalId: string;
+				sliceId: string;
+				agent?: string | undefined;
+				releaseLock?: boolean | undefined;
+				force?: boolean | undefined;
+				validateEvidence?: IValidateEvidence | undefined;
+				validationScope?: 'scoped' | 'global' | undefined;
+				idempotencyKey?: string | undefined;
+			}) => {
+				const scoped = scopeToCaller(options);
+				// Zod parses exitCode as number and logPath as string|undefined;
+				// the internal contract is stricter (exitCode literal 0, logPath required).
+				// The runtime gate in transition-evidence.ts rejects anything that
+				// does not satisfy both, so the cast is sound here.
+				if (args.validateEvidence !== undefined) {
+					args = {
+						...args,
+						validateEvidence: {
+							timestamp: args.validateEvidence.timestamp,
+							exitCode: 0,
+							logPath: args.validateEvidence.logPath ?? '',
+						},
+					};
+				}
+				// index lookups self-heal a stale index once —
+				// transitions move files and leave the index pointing at
+				// the pre-move path until the next sync.
+				const resolved = await resolveIndexedDoc(
+					scoped,
+					args.proposalId,
+				);
+				if (!resolved.ok) {
+					return toolError(resolved.reason, resolved.nextAction);
+				}
+				const { entry, docPath } = resolved;
+				const closeSliceOptions = scoped as ICloseSliceValidateOptions;
+				const canonicalId = canonicalSliceId(args.sliceId);
+				const explicitSliceState =
+					(await closeSliceOptions.sliceLifecycleStateReader?.getSliceState(
+						{
+							proposalId: entry.id,
+							sliceId: canonicalId,
+							path: docPath,
+						},
+					)) ?? null;
+				if (explicitSliceState?.status === 'done') {
+					return toolOk(
+						buildCloseSliceAlreadyClosedResult({
+							proposalId: entry.id,
+							requestedSliceId: args.sliceId,
+							canonicalSliceId: canonicalId,
+							path: explicitSliceState.sourcePath ?? entry.file,
+							...(args.idempotencyKey !== undefined
+								? { idempotencyKey: args.idempotencyKey }
+								: {}),
+						}),
+					);
+				}
+				let validationDecision:
+					| ICloseSliceValidationDecision
+					| undefined;
+				let alreadyClosedPayload: Record<string, unknown> | undefined;
+				let closeGate: ICloseSliceGateReport | undefined;
+				let persisted: IPersistResult = {
+					committed: false,
+					pushed: false,
+					mode: 'none',
+				};
+				// One decision for "is this tree verified": the tree-keyed close
+				// gate (`runQuality`) answers it from the certification that
+				// already exists for the exact tree (the forge's checks, the
+				// landing's) or a recorded local result. Explicit, fresh,
+				// green `validateEvidence` is one more source it accepts, so a
+				// slice whose gate demands a validate closes from it when the
+				// gate gives no verdict; a red verdict still blocks. With no
+				// gate wired, a slice that
+				// demands a validate has no source at all and is refused.
+				let explicitEvidenceAccepted = false;
+				if (
+					args.force !== true &&
+					scoped.requireValidateEvidence !== false
+				) {
+					const gateProbe = await readTextOrNull(docPath);
+					const blockForGate =
+						gateProbe === null
+							? null
+							: extractSliceBlockForGate(gateProbe, canonicalId);
+					if (gateHardRequiresValidate(blockForGate ?? '')) {
+						explicitEvidenceAccepted =
+							args.validateEvidence !== undefined &&
+							isFreshValidateEvidence(args.validateEvidence);
+						if (
+							!explicitEvidenceAccepted &&
+							typeof scoped.runQuality !== 'function'
+						) {
+							return toolErrorEnvelope({
+								ok: false as const,
+								kind: 'validation-error' as const,
+								blockerType: 'validate-required' as const,
+								error: {
+									reason: `slice "${args.sliceId}" has a gate that demands a verified tree, and nothing verifies this one: no certification of the tree, no recorded gate result, and no fresh passing validateEvidence.`,
+									nextAction:
+										'Publish the unit (`delendai work publish`), wait for the required checks to certify the exact tree, then retry close_slice; or pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path> } } from a validate run of this tree.',
+									kind: 'validation-error' as const,
+								},
+								proposalId: entry.id,
+								sliceId: args.sliceId,
+								closed: false,
+							});
+						}
+					}
+				}
+				try {
+					await withFileMutex(docPath, async () => {
+						const md = await readTextOrNull(docPath);
+						if (md === null) {
+							throw new Error(
+								`proposal file missing: ${docPath}`,
+							);
+						}
+						// Flip the slice block's status to done (add or replace).
+						const blockRe = new RegExp(
+							`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+							'm',
+						);
+						const m = md.match(blockRe);
+						if (m === null) {
+							throw new Error(
+								`slice "${args.sliceId}" not found in ${entry.file}`,
+							);
+						}
+						const rawBlock = m[2] ?? '';
+						const slicePlan = parseProposalSlicePlan(entry.id, md);
+						if (slicePlan === null) {
+							throw new Error(
+								`slice plan missing in ${entry.file}`,
+							);
+						}
+						const slice = slicePlan.slices.find(
+							(candidate) => candidate.sliceId === canonicalId,
+						);
+						if (slice === undefined) {
+							throw new Error(
+								`slice "${args.sliceId}" not found in ${entry.file}`,
+							);
+						}
+						if (isSliceStatusDone(rawBlock)) {
+							alreadyClosedPayload = {
+								...buildCloseSliceAlreadyClosedResult({
+									proposalId: entry.id,
+									requestedSliceId: args.sliceId,
+									canonicalSliceId: canonicalId,
+									path: entry.file,
+									...(args.idempotencyKey !== undefined
+										? {
+												idempotencyKey:
+													args.idempotencyKey,
+											}
+										: {}),
+								}),
+							};
+							return;
+						}
+						if (
+							closeSliceOptions.resolveValidationDecision !==
+							undefined
+						) {
+							const decision =
+								await closeSliceOptions.resolveValidationDecision(
+									{
+										operation: 'close',
+										ownedFiles: slice.files,
+										proposalId: entry.id,
+										sliceId: canonicalId,
+										...(args.agent !== undefined
+											? { agent: args.agent }
+											: {}),
+									},
+								);
+							const guidance =
+								decision.mode === 'blocked'
+									? buildCloseBlockerGuidance({
+											reason: decision.reason,
+											blockingReasons:
+												decision.blockingReasons ?? [],
+										})
+									: undefined;
+							validationDecision = {
+								mode: decision.mode,
+								resolvedScopes: [...decision.resolvedScopes],
+								snapshotId: decision.snapshotId,
+								reason: decision.reason,
+								...(guidance !== undefined
+									? {
+											blockingReasons:
+												guidance.blockingReasons,
+											nextAction: guidance.nextAction,
+										}
+									: {}),
+							};
+							if (decision.mode === 'blocked') {
+								const err: ICloseSliceThrownError =
+									Object.assign(new Error(decision.reason), {
+										kind: 'validation-error' as const,
+										validationDecision,
+									});
+								throw err;
+							}
+						}
+						// a00072 S3.c — quality gate BEFORE flipping status.
+						// If the probe is wired and reports severity=error,
+						// refuse the close. Hosts that do not wire the quality
+						// plugin skip this check entirely.
+						if (typeof scoped.runQuality === 'function') {
+							const quality = await scoped.runQuality(
+								validationDecision !== undefined
+									? {
+											scopes: validationDecision.resolvedScopes,
+											mode:
+												validationDecision.mode ===
+												'blocked'
+													? 'full'
+													: validationDecision.mode,
+										}
+									: undefined,
+							);
+							closeGate = quality.gate;
+							const gateKind =
+								quality.gate?.state === 'pending'
+									? ('gate-pending' as const)
+									: quality.gate?.state === 'unverifiable'
+										? ('gate-unverifiable' as const)
+										: ('quality-failed' as const);
+							// A red result always blocks. A gate that gave no
+							// verdict (still running, or nothing to verify
+							// with) is exactly what explicit evidence covers.
+							const coveredByExplicitEvidence =
+								explicitEvidenceAccepted &&
+								gateKind !== 'quality-failed';
+							if (
+								quality.severity === 'error' &&
+								!coveredByExplicitEvidence
+							) {
+								const err: ICloseSliceThrownError =
+									Object.assign(
+										new Error(
+											gateKind === 'gate-pending'
+												? 'the gate is still running'
+												: gateKind ===
+														'gate-unverifiable'
+													? 'the gate could not be verified'
+													: 'quality gate reported severity=error',
+										),
+										{
+											kind: gateKind,
+											detail: quality,
+										},
+									);
+								throw err;
+							}
+						}
+						if (
+							scoped.requirePeerReview !== false &&
+							args.force !== true
+						) {
+							const review = parseReviewState(rawBlock);
+							if (review.status !== 'done') {
+								const err: ICloseSliceThrownError =
+									Object.assign(
+										new Error(
+											'peer-review required before close_slice can mark the slice done',
+										),
+										{
+											kind: 'peer-review-required' as const,
+										},
+									);
+								throw err;
+							}
+						}
+						const configuredPersist = closeSliceOptions.persist ?? {
+							mode: 'none' as const,
+						};
+						const persistResult = await maybePersistAfterSlice(
+							slice.files,
+							entry.id,
+							canonicalSliceId(args.sliceId),
+							{
+								...configuredPersist,
+								...(scoped.agentWorktreeEnabled !== undefined
+									? {
+											agentWorktreeEnabled:
+												scoped.agentWorktreeEnabled,
+										}
+									: {}),
+								cwd: scoped.workspaceRoot,
+								...(configuredPersist.allowForeignChanges ===
+								true
+									? { allowForeignChanges: true }
+									: {}),
+								...(closeSliceOptions.commitAuthor !== undefined
+									? {
+											commitAuthor:
+												closeSliceOptions.commitAuthor,
+										}
+									: {}),
+								...(closeSliceOptions.persistGit !== undefined
+									? { git: closeSliceOptions.persistGit }
+									: {}),
+							},
+						);
+						const persistIncomplete =
+							(configuredPersist.mode === 'commit' &&
+								persistResult.committed !== true) ||
+							(configuredPersist.mode === 'commit-and-push' &&
+								(persistResult.committed !== true ||
+									persistResult.pushed !== true));
+						if (persistIncomplete) {
+							const err: ICloseSliceThrownError = Object.assign(
+								new Error(
+									persistResult.reason ??
+										'persistence is incomplete; the slice was not closed',
+								),
+								{
+									kind: 'validation-error' as const,
+									output: JSON.stringify(persistResult),
+									persist: persistResult,
+								},
+							);
+							throw err;
+						}
+						persisted = persistResult;
+						// record which commit delivered the slice,
+						// at the one moment the system knows it. Measured
+						// before wiring this: 41 of 1445 slices on the board
+						// cite a commit, because nothing ever wrote one. The
+						// citation is what later lets dispatch tell work that
+						// landed from work that only claims to have.
+						const block = recordShippingCommit(
+							flipSliceStatusDone(rawBlock),
+							persistResult.hash,
+						).block;
+						const sliceClosedContent = md.replace(
+							blockRe,
+							`${m[1]}${block}`,
+						);
+						// Auto-transition to proposal-done is independent of the
+						// validation scope: when every slice is done the
+						// proposal moves to `done/`, regardless of whether the
+						// gate was scoped or global. The validation-scope switch
+						// controls WHICH evidence was inspected, not whether
+						// the file gets reconciled afterwards.
+						const nextContent = markProposalDoneForAutoTransition(
+							entry.id,
+							sliceClosedContent,
+							scoped.requirePeerReview === undefined
+								? {}
+								: {
+										requirePeerReview:
+											scoped.requirePeerReview,
+									},
+						).markdown;
+						await writeFileAtomic(docPath, nextContent);
+					});
+					if (alreadyClosedPayload !== undefined) {
+						persisted = {
+							committed: false,
+							pushed: false,
+							mode: 'none',
+						};
+					}
+				} catch (rawErr: unknown) {
+					if (!isCloseSliceThrownError(rawErr)) throw rawErr;
+					const err = rawErr;
+					if (err.kind === 'validation-error') {
+						// One `kind` covers two unrelated failures: the
+						// quality probe reported errors (there IS failing
+						// output to fix), and the swarm validation gate
+						// refused outright (there is no output at all — the
+						// activity snapshot is inconsistent, or the caller
+						// is not an active actor). Answering both with
+						// "fix the failing validate output" sent agents to
+						// wait on a green validate that could never have
+						// unblocked them, with the work finished and the
+						// slice uncloseable. The blocked decision carries
+						// its own next step; use it.
+						const blocked =
+							err.validationDecision?.mode === 'blocked'
+								? err.validationDecision
+								: undefined;
+						const envelope = {
+							ok: false as const,
+							kind: 'validation-error',
+							blockerType:
+								blocked !== undefined
+									? ('swarm-validation-blocked' as const)
+									: ('quality-failed' as const),
+							error: {
+								reason: String(err.message),
+								nextAction:
+									blocked?.nextAction ??
+									'Fix the failing validate output, then retry close_slice.',
+								kind: 'validation-error',
+								output: String(err.output ?? ''),
+							},
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
+							validationOutput: String(err.output ?? ''),
+							...(err.validationDecision !== undefined
+								? { validationDecision: err.validationDecision }
+								: {}),
+							...(err.persist !== undefined
+								? { persist: err.persist }
+								: {}),
+						};
+						return toolErrorEnvelope(envelope);
+					}
+					if (err.kind === 'peer-review-required') {
+						const envelope = {
+							ok: false as const,
+							kind: 'peer-review-required',
+							blockerType: 'peer-review-required' as const,
+							error: {
+								reason: String(err.message),
+								nextAction: `${options.namespacePrefix}_proposal_review { action: "submit", proposalId: "${entry.id}", sliceId: "${args.sliceId}", agent: "<implementer>" } then a DIFFERENT agent ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${entry.id}", sliceId: "${args.sliceId}", agent: "<reviewer≠implementer>" }`,
+								kind: 'peer-review-required',
+							},
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
+						};
+						return toolErrorEnvelope(envelope);
+					}
+					if (
+						err.kind === 'gate-pending' ||
+						err.kind === 'gate-unverifiable'
+					) {
+						const pending = err.kind === 'gate-pending';
+						const envelope = {
+							ok: false as const,
+							kind: err.kind,
+							blockerType: err.kind,
+							blockerDetail: err.detail,
+							error: {
+								reason: String(err.message),
+								nextAction: [
+									pending
+										? `The gate runs in the background (handle ${err.detail?.gate?.handle ?? 'unknown'}). Call close_slice again to resume it; the slice was NOT marked done and nothing is wrong yet.`
+										: 'The gate did not give a verdict, which is neither a pass nor a failure of the work. Read the findings, then call close_slice again to run it afresh; the slice was NOT marked done.',
+									err.detail?.gate?.nextAction,
+								]
+									.filter(
+										(part): part is string =>
+											part !== undefined,
+									)
+									.join(' '),
+								kind: err.kind,
+								output: (err.detail?.findings ?? []).join('\n'),
+							},
+							...(err.detail?.gate !== undefined
+								? { gate: err.detail.gate }
+								: {}),
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
+						};
+						return toolErrorEnvelope(envelope);
+					}
+					if (err.kind === 'quality-failed') {
+						const envelope = {
+							ok: false as const,
+							kind: 'quality-failed',
+							blockerType: 'quality-failed' as const,
+							blockerDetail: err.detail,
+							error: {
+								reason: String(err.message),
+								nextAction:
+									err.detail?.gate?.nextAction ??
+									'Fix the reported quality findings, then retry close_slice. The slice was NOT marked done.',
+								kind: 'quality-failed',
+								output: Array.isArray(err.detail?.findings)
+									? err.detail.findings.join('\n')
+									: '',
+							},
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
+						};
+						return toolErrorEnvelope(envelope);
+					}
+					return toolError(
+						err instanceof Error
+							? `${err.message}\n${err.stack ?? ''}`
+							: String(err),
+						'Call proposal_board to list slices.',
+					);
+				}
+
+				// non-destructive branch-integration step. When
+				// per-agent worktrees are on and the slice was closed on an
+				// `agent/*` branch, record that branch for deliberate
+				// integration. This runs BEFORE releasing the lock so the
+				// finished-branch fact is captured while the agent is still
+				// the owner. It performs NO git write — it only *reads* the
+				// current branch (via `git rev-parse`) and writes a registry
+				// entry. When the gate is off it is a no-op (byte-identical).
+				let pendingIntegrationBranch: string | null = null;
+				if (
+					scoped.agentWorktreeEnabled === true &&
+					scoped.pendingIntegrationPathAbs !== undefined &&
+					scoped.run !== undefined
+				) {
+					const branch = await resolveAgentBranch(scoped.run);
+					if (branch !== null) {
+						const worktreePath = await resolveWorktreeTopLevel(
+							scoped.run,
+						);
+						await createPendingIntegrationStore(
+							scoped.pendingIntegrationPathAbs,
+						).record({
+							branch,
+							worktreePath,
+							sliceId: args.sliceId,
+							proposalId: entry.id,
+							recordedAt: new Date().toISOString(),
+						});
+						pendingIntegrationBranch = branch;
+					}
+				}
+
+				let lockReleased = false;
+				let assignmentReleased = false;
+				if (args.releaseLock !== false) {
+					lockReleased = await releaseSliceLock(
+						scoped,
+						entry.id,
+						args.sliceId,
+					);
+					assignmentReleased = await releaseSliceAssignment(
+						scoped,
+						entry.id,
+						args.sliceId,
+					);
+				}
+				await syncProposalRegistry(
+					scoped.workspaceRoot,
+					scoped.layout,
+					scoped.extraFolders ?? [],
+				);
+				if (alreadyClosedPayload !== undefined) {
+					return toolOk({
+						...alreadyClosedPayload,
+						lockReleased,
+						assignmentReleased,
+						persist: persisted,
+						pendingIntegrationBranch,
+						...(validationDecision !== undefined
+							? { validationDecision }
+							: {}),
+					});
+				}
+				return toolOk({
+					...buildCloseSliceClosedResult({
+						proposalId: entry.id,
+						requestedSliceId: args.sliceId,
+						canonicalSliceId: canonicalSliceId(args.sliceId),
+						path: entry.file,
+						...(validationDecision !== undefined
+							? { validationDecision }
+							: {}),
+						...(args.idempotencyKey !== undefined
+							? { idempotencyKey: args.idempotencyKey }
+							: {}),
+					}),
+					proposalId: entry.id,
+					sliceId: args.sliceId,
+					closed: true,
+					lockReleased,
+					assignmentReleased,
+					persist: persisted,
+					pendingIntegrationBranch,
+					...(closeGate !== undefined ? { gate: closeGate } : {}),
+				});
+			},
+		);
+	},
+});
+
+/**
+ * Whether the review rules refuse this verdict on the slice as the
+ * document has it now. Read-only: it decides only whether the proposal is
+ * claimed before the verdict is recorded.
+ */
+const verdictWouldBeRefused = async (
+	docPath: string,
+	args: {
+		readonly sliceId: string;
+		readonly action: 'approve' | 'request_changes';
+		readonly agent: string;
+	},
+	quorum: number,
+): Promise<boolean> => {
+	const md = await readTextOrNull(docPath);
+	if (md === null) return false;
+	const block = md.match(
+		new RegExp(
+			`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+			'm',
+		),
+	);
+	if (block === null) return false;
+	const state = parseReviewState(block[2] ?? '');
+	// With no round open the verdict opens one, which the path below
+	// decides; only a round already open has rules to break.
+	if (state.status === 'none') return false;
+	return !reviewTransition(
+		state,
+		args.action,
+		args.agent,
+		'',
+		args.action === 'approve'
+			? { enforceDistinctAgentName: false, quorum }
+			: { quorum },
+	).ok;
+};
+
+/**
+ * `proposal_review` — peer-review loop for a slice. An implementer
+ * `submit`s a finished slice for review (it is NOT done yet); a DIFFERENT
+ * agent `approve`s it (→ done + lock released) or `request_changes` with an
+ * objection (→ reworkable, lock released). The fixer re-`submit`s and another
+ * agent reviews the fix — the loop repeats until a reviewer has no objection.
+ * `status` reads the current review state without changing it.
+ */
+export const buildReviewRegistration = (
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
+): IToolRegistration => ({
+	id: 'proposal_review',
+	effects: ['write'],
+	writeRoot: 'caller-checkout',
+	// `status` reads the round and changes nothing.
+	readsOnly: (input) =>
+		(input as { readonly action?: unknown } | undefined)?.action ===
+		'status',
+	summary:
+		'Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.',
+	tags: ['proposals'],
+	register: async (server) => {
+		server.registerTool(
+			`${options.namespacePrefix}_proposal_review`,
+			{
+				description:
+					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released, and must attach empirical evidence (commit hash, passing validate exit code, and passing test counts). action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. action=status: read current state. Enforces reviewer ≠ implementer (independent verification).',
+				inputSchema: REVIEW_INPUT_SCHEMA,
+				outputSchema: REVIEW_OUTPUT_SCHEMA,
+			},
+			async (rawArgs: {
+				proposalId: string;
+				sliceId: string;
+				action: 'submit' | 'approve' | 'request_changes' | 'status';
+				agent: string;
+				note?: string | undefined;
+				evidence?: IProposalReviewEvidence | undefined;
+				commitHash?: string | undefined;
+			}) => {
+				const args = { ...rawArgs };
+				const scoped = scopeToCaller(options);
+				// same one-shot self-heal as close_slice.
+				const resolved = await resolveIndexedDoc(
+					scoped,
+					args.proposalId,
+				);
+				if (!resolved.ok) {
+					return toolError(resolved.reason, resolved.nextAction);
+				}
+				const { entry, docPath } = resolved;
+				const missingSliceNextAction = `Call ${options.namespacePrefix}_proposal_get { view: "slices", proposalId: "${entry.id}" } and retry with a declared sliceId. If this historical proposal is already done, do not submit a review: run ${options.namespacePrefix}_proposal_reconcile_folder { id: "${entry.id}", reason: "repair historical proposal state" }. If the done state still needs repair after that, report it to the owner; closing without a review is not a reviewer's step.`;
+				// redact the reviewer note...
+				const redactedNote = args.note
+					? redactSecrets(args.note)
+					: { text: '', redactions: 0 };
+
+				if (args.action === 'status') {
+					const md = await readTextOrNull(docPath);
+					if (md === null)
+						return toolError(`proposal file missing: ${docPath}`);
+					const blockRe = new RegExp(
+						`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+						'm',
+					);
+					const m = md.match(blockRe);
+					if (m === null) {
+						return toolError(
+							`slice "${args.sliceId}" not found in ${entry.file}`,
+							missingSliceNextAction,
+						);
+					}
+					const body = m[2] ?? '';
+					const state = parseReviewState(body);
+					return toolOk({
+						proposalId: entry.id,
+						sliceId: args.sliceId,
+						action: 'status',
+						status: state.status,
+						implementer: state.implementer,
+						reviewer: state.reviewer,
+						rounds: state.rounds,
+						lockReleased: false,
+						assignmentReleased: false,
+						redactedSecrets: 0,
+					});
+				}
+
+				if (
+					args.action === 'approve' ||
+					args.action === 'request_changes'
+				) {
+					const wrongLanguage = languageRefusal(
+						args.note ?? '',
+						scoped.documentationLanguage,
+					);
+					if (wrongLanguage !== undefined) {
+						return toolError(
+							wrongLanguage,
+							'Record the same verdict with its note in English. Nothing was written.',
+						);
+					}
+					const role = canonicalRoleOf(args.agent);
+					if (role !== undefined) {
+						return toolError(
+							`"${args.agent}" is a role, not a reviewer: a verdict is signed by the model that reached it.`,
+							'Record the verdict under the model id you run as (for example `glm-5.3-max`), the same one your review unit is named after.',
+						);
+					}
+					const branches = scoped.developmentPolicy?.branches;
+					// A pack is one reviewer's: a verdict in a review unit is
+					// signed by the agent the unit is named after, never by a
+					// name chosen at the call.
+					const unitAgent = await reviewUnitAgent(
+						scoped.run ?? createGitRunner(scoped.workspaceRoot),
+						branches,
+					);
+					if (unitAgent !== undefined) {
+						if (
+							unitAgent !==
+							resolveWorkAgentId({ model: args.agent }).id
+						) {
+							return toolError(
+								`"${args.agent}" is not the reviewer of this review unit, which is ${unitAgent}'s.`,
+								`Record the verdict as ${unitAgent}, the model this unit was entered as, or enter a review unit of your own.`,
+							);
+						}
+						// One agent, one spelling: the verdict is signed the
+						// way its unit's ref names the agent (`GPT-5.4` and
+						// `gpt-5.4` were two reviewers to every reader).
+						args.agent = unitAgent;
+					}
+					// A verdict the review rules will refuse claims nothing:
+					// claimed first, it left the refused reviewer holding the
+					// proposal, so the reviewer it was refused FOR could not
+					// take it. The refusal itself comes from the path below,
+					// with its own reason.
+					const refusal = await verdictClaimRefusal(
+						scoped.run ?? createGitRunner(scoped.workspaceRoot),
+						branches,
+						entry.id,
+						branches?.integration ?? 'HEAD',
+						options.namespacePrefix,
+						{
+							claim: !(await verdictWouldBeRefused(
+								docPath,
+								{
+									sliceId: args.sliceId,
+									action: args.action,
+									agent: args.agent,
+								},
+								quorumForReview(scoped.reviewPanel),
+							)),
+						},
+					);
+					if (refusal !== undefined) {
+						return toolError(refusal.reason, refusal.nextAction);
+					}
+				}
+
+				// Set when the approver and the implementer, one model, were
+				// seen to be two processes: the approval line then says so.
+				let anotherInstance = false;
+				let nextStatus!:
+					| 'none'
+					| 'in_review'
+					| 'changes_requested'
+					| 'done';
+				let nextImplementer!: string | null;
+				let nextReviewer!: string | null;
+				let nextRounds!: readonly IReviewRound[];
+				let autoTransitionRequested = false;
+				let reopenRequested = false;
+				let attribution: IReviewAttribution | undefined;
+				let approvalOutcome: IApprovalOutcome | undefined;
+				// One journal per repository, whichever worktree reviews.
+				const peerReviewLogPathAbs = join(
+					sharedCheckout(scoped.workspaceRoot) ??
+						scoped.workspaceRoot,
+					PEER_REVIEW_LOG_RELATIVE_PATH,
+				);
+
+				try {
+					await withFileMutex(docPath, async () => {
+						const md = await readTextOrNull(docPath);
+						if (md === null)
+							throw new Error(
+								`proposal file missing: ${docPath}`,
+							);
+
+						const blockRe = new RegExp(
+							`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+							'm',
+						);
+						const m = md.match(blockRe);
+						if (m === null) {
+							throw new Error(
+								`slice "${args.sliceId}" not found in ${entry.file}`,
+							);
+						}
+						const body = m[2] ?? '';
+						const slicePlan = parseProposalSlicePlan(
+							entry.id,
+							md,
+						)?.slices.find((slice) => {
+							const parsedSliceId = slice.sliceId.toLowerCase();
+							const requestedSliceId = args.sliceId.toLowerCase();
+							return (
+								parsedSliceId === requestedSliceId ||
+								parsedSliceId.endsWith(`.${requestedSliceId}`)
+							);
+						});
+						const acceptanceCriteria =
+							slicePlan?.acceptanceCriteria ?? [];
+						let state = parseReviewState(body);
+						// A proposal handed to review with no round open for
+						// this slice: the implementer never submitted and is
+						// gone. Open the round under the name Git gives the
+						// delivery — the reviewer names a commit, not a person.
+						if (
+							args.action !== 'submit' &&
+							needsAttributedRound(state, md)
+						) {
+							const derived = await attributeDelivery({
+								run:
+									scoped.run ??
+									createGitRunner(scoped.workspaceRoot),
+								proposalId: entry.id,
+								declaredFiles: slicePlan?.files ?? [],
+								commitHash:
+									args.commitHash ??
+									args.evidence?.commitHash ??
+									'',
+								integration:
+									scoped.developmentPolicy?.branches
+										.integration ?? 'HEAD',
+								refShape: scoped.developmentPolicy?.branches,
+							});
+							const namedNoCommit =
+								args.commitHash === undefined &&
+								args.evidence?.commitHash === undefined;
+							const deliveredAt =
+								!derived.ok &&
+								args.action === 'request_changes' &&
+								namedNoCommit
+									? await deliveredCommitOf(
+											scoped.run ??
+												createGitRunner(
+													scoped.workspaceRoot,
+												),
+											scoped.developmentPolicy?.branches
+												.integration ?? 'HEAD',
+											entry.id,
+										)
+									: undefined;
+							if (deliveredAt !== undefined) {
+								// The work is in the integration branch: an
+								// objection to it names the commit it is about.
+								throw Object.assign(
+									new Error('change request names no commit'),
+									{
+										toolError: toolError(
+											`${entry.id} was delivered in ${deliveredAt}, and this change request names no commit: an objection is about what landed.`,
+											`Read that commit, run the slice's declared gate, and pass commitHash: "${deliveredAt}" with the objection. If you could not inspect it, record no verdict and release the claim.`,
+										),
+									},
+								);
+							}
+							if (
+								!derived.ok &&
+								args.action === 'request_changes' &&
+								namedNoCommit
+							) {
+								// Sending work back needs no delivering commit —
+								// the objection may be that nothing was delivered.
+								attribution = unrecordedAttribution(
+									'',
+									`no delivering commit was named for ${entry.id} ${args.sliceId}`,
+								);
+							} else if (!derived.ok) {
+								throw Object.assign(new Error(derived.reason), {
+									toolError: toolError(
+										`no review round is open for ${entry.id} ${args.sliceId}, and ${derived.reason}`,
+										`Pass commitHash: the commit that delivered the slice, so the implementer is derived from Git. Missing: ${derived.missing}. Never submit on the implementer's behalf.`,
+									),
+								});
+							} else {
+								attribution = derived.attribution;
+							}
+							state = openAttributedRound(state, attribution);
+						}
+						if (args.action === 'approve') {
+							const sameAgentNameAsImplementer =
+								attribution === undefined &&
+								isSelfApproval(
+									state.implementer ?? undefined,
+									args.agent,
+									scoped.reviewIndependence,
+								);
+							const approver = buildReviewIdentity(
+								args.agent,
+								scoped.reviewIdentityDeps ?? {
+									hostname: () =>
+										require('node:os').hostname(),
+									pid: () => process.pid,
+									envHost: () => process.env.MCP_HOST,
+								},
+							);
+							const identityCheck =
+								attribution === undefined
+									? await checkApproveIdentity({
+											workspaceRoot: scoped.workspaceRoot,
+											proposalId: entry.id,
+											sliceId: args.sliceId,
+											approver,
+											recordedImplementer:
+												state.implementer ?? undefined,
+											independence:
+												scoped.reviewIndependence,
+											...(scoped.reviewIdentityDeps !==
+											undefined
+												? {
+														deps: scoped.reviewIdentityDeps,
+													}
+												: {}),
+										})
+									: checkAttributedApprover(
+											attribution,
+											args.agent,
+											scoped.reviewIndependence,
+										);
+							const submittedBy =
+								identityCheck.ok && 'submitter' in identityCheck
+									? (identityCheck.submitter as {
+											readonly agent?: string;
+										} | null)
+									: null;
+							anotherInstance =
+								typeof submittedBy?.agent === 'string' &&
+								isSameModel(submittedBy.agent, args.agent);
+							if (!identityCheck.ok) {
+								if (
+									sameAgentNameAsImplementer &&
+									identityCheck.reason === 'self-approve'
+								) {
+									throw Object.assign(
+										new Error(
+											'reviewer must be a different agent from the implementer',
+										),
+										{
+											toolError: toolError(
+												'reviewer must be a different agent from the implementer',
+											),
+										},
+									);
+								}
+								throw Object.assign(
+									new Error(identityCheck.reason),
+									{
+										toolError: toolError(
+											identityCheck.reason,
+											identityCheck.nextAction,
+										),
+									},
+								);
+							}
+							const evidenceError =
+								requireProposalReviewEvidence(
+									args.evidence,
+									acceptanceCriteria,
+								) ??
+								(await unintegratedEvidenceError(
+									scoped.run ??
+										createGitRunner(scoped.workspaceRoot),
+									scoped.developmentPolicy?.branches
+										.integration,
+									args.evidence?.commitHash,
+								)) ??
+								(await supersededEvidenceError(
+									scoped.run ??
+										createGitRunner(scoped.workspaceRoot),
+									scoped.developmentPolicy?.branches
+										.integration,
+									entry.id,
+									slicePlan?.files ?? [],
+									args.evidence?.commitHash,
+								));
+							if (evidenceError !== null) {
+								throw Object.assign(
+									new Error('missing empirical evidence'),
+									{
+										toolError: evidenceError,
+									},
+								);
+							}
+						}
+
+						// `args.action === 'status'` already returned
+						// above, but that narrowing does not cross the
+						// `withFileMutex(docPath, async () => { ... })` closure
+						// boundary this code runs inside — TS re-widens `args`
+						// back to its full declared union inside any nested
+						// function. Re-proving it here (rather than an `as
+						// any` cast) keeps the check real: if this callback
+						// is ever reached with `action: 'status'`, it throws
+						// instead of silently mismatching `IReviewAction`.
+						if (args.action === 'status') {
+							throw new Error(
+								'unreachable: action "status" already returned above',
+							);
+						}
+						// the quorum the panel policy resolved,
+						// not the implicit 1 this call used to pass. With
+						// nothing configured it IS 1, so the pre-panel flow
+						// is the same code path rather than a parallel one.
+						const quorum = quorumForReview(scoped.reviewPanel);
+						const result = reviewTransition(
+							state,
+							args.action,
+							args.agent,
+							args.action === 'approve' &&
+								args.evidence !== undefined
+								? `${approvalNote(args.evidence, redactedNote.text)}${anotherInstance ? ` ${ANOTHER_INSTANCE_MARK}` : ''}`
+								: redactedNote.text,
+							args.action === 'approve'
+								? { enforceDistinctAgentName: false, quorum }
+								: { quorum },
+						);
+						if (!result.ok || result.next === undefined) {
+							// Two DIFFERENT rules both phrase their refusal
+							// with "different agent": reviewer ≠ implementer,
+							// and reviewer ≠ the previous round's reviewer
+							// (the x00056 chain rule). Matching the shared
+							// phrase collapsed them into the first message,
+							// so an agent refused for reviewing two rounds in
+							// a row was told it was the implementer — and the
+							// fix that message names does not resolve the gate
+							// that actually fired. Only the implementer rule
+							// gets the implementer wording; anything else is
+							// reported verbatim, because the reason a caller
+							// is refused has to be the reason it was refused.
+							if (
+								result.reason
+									?.toLowerCase()
+									.includes('than the implementer')
+							) {
+								throw Object.assign(new Error(result.reason), {
+									toolError: toolError(
+										'reviewer must be a different agent from the implementer',
+									),
+								});
+							}
+							throw Object.assign(
+								new Error(
+									result.reason ??
+										'invalid review transition',
+								),
+								{
+									toolError: toolError(
+										result.reason ??
+											'invalid review transition',
+										'Call proposal_board to list slices.',
+									),
+								},
+							);
+						}
+						const next = result.next;
+						nextStatus = next.status;
+						nextImplementer = next.implementer;
+						nextReviewer = next.reviewer;
+						nextRounds = next.rounds;
+
+						// Rewrite the slice block: replace the review lines, and on approval
+						// also flip `- status: done`.
+						let block = body.replace(
+							/^[-*]\s*review-(?:state|implementer|reviewer|log):.*$\n?/gm,
+							'',
+						);
+						block = withClosingLines(
+							block,
+							[
+								...renderReviewLines(next),
+								...(attribution === undefined
+									? []
+									: [
+											renderAttributionLine(
+												attribution,
+												args.agent,
+											),
+										]),
+							],
+							md.slice((m.index ?? 0) + m[0].length),
+						);
+						const inReview =
+							readFrontmatterField(
+								md,
+								'status',
+							)?.toLowerCase() === 'review';
+						if (next.status === 'done') {
+							block = flipSliceStatusDone(block);
+						} else if (
+							next.status === 'changes_requested' &&
+							inReview
+						) {
+							// The work goes back to its author: the slice is
+							// open again, and so is the proposal.
+							block = flipSliceStatusInProgress(block);
+							reopenRequested = true;
+						}
+						let updated = md.replace(blockRe, `${m[1]}${block}`);
+						const verifiedCommit =
+							args.action === 'approve'
+								? (args.evidence?.commitHash ??
+									attribution?.commit)
+								: undefined;
+						if (verifiedCommit !== undefined) {
+							updated = withShippedIn(updated, verifiedCommit);
+						}
+						// Only an approval that actually CLOSED the slice may
+						// transition the proposal. This ran on every approval,
+						// which was indistinguishable while a quorum could
+						// only be 1; with a panel, the first of two approvals
+						// would have marked the whole proposal done while the
+						// slice was still waiting for its second reviewer.
+						//
+						// The close itself is the normal transition, run once
+						// the document is written: frontmatter, folder and
+						// index move together, under the same gates as any
+						// other `review → done`.
+						autoTransitionRequested =
+							args.action === 'approve' &&
+							inReview &&
+							shouldAutoTransitionOnReviewState(next) &&
+							everySliceReviewed(entry.id, updated);
+						if (args.action === 'approve') {
+							approvalOutcome = describeApprovalOutcome(
+								next,
+								quorum,
+							);
+						}
+						await writeFileAtomic(docPath, updated);
+						if (args.action === 'submit') {
+							await recordReviewSubmitIdentity({
+								workspaceRoot: scoped.workspaceRoot,
+								proposalId: entry.id,
+								sliceId: args.sliceId,
+								agent: args.agent,
+								...(scoped.reviewIdentityDeps !== undefined
+									? { deps: scoped.reviewIdentityDeps }
+									: {}),
+							});
+						}
+						if (
+							args.action === 'approve' ||
+							args.action === 'request_changes'
+						) {
+							await appendPeerReviewLog(peerReviewLogPathAbs, {
+								ts: new Date().toISOString(),
+								proposal_id: entry.id,
+								slice_id: args.sliceId,
+								agent: args.agent,
+								verdict:
+									args.action === 'approve'
+										? 'approved'
+										: 'request_changes',
+								...(redactedNote.text !== ''
+									? { note: redactedNote.text }
+									: {}),
+							});
+						}
+					});
+				} catch (rawErr: unknown) {
+					if (!isToolErrorCarryingError(rawErr)) throw rawErr;
+					if (rawErr.toolError !== undefined) return rawErr.toolError;
+					const nextAction =
+						rawErr.message.includes('slice "') &&
+						rawErr.message.includes('not found')
+							? missingSliceNextAction
+							: 'Call proposal_board to list slices.';
+					return toolError(rawErr.message, nextAction);
+				}
+
+				// approve/request_changes free the slice (done, or reworkable).
+				let lockReleased = false;
+				let assignmentReleased = false;
+				if (
+					nextStatus === 'done' ||
+					nextStatus === 'changes_requested'
+				) {
+					lockReleased = await releaseSliceLock(
+						scoped,
+						entry.id,
+						args.sliceId,
+					);
+					assignmentReleased = await releaseSliceAssignment(
+						scoped,
+						entry.id,
+						args.sliceId,
+					);
+				}
+				await syncProposalRegistry(
+					scoped.workspaceRoot,
+					scoped.layout,
+					scoped.extraFolders ?? [],
+				);
+				// Recorded BEFORE the close below: `review → done` reads this
+				// log for the independent approval it requires.
+				if (scoped.peerReviewLogPathAbs !== undefined) {
+					await recordProposalReviewAction({
+						logPathAbs: scoped.peerReviewLogPathAbs,
+						proposalId: entry.id,
+						sliceId: args.sliceId,
+						action: args.action,
+						implementer: nextImplementer,
+						reviewer: nextReviewer,
+						...(args.action === 'approve'
+							? { verdict: 'approved' as const }
+							: args.action === 'request_changes'
+								? { verdict: 'requested_changes' as const }
+								: {}),
+					}).catch(() => undefined);
+				}
+				const lifecycle = await moveProposalAfterVerdict({
+					close: autoTransitionRequested,
+					reopen: reopenRequested,
+					proposalId: entry.id,
+					sliceId: args.sliceId,
+					agent: args.agent,
+					options: {
+						namespacePrefix: scoped.namespacePrefix,
+						workspaceRoot: scoped.workspaceRoot,
+						proposalsDirAbs: scoped.proposalsDirAbs,
+						indexPathAbs: scoped.indexPathAbs,
+						indexFreeMoves: movesStayOutOfTheIndex(
+							scoped.developmentPolicy,
+						),
+						...(scoped.run === undefined
+							? {}
+							: { gitRunner: scoped.run }),
+						...(scoped.peerReviewLogPathAbs === undefined
+							? {}
+							: {
+									peerReviewLogPathAbs:
+										scoped.peerReviewLogPathAbs,
+								}),
+						...(scoped.requirePeerReview === undefined
+							? {}
+							: { requirePeerReview: scoped.requirePeerReview }),
+						...(scoped.requireValidateEvidence === undefined
+							? {}
+							: {
+									requireValidateEvidence:
+										scoped.requireValidateEvidence,
+								}),
+						...(scoped.folderPolicy === undefined
+							? {}
+							: { folderPolicy: scoped.folderPolicy }),
+						...(options.validateEvidenceDeps === undefined
+							? {}
+							: {
+									validateEvidenceDeps:
+										options.validateEvidenceDeps,
+								}),
+					},
+				});
+				if (args.action === 'submit') {
+					await journalReviewSubmission(
+						scoped.workspaceRoot,
+						entry.id,
+						args.sliceId,
+						args.agent,
+					);
+				}
+				return toolOk({
+					proposalId: entry.id,
+					sliceId: args.sliceId,
+					action: args.action,
+					status: nextStatus,
+					implementer: nextImplementer,
+					reviewer: nextReviewer,
+					rounds: nextRounds,
+					lockReleased,
+					assignmentReleased,
+					redactedSecrets: redactedNote.redactions,
+					...(attribution === undefined
+						? {}
+						: { attributedTo: attribution.implementer }),
+					...lifecycle,
+					// Only present on approve, and only ever says "done"
+					// when the slice actually closed. An approval that
+					// completes nothing must not read like one that does,
+					// or the round stalls with everyone believing it ended.
+					...(approvalOutcome === undefined
+						? {}
+						: {
+								quorum: approvalOutcome.quorum,
+								approvalsStanding: approvalOutcome.approvedBy,
+								quorumMessage: approvalOutcome.message,
+							}),
+				});
+			},
+		);
+	},
+});

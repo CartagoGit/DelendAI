@@ -1,0 +1,945 @@
+---
+id: q00021
+title: "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)"
+kind: plan
+status: ready
+type: proposal
+track: trust
+date: 2026-09-07
+parent:
+    - b00239 # Re-brand legacy MCP Vertex → DelendAI (migration engine IMigration/IMigrationJournal ya consolidados)
+    - q00019 # State Engine Phase 1 — SQLite shadow driver (necesitamos la conexión SQLite para persistir el epoch)
+    - q00020 # Work Telemetry (progress es operational state, NO TTL cache; debe migrar cuando SQLite sea canónico)
+depends-on:
+    - b00239 S4 # Engine IMigration + journal .delendai/migrations-applied.json + 6 format-specific migrators
+    - q00019 # Conexión SQLite consolidada (StateSqliteDriver) para reutilizar como lifecycle state store
+nonGoals:
+    - "No es un GC que escanea la caché y borra lo que parezca viejo; es un sistema versionado de lifecycle."
+    - "No reemplaza ICacheEvictionRegistry (TTL/keepLastN); convive con él."
+    - "No reemplaza StateMigrator (schema migrations de un mismo store); convive con él."
+    - "No introduce red, LLM, embeddings ni semántica para decidir qué migrar; la decisión está en código versionado."
+    - "No borra resultados/`results/` de forma genérica; los records son propiedad del plugin owner."
+    - "No escanea el árbol en cada boot; cuando el epoch ya coincide, el coste es exactamente 1 lectura de metadata."
+contains:
+    proposals:
+        - { id: f00513, kind: feat, required: true, priority: P0, track: trust,
+            rationale: "S0 — Inventario histórico de layouts: tabla old-path / current-path / owner / class / acción para r00010, f00065, f00080, x00052, rebrand, proposal workflow refactors, progress y JSON→SQLite. Sin este inventario el resto es guesswork." }
+        - { id: f00526, kind: feat, required: true, priority: P0, track: trust,
+            rationale: "S1 — Contratos puros: ICacheLayoutManifest, ICacheLayoutMigration (extiende IMigration reutilizando `detect`/`plan`/`apply`), ICacheArtifactClass = derived | ephemeral | operational | records. Tests puros sin tocar filesystem." }
+        - { id: f00527, kind: feat, required: true, priority: P0, track: trust,
+            rationale: "S2 — Lifecycle state store: SqliteLifecycleStateStore (scope=cache-layout, applied_epoch, updated_at) usando la conexión del state-sqlite driver; ILifecycleStateStore interface + fallback a marker sólo si SQLite aún no está consolidado." }
+        - { id: f00528, kind: feat, required: true, priority: P0, track: trust,
+            rationale: "S3 — Integración en bootstrap: `runPendingCacheLayoutMigrations()` antes de cargar plugins, con cache en memoria del epoch durante la vida del proceso. Acceptance O(1): metadata reads ≤ 1, readdir = 0, stat = 0, write = 0, network = 0." }
+        - { id: f00529, kind: feat, required: true, priority: P0, track: trust,
+            rationale: "S4 — Migraciones históricas reales (prioridad L1→L5 del pasted text): logs/memory/usage-tracking → results/, caches no canónicas pre-f00065, ephemeral pre-f00080, índices derivados antiguos, rebrand root. Cada migrator respeta las clases (borrar/preservar/migrar)." }
+        - { id: f00530, kind: feat, required: true, priority: P1, track: trust,
+            rationale: "S5 — Hardcoded path eradication + lint:no-legacy-cache-paths + lint:cache-layout-ratchet. Pasar `rg '\\.cache/mcp-vertex|mcp-vertex' packages plugins tools apps extensions` y clasificar; wirear ambos lints en `validate`." }
+        - { id: f00531, kind: feat, required: true, priority: P1, track: trust,
+            rationale: "S6 — CLI operator (delendai cache migrations / status / gc) sobre el mismo engine; nada de MCP tool dedicada a disparar migraciones automáticas." }
+        - { id: f00532, kind: feat, required: false, priority: P2, track: perf,
+            rationale: "S7 (opt-in) — Throttle de `cache_gc`: last_cache_eviction_at + interval configurable para que el dry-run periódico no penalice el boot." }
+    unblocks:
+        - { id: b00239 S10, rationale: "Cuando entre el epoch cache-layout post-rebrand, el cierre de b00239 deja de tener que llevar el `LegacyMigrationManager` como pieza separada — todo cuelga del engine IMigration ya consolidado." }
+        - { id: q00019, rationale: "El JsonToSqliteMigration (queue/progress/counters/checkpoint) reusa el epoch cache-layout y la conexión SqliteLifecycleStateStore; el lifecycle es la palanca que justifica pasar stores a SQLite." }
+        - { id: q00020, rationale: "Si el layout de progress cambia (p.ej. de JSON a SQLite), la migración está versionada; progress deja de poder ser tratado accidentalmente como TTL cache." }
+---
+
+# q00021 — Plan — Cache Layout Lifecycle & Legacy Reaper
+
+> **ID remap (2026-09-08).** S1-S7 originally reserved `f00514`-`f00520`.
+> Those ids were later allocated to the proposals-SQLite line (`f00514`
+> lifecycle-events/outbox, `f00515` quarantine, `f00516` FTS5, `f00517`
+> context-compiler budgets, `f00518` db-doctor, `f00519` tombstones), so
+> every reference in this plan pointed at the wrong proposal. The cache
+> deliverables are now `f00526`-`f00532`. `f00513` (S0) is unaffected and
+> already done.
+
+
+## Goal
+
+Que un proyecto que haya usado **cualquier** versión anterior de DelendAI arranque hoy, sin intervención del usuario, sin gastar un solo token de modelo, sin escanear el árbol, y quede alineado al layout actual — incluyendo `b00239` (rebrand), `r00010` (logs/memory/usage → `results/`), `f00065` (consolidación de caches), `f00080` (ephemeral canónico), `x00052` (proposal workflow), la promoción de SQLite como store canónico (`q00019`), y el nuevo `progress` (`q00020`) como estado **operacional**, no derivable.
+
+El mecanismo es **un sistema determinista de lifecycle versionado** que:
+
+1. introduce un entero `CACHE_LAYOUT_EPOCH`, independiente de la versión npm, del schema SQLite y de cada store;
+2. persiste el epoch aplicado por scope (`cache-layout`) en SQLite, reutilizando la conexión del state engine;
+3. expone un registry `ICacheLayoutMigrationRegistry` que aplica siempre la cadena `N → N+1` (nunca `N → M` con heurística), siguiendo la filosofía del `legacy-migration.service.ts` ya consolidado por `b00239 S2`;
+4. garantiza fast-path O(1) cuando el epoch ya coincide: **1 lectura de metadata, 0 filesystem walk, 0 stat, 0 rm, 0 logs, 0 red, 0 modelo**;
+5. clasifica cada artefacto como `derived | ephemeral | operational | records` y aplica la acción correcta (borrar / mover / preservar / migrar);
+6. es idempotente y crash-safe (epoch se actualiza al final; rerun tras crash es seguro);
+7. se ejecuta antes de cargar plugins, en el bootstrap, donde ya se ejecuta `runPendingMigrations` de `b00239 S4`.
+
+## why
+
+### El hueco que el pasted text señala — y que el repo confirma
+
+`r00010` ([proposal](docs/delendai/proposals/done/refactors/r00010-separate-accumulated-results-logs-memory-usage-tracking-from-derivable-cache-under-cache-mcp-vertex-results.md)) movió `logs`, `memory` y `usage-tracking` a `results/` y **declaró explícitamente** que la migración retroactiva para proyectos consumidores no se implementó. Eso es deuda legacy demostrable hoy.
+
+A eso se suma, en el HEAD actual:
+
+- **b00239 S4** acaba de aterrizar (commit `1de797a76`): los 6 format-specific migrators ya existen, pero el `LegacyMigrationManager` aún es lógica ad-hoc y los paths legacy físicos siguen vivos en el árbol (todavía hay 13+ archivos con `.cache/mcp-vertex` hardcodeado, ver `S5`).
+- **q00019** (SQLite shadow driver) está consolidando la conexión SQLite como store canónico. Sin un mecanismo de epoch, los stores que pasen de JSON a SQLite no tendrán cómo versionar el corte sin una capa extra.
+- **q00020** introduce `progress`, que **no** debe tratarse como TTL cache — un agente que lo considere borrable por edad pierde trabajo real del swarm.
+- Hay tooling/runtime con `.cache/mcp-vertex` literal (`auto-work-invoke` y otros): el rebrand puede **recrear** la ruta legacy después de limpiarla.
+
+El sistema actual (`ICacheEvictionRegistry`) resuelve "este artefacto es válido pero viejo", no "este artefacto pertenece a un layout retirado". Son problemas distintos y necesitan capas distintas.
+
+### Las tres capas que NO deben mezclarse
+
+| Capa                                                              | Qué resuelve                                                    | Dónde vive              |
+| ----------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------- |
+| **StateMigrator** (`packages/core/src/lib/migrations/migrate.ts`) | Cambios de schema dentro del mismo store (`queue.json v2 → v3`) | Ya existe               |
+| **CacheEvictionRegistry** (plugin `cache`)                        | TTL/keepLastN sobre el layout actual                            | Ya existe               |
+| **CacheLayoutLifecycle** (este plan)                              | Compatibilidad entre layouts distintos (epoch N → N+1)          | **A crear — este plan** |
+
+Mezclarlas produce bugs reales: un plugin que añade TTL "para limpiar legacy" borra el `results/memory/` de otro owner.
+
+## non-goals
+
+- Reemplazar `ICacheEvictionRegistry` (TTL/keepLastN del layout actual) ni `StateMigrator` (schema migrations). Conviven.
+- Inventar un mark-and-sweep global que escanee la caché y borre lo que "no parezca usado". Riesgo: borra plugins deshabilitados temporalmente, custom `cacheDir`, resultados acumulados, extensiones externas.
+- Borrar genéricamente `results/` desde el lifecycle. Los records son del plugin owner; él decide su retención.
+- Hardcodear rutas legacy (`.cache/mcp-vertex`, etc.) en el runtime/tooling. Si no, el rebrand recrea la basura que acabamos de limpiar.
+- Introducir red, embeddings, LLM, MCP ni filesystem walks para decidir qué migrar. La decisión está en código versionado.
+
+---
+
+## architecture
+
+### 1.1 CACHE_LAYOUT_EPOCH
+
+Entero independiente de:
+
+- `version` del `package.json`;
+- `STATE_SQLITE_SCHEMA_VERSION` (1 hoy);
+- `IMigration.id` (que es un id textual, no un número);
+- versiones de cada store individual.
+
+```ts
+// packages/core/src/lib/cache/cache-layout-manifest.ts
+export const CACHE_LAYOUT_EPOCH = 9;
+```
+
+Cambia **sólo cuando cambia la compatibilidad del layout persistido**. Un bugfix → `9 → 9`. Un cambio legacy `.cache/mcp-vertex/foo → .cache/delendai/foo` → `9 → 10`. JSON → SQLite de un store → `10 → 11`.
+
+#### Cadena de epochs histórica
+
+Esta tabla se rellena en S0 (`f00513`). Es la línea base contra la que el ratchet de §6.3 detecta cambios estructurales no bumpeados. Una nueva entrada **requiere** bump de epoch + al menos un migrator en `cache-layout-migrations-registry.ts`.
+
+| Epoch | Introduced by   | Cambio de layout persistido                                                                                | Commit / propuesta                                           |
+| ----- | --------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 1     | f00065          | Cache consolidado en `<workspaceRoot>/.cache/delendai/` (mata subproject `.cache` dispersos)               | `tools/scripts/lint/check-cache.script.ts` (umbrella commit) |
+| 2     | f00080          | Ephemeral canónico `<pluginCacheDir>/exec/<name>` (mata `os.tmpdir()`, `mkdtempSync(tmpdir…)`, `/tmp/`)    | `tools/scripts/lint/check-ephemeral-paths.script.ts`         |
+| 3     | r00010          | `logs/`, `memory/`, `usage-tracking/` → `results/{logs,memory,usage-tracking}/`; consumers **no** migrados | proposal `done/refactors/r00010-*.md`                        |
+| 4     | x00052          | `docs/delendai/proposals/index.json` → `.cache/delendai/proposals/index.json` (regenerable)                | `done/legacy/closed/fixes/x00052-*.md`                       |
+| 5     | b00239 S4       | legacy `.cache/mcp-vertex/` → `.cache/delendai/`; `delendai.config.json`/`docs/delendai/` también          | commit `1de797a76` (`cache-and-docs.migrator.ts`)            |
+| 6     | q00019 S?       | Proposals + counters + status → `state.sqlite` (shadow verified)                                           | pending (`q00019-state-engine-phase-1-*.md`)                 |
+| 7     | q00020 S?       | `progress/` → `state.sqlite` (operational, NO TTL cache)                                                   | pending (`q00020-plan-work-telemetry-*.md`)                  |
+| 8     | q00019 S?       | `swarm.sqlite` consolida agents, claims, leases, queue, worktree_registry                                  | pending                                                      |
+| **9** | **HEAD actual** | **Layout presente: nada que migrar en un workspace recién clonado**                                        | `CACHE_LAYOUT_EPOCH = 9` en `cache-layout-manifest.ts`       |
+
+> **Implicación para S4**: las migraciones L1–L5 cierran los huecos de los epochs `3` (L1) y `5` (L5, parcialmente — los sub-paths operativos y records dentro del path legacy `.cache/mcp-vertex/`). Los epochs `1`–`2` ya están consolidados por los lints `check-cache` y `check-ephemeral-paths`; S4 no necesita replicarlos. Los epochs `6`–`8` son trabajo futuro de q00019/q00020 y se incorporarán cuando sus migrators JSON→SQLite aterricen.
+
+### 1.2 Persistencia del epoch
+
+Reutilizar la conexión SQLite del state engine. NO crear una segunda DB.
+
+```sql
+-- en STATE_SQLITE_SCHEMA_SQL (extender)
+CREATE TABLE IF NOT EXISTS lifecycle_meta (
+    scope TEXT PRIMARY KEY,
+    applied_epoch INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+```
+
+Fila inicial:
+
+```
+scope = 'cache-layout'
+applied_epoch = 9
+```
+
+Conceptualmente:
+
+```ts
+export interface ILifecycleStateStore {
+  getAppliedEpoch(scope: 'cache-layout'): Promise<number | null>;
+  setAppliedEpoch(scope: 'cache-layout', epoch: number): Promise<void>;
+  withMigrationLock<T>(fn: () => Promise<T>): Promise<T>;
+}
+```
+
+`SqliteLifecycleStateStore` (en `packages/state-sqlite/`) es la implementación canónica. Si `q00019` aún no estuviera consolidado cuando se ejecute S3, fallback a marker temporal en `.delendai/cache-layout-applied.json` (NO fuera del cache, siguiendo la convención `b00239 S2`). **Importante: `sqlite_schema_version ≠ cache_layout_epoch`** — son ejes ortogonales.
+
+### 1.3 Fast-path obligatorio
+
+```ts
+// pseudocódigo en el bootstrap
+const applied = await lifecycleState.getAppliedEpoch('cache-layout');
+if (applied === CACHE_LAYOUT_EPOCH) {
+  return; // O(1): 1 lectura de metadata, nada más
+}
+```
+
+Cuando coincide:
+
+- ❌ `readdir`
+- ❌ recursive walk
+- ❌ `stat`
+- ❌ glob
+- ❌ hash del filesystem
+- ❌ `rm`
+- ❌ logs informativos
+- ❌ lectura de propuestas
+- ❌ comprobación de timestamps
+- ❌ invocación MCP
+- ❌ modelo, embeddings, red
+
+Cachear el resultado durante la vida del proceso (`Map<string, number>` module-level) para que la comprobación ocurra **una vez por boot**, no una vez por entrypoint.
+
+### 1.4 Cuándo ejecutar
+
+Orden canónico en `packages/core/src/lib/cli/assemble.ts` (donde ya corre `runPendingMigrations` de `b00239`):
+
+```
+resolve workspace
+↓
+resolve corePaths/cacheDir
+↓
+open lifecycle metadata (SQLite o marker fallback)
+↓
+run pending cache-layout migrations (S3 hook)
+↓
+run pending identity migrations (b00239 — ya existe)
+↓
+load/register plugins
+↓
+normal DelendAI boot
+```
+
+Las migraciones de layout **antes** de identidad: si identidad renombra el path legacy `.cache/mcp-vertex → .cache/delendai`, el lifecycle debe haber clasificado el contenido antes del rename. De lo contrario, el contenido nuevo cae sobre artefactos no clasificados.
+
+### 1.5 Registry de migraciones
+
+Reutilizar la forma de `IMigration` (`packages/core/src/lib/contracts/interfaces/workspace-migration.interface.ts`). No inventar `ICacheLayoutMigration` desde cero: extender.
+
+```ts
+// packages/core/src/lib/cache/cache-layout-migration.ts
+export interface ICacheLayoutMigrationContext extends IMigrationContext {
+  readonly cacheDirAbs: string;          // resuelto y validado
+  readonly lifecycleState: ILifecycleStateStore;
+  readonly helpers: ICacheLayoutHelpers; // dropDerived, moveIfDestinationMissing, ...
+}
+
+export interface ICacheLayoutHelpers {
+  readonly dropDerived: (relPath: string) => Promise<void>;
+  readonly moveIfDestinationMissing: (fromRel: string, toRel: string) => Promise<'moved' | 'kept-source' | 'skipped-conflict'>;
+  readonly removeEmptyDirectory: (relPath: string) => Promise<void>;
+  readonly pathExists: (relPath: string) => Promise<boolean>;
+  readonly assertContained: (relPath: string) => void;
+  readonly migrateStore: <T>(...) => Promise<void>;       // merge de records
+  readonly importStoreToSqlite: <T>(...) => Promise<void>; // JSON → SQLite
+}
+
+export interface ICacheLayoutMigration extends IMigration {
+  readonly fromEpoch: number;
+  readonly toEpoch: number;
+}
+```
+
+Aplicar siempre la cadena completa:
+
+```
+5 → 6 → 7 → 8
+```
+
+Nunca `5 → 8` con heurística. Si falta un tramo, error explícito (mismo patrón que `StateMigrator` ya rechaza cadenas incompletas y downgrades).
+
+#### Integración con `DEFAULT_MIGRATIONS` (sin engine paralelo)
+
+El Cache Layout Lifecycle **se registra como un migrator más** dentro del engine `legacy-migration.service.ts` consolidado por `b00239 S4`. No existe un engine paralelo, ni un segundo journal, ni una segunda pila de errores. Esto es deliberado y se concreta en tres puntos:
+
+1. **Una sola entry en `DEFAULT_MIGRATIONS`** (`packages/core/src/lib/workspace-migration/migration-registry.ts:36`):
+
+   ```ts
+   export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
+     // ... los 6 migrators de b00239 S4 + cache-and-docs ...
+     createCacheLayoutReaper(),  // ← nueva entry de q00021
+   ] as const;
+   ```
+
+   El `id` declarado es `cacheLayoutReaper:v9` (uno por epoch actual; cada bump genera `cacheLayoutReaper:v10`, etc.).
+
+2. **Un solo journal en `.delendai/migrations-applied.json`**. El `applied_epoch` del cache-layout vive en la misma fila que el resto de migraciones, con un campo adicional `cache_layout_epoch?: number` opcional al final del registro. Esto evita:
+   - dos archivos de estado con riesgo de divergencia;
+   - duplicación de la lógica de "fast-path O(1) cuando no hay nada que hacer";
+   - tener que sincronizar dos crons/limpiadores.
+
+3. **Hook en `packages/cli/src/lib/cli/entrypoint.ts#ensureMigrated`** (donde ya se invoca `ensureWorkspaceMigrated`). El cache-layout reaper corre **antes** de los migrators de identidad (L5 antes de L2), y la salida de su `plan()` se prepende al array `legacyPaths` del `bootstrapCacheLayout` posterior. Así una sola pasada de filesystem reconcilia identidad + layout, en orden topológico.
+
+> **Por qué NO un engine separado**: la historia reciente (`b00239 S2`→`S4`) costó consolidar el engine actual. Reabrirlo duplicaría journals, error classes, gates de idempotencia y surfaces de testing, sin aportar ninguna propiedad nueva — el engine actual ya implementa todo lo que un cache-layout lifecycle necesita (`detect`/`plan`/`apply`, journal, silent-on-success, `IMigrationOutcome`).
+
+### 1.6 Clasificación obligatoria (las 4 clases)
+
+| Clase         | Ejemplos                                                        | Acción permitida                                           |
+| ------------- | --------------------------------------------------------------- | ---------------------------------------------------------- |
+| `derived`     | proposal index, drift snapshot, generated rules cache           | borrar y regenerar                                         |
+| `ephemeral`   | verify scratch, old exec artefacts, crashed tmp files           | borrar                                                     |
+| `operational` | queue, progress, locks, checkpoint, counters, peer-review state | migrar o preservar                                         |
+| `records`     | `results/memory`, `results/logs`, `results/usage-tracking`      | migración específica del owner; **nunca** borrado genérico |
+
+Regla de seguridad absoluta: **el Legacy Reaper no puede borrar genéricamente `results/`**. Esto NO impide que el plugin `logs` conserve los últimos N logs (eso es eviction, no lifecycle). Lo prohibido es `"esto parece viejo → delete results/foo"` desde el lifecycle genérico.
+
+### 1.7 Primitivas (helpers)
+
+Evitar veinte `fs` operations inline en cada migration. Helpers pequeños, auditables, reutilizables:
+
+- `dropDerived(path)` — borrar sabiendo que se puede regenerar
+- `moveIfDestinationMissing(from, to)` — atómico, respeta coexistencia
+- `removeEmptyDirectory(path)`
+- `pathExists(path)`
+- `assertContained(path)` — rechaza `..` y symlinks fuera del workspace
+- `migrateStore(...)` — merge de records por clave estable
+- `importStoreToSqlite(...)` — transacción: BEGIN, insertar, validar counts, devolver
+
+Garantizan: containment, symlink safety, atomicidad, report, idempotencia.
+
+---
+
+### 2. Catálogo inicial de migraciones (S4)
+
+Resultado de S0 (inventario). Aquí el catálogo **mínimo** que ya sabemos necesario:
+
+### L1 — Pre-`results/` (`r00010`)
+
+```
+<cacheDir>/logs/             → <cacheDir>/results/logs/
+<cacheDir>/logs-errors/      → <cacheDir>/results/logs-errors/
+<cacheDir>/memory/           → <cacheDir>/results/memory/
+<cacheDir>/usage-tracking/   → <cacheDir>/results/usage-tracking/
+```
+
+**No borrar fuentes.** Migrar:
+- memory → merge de notes por ID/clave estable
+- logs → merge/relocate JSONL preservando eventos
+- usage → merge sin perder historical spend
+
+Sólo tras validar el destino: borrar la fuente. **Este caso es P0**: `r00010` dijo expresamente que la migración para consumidores quedó pendiente.
+
+### L2 — Caches no canónicas pre-`f00065`
+
+Auditar:
+
+```
+tools/scripts/.cache
+subproject/.cache
+app/.cache
+```
+
+Si son artefactos de DelendAI conocidos y totalmente derivables: `dropDerived`. La migration lleva la **lista histórica conocida**, no hace recursive scan.
+
+### L3 — Ephemeral paths pre-`f00080`
+
+```
+.verify-tmp/
+scratch temporales
+compiled bundles temporales
+old exec directories
+driver snapshots antiguos
+```
+
+`dropDerived` con la lista conocida.
+
+### L4 — Índices derivados antiguos
+
+Todo índice que:
+- tiene nueva ubicación;
+- pasó a SQLite;
+- se regenera desde los `.md` (p.ej. `proposals/index.json`)
+
+Borrar en la ruta legacy. Regenerable.
+
+### L5 — Rebrand legacy `MCP Vertex → DelendAI`
+
+Cuando quede fijado, NO `rm -rf` el path legacy `.cache/mcp-vertex`. Clasificar contenido:
+
+- **Derived** (`bootstrap`, `drift`, `rules cache`, `proposal index`, `verify`, old generated snapshots) → descartar.
+- **Operational** (`agent queue`, `progress`, `proposal counters`, `pending integration`, `checkpoint`, `peer-review state`) → migrar.
+- **Records** (`results/*`) → migrar/conservar.
+- **Worktrees** → comprobar estado; huérfanos/derivables limpian vía APIs git, no dejar metadata git rota.
+
+**Custom `cacheDir`**: si el host usa `{"cacheDir": ".foo/bar"}`, el engine opera sobre el root resuelto. **NO** tocar el legacy `.cache/mcp-vertex` ni `.cache/delendai` basándose sólo en los defaults.
+
+---
+
+### 3. JSON → SQLite (cuando `q00019` sea canónico)
+
+Para cada store que pase de JSON a SQLite:
+
+1. `BEGIN IMMEDIATE`
+2. importar filas
+3. validar counts/invariantes
+4. commit
+5. eliminar el JSON antiguo
+6. actualizar `applied_epoch`
+
+Nunca `delete JSON → import DB`. Si el proceso crashea durante el import:
+
+- el JSON debe seguir presente
+- la transacción debe rollback
+- el siguiente boot repite
+- el epoch no avanza
+
+Esto es el "JsonToSqliteMigration" que reutilizará `q00019 S?` para la conexión.
+
+---
+
+### 4. Concurrencia y crash safety
+
+### Concurrencia
+
+Varios procesos/agentes pueden arrancar DelendAI simultáneamente.
+
+```ts
+await lifecycleState.withMigrationLock(async () => {
+  const applied = await lifecycleState.getAppliedEpoch('cache-layout');
+  if (applied === CACHE_LAYOUT_EPOCH) return;
+  // ... aplicar chain
+});
+```
+
+`withMigrationLock` usa `BEGIN IMMEDIATE` en SQLite (lock exclusivo de escritura), o el primitive equivalente del `state-sqlite` driver. Nunca dos migraciones destructivas en paralelo.
+
+### Crash safety
+
+- Idempotente (rerun tras crash = mismo resultado)
+- Fuente solo se borra después de destino válido
+- Epoch solo se actualiza al final
+- Para movimientos grandes: `copy → verify → atomic rename → source delete`
+- Para SQLite: transacción
+
+Cada migration devuelve `IMigrationOutcome` (ya tipado en `legacy-migration.service.ts`) para que el rerun sepa si quedó a medias.
+
+---
+
+### 5. Filesystem safety
+
+Todas las rutas de migrations deben:
+
+- resolverse contra workspace/cache root
+- comprobar containment (`assertContained`)
+- rechazar `..` escape
+- no seguir symlinks que saquen la operación del workspace
+- no aceptar paths del LLM
+- no construir comandos shell para borrar
+- usar APIs de filesystem tipadas
+
+Reutilizar las garantías que ya viven alrededor de `resolveWorkspaceContained` (en `packages/core/src/lib/shared/`).
+
+---
+
+### 6. Hardcoded path eradication (S5)
+
+### 6.1 Pasada manual
+
+```bash
+rg 'legacy \.cache/mcp-vertex|mcp-vertex' packages plugins tools apps extensions
+```
+
+Cada hit clasificado en una de estas categorías:
+
+| Categoría                  | Acción                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Código runtime/tooling     | usar exclusivamente `DEFAULT_CORE_PATHS`, `ctx.cacheDir`, `ctx.pluginCacheDir`, `buildSwarmPaths(…)`, `cacheRoot()` |
+| Tests + migration fixtures | pueden conservar literales cuando prueban compatibilidad                                                            |
+| Docs/propuestas `done/`    | pueden conservar contexto histórico                                                                                 |
+
+Inventario esperado (HEAD actual ya muestra ≥13 archivos con el path legacy `.cache/mcp-vertex` en tests; la pasada completa es S5 S1).
+
+### 6.2 Lint: `lint:no-legacy-cache-paths`
+
+Falla cuando source/runtime/tooling introduce literalmente el path legacy `.cache/mcp-vertex/...` o `.mcp-vertex/...`.
+
+Permitido (whitelist por path):
+- `packages/core/src/lib/workspace-migration/migrations/*.ts` (los migrators deben conocer el nombre viejo para detectarlo)
+- `packages/core/src/lib/cache/cache-layout-migration-*.ts` (registro de migraciones históricas)
+- `tests/**/migration-fixtures/**`
+- `docs/delendai/proposals/done/**`
+
+### 6.3 Lint: `lint:cache-layout-ratchet`
+
+Si alguien modifica `CACHE_LAYOUT_MANIFEST` (ver §7) sin incrementar `CACHE_LAYOUT_EPOCH`, CI falla. Implementación: snapshot checksum del manifest bajo `tests/cache/layout-manifest.spec.ts`.
+
+---
+
+### 7. Manifest (`CACHE_LAYOUT_MANIFEST`)
+
+Documentación ejecutable del layout actual. NO es fuente de verdad para mark-and-sweep; sólo:
+
+- documenta el layout actual;
+- detecta cambios estructurales;
+- asigna ownership;
+- genera tests;
+- **obliga** a pensar en compatibilidad.
+
+```ts
+type CacheArtifactClass = 'derived' | 'ephemeral' | 'operational' | 'records';
+
+interface ICacheArtifactDescriptor {
+  readonly id: string;          // 'proposal-index', 'progress', 'memory', ...
+  readonly owner: string;       // 'proposals', 'q00020', 'memory', ...
+  readonly path: string;        // 'proposals/index.json', 'results/memory', ...
+  readonly class: CacheArtifactClass;
+}
+
+export const CACHE_LAYOUT_MANIFEST = {
+  epoch: 9,
+  artifacts: [
+    { id: 'proposal-index',    owner: 'proposals', path: 'proposals/index.json',                class: 'derived' },
+    { id: 'proposal-progress', owner: 'proposals', path: 'progress/proposal-progress.json',     class: 'operational' },
+    { id: 'memory',            owner: 'memory',    path: 'results/memory',                      class: 'records' },
+    { id: 'logs',              owner: 'logs',      path: 'results/logs',                        class: 'records' },
+    { id: 'usage-tracking',    owner: 'usage-tracking', path: 'results/usage-tracking',        class: 'records' },
+    // ...
+  ],
+} as const;
+```
+
+TTL NO va aquí. TTL sigue siendo propiedad del eviction registry.
+
+---
+
+### 8. Plugins externos
+
+Default: `unknown = preserve`. No borrar caches de plugins externos por no reconocerlas.
+
+Extensión futura (no en este plan):
+
+```ts
+// en plugin manifest
+cacheLifecycle: { epoch: 3, migrations: [...] }
+```
+
+Fuera de alcance de q00021. Primero resolver core + plugins built-in.
+
+---
+
+### 9. Relación con `cache_gc`
+
+| Aspecto                 | `cache_gc`                             | `cache_layout_migrator` (este plan)  |
+| ----------------------- | -------------------------------------- | ------------------------------------ |
+| Cuándo corre            | periódico / manual                     | una vez por cambio de epoch          |
+| Qué decide              | TTL, keepLastN                         | `N → N+1` migrations explícitas      |
+| Fuente de la decisión   | `ICacheEvictionRegistry` (declarativa) | `CACHE_LAYOUT_MIGRATIONS` (registry) |
+| Coste en boot           | (optimizable en S7)                    | **O(1) cuando ya coincide**          |
+| Puede borrar `results/` | sólo vía regla explícita del owner     | **NO**                               |
+
+No se sustituye `cache_gc`. Se añade el lifecycle por encima.
+
+---
+
+### 10. CLI operator (S6)
+
+Documentar y exponer:
+
+```
+delendai cache status          # epoch actual, último aplicado, pendientes
+delendai cache migrations      # lista las migraciones registradas (declaration order)
+delendai cache migrate --dry-run
+delendai cache migrate         # apply pending
+delendai cache gc              # delega al cache_gc existente (sin cambios)
+```
+
+La CLI usa el mismo engine. **No** añadir herramienta MCP dedicada a disparar migraciones — el usuario no debería tener que pedirle al agente "limpia la cache". Debe ocurrir por versión.
+
+---
+
+### 11. Throttle de `cache_gc` (S7, opt-in)
+
+Problema: el boot sweep de `cache_gc` con `runOnBoot` y dry-run por defecto puede penalizar arranque.
+
+Solución: `last_cache_eviction_at` + `cacheEvictionIntervalMs` (default 24h). Fast-path:
+
+```ts
+if (now - lastCacheEvictionAt < cacheEvictionIntervalMs) return;
+```
+
+Slice independiente. Modifica comportamiento del eviction existente → puede necesitar compat flag.
+
+---
+
+## slices
+
+Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La numeración sigue la convención `S0`-`S7` del pasted text.
+
+### S0 — Inventario histórico (entregable: `f00513`)
+- **Status**: review
+- **Files**: `docs/delendai/proposals/done/chores/c00527-anexo-q00021-f00513-inventario-historico-de-cache-layout-epochs-1-9.md`
+- **Tarea**: tabla `old-path / current-path / owner / class / acción / introducido-en / seguro-borrar` para `r00010`, `f00065`, `f00080`, `x00052`, rebrand, proposal workflow refactors, `q00019` (SQLite stores), `q00020` (progress).
+- **Gate**: `bun run lint:proposals` (the annex parses and every link resolves).
+- **Aceptación**: firmado por el `proposal_guardian` o un reviewer que **no** sea el autor.
+- **Shipped**: already delivered before this unit, in commit `c54547404` (`chore(proposals): close c00527 inventory annex`). The deliverable lives in the annex `c00527`, not in the `ready/chores/f00513-inventory.md` path this block used to declare (that file never existed; the annex was archived under `done/chores/`). Its table covers epochs 1-9 and eight sections (r00010, f00065, f00080, x00052, rebrand, workflow refactors, q00019, q00020), each row with its introducing proposal or commit and a safe-to-delete verdict. This unit only corrects the declared path and records the shipping commit.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S1 — Contratos puros (entregable: `f00526`)
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/src/lib/cache/cache-layout-migration.helper.ts`
+  - `packages/core/tests/src/lib/cache/cache-layout-migration.helper.spec.ts`
+- **Tarea**: tipos puros. `ICacheArtifactClass` + `ICacheLayoutManifest`, `ICacheLayoutMigration` (`fromEpoch`/`toEpoch`, `detect`/`plan`/`apply` sobre un contexto con `cacheDirAbs` y `helpers`), y las reglas puras: `assertDroppable` (falla en records/operational y en sus ancestros), `resolveMigrationChain` (cadena completa `N -> N+1`, error en hueco/duplicado/downgrade), `validateManifest`, `findOwningArtifact`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/cache-layout-migration.helper.spec.ts` (35 tests puros, sin filesystem ni SQLite).
+- **Aceptación**: ningún `fs` import en `cache-layout-migration.helper.ts`. `IMigration.detect` se mantiene como contrato del probe barato.
+- **Corrections to the design, following the code**:
+  - `ICacheLayoutMigration` does not `extends IMigration`: its `detect`/`plan`/`apply` take a narrower context (`ICacheLayoutMigrationContext`), and a function property cannot narrow its parameter in a subtype. It reuses `IMigration['id']` and `IMigrationPlanStep`, and S3 adapts a chain to the engine's journal.
+  - The context carries no `lifecycleState`: only the bootstrap reads and writes the epoch; a migration that could write it could skip its own successors.
+  - `migrateStore` and `importStoreToSqlite` are not in `ICacheLayoutHelpers`. No store moves to SQLite yet (epochs 6-8 are future work of q00019/q00020), so they would be untested surface; they arrive with the first migration that needs them.
+  - The manifest lists only artifacts present in the code today (`progress/` is q00020 and does not exist yet) and none that belong to the proposals domain: `lint:core-proposals-boundary` forbids core from naming that domain, so the proposal index, id counters and peer-review log are declared by the proposals plugin, not here. It lives in `contracts/constants/` because the file-conventions lint requires exported constants there.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S2 — Lifecycle state store (entregable: `f00527`)
+- **Status**: review
+- **Files**:
+  - `packages/state/src/lib/lifecycle-state.interface.ts`
+  - `packages/state/src/index.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/src/lib/cache/file-lifecycle-state-store.service.ts`
+  - `packages/core/tests/src/lib/cache/file-lifecycle-state-store.service.spec.ts`
+  - `packages/state-sqlite/src/lib/lifecycle-state-store.ts`
+  - `packages/state-sqlite/src/lib/lifecycle-state-store.spec.ts`
+  - `packages/state-sqlite/src/lib/contracts/constants/lifecycle-meta.constant.ts`
+  - `packages/state-sqlite/src/lib/schema.ts`
+  - `packages/state-sqlite/src/public/index.ts`
+- **Tarea**: `ILifecycleStateStore` con dos implementaciones. `SqliteLifecycleStateStore` (sobre la conexión `bun:sqlite` que se le pasa; `withMigrationLock` = `BEGIN IMMEDIATE`, con cola en proceso) y `createFileLifecycleStateStore` (marker `.delendai/cache-layout-applied.json`, lock con el `withFileMutex` compartido). La tabla `lifecycle_meta` se crea con `IF NOT EXISTS` al abrir, sin tocar `STATE_SQLITE_SCHEMA_VERSION`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/file-lifecycle-state-store.service.spec.ts` y `bun test packages/state-sqlite/src/lib/lifecycle-state-store.spec.ts` (`bun run test:sqlite` lo incluye).
+- **Aceptación**: `getAppliedEpoch('cache-layout')` con epoch ya escrito retorna exactamente el número (no `null`); un marker dañado equivale a ausente; un fallo dentro del lock no avanza el epoch en SQLite.
+- **Corrections to the design, following the code**:
+  - The interface lives in `@delendai/state`, not in core: `@delendai/state-sqlite` depends on `state` and not on core, and both stores must implement the same type.
+  - The marker is the store core actually uses today. Nothing in the product opens `state.sqlite` through core (core has no SQLite driver and the driver is a shadow with no consumer yet), so S3 wires the file store; the SQLite store is ready for the day the state engine hands core a connection.
+  - The marker lock reuses `withFileMutex` (token ownership, heartbeat, stale takeover) rather than a new lock file protocol.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S3 — Integración en bootstrap (entregable: `f00528`)
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
+  - `packages/core/src/lib/cache/cache-layout-helpers.service.ts`
+  - `packages/core/src/lib/cache/cache-layout-migrations.registry.ts`
+  - `packages/core/src/lib/workspace-migration/cache-layout-step.service.ts`
+  - `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`
+  - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/tests/src/lib/cache/run-pending-cache-layout-migrations.service.spec.ts`
+  - `packages/core/tests/src/lib/cache/cache-layout-helpers.service.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/cache-layout-step.service.spec.ts`
+- **Tarea**: `runPendingCacheLayoutMigrations` lee el epoch una vez, sale si coincide (y lo recuerda por proceso), y si no recorre la cadena completa bajo `withMigrationLock`, registrando el epoch solo al final. `createCacheLayoutHelpers` implementa las primitivas (contención léxica y por realpath, sin seguir symlinks, `dropDerived` que falla en records/operational, sin sobrescritura, todo rechazado en dry run). `ensureWorkspaceMigrated` ejecuta el paso antes de los migrators de identidad y traduce el resultado al vocabulario `IMigrationOutcome`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache packages/core/tests/src/lib/workspace-migration` (fast path: 1 lectura, 0 escrituras, árbol idéntico; segundo y tercer boot no tocan nada; crash no avanza el epoch y el reintento termina; dos procesos ejecutan una vez; cacheDir custom; hueco y downgrade fallan con mensaje).
+- **Corrections to the design, following the code**:
+  - The hook is `ensureWorkspaceMigrated` (core), which every entrypoint already calls after the adoption check, not `assemble.ts` (that runs after the server is already assembled) nor the CLI's `ensureMigrated` (a thin wrapper of the same function).
+  - `CACHE_LAYOUT_EPOCH` is 5, not 9. Epochs 6 to 8 of the table were planned SQLite stores that have not shipped; a build cannot carry a workspace through steps that do not exist, and numbering ahead of them would force no-op steps forever. Each future store takes the next number when it lands. A workspace with no recorded epoch is taken as epoch 0 and walks `0 -> 5`, one step per landed layout change (f00065, f00080, r00010, x00052, rebrand), each a detect-driven probe.
+  - The file name `cache-layout-bootstrap.ts` was already taken by the directory bootstrap, so the runner has its own name.
+  - The registry is empty in this slice and an empty registry makes the runner a no-op (`unregistered`, no read, no write): recording epoch 5 before the migrators of S4 exist would mark workspaces migrated that were never migrated.
+  - Known limit: when `cacheDir` was just changed in the configuration, the layout step runs against the new directory before the config transition moves the old cache into it.
+  - The cache directory is resolved lazily, only when there is something to carry, so the fast path never parses the configuration.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S4 — Migraciones históricas (entregable: `f00529`)
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/cache/migrations/results-segregation.migration.ts`
+  - `packages/core/src/lib/cache/migrations/canonical-scratch.migration.ts`
+  - `packages/core/src/lib/cache/migrations/unchanged-in-cache.migration.ts`
+  - `packages/core/src/lib/cache/cache-layout-migrations.registry.ts`
+  - `packages/core/src/lib/cache/cache-layout-helpers.service.ts`
+  - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout-migration.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
+  - `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`
+  - `packages/core/tests/src/lib/cache/migrations/cache-layout-history.spec.ts`
+  - `packages/core/tests/src/lib/cache/run-pending-cache-layout-migrations.service.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/cache-layout-step.service.spec.ts`
+- **Tarea**: la cadena `0 -> 5` real. `2 -> 3` (L1, r00010) mueve `logs`, `logs-errors`, `memory` y `usage-tracking` bajo `results/`, entrada por entrada, sin sobrescribir: un conflicto deja ambas copias y el origen. `1 -> 2` (L3) renombra `.verify-tmp` y `.commit-policy` dentro del cache. Los pasos `0 -> 1`, `3 -> 4` y `4 -> 5` no tienen nada que mover dentro del cache y existen para que la cadena sea un epoch por paso.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache packages/core/tests/src/lib/workspace-migration` (records sobreviven con su contenido, merge sin overwrite, desconocidos/operational intactos, dry run no cambia el árbol, cacheDir custom, symlink fuera del cache no se sigue, segundo run no-op).
+- **Corrections to the design, following the code**:
+  - The lifecycle step runs AFTER the identity migrators, not before. Those are what rename an older build's cache directory; run first, the layout would find an empty directory, record the epoch, and the records inside the legacy-named directory would never be moved.
+  - L2 (`tools/scripts/.cache`, `subproject/.cache`, `app/.cache`) and L4 (`docs/.../proposals/index.json`) live outside the cache directory. The lifecycle helpers are contained to the cache directory by design, and deleting files in a user's source tree on a hard-coded list is the kind of guess this proposal rules out, so those two are not deleted; their epochs are pass-through steps. L5 is the identity engine's rename.
+  - A workspace with nothing to carry is not recorded: a clean project is left byte-identical (the contract of the identity engine), and pays the chain's `lstat` probes once per process. A rehearsal runs before the lock is taken, because taking it creates `.delendai/`.
+  - An unreadable configuration makes the step `skipped` (nothing touched, nothing recorded), not failed: a broken config file must not report a migration failure on every boot.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S5 — Hardcoded paths + lint (entregable: `f00530`)
+- **Status**: review
+- **Files**:
+  - `tools/scripts/lint/no-legacy-cache-paths.script.ts`
+  - `tools/scripts/lint/no-legacy-cache-paths.constant.ts`
+  - `tools/scripts/lint/no-legacy-cache-paths.interface.ts`
+  - `tools/scripts/lint/no-legacy-cache-paths.script.spec.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.script.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.constant.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.interface.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.script.spec.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.snapshot.json`
+  - `package.json`
+- **Tarea**: la pasada de `git grep` sobre `packages plugins tools apps extensions` no encontró ningún literal `.cache/<nombre retirado>` en código runtime/tooling fuera de los migrators (y comentarios de ellos), así que no hubo nada que erradicar; el lint lo mantiene así. `lint:no-legacy-cache-paths` escanea los fuentes versionados (falla si no escanea nada) con whitelist de migrators, migraciones de cache, tests y fixtures. `lint:cache-layout-ratchet` compara epoch y checksum de los artefactos del manifest con un snapshot; cambiar artefactos sin subir el epoch falla, y `--update` se niega a grabar ese caso. Ambos van encadenados en `lint:architecture`, que corre en CI.
+- **Gate**: `bun run vitest run tools/scripts/lint/no-legacy-cache-paths.script.spec.ts tools/scripts/lint/cache-layout-ratchet.script.spec.ts` y `bun run lint:no-legacy-cache-paths && bun run lint:cache-layout-ratchet`.
+- **Corrections to the design, following the code**:
+  - The ratchet is a script with a JSON snapshot in `tools/scripts/lint`, not a rule in `packages/rules` with a spec under `tests/cache`: every other repository-wide ratchet is a script plus a baseline file, and the manifest lives in core, which `packages/rules` does not import.
+  - The lint is not wired into `validate` directly but into `lint:architecture`, which CI runs; a lint reachable only from `validate:run` fails `lints-reach-ci`.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S6 — CLI operator (entregable: `f00531`)
+- **Status**: review
+- **Files**:
+  - `packages/cli/src/commands/cache.command.ts`
+  - `packages/cli/src/commands/cache.command.spec.ts`
+  - `packages/cli/src/commands/registry.ts`
+  - `packages/cli/src/commands/registry.spec.ts`
+  - `packages/cli/src/contracts/constants/help-translation.constant.ts`
+  - `packages/core/src/cli.ts`
+  - `packages/core/src/lib/workspace-migration/cache-layout-step.service.ts`
+  - `tools/scripts/lint/cli-ui-parity.map.json`
+- **Tarea**: `delendai cache status|migrations|migrate [--dry-run]|gc [--dry-run|--apply]`, un solo comando con subcomandos sobre el mismo `runCacheLayoutStep`. `status` hace un ensayo (no escribe) y muestra epoch aplicado, epoch objetivo y lo pendiente; `migrations` lista la cadena registrada; `gc` delega en la herramienta `cache_gc` existente y por defecto solo previsualiza. No añade tool MCP.
+- **Gate**: `bun run vitest run --root packages/cli src/commands` (status sin escritura, migrate --dry-run no cambia el árbol, migrate conserva los records, gc dry-run por defecto, subcomando desconocido = USAGE).
+- **Corrections to the design, following the code**:
+  - One command file with subcommands, like `migrate.command.ts`, instead of five files: the subcommands are a few lines each over the same engine.
+  - `gc` previews unless `--apply` is given (the plan only asked for a dry-run flag); eviction deletes by age, so applying it should be deliberate.
+  - This slice builds on the registry that S4 adds (open pull request at the time of writing), so its branch carries that merge.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/cache/boot-eviction-throttle.service.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/src/lib/plugins/load-config-file.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/schema/delendai.config.schema.json`
+  - `packages/core/tests/src/lib/cache/boot-eviction-throttle.service.spec.ts`
+- **Tarea**: `cache.evictionIntervalMs` (opt-in; ausente o 0 = comportamiento de siempre). Con intervalo, el barrido de arranque comprueba `.delendai/cache-eviction-at.json` y no corre si el último fue hace menos del intervalo; el sello se escribe solo después de que el barrido corrió.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/boot-eviction-throttle.service.spec.ts` (sin intervalo no escribe nada; dry-run respeta el throttle; un reloj virtual que avanza 24 h hace correr el barrido; un fallo no sella).
+- **Corrections to the design, following the code**:
+  - The throttle sits in core around the boot sweep (`assemble.ts`), not in the `cache` plugin: the sweep and its `runOnBoot` posture are core's, and the plugin only contributes rules. The `cache_gc` tool and `delendai cache gc` are on-demand and are never throttled.
+  - The default is no throttle, not 24 h: a default would change what every existing project's boot does. A project opts in with the value it wants.
+  - The stamp lives in `.delendai/`, not in the cache directory the sweep evicts from.
+
+## acceptance
+
+NO usar `< 1.7ms` como gate. CI es ruidoso.
+
+Usar gate **operacional** (en `tests/perf/cache-layout-fast-path.spec.ts`):
+
+| Operación                                                    | Permitido |
+| ------------------------------------------------------------ | --------- |
+| Lecturas de metadata                                         | **≤ 1**   |
+| Enumeraciones de filesystem (`readdir`, `glob`, walk)        | **0**     |
+| Operaciones de escritura (`write`, `rename`, `rm`, `unlink`) | **0**     |
+| Llamadas de red                                              | **0**     |
+| Logs informativos                                            | **0**     |
+
+Se puede añadir benchmark informativo aparte; no es gate. La única promesa estricta: **coste constante y sin escaneo cuando el proyecto ya está actualizado**.
+
+---
+
+### 14. Tests de aceptación obligatorios
+
+### Fast path (S3)
+Con `applied_epoch === CACHE_LAYOUT_EPOCH`:
+
+- ≤ 1 lectura de metadata
+- 0 `readdir`, 0 `stat`, 0 `rm`, 0 escrituras, 0 logs, 0 llamadas externas
+
+Verificación: spy sobre `fs.promises.*` y sobre `lifecycleState.getAppliedEpoch` cuenta exactamente 1.
+
+### Second boot (S3+S4)
+```
+boot 1: migration corre
+boot 2: O(1) no-op
+boot 3: O(1) no-op
+```
+
+### r00010 fixture (S4 L1)
+Fixture: `cache/memory`, `cache/logs`, `cache/usage-tracking` con datos sintéticos.
+Resultado: `cache/results/memory`, `cache/results/logs`, `cache/results/usage-tracking`.
+**Todos los registros sobreviven.**
+
+### Derived (S4 L4)
+Legacy proposal index en ruta antigua: eliminado. Regenerable posteriormente vía `sync_proposals`.
+
+### JSON → SQLite (S3+S4 — cuando `q00019` canónico)
+Fixture con `queue`, `progress`, `counters`, `checkpoint`. Verificar: `rows imported`, `commit successful`, `legacy removed only afterwards`.
+
+### Crash
+Inyectar fallo en mitad de migration. Segundo intento: `no corruption`, `no duplicate state`, `successful retry`. Epoch no avanzó en el primer intento.
+
+### Concurrency
+Dos migrators simultáneos (procesos/agents). Sólo uno ejecuta acciones.
+
+### Custom cacheDir
+Nunca toca defaults incorrectamente. Test: `{"cacheDir": ".foo/bar"}` opera sobre `.foo/bar`.
+
+### Symlink escape
+`assertContained` rechaza symlink a `..` o fuera del workspace.
+
+### Unknown plugin
+Directorio no reconocido: **preserved**.
+
+### Records
+Intentar `dropDerived('results/memory')`: **hard failure** (lanza o aborta con error explícito).
+
+### Epoch chain
+Falta migration `7 → 8`: aborta con mensaje claro.
+
+### Layout ratchet (S5)
+Modificar `CACHE_LAYOUT_MANIFEST.artifacts` sin incrementar `epoch`: CI falla.
+
+### Legacy literal ratchet (S5)
+Introducir el path legacy `.cache/mcp-vertex/foo` en nuevo runtime source: CI falla.
+
+---
+
+## risks and mitigations
+
+1. Un consumidor puede saltar varias generaciones de DelendAI y llegar al layout actual **automáticamente** (sin intervención, sin LLM).
+2. Todos los datos no regenerables sobreviven (`results/memory`, `results/logs`, `results/usage-tracking`).
+3. Todo artefacto derivable conocido de layouts retirados desaparece.
+4. El nuevo DelendAI no vuelve a recrear ninguna ruta legacy (lint `no-legacy-cache-paths` lo impide).
+5. Las migrations son idempotentes y crash-safe.
+6. Las migrations **no** usan LLM ni MCP ni red ni embeddings ni filesystem walks cuando el epoch ya coincide.
+7. Un proyecto ya migrado no escanea el filesystem en posteriores boots.
+8. SQLite (`q00019`) y filesystem migrations mantienen versiones independientes (enteros distintos, schema version vs cache layout epoch).
+9. Plugins externos/desconocidos no sufren borrados automáticos.
+10. `bun run validate` queda green.
+11. CI obliga a cualquier futuro cambio de layout a traer su migration correspondiente (ratchet).
+
+---
+
+## notes
+
+| Riesgo                                       | Mitigación                                                                                |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Un migrator rompe datos reales               | Tests con fixtures, gate de "records nunca se borran genéricamente", `dryRun` por defecto |
+| Concurrencia: dos procesos migran a la vez   | `withMigrationLock` (`BEGIN IMMEDIATE`); el segundo ve epoch ya actualizado y sale        |
+| Crash a mitad de migration                   | Idempotencia + epoch al final; rerun seguro                                               |
+| Path safety (symlink, `..`)                  | `assertContained` en todos los helpers; tests dedicados                                   |
+| Custom `cacheDir` no respetado               | Engine opera sobre root resuelto; tests con `cacheDir` custom                             |
+| Performance regression                       | Gate operacional (no absoluto); spy en fs en tests                                        |
+| Sobrescritura de coexistencia origen/destino | `moveIfDestinationMissing` no sobrescribe; reporta conflicto                              |
+| Olvido de bumpear epoch al cambiar layout    | Lint ratchet + snapshot checksum                                                          |
+
+---
+
+### 17. Decisión arquitectónica final
+
+No implementar un "limpiador inteligente de cosas que DelendAI no esté usando".
+
+Implementar:
+
+> **Un sistema determinista de lifecycle versionado.**
+
+Regla:
+
+```
+current artifact + stale        → eviction policy
+old known layout + derived      → delete once
+old known layout + persistent   → migrate once
+unknown                         → preserve
+already on current epoch        → do nothing
+```
+
+Esto elimina basura histórica sin convertir DelendAI en un daemon que reescanea constantemente su propia caché, y sin gastar un solo token de modelo para decidir qué conservar.
+
+---
+
+### 18. Relación con el resto del cascade
+
+- **b00239 S4** (recién aterrizado) → provee `IMigration`/`IMigrationJournal`/registry. q00021 los reutiliza y los especializa para layout.
+- **b00239 S10** (`LegacyMigrationManager`) → cuando q00021 aterrice, ese manager deja de ser lógica ad-hoc; cuelga del engine IMigration consolidado.
+- **q00019** (SQLite shadow) → provee la conexión SQLite que `SqliteLifecycleStateStore` reusa. Sin q00019, S2 cae al fallback marker.
+- **q00020** (progress) → al pasar a SQLite (o cambiar de ubicación), JsonToSqliteMigration usa el epoch cache-layout. Progress deja de poder ser tratado como TTL cache.
+- **r00010** (done) → la migración L1 cierra la deuda explícita que r00010 dejó pendiente para consumidores.
+
+### 19. Orden recomendado de ejecución
+
+```
+S0 (inventario)
+   ↓
+S1 (contratos)
+   ↓
+S2 (lifecycle state — depende de q00019 consolidado)
+   ↓
+S3 (bootstrap + fast-path gate)
+   ↓
+S4 (L1 → L5, priorizando r00010 + hardcoded paths)
+   ↓
+S5 (lint + hardcoded path eradication)
+   ↓
+S6 (CLI operator)
+   ↓
+S7 (cache_gc throttle, opt-in)
+```
+
+S4 puede entregarse en varios PRs siguiendo la prioridad L1 > L2 > L3 > L4 > L5.
+
+---
+
+### 20. Anexo: relación con el pasted text original
+
+El pasted text que motiva este plan tiene 29 secciones; este `q00021` las mapea así:
+
+| Sección pasted                | Dónde vive aquí              |
+| ----------------------------- | ---------------------------- |
+| §1-§2 (problema, principio)   | §"why" + §1                  |
+| §3-§4 (epoch, persistencia)   | §1.1, §1.2                   |
+| §5 (fast-path)                | §1.3, §13, §14               |
+| §6 (cuándo ejecutar)          | §1.4                         |
+| §7 (registry)                 | §1.5, §1.7                   |
+| §8 (NO mark-and-sweep)        | §"non-goals", §"why"         |
+| §9 (clasificación)            | §1.6                         |
+| §10 (primitivas)              | §1.7                         |
+| §11 (catálogo L1-L5)          | §2                           |
+| §12 (JSON → SQLite)           | §3                           |
+| §13 (progress)                | §"why" + §18 (q00020)        |
+| §14 (hardcoded paths)         | §6                           |
+| §15 (lint no-legacy)          | §6.2                         |
+| §16 (lint layout)             | §6.3                         |
+| §17 (manifest)                | §7                           |
+| §18 (plugins externos)        | §8                           |
+| §19-§20 (concurrencia, crash) | §4                           |
+| §21 (filesystem safety)       | §5                           |
+| §22 (logging)                 | §1.3 (sin logs en fast-path) |
+| §23 (tokens = 0)              | §"non-goals", §15            |
+| §24 (relación cache_gc)       | §9                           |
+| §25 (throttle)                | §11                          |
+| §26 (slices S0-S7)            | §12                          |
+| §27 (tests de aceptación)     | §14                          |
+| §28 (criterio perf)           | §13                          |
+| §29 (DoD)                     | §15                          |
+
+**Delta material del pasted text que se incorpora:**
+
+- §3 (epoch independiente) — incorporado
+- §4 (marker file como fallback) — refinado: SQLite preferido, marker sólo si `q00019` no consolidado
+- §5 (NO logs en fast-path) — incorporado como gate operacional explícito
+- §9 (clasificación 4 clases) — incorporada; regla de "results nunca genérico" como DoD
+- §11 L1-L5 — adaptado al estado actual del repo (L1 = `r00010` con paths concretos)
+- §12 (JSON → SQLite con transacción) — incorporado; bloqueado por `q00019`
+- §13 (progress como operational) — referencia a `q00020`
+- §14-§16 (lints) — incorporados como S5
+- §23 (tokens = 0) — DoD literal
+- §28 (gate operacional, no absoluto) — incorporado
+
+**Lo que el pasted text sugería pero el estado actual ya provee:**
+
+- "`packages/core/src/lib/migrations/migrate.ts` como runner versionado" — sí existe; `IMigration` ya está tipado. q00021 **reutiliza** este contrato (no lo reinventa).
+- "convención `.delendai/`" — `b00239 S2` ya la establece (`migration-registry.ts:36`). q00021 la extiende con `.delendai/cache-layout-applied.json` para el fallback marker.
+- "`classifyResidual` ya distingue live/historical/vendored/generated" — `b00239 S8` ya lo hace (`classify-residual.service.ts`). q00021 reusa el vocabulario para `ICacheArtifactClass` con los 4 valores y semántica compatible (records ≈ historical preservado).

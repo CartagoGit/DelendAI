@@ -1,0 +1,67 @@
+{
+	"name": "@delendai/external-mcps",
+	"version": "0.1.1",
+	"type": "module",
+	"description": "Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM-assisted config validation with mandatory version pins, and (later slices) lazy subprocess boot with human-acked activation. Load with `delendai --plugins=external-mcps`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"external",
+		"catalog",
+		"composition",
+		"proxy",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"skills"
+	],
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./lib/subprocess/env-filter": {
+			"@delendai/source": {
+				"types": "./src/lib/subprocess/env-filter.ts"
+			},
+			"types": "./dist/lib/subprocess/env-filter.d.ts",
+			"import": "./dist/lib/subprocess/env-filter.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/external-mcps"
+	},
+	"peerDependencies": {
+		"@delendai/core": "^0.1.1"
+	},
+	"dependencies": {
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@delendai/core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/delendai"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

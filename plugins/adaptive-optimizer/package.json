@@ -1,0 +1,80 @@
+{
+	"name": "@delendai/adaptive-optimizer",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Adaptive optimizer for @delendai/core: cheap candidate scoring across model, plugin set and prompt knobs with explicit budget and consent guards.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"optimizer",
+		"adaptive",
+		"prompt",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/adaptive-optimizer"
+	},
+	"peerDependencies": {
+		"@delendai/core": "^0.1.1"
+	},
+	"dependencies": {
+		"@delendai/auto-agent-selector": "workspace:*",
+		"@delendai/auto-plugin-selector": "workspace:*",
+		"@delendai/perf": "workspace:*",
+		"@delendai/prompt-eval": "workspace:*",
+		"@delendai/proposals": "workspace:*",
+		"@delendai/usage-tracking": "workspace:*",
+		"@modelcontextprotocol/sdk": "^1.31.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@delendai/auto-agent-selector": "workspace:*",
+		"@delendai/auto-plugin-selector": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/perf": "workspace:*",
+		"@delendai/prompt-eval": "workspace:*",
+		"@delendai/proposals": "workspace:*",
+		"@delendai/usage-tracking": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/delendai"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}
