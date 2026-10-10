@@ -546,6 +546,8 @@ Measured on this repository: 16.5 s to 8.6 s from process start to the
 reply. What is left is one fetch, one journal fetch, the listing of
 retired refs and the two reads of the forge; those are independent of
 one another and still run in sequence.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
