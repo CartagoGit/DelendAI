@@ -31,7 +31,8 @@ import { join } from 'node:path';
 
 import { PROPOSAL_SCAN_FOLDERS } from '../contracts/constants/proposal-glossary.constant';
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
-import { readProposalIndex } from './index-reader';
+import { type IProposalIndexEntry, readProposalIndex } from './index-reader';
+import { ProposalIndexSqlUnavailableError } from './proposal-errors';
 import { DEFAULT_PROPOSAL_FS, type IProposalFs } from './locate-fs';
 
 // ---------------------------------------------------------------------------
@@ -96,7 +97,16 @@ export const locateByIndex = async (
 ): Promise<ILocatedProposal | null> => {
 	// Through the one reader of the index, so a proposal is found where
 	// the markdown says it is, not where a registry file last recorded it.
-	const entry = (await readProposalIndex(indexPathAbs, fs)).find(
+	// A projection that cannot serve is a miss, not a failure: the caller
+	// falls back to the markdown itself.
+	let index: readonly IProposalIndexEntry[];
+	try {
+		index = await readProposalIndex(indexPathAbs, fs);
+	} catch (error) {
+		if (!(error instanceof ProposalIndexSqlUnavailableError)) throw error;
+		return null;
+	}
+	const entry = index.find(
 		(p) => p.id === proposalId || (p.id ?? '').startsWith(`${proposalId}-`),
 	);
 	if (entry === undefined || typeof entry.file !== 'string') {

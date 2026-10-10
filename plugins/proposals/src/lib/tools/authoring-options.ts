@@ -16,7 +16,7 @@
  *     re-declaration.
  */
 import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 import type { ICommitAuthorResolution } from '@delendai/core/contracts';
 
@@ -26,10 +26,13 @@ import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.
 import type { IGitRunner } from '../shared/git-runner';
 import type { IAgentNamesToolOptions } from './agent-names.tool';
 import {
+	type IProposalIndexEntry,
 	readJsonOrNull,
 	readProposalIndex,
 	readTextOrNull,
 } from '../proposals/index-reader';
+import { locateByScan } from '../proposals/locate';
+import { ProposalIndexSqlUnavailableError } from '../proposals/proposal-errors';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { ICloseSliceQualityResult } from '../contracts/interfaces/close-slice-gate.interface';
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
@@ -286,15 +289,32 @@ export const resolveIndexedDoc = async (
 	proposalId: string,
 ): Promise<IIndexedDocResolution> => {
 	const lookup = async (): Promise<IIndexedDocResolution | null> => {
-		const proposals = await readProposalIndex(options.indexPathAbs);
+		const proposalsDirAbs =
+			options.proposalsDirAbs ?? dirname(options.indexPathAbs);
+		let proposals: readonly IProposalIndexEntry[];
+		try {
+			proposals = await readProposalIndex(options.indexPathAbs);
+		} catch (error) {
+			if (!(error instanceof ProposalIndexSqlUnavailableError))
+				throw error;
+			// The projection cannot serve (a damaged database is never
+			// rebuilt over): the markdown it is built from still can.
+			const found = await locateByScan(proposalsDirAbs, proposalId);
+			if (found === null) return null;
+			return {
+				ok: true,
+				entry: {
+					id: found.id,
+					file: relative(proposalsDirAbs, found.absPath),
+				},
+				docPath: found.absPath,
+			};
+		}
 		const entry = proposals.find(
 			(p) => p.id === proposalId || p.id.startsWith(`${proposalId}-`),
 		);
 		if (entry === undefined) return null;
-		const docPath = join(
-			options.proposalsDirAbs ?? dirname(options.indexPathAbs),
-			entry.file,
-		);
+		const docPath = join(proposalsDirAbs, entry.file);
 		// A hit whose file vanished is exactly the stale-index symptom —
 		// treat it as a miss so the heal path re-syncs.
 		if ((await readTextOrNull(docPath)) === null) return null;

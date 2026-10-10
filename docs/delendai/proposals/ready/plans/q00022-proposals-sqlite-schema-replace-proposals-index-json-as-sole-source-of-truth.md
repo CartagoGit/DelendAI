@@ -582,12 +582,15 @@ slices without ids, timestamps or revisions:
   - `plugins/proposals/tests/src/lib/proposals/index-single-reader.spec.ts`
   - `plugins/proposals/tests/src/lib/authoring.spec.ts`
   - `plugins/proposals/tests/src/lib/close-slice-validation.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts`
 - **Gate**: unit
 - acceptance:
   - A projection stamped with a commit whose proposals tree differs from the tree at HEAD is rebuilt from the markdown before the read returns.
   - A proposal file or folder modified on disk after the last rebuild (edited, added, moved, removed or put back, committed or not) makes the next read rebuild once; the read after that does not rebuild.
   - `proposals status`, the board, auto-work, authoring, `locateByIndex` and the plan-closure resolver read the index through `readProposalIndex`; a spec fails when a module of the plugin opens the registry file by itself.
   - In a tree where no registry file was ever written, `proposals status` reports the proposals the markdown holds instead of zero.
+  - With a database that cannot serve and is never rebuilt over (truncated, corrupt), locating a proposal and closing a slice fall back to the markdown itself instead of failing.
 
 Reported by the owner on 2026-10-10: `proposals status` did not count
 what the markdown documented. Two causes, both removed here:
@@ -606,6 +609,11 @@ what the markdown documented. Two causes, both removed here:
   `index-single-reader.spec.ts` names the four modules that may still
   open the file: the reader, the writer and the two that compare it with
   the projection.
+
+Three fixtures described states the markdown cannot be in and passed
+only because their reader never looked at it: a proposal without `kind`,
+the same plan left in two folders, and a hand-built database with no run
+recorded. They are valid proposals and a stamped projection now.
 
 Measured in this repository (1188 proposals): a level read costs about
 130 ms; a rebuild about 9 s, once per change.
