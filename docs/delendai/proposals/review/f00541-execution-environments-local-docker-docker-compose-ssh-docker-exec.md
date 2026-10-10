@@ -129,7 +129,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S7 — Secret resolver
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/execution-env/src/lib/secret-resolver.service.ts`, `plugins/execution-env/src/lib/contracts/interfaces/secret-resolver.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/secret-resolver.spec.ts`
 - **Gate**: `npx vitest run --root plugins/execution-env`
 - shipped: `resolveSecrets` turns references into in-memory values: `env` (host variable, optionally under another name), `file` (content, one trailing newline dropped) and `ssh-agent-forward` (the socket from `SSH_AUTH_SOCK`, an error when unset). Sources are injected so specs need no real host. Errors name the reference, never the value. The module has no write path, and a spec proves resolving from the real host leaves the directory unchanged. The returned `redact` removes every resolved value (longest first) and then applies the core secret redactor, for any text about to be logged.
@@ -137,9 +137,11 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Resolves env(file references), file(content references), and ssh-agent-forward (using $SSH_AUTH_SOCK)."
   - "Never writes resolved secrets to disk."
   - "Redaction policy strips values from any accidental log output."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `e6f2613329ac`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S8 — Lifecycle integration in orchestrator-runner
 - **Status**: review
