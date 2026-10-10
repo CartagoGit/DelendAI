@@ -153,6 +153,58 @@ describe('publishing agents work checkouts', () => {
 		expect(await remoteHas(WORK_BRANCH)).toBe('');
 	});
 
+	it('takes a work ref off the remote once its work landed, and pushes it again for new work', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'work';\n");
+		await publishWorkCheckouts(run, POLICY);
+		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
+		// The work lands, and the unit is kept: its checkout follows the
+		// integration branch and has nothing of its own.
+		await repo.git(
+			'merge',
+			'-q',
+			'--no-ff',
+			'-m',
+			'merge work',
+			WORK_BRANCH,
+		);
+		await execFileAsync('git', ['merge', '-q', '--ff-only', 'develop'], {
+			cwd: dir,
+		});
+
+		const [landed] = await publishWorkCheckouts(run, POLICY);
+		expect(landed?.outcome).toBe('withdrawn');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
+		// Nothing is left to take: the next pass says what it always said.
+		const [idle] = await publishWorkCheckouts(run, POLICY);
+		expect(idle?.outcome).toBe('skipped');
+		expect(idle?.reason).toContain('no commits of its own');
+
+		await commitIn(dir, "export const v = 'next slice';\n");
+		expect(outcomes(await publishWorkCheckouts(run, POLICY))).toEqual([
+			'published',
+		]);
+		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
+	});
+
+	it('leaves on the remote a work ref that holds what has not landed', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'work';\n");
+		await publishWorkCheckouts(run, POLICY);
+		// The checkout is reset onto the integration branch by hand; what
+		// the remote holds is still nowhere else.
+		await execFileAsync('git', ['reset', '-q', '--hard', 'develop'], {
+			cwd: dir,
+		});
+		await repo.git('fetch', '--quiet', 'origin');
+
+		const [only] = await publishWorkCheckouts(run, POLICY);
+		expect(only?.outcome).toBe('skipped');
+		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
+	});
+
 	it('leaves a branch outside the work-ref namespace alone', async () => {
 		const { enter, commitIn, remoteHas, run } = await setup();
 		const dir = await enter('feature/mine');
