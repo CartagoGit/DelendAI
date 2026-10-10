@@ -426,6 +426,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S38 — The lockfile audit is as strict as the forge's dependency alerts
+- **Status**: review
+- **Files**: `tools/scripts/lint/dependency-advisories.script.ts`, `tools/scripts/lint/dependency-advisories.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`lint:dependency-advisories` fails on an advisory of any severity in the lockfile, low included, unless it is excepted in date; it runs on every candidate into the integration branch, on the promotion, and in the daily sweep."
+- Asked by the owner on 2026-10-10: what the forge's dependency alerts detect should be caught on the integration branch, so the release branch only ever receives clean code. The forge computes those alerts for the default branch alone, so the integration branch cannot have its own; the lockfile audit added in x00879 S10 is its equivalent, but it let low-severity advisories through, which the forge lists. It now blocks every severity.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
