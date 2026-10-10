@@ -472,6 +472,19 @@ export const portsFor = (
 						machineId: strOrNull(record.machine_id),
 						occurredAt: num(record.occurred_at),
 						payload: parseJson(str(record.payload_json)),
+						// What identifies the event, as the real repository
+						// returns it: a published event without these is
+						// imported back under another id, twice.
+						repositoryUid: strOrNull(record.repository_uid),
+						workUnitUid: strOrNull(record.work_unit_uid),
+						proposalUid: strOrNull(record.proposal_uid),
+						sliceUid: strOrNull(record.slice_uid),
+						generation:
+							record.generation === null ||
+							record.generation === undefined
+								? null
+								: num(record.generation),
+						actorAgentId: strOrNull(record.actor_agent_id),
 					};
 				}),
 	},
