@@ -436,6 +436,38 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S39 — A server at rest does not hold a third of a core
+
+- **Status**: review
+- **Files**:
+  - `plugins/commit-policy/src/lib/services/slice-persisted.service.ts`
+  - `plugins/commit-policy/src/lib/triggers/slice-listener.ts`
+  - `plugins/commit-policy/src/index.ts`
+  - `plugins/commit-policy/tests/src/lib/services/slice-persisted.service.spec.ts`
+  - `plugins/commit-policy/tests/src/lib/triggers/slice-listener-pacing.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - At start, the question "is this finished slice already committed" is answered for every slice from one reading of the working tree, not from one `git status` per slice; a pattern only git can expand is still asked of git.
+  - A slice that turns after start is answered as of that moment, never from an earlier reading.
+  - A poll of the proposals tree is followed by a rest of twenty times what it cost; a poll that costs nothing keeps its interval.
+
+Found 2026-10-10: the two servers of this repository sat at 27 to 35% of
+a core each, for as long as they ran. A profile of one showed two
+causes in the commit-policy slice listener:
+
+- At start it asked, once per finished slice (about three thousand
+  here), whether the slice's files were committed, and each question was
+  its own `git status` process: 31 of the first 60 seconds.
+- Every second it listed the whole proposals tree through the guarded
+  reader (a `realpath` and a `stat` per entry, 1200 entries, 255 ms),
+  whatever that cost.
+
+Measured on this repository after the change: a server's steady use went
+from 35% to 15% of a core, and the listener alone takes 8% (six polls in
+thirty seconds). The remaining share is not the listener's and its
+source is not identified yet; the listener's own cost is bounded by the
+factor, not by the size of the project.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

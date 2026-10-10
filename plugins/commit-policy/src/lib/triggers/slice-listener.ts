@@ -30,6 +30,14 @@ export type { ITriggerEvent };
 const DEFAULT_POLL_MS = 1_000;
 
 /**
+ * How many times its own cost a poll rests before the next: polling
+ * takes at most a twentieth of the time, whatever the size of the
+ * project. A poll of a few milliseconds rests less than one interval and
+ * changes nothing.
+ */
+const POLL_COST_FACTOR = 20;
+
+/**
  * Result the engine returns after consuming a trigger event.
  * Anything other than `{ ack: 'OK' }` is treated as "not seen" so the
  * next poll re-emits the event.
@@ -158,7 +166,10 @@ const diffSlices = (
 const collectUnpersistedBaseline = async (
 	curr: ReadonlyMap<string, SliceSnapshotEntry>,
 	onStatuses: readonly string[],
-	isAlreadyPersisted: (event: ITriggerEvent) => Promise<boolean>,
+	isAlreadyPersisted: (
+		event: ITriggerEvent,
+		asked: 'at-start' | 'on-change',
+	) => Promise<boolean>,
 ): Promise<{
 	queue: ITriggerEvent[];
 	refusals: readonly { readonly key: string; readonly reason: string }[];
@@ -174,7 +185,7 @@ const collectUnpersistedBaseline = async (
 		}
 		let persisted: boolean;
 		try {
-			persisted = await isAlreadyPersisted(candidate);
+			persisted = await isAlreadyPersisted(candidate, 'at-start');
 		} catch {
 			// Store unreadable. Fail to "already persisted" so a broken
 			// store cannot turn into a replay of the whole history.
@@ -238,7 +249,16 @@ export const createSliceListener = (
 	 * listening. See `collectUnpersistedBaseline`. Omitted means the old
 	 * unconditional silent baseline.
 	 */
-	isAlreadyPersisted?: (event: ITriggerEvent) => Promise<boolean>,
+	/**
+	 * `asked` says which of the two it is: `at-start`, once per finished
+	 * slice the first poll finds, which an implementation may answer for
+	 * all of them from one reading; or `on-change`, for a slice that
+	 * just turned, which has to be answered as of now.
+	 */
+	isAlreadyPersisted?: (
+		event: ITriggerEvent,
+		asked: 'at-start' | 'on-change',
+	) => Promise<boolean>,
 ): ISliceListener => {
 	const snapshot = createSliceSnapshotReader(
 		new SafeWorkspaceReader(workspaceRoot),
@@ -377,9 +397,10 @@ export const createSliceListener = (
 		if (isAlreadyPersisted === undefined) return [...events];
 		const kept: ITriggerEvent[] = [];
 		for (const event of events) {
-			const persisted = await isAlreadyPersisted(event).catch(
-				() => false,
-			);
+			const persisted = await isAlreadyPersisted(
+				event,
+				'on-change',
+			).catch(() => false);
 			if (!persisted) {
 				kept.push(event);
 				continue;
@@ -494,8 +515,18 @@ export const createSliceListener = (
 			// Prime immediately so a transition made after startup does
 			// not wait for the first polling interval.
 			const primed = check().then(() => undefined);
+			// A poll that took long is followed by a proportionally
+			// longer rest, so reading a large tree never holds a core.
+			let restUntil = 0;
 			timer = setInterval(() => {
-				void check();
+				const started = Date.now();
+				if (started < restUntil) return;
+				void check()
+					.catch(() => undefined)
+					.finally(() => {
+						const cost = Date.now() - started;
+						restUntil = Date.now() + cost * POLL_COST_FACTOR;
+					});
 			}, pollMs);
 			if (typeof timer.unref === 'function') timer.unref();
 			return primed;

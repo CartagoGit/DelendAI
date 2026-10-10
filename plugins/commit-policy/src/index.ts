@@ -49,7 +49,10 @@ import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { buildCommitPolicySettlementToolRegistration } from './lib/tools/settlement-tool';
 import { buildWorkRefToolRegistration } from './lib/tools/work-ref.tool';
-import { sliceFilesAreCommitted } from './lib/services/slice-persisted.service';
+import {
+	createCommittedFilesProbe,
+	sliceFilesAreCommitted,
+} from './lib/services/slice-persisted.service';
 import {
 	createSliceTopicResolver,
 	workRefAgent,
@@ -688,6 +691,7 @@ export default definePlugin({
 				}
 				return { ack: 'ERR', reason: result.reason };
 			};
+			const filesAreCommitted = createCommittedFilesProbe(run);
 			sliceListener = createSliceListener(
 				ctx.workspace.root,
 				ctx.cacheDir,
@@ -700,7 +704,7 @@ export default definePlugin({
 				// repo's history has terminal outcomes recorded and
 				// stays silent; a slice closed while the server was
 				// down does not, and gets committed instead of lost.
-				async (event) => {
+				async (event, asked) => {
 					if (
 						event.proposalId === undefined ||
 						event.sliceId === undefined
@@ -722,10 +726,13 @@ export default definePlugin({
 					}
 					// An empty store is not evidence: a slice committed
 					// before this cache existed has clean files.
-					return await sliceFilesAreCommitted(
-						run,
-						event.files?.paths ?? [],
-					);
+					// At start the question comes once per finished slice
+					// and one reading of the tree answers them all; a slice
+					// that just turned is answered as of now.
+					const paths = event.files?.paths ?? [];
+					return asked === 'at-start'
+						? await filesAreCommitted(paths)
+						: await sliceFilesAreCommitted(run, paths);
 				},
 			);
 			// Deliberately not awaited: registration must not block the
