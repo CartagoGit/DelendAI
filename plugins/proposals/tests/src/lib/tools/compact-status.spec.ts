@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	collectCompactStatus,
+	describeSetAside,
 	type ICompactStatusOptions,
 } from '@delendai/proposals/lib/tools/compact-status.tool';
 
@@ -30,6 +31,9 @@ describe('compact_status (N17) — aggregates the proposals plugin state', async
 		expect(s.locks?.active).toBe(0);
 		expect(s.queue?.queued).toBe(0);
 		expect(s.proposals?.total).toBe(0);
+		// Zero is said, not left out: an absent field could not be told
+		// from a status that never looked.
+		expect(s.proposals?.setAside).toEqual({ count: 0 });
 	});
 
 	it('counts active locks, queue backpressure and proposals by status', async () => {
@@ -75,5 +79,23 @@ describe('compact_status (N17) — aggregates the proposals plugin state', async
 		writeFileSync(opts.indexPathAbs, '{ not json');
 		const s = await collectCompactStatus(opts, ['proposals']);
 		expect(s.proposals?.total).toBe(0);
+	});
+});
+
+describe('the files a rebuild set aside, as the status reports them', () => {
+	it('counts them and names the first with its reason', () => {
+		expect(
+			describeSetAside([
+				{ path: 'ready/a.md', reason: 'frontmatter.kind is missing' },
+				{ path: 'ready/b.md', reason: 'duplicate id' },
+			]),
+		).toEqual({
+			count: 2,
+			first: 'ready/a.md: frontmatter.kind is missing',
+		});
+	});
+
+	it('reports none as zero, with nothing to name', () => {
+		expect(describeSetAside([])).toEqual({ count: 0 });
 	});
 });

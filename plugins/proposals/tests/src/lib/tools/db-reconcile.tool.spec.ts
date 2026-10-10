@@ -34,6 +34,7 @@ import {
 	reconcileIncremental,
 	PROPOSAL_KIND_VOCABULARY,
 	ProposalsSqliteDriver,
+	readSetAsideFiles,
 	reconcileShadowToStaging,
 	resolveProposalsDbPaths,
 } from '@delendai/proposals-sqlite';
@@ -727,5 +728,73 @@ describe('proposals_db_reconcile at a commit (q00023 S1)', () => {
 		// Without a ref the worktree is read, a person's edit included.
 		expect(worktree.proposals).toBe(2);
 		expect(worktree.logicalDigest).not.toBe(first.logicalDigest);
+	});
+});
+
+describe('a file the projection sets aside is kept where the proposals are read', () => {
+	const rebuild = (root: string, proposalsDir: string, now: number) =>
+		reconcileProposalsDb({
+			workspaceRoot: root,
+			proposalsDirAbs: proposalsDir,
+			sourceCommit: `commit-${String(now)}`,
+			now,
+		});
+
+	it('records a proposal it could not represent, and not a file that is no proposal', () => {
+		const { root, proposalsDir } = makeWorkspace();
+		write(
+			proposalsDir,
+			'ready/q00001-a.md',
+			flat('q00001', 'feat', 'ready'),
+		);
+		write(
+			proposalsDir,
+			'ready/q00002-b.md',
+			'---\nid: q00002\ntitle: No kind\nstatus: ready\n---\n# No kind\n',
+		);
+		write(proposalsDir, 'README.md', '# Not a proposal\n');
+
+		const out = rebuild(root, proposalsDir, 1_760_000_000_000);
+
+		// The rebuild's own answer names both; only the proposal is kept,
+		// because a reader that rebuilds on its own has no caller to tell.
+		expect(out.excluded.map((entry) => entry.path)).toEqual([
+			'README.md',
+			'ready/q00002-b.md',
+		]);
+		const kept = readSetAsideFiles(
+			resolveProposalsDbPaths(root).databasePath,
+		);
+		expect(kept?.map((entry) => entry.path)).toEqual(['ready/q00002-b.md']);
+		expect(kept?.[0]?.reason).toContain('kind');
+	});
+
+	it('forgets a file once it projects', () => {
+		const { root, proposalsDir } = makeWorkspace();
+		write(
+			proposalsDir,
+			'ready/q00002-b.md',
+			'---\nid: q00002\ntitle: No kind\nstatus: ready\n---\n# No kind\n',
+		);
+		rebuild(root, proposalsDir, 1_760_000_000_000);
+		write(
+			proposalsDir,
+			'ready/q00002-b.md',
+			flat('q00002', 'fix', 'ready'),
+		);
+
+		const out = rebuild(root, proposalsDir, 1_760_000_001_000);
+
+		expect(out.proposals).toBe(1);
+		expect(
+			readSetAsideFiles(resolveProposalsDbPaths(root).databasePath),
+		).toEqual([]);
+	});
+
+	it('answers null for a database that cannot be read', () => {
+		const { root } = makeWorkspace();
+		expect(
+			readSetAsideFiles(join(root, 'nowhere/proposals.sqlite')),
+		).toBeNull();
 	});
 });

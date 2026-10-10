@@ -623,21 +623,29 @@ Measured in this repository (1188 proposals): a level read costs about
 
 ### S7 — A file the projection cannot represent is reported where the proposals are counted
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
+  - `packages/proposals-sqlite/src/lib/set-aside.service.ts`
+  - `packages/proposals-sqlite/src/index.ts`
+  - `plugins/proposals/src/lib/tools/db-reconcile.tool.ts`
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/src/lib/tools/db-status.tool.ts`
-  - `plugins/proposals/src/lib/proposals/index-reader-sql.ts`
+  - `plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/compact-status.spec.ts`
 - **Gate**: unit
 - acceptance:
-  - `proposals status` reports how many proposal files the last rebuild set aside and names the first of them with its reason; zero is reported as zero, not omitted.
-  - `db status` counts the quarantine from the database instead of returning the constant it returns today.
+  - A rebuild records in `quarantine` every file written as a proposal that it set aside, with its reason; a file with no frontmatter (a README) is not recorded.
+  - The record is what the last rebuild found: a file that projects on the next rebuild is no longer listed.
+  - `proposals status` reports how many proposal files were set aside and names the first with its reason; zero is reported as zero, not omitted.
+  - `db status` counts the quarantine from the database instead of returning a constant.
 
 Found while delivering S6: a markdown file without `kind` is set aside
-by the reconciler (by design, f00515) and then simply absent from every
-count, where the registry file used to list it. The person who wrote the
-file has no way to learn that from the status. Phase 3 of S4 removes the
-registry, so this has to be visible before it.
+by the rebuild and then absent from every count, where the registry file
+used to list it. The list of what was set aside went back to the caller
+of the rebuild and was stored nowhere, so a read that rebuilt on its own
+dropped it and the person who wrote the file had no way to learn why it
+was missing. Phase 3 of S4 removes the registry, so this had to be
+visible before it.
 
 ### S8 — A file that returns is alive again
 
