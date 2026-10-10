@@ -14,6 +14,7 @@ shipped-in:
   - "8e7c04483e60d78c9edec255947754a7d3054772"
   - "bf7ca511a5af"
   - "e93e4f19e616"
+  - "dc50669b9dd4"
 ---
 
 # x00879 — Main carries no code scanning alert
@@ -114,15 +115,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at e93e4f19e616, validate exit 0, tests 58/58 — CodeQL listed beside delendai-validate in delendai.config.json requiredChecks, branch-protection.yml/.ts, settings.yml; branch-protection-guard spec passes
 
 ### S7 — Every certified develop is scanned
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "Each full run that certifies the integration branch dispatches CodeQL on it, so a merge made by the queue (whose token starts no workflow on push) is analysed all the same."
 - Found 2026-10-07 right after #903 landed: S5's push trigger never fired for develop, because the queue merges with the workflow token and a push made with it starts no workflow — the same reason the full run is dispatched after each merge. `release-the-queue`, which already runs once per certified develop tip, now also dispatches `codeql.yml` on develop.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dc50669b9dd4`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — ci.yml release-the-queue step runs gh workflow run codeql.yml --ref develop
 
 ### S8 — Remote names, urls and refs never parse as git options
 - **Status**: review
