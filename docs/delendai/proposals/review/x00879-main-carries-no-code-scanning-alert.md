@@ -154,7 +154,7 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — ci.yml has pull_request branches [develop, main]; no-duplicate-release-triggers spec passes
 
 ### S10 — No dependency carries a known advisory
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`, `apps/web/package.json`, `bun.lock`, `config/delendai/advisory-exceptions.json`, `package.json`, `packages/client/package.json`, `packages/core/package.json`, `packages/test-kit/package.json`, `plugins/adaptive-optimizer/package.json`, `plugins/agent-orchestrator/package.json`, `plugins/audit/package.json`, `plugins/auto-agent-selector/package.json`, `plugins/auto-plugin-selector/package.json`, `plugins/cache/package.json`, `plugins/commit-policy/package.json`, `plugins/completion/package.json`, `plugins/context-for-change/package.json`, `plugins/conventions/package.json`, `plugins/deps/package.json`, `plugins/diagram/package.json`, `plugins/docs/package.json`, `plugins/env/package.json`, `plugins/error-reporting/package.json`, `plugins/forge/package.json`, `plugins/framework-knowledge/package.json`, `plugins/git/package.json`, `plugins/i18n/package.json`, `plugins/impact-analysis/package.json`, `plugins/issues-triage/package.json`, `plugins/issues/package.json`, `plugins/link-check/package.json`, `plugins/logs/package.json`, `plugins/memory/package.json`, `plugins/notification/package.json`, `plugins/orchestrator-runner/package.json`, `plugins/perf/package.json`, `plugins/project-health/package.json`, `plugins/prompt-eval/package.json`, `plugins/proposals/package.json`, `plugins/quality-policy/package.json`, `plugins/quality/package.json`, `plugins/rules/package.json`, `plugins/search/package.json`, `plugins/security/package.json`, `plugins/self-learning/package.json`, `plugins/status-marker/package.json`, `plugins/tech-debt/package.json`, `plugins/test-convention/package.json`, `plugins/test-policy/package.json`, `plugins/usage-tracking/package.json`, `plugins/web-fetch/package.json`, `tools/scripts/lint/dependency-advisories.script.spec.ts`, `tools/scripts/lint/dependency-advisories.script.ts`, `.github/dependabot.yml`, `docs/delendai/DEPENDENCY-VERSIONS.md`, `packages/core/src/lib/scaffold/scaffold-host.ts`
 - **Gate**: type
 - acceptance:
@@ -162,9 +162,11 @@ The owner promotes develop to main only from a stable point, and main is where G
   - "Dependabot updates the `bun` ecosystem, which reads and rewrites `bun.lock`."
   - "`lint:dependency-advisories` runs on every candidate in `lint-security` and fails on any advisory of moderate severity or above in the lockfile, unless it is excepted in `config/delendai/advisory-exceptions.json` with a reason and a review date that has not passed."
 - Found 2026-10-07 right after the promotion: Dependabot opened GHSA-6qxp-vccf-f47h on the root and `apps/web` (SDK pinned at 1.30.0), and `bun audit` found 43 advisories in the lockfile, most kept in place by root `overrides` that had pinned versions once patched and since superseded. The overrides now pin the patched versions; braces has no patched release and is excepted until 2026-11-07. Nothing audited the lockfile before a candidate landed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dc50669b9dd4`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — SDK pinned 1.31.0 in root/apps/web and ^1.31.0 in plugins/core; dependabot has bun ecosystem; lint:dependency-advisories wired into ci.yml lint step; exceptions file has reason and until 2026-11-07; dependency-advisories spec passes
 
 ### S11 — The forward sync's branch is a canonical publication
 - **Status**: review
