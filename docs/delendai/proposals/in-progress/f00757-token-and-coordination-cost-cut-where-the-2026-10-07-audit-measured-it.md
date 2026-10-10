@@ -12,6 +12,7 @@ last-transition-from: review
 last-transition-at: 2026-10-10T11:25:36.255Z
 shipped-in:
   - "dd039031e185"
+  - "cc1aae7f4aea"
 ---
 
 # f00757 — Token and coordination cost cut where the 2026-10-07 audit measured it
@@ -99,15 +100,17 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - review-log: approved by claude-sonnet-5-5 — verified at dd039031e185, validate exit 0, tests 3/3 — Ran result-size-ranking.spec.ts (with zone-reads spec: 18 pass). Ranked tools carry p50Bytes/p95Bytes/p99Bytes; responseBytes recorded per invocation.
 
 ### S6 — A workflow edit runs the tests it can reach
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/zone-reads.ts`, `tools/scripts/ci/zone-reads.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.constant.ts`, `tools/scripts/ci/test-zones.interface.ts`
 - **Gate**: type
 - acceptance:
   - "An edit of a workflow file that leaves the test-running jobs of the test workflow (plan, zones, merge) and its workflow-wide `env` and `defaults` as they were reaches only the zones observed to read that file; an edit of those jobs, of a composite action, of a root file, or one whose effect cannot be read, still runs every zone."
 - Asked by the owner on 2026-10-07: a pull request waited for checks that had nothing to do with its change. Measured on #912, which changed one trigger of `ci.yml`, a lint script and its spec: the planner ran all eleven shards ("a root file or a workflow can reach any zone"), the proposals zone alone taking eleven minutes. Replayed on the same diff, the planner now selects the tools zone only.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `cc1aae7f4aea`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at cc1aae7f4aea, validate exit 0, tests 15/15 — Ran zone-reads.spec.ts (15 pass) and read test-zones.script.ts diff: test workflow runner compared base/head, other workflow edits reach reading zones only, composite action/root/unknown still run everything.
 
 ## acceptance
 
