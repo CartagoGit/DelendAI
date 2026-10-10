@@ -39,11 +39,9 @@ export const reaped = async (
 	});
 	// What was not removed and holds nothing is brought forward, so a unit
 	// kept for its proposal's next slice does not fall behind unseen.
-	const removed = new Set(
-		units
-			.filter((unit) => unit.outcome === 'removed')
-			.map((unit) => unit.ref),
-	);
+	// A unit the reaper just judged spent is not also brought forward.
+	const spent = new Set<string>();
+	for (const unit of units) spent.add(unit.ref);
 	const advanced = hydrateKeptUnits({
 		root: opened.root,
 		base: integrationBase(opened.root, opened.policy),
@@ -55,7 +53,7 @@ export const reaped = async (
 		)
 			.filter(
 				(unit) =>
-					!removed.has(unit.ref) &&
+					!spent.has(unit.ref) &&
 					hasLocalBranch(opened.root, unit.ref),
 			)
 			.map((unit) => ({
