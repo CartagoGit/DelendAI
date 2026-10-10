@@ -2,7 +2,7 @@
 id: q00021
 title: "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)"
 kind: plan
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-07
@@ -42,6 +42,10 @@ contains:
         - { id: b00239 S10, rationale: "Cuando entre el epoch cache-layout post-rebrand, el cierre de b00239 deja de tener que llevar el `LegacyMigrationManager` como pieza separada — todo cuelga del engine IMigration ya consolidado." }
         - { id: q00019, rationale: "El JsonToSqliteMigration (queue/progress/counters/checkpoint) reusa el epoch cache-layout y la conexión SqliteLifecycleStateStore; el lifecycle es la palanca que justifica pasar stores a SQLite." }
         - { id: q00020, rationale: "Si el layout de progress cambia (p.ej. de JSON a SQLite), la migración está versionada; progress deja de poder ser tratado accidentalmente como TTL cache." }
+last-transition-id: 77a6d4aa-6699-48c7-9cc7-d4e7c353fccc
+last-correlation-id: 77a6d4aa-6699-48c7-9cc7-d4e7c353fccc
+last-transition-from: ready
+last-transition-at: 2026-10-10T23:51:41.165Z
 ---
 
 # q00021 — Plan — Cache Layout Lifecycle & Legacy Reaper
