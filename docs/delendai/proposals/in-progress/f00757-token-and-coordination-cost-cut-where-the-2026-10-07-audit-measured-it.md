@@ -10,6 +10,8 @@ last-transition-id: ba25df0f-b625-42d3-b48c-a7213dc46d5a
 last-correlation-id: ba25df0f-b625-42d3-b48c-a7213dc46d5a
 last-transition-from: review
 last-transition-at: 2026-10-10T11:25:36.255Z
+shipped-in:
+  - "dd039031e185"
 ---
 
 # f00757 — Token and coordination cost cut where the 2026-10-07 audit measured it
@@ -84,15 +86,17 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - review-log: requested_changes by claude-sonnet-5-5 — Only the coordination_tax KPI exists. The acceptance also needs a swarm-run summary recording agents, units, accepted slices, invalid verdicts, orphans left, manual interventions, and the KPI showing a trend across runs; the slice says both are still to do.
 
 ### S5 — Tool output size is measured per tool
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/result-size-ranking.helper.ts`, `plugins/usage-tracking/src/lib/contracts/result-size-ranking.interface.ts`, `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/usage-tracking/tests/src/lib/result-size-ranking.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Each tool call records its output bytes; p50, p95 and p99 per tool appear in the KPIs, so the tools worth an artifact handle or a compact default are chosen by measurement."
 - Delivered: most of this was there — every invocation record carries `responseBytes`, the KPIs give per-plugin p50/p95, and `usage_report` ranks tools by total and by largest result. Each ranked tool now carries its own `p50Bytes`, `p95Bytes` and `p99Bytes` too, so a tool whose every answer is big is told from one with a single huge answer. The ranking spec pins them.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dd039031e185`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at dd039031e185, validate exit 0, tests 3/3 — Ran result-size-ranking.spec.ts (with zone-reads spec: 18 pass). Ranked tools carry p50Bytes/p95Bytes/p99Bytes; responseBytes recorded per invocation.
 
 ### S6 — A workflow edit runs the tests it can reach
 - **Status**: review
