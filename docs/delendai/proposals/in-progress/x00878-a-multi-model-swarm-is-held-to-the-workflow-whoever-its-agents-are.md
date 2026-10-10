@@ -491,6 +491,8 @@ stayed on the forge pointing into the integration branch's history. On
 a clean runner, where no worktree stands on it, that reads as a unit
 somebody left. The periodic publisher already refused to push such a
 ref back (x00691); it now also takes it off.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
