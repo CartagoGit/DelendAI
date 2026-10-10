@@ -470,6 +470,28 @@ factor, not by the size of the project.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S40 — A work ref leaves the forge when its work lands, while its unit goes on
+
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
+  - `packages/core/src/lib/wip-engine/work-checkout-publisher.interface.ts`
+  - `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - A work checkout with no commits of its own whose ref on the remote holds only what the integration branch already has gets that ref deleted from the remote, and the pass reports it as `withdrawn`.
+  - A ref on the remote that holds anything the integration branch lacks is left where it is.
+  - The next commit in the unit pushes the ref again.
+
+Found 2026-10-10: `keep-the-queue-moving` failed eleven times in a row
+on `no-remote-work-refs`, so the queue armed nothing. The refs it named
+were two units kept for a proposal still in progress (S37): each had
+pushed its work ref while it had work, the work landed, and the ref
+stayed on the forge pointing into the integration branch's history. On
+a clean runner, where no worktree stands on it, that reads as a unit
+somebody left. The periodic publisher already refused to push such a
+ref back (x00691); it now also takes it off.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

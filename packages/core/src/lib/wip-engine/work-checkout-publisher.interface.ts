@@ -7,9 +7,10 @@ export interface IWorkCheckoutPublication {
 	/**
 	 * `published`: the remote now holds the checkout's commits.
 	 * `level`: it already did. `skipped`: nothing was pushed, and `reason`
-	 * says why.
+	 * says why. `withdrawn`: the ref was taken off the remote, because
+	 * everything it held there has landed.
 	 */
-	readonly outcome: 'published' | 'level' | 'skipped';
+	readonly outcome: 'published' | 'level' | 'skipped' | 'withdrawn';
 	readonly reason?: string;
 }
 

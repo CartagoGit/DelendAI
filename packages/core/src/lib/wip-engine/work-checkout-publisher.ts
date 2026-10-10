@@ -96,6 +96,37 @@ const publishOne = async (
 	}
 };
 
+/**
+ * Take a work ref off the remote when everything it holds there has
+ * landed, and say whether it was taken.
+ *
+ * A unit kept for its proposal goes on after its work lands: its
+ * checkout follows the integration branch and has nothing of its own
+ * until the next slice. The ref it pushed while it had work stayed on the
+ * remote, pointing into the integration branch's history, and read there
+ * as a unit somebody left: on 2026-10-10 two of them failed the check the
+ * merge queue starts with, and the queue armed nothing. A work ref ends
+ * when its work does, on the remote too; the next commit pushes it again.
+ */
+const withdrawLanded = async (
+	run: IGitRunner,
+	policy: IResolvedDevelopmentPolicy,
+	remote: string,
+	ref: string,
+): Promise<boolean> => {
+	const listed = await run(['ls-remote', '--', remote, ref]);
+	const remoteSha = listed.ok ? firstField(listed.output) : undefined;
+	if (remoteSha === undefined) return false;
+	const landed = await run([
+		'merge-base',
+		'--is-ancestor',
+		remoteSha,
+		`refs/heads/${policy.branches.integration}`,
+	]);
+	if (!landed.ok) return false;
+	return (await run(['push', '--quiet', '--delete', '--', remote, ref])).ok;
+};
+
 const publishHeld = async (
 	run: IGitRunner,
 	policy: IResolvedDevelopmentPolicy,
@@ -121,7 +152,13 @@ const publishHeld = async (
 		`refs/heads/${policy.branches.integration}`,
 	]);
 	if (own.ok) {
-		return { ref, outcome: 'skipped', reason: 'no commits of its own yet' };
+		return (await withdrawLanded(run, policy, remote, ref))
+			? {
+					ref,
+					outcome: 'withdrawn',
+					reason: `its work landed; the ref was taken off ${remote}`,
+				}
+			: { ref, outcome: 'skipped', reason: 'no commits of its own yet' };
 	}
 	// Work that already reached the remote under another ref (the
 	// integration branch, its publication) is finished work: the work ref
