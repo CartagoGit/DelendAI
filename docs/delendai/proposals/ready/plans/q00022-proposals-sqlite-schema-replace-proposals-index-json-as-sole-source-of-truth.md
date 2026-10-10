@@ -646,6 +646,8 @@ of the rebuild and was stored nowhere, so a read that rebuilt on its own
 dropped it and the person who wrote the file had no way to learn why it
 was missing. Phase 3 of S4 removes the registry, so this had to be
 visible before it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — A file that returns is alive again
 
