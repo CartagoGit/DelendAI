@@ -482,8 +482,13 @@ export default definePlugin({
 			ctx.workspace.resolve(relativePath);
 		// The database stays at its canonical place when the cache moves;
 		// readers find this workspace from the index path only if the
-		// layout that placed it is known.
-		declareProposalIndexFile(layout.proposalIndexFile, ctx.workspace.root);
+		// layout that placed it is known, and rebuild from the folder the
+		// project keeps its proposals in only if they are told which.
+		declareProposalIndexFile(
+			layout.proposalIndexFile,
+			ctx.workspace.root,
+			layout.proposalsDir,
+		);
 
 		// Host-specific proposal subfolders (relative to proposalsDir),
 		// e.g. `['paused/demos']`. delendai bakes none — the host injects

@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	declareProposalIndexFile,
+	resolveProposalsDirAbs,
 	resolveWorkspaceRoot,
 } from '../../../../src/lib/proposals/index-reader-location';
 
@@ -40,6 +41,44 @@ describe('resolveWorkspaceRoot for a declared layout', () => {
 		expect(
 			await resolveWorkspaceRoot(join(sep, 'work', 'project', relative), {
 				workspaceRoot: join(sep, 'named'),
+			}),
+		).toBe(join(sep, 'named'));
+	});
+});
+
+describe('the folder a projection is rebuilt from', () => {
+	const root = join(sep, 'work', 'elsewhere');
+	const configured = join('var', 'cache-b', 'proposals', 'index.json');
+	declareProposalIndexFile(configured, root, join('planning', 'proposals'));
+	const pinned = join(sep, 'abs', 'cache', 'proposals', 'index.json');
+	declareProposalIndexFile(pinned, root, join(sep, 'shared', 'proposals'));
+
+	it('is the one the project configured, in any checkout of it', () => {
+		const unit = join(root, '.worktrees', 'unit-a');
+		expect(resolveProposalsDirAbs(join(root, configured), root)).toBe(
+			join(root, 'planning', 'proposals'),
+		);
+		expect(resolveProposalsDirAbs(join(unit, configured), unit)).toBe(
+			join(unit, 'planning', 'proposals'),
+		);
+	});
+
+	it('is an absolute configured folder as it stands', () => {
+		expect(resolveProposalsDirAbs(pinned, root)).toBe(
+			join(sep, 'shared', 'proposals'),
+		);
+	});
+
+	it('is the default layout when nothing was declared for the index', () => {
+		expect(
+			resolveProposalsDirAbs(join(root, 'other', 'index.json'), root),
+		).toBe(join(root, 'docs', 'delendai', 'proposals'));
+	});
+
+	it('defers to a folder the caller names', () => {
+		expect(
+			resolveProposalsDirAbs(join(root, configured), root, {
+				proposalsDirAbs: join(sep, 'named'),
 			}),
 		).toBe(join(sep, 'named'));
 	});
