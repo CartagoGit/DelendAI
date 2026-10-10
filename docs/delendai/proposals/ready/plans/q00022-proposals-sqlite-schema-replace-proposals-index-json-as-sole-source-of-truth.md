@@ -705,6 +705,8 @@ Three things S6 left that a project other than this one would have met:
   1188 proposals). The servers of this repository, which read the index
   several times a second, sat at 27% of a core each. A level projection
   is now remembered as level for two seconds per process: 4 ms a read.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
