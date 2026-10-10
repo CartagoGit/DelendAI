@@ -98,7 +98,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S5 — SSH adapter with keepalive and jump host
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/execution-env/src/lib/adapters/ssh.service.ts`, `plugins/execution-env/src/lib/helpers/ssh-args.helper.ts`, `plugins/execution-env/src/lib/helpers/shell-quoting.helper.ts`, `plugins/execution-env/src/lib/contracts/constants/ssh.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/ssh-execution.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/remote-command.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/adapters/ssh.spec.ts`, `plugins/execution-env/tests/src/lib/helpers/shell-quoting.spec.ts`
 - **Gate**: `npx vitest run --root plugins/execution-env`
 - shipped: `SshExecutionEnvironment` drives the ssh binary through the process seam. Defaults: `BatchMode=yes`, `StrictHostKeyChecking=yes`, `ForwardAgent=no`, `ServerAliveInterval=30`, `ServerAliveCountMax=4`. It takes an identity file (with `IdentitiesOnly`), an optional ssh-agent opt-out, a jump host (`-J`) or a proxy command given as an argument vector, and refuses a host, user or port that could be read as an option; `--` ends the options before the host. ssh can only carry one string to the remote shell, so the command is quoted per dialect: POSIX single quotes with the `'\''` escape, PowerShell single quotes doubling the ASCII and typographic quote characters, variable names validated and never quoted. On a Windows host file paths travel in a variable, not in script text. `forward-secrets` is promised only when `forwardAgent` is set.
@@ -107,9 +107,11 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Default keepalive is 30s interval, 4 count max."
   - "Shell quoting is OS-aware (POSIX vs Windows quoting)."
   - "Capability forward-secrets is false unless ssh-agent-forward is configured."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `197d9d2cfd61`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S6 — Docker Exec adapter for sidecars
 - **Status**: review
