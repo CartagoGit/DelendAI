@@ -7,7 +7,7 @@ import {
 	isContradictedByCandidate,
 	readLiveEntities,
 	reviveReturnedEntities,
-} from './reconciler-revive';
+} from './reconciler-revive.service';
 
 export interface IApplyValidatedCandidateInput {
 	readonly stagingPath: string;

@@ -643,7 +643,7 @@ registry, so this has to be visible before it.
 
 - **Status**: review
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/reconciler-revive.ts`
+  - `packages/proposals-sqlite/src/lib/reconciler-revive.service.ts`
   - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
   - `packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts`
 - **Gate**: unit

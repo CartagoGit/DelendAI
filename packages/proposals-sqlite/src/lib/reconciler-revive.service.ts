@@ -1,5 +1,5 @@
 /**
- * reconciler-revive.ts
+ * reconciler-revive.service.ts
  *
  * A file that returns is alive again.
  *
