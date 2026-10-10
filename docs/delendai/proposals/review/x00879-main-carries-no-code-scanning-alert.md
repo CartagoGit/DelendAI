@@ -10,6 +10,8 @@ last-transition-id: f6a98be9-c98c-48f4-af7f-e8671cb663c5
 last-correlation-id: f6a98be9-c98c-48f4-af7f-e8671cb663c5
 last-transition-from: in-progress
 last-transition-at: 2026-10-09T21:23:38.326Z
+shipped-in:
+  - "8e7c04483e60d78c9edec255947754a7d3054772"
 ---
 
 # x00879 — Main carries no code scanning alert
@@ -32,15 +34,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - global_gate: none
 
 ### S1 — Core writes temporary files and runs commands safely
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/atomic-write.ts`, `packages/core/src/lib/shared/with-file-mutex.ts`, `packages/core/src/lib/shared/run-command.ts`, `packages/core/src/lib/services/shell/terminal-probe.service.ts`
 - **Gate**: type
 - acceptance:
   - "The alerts js/insecure-temporary-file (#420, #166-#169), js/shell-command-injection-from-environment (#269) and js/indirect-command-line-injection (#366) no longer apply to the code: temporary files are created exclusively with restrictive modes, and no command string built from the environment or arguments reaches a shell."
 - Triage 2026-10-07 against develop: #420, #166–#169 and #366 are already fixed there — temporary files sit beside their target and are created `wx` with mode 0o600 (`LOCK_FILE_MODE` in the mutex), and the probed shell comes from a fixed list (`launchableShell`). #269 stays: running a caller's command string is `run-command`'s purpose, through an explicit `/bin/bash --noprofile --norc -c` on POSIX; it is dismissed as won't-fix with that reason once develop is analysed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `8e7c04483e60d78c9edec255947754a7d3054772`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 8e7c04483e60, validate exit 0, tests 58/58 — atomic-write opens tmp 'wx' 0o600, mutex LOCK_FILE_MODE 0o600 with 'wx'; run-command spawns explicit /bin/bash --noprofile --norc -c (documented won't-fix for #269), terminal-probe uses fixed launchableShell; with-file-mutex spec passes
 
 ### S2 — Client, extension and dashboard build no markup or request from untrusted input
 - **Status**: review
