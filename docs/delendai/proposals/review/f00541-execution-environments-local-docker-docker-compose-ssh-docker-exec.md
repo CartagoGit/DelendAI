@@ -51,7 +51,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S2 — Local adapter baseline
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/execution-env/src/lib/adapters/local.service.ts`, `plugins/execution-env/src/lib/runners/spawn-process-runner.service.ts`, `plugins/execution-env/src/lib/helpers/env-redaction.helper.ts`, `plugins/execution-env/src/lib/helpers/run-planned.helper.ts`, `plugins/execution-env/src/lib/contracts/constants/env-redaction.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/env-redaction.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/local-execution.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/process-runner.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/run-planned.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/adapters/fake-process-runner.ts`, `plugins/execution-env/tests/src/lib/adapters/local.spec.ts`, `plugins/execution-env/tests/src/lib/helpers/env-redaction.spec.ts`, `plugins/execution-env/tests/src/lib/runners/spawn-process-runner.spec.ts`
 - **Gate**: `npx vitest run --root plugins/execution-env`
 - shipped: the local adapter over a typed `IProcessRunner` seam. The real runner spawns with `shell: false` behind `guardEffectCapability('spawn')`, so a dry run cannot start a process; `runPlanned` reports the planned argument vector instead. `env()` shows the process environment through a name-based redaction policy while commands still receive the real values. Files are contained to the workspace (safe reader, atomic writer). `prepare` and `teardown` succeed without doing anything.
@@ -59,12 +59,14 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Wraps Bun child_process with proper stdio piping."
   - "env() returns process.env filtered through a redaction policy."
   - "prepare and teardown are no-ops but return successfully."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `197d9d2cfd61`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S3 — Docker CLI adapter
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/execution-env/src/lib/adapters/docker-cli.service.ts`, `plugins/execution-env/src/lib/helpers/docker-args.helper.ts`, `plugins/execution-env/src/lib/helpers/docker-env.helper.ts`, `plugins/execution-env/src/lib/contracts/constants/docker-cli.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/docker-cli-execution.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/execution-env-types.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/adapters/docker-cli.spec.ts`
 - **Gate**: `npx vitest run --root plugins/execution-env`
 - shipped: `DockerCliExecutionEnvironment` drives the docker CLI by spawn through the `IProcessRunner` seam (no daemon socket). `prepare` runs a detached idle container with `--network=none`, `--user=1000:1000` and `--rm` by default, mounting only what is listed (read-only unless stated) and refusing the docker socket without `allowDockerSocket`. Every option uses the `--flag=value` form and `--` ends options before the image, the container name and the command. Files move over stdin and a constant script with the path as a positional parameter. `env()` reads `docker inspect` and redacts. Dry run returns the planned argument vectors. All specs use a typed fake runner, so none needs a docker CLI and none can block CI.
@@ -74,9 +76,11 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Mounts workspace only when explicitly listed."
   - "Capability isolated-filesystem=true; isolated-network only when network=none."
   - "Test skips when docker CLI is not available, never blocks CI."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `197d9d2cfd61`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S4 — Docker Compose adapter
 - **Status**: review
