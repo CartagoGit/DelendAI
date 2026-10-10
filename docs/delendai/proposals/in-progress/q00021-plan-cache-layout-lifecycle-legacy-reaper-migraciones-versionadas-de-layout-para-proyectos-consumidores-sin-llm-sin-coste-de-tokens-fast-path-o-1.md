@@ -579,6 +579,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S0 — Inventario histórico (entregable: `f00513`)
 - **Status**: review
+- shipped-in: `f37f97fc0`
 - **Files**: `docs/delendai/proposals/done/chores/c00527-anexo-q00021-f00513-inventario-historico-de-cache-layout-epochs-1-9.md`
 - **Tarea**: tabla `old-path / current-path / owner / class / acción / introducido-en / seguro-borrar` para `r00010`, `f00065`, `f00080`, `x00052`, rebrand, proposal workflow refactors, `q00019` (SQLite stores), `q00020` (progress).
 - **Gate**: `bun run lint:proposals` (the annex parses and every link resolves).
@@ -589,6 +590,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S1 — Contratos puros (entregable: `f00526`)
 - **Status**: review
+- shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
   - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
@@ -607,6 +609,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S2 — Lifecycle state store (entregable: `f00527`)
 - **Status**: review
+- shipped-in: `11d9226de`
 - **Files**:
   - `packages/state/src/lib/lifecycle-state.interface.ts`
   - `packages/state/src/index.ts`
@@ -630,6 +633,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S3 — Integración en bootstrap (entregable: `f00528`)
 - **Status**: review
+- shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
   - `packages/core/src/lib/cache/cache-layout-helpers.service.ts`
@@ -655,6 +659,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S4 — Migraciones históricas (entregable: `f00529`)
 - **Status**: review
+- shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/cache/migrations/results-segregation.migration.ts`
   - `packages/core/src/lib/cache/migrations/canonical-scratch.migration.ts`
@@ -680,6 +685,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
 - **Status**: review
+- shipped-in: `cb6ceebff`
 - **Files**:
   - `tools/scripts/lint/no-legacy-cache-paths.script.ts`
   - `tools/scripts/lint/no-legacy-cache-paths.constant.ts`
@@ -701,6 +707,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S6 — CLI operator (entregable: `f00531`)
 - **Status**: review
+- shipped-in: `baf7794eb`
 - **Files**:
   - `packages/cli/src/commands/cache.command.ts`
   - `packages/cli/src/commands/cache.command.spec.ts`
@@ -721,6 +728,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
 - **Status**: review
+- shipped-in: `1632de660`
 - **Files**:
   - `packages/core/src/lib/cache/boot-eviction-throttle.service.ts`
   - `packages/core/src/lib/cli/assemble.ts`
