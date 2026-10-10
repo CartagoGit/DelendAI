@@ -156,6 +156,8 @@ declarations of the second are checked against those of the first.
   - `packages/cli/src/lib/work-progress.service.spec.ts`
   - `packages/cli/src/commands/work.command.ts`
   - `packages/cli/src/contracts/constants/work-command.constant.ts`
+  - `tools/scripts/compile/inlined-packages.ts`
+  - `tools/scripts/compile/inlined-packages.spec.ts`
   - `packages/cli/package.json`
   - `package.json`
   - `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts`
@@ -171,6 +173,14 @@ declarations of the second are checked against those of the first.
   - The open proposals and their slices come from the proposals board, which reads them through the one reader of the proposal index and the one parser of slices; the view parses no document and walks no status folder.
   - `proposal_board { progress: true }` lists every open proposal (in review or blocked included) with its title and, per slice, the status its document carries and its acceptance count; the board an orchestrator asks for is unchanged.
   - `bun run work:progress` runs the CLI command; the script that duplicated it is gone.
+
+Building it showed two things the manifests did not say. The CLI's
+shipped sources import `@delendai/proposals/public` (the validation
+journal and the review packs) while naming the plugin only in
+`devDependencies`: an installed CLI depended on something its manifest
+did not ask for. It is a dependency now. And the scan that decides what
+a package bundles counted a `testing/` folder under `src/` as shipped
+code; it follows the convention the publication-boundary lint reads.
 
 The script read the proposals by walking four status folders under a
 default path and parsed the slices with a third regular expression of

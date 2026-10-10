@@ -40,12 +40,12 @@
 		"@delendai/client": "workspace:*",
 		"@delendai/core": "workspace:*",
 		"@delendai/env": "workspace:*",
+		"@delendai/proposals": "workspace:*",
 		"@delendai/state": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@delendai/test-kit": "workspace:*",
-		"@delendai/proposals": "workspace:*",
 		"@delendai/state-telemetry": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",

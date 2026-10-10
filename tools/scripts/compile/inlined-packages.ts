@@ -106,11 +106,24 @@ export const readWorkspaceManifests = (
 	return manifests;
 };
 
+/**
+ * Folders under `src/` that hold test support, by the convention the
+ * publication-boundary lint reads too. Nothing in them ships.
+ */
+const TEST_SUPPORT_DIRS: ReadonlySet<string> = new Set([
+	'testing',
+	'__fixtures__',
+	'fixtures',
+]);
+
 const sourceFilesUnder = (dir: string): readonly string[] => {
 	if (!existsSync(dir)) return [];
 	return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
 		const path = join(dir, entry.name);
-		if (entry.isDirectory()) return sourceFilesUnder(path);
+		if (entry.isDirectory())
+			return TEST_SUPPORT_DIRS.has(entry.name)
+				? []
+				: sourceFilesUnder(path);
 		return /\.(?:ts|tsx|mts)$/u.test(entry.name) &&
 			!/\.(?:spec|test)\.[a-z]+$/u.test(entry.name)
 			? [path]
