@@ -114,7 +114,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S6 — Docker Exec adapter for sidecars
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/execution-env/src/lib/adapters/docker-exec.service.ts`, `plugins/execution-env/src/lib/contracts/constants/docker-cli.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/docker-exec-execution.interface.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/adapters/docker-exec.spec.ts`
 - **Gate**: `npx vitest run --root plugins/execution-env`
 - shipped: `DockerExecExecutionEnvironment` runs `docker exec` into an existing container given by name or id (the reference must start alphanumeric, so it cannot be an option). `prepare` only inspects that the container is running. `--user` switches user, `--workdir` sets the directory, the command follows `--`. `env()` reads `docker inspect` and redacts. `teardown` runs nothing: the container was there before and is not ours to stop.
@@ -122,9 +122,11 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Resolves container by name or id, supports user switching."
   - "env() reads container env via docker inspect."
   - "teardown does not stop the container (it was existing)."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `197d9d2cfd61`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S7 — Secret resolver
 - **Status**: review
