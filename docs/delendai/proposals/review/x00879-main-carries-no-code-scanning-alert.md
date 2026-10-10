@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-09T21:23:38.326Z
 shipped-in:
   - "8e7c04483e60d78c9edec255947754a7d3054772"
+  - "bf7ca511a5af"
 ---
 
 # x00879 — Main carries no code scanning alert
@@ -60,15 +61,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at 8e7c04483e60, validate exit 0, tests 58/58 — configuration-center.service refuses __proto__/prototype/constructor keys, plain-prototype check; dashboard builders use escapeHtml; page fetches fixed same-origin path; configuration-center-dev-page spec passes
 
 ### S3 — Repository scripts are free of the scanner's findings
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/llm-attribution-rules.ts`, `tools/scripts/lint/content-integrity.script.ts`, `tools/scripts/lint/style-integrity.script.ts`, `tools/scripts/publish/workspace-deps.ts`, `tools/scripts/ci/local-repro.script.ts`, `tools/scripts/dev/dev.script.ts`, `tools/scripts/ci/verify-develop-health.script.ts`, `tools/scripts/build/stable-manifest.script.ts`, `tools/scripts/ci/pack-smoke.script.ts`, `tools/scripts/compile/build.script.ts`, `apps/web/scripts/fetch-brand-logos.ts`
 - **Gate**: type
 - acceptance:
   - "Every open alert under tools/scripts and apps/web/scripts (regex anchors and hostname, tag filters, temporary files, command-line injection, stack-trace exposure, file-system races, a missing space) no longer applies."
 - Triage 2026-10-07 against develop: all but two are already fixed there (plain host comparison instead of domain regexes, `\b[^>]*>` closing tags, `writeFileAtomic`, an allowlisted repro program, no stack in HTTP responses, read-then-compare writes). #329 is fixed here: `readExistingManifest` reads and catches instead of checking `existsSync` first. #384 is a false positive (a `::warning title=…::` workflow command wants no space after `::`); dismissed with that reason if the analysis of develop still reports it.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bf7ca511a5af`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at bf7ca511a5af, validate exit 0, tests 58/58 — readExistingManifest reads then catches instead of existsSync (seen in stable-manifest.script.ts); other fixes triaged as already on develop
 
 ### S4 — Specs and remaining sources carry no dead or unsafe code
 - **Status**: review
