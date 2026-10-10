@@ -31,6 +31,8 @@ import { join } from 'node:path';
 
 import { PROPOSAL_SCAN_FOLDERS } from '../contracts/constants/proposal-glossary.constant';
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
+import { type IProposalIndexEntry, readProposalIndex } from './index-reader';
+import { ProposalIndexSqlUnavailableError } from './proposal-errors';
 import { DEFAULT_PROPOSAL_FS, type IProposalFs } from './locate-fs';
 
 // ---------------------------------------------------------------------------
@@ -74,15 +76,6 @@ export interface ILocatedProposal {
 // Strategy 1 — index lookup (fast path).
 // ---------------------------------------------------------------------------
 
-interface IIndexEntry {
-	readonly id?: string;
-	readonly file?: string;
-}
-
-interface IIndexFile {
-	readonly proposals?: readonly IIndexEntry[];
-}
-
 /**
  * Look up a proposal in `index.json` and return its file path + a few
  * frontmatter fields. Returns `null` when the index is missing,
@@ -102,15 +95,18 @@ export const locateByIndex = async (
 	fs: IProposalFs = DEFAULT_PROPOSAL_FS,
 	proposalsDirAbs?: string,
 ): Promise<ILocatedProposal | null> => {
-	const raw = await fs.read(indexPathAbs);
-	if (raw === null) return null;
-	let parsed: IIndexFile;
+	// Through the one reader of the index, so a proposal is found where
+	// the markdown says it is, not where a registry file last recorded it.
+	// A projection that cannot serve is a miss, not a failure: the caller
+	// falls back to the markdown itself.
+	let index: readonly IProposalIndexEntry[];
 	try {
-		parsed = JSON.parse(raw) as IIndexFile;
-	} catch {
+		index = await readProposalIndex(indexPathAbs, fs);
+	} catch (error) {
+		if (!(error instanceof ProposalIndexSqlUnavailableError)) throw error;
 		return null;
 	}
-	const entry = (parsed.proposals ?? []).find(
+	const entry = index.find(
 		(p) => p.id === proposalId || (p.id ?? '').startsWith(`${proposalId}-`),
 	);
 	if (entry === undefined || typeof entry.file !== 'string') {

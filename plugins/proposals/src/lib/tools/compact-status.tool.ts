@@ -8,7 +8,7 @@ import {
 	reportBackpressure,
 } from '../agents/persistent-task-queue';
 import type { IPersistentTaskQueue } from '../agents/persistent-task-queue';
-import { readJsonOrNull } from '../proposals/index-reader';
+import { readJsonOrNull, readProposalIndex } from '../proposals/index-reader';
 
 export interface ICompactStatusOptions {
 	readonly namespacePrefix: string;
@@ -106,21 +106,17 @@ export const collectCompactStatus = async (
 	}
 
 	if (want.has('proposals')) {
-		let byStatus: Record<string, number> = {};
-		let total = 0;
-		// torn/missing index → zeros (state_health surfaces corruption)
-		const index = await readJsonOrNull<{
-			proposals?: Array<{ status?: string }>;
-		}>(options.indexPathAbs);
-		if (index !== null) {
-			const list = index.proposals ?? [];
-			total = list.length;
-			byStatus = list.reduce<Record<string, number>>((acc, p) => {
-				const k = p.status ?? 'unknown';
-				acc[k] = (acc[k] ?? 0) + 1;
-				return acc;
-			}, {});
-		}
+		// Through the one reader every other tool uses: the projection of
+		// the markdown, rebuilt first when it is missing or behind it. This
+		// read the legacy registry file by itself and counted what a pull
+		// had long since changed, or nothing at all where none existed.
+		const list = await readProposalIndex(options.indexPathAbs);
+		const total = list.length;
+		const byStatus = list.reduce<Record<string, number>>((acc, p) => {
+			const k = p.status ?? 'unknown';
+			acc[k] = (acc[k] ?? 0) + 1;
+			return acc;
+		}, {});
 		const actionable = ACTIONABLE.reduce(
 			(n, s) => n + (byStatus[s] ?? 0),
 			0,

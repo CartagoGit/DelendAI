@@ -63,6 +63,7 @@ const SLICE_DOC = (gate: string, acceptance?: string[]): string => {
 	return `---
 id: f00999
 title: S5 fixture
+kind: feat
 status: in-progress
 ---
 
