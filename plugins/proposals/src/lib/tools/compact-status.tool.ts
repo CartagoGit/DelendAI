@@ -8,7 +8,8 @@ import {
 	reportBackpressure,
 } from '../agents/persistent-task-queue';
 import type { IPersistentTaskQueue } from '../agents/persistent-task-queue';
-import { readJsonOrNull } from '../proposals/index-reader';
+import { readJsonOrNull, readProposalIndex } from '../proposals/index-reader';
+import { resolveDatabasePath } from '../proposals/index-reader-location';
 
 export interface ICompactStatusOptions {
 	readonly namespacePrefix: string;
@@ -40,8 +41,43 @@ export interface ICompactStatus {
 		readonly total: number;
 		readonly actionable: number;
 		readonly byStatus: Record<string, number>;
+		/**
+		 * Proposal files the last rebuild could not represent, and so
+		 * counted nowhere above: how many, and the first with its reason.
+		 */
+		readonly setAside: { readonly count: number; readonly first?: string };
 	};
 }
+
+/** How many files were set aside, and the first of them with its reason. */
+export const describeSetAside = (
+	files: readonly { readonly path: string; readonly reason: string }[],
+): { readonly count: number; readonly first?: string } => {
+	const first = files[0];
+	return first === undefined
+		? { count: 0 }
+		: { count: files.length, first: `${first.path}: ${first.reason}` };
+};
+
+/**
+ * The files the projection set aside. Read through a dynamic import: the
+ * database driver only loads under the runtime that has it, and a status
+ * that cannot be told reports none rather than failing.
+ */
+const readSetAside = async (
+	indexPathAbs: string,
+): Promise<{ readonly count: number; readonly first?: string }> => {
+	try {
+		const databasePath = await resolveDatabasePath(indexPathAbs);
+		if (databasePath === null) return { count: 0 };
+		const { readSetAsideFiles } = await import(
+			'@delendai/proposals-sqlite'
+		);
+		return describeSetAside(readSetAsideFiles(databasePath) ?? []);
+	} catch {
+		return { count: 0 };
+	}
+};
 
 // `readJsonOrNull` is provided by `proposals/index-reader.ts` (DRY).
 
@@ -80,6 +116,7 @@ export const collectCompactStatus = async (
 			total: number;
 			actionable: number;
 			byStatus: Record<string, number>;
+			setAside: { readonly count: number; readonly first?: string };
 		};
 	} = {};
 
@@ -106,26 +143,27 @@ export const collectCompactStatus = async (
 	}
 
 	if (want.has('proposals')) {
-		let byStatus: Record<string, number> = {};
-		let total = 0;
-		// torn/missing index → zeros (state_health surfaces corruption)
-		const index = await readJsonOrNull<{
-			proposals?: Array<{ status?: string }>;
-		}>(options.indexPathAbs);
-		if (index !== null) {
-			const list = index.proposals ?? [];
-			total = list.length;
-			byStatus = list.reduce<Record<string, number>>((acc, p) => {
-				const k = p.status ?? 'unknown';
-				acc[k] = (acc[k] ?? 0) + 1;
-				return acc;
-			}, {});
-		}
+		// Through the one reader every other tool uses: the projection of
+		// the markdown, rebuilt first when it is missing or behind it. This
+		// read the legacy registry file by itself and counted what a pull
+		// had long since changed, or nothing at all where none existed.
+		const list = await readProposalIndex(options.indexPathAbs);
+		const total = list.length;
+		const byStatus = list.reduce<Record<string, number>>((acc, p) => {
+			const k = p.status ?? 'unknown';
+			acc[k] = (acc[k] ?? 0) + 1;
+			return acc;
+		}, {});
 		const actionable = ACTIONABLE.reduce(
 			(n, s) => n + (byStatus[s] ?? 0),
 			0,
 		);
-		out.proposals = { total, actionable, byStatus };
+		out.proposals = {
+			total,
+			actionable,
+			byStatus,
+			setAside: await readSetAside(options.indexPathAbs),
+		};
 	}
 
 	return out;
@@ -143,7 +181,7 @@ export const buildCompactStatusRegistration = (
 			`${options.namespacePrefix}_compact_status`,
 			{
 				description:
-					'Aggregates the proposals plugin state in ONE low-token call: active locks, queue backpressure (queued/promoted/waiterOrphans/threshold) and proposal counts by status. Use `fields` (["locks","queue","proposals"]) to shrink it further. Read-only.',
+					'Aggregates the proposals plugin state in ONE low-token call: active locks, queue backpressure (queued/promoted/waiterOrphans/threshold) and proposal counts by status with the files the projection set aside. Use `fields` (["locks","queue","proposals"]) to shrink it further. Read-only.',
 				inputSchema: z.object({
 					fields: z
 						.array(z.enum(['locks', 'queue', 'proposals']))
@@ -164,6 +202,10 @@ export const buildCompactStatusRegistration = (
 							total: z.number(),
 							actionable: z.number(),
 							byStatus: z.record(z.string(), z.number()),
+							setAside: z.object({
+								count: z.number(),
+								first: z.string().optional(),
+							}),
 						})
 						.optional(),
 				}),

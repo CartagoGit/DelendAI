@@ -2,14 +2,17 @@
 id: f00757
 title: "Token and coordination cost cut where the 2026-10-07 audit measured it"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-10-06
-last-transition-id: f94aa036-4e02-4515-8006-097d335c51dc
-last-correlation-id: f94aa036-4e02-4515-8006-097d335c51dc
-last-transition-from: in-progress
-last-transition-at: 2026-10-09T21:44:43.702Z
+last-transition-id: ba25df0f-b625-42d3-b48c-a7213dc46d5a
+last-correlation-id: ba25df0f-b625-42d3-b48c-a7213dc46d5a
+last-transition-from: review
+last-transition-at: 2026-10-10T11:25:36.255Z
+shipped-in:
+  - "dd039031e185"
+  - "cc1aae7f4aea"
 ---
 
 # f00757 — Token and coordination cost cut where the 2026-10-07 audit measured it
@@ -58,15 +61,17 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - review-implementer: claude-opus-5-5
 
 ### S3 — A plan document has a generated compact view
-- **Status**: review
+- **Status**: in-progress
 - **Files**: `packages/cli/src/lib/review/slice-sections.service.ts`, `packages/cli/src/lib/review/slice-sections.service.spec.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`
 - **Gate**: type
 - acceptance:
   - "Each plan or proposal over a size threshold has a generated view of its open slices, dependencies and remaining acceptance, and work enter and the review brief read that view instead of the whole document."
 - Delivered, for the review brief: `review next` hands the reviewer each waiting slice's own section of the document (`section`, cut at the next heading) and tells it to open the whole file only where a section refers to another part of it. On x00875, the two slices waiting for a verdict are 4,224 characters of a 56,074-character document: 92 % less to read before judging. Still to do: the same view for `work enter`'s briefing, which reads the proposal through core and so needs the section from the proposals plugin.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `944f1ae96817`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: requested_changes by claude-sonnet-5-5 — Acceptance requires work enter AND the review brief to read a generated compact view of open slices, dependencies and remaining acceptance. Delivered: only a per-slice section cut in review next. The slice itself says work enter's briefing is still to do, and there is no generated view of open slices/dependencies.
 
 ### S4 — The coordination cost of a swarm is measured
 - **Status**: review
@@ -75,31 +80,37 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - acceptance:
   - "A swarm-run summary records agents, units, accepted slices, invalid verdicts, orphans left, manual interventions and coordination_tax = (merge + generated + bookkeeping commits) / all commits, and the KPI shows its trend across runs."
 - Progress 2026-10-07: the workflow KPIs (`readWorkflowKpis`, read by `project-kpis`'s snapshot) carry `coordination`: over the integration branch's last 7 days, the commits, the merges, the bookkeeping commits (`chore(generated|delendai|review)`: regenerated views and the tools' own records) and `tax = (merges + bookkeeping) / commits`. Measured here on 2026-10-07: 1,450 commits, 610 merges, 454 bookkeeping, tax 0.734 — the audit's 74.5 %. Still to do: the per-run summary (agents, units, accepted slices, invalid verdicts, orphans left, manual interventions) and the trend across runs, which the KPI history can carry once the snapshot records this field.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `ff28bd06bfe5`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: requested_changes by claude-sonnet-5-5 — Only the coordination_tax KPI exists. The acceptance also needs a swarm-run summary recording agents, units, accepted slices, invalid verdicts, orphans left, manual interventions, and the KPI showing a trend across runs; the slice says both are still to do.
 
 ### S5 — Tool output size is measured per tool
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/result-size-ranking.helper.ts`, `plugins/usage-tracking/src/lib/contracts/result-size-ranking.interface.ts`, `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/usage-tracking/tests/src/lib/result-size-ranking.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Each tool call records its output bytes; p50, p95 and p99 per tool appear in the KPIs, so the tools worth an artifact handle or a compact default are chosen by measurement."
 - Delivered: most of this was there — every invocation record carries `responseBytes`, the KPIs give per-plugin p50/p95, and `usage_report` ranks tools by total and by largest result. Each ranked tool now carries its own `p50Bytes`, `p95Bytes` and `p99Bytes` too, so a tool whose every answer is big is told from one with a single huge answer. The ranking spec pins them.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dd039031e185`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at dd039031e185, validate exit 0, tests 3/3 — Ran result-size-ranking.spec.ts (with zone-reads spec: 18 pass). Ranked tools carry p50Bytes/p95Bytes/p99Bytes; responseBytes recorded per invocation.
 
 ### S6 — A workflow edit runs the tests it can reach
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/zone-reads.ts`, `tools/scripts/ci/zone-reads.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.constant.ts`, `tools/scripts/ci/test-zones.interface.ts`
 - **Gate**: type
 - acceptance:
   - "An edit of a workflow file that leaves the test-running jobs of the test workflow (plan, zones, merge) and its workflow-wide `env` and `defaults` as they were reaches only the zones observed to read that file; an edit of those jobs, of a composite action, of a root file, or one whose effect cannot be read, still runs every zone."
 - Asked by the owner on 2026-10-07: a pull request waited for checks that had nothing to do with its change. Measured on #912, which changed one trigger of `ci.yml`, a lint script and its spec: the planner ran all eleven shards ("a root file or a workflow can reach any zone"), the proposals zone alone taking eleven minutes. Replayed on the same diff, the planner now selects the tools zone only.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `cc1aae7f4aea`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at cc1aae7f4aea, validate exit 0, tests 15/15 — Ran zone-reads.spec.ts (15 pass) and read test-zones.script.ts diff: test workflow runner compared base/head, other workflow edits reach reading zones only, composite action/root/unknown still run everything.
 
 ## acceptance
 

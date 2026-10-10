@@ -332,6 +332,10 @@ export interface DelendaiProposalsCompactStatusOutput {
 		total: number;
 		actionable: number;
 		byStatus: Record<string, number>;
+		setAside: {
+			count: number;
+			first?: string;
+		};
 	};
 }
 

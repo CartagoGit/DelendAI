@@ -27,7 +27,7 @@ import type {
 import { runStashSnapshot, type IStashEntry } from '../shared/stash-snapshot';
 import { detectAgentLoop, type IToolCall } from '../agents/agent-loop-detector';
 import { hasPeerApprovedReview } from '../swarm/proposal-review';
-import { readJsonOrNull } from '../proposals/index-reader';
+import { readProposalIndex } from '../proposals/index-reader';
 
 /**
  * Optional persistence step the orchestrator can opt into at slice
@@ -277,10 +277,7 @@ const findReviewPendingPeerApproval = async (
 	options: Pick<IAutoWorkToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
 ): Promise<{ proposalId: string; file: string } | null> => {
 	if (options.proposalsDirAbs === undefined) return null;
-	const index = await readJsonOrNull<{
-		proposals?: Array<{ id: string; file: string }>;
-	}>(options.indexPathAbs);
-	for (const entry of index?.proposals ?? []) {
+	for (const entry of await readProposalIndex(options.indexPathAbs)) {
 		if (
 			entry.file.startsWith('review/') ||
 			entry.file.includes('/review/')

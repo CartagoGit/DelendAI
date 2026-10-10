@@ -3,6 +3,11 @@ import { dirname } from 'node:path';
 
 import { loadDatabaseClass } from './bun-sqlite.helper';
 import { ProposalsSqliteDriver } from './sqlite-driver';
+import {
+	isContradictedByCandidate,
+	readLiveEntities,
+	reviveReturnedEntities,
+} from './reconciler-revive.service';
 
 export interface IApplyValidatedCandidateInput {
 	readonly stagingPath: string;
@@ -452,6 +457,9 @@ export const applyValidatedCandidate = (
 		const slices = readSlices(staging);
 		const quarantine = readQuarantine(staging);
 		const tombstones = readTombstones(staging);
+		// The candidate is what the markdown holds: an entity it carries
+		// unretired exists, whatever was observed about it before.
+		const live = readLiveEntities(staging.handle);
 		staging.close();
 		staging = null;
 
@@ -534,6 +542,7 @@ export const applyValidatedCandidate = (
 			// exist while the proposal it refers to still reads as live,
 			// which is a record of a decision nobody acted on.
 			for (const stone of tombstones) {
+				if (isContradictedByCandidate(stone, live)) continue;
 				// A candidate carries every observation it inherited from the
 				// active database. Seeing the same disappearance again is the
 				// same fact: keep one row (the reconciler writes it the same
@@ -758,6 +767,7 @@ export const applyValidatedCandidate = (
 				}
 				slicesApplied += 1;
 			}
+			reviveReturnedEntities(handle, live);
 		});
 		tx.immediate();
 		if (fencedOff !== undefined) {

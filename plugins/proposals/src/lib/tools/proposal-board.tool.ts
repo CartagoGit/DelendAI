@@ -3,7 +3,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 
-import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
+import { readProposalIndex, readTextOrNull } from '../proposals/index-reader';
 import {
 	deriveSliceStatuses,
 	parseProposalSlicePlan,
@@ -87,28 +87,19 @@ export const buildProposalBoardRegistration = (
 				readonly proposalId?: string | undefined;
 				readonly detail?: boolean | undefined;
 			}) => {
-				const index = await readJsonOrNull<{
-					proposals: Array<{
-						id: string;
-						file: string;
-						status: string;
-					}>;
-				}>(options.indexPathAbs);
-				if (index === null) {
-					return toolJson({ proposals: [] });
-				}
+				const proposals = await readProposalIndex(options.indexPathAbs);
 				const locks = await readActiveLocks(options.lockPathAbs);
 				// real documents carry the hyphenated status; keep
 				// the underscore spellings for indexes written before the
 				// vocabulary converged.
-				const actionable = index.proposals.filter(
+				const actionable = proposals.filter(
 					(p) =>
 						[
 							'pending',
 							'ready',
 							'in_progress',
 							'in-progress',
-						].includes(p.status) &&
+						].includes(p.status ?? '') &&
 						(args.proposalId === undefined ||
 							p.id === args.proposalId),
 				);
@@ -129,7 +120,7 @@ export const buildProposalBoardRegistration = (
 							// that is the norm, not the exception.
 							return {
 								id: p.id,
-								status: p.status,
+								status: p.status ?? 'unknown',
 								slices: [],
 								unreadable: `index points at ${p.file}, which does not exist — run sync_proposals`,
 							};
@@ -138,7 +129,7 @@ export const buildProposalBoardRegistration = (
 						if (parsed === null) {
 							return {
 								id: p.id,
-								status: p.status,
+								status: p.status ?? 'unknown',
 								slices: [],
 								unreadable:
 									'the document has no parseable `## Slices` section',
@@ -147,7 +138,7 @@ export const buildProposalBoardRegistration = (
 						const plan = deriveSliceStatuses(parsed, locks);
 						return {
 							id: p.id,
-							status: p.status,
+							status: p.status ?? 'unknown',
 							slices: plan.slices.map((s) => ({
 								sliceId: s.sliceId,
 								status: s.status,
