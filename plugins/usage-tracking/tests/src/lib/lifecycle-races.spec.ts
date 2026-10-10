@@ -46,12 +46,28 @@ const readLines = (path: string): string[] => {
 	}
 };
 
+/** How often, and how far apart, removing the fixture directory is retried. */
+const REMOVE_RETRIES = 10;
+const REMOVE_RETRY_DELAY_MS = 20;
+
 describe('usage-tracking lifecycle races (x00097 S3)', () => {
 	let dir = '';
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'ut-lifecycle-'));
 	});
-	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+	afterEach(async () => {
+		// What a test left buffered is written first, and the removal is
+		// retried: a plugin registered here keeps regenerating its summary
+		// in the background, and a file it creates while the directory is
+		// being emptied makes a single pass fail with ENOTEMPTY.
+		await drainLiveBuffers();
+		rmSync(dir, {
+			recursive: true,
+			force: true,
+			maxRetries: REMOVE_RETRIES,
+			retryDelay: REMOVE_RETRY_DELAY_MS,
+		});
+	});
 
 	it('summary regeneration racing degradation appends loses nothing (barrier)', async () => {
 		const invocationsPath = join(dir, 'invocations.jsonl');
