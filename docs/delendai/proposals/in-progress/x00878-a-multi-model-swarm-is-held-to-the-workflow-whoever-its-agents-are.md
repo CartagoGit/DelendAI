@@ -416,6 +416,26 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S37 — A unit kept for its proposal follows the integration branch
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`work reap --apply`, which already runs after each merge, fast-forwards every unit of the clone that holds no commit of its own and no uncommitted change to the integration branch; without `--apply` it reports which would move; a unit holding work is left to its agent."
+- Found 2026-10-10: a proposal in progress keeps its unit after each publication, for its next slice. Only `work enter` brought such a unit forward, so every merge left it behind and `work doctor` reported it under `units-hold-work` as broken: two units, each kept on purpose, each red for a merge it had no part in.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S38 — The lockfile audit is as strict as the forge's dependency alerts
+- **Status**: review
+- **Files**: `tools/scripts/lint/dependency-advisories.script.ts`, `tools/scripts/lint/dependency-advisories.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`lint:dependency-advisories` fails on an advisory of any severity in the lockfile, low included, unless it is excepted in date; it runs on every candidate into the integration branch, on the promotion, and in the daily sweep."
+- Asked by the owner on 2026-10-10: what the forge's dependency alerts detect should be caught on the integration branch, so the release branch only ever receives clean code. The forge computes those alerts for the default branch alone, so the integration branch cannot have its own; the lockfile audit added in x00879 S10 is its equivalent, but it let low-severity advisories through, which the forge lists. It now blocks every severity.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

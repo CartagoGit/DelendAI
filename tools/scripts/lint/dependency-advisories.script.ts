@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * dependency-advisories.script.ts — no dependency in the lockfile carries
- * a known advisory of moderate severity or above.
+ * a known advisory, of any severity.
  *
  * Code scanning reads the code and Dependabot reads the manifests, after
  * the fact: on 2026-10-07 a promotion reached main and two Dependabot
@@ -11,13 +11,20 @@
  * touching the code; it reads the lockfile and the advisory database, so
  * it costs about a second.
  *
+ * Every severity blocks, low included. The forge computes its dependency
+ * alerts for the default branch only, so the integration branch has no
+ * alert list of its own: this audit is that list, on every candidate, on
+ * the promotion and in the daily sweep. It has to be as strict as what
+ * the forge will say once the code reaches the release branch, or the
+ * release branch is where the difference shows.
+ *
  * An advisory with no patched version to move to is excepted in
  * `config/delendai/advisory-exceptions.json`, with its reason and the date
  * it is looked at again. An expired exception fails like the advisory
  * itself, so nothing is waived for good by being written down once.
  *
  * Exit codes:
- *   0 — nothing at or above moderate, or every finding excepted in date.
+ *   0 — no advisory, or every finding excepted in date.
  *   1 — an advisory to fix, an expired exception, or an audit that could
  *       not run (a check that cannot run is not a pass).
  */
@@ -47,8 +54,6 @@ export interface IAdvisoryVerdict {
 	readonly excepted: readonly string[];
 }
 
-const BLOCKING = new Set(['moderate', 'high', 'critical']);
-
 const advisoryId = (url: string): string => url.split('/').pop() ?? url;
 
 /** What the audit's findings mean once the exceptions are applied on `today`. */
@@ -62,7 +67,6 @@ export const judgeAdvisories = (
 	const excepted: string[] = [];
 	for (const [name, advisories] of Object.entries(audit)) {
 		for (const advisory of advisories) {
-			if (!BLOCKING.has(advisory.severity)) continue;
 			const id = advisoryId(advisory.url);
 			const line = `${name}: ${advisory.severity} ${id} — ${advisory.title}`;
 			const exception = exceptions.find(
@@ -117,7 +121,7 @@ export const main = (): number => {
 	for (const line of verdict.excepted) console.log(`  excepted ${line}`);
 	if (verdict.toFix.length === 0 && verdict.expired.length === 0) {
 		console.log(
-			`✓ dependency-advisories: no dependency carries an advisory of moderate severity or above (${String(verdict.excepted.length)} excepted).`,
+			`✓ dependency-advisories: no dependency carries a known advisory (${String(verdict.excepted.length)} excepted).`,
 		);
 		return 0;
 	}
