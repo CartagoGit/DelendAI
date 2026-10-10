@@ -87,15 +87,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at bf7ca511a5af, validate exit 0, tests 58/58 — adversarial.spec uses expectTypeOf(ctx).not.toHaveProperty('git') at line 231; with-file-mutex spec passes
 
 ### S5 — Code scanning analyses the integration branch too
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/codeql.yml`
 - **Gate**: type
 - acceptance:
   - "CodeQL runs on pushes to the integration branch and on pull requests into it, not only on the release branch, so an alert is reported when it is introduced and develop reaches main with none open."
 - Delivered: CodeQL runs on pushes to develop and main, on pull requests into develop, and on demand; not on pull requests into main, since the push run already analyses a develop → main candidate's commit (`lint:no-duplicate-release-triggers`).
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bf7ca511a5af`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at bf7ca511a5af, validate exit 0, tests 58/58 — codeql.yml on: push [main, develop], pull_request [develop], workflow_dispatch
 
 ### S6 — Code scanning must pass to merge into develop
 - **Status**: review
