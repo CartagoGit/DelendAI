@@ -74,15 +74,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at bf7ca511a5af, validate exit 0, tests 58/58 — readExistingManifest reads then catches instead of existsSync (seen in stable-manifest.script.ts); other fixes triaged as already on develop
 
 ### S4 — Specs and remaining sources carry no dead or unsafe code
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/agents/loop-detector-service.ts`, `plugins/proposals/src/lib/agents/zombie-reconcile.ts`, `plugins/web-fetch/src/lib/services/engine.ts`, `plugins/error-reporting/src/lib/mcp-internal-error.helper.ts`, `packages/client/tests/services/external-mcp/router.spec.ts`, `packages/core/tests/src/lib/capabilities/adversarial.spec.ts`, `packages/core/tests/src/lib/shared/with-file-mutex.spec.ts`, `packages/cli/src/lib/alias/integration.spec.ts`, `plugins/gitlab/tests/src/lib/tools.spec.ts`, `plugins/proposals/tests/src/lib/agents/delivery-verifier.task-queue.spec.ts`, `plugins/usage-tracking/tests/e2e/1000-calls-latency.e2e.spec.ts`, `packages/ui-extension/tests/components/runtime.spec.ts`, `extensions/vscode/src/test/open-auto-agent-selector.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The useless assignments and expressions, the incompatible comparison, the unneeded defensive code and the specs' file-system races and tag filters the scanner reports no longer apply."
 - Triage 2026-10-07 against develop: the useless assignments (#55, #79, #192, #348), the incompatible comparison (#251), the defensive code (#80) and the specs' races (#40, #341, #367) are already fixed there. #276 is fixed here: the type-level check is `expectTypeOf(ctx).not.toHaveProperty('git')` instead of a bare expression under `@ts-expect-error`. #37 is a spec that plants the lock file on purpose to simulate another process; dismissed as used-in-tests.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bf7ca511a5af`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at bf7ca511a5af, validate exit 0, tests 58/58 — adversarial.spec uses expectTypeOf(ctx).not.toHaveProperty('git') at line 231; with-file-mutex spec passes
 
 ### S5 — Code scanning analyses the integration branch too
 - **Status**: review
