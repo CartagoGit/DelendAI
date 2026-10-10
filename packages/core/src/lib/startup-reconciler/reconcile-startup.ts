@@ -45,7 +45,6 @@ import { runStateDatabasePhase } from './phases/open-state';
 import { runCheckoutPhase } from './phases/verify-checkout';
 import { runWorkRefPhase } from './phases/rebuild-work-units';
 import { compileWorkRefParser } from './work-ref-identity';
-
 import type { IReconcileStartupInput } from './reconcile-startup.interface';
 import { answeredBy } from './repair-resolutions';
 
