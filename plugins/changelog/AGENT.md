@@ -35,6 +35,7 @@
 ## Tests
 
 - plugins/changelog/src/lib/bump/infer-bump.spec.ts
+- plugins/changelog/src/lib/render/conventional-commit.spec.ts
 - plugins/changelog/src/lib/tools/changelog-generate.tool.spec.ts
 - plugins/changelog/src/lib/tools/release-plan.tool.spec.ts
 
