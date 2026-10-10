@@ -124,6 +124,17 @@ export interface IStartupGitSeam {
 		integrationBranch: string,
 		sinceOccurredAt: number | undefined,
 	): Promise<IForgeRead<readonly IJournalSourceEvent[]>>;
+	/**
+	 * Publishes coordination events to `refs/<namespace>/journal` on the
+	 * integration remote as a fast-forward commit, merging with whatever
+	 * another machine published first. Best effort: it answers, it does
+	 * not throw, and the events stay in the local database either way.
+	 */
+	publishJournal?(
+		namespace: string,
+		integrationBranch: string,
+		events: readonly IJournalSourceEvent[],
+	): Promise<IJournalPublication>;
 	/** Resolve a ref to a SHA; undefined when it does not exist. */
 	resolveRef(name: string): Promise<string | undefined>;
 	/** Describe a work ref against the integration head. */
@@ -253,6 +264,12 @@ export interface IStartupForgeSeam {
 		readonly shas: readonly string[];
 	}): Promise<IForgeRead<readonly IForgeCheckRun[]>>;
 }
+
+/** What a journal publication did. */
+export type IJournalPublication =
+	| { readonly kind: 'published'; readonly added: number }
+	| { readonly kind: 'unchanged' }
+	| { readonly kind: 'unavailable'; readonly reason: string };
 
 /** One exported coordination event, as it travels between machines. */
 export interface IJournalSourceEvent {

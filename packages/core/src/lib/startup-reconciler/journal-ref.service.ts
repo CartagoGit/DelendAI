@@ -13,6 +13,7 @@ import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { namespacedRef } from '../work-units/namespaced-ref.helper';
 import {
 	JOURNAL_EVENT_KINDS,
+	JOURNAL_FALLBACK_NAMESPACE,
 	JOURNAL_FILE,
 	JOURNAL_REF_LEAF,
 } from './journal-ref.constant';
@@ -22,6 +23,13 @@ import type {
 	IStartupGitSeam,
 	IStartupJournalSource,
 } from './seams.interface';
+
+/** `refs/<namespace>/journal`, under a fixed namespace for a project with none. */
+export const journalRefName = (namespace: string): string =>
+	namespacedRef(
+		namespace.length > 0 ? namespace : JOURNAL_FALLBACK_NAMESPACE,
+		JOURNAL_REF_LEAF,
+	);
 
 type IJournalRead = IForgeRead<readonly IJournalSourceEvent[]>;
 
@@ -80,7 +88,7 @@ export const journalRefReader =
 	): Promise<IJournalRead> => {
 		const remote = await integrationRemote(integrationBranch);
 		if (remote === undefined) return { kind: 'payload', payload: [] };
-		const ref = namespacedRef(namespace, JOURNAL_REF_LEAF);
+		const ref = journalRefName(namespace);
 		const listed = await run(['ls-remote', '--', remote, ref]);
 		if (!listed.ok)
 			return unavailable(`${remote} could not be asked for ${ref}`);
