@@ -8,6 +8,8 @@
  * corrupt state database. It now uses the same pragmas as every other
  * connection, so an invalid write fails where it is made.
  */
+import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { openStartupStatePorts } from '../../../../src/lib/work-model/startup-state-ports';
@@ -92,5 +94,13 @@ describe('the connection the startup reconciler writes through', () => {
 				allowCreate: false,
 			}),
 		).toEqual({ kind: 'absent' });
+	});
+
+	it('creates the folders above a database it may create, as a fresh clone needs', () => {
+		const opened = openStartupStatePorts({
+			databasePath: join(`${fixture.dbPath}.d`, 'a', 'b', 'state.sqlite'),
+			allowCreate: true,
+		});
+		expect(opened.kind).toBe('opened');
 	});
 });

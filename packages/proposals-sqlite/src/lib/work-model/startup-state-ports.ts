@@ -26,6 +26,9 @@
  * it away, so a wrong verdict here destroys real state.
  */
 
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
+
 import { SQLITE_BOOT_PRAGMAS } from '../schema';
 import type { Database } from 'bun:sqlite';
 
@@ -91,6 +94,11 @@ export const openStartupStatePorts = (
 ): IOpenStatePortsResult => {
 	let db: Database;
 	try {
+		// A fresh clone has no cache folder yet, and SQLite creates a file,
+		// not the folders above it: without this the first boot of a new
+		// machine reported its own missing directory as a corrupt database.
+		if (options.allowCreate)
+			mkdirSync(dirname(options.databasePath), { recursive: true });
 		const DatabaseClass = loadDatabaseClass('openStartupStatePorts');
 		// `readwrite` is stated: Bun refuses `create: false` without it as
 		// API misuse, so a boot that may not create reported a healthy

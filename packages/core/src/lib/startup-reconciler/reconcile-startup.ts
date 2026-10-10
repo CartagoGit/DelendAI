@@ -38,7 +38,7 @@ import { runFetchPhase } from './phases/fetch-refs';
 import { runForgePhase } from './phases/reconcile-forge';
 import { runGovernancePhase } from './phases/inspect-governance';
 import { runIntegrationEvidencePhase } from './phases/integration-evidence';
-import { runJournalPhase } from './phases/import-journal';
+import { finishJournal, runJournalStep } from './journal-publish.service';
 import { journalSourceFor } from './journal-ref.service';
 import { runLeasePhase } from './phases/reap-leases';
 import { runStateDatabasePhase } from './phases/open-state';
@@ -257,21 +257,11 @@ const reconcileUnderLock = async (args: {
 		findings: forge.findings,
 	});
 
-	const newestKnownEvent = ports.journal
-		.listAll()
-		.reduce((max, event) => Math.max(max, event.occurredAt), 0);
 	const journalSource = journalSourceFor(input, policy.branches);
-	const journal = await runJournalPhase({
+	const journal = await runJournalStep({
 		source: journalSource,
 		ports,
 		mode,
-		since: newestKnownEvent > 0 ? newestKnownEvent : undefined,
-	});
-	collect(phases, {
-		phase: 'journal',
-		ran: journalSource !== undefined,
-		counters: journal.counters,
-		findings: journal.findings,
 	});
 
 	const evidence = await runIntegrationEvidencePhase({
@@ -353,16 +343,6 @@ const reconcileUnderLock = async (args: {
 		forgeEtag: forge.etag,
 		refs: fetched.refs,
 	});
-	const report = finish({
-		phases,
-		startedAt,
-		completedAt: input.clock.now(),
-		machineId: environment.environment.machineId,
-		mode,
-		fingerprint,
-		resolutions,
-	});
-
 	// The fingerprint is written only when it MOVED. A boot that changed
 	// nothing appends nothing, so "start the server twenty times" does not
 	// grow the journal by twenty events.
@@ -383,6 +363,26 @@ const reconcileUnderLock = async (args: {
 			}),
 		});
 	}
+
+	collect(
+		phases,
+		await finishJournal({
+			imported: journal,
+			ran: journalSource !== undefined,
+			git: input.git,
+			journal: ports.journal,
+			branches: policy.branches,
+		}),
+	);
+	const report = finish({
+		phases,
+		startedAt,
+		completedAt: input.clock.now(),
+		machineId: environment.environment.machineId,
+		mode,
+		fingerprint,
+		resolutions,
+	});
 
 	ports.reconciliation.complete({
 		id: run.id,
