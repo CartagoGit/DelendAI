@@ -2,13 +2,16 @@
 id: r00056
 title: "SQLite storage modes and canonical proposals DB wiring"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
-last-transition-id: 75a9525f-8396-49a9-8b32-a1a991cb4a5f
-last-correlation-id: 75a9525f-8396-49a9-8b32-a1a991cb4a5f
-last-transition-from: in-progress
+last-transition-id: 6632c280-0339-4fcf-889e-464c4d80d672
+last-correlation-id: 6632c280-0339-4fcf-889e-464c4d80d672
+last-transition-from: review
+shipped-in:
+  - "efa480669"
+last-transition-at: 2026-10-10T11:05:00.219Z
 ---
 
 # r00056 — SQLite storage modes and canonical proposals DB wiring
@@ -67,7 +70,7 @@ hay paridad. Por eso el doctor forma parte de esta slice y no de una posterior.
 - global_gate: none
 
 ### S1 — Resolver única de rutas, storage modes y doctor
-- **Status**: review — 2026-10-05: every acceptance item is delivered. One path resolver (`resolveProposalsDbPaths`) is used by the plugin, the reconciler, `db-rebuild`, `resurrect` and the doctor, and no operational path joins `proposals.sqlite` by hand. The three modes are the three values of the one switch, `DELENDAI_PROPOSAL_INDEX_SOURCE` (`auto` / `sql` / `json`), with the mapping written beside it (decision of 2026-09-25 below). `sql` refuses a missing or unreadable database instead of falling back. The doctor's `storage_mode` check reports mode, canonical path, fallback count and parity. Gate: `storage-mode.spec.ts` (5) and `db-doctor.spec.ts` under `bun test` (4).
+- **Status**: done
 - shipped-in: `efa480669`
 - **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`, `packages/proposals-sqlite/src/lib/db-path.ts`, `plugins/proposals/tests/src/lib/services/db-doctor/storage-mode.spec.ts`, `plugins/proposals/tests/src/lib/services/db-doctor.spec.ts`
 - **Gate**: type
@@ -76,8 +79,10 @@ hay paridad. Por eso el doctor forma parte de esta slice y no de una posterior.
   - "No quedan joins ad hoc a proposals.sqlite en los paths operacionales."
   - "shadow permite fallback documentado; sql-primary-compare sirve desde SQLite; sql-only convierte DB missing/corrupt en error explícito y nunca cae silenciosamente a JSON/Markdown."
   - "doctor informa mode, canonical path, fallback count y parity status."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at efa480669, validate exit 0, tests 12/12 — Ran storage-mode.spec (vitest 5/5), db-doctor.spec (bun test 4/4), index-reader-db-resolution (3/3); read the constant and grepped for ad hoc joins.
 
 ## acceptance
 
