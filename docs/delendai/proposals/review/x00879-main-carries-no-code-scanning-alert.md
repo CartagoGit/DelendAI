@@ -13,6 +13,7 @@ last-transition-at: 2026-10-09T21:23:38.326Z
 shipped-in:
   - "8e7c04483e60d78c9edec255947754a7d3054772"
   - "bf7ca511a5af"
+  - "e93e4f19e616"
 ---
 
 # x00879 — Main carries no code scanning alert
@@ -100,15 +101,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at bf7ca511a5af, validate exit 0, tests 58/58 — codeql.yml on: push [main, develop], pull_request [develop], workflow_dispatch
 
 ### S6 — Code scanning must pass to merge into develop
-- **Status**: review
+- **Status**: done
 - **Files**: `delendai.config.json`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/settings.yml`, `tools/scripts/lint/branch-protection-guard.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`CodeQL` is a required check of the integration branch, beside `delendai-validate`: a pull request that introduces a code scanning alert does not merge, so develop — and what it promotes to main — stays at zero."
 - Asked by the owner on 2026-10-07: code scanning is a validation that must always hold, so a feature, a fix or a refactor cannot bring a new alert in. The policy's `integration.requiredChecks` gains `CodeQL` (the check CodeQL reports on a pull request, seen on #903), and `forge-settings --write` projects it into the generated protection files; the live protection is applied through the repository's bootstrap path. Main's required checks are unchanged: CodeQL does not run on pull requests into main (S5 — the push to develop already analyses that commit), so requiring it there would block every promotion, and main only ever receives what develop let through.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e93e4f19e616`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at e93e4f19e616, validate exit 0, tests 58/58 — CodeQL listed beside delendai-validate in delendai.config.json requiredChecks, branch-protection.yml/.ts, settings.yml; branch-protection-guard spec passes
 
 ### S7 — Every certified develop is scanned
 - **Status**: review
