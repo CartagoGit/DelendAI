@@ -32,7 +32,7 @@ Status on 2026-10-07.
 Not started, on purpose. Two things come first, found while implementing f00511:
 
 - **Something must emit work events.** Nothing records events at runtime yet, so `status` and `agents` would always render empty. That is q00020's first slice (work telemetry), now in progress; this proposal depends on it.
-- **Published code never imports `@delendai/state-telemetry`.** It stays private: the CLI, core and every published plugin write append-only journal files under the cache directory, and the private package reads and projects them (the transition-duration journal of f00511 S2 is the pattern). The CLI surfaces here read projections through that boundary, not by importing the package.
+- **A published package carries the private packages it imports; nothing private is published for its sake.** `@delendai/state-telemetry` stays private. Owner's decision, 2026-10-10: every extra public package is one more thing a user has to install and version, so the build bundles a private package into the published package that imports it (S6) instead of putting it on the registry. Until the CLI command of S7 exists the view runs as `bun run work:progress`.
 
 Two corrections for the slices when they start: `delendai work status` already exists with another meaning (the checkout and policy report), so the progress view needs its own name (for example `work progress`) or an explicit extension of `status`; and the declared `commands/groups/work.ts` does not exist (`work` is `commands/work.command.ts`, which delegates to core).
 
@@ -122,6 +122,45 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "El setting `delendai.config.json#telemetry.chat_intrinsic.enabled` (default `false`) controla la inyección; con `false`, el bloque se omite."
   - "Test `telemetry-no-tokens.spec.ts` (acceptance del plan q00020): arranca un agente mock, dispara 100 tool calls, activa el bloque durante 5 minutos, y verifica que `usage_tracking.llm_tokens_total` es invariante entre los dos extremos."
   - "El bloque se omite automáticamente cuando el agente está en `WorkPhase: 'done'` o no tiene `work_item_id` activo (degradación silenciosa)."
+
+### S6 — A published package bundles the private packages it imports
+
+- **Status**: review
+- **Files**:
+  - `tools/scripts/compile/inlined-packages.ts`
+  - `tools/scripts/compile/inlined-packages.spec.ts`
+  - `tools/scripts/compile/bundle-js.ts`
+  - `tools/scripts/compile/build-graph.ts`
+  - `tools/scripts/compile/build.script.ts`
+  - `tools/scripts/lint/no-internal-core-imports.script.ts`
+  - `tools/scripts/lint/no-internal-core-imports.script.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - A published package that names a private workspace package in `devDependencies` and imports it from its shipped sources gets that package, and the private packages it depends on, inside its own bundle; every other bare import stays an import.
+  - A private package named in `devDependencies` and imported only by tests is not bundled.
+  - The build refuses, naming them, the public packages a bundled one imports that the publisher does not declare.
+  - The publication-boundary lint accepts an import of a private package the importer declares in `devDependencies`, refuses any other, and refuses a private package bundled into two published packages.
+  - `bun run build` builds every workspace with the new wiring.
+
+Delivered in `f97df2512` (its message names S4 by mistake). The private
+package is built before the package that bundles it, because the
+declarations of the second are checked against those of the first.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S7 — `delendai work progress` in the published CLI
+
+- **Status**: pending
+- **Files**:
+  - `packages/cli/src/commands/work.command.ts`
+  - `packages/cli/package.json`
+  - `tools/scripts/telemetry/work-progress.script.ts`
+- **Gate**: unit
+- acceptance:
+  - `delendai work progress [--watch|--agents|--json]` renders the view `bun run work:progress` renders, from an installed CLI, with `@delendai/state-telemetry` bundled by S6.
+  - The open proposals come from the one reader of the proposal index and the project's configured layout, not from a walk of status folders under a default path.
+  - `bun run work:progress` runs the CLI command; the script that duplicated it is gone.
+  - The pack smoke test installs the CLI tarball and runs the command.
 
 ## acceptance
 

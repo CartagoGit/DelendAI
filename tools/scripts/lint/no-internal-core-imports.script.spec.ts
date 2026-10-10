@@ -186,6 +186,30 @@ describe('publication boundary', () => {
 		expect(reason).toContain('"private": true');
 	});
 
+	it('accepts a private package the importer declares to bundle', () => {
+		// Named in devDependencies, the build carries it inside the
+		// importer's own output: an installer has nothing to resolve.
+		const carrier = pkg('packages/cli', '@delendai/cli', {
+			devDependencies: { '@delendai/state': 'workspace:*' },
+		});
+		const carrying = new Map(world).set(carrier.name, carrier);
+		expect(
+			publicationBoundaryReason(
+				'@delendai/state',
+				carrying,
+				carrier.name,
+			),
+		).toBeUndefined();
+		// Another package in the same workspace is not excused by it.
+		expect(
+			publicationBoundaryReason(
+				'@delendai/state',
+				carrying,
+				'@delendai/core',
+			),
+		).toContain('devDependencies');
+	});
+
 	it('rejects a subpath declared with types but no runtime condition', () => {
 		const reason = publicationBoundaryReason(
 			'@delendai/commit-policy/lib/services/storm-detector',
