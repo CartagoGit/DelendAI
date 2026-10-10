@@ -245,6 +245,7 @@ interface IPackageManifest {
 	readonly private?: boolean;
 	readonly exports?: Record<string, unknown>;
 	readonly dependencies?: Record<string, string>;
+	readonly devDependencies?: Record<string, string>;
 	readonly peerDependencies?: Record<string, string>;
 }
 
@@ -414,7 +415,15 @@ export const publicationBoundaryReason = (
 	// third-party dependency; nothing for this lint to say.
 	if (target === undefined) return undefined;
 	if (target.manifest.private === true && split.pkg !== selfName) {
-		return `${split.pkg} is "private": true, so an npm install of this package cannot resolve it. Publish it (and add it to PUBLISH_ORDER) or stop depending on it.`;
+		// A private package the importer names in `devDependencies` is
+		// bundled into the importer's own output by the build, so nothing
+		// is left for an installer to resolve.
+		const inlined =
+			packages.get(selfName)?.manifest.devDependencies?.[split.pkg] !==
+			undefined;
+		return inlined
+			? undefined
+			: `${split.pkg} is "private": true, so an npm install of this package cannot resolve it. Declare it in this package's devDependencies so the build bundles it in, or stop depending on it.`;
 	}
 	const exportsMap = target.manifest.exports;
 	if (exportsMap === undefined) {
@@ -481,6 +490,12 @@ export const detectPublicationBoundaryViolations = async (
 		[...packages.values()].map((pkg) => [pkg.dir, pkg] as const),
 	);
 	const findings: IPublicationBoundaryFinding[] = [];
+	// Which published packages bundle each private one, with the first
+	// import that makes them do so.
+	const bundledBy = new Map<
+		string,
+		Map<string, Omit<IPublicationBoundaryFinding, 'reason'>>
+	>();
 	for (const dir of PUBLISH_ORDER) {
 		const pkg = byDir.get(dir);
 		if (pkg === undefined) continue;
@@ -499,6 +514,22 @@ export const detectPublicationBoundaryViolations = async (
 					packages,
 					pkg.name,
 				);
+				const imported = splitSpecifier(specifier)?.pkg;
+				if (
+					reason === undefined &&
+					imported !== undefined &&
+					imported !== pkg.name &&
+					packages.get(imported)?.manifest.private === true
+				) {
+					const carriers = bundledBy.get(imported) ?? new Map();
+					if (!carriers.has(pkg.name))
+						carriers.set(pkg.name, {
+							relPath: rel,
+							line: lineForOffset(content, match.index ?? 0),
+							specifier,
+						});
+					bundledBy.set(imported, carriers);
+				}
 				if (reason === undefined) continue;
 				findings.push({
 					relPath: rel,
@@ -507,6 +538,18 @@ export const detectPublicationBoundaryViolations = async (
 					reason,
 				});
 			}
+		}
+	}
+	// One copy of a private package: bundled into two published packages
+	// it would run twice in one process, each with its own state.
+	for (const [name, carriers] of bundledBy) {
+		if (carriers.size < 2) continue;
+		const names = [...carriers.keys()].sort().join(', ');
+		for (const where of carriers.values()) {
+			findings.push({
+				...where,
+				reason: `${name} is private and would be bundled into ${names}; one published package may carry it, the others import it from that one.`,
+			});
 		}
 	}
 	return findings;

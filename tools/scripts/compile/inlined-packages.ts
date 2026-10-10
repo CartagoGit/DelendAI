@@ -16,6 +16,9 @@
  * import, so the publisher has to declare it as its own dependency.
  */
 
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 export interface IWorkspaceManifest {
 	readonly name: string;
 	readonly private?: boolean | undefined;
@@ -69,4 +72,71 @@ export const undeclaredByPublisher = (
 		}
 	}
 	return [...needed].sort((left, right) => left.localeCompare(right));
+};
+
+/**
+ * Every workspace manifest under `root`, by package name, with the
+ * directory it was read from.
+ */
+export const readWorkspaceManifests = (
+	root: string,
+	groups: readonly string[] = ['packages', 'plugins'],
+): ReadonlyMap<string, IWorkspaceManifest & { readonly rel: string }> => {
+	const manifests = new Map<
+		string,
+		IWorkspaceManifest & { readonly rel: string }
+	>();
+	for (const group of groups) {
+		const groupDir = join(root, group);
+		if (!existsSync(groupDir)) continue;
+		for (const entry of readdirSync(groupDir).sort()) {
+			const path = join(groupDir, entry, 'package.json');
+			if (!existsSync(path)) continue;
+			const manifest = JSON.parse(
+				readFileSync(path, 'utf8'),
+			) as Partial<IWorkspaceManifest>;
+			if (typeof manifest.name !== 'string') continue;
+			manifests.set(manifest.name, {
+				...manifest,
+				name: manifest.name,
+				rel: `${group}/${entry}`,
+			});
+		}
+	}
+	return manifests;
+};
+
+const sourceFilesUnder = (dir: string): readonly string[] => {
+	if (!existsSync(dir)) return [];
+	return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+		const path = join(dir, entry.name);
+		if (entry.isDirectory()) return sourceFilesUnder(path);
+		return /\.(?:ts|tsx|mts)$/u.test(entry.name) &&
+			!/\.(?:spec|test)\.[a-z]+$/u.test(entry.name)
+			? [path]
+			: [];
+	});
+};
+
+/**
+ * The names among `candidates` that the shipped sources under `srcDir`
+ * import. A private package named in `devDependencies` for the tests
+ * alone (a test kit) is not part of what ships, and saying it is bundled
+ * would be wrong.
+ */
+export const importedBySources = (
+	srcDir: string,
+	candidates: readonly string[],
+): readonly string[] => {
+	if (candidates.length === 0) return [];
+	const sources = sourceFilesUnder(srcDir).map((path) =>
+		readFileSync(path, 'utf8'),
+	);
+	return candidates.filter((name) => {
+		const imported = new RegExp(
+			`(?:from|import|require)\\s*\\(?\\s*['"]${name.replace(/[.*+?^${}()|[\]\\/]/gu, '\\$&')}(?:/[^'"]*)?['"]`,
+			'u',
+		);
+		return sources.some((source) => imported.test(source));
+	});
 };

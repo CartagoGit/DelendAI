@@ -38,6 +38,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { computeBuildOrder, WORKSPACE_GROUPS } from './build-graph';
+import {
+	importedBySources,
+	inlinedPackagesOf,
+	readWorkspaceManifests,
+	undeclaredByPublisher,
+} from './inlined-packages';
 
 // Walk up from this file's directory until we find a directory that
 // contains `delendai.config.json` (or `.git`). That is the repo root.
@@ -143,14 +149,18 @@ const buildPackage = (rel: string): void => {
 		name?: string;
 		version?: string;
 		bin?: unknown;
+		private?: boolean;
 		dependencies?: Record<string, string>;
+		devDependencies?: Record<string, string>;
 		peerDependencies?: Record<string, string>;
 	} = existsSync(pkgJsonPath)
 		? (JSON.parse(readFileSync(pkgJsonPath, 'utf8')) as {
 				name?: string;
 				version?: string;
 				bin?: unknown;
+				private?: boolean;
 				dependencies?: Record<string, string>;
+				devDependencies?: Record<string, string>;
 				peerDependencies?: Record<string, string>;
 			})
 		: {};
@@ -218,6 +228,33 @@ const buildPackage = (rel: string): void => {
 	// stale files from a previous version when version bumped.
 	rmSync(outRoot, { recursive: true, force: true });
 
+	// The private workspace packages this one ships inside its bundle:
+	// they are on no registry, so an import of one left in the output
+	// could not be installed. What THEY import from a public package stays
+	// an import, and the publisher has to declare it.
+	const workspace = readWorkspaceManifests(ROOT);
+	const self = { ...pkgMeta, name: pkgMeta.name ?? rel };
+	// Only what the shipped sources import: a private package named in
+	// devDependencies for the tests alone is not part of the bundle.
+	const shipped = {
+		...self,
+		devDependencies: Object.fromEntries(
+			importedBySources(
+				join(dir, 'src'),
+				Object.keys(self.devDependencies ?? {}),
+			).map((name) => [name, 'workspace:*']),
+		),
+	};
+	const inlined = inlinedPackagesOf(shipped, workspace);
+	const undeclared = undeclaredByPublisher(shipped, workspace);
+	if (undeclared.length > 0) {
+		throw new BuildError(
+			`build: ${rel} bundles ${inlined.join(', ')}, which import ${undeclared.join(', ')}; declare ${undeclared.length === 1 ? 'it' : 'them'} in ${rel}/package.json dependencies`,
+			1,
+		);
+	}
+	if (inlined.length > 0) console.log(`  inlines ${inlined.join(', ')}`);
+
 	// 1. JS bundles (deps external; bundler-style imports resolved here).
 	//    a00065: routed through `bundle-js.ts` (a `Bun.build()` wrapper)
 	//    instead of the `bun build` CLI so the repo's `scssPlugin` is
@@ -238,6 +275,7 @@ const buildPackage = (rel: string): void => {
 			'--outdir',
 			outRoot,
 			...entries.flatMap((e) => ['--entry', e]),
+			...inlined.flatMap((name) => ['--inline', name]),
 		],
 		dir,
 	);
@@ -336,6 +374,13 @@ const buildPackage = (rel: string): void => {
 	const selfName = pkgMeta.name?.replace(/^@delendai\//, '');
 	const mcpDeps = new Set<string>(); // "packages/x" | "plugins/x", transitive
 	const queue: string[] = [rel];
+	// The inlined packages' declarations are read like any dependency's.
+	for (const name of inlined) {
+		const inlinedRel = workspace.get(name)?.rel;
+		if (inlinedRel === undefined) continue;
+		mcpDeps.add(inlinedRel);
+		queue.push(inlinedRel);
+	}
 	while (queue.length > 0) {
 		const currentRel = queue.shift()!;
 		const currentPkgJsonPath = join(ROOT, currentRel, 'package.json');

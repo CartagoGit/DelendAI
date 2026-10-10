@@ -2,9 +2,14 @@
  * inlined-packages.spec.ts — a published package carries the private
  * packages it uses, and says which public ones that obliges it to declare.
  */
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+	importedBySources,
 	inlinedPackagesOf,
 	type IWorkspaceManifest,
 	undeclaredByPublisher,
@@ -68,5 +73,42 @@ describe('undeclaredByPublisher', () => {
 				workspace,
 			),
 		).toEqual([]);
+	});
+});
+
+describe('importedBySources', () => {
+	it('names what the shipped sources import, not what only a test does', () => {
+		const src = mkdtempSync(join(tmpdir(), 'inlined-src-'));
+		try {
+			mkdirSync(join(src, 'lib'));
+			writeFileSync(
+				join(src, 'index.ts'),
+				"import { view } from '@x/telemetry/public';\nexport const v = view;\n",
+			);
+			writeFileSync(
+				join(src, 'lib', 'lazy.ts'),
+				"export const load = () => import('@x/store');\n",
+			);
+			writeFileSync(
+				join(src, 'lib', 'thing.spec.ts'),
+				"import { fake } from '@x/kit';\n",
+			);
+
+			expect(
+				importedBySources(src, [
+					'@x/telemetry',
+					'@x/store',
+					'@x/kit',
+					'@x/tele',
+				]),
+			).toEqual(['@x/telemetry', '@x/store']);
+		} finally {
+			rmSync(src, { recursive: true, force: true });
+		}
+	});
+
+	it('is empty for a package with no sources or no candidates', () => {
+		expect(importedBySources('/nowhere/src', ['@x/kit'])).toEqual([]);
+		expect(importedBySources('/nowhere/src', [])).toEqual([]);
 	});
 });
