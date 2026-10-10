@@ -250,4 +250,40 @@ describe('a slice reservation whose unit is gone', () => {
 		expect(claims(first.git)).not.toContain('x00001/s1');
 		expect(claims(first.git)).toContain('x00001/s2');
 	});
+
+	it('is released at once when its unit has landed on the integration branch', async () => {
+		// A unit that published and merged has no branch left, and used to
+		// hold its slice for the whole abandonment window all the same.
+		const { first } = twoMachines();
+		expect((await enter(first.root, 'agent-a', 'S3')).code).toBe(0);
+		const unit = first
+			.git(
+				'for-each-ref',
+				'--format=%(refname:short)',
+				'refs/heads/delendai',
+			)
+			.split('\n')
+			.find((name) => name.includes('x00001-S3'))
+			?.replace('delendai/wip/', '');
+		expect(unit).toBeDefined();
+		const now = Math.floor(Date.now() / 1000);
+		expect(await reap(first.root, false, now)).toEqual([]);
+
+		first.git(
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			`Merge pull request #7 from owner/delendai/pr/${unit ?? ''}`,
+		);
+		first.git('push', '-q', 'origin', 'develop');
+
+		expect(await reap(first.root, true, now)).toEqual([
+			expect.objectContaining({
+				slice: 'x00001/s3',
+				outcome: 'released',
+			}),
+		]);
+		expect(claims(first.git)).not.toContain('x00001/s3');
+	});
 });
