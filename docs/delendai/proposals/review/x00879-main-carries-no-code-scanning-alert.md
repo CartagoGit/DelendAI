@@ -47,15 +47,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at 8e7c04483e60, validate exit 0, tests 58/58 — atomic-write opens tmp 'wx' 0o600, mutex LOCK_FILE_MODE 0o600 with 'wx'; run-command spawns explicit /bin/bash --noprofile --norc -c (documented won't-fix for #269), terminal-probe uses fixed launchableShell; with-file-mutex spec passes
 
 ### S2 — Client, extension and dashboard build no markup or request from untrusted input
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/client/src/node/services/configuration-center.service.ts`, `extensions/vscode/src/dev/settings-panel.ts`, `extensions/vscode/src/dev/pages/configuration-center.ts`, `packages/ui-extension/src/dashboard/render-dashboard.ts`
 - **Gate**: type
 - acceptance:
   - "The alerts js/prototype-polluting-assignment (#262-#264), js/file-system-race (#265), js/client-side-request-forgery (#74, #75), js/bad-tag-filter (#59, #60), js/incomplete-multi-character-sanitization (#58) and js/html-constructed-from-input (#358-#360) no longer apply."
 - Triage 2026-10-07 against develop: #262–#265, #58–#60, #74, #75 and #23 are already fixed there (prototype keys refused before assignment, a handle-based read, DOM parsing instead of tag regexes, a fixed same-origin path with an encoded query). #358–#360 are false positives: every value the dashboard interpolates passes through `escapeHtml` in its builders; dismissed with that reason once develop is analysed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `8e7c04483e60d78c9edec255947754a7d3054772`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 8e7c04483e60, validate exit 0, tests 58/58 — configuration-center.service refuses __proto__/prototype/constructor keys, plain-prototype check; dashboard builders use escapeHtml; page fetches fixed same-origin path; configuration-center-dev-page spec passes
 
 ### S3 — Repository scripts are free of the scanner's findings
 - **Status**: review
