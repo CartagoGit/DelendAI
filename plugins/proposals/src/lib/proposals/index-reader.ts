@@ -358,8 +358,7 @@ export const readProposalIndex = async (
 	// "it served, and there are no proposals". Only the first triggers
 	// the fallback — treating `[]` as a failure would re-read JSON for
 	// a genuinely empty repository, and treating `null` as `[]` would
-	// hand every consumer an empty repository when the database is
-	// simply absent.
+	// hand every consumer an empty one when the database is just absent.
 	const log = options?.log ?? defaultLog;
 	if (source === 'sql')
 		return serveStrictSql(indexPathAbs, fs, fromSql, log, options);

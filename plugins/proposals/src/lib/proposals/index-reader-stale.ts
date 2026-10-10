@@ -86,28 +86,29 @@ const gitTreeOf = (
  * built in between would stay wrong, and a project need not be a
  * repository at all.
  */
+/** When `path` was last modified; a path that cannot be read counts as now. */
+const modifiedAt = (path: string): Promise<number> =>
+	stat(path).then(
+		(found) => found.mtimeMs,
+		() => Number.POSITIVE_INFINITY,
+	);
+
 const modifiedSince = async (
 	dirAbs: string,
 	sinceMs: number,
 ): Promise<boolean> => {
-	let entries: Dirent[];
-	try {
-		if ((await stat(dirAbs)).mtimeMs > sinceMs) return true;
-		entries = await readdir(dirAbs, { withFileTypes: true });
-	} catch {
-		return false;
-	}
+	const entries: Dirent[] | null = await readdir(dirAbs, {
+		withFileTypes: true,
+	}).catch(() => null);
+	if (entries === null) return false;
+	if ((await modifiedAt(dirAbs)) > sinceMs) return true;
 	for (const entry of entries) {
 		const path = join(dirAbs, entry.name);
-		if (entry.isDirectory()) {
-			if (await modifiedSince(path, sinceMs)) return true;
-		} else if (entry.name.endsWith(MARKDOWN_SUFFIX)) {
-			try {
-				if ((await stat(path)).mtimeMs > sinceMs) return true;
-			} catch {
-				return true;
-			}
-		}
+		const newer = entry.isDirectory()
+			? await modifiedSince(path, sinceMs)
+			: entry.name.endsWith(MARKDOWN_SUFFIX) &&
+				(await modifiedAt(path)) > sinceMs;
+		if (newer) return true;
 	}
 	return false;
 };
