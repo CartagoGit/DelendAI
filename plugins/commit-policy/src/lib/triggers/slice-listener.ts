@@ -236,6 +236,28 @@ export interface ISliceListener {
 	stop(): void;
 }
 
+/**
+ * Paces a poll by what it costs: a poll that took long is followed by a
+ * rest of {@link POLL_COST_FACTOR} times that, so reading a large tree
+ * never holds a core. `begin` answers `undefined` while resting, and
+ * otherwise the function to call when the poll is over.
+ */
+export const createPollPacer = (
+	now: () => number = Date.now,
+): { begin(): (() => void) | undefined } => {
+	let restUntil = 0;
+	return {
+		begin: () => {
+			const started = now();
+			if (started < restUntil) return undefined;
+			return () => {
+				const ended = now();
+				restUntil = ended + (ended - started) * POLL_COST_FACTOR;
+			};
+		},
+	};
+};
+
 export const createSliceListener = (
 	workspaceRoot: string,
 	indexDir: string,
@@ -515,18 +537,13 @@ export const createSliceListener = (
 			// Prime immediately so a transition made after startup does
 			// not wait for the first polling interval.
 			const primed = check().then(() => undefined);
-			// A poll that took long is followed by a proportionally
-			// longer rest, so reading a large tree never holds a core.
-			let restUntil = 0;
+			const pacer = createPollPacer();
 			timer = setInterval(() => {
-				const started = Date.now();
-				if (started < restUntil) return;
+				const finished = pacer.begin();
+				if (finished === undefined) return;
 				void check()
 					.catch(() => undefined)
-					.finally(() => {
-						const cost = Date.now() - started;
-						restUntil = Date.now() + cost * POLL_COST_FACTOR;
-					});
+					.finally(finished);
 			}, pollMs);
 			if (typeof timer.unref === 'function') timer.unref();
 			return primed;
