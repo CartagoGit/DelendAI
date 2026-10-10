@@ -64,9 +64,17 @@ describe('forwardSyncVerdict', () => {
 describe('forwardSyncRef', () => {
 	it('lives in the namespace the forge lets a workflow create refs in', () => {
 		expect(forwardSyncRef(RELEASE_SHA)).toBe(
-			`${FORWARD_SYNC_REF_PREFIX}c7eda197a`,
+			`${FORWARD_SYNC_REF_PREFIX}c7eda197a-g1/carries-the-release-back`,
 		);
 		expect(FORWARD_SYNC_REF_PREFIX.startsWith('delendai/pr/')).toBe(true);
+	});
+
+	it('has the agent, kind, unit and topic every publication has', () => {
+		// #913: the flat `delendai/pr/forward-sync-<sha>` failed the doctor's
+		// publications-canonical invariant while it was open.
+		const tail = forwardSyncRef(RELEASE_SHA).slice('delendai/pr/'.length);
+		expect(tail.split('/')).toHaveLength(4);
+		expect(tail.split('/')[2]).toMatch(/-g\d+$/u);
 	});
 });
 

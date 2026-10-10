@@ -20,10 +20,8 @@ import {
 } from 'node:fs/promises';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 
-import {
-	type IResolvedDevelopmentPolicy,
-	writeFileAtomic,
-} from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
 import type {
 	IBaseEntry,
 	ICleanPlan,

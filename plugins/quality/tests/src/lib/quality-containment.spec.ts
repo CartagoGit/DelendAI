@@ -24,11 +24,8 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type {
-	IFileReader,
-	IToolRegistration,
-	IToolTextResult,
-} from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
+import type { IFileReader, IToolRegistration } from '@delendai/core/contracts';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 import { buildQualityComplexityToolRegistration } from '../../../src/lib/tools/quality-complexity.tool';

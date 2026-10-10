@@ -21,10 +21,9 @@ import { join, relative } from 'node:path';
 import {
 	redactSecrets,
 	resolveExistingWorkspaceContained,
-	SafeWorkspaceReader,
 	safeListDir,
-	writeFileAtomic,
 } from '@delendai/core/public';
+import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/runtime';
 
 import {
 	PROPOSAL_KINDS,

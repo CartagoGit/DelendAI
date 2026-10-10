@@ -198,6 +198,36 @@ Este plan **no entrega código propio**: orquesta las cuatro propuestas hijas de
 - **Gate**: las cuatro hijas (`f00509`, `f00510`, `f00511`, `f00512`) están en `done/` y `bun run validate` está verde sobre el árbol que tocan (cada hija declara su propio globalGate, ver archivos de cada hija).
 - **Acceptance**: `delendai work status` (CLI) emite el snapshot completo de las cuatro hijas; la barra de estado de la extensión muestra al menos un agente activo; el test de `phase-inference.spec.ts` pasa con ≥95% de acierto sobre los eventos sintéticos del dataset canónico.
 
+### S1 — Runtime events: units journal their claims and publications, a private drain feeds the bus
+
+The gap this closes: nothing emitted work events at runtime, so any status view rendered empty. `@delendai/state-telemetry` stays private, so published code (core, the CLI, plugins) never imports it. Published code appends one JSON line per event to `<cacheDir>/telemetry/work-event-journal.ndjson` (append-only, a failure to record is swallowed and never fails the work); the private package claims that file by renaming it and appends every valid line to the event bus.
+
+- **Status**: review
+- **Files**: `packages/core/src/lib/contracts/constants/work-event-journal.constant.ts`, `packages/core/src/lib/contracts/interfaces/work-event-journal.interface.ts`, `packages/core/src/lib/work-units/work-event-journal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-event-journal.service.spec.ts`, `packages/state-telemetry/src/lib/events/contracts/interfaces/work-event-journal-drain.interface.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`, `packages/state-telemetry/src/public/index.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-event-journal.service.spec.ts` and `npx vitest run --root packages/state-telemetry src/lib/events`
+- Unit enter journals `slice_claimed`; a successful publish journals `slice_submitted`.
+- `drainWorkEventJournal` validates the closed kinds and appends to any sink that has `append`.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S2 — Runtime events: proposal transitions and review submissions
+
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/tools/proposal-work-events.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-work-events.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
+- **Gate**: `npx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-work-events.spec.ts plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
+- A successful `proposal_transition` journals `proposal_transition` (work item `<id>/all`); a review `submit` journals `slice_submitted`. Both go by appending to the same journal file the core helper writes (core's public surface is at its budget, so no new export); core names no proposals vocabulary.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S3 — Journals drained into the stores, on demand
+
+- **Status**: review
+- **Files**: `packages/state-telemetry/src/lib/drain/contracts/constants/telemetry-journal.constant.ts`, `packages/state-telemetry/src/lib/drain/contracts/interfaces/telemetry-drain.interface.ts`, `packages/state-telemetry/src/lib/drain/telemetry-drain.service.ts`, `packages/state-telemetry/src/lib/drain/telemetry-drain.service.spec.ts`, `packages/state-telemetry/src/public/index.ts`, `tools/scripts/telemetry/drain-telemetry.script.ts`, `package.json`
+- **Gate**: `npx vitest run --root packages/state-telemetry src/lib/drain`
+- `drainTelemetryJournals` reads the work event journal into the event bus and the proposals plugin's transition-duration journal into the ETA duration history. `bun run telemetry:drain` is the on-demand caller (it resolves the shared checkout from any worktree and prints both counts). A status view or the CLI later calls the same function from private code.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
 ## dependency graph
 
 ```

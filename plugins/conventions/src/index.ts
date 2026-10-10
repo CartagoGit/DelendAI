@@ -13,7 +13,7 @@
  *   - `conventions_classify` — pure: classify caller-supplied paths.
  *   - `conventions_check`     — scan the workspace, report drift.
  */
-import { definePlugin } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import z from 'zod';
 
 import { buildConventionsToolRegistrations } from './lib/tools';

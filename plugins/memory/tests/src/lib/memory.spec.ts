@@ -32,7 +32,7 @@ import { CorruptFileError } from '@delendai/core/public';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 const captureHandler = async (
 	reg: IToolRegistration,

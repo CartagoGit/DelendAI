@@ -40,18 +40,20 @@ import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import {
-	SafeWorkspaceReader,
 	callerCheckout,
 	projectBranches,
 	safeRename,
 	toolError,
 	toolOk,
-	withFileMutex,
 	withFileMutexes,
-	writeFileAtomic,
 } from '@delendai/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@delendai/core/runtime';
 
 import {
 	PROPOSAL_KIND_BY_PREFIX,
@@ -126,6 +128,10 @@ import {
 	lifecycleEntity,
 	unknownOutcome,
 } from '../services/lifecycle-outcome';
+import { LAST_TRANSITION_AT_FIELD } from '../contracts/constants/transition-duration.constant';
+import type { IProposalDurationRecorder } from '../contracts/interfaces/transition-duration.interface';
+import { journalProposalTransition } from './proposal-work-events';
+import { recordMeasuredTransition } from './proposal-transition-duration';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
 import { VALIDATE_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
 import { unapprovedSlices } from '../shared/independent-approval';
@@ -256,6 +262,10 @@ export interface IProposalTransitionToolOptions {
 	readonly peerReviewGateDeps?: IPeerReviewGateDeps;
 	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
 	readonly proposalLifecycleStateReader?: import('./authoring-options').IProposalLifecycleStateReader;
+	/** Receives how long each closing stretch took; optional and advisory. */
+	readonly durationRecorder?: IProposalDurationRecorder;
+	/** Injectable clock for the duration stamp; defaults to `Date.now`. */
+	readonly now?: () => number;
 }
 
 /**
@@ -1412,6 +1422,21 @@ export const runProposalTransition = async (
 		options,
 		depId,
 	);
+	if (result.isError !== true) {
+		await journalProposalTransition(
+			options.workspaceRoot,
+			args.id,
+			from,
+			finalTo,
+			args.agent,
+		);
+		recordMeasuredTransition(options.durationRecorder, {
+			previousMarkdown: raw,
+			to: finalTo,
+			agent: args.agent,
+			nowMs: (options.now ?? Date.now)(),
+		});
+	}
 	if (
 		result.isError !== true &&
 		finalTo === 'review' &&
@@ -1994,6 +2019,11 @@ const applyTransition = async (
 			updated = shortPass.markdown;
 			filesRewritten = longPass.replacements + shortPass.replacements;
 		}
+		updated = setFrontmatterMetadataField(
+			updated,
+			LAST_TRANSITION_AT_FIELD,
+			new Date((options.now ?? Date.now)()).toISOString(),
+		);
 		await writeFileAtomic(found.absPath, updated);
 
 		if (moved) {

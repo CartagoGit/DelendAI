@@ -574,93 +574,163 @@ Slice independiente. Modifica comportamiento del eviction existente → puede ne
 Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La numeración sigue la convención `S0`-`S7` del pasted text.
 
 ### S0 — Inventario histórico (entregable: `f00513`)
-- **Status**: pending
-- **Files**: `docs/delendai/proposals/ready/chores/f00513-inventory.md`
+- **Status**: review
+- **Files**: `docs/delendai/proposals/done/chores/c00527-anexo-q00021-f00513-inventario-historico-de-cache-layout-epochs-1-9.md`
 - **Tarea**: tabla `old-path / current-path / owner / class / acción / introducido-en / seguro-borrar` para `r00010`, `f00065`, `f00080`, `x00052`, rebrand, proposal workflow refactors, `q00019` (SQLite stores), `q00020` (progress).
-- **Gate**: el documento contiene las 5 secciones L1-L5 con ≥1 entrada cada una, y referencia explícita al commit hash donde se introdujo cada cambio.
+- **Gate**: `bun run lint:proposals` (the annex parses and every link resolves).
 - **Aceptación**: firmado por el `proposal_guardian` o un reviewer que **no** sea el autor.
+- **Shipped**: already delivered before this unit, in commit `c54547404` (`chore(proposals): close c00527 inventory annex`). The deliverable lives in the annex `c00527`, not in the `ready/chores/f00513-inventory.md` path this block used to declare (that file never existed; the annex was archived under `done/chores/`). Its table covers epochs 1-9 and eight sections (r00010, f00065, f00080, x00052, rebrand, workflow refactors, q00019, q00020), each row with its introducing proposal or commit and a safe-to-delete verdict. This unit only corrects the declared path and records the shipping commit.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S1 — Contratos puros (entregable: `f00526`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
-  - `packages/core/src/lib/cache/cache-layout-manifest.ts` (constante inicial, NO destructivo)
-  - `packages/core/src/lib/cache/cache-layout-migration.ts` (helpers tipados)
-  - `packages/core/tests/src/lib/cache/cache-layout-migration.spec.ts`
-- **Tarea**: tipos puros. `IMigration` se reutiliza tal cual (no se duplica); `ICacheLayoutMigration extends IMigration` añade `fromEpoch/toEpoch/helpers`. `ICacheArtifactClass` enum + tabla de clasificación.
-- **Gate**: tests puros verdes (sin filesystem, sin SQLite).
-- **Aceptación**: ningún `fs` import en `cache-layout-migration.ts`. `IMigration.detect` se mantiene como contrato del probe barato.
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/src/lib/cache/cache-layout-migration.helper.ts`
+  - `packages/core/tests/src/lib/cache/cache-layout-migration.helper.spec.ts`
+- **Tarea**: tipos puros. `ICacheArtifactClass` + `ICacheLayoutManifest`, `ICacheLayoutMigration` (`fromEpoch`/`toEpoch`, `detect`/`plan`/`apply` sobre un contexto con `cacheDirAbs` y `helpers`), y las reglas puras: `assertDroppable` (falla en records/operational y en sus ancestros), `resolveMigrationChain` (cadena completa `N -> N+1`, error en hueco/duplicado/downgrade), `validateManifest`, `findOwningArtifact`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/cache-layout-migration.helper.spec.ts` (35 tests puros, sin filesystem ni SQLite).
+- **Aceptación**: ningún `fs` import en `cache-layout-migration.helper.ts`. `IMigration.detect` se mantiene como contrato del probe barato.
+- **Corrections to the design, following the code**:
+  - `ICacheLayoutMigration` does not `extends IMigration`: its `detect`/`plan`/`apply` take a narrower context (`ICacheLayoutMigrationContext`), and a function property cannot narrow its parameter in a subtype. It reuses `IMigration['id']` and `IMigrationPlanStep`, and S3 adapts a chain to the engine's journal.
+  - The context carries no `lifecycleState`: only the bootstrap reads and writes the epoch; a migration that could write it could skip its own successors.
+  - `migrateStore` and `importStoreToSqlite` are not in `ICacheLayoutHelpers`. No store moves to SQLite yet (epochs 6-8 are future work of q00019/q00020), so they would be untested surface; they arrive with the first migration that needs them.
+  - The manifest lists only artifacts present in the code today (`progress/` is q00020 and does not exist yet) and none that belong to the proposals domain: `lint:core-proposals-boundary` forbids core from naming that domain, so the proposal index, id counters and peer-review log are declared by the proposals plugin, not here. It lives in `contracts/constants/` because the file-conventions lint requires exported constants there.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Lifecycle state store (entregable: `f00527`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/contracts/interfaces/lifecycle-state.interface.ts`
+  - `packages/state/src/lib/lifecycle-state.interface.ts`
+  - `packages/state/src/index.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/src/lib/cache/file-lifecycle-state-store.service.ts`
+  - `packages/core/tests/src/lib/cache/file-lifecycle-state-store.service.spec.ts`
   - `packages/state-sqlite/src/lib/lifecycle-state-store.ts`
   - `packages/state-sqlite/src/lib/lifecycle-state-store.spec.ts`
-  - extender `STATE_SQLITE_SCHEMA_SQL` con `CREATE_LIFECYCLE_META_TABLE_SQL`
-- **Tarea**: `SqliteLifecycleStateStore implements ILifecycleStateStore`. Reutiliza la conexión de `packages/state-sqlite/src/lib/sqlite-driver.ts`. `withMigrationLock` usa `BEGIN IMMEDIATE`. Fallback a marker en `.delendai/cache-layout-applied.json` si SQLite no consolidado.
-- **Gate**: tests con SQLite in-memory (existente) + test de fallback con marker.
-- **Aceptación**: `getAppliedEpoch('cache-layout')` con epoch ya escrito retorna exactamente el número (no `null`).
+  - `packages/state-sqlite/src/lib/contracts/constants/lifecycle-meta.constant.ts`
+  - `packages/state-sqlite/src/lib/schema.ts`
+  - `packages/state-sqlite/src/public/index.ts`
+- **Tarea**: `ILifecycleStateStore` con dos implementaciones. `SqliteLifecycleStateStore` (sobre la conexión `bun:sqlite` que se le pasa; `withMigrationLock` = `BEGIN IMMEDIATE`, con cola en proceso) y `createFileLifecycleStateStore` (marker `.delendai/cache-layout-applied.json`, lock con el `withFileMutex` compartido). La tabla `lifecycle_meta` se crea con `IF NOT EXISTS` al abrir, sin tocar `STATE_SQLITE_SCHEMA_VERSION`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/file-lifecycle-state-store.service.spec.ts` y `bun test packages/state-sqlite/src/lib/lifecycle-state-store.spec.ts` (`bun run test:sqlite` lo incluye).
+- **Aceptación**: `getAppliedEpoch('cache-layout')` con epoch ya escrito retorna exactamente el número (no `null`); un marker dañado equivale a ausente; un fallo dentro del lock no avanza el epoch en SQLite.
+- **Corrections to the design, following the code**:
+  - The interface lives in `@delendai/state`, not in core: `@delendai/state-sqlite` depends on `state` and not on core, and both stores must implement the same type.
+  - The marker is the store core actually uses today. Nothing in the product opens `state.sqlite` through core (core has no SQLite driver and the driver is a shadow with no consumer yet), so S3 wires the file store; the SQLite store is ready for the day the state engine hands core a connection.
+  - The marker lock reuses `withFileMutex` (token ownership, heartbeat, stale takeover) rather than a new lock file protocol.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Integración en bootstrap (entregable: `f00528`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/cache/cache-layout-bootstrap.ts`
-  - `packages/core/src/lib/cache/cache-layout-bootstrap.spec.ts`
-  - extender `packages/core/src/lib/cli/assemble.ts` (insertar el hook antes del `runPendingMigrations` de `b00239`)
-- **Tarea**: hook que abre lifecycle state, lee epoch, decide, ejecuta. Cache en memoria durante la vida del proceso.
-- **Gate**: metadata reads ≤ 1; filesystem enumerations = 0; filesystem writes = 0; network calls = 0.
-  - `metadata reads ≤ 1`
-  - `filesystem enumerations = 0`
-  - `filesystem writes = 0`
-  - `network calls = 0`
-- **Aceptación funcional**: dos boots consecutivos, el segundo no toca filesystem. Test que mockea el `IMigrationContext` y verifica que `detect()` no se invoca cuando `applied === CACHE_LAYOUT_EPOCH`.
+  - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
+  - `packages/core/src/lib/cache/cache-layout-helpers.service.ts`
+  - `packages/core/src/lib/cache/cache-layout-migrations.registry.ts`
+  - `packages/core/src/lib/workspace-migration/cache-layout-step.service.ts`
+  - `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`
+  - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/tests/src/lib/cache/run-pending-cache-layout-migrations.service.spec.ts`
+  - `packages/core/tests/src/lib/cache/cache-layout-helpers.service.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/cache-layout-step.service.spec.ts`
+- **Tarea**: `runPendingCacheLayoutMigrations` lee el epoch una vez, sale si coincide (y lo recuerda por proceso), y si no recorre la cadena completa bajo `withMigrationLock`, registrando el epoch solo al final. `createCacheLayoutHelpers` implementa las primitivas (contención léxica y por realpath, sin seguir symlinks, `dropDerived` que falla en records/operational, sin sobrescritura, todo rechazado en dry run). `ensureWorkspaceMigrated` ejecuta el paso antes de los migrators de identidad y traduce el resultado al vocabulario `IMigrationOutcome`.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache packages/core/tests/src/lib/workspace-migration` (fast path: 1 lectura, 0 escrituras, árbol idéntico; segundo y tercer boot no tocan nada; crash no avanza el epoch y el reintento termina; dos procesos ejecutan una vez; cacheDir custom; hueco y downgrade fallan con mensaje).
+- **Corrections to the design, following the code**:
+  - The hook is `ensureWorkspaceMigrated` (core), which every entrypoint already calls after the adoption check, not `assemble.ts` (that runs after the server is already assembled) nor the CLI's `ensureMigrated` (a thin wrapper of the same function).
+  - `CACHE_LAYOUT_EPOCH` is 5, not 9. Epochs 6 to 8 of the table were planned SQLite stores that have not shipped; a build cannot carry a workspace through steps that do not exist, and numbering ahead of them would force no-op steps forever. Each future store takes the next number when it lands. A workspace with no recorded epoch is taken as epoch 0 and walks `0 -> 5`, one step per landed layout change (f00065, f00080, r00010, x00052, rebrand), each a detect-driven probe.
+  - The file name `cache-layout-bootstrap.ts` was already taken by the directory bootstrap, so the runner has its own name.
+  - The registry is empty in this slice and an empty registry makes the runner a no-op (`unregistered`, no read, no write): recording epoch 5 before the migrators of S4 exist would mark workspaces migrated that were never migrated.
+  - Known limit: when `cacheDir` was just changed in the configuration, the layout step runs against the new directory before the config transition moves the old cache into it.
+  - The cache directory is resolved lazily, only when there is something to carry, so the fast path never parses the configuration.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — Migraciones históricas (entregable: `f00529`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/cache/migrations/logs-to-results.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/memory-to-results.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/usage-tracking-to-results.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/legacy-non-canonical-cache.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/old-ephemeral-paths.migrator.ts`
-  - `packages/core/src/lib/cache/migrations/rebrand-root.migrator.ts`
-  - `packages/core/tests/src/lib/cache/migrations/` (uno por migrator)
-  - `packages/core/src/lib/cache/cache-layout-migrations-registry.ts`
-- **Tarea**: implementar L1-L5 del §2. Cada migrator: `detect()` (probe barato, sin enumerar), `plan()` (qué haría), `apply()` (ejecuta la acción de su clase). Clasificación por `class` de cada descriptor en `CACHE_LAYOUT_MANIFEST`.
-- **Gate**: tests con fixtures que simulan el layout viejo; `results/memory` nunca se borra genéricamente; coexistencia origen/destino sin overwrite.
-- **Aceptación**: las migraciones `r00010` corre sin tocar contenido de `results/` (los registros sobreviven).
+  - `packages/core/src/lib/cache/migrations/results-segregation.migration.ts`
+  - `packages/core/src/lib/cache/migrations/canonical-scratch.migration.ts`
+  - `packages/core/src/lib/cache/migrations/unchanged-in-cache.migration.ts`
+  - `packages/core/src/lib/cache/cache-layout-migrations.registry.ts`
+  - `packages/core/src/lib/cache/cache-layout-helpers.service.ts`
+  - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout-migration.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
+  - `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`
+  - `packages/core/tests/src/lib/cache/migrations/cache-layout-history.spec.ts`
+  - `packages/core/tests/src/lib/cache/run-pending-cache-layout-migrations.service.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/cache-layout-step.service.spec.ts`
+- **Tarea**: la cadena `0 -> 5` real. `2 -> 3` (L1, r00010) mueve `logs`, `logs-errors`, `memory` y `usage-tracking` bajo `results/`, entrada por entrada, sin sobrescribir: un conflicto deja ambas copias y el origen. `1 -> 2` (L3) renombra `.verify-tmp` y `.commit-policy` dentro del cache. Los pasos `0 -> 1`, `3 -> 4` y `4 -> 5` no tienen nada que mover dentro del cache y existen para que la cadena sea un epoch por paso.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache packages/core/tests/src/lib/workspace-migration` (records sobreviven con su contenido, merge sin overwrite, desconocidos/operational intactos, dry run no cambia el árbol, cacheDir custom, symlink fuera del cache no se sigue, segundo run no-op).
+- **Corrections to the design, following the code**:
+  - The lifecycle step runs AFTER the identity migrators, not before. Those are what rename an older build's cache directory; run first, the layout would find an empty directory, record the epoch, and the records inside the legacy-named directory would never be moved.
+  - L2 (`tools/scripts/.cache`, `subproject/.cache`, `app/.cache`) and L4 (`docs/.../proposals/index.json`) live outside the cache directory. The lifecycle helpers are contained to the cache directory by design, and deleting files in a user's source tree on a hard-coded list is the kind of guess this proposal rules out, so those two are not deleted; their epochs are pass-through steps. L5 is the identity engine's rename.
+  - A workspace with nothing to carry is not recorded: a clean project is left byte-identical (the contract of the identity engine), and pays the chain's `lstat` probes once per process. A rehearsal runs before the lock is taken, because taking it creates `.delendai/`.
+  - An unreadable configuration makes the step `skipped` (nothing touched, nothing recorded), not failed: a broken config file must not report a migration failure on every boot.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `tools/scripts/lint/no-legacy-cache-paths.script.ts`
-  - `packages/rules/src/rules/cache-layout-ratchet.rule.ts`
+  - `tools/scripts/lint/no-legacy-cache-paths.constant.ts`
+  - `tools/scripts/lint/no-legacy-cache-paths.interface.ts`
   - `tools/scripts/lint/no-legacy-cache-paths.script.spec.ts`
-  - `packages/rules/tests/src/rules/cache-layout-ratchet.rule.spec.ts`
-  - Whitelist documentada en cada rule.
-- **Tarea**: pasar `rg` y clasificar cada hit. Eliminar los que sean runtime/tooling. Whitelist para migrators, fixtures y docs.
-- **Gate**: `bun run validate` falla si un PR nuevo introduce el path legacy `.cache/mcp-vertex/...` en runtime/tooling. El ratchet falla si se modifica `CACHE_LAYOUT_MANIFEST.epoch` o la lista de `artifacts` sin bump de `CACHE_LAYOUT_EPOCH`.
+  - `tools/scripts/lint/cache-layout-ratchet.script.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.constant.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.interface.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.script.spec.ts`
+  - `tools/scripts/lint/cache-layout-ratchet.snapshot.json`
+  - `package.json`
+- **Tarea**: la pasada de `git grep` sobre `packages plugins tools apps extensions` no encontró ningún literal `.cache/<nombre retirado>` en código runtime/tooling fuera de los migrators (y comentarios de ellos), así que no hubo nada que erradicar; el lint lo mantiene así. `lint:no-legacy-cache-paths` escanea los fuentes versionados (falla si no escanea nada) con whitelist de migrators, migraciones de cache, tests y fixtures. `lint:cache-layout-ratchet` compara epoch y checksum de los artefactos del manifest con un snapshot; cambiar artefactos sin subir el epoch falla, y `--update` se niega a grabar ese caso. Ambos van encadenados en `lint:architecture`, que corre en CI.
+- **Gate**: `bun run vitest run tools/scripts/lint/no-legacy-cache-paths.script.spec.ts tools/scripts/lint/cache-layout-ratchet.script.spec.ts` y `bun run lint:no-legacy-cache-paths && bun run lint:cache-layout-ratchet`.
+- **Corrections to the design, following the code**:
+  - The ratchet is a script with a JSON snapshot in `tools/scripts/lint`, not a rule in `packages/rules` with a spec under `tests/cache`: every other repository-wide ratchet is a script plus a baseline file, and the manifest lives in core, which `packages/rules` does not import.
+  - The lint is not wired into `validate` directly but into `lint:architecture`, which CI runs; a lint reachable only from `validate:run` fails `lints-reach-ci`.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S6 — CLI operator (entregable: `f00531`)
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/cli/src/commands/cache.command.ts`
-  - `packages/cli/src/commands/cache/status.command.ts`
-  - `packages/cli/src/commands/cache/migrate.command.ts`
-  - `packages/cli/src/commands/cache/migrations.command.ts`
-  - `packages/cli/src/commands/cache/gc.command.ts` (delega al cache_gc existente)
-  - tests correspondientes
-- **Tarea**: subcomandos que invocan el engine. **No** añade tool MCP.
-- **Gate**: cada subcomando tiene `--dry-run`. Salida estructurada (JSON opcional) sin texto narrativo.
+  - `packages/cli/src/commands/cache.command.spec.ts`
+  - `packages/cli/src/commands/registry.ts`
+  - `packages/cli/src/commands/registry.spec.ts`
+  - `packages/cli/src/contracts/constants/help-translation.constant.ts`
+  - `packages/core/src/cli.ts`
+  - `packages/core/src/lib/workspace-migration/cache-layout-step.service.ts`
+  - `tools/scripts/lint/cli-ui-parity.map.json`
+- **Tarea**: `delendai cache status|migrations|migrate [--dry-run]|gc [--dry-run|--apply]`, un solo comando con subcomandos sobre el mismo `runCacheLayoutStep`. `status` hace un ensayo (no escribe) y muestra epoch aplicado, epoch objetivo y lo pendiente; `migrations` lista la cadena registrada; `gc` delega en la herramienta `cache_gc` existente y por defecto solo previsualiza. No añade tool MCP.
+- **Gate**: `bun run vitest run --root packages/cli src/commands` (status sin escritura, migrate --dry-run no cambia el árbol, migrate conserva los records, gc dry-run por defecto, subcomando desconocido = USAGE).
+- **Corrections to the design, following the code**:
+  - One command file with subcommands, like `migrate.command.ts`, instead of five files: the subcommands are a few lines each over the same engine.
+  - `gc` previews unless `--apply` is given (the plan only asked for a dry-run flag); eviction deletes by age, so applying it should be deliberate.
+  - This slice builds on the registry that S4 adds (open pull request at the time of writing), so its branch carries that merge.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
-- **Status**: pending
-- **Files**: plugin `cache` (extender), config schema, tests.
-- **Tarea**: `lastCacheEvictionAt` + `cacheEvictionIntervalMs`. Aplica sólo si el eviction registry tiene reglas con `runOnBoot`.
-- **Gate**: dry-run respeta el throttle. Test de clock virtual avanza 24h y verifica que el GC corre.
-
----
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/cache/boot-eviction-throttle.service.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/src/lib/plugins/load-config-file.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
+  - `packages/core/schema/delendai.config.schema.json`
+  - `packages/core/tests/src/lib/cache/boot-eviction-throttle.service.spec.ts`
+- **Tarea**: `cache.evictionIntervalMs` (opt-in; ausente o 0 = comportamiento de siempre). Con intervalo, el barrido de arranque comprueba `.delendai/cache-eviction-at.json` y no corre si el último fue hace menos del intervalo; el sello se escribe solo después de que el barrido corrió.
+- **Gate**: `bun run vitest run --project core packages/core/tests/src/lib/cache/boot-eviction-throttle.service.spec.ts` (sin intervalo no escribe nada; dry-run respeta el throttle; un reloj virtual que avanza 24 h hace correr el barrido; un fallo no sella).
+- **Corrections to the design, following the code**:
+  - The throttle sits in core around the boot sweep (`assemble.ts`), not in the `cache` plugin: the sweep and its `runOnBoot` posture are core's, and the plugin only contributes rules. The `cache_gc` tool and `delendai cache gc` are on-demand and are never throttled.
+  - The default is no throttle, not 24 h: a default would change what every existing project's boot does. A project opts in with the value it wants.
+  - The stamp lives in `.delendai/`, not in the cache directory the sweep evicts from.
 
 ## acceptance
 

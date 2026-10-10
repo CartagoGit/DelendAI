@@ -74,6 +74,13 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	// cache, but still under the one canonical ignored root. Nests
 	// logs/memory/usage-tracking (and any future opt-in plugin).
 	'results',
+	// Append-only journals published code writes for the private telemetry
+	// package to drain (work events, transition durations). A proposal
+	// transition writes one, so leaving this out refused the very commit a
+	// transition makes.
+	'telemetry',
+	// The server's own log, one file per day (`logs/mcp-server/`).
+	'logs',
 	// Per-plugin ephemeral exec dir (f00080)
 	// Per-agent git worktrees — not source code, never stray.
 	'.worktrees',
@@ -95,6 +102,8 @@ const SANCTIONED_SUBPATH_PREFIXES: readonly string[] = [
 	'results/logs-errors/',
 	'results/memory/',
 	'results/usage-tracking/',
+	'telemetry/',
+	'logs/',
 	'rules/',
 	'.worktrees/',
 ];

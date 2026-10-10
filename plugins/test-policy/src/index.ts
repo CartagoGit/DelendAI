@@ -1,6 +1,6 @@
 import { isAbsolute } from 'node:path';
 
-import { definePlugin } from '@delendai/core/public';
+import { definePlugin } from '@delendai/core/plugin';
 import z from 'zod';
 
 import {

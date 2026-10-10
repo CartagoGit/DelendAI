@@ -26,6 +26,7 @@ import {
 	isReviewUnitBranch,
 	outsideReviewScope,
 } from '../development-policy/git-guard-review-scope';
+import { journalWorkEvent } from './work-event-journal.service';
 import { endCarriedUnits } from './carried-units.service';
 
 import {
@@ -302,6 +303,15 @@ export const published = async (
 					? [publication.nextAction]
 					: []),
 			].join('\n');
+	if (outcome.published) {
+		await journalWorkEvent(root, {
+			kind: 'slice_submitted',
+			proposal,
+			slice,
+			actor: agent,
+			detail: { unitKind: kindFor(args, slice), via: 'publish' },
+		});
+	}
 	return {
 		code: landed ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
 		...(failure === undefined ? {} : { error: failure }),

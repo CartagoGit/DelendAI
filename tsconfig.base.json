@@ -69,6 +69,18 @@
 				"./packages/state-telemetry/src/public/index.ts"
 			],
 			"@delendai/state-telemetry/*": ["./packages/state-telemetry/src/*"],
+			"@delendai/roadmap": ["./packages/roadmap/src/index.ts"],
+			"@delendai/roadmap/public": [
+				"./packages/roadmap/src/public/index.ts"
+			],
+			"@delendai/roadmap/*": ["./packages/roadmap/src/*"],
+			"@delendai/roadmap-sqlite": [
+				"./packages/roadmap-sqlite/src/index.ts"
+			],
+			"@delendai/roadmap-sqlite/public": [
+				"./packages/roadmap-sqlite/src/public/index.ts"
+			],
+			"@delendai/roadmap-sqlite/*": ["./packages/roadmap-sqlite/src/*"],
 			"@delendai/proposals-sqlite": [
 				"./packages/proposals-sqlite/src/index.ts"
 			],
@@ -355,6 +367,11 @@
 				"./plugins/changelog/src/public/index.ts"
 			],
 			"@delendai/changelog/*": ["./plugins/changelog/src/*"],
+			"@delendai/execution-env": ["./plugins/execution-env/src/index.ts"],
+			"@delendai/execution-env/public": [
+				"./plugins/execution-env/src/public/index.ts"
+			],
+			"@delendai/execution-env/*": ["./plugins/execution-env/src/*"],
 			"@delendai/self-learning": ["./plugins/self-learning/src/index.ts"],
 			"@delendai/self-learning/public": [
 				"./plugins/self-learning/src/public/index.ts"

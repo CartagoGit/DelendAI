@@ -24,6 +24,7 @@
 | docs | @delendai/docs | public | stable | lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | env | @delendai/env | public | stable | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | error-reporting | @delendai/error-reporting | public | stable | standard, swarm, full, dogfood |
+| execution-env | @delendai/execution-env | public | experimental |  |
 | external-mcps | @delendai/external-mcps | public | stable | full |
 | forge | @delendai/forge | public | stable | swarm, full, dogfood |
 | framework-knowledge | @delendai/framework-knowledge | public | experimental |  |
@@ -86,6 +87,7 @@
 | docs | 2700 | 3000 | 20 |
 | env | 2700 | 3000 | 20 |
 | error-reporting | 3800 | 4200 | 20 |
+| execution-env | 2700 | 3000 | 20 |
 | external-mcps | 2700 | 3000 | 20 |
 | forge | 7400 | 8200 | 20 |
 | framework-knowledge | 2700 | 3000 | 20 |
@@ -149,6 +151,7 @@
 | docs | filesystem-read, filesystem-write |  |
 | env | filesystem-read, env-read |  |
 | error-reporting | filesystem-read, filesystem-write, network, forge-write | report_status: network, forge-write |
+| execution-env | filesystem-read, filesystem-write, process, env-read |  |
 | external-mcps | filesystem-read, process, network, env-read |  |
 | forge | filesystem-read, process, network, forge-read, forge-write | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |
 | framework-knowledge | filesystem-read, filesystem-write |  |
@@ -380,6 +383,15 @@
 | error-reporting | web-app | no | no | yes |
 | error-reporting | backend-api | no | no | yes |
 | error-reporting | cli-tool | no | no | yes |
+| execution-env | minimal | no | no | yes |
+| execution-env | lean | no | no | yes |
+| execution-env | standard | no | no | yes |
+| execution-env | swarm | no | no | yes |
+| execution-env | full | no | no | yes |
+| execution-env | dogfood | no | no | yes |
+| execution-env | web-app | no | no | yes |
+| execution-env | backend-api | no | no | yes |
+| execution-env | cli-tool | no | no | yes |
 | external-mcps | minimal | no | no | yes |
 | external-mcps | lean | no | no | yes |
 | external-mcps | standard | no | no | yes |

@@ -28,8 +28,9 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
-import { toolOk, withFileMutex, writeFileAtomic } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { toolOk } from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import type {
 	IGithubClient,

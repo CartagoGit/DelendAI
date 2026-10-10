@@ -29,7 +29,7 @@
 import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/cli';
 import type { z } from 'zod';
 
-import type { IToolRegistration } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import type { IToolEffect } from '@delendai/core/cli';
 
 /**

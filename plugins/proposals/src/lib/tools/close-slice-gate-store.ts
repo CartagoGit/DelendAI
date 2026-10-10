@@ -11,7 +11,7 @@
 import { readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { writeFileAtomic } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/runtime';
 
 import type {
 	ICloseGateGreenVerdict,

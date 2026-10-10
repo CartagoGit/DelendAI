@@ -23,6 +23,8 @@ concurrency:
 
 permissions:
     contents: read
+    # Reading the alerts open on the promotion's head branch.
+    security-events: read
 
 jobs:
     release-pr-gate:
@@ -45,3 +47,12 @@ jobs:
 
             - name: Lint (Biome)
               run: bun run lint
+
+            # The pull request's own CodeQL check fails only from a severity
+            # threshold up, so alerts below it reach the integration branch;
+            # none of them reaches the release branch.
+            - name: The promotion carries no open code scanning alert
+              if: ${{ github.event_name == 'pull_request' }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run forge:promotion-alerts

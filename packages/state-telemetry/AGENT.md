@@ -14,6 +14,10 @@
 - aggregateProgress
 - createWorkProgressProducer
 - createWorkProgressService
+- drainWorkEventJournal
+- WorkEventStoreFacade
+- drainTelemetryJournals
+- DurationHistoryFacade
 
 ## Depends on
 
@@ -29,10 +33,10 @@ _(none)_
 
 ## Tests
 
+- packages/state-telemetry/src/lib/drain/telemetry-drain.service.spec.ts
 - packages/state-telemetry/src/lib/eta/duration-history.spec.ts
+- packages/state-telemetry/src/lib/eta/duration-journal.service.spec.ts
 - packages/state-telemetry/src/lib/eta/eta-aggregation.spec.ts
-- packages/state-telemetry/src/lib/eta/eta-engine.spec.ts
-- packages/state-telemetry/src/lib/eta/feature-vector.spec.ts
 
 ## Do not
 

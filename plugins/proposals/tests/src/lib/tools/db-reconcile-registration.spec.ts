@@ -22,7 +22,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ZodObject } from 'zod';
 
-import type { IMcpPluginContext } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/contracts';
 import plugin from '@delendai/proposals';
 import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
 

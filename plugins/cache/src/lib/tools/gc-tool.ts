@@ -17,10 +17,12 @@
 import {
 	toolError,
 	toolJson,
-	type ICacheEvictionRegistry,
-	type IToolRegistration,
 	type IToolTextResult,
 } from '@delendai/core/public';
+import type {
+	ICacheEvictionRegistry,
+	IToolRegistration,
+} from '@delendai/core/contracts';
 import z from 'zod';
 
 const GcInputSchema = z.object({

@@ -1385,14 +1385,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00509",
-				"title": "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-06"
-			},
-			{
 				"id": "f00511",
 				"title": "F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico",
 				"track": "trust",
@@ -1407,14 +1399,6 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-09-06"
-			},
-			{
-				"id": "f00541",
-				"title": "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec",
-				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-15"
 			},
 			{
 				"id": "f00542",
@@ -1449,14 +1433,6 @@
 				"date": "2026-09-15"
 			},
 			{
-				"id": "f00547",
-				"title": "Resolve what the installed framework version allows, recommends and forbids before an agent writes code",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-16"
-			},
-			{
 				"id": "f00548",
 				"title": "Own the style surface: who may define a selector, and what breaks when it changes",
 				"track": "architecture",
@@ -1481,25 +1457,9 @@
 				"date": "2026-09-20"
 			},
 			{
-				"id": "f00643",
-				"title": "The startup forge and journal phases run in a real host",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-26"
-			},
-			{
 				"id": "f00756",
 				"title": "Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable",
 				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-10-06"
-			},
-			{
-				"id": "f00757",
-				"title": "Token and coordination cost cut where the 2026-10-07 audit measured it",
-				"track": "tokens",
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-10-06"
@@ -1569,14 +1529,6 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "r00040",
-				"title": "Migrar el barrel de 288 exports a los subpaths del core que ya existen",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "refactor",
-				"date": "2026-08-29"
-			},
-			{
 				"id": "x00554",
 				"title": "A green pull request lands itself and the swarm rebases",
 				"track": "trust",
@@ -1585,28 +1537,12 @@
 				"date": "2026-09-19"
 			},
 			{
-				"id": "x00877",
-				"title": "An upgrade leaves the project as its configuration says, and nothing else",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-06"
-			},
-			{
 				"id": "x00878",
 				"title": "A multi-model swarm is held to the workflow, whoever its agents are",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-10-06"
-			},
-			{
-				"id": "x00879",
-				"title": "Main carries no code scanning alert",
-				"track": "security",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-10-07"
 			}
 		]
 	}

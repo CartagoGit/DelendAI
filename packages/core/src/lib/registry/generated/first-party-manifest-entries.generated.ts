@@ -200,6 +200,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'execution-env',
+			package: '@delendai/execution-env',
+			summary: 'Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.',
+			tags: ['execution', 'docker', 'ssh'],
+			permissions: ['filesystem-read', 'filesystem-write', 'process', 'env-read'],
+			tokenBudgetBytes: 2700,
+		},
+		{
+			origin: 'first-party',
 			id: 'external-mcps',
 			package: '@delendai/external-mcps',
 			summary: 'Compose third-party MCP servers through the catalog + human ack.',

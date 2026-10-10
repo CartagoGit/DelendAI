@@ -22,10 +22,12 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+	guardHooksFollowMode,
 	guardHooksMode,
 	reportGuardHooks,
 } from './guard-hooks-autoinstall.service';
 import { GENERATED_MERGE_DRIVER } from '../contracts/constants/generated-merge-driver.constant';
+import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 import { locateHooks } from './guard-hooks.service';
 
 const roots: string[] = [];
@@ -209,5 +211,60 @@ describe('what the report tells a lefthook project', () => {
 
 		expect(text).toMatch(/pre-commit: absent — .*lefthook\.yml/u);
 		expect(text).not.toContain('run `delendai guard install`');
+	});
+});
+
+describe('guardHooksFollowMode', () => {
+	const report = (
+		states: readonly ('installed' | 'absent')[],
+		reason?: string,
+	): IGuardHooksReport => ({
+		dir: '.git/hooks',
+		hooks: states.map((state, index) => ({
+			hook: index === 0 ? ('pre-commit' as const) : ('pre-push' as const),
+			state,
+			...(reason === undefined ? {} : { reason }),
+		})),
+	});
+
+	it('asks to remove hooks a project that turned the guard off still has', () => {
+		const verdict = guardHooksFollowMode(
+			report(['installed', 'absent']),
+			'off',
+		);
+		expect(verdict.follows).toBe(false);
+		expect(verdict.remedy).toContain('delendai guard uninstall');
+		expect(verdict.remedy).toContain('pre-commit');
+	});
+
+	it('asks to install hooks a project that wants them lacks', () => {
+		const verdict = guardHooksFollowMode(
+			report(['installed', 'absent']),
+			'install',
+		);
+		expect(verdict.follows).toBe(false);
+		expect(verdict.remedy).toContain('delendai guard install');
+		expect(verdict.remedy).toContain('pre-push');
+	});
+
+	it('leaves a hook its manager owns to that manager', () => {
+		expect(
+			guardHooksFollowMode(
+				report(['absent', 'absent'], 'lefthook manages this hook'),
+				'install',
+			).follows,
+		).toBe(true);
+	});
+
+	it('follows when the mode only reports, or no policy is declared', () => {
+		expect(
+			guardHooksFollowMode(report(['installed']), 'report').follows,
+		).toBe(true);
+		expect(guardHooksFollowMode(report(['absent']), 'absent').follows).toBe(
+			true,
+		);
+		expect(
+			guardHooksFollowMode(report(['absent', 'absent']), 'off').follows,
+		).toBe(true);
 	});
 });

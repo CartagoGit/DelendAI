@@ -13,7 +13,7 @@
 
 import { join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import {
 	BASELINE_EMIT_LIMIT,

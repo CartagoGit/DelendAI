@@ -1,6 +1,7 @@
 import z from 'zod';
 
-import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import { PROPOSAL_ADAPTIVE_FACADE_INTENTS } from '@delendai/proposals/public';
 
 import type {

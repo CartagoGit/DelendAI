@@ -12,7 +12,7 @@ import { stat } from 'node:fs/promises';
 import { isLockEntryExpired } from '@delendai/core/public';
 
 import { lockExpiryPolicyFor } from './lock-expiry-policy';
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 /**
  * `fs/promises.stat` rejects on ENOENT; we only care whether the path

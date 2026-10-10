@@ -14,7 +14,7 @@ import {
 	SafeWorkspaceReader,
 	writeFileAtomic,
 	withFileMutex,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 import { EMPTY_BALANCE } from '../contracts/constants/agent-lock-engine.constant';
 import { isMissingFileErrno } from '../shared/errno';
 

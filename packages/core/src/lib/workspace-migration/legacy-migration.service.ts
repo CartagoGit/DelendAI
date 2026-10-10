@@ -44,6 +44,10 @@ import type {
 import type { IConfigTransition } from '../contracts/interfaces/config-transition.interface';
 import { ADOPTION_MARKERS } from './legacy-migration.constant';
 import { reconcileConfigTransitions } from './config-transitions.service';
+import {
+	cacheLayoutOutcomes,
+	runCacheLayoutStep,
+} from './cache-layout-step.service';
 
 export type {
 	IMigration,
@@ -193,11 +197,37 @@ export const ensureWorkspaceMigrated = async (input: {
 	if (!(await hasAdopted(input.workspaceRoot))) {
 		return { outcomes: [{ status: 'not-needed' }], acted: false };
 	}
-	const migrated = await runPendingMigrations({
+	const identity = await runPendingMigrations({
 		migrations: input.migrations,
 		journal: input.journal,
 		ctx: { workspaceRoot: input.workspaceRoot, dryRun: false },
 	});
+	// The cache layout runs after the identity migrators, not before: they
+	// are what move an older build's cache directory to its current name,
+	// and the layout steps work on the cache directory the configuration
+	// names. Run first, they would find an empty directory, record the
+	// epoch, and the records inside the renamed one would never be moved.
+	// A workspace already at this build's epoch costs one read.
+	const layoutOutcomes = identity.outcomes.some(
+		(outcome) => outcome.status === 'failed',
+	)
+		? []
+		: cacheLayoutOutcomes(
+				await runCacheLayoutStep(input.workspaceRoot, false),
+			);
+	const migrated: IMigrationRunResult =
+		layoutOutcomes.length === 0
+			? identity
+			: {
+					...identity,
+					outcomes: [
+						...identity.outcomes.filter(
+							(outcome) => outcome.status !== 'not-needed',
+						),
+						...layoutOutcomes,
+					],
+					acted: true,
+				};
 	// A failed migration leaves the workspace between two identities;
 	// acting on its configuration then would build on a tree the engine
 	// has just refused to call finished.

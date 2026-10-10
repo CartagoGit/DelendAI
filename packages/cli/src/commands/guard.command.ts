@@ -40,6 +40,10 @@ import {
 	managerReason,
 	uninstallGuardHooks,
 } from '../lib/guard-hooks.service';
+import {
+	guardHooksFollowMode,
+	guardHooksMode,
+} from '../lib/guard-hooks-autoinstall.service';
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 import type { IGeneratedMergeDriverReport } from '../contracts/interfaces/generated-merge-driver.interface';
 import { GENERATED_MERGE_DRIVER_SCRIPT } from '../contracts/constants/generated-merge-driver.constant';
@@ -458,12 +462,25 @@ const MANAGEMENT = new Map<
 				ctx,
 				uninstallGeneratedMergeDriver(ctx.globals.workspace),
 			),
-		status: (_args, ctx) =>
-			reported(
-				inspectGuardHooks(ctx.globals.workspace),
+		status: async (_args, ctx) => {
+			const report = inspectGuardHooks(ctx.globals.workspace);
+			const result = reported(
+				report,
 				ctx,
 				inspectGeneratedMergeDriver(ctx.globals.workspace),
-			),
+			);
+			// The hooks are also held to what the project declares.
+			const mode = await guardHooksMode(ctx.globals.workspace);
+			const verdict = guardHooksFollowMode(report, mode);
+			if (verdict.follows) return result;
+			if (!(ctx.globals.json || ctx.globals.format === 'json')) {
+				process.stdout.write(`${verdict.remedy ?? ''}\n`);
+			}
+			return {
+				code: EXIT_CODE.VALIDATION,
+				data: { ...report, mode, remedy: verdict.remedy },
+			};
+		},
 	}),
 );
 

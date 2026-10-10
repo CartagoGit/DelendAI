@@ -17,7 +17,8 @@
  */
 import { basename, relative, sep } from 'node:path';
 
-import { SafeWorkspaceReader, walkAllowedFiles } from '@delendai/core/public';
+import { walkAllowedFiles } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import {
 	DEFAULT_EXTENSIONS,

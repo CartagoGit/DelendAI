@@ -222,6 +222,13 @@ export interface IJournalEventView {
 	readonly machineId: string | null;
 	readonly occurredAt: number;
 	readonly payload: unknown;
+	/** The rest of the stored row; the journal is published with all of it. */
+	readonly repositoryUid?: string | null | undefined;
+	readonly workUnitUid?: string | null | undefined;
+	readonly proposalUid?: string | null | undefined;
+	readonly sliceUid?: string | null | undefined;
+	readonly generation?: number | null | undefined;
+	readonly actorAgentId?: string | null | undefined;
 }
 
 export interface IStartupJournalPort {

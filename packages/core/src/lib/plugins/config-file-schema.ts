@@ -303,6 +303,7 @@ export const CONFIG_FILE_SCHEMA = z
 		cache: z
 			.object({
 				runOnBoot: z.enum(['dry-run', 'apply', 'off']).optional(),
+				evictionIntervalMs: z.number().int().min(0).optional(),
 				maxAgeDays: z.number().optional(),
 				worktrees: z
 					.object({
