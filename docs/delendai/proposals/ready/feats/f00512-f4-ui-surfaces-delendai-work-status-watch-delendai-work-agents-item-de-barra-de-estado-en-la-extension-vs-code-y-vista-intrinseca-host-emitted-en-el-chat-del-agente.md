@@ -92,6 +92,8 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "No requiere `git checkout`: lee `git worktree list --porcelain` desde el cwd actual, igual que `delendai agents` de `f00277`."
   - "El output distingue con prefijo `*` el agente que está ejecutando en el cwd actual (vs los que están en otros worktrees)."
 - Shipped 2026-10-10: `bun run work:progress -- --agents` (and the foot of the default view) lists each agent whose last event falls in the last half hour, with the work item and the kind of that event (`activeAgents`).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
 - **Status**: pending
