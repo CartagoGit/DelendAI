@@ -639,6 +639,31 @@ count, where the registry file used to list it. The person who wrote the
 file has no way to learn that from the status. Phase 3 of S4 removes the
 registry, so this has to be visible before it.
 
+### S8 — A file that returns is alive again
+
+- **Status**: review
+- **Files**:
+  - `packages/proposals-sqlite/src/lib/reconciler-revive.service.ts`
+  - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
+  - `packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - A proposal promoted, absent from a later candidate and present again in a third one reads as existing: `deleted_at` and `tombstone_reason` are null on its row.
+  - No row of `tombstones` names an entity the promoted candidate carries unretired, so the next candidate does not inherit the retirement.
+  - A disappearance still marks the entity retired, and promoting the same disappearance twice still records it once.
+
+Found on 2026-10-10 after S6 landed: `proposals status` counted 1102
+proposals done where the markdown holds 1105. x00643, x00644 and x00645
+were recorded as removed on 2026-09-25 and their files exist. Every
+candidate inherits the disappearances recorded before it, and promotion
+applied them unconditionally, so the record outlived the absence and the
+reader, which lists what exists now, left the three out for two weeks.
+The candidate is what the markdown holds: promotion skips a recorded
+disappearance the candidate contradicts, clears the retirement on the
+entity and removes the record.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - All S1-S5 slices land.
