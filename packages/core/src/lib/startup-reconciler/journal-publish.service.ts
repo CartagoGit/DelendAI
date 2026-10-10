@@ -26,7 +26,11 @@ import {
 	JOURNAL_FILE_MODE,
 	JOURNAL_PUBLISH_ATTEMPTS,
 } from './journal-ref.constant';
-import { journalRefName, journalRefReader } from './journal-ref.service';
+import {
+	journalRefName,
+	journalRefReader,
+	readJournalAt,
+} from './journal-ref.service';
 import { finding } from './finding-catalog';
 import {
 	runJournalPhase,
@@ -187,6 +191,17 @@ export const journalRefPublisher =
 		const remote = await integrationRemote(integrationBranch);
 		if (remote === undefined) return { kind: 'unchanged' };
 		const ref = journalRefName(namespace);
+		// The journal only grows. If the copy of it this start already
+		// fetched holds every event there is to publish, so does the
+		// remote: nothing is asked of it again.
+		const known = await readJournalAt(run, ref);
+		if (
+			Array.isArray(known) &&
+			mergeByIdentity(known as readonly IJournalSourceEvent[], local)
+				.length === known.length
+		) {
+			return { kind: 'unchanged' };
+		}
 		const read = journalRefReader(run, integrationRemote);
 		let reason = `${ref} was rejected on every attempt`;
 		for (

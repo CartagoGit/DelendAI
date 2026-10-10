@@ -513,6 +513,43 @@ removal, and with it the run.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S42 — A server answers its host in half the time: three network round trips at start, not seven
+
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/startup-reconciler/git-seam.ts`
+  - `packages/core/src/lib/startup-reconciler/journal-ref.service.ts`
+  - `packages/core/src/lib/startup-reconciler/journal-publish.service.ts`
+  - `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
+  - `packages/core/src/lib/startup-reconciler/repair-resolutions.ts`
+  - `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`
+  - `packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts`
+  - `packages/core/tests/src/lib/startup-reconciler/journal-publish.service.spec.ts`
+  - `packages/core/tests/src/lib/startup-reconciler/journal-ref.service.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - The integration branch, the publications and the work namespace are fetched in one `git fetch`, into remote-tracking refs only.
+  - A published journal is read in one round trip; an absent one is still told apart from a remote that cannot be asked.
+  - Publishing the journal asks the remote nothing when the copy already fetched holds every event there is to publish.
+  - A vanished ref whose finding a recorded decision already answers is raised again without any git call about its checkpoint.
+
+Reported by the owner on 2026-10-11: the host waited 24 seconds for the
+reply to `initialize`. The reconciliation runs before the server
+answers, by design, and timing each git call of one start showed where
+the time went: 12.8 of 16.5 seconds in seven round trips to the remote
+of about 1.8 seconds each. Two fetches where the second only existed
+because the first once wrote local refs; a question and then a fetch
+for the journal, twice; and one listing of the retired refs. Thirty
+seven checkpoints of units closed long ago by a recorded decision were
+also examined again at every start, several processes each.
+
+Measured on this repository: 16.5 s to 8.6 s from process start to the
+reply. What is left is one fetch, one journal fetch, the listing of
+retired refs and the two reads of the forge; those are independent of
+one another and still run in sequence.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
