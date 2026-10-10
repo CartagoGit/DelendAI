@@ -24,7 +24,7 @@ const TABLE_OF = {
 type TEntityType = keyof typeof TABLE_OF;
 
 /** The uids a candidate carries, per entity type. */
-export type ILiveEntities = Readonly<Record<TEntityType, ReadonlySet<string>>>;
+type ILiveEntities = Readonly<Record<TEntityType, ReadonlySet<string>>>;
 
 const isEntityType = (value: string): value is TEntityType =>
 	Object.hasOwn(TABLE_OF, value);
