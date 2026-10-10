@@ -2,14 +2,14 @@
 id: x00879
 title: "Main carries no code scanning alert"
 kind: fix
-status: review
+status: done
 type: proposal
 track: security
 date: 2026-10-07
-last-transition-id: f6a98be9-c98c-48f4-af7f-e8671cb663c5
-last-correlation-id: f6a98be9-c98c-48f4-af7f-e8671cb663c5
-last-transition-from: in-progress
-last-transition-at: 2026-10-09T21:23:38.326Z
+last-transition-id: 5f17c0e4-5f2e-430c-9920-f6d7ca3ca93a
+last-correlation-id: 5f17c0e4-5f2e-430c-9920-f6d7ca3ca93a
+last-transition-from: review
+last-transition-at: 2026-10-10T11:17:34.549Z
 shipped-in:
   - "8e7c04483e60d78c9edec255947754a7d3054772"
   - "bf7ca511a5af"
@@ -195,15 +195,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — pages.yml detects enabled state, emits notice when off, strict site build runs unconditionally, publish steps gated on enabled=='true'
 
 ### S13 — The integrated sweep runs off the promotion path
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/quality-gate.yml`
 - **Gate**: type
 - acceptance:
   - "`quality-gate.yml` no longer runs on pull requests into the release branch or in the merge queue; it sweeps the integration branch daily and on request, with a limit it fits in."
 - Found 2026-10-07 on the promotion #911, and the same on #641: the workflow was never a required check of `main`, repeated the CI matrix that is required there, and hit its 30-minute limit on every promotion, leaving a red run that blocked nothing. What only it does, running every lint script including ones no workflow wires, is kept as a daily sweep; its last run had found `proposal-already-implemented` failing on twelve slices, recorded for the backlog reconciliation.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dc50669b9dd4`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — quality-gate.yml triggers only schedule cron 17 3 daily and workflow_dispatch, timeout 60
 
 ## acceptance
 
