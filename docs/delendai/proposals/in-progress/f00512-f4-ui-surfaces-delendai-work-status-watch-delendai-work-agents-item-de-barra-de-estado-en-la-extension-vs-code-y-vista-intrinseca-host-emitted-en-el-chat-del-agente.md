@@ -189,6 +189,8 @@ proposal by the folder it sat in, not by its status, and missed any
 project that keeps its proposals elsewhere. The view now takes its
 slices as data: the canonical slice parser carries the status word the
 document writes, and the board hands it over when asked for progress.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
