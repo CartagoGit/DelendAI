@@ -10,6 +10,8 @@ last-transition-id: b8cb94de-b4b6-4e21-aecc-0ec4dd84c004
 last-correlation-id: b8cb94de-b4b6-4e21-aecc-0ec4dd84c004
 last-transition-from: in-progress
 last-transition-at: 2026-10-09T15:39:55.779Z
+shipped-in:
+  - "b201fe50ec0d28cf0a76c1370a2465c43cf488f7"
 ---
 
 # f00541 — Execution environments: local, Docker, Docker Compose, SSH, Docker Exec
@@ -34,7 +36,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - global_gate: type
 
 ### S1 — IExecutionEnvironment contract and registry
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/execution-env/package.json`, `plugins/execution-env/plugin.manifest.ts`, `plugins/execution-env/tsconfig.json`, `plugins/execution-env/vitest.config.ts`, `plugins/execution-env/LICENSE`, `plugins/execution-env/AGENT.md`, `plugins/execution-env/src/index.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/src/lib/contracts/constants/execution-capability.constant.ts`, `plugins/execution-env/src/lib/contracts/interfaces/execution-env.interface.ts`, `plugins/execution-env/src/lib/contracts/interfaces/execution-env-types.interface.ts`, `plugins/execution-env/src/lib/registry/execution-env-registry.service.ts`, `plugins/execution-env/tests/src/lib/registry/execution-env-registry.spec.ts`, `tsconfig.base.json`
 - **Gate**: `npx vitest run --root plugins/execution-env`
 - shipped: the `execution-env` plugin with the `IExecutionEnvironment` contract (id, label, capabilities, prepare, exec, putFile, getFile, teardown, env), the eight-member capability vocabulary and `ExecutionEnvRegistry`, which registers by id and refuses duplicates. `exec` takes an argument vector so data can never become shell syntax.
@@ -42,9 +44,11 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Contract exposes id, label, capabilities(), prepare(), exec(), putFile(), getFile(), teardown(), env()."
   - "ExecutionCapability union includes persistent-workspace, isolated-filesystem, isolated-network, shell-bash, shell-pwsh, suspend-resume, forward-secrets, preserve-between-slices."
   - "Registry accepts registrations by id."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `197d9d2cfd61`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S2 — Local adapter baseline
 - **Status**: review
