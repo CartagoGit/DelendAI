@@ -566,6 +566,68 @@ slices without ids, timestamps or revisions:
   stale revision get `conflict` instead (`lifecycle-cas-race.spec.ts`),
   which is the compare-and-swap r00048 specified.
 
+### S6 — A projection behind the markdown is rebuilt before it answers, and the index has one reader
+
+- **Status**: review
+- **Files**:
+  - `plugins/proposals/src/lib/proposals/index-reader-stale.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader.ts`
+  - `plugins/proposals/src/lib/proposals/locate.ts`
+  - `plugins/proposals/src/lib/swarm/plan-closure.resolvers.ts`
+  - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
+  - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
+  - `plugins/proposals/src/lib/tools/auto-work.tool.ts`
+  - `plugins/proposals/src/lib/tools/authoring-options.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-stale-projection.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-single-reader.spec.ts`
+  - `plugins/proposals/tests/src/lib/authoring.spec.ts`
+  - `plugins/proposals/tests/src/lib/close-slice-validation.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - A projection stamped with a commit whose proposals tree differs from the tree at HEAD is rebuilt from the markdown before the read returns.
+  - A proposal file or folder modified on disk after the last rebuild (edited, added, moved, removed or put back, committed or not) makes the next read rebuild once; the read after that does not rebuild.
+  - `proposals status`, the board, auto-work, authoring, `locateByIndex` and the plan-closure resolver read the index through `readProposalIndex`; a spec fails when a module of the plugin opens the registry file by itself.
+  - In a tree where no registry file was ever written, `proposals status` reports the proposals the markdown holds instead of zero.
+
+Reported by the owner on 2026-10-10: `proposals status` did not count
+what the markdown documented. Two causes, both removed here:
+
+- The reader rebuilt a projection only when it was missing or unstamped.
+  One that a pull, a merge or a hand edit had left behind was served as
+  it stood. It is now compared with its authority first: the tree object
+  of the proposals directory at the stamped commit against the one at
+  HEAD, and the modification times under the directory against the
+  moment of the last rebuild. The second check reads the file system and
+  not git on purpose: a hand edit that was put back leaves nothing for
+  git to report, and a project need not be a repository.
+- Six modules parsed the registry file on their own (the status the
+  owner ran among them), so they answered with a copy whatever the
+  reader did. They go through the reader now, and
+  `index-single-reader.spec.ts` names the four modules that may still
+  open the file: the reader, the writer and the two that compare it with
+  the projection.
+
+Measured in this repository (1188 proposals): a level read costs about
+130 ms; a rebuild about 9 s, once per change.
+
+### S7 — A file the projection cannot represent is reported where the proposals are counted
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
+  - `plugins/proposals/src/lib/tools/db-status.tool.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-sql.ts`
+- **Gate**: unit
+- acceptance:
+  - `proposals status` reports how many proposal files the last rebuild set aside and names the first of them with its reason; zero is reported as zero, not omitted.
+  - `db status` counts the quarantine from the database instead of returning the constant it returns today.
+
+Found while delivering S6: a markdown file without `kind` is set aside
+by the reconciler (by design, f00515) and then simply absent from every
+count, where the registry file used to list it. The person who wrote the
+file has no way to learn that from the status. Phase 3 of S4 removes the
+registry, so this has to be visible before it.
+
 ## acceptance
 
 - All S1-S5 slices land.

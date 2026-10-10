@@ -9,7 +9,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 import type {
@@ -682,9 +682,16 @@ describe('proposal_board — index points to a file that does not exist', () => 
 			}),
 		};
 	});
-	afterEach(() => rmSync(root, { recursive: true, force: true }));
+	afterEach(() => {
+		vi.unstubAllEnvs();
+		rmSync(root, { recursive: true, force: true });
+	});
 
 	it('says it instead of returning an empty slices list', async () => {
+		// The projection is built from the markdown, so it never names a
+		// file that is not there; a registry written before the file went
+		// away can, and the board must still say so.
+		vi.stubEnv('DELENDAI_PROPOSAL_INDEX_SOURCE', 'json');
 		mkdirSync(join(root, '.cache/delendai/proposals'), {
 			recursive: true,
 		});
@@ -720,7 +727,7 @@ describe('proposal_board — index points to a file that does not exist', () => 
 		});
 		writeFileSync(
 			join(root, 'docs/delendai/proposals/ready/x00002-sin-slices.md'),
-			'---\nid: x00002\nstatus: ready\n---\n\n# Sin slices\n',
+			'---\nid: x00002\nkind: fix\nstatus: ready\n---\n\n# Sin slices\n',
 		);
 		writeFileSync(
 			opts.indexPathAbs,

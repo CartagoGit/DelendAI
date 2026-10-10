@@ -25,7 +25,11 @@ import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import type { IGitRunner } from '../shared/git-runner';
 import type { IAgentNamesToolOptions } from './agent-names.tool';
-import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
+import {
+	readJsonOrNull,
+	readProposalIndex,
+	readTextOrNull,
+} from '../proposals/index-reader';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { ICloseSliceQualityResult } from '../contracts/interfaces/close-slice-gate.interface';
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
@@ -282,11 +286,8 @@ export const resolveIndexedDoc = async (
 	proposalId: string,
 ): Promise<IIndexedDocResolution> => {
 	const lookup = async (): Promise<IIndexedDocResolution | null> => {
-		const index = await readJsonOrNull<{
-			proposals: Array<{ id: string; file: string }>;
-		}>(options.indexPathAbs);
-		if (index === null) return null;
-		const entry = index.proposals.find(
+		const proposals = await readProposalIndex(options.indexPathAbs);
+		const entry = proposals.find(
 			(p) => p.id === proposalId || p.id.startsWith(`${proposalId}-`),
 		);
 		if (entry === undefined) return null;
