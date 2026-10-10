@@ -571,6 +571,7 @@ slices without ids, timestamps or revisions:
 - **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/proposals/index-reader-stale.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/stale-projection-seams.interface.ts`
   - `plugins/proposals/src/lib/proposals/index-reader.ts`
   - `plugins/proposals/src/lib/proposals/locate.ts`
   - `plugins/proposals/src/lib/swarm/plan-closure.resolvers.ts`

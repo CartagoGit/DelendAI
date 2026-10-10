@@ -34,10 +34,8 @@ import type { IProposalIndexSource } from '../contracts/interfaces/proposal-inde
 import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
 import { resolveDatabasePath } from './index-reader-location';
 import { attemptSqlRebuild } from './index-reader-rebuild';
-import {
-	type IStaleProjectionSeams,
-	levelStaleProjection,
-} from './index-reader-stale';
+import type { IStaleProjectionSeams } from '../contracts/interfaces/stale-projection-seams.interface';
+import { levelStaleProjection } from './index-reader-stale';
 import { recordProposalIndexRead } from './index-read-stats';
 import { defaultLog, noticeOnce } from './index-reader-notice';
 import { ProposalIndexSqlUnavailableError } from './proposal-errors';

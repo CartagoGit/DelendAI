@@ -33,33 +33,13 @@ import { fileExists } from '../locks/lock-paths';
 import type { IProposalIndexReadOptions } from './index-reader';
 import { resolveWorkspaceRoot } from './index-reader-location';
 import { noticeOnce } from './index-reader-notice';
+import type { IStaleProjectionSeams } from '../contracts/interfaces/stale-projection-seams.interface';
 
 /** A stamp that names a commit: an abbreviated or a full object id. */
 const COMMIT = /^[0-9a-f]{7,}$/u;
 
 /** The files a proposals tree is made of. */
 const MARKDOWN_SUFFIX = '.md';
-
-/** Seams the staleness check reads through; the defaults are git and the leveller. */
-export interface IStaleProjectionSeams {
-	/**
-	 * The git tree id of `dir` at `revision` in the repository at `root`,
-	 * or `null` when git cannot say (no repository, unknown revision).
-	 */
-	readonly treeOf?: (
-		root: string,
-		revision: string,
-		dir: string,
-	) => Promise<string | null>;
-	/**
-	 * Whether anything under the proposals directory `dirAbs` was modified
-	 * after `sinceMs`, committed or not.
-	 */
-	readonly changedSince?: (
-		dirAbs: string,
-		sinceMs: number,
-	) => Promise<boolean>;
-}
 
 const gitTreeOf = (
 	root: string,
