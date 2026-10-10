@@ -77,9 +77,11 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - acceptance:
   - "A swarm-run summary records agents, units, accepted slices, invalid verdicts, orphans left, manual interventions and coordination_tax = (merge + generated + bookkeeping commits) / all commits, and the KPI shows its trend across runs."
 - Progress 2026-10-07: the workflow KPIs (`readWorkflowKpis`, read by `project-kpis`'s snapshot) carry `coordination`: over the integration branch's last 7 days, the commits, the merges, the bookkeeping commits (`chore(generated|delendai|review)`: regenerated views and the tools' own records) and `tax = (merges + bookkeeping) / commits`. Measured here on 2026-10-07: 1,450 commits, 610 merges, 454 bookkeeping, tax 0.734 — the audit's 74.5 %. Still to do: the per-run summary (agents, units, accepted slices, invalid verdicts, orphans left, manual interventions) and the trend across runs, which the KPI history can carry once the snapshot records this field.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `ff28bd06bfe5`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: requested_changes by claude-sonnet-5-5 — Only the coordination_tax KPI exists. The acceptance also needs a swarm-run summary recording agents, units, accepted slices, invalid verdicts, orphans left, manual interventions, and the KPI showing a trend across runs; the slice says both are still to do.
 
 ### S5 — Tool output size is measured per tool
 - **Status**: review
