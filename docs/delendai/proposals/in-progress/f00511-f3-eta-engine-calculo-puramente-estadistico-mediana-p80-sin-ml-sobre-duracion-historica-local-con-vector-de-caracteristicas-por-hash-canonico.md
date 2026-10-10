@@ -2,7 +2,7 @@
 id: f00511
 title: "F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-06
@@ -17,6 +17,10 @@ tags:
     - eta
     - statistics
     - non-ml
+last-transition-id: adccda09-2b6a-42b0-af6e-79c2fb44c787
+last-correlation-id: adccda09-2b6a-42b0-af6e-79c2fb44c787
+last-transition-from: ready
+last-transition-at: 2026-10-10T23:52:13.066Z
 ---
 
 # f00511 — F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico
