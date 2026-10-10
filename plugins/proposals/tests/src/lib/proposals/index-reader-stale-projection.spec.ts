@@ -5,7 +5,10 @@
 import { describe, expect, it } from 'vitest';
 
 import { resetProposalIndexFallbackNotice } from '../../../../src/lib/proposals/index-reader';
-import { levelStaleProjection } from '../../../../src/lib/proposals/index-reader-stale';
+import {
+	levelStaleProjection,
+	resetStaleProjectionChecks,
+} from '../../../../src/lib/proposals/index-reader-stale';
 
 const STAMPED = 'a81bc8169';
 const INDEX = '/workspace/.cache/delendai/proposals/index.json';
@@ -21,13 +24,17 @@ const level = async (input: {
 	readonly trees: Readonly<Record<string, string | null>>;
 	readonly fresh?: IRead | null;
 	readonly changedSince?: number;
+	/** Keep what earlier calls remembered, and read the clock at this time. */
+	readonly at?: number;
 }) => {
 	resetProposalIndexFallbackNotice();
+	if (input.at === undefined) resetStaleProjectionChecks();
 	const calls = { rebuilt: 0, notices: [] as string[] };
 	const served = await levelStaleProjection(
 		INDEX,
 		{
 			workspaceRoot: '/workspace',
+			...(input.at === undefined ? {} : { now: () => input.at ?? 0 }),
 			pathExists: () => true,
 			treeOf: (_root, revision) =>
 				Promise.resolve(input.trees[revision] ?? null),
@@ -105,6 +112,37 @@ describe('levelStaleProjection', () => {
 		expect(notACommit.calls.rebuilt).toBe(0);
 	});
 
+	it('still sees an edit on disk where git cannot say anything', async () => {
+		// A project that is not a repository is stamped with a word, not
+		// a commit. Its markdown is the authority all the same.
+		const edited = await level({
+			current: {
+				sourceCommit: 'workspace',
+				reconciledAt: 1000,
+				entries: ['before the edit'],
+			},
+			trees: {},
+			changedSince: 2000,
+			fresh: {
+				sourceCommit: 'workspace',
+				reconciledAt: 3000,
+				entries: ['after the edit'],
+			},
+		});
+		expect(edited.calls.rebuilt).toBe(1);
+		expect(edited.served.entries).toEqual(['after the edit']);
+		const untouched = await level({
+			current: {
+				sourceCommit: 'workspace',
+				reconciledAt: 3000,
+				entries: ['after the edit'],
+			},
+			trees: {},
+			changedSince: 2000,
+		});
+		expect(untouched.calls.rebuilt).toBe(0);
+	});
+
 	it('rebuilds once for a proposal edited on disk, committed or not', async () => {
 		const stamped = { ...old, reconciledAt: 1_000 };
 		const same = { HEAD: 'tree-same', [STAMPED]: 'tree-same' };
@@ -136,5 +174,32 @@ describe('levelStaleProjection', () => {
 			fresh: { sourceCommit: null, entries: [] },
 		});
 		expect(served).toBe(old);
+	});
+
+	it('checks a level projection once per window, and again after it', async () => {
+		// The check costs several reads; a server reading many times a
+		// second must not pay it each time.
+		resetStaleProjectionChecks();
+		const level1 = { sourceCommit: STAMPED, entries: ['level'] };
+		const same = { [STAMPED]: 'tree', HEAD: 'tree' };
+		const moved = { [STAMPED]: 'tree', HEAD: 'tree-after-a-pull' };
+		const first = await level({ current: level1, trees: same, at: 10_000 });
+		const within = await level({
+			current: level1,
+			trees: moved,
+			fresh,
+			at: 11_000,
+		});
+		const after = await level({
+			current: level1,
+			trees: moved,
+			fresh,
+			at: 13_000,
+		});
+
+		expect(first.calls.rebuilt).toBe(0);
+		expect(within.calls.rebuilt).toBe(0);
+		expect(after.calls.rebuilt).toBe(1);
+		expect(after.served).toBe(fresh);
 	});
 });

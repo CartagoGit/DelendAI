@@ -17,4 +17,6 @@ export interface IStaleProjectionSeams {
 		dirAbs: string,
 		sinceMs: number,
 	) => Promise<boolean>;
+	/** The clock the check paces itself by; the system's by default. */
+	readonly now?: () => number;
 }

@@ -9,6 +9,7 @@ import { basename, dirname, isAbsolute, join, sep } from 'node:path';
 
 import { PROPOSAL_INDEX_DB_PATH_ENV_VAR } from '../contracts/constants/proposal-index-source.constant';
 import type { IProposalIndexReadOptions } from './index-reader';
+import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 
 /**
  * The workspace this read belongs to, taken from the index path the
@@ -48,10 +49,14 @@ const workspaceRootFromIndexPath = (
  * root of a relocated index. The plugin knows both when it lays out its
  * paths, and says so once.
  */
-const declaredIndexFiles = new Map<string, string>();
+const declaredIndexFiles = new Map<
+	string,
+	{ readonly workspaceRoot: string; readonly proposalsDir?: string }
+>();
 
 /**
- * Record where this workspace keeps its proposal index. A relative
+ * Record where this workspace keeps its proposal index, and the folder
+ * its proposals are written in when the layout names one. A relative
  * `indexFile` is the layout's own path, valid in any checkout of the
  * workspace (a unit of work's worktree included); an absolute one names
  * this checkout only.
@@ -59,25 +64,55 @@ const declaredIndexFiles = new Map<string, string>();
 export const declareProposalIndexFile = (
 	indexFile: string,
 	workspaceRoot: string,
+	proposalsDir?: string,
 ): void => {
-	declaredIndexFiles.set(indexFile, workspaceRoot);
+	declaredIndexFiles.set(indexFile, {
+		workspaceRoot,
+		...(proposalsDir === undefined ? {} : { proposalsDir }),
+	});
 };
 
-/** The root a declared layout implies for `indexPathAbs`, if any does. */
-const workspaceRootFromDeclaredLayout = (
+/** The layout declared for `indexPathAbs` and the root it implies, if any. */
+const declaredLayoutOf = (
 	indexPathAbs: string,
-): string | null => {
-	for (const [indexFile, workspaceRoot] of declaredIndexFiles) {
+): { readonly root: string; readonly proposalsDir?: string } | null => {
+	for (const [indexFile, declared] of declaredIndexFiles) {
+		const proposalsDir =
+			declared.proposalsDir === undefined
+				? {}
+				: { proposalsDir: declared.proposalsDir };
 		if (isAbsolute(indexFile)) {
-			if (indexFile === indexPathAbs) return workspaceRoot;
+			if (indexFile === indexPathAbs)
+				return { root: declared.workspaceRoot, ...proposalsDir };
 			continue;
 		}
 		const suffix = `${sep}${join(indexFile)}`;
 		if (indexPathAbs.endsWith(suffix)) {
-			return indexPathAbs.slice(0, -suffix.length);
+			return {
+				root: indexPathAbs.slice(0, -suffix.length),
+				...proposalsDir,
+			};
 		}
 	}
 	return null;
+};
+
+/**
+ * The folder the proposals of the workspace at `root` are written in:
+ * the caller's own word, else the one the plugin declared for this index
+ * from the project's configuration, else the default layout. A project
+ * that keeps its proposals elsewhere is rebuilt from where they are.
+ */
+export const resolveProposalsDirAbs = (
+	indexPathAbs: string,
+	root: string,
+	options?: IProposalIndexReadOptions,
+): string => {
+	if (options?.proposalsDirAbs !== undefined) return options.proposalsDirAbs;
+	const declared = declaredLayoutOf(indexPathAbs)?.proposalsDir;
+	if (declared === undefined)
+		return join(root, DEFAULT_PATH_LAYOUT.proposalsDir);
+	return isAbsolute(declared) ? declared : join(root, declared);
 };
 
 /**
@@ -107,7 +142,7 @@ export const resolveWorkspaceRoot = async (
 		// The canonical layout cannot be checked here; a declared one is
 		// a matter of paths alone.
 	}
-	return canonical ?? workspaceRootFromDeclaredLayout(indexPathAbs);
+	return canonical ?? declaredLayoutOf(indexPathAbs)?.root ?? null;
 };
 
 /**

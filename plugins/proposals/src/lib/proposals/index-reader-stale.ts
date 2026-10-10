@@ -30,10 +30,12 @@ import type { Dirent } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
-import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { fileExists } from '../locks/lock-paths';
 import type { IProposalIndexReadOptions } from './index-reader';
-import { resolveWorkspaceRoot } from './index-reader-location';
+import {
+	resolveProposalsDirAbs,
+	resolveWorkspaceRoot,
+} from './index-reader-location';
 import { noticeOnce } from './index-reader-notice';
 
 /** A stamp that names a commit: an abbreviated or a full object id. */
@@ -95,12 +97,48 @@ const modifiedSince = async (
 };
 
 /**
+ * How long a projection found level is taken to stay level, per process.
+ * The check costs two git calls and a stat of every proposal, several
+ * times the read it guards; a server that reads the index many times a
+ * second would spend its time checking. A new process always checks, so
+ * a command run after an edit sees it; a long-lived one sees it within
+ * this window.
+ */
+const LEVEL_CHECK_TTL_MS = 2000;
+
+/** The last check of each index: the projection it saw, and when. */
+const levelChecks = new Map<
+	string,
+	{ readonly stamp: string; readonly at: number }
+>();
+
+/** Forget every remembered check. For tests. */
+export const resetStaleProjectionChecks = (): void => {
+	levelChecks.clear();
+};
+
+/**
+ * Whether the proposals tree at the stamped commit differs from the one
+ * at HEAD. `false` when git cannot say (a stamp that is not a commit, a
+ * workspace that is not a repository): an unknown is not a reason to
+ * rebuild, and the modification times still answer for such a project.
+ */
+const treeMoved = async (
+	root: string,
+	sourceCommit: string | null,
+	dir: string,
+	treeOf: NonNullable<IProposalIndexReadOptions['treeOf']>,
+): Promise<boolean> => {
+	if (sourceCommit === null || !COMMIT.test(sourceCommit)) return false;
+	const now = await treeOf(root, 'HEAD', dir);
+	return now !== null && (await treeOf(root, sourceCommit, dir)) !== now;
+};
+
+/**
  * The projection to serve: `current`, or a fresh read of it after a
  * rebuild when the proposals tree moved since it was stamped. `current`
- * is handed back when it is up to date, when nothing here can tell (a
- * stamp that is not a commit, a workspace that is not a repository: an
- * unknown is not a reason to rebuild), or when the rebuild left nothing
- * better to serve.
+ * is handed back when it is up to date, when nothing here can tell, or
+ * when the rebuild left nothing better to serve.
  */
 export const levelStaleProjection = async <
 	T extends {
@@ -114,20 +152,24 @@ export const levelStaleProjection = async <
 	log: (message: string) => void,
 	reread: () => Promise<T | null>,
 ): Promise<T> => {
-	const sourceCommit = current.sourceCommit;
-	if (sourceCommit === null || !COMMIT.test(sourceCommit)) return current;
+	const clock = options?.now ?? Date.now;
+	const stamp = `${String(current.sourceCommit)}@${String(current.reconciledAt)}`;
+	const last = levelChecks.get(indexPathAbs);
+	if (last?.stamp === stamp && clock() - last.at < LEVEL_CHECK_TTL_MS)
+		return current;
+	levelChecks.set(indexPathAbs, { stamp, at: clock() });
 	const root = await resolveWorkspaceRoot(indexPathAbs, options);
 	if (root === null) return current;
 	const exists = options?.pathExists ?? fileExists;
 	if (!(await exists(root))) return current;
-	const proposalsDirAbs =
-		options?.proposalsDirAbs ??
-		join(root, DEFAULT_PATH_LAYOUT.proposalsDir);
+	const proposalsDirAbs = resolveProposalsDirAbs(indexPathAbs, root, options);
 	const dir = relative(root, proposalsDirAbs);
-	const treeOf = options?.treeOf ?? gitTreeOf;
-	const now = await treeOf(root, 'HEAD', dir);
-	if (now === null) return current;
-	const committedMoved = (await treeOf(root, sourceCommit, dir)) !== now;
+	const committedMoved = await treeMoved(
+		root,
+		current.sourceCommit,
+		dir,
+		options?.treeOf ?? gitTreeOf,
+	);
 	const since = current.reconciledAt ?? null;
 	const editedByHand =
 		!committedMoved &&
@@ -141,8 +183,8 @@ export const levelStaleProjection = async <
 		options?.rebuildProjection ??
 		(await import('../services/projection-refresh')).reconcileProjection;
 	noticeOnce(
-		`sql-stale:${indexPathAbs}:${now}:${String(editedByHand)}`,
-		`proposal index: the SQLite projection for ${indexPathAbs} was built from ${sourceCommit.slice(0, 9)} and the proposals changed since${editedByHand ? ' (edited on disk)' : ''}; rebuilding it from markdown before serving`,
+		`sql-stale:${indexPathAbs}:${String(since)}:${String(editedByHand)}`,
+		`proposal index: the SQLite projection for ${indexPathAbs} was built from ${(current.sourceCommit ?? 'an unknown source').slice(0, 9)} and the proposals changed since${editedByHand ? ' (edited on disk)' : ''}; rebuilding it from markdown before serving`,
 		log,
 	);
 	await rebuild({ root, proposalsDir: dir });
