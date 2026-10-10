@@ -145,6 +145,8 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 Delivered in `f97df2512` (its message names S4 by mistake). The private
 package is built before the package that bundles it, because the
 declarations of the second are checked against those of the first.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — `delendai work progress` in the published CLI
 
