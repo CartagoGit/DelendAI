@@ -423,6 +423,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "`work reap --apply`, which already runs after each merge, fast-forwards every unit of the clone that holds no commit of its own and no uncommitted change to the integration branch; without `--apply` it reports which would move; a unit holding work is left to its agent."
 - Found 2026-10-10: a proposal in progress keeps its unit after each publication, for its next slice. Only `work enter` brought such a unit forward, so every merge left it behind and `work doctor` reported it under `units-hold-work` as broken: two units, each kept on purpose, each red for a merge it had no part in.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
