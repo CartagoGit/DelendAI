@@ -433,6 +433,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "`lint:dependency-advisories` fails on an advisory of any severity in the lockfile, low included, unless it is excepted in date; it runs on every candidate into the integration branch, on the promotion, and in the daily sweep."
 - Asked by the owner on 2026-10-10: what the forge's dependency alerts detect should be caught on the integration branch, so the release branch only ever receives clean code. The forge computes those alerts for the default branch alone, so the integration branch cannot have its own; the lockfile audit added in x00879 S10 is its equivalent, but it let low-severity advisories through, which the forge lists. It now blocks every severity.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
