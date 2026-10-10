@@ -19,18 +19,17 @@ const exception = (until: string) => ({
 });
 
 describe('judgeAdvisories', () => {
-	it('blocks an advisory of moderate severity or above', () => {
-		expect(
-			judgeAdvisories({ hono: [advisory('moderate')] }, [], '2026-10-07')
-				.toFix,
-		).toHaveLength(1);
-	});
-
-	it('lets a low advisory through', () => {
-		expect(
-			judgeAdvisories({ hono: [advisory('low')] }, [], '2026-10-07')
-				.toFix,
-		).toEqual([]);
+	it('blocks an advisory of every severity, low included', () => {
+		// The forge lists low alerts on the release branch too.
+		for (const severity of ['low', 'moderate', 'high', 'critical']) {
+			expect(
+				judgeAdvisories(
+					{ hono: [advisory(severity)] },
+					[],
+					'2026-10-07',
+				).toFix,
+			).toHaveLength(1);
+		}
 	});
 
 	it('waives an advisory excepted for that package until a later date', () => {

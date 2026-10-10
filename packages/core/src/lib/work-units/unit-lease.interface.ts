@@ -114,6 +114,13 @@ export interface IReapedUnit {
 	readonly regenerable: readonly string[];
 }
 
+/** A kept unit the maintenance brought forward, or would. */
+export interface IHydratedUnit {
+	readonly ref: string;
+	/** `kept`: it holds uncommitted changes, so it is its agent's to move. */
+	readonly outcome: 'advanced' | 'would-advance' | 'kept';
+}
+
 export interface IUnitRemoval {
 	readonly removedWorktree: string | null;
 	readonly deletedBranch: boolean;
