@@ -1513,14 +1513,6 @@
 				"date": "2026-09-06"
 			},
 			{
-				"id": "q00021",
-				"title": "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "plan",
-				"date": "2026-09-07"
-			},
-			{
 				"id": "q00022",
 				"title": "Proposals SQLite schema — replace proposals/INDEX.json as sole source of truth",
 				"track": "architecture",
