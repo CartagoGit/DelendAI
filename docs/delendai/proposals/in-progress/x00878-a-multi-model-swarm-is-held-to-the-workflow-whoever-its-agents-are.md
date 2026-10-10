@@ -467,6 +467,8 @@ from 35% to 15% of a core, and the listener alone takes 8% (six polls in
 thirty seconds). The remaining share is not the listener's and its
 source is not identified yet; the listener's own cost is bounded by the
 factor, not by the size of the project.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
