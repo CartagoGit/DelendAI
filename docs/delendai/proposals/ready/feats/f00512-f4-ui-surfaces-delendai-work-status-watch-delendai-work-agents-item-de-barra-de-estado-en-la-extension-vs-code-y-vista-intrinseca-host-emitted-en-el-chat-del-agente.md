@@ -78,6 +78,8 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "Sale limpiamente con `q` o Ctrl-C (`process.on('SIGINT')`); un test verifica que el intervalo se cancela y no quedan handles abiertos."
   - "El polling consume el SQLite shadow o el NDJSON fallback directamente; nunca pregunta al MCP server ni al LLM (verificado con contador `usage_tracking.llm_tokens_total` invariante en un test de 5 minutos)."
 - Shipped 2026-10-10: `bun run work:progress -- --watch` recomputes every 500 ms and redraws only when the view changed, so the terminal does not flicker.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — `delendai work agents [agentId]` — vista de agentes activos con su AgentSession + fase + último cambio
 - **Status**: review
