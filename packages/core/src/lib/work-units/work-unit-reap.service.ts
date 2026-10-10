@@ -5,9 +5,13 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import { reapLandedRetired } from './retired-landed.service';
 import { reapSpentReservations } from './slice-reservation-reap.service';
+import { hydrateKeptUnits } from './kept-unit-hydration.service';
 import { reapDeliveredUnits } from './unit-reaper.service';
+import { worktreeOfRef } from './unit-removal.service';
+import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
 import { leaseWindowSeconds } from './unit-verdict.service';
 import {
+	integrationBase,
 	integrationRemote,
 	mainWorktreeOf,
 	openWork,
@@ -31,6 +35,33 @@ export const reaped = async (
 	const units = await reapDeliveredUnits({
 		root: opened.root,
 		policy: opened.policy,
+		apply: args.includes('--apply'),
+	});
+	// What was not removed and holds nothing is brought forward, so a unit
+	// kept for its proposal's next slice does not fall behind unseen.
+	const removed = new Set(
+		units
+			.filter((unit) => unit.outcome === 'removed')
+			.map((unit) => unit.ref),
+	);
+	const advanced = hydrateKeptUnits({
+		root: opened.root,
+		base: integrationBase(opened.root, opened.policy),
+		units: (
+			await readUnitStandings({
+				root: opened.root,
+				policy: opened.policy,
+			})
+		)
+			.filter(
+				(unit) =>
+					!removed.has(unit.ref) &&
+					hasLocalBranch(opened.root, unit.ref),
+			)
+			.map((unit) => ({
+				ref: unit.ref,
+				worktree: worktreeOfRef(opened.root, unit.ref),
+			})),
 		apply: args.includes('--apply'),
 	});
 	const root = mainWorktreeOf(opened.root);
@@ -60,6 +91,6 @@ export const reaped = async (
 	});
 	return {
 		code: EXIT_CODE.OK,
-		data: { units, husks, retired, reservations },
+		data: { units, advanced, husks, retired, reservations },
 	};
 };
