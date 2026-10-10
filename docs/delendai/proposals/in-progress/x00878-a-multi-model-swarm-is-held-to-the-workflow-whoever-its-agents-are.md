@@ -413,6 +413,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - acceptance:
   - "The release gate of a promotion asks the forge for the code scanning alerts open on the promotion's head branch and fails while there is one, naming each with its rule and location; when the forge cannot be asked it fails too."
 - Found 2026-10-10 with S35: nothing but a person counting kept alerts off the release branch. The pull request's `CodeQL` check fails only from a severity threshold up, so four alerts below it had reached the integration branch with every pull request green. `release-pr-gate`, a required check of the release branch, now counts them.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
