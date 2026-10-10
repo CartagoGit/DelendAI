@@ -303,7 +303,7 @@ export const published = async (
 					? [publication.nextAction]
 					: []),
 			].join('\n');
-	if (outcome.published && proposal !== undefined && slice !== undefined) {
+	if (outcome.published) {
 		await journalWorkEvent(root, {
 			kind: 'slice_submitted',
 			proposal,

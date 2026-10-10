@@ -284,6 +284,7 @@
 		"archive:proposals:reap": "bun tools/scripts/lint/reap-legacy-proposals.script.ts --apply",
 		"archive:proposals:status": "bun tools/scripts/archive/proposals-status.script.ts",
 		"lint:no-duplicate-implementation": "bun tools/scripts/lint/no-duplicate-implementation.script.ts",
+		"forge:promotion-alerts": "bun tools/scripts/forge/promotion-alerts.script.ts",
 		"lint:dependency-advisories": "bun tools/scripts/lint/dependency-advisories.script.ts",
 		"lint:no-silent-gates": "bun tools/scripts/lint/no-silent-gates.script.ts",
 		"lint:bun-suite-ceiling": "bun tools/scripts/lint/bun-suite-has-a-ceiling.script.ts",

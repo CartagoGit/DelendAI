@@ -396,6 +396,26 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S35 — The integration branch carries no code scanning alert again
+- **Status**: review
+- **Files**: `plugins/changelog/src/lib/render/conventional-commit.ts`, `plugins/changelog/src/lib/render/conventional-commit.spec.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Gate**: type
+- acceptance:
+  - "Code scanning reports no open alert on the integration branch: the commit parser's two patterns cannot backtrack on a run of whitespace (js/polynomial-redos #439, #440), and the publication no longer compares to `undefined` two values that never are (js/comparison-between-incompatible-types #436, #437)."
+- Found 2026-10-10 before promoting: four alerts had opened on the integration branch since the last promotion. The parser's patterns became reachable from library input when the roadmap package started calling it, and the comparisons came with the work-event journal. The pull requests' own `CodeQL` check had passed: the forge fails that check only from a severity threshold up, and these were below it. The parser had no spec; it has one, with the many-tabs line.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S36 — A promotion carries no open code scanning alert
+- **Status**: review
+- **Files**: `tools/scripts/forge/promotion-alerts.script.ts`, `tools/scripts/forge/promotion-alerts.script.spec.ts`, `.github/workflows/release-pr-gate.yml`, `package.json`
+- **Gate**: type
+- acceptance:
+  - "The release gate of a promotion asks the forge for the code scanning alerts open on the promotion's head branch and fails while there is one, naming each with its rule and location; when the forge cannot be asked it fails too."
+- Found 2026-10-10 with S35: nothing but a person counting kept alerts off the release branch. The pull request's `CodeQL` check fails only from a severity threshold up, so four alerts below it had reached the integration branch with every pull request green. `release-pr-gate`, a required check of the release branch, now counts them.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.

@@ -22,8 +22,11 @@ export interface IConventionalCommit {
 	readonly hash: string;
 }
 
+// The subject starts with a non-space character in both patterns below:
+// with `\s+(.+)` the whitespace run and the subject could both claim the
+// same characters, which is quadratic on a line of many tabs.
 const COMMIT_TYPE_PATTERN =
-	/^(feat|fix|docs|refactor|perf|test|build|ci|chore|style|revert)(?:\(([^)]+)\))?(!)?:\s+(.+)$/u;
+	/^(feat|fix|docs|refactor|perf|test|build|ci|chore|style|revert)(?:\(([^)]+)\))?(!)?:\s+(\S.*)$/u;
 const BREAKING_FOOTER_PATTERN = /(^|\n)BREAKING[ -]CHANGE:\s+/u;
 
 export const parseConventionalCommit = (
@@ -32,7 +35,7 @@ export const parseConventionalCommit = (
 	const normalized = line.trim();
 	if (normalized.length === 0) return null;
 	const [header = '', ...bodyLines] = normalized.split(/\r?\n/u);
-	const headerMatch = /^([0-9a-f]{7,40})\s+(.+)$/u.exec(header.trim());
+	const headerMatch = /^([0-9a-f]{7,40})\s+(\S.*)$/u.exec(header.trim());
 	if (headerMatch === null) return null;
 	const hash = headerMatch[1] ?? '';
 	const rawSubject = headerMatch[2] ?? '';
