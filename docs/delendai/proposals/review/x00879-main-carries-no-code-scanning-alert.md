@@ -141,15 +141,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — scripted scan of every multi-line and single-line git push/fetch/ls-remote arg list in non-test ts: all have '--' before remote/ref (git-operations, write-tools included)
 
 ### S9 — The promotion carries its own required check
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/lint/no-duplicate-release-triggers.script.ts`, `tools/scripts/lint/no-duplicate-release-triggers.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The workflow that reports a required check of the release branch runs on pull requests into it, so a promotion whose head no push run built still gets that check; the lint that forbade the doubled trigger exempts that workflow and refuses it when it lacks the trigger."
 - Found 2026-10-07 on the first promotion after this proposal's fixes (#911): `delendai-validate` and `release-pr-gate` were green on its head, yet the forge kept it BLOCKED with `delendai-validate` "expected". The check came from a dispatched certification run, and the forge counts a check towards a pull request only from that pull request's own runs or a push; the queue's merges, made with the workflow token, start no push run. The rule against running CI on both triggers rested on that push run existing.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bdd1e619c0f4`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — ci.yml has pull_request branches [develop, main]; no-duplicate-release-triggers spec passes
 
 ### S10 — No dependency carries a known advisory
 - **Status**: review
