@@ -32,7 +32,7 @@ import {
 	policyDigest,
 	readPreviousRun,
 } from './fingerprint';
-import { finding } from './finding-catalog';
+import { finding, repairTaskFor } from './finding-catalog';
 import { runEnvironmentPhase } from './phases/detect-environment';
 import { runFetchPhase } from './phases/fetch-refs';
 import { runForgePhase } from './phases/reconcile-forge';
@@ -287,6 +287,14 @@ const reconcileUnderLock = async (args: {
 					).map((ref) => ref.sha)
 				: []),
 		],
+		answered: (candidate) => {
+			const task = repairTaskFor(candidate);
+			return resolutions.some(
+				(resolution) =>
+					resolution.taskId === task.id &&
+					resolution.evidenceDigest === task.evidenceDigest,
+			);
+		},
 		now,
 	});
 	collect(phases, {
