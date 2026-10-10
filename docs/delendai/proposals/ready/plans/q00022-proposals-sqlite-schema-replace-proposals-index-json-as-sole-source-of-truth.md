@@ -618,6 +618,8 @@ recorded. They are valid proposals and a stamped projection now.
 
 Measured in this repository (1188 proposals): a level read costs about
 130 ms; a rebuild about 9 s, once per change.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — A file the projection cannot represent is reported where the proposals are counted
 
