@@ -396,6 +396,14 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S35 — The integration branch carries no code scanning alert again
+- **Status**: review
+- **Files**: `plugins/changelog/src/lib/render/conventional-commit.ts`, `plugins/changelog/src/lib/render/conventional-commit.spec.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Gate**: type
+- acceptance:
+  - "Code scanning reports no open alert on the integration branch: the commit parser's two patterns cannot backtrack on a run of whitespace (js/polynomial-redos #439, #440), and the publication no longer compares to `undefined` two values that never are (js/comparison-between-incompatible-types #436, #437)."
+- Found 2026-10-10 before promoting: four alerts had opened on the integration branch since the last promotion. The parser's patterns became reachable from library input when the roadmap package started calling it, and the comparisons came with the work-event journal. The pull requests' own `CodeQL` check had passed: the forge fails that check only from a severity threshold up, and these were below it. The parser had no spec; it has one, with the many-tabs line.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
