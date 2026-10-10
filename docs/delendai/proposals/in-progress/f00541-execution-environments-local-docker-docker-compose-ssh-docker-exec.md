@@ -2,14 +2,14 @@
 id: f00541
 title: "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-15
-last-transition-id: b8cb94de-b4b6-4e21-aecc-0ec4dd84c004
-last-correlation-id: b8cb94de-b4b6-4e21-aecc-0ec4dd84c004
-last-transition-from: in-progress
-last-transition-at: 2026-10-09T15:39:55.779Z
+last-transition-id: cbee9253-e696-459c-94de-e2978eb9e314
+last-correlation-id: cbee9253-e696-459c-94de-e2978eb9e314
+last-transition-from: review
+last-transition-at: 2026-10-10T10:23:20.911Z
 shipped-in:
   - "b201fe50ec0d28cf0a76c1370a2465c43cf488f7"
 ---
@@ -144,16 +144,18 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S8 — Lifecycle integration in orchestrator-runner
-- **Status**: review
+- **Status**: in-progress
 - **Files**: `plugins/orchestrator-runner/src/lib/services/execution-env.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/execution-env-lifecycle.interface.ts`, `plugins/orchestrator-runner/src/public/index.ts`, `plugins/orchestrator-runner/tests/execution-env.service.spec.ts`
 - **Gate**: `npx vitest run --root plugins/orchestrator-runner tests/execution-env.service.spec.ts`
 - shipped: `runInExecutionEnvironment` prepares an environment, runs the slice, then tears down, logging each phase with its duration (and passing it to an `onLog` sink). When `prepare` fails or throws the slice is never called; teardown runs whenever prepare was attempted, also after a failing slice; a failed teardown after a good slice is reported as a failure. The environment is described by a two-method structural interface, so the runner takes no package dependency on the environment plugin.
 - acceptance:
   - "Runner calls prepare before slice and teardown after, reporting durations in the slice log."
   - "On prepare failure, the slice is aborted before any code change."
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `e1504fba93b0`
+- review-state: changes_requested
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: requested_changes by claude-opus-5-5 — runInExecutionEnvironment (plugins/orchestrator-runner/src/lib/services/execution-env.service.ts) is correct and its five specs pass: it prepares, never starts the slice when prepare fails, and always tears down, recording both durations. But nothing calls it: it is only exported from the plugin public index. The criterion says the RUNNER calls prepare before a slice and teardown after and reports the durations in the slice log; the runner own slice execution does neither. Wire it into the path that runs a slice (with the environment resolved from configuration, local when none is declared) and prove it with a spec that drives that path, or the helper is unused code.
 
 ## acceptance
 
