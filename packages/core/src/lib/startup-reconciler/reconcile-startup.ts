@@ -32,7 +32,7 @@ import {
 	policyDigest,
 	readPreviousRun,
 } from './fingerprint';
-import { finding, repairTaskFor } from './finding-catalog';
+import { finding } from './finding-catalog';
 import { runEnvironmentPhase } from './phases/detect-environment';
 import { runFetchPhase } from './phases/fetch-refs';
 import { runForgePhase } from './phases/reconcile-forge';
@@ -47,6 +47,7 @@ import { runWorkRefPhase } from './phases/rebuild-work-units';
 import { compileWorkRefParser } from './work-ref-identity';
 
 import type { IReconcileStartupInput } from './reconcile-startup.interface';
+import { answeredBy } from './repair-resolutions';
 
 export type { IReconcileStartupInput } from './reconcile-startup.interface';
 
@@ -287,14 +288,7 @@ const reconcileUnderLock = async (args: {
 					).map((ref) => ref.sha)
 				: []),
 		],
-		answered: (candidate) => {
-			const task = repairTaskFor(candidate);
-			return resolutions.some(
-				(resolution) =>
-					resolution.taskId === task.id &&
-					resolution.evidenceDigest === task.evidenceDigest,
-			);
-		},
+		answered: answeredBy(resolutions),
 		now,
 	});
 	collect(phases, {

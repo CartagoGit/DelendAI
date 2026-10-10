@@ -521,6 +521,7 @@ removal, and with it the run.
   - `packages/core/src/lib/startup-reconciler/journal-ref.service.ts`
   - `packages/core/src/lib/startup-reconciler/journal-publish.service.ts`
   - `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
+  - `packages/core/src/lib/startup-reconciler/repair-resolutions.ts`
   - `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`
   - `packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts`
   - `packages/core/tests/src/lib/startup-reconciler/journal-publish.service.spec.ts`
