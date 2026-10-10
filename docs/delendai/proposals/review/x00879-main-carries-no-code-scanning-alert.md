@@ -169,15 +169,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — SDK pinned 1.31.0 in root/apps/web and ^1.31.0 in plugins/core; dependabot has bun ecosystem; lint:dependency-advisories wired into ci.yml lint step; exceptions file has reason and until 2026-11-07; dependency-advisories spec passes
 
 ### S11 — The forward sync's branch is a canonical publication
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The branch the forward sync opens has the agent, kind, unit-with-generation and topic segments of every publication (`delendai/pr/delendai/sync/forward-<sha>-g1/carries-the-release-back`), so `work doctor --forge` reports `publications-canonical` as holding while it is open."
 - Found 2026-10-07 on the first real forward sync (#913, after the promotion #911): the flat `delendai/pr/forward-sync-<sha>` failed `publications-canonical` and turned two runs of keep-the-queue-moving red while it was open. A branch DelendAI made broke the rule DelendAI holds every agent's branches to; it now has the same shape instead of an exception.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dc50669b9dd4`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — forward-sync spec 'has the agent, kind, unit and topic every publication has' passes
 
 ### S12 — A promotion leaves no red run for a setting nobody chose
 - **Status**: review
