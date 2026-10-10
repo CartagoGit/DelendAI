@@ -126,10 +126,12 @@
         "@delendai/client": "workspace:*",
         "@delendai/core": "workspace:*",
         "@delendai/env": "workspace:*",
+        "@delendai/state": "workspace:*",
         "zod": "^4.4.3",
       },
       "devDependencies": {
         "@delendai/proposals": "workspace:*",
+        "@delendai/state-telemetry": "workspace:*",
         "@delendai/test-kit": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",

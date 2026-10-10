@@ -27,10 +27,6 @@ import type {
 	IWorkStatusRow,
 } from './contracts/interfaces/work-status.interface';
 
-const SLICE_HEADING = /^### (S\d+)\b[^\n]*$/gmu;
-const STATUS_LINE = /^- \*\*Status\*\*:\s*([a-z-]+)/mu;
-const ACCEPTANCE_ITEM = /^ {2}- /gmu;
-
 const ITEM_STATUS: Readonly<Record<string, IWorkItemInput['status']>> = {
 	pending: 'open',
 	'in-progress': 'in-progress',
@@ -39,24 +35,17 @@ const ITEM_STATUS: Readonly<Record<string, IWorkItemInput['status']>> = {
 	blocked: 'blocked',
 };
 
-/** The slices of one proposal document as work items; retired ones are left out. */
+/** The slices of one proposal as work items; retired ones are left out. */
 export const workItemsOf = (
 	proposal: IWorkStatusProposal,
-): readonly IWorkItemInput[] => {
-	const headings = [...proposal.markdown.matchAll(SLICE_HEADING)];
-	return headings.flatMap((heading, index) => {
-		const start = heading.index ?? 0;
-		const end = headings[index + 1]?.index ?? proposal.markdown.length;
-		const block = proposal.markdown.slice(start, end);
-		const status = ITEM_STATUS[STATUS_LINE.exec(block)?.[1] ?? ''];
+): readonly IWorkItemInput[] =>
+	proposal.slices.flatMap((slice) => {
+		const status = ITEM_STATUS[slice.status];
 		if (status === undefined) return [];
-		const acceptanceCount = Math.max(
-			1,
-			[...block.matchAll(ACCEPTANCE_ITEM)].length,
-		);
+		const acceptanceCount = Math.max(1, slice.acceptanceCount);
 		return [
 			{
-				workItemId: `${proposal.id}/${heading[1] ?? ''}`,
+				workItemId: `${proposal.id}/${slice.id}`,
 				acceptanceCount,
 				// A document says whether a slice was delivered, not which of
 				// its acceptance lines: one handed to review delivered them all
@@ -69,7 +58,6 @@ export const workItemsOf = (
 			},
 		];
 	});
-};
 
 /** The least advanced phase a slice can be in, given what its document says. */
 const PHASE_FLOOR: Readonly<

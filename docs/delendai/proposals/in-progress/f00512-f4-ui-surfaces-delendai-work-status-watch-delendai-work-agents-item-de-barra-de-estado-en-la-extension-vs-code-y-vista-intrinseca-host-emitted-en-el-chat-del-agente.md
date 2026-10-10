@@ -32,7 +32,7 @@ Status on 2026-10-07.
 Not started, on purpose. Two things come first, found while implementing f00511:
 
 - **Something must emit work events.** Nothing records events at runtime yet, so `status` and `agents` would always render empty. That is q00020's first slice (work telemetry), now in progress; this proposal depends on it.
-- **A published package carries the private packages it imports; nothing private is published for its sake.** `@delendai/state-telemetry` stays private. Owner's decision, 2026-10-10: every extra public package is one more thing a user has to install and version, so the build bundles a private package into the published package that imports it (S6) instead of putting it on the registry. Until the CLI command of S7 exists the view runs as `bun run work:progress`.
+- **A published package carries the private packages it imports; nothing private is published for its sake.** `@delendai/state-telemetry` stays private. Owner's decision, 2026-10-10: every extra public package is one more thing a user has to install and version, so the build bundles a private package into the published package that imports it (S6) instead of putting it on the registry. The view is `delendai work progress` (S7).
 
 Two corrections for the slices when they start: `delendai work status` already exists with another meaning (the checkout and policy report), so the progress view needs its own name (for example `work progress`) or an explicit extension of `status`; and the declared `commands/groups/work.ts` does not exist (`work` is `commands/work.command.ts`, which delegates to core).
 
@@ -150,17 +150,35 @@ declarations of the second are checked against those of the first.
 
 ### S7 — `delendai work progress` in the published CLI
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
+  - `packages/cli/src/lib/work-progress.service.ts`
+  - `packages/cli/src/lib/work-progress.service.spec.ts`
   - `packages/cli/src/commands/work.command.ts`
+  - `packages/cli/src/contracts/constants/work-command.constant.ts`
   - `packages/cli/package.json`
-  - `tools/scripts/telemetry/work-progress.script.ts`
+  - `package.json`
+  - `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts`
+  - `plugins/proposals/src/generated/tool-outputs.ts`
+  - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-board-progress.spec.ts`
+  - `packages/state-telemetry/src/lib/status/work-status.service.ts`
+  - `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`
+  - `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`
 - **Gate**: unit
 - acceptance:
-  - `delendai work progress [--watch|--agents|--json]` renders the view `bun run work:progress` renders, from an installed CLI, with `@delendai/state-telemetry` bundled by S6.
-  - The open proposals come from the one reader of the proposal index and the project's configured layout, not from a walk of status folders under a default path.
+  - `delendai work progress [--watch] [--agents]` renders the view, and `--json` gives its rows, with `@delendai/state-telemetry` bundled into the CLI by S6.
+  - The open proposals and their slices come from the proposals board, which reads them through the one reader of the proposal index and the one parser of slices; the view parses no document and walks no status folder.
+  - `proposal_board { progress: true }` lists every open proposal (in review or blocked included) with its title and, per slice, the status its document carries and its acceptance count; the board an orchestrator asks for is unchanged.
   - `bun run work:progress` runs the CLI command; the script that duplicated it is gone.
-  - The pack smoke test installs the CLI tarball and runs the command.
+
+The script read the proposals by walking four status folders under a
+default path and parsed the slices with a third regular expression of
+its own, next to the plugin's parser and the reconciler's. It listed a
+proposal by the folder it sat in, not by its status, and missed any
+project that keeps its proposals elsewhere. The view now takes its
+slices as data: the canonical slice parser carries the status word the
+document writes, and the board hands it over when asked for progress.
 
 ## acceptance
 
