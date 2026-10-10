@@ -64,6 +64,8 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "El campo `source` se imprime siempre (`sqlite-shadow` o `git-fallback`) para que el usuario sepa con qué se calcula."
   - "Test: `bun run packages/cli` `delendai work status --format json` sobre fixtures no añade tokens al LLM (assertion: `usage_tracking.llm_tokens_total` invariante)."
 - Shipped 2026-10-10 as `bun run work:progress`: one line per open proposal with its weighted progress, the phase of its furthest-behind slice, how many slices are stalled and when something last happened, computed by `buildWorkStatus` from the proposals on disk and the event store (the journals are drained first). `--json` gives the rows. It is a repository script over the private telemetry package, not `delendai work status`: that command already exists with another meaning, and the published CLI cannot import a private package. Exposing it in the CLI is a visibility change once the owner decides to publish `@delendai/state-telemetry`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — `delendai work status --watch` — modo watch (500 ms, polling del SQLite shadow o NDJSON) con render estable (sin parpadeo)
 - **Status**: review
