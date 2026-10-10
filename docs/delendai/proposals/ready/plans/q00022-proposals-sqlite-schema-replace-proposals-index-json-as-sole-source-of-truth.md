@@ -674,6 +674,40 @@ entity and removes the record.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S9 — The reader follows the project: its configured folder, with or without git, at a cost a server can pay
+
+- **Status**: review
+- **Files**:
+  - `plugins/proposals/src/lib/proposals/index-reader-location.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-stale.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader-rebuild.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/stale-projection-seams.interface.ts`
+  - `plugins/proposals/src/index.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-location.spec.ts`
+  - `plugins/proposals/tests/src/lib/proposals/index-reader-stale-projection.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - A project whose configuration keeps its proposals in another folder is rebuilt from that folder, and checked for staleness there, in any checkout of it; the default layout is used only when nothing was declared for the index.
+  - In a workspace that is not a git repository, a proposal edited on disk makes the next read rebuild once.
+  - A projection found level is not checked again by the same process for two seconds; a new process always checks.
+
+Three things S6 left that a project other than this one would have met:
+
+- The reader rebuilt from, and watched, the default folder
+  `docs/delendai/proposals` unless every caller passed its own, and most
+  do not. The plugin already tells the reader where the configured
+  layout puts the index; it now says where it puts the proposals too.
+- The check returned before looking at the disk when the projection was
+  not stamped with a commit, which is every project that is not a git
+  repository. The comparison of trees needs git; the modification times
+  do not, and they answer alone there.
+- The check made a read seven times dearer (106 ms against 14 ms with
+  1188 proposals). The servers of this repository, which read the index
+  several times a second, sat at 27% of a core each. A level projection
+  is now remembered as level for two seconds per process: 4 ms a read.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - All S1-S5 slices land.
