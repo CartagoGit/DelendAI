@@ -128,15 +128,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — ci.yml release-the-queue step runs gh workflow run codeql.yml --ref develop
 
 ### S8 — Remote names, urls and refs never parse as git options
-- **Status**: review
+- **Status**: done
 - **Files**: `extensions/vscode/src/test/configuration-center-dev-page.spec.ts`, `packages/cli/src/commands/review.command.ts`, `packages/core/src/lib/integration-engine/git-operations.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/journal-ref.service.ts`, `packages/core/src/lib/startup-reconciler/retired-tips.service.ts`, `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`, `packages/core/src/lib/wip-engine/work-ref-publication.ts`, `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/src/lib/work-units/work-retired-drop.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy-required-checks.ts`, `plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`, `plugins/commit-policy/src/lib/services/work-ref-checkpoint.service.ts`, `plugins/git/src/lib/tools/write-tools.ts`, `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/src/lib/services/review-reservation.service.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `tools/scripts/forge/advance-queue.script.ts`, `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/open-publication-prs.script.ts`, `tools/scripts/forge/publish-candidate.script.ts`, `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/refresh-candidates.script.ts`, `tools/scripts/forge/sync-with-integration.script.ts`, `tools/scripts/git/ended-reservations.service.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`, `tools/scripts/reclaim/reclaim-local.script.ts`
 - **Gate**: type
 - acceptance:
   - "Every git ls-remote, fetch and push that passes a remote, url or ref taken from data ends its options with `--` first, so js/second-order-command-line-injection (#422-#434) no longer applies; the aggregate-job pattern is anchored as a whole (#435) and the test page's end-tag filters accept attributes and whitespace (#421)."
 - Found 2026-10-07 in the first analysis of develop (15 open alerts once #903 made it scanned). Fixed as a class, not per alert: every such call in core, the CLI, the plugins and the repository scripts, including the git plugin's push tool, whose remote comes from tool input (`--receive-pack=<cmd>` was a first-order injection there).
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e93e4f19e616`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — scripted scan of every multi-line and single-line git push/fetch/ls-remote arg list in non-test ts: all have '--' before remote/ref (git-operations, write-tools included)
 
 ### S9 — The promotion carries its own required check
 - **Status**: review
