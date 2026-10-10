@@ -20,9 +20,11 @@
  * A proposal edited by hand and not committed is the authority too. The
  * projection records when it was last rebuilt, so any file or directory
  * of the tree modified after that makes it old as well, once: the
- * rebuild that follows is newer than the edit. A rebuild takes seconds and a check takes
- * milliseconds, so the check has to be exact rather than cautious.
+ * rebuild that follows is newer than the edit. A rebuild takes seconds
+ * and a check takes milliseconds, so the check has to be exact rather
+ * than cautious.
  */
+// effect-boundary-authorized: read-only staleness probe; runs `git rev-parse` and stats the proposals tree, never writes
 import { execFile } from 'node:child_process';
 import type { Dirent } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
@@ -33,7 +35,6 @@ import { fileExists } from '../locks/lock-paths';
 import type { IProposalIndexReadOptions } from './index-reader';
 import { resolveWorkspaceRoot } from './index-reader-location';
 import { noticeOnce } from './index-reader-notice';
-import type { IStaleProjectionSeams } from '../contracts/interfaces/stale-projection-seams.interface';
 
 /** A stamp that names a commit: an abbreviated or a full object id. */
 const COMMIT = /^[0-9a-f]{7,}$/u;
