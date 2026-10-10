@@ -2,14 +2,14 @@
 id: f00757
 title: "Token and coordination cost cut where the 2026-10-07 audit measured it"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-10-06
-last-transition-id: f94aa036-4e02-4515-8006-097d335c51dc
-last-correlation-id: f94aa036-4e02-4515-8006-097d335c51dc
-last-transition-from: in-progress
-last-transition-at: 2026-10-09T21:44:43.702Z
+last-transition-id: ba25df0f-b625-42d3-b48c-a7213dc46d5a
+last-correlation-id: ba25df0f-b625-42d3-b48c-a7213dc46d5a
+last-transition-from: review
+last-transition-at: 2026-10-10T11:25:36.255Z
 ---
 
 # f00757 — Token and coordination cost cut where the 2026-10-07 audit measured it
@@ -58,15 +58,17 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - review-implementer: claude-opus-5-5
 
 ### S3 — A plan document has a generated compact view
-- **Status**: review
+- **Status**: in-progress
 - **Files**: `packages/cli/src/lib/review/slice-sections.service.ts`, `packages/cli/src/lib/review/slice-sections.service.spec.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`
 - **Gate**: type
 - acceptance:
   - "Each plan or proposal over a size threshold has a generated view of its open slices, dependencies and remaining acceptance, and work enter and the review brief read that view instead of the whole document."
 - Delivered, for the review brief: `review next` hands the reviewer each waiting slice's own section of the document (`section`, cut at the next heading) and tells it to open the whole file only where a section refers to another part of it. On x00875, the two slices waiting for a verdict are 4,224 characters of a 56,074-character document: 92 % less to read before judging. Still to do: the same view for `work enter`'s briefing, which reads the proposal through core and so needs the section from the proposals plugin.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `944f1ae96817`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: requested_changes by claude-sonnet-5-5 — Acceptance requires work enter AND the review brief to read a generated compact view of open slices, dependencies and remaining acceptance. Delivered: only a per-slice section cut in review next. The slice itself says work enter's briefing is still to do, and there is no generated view of open slices/dependencies.
 
 ### S4 — The coordination cost of a swarm is measured
 - **Status**: review
