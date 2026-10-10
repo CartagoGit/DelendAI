@@ -59,7 +59,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 ### S1 — `delendai work status` — comando CLI que renderiza el snapshot agregado por propuesta (progreso ponderado, fase, ETA, source)
 - **Status**: review
 - **DependsOn**: [f00510, f00511]
-- **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `tools/scripts/telemetry/work-progress.script.ts`, `package.json`
+- **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "`delendai work status [proposalId]` existe y devuelve: proposal, lista de slices con `{ sliceId, phase, progress, weight, confidence, eta_p50_ms, eta_p80_ms, eta_reason, source }`."
@@ -74,7 +74,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 ### S2 — `delendai work status --watch` — modo watch (500 ms, polling del SQLite shadow o NDJSON) con render estable (sin parpadeo)
 - **Status**: review
 - **DependsOn**: [F4-S1]
-- **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `tools/scripts/telemetry/work-progress.script.ts`, `package.json`
+- **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "`delendai work status --watch [proposalId]` entra en bucle con intervalo por defecto 500 ms (configurable con `--interval <ms>`, mínimo 100 ms)."
@@ -88,7 +88,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 ### S3 — `delendai work agents [agentId]` — vista de agentes activos con su AgentSession + fase + último cambio
 - **Status**: review
 - **DependsOn**: [F4-S1]
-- **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `tools/scripts/telemetry/work-progress.script.ts`, `package.json`
+- **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "`delendai work agents` lista todos los agentes con sesión activa: `{ agentId, proposalId, sliceId, phase, progress, lastActivityAt, lastActionKind, source }`."

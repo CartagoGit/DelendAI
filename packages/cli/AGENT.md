@@ -15,6 +15,8 @@ _(none)_
 - @delendai/client
 - @delendai/core
 - @delendai/env
+- @delendai/proposals
+- @delendai/state
 - zod
 
 ## Writes
