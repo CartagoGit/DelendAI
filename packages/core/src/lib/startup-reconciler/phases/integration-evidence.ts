@@ -60,6 +60,11 @@ export const runIntegrationEvidencePhase = async (input: {
 	 * lost.
 	 */
 	readonly retiredTips?: readonly string[];
+	/**
+	 * Whether a recorded decision answers this finding as it stands. Such
+	 * a finding is raised without being examined again.
+	 */
+	readonly answered?: (candidate: IStartupFinding) => boolean;
 	readonly now: number;
 }): Promise<IIntegrationPhaseResult> => {
 	const findings: IStartupFinding[] = [];
@@ -94,6 +99,28 @@ export const runIntegrationEvidencePhase = async (input: {
 			unit.id,
 		)) {
 			if (generation.integratedSha !== null) continue;
+			const present = input.liveRefs.has(generation.wipRef);
+			const vanished = finding({
+				code: 'integration-evidence.ref-vanished',
+				phase: 'integration-evidence',
+				kind: 'blocker',
+				subject: generation.wipRef,
+				message: `The ref ${generation.wipRef} no longer exists and its checkpoint ${generation.wipHeadSha} is NOT contained in the integration branch. Nothing was assumed and nothing was removed.`,
+				detail: {
+					workUnit: unit.uid,
+					generation: generation.generation,
+					sha: generation.wipHeadSha,
+				},
+			});
+			// Somebody already read this very evidence and decided. The
+			// finding is raised again, because the decision answers it by
+			// what it says, but nothing is asked of git to reach it: every
+			// start used to spend several processes on each checkpoint a
+			// person had long since closed.
+			if (!present && input.answered?.(vanished) === true) {
+				findings.push(vanished);
+				continue;
+			}
 			// Ancestry is the first evidence; identical content is the
 			// second. An empty checkpoint, or work that reached the
 			// integration branch by a squash or a rewritten branch, is not
@@ -108,7 +135,6 @@ export const runIntegrationEvidencePhase = async (input: {
 					generation.wipHeadSha,
 					input.integrationSha,
 				) ?? Promise.resolve(false)));
-			const present = input.liveRefs.has(generation.wipRef);
 
 			if (contained) {
 				if (
@@ -198,20 +224,7 @@ export const runIntegrationEvidencePhase = async (input: {
 					);
 					continue;
 				}
-				findings.push(
-					finding({
-						code: 'integration-evidence.ref-vanished',
-						phase: 'integration-evidence',
-						kind: 'blocker',
-						subject: generation.wipRef,
-						message: `The ref ${generation.wipRef} no longer exists and its checkpoint ${generation.wipHeadSha} is NOT contained in the integration branch. Nothing was assumed and nothing was removed.`,
-						detail: {
-							workUnit: unit.uid,
-							generation: generation.generation,
-							sha: generation.wipHeadSha,
-						},
-					}),
-				);
+				findings.push(vanished);
 			}
 		}
 	}

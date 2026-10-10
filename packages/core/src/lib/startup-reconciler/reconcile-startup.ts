@@ -45,8 +45,8 @@ import { runStateDatabasePhase } from './phases/open-state';
 import { runCheckoutPhase } from './phases/verify-checkout';
 import { runWorkRefPhase } from './phases/rebuild-work-units';
 import { compileWorkRefParser } from './work-ref-identity';
-
 import type { IReconcileStartupInput } from './reconcile-startup.interface';
+import { answeredBy } from './repair-resolutions';
 
 export type { IReconcileStartupInput } from './reconcile-startup.interface';
 
@@ -270,8 +270,7 @@ const reconcileUnderLock = async (args: {
 		repositoryId,
 		integrationSha: fetched.integrationSha,
 		liveRefs: new Set(fetched.refs.map((ref) => ref.name)),
-		// Every ref that can hold a checkpoint once its work ref is gone:
-		// the work refs themselves and their publications (x00702).
+		// Every ref that can hold a checkpoint once its work ref is gone.
 		retiredTips:
 			(await input.git.listRetiredTips?.(
 				policy.branches.namespacePrefix,
@@ -287,6 +286,7 @@ const reconcileUnderLock = async (args: {
 					).map((ref) => ref.sha)
 				: []),
 		],
+		answered: answeredBy(resolutions),
 		now,
 	});
 	collect(phases, {
