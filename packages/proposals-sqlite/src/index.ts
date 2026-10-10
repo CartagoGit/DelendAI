@@ -173,3 +173,7 @@ export {
 	type IParsedFrontmatter,
 	type IYamlValue,
 } from './lib/frontmatter.helper';
+export {
+	readSetAsideFiles,
+	recordSetAsideFiles,
+} from './lib/set-aside.service';
