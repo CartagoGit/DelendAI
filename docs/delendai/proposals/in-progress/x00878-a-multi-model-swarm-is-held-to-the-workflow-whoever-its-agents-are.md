@@ -462,11 +462,10 @@ causes in the commit-policy slice listener:
   reader (a `realpath` and a `stat` per entry, 1200 entries, 255 ms),
   whatever that cost.
 
-Measured on this repository after the change: a server's steady use went
-from 35% to 15% of a core, and the listener alone takes 8% (six polls in
-thirty seconds). The remaining share is not the listener's and its
-source is not identified yet; the listener's own cost is bounded by the
-factor, not by the size of the project.
+Measured on this repository after the change landed and the servers
+restarted onto it: from about 35% of a core each to about 4%. The
+listener's cost is bounded by the factor, not by the size of the
+project.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
