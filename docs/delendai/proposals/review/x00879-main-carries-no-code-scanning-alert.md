@@ -182,15 +182,17 @@ The owner promotes develop to main only from a stable point, and main is where G
 - review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — forward-sync spec 'has the agent, kind, unit and topic every publication has' passes
 
 ### S12 — A promotion leaves no red run for a setting nobody chose
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/pages.yml`
 - **Gate**: type
 - acceptance:
   - "On a push to main the Pages workflow builds the site in strict mode whether or not GitHub Pages is enabled, and publishes it only when it is; with Pages off it ends green with a notice saying how to enable it."
 - Found 2026-10-07 after the promotion: `Pages → build site` failed with "Get Pages site failed: Not Found" because Pages is not enabled on the repository. Enabling it publishes a public site, which is the owner's decision; until then the check the workflow exists for (the strict site build) still runs.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dc50669b9dd4`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at dc50669b9dd4, validate exit 0, tests 58/58 — pages.yml detects enabled state, emits notice when off, strict site build runs unconditionally, publish steps gated on enabled=='true'
 
 ### S13 — The integrated sweep runs off the promotion path
 - **Status**: review
