@@ -493,6 +493,24 @@ ref back (x00691); it now also takes it off.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S41 — A fixture directory a background writer still uses is removed without failing the run
+
+- **Status**: review
+- **Files**:
+  - `plugins/usage-tracking/tests/src/lib/lifecycle-races.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - The spec drains what its tests left buffered before removing the fixture directory, and retries the removal.
+  - The spec passes twenty times in a row.
+
+Found 2026-10-10: the certifying run of the integration branch failed on
+`usage_clear through the real manifest does not resurrect buffered
+records` with `ENOTEMPTY ... rmdir .../usage-tracking`, on a merge that
+touched nothing near it. The test registers the real plugin, whose
+summary is regenerated in the background with no way to wait for it; a
+file it wrote while `afterEach` was emptying the directory failed the
+removal, and with it the run.
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
