@@ -661,6 +661,8 @@ reader, which lists what exists now, left the three out for two weeks.
 The candidate is what the markdown holds: promotion skips a recorded
 disappearance the candidate contradicts, clears the retirement on the
 entity and removes the record.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
