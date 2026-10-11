@@ -365,7 +365,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 9c7886ed7ea6, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the boot sees a checkpoint whose only extra commit merged landed work. Pinned by landed-work.service.spec alongside swarm-boot.spec.
 
 ### S24 — A unit another unit of its agent published ends with that publication
-- **Status**: review
+- **Status**: done
 - shipped-in: `2cb7b16cd`
 - **Files**: `packages/core/src/lib/work-units/carried-units.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/carried-units.service.spec.ts`
 - **Gate**: type
@@ -373,8 +373,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "When `work publish` publishes a unit, every other work ref of the same agent and proposal whose tip the publication contains is ended the way the published one is (clean worktree removed, remote copy and local ref deleted); a unit of another agent, and one entered on top and not committed to yet, are left alone."
 - Found 2026-10-07 by the owner: `origin/delendai/wip/claude-opus-5-5/implement/x00877-S7-g1/…` stayed on the forge after x00877 S5 merged it in and published it as #891. The forge reaper takes only a unit's own publication as proof, deliberately — a unit stacked on another's publication starts at its tip and is not finished — and S5 had been fast-forwarded onto S7, so git cannot tell the two cases apart from the outside.
 - Delivered: the publisher, which knows what it carried, ends the carried units of its own agent and proposal (`endCarriedUnits`, reported as `carried-*` steps in the publish result). A unit whose tip is still the commit it was entered at (its lease's `entrySha`) is a fresh stack, not carried work, and is kept; `endWorkRef` keeps any worktree with uncommitted changes. x00877 S7 itself was retired by hand with that reason; once #891 lands the landed-retired reaper drops it. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at ef9ab171167c, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: carried-units.service ends a unit another unit of its agent published with that publication, answering the finding that gpt-5.4 'finished with a unit holding three approvals (f00267, r00056, f00275) it never published'. Pinned by carried-units.service.spec.
 
 ### S25 — The server keeps its own log in the workspace
 - **Status**: review
