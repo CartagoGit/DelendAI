@@ -22,6 +22,7 @@ import { createGitRunner } from '../shared/git-write';
 
 import { resolveDurabilityRemote } from './durability-remote';
 import { resolveWorkRef } from './ref-name';
+import { remoteUnitStanding } from './remote-unit-standing.service';
 import type {
 	IWorkCheckoutPublication,
 	IWorkCheckoutPublisher,
@@ -192,15 +193,18 @@ const publishHeld = async (
 			reason: `its commits are already kept by ${heldElsewhere}`,
 		};
 	}
-	const remoteTip = await run(['ls-remote', '--', remote, ref]);
-	if (!remoteTip.ok) {
+	const standing = await remoteUnitStanding(run, policy, remote, ref);
+	if (!standing.ok) {
+		return { ref, outcome: 'skipped', reason: standing.reason };
+	}
+	if (standing.retired?.tip === commit) {
 		return {
 			ref,
 			outcome: 'skipped',
-			reason: remoteTip.reason ?? `could not inspect ${remote}`,
+			reason: `the unit was retired on ${remote}; its tip is kept at ${standing.retired.ref}`,
 		};
 	}
-	const remoteSha = firstField(remoteTip.output);
+	const remoteSha = standing.tip;
 	if (remoteSha === commit) return { ref, outcome: 'level' };
 	if (remoteSha !== undefined) {
 		const forward = await run([

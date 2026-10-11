@@ -45,8 +45,12 @@ import { planRetirement } from '@delendai/core/lib/work-units/work-retire.servic
 // guard needs `node_modules` regardless — it resolves the policy through
 // core — so the import-lean constraint that applies to
 // `branch-protection-guard` does not apply here.
-import { declaredBranches } from '../lib/declared-branches';
+import {
+	declaredBranches,
+	declaredLeaseTtlMinutes,
+} from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
+import { silentWorkRefs } from './silent-work-refs';
 
 const REAP = process.argv.includes('--reap');
 
@@ -517,6 +521,63 @@ const main = (): void => {
 				`ref-lifecycle: ${verdict.name} left: ${retiredRef} already holds another tip.`,
 			);
 		}
+	}
+
+	// A work ref silent past what a unit is given, and never published,
+	// has nobody left to publish it: its tip is kept and it goes.
+	const silent = silentWorkRefs({
+		refs: observed
+			.filter(
+				(branch) =>
+					branch.name.startsWith(workPrefix) &&
+					!deleted.has(branch.name),
+			)
+			.map((branch) => {
+				const plan = planRetirement({
+					branch: branch.name,
+					namespace: branches.namespacePrefix,
+					workRefPrefix: branches.workRefPrefix,
+					publicationRefPrefix: branches.publicationRefPrefix,
+				});
+				return {
+					name: branch.name,
+					published:
+						plan === undefined ||
+						onForge.has(plan.publicationBranch),
+					committedAt: Math.floor(
+						Date.parse(
+							ghScalar(
+								`repos/${REPOSITORY_SLUG}/commits/${branch.sha}`,
+								'.commit.committer.date',
+							),
+						) / 1000,
+					),
+				};
+			}),
+		leaseTtlMinutes: declaredLeaseTtlMinutes(repoRoot()),
+		now: Math.floor(Date.now() / 1000),
+	});
+	for (const ref of silent) {
+		const plan = planRetirement({
+			branch: ref.name,
+			namespace: branches.namespacePrefix,
+			workRefPrefix: branches.workRefPrefix,
+			publicationRefPrefix: branches.publicationRefPrefix,
+		});
+		const sha = shaOf.get(ref.name);
+		if (plan === undefined || sha === undefined) continue;
+		const evidence = `silent ${String(ref.hours)} h, never published`;
+		if (!REAP) {
+			console.log(
+				`ref-lifecycle: ${ref.name} is retirable (${evidence}) — run with --reap to keep its tip at ${plan.retiredRef} and delete it.`,
+			);
+			continue;
+		}
+		console.log(
+			retireOnForge(ref.name, sha, plan.retiredRef)
+				? `ref-lifecycle: retired ${ref.name} to ${plan.retiredRef} (${evidence}).`
+				: `ref-lifecycle: ${ref.name} left: ${plan.retiredRef} already holds another tip.`,
+		);
 	}
 
 	// A ref this pass just reaped is resolved, not outstanding: reporting it
