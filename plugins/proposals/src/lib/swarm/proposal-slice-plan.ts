@@ -39,6 +39,12 @@ export interface IProposalSliceContract {
 	readonly gate: ISliceGate;
 	readonly status: ISliceStatus;
 	readonly acceptanceCriteria: readonly string[];
+	/**
+	 * The status word the document carries for the slice (`review`,
+	 * `retired`, `pending`…), as written. `status` above says only what a
+	 * claim needs to know; a view of the work reads this.
+	 */
+	readonly documentStatus?: string;
 	readonly migrationPhase?: ContractMigrationPhase;
 	readonly migrationGuidance?: IContractMigrationSliceGuidance;
 	/**
@@ -273,6 +279,11 @@ export const parseProposalSlicePlan = (
 		const docDone =
 			/^[-*]\s*status:\s*done\b/m.test(body) ||
 			/^[-*]\s*\*\*Status\*\*:\s*`?done`?\b/m.test(body);
+		const documentStatus = body
+			.match(
+				/^[-*]\s*(?:status|\*\*Status\*\*):\s*`?([a-z][a-z-]*)/im,
+			)?.[1]
+			?.toLowerCase();
 		const acceptanceBlock =
 			body.match(/^[-*]\s*acceptance:\s*\n((?:[ \t]+.*\n?)*)/m)?.[1] ??
 			'';
@@ -301,6 +312,7 @@ export const parseProposalSlicePlan = (
 			gate,
 			status: docDone ? 'done' : 'pending',
 			acceptanceCriteria,
+			...(documentStatus !== undefined ? { documentStatus } : {}),
 			...(migrationPhase !== undefined ? { migrationPhase } : {}),
 			...(requiresCapability.length > 0 ? { requiresCapability } : {}),
 			...(preferredProvider !== undefined ? { preferredProvider } : {}),
