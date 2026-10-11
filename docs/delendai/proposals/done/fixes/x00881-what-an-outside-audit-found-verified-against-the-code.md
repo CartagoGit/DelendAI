@@ -2,14 +2,16 @@
 id: x00881
 title: "What an outside audit found, verified against the code"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-11
-last-transition-id: 303228be-bb09-4ab5-8a19-ed31c7c9c4d7
-last-correlation-id: 303228be-bb09-4ab5-8a19-ed31c7c9c4d7
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T05:29:45.206Z
+last-transition-id: 0492fd2e-3fe4-4234-8aab-0d767c5d6634
+last-correlation-id: 0492fd2e-3fe4-4234-8aab-0d767c5d6634
+last-transition-from: review
+last-transition-at: 2026-10-11T09:40:23.420Z
+shipped-in:
+  - "cb4f8082c03111eff3211b9d99cd9831b6505b37"
 ---
 
 # x00881 — What an outside audit found, verified against the code
@@ -31,7 +33,7 @@ The owner had the `develop` branch audited from outside on 2026-10-11 (anchored 
 
 ### S1 — A migration fails on a file it cannot read, instead of taking it for absent
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/migrations/migrate-file.ts`
   - `packages/core/tests/src/lib/migrations/migrate.spec.ts`
@@ -42,12 +44,14 @@ The owner had the `develop` branch audited from outside on 2026-10-11 (anchored 
   - A file that exists and cannot be read (no permission, an I/O error, a directory in its place) fails the migration with the path and the cause.
 
 Verified: any failure of `readFile` returned `null`, the answer for "no such file". A state file the process could not read was stepped over and the project migrated as if it had never had one.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at cb4f8082c031, validate exit 0, tests 13/13 — Delivered by a5d043eb8 (shipped-in) inside PR #995 (merge cb4f8082c, claude-opus-5-5). migrateJsonFile now answers 'nothing to migrate' only on a missing file and fails the migration with path and cause for a file it cannot read. Verified today in this worktree, agent env scrubbed: migrate.spec.ts green 13/13 exit 0; declared files exist. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S2 — A published package exports nothing it does not ship
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/api/package.json`
   - `plugins/observability/package.json`
@@ -60,12 +64,14 @@ Verified: any failure of `readFile` returned `null`, the answer for "no such fil
   - The publication-boundary lint fails on an export of a published package whose only condition is `types` pointing into `src/`.
 
 Verified, and wider than reported: `@delendai/api` declared `./public` as `{ "types": "./src/public/index.ts" }` while shipping `dist` alone, though that module exports six functions; `@delendai/observability` did the same. The build already emitted `dist/public/index.js` for both, so only the manifests were wrong. The lint that checks what published code imports never looked at what a package offers that nobody imports yet.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at cb4f8082c031, validate exit 0, tests 21/21 — Delivered by a5d043eb8 (shipped-in) inside PR #995 (merge cb4f8082c, claude-opus-5-5). Both published packages resolve their /public exports to built files for values and types, and the publication-boundary lint now fails a types-only condition pointing into src/. Verified today, agent env scrubbed: no-internal-core-imports.script.spec.ts green 21/21 exit 0. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S3 — A package describes what it does today
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/orchestrator-runner/package.json`
 - **Gate**: none
@@ -73,13 +79,15 @@ Verified, and wider than reported: `@delendai/api` declared `./public` as `{ "ty
   - The description of `@delendai/orchestrator-runner` says that it runs the provider it chooses.
 
 Verified: the description read "Headless (no subprocess spawning)" for a plugin whose tools invoke CLI, API and MCP providers and cancel them.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `a5d043eb8dd7`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at cb4f8082c031, validate exit 0, tests 13/13 — Delivered inside PR #995 (merge cb4f8082c, claude-opus-5-5): the package description now says what the plugin does today (it runs the chosen provider). Docs-only change; the slice declares no gate, so I ran the S1 suite (13/13) as surrounding evidence that the tree is green. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S4 — The editor extension does not go on with a test double for a host
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `extensions/vscode/src/extension.ts`
   - `extensions/vscode/src/host/resolve-host-adapter.ts`
@@ -94,8 +102,10 @@ Verified: the description read "Headless (no subprocess spawning)" for a plugin 
 Verified: `extension.ts` catches a failed import of `./host/vscode-host-adapter` and falls back to the adapter written for tests, "to keep the canonical dashboard registrable". A surface that looks alive and answers nothing is worse than one that says it could not start.
 
 Delivered 2026-10-11: `resolveHostAdapter` answers the loaded adapter, the minimal one for an injected API, or nothing with the failure shown; `registerDashboardSurfaces` registers nothing when it answers nothing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at cb4f8082c031, validate exit 0, tests 4/4 — Delivered by d23f50b36 (shipped-in) merged inside PR #995 (cb4f8082c, claude-opus-5-5): the VS Code extension stops on a loadable-host failure and says so instead of continuing on the test double; the minimal adapter is reserved for injected APIs. Verified today in this worktree, agent env scrubbed: resolve-host-adapter.spec.ts green 4/4 exit 0; declared files exist. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S5 — A plugin says whether it can be used, not only that it loaded
 
