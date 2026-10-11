@@ -138,12 +138,13 @@ cualquier tool a partir de un solo campo de input.
 - **Status**: in-progress
 - **Files**: `packages/core/src/lib/contracts/detail.contract.ts`, `packages/core/tests/src/lib/contracts/detail.contract.spec.ts`, `plugins/audit/src/lib/tools/audit-run.tool.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/logs/src/lib/tools/tools.ts`, `plugins/logs/tests/tools.spec.ts`
 - **Gate**: type
-- review-state: changes_requested
-- review-implementer: GitHub
-- review-reviewer: delivery_verifier
-- review-log: requested_changes by delivery_verifier — Regresión de compatibilidad en logs: query, subscribe, correlate y search resuelven detail omitido a normal, y normal vacía metadata. Sin detail debe conservarse el comportamiento legado con metadata completa; aplicar la proyección nueva solo cuando detail se solicite explícitamente. Mantén includeMeta compatible.
 - shipped-in: `7127cc34a`
 - **Evidence (2026-09-15)**: the logs regression the review raised is fixed in PR #223 (merge `7127cc34a`): an omitted `detail` resolves through `includeMeta` first and otherwise keeps each tool's legacy default — redacted `full` for query, subscribe, correlate and search, `normal` for tail and errors_tail — so metadata is no longer emptied unless `detail` is requested. `plugins/logs/tests/tools.spec.ts` pins both defaults. The shared contract lives in `detail.contract.ts` (not `detail.ts`; spec 6/6); audit adopts it in `audit-run` (specs 9/9 and 6/6) and `audit-consolidate` (8/8, compact trims consensus, findings and markdown); usage adopts it in the `usage-tracking` plugin's `report.tool.ts` (there is no `plugins/usage`), tools spec 9/9. The Files list above names what actually shipped.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by delivery_verifier — Regresión de compatibilidad en logs: query, subscribe, correlate y search resuelven detail omitido a normal, y normal vacía metadata. Sin detail debe conservarse el comportamiento legado con metadata completa; aplicar la proyección nueva solo cuando detail se solicite explícitamente. Mantén includeMeta compatible.
+- review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: The regression the request names was fixed in 7127cc34a (PR #223) and never resubmitted: an omitted detail resolves through includeMeta first and otherwise keeps each tool legacy default (redacted full for query, subscribe, correlate and search), so metadata is emptied only when detail is asked for. plugins/logs/tests/tools.spec.ts pins both defaults and passes here with detail.contract.spec.ts.
+
 ### S2 — Adopción en project-health, dependencies, search + lint
 
 - **Status**: done
