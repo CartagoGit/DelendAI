@@ -718,7 +718,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 10/10 — Judged at the superseding whole-proposal delivery 84217680c5c8 (the slice itself ships in cb6ceebff; the merge keeps the same lint files). Specs: 10/10 (no-legacy-cache-paths.script.spec.ts + cache-layout-ratchet.script.spec.ts). Real lints on the current tree: lint:no-legacy-cache-paths scanned 3845 files, exit 0; lint:cache-layout-ratchet = epoch 5, manifest unchanged, exit 0. Both chained into lint:architecture for CI. Ratchet refuses --update when artifacts change without an epoch bump, verified by its spec.
 
 ### S6 — CLI operator (entregable: `f00531`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `baf7794eb`
 - **Files**:
   - `packages/cli/src/commands/cache.command.ts`
@@ -735,8 +735,10 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - One command file with subcommands, like `migrate.command.ts`, instead of five files: the subcommands are a few lines each over the same engine.
   - `gc` previews unless `--apply` is given (the plan only asked for a dry-run flag); eviction deletes by age, so applying it should be deliberate.
   - This slice builds on the registry that S4 adds (open pull request at the time of writing), so its branch carries that merge.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 30/30 — Judged at the superseding whole-proposal delivery 84217680c5c8 (slice ships in baf7794eb). cache.command.ts implements status|migrations|migrate --dry-run|gc --dry-run/--apply over runCacheLayoutStep; status previews without writing; gc previews unless --apply. Gate: vitest in packages/cli on cache.command.spec.ts + registry.spec.ts = 30/30. The one failing spec in src/commands is repair.command.spec.ts (ea63c1e0e, r00040), outside this slice's Files; cache.command and registry are green.
 
 ### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
 - **Status**: review
