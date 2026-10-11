@@ -2,7 +2,7 @@
 id: f00547
 title: "Resolve what the installed framework version allows, recommends and forbids before an agent writes code"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,10 +11,10 @@ tags:
     - frameworks
     - policy
     - tokens
-last-transition-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
-last-correlation-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
-last-transition-from: in-progress
-last-transition-at: 2026-10-09T21:10:50.048Z
+last-transition-id: 93966f78-0a69-404f-9d2e-6bdc9ef5906c
+last-correlation-id: 93966f78-0a69-404f-9d2e-6bdc9ef5906c
+last-transition-from: review
+last-transition-at: 2026-10-11T05:30:48.225Z
 shipped-in:
   - "97ed3389c329"
   - "7b07571790b18759adbefc1eec61d0db2d1797"
@@ -278,7 +278,7 @@ Shipped: a pack rule may carry `pattern` (`directory`, `suffix`, `marker`); the 
 
 ### S8 — Trusted-domain adapters stay out; the posture is enforced
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/framework-knowledge/tests/src/no-network.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/no-network.spec.ts`
 
@@ -289,9 +289,11 @@ no preset. Fetching rules from the web is not part of this proposal; a
 future adapter would be its own, allow-listed proposal.
 
 Shipped: the spec scans every source of the plugin for a network module import or a network call and fails on any.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1e177dd3ce32`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 47/47 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/no-network.spec.ts inside the six-file batch -> 6 files / 47 tests passed, exit 0. The acceptance is met by having no adapters at all, and the spec enforces that rather than trusting it. A future adapter with an allow-list is its own proposal, as the slice states.
 
 ## acceptance
 
