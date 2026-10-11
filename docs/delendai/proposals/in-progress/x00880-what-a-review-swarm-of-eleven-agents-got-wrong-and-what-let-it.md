@@ -60,13 +60,20 @@ Observed at 05:15:
 16. **A third name for one model, and a version nobody launched.** Two units belong to `glm-4.6-flash` (`batch-all-g1`, `batch-all-g2`). The GLM agents are Flash 5.3: on the forge and in the worktrees they are now `glm-5.3-flash`, `glm-5.3-max` and `glm-4.6-flash`. Nine names for five models. → S2.
 17. **A pack of approvals titled as a release.** #993 is titled "chore(review): release r00040" and carries an approval of f00643; #998 is "chore(review): release f00271" and carries five claims and the verdicts on f00267. `work publish` titles a pull request from a commit of the unit, and for a review pack that is whichever bookkeeping commit it meets. → S5.
 
+18. **"validate exit 0" on approvals that ran a focused gate.** Every approval records `validate exit 0` beside a count such as `tests 28/28` or `tests 6/6`, and its note says which focused specs were run. The field is named for the repository's whole validation; what fills it is the exit code of whatever the reviewer ran. The record says more than was checked. → S8.
+
 ### S2 — An agent has one name, and it is not the model's to choose
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/work-units/agent-alias.service.ts`
   - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
   - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+  - `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`
+  - `packages/core/src/lib/development-policy/resolve.ts`
+  - `packages/core/src/lib/development-policy/resolve.interface.ts`
+  - `packages/core/src/lib/plugins/development-config-schema.constant.ts`
+  - `packages/core/tests/src/lib/work-units/agent-alias.service.spec.ts`
 - **Gate**: unit
 - acceptance:
   - A project can declare the roster of a swarm (the agent names allowed to work in it). With a roster declared, entering a unit, claiming a review or recording a verdict under a name that is not on it is refused, listing the roster and the nearest name on it.
@@ -84,6 +91,16 @@ where the answer is: "caught by what the agent declares it is running,
 not by guessing here". A model's account of itself is not a declaration.
 The person who launches the swarm knows what was launched, so the names
 are theirs to give, once, and the product's to hold everyone to.
+
+Delivered 2026-10-11, the roster: `development.coordination.roster` in
+the project's configuration names who may work in it, and `work enter`,
+which every unit of every kind goes through, refuses any other name and
+says which roster name the entrant probably is. Tried in a throwaway
+project with the names of this swarm: `minimax-3.1` and `glm-5.3-max`
+are refused and pointed at `minimax-m3.1` and `glm-5.3-flash`;
+`glm-5.3-flash` enters. Still to do: refusing an `--agent` that
+contradicts what the launcher declared in `DELENDAI_AGENT_ID`, and
+saying in the launch instructions that a swarm is given its roster.
 
 ### S3 — Asking the review queue again does not open another unit
 

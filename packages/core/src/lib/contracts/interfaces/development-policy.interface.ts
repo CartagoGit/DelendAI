@@ -326,6 +326,12 @@ export interface IPolicyCoordination {
 	readonly requiresClaims: boolean;
 	/** Minutes before an un-renewed lease is considered dead; 0 = never. */
 	readonly leaseTtlMinutes: number;
+	/**
+	 * The agent names allowed to work in the project, as whoever launches
+	 * the agents declares them. Absent: any name, checked only for being
+	 * a re-spelling of one already at work.
+	 */
+	readonly roster?: readonly string[];
 }
 
 /** Recovery axis. */

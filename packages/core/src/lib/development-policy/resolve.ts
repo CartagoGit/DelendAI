@@ -288,6 +288,9 @@ const applyOverrides = (
 			leaseTtlMinutes:
 				input.coordination?.leaseTtlMinutes ??
 				base.coordination.leaseTtlMinutes,
+			...(input.coordination?.roster === undefined
+				? {}
+				: { roster: input.coordination.roster }),
 		},
 		recovery: {
 			...base.recovery,
