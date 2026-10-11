@@ -36,14 +36,6 @@ export interface IObservedRef {
 	 */
 	readonly publishedIn?: string | undefined;
 	/**
-	 * For a work ref: its proposal is still in progress on the integration
-	 * branch. A proposal keeps one work branch while it is in progress and
-	 * publishes its slices from it, so a published tip is not the end of
-	 * that branch. The caller reads the proposal state; reconcile stays
-	 * pure.
-	 */
-	readonly proposalInProgress?: boolean | undefined;
-	/**
 	 * For a work ref: the verdict on its unit (owner and heartbeat). Only
 	 * a clone that holds the leases can state it; absent, a work ref is
 	 * judged as it always was.
