@@ -2,7 +2,7 @@
 id: f00538
 title: "Forward-sync the release branch back into the integration branch after every promotion"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-15
@@ -11,12 +11,14 @@ tags:
     - branches
     - release
     - automation
-last-transition-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
-last-correlation-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
-last-transition-from: in-progress
+last-transition-id: 8c60e379-02ad-4321-9b51-1865b704333f
+last-correlation-id: 8c60e379-02ad-4321-9b51-1865b704333f
+last-transition-from: review
 shipped-in:
   - "7dfa7abc3476102c786e172126e750286090d948"
   - "d615fc5a2550b5079967172e87fd4792720d43e4"
+  - "20d9a02771672357d7bed8595ce66551da728e0a"
+last-transition-at: 2026-10-11T02:44:44.396Z
 ---
 
 # f00538 — Forward-sync the release branch back into the integration branch after every promotion
@@ -118,13 +120,18 @@ fast-forwards a local clone and never touches the forge.
 
 ### S5 — Close the gap that exists today
 
-- **Status**: done — gate read `0 302` on 2026-10-01, after #686 merged. Ran on 2026-09-15 after S2 reached `develop` (#236). The verdict was `ancestry-only` for `c7eda197a`, and the run opened #237 with 0 changed files and auto-merge armed. It stays open until #237 merges and the gate below reads 0. The first attempt found a defect: the script pushed from its throwaway worktree under the system temp directory, where the shared pre-push hooks cannot find `node_modules`. It now pushes the merge commit by SHA from the installed checkout.
+- **Status**: done
 - **Found 2026-09-30 — the same defect at the commit.** After the promotion of #641, `main` was one commit ahead of `develop` (`0720e8436`). The forward-sync pull request #656 was closed without merging, and a re-dispatched run reported "merging main into develop stops on a conflict". There was no conflict: the merge commit ran the repository's commit hooks in the throwaway worktree, a hook died on `Cannot find module`, and every failure of `git merge` was read as a conflict. The merge now runs `--no-commit` first and only unmerged paths count as a conflict (`mergeOutcome`, a failure otherwise names its cause); the throwaway worktree gets the installed checkout's `node_modules` before the commit, so the hooks run instead of being skipped. Run read-only against `origin/main`/`origin/develop`: `ancestry-only`, merge committed through the hooks.
 - **Found 2026-09-30 — the forward sync was reaped as soon as it opened.** With the merge fixed, the re-dispatched run opened #675, and five minutes later it was closed with its branch deleted, as #656 had been. The owner machine's `maintain-ref-namespace` reaped `delendai/pr/forward-sync-0720e8436` because "develop already contains everything it adds": `isSpent` judges a ref by content (an empty three-dot diff), and an `ancestry-only` forward sync adds no content by design. A forward-sync ref is now spent only once the integration branch contains its commit (`merge-base --is-ancestor`); every other ref is judged as before.
 - **Found 2026-10-01 — the forward sync could not pass `tests`.** #686 carried no content, so the planner ran no test zone, no shard uploaded a report and the `tests` job failed merging reports that did not exist. x00790 made a plan that runs no zone the verdict; #686 then needed develop merged into its head, because a pull request's run used the workflow its head carried. It passed and merged, and the gate reads 0.
 - **Files**: [`tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `.github/workflows/ci.yml`]
 - **Gate**: `git rev-list --left-right --count origin/main...origin/develop` reports `0` on the left.
 - shipped-in: `20d9a0277167`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 20d9a0277167, validate exit 0, tests 18/18 — Candidate correction: the queue offered 20d9a0277167 and the tool correctly refuses 733d26f88 as superseded by it. I read the tree AT 20d9a027 (diff against first parent: maintain-ref-namespace.script.ts +14/-1 and its spec +44) and it contains the whole delivery — 733d26f88 is an ancestor of it. Gate: the slice's own gate is 'git rev-list --left-right --count origin/main...origin/develop reports 0 on the left'; run against fresh refs it reads '0 183' — 0 on the left, so acceptance criterion 1 holds measured. Supporting gate npx vitest run maintain-ref-namespace.script.spec.ts: 18/18 pass. The reaper fix as it stands: isSpent takes ref and, when ref starts with FORWARD_SYNC_REF_PREFIX, returns git merge-base --is-ancestor <sha> <integration>; every other ref still falls through to the original name-only three-dot diff, so the change is exactly as narrow as the defect that closed #656 and #675, and content-bearing refs are reaped as before. The other defects the slice names are present in this tree under named specs: 'conflict is only unmerged paths' (both the unmerged and the failed-with-nothing-unmerged cases), 'starts the required check BEFORE arming auto-merge', 'does not arm at all when the check could not be started'. Later commits (7ac3d2db6 makes the forward-sync branch a canonical publication) extend this work.
+- review-attribution: claude-opus-5-5 from commit 20d9a0277167 names refs/heads/delendai/wip/claude-opus-5-5/implement/f00538-S5-g1/the-reaper-keeps-a-forward-sync (20d9a02771672357d7bed8595ce66551da728e0a), opened by minimax-m31
 
 ## acceptance
 
