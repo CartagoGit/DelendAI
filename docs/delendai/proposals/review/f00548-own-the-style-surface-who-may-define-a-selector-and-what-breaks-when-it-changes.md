@@ -2,7 +2,7 @@
 id: f00548
 title: "Own the style surface: who may define a selector, and what breaks when it changes"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,10 +11,10 @@ tags:
     - scss
     - impact
     - design-tokens
-last-transition-id: 5da15fe6-0174-4d46-9e64-79460a8929ee
-last-correlation-id: 5da15fe6-0174-4d46-9e64-79460a8929ee
-last-transition-from: ready
-last-transition-at: 2026-10-11T22:03:54.330Z
+last-transition-id: 15403476-c6cc-4c0b-a66d-bc829fa72db4
+last-correlation-id: 15403476-c6cc-4c0b-a66d-bc829fa72db4
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T22:04:27.507Z
 ---
 
 # f00548 — Own the style surface: who may define a selector, and what breaks when it changes
@@ -86,6 +86,8 @@ and leaves the two ratchets as the authorities they already are.
 - acceptance:
   - The graph holds every selector with the files that define it and the surfaces that use it; a markup file's own `<style>` block defines selectors for that file.
   - The parser is the integrity ratchet's own, moved here and imported by the ratchet, so the two cannot disagree about nesting or comma lists; the ratchet's verdict is unchanged (415 used classes against 541 defined, its 22 specs green).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — `style_impact`: what a change to this selector reaches
 
@@ -101,6 +103,8 @@ and leaves the two ratchets as the authorities they already are.
 - acceptance:
   - Given a selector, or a file, it answers where each selector is defined, every surface that uses it, and which of those are in another package than every file that defines it.
   - A selector nothing defines or uses is refused by name rather than answered as "no impact".
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — `style_check`: ownership and hard-coded values
 
@@ -115,6 +119,8 @@ and leaves the two ratchets as the authorities they already are.
   - It refuses, with the reason and the remedy named: a selector whose prefix another layer owns, a second definition of a selector defined in another file, and a hard-coded value an existing design token names — and it names the token.
   - A class under a prefix another gate owns is not decided here: the finding names that gate (`sharedAuthority`), which in this repository is `lint:shared-ui-ratchet`.
   - It checks the file on disk or the stylesheet as it would be saved.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — `style_profile`: the project's declared style architecture
 
@@ -142,6 +148,8 @@ and leaves the two ratchets as the authorities they already are.
   - A project that declares no `styleRoots` gets no tool and no diagnostic.
 
 Re-cut at delivery: the installed version of the utility framework is read from the project's own manifest by this plugin. The plan sent it through f00547, whose public surface holds knowledge records and no version resolver; a directive table of ten lines did not justify adding one there.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
