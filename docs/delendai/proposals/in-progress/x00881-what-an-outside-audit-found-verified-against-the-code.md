@@ -32,6 +32,7 @@ The owner had the `develop` branch audited from outside on 2026-10-11 (anchored 
   - `packages/core/src/lib/migrations/migrate-file.ts`
   - `packages/core/tests/src/lib/migrations/migrate.spec.ts`
 - **Gate**: unit
+- shipped-in: `a5d043eb8dd7`
 - acceptance:
   - `migrateJsonFile` answers "nothing to migrate" only for a file that does not exist.
   - A file that exists and cannot be read (no permission, an I/O error, a directory in its place) fails the migration with the path and the cause.
@@ -49,6 +50,7 @@ Verified: any failure of `readFile` returned `null`, the answer for "no such fil
   - `tools/scripts/lint/no-internal-core-imports.script.ts`
   - `tools/scripts/lint/no-internal-core-imports.script.spec.ts`
 - **Gate**: unit
+- shipped-in: `a5d043eb8dd7`
 - acceptance:
   - `@delendai/api/public` and `@delendai/observability/public` resolve to built files of the published package, for values and for types.
   - The publication-boundary lint fails on an export of a published package whose only condition is `types` pointing into `src/`.
@@ -72,20 +74,25 @@ Verified: the description read "Headless (no subprocess spawning)" for a plugin 
 
 ### S4 — The editor extension does not go on with a test double for a host
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `extensions/vscode/src/extension.ts`
-  - `extensions/vscode/src/host/stub-host-adapter.ts`
+  - `extensions/vscode/src/host/resolve-host-adapter.ts`
+  - `extensions/vscode/src/test/resolve-host-adapter.spec.ts`
 - **Gate**: unit
+- shipped-in: `d23f50b36b24`
+- shipped-in: `a5d043eb8dd7`
 - acceptance:
   - When the real host adapter cannot be loaded, the extension says so and registers nothing that depends on it; it does not continue on `createFakeHostFromVscode`, whose operations throw or do nothing.
-  - The test double is reachable from tests only.
+  - The minimal adapter is given only to an API that was injected (a test, or a port to another editor), never to the real editor.
 
 Verified: `extension.ts` catches a failed import of `./host/vscode-host-adapter` and falls back to the adapter written for tests, "to keep the canonical dashboard registrable". A surface that looks alive and answers nothing is worse than one that says it could not start.
 
+Delivered 2026-10-11: `resolveHostAdapter` answers the loaded adapter, the minimal one for an injected API, or nothing with the failure shown; `registerDashboardSurfaces` registers nothing when it answers nothing.
+
 ### S5 — A plugin says whether it can be used, not only that it loaded
 
-- **Status**: pending
+- **Status**: retired
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/plugin-availability.interface.ts`
   - `packages/core/src/lib/surface/plugin-availability.service.ts`
@@ -96,6 +103,8 @@ Verified: `extension.ts` catches a failed import of `./host/vscode-host-adapter`
   - The state is computed without a model and without calling the plugin's tools.
 
 The audit's observation that "there are many plugins, but some do not work" is seven different situations today, all shown as one: registered. `execution-env` exposes no tool by design; `browser` needs a browser; `orchestrator-runner` needs providers; a plugin can load from the monorepo and not from its tarball (S2). The pack smoke test proves a package installs, not that it can do anything.
+
+Retired 2026-10-11, on what the code already says. A start reports plugins configured, loaded, warm and failed as four numbers, and a plugin that fails to load or register is announced by name with its cause (`announce-plugin-failures.ts`). The one concrete case behind the audit's remark, a package that loads from the repository and not from its tarball, is closed by S2. Seven declared states would need every plugin to describe its own requirements, for situations nobody has yet been stopped by; the slice comes back with the first one that is.
 
 ## acceptance
 
