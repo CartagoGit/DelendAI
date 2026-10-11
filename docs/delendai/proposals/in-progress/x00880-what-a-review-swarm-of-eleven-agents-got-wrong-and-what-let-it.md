@@ -221,6 +221,8 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
   - An approval of work nobody can be named for is recorded and does not close its proposal: every path to `done` applies the rule the repository's check applies, and the queue says beforehand that the close is the owner's.
 
 Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a status a slice of a closed proposal may be in, and a hash that names a tree or a blob is skipped by the cited-commits lint. x00875's three citations of unreferenced objects were rewritten in its own unit. Then the rest. Both rules now read `review/` as well as `done/`; run over the fifteen proposals waiting today they found one real thing, twice: f00512 and f00536 each have a retired slice naming files that were never written, which the completeness rule would have held against whoever approved them. A retired slice is no longer asked for its files, and the baseline shrank by eight entries for it. And the cause of observation 21: the close from `review` was judged by the review log alone, so an approval over an unrecorded implementer closed f00538, and the per-slice rule in CI refused the pack. `proposal_transition` now applies that one rule on every path to `done`; the approval stands, the proposal stays in review, and the answer says why.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S10 — Two packs of verdicts on different proposals do not wait on each other
 
