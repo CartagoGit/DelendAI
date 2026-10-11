@@ -70,7 +70,7 @@ between those two designs:
   - `plugins/proposals/tests/src/lib/services/attested-implementer.service.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-review-attest.spec.ts`
 - **Gate**: type
-- shipped-in: `8bbc9885b9a0`
+- shipped-in: `8bbc9885b9a0`, `886c69aa2df1`
 - acceptance:
   - `proposal_review { action: "attest", implementer, note }` (CLI: `proposals review <id> <slice> --action=attest --implementer=<who> --note=<evidence>`) writes the implementer and a `review-attribution: <who> attested by <agent> — <evidence>` line on a slice reviewed as `unrecorded`.
   - It refuses a slice whose implementer is already named, a slice no review round was opened for, a name that is empty, `unrecorded` or more than one word, and evidence shorter than a sentence; a refusal writes nothing.
