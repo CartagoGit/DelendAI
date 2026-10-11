@@ -15,7 +15,7 @@ import {
 	versionInputSchema,
 } from './shared/envelope.helper';
 
-export const readinessSchema = z.object({
+const readinessSchema = z.object({
 	version: z.string(),
 	status: z.enum(ROADMAP_READINESS_STATUSES),
 	reason: z.string(),

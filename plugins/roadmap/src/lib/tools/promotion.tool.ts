@@ -3,6 +3,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolError, toolJson } from '@delendai/core/public';
 
+import { ROADMAP_READINESS_STATUSES } from '../contracts/constants/read-model.constant';
 import type { IRoadmapToolOptions } from '../contracts/interfaces/roadmap-workspace.interface';
 import { isPublished } from '../read-model/roadmap-delta.service';
 import { horizonReadiness } from '../read-model/roadmap-readiness.service';
@@ -11,7 +12,6 @@ import {
 	loadRoadmap,
 	versionInputSchema,
 } from './shared/envelope.helper';
-import { readinessSchema } from './readiness.tool';
 
 const OUTPUT = z.object({
 	ok: z.literal(true),
@@ -21,7 +21,14 @@ const OUTPUT = z.object({
 	to: z.string(),
 	/** False when the project has one branch: there is nowhere to promote to. */
 	promotable: z.boolean(),
-	readiness: readinessSchema.optional(),
+	/** The verdict; `roadmap_readiness` gives what holds it back. */
+	readiness: z
+		.object({
+			version: z.string(),
+			status: z.enum(ROADMAP_READINESS_STATUSES),
+			reason: z.string(),
+		})
+		.optional(),
 	nextAction: z.string(),
 });
 
@@ -103,7 +110,11 @@ export const buildRoadmapPromotionTool = (
 					OUTPUT.parse({
 						...base,
 						promotable: true,
-						readiness,
+						readiness: {
+							version: readiness.version,
+							status: readiness.status,
+							reason: readiness.reason,
+						},
 						nextAction:
 							readiness.status === 'ready'
 								? `open the pull request from ${branches.integration} into ${branches.release}: ${readiness.reason}`
