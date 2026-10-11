@@ -67,6 +67,8 @@ Verified, and wider than reported: `@delendai/api` declared `./public` as `{ "ty
   - The description of `@delendai/orchestrator-runner` says that it runs the provider it chooses.
 
 Verified: the description read "Headless (no subprocess spawning)" for a plugin whose tools invoke CLI, API and MCP providers and cancel them.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The editor extension does not go on with a test double for a host
 
