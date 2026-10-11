@@ -509,10 +509,13 @@ export interface DelendaiProposalsProposalBoardOutput {
 	proposals: {
 		id: string;
 		status: string;
+		title?: string;
 		slices?: {
 			sliceId: string;
 			status: string;
 			owner: string;
+			written?: string;
+			acceptance?: number;
 		}[];
 		sliceCount?: number;
 		claimableSliceIds?: string[];
