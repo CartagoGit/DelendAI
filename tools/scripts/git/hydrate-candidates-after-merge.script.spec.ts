@@ -69,7 +69,7 @@ describe('skipReason (x00554 S2)', () => {
 
 describe('what bringing the candidates forward runs', () => {
 	it('certifies what landed first, then has one writer that merges and regenerates', () => {
-		// `forge:refresh --apply` used to run first. It merged every
+		// A second refresher used to run first. It merged every
 		// candidate textually, so the regenerating step found nothing
 		// behind and never ran.
 		const scripts = HYDRATION_STEPS.map(([script]) => script);

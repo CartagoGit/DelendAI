@@ -3,17 +3,21 @@
  * refresh-candidate-artifacts — a candidate that is behind is brought up
  * to the integration branch WITH its derived files recomputed.
  *
- * WHY the existing refresh is not enough: `forge:refresh` merges the
- * integration branch into a candidate through a throwaway index, which
- * is what lets it run without moving the shared checkout. A textual
- * merge is the right answer for authored files and the wrong one for
- * derived files — the agent catalog is rendered from the proposals on
- * disk, so merging two versions of it produces a file neither generator
- * would produce, and `catalog:check` fails on the merge result.
+ * WHY it regenerates: a textual merge is the right answer for authored
+ * files and the wrong one for derived files. A derived file merged from
+ * two versions is a file no generator would produce, and its check fails
+ * on the merge result. Measured over one session: six candidates went red
+ * on exactly that, and the fix each time was a person running two
+ * generators and pushing. That is the definition of work that should not
+ * need a person.
  *
- * Measured over one session: six candidates went red on exactly that,
- * and the fix each time was a person running two generators and pushing.
- * That is the definition of work that should not need a person.
+ * WHY it is the only refresher (`bun run forge:refresh`): a second one
+ * brought forward every candidate that was behind, whatever the queue's
+ * rules said of it. Run on a clock, it restarted the checks of every open
+ * pull request after every merge, the head of the queue included, which
+ * then never got a verdict: five restarts in three hours for one head.
+ * What is brought forward is decided in one place, `candidate-disposition`
+ * and the queue's own acceptance, and this script does what they say.
  *
  * So this does what the person did: one throwaway worktree per candidate
  * that is behind, merge, regenerate, push. It never touches the shared
