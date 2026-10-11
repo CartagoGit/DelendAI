@@ -117,6 +117,8 @@ are refused and pointed at `minimax-m3.1` and `glm-5.3-flash`;
 `glm-5.3-flash` enters.
 
 Also delivered: the instructions every agent receives at start now end their "sign as `<you>`" step with the roster's names, so the name is read, not recalled. Not done, and taken out of the acceptance: refusing an `--agent` that differs from `DELENDAI_AGENT_ID`. A host sets that variable once and every process it starts inherits it, a sub-agent of another model included, so the variable is weaker evidence than the argument it would overrule. What the owner still has to give is the roster itself.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Asking the review queue again does not open another unit
 
