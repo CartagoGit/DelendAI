@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-09T20:59:09.970Z
 shipped-in:
   - "ff589f828b9bb3ad18c8f483059268acfe78c141"
+  - "652863cb5729b2376b25bc40c8490133a800c327"
 ---
 
 # f00643 — The startup forge and journal phases run in a real host
@@ -49,7 +50,7 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - review-log: approved by glm-5.3-max — verified at ff589f828b9b, validate exit 0, tests 10/10 — Delivered by 4a1ca6f53 (PR #806, claude-sonnet-5-5; the queue cites the later merge ff589f828b of PR #832 which re-merged the same files with no code delta on this slice's paths). runStartupGate takes an optional forge seam and stops listing the phase NOT EXECUTED when bound; the host seam shells out to the user's own gh session with If-None-Match and answers unavailable instead of throwing. Evidence today in this worktree, agent env scrubbed: run-startup-gate.spec.ts + idempotency.spec.ts green 10/10 exit 0; all declared files exist; implementer is a different model, independence holds.
 
 ### S2 — A journal source is bound once its home is decided
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/startup-reconciler/seams.interface.ts`, `packages/core/src/lib/startup-reconciler/journal-ref.service.ts`, `packages/core/src/lib/startup-reconciler/journal-ref.constant.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.interface.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.constant.ts`, `packages/core/tests/src/lib/startup-reconciler/journal-ref.service.spec.ts`, `packages/core/tests/src/lib/startup-gate/run-startup-gate.spec.ts`, `docs/delendai/ADOPTER-CONFIG-FOOTGUNS.md`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler/journal-ref.service.spec.ts packages/core/tests/src/lib/startup-gate`
@@ -59,9 +60,11 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - acceptance:
   - "The maintainer's decision on where the coordination journal ships is recorded in this proposal."
   - "The host binds an `IStartupJournalSource` reading from there, and replaying the same events twice imports them once."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `205650657f2c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 652863cb5729, validate exit 0, tests 10/10 — Delivered by the S2 work merged via PR #832 (merge ff589f828b, claude-opus-5-5); the queue cites the later merge 652863cb5 (PR #960) which touched the same files delivering S3. The Decision block in the proposal records the maintainer-delegated home (refs/<namespace>/journal, git-ref NDJSON); journal-ref.service.ts binds IStartupJournalSource and the journal port dedupes on event identity so a replay imports once. Evidence today in this worktree, agent env scrubbed: journal-ref.service.spec.ts green 10/10 exit 0; declared files exist; implementer is a different model, independence holds.
 
 ### S3 — The journal is published to its ref
 - **Status**: review
