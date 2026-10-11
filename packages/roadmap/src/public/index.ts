@@ -59,3 +59,15 @@ export * from '../lib/contracts/constants/roadmap-producer.constant';
 export type * from '../lib/contracts/interfaces/roadmap-producer.interface';
 export { createRoadmapProducer } from '../lib/state/roadmap.producer.service';
 export { projectRoadmap } from '../lib/state/roadmap.projection.service';
+export * from '../lib/contracts/constants/read-model.constant';
+export type * from '../lib/contracts/interfaces/read-model.interface';
+export { horizonDelta } from '../lib/read-model/roadmap-delta.service';
+export { horizonReadiness } from '../lib/read-model/roadmap-readiness.service';
+export {
+	entryDetail,
+	summariseRoadmap,
+} from '../lib/read-model/roadmap-summary.service';
+export {
+	pendingTimelineDrafts,
+	syncReport,
+} from '../lib/read-model/roadmap-sync.service';
