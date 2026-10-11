@@ -694,7 +694,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 375/375 — Judged at superseding delivery 84217680c5c8 (slice ships in 8ed4c1b71). The real chain 0->5 is registered: 2->3 moves logs/logs-errors/memory/usage-tracking under results/ entry by entry without overwriting (conflict keeps both copies and the origin); 1->2 renames .verify-tmp and .commit-policy; 0->1, 3->4, 4->5 are empty steps that keep one epoch per step. Same gate as S3: 375/375 cache+workspace-migration tests cover records surviving with content, merge-without-overwrite, unknowns/operational untouched, dry run changes nothing, custom cacheDir, symlink not followed, second run idempotent.
 
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `cb6ceebff`
 - **Files**:
   - `tools/scripts/lint/no-legacy-cache-paths.script.ts`
@@ -712,8 +712,10 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Corrections to the design, following the code**:
   - The ratchet is a script with a JSON snapshot in `tools/scripts/lint`, not a rule in `packages/rules` with a spec under `tests/cache`: every other repository-wide ratchet is a script plus a baseline file, and the manifest lives in core, which `packages/rules` does not import.
   - The lint is not wired into `validate` directly but into `lint:architecture`, which CI runs; a lint reachable only from `validate:run` fails `lints-reach-ci`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 10/10 — Judged at the superseding whole-proposal delivery 84217680c5c8 (the slice itself ships in cb6ceebff; the merge keeps the same lint files). Specs: 10/10 (no-legacy-cache-paths.script.spec.ts + cache-layout-ratchet.script.spec.ts). Real lints on the current tree: lint:no-legacy-cache-paths scanned 3845 files, exit 0; lint:cache-layout-ratchet = epoch 5, manifest unchanged, exit 0. Both chained into lint:architecture for CI. Ratchet refuses --update when artifacts change without an epoch bump, verified by its spec.
 
 ### S6 — CLI operator (entregable: `f00531`)
 - **Status**: review
