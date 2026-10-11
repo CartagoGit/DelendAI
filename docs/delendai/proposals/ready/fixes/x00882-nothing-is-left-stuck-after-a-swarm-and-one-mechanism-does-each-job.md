@@ -117,6 +117,8 @@ Delivered 2026-10-11. The request reopens its proposal when it is recorded today
   - Closing a proposal whose slices record what delivered them fills the proposal's `shipped-in` from them; the close is refused only when no slice says.
 
 Delivered 2026-10-11. An approval writes the field since x00692; x00539 was approved before, and every one of its slices names `eaf03fb5c`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A pack that cannot land is settled by the queue, and says so
 
