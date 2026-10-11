@@ -290,6 +290,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - **DependsOn**: [S9, S11]
 - **Files**: `packages/core/tests/src/lib/e2e/roadmap-agnosticism.spec.ts`, `plugins/roadmap/tests/src/lib/store/agnosticism.spec.ts`, `docs/delendai/ROADMAP-DOGFOOD.md`
 - **Gate**: e2e
+- shipped-in: `2cd6a99b8303`, `2c8947986b5c`
 - acceptance:
   - "El test carga una configuración sintética con `trunk → release/2.x` y verifica que ninguna ruta de código asume `develop`/`main`."
   - "El test carga una configuración sintética con una sola rama (sin rama de release) y verifica que el plugin no falla."
