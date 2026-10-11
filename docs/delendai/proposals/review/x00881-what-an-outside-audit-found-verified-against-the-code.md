@@ -2,10 +2,14 @@
 id: x00881
 title: "What an outside audit found, verified against the code"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-11
+last-transition-id: 303228be-bb09-4ab5-8a19-ed31c7c9c4d7
+last-correlation-id: 303228be-bb09-4ab5-8a19-ed31c7c9c4d7
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T05:29:45.206Z
 ---
 
 # x00881 — What an outside audit found, verified against the code
@@ -71,6 +75,7 @@ Verified, and wider than reported: `@delendai/api` declared `./public` as `{ "ty
 Verified: the description read "Headless (no subprocess spawning)" for a plugin whose tools invoke CLI, API and MCP providers and cancel them.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `a5d043eb8dd7`
 
 ### S4 — The editor extension does not go on with a test double for a host
 
@@ -107,6 +112,8 @@ Delivered 2026-10-11: `resolveHostAdapter` answers the loaded adapter, the minim
 The audit's observation that "there are many plugins, but some do not work" is seven different situations today, all shown as one: registered. `execution-env` exposes no tool by design; `browser` needs a browser; `orchestrator-runner` needs providers; a plugin can load from the monorepo and not from its tarball (S2). The pack smoke test proves a package installs, not that it can do anything.
 
 Retired 2026-10-11, on what the code already says. A start reports plugins configured, loaded, warm and failed as four numbers, and a plugin that fails to load or register is announced by name with its cause (`announce-plugin-failures.ts`). The one concrete case behind the audit's remark, a package that loads from the repository and not from its tarball, is closed by S2. Seven declared states would need every plugin to describe its own requirements, for situations nobody has yet been stopped by; the slice comes back with the first one that is.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
