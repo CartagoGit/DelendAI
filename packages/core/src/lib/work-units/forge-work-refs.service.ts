@@ -119,3 +119,54 @@ export const spentPublicationsInvariant = (input: {
 		remedy: `its commits are already on \`${integration}\`: retire it (\`delendai work retire --ref=<ref> --reason="landed on ${integration}"\`)`,
 	};
 };
+
+/**
+ * A publication waits for a merge, and a merge takes hours at most. One
+ * whose tip nobody has moved for longer than a unit is given before it
+ * counts as abandoned is not waiting any more: its checks are red and its
+ * author is gone, or it needs a decision nobody was told about. The queue
+ * leaves such a candidate to its author, which is right while there is
+ * one; this says so when there no longer is.
+ */
+export const stalledPublicationsInvariant = (input: {
+	readonly root: string;
+	readonly remote: string;
+	readonly published: readonly string[];
+	readonly leaseTtlMinutes: number;
+	/** Seconds since the epoch; the clock, unless a test says otherwise. */
+	readonly now?: number | undefined;
+}): IInvariantResult => {
+	const now = input.now ?? Math.floor(Date.now() / 1000);
+	const limit = abandonedAfterSeconds(input.leaseTtlMinutes);
+	const stalled = input.published.flatMap((ref) => {
+		const tipAt = Number(
+			git(input.root, [
+				'log',
+				'-1',
+				'--format=%ct',
+				`${input.remote}/${ref}`,
+			]),
+		);
+		// A ref this clone never fetched cannot be dated: not judged.
+		if (!Number.isFinite(tipAt) || tipAt === 0) return [];
+		const silent = now - tipAt;
+		return silent > limit
+			? [
+					`${ref} (${String(Math.round(silent / SECONDS_PER_MINUTE / 60))} h)`,
+				]
+			: [];
+	});
+	return {
+		scope: 'forge',
+		id: 'publications-move',
+		claim: 'no publication sits unmoved after its author has gone',
+		holds: stalled.length === 0,
+		observed:
+			input.published.length === 0
+				? 'no publication refs'
+				: stalled.length === 0
+					? `${String(input.published.length)} ref(s), none stalled`
+					: `${String(stalled.length)} stalled: ${stalled.slice(0, 3).join(', ')}`,
+		remedy: 'read why its pull request is not merging (its failing check, or the decision it waits for), then fix it on its own publication or retire it (`delendai work retire --ref=<ref> --reason="<why>"`)',
+	};
+};

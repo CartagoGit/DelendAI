@@ -487,7 +487,7 @@ export const evidenceArgs = (
 };
 
 const REVIEW_USAGE =
-	'proposals review <proposalId> <sliceId> --action=<submit|approve|request_changes|status> --agent=<who> [--note=<n>] [--commit=<sha>] [--validate-exit=0 --tests-passing=<n> --tests-total=<n>] [--criterion="<criterion> => <evidence>" …]';
+	'proposals review <proposalId> <sliceId> --action=<submit|approve|request_changes|status|attest> --agent=<who> [--note=<n>] [--commit=<sha>] [--implementer=<who>] [--validate-exit=0 --tests-passing=<n> --tests-total=<n>] [--criterion="<criterion> => <evidence>" …]';
 
 const reviewCommand: ICliCommand = {
 	name: 'proposals review',
@@ -501,9 +501,10 @@ const reviewCommand: ICliCommand = {
 		'tests-passing',
 		'tests-total',
 		'criterion',
+		'implementer',
 	],
 	summary:
-		'Peer-review a slice: submit/approve/request_changes/status. --commit names the delivering commit (and opens the round a delivery never opened); approve also needs --validate-exit, --tests-passing and --tests-total.',
+		'Peer-review a slice: submit/approve/request_changes/status/attest. --commit names the delivering commit (and opens the round a delivery never opened); approve also needs --validate-exit, --tests-passing and --tests-total. attest names who delivered a slice Git cannot name: --implementer=<who> and --note=<where the name comes from>.',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
 		const proposalId = positionals[0];
@@ -521,6 +522,7 @@ const reviewCommand: ICliCommand = {
 		const note = scalarArg(args, 'note');
 		const commit = scalarArg(args, 'commit');
 		const evidence = action === 'approve' ? evidenceArgs(args) : undefined;
+		const implementer = scalarArg(args, 'implementer');
 		return data(
 			await request(ctx, 'delendai_proposals_proposal_review', {
 				proposalId,
@@ -530,6 +532,7 @@ const reviewCommand: ICliCommand = {
 				...(note !== undefined ? { note } : {}),
 				...(commit !== undefined ? { commitHash: commit } : {}),
 				...(evidence !== undefined ? { evidence } : {}),
+				...(implementer !== undefined ? { implementer } : {}),
 			}),
 		);
 	},

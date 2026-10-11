@@ -31,6 +31,7 @@ import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environmen
 import {
 	hangingForgeWorkRefs,
 	spentPublicationsInvariant,
+	stalledPublicationsInvariant,
 } from './forge-work-refs.service';
 import { idleUnitsInvariant } from './idle-units.service';
 import { profileBranchesInvariant } from './profile-branches.service';
@@ -283,6 +284,17 @@ export const checkWorkflowInvariants = (input: {
 	// 8. A publication still on the forge holds something the integration
 	// branch lacks.
 	add(spentPublicationsInvariant({ root, remote, integration, published }));
+
+	// A publication nobody has moved since its author went quiet is
+	// stuck, not waiting.
+	add(
+		stalledPublicationsInvariant({
+			root,
+			remote,
+			published,
+			leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
+		}),
+	);
 
 	// 9. The local integration branch only follows the forge's. A commit
 	// it holds that the forge lacks was made in the shared checkout: it
