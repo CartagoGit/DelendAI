@@ -193,7 +193,7 @@ const attributed = (
 	nextAction: `${
 		attribution.recorded
 			? ''
-			: 'Nothing in Git names who delivered this; it is reviewed as unrecorded and independence cannot be verified. '
+			: 'Nothing in Git names who delivered this; it is reviewed as unrecorded and independence cannot be verified: your verdict is recorded, and closing the proposal stays with the owner. '
 	}${reviewCall(
 		prefix,
 		proposalId,

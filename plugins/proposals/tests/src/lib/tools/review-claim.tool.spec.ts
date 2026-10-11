@@ -250,6 +250,10 @@ describe('review_claim', () => {
 		});
 		const afterVerdict = await ask('x00002');
 		const third = await ask('x00003');
+		const afterJudging = await ask(
+			'x00001',
+			'handing it to another reviewer',
+		);
 		await ask('x00002', 'could not run its gate here');
 		const afterRelease = await ask('x00003');
 
@@ -259,6 +263,11 @@ describe('review_claim', () => {
 		);
 		expect(afterVerdict.structuredContent).toMatchObject({ claimed: true });
 		expect(third.isError).toBe(true);
+		// What it wrote a verdict on is published, not given back.
+		expect(afterJudging.isError).toBe(true);
+		expect(JSON.stringify(afterJudging.structuredContent)).toContain(
+			'has recorded a verdict on x00001',
+		);
 		expect(afterRelease.structuredContent).toMatchObject({ claimed: true });
 	});
 });

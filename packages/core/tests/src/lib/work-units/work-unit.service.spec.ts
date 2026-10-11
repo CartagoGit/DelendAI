@@ -31,6 +31,17 @@ import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 const roots: string[] = [];
 const command = { run: runWorkUnit };
 
+/** A verdict written in a review unit: the change that makes it a pack. */
+const recordVerdict = (unit: string, name: string): void => {
+	const dir = join(unit, 'docs/delendai/proposals/review');
+	mkdirSync(dir, { recursive: true });
+	writeFileSync(join(dir, `${name}.md`), 'review-log: approved\n');
+	execFileSync('git', ['add', '-A'], { cwd: unit });
+	execFileSync('git', ['commit', '-q', '-m', `docs(review): ${name}`], {
+		cwd: unit,
+	});
+};
+
 const PINNED = {
 	development: {
 		profile: 'shared-checkout-pr',
@@ -767,6 +778,7 @@ describe('delendai work (x00553)', () => {
 				{ cwd: unit },
 			);
 		}
+		recordVerdict(unit, 'x00001-verdict');
 		const published = await command.run(
 			[
 				'publish',
@@ -891,6 +903,7 @@ describe('delendai work (x00553)', () => {
 			],
 			{ cwd: join(root, 'batch-wt') },
 		);
+		recordVerdict(join(root, 'batch-wt'), 'x00001-verdict');
 		// Neither the kind nor the topic it was entered with.
 		const published = await command.run(
 			[
@@ -980,13 +993,7 @@ describe('delendai work (x00553)', () => {
 		expect(new Set(units.map((unit) => unit.session)).size).toBe(3);
 		const second = units[1];
 		if (second === undefined) throw new Error('no second unit');
-		execFileSync(
-			'git',
-			['commit', '-q', '--allow-empty', '-m', 'review b'],
-			{
-				cwd: second.path,
-			},
-		);
+		recordVerdict(second.path, 'review-b');
 		const publish = (extra: readonly string[]) =>
 			command.run(
 				[
@@ -1078,13 +1085,7 @@ describe('delendai work (x00553)', () => {
 				path: string;
 				session: string;
 			};
-			execFileSync(
-				'git',
-				['commit', '-q', '--allow-empty', '-m', `review ${topic}`],
-				{
-					cwd: entered.path,
-				},
-			);
+			recordVerdict(entered.path, `review-${topic}`);
 			units.push(entered);
 		}
 		const [first, second] = units;
