@@ -2,7 +2,7 @@
 id: f00536
 title: "Context frugality as an enforced agent property, and automatic compaction of tool output"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-10
@@ -11,14 +11,15 @@ tags:
     - agent-policy
     - tool-output
     - compaction
-last-transition-id: 6f7c2fac-8643-4b03-985d-85a9d83d0d01
-last-correlation-id: 6f7c2fac-8643-4b03-985d-85a9d83d0d01
-last-transition-from: in-progress
+last-transition-id: c65634db-9cc4-412d-8db3-f63795e5e526
+last-correlation-id: c65634db-9cc4-412d-8db3-f63795e5e526
+last-transition-from: review
 shipped-in:
   - "03289da1e5f3"
   - "55eae8993498"
   - "c6b96a4d0c19"
   - "7fbff952e89c"
+last-transition-at: 2026-10-11T02:51:36.814Z
 ---
 
 # f00536 — Context frugality as an enforced agent property, and automatic compaction of tool output
