@@ -184,6 +184,23 @@ export const commitExists = (
 	return (reachable ?? reachableCommits(git)).has(full);
 };
 
+/**
+ * True when `hash` names an object that is not a commit: a tree or a
+ * blob a document quotes ("produced tree `1a19f55e9`"). It is not a
+ * citation of a commit, and calling it an orphan one failed the closing
+ * of a proposal over a sentence that was true.
+ */
+export const namesAnotherObject = (
+	hash: string,
+	git: (args: readonly string[]) => {
+		stdout: string;
+		status: number;
+	} = defaultGit,
+): boolean => {
+	const kind = git(['cat-file', '-t', hash]);
+	return kind.status === 0 && ['tree', 'blob'].includes(kind.stdout.trim());
+};
+
 const defaultGit = (
 	args: readonly string[],
 ): { stdout: string; status: number } => {
@@ -221,6 +238,7 @@ export const findOrphanHashes = async (
 			// reported as 3 line-numbered entries, not 1 entry + 1 line.
 			for (const { hash, line } of cited) {
 				checked += 1;
+				if (namesAnotherObject(hash, git)) continue;
 				if (!commitExists(hash, git, reachable)) {
 					orphans.push({
 						hash,

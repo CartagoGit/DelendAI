@@ -58,6 +58,9 @@ const PROPOSAL_KINDS = [
 	'resumes',
 ];
 
+/** The statuses a slice of a closed proposal may be in. */
+const CLOSED_SLICE_STATUSES: ReadonlySet<string> = new Set(['done', 'retired']);
+
 const frontmatter = (content: string): Record<string, string> => {
 	const match = /^---\n([\s\S]+?)\n---/.exec(content);
 	if (match === null) return {};
@@ -150,7 +153,9 @@ export const findIssues = (root: string): readonly IIssue[] => {
 			if (status !== 'done') continue;
 			const slices = collectSliceStatuses(content);
 			for (const slice of slices) {
-				if (slice.status !== 'done') {
+				// A retired slice is finished too: it was decided against, with
+				// its reason in the document, and nothing is left to do on it.
+				if (!CLOSED_SLICE_STATUSES.has(slice.status)) {
 					out.push({
 						proposal: f,
 						kind: 'pending-slice',
