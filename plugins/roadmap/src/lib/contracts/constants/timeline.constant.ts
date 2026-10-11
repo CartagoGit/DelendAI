@@ -18,3 +18,6 @@ export const MARKDOWN_TIMELINE_LINE_PREFIX = '- ';
 
 /** The first sequence number a timeline hands out. */
 export const TIMELINE_FIRST_SEQ = 1;
+
+/** What the timeline file is called, beside the roadmap file, when the project names none. */
+export const TIMELINE_SUFFIX = '.timeline.md';

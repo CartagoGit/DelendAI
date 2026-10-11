@@ -167,6 +167,7 @@ docs as the delivery and verification surfaces around that core.
 | `plugins/quality-policy` | `@delendai/quality-policy` | Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands. |
 | `plugins/refactor` | `@delendai/refactor` | Refactor primitives (symbols, definition, references, rename, codemod). |
 | `plugins/remote-provider-core` | `@delendai/remote-provider-core` | Shared remote-provider foundation: validated config, injectable HTTP, normalized errors. |
+| `plugins/roadmap` | `@delendai/roadmap` | Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply. |
 | `plugins/rules` | `@delendai/rules` | Lint/type rules engine (frameworks, dogmas, presets). |
 | `plugins/search` | `@delendai/search` | Code search (semantic + symbol + references). |
 | `plugins/security` | `@delendai/security` | Security audit (CVEs, SAST, secrets, env). |

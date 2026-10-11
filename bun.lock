@@ -210,23 +210,6 @@
         "vitest": "4.1.11",
       },
     },
-    "packages/roadmap": {
-      "name": "@delendai/roadmap",
-      "version": "0.1.0",
-      "dependencies": {
-        "@delendai/changelog": "workspace:*",
-        "@delendai/core": "workspace:*",
-        "@delendai/state": "workspace:*",
-        "yaml": "2.9.0",
-        "zod": "^4.4.3",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-        "fast-check": "3.23.2",
-        "typescript": "7.0.2",
-        "vitest": "4.1.11",
-      },
-    },
     "packages/roadmap-sqlite": {
       "name": "@delendai/roadmap-sqlite",
       "version": "0.1.0",
@@ -1189,6 +1172,23 @@
         "@delendai/core": "^0.1.1",
       },
     },
+    "plugins/roadmap": {
+      "name": "@delendai/roadmap",
+      "version": "0.1.0",
+      "dependencies": {
+        "@delendai/changelog": "workspace:*",
+        "@delendai/core": "workspace:*",
+        "@delendai/state": "workspace:*",
+        "yaml": "2.9.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "fast-check": "3.23.2",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+      },
+    },
     "plugins/rules": {
       "name": "@delendai/rules",
       "version": "0.1.1",
@@ -1719,7 +1719,7 @@
 
     "@delendai/remote-provider-core": ["@delendai/remote-provider-core@workspace:plugins/remote-provider-core"],
 
-    "@delendai/roadmap": ["@delendai/roadmap@workspace:packages/roadmap"],
+    "@delendai/roadmap": ["@delendai/roadmap@workspace:plugins/roadmap"],
 
     "@delendai/roadmap-sqlite": ["@delendai/roadmap-sqlite@workspace:packages/roadmap-sqlite"],
 

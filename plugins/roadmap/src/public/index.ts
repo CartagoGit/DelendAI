@@ -61,7 +61,10 @@ export { createRoadmapProducer } from '../lib/state/roadmap.producer.service';
 export { projectRoadmap } from '../lib/state/roadmap.projection.service';
 export * from '../lib/contracts/constants/read-model.constant';
 export type * from '../lib/contracts/interfaces/read-model.interface';
-export { horizonDelta } from '../lib/read-model/roadmap-delta.service';
+export {
+	horizonDelta,
+	isPublished,
+} from '../lib/read-model/roadmap-delta.service';
 export { horizonReadiness } from '../lib/read-model/roadmap-readiness.service';
 export {
 	entryDetail,
@@ -71,3 +74,10 @@ export {
 	pendingTimelineDrafts,
 	syncReport,
 } from '../lib/read-model/roadmap-sync.service';
+export type * from '../lib/contracts/interfaces/roadmap-workspace.interface';
+export { roadmapOptionsSchema } from '../lib/contracts/schemas/roadmap-options.schema';
+export { gatherGateEvidence } from '../lib/workspace/gate-evidence.service';
+export {
+	openRoadmapWorkspace,
+	timelineBeside,
+} from '../lib/workspace/roadmap-workspace.service';

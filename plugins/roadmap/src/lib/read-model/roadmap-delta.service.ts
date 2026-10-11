@@ -63,3 +63,36 @@ export const horizonDelta = (
 		nextAction: nextActionOf(horizon, open, published, readiness),
 	};
 };
+
+/** The leading numeric parts of a version, or nothing when it has none. */
+const numericParts = (version: string): readonly number[] | undefined => {
+	const parts = version.replace(/^v/u, '').split(/[.+-]/u).slice(0, 3);
+	const numbers = parts.map(Number);
+	return parts.length > 0 && numbers.every((part) => Number.isInteger(part))
+		? numbers
+		: undefined;
+};
+
+/**
+ * Whether `horizonVersion` is out, given the version the project is at:
+ * it is when the project's version has reached it. `null` when either
+ * cannot be read as numbers — nobody can say, and that is not "no".
+ */
+export const isPublished = (
+	horizonVersion: string,
+	currentVersion: string | undefined,
+): boolean | null => {
+	if (currentVersion === undefined) return null;
+	const wanted = numericParts(horizonVersion);
+	const have = numericParts(currentVersion);
+	if (wanted === undefined || have === undefined) return null;
+	for (
+		let index = 0;
+		index < Math.max(wanted.length, have.length);
+		index += 1
+	) {
+		const difference = (have[index] ?? 0) - (wanted[index] ?? 0);
+		if (difference !== 0) return difference > 0;
+	}
+	return true;
+};

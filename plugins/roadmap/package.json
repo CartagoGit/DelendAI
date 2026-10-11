@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"type": "module",
 	"private": true,
-	"description": "Versioned roadmap: entries with a kind and gates, a bump intent derived through the changelog plugin, a git-tracked authority file and an append-only timeline.",
+	"description": "Versioned roadmap: what each target version promises, what of it is delivered, whether it can be promoted, and the bump its promises imply (asked of the changelog plugin). A git-tracked authority file, an append-only timeline, read tools plus init and close. Load with `delendai --plugins=roadmap`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -34,7 +34,7 @@
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
-		"build": "bun ../../tools/scripts/compile/build.script.ts packages/roadmap"
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/roadmap"
 	},
 	"dependencies": {
 		"@delendai/changelog": "workspace:*",
