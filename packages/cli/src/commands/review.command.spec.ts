@@ -297,10 +297,15 @@ describe('delendai review', () => {
 			worktree: string;
 			session: string;
 			proposal: string;
+			read: string;
 			slices: { slice: string; approve: string; changes: string }[];
 		};
 		expect(result.code).toBe(0);
 		expect(answer.proposal).toBe('x00002');
+		// Where to run, and how much: the gate, in the reviewer's own worktree.
+		expect(answer.read).toContain(
+			`Run its gate from your worktree (${answer.worktree}) and nothing wider`,
+		);
 		expect(claimsIn(answer.worktree)).toBe('x00002');
 		expect(git(answer.worktree, 'branch', '--show-current')).toMatch(
 			/^delendai\/wip\/minimax-m3\/review\/batch-all-g1\//u,
