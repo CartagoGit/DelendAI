@@ -216,12 +216,14 @@ The gap this closes: nothing emitted work events at runtime, so any status view 
 
 ### S2 — Runtime events: proposal transitions and review submissions
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/proposal-work-events.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-work-events.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
 - **Gate**: `npx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-work-events.spec.ts plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
 - A successful `proposal_transition` journals `proposal_transition` (work item `<id>/all`); a review `submit` journals `slice_submitted`. Both go by appending to the same journal file the core helper writes (core's public surface is at its budget, so no new export); core names no proposals vocabulary.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 3df8e79e1462, validate exit 0, tests 12/12 — S1: 12 tests (core journal 4 + state-telemetry events 8), exit 0. Delivery verified in the code: unit enter journals slice_claimed (work-event-journal.service.ts:74) and a successful publish journals slice_submitted (work-unit-publish.service.ts:324); drainWorkEventJournal validates the closed kinds with isWorkEventKind before appending to any sink that has append. The append helper swallows its own failures (catch at :58) so observing work can never fail it, pinned by specs 'appends one line in the shape the event bus stores', 'hashes the same facts to the same value whatever their order' and 'keeps earlier lines when another is appended'. Published code appends JSON lines rather than importing the private telemetry package, so core stays inside its public-surface budget and names no proposals vocabulary. S2: 2 files / 5 tests, exit 0. proposal-work-events.ts writes kind proposal_transition (:68) for a successful proposal_transition and slice_submitted (:82) for a review submit, both appended to the same journal file core writes. S3: 2 tests, exit 0. drainTelemetryJournals reads the work event journal into the bus via drainWorkEventJournal (:28) and the transition-duration journal into the ETA history via drainTransitionDurationJournal (:32); spec 'feeds the event bus and the duration history from their journals' plus 'drains nothing when no process has journalled yet'. bun run telemetry:drain exists in package.json and is the on-demand caller. These three slices declare no acceptance bullets of their own, so the criteria arrays are empty and the judgment rests on the delivery description each slice states, which I checked against the code rather than against prose.
 
 ### S3 — Journals drained into the stores, on demand
 
