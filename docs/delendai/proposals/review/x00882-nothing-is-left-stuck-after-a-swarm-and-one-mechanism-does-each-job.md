@@ -173,7 +173,7 @@ Not found. Four commands of the orchestrator ended with exit code 144 (128 + sig
   - `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/review-verdict-lifecycle.interface.ts`
   - `plugins/proposals/tests/src/lib/tools/review-verdict-lifecycle.spec.ts`
-  - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-review-sent-back.spec.ts`
 - **Gate**: unit
 - shipped-in: `3ce02bdbf85b`
 - acceptance:
