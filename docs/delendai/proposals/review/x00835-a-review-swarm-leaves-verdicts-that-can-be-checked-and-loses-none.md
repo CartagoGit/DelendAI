@@ -25,6 +25,7 @@ shipped-in:
   - "17d1fa53353c7b4de9ad67392f75e198b301c26d"
   - "657da3ff96183e12acf10efe5cef4ee54b54273f"
   - "345f73884420995774374681a50ff8ea6d827777"
+  - "5c102c170928cd0a35890fb33449cff0305dd296"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -1023,13 +1024,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - The others are independent.
 
 ### S34 — The queue offers a reviewer no work its own model delivered
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-queue-reviewer.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`, `plugins/proposals/tests/src/lib/services/review-queue-reviewer.service.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/services/review-queue-reviewer.service.spec.ts`
 - Found 2026-10-05: `review next --agent=claude-opus-5-5` claimed `r00040`, every slice of which that same model had delivered, in a project whose `reviewIndependence` is `model`. The approval would have been refused as a self-approval after the reading was done, and the claim kept other reviewers out meanwhile.
 - `review_queue` now answers for the agent that asks. Under model independence, a slice waiting for a verdict that the asker's model delivered is `needs-another-reviewer`, with a sentence that says so, and it is not counted in `needsVerdict`. `review next` reads the same field, so it skips those proposals with no change of its own. Where another instance of the model may review, or the delivery is unrecorded, nothing changes: the approval decides.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 5c102c170928, validate exit 0, tests 4/4 — Delivered by 5c102c1709 (PR #795 merge 7fa7e95db, on develop). The queue no longer offers a reviewer work its own model delivered: review-queue-reviewer.service.ts filters slices by the asker's model identity and the schema/interface carry the field. Verified today in this worktree, agent env scrubbed: the slice's declared gate review-queue-reviewer.service.spec.ts green 4/4 exit 0; every declared file exists; the delivered commit cites x00835 S34 in its subject. No out-of-scope changes beyond the proposal's own documentation lines in the same commit. Implementer claude-opus-5-5 (recorded in the wip branch/PR); I am a different model, independence holds.
 
 ### S35 — A reviewer's queue is read from its own unit
 - **Status**: review
