@@ -2,7 +2,7 @@
 id: f00548
 title: "Own the style surface: who may define a selector, and what breaks when it changes"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,6 +11,10 @@ tags:
     - scss
     - impact
     - design-tokens
+last-transition-id: 5da15fe6-0174-4d46-9e64-79460a8929ee
+last-correlation-id: 5da15fe6-0174-4d46-9e64-79460a8929ee
+last-transition-from: ready
+last-transition-at: 2026-10-11T22:03:54.330Z
 ---
 
 # f00548 — Own the style surface: who may define a selector, and what breaks when it changes
