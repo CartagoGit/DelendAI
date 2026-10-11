@@ -23,6 +23,7 @@ shipped-in:
   - "9c7886ed7ea613f3a0322b477e49213e5f06282c"
   - "b65c20a21e1074d8952813f57866b9236aaac99e"
   - "6995db016bba77a3093de329db0201d7a7dd1636"
+  - "030cdc1a3857da4062cfe1d5141f0538b9d70ff5"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -392,7 +393,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: server-log keeps the server's own log in the workspace, which is what makes S19's once-only rule checkable at all. Pinned by server-log.spec.
 
 ### S26 — A queue whose candidates are all behind still moves
-- **Status**: review
+- **Status**: done
 - shipped-in: `b63130d64`
 - **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`, `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`
 - **Gate**: type
@@ -401,8 +402,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "The hydration log says when each pass ran and is set aside before it outgrows 2 MB."
 - Found 2026-10-07: for three hours nothing merged. The queue arms only candidates that land as they are; all six were behind, so it armed none and reported "refresh it from the machine that owns it".
 - Root cause, read from the hydration log on 2026-10-07: the cadence existed (the host server runs the pass every ten minutes), but every pass failed on the same candidate: the flat forward sync `delendai/pr/forward-sync-<sha>` could not be brought forward, because the pre-push guard refused its shape, 184 times. The candidate never moved and the queue waited on it. That is fixed at its source by x00879 S11 (the forward sync's branch is a canonical publication), not by a second cadence. What this slice adds is what hid it: the log grew to 17 MB and 130,000 lines without a date, so the same refusal repeated for hours unread. Each pass now writes a dated header, and the log is set aside as `.1` past 2 MB.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 030cdc1a3857, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: hydrate-candidates-after-merge.script.ts keeps a queue moving when all its candidates are behind — the finding that 'a queue whose candidates are all behind still moves'. Pinned by its spec.
 
 ### S27 — A stale generated catalog does not stop its own regeneration
 - **Status**: review
