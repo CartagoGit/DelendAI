@@ -17,6 +17,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-09T21:10:50.048Z
 shipped-in:
   - "7b07571790b18759adbefc1eec61d0db2d1797db"
+  - "7cf206f4d2f8"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -156,7 +157,7 @@ and the interface file respectively, per `lint:types-in-contracts`
 
 ### S3 — Resolve project policy against framework force
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/src/lib/policy/resolve-policy.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/policy.interface.ts`, `plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts`]
 
 One pure function decides the effective answer from an ordered set of
@@ -168,8 +169,10 @@ recommendation; it does not win over `removed`, which resolves to
 
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts`
 - shipped-in: `7cf206f4d2f8`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 7cf206f4d2f8, validate exit 0, tests 71/71 — Delivered by 7cf206f4d (PR #714 merge d7ccbd8b39). resolve-policy.helper.ts resolves the project policy against the framework force. Verified today: resolve-policy.spec.ts is part of the green 71/71 plugin battery. Different model; independence holds.
 
 ### S4 — Detected convention as an input, with its confidence
 
