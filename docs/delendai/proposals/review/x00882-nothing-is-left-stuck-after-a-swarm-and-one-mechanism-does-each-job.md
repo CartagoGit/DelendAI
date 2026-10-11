@@ -184,6 +184,19 @@ Found after the rest: f00757 was in progress with its four slices resubmitted da
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S8 — `proposals status` counts every status, at zero when it is empty
+
+- **Status**: review
+- **Files**:
+  - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
+  - `plugins/proposals/tests/src/lib/tools/compact-status.spec.ts`
+- **Gate**: unit
+- shipped-in: `fa4f10d983f2`
+- acceptance:
+  - `byStatus` carries every status of the workflow; one no proposal is in reads `0`.
+
+Seen by the owner the moment the last proposal left `in-progress`: the status vanished from the answer.
+
 ## acceptance
 
 - With no agent at work, `proposals status` shows in review only proposals a reviewer can give a verdict on, and the review queue offers each of them.
