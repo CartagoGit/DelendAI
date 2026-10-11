@@ -45,7 +45,7 @@ import {
 	readPeerReviewLog,
 	type IPeerReviewLogEntry,
 } from '../shared/peer-review-log';
-import { parseProposalSlicePlan } from '../swarm/proposal-slice-plan';
+import { slicesViewOf } from '../services/proposal-slices-view.service';
 
 export interface IProposalGetToolOptions {
 	readonly namespacePrefix: string;
@@ -141,14 +141,7 @@ const buildCompactSummary = (
 const buildSlices = (
 	loaded: ILoadedProposalDocument,
 ): Extract<IProposalReadOutput, { view: 'slices' }>['slices'] =>
-	(
-		parseProposalSlicePlan(loaded.doc.frontmatter.id, loaded.raw)?.slices ??
-		[]
-	).map((slice) => ({
-		id: slice.sliceId,
-		status: slice.status,
-		title: slice.title,
-	}));
+	slicesViewOf(loaded.doc.frontmatter.id, loaded.raw);
 
 const buildDetailProposal = (
 	loaded: ILoadedProposalDocument,

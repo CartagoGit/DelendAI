@@ -19,6 +19,9 @@ interface ITrendSample {
 	readonly value?: number;
 }
 
+/** Where the coordination tax is measured. */
+const COORDINATION_SOURCE = 'core/workflow-kpis';
+
 const asRounded = (value: number): number => Number(value.toFixed(6));
 
 const isReadResult = (
@@ -218,6 +221,19 @@ export const buildKpiTrendReport = (
 						entry.economics.financialSavingsUsd.note,
 					),
 				),
+				options,
+			),
+			coordinationTax: evaluateTrend(
+				'workflow.coordination.tax',
+				metricSamples(entries, (entry) => {
+					const tax = entry.snapshot.workflow?.coordination?.tax;
+					return toSample(
+						entry.snapshot.generatedAt,
+						tax === undefined ? 'unavailable' : 'measured',
+						COORDINATION_SOURCE,
+						tax,
+					);
+				}),
 				options,
 			),
 		},
