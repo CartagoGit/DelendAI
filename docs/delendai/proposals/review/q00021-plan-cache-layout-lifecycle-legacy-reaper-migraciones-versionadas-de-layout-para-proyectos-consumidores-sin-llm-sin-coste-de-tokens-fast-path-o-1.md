@@ -46,6 +46,8 @@ last-transition-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
 last-correlation-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
 last-transition-from: in-progress
 last-transition-at: 2026-10-10T23:53:48.591Z
+shipped-in:
+  - "84217680c5c8ca0d905b833ca684ec55cd2e6a1d"
 ---
 
 # q00021 — Plan — Cache Layout Lifecycle & Legacy Reaper
@@ -589,7 +591,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-implementer: claude-sonnet-5-5
 
 ### S1 — Contratos puros (entregable: `f00526`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
@@ -604,8 +606,10 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The context carries no `lifecycleState`: only the bootstrap reads and writes the epoch; a migration that could write it could skip its own successors.
   - `migrateStore` and `importStoreToSqlite` are not in `ICacheLayoutHelpers`. No store moves to SQLite yet (epochs 6-8 are future work of q00019/q00020), so they would be untested surface; they arrive with the first migration that needs them.
   - The manifest lists only artifacts present in the code today (`progress/` is q00020 and does not exist yet) and none that belong to the proposals domain: `lint:core-proposals-boundary` forbids core from naming that domain, so the proposal index, id counters and peer-review log are declared by the proposals plugin, not here. It lives in `contracts/constants/` because the file-conventions lint requires exported constants there.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 34/34 — All 4 declared files exist on develop (judged at the superseding delivery 84217680c5c8, which only re-names the same work; the slice ships in 8ed4c1b71 and the merge keeps it byte-identical). cache-layout-migration.helper.ts has zero fs imports (acceptance). Gate run: vitest --project core cache-layout-migration.helper.spec.ts = 34/34 passed on the current tree. Pure rules present: assertDroppable/resolveMigrationChain/validateManifest/findOwningArtifact; ICacheLayoutMigration reuses IMigration['id'] + IMigrationPlanStep without extends, as the correction records.
 
 ### S2 — Lifecycle state store (entregable: `f00527`)
 - **Status**: review
