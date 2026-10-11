@@ -134,7 +134,7 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
 
 ### S2 — `--offline`: marcar y saltar checks que requieren red
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `packages/cli/src/commands/groups/doctor.ts`
     - `packages/cli/src/contracts/constants/doctor-modes.constant.ts`
@@ -144,9 +144,11 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
     - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
 - Shipped: `--offline` skips the checks that need the network and reports each as `not-applicable` with a `skipped:` finding, never as passed. Premise note: no check in the pure registry opens a socket today (`network.check.ts` is already not-applicable), so no `requiresNetwork` property was needed there. The one network-bound section is the plugins/tools overview when `--remote` is set; it is skipped offline. `requiresNetwork` exists on deep checks, and the spec asserts a marked check is not run.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `66b124669ad9`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 236586bbf31c, validate exit 0, tests 49/49 — Gate declared by all three slices (npx vitest run --project @delendai/cli deep-checks.service.spec.ts commands/groups/doctor.spec.ts): 2 files / 49 tests passed, exit 0. Repo typecheck exit 0. All three acceptance points are pinned by assertions rather than by prose. --ci adds a structured `ci` block (doctor.ts:323) with the documented exit meanings. --offline reports a marked check as `not-applicable` with a `skipped:` finding rather than as passed, and the spec asserts that at the section level. --deep reports the error-reporting self-test as its own section and the spec injects a fake exec, recording every argv it was handed and asserting zero calls reach `gh`. The slice's premise notes are honest and I confirmed both: the command file is groups/doctor.ts with commands/doctor.ts left as a dead duplicate, and no check in the pure registry opens a socket today, which is why no `requiresNetwork` property was needed there.
 
 ### S3 — `--deep`: registro de checks caros + primer check (error-reporting self-test)
 
