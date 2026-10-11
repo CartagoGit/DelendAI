@@ -1385,14 +1385,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00512",
-				"title": "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-06"
-			},
-			{
 				"id": "f00542",
 				"title": "Delendai language-, IDE-, and OS-agnostic",
 				"track": "general",
@@ -1513,12 +1505,12 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "x00878",
-				"title": "A multi-model swarm is held to the workflow, whoever its agents are",
-				"track": "trust",
+				"id": "x00880",
+				"title": "What a review swarm of eleven agents got wrong, and what let it",
+				"track": "swarm",
 				"status": "in-progress",
 				"kind": "fix",
-				"date": "2026-10-06"
+				"date": "2026-10-11"
 			}
 		]
 	}
