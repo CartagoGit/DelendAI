@@ -620,6 +620,16 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'style-convention',
+			package: '@delendai/style-convention',
+			summary: 'The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.',
+			tags: ['styles', 'scss', 'design-tokens'],
+			permissions: ['filesystem-read'],
+			tokenBudgetBytes: 3500,
+			toolPermissions: { 'style_profile': ['filesystem-read'], 'style_impact': ['filesystem-read'], 'style_check': ['filesystem-read'] },
+		},
+		{
+			origin: 'first-party',
 			id: 'tech-debt',
 			package: '@delendai/tech-debt',
 			summary: 'Tech-debt scanner (TODO/FIXME/HACK inventory).',

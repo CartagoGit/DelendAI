@@ -1554,6 +1554,31 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		}
 	},
 	{
+		"id": "style-convention",
+		"package": "@delendai/style-convention",
+		"summary": "The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.",
+		"tags": [
+			"styles",
+			"scss",
+			"design-tokens"
+		],
+		"maturity": "experimental",
+		"visibility": "public",
+		"presets": [],
+		"capabilities": [
+			"styles",
+			"design-tokens"
+		],
+		"permissions": [
+			"filesystem-read"
+		],
+		"tokenBudget": {
+			"warning": 3900,
+			"hard": 4200,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
 		"id": "tech-debt",
 		"package": "@delendai/tech-debt",
 		"summary": "Tech-debt scanner (TODO/FIXME/HACK inventory).",

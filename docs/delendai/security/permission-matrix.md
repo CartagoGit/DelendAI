@@ -105,6 +105,9 @@
 | self-learning | public | * | filesystem-read, filesystem-write |
 | skills-pack | public | * | filesystem-read |
 | status-marker | public | * | filesystem-read |
+| style-convention | public | style_profile | filesystem-read |
+| style-convention | public | style_impact | filesystem-read |
+| style-convention | public | style_check | filesystem-read |
 | tech-debt | public | * | filesystem-read |
 | test-convention | public | * | filesystem-read |
 | test-policy | public | * | filesystem-read, filesystem-write |

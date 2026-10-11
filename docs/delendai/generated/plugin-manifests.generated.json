@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-10-07T18:32:00.282Z",
+	"generatedAt": "2026-10-11T21:56:29.563Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -2265,6 +2265,52 @@
 			]
 		},
 		{
+			"id": "style-convention",
+			"package": "@delendai/style-convention",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.",
+			"tags": [
+				"styles",
+				"scss",
+				"design-tokens"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"filesystem-read"
+			],
+			"toolPermissions": {
+				"style_profile": [
+					"filesystem-read"
+				],
+				"style_impact": [
+					"filesystem-read"
+				],
+				"style_check": [
+					"filesystem-read"
+				]
+			},
+			"presets": [],
+			"tokenBudget": {
+				"staticBytes": 3500,
+				"adaptiveActivationBytes": 1430,
+				"caps": {
+					"hard": 4200,
+					"warning": 3900
+				},
+				"measuredAt": "2026-10-11",
+				"source": "token-budget-real"
+			},
+			"dependencies": [
+				"@delendai/core",
+				"zod"
+			],
+			"capabilities": [
+				"styles",
+				"design-tokens"
+			]
+		},
+		{
 			"id": "tech-debt",
 			"package": "@delendai/tech-debt",
 			"version": "0.1.1",
@@ -3649,6 +3695,32 @@
 						}
 					]
 				}
+			}
+		},
+		{
+			"origin": "first-party",
+			"id": "style-convention",
+			"package": "@delendai/style-convention",
+			"summary": "The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.",
+			"tags": [
+				"styles",
+				"scss",
+				"design-tokens"
+			],
+			"permissions": [
+				"filesystem-read"
+			],
+			"tokenBudgetBytes": 3500,
+			"toolPermissions": {
+				"style_profile": [
+					"filesystem-read"
+				],
+				"style_impact": [
+					"filesystem-read"
+				],
+				"style_check": [
+					"filesystem-read"
+				]
 			}
 		},
 		{
@@ -5291,6 +5363,31 @@
 			}
 		},
 		{
+			"id": "style-convention",
+			"package": "@delendai/style-convention",
+			"summary": "The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.",
+			"tags": [
+				"styles",
+				"scss",
+				"design-tokens"
+			],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": [],
+			"capabilities": [
+				"styles",
+				"design-tokens"
+			],
+			"permissions": [
+				"filesystem-read"
+			],
+			"tokenBudget": {
+				"warning": 3900,
+				"hard": 4200,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
 			"id": "tech-debt",
 			"package": "@delendai/tech-debt",
 			"summary": "Tech-debt scanner (TODO/FIXME/HACK inventory).",
@@ -5757,6 +5854,12 @@
 			"id": "status-marker",
 			"warning": 2700,
 			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
+			"id": "style-convention",
+			"warning": 3900,
+			"hard": 4200,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -6420,6 +6523,23 @@
 			"permissions": [
 				"filesystem-read"
 			]
+		},
+		{
+			"id": "style-convention",
+			"permissions": [
+				"filesystem-read"
+			],
+			"toolPermissions": {
+				"style_profile": [
+					"filesystem-read"
+				],
+				"style_impact": [
+					"filesystem-read"
+				],
+				"style_check": [
+					"filesystem-read"
+				]
+			}
 		},
 		{
 			"id": "tech-debt",
@@ -9854,6 +9974,69 @@
 		},
 		{
 			"pluginId": "status-marker",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "dogfood",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
