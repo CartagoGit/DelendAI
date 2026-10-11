@@ -28,6 +28,7 @@ shipped-in:
   - "feb34020cf8fe3c34d518d486d176fa75c58e75b"
   - "cda35c0a1811ad72655b2595554726a7da0cf9b0"
   - "5ca6586a7230b91298e062be4d3c9b1c1b937ea2"
+  - "32aeee8d75229edfba38c08f2d9f8451eda2465b"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -539,15 +540,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 732f19602ccd, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: promotion-alerts.script.ts keeps a promotion from carrying an open code-scanning alert — the finding that a promotion landed with an advisory open. Pinned by its spec.
 
 ### S37 — A unit kept for its proposal follows the integration branch
-- **Status**: review
+- **Status**: done
 - shipped-in: `b4da637b8`
 - **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work reap --apply`, which already runs after each merge, fast-forwards every unit of the clone that holds no commit of its own and no uncommitted change to the integration branch; without `--apply` it reports which would move; a unit holding work is left to its agent."
 - Found 2026-10-10: a proposal in progress keeps its unit after each publication, for its next slice. Only `work enter` brought such a unit forward, so every merge left it behind and `work doctor` reported it under `units-hold-work` as broken: two units, each kept on purpose, each red for a merge it had no part in.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 32aeee8d7522, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: kept-unit-hydration.service makes a unit kept for its proposal follow the integration branch instead of going stale against it. Pinned by its spec.
 
 ### S38 — The lockfile audit is as strict as the forge's dependency alerts
 - **Status**: review
