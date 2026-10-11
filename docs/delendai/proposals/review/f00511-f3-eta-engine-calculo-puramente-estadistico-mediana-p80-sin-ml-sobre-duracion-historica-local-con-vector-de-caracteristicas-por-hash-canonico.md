@@ -8,6 +8,7 @@ track: trust
 date: 2026-09-06
 shipped-in:
   - "86bd19eb0"
+  - "0249c4a72dd2"
 parent-plan: q00020
 depends-on:
     - f00510
@@ -54,8 +55,10 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Dos propuestas distintas con los mismos 6 campos producen el mismo hash; cambiar 1 campo cambia el hash."
   - "`complexity_proxy` se calcula como `slice_count × 1.2 + affected_packages × 2.1 + public_api_changes × 3.2 + test_count × 0.7 + loc_changed × 0.0001`, redondeado a 2 decimales."
   - "Test de estabilidad: para 100 propuestas sintéticas con vectores aleatorios, el hash es único y el cálculo es independiente del orden de los campos del input."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 0249c4a72dd2, validate exit 0, tests 128/128 — Gate declared by S2 (npx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts): 1 file / 8 tests passed, exit 0. The S4 gate (npx vitest run --root packages/state-telemetry) covers S1 and S3 too: 23 files / 128 tests passed, exit 0. Repo typecheck exit 0. Every criterion of S1 and S3 is pinned by a named assertion rather than by prose. The weight table is literally the formula the acceptance states; the hash stability and 100-vector uniqueness are separate specs; the p80 is a quantile with R type-7 interpolation, not a mean; the sample-size boundary is pinned on both sides (fallback at 4, no fallback at 5); and the <=35% median relative error is asserted directly. eta-engine.spec.ts also asserts computeEta never reaches the network or a model, which is the purity the fifth criterion asks for. Two criteria of S2 are met in a corrected shape that the slice itself documents and that I judged sound: the triple is an index rather than the primary key (many samples per key are the point of the table — the engine takes a median and a p80 over them), and the two sides meet through a journal file rather than a direct import because @delendai/proposals is published while @delendai/state-telemetry is private. Neither correction weakens the acceptance: the lookup is indexed and the 5% median guard is exported and tested on both branches.
 
 ### S2 — `duration-history.ts` — tabla `duration_history` (feature_vector_hash, actor_profile, task_kind, duration_ms, outcome) + insert desde `proposal_transition → done`
 - **Status**: review
