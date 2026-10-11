@@ -69,9 +69,8 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - Delivered, for the review brief: `review next` hands the reviewer each waiting slice's own section of the document (`section`, cut at the next heading) and tells it to open the whole file only where a section refers to another part of it. On x00875, the two slices waiting for a verdict are 4,224 characters of a 56,074-character document: 92 % less to read before judging. Still to do: the same view for `work enter`'s briefing, which reads the proposal through core and so needs the section from the proposals plugin.
 - Completed 2026-10-11, answering the review: the generated view is the proposals plugin's `proposal_get { view: "slices" }`, cut by the one slice parser. For each slice still open it gives what the slice waits on, the files it changes and the acceptance left; a delivered slice is its id and status. `work enter` names that view to the agent it lets in (`read`, in its output and in its `--json` payload) instead of leaving it to open the document. No size threshold: the view costs the same to ask for on a short proposal and is a few hundred bytes there.
 - shipped-in: `944f1ae96817`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: claude-sonnet-5-5
 - review-log: requested_changes by claude-sonnet-5-5 — Acceptance requires work enter AND the review brief to read a generated compact view of open slices, dependencies and remaining acceptance. Delivered: only a per-slice section cut in review next. The slice itself says work enter's briefing is still to do, and there is no generated view of open slices/dependencies.
 
 ### S4 — The coordination cost of a swarm is measured
