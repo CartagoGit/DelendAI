@@ -2,7 +2,7 @@
 id: f00547
 title: "Resolve what the installed framework version allows, recommends and forbids before an agent writes code"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,10 +11,16 @@ tags:
     - frameworks
     - policy
     - tokens
-last-transition-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
-last-correlation-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
-last-transition-from: in-progress
-last-transition-at: 2026-10-09T21:10:50.048Z
+last-transition-id: 93966f78-0a69-404f-9d2e-6bdc9ef5906c
+last-correlation-id: 93966f78-0a69-404f-9d2e-6bdc9ef5906c
+last-transition-from: review
+last-transition-at: 2026-10-11T05:30:48.225Z
+shipped-in:
+  - "97ed3389c329"
+  - "7b07571790b18759adbefc1eec61d0db2d1797"
+  - "7cf206f4d2f8"
+  - "30680e32ef2b"
+  - "48754bc9a7646463f097c21b1cbaf6dfee9f81"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -73,7 +79,7 @@ This is infrastructure. f00548 (style architecture) and f00549
 
 ### S1 — Resolve the installed version, not just the framework id
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/bootstrap/framework-version.ts`, `packages/core/tests/src/lib/bootstrap/framework-version.spec.ts`, `packages/core/src/lib/contracts/interfaces/framework-version.interface.ts`]
 
 Read the resolved version from the lockfile first and the manifest range
@@ -101,13 +107,15 @@ coverage on `framework-version.ts` is 100% statements/functions/lines,
 - shipped-in: `97ed3389c329`
 - Reconciled 2026-10-09 for the reviewer's request: the proposal-level acceptance that S1-S5 did not cover now has slices of its own, S6 (rules as project-owned packs seeding the version-keyed cache, offline), S7 (the detected convention as an input) and S8 (the no-network posture enforced by a spec). S1 itself is unchanged.
 - review-attribution: claude-opus-5-5 from commit d6ecc216abea names refs/heads/delendai/wip/claude-opus-5-5/review/batch-all-g2/verdicts (d6ecc216abeaace3f90fcb00209a0facab278d9c), opened by glm-5.3-flash
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
 - review-log: requested_changes by glm-5.3-flash — The proposal-level acceptance is broader than the delivered S1-S5 scope: it requires framework_guidance and framework_source behavior, cache invalidation, refusal of removed rules with version evidence, and network restriction to trusted adapter domains. The proposal has no slice for trusted-domain adapters/cache population and its S5 notes state the cache is not populated yet and convention is not wired into tools. S1-S5 tests pass, but these global criteria are not implemented or gated; reconcile scope/acceptance before approval.
+- review-log: approved by minimax-3.1 — verified at 97ed3389c329, validate exit 0, tests 13/13 — Delivered by 97ed3389c329 (PR #671, f00547-S1-g2). Gate run verbatim: env -u CLAUDECODE -u AI_AGENT bunx vitest run packages/core/tests/src/lib/bootstrap/framework-version.spec.ts -> 1 file / 13 tests passed, exit 0. Judge on what it delivered. The slice corrects its own Files list: the spec lives under packages/core/tests/src/lib/bootstrap/ mirroring src/, not colocated; the gate command was corrected to match. Independently verified the acceptance in code: the resolver dispatches on lockfile kind (bun.lock, package-lock v1/v3, yarn.lock, pnpm-lock.yaml), the same four kinds detect-stack-defaults.helper.ts lists, so a range with no lockfile cannot be guessed.
 
 ### S2 — A knowledge record with its evidence and its force
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/package.json`, `plugins/framework-knowledge/plugin.manifest.ts`, `plugins/framework-knowledge/tsconfig.json`, `plugins/framework-knowledge/vitest.config.ts`, `plugins/framework-knowledge/LICENSE`, `plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/src/public/index.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-record.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-force.constant.ts`, `plugins/framework-knowledge/src/lib/knowledge/knowledge-record.ts`, `plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts`, `plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts`, `bun.lock`]
 
 Every rule carries what it says, the framework version it applies to,
@@ -147,12 +155,14 @@ file contributes nothing to either side of the ratio). `FORCE_VALUES`
 and the interface file respectively, per `lint:types-in-contracts`
 (caught by `gates.sh`, not something the proposal anticipated).
 - shipped-in: `f75161fa8386`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 7b07571790b1, validate exit 0, tests 47/47 — Delivered by 7b07571790b18759adbefc1eec61d0db2d1797 (PR #778, f00547-S5-g1). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts (+ resolve-policy, detect-convention, knowledge-cache, guidance-convention, no-network) -> 6 files / 47 tests passed, exit 0. The record carries its evidence and its force; forceRank orders required above removed.
 
 ### S3 — Resolve project policy against framework force
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/src/lib/policy/resolve-policy.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/policy.interface.ts`, `plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts`]
 
 One pure function decides the effective answer from an ordered set of
@@ -164,12 +174,14 @@ recommendation; it does not win over `removed`, which resolves to
 
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts`
 - shipped-in: `7cf206f4d2f8`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 7cf206f4d2f8, validate exit 0, tests 47/47 — Delivered by 7cf206f4d2f8 (PR #714, f00547-S3-g1). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts, run inside the batch with the other five framework-knowledge specs -> 6 files / 47 tests passed, exit 0. Project policy resolves against framework force: the priority order is pinned by the spec rather than asserted by convention.
 
 ### S4 — Detected convention as an input, with its confidence
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/src/lib/detect/detect-convention.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/convention.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/convention.constant.ts`, `plugins/framework-knowledge/tests/src/lib/detect/detect-convention.spec.ts`]
 
 Count what the project actually does — 94 components with external
@@ -182,12 +194,14 @@ instead of its own habits.
   no convention: a weak habit fed to the resolver would outrank the
   framework's own recommendation.
 - shipped-in: `30680e32ef2b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 30680e32ef2b, validate exit 0, tests 47/47 — Delivered by 30680e32ef2b (PR #723, f00547-S4-g1). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/detect/detect-convention.spec.ts inside the six-file batch -> 6 files / 47 tests passed, exit 0. The detected convention is carried as an input with its confidence, and the version-keyed cache is what the invalidation is asserted against.
 
 ### S5 — The two tools, and a cache keyed by resolved version
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/plugin.manifest.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/source.tool.ts`, `plugins/framework-knowledge/src/lib/tools/knowledge-output.schema.ts`, `plugins/framework-knowledge/src/lib/cache/knowledge-cache.service.ts`, `plugins/framework-knowledge/src/lib/resolve/installed-framework.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-cache.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-cache.constant.ts`, `plugins/framework-knowledge/tests/src/lib/cache/knowledge-cache.spec.ts`, `plugins/framework-knowledge/tests/src/lib/tools/framework-tools.spec.ts`, `plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts`, `packages/core/src/public/index.ts`]
 
 `framework_guidance { topic }` returns the small resolved answer;
@@ -216,13 +230,15 @@ keeps summary and evidence apart so the common path stays cheap.
   because it needs a project scan that no tool owns.
 - The spec lives at `tests/src/lib/cache/`, the repo's real convention,
   not next to the source as the first draft of this slice said.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `f75161fa8386`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 47/47 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955, the reconciling merge). Gate run verbatim: npx vitest run .../knowledge-cache.spec.ts -> within a 6-file / 47-test batch, exit 0; then bun run lint:unregistered-tools -> exit 0, 228 builders all wired. The cache is keyed by resolved version, so a changed lockfile entry is a different key.
 
 ### S6 — Knowledge packs: rules as data, selected by version, seeding the cache offline
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/framework-knowledge/src/lib/packs/pack-loader.service.ts`, `plugins/framework-knowledge/src/lib/packs/version-range.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-pack.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-pack.constant.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/knowledge-output.schema.ts`, `plugins/framework-knowledge/tests/src/lib/packs/pack-loader.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/packs`
 
@@ -237,13 +253,15 @@ the lockfile entry the version was read from and the pack file the rules
 came from.
 
 Shipped: a pack is `.delendai/knowledge/<framework>.json`; `framework_guidance` selects the rules whose range (`*` or comparators such as `>=17 <19`) holds the resolved version, seeds the version-keyed cache from them when it holds nothing usable, and answers with a `provenance` naming the lockfile entry and the pack file. A malformed rule is reported by the loader, not dropped silently.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1e177dd3ce32`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 10/10 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/packs -> 1 file / 10 tests passed, exit 0. This slice is the one the earlier change request asked for: S5 left the cache with no producer, and a pack (.delendai/knowledge/<framework>.json) is now the producer. Verified the range logic is real (* or comparators such as >=17 <19) and that a malformed rule is reported by the loader rather than dropped silently.
 
 ### S7 — The detected convention is an input of the answer
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/detect/scan-convention.service.ts`, `plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`
 
@@ -252,13 +270,15 @@ tool counts it in the project (S4) and feeds the result, with its
 confidence, to the resolver, so a project that already does X is told X.
 
 Shipped: a pack rule may carry `pattern` (`directory`, `suffix`, `marker`); the tool counts it for the rules of the asked topic, bounded in depth and files, and feeds `detectConvention`'s result to the resolver. The answer carries the `convention` it weighed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1e177dd3ce32`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 47/47 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts inside the six-file batch -> 6 files / 47 tests passed, exit 0. Verified the slice does what it claims: a pack rule may carry a pattern (directory/suffix/marker); the tool counts it bounded in depth and files and feeds detectConvention's result to the resolver, and the answer carries the convention it weighed.
 
 ### S8 — Trusted-domain adapters stay out; the posture is enforced
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/framework-knowledge/tests/src/no-network.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/no-network.spec.ts`
 
@@ -269,9 +289,11 @@ no preset. Fetching rules from the web is not part of this proposal; a
 future adapter would be its own, allow-listed proposal.
 
 Shipped: the spec scans every source of the plugin for a network module import or a network call and fails on any.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1e177dd3ce32`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 47/47 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/no-network.spec.ts inside the six-file batch -> 6 files / 47 tests passed, exit 0. The acceptance is met by having no adapters at all, and the spec enforces that rather than trusting it. A future adapter with an allow-list is its own proposal, as the slice states.
 
 ## acceptance
 
