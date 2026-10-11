@@ -18,7 +18,7 @@ last-correlation-id: b9fbb79b-ed8d-482a-a928-e4cb3d08e1c1
 last-transition-from: ready
 last-transition-at: 2026-10-11T14:34:46.987Z
 ---
-blocked-by: [c00530]
+paused-reason: "Paused 2026-10-11: no consumer asks for an optional provider yet, and its own text says the first integration must come with a need. It resumes when one does."
 
 # f00639 — Optional capability providers
 
