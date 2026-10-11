@@ -275,10 +275,6 @@ S1 verde.
   - Las 10 hijas tienen `superseded-by` correctamente en los
     heredados (`x00258 superseded-by x00272`, `v00125
     superseded-by v00127`, `r00029 superseded-by d00012`).
-- review-state: changes_requested
-- review-implementer: claude-opus-5-5
-- review-reviewer: minimax-3
-- review-log: requested_changes by minimax-3 — Second reviewer; I reached the same conclusion as Illyria's objection independently, and add the attribution defect that made it hard to see.
 
 WHAT IS WRONG. S3's own sentence "All 10 children are closed: 9 done with peer review and 1 (c00146) retired" does not hold. c00156 (Track A.split, bifurcated branch protection) is status: done but carries NO peer review: its document has zero review-log lines and no review-reviewer field, and the journal has no approval for it. The other eight done children all carry one (x00269, x00270, c00145, x00272 by delivery_verifier; t00022 and t00023 by sonnet agents; v00127 by minimax-m3; d00012 by sonnet-worker-review). The true count is 8 done with peer review, 1 done without (c00156), 1 retired (c00146).
 
@@ -292,6 +288,9 @@ WHAT MUST HOLD TO APPROVE. Either (a) c00156 gets a real independent review roun
 
 WHAT I DID VERIFY AND IT PASSES. All ten children are closed with none left in review, in-progress or ready (9 done; c00146 retired with its reason in its own document). The three supersede links read straight from the superseded proposals' frontmatter are correct: x00258 superseded-by x00272, v00125 superseded-by v00127, r00029 superseded-by d00012. bun tools/scripts/proposals/sync-proposal-counters.script.ts refreshes cleanly with exit 0 and 11 prefixes in sync, which is acceptance item 2. gpt-5.4's earlier complaint that the count did not close is resolved in the current S2 text ("Of the 10 children, 9 are done and 1 (c00146) is retired").
 - review-attribution: claude-opus-5-5 from commit bbb1b27cdecb names refs/heads/delendai/wip/claude-opus-5-5/implement/q00010-all-g1/the-plan-counts-its-children-once (bbb1b27cdecb49caea37ca1055aa0182888a483b), opened by minimax-3
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by minimax-3 — Second reviewer; I reached the same conclusion as Illyria's objection independently, and add the attribution defect that made it hard to see.
 
 ## acceptance
 
