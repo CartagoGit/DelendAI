@@ -297,8 +297,10 @@ El State Engine nunca es ese camino.
   calcula un SHA-256 sobre la proyección canónica serializada de
   forma estable (orden de claves).
 - Delivered (reconciled 2026-10-07 against the tree): `packages/state/src/lib/{scope,fingerprint,producer,hash}.ts`, each with its spec; reworked in `50717a0d5` (x00501: typed locators, the fingerprint split, SHA-256).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 50717a0d5273, validate exit 0, tests 109/109 — Verified the state contracts cover scopes, producer inputs, canonical fingerprints and canonical hashing, with the resolved-input split and SHA-256 behavior exercised by the package test suite. Package tests passed 109/109.
 
 ### S3 — `IStateRegistry` + `InMemoryStateRegistry` (driver inicial)
 
