@@ -216,7 +216,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: close-approved-proposals.script.ts ends a retired close pass once its closes have landed, answering the finding that a closer's pull request sat beside a hand-made one (#848 vs the hand-moved five). Pinned by close-approved-proposals.script.spec.
 
 ### S13 — A publication its author left in conflict is adopted or retired, not left
-- **Status**: review
+- **Status**: done
 - shipped-in: `aba4404da`
 - **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Gate**: type
@@ -224,8 +224,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A publication that does not merge trivially and whose author's unit has been abandoned (past the lease windows) is reported once as adoptable, with the exact `work enter` + merge + `work retire --unowned` steps, instead of `its author decides` on every pass; after a further window with nobody adopting it, its pull request is closed with that reason, and S10 retires it."
 - Found 2026-10-06: after the swarm stopped, #856, #857 and #858 sat on the forge, two of them conflicted, each reported on every hydration as "its author decides" by an author that was gone. Done by hand that day: #857's verdicts were adopted into a pack of the orchestrator's (less one approval that judged an earlier definition of x00875 S20), #858 was retired (signed `illyria`, a name of no model; its q00010 changes superseded), and #856 duplicates the queue's own close pass #878.
 - Delivered: the hydrator's report of a candidate that does not merge trivially now tells an author still around from one gone: when the candidate's unit is no longer on the forge and nobody has pushed it for a day (far past any lease; a threshold of the hydrator's own, so the queue tooling reaches no core internals), it says how the conflict ends — adopted on its own publication (approvals land only through their reviewer's pull request) or retired with `work retire --unowned`, which keeps the tip — instead of "its author decides" on every pass. Not delivered: closing such a pull request on its own after a further window. Whether to end another agent's work stays a decision someone makes with the report in hand; once it is closed, S10 retires it. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: refresh-candidate-artifacts.script.ts adopts or retires a publication its author left in conflict instead of leaving it, which is the finding that packs 'waited for a person' with their verdicts. Pinned by refresh-candidate-artifacts.script.spec.
 
 ### S14 — A unit that only merged landed work in is delivered
 - **Status**: review
