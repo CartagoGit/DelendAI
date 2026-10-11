@@ -2,15 +2,15 @@
 id: x00835
 title: "A review swarm leaves verdicts that can be checked, and loses none"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-03
 priority: P1
 related: [x00831, x00834, x00850]
-last-transition-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
-last-correlation-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
-last-transition-from: in-progress
+last-transition-id: 9adfb69c-5ac3-4c57-81d3-2390353386ae
+last-correlation-id: 9adfb69c-5ac3-4c57-81d3-2390353386ae
+last-transition-from: review
 shipped-in:
   - "f83c85addc9e"
   - "70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77"
@@ -31,6 +31,7 @@ shipped-in:
   - "eb1e94c54f307621664c488e504e73e18147a110"
   - "601a652075176a9809c87c1aeca8d9d364ebeae2"
   - "ba673a55011e62f6c496143c97c97daeb41cd9fe"
+last-transition-at: 2026-10-11T03:07:04.575Z
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
