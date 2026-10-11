@@ -2,14 +2,14 @@
 id: f00541
 title: "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-15
-last-transition-id: 5fdde533-f187-4fce-9863-fb7540b0784d
-last-correlation-id: 5fdde533-f187-4fce-9863-fb7540b0784d
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T00:21:48.517Z
+last-transition-id: ed61a9f5-b989-44df-8aba-9975cdc74a25
+last-correlation-id: ed61a9f5-b989-44df-8aba-9975cdc74a25
+last-transition-from: review
+last-transition-at: 2026-10-11T04:38:29.337Z
 shipped-in:
   - "b201fe50ec0d28cf0a76c1370a2465c43cf488f7"
   - "5db86437392ffbca82143e19efbc9f42874062f9"
