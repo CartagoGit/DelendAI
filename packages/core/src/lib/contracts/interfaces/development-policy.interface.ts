@@ -136,15 +136,13 @@ export interface IPolicyBranches {
 	/** Where releases land; equals `integration` for a one-branch project. */
 	readonly release: string;
 	/**
-	 * Namespace for delendai-owned refs, no trailing slash. Empty by
-	 * default (`wip/`, `pr/`); `delendai` gives `delendai/wip/` and
-	 * `delendai/pr/`. The one knob that moves both prefixes together.
+	 * Namespace for delendai-owned refs, no trailing slash: empty gives `wip/`
+	 * and `pr/`, `delendai` gives `delendai/wip/` and `delendai/pr/`.
 	 */
 	readonly namespacePrefix: string;
 	/**
-	 * Template for a unit of work's ref. Placeholders: `${agent}`,
-	 * `${proposal}`, `${slice}`, `${generation}`. Empty when the
-	 * persistence strategy writes no per-unit ref.
+	 * Template for a unit of work's ref (`${agent}`, `${proposal}`, `${slice}`,
+	 * `${generation}`). Empty when persistence writes no per-unit ref.
 	 */
 	readonly workRefTemplate: string;
 	/** Prefix a reaper may consider managed. Empty disables cleanup. */
@@ -326,12 +324,8 @@ export interface IPolicyCoordination {
 	readonly requiresClaims: boolean;
 	/** Minutes before an un-renewed lease is considered dead; 0 = never. */
 	readonly leaseTtlMinutes: number;
-	/**
-	 * The agent names allowed to work in the project, as whoever launches
-	 * the agents declares them. Absent: any name, checked only for being
-	 * a re-spelling of one already at work.
-	 */
-	readonly roster?: readonly string[];
+	/** Who may work here, as whoever launches the agents declares; absent: anyone. */
+	readonly roster?: readonly string[] | undefined;
 }
 
 /** Recovery axis. */
