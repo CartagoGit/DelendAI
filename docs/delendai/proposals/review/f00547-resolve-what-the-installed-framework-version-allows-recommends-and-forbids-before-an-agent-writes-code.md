@@ -259,7 +259,7 @@ Shipped: a pack is `.delendai/knowledge/<framework>.json`; `framework_guidance` 
 
 ### S7 — The detected convention is an input of the answer
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/detect/scan-convention.service.ts`, `plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`
 
@@ -268,9 +268,11 @@ tool counts it in the project (S4) and feeds the result, with its
 confidence, to the resolver, so a project that already does X is told X.
 
 Shipped: a pack rule may carry `pattern` (`directory`, `suffix`, `marker`); the tool counts it for the rules of the asked topic, bounded in depth and files, and feeds `detectConvention`'s result to the resolver. The answer carries the `convention` it weighed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1e177dd3ce32`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 47/47 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts inside the six-file batch -> 6 files / 47 tests passed, exit 0. Verified the slice does what it claims: a pack rule may carry a pattern (directory/suffix/marker); the tool counts it bounded in depth and files and feeds detectConvention's result to the resolver, and the answer carries the convention it weighed.
 
 ### S8 — Trusted-domain adapters stay out; the posture is enforced
 
