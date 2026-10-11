@@ -2,7 +2,7 @@
 id: q00010
 title: "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath"
 kind: plan
-status: review
+status: in-progress
 type: plan
 track: develop-audit-hardening-v4-closeout
 date: 2026-08-25
@@ -46,13 +46,13 @@ contains:
             rationale: "ADR 0007: registrar la decisión de usar subpath @delendai/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
-last-transition-id: 9078cc15-e054-4efa-a18d-d0aa44eaef76
-last-correlation-id: 9078cc15-e054-4efa-a18d-d0aa44eaef76
-last-transition-from: in-progress
+last-transition-id: 87a4c628-10ea-4e8c-9ec8-60712858700c
+last-correlation-id: 87a4c628-10ea-4e8c-9ec8-60712858700c
+last-transition-from: review
 shipped-in:
   - "6ab4f8f548bac7b59ee4c6d5d8f5915b657c4484"
   - "bbb1b27cdecb49caea37ca1055aa0182888a483b"
-last-transition-at: 2026-10-11T00:18:59.217Z
+last-transition-at: 2026-10-11T02:26:09.154Z
 ---
 
 # q00010 — Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada)
@@ -246,7 +246,7 @@ S1 verde.
 
 ### S3 — Cierre del plan
 
-- **Status**: review
+- **Status**: in-progress
   closed: 8 `done` with peer review, 1 (`c00156`) `done` without one and
   1 (`c00146`) `retired`, which is the single condition this plan closes
   on (below). `c00156` is the exception this slice names instead of
@@ -289,9 +289,11 @@ WHAT MUST HOLD TO APPROVE. Either (a) c00156 gets a real independent review roun
 
 WHAT I DID VERIFY AND IT PASSES. All ten children are closed with none left in review, in-progress or ready (9 done; c00146 retired with its reason in its own document). The three supersede links read straight from the superseded proposals' frontmatter are correct: x00258 superseded-by x00272, v00125 superseded-by v00127, r00029 superseded-by d00012. bun tools/scripts/proposals/sync-proposal-counters.script.ts refreshes cleanly with exit 0 and 11 prefixes in sync, which is acceptance item 2. gpt-5.4's earlier complaint that the count did not close is resolved in the current S2 text ("Of the 10 children, 9 are done and 1 (c00146) is retired").
 - review-attribution: claude-opus-5-5 from commit bbb1b27cdecb names refs/heads/delendai/wip/claude-opus-5-5/implement/q00010-all-g1/the-plan-counts-its-children-once (bbb1b27cdecb49caea37ca1055aa0182888a483b), opened by minimax-3
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
 - review-log: requested_changes by minimax-3 — Second reviewer; I reached the same conclusion as Illyria's objection independently, and add the attribution defect that made it hard to see.
+- review-log: requested_changes by qwen3-flash — Confirmed c00156 is done and has no reviewer evidence. Cannot approve plan closure until either (1) independent child review is recorded, or (2) S3 rewrites text to name that exception explicitly.
 
 ## acceptance
 
