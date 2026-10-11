@@ -550,6 +550,34 @@ one another and still run in sequence.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S43 — The forge cleans a landed work ref itself, and two checks stop disagreeing about it
+
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`
+  - `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`
+  - `packages/core/tests/src/lib/ref-lifecycle/work-namespace.spec.ts`
+  - `tools/scripts/lint/ref-lifecycle-guard.script.ts`
+  - `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - A work ref on the forge whose content is published is reaped by the queue's reap step, whether or not its proposal is still in progress.
+  - The ref-lifecycle guard no longer reads which proposals are in progress, from any folder.
+
+Found 2026-10-11, hours after S40: the queue failed twice more on
+`no-remote-work-refs`. S40 has the host that owns the unit take the ref
+off, on its cadence, so for some minutes after a merge the ref is still
+there, and in a project where no host is running it is there for good.
+The queue's own reap step saw the ref each time and kept it on purpose:
+one rule (`ref-lifecycle`) said a published work ref of a proposal in
+progress belongs to somebody, and the next step of the same job
+(`work doctor`) failed on that very ref. The exemption is removed, with
+the walk of `docs/delendai/proposals/in-progress` that fed it; the kept
+unit lives where it is worked on and pushes its ref again with its next
+commit.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
