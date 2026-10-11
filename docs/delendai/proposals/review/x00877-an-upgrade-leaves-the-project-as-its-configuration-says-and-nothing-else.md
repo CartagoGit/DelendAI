@@ -14,6 +14,7 @@ shipped-in:
   - "b6bc626ea9363cad35a15eb0b21ddda7e966a5cd"
   - "fc1a589e2059b0cf11263be473526d1dc8c5dfb0"
   - "38b68714aebe"
+  - "a6095f9df9cdc8dcb74544abb762cfe1d33b803f"
 ---
 
 # x00877 — An upgrade leaves the project as its configuration says, and nothing else
@@ -91,17 +92,19 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-log: approved by gpt-5.4 — verified at 38b68714aebe, validate exit 0, tests 94/94 — Approved after rerunning the focused migration spec pack for x00877. The root host config and root instruction files are covered by the host-config and agent-files migrator specs, and the whole focused pack passed 94/94.
 
 ### S4 — No ignore line or moved file keeps the old name
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/gitignore.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/gitignore.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/gitignore.migrator.spec.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`, `packages/cli/src/contracts/interfaces/residual-report.interface.ts`, `tools/scripts/migrate/rebrand-propagate.script.ts`
 - **Gate**: type
 - acceptance:
   - "A `.gitignore` line naming a renamed directory names the new one; a duplicate is not added."
   - "`migrate status` reports any legacy spelling the scanner still finds in live files, so a leftover is never silent."
 - Delivered: a `gitignoreMigrator:v1`, right after the directory renames, rewrites each `.gitignore` line naming a path they rename (`.cache/mcp-vertex/`, `docs/mcp-vertex`, `mcp-vertex.config.json`) to the new one, keeping its leading `/`, its `!` and its tail, and drops it instead where the new line is already there; nothing else in the file moves. `migrate status` now carries `residual`: how many live legacy spellings the scanner finds and the first twenty (file, line, spelling), skipping `.git`, `node_modules` and `.cache`; it takes two seconds on this repository, which, being the migration's own source, reports 2,201. Both specs fail without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - Fix 2026-10-07: the residual spec's fixture spells the old name, as it must, and `rebrand-propagate --check` counted it as a live leftover: develop's full run went red on #887 and the queue stopped arming. The spec is listed with the other files whose subject is the old name (`INTENTIONAL_LEGACY_PATHS`, beside `packages/cli/src/index.spec.ts`), with the reason.
 - shipped-in: `01e0713ced6d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at a6095f9df9cd, validate exit 0, tests 94/94 — Approved after rerunning the focused migration spec pack for x00877. The gitignore migrator rewrites only renamed ignore lines without duplication, migrate status now surfaces residual legacy spellings, and the focused pack passed 94/94.
 
 ### S5 — A profile change leaves nothing of the old mode unowned
 - **Status**: review
