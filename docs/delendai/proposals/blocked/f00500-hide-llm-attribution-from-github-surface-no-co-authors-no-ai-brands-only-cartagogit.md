@@ -164,7 +164,7 @@ manualmente cuando lo necesite.
   - "El wiring de la config va a través de `IDelendaiPluginConfig.options` y `proposals/index.ts` lo lee — el campo puede ser opcional, default `false`."
 
 ### S4 — Repo surface cleanup: renombrar filenames que contienen marcas de LLM
-- **Status**: pending
+- **Status**: retired
 - **Files**: `docs/delendai/proposals/done/audits/a00007-*.md`, `docs/delendai/proposals/done/audits/a00006-*.md`, `docs/delendai/proposals/done/resumes/n00001-*.md`, `docs/delendai/proposals/done/resumes/n00002-*.md`, `docs/delendai/proposals/done/README.md`, `docs/delendai/proposals/done/resumes/README.md`, `config/external/claude/`, `config/external/README.md`, `.gitignore`
 - **Gate**: lint
 
@@ -211,11 +211,14 @@ con su nombre canónico: el wiki puede y debe mencionar Claude/Codex/Copilot.
   - "Correr `bun tools/scripts/proposals/sync-proposal-registry.script.ts` y verificar `errorCount: 0`."
   - "`git grep -iE '(claude-opus|minimax-m3|gpt-5-5|gpt-4|gemini)' docs/delendai/proposals/` no devuelve hits en filenames ni en la primera línea de cada doc."
 
+Retired 2026-10-11. Renaming closed documents so that no file name carries a model's name was decided against by what the project chose afterwards: an agent is named by the model it runs as, in its work refs and its pull requests, which is the same surface (x00878, x00880, x00882). What this proposal protects, and still holds, is authorship: no commit names a model as author or co-author. The four documents are closed records and keep their names.
+
 ### S5 — Pre-commit hook + lint guard para AI attribution (defensa en profundidad)
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
-- **Files**: `tools/scripts/hooks/pre-commit.ts`, `tools/scripts/lint/no-llm-attribution.script.ts`, `tools/scripts/lint/no-llm-attribution.spec.ts`, `lefthook.yml`, `package.json`
+- **Files**: `tools/scripts/lint/no-llm-attribution.script.ts`, `tools/scripts/lint/no-llm-attribution.spec.ts`, `lefthook.yml`, `package.json`
 - **Gate**: lint
+- shipped-in: `0adb72233`
 
 Red de seguridad final: aunque alguien fuerce el `trailer: 'co-authored-by'`
 o un agente externo (no-core) inyecte un trailer, el hook lo detecta y
@@ -279,11 +282,14 @@ rechaza.
   - "Añadir `bun tools/scripts/lint/no-llm-attribution.script.ts` a `pre-commit` + `pre-push` chains en `lefthook.yml`."
   - "Añadir `lint:no-llm-attribution` al script set en `package.json` para que `bun run validate` lo incluya."
 
+Delivered on 2026-09-04 in `0adb72233` and never marked: the lint exists with its spec, `lefthook.yml` runs it on every commit message (`no-llm-attribution`), and `package.json` names it. It refuses a commit today, as every agent that added the trailer has found.
+
 ### S6 — Documentar la política de no-AI-attribution
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1, S2, S5]
-- **Files**: `.github/CONTRIBUTING.md`, `docs/PRIVACY.md`, `README.md`, `README.es.md`
+- **Files**: `.github/CONTRIBUTING.md`, `docs/PRIVACY.md`, `README.md`
 - **Gate**: lint
+- shipped-in: `1ab56e2e9`
 
 Hace que la política sea discoverable, no solo enforceable.
 
@@ -335,11 +341,14 @@ Hace que la política sea discoverable, no solo enforceable.
   - "Añadir una línea al final del bloque de "Why this project" en `README.md` y `README.es.md` que apunte a `docs/PRIVACY.md` (formato: "Attribution policy: [docs/PRIVACY.md](docs/PRIVACY.md) — only the human maintainer appears as commit author / co-author on GitHub.")."
   - "Links renderizan, no hay contradicción entre el comportamiento del engine y la documentación."
 
+Delivered on 2026-09-04 in `1ab56e2e9`: `docs/PRIVACY.md` states the policy, and `README.md` and `.github/CONTRIBUTING.md` point to it.
+
 ### S7 — Validación end-to-end del conjunto
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1, S2, S3, S4, S5, S6]
 - **Files**: `tools/scripts/verify/post-slice-f00500-evidence.script.ts`
 - **Gate**: lint
+- shipped-in: `1ab56e2e9`
 
 Verifica que las 6 slices anteriores cierran la fuga de **commits
 futuros y de archivos del repo**. La fuga de **commits históricos** se
@@ -389,14 +398,19 @@ queda verde.
   - "El script sale con 0; el log se adjunta al commit body de S7 como evidencia empírica."
   - "`bun run validate` global verde."
 
+Delivered on 2026-09-04: the evidence script exists and the attribution lint reports `ok` on the tree as it is on 2026-10-11.
+
 ### S8 — History rewrite + .mailmap (limpieza histórica, opcional pero recomendado)
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1, S2]
 - **Files**: `.mailmap`, `tools/scripts/git/rewrite-llm-attribution.script.ts`, `tools/scripts/git/rewrite-llm-attribution.spec.ts`, `docs/delendai/wiki/git-history-rewrite.md`
 - **Gate**: none
+- shipped-in: `1ab56e2e9`
 
 Cierra la fuga histórica**.** El `.mailmap` es instantáneo y barato; el
 history rewrite es destructivo y opcional.
+
+Delivered on 2026-09-04, the tooling: `.mailmap`, the rewrite script with its spec, and the runbook. Running the rewrite is not part of the slice and was not done: it rewrites published history, needs a freeze, and is the owner's to call, as the slice says (`none` gate, manual).
 
 ### S8a — `.mailmap`
 
