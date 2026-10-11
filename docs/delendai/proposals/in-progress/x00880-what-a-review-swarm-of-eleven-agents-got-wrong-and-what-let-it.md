@@ -80,6 +80,11 @@ Observed at 08:30, continued:
 25. **A pull request of one claim.** #1012 (`minimax-3.1`, unit `batch-all-g2/packs3`) holds one commit, `chore(review): claim q00014`, and no verdict. It was published, armed, and failed `candidate-delivers`: "the forge reports 0 changed files". The queue then reported itself stuck on it, "1 armed and red". `work publish` refuses a review unit with no commit of its own, and a claim is a commit. → S11.
 26. **Twenty-five to one.** By 08:20 forty-one approvals had landed and none of the five change requests written had; eighty-six more approvals wait in packs. Of the five requests, four (`gpt-5.4`, on f00512) are right: the acceptance still names commands the delivery renamed, and its implementer handed it over that way. One (`qwen3-flash`, on q00010 S3) asks for a change its own tree already had: the commit that named the exception was an ancestor of the verdict's, and the acceptance it judged said so. → S7.
 
+Observed at 09:40:
+
+27. **Locked out of one's own unit.** The orchestrator's pull request #1011 turned up in conflict with the integration branch. Its unit had ended at publication, and `work enter` for the same slice answered "q00022 s11 is reserved on the forge by claude-opus-5-5 … wait for it to land, take a slice nobody holds, or pass --alongside". The reservation was its own: the entry had chosen another name for the unit than the one that held it. Passing the generation and the topic by hand resumed it. → S12.
+28. **The swarm stopped with verdicts unpublished.** No reviewer has committed since 07:38. Five review units are still on the forge as work refs (`glm-5.3-flash` g3 and g7, `glm-5.3-max` g3, `qwen3-flash` g3 and g4) and their proposals stay claimed. Whether they hold verdicts is to be read before anything is done with them.
+
 ### S2 — An agent has one name, and it is not the model's to choose
 
 - **Status**: review
@@ -277,6 +282,19 @@ What the rule has to keep, found while reading how candidates are compared. The 
 Delivered 2026-10-11. Four specs published a review unit made of empty commits; each now records a verdict first, as a reviewer does.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+
+### S12 — An agent can go back to a unit it published
+
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/work-units/slice-reservation.service.ts`
+  - `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
+- **Gate**: unit
+- shipped-in: `872e2f4214c0`
+- acceptance:
+  - An agent entering a slice that its own unit reserves, under another unit name, is told so, with the generation and the topic that resume that unit and how to bring its pull request in.
+
+Delivered 2026-10-11 as what the refusal says. Resuming without being told (taking the reserved unit's name when the entrant is its agent) is the fuller answer and is left for when it is needed twice.
 
 ## acceptance
 
