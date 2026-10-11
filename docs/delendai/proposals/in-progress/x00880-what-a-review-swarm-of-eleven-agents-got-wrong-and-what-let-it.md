@@ -27,10 +27,11 @@ On 2026-10-11 the owner launched eleven agents on five models to review the prop
 
 ### S1 — The evidence, as it is observed
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `docs/delendai/proposals/in-progress/x00880-what-a-review-swarm-of-eleven-agents-got-wrong-and-what-let-it.md`
 - **Gate**: none
+- shipped-in: `2b0e70e1f922`
 - acceptance:
   - Each observation names when it was seen, the refs or commits that show it, and the slice that closes it.
 
@@ -42,7 +43,7 @@ Observed on the forge at 04:25–04:30 local time (refs under `delendai/wip/` an
 4. **A claim taken and dropped.** `gpt-5.4` claimed r00040 at 04:20:14 and released it at 04:22:15 with no verdict, then claimed f00643. → S4. (Corrected at 07:20: the release does carry its reason, in the body of its commit — see 23.)
 5. **Units named by whoever opened them.** The slice of a review unit is `batch-all` for most and `batch-review` for one; the topic is `verdicts`, `review-pack`, `review-pack-g1` or `packs-1011`. The name of a unit is what every listing sorts and matches by. → S5.
 6. **The swarm view calls every review pack a duplicate.** `delendai work swarm` reports "duplicate batch-all is live 16 times; keep one" and lists all of them under "to sort out". Many review packs at once is how a review swarm works; the one real finding a person needs from that view is buried under a false one. → S6.
-7. **Claims recorded in a unit with no reservation on the forge.** Units of `minimax-m31` carry commits `claim x00877`, `claim x00875` and `claim q00018`; `refs/delendai/claims/review/` held no ref for those three when listed at 04:27. Either the reservation was never pushed or it was released without a commit saying so. To be confirmed before it is given a slice.
+7. **Claims recorded in a unit with no reservation on the forge.** Units of `minimax-m31` carry commits `claim x00877`, `claim x00875` and `claim q00018`; `refs/delendai/claims/review/` held no ref for those three when listed at 04:27. Either the reservation was never pushed or it was released without a commit saying so. Read later: each of those claims was followed, minutes on, by a release commit in the same unit, and a release removes the reservation; the listing at 04:27 came after them. Not a defect.
 8. **Reservations that outlived their unit.** `refs/delendai/claims/slice/x00554/s2`, `…/q00010/s3` and `…/f00757/all` belong to units whose pull requests merged hours before. These are the orchestrator's own, not the swarm's; they are here because the same listing shows them. To be confirmed against the reservation reaper.
 
 Observed between 04:30 and 04:50:
@@ -136,13 +137,15 @@ Also delivered: the instructions every agent receives at start now end their "si
 
 ### S3 — Asking the review queue again does not open another unit
 
-- **Status**: pending
+- **Status**: retired
 - **Files**:
   - `packages/cli/src/commands/review.command.ts`
 - **Gate**: unit
 - acceptance:
   - `review next` without a session, from an agent that already holds a review unit with no verdict in it, resumes that unit instead of opening a new one.
   - A unit that was opened and never used ends when its session does; it is not left on the forge.
+
+Retired 2026-10-11. Resuming "the agent's open unit" when no session is given cannot be done safely: three instances of one model share a name by the owner's own rule (S2), and the session is what tells them apart, so an entry without one would hand an instance the unit of another. What the slice was for is closed elsewhere: a unit that claimed and judged nothing is not published (S11), a unit that judged is published whatever it still claims (S13), a reviewer holds one proposal at a time (S4), and a command run inside a unit already takes that unit's session.
 
 ### S4 — A reviewer holds what it is reviewing, and is offered only what it can judge
 
@@ -165,14 +168,18 @@ Delivered 2026-10-11. A release already records why, in its commit; showing that
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
-### S5 — A review unit is named by the product
+### S5 — A pack of verdicts is titled by what it judged
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/cli/src/commands/review.command.ts`
+  - `packages/core/src/lib/work-units/publication-pull-request.service.ts`
+  - `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - **Gate**: unit
+- shipped-in: `20ed91d2e3ee`
 - acceptance:
-  - The slice and the topic of a review unit are not arguments: every review unit of every agent is named the same way, differing only by agent and generation.
+  - The pull request of a review pack is titled with the number of verdicts it carries and the proposals they are on, whatever its first commit was.
+
+Delivered 2026-10-11, the title (observation 17). The other half as first written, review units named only by the product, is not done and is taken out: a unit is found by what it is and not by its name, so the names the swarm invented (`packs-1011`, `review-pack-g2`) cost a reader and nothing else, while refusing a topic would change the entry the queue's own closing unit goes through.
 
 ### S6 — The swarm view does not report review packs as duplicates
 
