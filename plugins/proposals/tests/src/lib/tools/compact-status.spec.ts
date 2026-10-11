@@ -66,6 +66,13 @@ describe('compact_status (N17) — aggregates the proposals plugin state', async
 		expect(s.proposals?.total).toBe(3);
 		expect(s.proposals?.actionable).toBe(2); // in_progress + ready
 		expect(s.proposals?.byStatus.done).toBe(1);
+		// A status with nothing in it is reported at zero, not left out.
+		expect(s.proposals?.byStatus).toMatchObject({
+			'in-progress': 0,
+			blocked: 0,
+			paused: 0,
+			retired: 0,
+		});
 	});
 
 	it('honours the fields selector (low-token)', async () => {

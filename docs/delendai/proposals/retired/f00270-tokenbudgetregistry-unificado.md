@@ -2,7 +2,7 @@
 id: f00270
 title: "`TokenBudgetRegistry` unificado"
 kind: feat
-status: blocked
+status: retired
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -18,6 +18,10 @@ related:
     - c00136 # Token ROI por plugin (consume el registry)
     - r00031 # compactación de output (el registry la reporta)
     - r00032 # idem orchestrator-runner
+last-transition-id: a8fb56ca-e5e3-445a-b2e4-d7767a8674c8
+last-correlation-id: a8fb56ca-e5e3-445a-b2e4-d7767a8674c8
+last-transition-from: blocked
+last-transition-at: 2026-10-11T14:29:32.081Z
 ---
 
 # f00270 — `TokenBudgetRegistry` unificado

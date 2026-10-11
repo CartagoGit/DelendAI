@@ -353,6 +353,30 @@ describe('a unit whose owner left before committing anything', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
 	});
 
+	it('is removed, commit and all, once the remote keeps its tip as retired', async () => {
+		const { repo, ref, worktree, start } = await emptyUnit('retired', 600);
+		repo.commit(worktree, 'unmerged.ts');
+		const remote = join(repo.root, '..', 'origin.git');
+		git(repo.root, 'init', '-q', '--bare', remote);
+		git(repo.root, 'remote', 'add', 'origin', remote);
+		git(
+			repo.root,
+			'push',
+			'-q',
+			'origin',
+			`${ref}:refs/${unitPolicy.branches.namespacePrefix}/retired/kept`,
+		);
+
+		const [reaped] = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped?.outcome).toBe('removed');
+		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
+	});
+
 	it('keeps an edit its owner left uncommitted, and says which', async () => {
 		const { repo, worktree, start } = await emptyUnit('drafted', 600);
 		writeFileSync(join(worktree, 'draft.ts'), 'export {};\n');

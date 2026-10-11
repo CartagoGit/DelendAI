@@ -33,6 +33,7 @@ import {
 	workCheckoutCadenceMinutes,
 	workCheckoutRefs,
 } from '../../../../src/lib/wip-engine/work-checkout-publisher';
+import { planRetirement } from '../../../../src/lib/work-units/work-retire.service';
 
 const execFileAsync = promisify(execFile);
 const cleanups: Array<() => Promise<void>> = [];
@@ -266,6 +267,36 @@ describe('publishing agents work checkouts', () => {
 		expect(only?.outcome).toBe('skipped');
 		expect(only?.reason).toContain('pr/agent-a/x00001-S1-g1/work');
 		expect(await remoteHas(WORK_BRANCH)).toBe('');
+	});
+
+	it('does not push back a unit that was retired on the remote', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'given up';\n");
+		const tip = (await repo.git('rev-parse', WORK_BRANCH)).trim();
+		const retiredRef = planRetirement({
+			branch: WORK_BRANCH,
+			namespace: POLICY.branches.namespacePrefix,
+			workRefPrefix: POLICY.branches.workRefPrefix,
+			publicationRefPrefix: POLICY.branches.publicationRefPrefix,
+		})?.retiredRef;
+		await repo.git(
+			'push',
+			'--quiet',
+			'origin',
+			`${tip}:${String(retiredRef)}`,
+		);
+
+		const [only] = await publishWorkCheckouts(run, POLICY);
+		expect(only?.outcome).toBe('skipped');
+		expect(only?.reason).toContain('was retired');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
+
+		// New work in it is work again: the tip kept is no longer its tip.
+		await commitIn(dir, "export const v = 'taken up again';\n");
+		expect(outcomes(await publishWorkCheckouts(run, POLICY))).toEqual([
+			'published',
+		]);
 	});
 
 	it('pushes nothing while a publication holds the ref', async () => {

@@ -402,12 +402,11 @@ describe('runEntry reports a workflow the project is not following (x00598)', ()
 
 		const text = lines.join('\n');
 		expect(text).toContain('checkout-clean');
-		// The six that hold say nothing at all.
+		// The five that hold say nothing at all.
 		for (const quiet of [
 			'checkout-anchored',
 			'no-abandoned-work-refs',
 			'publications-canonical',
-			'candidates-hydrated',
 			'no-leftover-worktrees',
 			'no-remote-work-refs',
 		]) {

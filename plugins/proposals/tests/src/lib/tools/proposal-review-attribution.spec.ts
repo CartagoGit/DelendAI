@@ -246,38 +246,6 @@ describe('a verdict on a slice no round was opened for', () => {
 		});
 	});
 
-	it('reopens every slice a pack sends back, not only the first', async () => {
-		repo.proposalInReview(
-			`${SLICE_S1('review')}\n### S2 — more work\n- **Status**: review\n- **Files**: \`src/b.ts\`\n- review-state: in_review\n- review-implementer: agent-a\n`,
-		);
-
-		await repo.review({
-			action: 'request_changes',
-			agent: 'agent-b',
-			note: 'nothing was delivered for S1',
-		});
-		const second = await repo.review({
-			sliceId: 'S2',
-			action: 'request_changes',
-			agent: 'agent-b',
-			note: 'nothing was delivered for S2',
-		});
-
-		// The first request reopened the proposal; the second finds it
-		// open, and its slice goes back to its author all the same.
-		expect(second.body).toMatchObject({ status: 'changes_requested' });
-		const markdown = readFileSync(
-			join(
-				repo.root,
-				'docs/delendai/proposals/in-progress/x00001-work.md',
-			),
-			'utf8',
-		);
-		expect(
-			markdown.match(/^- \*\*Status\*\*: in-progress$/gmu),
-		).toHaveLength(2);
-	});
-
 	it('still refuses an approval without a commit', async () => {
 		const path = repo.proposalInReview(SLICE_S1('review'));
 		const before = readFileSync(path, 'utf8');

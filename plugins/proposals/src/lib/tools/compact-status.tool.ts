@@ -8,6 +8,7 @@ import {
 	reportBackpressure,
 } from '../agents/persistent-task-queue';
 import type { IPersistentTaskQueue } from '../agents/persistent-task-queue';
+import { PROPOSAL_STATUSES } from '../contracts/constants/proposal-glossary.constant';
 import { readJsonOrNull, readProposalIndex } from '../proposals/index-reader';
 import { resolveDatabasePath } from '../proposals/index-reader-location';
 
@@ -149,11 +150,19 @@ export const collectCompactStatus = async (
 		// had long since changed, or nothing at all where none existed.
 		const list = await readProposalIndex(options.indexPathAbs);
 		const total = list.length;
-		const byStatus = list.reduce<Record<string, number>>((acc, p) => {
-			const k = p.status ?? 'unknown';
-			acc[k] = (acc[k] ?? 0) + 1;
-			return acc;
-		}, {});
+		// Every status the workflow has, at zero when no proposal is in it:
+		// a status left out read as "does this project have it?" where the
+		// answer was "nothing is in progress".
+		const byStatus = list.reduce<Record<string, number>>(
+			(acc, p) => {
+				const k = p.status ?? 'unknown';
+				acc[k] = (acc[k] ?? 0) + 1;
+				return acc;
+			},
+			Object.fromEntries(
+				Object.keys(PROPOSAL_STATUSES).map((status) => [status, 0]),
+			),
+		);
 		const actionable = ACTIONABLE.reduce(
 			(n, s) => n + (byStatus[s] ?? 0),
 			0,

@@ -69,6 +69,16 @@ export const setFrontmatterField = (
 	}
 	// Field absent → append it before the closing `---` so the file
 	// remains parseable. Keeps the existing fields in place.
+	// Before the closing fence when the block carries it: appended after
+	// it, the field landed in the body, where no reader of the
+	// frontmatter finds it and every reader of the document does.
+	const fence = /\n---[ \t]*\n?$/u.exec(block);
+	if (fence !== null) {
+		return replaceFrontmatterBlock(
+			raw,
+			`${block.slice(0, fence.index)}\n${fieldName}: ${newValue}${fence[0]}`,
+		);
+	}
 	const closing = block.endsWith('\n')
 		? `\n${fieldName}: ${newValue}\n`
 		: `\n${fieldName}: ${newValue}`;

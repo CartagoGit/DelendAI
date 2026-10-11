@@ -2,14 +2,14 @@
 id: f00757
 title: "Token and coordination cost cut where the 2026-10-07 audit measured it"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-10-06
-last-transition-id: ba25df0f-b625-42d3-b48c-a7213dc46d5a
-last-correlation-id: ba25df0f-b625-42d3-b48c-a7213dc46d5a
-last-transition-from: review
-last-transition-at: 2026-10-10T11:25:36.255Z
+last-transition-id: 77a9412d-e681-44a8-83ec-910db5d18be5
+last-correlation-id: 77a9412d-e681-44a8-83ec-910db5d18be5
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T13:34:42.254Z
 shipped-in:
   - "dd039031e185"
   - "cc1aae7f4aea"

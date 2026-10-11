@@ -31,6 +31,7 @@ import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environmen
 import {
 	hangingForgeWorkRefs,
 	spentPublicationsInvariant,
+	stalledPublicationsInvariant,
 } from './forge-work-refs.service';
 import { idleUnitsInvariant } from './idle-units.service';
 import { profileBranchesInvariant } from './profile-branches.service';
@@ -215,35 +216,10 @@ export const checkWorkflowInvariants = (input: {
 		remedy: `give ${pubPrefix}<name> the agent, slice and generation segments (or delete the flat ref), then publish the unit again with \`delendai work publish\``,
 	});
 
-	// 5. Every candidate contains the integration branch.
-	const behind = published
-		.map((ref) => ({
-			ref,
-			count: Number(
-				git(root, [
-					'rev-list',
-					'--count',
-					`${remote}/${ref}..${remote}/${integration}`,
-				]) || '0',
-			),
-		}))
-		.filter((each) => each.count > 0);
-	add({
-		scope: 'forge',
-		id: 'candidates-hydrated',
-		claim: `every candidate contains \`${integration}\``,
-		holds: behind.length === 0,
-		observed:
-			published.length === 0
-				? 'no candidates'
-				: behind.length === 0
-					? `${String(published.length)} candidate(s), none behind`
-					: behind
-							.map((e) => `${e.ref} behind ${String(e.count)}`)
-							.slice(0, 3)
-							.join(', '),
-		remedy: 'bun run forge:refresh -- --apply',
-	});
+	// Not an invariant: "every candidate contains the integration branch".
+	// A candidate nothing moved under lands as it is, and one that is
+	// behind another is brought forward on its turn; held to be level, all
+	// of them were refreshed after every merge and none kept a verdict.
 
 	// 6. No worktree outlived the work ref it was made for.
 	//
@@ -308,6 +284,17 @@ export const checkWorkflowInvariants = (input: {
 	// 8. A publication still on the forge holds something the integration
 	// branch lacks.
 	add(spentPublicationsInvariant({ root, remote, integration, published }));
+
+	// A publication nobody has moved since its author went quiet is
+	// stuck, not waiting.
+	add(
+		stalledPublicationsInvariant({
+			root,
+			remote,
+			published,
+			leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
+		}),
+	);
 
 	// 9. The local integration branch only follows the forge's. A commit
 	// it holds that the forge lacks was made in the shared checkout: it
