@@ -39,6 +39,46 @@ export const aliasedIdentity = (
 export const describeAlias = (agent: string, existing: string): string =>
 	`\`${agent}\` is another spelling of \`${existing}\`, which already has work in this repository: one model signs one way, or every check that compares names takes it for two agents. Pass --agent=${existing}; a second instance of the same model is told apart by its session, not by its name.`;
 
+/**
+ * What two spellings of one model share: its words and its digits. A
+ * single letter beside the digits and where the dots fall are what an
+ * agent varies when it writes its own name from memory: `minimax-3.1`,
+ * `minimax-m31`, `MiniMax M3.1`.
+ */
+const modelKey = (agent: string): string => {
+	const tokens = agent.toLowerCase().match(/[a-z]+|\d+/gu) ?? [];
+	const words = tokens.filter((token) => /^[a-z]{2,}$/u.test(token));
+	const digits = tokens.filter((token) => /^\d+$/u.test(token)).join('');
+	return `${words.join('-')}|${digits}`;
+};
+
+/**
+ * The name the project first saw for the model `agent` reads as, when
+ * `agent` is a later way of writing it; `undefined` when it is that name,
+ * a model not seen before, or a name the project lists as its own.
+ *
+ * `seen` is every name that signed work here, oldest first: the agent
+ * names itself, and the project holds a model to the first spelling it
+ * signed with. Two models that really do differ by one letter (`gpt-4`,
+ * `gpt-4o`) are told apart by the project listing both.
+ */
+export const firstSpelling = (
+	agent: string,
+	seen: readonly string[],
+	listed: readonly string[] = [],
+): string | undefined => {
+	if (listed.includes(agent)) return undefined;
+	const key = modelKey(agent);
+	// A name with no digits has no version to be read two ways.
+	if (key.endsWith('|')) return undefined;
+	const first = seen.find((other) => modelKey(other) === key);
+	return first === undefined || first === agent ? undefined : first;
+};
+
+/** What an agent signing as a later spelling of a model is told. */
+export const describeFirstSpelling = (agent: string, first: string): string =>
+	`\`${agent}\` reads as \`${first}\`, the name this model first signed work with here: the same maker, words and version digits, written another way. Pass --agent=${first}. If you are a different model, its exact name goes in \`development.coordination.roster\`, where a project lists models whose names differ this little.`;
+
 /** The letters an identity starts with: its family, before any version. */
 const familyOf = (agent: string): string =>
 	/^[a-z]+/u.exec(agent.toLowerCase())?.[0] ?? '';

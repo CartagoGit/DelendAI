@@ -11,11 +11,7 @@ import type {
 import { withBriefing } from './work-unit-enter-briefing.service';
 import { hydratedIdleUnit } from './kept-unit-hydration.service';
 import { readSwarm } from './work-swarm.service';
-import {
-	aliasedIdentity,
-	describeAlias,
-	describeOffRoster,
-} from './agent-alias.service';
+import { entrantNameRefusal } from './agents-seen.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { sliceHeldOnForge } from './slice-reservation.service';
 import { isUnitHolding, readUnitStandings } from './unit-standings.service';
@@ -172,25 +168,14 @@ export const enteredHeld = async (
 	}
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
-	const offRoster = describeOffRoster(
-		agent,
-		policy.coordination.roster ?? [],
-	);
-	if (offRoster !== undefined) {
-		return refused('This project names who works in it.', offRoster);
-	}
 	const swarm = readSwarm({ root, policy });
-	const respelled = aliasedIdentity(agent, [
-		...new Set(
-			[...swarm.units, ...swarm.published].map((unit) => unit.agent),
-		),
-	]);
-	if (respelled !== undefined) {
-		return refused(
-			'An identity is spelled one way.',
-			describeAlias(agent, respelled),
-		);
-	}
+	const unnamed = entrantNameRefusal({
+		root,
+		policy,
+		agent,
+		live: [...swarm.units, ...swarm.published].map((unit) => unit.agent),
+	});
+	if (unnamed !== undefined) return refused(unnamed.what, unnamed.how);
 	const reviewed = await reviewedByEntrant(
 		root,
 		policy,

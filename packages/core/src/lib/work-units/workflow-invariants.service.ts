@@ -215,35 +215,10 @@ export const checkWorkflowInvariants = (input: {
 		remedy: `give ${pubPrefix}<name> the agent, slice and generation segments (or delete the flat ref), then publish the unit again with \`delendai work publish\``,
 	});
 
-	// 5. Every candidate contains the integration branch.
-	const behind = published
-		.map((ref) => ({
-			ref,
-			count: Number(
-				git(root, [
-					'rev-list',
-					'--count',
-					`${remote}/${ref}..${remote}/${integration}`,
-				]) || '0',
-			),
-		}))
-		.filter((each) => each.count > 0);
-	add({
-		scope: 'forge',
-		id: 'candidates-hydrated',
-		claim: `every candidate contains \`${integration}\``,
-		holds: behind.length === 0,
-		observed:
-			published.length === 0
-				? 'no candidates'
-				: behind.length === 0
-					? `${String(published.length)} candidate(s), none behind`
-					: behind
-							.map((e) => `${e.ref} behind ${String(e.count)}`)
-							.slice(0, 3)
-							.join(', '),
-		remedy: 'bun run forge:refresh -- --apply',
-	});
+	// Not an invariant: "every candidate contains the integration branch".
+	// A candidate nothing moved under lands as it is, and one that is
+	// behind another is brought forward on its turn; held to be level, all
+	// of them were refreshed after every merge and none kept a verdict.
 
 	// 6. No worktree outlived the work ref it was made for.
 	//

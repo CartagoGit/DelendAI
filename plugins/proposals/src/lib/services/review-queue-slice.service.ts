@@ -96,7 +96,7 @@ export const settleSlice = async (
 					}),
 			verdict: 'waiting-on-implementer',
 			nextAction:
-				'Changes were requested; the implementer resubmits the fix, then a reviewer other than the last one verifies it.',
+				'Changes were requested. Whoever takes the slice makes the fix and resubmits it (it need not be who delivered it first); then a reviewer other than the last one verifies it.',
 		};
 	}
 	if (state.status === 'in_review' && state.implementer !== null) {

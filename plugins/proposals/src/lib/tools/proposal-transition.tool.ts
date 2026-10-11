@@ -116,6 +116,7 @@ import {
 	collectSliceStatuses,
 	guardTransitionToDone,
 } from '../services/proposal-completeness';
+import { withShippedInFromSlices } from '../services/shipped-in-from-slices.service';
 import { staleApprovals } from '../services/review-verdict-evidence';
 import { openReviewRounds } from '../services/review-handoff';
 import { createIndexFreeGitRunner } from '../shared/index-free-git-runner';
@@ -1374,7 +1375,12 @@ export const runProposalTransition = async (
 	}
 
 	if (finalTo === 'done') {
-		const yamlBlock = extractYamlBlock(raw);
+		// What delivered the proposal is taken from its slices when the
+		// frontmatter does not repeat it: written before the move below,
+		// which reads the document again.
+		const closing = withShippedInFromSlices(raw);
+		if (closing !== raw) await writeFileAtomic(found.absPath, closing);
+		const yamlBlock = extractYamlBlock(closing);
 		const frontmatter =
 			yamlBlock === null
 				? {}

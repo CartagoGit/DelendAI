@@ -9,10 +9,10 @@
  * forge will build with. A cron would find the same work minutes later,
  * on a machine that cannot push as a person.
  *
- * WHY it refuses to be interesting: it runs `forge:refresh --apply`,
- * which builds every tree in a throwaway index, never moves the
- * checkout, never forces, and reports rather than resolves anything that
- * does not merge trivially. This script only decides WHEN that is worth
+ * WHY it refuses to be interesting: it runs the one refresher
+ * (`forge:refresh --apply`), which works in a throwaway worktree, never
+ * moves the checkout, never forces, and reports rather than resolves
+ * anything that does not merge trivially. This script only decides WHEN that is worth
  * doing, and it decides conservatively:
  *
  *   - only in the repository's main working tree, never in an agent's;
@@ -165,7 +165,7 @@ const main = (): void => {
 	// A dated header per pass, so the log says when each refusal happened.
 	console.log(`== hydration pass ${new Date().toISOString()} ==`);
 	// One writer brings a candidate forward: merge, install, run every
-	// generator, push. `forge:refresh --apply` used to run first and merge
+	// generator, push. A second refresher used to run first and merge
 	// every candidate textually; after it nothing was behind any more, so
 	// this step found no work and no candidate was ever regenerated (179
 	// hydration merges since 2026-09-20, no regeneration commit).
