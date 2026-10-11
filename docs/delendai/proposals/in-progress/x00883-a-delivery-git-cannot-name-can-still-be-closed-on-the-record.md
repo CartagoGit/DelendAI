@@ -105,6 +105,8 @@ between those two designs:
   - `work doctor --forge` reports `publications-move` broken for a publication whose tip is older than the window after which a unit counts as abandoned, with how long, and the remedy: read why it is not merging, then fix it on its own publication or retire it.
   - A fresh publication, and a ref the clone never fetched, are not reported.
   - Run on 2026-10-11 it named the pull request this proposal exists for, nine hours stalled.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The pull request that was stuck is closed through the mechanism
 
