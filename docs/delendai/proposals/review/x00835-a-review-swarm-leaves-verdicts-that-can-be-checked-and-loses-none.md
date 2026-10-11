@@ -27,6 +27,7 @@ shipped-in:
   - "345f73884420995774374681a50ff8ea6d827777"
   - "5c102c170928cd0a35890fb33449cff0305dd296"
   - "516a7cf4b51d58e91ac4073a7aad6df94ddf5aef"
+  - "ca9ff5e6a712fe1ed960c1022f58469116349783"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -1069,11 +1070,16 @@ the good verdicts' shape (P1) becomes the required shape.
 - Found 2026-10-05: I retired my stale review unit `batch-all-g1` and kept working in `batch-all-g2`. The next `review next --session=<g2's session>` entered a new `batch-all-g1` and claimed `x00870` there, and the approval of `x00870` with the same session went to `g2`, which had claimed nothing, and was refused. `chooseGeneration` took the first generation no other session held, so a generation freed by a retirement came before the one the session was in.
 - A session that holds a unit of that agent, proposal and slice now goes back to it, whichever generation; only a session that holds none takes the first free one. The spec fails without the change.
 ### S36 — A reviewer can give the evidence each criterion asks for
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `packages/cli/src/contracts/interfaces/review-queue-view.interface.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
 - Found 2026-10-05 approving `x00870` S1: "approve requires empirical evidence: evidence.acceptanceCriteria must cover every declared criterion". The tool asks for one piece of evidence per declared criterion, and neither `delendai review approve` nor `delendai proposals review` could pass any. From a shell, no slice that declares acceptance criteria could be approved at all, whatever the reviewer had verified.
 - Both commands take `--criterion="<criterion> => <evidence>"`, once per criterion; the first ` => ` separates them, since evidence is free text. The call `review next` hands a reviewer now carries one `--criterion` per declared criterion, with the criterion already written, so a reviewer of any model fills in evidence instead of guessing a format. The brief moved to `lib/review/review-brief.service.ts` and the queue's shapes to `contracts/interfaces/`, which brings `review.command.ts` from 404 to 349 lines.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at ca9ff5e6a712, validate exit 0, tests 13/13 — Delivered by ca9ff5e6a (PR #804 merge 17d1fa533, on develop). Both review commands take --criterion="<criterion> => <evidence>" once per declared criterion (review-brief.service.ts builds the call with JSON-quoted pairs), so a reviewer can satisfy the acceptanceCriteria array instead of hitting the 'must cover every declared criterion' refusal found on x00870 S1. Verified today in this worktree, agent env scrubbed: declared gate review.command.spec.ts green 13/13 exit 0 under npx vitest --project @delendai/cli; declared files all exist; commit subject cites x00835 S36. Implementer claude-opus-5-5; different model, independence holds.
+- review-attribution: claude-opus-5-5 from Merge pull request #804 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00835-S36-g1/a-reviewer-can-cite-each-criterion (refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S36-g1/a-reviewer-can-cite-each-criterion) (ca9ff5e6a712fe1ed960c1022f58469116349783), opened by glm-5.3-max
 
 ## acceptance
 
