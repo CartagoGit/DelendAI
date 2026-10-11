@@ -57,6 +57,7 @@ export const readWorkflowKpis = async (
 				root,
 				policy.branches.integration,
 				COORDINATION_WINDOW_DAYS,
+				policy.branches.publicationRefPrefix,
 			),
 		),
 	};

@@ -211,6 +211,13 @@ const buildTrend = (): IKpiTrendReport => ({
 			source: 'test',
 			sampleCount: 0,
 		},
+		coordinationTax: {
+			key: 'workflow.coordination.tax',
+			direction: 'unknown',
+			status: 'unavailable',
+			source: 'test',
+			sampleCount: 0,
+		},
 	},
 });
 

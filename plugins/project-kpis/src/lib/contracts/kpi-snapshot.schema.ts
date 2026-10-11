@@ -88,6 +88,13 @@ export const KpiWorkflowSectionSchema = z
 				merges: z.number().int().min(0),
 				bookkeeping: z.number().int().min(0),
 				tax: z.number().min(0).max(1),
+				landed: z
+					.object({
+						units: z.number().int().min(0),
+						agents: z.number().int().min(0),
+					})
+					.strict()
+					.optional(),
 			})
 			.strict()
 			.optional(),

@@ -128,7 +128,8 @@ export type TKpiTrendMetricKey =
 	| 'usage.totalTokens'
 	| 'economics.costUsd'
 	| 'economics.tokenSavings'
-	| 'economics.financialSavingsUsd';
+	| 'economics.financialSavingsUsd'
+	| 'workflow.coordination.tax';
 
 export interface IKpiTrendMetric {
 	readonly key: TKpiTrendMetricKey;
@@ -156,6 +157,8 @@ export interface IKpiTrendReport {
 		readonly costUsd: IKpiTrendMetric;
 		readonly tokenSavings: IKpiTrendMetric;
 		readonly financialSavingsUsd: IKpiTrendMetric;
+		/** The share of what landed that was coordination, run over run. */
+		readonly coordinationTax: IKpiTrendMetric;
 	};
 }
 
