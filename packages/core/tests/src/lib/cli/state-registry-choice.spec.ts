@@ -48,7 +48,11 @@ describe('chooseStateRegistry', () => {
 	});
 
 	it('runs the SQLite driver beside the in-memory one when asked', async () => {
-		const seen: { path?: string; state?: string; loaded?: string } = {};
+		const seen: {
+			path: string | undefined;
+			state: string | undefined;
+			loaded: string | undefined;
+		} = { path: undefined, state: undefined, loaded: undefined };
 		const shadow = defineInMemoryStateRegistry({ clock: () => 0 });
 		let facadeOf: { primary?: IStateRegistry; shadow?: IStateRegistry } =
 			{};

@@ -13,7 +13,7 @@
  * the in-memory engine alone would leave a sampler with nothing to
  * sample and a setting that reads as on.
  */
-import { mkdirSync } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import type {
@@ -78,7 +78,7 @@ export const chooseStateRegistry = async (input: {
 	// The registry is chosen before the cache layout is laid out, and
 	// SQLite does not create the directories above its file.
 	const path = join(input.cacheDirAbs, ...SHADOW_STORE_PATH);
-	mkdirSync(dirname(path), { recursive: true });
+	await mkdir(dirname(path), { recursive: true });
 	return loaded.createRegistryFacade({
 		primary,
 		shadow: loaded.defineSqliteStateRegistry({
