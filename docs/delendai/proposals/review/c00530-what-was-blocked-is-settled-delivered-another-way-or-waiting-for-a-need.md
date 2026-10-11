@@ -97,11 +97,32 @@ Met while doing S1. Parking f00639 with "recorded in c00530" for a reason blocke
 - shipped-in: `ee77fc419a9b`
 - acceptance:
   - The hydration pass runs `delendai work reap --apply` after it has maintained the ref namespace, and says what it reaped.
-  - A unit whose worktree holds an uncommitted edit is reported and kept, as the reaper always did.
+  - A unit whose worktree holds an uncommitted edit is reported and kept while its owner may still come back; once it is abandoned, S5 applies.
 
 Asked by the owner on 2026-10-11: refs, worktrees and branches had been left along the way. Counted then: four worktrees and local branches of review units the queue had retired on the forge hours before; a slice reservation of a unit whose pull request had merged; ten probe refs of the orchestrator's own in the shared clone (deleted by hand, they were never the product's); and twenty-three retired refs on the forge. The reaper already judged each of the first two kinds spent, with S3's rule for the retired ones. It had no caller: `work reap --apply` ran when somebody remembered. It is now a step of the one pass this machine runs after every merge. One of the four worktrees holds an edit its agent never committed; it is reported on every pass and not removed.
 
 Left as it is, and said: the retired refs. A retired tip is kept so that nothing is lost, and only one whose work the integration branch came to hold is dropped. Seventeen of the twenty-three belong to proposals that are closed; whether a closed proposal's retired units go after some days is a rule the owner has not given.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S5 — An abandoned unit's uncommitted edits are kept on the forge, and the unit removed
+
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/work-units/unit-edits-kept.service.ts`
+  - `packages/core/src/lib/work-units/unit-reaper.service.ts`
+  - `packages/core/src/lib/work-units/unit-removal.service.ts`
+  - `packages/core/src/lib/work-units/unit-lease.interface.ts`
+  - `packages/core/tests/src/lib/work-units/unit-edits-kept.service.spec.ts`
+  - `tools/scripts/reclaim/reclaim-orphans.script.ts`
+- **Gate**: unit
+- shipped-in: `88723b0ab309`
+- acceptance:
+  - `work reap --apply` commits what an abandoned unit left uncommitted (tracked or not, never what git ignores) on top of its tip, pushes it under the retired refs, removes the worktree and the local branch, and reports `retired` with the ref the edits are kept at.
+  - Without `--apply` the unit is reported as `would-retire` and nothing is written.
+  - A unit that is not abandoned, or whose edits could not be pushed, stays where it is and is reported `kept`.
+
+Found after S4 landed: the pass removed three of the four worktrees the swarm had left and kept the fourth for good — a review unit whose only content was a state transition of another proposal that it never committed, long since overtaken on the integration branch. "Kept and reported" has no end when the owner is gone; a retired ref has the same content and `work retired` lists it.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
