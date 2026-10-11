@@ -2,7 +2,7 @@
 id: f00511
 title: "F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-06
@@ -17,6 +17,10 @@ tags:
     - eta
     - statistics
     - non-ml
+last-transition-id: bf23edac-5866-4178-abe8-9ee8c66c7646
+last-correlation-id: bf23edac-5866-4178-abe8-9ee8c66c7646
+last-transition-from: in-progress
+last-transition-at: 2026-10-10T23:52:47.383Z
 ---
 
 # f00511 — F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico
@@ -50,6 +54,8 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Dos propuestas distintas con los mismos 6 campos producen el mismo hash; cambiar 1 campo cambia el hash."
   - "`complexity_proxy` se calcula como `slice_count × 1.2 + affected_packages × 2.1 + public_api_changes × 3.2 + test_count × 0.7 + loc_changed × 0.0001`, redondeado a 2 decimales."
   - "Test de estabilidad: para 100 propuestas sintéticas con vectores aleatorios, el hash es único y el cálculo es independiente del orden de los campos del input."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — `duration-history.ts` — tabla `duration_history` (feature_vector_hash, actor_profile, task_kind, duration_ms, outcome) + insert desde `proposal_transition → done`
 - **Status**: review
@@ -65,6 +71,7 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Test: simular 10 transiciones a `done` con vectores distintos produce 10 filas; una undécima con el mismo `(vector, actor, kind)` se acumula en un buffer interno y se inserta como nueva fila sólo si la mediana cambia >5%."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `186488db1e20`
 
 ### S3 — `eta-engine.ts` — cálculo de mediana + p80 por `(feature_vector_hash, actor_profile)`; fallback a `task_kind` global si la combinación específica tiene <5 muestras
 - **Status**: done — `86bd19eb0`. `eta-engine.ts` and `eta-aggregation.ts` landed with 25 passing specs; `tests/src/lib/eta/eta-fixtures.spec.ts` asserts a median relative p50 error <= 0.35 over 70 synthetic samples, the p80 aggregation, `insufficient_history`, and the task-kind fallback at confidence 0.6 vs 0.9. Verified 2026-09-15.
@@ -77,6 +84,8 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Si `(vector, actor)` tiene <5 muestras pero `(taskKind, actor)` tiene ≥5, se devuelve la ETA agregada por task_kind con `confidence: 0.6` (vs 0.9 del caso específico)."
   - "Test con fixture `tests/fixtures/eta-fixtures.spec.ts` (≥50 muestras sintéticas): la mediana de error de p50 sobre el dataset es ≤35%."
   - "`computeEta` no es un productor del State Engine — es una función pura invocada por `f00510` S5 al construir el snapshot. Esto evita meter cálculo en el `rebuild`/`reconcile`."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Integración con `f00510` — `progress_snapshots` gana campos `eta_p50_ms`, `eta_p80_ms`, `eta_reason`; sin llamada a LLM
 - **Status**: review
@@ -92,6 +101,7 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "`f00504` (Progress Watchdog) puede consumir `eta_p80_ms` para distinguir “stalled pero cerca de terminar” de “stalled al 5%”: tests de integración demuestran que el watchdog cambia su decisión en función de la ETA."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
+- shipped-in: `0249c4a72dd2`
 
 ## acceptance
 
