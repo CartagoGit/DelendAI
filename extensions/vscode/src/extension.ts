@@ -37,7 +37,7 @@ void NAVIGATOR_PATCH_MARKER;
 
 import type { IHostAdapter } from '@delendai/ui-extension/public';
 import { registerAdoptCommand } from './commands/adopt';
-import { createFakeHostFromVscode } from './host/stub-host-adapter';
+import { resolveHostAdapter } from './host/resolve-host-adapter';
 import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
 import { registerOpenAgentCatalogCommand } from './commands/open-agent-catalog';
 import { registerOpenAgentTimelineCommand } from './commands/open-agent-timeline';
@@ -1205,24 +1205,8 @@ const registerDashboardSurfaces = async (
 	dashboardRefresh: { current?: DashboardWebviewViewProvider },
 ): Promise<void> => {
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
-	let host: IHostAdapter;
-	if (injectedVscode !== undefined) {
-		host = createFakeHostFromVscode(injectedVscode);
-	} else {
-		try {
-			const { createVscodeHostAdapter } = await import(
-				'./host/vscode-host-adapter'
-			);
-			host = createVscodeHostAdapter();
-		} catch (error) {
-			// Keep the canonical dashboard registrable even when an optional
-			// host adapter import fails during extension-host startup.
-			void vscode.window.showErrorMessage?.(
-				`DelendAI host adapter unavailable: ${error instanceof Error ? error.message : String(error)}`,
-			);
-			host = createFakeHostFromVscode(vscode);
-		}
-	}
+	const host = await resolveHostAdapter(vscode, injectedVscode);
+	if (host === undefined) return;
 	const settingsStore = createExtensionSettingsStore(context.globalState);
 	track(
 		registerOpenDashboardCommand({
