@@ -2,7 +2,7 @@
 id: q00021
 title: "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)"
 kind: plan
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-07
@@ -42,12 +42,13 @@ contains:
         - { id: b00239 S10, rationale: "Cuando entre el epoch cache-layout post-rebrand, el cierre de b00239 deja de tener que llevar el `LegacyMigrationManager` como pieza separada — todo cuelga del engine IMigration ya consolidado." }
         - { id: q00019, rationale: "El JsonToSqliteMigration (queue/progress/counters/checkpoint) reusa el epoch cache-layout y la conexión SqliteLifecycleStateStore; el lifecycle es la palanca que justifica pasar stores a SQLite." }
         - { id: q00020, rationale: "Si el layout de progress cambia (p.ej. de JSON a SQLite), la migración está versionada; progress deja de poder ser tratado accidentalmente como TTL cache." }
-last-transition-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
-last-correlation-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
-last-transition-from: in-progress
-last-transition-at: 2026-10-10T23:53:48.591Z
+last-transition-id: cd5ac212-7e93-43d8-9f82-ac08aaf8fb57
+last-correlation-id: cd5ac212-7e93-43d8-9f82-ac08aaf8fb57
+last-transition-from: review
+last-transition-at: 2026-10-11T02:53:19.968Z
 shipped-in:
   - "84217680c5c8ca0d905b833ca684ec55cd2e6a1d"
+  - "f37f97fc0"
 ---
 
 # q00021 — Plan — Cache Layout Lifecycle & Legacy Reaper
@@ -580,15 +581,17 @@ Slice independiente. Modifica comportamiento del eviction existente → puede ne
 Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La numeración sigue la convención `S0`-`S7` del pasted text.
 
 ### S0 — Inventario histórico (entregable: `f00513`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `f37f97fc0`
 - **Files**: `docs/delendai/proposals/done/chores/c00527-anexo-q00021-f00513-inventario-historico-de-cache-layout-epochs-1-9.md`
 - **Tarea**: tabla `old-path / current-path / owner / class / acción / introducido-en / seguro-borrar` para `r00010`, `f00065`, `f00080`, `x00052`, rebrand, proposal workflow refactors, `q00019` (SQLite stores), `q00020` (progress).
 - **Gate**: `bun run lint:proposals` (the annex parses and every link resolves).
 - **Aceptación**: firmado por el `proposal_guardian` o un reviewer que **no** sea el autor.
 - **Shipped**: already delivered before this unit, in commit `c54547404` (`chore(proposals): close c00527 inventory annex`). The deliverable lives in the annex `c00527`, not in the `ready/chores/f00513-inventory.md` path this block used to declare (that file never existed; the annex was archived under `done/chores/`). Its table covers epochs 1-9 and eight sections (r00010, f00065, f00080, x00052, rebrand, workflow refactors, q00019, q00020), each row with its introducing proposal or commit and a safe-to-delete verdict. This unit only corrects the declared path and records the shipping commit.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at f37f97fc0, validate exit 0, tests 1/1 — Annex c00527 exists under docs/delendai/proposals/done/chores/ with the epochs 1-9 table (59 table rows across 8 sections: r00010, f00065, f00080, x00052, rebrand, workflow refactors, q00019, q00020), each row with introducing commit/proposal and a safe-to-delete verdict. The slice's gate (bun run lint:proposals) exits 0 on the current tree: the annex parses and every link resolves. The evidence counters carry the gate's own pass (1/1), since the annex has no test suite. Reviewer != implementer (claude-sonnet-5-5).
 
 ### S1 — Contratos puros (entregable: `f00526`)
 - **Status**: done
