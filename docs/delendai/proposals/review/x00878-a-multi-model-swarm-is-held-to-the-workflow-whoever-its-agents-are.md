@@ -16,6 +16,7 @@ shipped-in:
   - "aba4404daba70ff26b231e60c7efd4210a3eebfa"
   - "945143a0310a9453b5def0e30d544f093f5d06ab"
   - "ef9ab171167c2cf92dc5b7c07c3801c1970f1137"
+  - "6acb9a5b1e4f998182c8fd2805a66266b2360c0e"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -150,13 +151,15 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at ef9ab171167c, validate exit 0, tests 65/65 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new claim-liveness.service.ts answers 'whether a unit holds its claims' and unit-fence.service.ts supplies the fencing token. The four specs are the criteria verbatim: 'is yes while its holder is live, local or as the remote co…', 'is yes while its publication is open, however quiet its ho…', 'is no once its holder has gone quiet, has gone, or has lan…', 'is yes for a unit nothing has judged'. This is the owner's analysis made product: a claim means a ref exists, which survives its agent.
 
 ### S8 — Asking the queue opens no unit
-- **Status**: review
+- **Status**: done
 - shipped-in: `635e8014f`
 - **Files**: `packages/cli/src/lib/review/review-peek.service.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: type
 - `review next` without a session reads the queue first and enters a unit only when a proposal waits for a verdict that nobody holds; otherwise it answers that nothing is waiting, and no ref, worktree or lease is made. The spec (three questions, no unit) fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 6acb9a5b1e4f, validate exit 0, tests 65/65 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new review-peek.service.ts reads the queue before entering a unit — anythingWaiting() returns whether any proposal is unclaimed and carries a needs-verdict slice — so 'review next' without a session opens no unit. This is the finding I reproduced live in this session: four stray units (g3–g6) came from calling review next without the session. Covered by review.command.spec.
 
 ### S9 — A unit nobody holds leaves nothing behind
 - **Status**: review
