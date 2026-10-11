@@ -6,6 +6,8 @@
  * A project that declares no roadmap file gets no tool and no
  * diagnostic: the plugin's defaults are nobody's roadmap.
  */
+import { resolve } from 'node:path';
+
 import { definePlugin } from '@delendai/core/plugin';
 import { callerCheckout } from '@delendai/core/public';
 
@@ -37,13 +39,15 @@ export default definePlugin({
 		const { file } = parsed.data;
 		// No roadmap declared: nothing to serve, and nothing to say.
 		if (file === undefined) return { tools: [] };
-		const openIn = (workspaceRoot: string, docsDir: string | undefined) =>
+		// The docs directory arrives relative to the workspace, so it
+		// follows whichever checkout the call is bound to.
+		const openIn = (workspaceRoot: string) =>
 			openRoadmapWorkspace({
 				workspaceRoot,
-				docsDir,
+				docsDir: resolve(workspaceRoot, ctx.docsDir),
 				options: { ...parsed.data, file },
 			});
-		const served = openIn(ctx.workspace.root, ctx.docsDir);
+		const served = openIn(ctx.workspace.root);
 		if (!served.ok) {
 			throw new Error(`roadmap plugin: ${served.reason}`);
 		}
@@ -53,15 +57,7 @@ export default definePlugin({
 			workspace: () => {
 				const root = callerCheckout.executionRootOr(ctx.workspace.root);
 				if (root === ctx.workspace.root) return served.value;
-				const mine = openIn(
-					root,
-					ctx.docsDir === undefined
-						? undefined
-						: callerCheckout.pathForCall(
-								ctx.docsDir,
-								ctx.workspace.root,
-							),
-				);
+				const mine = openIn(root);
 				return mine.ok ? mine.value : served.value;
 			},
 			...(ctx.developmentPolicy === undefined

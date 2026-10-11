@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { ROADMAP_BUMP_AUTHORITY } from '../../../../src/lib/contracts/constants/bump-intent.constant';
 import type { IRoadmapHorizon } from '../../../../src/lib/contracts/interfaces/roadmap.interface';
-import { horizonDelta } from '../../../../src/lib/read-model/roadmap-delta.service';
+import {
+	horizonDelta,
+	isPublished,
+} from '../../../../src/lib/read-model/roadmap-delta.service';
 import { horizonReadiness } from '../../../../src/lib/read-model/roadmap-readiness.service';
 import { entry, horizon } from './read-model.fixture';
 
@@ -79,5 +82,25 @@ describe('horizonDelta', () => {
 		);
 		expect(delta.bump.coherent).toBe(false);
 		expect(delta.bump.declared).toBe('major');
+	});
+});
+
+describe('isPublished', () => {
+	it('is true once the project version reaches the horizon', () => {
+		expect(isPublished('0.5.0', '0.5.0')).toBe(true);
+		expect(isPublished('0.5.0', '0.5.1')).toBe(true);
+		expect(isPublished('0.5.0', '1.0.0')).toBe(true);
+		expect(isPublished('v0.5.0', '0.5.0-rc.1')).toBe(true);
+	});
+
+	it('is false while the project version is behind it', () => {
+		expect(isPublished('0.5.0', '0.4.9')).toBe(false);
+		expect(isPublished('1.0', '0.9.9')).toBe(false);
+	});
+
+	it('is null when either cannot be read as numbers, or none is known', () => {
+		expect(isPublished('0.5.0', undefined)).toBeNull();
+		expect(isPublished('next', '0.5.0')).toBeNull();
+		expect(isPublished('0.5.0', 'unreleased')).toBeNull();
 	});
 });
