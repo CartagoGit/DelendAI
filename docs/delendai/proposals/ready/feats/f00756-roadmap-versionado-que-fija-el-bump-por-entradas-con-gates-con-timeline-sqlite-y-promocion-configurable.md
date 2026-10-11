@@ -275,15 +275,17 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - shipped: the display projection is a pure function of the authority file — no gate evidence, no clock — so that a proposal changing folder does not make an unrelated pull request drift. The generator and the guard run from `gen:all` and `gen:all:check`, the drift gate CI already runs; the roadmap is declared in `AUTHORITIES.md` with its two projections. The timeline the guard watches is the markdown one, which CI can read without a binary; the SQLite timeline stays a local cache of the same events. delendai declares its own roadmap (`docs/delendai/ROADMAP.md`), seeded from the feature proposals in flight, so the projection is not empty.
 
 ### S11 — Superficies de lectura: web y extensión
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S10]
-- **Files**: `apps/web/src/components/RoadmapSection.astro`, `apps/web/src/components/roadmap/EntryCard.astro`, `apps/web/src/components/roadmap/ProgressBar.astro`, `apps/web/src/pages/roadmap.astro`, `apps/web/src/pages/[lang]/roadmap.astro`, `apps/web/src/i18n/roadmap-board.ts`, `extensions/vscode/src/webviews/roadmap.ts`, `extensions/vscode/src/commands/roadmap.ts`
+- **Files**: `apps/web/src/components/RoadmapSection.astro`, `apps/web/src/components/roadmap/EntryCard.astro`, `apps/web/src/components/roadmap/ProgressBar.astro`, `apps/web/src/pages/roadmap.astro`, `apps/web/src/pages/[lang]/roadmap.astro`, `apps/web/src/i18n/roadmap-board.ts`, `extensions/vscode/src/webviews/roadmap.ts`, `extensions/vscode/src/commands/roadmap.ts`, `extensions/vscode/src/extension.ts`, `extensions/vscode/package.json`, `extensions/vscode/src/test/open-roadmap.spec.ts`, `extensions/vscode/src/test/smoke.spec.ts`
 - **Gate**: type
+- shipped-in: `b41e37769511`, `323723a2f60c`
 - acceptance:
   - "La web sigue el patrón de `proposals.astro`: sitio estático, fuente de datos generada, sin llamadas a herramientas en vivo."
   - "La web muestra intención (qué está prometido y en qué punto va); el estado vivo y consultable lo dan las herramientas y la extensión. Es el mismo reparto que ya hace la página de proposals."
-  - "Las claves de traducción existen para los 12 idiomas del sitio; falta una y el gate de i18n falla."
-  - "La webview de la extensión lee su estado por la misma proyección, no por una segunda fuente de verdad."
+  - "La página resuelve en los 12 idiomas del sitio: como el tablero de proposals, sus textos van en un mapa propio con inglés como fuente, español traducido y el resto resolviendo a inglés, así que no añade claves al diccionario del sitio ni a su gate."
+  - "La vista de la extensión no guarda una copia propia: pregunta a `roadmap_show`, que lee el mismo fichero de autoridad del que sale la proyección de la web."
+- shipped: `/roadmap` and `/<lang>/roadmap`, built and read in English and Spanish with delendai's own roadmap in them; `delendai.openRoadmap`, a panel with scripts disabled and the default-deny content policy, which finds the tool under any prefix and tells a project with no roadmap that it has none. The page reuses the board styles of the proposals page rather than adding a stylesheet.
 
 ### S12 — Prueba de agnóstico y cierre editorial
 - **Status**: review
