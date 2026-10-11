@@ -144,6 +144,8 @@ Delivered 2026-10-11. An approval writes the field since x00692; x00539 was appr
   - A work ref on the forge silent past what a unit is given, and never published, is retired by the queue's reap with its tip kept; the periodic publisher does not push back a unit whose tip is the one kept.
 
 Delivered 2026-10-11. Tried read-only on the forge as it stood: #1018 would be closed; the three silent units of the swarm would be retired; #1017 loses the verdicts on x00881 and f00547, both of which changed after it was opened, which is all it carries, and is then closed as delivering nothing. Not done, and taken out: publishing a silent unit's verdicts on its behalf. They are kept, and listed by `work retired`; the proposals return to the queue, where a reviewer that is present gives them. Not done either: a place in `proposals status` for the closes left to the owner; f00538 is the one there is, and is in this document.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — The run that died: what was ruled out, and a trace for next time
 
