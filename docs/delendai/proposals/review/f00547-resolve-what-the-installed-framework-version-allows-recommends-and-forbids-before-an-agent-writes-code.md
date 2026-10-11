@@ -258,7 +258,7 @@ Shipped: a pack is `.delendai/knowledge/<framework>.json`; `framework_guidance` 
 
 ### S7 — The detected convention is an input of the answer
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/detect/scan-convention.service.ts`, `plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts`
 
@@ -267,9 +267,11 @@ tool counts it in the project (S4) and feeds the result, with its
 confidence, to the resolver, so a project that already does X is told X.
 
 Shipped: a pack rule may carry `pattern` (`directory`, `suffix`, `marker`); the tool counts it for the rules of the asked topic, bounded in depth and files, and feeds `detectConvention`'s result to the resolver. The answer carries the `convention` it weighed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1e177dd3ce32`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 48754bc9a764, validate exit 0, tests 71/71 — Delivered by 1e177dd3ce (shipped-in) and re-delivered by 48754bc9a: scan-convention.service.ts feeds the detected convention into the guidance answer. Verified today: guidance-convention.spec.ts green within the 71/71 plugin battery. Different model; independence holds.
 
 ### S8 — Trusted-domain adapters stay out; the posture is enforced
 
