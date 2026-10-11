@@ -38,6 +38,27 @@ regressing — a bug to find and fix, not a number to relax.
    whether the margin is still appropriately sized for the drift they
    observe.
 
+## Re-measurements
+
+| Date | Runner | Statements | Branches | Functions | Lines | Floors after |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-14 | vitest 4 | 83.45 | 70.78 | 82.63 | 84.90 | — |
+| 2026-08-29 | vitest 4 | not recorded | not recorded | not recorded | not recorded | 82 / 69 / 83 / 83 |
+| 2026-10-11 (run 1) | vitest 5.0.3 | 87.26 | 75.02 | 88.89 | 88.93 | — |
+| 2026-10-11 (run 2) | vitest 5.0.3 | 87.25 | 75.00 | 88.88 | 88.92 | 86 / 74 / 87 / 87 |
+
+2026-10-11: the move to vitest 5 changed no test and broke none (16,259
+tests, 1,954 files). The floors rose because the suite had grown under
+them, not because the runner counts differently: the one counting
+difference found is that vitest 5 reports the setup files every project
+loads when `coverage.include` matches them, where vitest 4 left them
+out by itself. They are now excluded by name in `vitest.config.ts`
+(from the same list the projects load them from), so the measure is the
+one it was. Run 1 was taken before that exclusion (87.22 / 74.98 /
+88.85 / 88.89 as reported) and is shown here recomputed without those
+four files; run 2 is `bun run test:coverage` as it stands. Each floor is
+`floor(lower reading − 1.0)`; none moved down.
+
 ## Known gap
 
 Because coverage reporting is skipped on any test failure (see step 1

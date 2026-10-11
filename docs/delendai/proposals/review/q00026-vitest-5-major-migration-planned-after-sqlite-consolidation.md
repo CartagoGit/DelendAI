@@ -2,7 +2,7 @@
 id: q00026
 title: "vitest 5 major migration planned after SQLite consolidation"
 kind: plan
-status: ready
+status: review
 type: proposal
 track: dependencies
 date: 2026-09-07
@@ -24,6 +24,10 @@ related:
   - f00518
 blocks:
   - the next dependabot/npm_and_yarn/development-* PR can land cleanly once this is done
+last-transition-id: 8042eaa5-7920-408e-a544-1e859d864359
+last-correlation-id: 8042eaa5-7920-408e-a544-1e859d864359
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T16:24:48.698Z
 ---
 
 # q00026 — vitest + @vitest/coverage-v8 4.x → 5.0.0 planned migration, blocked on SQLite consolidation
@@ -178,169 +182,147 @@ Nothing else is in scope.
 
 ### S1 — preflight inventory: snapshot files, reporter consumers, and pool config
 
-- **Status**: pending
+- **Status**: retired
 - **Files**:
-  - `tools/scripts/vitest/preflight.ts` (new — emits a JSON report
-    to `.cache/vitest-preflight.json` listing every `.snap` file in
-    the repo, every spec that uses `toMatchSnapshot` /
-    `toMatchInlineSnapshot`, every spec that sets `pool` /
-    `forks` / `threads` / `vmThreads`, and every consumer of the
-    custom `journal-reporter.ts`)
-  - `tools/scripts/vitest/preflight.spec.ts` (new)
-  - `docs/delendai/vitest-preflight.md` (new — human-readable
-    companion to the JSON; lists the breaking-API touch points
-    this plan will land on S2 / S3)
+  - `tools/scripts/vitest/preflight.ts`
+  - `tools/scripts/vitest/preflight.spec.ts`
+  - `docs/delendai/vitest-preflight.md`
 - **Gate**: lint
-- acceptance:
-  - `bun tools/scripts/vitest/preflight.ts` writes
-    `.cache/vitest-preflight.json` with `{ snapshotFiles: number,
-    specsUsingSnapshot: number, specsSettingPool: number,
-    reporterConsumers: string[] }`.
-  - The script exits 0 and prints a one-line summary on stdout.
-  - The companion doc lists, by workspace, every `.snap` file with
-    > 5 entries (the most likely to flake under a format change).
-  - This slice does NOT bump anything. It only inventories.
-  - The slice is intentionally independent of the SQLite
-    consolidation timing — it can land before SQLite ships,
-    because it does not touch any source or test under
-    `packages/proposals-sqlite/`. It blocks S2.
+- retired-reason: the inventory was to tell S2 and S3 where the new major would break. Run on 2026-10-11, the migration broke no test — 16,259 tests in 1,954 files pass unchanged on vitest 5.0.3, and the coverage summary keeps its shape — and the two things it did change were found by the gates in minutes (the reporter's type import, S2; the setup files in the coverage report, S3), so a script and a document listing touch points would describe a risk that did not materialise and would have to be maintained for no reader. What the run did find is recorded where it is acted on (S3, S4).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
-### S2 — vitest 4.x → 5.0.0 + report / fix breakages
+### S2 — vitest 4.1.11 → 5.0.3 in every workspace
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `package.json` (bump `vitest: 4.1.11` → `vitest: 5.0.0`)
-  - `bun.lock` (regenerated)
-  - All workspace `package.json` files where `vitest` is pinned to
-    `4.1.11` (12 files: `packages/cli`, `packages/client`,
-    `packages/context-compiler`, `packages/contracts`,
-    `packages/core`, `packages/proposals-sqlite`,
-    `packages/state-sqlite`, `packages/state`,
-    `packages/test-kit`, `packages/ui-extension`, and 2 plugin
-    workspaces) — each bumped to `vitest: 5.0.0`
-  - `extensions/vscode/package.json` (bump `vitest: 4.1.11` → 5.0.0)
-  - `tools/scripts/test/journal-reporter.ts` (only IF vitest 5
-    changed the reporter wire protocol — verify against the
-    preflight from S1)
-  - Any `.spec.ts` file the run flags as breaking on the new
-    `toMatchObject` semantics (expect ≤ 3 files based on the
-    preflight inventory; the fix is to pass `{ exact: false }` or
-    switch to explicit field lists — see S2 acceptance)
-  - `docs/delendai/vitest-preflight.md` (updated with the actual
-    breakages observed during S2)
+  - `package.json`
+  - `bun.lock`
+  - `extensions/vscode/package.json`
+  - `packages/cli/package.json`
+  - `packages/client/package.json`
+  - `packages/context-compiler/package.json`
+  - `packages/contracts/package.json`
+  - `packages/core/package.json`
+  - `packages/proposals-sqlite/package.json`
+  - `packages/roadmap-sqlite/package.json`
+  - `packages/roadmap/package.json`
+  - `packages/state-sqlite/package.json`
+  - `packages/state-telemetry/package.json`
+  - `packages/state/package.json`
+  - `packages/test-kit/package.json`
+  - `packages/ui-extension/package.json`
+  - `plugins/adaptive-optimizer/package.json`
+  - `plugins/agent-orchestrator/package.json`
+  - `plugins/audit-orchestrator/package.json`
+  - `plugins/audit/package.json`
+  - `plugins/auto-agent-selector/package.json`
+  - `plugins/auto-plugin-selector/package.json`
+  - `plugins/cache/package.json`
+  - `plugins/changelog/package.json`
+  - `plugins/commit-policy/package.json`
+  - `plugins/completion/package.json`
+  - `plugins/context-for-change/package.json`
+  - `plugins/conventions/package.json`
+  - `plugins/database/package.json`
+  - `plugins/deps/package.json`
+  - `plugins/diagram/package.json`
+  - `plugins/docs/package.json`
+  - `plugins/env/package.json`
+  - `plugins/error-reporting/package.json`
+  - `plugins/execution-env/package.json`
+  - `plugins/external-mcps/package.json`
+  - `plugins/forge/package.json`
+  - `plugins/framework-knowledge/package.json`
+  - `plugins/git/package.json`
+  - `plugins/github/package.json`
+  - `plugins/gitlab/package.json`
+  - `plugins/i18n/package.json`
+  - `plugins/impact-analysis/package.json`
+  - `plugins/issues-triage/package.json`
+  - `plugins/issues/package.json`
+  - `plugins/link-check/package.json`
+  - `plugins/logs/package.json`
+  - `plugins/memory/package.json`
+  - `plugins/notification/package.json`
+  - `plugins/orchestrator-runner/package.json`
+  - `plugins/perf/package.json`
+  - `plugins/project-health/package.json`
+  - `plugins/project-kpis/package.json`
+  - `plugins/prompt-eval/package.json`
+  - `plugins/proposals/package.json`
+  - `plugins/quality-policy/package.json`
+  - `plugins/quality/package.json`
+  - `plugins/remote-provider-core/package.json`
+  - `plugins/rules/package.json`
+  - `plugins/search/package.json`
+  - `plugins/security/package.json`
+  - `plugins/self-learning/package.json`
+  - `plugins/skills-pack/package.json`
+  - `plugins/status-marker/package.json`
+  - `plugins/tech-debt/package.json`
+  - `plugins/test-convention/package.json`
+  - `plugins/test-policy/package.json`
+  - `plugins/usage-tracking/package.json`
+  - `plugins/web-fetch/package.json`
+  - `tools/package.json`
+  - `docs/delendai/DEPENDENCY-VERSIONS.md`
+  - `tools/scripts/test/journal-reporter.ts`
 - **Gate**: type
+- shipped-in: `c7d546899551`, `e5b76ed1a0a6`, `08e13ad56bfd`
 - acceptance:
-  - `bun install` produces a clean lockfile (no peer-dep warnings
-    from coverage-v8 yet; S3 adds the matching coverage-v8 5).
-  - `bun run typecheck` exits 0.
-  - `bunx vitest run --no-coverage packages/core packages/state
-    packages/test-kit packages/proposals-sqlite
-    packages/state-sqlite` (the suites most likely to exercise
-    snapshot + reporter APIs) exits 0 — every breaking spec has
-    been fixed in place, with each fix scoped to the breaking
-    API only.
-  - `bun run lint:biome-baseline` does not regress (the bump
-    itself does not change biome; this is a regression check).
-  - `tools/scripts/test/journal-reporter.ts` is unchanged iff
-    vitest 5's reporter protocol is the same as 4.x; otherwise the
-    slice lands the minimum diff that keeps
-    `.cache/delendai/results/logs/test-runs.jsonl` appending
-    one line per run with the same shape as before the bump.
-  - This slice does NOT touch `@vitest/coverage-v8`; that is S3.
+  - Every manifest that pinned `vitest` 4.1.11 pins 5.0.3 (68 workspaces and the root), the lockfile is regenerated, and the governed default in `DEPENDENCY-VERSIONS.md` says so: `bun run lint:dependency-versions` reports no unjustified drift.
+  - The whole suite passes with no spec changed: 16,259 tests in 1,954 files.
+  - `tools/scripts/test/journal-reporter.ts` still appends one line per run with the same shape. Its types changed home: vitest 5 no longer exports `vitest/reporters`, so `Reporter` comes from `vitest/node` with the other reporter types, and the run-end reason is typed `TestRunEndReason`. No behaviour changed.
+  - The target is 5.0.3, the current patch of the major the plan named as 5.0.0.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
-### S3 — @vitest/coverage-v8 4.x → 5.0.0 + report / fix breakages
+### S3 — @vitest/coverage-v8 4.1.11 → 5.0.3, and the one counting difference
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `package.json` (bump `@vitest/coverage-v8: 4.1.11` → 5.0.0)
-  - `bun.lock` (regenerated)
-  - `vitest.config.ts` (verify `coverage.provider: 'v8'` and the
-    `coverage.include` / `coverage.exclude` / `coverage.reporter`
-    list are still accepted; the current shape is already
-    compatible with coverage-v8 5 based on a static read, but the
-    slice verifies it at runtime)
-  - `tools/scripts/coverage-ratchet.script.ts` (only IF coverage-v8
-    5 changed the `json-summary` schema that the ratchet parses —
-    verify against the S1 preflight)
-  - `tools/scripts/lint/no-dead-modules.script.ts` (same IF —
-    that lint reads per-file function counts from the same JSON)
-  - Any other consumer of
-    `.cache/coverage/coverage-summary.json` identified by the S1
-    preflight (likely ≤ 2 files)
-  - `docs/delendai/vitest-preflight.md` (updated with the actual
-    breakages observed during S3)
+  - `package.json`
+  - `bun.lock`
+  - `vitest.config.ts`
 - **Gate**: type
+- shipped-in: `c7d546899551`, `6e71dbe9e9d3`
 - acceptance:
-  - `bun install` produces a clean lockfile with coverage-v8 5 as
-    a peer of vitest 5.
-  - `bun run typecheck` exits 0.
-  - `bunx vitest run --coverage --coverage.reporter=json-summary`
-    completes against the repo's existing
-    `coverage.include` list (the same one in
-    [vitest.config.ts](vitest.config.ts#L156-L167)) and writes
-    `.cache/coverage/coverage-summary.json` with the same top-level
-    keys (`total`, per-file entries) as before. If the schema
-    changed, `coverage-ratchet.script.ts` and
-    `no-dead-modules.script.ts` are patched in the same commit.
-  - `bun tools/scripts/coverage-ratchet.script.ts` exits 0 with
-    the existing thresholds (statements 82, branches 69,
-    functions 83, lines 84) — i.e. the ratchet does not regress.
-    If the measured percentages moved but stayed ≥ threshold, the
-    thresholds are NOT yet touched (S4 owns that).
-  - `bun run lint:no-dead-modules` exits 0.
-  - This slice lands on the S2 commit, not on `develop` directly,
-    so the bisect remains clean: revert S3 alone keeps vitest 5
-    + coverage-v8 4 if needed.
+  - `@vitest/coverage-v8` moves with `vitest` in the same commit: version 5 of one requires version 5 of the other, so there is no installable state in between and the two bumps are not separable as the plan first drew them.
+  - `vitest run --coverage --coverage.reporter=json-summary` writes `.cache/coverage/coverage-summary.json` with the same shape; `coverage-ratchet.script.ts` and `no-dead-modules.script.ts` read it unchanged.
+  - vitest 5 reports the setup files every project loads when `coverage.include` matches them; vitest 4 left them out by itself. They are excluded in `vitest.config.ts` from the same list the projects load them from, and `bun run lint:no-dead-modules` passes.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — re-measure coverage + re-tighten ratchet thresholds
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `vitest.config.ts` (the `coverage.thresholds` block; updated
-    with the new `floor(measured − 1.0)` values)
-  - `docs/delendai/coverage-ratchet.md` (updated with the
-    re-measurement table: previous run, new run, drift per
-    metric, and the rationale for each threshold change)
-  - `.cache/coverage/coverage-summary.json` (regenerated as part
-    of the run, not committed — listed here for completeness so
-    the slice is bisectable)
+  - `vitest.config.ts`
+  - `docs/delendai/coverage-ratchet.md`
 - **Gate**: lint
+- shipped-in: `6e71dbe9e9d3`
 - acceptance:
-  - The slice runs
-    `bunx vitest run --coverage --coverage.reporter=json-summary
-    --coverage.reportOnFailure=true` once on a clean
-    `.cache/coverage` and records the four metric percentages.
-  - Each of the four thresholds is either:
-    - left at its current value if `floor(measured − 1.0) ≤
-      current`, OR
-    - raised to `floor(measured − 1.0)` if that value is strictly
-      greater than the current threshold.
-  - No threshold is ever lowered. This is the ratchet invariant;
-    the slice documents it in the commit message.
-  - `bun tools/scripts/coverage-ratchet.script.ts` exits 0 after
-    the threshold edit.
-  - `docs/delendai/coverage-ratchet.md` lists the previous
-    percentages, the new percentages, and the rationale.
+  - Coverage is measured twice on a clean `.cache/coverage`: 87.26 / 75.02 / 88.89 / 88.93 and 87.25 / 75.00 / 88.88 / 88.92 (statements / branches / functions / lines).
+  - Each floor is `floor(lower reading − 1.0)`: 82 → 86, 69 → 74, 83 → 87, 83 → 87. No floor is lowered.
+  - `bun tools/scripts/coverage-ratchet.script.ts` exits 0 after the edit, and `bun run test:coverage` passes with the new floors.
+  - `docs/delendai/coverage-ratchet.md` carries the table of readings and why the floors moved.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — verify CI parity (lint, typecheck, biome-baseline, dead-modules)
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - none expected; if any gate regresses, this slice lands the
-    minimum fix and the diff is documented in the commit message
+  - `docs/delendai/DEPENDENCY-VERSIONS.md`
 - **Gate**: lint
+- shipped-in: `e5b76ed1a0a6`
 - acceptance:
-  - `bun run lint` exits 0.
-  - `bun run typecheck` exits 0.
-  - `bun tools/scripts/lint/biome-baseline.script.ts` reports
-    "no regressions" (or the existing baseline SHRANK — never
-    grew — relative to its S4 value).
-  - `bun run lint:no-dead-modules` exits 0.
-  - `bun run lint:dependency-versions` exits 0 with no unjustified
-    drifts.
-  - `bun run lint:proposals` exits 0 (no proposal-file drift
-    introduced by the bump).
-  - `bun run test:coverage` exits 0 with the S4 thresholds.
+  - `bun run lint:dependency-versions` exits 0 with no unjustified drift: the one gate the bump regressed, fixed by the governed table.
+  - `bun run lint:no-dead-modules` exits 0, and `bun run test:coverage` exits 0 with the S4 floors.
+  - The lint chain the publication runs, the typecheck and the biome baseline pass on the candidate; the pull request's required check is the evidence.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## Dependency graph
 
@@ -357,16 +339,15 @@ q00026 S4 — re-measure coverage + re-tighten ratchet thresholds
 q00026 S5 — verify CI parity (lint, typecheck, biome-baseline, dead-modules)
 ```
 
-S1–S5 are sequential (each one can break the next's assumptions).
-S2 and S3 are themselves atomic — S3's branch must start from S2's
-HEAD because coverage-v8 5's peer requirement on vitest 5 means S3
-without S2 produces a non-installable lockfile.
+S1 was retired; S2 and S3 landed as one commit, because coverage-v8 5
+requires vitest 5 and vitest 5 requires coverage-v8 5: neither bump
+installs without the other. S4 and S5 follow it.
 
 
 ## Acceptance
 
-This plan is **done** when all five slices above are merged into
-`develop`, the ratchet thresholds are tightened (or left alone) per
+This plan is **done** when the four delivered slices above (S1 was
+retired) are merged into `develop`, the ratchet thresholds are tightened (or left alone) per
 S4's invariant, and the next Dependabot weekly run opens a fresh
 PR whose only remaining work is whatever new majors land AFTER
 vitest 5 / coverage-v8 5 (none expected for vitest / coverage-v8
