@@ -173,6 +173,8 @@ Delivered 2026-10-11. A release already records why, in its commit; showing that
   - Two units implementing the same slice still are.
 
 Delivered 2026-10-11: a unit whose kind reads work rather than does it is left out of the duplicate relation. Run against the live swarm, "to sort out" went from every pack of every reviewer to the one real overlap, the two units of observation 19.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — A reviewer judges the text under review, and the tool shows it which that is
 
