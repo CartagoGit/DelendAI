@@ -18,6 +18,7 @@ last-transition-at: 2026-10-09T21:10:50.048Z
 shipped-in:
   - "7b07571790b18759adbefc1eec61d0db2d1797db"
   - "7cf206f4d2f8"
+  - "30680e32ef2b"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -176,7 +177,7 @@ recommendation; it does not win over `removed`, which resolves to
 
 ### S4 — Detected convention as an input, with its confidence
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/src/lib/detect/detect-convention.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/convention.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/convention.constant.ts`, `plugins/framework-knowledge/tests/src/lib/detect/detect-convention.spec.ts`]
 
 Count what the project actually does — 94 components with external
@@ -189,8 +190,10 @@ instead of its own habits.
   no convention: a weak habit fed to the resolver would outrank the
   framework's own recommendation.
 - shipped-in: `30680e32ef2b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 30680e32ef2b, validate exit 0, tests 71/71 — Delivered by 30680e32ef (PR #723 merge 3f198f5c50). detect-convention.helper.ts feeds the detected convention as an input with its confidence. Verified today: detect-convention.spec.ts is part of the green 71/71 plugin battery. Different model; independence holds.
 
 ### S5 — The two tools, and a cache keyed by resolved version
 
