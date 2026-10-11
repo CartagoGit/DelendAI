@@ -20,6 +20,7 @@ import {
 	claimForReview,
 	publishPackStep,
 	releaseClaim,
+	unjudgedStep,
 } from '../services/review-claim.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
@@ -45,6 +46,11 @@ const ANSWERS: {
 		toolError(
 			`Your review unit already holds a full pack (${String(outcome.size)} proposals).`,
 			publishPackStep(prefix),
+		),
+	unjudged: (outcome, proposalId, prefix) =>
+		toolError(
+			`Your review unit holds ${outcome.holding} and has recorded nothing about it; ${proposalId} is not taken until it has.`,
+			unjudgedStep(outcome.holding, prefix),
 		),
 	failed: (outcome, proposalId) =>
 		toolError(

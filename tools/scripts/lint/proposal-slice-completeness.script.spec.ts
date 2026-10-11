@@ -29,6 +29,27 @@ describe('proposal-slice-completeness lint', () => {
 	});
 
 	describe('findIssues', () => {
+		it('takes a retired slice of a done proposal as finished', () => {
+			// Decided against, with its reason in the document: nothing is
+			// left to do on it. Read as pending, it failed the review pack
+			// that closed r00040 on a slice retired weeks before.
+			write(
+				'docs/delendai/proposals/done/feats/f00002-thing.md',
+				'---\nid: f00002\nstatus: done\n---\n\n' +
+					'### S1 — thing\n' +
+					'- **Status**: done\n' +
+					'- **Gate**: e2e\n\n' +
+					'### S2 — dropped\n' +
+					'- **Status**: retired\n' +
+					'- **Gate**: e2e\n',
+			);
+			expect(
+				findIssues(root).filter(
+					(issue) => issue.kind === 'pending-slice',
+				),
+			).toEqual([]);
+		});
+
 		it('flags a done proposal with a non-done slice', () => {
 			write(
 				'docs/delendai/proposals/done/feats/f00001-thing.md',
