@@ -2,7 +2,7 @@
 id: q00021
 title: "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)"
 kind: plan
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-07
@@ -42,10 +42,13 @@ contains:
         - { id: b00239 S10, rationale: "Cuando entre el epoch cache-layout post-rebrand, el cierre de b00239 deja de tener que llevar el `LegacyMigrationManager` como pieza separada — todo cuelga del engine IMigration ya consolidado." }
         - { id: q00019, rationale: "El JsonToSqliteMigration (queue/progress/counters/checkpoint) reusa el epoch cache-layout y la conexión SqliteLifecycleStateStore; el lifecycle es la palanca que justifica pasar stores a SQLite." }
         - { id: q00020, rationale: "Si el layout de progress cambia (p.ej. de JSON a SQLite), la migración está versionada; progress deja de poder ser tratado accidentalmente como TTL cache." }
-last-transition-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
-last-correlation-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
-last-transition-from: in-progress
-last-transition-at: 2026-10-10T23:53:48.591Z
+last-transition-id: cd5ac212-7e93-43d8-9f82-ac08aaf8fb57
+last-correlation-id: cd5ac212-7e93-43d8-9f82-ac08aaf8fb57
+last-transition-from: review
+last-transition-at: 2026-10-11T02:53:19.968Z
+shipped-in:
+  - "84217680c5c8ca0d905b833ca684ec55cd2e6a1d"
+  - "f37f97fc0"
 ---
 
 # q00021 — Plan — Cache Layout Lifecycle & Legacy Reaper
@@ -578,18 +581,20 @@ Slice independiente. Modifica comportamiento del eviction existente → puede ne
 Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La numeración sigue la convención `S0`-`S7` del pasted text.
 
 ### S0 — Inventario histórico (entregable: `f00513`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `f37f97fc0`
 - **Files**: `docs/delendai/proposals/done/chores/c00527-anexo-q00021-f00513-inventario-historico-de-cache-layout-epochs-1-9.md`
 - **Tarea**: tabla `old-path / current-path / owner / class / acción / introducido-en / seguro-borrar` para `r00010`, `f00065`, `f00080`, `x00052`, rebrand, proposal workflow refactors, `q00019` (SQLite stores), `q00020` (progress).
 - **Gate**: `bun run lint:proposals` (the annex parses and every link resolves).
 - **Aceptación**: firmado por el `proposal_guardian` o un reviewer que **no** sea el autor.
 - **Shipped**: already delivered before this unit, in commit `c54547404` (`chore(proposals): close c00527 inventory annex`). The deliverable lives in the annex `c00527`, not in the `ready/chores/f00513-inventory.md` path this block used to declare (that file never existed; the annex was archived under `done/chores/`). Its table covers epochs 1-9 and eight sections (r00010, f00065, f00080, x00052, rebrand, workflow refactors, q00019, q00020), each row with its introducing proposal or commit and a safe-to-delete verdict. This unit only corrects the declared path and records the shipping commit.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at f37f97fc0, validate exit 0, tests 1/1 — Annex c00527 exists under docs/delendai/proposals/done/chores/ with the epochs 1-9 table (59 table rows across 8 sections: r00010, f00065, f00080, x00052, rebrand, workflow refactors, q00019, q00020), each row with introducing commit/proposal and a safe-to-delete verdict. The slice's gate (bun run lint:proposals) exits 0 on the current tree: the annex parses and every link resolves. The evidence counters carry the gate's own pass (1/1), since the annex has no test suite. Reviewer != implementer (claude-sonnet-5-5).
 
 ### S1 — Contratos puros (entregable: `f00526`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
@@ -604,11 +609,13 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The context carries no `lifecycleState`: only the bootstrap reads and writes the epoch; a migration that could write it could skip its own successors.
   - `migrateStore` and `importStoreToSqlite` are not in `ICacheLayoutHelpers`. No store moves to SQLite yet (epochs 6-8 are future work of q00019/q00020), so they would be untested surface; they arrive with the first migration that needs them.
   - The manifest lists only artifacts present in the code today (`progress/` is q00020 and does not exist yet) and none that belong to the proposals domain: `lint:core-proposals-boundary` forbids core from naming that domain, so the proposal index, id counters and peer-review log are declared by the proposals plugin, not here. It lives in `contracts/constants/` because the file-conventions lint requires exported constants there.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 34/34 — All 4 declared files exist on develop (judged at the superseding delivery 84217680c5c8, which only re-names the same work; the slice ships in 8ed4c1b71 and the merge keeps it byte-identical). cache-layout-migration.helper.ts has zero fs imports (acceptance). Gate run: vitest --project core cache-layout-migration.helper.spec.ts = 34/34 passed on the current tree. Pure rules present: assertDroppable/resolveMigrationChain/validateManifest/findOwningArtifact; ICacheLayoutMigration reuses IMigration['id'] + IMigrationPlanStep without extends, as the correction records.
 
 ### S2 — Lifecycle state store (entregable: `f00527`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `11d9226de`
 - **Files**:
   - `packages/state/src/lib/lifecycle-state.interface.ts`
@@ -628,11 +635,13 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The interface lives in `@delendai/state`, not in core: `@delendai/state-sqlite` depends on `state` and not on core, and both stores must implement the same type.
   - The marker is the store core actually uses today. Nothing in the product opens `state.sqlite` through core (core has no SQLite driver and the driver is a shadow with no consumer yet), so S3 wires the file store; the SQLite store is ready for the day the state engine hands core a connection.
   - The marker lock reuses `withFileMutex` (token ownership, heartbeat, stale takeover) rather than a new lock file protocol.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 453/453 — Judged at superseding delivery 84217680c5c8 (slice itself ships in 11d9226de; the merge keeps the same files). ILifecycleStateStore with both implementations verified: file store spec 8/8 under vitest (core) and the sqlite store through the bun-owned suite (bun run test:sqlite = 445 pass / 0 fail across 82 files, including lifecycle-state-store.spec.ts). getAppliedEpoch returns the exact epoch, corrupted marker counts as absent, BEGIN IMMEDIATE lock with in-process queue. Interface lives in @delendai/state, not core, as the correction records.
 
 ### S3 — Integración en bootstrap (entregable: `f00528`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
@@ -654,11 +663,13 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The registry is empty in this slice and an empty registry makes the runner a no-op (`unregistered`, no read, no write): recording epoch 5 before the migrators of S4 exist would mark workspaces migrated that were never migrated.
   - Known limit: when `cacheDir` was just changed in the configuration, the layout step runs against the new directory before the config transition moves the old cache into it.
   - The cache directory is resolved lazily, only when there is something to carry, so the fast path never parses the configuration.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 375/375 — Judged at superseding delivery 84217680c5c8 (slice ships in 8ed4c1b71). All 10 declared files exist on develop. Gate: vitest --project core packages/core/tests/src/lib/cache packages/core/tests/src/lib/workspace-migration = 375/375 across 31 files: fast path (1 read, 0 writes on second boot), crash does not advance the epoch, two concurrent processes run the chain once, gap and downgrade fail with a message. ensureWorkspaceMigrated runs the cache-layout step before the identity migrators and maps the result to IMigrationOutcome.
 
 ### S4 — Migraciones históricas (entregable: `f00529`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/cache/migrations/results-segregation.migration.ts`
@@ -680,11 +691,13 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - L2 (`tools/scripts/.cache`, `subproject/.cache`, `app/.cache`) and L4 (`docs/.../proposals/index.json`) live outside the cache directory. The lifecycle helpers are contained to the cache directory by design, and deleting files in a user's source tree on a hard-coded list is the kind of guess this proposal rules out, so those two are not deleted; their epochs are pass-through steps. L5 is the identity engine's rename.
   - A workspace with nothing to carry is not recorded: a clean project is left byte-identical (the contract of the identity engine), and pays the chain's `lstat` probes once per process. A rehearsal runs before the lock is taken, because taking it creates `.delendai/`.
   - An unreadable configuration makes the step `skipped` (nothing touched, nothing recorded), not failed: a broken config file must not report a migration failure on every boot.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 375/375 — Judged at superseding delivery 84217680c5c8 (slice ships in 8ed4c1b71). The real chain 0->5 is registered: 2->3 moves logs/logs-errors/memory/usage-tracking under results/ entry by entry without overwriting (conflict keeps both copies and the origin); 1->2 renames .verify-tmp and .commit-policy; 0->1, 3->4, 4->5 are empty steps that keep one epoch per step. Same gate as S3: 375/375 cache+workspace-migration tests cover records surviving with content, merge-without-overwrite, unknowns/operational untouched, dry run changes nothing, custom cacheDir, symlink not followed, second run idempotent.
 
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `cb6ceebff`
 - **Files**:
   - `tools/scripts/lint/no-legacy-cache-paths.script.ts`
@@ -702,11 +715,13 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Corrections to the design, following the code**:
   - The ratchet is a script with a JSON snapshot in `tools/scripts/lint`, not a rule in `packages/rules` with a spec under `tests/cache`: every other repository-wide ratchet is a script plus a baseline file, and the manifest lives in core, which `packages/rules` does not import.
   - The lint is not wired into `validate` directly but into `lint:architecture`, which CI runs; a lint reachable only from `validate:run` fails `lints-reach-ci`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 10/10 — Judged at the superseding whole-proposal delivery 84217680c5c8 (the slice itself ships in cb6ceebff; the merge keeps the same lint files). Specs: 10/10 (no-legacy-cache-paths.script.spec.ts + cache-layout-ratchet.script.spec.ts). Real lints on the current tree: lint:no-legacy-cache-paths scanned 3845 files, exit 0; lint:cache-layout-ratchet = epoch 5, manifest unchanged, exit 0. Both chained into lint:architecture for CI. Ratchet refuses --update when artifacts change without an epoch bump, verified by its spec.
 
 ### S6 — CLI operator (entregable: `f00531`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `baf7794eb`
 - **Files**:
   - `packages/cli/src/commands/cache.command.ts`
@@ -723,11 +738,13 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - One command file with subcommands, like `migrate.command.ts`, instead of five files: the subcommands are a few lines each over the same engine.
   - `gc` previews unless `--apply` is given (the plan only asked for a dry-run flag); eviction deletes by age, so applying it should be deliberate.
   - This slice builds on the registry that S4 adds (open pull request at the time of writing), so its branch carries that merge.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 30/30 — Judged at the superseding whole-proposal delivery 84217680c5c8 (slice ships in baf7794eb). cache.command.ts implements status|migrations|migrate --dry-run|gc --dry-run/--apply over runCacheLayoutStep; status previews without writing; gc previews unless --apply. Gate: vitest in packages/cli on cache.command.spec.ts + registry.spec.ts = 30/30. The one failing spec in src/commands is repair.command.spec.ts (ea63c1e0e, r00040), outside this slice's Files; cache.command and registry are green.
 
 ### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
-- **Status**: review
+- **Status**: done
 - shipped-in: `1632de660`
 - **Files**:
   - `packages/core/src/lib/cache/boot-eviction-throttle.service.ts`
@@ -743,8 +760,10 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The throttle sits in core around the boot sweep (`assemble.ts`), not in the `cache` plugin: the sweep and its `runOnBoot` posture are core's, and the plugin only contributes rules. The `cache_gc` tool and `delendai cache gc` are on-demand and are never throttled.
   - The default is no throttle, not 24 h: a default would change what every existing project's boot does. A project opts in with the value it wants.
   - The stamp lives in `.delendai/`, not in the cache directory the sweep evicts from.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 6/6 — Judged at the superseding whole-proposal delivery 84217680c5c8 (the slice itself ships in 1632de660; the merge keeps the same files). Gate: vitest --project core boot-eviction-throttle.service.spec.ts = 6/6: no interval writes nothing, dry-run respects the throttle, a virtual clock advanced 24h runs the sweep, a failure does not stamp. cache.evictionIntervalMs is opt-in (absent or 0 = today's behaviour), declared in config-file-schema + delendai.config.schema.json; the stamp lives in .delendai/cache-eviction-at.json and is written only after the sweep ran. The throttle sits in core around the boot sweep (assemble.ts), not in the cache plugin, as the correction records; on-demand cache_gc is never throttled.
 
 ## acceptance
 
