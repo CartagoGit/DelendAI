@@ -2,7 +2,7 @@
 id: q00011
 title: "Plan — cerrar los contratos de runtime que el sistema promete y no cumple: ciclo de vida eager/lazy, propiedad del teardown, enforcement de efectos, puertas ciegas de CI y el 66% del coste de tokens que vive en los output schemas"
 kind: plan
-status: in-progress
+status: review
 type: plan
 track: runtime-contracts-v1
 date: 2026-08-27
@@ -121,9 +121,10 @@ contains:
             rationale: "delendai doctor --deep/--ci/--offline cubriendo los modos de fallo de esta auditoria. AUD-F04." }
         - { id: d00014, kind: docs, required: false, priority: P2, track: docs,
             rationale: "Una pagina canonica por plugin: tres paginas manuales duplican las auto-generadas. AUD-F07." }
-last-transition-id: a89da4b9-e95f-4328-8644-ba9cbe9152ae
-last-correlation-id: a89da4b9-e95f-4328-8644-ba9cbe9152ae
-last-transition-from: ready
+last-transition-id: 8435432b-f89f-4d5d-b62a-8a75a83551f4
+last-correlation-id: 8435432b-f89f-4d5d-b62a-8a75a83551f4
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T13:37:45.546Z
 ---
 
 # q00011 — Cerrar los contratos de runtime
@@ -255,6 +256,9 @@ detalle vive en la hija; aquí el orden y la razón del orden.
 intente hacerlo bien con un token de administrador. Después, en paralelo,
 `x00277` (el falso verde deja de ser verde) y `x00276` (el 403 deja de explotar;
 es el único check rojo que queda en `develop`).
+- shipped-in: `ca9832016ec4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Ciclo de vida: la cadena completa o nada (P0)
 
@@ -278,6 +282,9 @@ host no llama. Arreglar uno solo no produce ninguna mejora observable.
 > `f00198`/`f00199`; y `delendai adopt` (`AUD-G04`) y los subpaths del core
 > (`AUD-E03`) **ya existían** — prescribí construir lo construido. Todas las
 > correcciones están anotadas en su hallazgo de la auditoría.
+- shipped-in: `ca9832016ec4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Independientes de P0, en paralelo
 
@@ -292,6 +299,9 @@ fronteras de efectos, ratchet medido en 104 — el 13 publicado contaba sólo
 completo con baseline que sólo baja) y `x00295` (el guard de sondeo compara
 literales que no existen en el union: 33 herramientas con efectos se invocan con
 entrada vacía).
+- shipped-in: `ca9832016ec4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Tokens: atacar el 66% (P1)
 
@@ -306,6 +316,9 @@ compartido vía `$defs`/`$ref` queda descartado: `v00128` estableció que zod v4
 el SDK de MCP no deduplican `$ref`, así que no ahorra nada), `v00130`
 (`advise_routing` + `invoke`), `v00131` (`quality_policy` + `usage_report`), y
 `r00036` (ratchet descendente) para blindar lo ganado.
+- shipped-in: `ca9832016ec4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Superficie adaptativa (P1)
 
@@ -316,6 +329,9 @@ el SDK de MCP no deduplican `$ref`, así que no ahorra nada), `v00130`
 
 `x00285` (decidir el modo leyendo al cliente) y `x00286` (evicción real del
 working set, que depende del `dispose` retenido por `r00038`).
+- shipped-in: `ca9832016ec4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Seguridad, resto (P1)
 
@@ -326,6 +342,9 @@ working set, que depende del `dispose` retenido por `r00038`).
 
 `r00037` (`EffectBroker`: dry-run como prevención), `x00289` (`eager`
 expresable), `x00292` (`protectedBranches` obligatorio en la firma).
+- shipped-in: `ca9832016ec4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — CI y gobernanza, resto (P1)
 
@@ -338,6 +357,9 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 `x00294` (`tools/` entra en el typecheck: 95 errores invisibles hoy),
 `d00013` (ADR del modelo de ramas), `x00273` (guard de push a `main`) y
 `x00293` (versión única por plugin: 41 de 51 mienten al host).
+- shipped-in: `ca9832016ec4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — Testing (P1)
 
@@ -350,6 +372,8 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 `t00030` (umbrales apretados + branches ≥80% en los módulos de P0) y `t00031`
 (reescribir el e2e de dogfood de `commit-policy`). Acompañan a toda la Ola 1:
 los tests de caminos de error suben la cobertura de ramas por sí solos.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — Plataforma (P2)
 
