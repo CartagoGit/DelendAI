@@ -51,6 +51,8 @@ const refusalOf = (result: {
 export const moveProposalAfterVerdict = async (input: {
 	readonly close: boolean;
 	readonly reopen: boolean;
+	/** The submission left no slice to do: the proposal goes to review. */
+	readonly handOver?: boolean;
 	readonly proposalId: string;
 	readonly sliceId: string;
 	readonly agent: string;
@@ -87,5 +89,41 @@ export const moveProposalAfterVerdict = async (input: {
 				}
 			: { proposalReopened: true };
 	}
+	if (input.handOver === true) {
+		const result = await runProposalTransition(
+			{
+				id: input.proposalId,
+				to: 'review',
+				reason: `every slice is handed in (${input.sliceId} was the last)`,
+				agent: input.agent,
+			},
+			input.options,
+		);
+		return refused(result)
+			? {
+					proposalHandedOver: false,
+					proposalCloseBlocker: refusalOf(result),
+				}
+			: { proposalHandedOver: true };
+	}
 	return {};
+};
+
+const HANDED_OVER = new Set(['review', 'done', 'retired']);
+
+/** Whether no slice of `markdown` is left to do: each is in review, done or retired. */
+export const everySliceHandedOver = (markdown: string): boolean => {
+	const statuses = [
+		...markdown.matchAll(/^###[^\n]*\n(?:(?!^#{2,3} )[^\n]*\n?)*/gmu),
+	]
+		.map((block) =>
+			/^[-*]\s*\*\*Status\*\*:\s*([a-z-]+)/imu
+				.exec(block[0])?.[1]
+				?.toLowerCase(),
+		)
+		.filter((status): status is string => status !== undefined);
+	return (
+		statuses.length > 0 &&
+		statuses.every((status) => HANDED_OVER.has(status))
+	);
 };
