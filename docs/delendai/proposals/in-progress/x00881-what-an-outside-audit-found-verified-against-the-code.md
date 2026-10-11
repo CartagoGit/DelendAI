@@ -54,6 +54,8 @@ Verified: any failure of `readFile` returned `null`, the answer for "no such fil
   - The publication-boundary lint fails on an export of a published package whose only condition is `types` pointing into `src/`.
 
 Verified, and wider than reported: `@delendai/api` declared `./public` as `{ "types": "./src/public/index.ts" }` while shipping `dist` alone, though that module exports six functions; `@delendai/observability` did the same. The build already emitted `dist/public/index.js` for both, so only the manifests were wrong. The lint that checks what published code imports never looked at what a package offers that nobody imports yet.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A package describes what it does today
 
