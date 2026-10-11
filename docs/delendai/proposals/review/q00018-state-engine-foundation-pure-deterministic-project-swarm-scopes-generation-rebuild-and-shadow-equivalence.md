@@ -347,8 +347,10 @@ El State Engine nunca es ese camino.
   piensa otro agente publica gen 148. La escritura del agente 1 es
   rechazada con `STALE_GENERATION` y la del agente 2 tiene éxito.
 - Delivered (reconciled 2026-10-07 against the tree): `packages/state/src/lib/generation.ts`: publish, drain, a strictly increasing lease token, a lease-fenced write that is refused when stale (`IFenceRejected`, the plan's `STALE_GENERATION` under another name) and a GC that reaps, all in `generation.spec.ts`. Shipped in `99d17f26d`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 50717a0d5273, validate exit 0, tests 109/109 — Verified generation fencing and lifecycle semantics are present in generation.ts, including stale-write refusal and GC behavior described by the slice. Package tests passed 109/109.
 
 ### S5 — Property tests: `incremental ≡ cleanRebuild` + determinism + corrupción
 
