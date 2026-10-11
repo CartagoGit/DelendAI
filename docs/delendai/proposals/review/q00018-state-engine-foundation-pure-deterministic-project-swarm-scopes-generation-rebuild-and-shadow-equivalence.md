@@ -13,6 +13,7 @@ shipped-in:
   - "99d17f26d"
   - "50717a0d5"
   - "e0970e951"
+  - "5e2f6d6bd802f697a50f7fe73af057f9a35be6e1"
 ---
 
 # q00018 — State Engine foundation
@@ -373,8 +374,10 @@ El State Engine nunca es ese camino.
   hash canónico es idéntico al calculado antes de la corrupción.
 - Delivered (reconciled 2026-10-07 against the tree): `packages/state/tests/src/property/{equivalence,determinism,corruption}.spec.ts` (the determinism suite includes the `Date.now()` regression). The default ran 200 sequences where the acceptance asks for at least 1,000; it is 1,000 now (`STATE_PROPERTY_RUNS` still overrides), and the three suites take 4 s instead of 3.
 - shipped-in: `60ea92e6db1d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 5e2f6d6bd802, validate exit 0, tests 109/109 — Verified the property suites for equivalence, determinism and corruption exist, default to 1000 runs via STATE_PROPERTY_RUNS, and the package test suite passes with them enabled. Package tests passed 109/109.
 
 ### S6 — Lint `state-engine-purity` + acceso por `IMcpPluginContext.state`
 
