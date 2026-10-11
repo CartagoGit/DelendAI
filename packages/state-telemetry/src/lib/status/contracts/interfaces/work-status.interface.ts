@@ -4,11 +4,24 @@ import type {
 	IWorkProgressSnapshot,
 } from '../../../projector/contracts/interfaces/work-progress.interface';
 
-/** One open proposal as the status view reads it: its id and its document. */
+/** One slice of an open proposal, as whoever read the proposals reports it. */
+export interface IWorkStatusSlice {
+	readonly id: string;
+	/** The status word its document carries (`pending`, `review`, `done`…). */
+	readonly status: string;
+	/** How many acceptance lines it has; a slice with none counts as one. */
+	readonly acceptanceCount: number;
+}
+
+/**
+ * One open proposal as the status view reads it. The view does not read
+ * proposal documents: whoever does (the proposals plugin, through its one
+ * reader) hands it the slices.
+ */
 export interface IWorkStatusProposal {
 	readonly id: string;
 	readonly title: string;
-	readonly markdown: string;
+	readonly slices: readonly IWorkStatusSlice[];
 }
 
 /** One proposal's line in the status view. */
