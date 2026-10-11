@@ -203,15 +203,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: proposal-id-sources.ts ends an id reservation when a higher one supersedes it, which is the finding that 'the new/all reservation still blocked the next new proposal'. Pinned by proposal-id-sources.spec.
 
 ### S12 — A retired close pass ends once its closes have landed
-- **Status**: review
+- **Status**: done
 - shipped-in: `aba4404da`
 - **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`, `tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Each run of the closer drops from the forge its own retired passes whose every closed proposal is in `done/` on the integration branch; a pass with a close that has not landed is kept."
 - Delivered: thirty-seven passes of the closer were retired on the forge after an afternoon, each holding the close of the same five proposals. The reaper of landed retired work drops a tip the integration branch contains, and a pass's commits never are contained: its copy of each close differs from the one that lands in the transition ids it stamped. The closer now reads its own retired passes, the proposals each added under `done/`, and drops (`work retired --drop`) those whose closes are all on the integration branch. The helpers' spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: close-approved-proposals.script.ts ends a retired close pass once its closes have landed, answering the finding that a closer's pull request sat beside a hand-made one (#848 vs the hand-moved five). Pinned by close-approved-proposals.script.spec.
 
 ### S13 — A publication its author left in conflict is adopted or retired, not left
 - **Status**: review
