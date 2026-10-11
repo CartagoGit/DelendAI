@@ -55,6 +55,11 @@ Observed between 04:30 and 04:50:
 14. **A pull request titled "review batch".** #991, from `qwen-3.8-flash`, carries two approvals of x00875 under that title and a body that lists commit subjects. The title is what the queue and a person see. → S5.
 15. **A review pack fails on text its reviewer did not write.** By 04:55 four of the seven review packs opened were red on `lint-governance` or `lint-presets`, each for something in the proposal it closed, not in the verdict: x00875 named three unreferenced objects by hash (#991); f00538 quotes a tree, "produced tree `1a19f55e9`", which the cited-commits lint took for an orphan commit (#992); r00040 has a slice retired weeks ago, which the completeness lint counts as pending once the proposal is in `done/` (#996); and one pack left the agent catalog stale (#996). Every one of these rules only looks at `done/`, so a proposal carries the fault through `review/` unseen and the reviewer who approves it is the one stopped. A reviewer may not change the product, so it cannot fix what stops it. → S9.
 
+Observed at 05:15:
+
+16. **A third name for one model, and a version nobody launched.** Two units belong to `glm-4.6-flash` (`batch-all-g1`, `batch-all-g2`). The GLM agents are Flash 5.3: on the forge and in the worktrees they are now `glm-5.3-flash`, `glm-5.3-max` and `glm-4.6-flash`. Nine names for five models. → S2.
+17. **A pack of approvals titled as a release.** #993 is titled "chore(review): release r00040" and carries an approval of f00643; #998 is "chore(review): release f00271" and carries five claims and the verdicts on f00267. `work publish` titles a pull request from a commit of the unit, and for a review pack that is whichever bookkeeping commit it meets. → S5.
+
 ### S2 — An agent has one name, and it is not the model's to choose
 
 - **Status**: pending
