@@ -21,6 +21,8 @@ related:
 last-transition-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
 last-correlation-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
 last-transition-from: in-progress
+shipped-in:
+  - "d5dd77f035e6"
 ---
 
 # f00267 — Idempotency keys para commits automáticos
@@ -162,7 +164,7 @@ Política:
 
 ### S1 — `processed-events.ts` con TTL + `CommitPolicyEngine` lo consulta
 
-- **Status**: done — verified 2026-09-15 by an evidence pass (the `in_review` state below never received a recorded review). `processed-events.ts` keeps keys with a configurable TTL (30 days by default) and the engine checks and records them around the commit. Each acceptance point has a passing spec: replaying the same event returns `ALREADY_PROCESSED` without committing (`engine.spec.ts`, including after a restart in `processed-events.spec.ts`), an expired key is processed again, and a store read failure returns `STORE_READ_ERROR` without committing. `processed-events.spec.ts` 20/20 and `engine.spec.ts` 19/19.
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
 - **Gate**: type
 - **Dependency**: `f00266`
@@ -171,9 +173,12 @@ Política:
   - "replay del mismo evento → ALREADY_PROCESSED, sin commit"
   - "TTL expirado → vuelve a procesar (según policy)"
   - "I/O error de lectura → STORE_READ_ERROR, no commit"
-- review-state: in_review
-- review-implementer: copilot
 - shipped-in: `a3a56ccaeba9`
+- review-state: done
+- review-implementer: copilot
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at d5dd77f035e6, validate exit 0, tests 27/27 — Gate declared by the slice (npx vitest run --project commit-policy processed-events.spec.ts slice-replay.plugin.spec.ts): 2 files / 27 tests passed, exit 0. Repo typecheck (tsc --noEmit -p tsconfig.json) exit 0. The idempotency is real end to end, not only unit-tested: engine.ts consults the store before the commit and writes it around it. Replay is covered by slice-replay.plugin.spec.ts; the t00021 replay proposal the acceptance names never existed in the repository, which the slice's own note already records.
+
 ### S2 — The store stays bounded, and a question costs a stat
 - **Status**: review
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/processed-events.interface.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
