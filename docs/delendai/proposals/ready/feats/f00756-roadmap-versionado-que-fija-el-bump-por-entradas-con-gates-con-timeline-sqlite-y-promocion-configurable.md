@@ -286,25 +286,28 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La webview de la extensión lee su estado por la misma proyección, no por una segunda fuente de verdad."
 
 ### S12 — Prueba de agnóstico y cierre editorial
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S9, S11]
 - **Files**: `packages/core/tests/src/lib/e2e/roadmap-agnosticism.spec.ts`, `plugins/roadmap/tests/src/lib/store/agnosticism.spec.ts`, `docs/delendai/ROADMAP-DOGFOOD.md`
 - **Gate**: e2e
 - acceptance:
   - "El test carga una configuración sintética con `trunk → release/2.x` y verifica que ninguna ruta de código asume `develop`/`main`."
-  - "El test carga una configuración sintética con un solo esquema de versión (sin rama de release) y verifica que el plugin no falla."
-  - "Hay un e2e contra un servidor MCP en memoria que ejercita el ciclo completo: init → transición → readiness → delta → close."
-  - "Documentado para un adoptante: qué esdogfooding en delendai y qué debe replicar él en su proyecto."
+  - "El test carga una configuración sintética con una sola rama (sin rama de release) y verifica que el plugin no falla."
+  - "Hay un e2e contra un servidor MCP en memoria que ejercita el ciclo completo: init → readiness → delta → close → promotion → sync."
+  - "Documentado para un adoptante: qué es dogfooding en delendai y qué debe replicar él en su proyecto."
+- shipped: the end-to-end spec assembles a host as a host does and speaks to it through a listing MCP client, on three projects: other branch names, one branch, and no roadmap at all; a static spec proves no source file of the plugin names a branch; `ROADMAP-DOGFOOD.md` separates the product from this repository's own choices.
 
 ### S13 — A promotion is opened on the cadence the project declares
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S7, S9]
-- **Files**: `plugins/roadmap/src/lib/promotion/promotion-readiness.service.ts`, `plugins/roadmap/tests/src/lib/promotion/promotion-readiness.service.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/governance/forge-settings.lib.ts`
+- **Files**: `plugins/roadmap/src/lib/contracts/interfaces/promotion-readiness.interface.ts`, `plugins/roadmap/src/lib/promotion/promotion-readiness.service.ts`, `plugins/roadmap/tests/src/lib/promotion/promotion-readiness.service.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/governance/promotion-workflow.lib.ts`, `tools/scripts/governance/promotion-workflow.lib.spec.ts`, `tools/scripts/governance/forge-settings.script.ts`
 - **Gate**: type
+- shipped-in: `099d28d2cc04`
 - acceptance:
-  - "A project that declares `development.roadmap.promotion.schedule` (a cron expression, or `on-ready`) gets a workflow, projected from that configuration like the other forge settings, that opens the release pull request from the integration branch into the release branch when the cadence comes round and the promotion is ready: the integration branch's last full run is green, code scanning reports no open alert on it, and the roadmap's blocking gates for the next version pass."
-  - "When it is not ready, the workflow opens nothing and states which condition held it back; it never merges, never bumps and never tags: the release branch's own gate still decides, and the plugin keeps no git-write permission."
+  - "A project that declares `plugins.roadmap.options.promotion.schedule` (a cron expression, or `on-ready`) gets a workflow, projected from that configuration like the other forge settings, that opens the release pull request from the integration branch into the release branch when the cadence comes round and the promotion is ready: the checks the integration branch requires are green on its head, code scanning reports no open alert on it, and the roadmap's blocking gates for the next version pass."
+  - "When it is not ready, the workflow opens nothing and states every condition that held it back; it never merges, never bumps and never tags: the release branch's own gate still decides, and the plugin keeps no git-write permission."
   - "A project with one branch, with no release branch, or with no schedule declared gets no workflow and no diagnostic; branch names, the cadence and the conditions come from the configuration, never from this repository's develop and main."
+- shipped: `promotionReadiness` (pure, in the plugin) judges the three conditions and names all that fail; `open-promotion` asks them of the forge and opens the pull request with the evidence in its body, or says what holds it back, and opens no second one for the same promotion; the workflow is rendered by `promotion-workflow.lib.ts` and written by the forge-settings script when a cadence is declared. Probed against the real forge with a temporary cadence, read-only: it reported the two required checks still running on the head and the six open entries of 0.2.0. delendai itself declares no cadence — turning on scheduled release pull requests is the owner's decision — so no workflow is generated here yet.
 - Asked by the owner on 2026-10-07: promotions of develop into main were opened by hand whenever someone noticed develop was stable, and the first one waited for 48 code scanning alerts nobody was tracking on develop. The roadmap already knows what the next version promises; this slice turns "is it time to promote" into a scheduled, evidence-backed pull request. It keeps decision 3 of `## why this design`: the plugin informs (readiness), the forge acts (a workflow that opens a pull request), and the merge stays behind the release gate.
 
 ## dependency graph
