@@ -59,7 +59,10 @@ import { spawnSync } from 'node:child_process';
 
 const REPO_ROOT = process.cwd();
 const PROPOSALS_DIR = 'docs/delendai/proposals';
+// `review` too: a citation that would stop a proposal from closing is
+// its implementer's to fix, before a reviewer's approval is what meets it.
 const DONE_DIRS = [
+	'review',
 	'done/feats',
 	'done/fixes',
 	'done/refactors',
@@ -304,7 +307,7 @@ const formatReport = (
 	const known = baseline.orphans.length;
 	const lines: string[] = [];
 	lines.push(
-		`proposal-cited-commits: ${verdict.checked} hash(es) checked across done/* proposals`,
+		`proposal-cited-commits: ${verdict.checked} hash(es) checked across review and done/* proposals`,
 	);
 	if (verdict.orphans.length === 0) {
 		lines.push('✓ no new orphan commits cited');
