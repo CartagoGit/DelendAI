@@ -666,7 +666,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 375/375 — Judged at superseding delivery 84217680c5c8 (slice ships in 8ed4c1b71). All 10 declared files exist on develop. Gate: vitest --project core packages/core/tests/src/lib/cache packages/core/tests/src/lib/workspace-migration = 375/375 across 31 files: fast path (1 read, 0 writes on second boot), crash does not advance the epoch, two concurrent processes run the chain once, gap and downgrade fail with a message. ensureWorkspaceMigrated runs the cache-layout step before the identity migrators and maps the result to IMigrationOutcome.
 
 ### S4 — Migraciones históricas (entregable: `f00529`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/cache/migrations/results-segregation.migration.ts`
@@ -688,8 +688,10 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - L2 (`tools/scripts/.cache`, `subproject/.cache`, `app/.cache`) and L4 (`docs/.../proposals/index.json`) live outside the cache directory. The lifecycle helpers are contained to the cache directory by design, and deleting files in a user's source tree on a hard-coded list is the kind of guess this proposal rules out, so those two are not deleted; their epochs are pass-through steps. L5 is the identity engine's rename.
   - A workspace with nothing to carry is not recorded: a clean project is left byte-identical (the contract of the identity engine), and pays the chain's `lstat` probes once per process. A rehearsal runs before the lock is taken, because taking it creates `.delendai/`.
   - An unreadable configuration makes the step `skipped` (nothing touched, nothing recorded), not failed: a broken config file must not report a migration failure on every boot.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 375/375 — Judged at superseding delivery 84217680c5c8 (slice ships in 8ed4c1b71). The real chain 0->5 is registered: 2->3 moves logs/logs-errors/memory/usage-tracking under results/ entry by entry without overwriting (conflict keeps both copies and the origin); 1->2 renames .verify-tmp and .commit-policy; 0->1, 3->4, 4->5 are empty steps that keep one epoch per step. Same gate as S3: 375/375 cache+workspace-migration tests cover records surviving with content, merge-without-overwrite, unknowns/operational untouched, dry run changes nothing, custom cacheDir, symlink not followed, second run idempotent.
 
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
 - **Status**: review
