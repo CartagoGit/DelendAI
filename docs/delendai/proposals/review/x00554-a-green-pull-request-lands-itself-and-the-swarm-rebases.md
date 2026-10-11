@@ -2,7 +2,7 @@
 id: x00554
 title: "A green pull request lands itself and the swarm rebases"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-19
@@ -11,9 +11,10 @@ tags:
     - integration
     - hydration
     - swarm
-last-transition-id: 69d1dcf8-c04f-4977-a23e-8248c1af1315
-last-correlation-id: 69d1dcf8-c04f-4977-a23e-8248c1af1315
-last-transition-from: ready
+last-transition-id: d1744948-b5c0-4105-a3ce-4946aad545c3
+last-correlation-id: d1744948-b5c0-4105-a3ce-4946aad545c3
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T00:02:44.016Z
 ---
 
 # x00554 — A green pull request lands itself and the swarm rebases
@@ -88,16 +89,32 @@ already hydrates the checkout.
   publication ref once the required checks pass, honouring the policy's
   integration method. Nothing merges that the policy would not have
   merged by hand.
+- shipped-in: `dea43b3d7f38`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
-### S2 — Hydration cascades to every dependent ref
+### S2 — What depends on the integration branch follows it, and what somebody is working on is told
 
-- **Status**: pending
-- **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
-- **Files**: `packages/core/src/lib/startup-reconciler/**`, `packages/core/src/lib/wip-engine/rebase.ts`, `tools/scripts/forge/**`
-- When the integration node moves, each work ref based on the old tip is
-  replayed onto the new one through `rebaseWipOntoNewBase`, and each
-  publication ref is refreshed. A conflict is reported per ref, with the
-  paths, and leaves that ref untouched.
+- **Status**: review
+- shipped-in: `fd71074e1`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units`
+- **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `tools/scripts/forge/refresh-candidates.script.ts`, `packages/core/src/lib/work-units/work-swarm-relations.service.ts`
+- When the integration branch moves, every ref that nobody is working on
+  follows it: a unit that holds no commits of its own is fast-forwarded
+  (`kept-unit-hydration.service.ts`, and `work reap --apply` since
+  x00878 S37), and each publication is refreshed by the queue and by the
+  host when it hydrates (`refresh-candidates.script.ts`, `b0b2975d9`). A
+  publication that cannot be refreshed is reported with its conflict and
+  left as it was.
+- A work ref somebody is working on is NOT replayed. This slice was
+  written to replay each of them through `rebaseWipOntoNewBase`; that
+  was decided against on 2026-10-11. Rewriting the branch under an agent
+  in the middle of an edit moves files it has open and can leave its
+  worktree in a conflict it did not start; it is told instead (S3), and
+  the conflict, if there is one, is met once, by the agent, when it
+  merges the integration branch before publishing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — An agent is told its base moved under it
 
@@ -117,13 +134,15 @@ already hydrates the checkout.
   after every other kind, since it is the mildest.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `581b5720bad3`
 
 ## acceptance
 
 - A publication ref whose required checks pass integrates without anyone
   asking it to, by the method the policy declares.
-- After the integration node moves, every work ref based on the old tip
-  is replayed onto the new one, and a ref that cannot be replayed is
-  reported with its conflicting paths and left untouched.
+- After the integration branch moves, every unit that holds nothing of
+  its own and every publication follows it; a publication that cannot
+  is reported with its conflict and left untouched. A work ref somebody
+  is working on is not rewritten under them.
 - An agent whose base moved is told so, with what to run.
 
