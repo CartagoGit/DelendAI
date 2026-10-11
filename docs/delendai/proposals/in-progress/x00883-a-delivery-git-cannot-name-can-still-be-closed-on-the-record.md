@@ -2,10 +2,14 @@
 id: x00883
 title: "A delivery Git cannot name can still be closed, on the record"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-11
+last-transition-id: 2dcc0c0b-41ab-4fc7-b68c-0fff7a5e981c
+last-correlation-id: 2dcc0c0b-41ab-4fc7-b68c-0fff7a5e981c
+last-transition-from: ready
+last-transition-at: 2026-10-11T21:20:56.030Z
 ---
 
 # x00883 — A delivery Git cannot name can still be closed, on the record
