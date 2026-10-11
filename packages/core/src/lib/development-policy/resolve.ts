@@ -12,9 +12,8 @@
  * Rule (2) is the reason this file exists. A project that upgrades
  * delendai without editing its config must keep integrating work exactly
  * the way it did yesterday when that model still has a supported route.
- * Legacy fields are mapped rather than ignored, and unsupported combinations
- * remain visible to validation instead of being silently migrated. Choosing
- * the new model is an edit the operator makes.
+ * Legacy fields are mapped rather than ignored, unsupported combinations stay
+ * visible to validation, and choosing the new model is the operator's edit.
  */
 import {
 	DEVELOPMENT_POLICY_VERSION,
@@ -288,6 +287,7 @@ const applyOverrides = (
 			leaseTtlMinutes:
 				input.coordination?.leaseTtlMinutes ??
 				base.coordination.leaseTtlMinutes,
+			roster: input.coordination?.roster,
 		},
 		recovery: {
 			...base.recovery,
