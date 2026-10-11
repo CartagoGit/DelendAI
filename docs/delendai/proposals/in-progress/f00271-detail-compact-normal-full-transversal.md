@@ -135,7 +135,7 @@ cualquier tool a partir de un solo campo de input.
 
 ### S1 — Contrato compartido + adopción en audit, usage, logs (3 plugins)
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/detail.contract.ts`, `packages/core/tests/src/lib/contracts/detail.contract.spec.ts`, `plugins/audit/src/lib/tools/audit-run.tool.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/logs/src/lib/tools/tools.ts`, `plugins/logs/tests/tools.spec.ts`
 - **Gate**: type
 - shipped-in: `7127cc34a`
