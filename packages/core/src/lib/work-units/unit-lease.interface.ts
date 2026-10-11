@@ -107,11 +107,22 @@ export interface ITouchUnit {
 
 export interface IReapedUnit {
 	readonly ref: string;
-	readonly outcome: 'removed' | 'would-remove' | 'kept';
+	/**
+	 * `retired`: abandoned with edits nobody committed — they are kept on
+	 * the forge at `keptAt` and the unit is gone from here.
+	 */
+	readonly outcome:
+		| 'removed'
+		| 'would-remove'
+		| 'retired'
+		| 'would-retire'
+		| 'kept';
 	readonly worktree: string | null;
 	/** The edits that kept it, when it was kept. */
 	readonly edited: readonly string[];
 	readonly regenerable: readonly string[];
+	/** Where its uncommitted edits are kept, when it was retired. */
+	readonly keptAt?: string;
 }
 
 /** A kept unit the maintenance brought forward, or would. */

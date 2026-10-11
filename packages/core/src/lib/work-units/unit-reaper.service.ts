@@ -11,6 +11,9 @@
  *
  * Nothing real is lost: a worktree holding an edit somebody made is kept
  * and reported with the paths; one holding only regenerable files is not.
+ * Once the unit is abandoned nobody is coming back for those edits, so
+ * they are kept on the forge as a retired ref and the unit removed — the
+ * alternative was a copy of the repository left here for good.
  *
  * A unit whose owner went away before committing anything is reaped the
  * same way: it carries no commit the integration branch lacks, so its
@@ -18,6 +21,7 @@
  * it started, each a full copy of the repository, and none was ever
  * delivered for this reaper to see.
  */
+import { keepUncommittedEdits } from './unit-edits-kept.service';
 import type { IReapedUnit } from './unit-lease.interface';
 import { removeUnitCheckout, worktreeOfRef } from './unit-removal.service';
 import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
@@ -54,12 +58,13 @@ export const reapDeliveredUnits = async (input: {
 	// The tips kept on the remote for units retired there: a unit left
 	// behind here whose tip is one of them lost nothing by being removed,
 	// and stayed in every listing of the swarm as a unit at work.
+	const remote = integrationRemote(root, policy);
 	const retiredTips = new Set(
 		(
 			readGit(root, [
 				'ls-remote',
 				'--',
-				integrationRemote(root, policy),
+				remote,
 				`refs/${policy.branches.namespacePrefix}/retired/*`,
 			]) ?? ''
 		)
@@ -97,7 +102,31 @@ export const reapDeliveredUnits = async (input: {
 			regenerable: state.regenerable,
 		};
 		if (state.edited.length > 0) {
-			reaped.push({ ...base, outcome: 'kept' });
+			if (unit.standing !== 'abandoned' || worktree === null) {
+				reaped.push({ ...base, outcome: 'kept' });
+				continue;
+			}
+			if (!apply) {
+				reaped.push({ ...base, outcome: 'would-retire' });
+				continue;
+			}
+			const keptAt = keepUncommittedEdits({
+				root,
+				policy,
+				remote,
+				ref: unit.ref,
+				worktree,
+			});
+			// Not kept (no forge to keep them on): the unit stays.
+			const gone =
+				keptAt !== undefined &&
+				(await removeUnitCheckout(root, unit.ref, { editsKept: true }))
+					.deletedBranch;
+			reaped.push(
+				gone
+					? { ...base, outcome: 'retired', keptAt }
+					: { ...base, outcome: 'kept' },
+			);
 			continue;
 		}
 		if (!apply) {

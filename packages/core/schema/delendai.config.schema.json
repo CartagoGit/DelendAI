@@ -116,6 +116,27 @@
 			},
 			"additionalProperties": false
 		},
+		"state": {
+			"type": "object",
+			"properties": {
+				"parity": {
+					"type": "object",
+					"properties": {
+						"shadow": {
+							"type": "object",
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
+				}
+			},
+			"additionalProperties": false
+		},
 		"keepLegacy": {
 			"type": "boolean"
 		},
