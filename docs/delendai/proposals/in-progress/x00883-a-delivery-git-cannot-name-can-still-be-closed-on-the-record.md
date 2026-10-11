@@ -89,6 +89,8 @@ between those two designs:
 - acceptance:
   - `closed-with-independent-approval` fails a pull request that closes a proposal with an attested slice, names the proposal and the slices, and passes once the pull request carries the owner's label (`delendai:owner-reconcile`).
   - A proposal Git names throughout is judged exactly as before.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A publication nobody moves any more is reported
 
