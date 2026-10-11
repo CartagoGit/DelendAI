@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 /**
  * generate-agent-catalog.script.ts — build the checked-in agent discovery
- * catalog from the three canonical inputs S1 already exposes: the live tool
- * registry, the composed skill manifest, and the proposal index.
+ * catalog from the live tool registry and the composed skill manifest.
+ * It lists no proposals: their state is read from their own projection.
  *
  * Why it exists: S1's MCP tool/resource/prompt are live views. This script
  * materializes the same compact discovery surface into a checked-in artifact so
@@ -26,20 +26,11 @@ import { mkdir, rm } from 'node:fs/promises';
 
 import { assembleCliConfig } from '@delendai/core/public';
 import { parseCliArgs } from '@delendai/core/plugin';
-import { ACTIONABLE_PROPOSAL_STATUSES, buildCatalog } from '@delendai/core/cli';
-import { toProposalSummaries } from '../../../plugins/proposals/src/lib/proposals/proposal-summaries.service';
-import { scanProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
-import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
-import type {
-	IProposalSummary,
-	ISkillSummary,
-	IToolSummary,
-} from '@delendai/core/contracts';
+import { buildCatalog } from '@delendai/core/cli';
+import type { ISkillSummary, IToolSummary } from '@delendai/core/contracts';
 import type { ICatalogSources } from '@delendai/core/cli';
 
 export const DEFAULT_OUTPUT_PATH = 'docs/delendai/agent-catalog.generated.json';
-export const DEFAULT_PROPOSALS_INDEX_PATH =
-	'.cache/delendai/proposals/index.json';
 export const DEFAULT_SKILL_MANIFEST_PATH = 'packages/core/skills/manifest.json';
 export const DEFAULT_WARNINGS_SUFFIX = '.lint-warnings.txt';
 
@@ -60,13 +51,6 @@ export interface ISkillManifestFile {
 	readonly skills: readonly IManifestSkillEntry[];
 }
 
-interface IProposalIndexFile {
-	readonly generated_at?: string;
-	readonly proposals?: readonly Parameters<
-		typeof toProposalSummaries
-	>[0][number][];
-}
-
 export interface IArtifactSkill {
 	readonly id: string;
 	readonly version: string;
@@ -77,40 +61,15 @@ export interface IArtifactSkill {
 	readonly bodyPath: string;
 }
 
-export interface IArtifactProposalSummary {
-	readonly id: string;
-	readonly title: string;
-	readonly track: string;
-	readonly status: IProposalSummary['status'];
-	readonly kind: IProposalSummary['kind'];
-	readonly date: string;
-}
-
 export interface IGeneratedAgentCatalogArtifact {
 	readonly mode: CatalogMode;
 	readonly tools: readonly IToolSummary[];
 	readonly skills: readonly IArtifactSkill[];
-	/**
-	 * There is deliberately no `byStatus` roll-up here.
-	 *
-	 * A count over every proposal in the repository is a property of the
-	 * REPOSITORY, not of a branch, and this artifact is checked in and
-	 * compared against its generator on the PR's **merge ref**. With N
-	 * candidates open, each one's merge ref sees a different total, so the
-	 * committed number can be right for at most one of them and every
-	 * merge invalidates the rest. Measured here: that single field —
-	 * `review: 36` against `review: 38` — was the whole content of the
-	 * drift diff on six consecutive candidates, and refreshing them only
-	 * moved the failure to whichever one merged last.
-	 *
-	 * Per-proposal entries below are branch-local facts and merge fine.
-	 * Anything that needs totals counts them at read time, which is what
-	 * `proposals_compact_status` already does.
-	 */
-	readonly proposals: {
-		readonly actionable: readonly IArtifactProposalSummary[];
-		readonly all?: readonly IArtifactProposalSummary[];
-	};
+	// No proposals: what a proposal's state is belongs to its markdown and
+	// the projection read from it. Listed here, every change of state in
+	// any proposal rewrote this checked-in file, so every pull request
+	// that touched a proposal touched what every other one did, and the
+	// zones whose tests read this file ran again for a verdict.
 }
 
 export interface IGeneratorOptions {
@@ -130,13 +89,6 @@ export interface IGeneratorIo {
 	readonly now?: () => Date;
 	readonly fixedGeneratedAt?: string;
 	readonly loadTools?: (root: string) => Promise<readonly IToolSummary[]>;
-	/**
-	 * The proposal registry as the markdown describes it now, as index
-	 * JSON text, computed without writing anything. Defaults to the real
-	 * read-only scan. A test that feeds the registry file directly as its
-	 * input answers `undefined`, meaning "read the file as it is".
-	 */
-	readonly scanRegistry?: (root: string) => Promise<string | undefined>;
 }
 
 export interface IGenerationResult {
@@ -153,11 +105,6 @@ export interface ICliResult {
 	readonly exitCode: number;
 	readonly generation?: IGenerationResult;
 }
-
-const scanRegistryFromMarkdown = async (
-	root: string,
-): Promise<string | undefined> =>
-	(await scanProposalRegistry(root, DEFAULT_PATH_LAYOUT)).text;
 
 const defaultIo = (): IGeneratorIo => ({
 	readText: async (absPath) => {
@@ -266,44 +213,6 @@ const readSkillSummaries = async (
 	};
 };
 
-const readProposalSummaries = async (
-	root: string,
-	io: IGeneratorIo,
-): Promise<{
-	readonly proposals: readonly IProposalSummary[];
-	readonly generatedAt: string;
-}> => {
-	const proposalIndexPath = join(root, DEFAULT_PROPOSALS_INDEX_PATH);
-	// The catalog is derived from the proposals that exist (x00625), and
-	// it is read, never repaired (x00629). x00625 got the first half by
-	// running the registry SYNC before reading, and the sync reconciles:
-	// it can move misfiled proposals, archive, unblock, rewrite the index
-	// and level SQLite. This generator is what `catalog:check` and
-	// `gen:all --check` run, so checking whether the catalog was stale
-	// could change the proposals it was checking. Now the registry is
-	// scanned in memory and read from there; nothing is written, and the
-	// index file on disk is left as it was.
-	const scanned = await (io.scanRegistry ?? scanRegistryFromMarkdown)(root);
-	const readText = (absolutePath: string): Promise<string | undefined> =>
-		scanned !== undefined && absolutePath === proposalIndexPath
-			? Promise.resolve(scanned)
-			: io.readText(absolutePath);
-	const parsed = await parseJsonFile<IProposalIndexFile>(
-		proposalIndexPath,
-		readText,
-		'proposal index',
-	);
-	// The host's own mapping, so the catalog and the running server cannot
-	// disagree about a proposal's kind or status. It maps the registry
-	// scanned above: the catalog is checked in and compared byte for byte,
-	// so it is built from the markdown, never from a cache on this machine.
-	const proposals = toProposalSummaries(parsed.proposals ?? []);
-	return {
-		proposals,
-		generatedAt: parsed.generated_at ?? '1970-01-01T00:00:00.000Z',
-	};
-};
-
 const loadLiveToolSummaries = async (
 	root: string,
 	io: IGeneratorIo,
@@ -328,7 +237,6 @@ const loadLiveToolSummaries = async (
 
 const resolveGeneratedAt = (
 	manifestGeneratedAt: string,
-	proposalGeneratedAt: string,
 	io: IGeneratorIo,
 ): string => {
 	const envFixed = io.fixedGeneratedAt ?? process.env.AGENT_CATALOG_FIXED_NOW;
@@ -341,10 +249,7 @@ const resolveGeneratedAt = (
 		}
 		return fixed.toISOString();
 	}
-	return (
-		[manifestGeneratedAt, proposalGeneratedAt].sort().at(-1) ??
-		'1970-01-01T00:00:00.000Z'
-	);
+	return manifestGeneratedAt;
 };
 
 const renderWarnings = (skillIds: readonly string[]): string =>
@@ -356,29 +261,11 @@ const renderWarnings = (skillIds: readonly string[]): string =>
 
 const buildArtifact = (
 	snapshot: ReturnType<typeof buildCatalog>,
-): IGeneratedAgentCatalogArtifact => {
-	const artifactProposals = snapshot.proposals.map((proposal) => ({
-		...proposal,
-		date: proposal.date ?? '',
-	}));
-	const actionable = snapshot.proposals
-		.filter((proposal) =>
-			ACTIONABLE_PROPOSAL_STATUSES.includes(proposal.status),
-		)
-		.map((proposal) => ({
-			...proposal,
-			date: proposal.date ?? '',
-		}));
-	return {
-		mode: snapshot.mode,
-		tools: snapshot.tools,
-		skills: snapshot.skills,
-		proposals: {
-			actionable,
-			...(snapshot.mode === 'full' ? { all: artifactProposals } : {}),
-		},
-	};
-};
+): IGeneratedAgentCatalogArtifact => ({
+	mode: snapshot.mode,
+	tools: snapshot.tools,
+	skills: snapshot.skills,
+});
 
 export const buildAgentCatalogArtifact = async (
 	options: Pick<IGeneratorOptions, 'root' | 'mode'>,
@@ -387,21 +274,15 @@ export const buildAgentCatalogArtifact = async (
 	const io = { ...defaultIo(), ...ioOverrides } satisfies IGeneratorIo;
 	const { skills, manifestGeneratedAt, missingSummarySkillIds } =
 		await readSkillSummaries(options.root, io);
-	const { proposals, generatedAt: proposalGeneratedAt } =
-		await readProposalSummaries(options.root, io);
 	const tools = await (io.loadTools ?? loadLiveToolSummaries)(
 		options.root,
 		io,
 	);
-	const generatedAt = resolveGeneratedAt(
-		manifestGeneratedAt,
-		proposalGeneratedAt,
-		io,
-	);
+	const generatedAt = resolveGeneratedAt(manifestGeneratedAt, io);
 	const sources: ICatalogSources = {
 		tools: () => tools,
 		skills: () => skills,
-		proposals: () => proposals,
+		proposals: () => [],
 	};
 	const snapshot = buildCatalog(sources, {
 		mode: options.mode,
