@@ -252,7 +252,7 @@ that the audit calls obligatory.
 
 ### S4 — One projection chain, then SQLite-only reads (the markdown stays the authority)
 
-- **Status**: in-progress (phase 2 delivered 2026-09-30; phase 3 remains)
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
   - `plugins/proposals/src/lib/services/projection-refresh.ts`
@@ -291,8 +291,7 @@ that the audit calls obligatory.
   - `plugins/proposals/tests/src/lib/proposals/index-reader-db-resolution.spec.ts`
   - `plugins/proposals/tests/src/lib/proposals/index-reader-location.spec.ts`
   - `plugins/proposals/src/lib/tools/db-status.tool.ts`
-  - `plugins/proposals/src/lib/proposals/index-reader-parity-report.ts`
-  - `plugins/proposals/tests/src/lib/proposals/index-reader-stale-registry.spec.ts`
+  - `plugins/proposals/tests/src/lib/services/db-doctor/storage-mode.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -537,6 +536,18 @@ Acceptance:
 
 **Phase 3, 2026-10-07 — a stale export is not a divergence.** Every boot of the MCP server said `proposal index: serving the SQLite projection …; .cache/delendai/proposals/index.json differs on x00643, x00644, x00645`. The projection reconciles on its own; the registry export is written only by a full sync, which in a shared checkout nobody runs — units sync in their own worktrees — so the file there was a day old and every comparison reported the work done since as divergence. The SQL read now carries when its reconcile completed (`reconciledAt`, from `reconciliation_runs.completed_at`), and a registry generated before that is not compared: the read is counted as `sql-registry-stale` (parity `not-compared`) and says nothing. A registry newer than the projection is still compared. `index-reader-stale-registry.spec.ts` pins both; `test:sqlite` 417 pass. This narrows the registry's role to what phase 3 wants it to be, an export for the rollback; removing it from the read path entirely is still open.
 
+**Phase 3 closed 2026-10-11 — the registry is out of the read.** After
+S6 the last thing a read under `sql`, the default, did with the registry
+file was to open it, parse it and say how it differed from the
+projection. Every read paid for a 250 KB parse to compare an authority
+that is kept level with the markdown against a copy nobody keeps
+current. The comparison is gone, with its module, its two outcomes in
+the read statistics and its spec; a read under `sql` records
+`sql-served` and compares nothing. `auto` and `json` remain what they
+were, for a project that pins them: `auto` is by definition a
+comparison. What still names the registry file is this repository's own
+tooling, which is S10.
+
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
 - **Status**: review — every acceptance item now has a spec; see the
@@ -707,6 +718,25 @@ Three things S6 left that a project other than this one would have met:
   is now remembered as level for two seconds per process: 4 ms a read.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+
+### S10 — The repository's own scripts read the projection, and the registry export goes
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
+  - `plugins/proposals/src/lib/proposals/registry-export.service.ts`
+  - `tools/scripts/catalog/generate-agent-catalog.script.ts`
+  - `tools/scripts/lint/proposals.script.ts`
+  - `tools/scripts/proposals/collect-evidence.script.ts`
+- **Gate**: unit
+- acceptance:
+  - No script under `tools/scripts` opens the registry file: each reads through `readProposalIndex`.
+  - A full sync no longer writes the registry file, and nothing fails for its absence.
+
+Nineteen scripts of this repository name the registry file (the review
+helpers, the catalog generator, three lints). They are tooling, not the
+product's read path, and each is a small change; together they are what
+keeps the export being written.
 
 ## acceptance
 
