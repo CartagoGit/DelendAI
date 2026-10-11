@@ -103,9 +103,8 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10: `bun run work:progress -- --agents` (and the foot of the default view) lists each agent whose last event falls in the last half hour, with the work item and the kind of that event (`activeAgents`).
 - Amended (S3) 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
 - shipped-in: `9cef7f165a10`, `edf768be6a8c`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work agents [agentId]`, but `delendai work agents` is not implemented: the CLI answers `Unknown subcommand 'agents'`. The delivered agent view is only available as `delendai work progress --agents`, so the promised command was not delivered.
 
 ### S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
