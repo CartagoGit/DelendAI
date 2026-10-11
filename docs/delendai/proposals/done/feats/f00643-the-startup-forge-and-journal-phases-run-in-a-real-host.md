@@ -2,14 +2,14 @@
 id: f00643
 title: "The startup forge and journal phases run in a real host"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-26
-last-transition-id: 4f0abf78-742e-46d9-9637-5951f6c8dfea
-last-correlation-id: 4f0abf78-742e-46d9-9637-5951f6c8dfea
-last-transition-from: in-progress
-last-transition-at: 2026-10-09T20:59:09.970Z
+last-transition-id: 9f5001b3-be34-438f-9b6e-310f936f576f
+last-correlation-id: 9f5001b3-be34-438f-9b6e-310f936f576f
+last-transition-from: review
+last-transition-at: 2026-10-11T09:16:08.359Z
 shipped-in:
   - "ff589f828b9bb3ad18c8f483059268acfe78c141"
   - "652863cb5729b2376b25bc40c8490133a800c327"
@@ -67,7 +67,7 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - review-log: approved by glm-5.3-max — verified at 652863cb5729, validate exit 0, tests 10/10 — Delivered by the S2 work merged via PR #832 (merge ff589f828b, claude-opus-5-5); the queue cites the later merge 652863cb5 (PR #960) which touched the same files delivering S3. The Decision block in the proposal records the maintainer-delegated home (refs/<namespace>/journal, git-ref NDJSON); journal-ref.service.ts binds IStartupJournalSource and the journal port dedupes on event identity so a replay imports once. Evidence today in this worktree, agent env scrubbed: journal-ref.service.spec.ts green 10/10 exit 0; declared files exist; implementer is a different model, independence holds.
 
 ### S3 — The journal is published to its ref
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `packages/core/src/lib/startup-reconciler/journal-publish.service.ts`, `packages/core/src/lib/startup-reconciler/journal-ref.service.ts`, `packages/core/src/lib/startup-reconciler/journal-ref.constant.ts`, `packages/core/src/lib/startup-reconciler/seams.interface.ts`, `packages/core/src/lib/startup-reconciler/state-ports.interface.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.constant.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`, `packages/core/tests/src/lib/startup-reconciler/journal-publish.service.spec.ts`, `packages/proposals-sqlite/src/lib/work-model/startup-state-ports.ts`, `packages/proposals-sqlite/tests/src/lib/work-model/startup-state-ports.spec.ts`, `tools/scripts/host/host-boot-journal.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/startup-reconciler/journal-publish.service.spec.ts && npx vitest run --project tools tools/scripts/host/host-boot-journal.spec.ts && bun test packages/proposals-sqlite/tests/src/lib/work-model/startup-state-ports.spec.ts`
@@ -78,8 +78,10 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - A project with no namespace published to `refs/journal`, which git refuses as a funny ref (fewer than three parts), so its journal could never have been read or written; both sides now use `refs/delendai/journal` when the namespace is empty.
 - Proof in a real host, not a fake: `tools/scripts/host/host-boot-journal.spec.ts` boots `host-server.script.ts` in a throwaway clone whose remote is a local bare repository reached through git's ssh transport (a small wrapper answers it). The boot report lists no phase as NOT EXECUTED, the first boot publishes its `reconciliation-outcome` to the ref, and a second machine's first boot replays it into its database once and publishes its own back. Booting it exposed a defect that no fake could: on a fresh clone the state database's folder does not exist, SQLite creates files and not folders, and the first boot of every new machine reported its own missing directory as a corrupt database (`state-database.corrupt`, an ambiguous blocker). `openStartupStatePorts` now creates the folders when it may create the database.
 - shipped-in: `9dba85760a9d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 652863cb5729, validate exit 0, tests 12/12 — Delivered by 9dba85760a (shipped-in) with the bulk in the PR #960 merge 652863cb5 (claude-opus-5-5): journal-publish.service.ts publishes the state database events to refs/delendai/journal as fast-forward commits, fetch-merges by event identity and retries on a rejected push, and a publication failure is reported without failing the boot. Evidence today in this worktree, agent env scrubbed: journal-publish.service.spec.ts + startup-state-ports.spec.ts + host-boot-journal.spec.ts green 12/12 exit 0; all declared files exist; implementer is a different model, independence holds.
 
 ## acceptance
 
