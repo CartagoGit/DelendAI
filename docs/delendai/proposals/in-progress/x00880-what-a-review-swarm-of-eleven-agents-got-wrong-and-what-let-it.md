@@ -75,6 +75,11 @@ Observed at 08:30:
 
 24. **A verdict costs the whole matrix, seven times.** The pack #1001 (`gpt-5.4`) changes one proposal document and the generated agent catalog. Between 05:13 and 07:28 it ran the full CI seven times, and so did #992 and #996; #991 ran it five times before landing. The queue's log says why on every pass: "#1001 is brought forward first — it and #995, which lands first, both touch the apps, plugins, proposals, tools zone(s)", and of a pack of verdicts alone, "#1007 … both touch the proposals zone(s)". Two causes. The checked-in catalog listed every open proposal with its state, so any verdict that closed a proposal rewrote a generated file that the specs of three zones read; that copy is removed in q00022 S11 (#1011). And every pack changes files under the proposals folder, which one zone reads whole, so no two packs are ever independent and each one's checks are thrown away when another lands. With eleven reviewers the second is quadratic. → S10.
 
+Observed at 08:30, continued:
+
+25. **A pull request of one claim.** #1012 (`minimax-3.1`, unit `batch-all-g2/packs3`) holds one commit, `chore(review): claim q00014`, and no verdict. It was published, armed, and failed `candidate-delivers`: "the forge reports 0 changed files". The queue then reported itself stuck on it, "1 armed and red". `work publish` refuses a review unit with no commit of its own, and a claim is a commit. → S11.
+26. **Twenty-five to one.** By 08:20 forty-one approvals had landed and none of the five change requests written had; eighty-six more approvals wait in packs. Of the five requests, four (`gpt-5.4`, on f00512) are right: the acceptance still names commands the delivery renamed, and its implementer handed it over that way. One (`qwen3-flash`, on q00010 S3) asks for a change its own tree already had: the commit that named the exception was an ancestor of the verdict's, and the acceptance it judged said so. → S7.
+
 ### S2 — An agent has one name, and it is not the model's to choose
 
 - **Status**: review
@@ -242,6 +247,24 @@ Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a
 Not started on purpose. The rule decides what lands unchecked against what, and it is worth changing on a measurement, not on the first cause found; S11 of q00022 may be most of it.
 
 What the rule has to keep, found while reading how candidates are compared. The queue tells two candidates apart by test zone, and a zone is reached two ways: its own code changed, or its specs read or list a file that changed. Verdict packs meet only the second way. But the second way is also what serialises two pull requests that each add a proposal under the same number, and that protection has to stay: two candidates that add files to one listed folder still wait on each other; two that change or move different existing files of it need not. Measured on #1007, a pack of verdicts alone: 34 jobs, of which ten are test shards with nothing to run (2 to 5 seconds each, a runner each) and fifteen are lints of 20 to 98 seconds.
+
+### S11 — A pack with no verdict is not published
+
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+  - `packages/cli/src/lib/review/review-pack-check.service.ts`
+  - `packages/cli/src/commands/review.command.ts`
+  - `packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+  - `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: unit
+- shipped-in: `a83c2ec9f284`
+- acceptance:
+  - `work publish` refuses a review unit that changes nothing over the integration branch, whatever commits it holds.
+  - `review next` does not try to publish such a unit when nothing else waits.
+
+Delivered 2026-10-11. Four specs published a review unit made of empty commits; each now records a verdict first, as a reviewer does.
 
 ## acceptance
 
