@@ -29,8 +29,9 @@ A Bun monorepo:
   plugin, swarm).
 - `scripts/*` — build, release, type/schema generation.
 - `docs/delendai/agent-catalog.generated.json` — checked-in snapshot of
-  the unified discovery surface (tools + skills + proposals). Hosts that
-  need a stable route to this surface read it directly.
+  the discovery surface (tools + skills). Hosts that need a stable route
+  to this surface read it directly. It lists no proposals: their state is
+  read from the proposals themselves.
 
 ## Commands (the only ones you need)
 
