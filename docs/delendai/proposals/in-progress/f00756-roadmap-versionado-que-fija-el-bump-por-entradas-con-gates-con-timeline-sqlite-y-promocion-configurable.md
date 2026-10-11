@@ -2,12 +2,16 @@
 id: f00756
 title: "Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-06
 shipped-in:
   - "94d62f666a80"
+last-transition-id: 1d1cec10-ad1a-41e4-9834-5c1d7d9ceeea
+last-correlation-id: 1d1cec10-ad1a-41e4-9834-5c1d7d9ceeea
+last-transition-from: ready
+last-transition-at: 2026-10-11T21:34:48.997Z
 ---
 
 # f00756 — Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable
