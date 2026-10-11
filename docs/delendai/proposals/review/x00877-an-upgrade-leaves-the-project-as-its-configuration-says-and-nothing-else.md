@@ -15,6 +15,7 @@ shipped-in:
   - "fc1a589e2059b0cf11263be473526d1dc8c5dfb0"
   - "38b68714aebe"
   - "a6095f9df9cdc8dcb74544abb762cfe1d33b803f"
+  - "6f6e97ff7f9e8551a9798d5ec56f197b9b732edd"
 ---
 
 # x00877 — An upgrade leaves the project as its configuration says, and nothing else
@@ -107,7 +108,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-log: approved by gpt-5.4 — verified at a6095f9df9cd, validate exit 0, tests 94/94 — Approved after rerunning the focused migration spec pack for x00877. The gitignore migrator rewrites only renamed ignore lines without duplication, migrate status now surfaces residual legacy spellings, and the focused pack passed 94/94.
 
 ### S5 — A profile change leaves nothing of the old mode unowned
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/profile-branches.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/profile-branches.service.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `packages/cli/src/commands/guard.command.ts`
 - **Gate**: type
 - acceptance:
@@ -115,9 +116,11 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "Hooks and `delendai.guard.*` keys follow the profile: installed where it needs them, removed where it does not."
 - Progress 2026-10-07, the first bullet: `work doctor` gains `branches-in-the-profile`, which asks the ref reconciler (the one source of which names are outside every namespace, `unmanaged`) of the clone's own branches and reports each one an earlier profile or a person left, with the way to end it (enter a unit, merge the branch in, publish, delete it). Work refs of the old shape under the product's namespace were already reported (`no-stray-refs`, `units-hold-work`). It holds on this repository. Of the second bullet: `guard uninstall` removed the hooks and left `delendai.guard.runner` and `.entry` in the clone's config, saying the clone was guarded after the guard was gone; it now unsets them (the uninstall spec checks the config is empty). Open: every built-in profile guards, so no profile change calls for removing the hooks; the one setting that stops installing them, `development.guardHooks: "off"`, is documented as keeping the project's hooks untouched, and removing them there would break that. Whether `off` should also remove what an earlier `install` put in is the owner's call.
 - Finished 2026-10-09, the second bullet: the project already declares what it wants (`development.guardHooks`: `install`, `report` or `off`), so no new setting was needed; what was missing was anything comparing it with the hooks on disk. `guard status` now does (`guardHooksFollowMode`): with `off` and hooks still running the guard it names them and says `delendai guard uninstall`; with `install` and a hook missing it says `delendai guard install`; a hook its manager owns is left to that manager; and it exits non-zero when the two disagree, so a script can gate on it. The open question (whether `off` should be its own setting) is answered by the setting that already existed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `85e411e0c1eb`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 6f6e97ff7f9e, validate exit 0, tests 94/94 — Approved after rerunning the focused work-profile and guard spec pack for x00877. Old-shape work refs remain reportable to work doctor, guard hook state follows the declared profile, and the focused pack passed 94/94.
 
 ### S6 — The generated-files merge driver exists where it is configured
 - **Status**: review
