@@ -17,9 +17,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	planZones,
-	reachableZones,
 	reachForBase,
+	reachableZones,
 	zoneOf,
+	zoneReach,
 } from './test-zones.script';
 
 const repoRoot = join(__dirname, '..', '..', '..');
@@ -505,6 +506,34 @@ describe('reachableZones', () => {
 		);
 
 		expect([...(reach ?? [])].sort()).toEqual(['core', 'tools']);
+	});
+
+	it('says which zones a change reaches only by being read', () => {
+		const reach = zoneReach(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => graph as never,
+				computeAffected: () =>
+					result({
+						rootFiles: ['docs/delendai/guide.md'],
+						directByWorkspace: new Map([['tools', ['tools/a.ts']]]),
+					}) as never,
+				diff: () => [
+					{ path: 'docs/delendai/guide.md', listing: false },
+					{ path: 'tools/a.ts', listing: false },
+				],
+				readMap: () => ({
+					zones: {
+						core: { read: ['docs/delendai/guide.md'], listed: [] },
+						tools: { read: ['docs/delendai/guide.md'], listed: [] },
+					},
+				}),
+			},
+		);
+
+		// `tools` is reached by its own code as well: not only by reading.
+		expect([...(reach?.zones ?? [])].sort()).toEqual(['core', 'tools']);
+		expect([...(reach?.readOnly ?? [])]).toEqual(['core']);
 	});
 });
 

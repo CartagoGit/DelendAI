@@ -2608,14 +2608,14 @@ export const buildReviewRegistration = (
 							)?.toLowerCase() === 'review';
 						if (next.status === 'done') {
 							block = flipSliceStatusDone(block);
-						} else if (
-							next.status === 'changes_requested' &&
-							inReview
-						) {
+						} else if (next.status === 'changes_requested') {
 							// The work goes back to its author: the slice is
-							// open again, and so is the proposal.
+							// open again, and so is the proposal, once. The
+							// second request of a pack found the proposal
+							// already reopened and left its slice reading
+							// `review` beside `changes_requested`.
 							block = flipSliceStatusInProgress(block);
-							reopenRequested = true;
+							reopenRequested = inReview;
 						}
 						let updated = md.replace(blockRe, `${m[1]}${block}`);
 						const verifiedCommit =

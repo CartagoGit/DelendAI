@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	expandDeclaredFiles,
 	looksLikePath,
+	readDeclaredSliceFiles,
 } from '@delendai/proposals/lib/proposals/expand-declared-files';
 
 describe('a Files line declares paths, not sentences (x00562)', () => {
@@ -75,5 +76,32 @@ describe('a Files line declares paths, not sentences (x00562)', () => {
 		]) {
 			expect(looksLikePath(prose)).toBe(false);
 		}
+	});
+});
+
+describe('a described sub-bullet declares its file, not what it describes', () => {
+	it('drops the path a description says the file writes to', () => {
+		// q00014 S2, as written: the journal path was read as a second
+		// declared file, absent wherever the suite had not run.
+		expect(
+			readDeclaredSliceFiles(
+				[
+					'- **Files**:',
+					'  - `tools/scripts/test/journal-reporter.ts` — reporter that writes JSONL to `.cache/delendai/results/logs/test-runs.jsonl`: file, name, assertion.',
+					'  - `tools/scripts/test/test-journal.ts` — `ITestFailureRecord`, `ITestRunRecord`.',
+					'  - `tools/scripts/test/test-journal.spec.ts`',
+				].join('\n'),
+			),
+		).toEqual([
+			'tools/scripts/test/journal-reporter.ts',
+			'tools/scripts/test/test-journal.ts',
+			'tools/scripts/test/test-journal.spec.ts',
+		]);
+	});
+
+	it('still reads several paths listed on one line', () => {
+		expect(
+			readDeclaredSliceFiles('- **Files**: `src/a.ts`, `src/b.ts`'),
+		).toEqual(['src/a.ts', 'src/b.ts']);
 	});
 });
