@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-11T00:52:48.735Z
 shipped-in:
   - "715a80b1dac7de961456cf545c6b9c03e5c65f99"
+  - "732f19602ccd7dfaebeb5b3c3dfa5bb8f6c62c0c"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -63,15 +64,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 715a80b1dac7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: agent-alias.service.ts implements the one-spelling rule — aliasedIdentity compares lettersOf(agent) (lowercased, punctuation stripped) against the identities already in the refs and refuses a re-spelling with describeAlias naming the spelling to use. Its docblock names the exact finding: five instances of one model worked as minimax-3, minimax-m3, MiniMax-M3, minimaxm3, minimaxm3-3 and minimaxm3-batch, and every check comparing names took them for different agents. The spec 'is refused on a proposal another unit of the same model holds' pins the review-side effect.
 
 ### S2 — A verdict reaches the document only through the review tool
-- **Status**: review
+- **Status**: done
 - shipped-in: `911e83f1d`
 - **Files**: `tools/scripts/lint/verdicts-through-the-tool.script.ts`, `tools/scripts/lint/verdicts-through-the-tool.script.spec.ts`, `package.json`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "A commit that changes a slice's review lines or a proposal's status without the review tool's record (its commit, or its trailer) fails a gate, so a verdict written by hand cannot pass for one the tool checked."
 - Delivered: `lint:verdicts-through-the-tool`, run in CI's governance job and in `validate:run`, reads every non-merge commit of the branch that touches the proposals directory and fails one that adds a `review-*` line under a subject other than a tool's own (`chore(delendai): <namespace>_<tool> …`), naming the commit and the lines. Run on the swarm's `q00010 S3 requested changes` commit (`chore(review): …`, signed Illyria) it names all five lines; on this branch it passes. Removing review lines is not a verdict and passes. Not covered: a proposal's `status:` moved by hand, and a hand commit that borrows the tool's subject — the subject is the record, and it can be typed.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 732f19602ccd, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: verdicts-through-the-tool.script.ts fails a commit that adds a review-* line under any subject other than the tool's own, which answers the finding 'a verdict committed by hand' where chore(review): approve x00752 S1 moved a proposal to done under an agent's own message and nothing distinguished it from a checked one. I ran the lint on the real tree: '0 commit(s) touch proposals; every review line among them came from the review tool'. Wired into validate:run (package.json:281) and .github/workflows/ci.yml is a declared file, so it reaches CI.
 
 ### S3 — A created proposal releases the reservation and directory of its `new` unit
 - **Status**: review
