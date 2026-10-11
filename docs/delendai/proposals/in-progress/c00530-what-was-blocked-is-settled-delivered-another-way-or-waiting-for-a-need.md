@@ -2,10 +2,14 @@
 id: c00530
 title: "What was blocked is settled: delivered another way, or waiting for a need"
 kind: chore
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-11
+last-transition-id: 658e37ce-dd51-49da-a6c4-405c0290e6f8
+last-correlation-id: 658e37ce-dd51-49da-a6c4-405c0290e6f8
+last-transition-from: ready
+last-transition-at: 2026-10-11T14:41:35.085Z
 ---
 
 # c00530 — What was blocked is settled: delivered another way, or waiting for a need
