@@ -667,6 +667,7 @@ export interface DelendaiProposalsProposalReviewOutput {
 	proposalClosed?: boolean;
 	proposalCloseBlocker?: string;
 	proposalReopened?: boolean;
+	proposalHandedOver?: boolean;
 }
 
 export interface DelendaiProposalsProposalStaleListOutput {
