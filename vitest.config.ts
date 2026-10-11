@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+import { sharedSetupFiles } from './vitest.shared';
 
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -181,6 +182,14 @@ export default defineConfig({
 				'**/*.test.ts',
 				...pureBarrelCoverageExcludes,
 				'**/*.script.ts',
+				// The setup files every project loads. vitest 4 left them out
+				// of the report by itself; vitest 5 counts whatever `include`
+				// matches, and a file that only prepares the worker (inert
+				// unless a variable is set) then reads as a module nobody
+				// executes.
+				...sharedSetupFiles(workspaceRoot).map((file) =>
+					relative(workspaceRoot, file).split('\\').join('/'),
+				),
 				// These two packages open a `bun:sqlite` database. It is a
 				// Bun builtin with no node resolution, so their specs can
 				// never run under vitest — their own vitest configs say so
@@ -217,6 +226,11 @@ export default defineConfig({
 			// Tightened to measured − 1.0pt, floored. t00030 also adds
 			// stricter branch floors for the core risk slices that carried
 			// the audit's P0/P1 bug fixes.
+			// 2026-10-11: re-measured on vitest 5, twice
+			// (87.26/75.02/88.89/88.93, then 87.25/75.00/88.88/88.92) —
+			// the floors had drifted 4-6pt under the real numbers.
+			// Tightened to the lower reading − 1.0pt, floored; none moved
+			// down.
 			// A SHARD measures; only the merge judges. Each shard sees a
 			// quarter of the suite, so enforcing a global floor there
 			// fails all four every time and says nothing — the first
@@ -246,10 +260,10 @@ export default defineConfig({
 				? {}
 				: {
 						thresholds: {
-							statements: 82,
-							branches: 69,
-							functions: 83,
-							lines: 83,
+							statements: 86,
+							branches: 74,
+							functions: 87,
+							lines: 87,
 							'packages/core/src/lib/plugins/**': {
 								branches: 80,
 							},
