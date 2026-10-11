@@ -25,6 +25,7 @@ shipped-in:
   - "6995db016bba77a3093de329db0201d7a7dd1636"
   - "030cdc1a3857da4062cfe1d5141f0538b9d70ff5"
   - "a0a4f48fa4ced941243d7ef49717d3c3a463225e"
+  - "feb34020cf8fe3c34d518d486d176fa75c58e75b"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -422,15 +423,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at a0a4f48fa4ce, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: managed-lazy-catalog-lookup.spec, tool-surface-runtime.exposure.spec and disclosure.spec together pin that a stale generated catalog does not stop its own regeneration. All three suites pass.
 
 ### S28 — A run that lost its required check runs again
-- **Status**: review
+- **Status**: done
 - shipped-in: `32973e074`
 - **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When an armed candidate's workflow run finished as a failure with no check failing and a required check absent, the queue runs it again once and says so; a run that loses its checks a second time is reported and not run a third time."
 - Found 2026-10-07 on #907: the forge concluded its run `failure` having created 35 of the workflow's 37 jobs, all green; `tests` and `delendai-validate` were never created. The candidate was armed and BLOCKED with nothing red on it, so the queue (which moves red candidates to their authors and waits on green ones) waited on it for good. A full re-run created all 37 jobs and the candidate merged. The queue now notices that shape, the same way it already releases runs the forge parks.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at feb34020cf8f, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: keep-the-queue-moving.script.ts runs again a run that lost its required check, which is the finding that 'the forward sync could not pass tests' because no shard uploaded a report. Pinned by its spec.
 
 ### S29 — An approved proposal closes on the integration branch's certified run
 - **Status**: retired
