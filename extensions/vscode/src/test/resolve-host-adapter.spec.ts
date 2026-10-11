@@ -42,6 +42,17 @@ describe('the host the extension registers its surfaces on', () => {
 		expect(shown[0]).toContain('Cannot find module vscode');
 	});
 
+	it('loads the real adapter by default, which only the editor can give', async () => {
+		const shown: string[] = [];
+
+		// Outside the editor there is no `vscode` module to import: the
+		// default loader fails, and the failure is what the user is shown.
+		const host = await resolveHostAdapter(createVscode(shown), undefined);
+
+		expect(host).toBeUndefined();
+		expect(shown[0]).toContain('the host adapter failed to load');
+	});
+
 	it('is the minimal adapter for an injected API, never loading the real one', async () => {
 		let loaded = false;
 
