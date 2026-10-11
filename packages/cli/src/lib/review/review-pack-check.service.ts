@@ -71,3 +71,18 @@ export const packRefusalsIn = (
 		claimed: claimed.split(/[\n,]/u),
 	});
 };
+
+/**
+ * Whether the pack in `path` changed anything over the integration
+ * branch. A claim is a commit with no change: a unit holding only claims
+ * has nothing to publish, and is not sent to be refused for it. True when
+ * it cannot be told (no remote to compare with).
+ */
+export const packHasVerdicts = (path: string, integration: string): boolean => {
+	const changed = gitOut(path, [
+		'diff',
+		'--name-only',
+		`origin/${integration}...HEAD`,
+	]);
+	return changed === undefined || changed.length > 0;
+};

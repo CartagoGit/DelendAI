@@ -177,4 +177,22 @@ describe('work publish of a review pack', () => {
 		expect(result.error).toContain('never removes one');
 		expect(result.error).toContain(DOC);
 	});
+
+	it('is refused when it holds a claim and no verdict', async () => {
+		const root = repository();
+		const mine = await unitOf(root, 'reviewer-a');
+		mine.git(
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			'chore(review): claim x00001',
+			'--trailer',
+			'Claims: x00001',
+		);
+
+		const result = await work(root, 'publish', 'reviewer-a');
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('changes nothing over');
+	});
 });

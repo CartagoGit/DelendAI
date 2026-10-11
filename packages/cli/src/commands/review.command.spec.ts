@@ -468,7 +468,16 @@ describe('delendai review', () => {
 		git(root, 'push', '-q', 'origin', 'develop');
 		const first = contextFor(root, [{ id: 'x00002' }]);
 		const started = (await run(first.ctx, 'next', '--agent=minimax-m3'))
-			.data as { session: string; unit: string };
+			.data as { session: string; unit: string; worktree: string };
+		// A pack is what its reviewer wrote: a verdict, not the claim alone.
+		const reviewed = join(
+			started.worktree,
+			'docs/delendai/proposals/review',
+		);
+		mkdirSync(reviewed, { recursive: true });
+		writeFileSync(join(reviewed, 'x00002-work.md'), 'approved\n');
+		git(started.worktree, 'add', '-A');
+		git(started.worktree, 'commit', '-q', '-m', 'docs(review): a verdict');
 		const full = contextFor(root, [{ id: 'x00003' }], {
 			full: true,
 			size: 5,
