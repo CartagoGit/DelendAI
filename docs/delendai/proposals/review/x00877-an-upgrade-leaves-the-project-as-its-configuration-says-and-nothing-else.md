@@ -13,6 +13,7 @@ last-transition-at: 2026-10-09T21:35:03.577Z
 shipped-in:
   - "b6bc626ea9363cad35a15eb0b21ddda7e966a5cd"
   - "fc1a589e2059b0cf11263be473526d1dc8c5dfb0"
+  - "38b68714aebe"
 ---
 
 # x00877 — An upgrade leaves the project as its configuration says, and nothing else
@@ -76,16 +77,18 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-log: approved by gpt-5.4 — verified at fc1a589e2059, validate exit 0, tests 94/94 — Approved after rerunning the focused migration and proposals spec pack for x00877. The legacy state migrator moves sidecars and database safely, conflicts do not overwrite, the proposals-sqlite location is pinned, and the legacy committed registry cleanup is covered by green focused specs.
 
 ### S3 — Every host file and instruction file names delendai
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/agent-files.migrator.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The root `.mcp.json` is migrated like `.vscode/mcp.json`."
   - "Root `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` are migrated like the agent folders."
 - Delivered: the host-config migrator rewrites every project MCP config a host reads, the editor's `.vscode/mcp.json` and the root `.mcp.json`; the agent-files migrator also walks the root instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`). Both specs fail without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `38b68714aebe`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 38b68714aebe, validate exit 0, tests 94/94 — Approved after rerunning the focused migration spec pack for x00877. The root host config and root instruction files are covered by the host-config and agent-files migrator specs, and the whole focused pack passed 94/94.
 
 ### S4 — No ignore line or moved file keeps the old name
 - **Status**: review
