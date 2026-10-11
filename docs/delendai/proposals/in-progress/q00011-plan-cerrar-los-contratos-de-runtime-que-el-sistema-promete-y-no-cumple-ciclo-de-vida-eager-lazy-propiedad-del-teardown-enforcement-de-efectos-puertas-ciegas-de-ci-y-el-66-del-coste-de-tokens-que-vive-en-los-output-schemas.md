@@ -363,7 +363,8 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 cliente), `r00042` (`proposals` como event log), `x00287` (fail-closed),
 `v00132` (payload duplicado), `f00274` (activación de la extensión), `f00275`
 (`doctor --deep`), `d00014` (docs canónicas).
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## Dependency graph
 
