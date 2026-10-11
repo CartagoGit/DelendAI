@@ -87,9 +87,8 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10: `bun run work:progress -- --watch` recomputes every 500 ms and redraws only when the view changed, so the terminal does not flicker.
 - Amended (S2) 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
 - shipped-in: `9cef7f165a10`, `edf768be6a8c`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work status --watch`, but the delivered watch mode hangs off `delendai work progress --watch`. The proposal note itself says it shipped as `bun run work:progress -- --watch`, and the accepted `work status` surface is still occupied by the existing checkout-status command.
 
 ### S3 — `delendai work progress --agents`: who did something lately, and on what
