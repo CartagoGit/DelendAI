@@ -29,6 +29,7 @@ shipped-in:
   - "cda35c0a1811ad72655b2595554726a7da0cf9b0"
   - "5ca6586a7230b91298e062be4d3c9b1c1b937ea2"
   - "32aeee8d75229edfba38c08f2d9f8451eda2465b"
+  - "4825b968e9285c8008ecadbedccfe6ab3a68be23"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -567,7 +568,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S39 — A server at rest does not hold a third of a core
 
-- **Status**: review
+- **Status**: done
 - shipped-in: `4618f848a`
 - **Files**:
   - `plugins/commit-policy/src/lib/services/slice-persisted.service.ts`
@@ -596,8 +597,10 @@ Measured on this repository after the change landed and the servers
 restarted onto it: from about 35% of a core each to about 4%. The
 listener's cost is bounded by the factor, not by the size of the
 project.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 4825b968e928, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: a server at rest does not hold a third of a core. Measured rather than asserted: slice-persisted.service.spec and slice-listener-pacing.spec pass, pinning the pacing that stops an idle server holding listeners.
 
 ### S40 — A work ref leaves the forge when its work lands, while its unit goes on
 
