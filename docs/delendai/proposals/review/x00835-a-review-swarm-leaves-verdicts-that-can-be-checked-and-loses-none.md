@@ -26,6 +26,7 @@ shipped-in:
   - "657da3ff96183e12acf10efe5cef4ee54b54273f"
   - "345f73884420995774374681a50ff8ea6d827777"
   - "5c102c170928cd0a35890fb33449cff0305dd296"
+  - "516a7cf4b51d58e91ac4073a7aad6df94ddf5aef"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -1035,13 +1036,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - review-log: approved by glm-5.3-max — verified at 5c102c170928, validate exit 0, tests 4/4 — Delivered by 5c102c1709 (PR #795 merge 7fa7e95db, on develop). The queue no longer offers a reviewer work its own model delivered: review-queue-reviewer.service.ts filters slices by the asker's model identity and the schema/interface carry the field. Verified today in this worktree, agent env scrubbed: the slice's declared gate review-queue-reviewer.service.spec.ts green 4/4 exit 0; every declared file exists; the delivered commit cites x00835 S34 in its subject. No out-of-scope changes beyond the proposal's own documentation lines in the same commit. Implementer claude-opus-5-5 (recorded in the wip branch/PR); I am a different model, independence holds.
 
 ### S35 — A reviewer's queue is read from its own unit
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-unit-tree.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
 - Found 2026-10-05: after `review approve x00835 S18` the very next `review next` offered S18 again. The verdict was a commit in the reviewer's unit; the queue read the shared checkout, where the slice still waited for one. A reviewer that trusted the queue would review the same slice for ever.
 - When the caller names its unit (`review next` always does), `review_queue` reads the proposals from that unit's worktree. A unit not checked out on this machine, or a proposals folder outside the workspace, reads as before.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 516a7cf4b51d, validate exit 0, tests 10/10 — Delivered by 516a7cf4b (PR #797 merge a3e03e9c9, on develop). A reviewer's queue is now read from its own unit: review-unit-tree.service.ts locates the worktree holding the unit and the verdicts it already recorded, so review next stops re-offering a slice this unit has already judged (the exact defect found 2026-10-05 with S18). Verified today in this worktree, agent env scrubbed: declared gate review-queue-swarm.tool.spec.ts green 10/10 exit 0; declared files all exist; the commit subject cites x00835 S35. Implementer claude-opus-5-5 (recorded in the wip branch/PR); different model, independence holds.
 
 ### S38 — A retired slice waits for no verdict
 - **Status**: review
