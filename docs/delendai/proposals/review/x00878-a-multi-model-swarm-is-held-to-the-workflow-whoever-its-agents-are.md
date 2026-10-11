@@ -13,6 +13,7 @@ last-transition-at: 2026-10-11T00:52:48.735Z
 shipped-in:
   - "715a80b1dac7de961456cf545c6b9c03e5c65f99"
   - "732f19602ccd7dfaebeb5b3c3dfa5bb8f6c62c0c"
+  - "aba4404daba70ff26b231e60c7efd4210a3eebfa"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -77,15 +78,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 732f19602ccd, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: verdicts-through-the-tool.script.ts fails a commit that adds a review-* line under any subject other than the tool's own, which answers the finding 'a verdict committed by hand' where chore(review): approve x00752 S1 moved a proposal to done under an agent's own message and nothing distinguished it from a checked one. I ran the lint on the real tree: '0 commit(s) touch proposals; every review line among them came from the review tool'. Wired into validate:run (package.json:281) and .github/workflows/ci.yml is a declared file, so it reaches CI.
 
 ### S3 — A created proposal releases the reservation and directory of its `new` unit
-- **Status**: review
+- **Status**: done
 - shipped-in: `aba4404da`
 - **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/free-directory.helper.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "After `proposals create` names a `new` unit's proposal, the `new/all` reservation and the `<agent>-new-all` worktree directory are free: a second new proposal can be started without `--alongside` or `--dir`."
 - Delivered: two holds outlived the `new` unit. Its slice reservation (`refs/delendai/claims/slice/new/all`) named a unit that no longer existed once it took its proposal's id, and was released only by the reaper hours later; renaming the unit now releases it. And the renamed unit keeps standing in the `<agent>-new-all` directory, which the next `work enter --proposal=new` was refused; a default directory something already occupies now gives way to the first free `<dir>-<n>` (resuming a unit finds its own worktree before this point). Both specs fail without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: unit-adoption.service.ts plus the new free-directory.helper.ts release the new/all reservation and the <agent>-new-all worktree directory once proposals create has named the unit's proposal, which is the finding that 'work enter --proposal=new was refused until given --alongside and --dir'. unit-adoption.service.spec and work-unit.service.spec both pass.
 
 ### S4 — A review reservation ends with its unit
 - **Status**: review
