@@ -671,7 +671,7 @@ visible before it.
 
 ### S8 — A file that returns is alive again
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler-revive.service.ts`
   - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
@@ -691,8 +691,10 @@ reader, which lists what exists now, left the three out for two weeks.
 The candidate is what the markdown holds: promotion skips a recorded
 disappearance the candidate contradicts, clears the retirement on the
 entity and removes the record.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
 
 ### S9 — The reader follows the project: its configured folder, with or without git, at a cost a server can pay
 
