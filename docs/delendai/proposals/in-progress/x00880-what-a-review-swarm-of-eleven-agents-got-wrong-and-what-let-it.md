@@ -276,6 +276,8 @@ What the rule has to keep, found while reading how candidates are compared. The 
 And what observation 29 adds to it: the measure to take is not only runs per pack but how long the head waits, and how many of its runs were cancelled by a refresh before they answered. A head that is brought forward while its checks are running loses them; one that is left alone until they answer does not, at the cost of landing one merge behind.
 
 Delivered 2026-10-11, the rule; the head that loses its run to a refresh is not touched here. Tried on the ten pull requests open at the time: the five packs of verdicts are independent of one another, except the two that both close f00538, which share its document; a pack and a pull request that changes code of a zone the pack's files are read by still wait on each other. What the rule gives up is a check that reads all those files together catching two packs that are each fine alone; the integration branch's own run after each merge is what is left to catch it, as its header already says of every candidate that lands beside another.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S11 — A pack with no verdict is not published
 
