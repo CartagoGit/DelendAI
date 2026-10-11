@@ -24,7 +24,7 @@ const SLICES_VIEW_HINT =
 	'the open slices of the proposal (the proposals `proposal_get` tool, view `slices`), not its whole document';
 
 /** Name that view to whoever entered: in the payload, and in the text. */
-const withSlicesView = (
+export const withSlicesView = (
 	result: ICliCommandResult,
 	ctx: ICliCommandContext,
 ): ICliCommandResult => {
