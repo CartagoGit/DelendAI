@@ -590,6 +590,9 @@ export interface DelendaiProposalsProposalGetOutput {
 			id: string;
 			status: string;
 			title?: string;
+			dependsOn?: string[];
+			files?: string[];
+			acceptance?: string[];
 		}[];
 		acceptance: {
 			command: string;
@@ -606,6 +609,9 @@ export interface DelendaiProposalsProposalGetOutput {
 		id: string;
 		status: string;
 		title?: string;
+		dependsOn?: string[];
+		files?: string[];
+		acceptance?: string[];
 	}[];
 	reviews?: Array<{
 		timestamp: string;

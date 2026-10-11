@@ -138,17 +138,34 @@ const buildCompactSummary = (
 	};
 };
 
+/** A slice in one of these is delivered or dropped: nothing left to read. */
+const DELIVERED_SLICE_STATUSES: ReadonlySet<string> = new Set([
+	'done',
+	'review',
+	'retired',
+]);
+
 const buildSlices = (
 	loaded: ILoadedProposalDocument,
 ): Extract<IProposalReadOutput, { view: 'slices' }>['slices'] =>
 	(
 		parseProposalSlicePlan(loaded.doc.frontmatter.id, loaded.raw)?.slices ??
 		[]
-	).map((slice) => ({
-		id: slice.sliceId,
-		status: slice.status,
-		title: slice.title,
-	}));
+	).map((slice) => {
+		const written = slice.documentStatus ?? slice.status;
+		return {
+			id: slice.sliceId,
+			status: written,
+			title: slice.title,
+			...(DELIVERED_SLICE_STATUSES.has(written)
+				? {}
+				: {
+						dependsOn: [...slice.dependsOn],
+						files: [...slice.files],
+						acceptance: [...slice.acceptanceCriteria],
+					}),
+		};
+	});
 
 const buildDetailProposal = (
 	loaded: ILoadedProposalDocument,
