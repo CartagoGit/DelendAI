@@ -17,6 +17,7 @@ shipped-in:
   - "945143a0310a9453b5def0e30d544f093f5d06ab"
   - "ef9ab171167c2cf92dc5b7c07c3801c1970f1137"
   - "6acb9a5b1e4f998182c8fd2805a66266b2360c0e"
+  - "fe842da802fd76617e9c878ce2b2fdeebf3f10bc"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -162,15 +163,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 6acb9a5b1e4f, validate exit 0, tests 65/65 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new review-peek.service.ts reads the queue before entering a unit — anythingWaiting() returns whether any proposal is unclaimed and carries a needs-verdict slice — so 'review next' without a session opens no unit. This is the finding I reproduced live in this session: four stray units (g3–g6) came from calling review next without the session. Covered by review.command.spec.
 
 ### S9 — A unit nobody holds leaves nothing behind
-- **Status**: review
+- **Status**: done
 - shipped-in: `a27a36abf`
 - **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A unit whose owner is gone (abandoned: past the lease windows) and that carries no commit beyond the integration branch has its worktree and local branch removed by `work reap --apply`, which the post-merge hook already runs; one holding an uncommitted edit is kept and reported with the paths, and one carrying a commit of its own is left alone."
 - Delivered: the reaper only ever removed delivered units, and a unit entered and never committed to is never delivered, so every reviewer of a swarm that stopped before its first verdict left a full copy of the repository and a branch behind (four `glm-5.3-flash` units here, each at the integration tip, clean). Such a unit is now reaped once it is abandoned; an idle one is left for its owner, and the edit and own-commit cases are unchanged. The removal case fails without the change; the three that keep a unit pin what must not change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at fe842da802fd, validate exit 0, tests 56/56 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new unit-reaper.service.ts removes a unit nobody holds, answering the finding that thirty empty worktrees sat under .cache/delendai/.worktrees/ and were retired by hand. Pinned by unit-reaper.service.spec including 'judges a merged, quiet unit delivered, and a fresh empty one not'.
 
 ### S10 — A publication closed without merging is retired, not left
 - **Status**: review
