@@ -89,15 +89,26 @@ already hydrates the checkout.
   integration method. Nothing merges that the policy would not have
   merged by hand.
 
-### S2 — Hydration cascades to every dependent ref
+### S2 — What depends on the integration branch follows it, and what somebody is working on is told
 
-- **Status**: pending
-- **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
-- **Files**: `packages/core/src/lib/startup-reconciler/**`, `packages/core/src/lib/wip-engine/rebase.ts`, `tools/scripts/forge/**`
-- When the integration node moves, each work ref based on the old tip is
-  replayed onto the new one through `rebaseWipOntoNewBase`, and each
-  publication ref is refreshed. A conflict is reported per ref, with the
-  paths, and leaves that ref untouched.
+- **Status**: review
+- shipped-in: `fd71074e1`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/work-units`
+- **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `tools/scripts/forge/refresh-candidates.script.ts`, `packages/core/src/lib/work-units/work-swarm-relations.service.ts`
+- When the integration branch moves, every ref that nobody is working on
+  follows it: a unit that holds no commits of its own is fast-forwarded
+  (`kept-unit-hydration.service.ts`, and `work reap --apply` since
+  x00878 S37), and each publication is refreshed by the queue and by the
+  host when it hydrates (`refresh-candidates.script.ts`, `b0b2975d9`). A
+  publication that cannot be refreshed is reported with its conflict and
+  left as it was.
+- A work ref somebody is working on is NOT replayed. This slice was
+  written to replay each of them through `rebaseWipOntoNewBase`; that
+  was decided against on 2026-10-11. Rewriting the branch under an agent
+  in the middle of an edit moves files it has open and can leave its
+  worktree in a conflict it did not start; it is told instead (S3), and
+  the conflict, if there is one, is met once, by the agent, when it
+  merges the integration branch before publishing.
 
 ### S3 — An agent is told its base moved under it
 
@@ -122,8 +133,9 @@ already hydrates the checkout.
 
 - A publication ref whose required checks pass integrates without anyone
   asking it to, by the method the policy declares.
-- After the integration node moves, every work ref based on the old tip
-  is replayed onto the new one, and a ref that cannot be replayed is
-  reported with its conflicting paths and left untouched.
+- After the integration branch moves, every unit that holds nothing of
+  its own and every publication follows it; a publication that cannot
+  is reported with its conflict and left untouched. A work ref somebody
+  is working on is not rewritten under them.
 - An agent whose base moved is told so, with what to run.
 
