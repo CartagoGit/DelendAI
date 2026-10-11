@@ -124,6 +124,12 @@ export const buildReviewClaimRegistration = (
 								: { commit: released.commit }),
 						});
 					}
+					if (released.kind === 'judged') {
+						return toolError(
+							`Your review unit has recorded a verdict on ${args.proposalId}: it is not given back, it is published.`,
+							`${publishPackStep(options.namespacePrefix)} The slices you did not judge return to the queue with it.`,
+						);
+					}
 					return toolError(
 						released.kind === 'not-held'
 							? `Your review unit does not hold ${args.proposalId}: there is nothing to give back.`

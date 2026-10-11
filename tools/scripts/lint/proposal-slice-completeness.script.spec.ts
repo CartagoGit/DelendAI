@@ -50,6 +50,45 @@ describe('proposal-slice-completeness lint', () => {
 			).toEqual([]);
 		});
 
+		it('does not ask a retired slice for the files it had planned', () => {
+			write(
+				'docs/delendai/proposals/done/feats/f00003-thing.md',
+				'---\nid: f00003\nstatus: done\n---\n\n' +
+					'### S1 — dropped\n' +
+					'- **Status**: retired\n' +
+					'- **Files**: `packages/core/src/lib/never-written.ts`\n',
+			);
+			expect(findIssues(root)).toEqual([]);
+		});
+
+		it('tells a proposal in review what would stop it from closing', () => {
+			write('packages/core/src/lib/real.ts', '');
+			write(
+				'docs/delendai/proposals/review/f00004-thing.md',
+				'---\nid: f00004\nstatus: review\n---\n\n' +
+					'### S1 — delivered\n' +
+					'- **Status**: review\n' +
+					'- **Files**: `packages/core/src/lib/real.ts`\n\n' +
+					'### S2 — left behind\n' +
+					'- **Status**: pending\n\n' +
+					'### S3 — delivered, one file short\n' +
+					'- **Status**: review\n' +
+					'- **Files**: `packages/core/src/lib/gone.ts`\n\n' +
+					'### S4 — dropped\n' +
+					'- **Status**: retired\n' +
+					'- **Files**: `packages/core/src/lib/never-written.ts`\n',
+			);
+			expect(
+				findIssues(root).map((issue) => [
+					issue.kind,
+					issue.detail.split(' ')[0],
+				]),
+			).toEqual([
+				['pending-slice', 'S2'],
+				['missing-file', 'S3'],
+			]);
+		});
+
 		it('flags a done proposal with a non-done slice', () => {
 			write(
 				'docs/delendai/proposals/done/feats/f00001-thing.md',

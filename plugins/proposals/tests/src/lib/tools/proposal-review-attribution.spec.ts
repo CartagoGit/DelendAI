@@ -194,7 +194,7 @@ describe('a verdict on a slice no round was opened for', () => {
 		expect(approved.body).toMatchObject({ attributedTo: 'agent-s' });
 	});
 
-	it('reviews a delivery nobody signed as unrecorded, and says independence is unverified', async () => {
+	it('reviews a delivery nobody signed as unrecorded, and leaves its close to the owner', async () => {
 		const commit = repo.deliverThroughPullRequest(
 			'src/a.ts',
 			'delendai/pr/x00001-the-work',
@@ -207,16 +207,21 @@ describe('a verdict on a slice no round was opened for', () => {
 			evidence: { ...EVIDENCE, commitHash: commit },
 		});
 
+		// The verdict stands; the proposal does not close on it. Nobody can
+		// be shown to be other than the author of work no one signed, and
+		// the repository's own check refuses such a close: closed here, the
+		// reviewer's pack was what that check stopped.
 		expect(approved.body).toMatchObject({
 			status: 'done',
 			implementer: 'unrecorded',
 			attributedTo: 'unrecorded',
+			proposalClosed: false,
 		});
+		expect(approved.body.proposalCloseBlocker).toContain(
+			'no approval by someone other than',
+		);
 		const markdown = readFileSync(
-			join(
-				repo.root,
-				'docs/delendai/proposals/done/fixes/x00001-work.md',
-			),
+			join(repo.root, 'docs/delendai/proposals/review/x00001-work.md'),
 			'utf8',
 		);
 		expect(markdown).toContain(
@@ -239,6 +244,38 @@ describe('a verdict on a slice no round was opened for', () => {
 			implementer: 'unrecorded',
 			proposalReopened: true,
 		});
+	});
+
+	it('reopens every slice a pack sends back, not only the first', async () => {
+		repo.proposalInReview(
+			`${SLICE_S1('review')}\n### S2 — more work\n- **Status**: review\n- **Files**: \`src/b.ts\`\n- review-state: in_review\n- review-implementer: agent-a\n`,
+		);
+
+		await repo.review({
+			action: 'request_changes',
+			agent: 'agent-b',
+			note: 'nothing was delivered for S1',
+		});
+		const second = await repo.review({
+			sliceId: 'S2',
+			action: 'request_changes',
+			agent: 'agent-b',
+			note: 'nothing was delivered for S2',
+		});
+
+		// The first request reopened the proposal; the second finds it
+		// open, and its slice goes back to its author all the same.
+		expect(second.body).toMatchObject({ status: 'changes_requested' });
+		const markdown = readFileSync(
+			join(
+				repo.root,
+				'docs/delendai/proposals/in-progress/x00001-work.md',
+			),
+			'utf8',
+		);
+		expect(
+			markdown.match(/^- \*\*Status\*\*: in-progress$/gmu),
+		).toHaveLength(2);
 	});
 
 	it('still refuses an approval without a commit', async () => {

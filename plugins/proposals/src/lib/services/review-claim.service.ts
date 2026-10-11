@@ -91,6 +91,28 @@ export const inReviewUnit = async (
 	shape !== undefined && (await currentUnit(run, shape)).review;
 
 /**
+ * Whether the unit's own commits change the document of `id`; `undefined`
+ * when git could not say.
+ */
+const writtenAbout = async (
+	run: IGitRunner,
+	id: string,
+	integration: string,
+): Promise<boolean | undefined> => {
+	const written = await run([
+		'log',
+		'-1',
+		'--format=%H',
+		'HEAD',
+		'--not',
+		integration,
+		'--',
+		`:(glob,icase)**/${id}-*.md`,
+	]);
+	return written.ok ? written.output.trim().length > 0 : undefined;
+};
+
+/**
  * The first proposal this unit holds, still waiting for a verdict, that
  * its own commits say nothing about. A claim is for what is being read: a
  * reviewer that took a whole pack in half a minute kept four proposals
@@ -106,17 +128,7 @@ const heldUnjudged = async (
 		const document = `:(glob,icase)**/${waiting}/**/${id}-*.md`;
 		const listed = await run(['ls-files', '--', document]);
 		if (!listed.ok || listed.output.trim().length === 0) continue;
-		const written = await run([
-			'log',
-			'-1',
-			'--format=%H',
-			'HEAD',
-			'--not',
-			integration,
-			'--',
-			`:(glob,icase)**/${id}-*.md`,
-		]);
-		if (written.ok && written.output.trim().length === 0) return id;
+		if ((await writtenAbout(run, id, integration)) === false) return id;
 	}
 	return undefined;
 };
@@ -269,6 +281,7 @@ export const releaseClaim = async (
 ): Promise<
 	| { readonly kind: 'released'; readonly commit?: string }
 	| { readonly kind: 'not-held' }
+	| { readonly kind: 'judged' }
 	| { readonly kind: 'failed'; readonly reason: string }
 > => {
 	if (shape === undefined) return { kind: 'not-held' };
@@ -284,6 +297,12 @@ export const releaseClaim = async (
 	]);
 	const held = own.ok ? heldFromTrailers(own.output) : [];
 	if (!held.includes(proposalId.toLowerCase())) return { kind: 'not-held' };
+	// A verdict recorded here is published from here. Given back after
+	// one, the proposal went to another reviewer while the verdict stayed
+	// in a unit that, holding no claim, was never published.
+	if (await writtenAbout(run, proposalId.toLowerCase(), integration)) {
+		return { kind: 'judged' };
+	}
 	const committed = await run([
 		'commit',
 		'--only',
