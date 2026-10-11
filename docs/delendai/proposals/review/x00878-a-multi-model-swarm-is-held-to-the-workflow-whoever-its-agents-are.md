@@ -33,6 +33,7 @@ shipped-in:
   - "78601cf18a172c72357b6d20d8791199197c0849"
   - "6afac82076e3e24c4c646f90fcc830b5a689f7f4"
   - "4a2c62df237242786cc2da091b2faed9d98ae9f0"
+  - "fec6421abbd4f2f22383697bf666bbf79796bfa5"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -284,15 +285,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: commit-call-writes.spec and stdio-context.factory.spec pin that a submit through the CLI is committed, or the CLI says why — the finding that 'either way the record does not say which'. Both suites pass.
 
 ### S17 — A merge leaves the proposal-id counter level with what it brought
-- **Status**: review
+- **Status**: done
 - shipped-in: `fdcc7cc82`
 - **Files**: `lefthook.yml`
 - **Gate**: type
 - acceptance:
   - "After a merge that brings in a proposal created elsewhere, `lint:proposal-id-drift` passes in the merging worktree without anyone reseeding the counter by hand."
 - Delivered: twice on 2026-10-07 a unit's publish was refused by `check-proposal-id-drift` (x00878, then f00756 from another host): the counter is a cache in each worktree's `.cache/delendai/`, and nothing moved it when a merge brought ids it had not handed out. Since x00868 the allocator takes the highest of the files in every worktree, the forge's reservations and the cache, so a lagging cache hands out no taken id; it only failed the gate. The post-merge hook now reseeds it (`sync-proposal-counters`, which only raises), in the shared checkout and in every unit that merges.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at fec6421abbd4, validate exit 0, tests 1/1 — Gate: bun run typecheck exit 0 (the declared gate); the criterion is about behaviour after a merge, so I also ran the lint on the merged tree and it passes green.
 
 ### S18 — Retired work that is dropped is not taken for lost work
 - **Status**: done
