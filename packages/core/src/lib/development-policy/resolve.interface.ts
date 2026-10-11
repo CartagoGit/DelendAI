@@ -73,6 +73,7 @@ export interface IDevelopmentConfigInput {
 		| {
 				readonly strategy?: string | undefined;
 				readonly leaseTtlMinutes?: number | undefined;
+				readonly roster?: readonly string[] | undefined;
 		  }
 		| undefined;
 	readonly recovery?:
