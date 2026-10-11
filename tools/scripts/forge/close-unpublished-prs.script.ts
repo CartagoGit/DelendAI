@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 /**
  * close-unpublished-prs.script.ts — a pull request that was not opened
- * from a publication is closed, with the reason (x00690).
+ * from a publication, or that delivers nothing, is closed, with the
+ * reason (x00690).
  *
  * `lint:pr-head-shape` fails such a pull request in CI, and nothing acted
  * on the failure. The hydrator brings publications forward, and the queue
@@ -13,6 +14,13 @@
  * The queue closes it with a comment that says what is wrong and how to
  * publish. The branch is never touched: it may be the only copy of the
  * work, and publishing it is the way forward.
+ *
+ * A pull request with no changed file is the same case from the other
+ * side: it is a publication, and there is nothing in it to validate or
+ * merge. #1018 was a review unit of two claims and two releases; it sat
+ * red on `candidate-delivers`, was brought forward on every pass, and the
+ * proposals it had named stayed held. Closed, its ref is retired by the
+ * reap that follows, tip kept.
  *
  *   bun tools/scripts/forge/close-unpublished-prs.script.ts [--apply]
  */
@@ -27,6 +35,8 @@ interface IOpenPullRequest {
 	readonly headRefName: string;
 	readonly baseRefName?: string;
 	readonly isCrossRepository: boolean;
+	/** As the forge counts them; absent when it was not asked. */
+	readonly changedFiles?: number;
 }
 
 /** The pull requests to close, each with the reason it gets. */
@@ -42,7 +52,18 @@ export const unpublishedPullRequests = (
 			branches,
 			pull.baseRefName,
 		);
-		return problem === undefined ? [] : [{ number: pull.number, problem }];
+		if (problem !== undefined) return [{ number: pull.number, problem }];
+		// Only a publication: the sync of the release branch back is a pull
+		// request of history alone, and that is its delivery.
+		return pull.changedFiles === 0 &&
+			pull.headRefName.startsWith(branches.publicationRefPrefix)
+			? [
+					{
+						number: pull.number,
+						problem: `\`${pull.headRefName}\` changes no file against \`${pull.baseRefName ?? 'its base'}\`: it would merge and deliver nothing.`,
+					},
+				]
+			: [];
 	});
 
 /** The comment a closed pull request carries. */
@@ -66,7 +87,7 @@ const main = (): number => {
 				'--limit',
 				'200',
 				'--json',
-				'number,headRefName,baseRefName,isCrossRepository',
+				'number,headRefName,baseRefName,isCrossRepository,changedFiles',
 			],
 			{ cwd: root, encoding: 'utf8' },
 		),
@@ -96,7 +117,7 @@ const main = (): number => {
 	}
 	if (toClose.length === 0) {
 		console.log(
-			'close-unpublished-prs: every open pull request comes from a publication.',
+			'close-unpublished-prs: every open pull request comes from a publication and delivers something.',
 		);
 	}
 	return 0;
