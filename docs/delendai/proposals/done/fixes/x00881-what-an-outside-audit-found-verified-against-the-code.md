@@ -2,14 +2,14 @@
 id: x00881
 title: "What an outside audit found, verified against the code"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-11
-last-transition-id: 303228be-bb09-4ab5-8a19-ed31c7c9c4d7
-last-correlation-id: 303228be-bb09-4ab5-8a19-ed31c7c9c4d7
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T05:29:45.206Z
+last-transition-id: 0492fd2e-3fe4-4234-8aab-0d767c5d6634
+last-correlation-id: 0492fd2e-3fe4-4234-8aab-0d767c5d6634
+last-transition-from: review
+last-transition-at: 2026-10-11T09:40:23.420Z
 shipped-in:
   - "cb4f8082c03111eff3211b9d99cd9831b6505b37"
 ---
