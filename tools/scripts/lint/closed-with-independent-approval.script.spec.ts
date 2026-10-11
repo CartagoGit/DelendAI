@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	attestedClosures,
 	agentOfRef,
 	approvalsAdded,
 	kindOfRef,
@@ -271,5 +272,27 @@ describe('linesAddedPerProposal', () => {
 				),
 			),
 		).toEqual(['gpt-5.4']);
+	});
+});
+
+describe('a closure that rests on an attested implementer', () => {
+	const named =
+		'### S1 — Named\n\n- **Status**: done\n- review-implementer: alpha\n- review-attribution: alpha from commit abc names refs/heads/x (abc), opened by beta\n';
+	const attested =
+		'### S2 — Vouched for\n\n- **Status**: done\n- review-implementer: gamma\n- review-attribution: gamma attested by delta — the session record shows gamma making the commit\n';
+
+	it('is none where Git names every implementer', () => {
+		expect(
+			attestedClosures([{ path: 'done/a.md', markdown: named }]),
+		).toEqual([]);
+	});
+
+	it('names the proposal and the slices the owner is asked to decide on', () => {
+		expect(
+			attestedClosures([
+				{ path: 'done/a.md', markdown: named },
+				{ path: 'done/b.md', markdown: `${named}\n${attested}` },
+			]),
+		).toEqual([{ path: 'done/b.md', slices: ['S2 — Vouched for'] }]);
 	});
 });
