@@ -238,7 +238,7 @@ keeps summary and evidence apart so the common path stays cheap.
 
 ### S6 — Knowledge packs: rules as data, selected by version, seeding the cache offline
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/framework-knowledge/src/lib/packs/pack-loader.service.ts`, `plugins/framework-knowledge/src/lib/packs/version-range.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-pack.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-pack.constant.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/knowledge-output.schema.ts`, `plugins/framework-knowledge/tests/src/lib/packs/pack-loader.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/packs`
 
@@ -253,9 +253,11 @@ the lockfile entry the version was read from and the pack file the rules
 came from.
 
 Shipped: a pack is `.delendai/knowledge/<framework>.json`; `framework_guidance` selects the rules whose range (`*` or comparators such as `>=17 <19`) holds the resolved version, seeds the version-keyed cache from them when it holds nothing usable, and answers with a `provenance` naming the lockfile entry and the pack file. A malformed rule is reported by the loader, not dropped silently.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1e177dd3ce32`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 10/10 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/packs -> 1 file / 10 tests passed, exit 0. This slice is the one the earlier change request asked for: S5 left the cache with no producer, and a pack (.delendai/knowledge/<framework>.json) is now the producer. Verified the range logic is real (* or comparators such as >=17 <19) and that a malformed rule is reported by the loader rather than dropped silently.
 
 ### S7 — The detected convention is an input of the answer
 
