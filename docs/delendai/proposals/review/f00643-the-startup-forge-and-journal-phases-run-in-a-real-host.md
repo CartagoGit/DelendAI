@@ -10,6 +10,8 @@ last-transition-id: 4f0abf78-742e-46d9-9637-5951f6c8dfea
 last-correlation-id: 4f0abf78-742e-46d9-9637-5951f6c8dfea
 last-transition-from: in-progress
 last-transition-at: 2026-10-09T20:59:09.970Z
+shipped-in:
+  - "ff589f828b9bb3ad18c8f483059268acfe78c141"
 ---
 
 # f00643 — The startup forge and journal phases run in a real host
@@ -32,7 +34,7 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - global_gate: none
 
 ### S1 — A read-only forge seam is bound in the host
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/startup-gate/run-startup-gate.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.interface.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/startup-gate/run-startup-gate.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/idempotency.spec.ts`, `tools/scripts/host/forge-seam.service.ts`, `tools/scripts/host/forge-seam.interface.ts`, `tools/scripts/host/forge-seam.constant.ts`, `tools/scripts/host/forge-seam.service.spec.ts`, `tools/scripts/host/host-server.script.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/startup-gate/run-startup-gate.spec.ts packages/core/tests/src/lib/startup-reconciler/idempotency.spec.ts && npx vitest run --project tools tools/scripts/host/forge-seam.service.spec.ts`
 - acceptance:
@@ -40,9 +42,11 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
   - "The host binds a seam that lists pull requests and check runs through the forge's API with the previous ETag, and answers `unavailable` (never throws) without credentials or network."
   - "A warm boot with nothing changed costs one conditional request and writes no rows."
   - shipped: `runStartupGate` takes an optional `forge` seam and stops listing the phase NOT EXECUTED when bound; the host seam (`forge-seam.service.ts`) shells out to the user's own `gh` session with `If-None-Match`, maps pull requests and check runs, and answers `unavailable` instead of throwing; a warm boot costs one conditional request and writes no rows.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `4a1ca6f53802`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at ff589f828b9b, validate exit 0, tests 10/10 — Delivered by 4a1ca6f53 (PR #806, claude-sonnet-5-5; the queue cites the later merge ff589f828b of PR #832 which re-merged the same files with no code delta on this slice's paths). runStartupGate takes an optional forge seam and stops listing the phase NOT EXECUTED when bound; the host seam shells out to the user's own gh session with If-None-Match and answers unavailable instead of throwing. Evidence today in this worktree, agent env scrubbed: run-startup-gate.spec.ts + idempotency.spec.ts green 10/10 exit 0; all declared files exist; implementer is a different model, independence holds.
 
 ### S2 — A journal source is bound once its home is decided
 - **Status**: review
