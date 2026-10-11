@@ -1385,14 +1385,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00541",
-				"title": "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-15"
-			},
-			{
 				"id": "f00542",
 				"title": "Delendai language-, IDE-, and OS-agnostic",
 				"track": "general",
