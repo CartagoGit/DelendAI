@@ -134,7 +134,11 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 			.strict()
 			.optional(),
 		coordination: z
-			.object({ strategy: strategy(), leaseTtlMinutes: wholeNumber() })
+			.object({
+				strategy: strategy(),
+				leaseTtlMinutes: wholeNumber(),
+				roster: z.array(z.string().min(1)).optional(),
+			})
 			.strict()
 			.optional(),
 		recovery: z

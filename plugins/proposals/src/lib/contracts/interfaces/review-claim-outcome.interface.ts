@@ -8,6 +8,8 @@ export type IReviewClaimOutcome =
 	| { readonly kind: 'held'; readonly by: readonly string[] }
 	/** This unit's pack is full: it is published before it claims more. */
 	| { readonly kind: 'pack-full'; readonly size: number }
+	/** This unit holds a proposal it has written nothing about yet. */
+	| { readonly kind: 'unjudged'; readonly holding: string }
 	/** The claim could not be committed. */
 	| { readonly kind: 'failed'; readonly reason: string };
 
