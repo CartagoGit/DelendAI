@@ -350,6 +350,29 @@ export const withShippedIn = (markdown: string, commit: string): string => {
 };
 
 /**
+ * The frontmatter with the commits its slices record as what delivered
+ * them, when it names none itself; unchanged otherwise. A proposal whose
+ * every slice says `- shipped-in: <sha>` was refused its close for a
+ * field at the top that repeats them, and nothing wrote it for approvals
+ * made before an approval did.
+ */
+export const withShippedInFromSlices = (markdown: string): string => {
+	if (listShippedIn(markdown).length > 0) return markdown;
+	const body = markdown.replace(/^---[\s\S]*?---\s*/u, '');
+	const commits = [
+		...new Set(
+			[...body.matchAll(/^[-*]\s*shipped-in:\s*(.+)$/gimu)].flatMap(
+				(line) => (line[1] ?? '').match(/\b[0-9a-f]{7,40}\b/giu) ?? [],
+			),
+		),
+	];
+	return commits.reduce(
+		(text, commit) => withShippedIn(text, commit),
+		markdown,
+	);
+};
+
+/**
  * Every slice is done AND carries a completed review. A proposal whose
  * other slices were only hand-marked `done` is not closed by approving
  * one of them.
