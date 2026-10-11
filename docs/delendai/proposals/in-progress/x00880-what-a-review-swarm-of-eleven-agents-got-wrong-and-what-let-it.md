@@ -62,6 +62,13 @@ Observed at 05:15:
 
 18. **"validate exit 0" on approvals that ran a focused gate.** Every approval records `validate exit 0` beside a count such as `tests 28/28` or `tests 6/6`, and its note says which focused specs were run. The field is named for the repository's whole validation; what fills it is the exit code of whatever the reviewer ran. The record says more than was checked. → S8.
 
+Observed at 07:00:
+
+19. **A reviewer edits the proposal it is approving.** `minimax-m31` approved the five slices of f00538, saw its pack (#992) fail on the quoted tree of observation 15, and committed `fix(f00538): the cited hash is a tree, not a commit` to the reviewed document in a second review unit, `review/f00538-review-g1/the-cited-tree-is-not-a-commit` (#1008). The pack it replaced was left open, so one set of verdicts is in two pull requests. The reviewer was right about the fault and had no legal way to act on it: the rule that stopped it was wrong (fixed in S9), and nothing lets a reviewer hand a finding about the document back to its implementer short of refusing the slice. → S9, S3.
+20. **The orchestrator did the same from the other side.** The implementer session (`claude-opus-5-5`) rewrote x00875's three citations in its own unit (#1002) while `qwen-3.8-flash` held x00875 in pack #991; the pack then conflicted with develop and waited to be brought forward. The rule against editing a proposal under review exists and is written down for agents, not enforced: a unit may commit to a proposal another agent has claimed for review. → S4.
+21. **The tool takes an approval the closing gate refuses.** f00538 S2 and S3 were delivered by a commit that names no work ref and no author the product can read; the review tool recorded `review-implementer: unrecorded … independence could not be verified`, accepted the approval and closed the proposal, and `closed-with-independent-approval` then refused the pack (#1008) for exactly that. Two rules answer one question differently, and the reviewer learns it after five approvals. Leaving such a close to the owner is the intended outcome; offering it to a reviewer as ordinary work is not. → S9.
+22. **More claims than reviews in hand.** At 07:00 seventeen proposals carry a review claim on the forge while six review units are alive and eight packs wait in pull requests; which claim belongs to which of them is not something the swarm view shows. → S4.
+
 ### S2 — An agent has one name, and it is not the model's to choose
 
 - **Status**: in-progress
@@ -133,13 +140,17 @@ saying in the launch instructions that a swarm is given its roster.
 
 ### S6 — The swarm view does not report review packs as duplicates
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/work-swarm-relations.service.ts`
+  - `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - **Gate**: unit
+- shipped-in: `b93e9014bf16`
 - acceptance:
   - Review units of different agents, or of different sessions of one model, are not listed as duplicates of one another.
   - Two units implementing the same slice still are.
+
+Delivered 2026-10-11: a unit whose kind reads work rather than does it is left out of the duplicate relation. Run against the live swarm, "to sort out" went from every pack of every reviewer to the one real overlap, the two units of observation 19.
 
 ### S7 — A reviewer judges the text under review, and the tool shows it which that is
 
@@ -166,7 +177,7 @@ saying in the launch instructions that a swarm is given its roster.
 
 ### S9 — What would stop a proposal from closing is found before a reviewer meets it
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `tools/scripts/lint/proposal-slice-completeness.script.ts`
   - `tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
@@ -177,6 +188,7 @@ saying in the launch instructions that a swarm is given its roster.
   - A retired slice of a closed proposal is finished: the completeness lint does not report it as pending.
   - A quoted tree or blob is not read as a citation of a commit.
   - Still to do, and what makes this slice whole: the two rules run on a proposal when it is handed to review, as they will when it closes, so the implementer is the one told.
+  - A slice whose implementer the product cannot name is not offered to the review queue as ordinary work: the queue says the close is the owner's, as the closing gate will.
 
 Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a status a slice of a closed proposal may be in, and a hash that names a tree or a blob is skipped by the cited-commits lint. x00875's three citations of unreferenced objects were rewritten in its own unit. Not yet delivered: running both rules at the hand-over to review.
 
