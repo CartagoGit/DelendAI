@@ -78,6 +78,27 @@ describe('proposal review state machine (M35)', async () => {
 		]);
 	});
 
+	it('writes what the implementer answered under the request it answers', async () => {
+		let s: IReviewState = EMPTY_REVIEW;
+		s = reviewTransition(s, 'submit', 'falcon').next!;
+		s = reviewTransition(s, 'request_changes', 'eagle', 'fix A').next!;
+		s = reviewTransition(s, 'submit', 'falcon', 'A is fixed in abc1234')
+			.next!;
+
+		expect(s.rounds.at(-1)).toEqual({
+			verdict: 'resubmitted',
+			agent: 'falcon',
+			note: 'resubmitted; answers the request above: A is fixed in abc1234',
+		});
+		// The answer is the implementer's: the reviewer who asked is still
+		// the last to have judged, and still may not verify the fix.
+		expect(reviewTransition(s, 'approve', 'eagle').ok).toBe(false);
+		expect(reviewTransition(s, 'approve', 'owl').ok).toBe(true);
+		expect(
+			parseReviewState(`${renderReviewLines(s).join('\n')}\n`).rounds,
+		).toHaveLength(2);
+	});
+
 	it('cannot review when nothing is in review; cannot reopen a done slice', async () => {
 		expect(reviewTransition(EMPTY_REVIEW, 'approve', 'eagle').ok).toBe(
 			false,

@@ -129,6 +129,21 @@ export const reviewTransition = (
 		// the log so it is auditable, and only when there is something to
 		// void, so a first submit stays quiet.
 		const voided = standingApprovals(state);
+		// And it answers a request for changes where one stands: what the
+		// implementer says it did is written under the request it answers.
+		// Kept out of the document, the next reviewer read the objection
+		// and nothing after it, and asked for the same change again.
+		const answers =
+			state.rounds.at(-1)?.verdict === 'requested_changes' &&
+			note.trim().length > 0;
+		const said = [
+			...(voided.length === 0
+				? []
+				: [
+						`${voided.length.toString()} standing approval(s) void (${voided.join(', ')}) — they were given for a different state of the code`,
+					]),
+			...(answers ? [`answers the request above: ${note.trim()}`] : []),
+		];
 		return {
 			ok: true,
 			next: {
@@ -137,14 +152,14 @@ export const reviewTransition = (
 				implementer: who,
 				reviewer: null,
 				rounds:
-					voided.length === 0
+					voided.length === 0 && !answers
 						? state.rounds
 						: [
 								...state.rounds,
 								{
 									verdict: 'resubmitted' as const,
 									agent: who,
-									note: `resubmitted; ${voided.length.toString()} standing approval(s) void (${voided.join(', ')}) — they were given for a different state of the code`,
+									note: ['resubmitted', ...said].join('; '),
 								},
 							],
 			},
