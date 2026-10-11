@@ -111,6 +111,7 @@ pages. Find yourself below; each row is a complete path, in order.
 | [Project observability — KPIs, economics and dogfooding](PROJECT-OBSERVABILITY.md) | The `@delendai/project-kpis` plugin turns delendai's own telemetry into |
 | [@delendai/core](README-DELENDAI.md) | A project-agnostic core for building MCP servers, plus a CLI that loads |
 | [Repo-level rules — `@delendai/core`](REPO-RULES.md) | Read this only if the host you are running in reads a |
+| [The roadmap plugin: what delendai does with it, and what you replicate](ROADMAP-DOGFOOD.md) | delendai uses its own roadmap plugin on itself. |
 | [Roadmap](ROADMAP.md) | This file is the authority for what each version of delendai promises. |
 | [Roadmap timeline](ROADMAP.timeline.md) | One event per line, appended and never edited. |
 | [Shared-develop operating model](SHARED-DEVELOP-MODEL.md) | Superseded for the integration question. This document was written |
