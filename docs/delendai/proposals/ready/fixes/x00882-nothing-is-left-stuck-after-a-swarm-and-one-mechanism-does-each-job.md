@@ -80,6 +80,8 @@ Delivered 2026-10-11. The hydrator had stopped calling the second refresher week
   - A version, a tier or a word apart is another model and enters. Two models that do differ by one letter are told apart by the project listing both in `development.coordination.roster`, which stays what it was: the owner's list, for a project that wants one.
 
 Delivered 2026-10-11, after the owner's answer to x00880 S2: the agent knows what it runs as, and should say. It does; what the product adds is memory. Read against this repository's own history the rule finds sixteen names that ever signed work, and of the swarm's three ways of writing MiniMax it lets through the first that landed and sends the other two to it. What it cannot see is a model that misstates itself in a way that reads as another model: `glm-5.3-max` for a Flash, `glm-4.6-flash` for a 5.3, `qwen3-flash` for a 3.8. Nothing in a name says which of two well-formed names is true; only the program that launched the model knows, and where it says so (`DELENDAI_AGENT_ID`) that is the name used.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A request for changes always has someone who can answer it
 
