@@ -136,15 +136,17 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-log: approved by gpt-5.4 — verified at 38b68714aebe, validate exit 0, tests 94/94 — Approved after rerunning the focused merge-driver and migration spec pack for x00877. The generated-files driver is configured only when the script is actually present in the adopting project, and the focused pack passed 94/94.
 
 ### S7 — The host-scope configs are migrated too
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/cli.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The user-level host configs (`~/.claude.json`, `~/.codex/config.toml`) are migrated by an explicit, opt-in host-scope command, never by a workspace `migrate run`, and a dry run lists what it would change."
 - Delivered: the global-config migrator (which rewrites only the entries it can prove are this workspace's, and keeps every other key byte for byte) existed and nothing called it. `migrate host --dry-run` lists what it would change in `~/.claude.json` and `~/.codex/config.toml` for this workspace; `migrate host` applies it; `migrate run` never touches them. On this machine the dry run plans nothing. The spec (dry run plans and writes nothing, `run` leaves the host configs alone, `host` applies) fails without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `a6095f9df9cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at a6095f9df9cd, validate exit 0, tests 94/94 — Approved after rerunning the focused migrate command spec pack for x00877. Host-scope config migration is explicit and opt-in, workspace migrate run stays out of user-level configs, and the focused pack passed 94/94.
 
 ### S8 — The rebrand check runs on every pull request
 - **Status**: review
