@@ -10,6 +10,8 @@ last-transition-id: 303228be-bb09-4ab5-8a19-ed31c7c9c4d7
 last-correlation-id: 303228be-bb09-4ab5-8a19-ed31c7c9c4d7
 last-transition-from: in-progress
 last-transition-at: 2026-10-11T05:29:45.206Z
+shipped-in:
+  - "cb4f8082c03111eff3211b9d99cd9831b6505b37"
 ---
 
 # x00881 — What an outside audit found, verified against the code
@@ -31,7 +33,7 @@ The owner had the `develop` branch audited from outside on 2026-10-11 (anchored 
 
 ### S1 — A migration fails on a file it cannot read, instead of taking it for absent
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/migrations/migrate-file.ts`
   - `packages/core/tests/src/lib/migrations/migrate.spec.ts`
@@ -42,8 +44,10 @@ The owner had the `develop` branch audited from outside on 2026-10-11 (anchored 
   - A file that exists and cannot be read (no permission, an I/O error, a directory in its place) fails the migration with the path and the cause.
 
 Verified: any failure of `readFile` returned `null`, the answer for "no such file". A state file the process could not read was stepped over and the project migrated as if it had never had one.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at cb4f8082c031, validate exit 0, tests 13/13 — Delivered by a5d043eb8 (shipped-in) inside PR #995 (merge cb4f8082c, claude-opus-5-5). migrateJsonFile now answers 'nothing to migrate' only on a missing file and fails the migration with path and cause for a file it cannot read. Verified today in this worktree, agent env scrubbed: migrate.spec.ts green 13/13 exit 0; declared files exist. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S2 — A published package exports nothing it does not ship
 
