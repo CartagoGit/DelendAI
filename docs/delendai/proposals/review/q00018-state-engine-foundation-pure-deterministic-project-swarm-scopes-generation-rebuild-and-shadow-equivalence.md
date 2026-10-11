@@ -269,8 +269,10 @@ El State Engine nunca es ese camino.
 - `package.json#scripts.test` y `typecheck` siguiendo el patrón del
   monorepo.
 - Delivered (reconciled 2026-10-07 against the tree): `packages/state` (`@delendai/state` 0.1.0) with the `./scope`, `./fingerprint`, `./producer`, `./hash`, `./generation` and `./registry` subpaths, and the no-Node-imports rule pinned by `tests/src/no-node-imports.spec.ts` and `lint:no-node-imports-in-state`. Shipped in `99d17f26d` (2026-09-05).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 50717a0d5273, validate exit 0, tests 109/109 — Verified @delendai/state exists as a separate package with the declared subpath exports, typecheck passes, and the no-node-imports-in-state lint is clean. Package gates passed and the public barrel stays pure.
 
 ### S2 — Contratos: `IStateScope`, `IStateProducer`, `ProjectFingerprint`, `canonicalStateHash`
 
