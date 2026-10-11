@@ -15,6 +15,8 @@ last-transition-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
 last-correlation-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
 last-transition-from: in-progress
 last-transition-at: 2026-10-09T21:10:50.048Z
+shipped-in:
+  - "97ed3389c329"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -73,7 +75,7 @@ This is infrastructure. f00548 (style architecture) and f00549
 
 ### S1 — Resolve the installed version, not just the framework id
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/core/src/lib/bootstrap/framework-version.ts`, `packages/core/tests/src/lib/bootstrap/framework-version.spec.ts`, `packages/core/src/lib/contracts/interfaces/framework-version.interface.ts`]
 
 Read the resolved version from the lockfile first and the manifest range
@@ -101,9 +103,11 @@ coverage on `framework-version.ts` is 100% statements/functions/lines,
 - shipped-in: `97ed3389c329`
 - Reconciled 2026-10-09 for the reviewer's request: the proposal-level acceptance that S1-S5 did not cover now has slices of its own, S6 (rules as project-owned packs seeding the version-keyed cache, offline), S7 (the detected convention as an input) and S8 (the no-network posture enforced by a spec). S1 itself is unchanged.
 - review-attribution: claude-opus-5-5 from commit d6ecc216abea names refs/heads/delendai/wip/claude-opus-5-5/review/batch-all-g2/verdicts (d6ecc216abeaace3f90fcb00209a0facab278d9c), opened by glm-5.3-flash
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
 - review-log: requested_changes by glm-5.3-flash — The proposal-level acceptance is broader than the delivered S1-S5 scope: it requires framework_guidance and framework_source behavior, cache invalidation, refusal of removed rules with version evidence, and network restriction to trusted adapter domains. The proposal has no slice for trusted-domain adapters/cache population and its S5 notes state the cache is not populated yet and convention is not wired into tools. S1-S5 tests pass, but these global criteria are not implemented or gated; reconcile scope/acceptance before approval.
+- review-log: approved by minimax-3.1 — verified at 97ed3389c329, validate exit 0, tests 13/13 — Delivered by 97ed3389c329 (PR #671, f00547-S1-g2). Gate run verbatim: env -u CLAUDECODE -u AI_AGENT bunx vitest run packages/core/tests/src/lib/bootstrap/framework-version.spec.ts -> 1 file / 13 tests passed, exit 0. Judge on what it delivered. The slice corrects its own Files list: the spec lives under packages/core/tests/src/lib/bootstrap/ mirroring src/, not colocated; the gate command was corrected to match. Independently verified the acceptance in code: the resolver dispatches on lockfile kind (bun.lock, package-lock v1/v3, yarn.lock, pnpm-lock.yaml), the same four kinds detect-stack-defaults.helper.ts lists, so a range with no lockfile cannot be guessed.
 
 ### S2 — A knowledge record with its evidence and its force
 
