@@ -2,7 +2,7 @@
 id: f00271
 title: "`detail: compact | normal | full` transversal"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -17,11 +17,12 @@ related:
     - r00031 # proposal_get (canary del patrón)
     - r00032 # orchestrator-runner (canary)
     - f00270 # TokenBudgetRegistry (mide los 3 niveles)
-last-transition-id: f82d5c4f-3e21-4c2a-8447-25753c9cfc74
-last-correlation-id: f82d5c4f-3e21-4c2a-8447-25753c9cfc74
-last-transition-from: in-progress
+last-transition-id: b4d82f5f-687a-473d-bd87-a5f37feb5ec7
+last-correlation-id: b4d82f5f-687a-473d-bd87-a5f37feb5ec7
+last-transition-from: review
 shipped-in:
   - "8fd88fed0"
+last-transition-at: 2026-10-11T13:03:21.052Z
 ---
 
 # f00271 — `detail: compact | normal | full` transversal
@@ -134,7 +135,7 @@ cualquier tool a partir de un solo campo de input.
 
 ### S1 — Contrato compartido + adopción en audit, usage, logs (3 plugins)
 
-- **Status**: done
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/contracts/detail.contract.ts`, `packages/core/tests/src/lib/contracts/detail.contract.spec.ts`, `plugins/audit/src/lib/tools/audit-run.tool.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/logs/src/lib/tools/tools.ts`, `plugins/logs/tests/tools.spec.ts`
 - **Gate**: type
 - review-state: changes_requested
