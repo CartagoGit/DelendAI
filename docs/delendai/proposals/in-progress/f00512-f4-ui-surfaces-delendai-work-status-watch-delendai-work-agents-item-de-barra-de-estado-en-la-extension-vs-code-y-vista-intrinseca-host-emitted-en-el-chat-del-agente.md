@@ -2,7 +2,7 @@
 id: f00512
 title: "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-06
@@ -17,10 +17,10 @@ tags:
     - cli
     - vscode-extension
     - non-llm
-last-transition-id: 229e536d-173a-4ccd-b037-7b8f53738fc6
-last-correlation-id: 229e536d-173a-4ccd-b037-7b8f53738fc6
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T00:48:27.637Z
+last-transition-id: 94d69ab6-5775-4110-916a-8586fd5ace13
+last-correlation-id: 94d69ab6-5775-4110-916a-8586fd5ace13
+last-transition-from: review
+last-transition-at: 2026-10-11T02:57:29.907Z
 ---
 
 # f00512 — F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente
@@ -57,7 +57,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - global_gate: type
 
 ### S1 — `delendai work status` — comando CLI que renderiza el snapshot agregado por propuesta (progreso ponderado, fase, ETA, source)
-- **Status**: review
+- **Status**: in-progress
 - **DependsOn**: [f00510, f00511]
 - **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
@@ -68,9 +68,11 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "El campo `source` se imprime siempre (`sqlite-shadow` o `git-fallback`) para que el usuario sepa con qué se calcula."
   - "Test: `bun run packages/cli` `delendai work status --format json` sobre fixtures no añade tokens al LLM (assertion: `usage_tracking.llm_tokens_total` invariante)."
 - Shipped 2026-10-10 as `bun run work:progress`: one line per open proposal with its weighted progress, the phase of its furthest-behind slice, how many slices are stalled and when something last happened, computed by `buildWorkStatus` from the proposals on disk and the event store (the journals are drained first). `--json` gives the rows. It is a repository script over the private telemetry package, not `delendai work status`: that command already exists with another meaning, and the published CLI cannot import a private package. Exposing it in the CLI is a visibility change once the owner decides to publish `@delendai/state-telemetry`.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `9cef7f165a10`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — I cannot approve S1 as delivered because the current tree does not implement the accepted surface. The acceptance requires `delendai work status [proposalId]`, but packages/cli/src/commands/work.command.ts only routes the new view through `work progress`; `work status` still belongs to the existing work-unit command family. The delivered note itself says the feature shipped as `bun run work:progress` and explicitly says it is not `delendai work status`. Please either change the implementation so the accepted `work status` surface exists, or update the slice acceptance and proposal text to match the delivered `work progress` surface before resubmitting.
 
 ### S2 — `delendai work status --watch` — modo watch (500 ms, polling del SQLite shadow o NDJSON) con render estable (sin parpadeo)
 - **Status**: review
