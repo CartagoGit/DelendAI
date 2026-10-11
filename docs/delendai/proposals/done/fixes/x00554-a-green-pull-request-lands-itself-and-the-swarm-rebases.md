@@ -2,7 +2,7 @@
 id: x00554
 title: "A green pull request lands itself and the swarm rebases"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19
@@ -11,10 +11,10 @@ tags:
     - integration
     - hydration
     - swarm
-last-transition-id: d1744948-b5c0-4105-a3ce-4946aad545c3
-last-correlation-id: d1744948-b5c0-4105-a3ce-4946aad545c3
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T00:02:44.016Z
+last-transition-id: 05d356d4-80cb-4fa8-a97c-104d9af154d4
+last-correlation-id: 05d356d4-80cb-4fa8-a97c-104d9af154d4
+last-transition-from: review
+last-transition-at: 2026-10-11T02:30:43.581Z
 shipped-in:
   - "dea43b3d7f38"
   - "581b5720bad3e883dc9fce2aa42553c0221d4289"
@@ -125,7 +125,7 @@ already hydrates the checkout.
 
 ### S3 — An agent is told its base moved under it
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/contracts/interfaces/work-swarm.interface.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - The boot and the work-status surface say, per work unit, whether it is
@@ -139,9 +139,11 @@ already hydrates the checkout.
   (and its `relations` in `--json`) now lists it under "to sort out" as
   `behind`, with how far its base moved and what to run in its worktree,
   after every other kind, since it is the mildest.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `581b5720bad3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 581b5720bad3, validate exit 0, tests 36/36 — Verified swarm relations now report work units whose base moved under them as behind, with actionable guidance for the owner, and the relation is covered by targeted work-swarm-relations tests. Slice-scoped checks passed 36/36.
 
 ## acceptance
 
