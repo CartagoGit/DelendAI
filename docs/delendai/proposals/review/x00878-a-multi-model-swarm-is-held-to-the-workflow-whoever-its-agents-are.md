@@ -379,15 +379,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at ef9ab171167c, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: carried-units.service ends a unit another unit of its agent published with that publication, answering the finding that gpt-5.4 'finished with a unit holding three approvals (f00267, r00056, f00275) it never published'. Pinned by carried-units.service.spec.
 
 ### S25 — The server keeps its own log in the workspace
-- **Status**: review
+- **Status**: done
 - shipped-in: `0d94f21ef`
 - **Files**: `packages/core/src/lib/shared/server-log.ts`, `packages/core/src/lib/contracts/constants/server-log.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/server-log.spec.ts`, `packages/cli/src/index.ts`, `tools/scripts/host/host-server.script.ts`
 - **Gate**: type
 - acceptance:
   - "Every line a server writes to stderr is also kept in `<cacheDir>/logs/mcp-server/mcp-server.<day>.log`, stamped with the time and the process (`cli-serve`, `host-server` or `host-supervisor`), whatever host started it; the logs of the last ten days are kept and older ones are removed when a server starts."
 - Asked by the owner on 2026-10-07: what a boot reported (DEGRADED, the repair tasks, a restart onto new code) lived only where the host put its stderr — VS Code's per-window log under the user's application data — and reached an agent only when a person pasted it. The server now copies its stderr into the workspace's cache, one file per day, so an agent can read back the boots after its own changes or another agent's and see how they reacted. A brief `__serve` here wrote the day's file with the guard and boot lines. The spec covers the copy, partial lines and the ten days kept.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: server-log keeps the server's own log in the workspace, which is what makes S19's once-only rule checkable at all. Pinned by server-log.spec.
 
 ### S26 — A queue whose candidates are all behind still moves
 - **Status**: review
