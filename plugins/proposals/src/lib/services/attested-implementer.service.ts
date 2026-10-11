@@ -33,8 +33,8 @@ const sliceBlock = (sliceId: string): RegExp =>
 		'mu',
 	);
 
-const IMPLEMENTER_LINE = /^- review-implementer:\s*(\S+)[^\n]*$/mu;
-const ATTRIBUTION_LINE = /^- review-attribution:[^\n]*$/mu;
+const IMPLEMENTER_PREFIX = '- review-implementer:';
+const ATTRIBUTION_PREFIX = '- review-attribution:';
 const ATTESTED_LINE = new RegExp(
 	`^- review-attribution:\\s*\\S+\\s+${ATTESTED_BY_MARK}\\s`,
 	'mu',
@@ -80,8 +80,20 @@ export const attestImplementer = (
 		return { ok: false, reason: `slice "${sliceId}" was not found` };
 	}
 	const [whole, heading = '', body = ''] = match;
-	const recorded = IMPLEMENTER_LINE.exec(body)?.[1];
-	if (recorded === undefined) {
+	// Read line by line: the fields are whole lines, and a pattern over
+	// the block would have to guess where each one ends.
+	const lines = body.split('\n');
+	const implementerAt = lines.findIndex((each) =>
+		each.startsWith(IMPLEMENTER_PREFIX),
+	);
+	const recorded =
+		implementerAt === -1
+			? undefined
+			: (lines[implementerAt] ?? '')
+					.slice(IMPLEMENTER_PREFIX.length)
+					.trim()
+					.split(' ')[0];
+	if (recorded === undefined || recorded === '') {
 		return {
 			ok: false,
 			reason: `slice "${sliceId}" has no review round: it is reviewed first, and attested only if that finds nobody to name`,
@@ -94,13 +106,19 @@ export const attestImplementer = (
 		};
 	}
 	const line = `- review-attribution: ${implementer} ${ATTESTED_BY_MARK} ${attestation.attestedBy.trim()} — ${evidence}`;
-	const named = body.replace(
-		IMPLEMENTER_LINE,
-		`- review-implementer: ${implementer}`,
+	lines[implementerAt] = `${IMPLEMENTER_PREFIX} ${implementer}`;
+	const attributionAt = lines.findIndex((each) =>
+		each.startsWith(ATTRIBUTION_PREFIX),
 	);
-	const attested = ATTRIBUTION_LINE.test(named)
-		? named.replace(ATTRIBUTION_LINE, () => line)
-		: `${named.replace(/\n*$/u, '')}\n${line}\n`;
+	if (attributionAt === -1) {
+		// After the last line that says something, before the blank ones.
+		let last = lines.length;
+		while (last > 0 && (lines[last - 1] ?? '').trim() === '') last -= 1;
+		lines.splice(last, 0, line);
+	} else {
+		lines[attributionAt] = line;
+	}
+	const attested = lines.join('\n');
 	return {
 		ok: true,
 		markdown: markdown.replace(whole, () => `${heading}${attested}`),
