@@ -2,7 +2,7 @@
 id: q00022
 title: "Proposals SQLite schema — replace proposals/INDEX.json as sole source of truth"
 kind: plan
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -30,10 +30,10 @@ related:
   - f00514
   - f00515
   - r00049
-last-transition-id: 8912f5b4-dc3d-4a3b-a2f5-cc7c1ae730b5
-last-correlation-id: 8912f5b4-dc3d-4a3b-a2f5-cc7c1ae730b5
-last-transition-from: ready
-last-transition-at: 2026-10-11T10:19:54.946Z
+last-transition-id: bcbfd984-5f5e-47f4-870a-e6cb461bf145
+last-correlation-id: bcbfd984-5f5e-47f4-870a-e6cb461bf145
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T10:21:00.018Z
 ---
 
 # q00022 — Proposals SQLite schema (replaces proposals/INDEX.json)
@@ -207,6 +207,9 @@ that the audit calls obligatory.
   - `PRAGMA foreign_keys = ON` + `PRAGMA journal_mode = WAL` + `PRAGMA busy_timeout = 5000` applied at every connection.
   - All tables have a corresponding `lifecycle_events` row on any write (enforced by the repository, not the schema — see S3).
   - `bun run typecheck` is green and `bunx vitest run packages/proposals-sqlite` is all green.
+- shipped-in: `53ac0f4306ae`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Reconciler foundation: parse markdown → identity → deterministic candidate projection
 
@@ -263,6 +266,9 @@ that the audit calls obligatory.
   - `closeProposal(uid)` returns `{ kind: 'closed' | 'already_closed' | 'conflict' | 'invalid_transition' }` — never throws, never corrupts.
   - `digest.ts` produces the same sha256 for the same canonical proposal projection in different orders (canonical sorting).
   - The write path only inserts into `outbox`; only the processor mutates delivery-state columns, and no hot path hard-deletes outbox rows.
+- shipped-in: `48ef03748a6c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — One projection chain, then SQLite-only reads (the markdown stays the authority)
 
@@ -565,6 +571,7 @@ tooling, which is S10.
 - review-implementer: claude-opus-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
+- shipped-in: `56cf4016958d`
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
@@ -594,6 +601,9 @@ slices without ids, timestamps or revisions:
   one `closed`, five `already_closed`, one lifecycle row. Writers holding a
   stale revision get `conflict` instead (`lifecycle-cas-race.spec.ts`),
   which is the compare-and-swap r00048 specified.
+- shipped-in: `00f48ee3b3e1`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — A projection behind the markdown is rebuilt before it answers, and the index has one reader
 
@@ -651,6 +661,7 @@ Measured in this repository (1188 proposals): a level read costs about
 - review-implementer: claude-opus-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
+- shipped-in: `bcb6f86c0504`
 
 ### S7 — A file the projection cannot represent is reported where the proposals are counted
 
@@ -681,6 +692,7 @@ visible before it.
 - review-implementer: claude-opus-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
+- shipped-in: `fc53d38ce4af`
 
 ### S8 — A file that returns is alive again
 
@@ -708,6 +720,7 @@ entity and removes the record.
 - review-implementer: claude-opus-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
+- shipped-in: `32f5711dce77`
 
 ### S9 — The reader follows the project: its configured folder, with or without git, at a cost a server can pay
 
@@ -744,6 +757,7 @@ Three things S6 left that a project other than this one would have met:
 - review-implementer: claude-opus-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
+- shipped-in: `0c05141bae44`
 
 ### S10 — The registry file is nobody's to read; what named it by habit goes
 
@@ -774,6 +788,7 @@ Removing those is a decision about compatibility, not a clean-up, and
 is not part of this plan.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `2a7edadacc92`
 
 ### S11 — The checked-in agent catalog lists no proposals
 
