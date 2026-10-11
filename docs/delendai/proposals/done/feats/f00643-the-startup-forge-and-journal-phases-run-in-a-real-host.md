@@ -6,10 +6,6 @@ status: done
 type: proposal
 track: trust
 date: 2026-09-26
-last-transition-id: 0531f5cf-96b3-47d8-9241-a52332e43c97
-last-correlation-id: 0531f5cf-96b3-47d8-9241-a52332e43c97
-last-transition-from: review
-last-transition-at: 2026-10-11T02:31:20.484Z
 last-transition-id: 9f5001b3-be34-438f-9b6e-310f936f576f
 last-correlation-id: 9f5001b3-be34-438f-9b6e-310f936f576f
 last-transition-from: review
