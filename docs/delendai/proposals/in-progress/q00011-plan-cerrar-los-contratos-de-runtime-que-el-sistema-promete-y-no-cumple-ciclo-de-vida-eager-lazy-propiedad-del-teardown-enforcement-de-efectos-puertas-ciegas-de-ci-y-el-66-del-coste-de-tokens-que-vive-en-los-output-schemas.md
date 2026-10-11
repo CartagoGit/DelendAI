@@ -344,6 +344,7 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 - **Status**: done — verified 2026-10-01: both children are closed, `t00030` and `t00031` in `done/tests/`.
 - **Files**: [`vitest.config.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`]
 - **Gate**: `bun run test:coverage`
+- shipped-in: `fc1a589e2`, `74583b235`
 
 
 `t00030` (umbrales apretados + branches ≥80% en los módulos de P0) y `t00031`
