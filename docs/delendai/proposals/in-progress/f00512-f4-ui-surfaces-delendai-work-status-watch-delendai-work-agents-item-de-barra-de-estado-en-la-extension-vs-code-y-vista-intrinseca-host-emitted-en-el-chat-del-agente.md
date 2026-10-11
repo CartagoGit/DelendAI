@@ -21,6 +21,8 @@ last-transition-id: 35fe19ee-8961-435c-bd61-572b6f2e7c45
 last-correlation-id: 35fe19ee-8961-435c-bd61-572b6f2e7c45
 last-transition-from: review
 last-transition-at: 2026-10-11T02:58:48.466Z
+shipped-in:
+  - "edf768be6a8c"
 ---
 
 # f00512 — F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente
@@ -168,7 +170,7 @@ declarations of the second are checked against those of the first.
 
 ### S7 — `delendai work progress` in the published CLI
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/cli/src/lib/work-progress.service.ts`
   - `packages/cli/src/lib/work-progress.service.spec.ts`
@@ -207,9 +209,11 @@ proposal by the folder it sat in, not by its status, and missed any
 project that keeps its proposals elsewhere. The view now takes its
 slices as data: the canonical slice parser carries the status word the
 document writes, and the board hands it over when asked for progress.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `edf768be6a8c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at edf768be6a8c, validate exit 0, tests 31/31 — Verified the published CLI surface for this slice is `work progress`, backed by proposal-board progress data, with focused tests green 31/31 and the repository script delegating directly to the CLI command.
 
 ## acceptance
 
