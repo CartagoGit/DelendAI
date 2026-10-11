@@ -748,6 +748,8 @@ The export itself stays: `json` and `auto` are sources a project may
 pin, and a read that cannot locate a projection falls back to it.
 Removing those is a decision about compatibility, not a clean-up, and
 is not part of this plan.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
