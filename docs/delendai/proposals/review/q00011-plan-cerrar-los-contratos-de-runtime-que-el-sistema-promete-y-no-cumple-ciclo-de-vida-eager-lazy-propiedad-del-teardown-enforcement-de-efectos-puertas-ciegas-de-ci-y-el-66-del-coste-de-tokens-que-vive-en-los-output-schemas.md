@@ -457,14 +457,15 @@ en `develop` (no sobre la rama de trabajo), verificado por comando:
 
 - Auditoría fuente:
   `docs/delendai/audits/2026-08-27-develop-independent-audit-claude-opus5.md`
-  (2.928 líneas, snapshot `2cf17373`).
-- La rama se movió durante la auditoría: el snapshot inicial fue `ff289141` y el
+  (2.928 líneas, snapshot 2cf17373).
+- Los dos snapshots se citan por su nombre de entonces, sin formato de commit: eran puntas de la rama de integración el día de la auditoría y ya no están en su historia.
+- La rama se movió durante la auditoría: el snapshot inicial fue ff289141 y el
   PR #49 se integró a mitad. Los hallazgos que #49 resolvió (`AUD-A01` drift,
   `AUD-A02`, `AUD-A03`, `AUD-A08`) **no** están en este plan; se conservan en el
   informe sólo como trazabilidad.
 - Tres hallazgos de este plan (`AUD-E01`, `AUD-D04`, `AUD-D05`) fueron reportados
   también por revisores externos y **se han reconfirmado línea a línea de forma
-  independiente** contra `2cf17373` antes de incluirse. Ninguno se acepta por
+  independiente** contra 2cf17373 antes de incluirse. Ninguno se acepta por
   referencia.
 
 ### Estado de ejecución y traspaso (2026-08-29)
