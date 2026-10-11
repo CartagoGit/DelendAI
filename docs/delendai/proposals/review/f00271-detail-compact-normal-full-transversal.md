@@ -2,7 +2,7 @@
 id: f00271
 title: "`detail: compact | normal | full` transversal"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -17,12 +17,12 @@ related:
     - r00031 # proposal_get (canary del patrón)
     - r00032 # orchestrator-runner (canary)
     - f00270 # TokenBudgetRegistry (mide los 3 niveles)
-last-transition-id: b4d82f5f-687a-473d-bd87-a5f37feb5ec7
-last-correlation-id: b4d82f5f-687a-473d-bd87-a5f37feb5ec7
-last-transition-from: review
+last-transition-id: 4097fc28-f7b3-40c6-ad44-2110f469a527
+last-correlation-id: 4097fc28-f7b3-40c6-ad44-2110f469a527
+last-transition-from: in-progress
 shipped-in:
   - "8fd88fed0"
-last-transition-at: 2026-10-11T13:03:21.052Z
+last-transition-at: 2026-10-11T13:34:11.496Z
 ---
 
 # f00271 — `detail: compact | normal | full` transversal
