@@ -2,10 +2,14 @@
 id: x00880
 title: "What a review swarm of eleven agents got wrong, and what let it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: swarm
 date: 2026-10-11
+last-transition-id: bc180466-1fd9-49ec-9fa5-4635ad541e0a
+last-correlation-id: bc180466-1fd9-49ec-9fa5-4635ad541e0a
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T08:48:56.360Z
 ---
 
 # x00880 — What a review swarm of eleven agents got wrong, and what let it
@@ -148,6 +152,8 @@ Also delivered: the instructions every agent receives at start now end their "si
   - A unit that was opened and never used ends when its session does; it is not left on the forge.
 
 Retired 2026-10-11. Resuming "the agent's open unit" when no session is given cannot be done safely: three instances of one model share a name by the owner's own rule (S2), and the session is what tells them apart, so an entry without one would hand an instance the unit of another. What the slice was for is closed elsewhere: a unit that claimed and judged nothing is not published (S11), a unit that judged is published whatever it still claims (S13), a reviewer holds one proposal at a time (S4), and a command run inside a unit already takes that unit's session.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A reviewer holds what it is reviewing, and is offered only what it can judge
 
