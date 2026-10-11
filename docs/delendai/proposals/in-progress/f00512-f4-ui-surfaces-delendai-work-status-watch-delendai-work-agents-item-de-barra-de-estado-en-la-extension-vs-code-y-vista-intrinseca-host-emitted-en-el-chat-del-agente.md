@@ -100,7 +100,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - review-implementer: claude-opus-5-5
 
 ### S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
-- **Status**: pending
+- **Status**: retired
 - **DependsOn**: [F4-S1]
 - **Files**: `extensions/vscode/src/services/work-status-bar-item.ts`, `extensions/vscode/src/services/work-status-bar-item.spec.ts`, `extensions/vscode/src/services/work-snapshot-reader.ts`, `extensions/vscode/src/services/work-snapshot-reader.spec.ts`, `extensions/vscode/src/extension.ts`
 - **Gate**: type
@@ -110,9 +110,10 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "Click → abre un `WebviewView` con la tabla equivalente a `delendai work agents` (no implementa nuevas queries; reusa la API)."
   - "El coste de polling es ≤ 2 KB por ciclo y no añade tokens al LLM (test de integración con un mock del cliente MCP)."
   - "Detrás de `delendai.config.json#telemetry.chat_intrinsic.enabled` (default `false`): si está en `false`, el item se muestra pero el tooltip no incluye la confianza (sólo progreso + fase)."
+- Retired 2026-10-11. A status bar item lives in one editor; the view this proposal is about has to reach an agent or a person on any host. `delendai work progress --watch` (S7) is that surface: a terminal every host has. The extension can show the same rows by running the command, without a reader, a poller and a webview of its own to keep in step with it.
 
 ### S5 — Vista intrínseca host-emitted en el chat del agente (bloque determinista que el host inyecta, no el modelo)
-- **Status**: pending
+- **Status**: retired
 - **DependsOn**: [F4-S1]
 - **Files**: `packages/core/src/lib/host-emitted/work-telemetry-block.service.ts`, `packages/core/src/lib/host-emitted/work-telemetry-block.service.spec.ts`, `packages/core/src/lib/mcp/chat-emitter.service.ts`, `packages/core/src/lib/mcp/chat-emitter.service.spec.ts`, `packages/core/tests/integration/telemetry-no-tokens.spec.ts`
 - **Gate**: type
@@ -122,6 +123,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "El setting `delendai.config.json#telemetry.chat_intrinsic.enabled` (default `false`) controla la inyección; con `false`, el bloque se omite."
   - "Test `telemetry-no-tokens.spec.ts` (acceptance del plan q00020): arranca un agente mock, dispara 100 tool calls, activa el bloque durante 5 minutos, y verifica que `usage_tracking.llm_tokens_total` es invariante entre los dos extremos."
   - "El bloque se omite automáticamente cuando el agente está en `WorkPhase: 'done'` o no tiene `work_item_id` activo (degradación silenciosa)."
+- Retired 2026-10-11. The Model Context Protocol gives a server no channel to a chat that stays out of the model's context: what a server returns is tool output, and tool output is context. A block the host renders beside the conversation is a feature of each host, to be built in each, and delendai is the same on all of them. The numbers the block would show are what `delendai work progress` shows.
 
 ### S6 — A published package bundles the private packages it imports
 
