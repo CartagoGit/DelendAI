@@ -10,15 +10,6 @@ import { briefingFrom, describeBriefing } from './work-briefing.service';
 import { readSwarm } from './work-swarm.service';
 
 /**
- * Where an entering agent reads what its slice asks for. A plan document
- * runs to tens of kilobytes and a slice is a few hundred bytes of it; the
- * proposals plugin cuts the open slices out of it, with what each waits
- * on, changes and still has to meet.
- */
-const SLICES_VIEW_HINT =
-	'the open slices of the proposal (proposals `proposal_get`, view `slices`), not its whole document';
-
-/**
  * Hand an entering agent the picture, in whichever form it reads.
  *
  * The briefing is attached to the payload rather than only printed,
@@ -37,7 +28,7 @@ export const withBriefing = (
 		agent,
 		view: readSwarm({ root, policy }),
 	});
-	const payload = { ...data, swarm: briefing, read: SLICES_VIEW_HINT };
+	const payload = { ...data, swarm: briefing };
 	if (ctx.globals.json || ctx.globals.format === 'json') {
 		return { code: EXIT_CODE.OK, data: payload };
 	}
@@ -50,7 +41,6 @@ export const withBriefing = (
 				: [
 						`session          ${data.session} (pass --session=${data.session} to enter this unit again)`,
 					]),
-			`read             ${SLICES_VIEW_HINT}`,
 			...describeBriefing(briefing),
 		].join('\n')}\n`,
 	);
