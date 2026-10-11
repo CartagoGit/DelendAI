@@ -2,14 +2,14 @@
 id: f00500
 title: "Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-03
-last-transition-id: 2d785b54-1bf4-4433-ba44-6341f2b85ee2
-last-correlation-id: 2d785b54-1bf4-4433-ba44-6341f2b85ee2
-last-transition-from: blocked
-last-transition-at: 2026-10-11T14:32:06.036Z
+last-transition-id: 3270deb4-e55c-49b4-9195-a4d8bab92c07
+last-correlation-id: 3270deb4-e55c-49b4-9195-a4d8bab92c07
+last-transition-from: ready
+last-transition-at: 2026-10-11T14:32:32.702Z
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
