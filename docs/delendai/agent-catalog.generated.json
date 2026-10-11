@@ -1511,14 +1511,6 @@
 				"status": "ready",
 				"kind": "plan",
 				"date": "2026-09-07"
-			},
-			{
-				"id": "x00881",
-				"title": "What an outside audit found, verified against the code",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-10-11"
 			}
 		]
 	}
