@@ -5,7 +5,6 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { ACTIONABLE_PROPOSAL_STATUSES } from '@delendai/core/cli';
 import type { IToolSummary } from '@delendai/core/contracts';
 import {
 	buildAgentCatalogArtifact,
@@ -53,36 +52,6 @@ const baseManifest = {
 	],
 };
 
-const baseProposals = {
-	generated_at: '2026-06-27T09:00:00.000Z',
-	proposals: [
-		{
-			id: 'f00056',
-			title: 'Agent discovery catalog',
-			track: 'catalog',
-			status: 'ready',
-			kind: 'feat',
-			date: '2026-06-25',
-		},
-		{
-			id: 'x00001',
-			title: 'Paused fix',
-			track: 'fixes',
-			status: 'paused',
-			kind: 'fix',
-			date: '2026-06-24',
-		},
-		{
-			id: 'a00001',
-			title: 'Done audit',
-			track: 'audits',
-			status: 'done',
-			kind: 'audit',
-			date: '2026-06-23',
-		},
-	],
-};
-
 const testIo = (overrides: Record<string, unknown> = {}) => ({
 	readText: async (absPath: string) => {
 		try {
@@ -103,28 +72,14 @@ const testIo = (overrides: Record<string, unknown> = {}) => ({
 	info: () => {},
 	warn: () => {},
 	error: () => {},
-	// These fixtures seed the registry file directly as the catalog's
-	// input, with no markdown behind it; a scan would find nothing. The
-	// tests that exercise the scan pass the real one.
-	scanRegistry: async () => undefined,
 	...overrides,
 });
 
 const createFixtureRoot = async (options?: {
 	readonly manifest?: any;
-	readonly proposals?: typeof baseProposals;
-	readonly skillBodies?: Readonly<Record<string, string>>;
-	// x00xxx (drift-in-CI fix): a fresh checkout — like the `drift`
-	// workflow's CI runner — has the checked-in proposal markdown but no
-	// gitignored `.cache/delendai/proposals/index.json`. These two let a
-	// test reproduce exactly that shape instead of always pre-seeding the
-	// cache file the way every other fixture in this suite does.
-	readonly skipProposalsIndex?: boolean;
-	readonly proposalMarkdownFiles?: Readonly<Record<string, string>>;
 }): Promise<string> => {
 	const root = await mkdtemp(join(tmpdir(), 'agent-catalog-'));
 	const manifest = options?.manifest ?? baseManifest;
-	const proposals = options?.proposals ?? baseProposals;
 	const skillBodies =
 		options?.skillBodies ??
 		({
@@ -146,8 +101,6 @@ const createFixtureRoot = async (options?: {
 		recursive: true,
 	});
 	await mkdir(join(root, 'packages/core/skills'), { recursive: true });
-	await mkdir(join(root, 'docs/delendai/proposals'), { recursive: true });
-	await mkdir(join(root, '.cache/delendai/proposals'), { recursive: true });
 	for (const [relativePath, content] of Object.entries(skillBodies)) {
 		await mkdir(
 			join(root, relativePath.split('/').slice(0, -1).join('/')),
@@ -162,20 +115,6 @@ const createFixtureRoot = async (options?: {
 		`${JSON.stringify(manifest, null, '\t')}\n`,
 		'utf8',
 	);
-	for (const [relativePath, content] of Object.entries(
-		options?.proposalMarkdownFiles ?? {},
-	)) {
-		const absPath = join(root, 'docs/delendai/proposals', relativePath);
-		await mkdir(join(absPath, '..'), { recursive: true });
-		await writeFile(absPath, content, 'utf8');
-	}
-	if (options?.skipProposalsIndex !== true) {
-		await writeFile(
-			join(root, '.cache/delendai/proposals/index.json'),
-			`${JSON.stringify(proposals, null, '\t')}\n`,
-			'utf8',
-		);
-	}
 	return root;
 };
 
@@ -372,198 +311,22 @@ describe('generate-agent-catalog script', async () => {
 		);
 	});
 
-	it('compact mode only surfaces actionable proposal statuses', async () => {
+	it('lists no proposals: a change of state in one rewrites nothing here', async () => {
 		await withFixture(async (root) => {
 			const result = await buildAgentCatalogArtifact(
-				{ root, mode: 'compact' },
+				{ root, mode: 'full' },
 				{
 					...testIo(),
 					fixedGeneratedAt: FIXED_NOW,
 					loadTools: async () => [...baseTools],
 				},
 			);
-			expect(
-				result.artifact.proposals.actionable.every((proposal) =>
-					ACTIONABLE_PROPOSAL_STATUSES.includes(proposal.status),
-				),
-			).toBe(true);
-			expect(result.artifact.proposals.actionable).toHaveLength(2);
+			expect(Object.keys(result.artifact).sort()).toEqual([
+				'mode',
+				'skills',
+				'tools',
+			]);
 		});
-	});
-
-	it('carries no repository-wide roll-up, which no branch can own', async () => {
-		// A count over every proposal in the repository changes when
-		// ANY candidate merges, and this artifact is checked in and
-		// compared against its generator on the PR's merge ref. A
-		// committed total can therefore be right for at most one open
-		// candidate at a time. Keeping the field out is what stops six
-		// candidates failing `drift` on a number none of them touched.
-		await withFixture(async (root) => {
-			const result = await buildAgentCatalogArtifact(
-				{ root, mode: 'compact' },
-				{
-					...testIo(),
-					fixedGeneratedAt: FIXED_NOW,
-					loadTools: async () => [...baseTools],
-				},
-			);
-			expect(result.artifact.proposals).not.toHaveProperty('byStatus');
-		});
-	});
-
-	it('self-heals the proposal index from checked-in markdown when the cache is absent (fresh CI checkout)', async () => {
-		// Reproduces the `drift` workflow's actual failure mode: a fresh
-		// `actions/checkout` has `docs/delendai/proposals/**` (tracked)
-		// but no `.cache/delendai/proposals/index.json` (gitignored —
-		// only ever built by the MCP server or an explicit sync). The
-		// generator must rebuild the index from the markdown, not throw.
-		await withFixture(
-			async (root) => {
-				const result = await buildAgentCatalogArtifact(
-					{ root, mode: 'full' },
-					{
-						...testIo({ scanRegistry: undefined }),
-						fixedGeneratedAt: FIXED_NOW,
-						loadTools: async () => [...baseTools],
-					},
-				);
-				const ids = result.artifact.proposals.all?.map(
-					(proposal) => proposal.id,
-				);
-				expect(ids).toContain('f00001');
-			},
-			{
-				skipProposalsIndex: true,
-				proposalMarkdownFiles: {
-					'ready/f00001-self-heal-example.md': [
-						'---',
-						'id: f00001',
-						'title: "Self-heal example"',
-						'kind: feat',
-						'status: ready',
-						'type: proposal',
-						'track: general',
-						'date: 2026-06-20',
-						'---',
-						'',
-						'# f00001 — Self-heal example',
-						'',
-						'Body.',
-						'',
-					].join('\n'),
-				},
-			},
-		);
-	});
-
-	it('derives from the markdown even when a stale index is present', async () => {
-		// The failure behind a week of red drift checks: after merging the
-		// integration branch, the index on disk still described the
-		// proposals as they were before the merge. The generator read it
-		// because it existed, so `gen:all` wrote a catalog that
-		// `catalog:check` (which syncs first) called stale.
-		await withFixture(
-			async (root) => {
-				const result = await buildAgentCatalogArtifact(
-					{ root, mode: 'full' },
-					{
-						...testIo({ scanRegistry: undefined }),
-						fixedGeneratedAt: FIXED_NOW,
-						loadTools: async () => [...baseTools],
-					},
-				);
-				const ids = result.artifact.proposals.all?.map(
-					(proposal) => proposal.id,
-				);
-				expect(ids).toContain('f00002');
-				// Only in the stale index; no markdown says it exists.
-				expect(ids).not.toContain('x00001');
-			},
-			{
-				proposalMarkdownFiles: {
-					'ready/f00002-arrived-with-the-merge.md': [
-						'---',
-						'id: f00002',
-						'title: "Arrived with the merge"',
-						'kind: feat',
-						'status: ready',
-						'type: proposal',
-						'track: general',
-						'date: 2026-09-23',
-						'---',
-						'',
-						'# f00002 — Arrived with the merge',
-						'',
-						'Body.',
-						'',
-					].join('\n'),
-				},
-			},
-		);
-	});
-
-	it('observes the proposals without repairing them: nothing moves, the index is not rewritten', async () => {
-		// x00629. This generator is what `catalog:check` and
-		// `gen:all --check` run. It used to sync the registry first, and a
-		// sync reconciles: it moves a proposal whose folder disagrees with
-		// its status. A check that repairs what it checks cannot fail the
-		// way it exists to fail.
-		const misfiled = [
-			'---',
-			'id: f00003',
-			'title: "Filed in the wrong folder"',
-			'kind: feat',
-			'status: review',
-			'type: proposal',
-			'track: general',
-			'date: 2026-09-24',
-			'---',
-			'',
-			'# f00003 \u2014 Filed in the wrong folder',
-			'',
-			'Body.',
-			'',
-		].join('\n');
-		await withFixture(
-			async (root) => {
-				const indexPath = join(
-					root,
-					'.cache/delendai/proposals/index.json',
-				);
-				const indexBefore = await readFile(indexPath, 'utf8');
-				const result = await buildAgentCatalogArtifact(
-					{ root, mode: 'full' },
-					{
-						...testIo({ scanRegistry: undefined }),
-						fixedGeneratedAt: FIXED_NOW,
-						loadTools: async () => [...baseTools],
-					},
-				);
-				// It is still in the catalog, as the markdown says it is.
-				expect(
-					result.artifact.proposals.all?.map(
-						(proposal) => proposal.id,
-					),
-				).toContain('f00003');
-				// And it is still exactly where it was filed.
-				await expect(
-					readFile(
-						join(
-							root,
-							'docs/delendai/proposals/ready/f00003-filed-in-the-wrong-folder.md',
-						),
-						'utf8',
-					),
-				).resolves.toBe(misfiled);
-				// The index on disk was not rewritten.
-				expect(await readFile(indexPath, 'utf8')).toBe(indexBefore);
-			},
-			{
-				proposalMarkdownFiles: {
-					'ready/f00003-filed-in-the-wrong-folder.md': misfiled,
-				},
-			},
-		);
 	});
 
 	it('sorts deterministically even when inputs arrive in different orders', async () => {
@@ -589,14 +352,6 @@ describe('generate-agent-catalog script', async () => {
 								raw,
 							) as typeof baseManifest;
 							parsed.skills = [...parsed.skills].reverse();
-							return `${JSON.stringify(parsed, null, '\t')}\n`;
-						}
-						if (absPath.endsWith('index.json')) {
-							const raw = await readFile(absPath, 'utf8');
-							const parsed = JSON.parse(
-								raw,
-							) as typeof baseProposals;
-							parsed.proposals = [...parsed.proposals].reverse();
 							return `${JSON.stringify(parsed, null, '\t')}\n`;
 						}
 						try {
