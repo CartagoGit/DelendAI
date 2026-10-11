@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-10-11T17:55:40.472Z",
+	"generatedAt": "2026-10-11T18:09:17.066Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -2084,9 +2084,14 @@
 			},
 			"presets": [],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 10250,
+				"adaptiveActivationBytes": 2260,
+				"caps": {
+					"hard": 11500,
+					"warning": 10800
+				},
+				"measuredAt": "2026-10-11",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -3615,7 +3620,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700,
+			"tokenBudgetBytes": 10250,
 			"toolPermissions": {
 				"roadmap_show": [
 					"filesystem-read"
@@ -5824,8 +5829,8 @@
 		},
 		{
 			"id": "roadmap",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 10800,
+			"hard": 11500,
 			"releaseRelativePercent": 20
 		},
 		{

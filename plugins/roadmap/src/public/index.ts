@@ -81,3 +81,8 @@ export {
 	openRoadmapWorkspace,
 	timelineBeside,
 } from '../lib/workspace/roadmap-workspace.service';
+export type * from '../lib/contracts/interfaces/roadmap-display.interface';
+export {
+	displayProjection,
+	renderDisplayProjection,
+} from '../lib/projection/roadmap-display.service';

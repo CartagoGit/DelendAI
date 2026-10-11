@@ -43,6 +43,7 @@
 		"@delendai/quality": "workspace:*",
 		"@delendai/quality-policy": "workspace:*",
 		"@delendai/refactor": "workspace:*",
+		"@delendai/roadmap": "workspace:*",
 		"@delendai/rules": "workspace:*",
 		"@delendai/search": "workspace:*",
 		"@delendai/security": "workspace:*",

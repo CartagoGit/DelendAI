@@ -114,7 +114,7 @@
 | quality-policy | 2700 | 3000 | 20 |
 | refactor | 2700 | 3000 | 20 |
 | remote-provider-core | 2700 | 3000 | 20 |
-| roadmap | 2700 | 3000 | 20 |
+| roadmap | 10800 | 11500 | 20 |
 | rules | 2700 | 3000 | 20 |
 | search | 2700 | 3000 | 20 |
 | security | 2700 | 3000 | 20 |

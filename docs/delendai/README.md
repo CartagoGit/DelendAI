@@ -111,6 +111,8 @@ pages. Find yourself below; each row is a complete path, in order.
 | [Project observability — KPIs, economics and dogfooding](PROJECT-OBSERVABILITY.md) | The `@delendai/project-kpis` plugin turns delendai's own telemetry into |
 | [@delendai/core](README-DELENDAI.md) | A project-agnostic core for building MCP servers, plus a CLI that loads |
 | [Repo-level rules — `@delendai/core`](REPO-RULES.md) | Read this only if the host you are running in reads a |
+| [Roadmap](ROADMAP.md) | This file is the authority for what each version of delendai promises. |
+| [Roadmap timeline](ROADMAP.timeline.md) | One event per line, appended and never edited. |
 | [Shared-develop operating model](SHARED-DEVELOP-MODEL.md) | Superseded for the integration question. This document was written |
 | [Stable API (f00152 S2 — L4)](STABLE-API.md) | The Stable API Surface is a small, named subset of tools that the |
 | [Token Budgets — generated dashboard](TOKEN-BUDGETS.md) | Generated from the current repository measurements; timestamps are intentionally omitted for deterministic diffs. |
