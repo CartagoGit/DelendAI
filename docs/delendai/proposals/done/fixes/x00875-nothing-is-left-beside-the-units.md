@@ -2,13 +2,13 @@
 id: x00875
 title: "Nothing is left beside the units"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-05
-last-transition-id: e0796df3-f7eb-4576-8f54-7fd19b6c508d
-last-correlation-id: e0796df3-f7eb-4576-8f54-7fd19b6c508d
-last-transition-from: in-progress
+last-transition-id: b3171da4-6b72-4f7f-9581-d5ed706b6050
+last-correlation-id: b3171da4-6b72-4f7f-9581-d5ed706b6050
+last-transition-from: review
 shipped-in:
   - "9e405f09f7fb33f0a0dd0e055642ef2928955731"
   - "00128e2debe92950f0a065d9da76064bcf114914"
@@ -23,6 +23,9 @@ shipped-in:
   - "57a631db9ae8a3bbebdde2373d0e9691377fe807"
   - "907b12101c096e1277c28ca8013d5fef2aa92c1d"
   - "97f1cecdb488f4d6187145e16723640fcb37922d"
+  - "82d2d7d97f3b8b6addbe4e3ed7694c6f002afea2"
+  - "aba4404daba70ff26b231e60c7efd4210a3eebfa"
+last-transition-at: 2026-10-11T02:37:03.231Z
 ---
 
 # x00875 — Nothing is left beside the units
@@ -79,7 +82,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/selection-explain.service.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/selection-explain.interface.ts`, `plugins/auto-agent-selector/src/lib/routing/economic-preference.ts`, `plugins/auto-agent-selector/src/public/index.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/selection-explain.service.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/auto-agent-selector tests/src/lib/routing`
-- Ported from the rescued commit `fa510753d` and reshaped to today's conventions. A ranked route keeps the parts of its score (`qualityEvidence`, `alreadyPaidBonus`, `scarcityPenalty`, `headroomTiebreak`, `total`); `explainSelection` names the chosen route, every discarded one with its reasons, and the fallback order.
+- Ported from a rescued commit (an unreferenced object, `feat(auto-agent-selector): explain route selection economics`, which no ref keeps) and reshaped to today's conventions. A ranked route keeps the parts of its score (`qualityEvidence`, `alreadyPaidBonus`, `scarcityPenalty`, `headroomTiebreak`, `total`); `explainSelection` names the chosen route, every discarded one with its reasons, and the fallback order.
 - `f00507` S4 now names the files that shipped.
 - shipped-in: `e18619dcb3ae`
 - review-state: done
@@ -91,7 +94,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Status**: done
 - **Files**: `packages/proposals-sqlite/src/lib/schema-guard.service.ts`, `packages/proposals-sqlite/src/lib/schema-guard.interface.ts`, `packages/proposals-sqlite/src/lib/schema-guard.service.spec.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.ts`, `packages/proposals-sqlite/src/lib/work-model/startup-state-ports.ts`, `packages/proposals-sqlite/src/index.ts`
 - **Gate**: `bun test --timeout 30000 packages/proposals-sqlite/src/lib/schema-guard.service.spec.ts packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
-- Ported from the rescued commit `ce0c35eec`. A writable open of a database whose recorded schema version is above the build's throws `SchemaAheadOfRuntimeError` before the migration sweep and before `user_version` is stamped; the file is left as it was. A read-only handle still opens, so the diagnostic is not blinded. Startup binds no port and reports the sentence that says which build to install.
+- Ported from a rescued commit (an unreferenced object that no ref keeps). A writable open of a database whose recorded schema version is above the build's throws `SchemaAheadOfRuntimeError` before the migration sweep and before `user_version` is stamped; the file is left as it was. A read-only handle still opens, so the diagnostic is not blinded. Startup binds no port and reports the sentence that says which build to install.
 - shipped-in: `05515492f69d`
 - review-state: done
 - review-implementer: claude-opus-5-5
@@ -209,7 +212,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 
 ### S15 — No tracked file keeps the markers of an unfinished merge
 - **Status**: done
-- **Files**: `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-conflict-markers.script.spec.ts`, `package.json`, `docs/delendai/proposals/review/x00835-a-review-swarm-leaves-verdicts-that-can-be-checked-and-loses-none.md`, `docs/delendai/proposals/review/x00875-nothing-is-left-beside-the-units.md`
+- **Files**: `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-conflict-markers.script.spec.ts`, `package.json`, `docs/delendai/proposals/review/x00835-a-review-swarm-leaves-verdicts-that-can-be-checked-and-loses-none.md`, `docs/delendai/proposals/done/fixes/x00875-nothing-is-left-beside-the-units.md`
 - **Gate**: `bun run lint:no-conflict-markers && npx vitest run --project tools tools/scripts/lint/no-conflict-markers.script.spec.ts`
 - Found 2026-10-06: the documents of `x00835` and of this proposal reached `develop` with `<<<<<<< HEAD` and `>>>>>>>` lines in them. My batch script merged another open pull request of the same proposal into a unit, the merge stopped on a conflict, and the next step committed the tree as it was; every gate passed and the queue merged it. Markdown shows the markers as text, and nothing looked for them.
 - `lint:no-conflict-markers` refuses any tracked file with a line that starts with git's opening or closing marker (not `=======`, which is also a markdown underline), and runs first in `lint:architecture`, which CI runs. Both documents are repaired by keeping every side: each conflict was two pull requests appending different slices.
@@ -260,7 +263,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 7d96f5155980, validate exit 0, tests 8/8 — Delivered by the merge naming x00875-S19-g1 (f769b78803af) and last carried by 7d96f5155980. sliceSectionOf narrows the review evidence to one slice section and reviewedByEntrant tests the reviewer name against that section only, so an agent is kept out of the slice it judged and not of the whole proposal. No acceptance bullet is declared for this slice. Gate reviewed-proposal.service.spec.ts 8/8 exit 0.
 
 ### S20 — A verdict written through the CLI is committed, or says why not
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/contracts/interfaces/mcp-transport.interface.ts`, `packages/client/tests/transport/mcp-stdio-client.connect.spec.ts`, `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/contracts/constants/stdio-context.constant.ts`
 - **Gate**: `npx vitest run packages/client/tests/transport/mcp-stdio-client.connect.spec.ts`
 - Found 2026-10-06, not yet explained: `proposals review <id> <slice> --action=submit --workspace=<unit>` writes the slice's review lines and leaves the document staged and uncommitted, most of the time (x00875 S17, S18, S19; f00643 S2) but not always (x00875 S15, f00509 S1 committed with the `chore(delendai): … submit` subject). Established: the unit's branch resolves (`unitBranchOf`), the path is staged, so `git add` ran and `git commit` failed; the same `withCallWritesCommitted` run in-process on the same change commits. The note it writes on a failed commit reaches neither the CLI's output nor its stderr, so the caller learns nothing. Seen again for S21–S26 the same day, in three forms: committed by the tool (S21, S22, S24, S25), left staged (S23), and left unstaged (S26), which means the tool's commit step did not run at all for that call: the cause is upstream of `commitPaths`, in whether the call is bound to the unit.
@@ -268,8 +271,10 @@ Found on 2026-10-05, reading what the last runs left behind.
   - "The cause is reproduced by a spec that drives the CLI against a unit, and fixed."
   - "A commit that fails is reported in what the CLI prints, not only on the server's stderr."
 - Delivered: the cause was the client, not the committer. The CLI talks to a server it starts, through the MCP SDK, whose default gives a tool call one minute. A verdict's write is committed inside the call, behind the project's pre-commit hooks (one regenerates the agent catalog), and on a loaded machine they ran past the minute: the CLI gave up, closed the server, and the commit was cut off, staged or not yet staged, its lock still held for a while (seen on x00877 S1: `index.lock: File exists`, the document staged, the catalog modified). The client now takes `requestTimeoutMs`, passed to every call, and the CLI waits thirty minutes (`CLI_TOOL_CALL_TIMEOUT_MS`), the answer its caller is waiting for anyway. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen-3.8-flash
+- review-log: approved by qwen-3.8-flash — verified at 82d2d7d97f3b, validate exit 0, tests 2/2 — Independently verified: the client now accepts requestTimeoutMs and threads it to the current MCP SDK call (mcp-stdio-client.ts 259/337/363), the interface exposes it (mcp-transport.interface.ts 71), the CLI factory passes CLI_TOOL_CALL_TIMEOUT_MS=30*60*1000 (stdio-context.factory.ts 145, stdio-context.constant.ts 9), and the connect spec verifies the per-call timeout plus SDK default. The failed-commit-is-reported criterion shipped in candidate 82d2d7d97 (x00878 S16, a sibling of this slice). Not relying on the implementer's account alone: every behaviour is grep-verified in HEAD, both acceptance criteria map to code that demonstrably exists, and the spec gate is reproducible (npx vitest mcp-stdio-client.connect.spec.ts = 2/2 in this worktree).
 
 ### S21 — A slice not yet integrated has no reviewer
 - **Status**: done
@@ -321,7 +326,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 - **Status**: done
 - **Files**: `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
 - **Gate**: `npx vitest run tools/scripts/git/maintain-ref-namespace.script.spec.ts`
-- Found 2026-10-06: pack #836 (only claim and release commits) was closed and its branch deleted at 10:51:56Z by the owner's credentials, seven minutes after `review finish` opened it, with no comment and no retired ref (its tip `5637260bb` survived only as an unreferenced object). `work retire` always comments and keeps the tip, so it was not that. Candidates: a host server or hook process applying a reap or supersede rule to a pack whose commits change no file. Lead: the g2 unit's worktree and local branch were removed too, which is what `work reap --apply` does from the post-merge hook of the main checkout to a unit it judges `delivered`; a unit whose commits change no file may be judged delivered by content.
+- Found 2026-10-06: pack #836 (only claim and release commits) was closed and its branch deleted at 10:51:56Z by the owner's credentials, seven minutes after `review finish` opened it, with no comment and no retired ref (its tip survived only as an unreferenced object, which no ref keeps). `work retire` always comments and keeps the tip, so it was not that. Candidates: a host server or hook process applying a reap or supersede rule to a pack whose commits change no file. Lead: the g2 unit's worktree and local branch were removed too, which is what `work reap --apply` does from the post-merge hook of the main checkout to a unit it judges `delivered`; a unit whose commits change no file may be judged delivered by content.
 - acceptance:
   - "The process that closed it is identified and a spec reproduces it."
   - "A pack whose commits change no file is never taken for spent or superseded while it carries claims or releases the integration branch lacks."
@@ -363,12 +368,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 57a631db9ae8, validate exit 0, tests 8/8 — Delivered by 57a631db9ae8, the newest delivery touching the slice's files (no merge names x00875-S28-g1, so the attribution is by declared files). The forge phase skips a commit the forge answers 422 for, so a commit only this machine has reports no runs instead of degrading the boot; any other failure, a 404 included, still reports unavailable. Gate forge-seam.service.spec.ts 8/8 exit 0. No acceptance bullet is declared for this slice.
 
 ### S29 — A close pass supersedes the one it built on
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`
 - **Gate**: `npx vitest run tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - Found 2026-10-06, right after S27 landed: the closer had two pull requests open closing the same five proposals (#846 from `batch-all-g2`, #848 from `batch-all-g4`). Each pass merges the open publication into its unit and publishes; under one reused generation that updated the same pull request, and with a generation per unit (S27) it opened a new one and left the old beside it. A pass with nothing new to close also republished, only to bring the open one level with the integration branch, which is the candidates' refresh's job. Now a pass publishes only when it closed something, and then retires the publication it merged (its tip kept, its pull request closed with the reason). #846 was retired by hand as superseded by #848, which contains it. Seen again before it landed: passes went on publishing beside each other (g15, g20, g21, g22 on top of g4), so a pass now merges every open publication of the closer, not the first, and retires all of them once its own is published. The four superseded ones were retired by hand for #866, which carries their closes. And none of them could ever land: `closed-with-independent-approval` refuses a review pack that changes proposals it did not claim, and the closer's close commit claimed nothing, so every pass's pull request was red in `lint-governance` and x00770, x00799, x00868, x00870 and x00873 stayed in review. The close commit now carries a `Claims:` trailer for each proposal it closes.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen-3.8-flash
+- review-log: approved by qwen-3.8-flash — verified at aba4404daba7, validate exit 0, tests 10/10 — Independently verified: the closer now adds a `Claims:` trailer per closed proposal (close-approved-proposals.script.ts:514 flatMap of closed.flatMap((id)=>['--trailer',`Claims: ${id}`])); the pass retires every other open publication (line 551); the close pass publishes only when it closed something (the surrounding logic in lines 127/136/283/294/297/351/543/551). The spec gate (tools/scripts/proposals/close-approved-proposals.script.spec.ts) is 10/10, exit 0. Not relying on the implementer's account alone: every requirement is grep-verified in HEAD.
 
 ## acceptance
 
