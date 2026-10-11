@@ -165,6 +165,25 @@ Not found. Four commands of the orchestrator ended with exit code 144 (128 + sig
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S7 — The submission that leaves no slice to do hands the proposal to review
+
+- **Status**: review
+- **Files**:
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/review-verdict-lifecycle.interface.ts`
+  - `plugins/proposals/tests/src/lib/tools/review-verdict-lifecycle.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-review-sent-back.spec.ts`
+- **Gate**: unit
+- shipped-in: `3ce02bdbf85b`
+- acceptance:
+  - Submitting a slice that was sent back marks it as in review.
+  - When that leaves every slice in review, done or retired, the proposal goes to `review` by the same transition as any hand-over, and the answer says so, or says why it was refused.
+
+Found after the rest: f00757 was in progress with its four slices resubmitted days before. The way back to review was a second command its implementer had to remember, the mirror of the reopening that needs none.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - With no agent at work, `proposals status` shows in review only proposals a reviewer can give a verdict on, and the review queue offers each of them.
