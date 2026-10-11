@@ -1529,14 +1529,6 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "x00554",
-				"title": "A green pull request lands itself and the swarm rebases",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-09-19"
-			},
-			{
 				"id": "x00878",
 				"title": "A multi-model swarm is held to the workflow, whoever its agents are",
 				"track": "trust",
