@@ -39,7 +39,7 @@ Observed on the forge at 04:25–04:30 local time (refs under `delendai/wip/` an
 1. **One model, several names.** Five models were launched; eight agent names are on the forge. `minimax-3.1` and `minimax-m31` are the same model. `qwen-3.8-flash` and `qwen3-flash` are the same model, and the second dropped its version. `glm-5.3-flash` and `glm-5.3-max`: both GLM agents are Flash, and one calls itself Max. No ref names GPT Luna 6.0 at all, though two were launched; `gpt-5.4` may be carrying them. The product takes whatever string `--agent` is given. Independence of review is decided by this name, so a model that names itself two ways can review its own work, and a count of agents by name is wrong. → S2.
 2. **Nineteen units for eleven agents.** `minimax-m31` holds five review units (`batch-all-g1`, `g3`, `g4`, `g5`, `g6`), `glm-5.3-flash` three, `qwen` three under two names. Six units hold no commit at all (`glm-5.3-flash/…g5`, `minimax-3.1/…batch-all-g1`, `qwen-3.8-flash/…g1`, `qwen3-flash/…g3`, …). Asking the review queue again without the session it printed opens another unit each time. → S3.
 3. **Five proposals reserved in 28 seconds by one agent.** `minimax-3.1` claimed f00267, f00271, f00275, f00509 and f00511 between 04:18:06 and 04:18:34, then took six minutes to record its first verdict. Four proposals were held from every other reviewer while it read the first. → S4.
-4. **A claim taken and dropped.** `gpt-5.4` claimed r00040 at 04:20:14 and released it at 04:22:15 with no verdict and no reason recorded, then claimed f00643. A release says nothing of why. → S4.
+4. **A claim taken and dropped.** `gpt-5.4` claimed r00040 at 04:20:14 and released it at 04:22:15 with no verdict, then claimed f00643. → S4. (Corrected at 07:20: the release does carry its reason, in the body of its commit — see 23.)
 5. **Units named by whoever opened them.** The slice of a review unit is `batch-all` for most and `batch-review` for one; the topic is `verdicts`, `review-pack`, `review-pack-g1` or `packs-1011`. The name of a unit is what every listing sorts and matches by. → S5.
 6. **The swarm view calls every review pack a duplicate.** `delendai work swarm` reports "duplicate batch-all is live 16 times; keep one" and lists all of them under "to sort out". Many review packs at once is how a review swarm works; the one real finding a person needs from that view is buried under a false one. → S6.
 7. **Claims recorded in a unit with no reservation on the forge.** Units of `minimax-m31` carry commits `claim x00877`, `claim x00875` and `claim q00018`; `refs/delendai/claims/review/` held no ref for those three when listed at 04:27. Either the reservation was never pushed or it was released without a commit saying so. To be confirmed before it is given a slice.
@@ -48,8 +48,8 @@ Observed on the forge at 04:25–04:30 local time (refs under `delendai/wip/` an
 Observed between 04:30 and 04:50:
 
 9. **A change requested that the document already carried.** `qwen3-flash` requested changes on q00010 S3 at 04:27:45: "Approve requires either (a) a real independent reviewer round … or (b) S3's acceptance text rewritten to enumerate c00156 as a named documented exception. Recommend (b)". Its unit is based on `f894a0987`, and the document at that commit already reads "`done` sin peer review y nombrada aquí como excepción con su motivo (`c00156`)" in the acceptance and "1 (`c00156`) `done` without one" in the status. The criterion it quotes as unmet is the wording of the round before, which survives in the previous reviewer's `review-log` line of the same section. A verdict was reached from the log of an earlier verdict rather than from the text under review. → S7.
-10. **Five more proposals reserved by one agent.** `glm-5.3-max` claimed q00014, x00539, r00048, f00536 and x00835 between 04:24:59 and 04:27:28 and had recorded no verdict on any of them fourteen minutes later; it released q00014 at 04:39 with no reason. → S4.
-11. **One proposal passed from hand to hand.** r00040 was claimed and released by `gpt-5.4` (04:20–04:22) and by `minimax-m31` (04:25–04:27), then claimed by `qwen3-flash` (04:29). `minimax-m31` did the same with x00877, x00875 and q00018, one unit each, five minutes each. No release says why, so each reviewer finds out for itself what the one before found. → S4.
+10. **Five more proposals reserved by one agent.** `glm-5.3-max` claimed q00014, x00539, r00048, f00536 and x00835 between 04:24:59 and 04:27:28 and had recorded no verdict on any of them fourteen minutes later; it released q00014 at 04:39. → S4.
+11. **One proposal passed from hand to hand.** r00040 was claimed and released by `gpt-5.4` (04:20–04:22) and by `minimax-m31` (04:25–04:27), then claimed by `qwen3-flash` (04:29). `minimax-m31` did the same with x00877, x00875 and q00018, one unit each, five minutes each. Each release says why in the body of its commit, where no later reviewer is shown it, so each finds out for itself what the one before found. → S4.
 12. **Every reviewer runs the whole validation, for the same commit.** At 04:50 the machine's load was 35. `bun run validate` and `bun run test` (the whole repository's suite, about half an hour each) were running in the units of `minimax-3.1`, `glm-5.3-max` and `gpt-5.4` at once, queued behind one another on the compute lock, one of them for 32 minutes. The verdict tool asks each approval for a validation exit code and a test count, and gives no way to answer with the run that already certified that commit on the forge, so eleven reviewers each prove on one machine what one CI run proved once. → S8.
 13. **Tests run from the shared checkout.** A `vitest run` over specs of f00512 was running with the shared checkout as its working directory, not from a unit. Reading is allowed there; a test run writes caches and reports into the tree every other agent starts from. → S8.
 14. **A pull request titled "review batch".** #991, from `qwen-3.8-flash`, carries two approvals of x00875 under that title and a body that lists commit subjects. The title is what the queue and a person see. → S5.
@@ -68,6 +68,8 @@ Observed at 07:00:
 20. **The orchestrator did the same from the other side.** The implementer session (`claude-opus-5-5`) rewrote x00875's three citations in its own unit (#1002) while `qwen-3.8-flash` held x00875 in pack #991; the pack then conflicted with develop and waited to be brought forward. The rule against editing a proposal under review exists and is written down for agents, not enforced: a unit may commit to a proposal another agent has claimed for review. → S4.
 21. **The tool takes an approval the closing gate refuses.** f00538 S2 and S3 were delivered by a commit that names no work ref and no author the product can read; the review tool recorded `review-implementer: unrecorded … independence could not be verified`, accepted the approval and closed the proposal, and `closed-with-independent-approval` then refused the pack (#1008) for exactly that. Two rules answer one question differently, and the reviewer learns it after five approvals. Leaving such a close to the owner is the intended outcome; offering it to a reviewer as ordinary work is not. → S9.
 22. **More claims than reviews in hand.** At 07:00 seventeen proposals carry a review claim on the forge while six review units are alive and eight packs wait in pull requests; which claim belongs to which of them is not something the swarm view shows. → S4.
+
+23. **Most releases were the product's doing, and observations 4, 10 and 11 misread them.** Read in full at 07:20, the release commits of the swarm give their reasons, and the reasons are refusals the reviewer met after claiming: "this agent already reviewed the prior round" (`gpt-5.4`, r00040); "S1 is changes_requested and only the implementer can resubmit it … nothing here can receive a verdict"; "proposal_review refuses this slice with missing-submit-identity"; "the guard requires the fix-verifier to differ from glm-5.3-flash". The queue offered work the verdict would refuse, and the claim tool took a proposal with nothing in it to judge. What was recorded here as agents dropping work for no reason was written from commit subjects alone. → S4.
 
 ### S2 — An agent has one name, and it is not the model's to choose
 
@@ -119,15 +121,24 @@ saying in the launch instructions that a swarm is given its roster.
   - `review next` without a session, from an agent that already holds a review unit with no verdict in it, resumes that unit instead of opening a new one.
   - A unit that was opened and never used ends when its session does; it is not left on the forge.
 
-### S4 — A reviewer holds what it is reviewing, and says why it lets go
+### S4 — A reviewer holds what it is reviewing, and is offered only what it can judge
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `plugins/proposals/src/lib/services/review-claims.service.ts`
+  - `plugins/proposals/src/lib/services/review-claim.service.ts`
+  - `plugins/proposals/src/lib/tools/review-claim.tool.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/review-claim-outcome.interface.ts`
+  - `plugins/proposals/src/lib/services/review-queue-slice.service.ts`
+  - `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/review-queue-candidates.spec.ts`
 - **Gate**: unit
+- shipped-in: `7a2ecb5a0d1f`
 - acceptance:
-  - A session holds at most one proposal with no verdict; a second claim is refused, naming the one it holds.
-  - Releasing a claim records a reason, which the queue shows to the next reviewer.
+  - A review unit that holds a proposal in review and has written nothing about it is refused another claim, naming the one it holds and the two ways on: a verdict, or giving it back.
+  - A verdict on another proposal is refused the same way, since a verdict claims what it judges.
+  - The queue does not offer a reviewer the fix of a round it reviewed: the slice waits for another reviewer, as the verdict would have said.
+
+Delivered 2026-10-11. A release already records why, in its commit; showing that to the next reviewer was dropped from this slice, because with the queue no longer offering what will be refused the reasons left are particular to one reviewer. A unit committing to a proposal another agent holds for review (observation 20) is not closed here: it is the orchestrator's rule to keep, and S9's hand-over check is what removes the reason to break it.
 
 ### S5 — A review unit is named by the product
 
