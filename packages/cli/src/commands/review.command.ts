@@ -47,7 +47,10 @@ import {
 	readProposalIn,
 	sliceSections,
 } from '../lib/review/slice-sections.service';
-import { packRefusalsIn } from '../lib/review/review-pack-check.service';
+import {
+	packHasVerdicts,
+	packRefusalsIn,
+} from '../lib/review/review-pack-check.service';
 import { anythingWaiting } from '../lib/review/review-peek.service';
 import { releasedElsewhere } from '../lib/review/review-releases.service';
 import { usage } from './groups/group-helpers';
@@ -270,7 +273,12 @@ const next = async (
 		resumed === undefined &&
 		claimed.length > 0 &&
 		answer.pack?.full === true;
-	if (packDone || (chosen === undefined && claimed.length > 0)) {
+	// By what the unit wrote, where that can be read: a verdict whose
+	// claim was given back is still a verdict to publish.
+	const somethingToPublish =
+		packHasVerdicts(unit.path, policy.branches.integration) ??
+		claimed.length > 0;
+	if (packDone || (chosen === undefined && somethingToPublish)) {
 		const published = await workOnUnit('publish', agent, unit.session, ctx);
 		if (published.code !== EXIT_CODE.OK || chosen === undefined) {
 			return published.code !== EXIT_CODE.OK

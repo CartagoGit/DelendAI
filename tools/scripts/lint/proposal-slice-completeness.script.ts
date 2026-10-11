@@ -36,7 +36,7 @@ import {
 	readdirSync,
 	writeFileSync,
 } from 'node:fs';
-import { dirname, extname, isAbsolute, join } from 'node:path';
+import { basename, dirname, extname, isAbsolute, join } from 'node:path';
 
 import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
 import { repoRoot } from '../lib/monorepo-paths';
@@ -60,6 +60,26 @@ const PROPOSAL_KINDS = [
 
 /** The statuses a slice of a closed proposal may be in. */
 const CLOSED_SLICE_STATUSES: ReadonlySet<string> = new Set(['done', 'retired']);
+
+/**
+ * A proposal in review, read as it will be when it closes: a slice
+ * waiting for its verdict is one the approval turns into `done`. The
+ * shared slice parser knows the statuses of a closed proposal only.
+ */
+const asIfApproved = (markdown: string): string =>
+	markdown.replaceAll(
+		/^(-\s*\*\*Status\*\*:\s*)review\b/gimu,
+		(_line, prefix: string) => `${prefix}done`,
+	);
+
+/** The markdown files of proposals under `dir`, at any depth. */
+const proposalFilesUnder = (dir: string): readonly string[] =>
+	existsSync(dir)
+		? (readdirSync(dir, { recursive: true }) as string[]).filter(
+				(file) =>
+					extname(file) === '.md' && basename(file) !== 'README.md',
+			)
+		: [];
 
 const frontmatter = (content: string): Record<string, string> => {
 	const match = /^---\n([\s\S]+?)\n---/.exec(content);
@@ -162,6 +182,9 @@ export const findIssues = (root: string): readonly IIssue[] => {
 						detail: `${slice.id} status=${slice.status} title='${slice.title}'`,
 					});
 				}
+				// A retired slice shipped nothing: the files it named were its
+				// plan, and a plan given up is not a delivery gone missing.
+				if (slice.status === 'retired') continue;
 				for (const file of slice.files) {
 					// Declared paths are workspace-relative — resolve against
 					// `root`, not the caller's cwd (a bug when this ran from
@@ -174,6 +197,36 @@ export const findIssues = (root: string): readonly IIssue[] => {
 							detail: `${slice.id} declares ${file} (not on disk)`,
 						});
 					}
+				}
+			}
+		}
+	}
+
+	// What would stop a proposal from closing is its implementer's to hear:
+	// checked only once closed, a slice left pending or a declared file
+	// that never shipped stopped the reviewer who approved the rest.
+	const reviewRoot = join(root, 'docs', 'delendai', 'proposals', 'review');
+	for (const file of proposalFilesUnder(reviewRoot)) {
+		const content = readFileSync(join(reviewRoot, file), 'utf8');
+		if ((frontmatter(content).status ?? '').toLowerCase() !== 'review') {
+			continue;
+		}
+		for (const slice of collectSliceStatuses(asIfApproved(content))) {
+			if (!CLOSED_SLICE_STATUSES.has(slice.status)) {
+				out.push({
+					proposal: basename(file),
+					kind: 'pending-slice',
+					detail: `${slice.id} status=${slice.status} title='${slice.title}' (in review/: a slice handed over is review, done or retired)`,
+				});
+			}
+			if (slice.status === 'retired') continue;
+			for (const declaredFile of slice.files) {
+				if (!declaredPathExists(root, declaredFile)) {
+					out.push({
+						proposal: basename(file),
+						kind: 'missing-file',
+						detail: `${slice.id} declares ${declaredFile} (not on disk)`,
+					});
 				}
 			}
 		}
