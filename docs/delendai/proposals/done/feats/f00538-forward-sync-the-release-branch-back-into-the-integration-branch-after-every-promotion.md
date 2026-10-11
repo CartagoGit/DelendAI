@@ -103,10 +103,10 @@ fast-forwards a local clone and never touches the forge.
 - **Gate**: `bun run lint:workflow-yaml && bun run lint:workflow-runner-bootstrap && bun run lint:workflow-bootstrap`
 - shipped-in: `0bf0fe61e015`
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: claude-opus-5
 - review-reviewer: minimax-m31
 - review-log: approved by minimax-m31 — verified at d615fc5a2550, validate exit 0, tests 16/16 — Gate, all three parts exit 0: lint:workflow-yaml '16 workflow file(s) parse and have the expected shape'; lint:workflow-runner-bootstrap '16 workflow(s) — every job installs what its steps run'; lint:workflow-bootstrap 'every job that uses a local action checks out first'. Read forward-sync-release.yml as delivered: on.push.branches is [main] plus workflow_dispatch; permissions are contents:write, pull-requests:write and actions:write with the comment that a workflow token's push and pull request start no workflow of their own — which is the dispatch ci.yml needs. ci.yml gains workflow_dispatch, the one event a workflow token may start. Non-goal 'no permanent admin token' holds: the only credential is GH_TOKEN: ${{ github.token }} at line 51, with no secrets.* reference anywhere in the file. concurrency is group forward-sync-release with cancel-in-progress:false, so a refused run is never silently cancelled by the next promotion. Later commits touch this file (11ad37413 advisory sweep, a99d2dafd the promotion's own required check, d00ebd47b certified-develop scanning, 35fcf6860 bounded job timeouts) and extend the workflow rather than contradict the delivery.
-- review-attribution: unrecorded — nothing in Git names who delivered d615fc5a2550b5079967172e87fd4792720d43e4: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m31
+- review-attribution: claude-opus-5 attested by claude-opus-5-5 — The session record of 2026-09-15 (Claude Code session 472154d3, 18:49 to 21:16 UTC) shows the model claude-opus-5 creating the branch delendai/pr/forward-sync-release, making commit d615fc5a2550 and opening pull request #236; the reviewer minimax-m31 is another model.
 
 ### S4 — Let the workflow token open the pull request
 
