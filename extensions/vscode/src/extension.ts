@@ -35,7 +35,6 @@ import {
 import { NAVIGATOR_PATCH_MARKER } from './shims/node22-navigator';
 void NAVIGATOR_PATCH_MARKER;
 
-import type { IHostAdapter } from '@delendai/ui-extension/public';
 import { registerAdoptCommand } from './commands/adopt';
 import { resolveHostAdapter } from './host/resolve-host-adapter';
 import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
