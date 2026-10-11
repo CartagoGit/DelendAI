@@ -39,6 +39,7 @@ import { registerAdoptCommand } from './commands/adopt';
 import { resolveHostAdapter } from './host/resolve-host-adapter';
 import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
 import { registerOpenAgentCatalogCommand } from './commands/open-agent-catalog';
+import { registerOpenRoadmapCommand } from './commands/roadmap';
 import { registerOpenAgentTimelineCommand } from './commands/open-agent-timeline';
 import {
 	OPEN_AUTO_AGENT_SELECTOR_COMMAND,
@@ -899,6 +900,7 @@ export const activate = async (
 		}),
 	);
 	track(registerOpenKnowledgeCommand({ vscode, client }));
+	track(registerOpenRoadmapCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
 	track(
 		registerRestartServerCommand(vscode, {
