@@ -2,14 +2,21 @@
 id: x00877
 title: "An upgrade leaves the project as its configuration says, and nothing else"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-06
-last-transition-id: 74b4140b-ea9c-468a-86c3-6841218c2d9c
-last-correlation-id: 74b4140b-ea9c-468a-86c3-6841218c2d9c
-last-transition-from: in-progress
-last-transition-at: 2026-10-09T21:35:03.577Z
+last-transition-id: 27cdb1a9-ef91-498a-8091-855cc5d3f3c9
+last-correlation-id: 27cdb1a9-ef91-498a-8091-855cc5d3f3c9
+last-transition-from: review
+last-transition-at: 2026-10-11T02:45:42.111Z
+shipped-in:
+  - "b6bc626ea9363cad35a15eb0b21ddda7e966a5cd"
+  - "fc1a589e2059b0cf11263be473526d1dc8c5dfb0"
+  - "38b68714aebe"
+  - "a6095f9df9cdc8dcb74544abb762cfe1d33b803f"
+  - "6f6e97ff7f9e8551a9798d5ec56f197b9b732edd"
+  - "46a8640284a9"
 ---
 
 # x00877 — An upgrade leaves the project as its configuration says, and nothing else
@@ -42,19 +49,21 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - global_gate: none
 
 ### S1 — migrate status only reads
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`migrate status` and `migrate --dry-run` write nothing: the tree, the config and `.delendai/migrations-applied.json` are byte-identical before and after."
   - "Only `migrate run` applies a migration."
 - Delivered: two causes. `migrate` started an MCP server to run, and that server applied the migration guard as it booted; and the CLI's own guard ran before the command too. `migrate` is now an offline command (like `init` and `guard`), and the guard skips it: `migrate run` is the only way it applies. Probed in a throwaway mcp-vertex project: `status` and `--dry-run` leave it byte-identical, `run` migrates and writes its manifest and backup. The spec fails without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `38b68714aebe`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at b6bc626ea936, validate exit 0, tests 94/94 — Approved after rerunning the focused migration and guard spec pack for x00877: 94/94 tests passed, and the CLI now keeps migrate status and dry-run read-only while migrate run remains the only applying path.
 
 ### S2 — The legacy proposal state is moved, and no copy of it stays behind
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/state-dir.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/state-dir.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/state-dir.migrator.spec.ts`, `packages/proposals-sqlite/tests/src/lib/state-dir-agreement.spec.ts`, `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`, `plugins/proposals/tests/src/lib/proposals/sync-legacy-registry.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -63,38 +72,44 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "After it, the proposals tools open the database without the manual remedy."
   - "A committed `docs/<docsDir>/proposals/index.json` (the old location) is removed by `migrate run`; it is regenerable and nothing reads it."
   - "The comments that still describe it as a committed variant are corrected."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - Delivered, split by owner (core may know nothing of the proposals plugin's storage, which `lint:core-proposals-boundary` enforces and which the first version broke): core's `stateDirectoryMigrator:v1` moves every file of its legacy state directory `.delendai/state/` to `.cache/delendai/state/` (SQLite sidecars before their database), never over a file already there, and removes the emptied directory; `state-dir-agreement.spec.ts` in `@delendai/proposals-sqlite` pins that its database opens there. The registry's old committed copy beside the proposals is the plugin's to remove: a full sync deletes `<proposalsDir>/index.json` (an index-only sync, which makes no tracked change, leaves it). Probed end to end before the split in a throwaway project; the specs fail without the change.
 - shipped-in: `3f9e395cd57c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at fc1a589e2059, validate exit 0, tests 94/94 — Approved after rerunning the focused migration and proposals spec pack for x00877. The legacy state migrator moves sidecars and database safely, conflicts do not overwrite, the proposals-sqlite location is pinned, and the legacy committed registry cleanup is covered by green focused specs.
 
 ### S3 — Every host file and instruction file names delendai
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/agent-files.migrator.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The root `.mcp.json` is migrated like `.vscode/mcp.json`."
   - "Root `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` are migrated like the agent folders."
 - Delivered: the host-config migrator rewrites every project MCP config a host reads, the editor's `.vscode/mcp.json` and the root `.mcp.json`; the agent-files migrator also walks the root instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`). Both specs fail without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `38b68714aebe`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 38b68714aebe, validate exit 0, tests 94/94 — Approved after rerunning the focused migration spec pack for x00877. The root host config and root instruction files are covered by the host-config and agent-files migrator specs, and the whole focused pack passed 94/94.
 
 ### S4 — No ignore line or moved file keeps the old name
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/gitignore.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/gitignore.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/gitignore.migrator.spec.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`, `packages/cli/src/contracts/interfaces/residual-report.interface.ts`, `tools/scripts/migrate/rebrand-propagate.script.ts`
 - **Gate**: type
 - acceptance:
   - "A `.gitignore` line naming a renamed directory names the new one; a duplicate is not added."
   - "`migrate status` reports any legacy spelling the scanner still finds in live files, so a leftover is never silent."
 - Delivered: a `gitignoreMigrator:v1`, right after the directory renames, rewrites each `.gitignore` line naming a path they rename (`.cache/mcp-vertex/`, `docs/mcp-vertex`, `mcp-vertex.config.json`) to the new one, keeping its leading `/`, its `!` and its tail, and drops it instead where the new line is already there; nothing else in the file moves. `migrate status` now carries `residual`: how many live legacy spellings the scanner finds and the first twenty (file, line, spelling), skipping `.git`, `node_modules` and `.cache`; it takes two seconds on this repository, which, being the migration's own source, reports 2,201. Both specs fail without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - Fix 2026-10-07: the residual spec's fixture spells the old name, as it must, and `rebrand-propagate --check` counted it as a live leftover: develop's full run went red on #887 and the queue stopped arming. The spec is listed with the other files whose subject is the old name (`INTENTIONAL_LEGACY_PATHS`, beside `packages/cli/src/index.spec.ts`), with the reason.
 - shipped-in: `01e0713ced6d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at a6095f9df9cd, validate exit 0, tests 94/94 — Approved after rerunning the focused migration spec pack for x00877. The gitignore migrator rewrites only renamed ignore lines without duplication, migrate status now surfaces residual legacy spellings, and the focused pack passed 94/94.
 
 ### S5 — A profile change leaves nothing of the old mode unowned
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/profile-branches.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/profile-branches.service.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `packages/cli/src/commands/guard.command.ts`
 - **Gate**: type
 - acceptance:
@@ -102,42 +117,50 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "Hooks and `delendai.guard.*` keys follow the profile: installed where it needs them, removed where it does not."
 - Progress 2026-10-07, the first bullet: `work doctor` gains `branches-in-the-profile`, which asks the ref reconciler (the one source of which names are outside every namespace, `unmanaged`) of the clone's own branches and reports each one an earlier profile or a person left, with the way to end it (enter a unit, merge the branch in, publish, delete it). Work refs of the old shape under the product's namespace were already reported (`no-stray-refs`, `units-hold-work`). It holds on this repository. Of the second bullet: `guard uninstall` removed the hooks and left `delendai.guard.runner` and `.entry` in the clone's config, saying the clone was guarded after the guard was gone; it now unsets them (the uninstall spec checks the config is empty). Open: every built-in profile guards, so no profile change calls for removing the hooks; the one setting that stops installing them, `development.guardHooks: "off"`, is documented as keeping the project's hooks untouched, and removing them there would break that. Whether `off` should also remove what an earlier `install` put in is the owner's call.
 - Finished 2026-10-09, the second bullet: the project already declares what it wants (`development.guardHooks`: `install`, `report` or `off`), so no new setting was needed; what was missing was anything comparing it with the hooks on disk. `guard status` now does (`guardHooksFollowMode`): with `off` and hooks still running the guard it names them and says `delendai guard uninstall`; with `install` and a hook missing it says `delendai guard install`; a hook its manager owns is left to that manager; and it exits non-zero when the two disagree, so a script can gate on it. The open question (whether `off` should be its own setting) is answered by the setting that already existed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `85e411e0c1eb`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 6f6e97ff7f9e, validate exit 0, tests 94/94 — Approved after rerunning the focused work-profile and guard spec pack for x00877. Old-shape work refs remain reportable to work doctor, guard hook state follows the declared profile, and the focused pack passed 94/94.
 
 ### S6 — The generated-files merge driver exists where it is configured
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/generated-merge-driver.service.ts`, `packages/cli/src/lib/generated-merge-driver.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`guard install` in an adopting project configures a merge driver that resolves to a file present there (the shipped CLI), or none."
 - Delivered: `guard install` configures the generated-files merge driver only where its script exists; in a project that does not carry it (every adopting project: it is this repository's tooling) nothing is configured, and a `merge.delendai-generated` section an older install left is removed. The spec fails without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `38b68714aebe`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 38b68714aebe, validate exit 0, tests 94/94 — Approved after rerunning the focused merge-driver and migration spec pack for x00877. The generated-files driver is configured only when the script is actually present in the adopting project, and the focused pack passed 94/94.
 
 ### S7 — The host-scope configs are migrated too
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/cli.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The user-level host configs (`~/.claude.json`, `~/.codex/config.toml`) are migrated by an explicit, opt-in host-scope command, never by a workspace `migrate run`, and a dry run lists what it would change."
 - Delivered: the global-config migrator (which rewrites only the entries it can prove are this workspace's, and keeps every other key byte for byte) existed and nothing called it. `migrate host --dry-run` lists what it would change in `~/.claude.json` and `~/.codex/config.toml` for this workspace; `migrate host` applies it; `migrate run` never touches them. On this machine the dry run plans nothing. The spec (dry run plans and writes nothing, `run` leaves the host configs alone, `host` applies) fails without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `a6095f9df9cd`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at a6095f9df9cd, validate exit 0, tests 94/94 — Approved after rerunning the focused migrate command spec pack for x00877. Host-scope config migration is explicit and opt-in, workspace migrate run stays out of user-level configs, and the focused pack passed 94/94.
 
 ### S8 — The rebrand check runs on every pull request
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "`migrate:rebrand:check` runs in CI's governance job on every pull request, so a live file that spells the old product name fails the pull request that brings it in, not the integration branch after the merge."
 - Found 2026-10-07: #887 brought a spec that spells the old name (it is about it), its pull request was green, and develop's full run went red on `rebrand-propagate.spec.ts`: that spec walks the whole tree, so the tools shard's selection by changed imports skipped it on the pull request. The queue then armed nothing for seven hours. The check takes two seconds; it now runs beside the other governance lints on every pull request.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `46a8640284a9`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 46a8640284a9, validate exit 0, tests 94/94 — Approved after verifying ci.yml directly in the review worktree. CI runs on pull requests and lint-governance now includes migrate:rebrand:check, so the old-name check runs before merge rather than only on develop.
 
 ## acceptance
 
