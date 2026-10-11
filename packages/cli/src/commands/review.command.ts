@@ -273,9 +273,11 @@ const next = async (
 		resumed === undefined &&
 		claimed.length > 0 &&
 		answer.pack?.full === true;
+	// By what the unit wrote, where that can be read: a verdict whose
+	// claim was given back is still a verdict to publish.
 	const somethingToPublish =
-		claimed.length > 0 &&
-		packHasVerdicts(unit.path, policy.branches.integration);
+		packHasVerdicts(unit.path, policy.branches.integration) ??
+		claimed.length > 0;
 	if (packDone || (chosen === undefined && somethingToPublish)) {
 		const published = await workOnUnit('publish', agent, unit.session, ctx);
 		if (published.code !== EXIT_CODE.OK || chosen === undefined) {
