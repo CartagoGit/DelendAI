@@ -604,7 +604,7 @@ project.
 
 ### S40 — A work ref leaves the forge when its work lands, while its unit goes on
 
-- **Status**: review
+- **Status**: done
 - shipped-in: `5852dfc15`
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
@@ -624,8 +624,10 @@ stayed on the forge pointing into the integration branch's history. On
 a clean runner, where no worktree stands on it, that reads as a unit
 somebody left. The periodic publisher already refused to push such a
 ref back (x00691); it now also takes it off.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at b65c20a21e10, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-checkout-publisher makes a work ref leave the forge when its work lands while its unit goes on — the finding that 'a temporary worktree of the candidates' refresh was left behind'. Suite passes.
 
 ### S41 — A fixture directory a background writer still uses is removed without failing the run
 
