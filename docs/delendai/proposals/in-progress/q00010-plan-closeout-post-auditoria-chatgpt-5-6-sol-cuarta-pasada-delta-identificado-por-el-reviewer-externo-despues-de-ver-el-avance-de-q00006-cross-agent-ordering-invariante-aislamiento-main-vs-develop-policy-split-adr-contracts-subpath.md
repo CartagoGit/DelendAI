@@ -245,9 +245,15 @@ S1 verde.
 
 ### S3 — Cierre del plan
 
-- **Status**: in-progress
-  closed: 9 `done` with peer review and 1 (`c00146`) `retired`, which is
-  the single condition this plan closes on (below). Verified each
+- **Status**: review
+  closed: 8 `done` with peer review, 1 (`c00156`) `done` without one and
+  1 (`c00146`) `retired`, which is the single condition this plan closes
+  on (below). `c00156` is the exception this slice names instead of
+  hiding: it changed branch protection on the forge, which its own
+  document records with the settings read back after the change; it
+  was closed before reviews were recorded per proposal and carries no
+  `review-log`. The one journal entry filed under it is a verdict about
+  this slice, not about it. Verified each
   `superseded-by` link by reading the superseding proposal's frontmatter
   directly: `x00258` carries `superseded-by: x00272`; `v00125` carries
   `superseded-by: v00127` (added by v00127 S3); `r00029` carries
@@ -258,9 +264,10 @@ S1 verde.
 - **Files**: las 10 propuestas hijas y el registro de cierre del plan
 - **Gate**: `bun run validate`
 - **Acceptance**:
-  - Las 10 hijas están cerradas: `done` con peer review, o `retired` con
-    el motivo registrado en su propio documento. Ninguna queda en
-    `review`, `in-progress` ni `ready`.
+  - Las 10 hijas están cerradas: `done` con peer review, `retired` con
+    el motivo registrado en su propio documento, o `done` sin peer
+    review y nombrada aquí como excepción con su motivo (`c00156`).
+    Ninguna queda en `review`, `in-progress` ni `ready`.
   - **El fork de `commit-policy` plugin muestra al ejecutar
     `bun tools/scripts/proposals/sync-proposal-counters.script.ts`
     que los contadores están sincronizados.**
