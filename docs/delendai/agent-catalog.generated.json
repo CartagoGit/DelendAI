@@ -1385,6 +1385,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "f00512",
+				"title": "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-09-06"
+			},
+			{
 				"id": "f00542",
 				"title": "Delendai language-, IDE-, and OS-agnostic",
 				"track": "general",
@@ -1463,6 +1471,14 @@
 				"status": "ready",
 				"kind": "plan",
 				"date": "2026-08-26"
+			},
+			{
+				"id": "q00010",
+				"title": "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath",
+				"track": "develop-audit-hardening-v4-closeout",
+				"status": "in-progress",
+				"kind": "plan",
+				"date": "2026-08-25"
 			},
 			{
 				"id": "q00011",
