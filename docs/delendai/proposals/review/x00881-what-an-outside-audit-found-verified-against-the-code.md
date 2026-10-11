@@ -71,7 +71,7 @@ Verified, and wider than reported: `@delendai/api` declared `./public` as `{ "ty
 
 ### S3 — A package describes what it does today
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/orchestrator-runner/package.json`
 - **Gate**: none
@@ -79,9 +79,11 @@ Verified, and wider than reported: `@delendai/api` declared `./public` as `{ "ty
   - The description of `@delendai/orchestrator-runner` says that it runs the provider it chooses.
 
 Verified: the description read "Headless (no subprocess spawning)" for a plugin whose tools invoke CLI, API and MCP providers and cancel them.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `a5d043eb8dd7`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at cb4f8082c031, validate exit 0, tests 13/13 — Delivered inside PR #995 (merge cb4f8082c, claude-opus-5-5): the package description now says what the plugin does today (it runs the chosen provider). Docs-only change; the slice declares no gate, so I ran the S1 suite (13/13) as surrounding evidence that the tree is green. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S4 — The editor extension does not go on with a test double for a host
 
