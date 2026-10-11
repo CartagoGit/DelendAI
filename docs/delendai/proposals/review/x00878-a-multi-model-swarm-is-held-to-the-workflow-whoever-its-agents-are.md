@@ -655,7 +655,7 @@ removal, and with it the run.
 
 ### S42 — A server answers its host in half the time: three network round trips at start, not seven
 
-- **Status**: review
+- **Status**: done
 - shipped-in: `dce8dc092`
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/git-seam.ts`
@@ -688,8 +688,10 @@ Measured on this repository: 16.5 s to 8.6 s from process start to the
 reply. What is left is one fetch, one journal fetch, the listing of
 retired refs and the two reads of the forge; those are independent of
 one another and still run in sequence.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 9c7886ed7ea6, validate exit 0, tests 39/39 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: three network round trips at start, not seven. integration-evidence.spec, journal-publish.service.spec and journal-ref.service.spec pass together (39 tests).
 
 ### S43 — The forge cleans a landed work ref itself, and two checks stop disagreeing about it
 
