@@ -143,6 +143,9 @@ import {
 
 export type { IProposalTransitionArgs } from '../contracts/proposal-transition-input.contract';
 
+/** The date part of an ISO timestamp: `2026-10-11`. */
+const ISO_DATE_LENGTH = 10;
+
 const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 type IProposalTransitionSourceStatus = IProposalStatus | 'pending';
@@ -1418,7 +1421,7 @@ export const runProposalTransition = async (
 				raw,
 				'paused-reason',
 				JSON.stringify(
-					`Paused ${new Date((options.now ?? Date.now)()).toISOString().slice(0, 10)}: ${pauseReason}`,
+					`Paused ${new Date((options.now ?? Date.now)()).toISOString().slice(0, ISO_DATE_LENGTH)}: ${pauseReason}`,
 				),
 			),
 		);

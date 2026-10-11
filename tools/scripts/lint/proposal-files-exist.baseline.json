@@ -1,5 +1,6 @@
 {
 	"docs/delendai/proposals/done/tests/t00004-coverage-gate-covers-apps-shared-extensions-and-tools-scripts-not-only-packages-plugins.md": 1,
+	"docs/delendai/proposals/done/fixes/x00768-branch-tools-and-proposal-publication-follow-the-configured-policy.md": 3,
 	"docs/delendai/proposals/done/fixes/x00155-stale-status-on-done-proposals-27-proposals-ship-with-status-pending-slices-only-4-are-real-work.md": 2,
 	"docs/delendai/proposals/done/fixes/x00573-the-workflow-checks-itself.md": 2,
 	"docs/delendai/proposals/done/fixes/x00602-the-integration-branch-is-discovered-not-assumed.md": 5,
