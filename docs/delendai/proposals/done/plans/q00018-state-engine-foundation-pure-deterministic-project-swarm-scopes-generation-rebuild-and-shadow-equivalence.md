@@ -2,18 +2,19 @@
 id: q00018
 title: "State Engine foundation: pure deterministic project/swarm scopes, generation rebuild and shadow equivalence"
 kind: plan
-status: review
+status: done
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-05
-last-transition-id: 305c969b-c21b-4158-8479-36fa304c5484
-last-correlation-id: 305c969b-c21b-4158-8479-36fa304c5484
-last-transition-from: in-progress
+last-transition-id: 20a99a2e-b4fc-4c80-8892-886ac5100c72
+last-correlation-id: 20a99a2e-b4fc-4c80-8892-886ac5100c72
+last-transition-from: review
 shipped-in:
   - "99d17f26d"
   - "50717a0d5"
   - "e0970e951"
   - "5e2f6d6bd802f697a50f7fe73af057f9a35be6e1"
+last-transition-at: 2026-10-11T02:41:21.686Z
 ---
 
 # q00018 — State Engine foundation
@@ -402,8 +403,10 @@ El State Engine nunca es ese camino.
   queda disponible para producers que plugins futuros quieran
   declarar (no en este slice).
 - Delivered (reconciled 2026-10-07 against the tree): `lint:state-engine-purity` with its spec (first in `e0970e951`), `IMcpPluginContext.state?: IStateRegistry` documented in `plugin-contract.ts`, and `assemble.ts` building the in-memory registry and injecting it as `state`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 50717a0d5273, validate exit 0, tests 109/109 — Verified lint:state-engine-purity is green and IMcpPluginContext documents optional state injection while assemble.ts always wires a shared in-memory registry for production hosts. Package tests passed 109/109 and the purity lint stayed clean.
 
 ## dependency graph
 
