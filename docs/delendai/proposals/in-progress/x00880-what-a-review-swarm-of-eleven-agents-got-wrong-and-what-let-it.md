@@ -195,20 +195,26 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
 
 ### S9 — What would stop a proposal from closing is found before a reviewer meets it
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/lint/proposal-slice-completeness.script.ts`
   - `tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
   - `tools/scripts/lint/proposal-cited-commits.script.ts`
   - `tools/scripts/lint/proposal-cited-commits.script.spec.ts`
+  - `tools/scripts/lint/proposal-slice-completeness.baseline.json`
+  - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
+  - `plugins/proposals/src/lib/services/review-queue-slice.service.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - **Gate**: unit
+- shipped-in: `30005836854c`, `d6d9d8c95603`
 - acceptance:
   - A retired slice of a closed proposal is finished: the completeness lint does not report it as pending.
   - A quoted tree or blob is not read as a citation of a commit.
-  - Still to do, and what makes this slice whole: the two rules run on a proposal when it is handed to review, as they will when it closes, so the implementer is the one told.
-  - A slice whose implementer the product cannot name is not offered to the review queue as ordinary work: the queue says the close is the owner's, as the closing gate will.
+  - The two rules run on a proposal while it waits for review, read as it will be when it closes, so the pull request that hands it over is the one that fails.
+  - A retired slice is not asked for the files it had planned.
+  - An approval of work nobody can be named for is recorded and does not close its proposal: every path to `done` applies the rule the repository's check applies, and the queue says beforehand that the close is the owner's.
 
-Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a status a slice of a closed proposal may be in, and a hash that names a tree or a blob is skipped by the cited-commits lint. x00875's three citations of unreferenced objects were rewritten in its own unit. Not yet delivered: running both rules at the hand-over to review.
+Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a status a slice of a closed proposal may be in, and a hash that names a tree or a blob is skipped by the cited-commits lint. x00875's three citations of unreferenced objects were rewritten in its own unit. Then the rest. Both rules now read `review/` as well as `done/`; run over the fifteen proposals waiting today they found one real thing, twice: f00512 and f00536 each have a retired slice naming files that were never written, which the completeness rule would have held against whoever approved them. A retired slice is no longer asked for its files, and the baseline shrank by eight entries for it. And the cause of observation 21: the close from `review` was judged by the review log alone, so an approval over an unrecorded implementer closed f00538, and the per-slice rule in CI refused the pack. `proposal_transition` now applies that one rule on every path to `done`; the approval stands, the proposal stays in review, and the answer says why.
 
 ### S10 — Two packs of verdicts on different proposals do not wait on each other
 
