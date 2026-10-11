@@ -695,7 +695,7 @@ one another and still run in sequence.
 
 ### S43 — The forge cleans a landed work ref itself, and two checks stop disagreeing about it
 
-- **Status**: review
+- **Status**: done
 - shipped-in: `4cff4cdb3`
 - **Files**:
   - `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`
@@ -719,8 +719,10 @@ progress belongs to somebody, and the next step of the same job
 the walk of `docs/delendai/proposals/in-progress` that fed it; the kept
 unit lives where it is worked on and pushes its ref again with its next
 commit.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at dd2a03cc9980, validate exit 0, tests 39/39 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-namespace.spec plus ref-lifecycle-guard.script.spec make the forge clean a landed work ref itself and stop the two checks disagreeing about it. Suite passes.
 
 ## acceptance
 
