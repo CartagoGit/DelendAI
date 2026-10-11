@@ -83,7 +83,7 @@ Observed at 08:30, continued:
 Observed at 09:40:
 
 27. **Locked out of one's own unit.** The orchestrator's pull request #1011 turned up in conflict with the integration branch. Its unit had ended at publication, and `work enter` for the same slice answered "q00022 s11 is reserved on the forge by claude-opus-5-5 … wait for it to land, take a slice nobody holds, or pass --alongside". The reservation was its own: the entry had chosen another name for the unit than the one that held it. Passing the generation and the topic by hand resumed it. → S12.
-28. **The swarm stopped with verdicts unpublished.** No reviewer has committed since 07:38. Five review units are still on the forge as work refs (`glm-5.3-flash` g3 and g7, `glm-5.3-max` g3, `qwen3-flash` g3 and g4) and their proposals stay claimed. Whether they hold verdicts is to be read before anything is done with them.
+28. **The swarm stopped with verdicts unpublished.** No reviewer has committed since 07:38, and four review units are still on the forge as work refs. Read one by one: `glm-5.3-flash` g3 holds a claim and a release, nothing else. `glm-5.3-max` g3 holds six approvals of x00835 (S34 to S39), the close of x00835, f00536 and r00048, and an edit of x00539's document, none of it published. `glm-5.3-flash` g7 holds an approval of f00547 S2 and `qwen3-flash` g4 one of f00547 S1, and both then released f00547: "the remaining slices' verdicts belong to the glm-5.3-flash batch unit that will publish the pack together". Neither unit holds a claim any more, and `review next` publishes a unit for what it claims, so neither would ever have been published. The two reviewers arranged between themselves, through release notes, what the product has a flow for: publish the pack with the slices judged, and the rest returns to the queue. → S13.
 
 ### S2 — An agent has one name, and it is not the model's to choose
 
@@ -297,6 +297,23 @@ Delivered 2026-10-11. Four specs published a review unit made of empty commits; 
 Delivered 2026-10-11 as what the refusal says. Resuming without being told (taking the reserved unit's name when the entrant is its agent) is the fuller answer and is left for when it is needed twice.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+
+### S13 — A verdict is not stranded by letting go of its proposal
+
+- **Status**: review
+- **Files**:
+  - `plugins/proposals/src/lib/services/review-claim.service.ts`
+  - `plugins/proposals/src/lib/tools/review-claim.tool.ts`
+  - `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
+  - `packages/cli/src/lib/review/review-pack-check.service.ts`
+  - `packages/cli/src/commands/review.command.ts`
+- **Gate**: unit
+- shipped-in: `12d3a1f544d6`
+- acceptance:
+  - A review unit that has recorded a verdict on a proposal is refused giving it back, and told to publish its pack: the slices it did not judge return to the queue with it.
+  - `review next` publishes a unit that wrote verdicts when nothing else waits, whether or not it still holds a claim.
+
+Delivered 2026-10-11. The four units of observation 28 are left as they are: their verdicts are their reviewers' to publish, and the owner's to dispose of if those sessions do not come back.
 
 ## acceptance
 
