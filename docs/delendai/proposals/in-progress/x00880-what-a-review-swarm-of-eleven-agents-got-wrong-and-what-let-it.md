@@ -182,6 +182,8 @@ Delivered 2026-10-11. A release already records why, in its commit; showing that
   - The pull request of a review pack is titled with the number of verdicts it carries and the proposals they are on, whatever its first commit was.
 
 Delivered 2026-10-11, the title (observation 17). The other half as first written, review units named only by the product, is not done and is taken out: a unit is found by what it is and not by its name, so the names the swarm invented (`packs-1011`, `review-pack-g2`) cost a reader and nothing else, while refusing a topic would change the entry the queue's own closing unit goes through.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — The swarm view does not report review packs as duplicates
 
