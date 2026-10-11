@@ -351,7 +351,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: slice-holders.service.ts records that the unit which wrote a proposal holds none of its slices, so the author cannot judge its own work through a claim. Pinned by slice-holders.service.spec.
 
 ### S23 — The boot sees a checkpoint whose only extra commit merged landed work
-- **Status**: review
+- **Status**: done
 - shipped-in: `16db79850`
 - **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/checkpoint-containment.ts`, `packages/core/tests/src/lib/work-units/landed-work.service.spec.ts`
 - **Gate**: type
@@ -359,8 +359,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A checkpoint whose only commits beyond the integration branch are merges of commits it holds is integration evidence at boot, so the unit's ref going (S21's reaper, or anyone's) is not reported as vanished."
 - Found 2026-10-07 in the MCP log: right after S21's reaper deleted x00878 S4, S6 and S8 from the forge, the next boot was DEGRADED with mutations blocked, on three `ref-vanished` blockers for exactly those units. The reconciler judges containment its own way — ancestry, or the same content at every path — and develop had changed those files again since, so a branch S14 and S21 call delivered looked lost to it.
 - Delivered: the rule is one predicate now. `parentsOutsideMerges` (pure) says which parents a merge-only tip needs the base to hold; `carriesNothingBeyond` (reapers, unit verdict) and the reconciler's git seam (asynchronous) both ask it. On the three real tips it answers yes. The spec pins the reading.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 9c7886ed7ea6, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the boot sees a checkpoint whose only extra commit merged landed work. Pinned by landed-work.service.spec alongside swarm-boot.spec.
 
 ### S24 — A unit another unit of its agent published ends with that publication
 - **Status**: review
