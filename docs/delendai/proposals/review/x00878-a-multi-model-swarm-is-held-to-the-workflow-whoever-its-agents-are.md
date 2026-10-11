@@ -31,6 +31,7 @@ shipped-in:
   - "32aeee8d75229edfba38c08f2d9f8451eda2465b"
   - "4825b968e9285c8008ecadbedccfe6ab3a68be23"
   - "78601cf18a172c72357b6d20d8791199197c0849"
+  - "6afac82076e3e24c4c646f90fcc830b5a689f7f4"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -492,15 +493,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 5ca6586a7230, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: path-importers.spec makes a change reach the zones of the files that import it by path, so a spec fix runs where it is depended on rather than only where it lives. Suite passes.
 
 ### S33 — What the product writes in its cache is not stray
-- **Status**: review
+- **Status**: done
 - shipped-in: `6afac8207`
 - **Files**: `tools/scripts/lint/check-stray-cache-files.script.ts`
 - **Gate**: type
 - acceptance:
   - "`lint:stray-cache-files` accepts the cache directories the product itself writes: `telemetry/` (the work-event and transition-duration journals) and `logs/` (the server's own log)."
 - Found 2026-10-09: handing a proposal to review wrote the transition journal under `.cache/delendai/telemetry/`, the lint called the directory stray, and the pre-commit hook refused the commit the transition itself needed. The server log directory of S25 was unknown to it in the same way.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 6afac82076e3, validate exit 0, tests 1/1 — verified allowlist telemetry and logs in check-stray-cache-files.script.ts:81 and :83
 
 ### S34 — A slice's reservation ends when its unit's publication lands
 - **Status**: done
