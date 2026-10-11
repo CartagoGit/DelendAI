@@ -1385,14 +1385,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00512",
-				"title": "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-09-06"
-			},
-			{
 				"id": "f00541",
 				"title": "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec",
 				"track": "general",
