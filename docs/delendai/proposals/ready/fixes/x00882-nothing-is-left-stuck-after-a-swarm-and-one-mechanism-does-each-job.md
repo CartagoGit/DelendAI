@@ -101,6 +101,8 @@ Delivered 2026-10-11, after the owner's answer to x00880 S2: the agent knows wha
   - A retired slice does not keep an approved proposal from being closed by the same pass.
 
 Delivered 2026-10-11. The request reopens its proposal when it is recorded today; these two were recorded before it did. One waited on `GitHub`, the committer of a merge, read as an implementer.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — An approved proposal closes without a field nobody writes
 
