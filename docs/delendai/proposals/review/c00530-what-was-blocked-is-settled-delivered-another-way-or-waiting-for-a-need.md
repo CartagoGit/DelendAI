@@ -57,6 +57,8 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 - **Status**: review
 - **Files**:
   - `tools/scripts/inspect/core-proposals-boundary.script.ts`
+  - `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
+  - `packages/core/tests/src/architecture/core-proposals-boundary.spec.ts`
 - **Gate**: unit
 - shipped-in: `f92f9dacebc7`
 - acceptance:
