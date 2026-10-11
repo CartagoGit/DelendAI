@@ -71,9 +71,8 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10 as `bun run work:progress`: one line per open proposal with its weighted progress, the phase of its furthest-behind slice, how many slices are stalled and when something last happened, computed by `buildWorkStatus` from the proposals on disk and the event store (the journals are drained first). `--json` gives the rows. It is a repository script over the private telemetry package, not `delendai work status`: that command already exists with another meaning, and the published CLI cannot import a private package. Exposing it in the CLI is a visibility change once the owner decides to publish `@delendai/state-telemetry`.
 - Amended 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
 - shipped-in: `9cef7f165a10`, `edf768be6a8c`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work status [proposalId]` to render progress rows, but the delivered surface keeps `work status` as the existing worktree-status command. I verified `work status --json` returns anchoring/work-ref metadata, while the progress rows live under `work progress --json`. That is a different command surface from the slice acceptance.
 
 ### S2 — `delendai work progress --watch`: the same view, redrawn when it changes
