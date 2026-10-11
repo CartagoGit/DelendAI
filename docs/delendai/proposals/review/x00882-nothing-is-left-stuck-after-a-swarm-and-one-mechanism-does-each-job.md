@@ -196,6 +196,8 @@ Found after the rest: f00757 was in progress with its four slices resubmitted da
   - `byStatus` carries every status of the workflow; one no proposal is in reads `0`.
 
 Seen by the owner the moment the last proposal left `in-progress`: the status vanished from the answer.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
