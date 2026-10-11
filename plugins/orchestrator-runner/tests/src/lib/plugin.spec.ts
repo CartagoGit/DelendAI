@@ -63,6 +63,30 @@ describe('orchestrator-runner plugin', () => {
 		expect(regs.knowledge?.[0]?.id).toBe('orchestrator-runner-routing');
 	});
 
+	it('rejects registration when the configured environment id is unknown', async () => {
+		await expect(
+			plugin.register(
+				makeCtx(dir, {
+					options: { executionEnvironment: { id: 'podman' } },
+				}),
+			),
+		).rejects.toThrow(/"podman" could not be created/u);
+	});
+
+	it('registers its tools when the configured environment loads', async () => {
+		const regs = await plugin.register(
+			makeCtx(dir, {
+				options: {
+					executionEnvironment: {
+						id: 'local',
+						options: { workspaceRoot: dir, dryRun: true },
+					},
+				},
+			}),
+		);
+		expect(regs.tools?.map((t) => t.id)).toContain('invoke');
+	});
+
 	it('every tool declares a summary + i18n descriptionKey', async () => {
 		const regs = await plugin.register(makeCtx(dir));
 		for (const tool of regs.tools ?? []) {

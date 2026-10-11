@@ -127,6 +127,19 @@ export const OptionsSchema = z
 		 */
 		autoBypassConfirmed: z.boolean().optional(),
 		/**
+		 * Where invocations run: an environment id from the built-in
+		 * `@delendai/execution-env` registry (`local`, `docker-cli`,
+		 * `docker-compose`, `docker-exec`, `ssh`) plus its options. Needs that
+		 * package installed. Unset, invocations run as before.
+		 */
+		executionEnvironment: z
+			.object({
+				id: z.string().min(1),
+				options: z.record(z.string(), z.unknown()).optional(),
+			})
+			.strict()
+			.optional(),
+		/**
 		 * Injected cross-plugin dependencies (e.g. the shared loop detector).
 		 * Passthrough — validated structurally by the seam resolver, never by
 		 * this schema, so a host can inject a class instance.

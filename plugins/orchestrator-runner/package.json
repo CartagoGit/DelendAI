@@ -46,7 +46,13 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/orchestrator-runner"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.1.1",
+		"@delendai/execution-env": "^0.1.0"
+	},
+	"peerDependenciesMeta": {
+		"@delendai/execution-env": {
+			"optional": true
+		}
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.31.0",
