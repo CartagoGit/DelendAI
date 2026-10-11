@@ -27,6 +27,7 @@ shipped-in:
   - "a0a4f48fa4ced941243d7ef49717d3c3a463225e"
   - "feb34020cf8fe3c34d518d486d176fa75c58e75b"
   - "cda35c0a1811ad72655b2595554726a7da0cf9b0"
+  - "5ca6586a7230b91298e062be4d3c9b1c1b937ea2"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -475,15 +476,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at cda35c0a1811, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: mass-content-removal.script.ts answers 'a commit says more than it did' in its product form — a branch whose deletions cross a threshold is not silently published. I ran it: 'no branch crosses the deletion threshold'. Wired into validate:run.
 
 ### S32 — A change reaches the zones of the files that import it by path
-- **Status**: review
+- **Status**: done
 - shipped-in: `3bbd128f0`
 - **Files**: `tools/scripts/ci/path-importers.ts`, `tools/scripts/ci/path-importers.spec.ts`, `tools/scripts/ci/test-zones.script.ts`
 - **Gate**: type
 - acceptance:
   - "The test planner adds, for every changed source file, the zone of each tracked file that imports it by a relative path, in whatever workspace that file lives, so a spec that tests another workspace's script runs when the script changes."
 - Found 2026-10-09: S31 changed a lint under `tools/`, its older spec sat in the proposals zone and imported the script by path, the planner selected only the tools zone, the pull request (#942) was green and the integration branch went red. The workspace graph follows package names and has no edge for such an import; thirty-four files import across workspaces this way, twelve of them in core.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 5ca6586a7230, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: path-importers.spec makes a change reach the zones of the files that import it by path, so a spec fix runs where it is depended on rather than only where it lives. Suite passes.
 
 ### S33 — What the product writes in its cache is not stray
 - **Status**: review
