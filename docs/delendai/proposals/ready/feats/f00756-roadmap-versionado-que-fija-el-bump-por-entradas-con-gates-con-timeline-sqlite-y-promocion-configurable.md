@@ -263,14 +263,16 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - shipped: the plugin entry point, its options schema (strict, everything optional), the manifest with per-tool permissions and a measured budget, and the README. No change to the core configuration schema was needed: a plugin's settings already have a home.
 
 ### S10 — Proyección a JSON y guard de deriva
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S3, S9]
-- **Files**: `tools/scripts/gen/roadmap-projection.script.ts`, `tools/scripts/lint/roadmap-drift.script.ts`, `tools/scripts/lint/roadmap-drift.script.spec.ts`, `apps/web/src/data/roadmaps.json`
+- **Files**: `plugins/roadmap/src/lib/contracts/interfaces/roadmap-display.interface.ts`, `plugins/roadmap/src/lib/projection/roadmap-display.service.ts`, `plugins/roadmap/tests/src/lib/projection/roadmap-display.service.spec.ts`, `tools/scripts/gen/roadmap-projection.lib.ts`, `tools/scripts/gen/roadmap-projection.script.ts`, `tools/scripts/lint/roadmap-drift.script.ts`, `tools/scripts/lint/roadmap-drift.script.spec.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/gen/repo-authorities.constant.ts`, `tools/package.json`, `apps/web/src/data/roadmaps.json`, `docs/delendai/ROADMAP.md`, `docs/delendai/ROADMAP.timeline.md`, `delendai.config.json`
 - **Gate**: type
+- shipped-in: `5f9e54fddc3b`
 - acceptance:
   - "El guard falla si la proyección commiteada no coincide con la derivada del fichero de autoridad; el remedio es regenerar, nunca editar el JSON."
-  - "La deriva entre SQLite y markdown también se detecta: markdown manda, SQLite es proyección."
-  - "El generador no escribe fuera de `apps/web/src/data/` y es determinista: dos ejecuciones dan el mismo byte."
+  - "La deriva entre el timeline y el markdown también se detecta: el markdown manda, el timeline es proyección, y el generador registra en él lo que al fichero le falta por contar."
+  - "El generador no escribe fuera de `apps/web/src/data/` (más el timeline junto al fichero de roadmap) y es determinista: dos ejecuciones dan el mismo byte y la segunda no registra nada."
+- shipped: the display projection is a pure function of the authority file — no gate evidence, no clock — so that a proposal changing folder does not make an unrelated pull request drift. The generator and the guard run from `gen:all` and `gen:all:check`, the drift gate CI already runs; the roadmap is declared in `AUTHORITIES.md` with its two projections. The timeline the guard watches is the markdown one, which CI can read without a binary; the SQLite timeline stays a local cache of the same events. delendai declares its own roadmap (`docs/delendai/ROADMAP.md`), seeded from the feature proposals in flight, so the projection is not empty.
 
 ### S11 — Superficies de lectura: web y extensión
 - **Status**: pending
