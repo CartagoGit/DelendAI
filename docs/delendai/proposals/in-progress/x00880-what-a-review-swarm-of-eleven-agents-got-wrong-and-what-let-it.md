@@ -187,15 +187,20 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
 - **Files**:
   - `plugins/proposals/src/lib/swarm/proposal-review.ts`
   - `plugins/proposals/tests/src/lib/proposal-review.spec.ts`
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - **Gate**: unit
-- shipped-in: `3928d9fc7578`
+- shipped-in: `3928d9fc7578`, `7d130a197bf4`
 - acceptance:
   - When an implementer hands a slice back after a request for changes and says what it did, that is written in the slice, under the request it answers.
+  - Every slice a pack sends back reads `in-progress`, not only the first one.
   - The answer is not a verdict: the reviewer who asked is still the last to have judged, and still may not verify the fix.
 
 Delivered 2026-10-11, and not as first written. The slice was to reshape the brief so that earlier rounds read as history. Following observation 26 to its cause showed the history was incomplete instead: q00010 S3 carried two requests for the same change, by `minimax-3` and then `qwen3-flash`, and between them the fix (#987) with nothing in the document to say so. `proposal_review { action: "submit", note }` took the implementer's note, answered `ok`, and kept none of it; a `resubmitted` line was written only when an approval was being voided. The second reviewer read an objection with no reply under it. The reply is now recorded.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+
+The same round left one more thing half-written. `gpt-5.4` sent back four slices of f00512 in one pack; the first request reopened the proposal and set its slice to `in-progress`, and the other three, finding the proposal already open, kept `Status: review` beside `review-state: changes_requested`. Each request now reopens its own slice.
 
 ### S8 — A reviewer runs the slice's gate, in its own worktree
 
