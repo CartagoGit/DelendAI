@@ -2,14 +2,14 @@
 id: x00878
 title: "A multi-model swarm is held to the workflow, whoever its agents are"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-06
-last-transition-id: 5a640b7c-07ad-4966-a4dd-cd3f95791bb6
-last-correlation-id: 5a640b7c-07ad-4966-a4dd-cd3f95791bb6
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T00:52:48.735Z
+last-transition-id: 64b2a794-b81a-4a21-b104-6b77492f5a6f
+last-correlation-id: 64b2a794-b81a-4a21-b104-6b77492f5a6f
+last-transition-from: review
+last-transition-at: 2026-10-11T03:48:01.156Z
 shipped-in:
   - "715a80b1dac7de961456cf545c6b9c03e5c65f99"
   - "732f19602ccd7dfaebeb5b3c3dfa5bb8f6c62c0c"
@@ -339,15 +339,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 6995db016bba, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-swarm-relations.service makes everyday listings show live work rather than what was given up — the finding that the queue held 20 proposals where a swarm that worked would have left none. Pinned by work-swarm-relations.spec.
 
 ### S21 — The forge reaper sees a branch whose only extra commit merged landed work
-- **Status**: review
+- **Status**: done
 - shipped-in: `32ed30544`
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A work branch whose only commits beyond the integration branch are merges of commits it already holds is reapable by `lint:ref-lifecycle --reap`, the same way S14 made it delivered for the local reaper."
 - Delivered: after #879 landed x00878 S4, S6 and S8 through S9's publication, their three work branches stayed on the forge for good: each held one merge of develop that develop did not, so `containedInGit` said no. It now asks `carriesNothingBeyond` (S14's predicate, one source) when the tip is not an ancestor. A dry run named exactly those three and `--reap` deleted them. A branch carried by another slice's open publication (x00877 S7 inside #891) is still left until that publication lands: only a unit's own publication proves it ended. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at dd2a03cc9980, validate exit 0, tests 56/56 — Gate: bun run typecheck exit 0 (the declared gate); ref-lifecycle-guard.script.spec passes 56/56 in the S10 batch, and I ran the guard against the real tree without --reap so it reports only.
 
 ### S22 — The unit that wrote a proposal holds none of its slices
 - **Status**: done
