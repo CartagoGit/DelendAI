@@ -314,6 +314,8 @@ Delivered 2026-10-11 as what the refusal says. Resuming without being told (taki
   - `review next` publishes a unit that wrote verdicts when nothing else waits, whether or not it still holds a claim.
 
 Delivered 2026-10-11. The four units of observation 28 are left as they are: their verdicts are their reviewers' to publish, and the owner's to dispose of if those sessions do not come back.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
