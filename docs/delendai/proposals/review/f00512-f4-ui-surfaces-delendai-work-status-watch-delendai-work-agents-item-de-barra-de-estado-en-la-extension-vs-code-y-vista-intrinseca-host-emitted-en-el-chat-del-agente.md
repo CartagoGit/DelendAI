@@ -2,7 +2,7 @@
 id: f00512
 title: "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-06
@@ -17,10 +17,10 @@ tags:
     - cli
     - vscode-extension
     - non-llm
-last-transition-id: 364300cb-3106-463c-952f-824651649c3a
-last-correlation-id: 364300cb-3106-463c-952f-824651649c3a
-last-transition-from: ready
-last-transition-at: 2026-10-10T09:59:22.211Z
+last-transition-id: 229e536d-173a-4ccd-b037-7b8f53738fc6
+last-correlation-id: 229e536d-173a-4ccd-b037-7b8f53738fc6
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T00:48:27.637Z
 ---
 
 # f00512 — F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente
@@ -70,6 +70,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10 as `bun run work:progress`: one line per open proposal with its weighted progress, the phase of its furthest-behind slice, how many slices are stalled and when something last happened, computed by `buildWorkStatus` from the proposals on disk and the event store (the journals are drained first). `--json` gives the rows. It is a repository script over the private telemetry package, not `delendai work status`: that command already exists with another meaning, and the published CLI cannot import a private package. Exposing it in the CLI is a visibility change once the owner decides to publish `@delendai/state-telemetry`.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `9cef7f165a10`
 
 ### S2 — `delendai work status --watch` — modo watch (500 ms, polling del SQLite shadow o NDJSON) con render estable (sin parpadeo)
 - **Status**: review
@@ -84,6 +85,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10: `bun run work:progress -- --watch` recomputes every 500 ms and redraws only when the view changed, so the terminal does not flicker.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `9cef7f165a10`
 
 ### S3 — `delendai work agents [agentId]` — vista de agentes activos con su AgentSession + fase + último cambio
 - **Status**: review
@@ -98,6 +100,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10: `bun run work:progress -- --agents` (and the foot of the default view) lists each agent whose last event falls in the last half hour, with the work item and the kind of that event (`activeAgents`).
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `9cef7f165a10`
 
 ### S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
 - **Status**: retired
@@ -111,6 +114,8 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "El coste de polling es ≤ 2 KB por ciclo y no añade tokens al LLM (test de integración con un mock del cliente MCP)."
   - "Detrás de `delendai.config.json#telemetry.chat_intrinsic.enabled` (default `false`): si está en `false`, el item se muestra pero el tooltip no incluye la confianza (sólo progreso + fase)."
 - Retired 2026-10-11. A status bar item lives in one editor; the view this proposal is about has to reach an agent or a person on any host. `delendai work progress --watch` (S7) is that surface: a terminal every host has. The extension can show the same rows by running the command, without a reader, a poller and a webview of its own to keep in step with it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Vista intrínseca host-emitted en el chat del agente (bloque determinista que el host inyecta, no el modelo)
 - **Status**: retired
@@ -124,6 +129,8 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "Test `telemetry-no-tokens.spec.ts` (acceptance del plan q00020): arranca un agente mock, dispara 100 tool calls, activa el bloque durante 5 minutos, y verifica que `usage_tracking.llm_tokens_total` es invariante entre los dos extremos."
   - "El bloque se omite automáticamente cuando el agente está en `WorkPhase: 'done'` o no tiene `work_item_id` activo (degradación silenciosa)."
 - Retired 2026-10-11. The Model Context Protocol gives a server no channel to a chat that stays out of the model's context: what a server returns is tool output, and tool output is context. A block the host renders beside the conversation is a feature of each host, to be built in each, and delendai is the same on all of them. The numbers the block would show are what `delendai work progress` shows.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — A published package bundles the private packages it imports
 
@@ -149,6 +156,7 @@ package is built before the package that bundles it, because the
 declarations of the second are checked against those of the first.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `fd3995d2137a`
 
 ### S7 — `delendai work progress` in the published CLI
 
@@ -193,6 +201,7 @@ slices as data: the canonical slice parser carries the status word the
 document writes, and the board hands it over when asked for progress.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `edf768be6a8c`
 
 ## acceptance
 
