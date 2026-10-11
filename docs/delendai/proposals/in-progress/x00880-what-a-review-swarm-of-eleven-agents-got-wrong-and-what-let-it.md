@@ -85,6 +85,10 @@ Observed at 09:40:
 27. **Locked out of one's own unit.** The orchestrator's pull request #1011 turned up in conflict with the integration branch. Its unit had ended at publication, and `work enter` for the same slice answered "q00022 s11 is reserved on the forge by claude-opus-5-5 … wait for it to land, take a slice nobody holds, or pass --alongside". The reservation was its own: the entry had chosen another name for the unit than the one that held it. Passing the generation and the topic by hand resumed it. → S12.
 28. **The swarm stopped with verdicts unpublished.** No reviewer has committed since 07:38, and four review units are still on the forge as work refs. Read one by one: `glm-5.3-flash` g3 holds a claim and a release, nothing else. `glm-5.3-max` g3 holds six approvals of x00835 (S34 to S39), the close of x00835, f00536 and r00048, and an edit of x00539's document, none of it published. `glm-5.3-flash` g7 holds an approval of f00547 S2 and `qwen3-flash` g4 one of f00547 S1, and both then released f00547: "the remaining slices' verdicts belong to the glm-5.3-flash batch unit that will publish the pack together". Neither unit holds a claim any more, and `review next` publishes a unit for what it claims, so neither would ever have been published. The two reviewers arranged between themselves, through release notes, what the product has a flow for: publish the pack with the slices judged, and the rest returns to the queue. → S13.
 
+Observed at 10:15:
+
+29. **The head of the queue restarted five times and never got its verdict.** #995 was "the head of the queue" in every pass from 06:50 to 10:15. Its checks were started at 07:30, 08:04, 09:01, 09:34 and 10:02, each time because a candidate armed earlier had landed and the head was brought forward again; with eleven pull requests sharing the runners a run took from twenty-five to eighty minutes, longer than the gap between two merges. The one run that finished (09:34) was red, on the changed-file coverage of the orchestrator's own change, and that verdict arrived twenty-six minutes after the head had already been refreshed past it. Every other candidate was "brought forward first — it and #995, which lands first", the green ones included. Two things compound: a refresh throws away a run in flight, and a candidate waits behind a head whose only claim to the place is its number. → S10.
+
 ### S2 — An agent has one name, and it is not the model's to choose
 
 - **Status**: review
@@ -262,6 +266,8 @@ Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a
 Not started on purpose. The rule decides what lands unchecked against what, and it is worth changing on a measurement, not on the first cause found; S11 of q00022 may be most of it.
 
 What the rule has to keep, found while reading how candidates are compared. The queue tells two candidates apart by test zone, and a zone is reached two ways: its own code changed, or its specs read or list a file that changed. Verdict packs meet only the second way. But the second way is also what serialises two pull requests that each add a proposal under the same number, and that protection has to stay: two candidates that add files to one listed folder still wait on each other; two that change or move different existing files of it need not. Measured on #1007, a pack of verdicts alone: 34 jobs, of which ten are test shards with nothing to run (2 to 5 seconds each, a runner each) and fifteen are lints of 20 to 98 seconds.
+
+And what observation 29 adds to it: the measure to take is not only runs per pack but how long the head waits, and how many of its runs were cancelled by a refresh before they answered. A head that is brought forward while its checks are running loses them; one that is left alone until they answer does not, at the cost of landing one merge behind.
 
 ### S11 — A pack with no verdict is not published
 
