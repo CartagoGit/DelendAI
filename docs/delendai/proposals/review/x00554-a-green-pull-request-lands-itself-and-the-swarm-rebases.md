@@ -17,6 +17,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-11T00:02:44.016Z
 shipped-in:
   - "dea43b3d7f38"
+  - "581b5720bad3e883dc9fce2aa42553c0221d4289"
 ---
 
 # x00554 — A green pull request lands itself and the swarm rebases
@@ -99,7 +100,7 @@ already hydrates the checkout.
 
 ### S2 — What depends on the integration branch follows it, and what somebody is working on is told
 
-- **Status**: review
+- **Status**: done
 - shipped-in: `fd71074e1`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units`
 - **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `tools/scripts/forge/refresh-candidates.script.ts`, `packages/core/src/lib/work-units/work-swarm-relations.service.ts`
@@ -117,8 +118,10 @@ already hydrates the checkout.
   worktree in a conflict it did not start; it is told instead (S3), and
   the conflict, if there is one, is met once, by the agent, when it
   merges the integration branch before publishing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 581b5720bad3, validate exit 0, tests 36/36 — Verified kept units with no authored work fast-forward, candidate refresh respects the resolved publication namespace, and the queue no longer treats non-publication refs as its own. Slice-scoped checks passed 36/36.
 
 ### S3 — An agent is told its base moved under it
 
