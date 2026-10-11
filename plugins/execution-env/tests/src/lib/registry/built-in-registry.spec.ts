@@ -9,6 +9,7 @@ describe('createBuiltInExecutionEnvRegistry', () => {
 			'docker-cli',
 			'docker-compose',
 			'docker-exec',
+			'ssh',
 		]);
 	});
 
