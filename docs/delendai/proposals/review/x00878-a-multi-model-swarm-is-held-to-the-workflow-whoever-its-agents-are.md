@@ -119,15 +119,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 945143a0310a, validate exit 0, tests 65/65 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new pack-governance.service.ts refuses a pack before it is published, and the spec names the refusal the proposal logs — 'names the approvals of another reviewer, and the proposals it never claimed', which is exactly the lint-governance refusal that left #851, #856 and #858 waiting for a person while the agents reported done. review.command.spec covers the CLI side.
 
 ### S6 — An open publication is a generation in use
-- **Status**: review
+- **Status**: done
 - shipped-in: `aba4404da`
 - **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work enter`, with or without `--alongside`, never gives a generation whose publication is open on the forge."
 - Delivered: the rule that kept a review batch from reusing the name of a pack still published now holds for every unit: a generation whose publication is open is skipped, with or without `--alongside`. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-unit-generation.service.ts treats an open publication as a generation in use, which is the finding that 'work enter --alongside gave x00875-S29-g1 while delendai/pr/…/x00875-S29-g1/… (#861) was open, a second ref with the same identity; only --generation=2 avoided it'. Pinned by work-unit.service.spec.
 
 ### S7 — A claim holds while its holder lives, for every kind of work
 - **Status**: review
