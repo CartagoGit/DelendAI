@@ -158,6 +158,8 @@ Delivered 2026-10-11. Tried read-only on the forge as it stood: #1018 would be c
   - What was ruled out is recorded, with the evidence, and what would name the sender if it recurs.
 
 Not found. Four commands of the orchestrator ended with exit code 144 (128 + signal 16) at 11:56:44, 12:00:20, 12:05:06 and 12:10:33 local time, among them a shell loop that ran nothing but `grep` and `sleep`; each time every command running under that session died together, and a test runner they had started lived on, orphaned. Before 11:56 and after 12:10 the same suites ran to the end in the same way, 2175 tests, and they ran to the end in a session of their own. Ruled out: the repository (no script, spec or hook sends a signal to a process it did not start, and none names signal 16); memory (4 GB free, no kernel message); the checkout following the integration branch (its moves do not line up). What the four have in common is the minutes in which the swarm's last agent was publishing its packs from the same editor, and nothing on this machine records what that agent ran. A process traced with `strace -e signal=all` now runs under the orchestrator's session; a signal sent to the session is recorded there with the sender's process id, beside a listing of the processes two seconds before.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
