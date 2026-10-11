@@ -31,9 +31,9 @@ import {
 
 import {
 	COORDINATION_TABLES,
-	readCoordination,
-	writeCoordination,
-} from './coordination-store';
+	DEFAULT_CHECKPOINT_EVERY_PUBLISHES,
+} from './contracts/constants/coordination.constant';
+import { readCoordination, writeCoordination } from './coordination-store';
 import {
 	mapSqliteError,
 	stateStoreCorrupt,
@@ -117,9 +117,6 @@ export interface ISqliteStateRegistryOptions extends IStateRegistryOptions {
 	 */
 	readonly checkpointEveryPublishes?: number;
 }
-
-/** Publishes between two passive WAL checkpoints, unless the caller says. */
-export const DEFAULT_CHECKPOINT_EVERY_PUBLISHES = 64;
 
 export interface IParityMismatchRecorder {
 	recordParityMismatch(fingerprint: string): void;

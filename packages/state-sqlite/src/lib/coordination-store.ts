@@ -11,6 +11,7 @@
  */
 import type { Database } from 'bun:sqlite';
 
+import { COORDINATION_TABLES } from './contracts/constants/coordination.constant';
 import type {
 	IScopeCoordination,
 	IStoredHolder,
@@ -38,13 +39,6 @@ interface IClaimRow {
 	readonly holder_id: string;
 	readonly generation_id: string;
 }
-
-/** The tables this store owns, for a reset to empty in one place. */
-export const COORDINATION_TABLES = [
-	'state_fencing_tokens',
-	'state_holders',
-	'state_swarm_claims',
-] as const;
 
 /** The scope's stored coordination, or nothing when none was stored. */
 export const readCoordination = (

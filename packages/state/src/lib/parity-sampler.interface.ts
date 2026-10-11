@@ -16,11 +16,11 @@
 import type { IStateRegistry, IStateRegistryOptions } from './registry';
 
 /** How the sampler builds a registry of one driver. */
-export type TParityRegistryFactory = (
+export type IParityRegistryFactory = (
 	options: IStateRegistryOptions,
 ) => IStateRegistry;
 
-export type TParityDivergenceKind =
+export type IParityDivergenceKind =
 	| 'driver-parity'
 	| 'replay-determinism'
 	| 'execution-determinism';
@@ -32,12 +32,12 @@ export interface IParitySamplerInput {
 	readonly operationsPerRun: number;
 	/** The same seed yields the same sequences. */
 	readonly seed: number;
-	readonly primary: TParityRegistryFactory;
-	readonly shadow: TParityRegistryFactory;
+	readonly primary: IParityRegistryFactory;
+	readonly shadow: IParityRegistryFactory;
 }
 
 export interface IParityDivergence {
-	readonly kind: TParityDivergenceKind;
+	readonly kind: IParityDivergenceKind;
 	readonly run: number;
 	readonly generationId: string;
 }

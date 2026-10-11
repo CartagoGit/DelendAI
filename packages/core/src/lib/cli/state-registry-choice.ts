@@ -22,10 +22,10 @@ import type {
 } from '@delendai/contracts/state';
 import { defineInMemoryStateRegistry } from '@delendai/state';
 
-/** The package the shadow driver ships in. */
-export const SHADOW_DRIVER_PACKAGE = '@delendai/state-sqlite';
-/** Where the shadow store lives, under the cache. */
-export const SHADOW_STORE_PATH = ['state', 'shadow.sqlite'] as const;
+import {
+	SHADOW_DRIVER_PACKAGE,
+	SHADOW_STORE_PATH,
+} from '../contracts/constants/state-registry-choice.constant';
 
 /** What this module needs of the shadow driver's package. */
 interface IShadowDriverModule {

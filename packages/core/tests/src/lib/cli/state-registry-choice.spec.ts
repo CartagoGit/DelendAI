@@ -8,10 +8,8 @@ import { join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import {
-	chooseStateRegistry,
-	SHADOW_DRIVER_PACKAGE,
-} from '@delendai/core/lib/cli/state-registry-choice';
+import { chooseStateRegistry } from '@delendai/core/lib/cli/state-registry-choice';
+import { SHADOW_DRIVER_PACKAGE } from '@delendai/core/lib/contracts/constants/state-registry-choice.constant';
 import { CONFIG_FILE_SCHEMA } from '@delendai/core/lib/plugins/config-file-schema';
 
 import type { IStateRegistry } from '@delendai/contracts/state';

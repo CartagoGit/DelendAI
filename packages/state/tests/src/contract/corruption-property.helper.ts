@@ -22,7 +22,7 @@ import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
 
 import { canonicalStateHash } from '../../../src/lib/hash';
-import type { TDefineRegistry } from './registry-contract.helper';
+import type { IDefineRegistry } from './registry-contract.helper';
 import type {
 	IStateInputSnapshot,
 	IProducerContext,
@@ -121,7 +121,7 @@ const NUM_RUNS = Number(process.env.STATE_PROPERTY_RUNS ?? 1000);
  */
 export const corruptionProperty = (
 	driver: string,
-	define: TDefineRegistry,
+	define: IDefineRegistry,
 	runs: number = NUM_RUNS,
 ): void => {
 	describe(`${driver}: Property: corruption recovery WITHOUT replay (q00018 S3)`, () => {

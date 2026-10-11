@@ -137,7 +137,7 @@ function hydrateInput(
 }
 
 /** How a driver under the contract is built. */
-export type TDefineRegistry = (
+export type IDefineRegistry = (
 	options: IStateRegistryOptions,
 ) => IStateRegistry;
 
@@ -147,7 +147,7 @@ export type TDefineRegistry = (
  */
 export const registryContract = (
 	driver: string,
-	define: TDefineRegistry,
+	define: IDefineRegistry,
 ): void => {
 	describe(`${driver}: the registry contract (q00018 S3 + 0.1 fixes)`, () => {
 		it('rejects ill-formed producers', () => {

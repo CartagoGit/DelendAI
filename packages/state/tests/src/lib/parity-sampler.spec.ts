@@ -5,22 +5,22 @@
 import { describe, expect, it } from 'vitest';
 
 import { defineInMemoryStateRegistry } from '../../../src/lib/driver-in-memory';
-import { sampleParity } from '../../../src/lib/parity-sampler';
-import type { TParityRegistryFactory } from '../../../src/lib/parity-sampler.interface';
+import { sampleParity } from '../../../src/lib/parity-sampler.service';
+import type { IParityRegistryFactory } from '../../../src/lib/parity-sampler.interface';
 import type { IStateProducer } from '../../../src/lib/producer';
 import { STATE_ABI_VERSION } from '../../../src/lib/fingerprint';
 import { sha256BytesHex } from '../../../src/lib/hash';
 import type { IHydrateInput } from '../../../src/lib/registry';
 import { asWorktreeId } from '../../../src/lib/scope';
 
-const honest: TParityRegistryFactory = (options) =>
+const honest: IParityRegistryFactory = (options) =>
 	defineInMemoryStateRegistry(options);
 
 /** A driver whose producers are swapped for `tamper(producer)`. */
 const tampering =
 	(
 		tamper: (producer: IStateProducer) => IStateProducer,
-	): TParityRegistryFactory =>
+	): IParityRegistryFactory =>
 	(options) => {
 		const registry = defineInMemoryStateRegistry(options);
 		const define = registry.defineProducer.bind(registry);

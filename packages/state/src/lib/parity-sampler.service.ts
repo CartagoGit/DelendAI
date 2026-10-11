@@ -1,5 +1,5 @@
 /**
- * parity-sampler.ts — random operations through two drivers, and a count
+ * parity-sampler.service.ts — random operations through two drivers, and a count
  * of where they part.
  *
  * Each run builds three fresh registries — the primary driver, the shadow

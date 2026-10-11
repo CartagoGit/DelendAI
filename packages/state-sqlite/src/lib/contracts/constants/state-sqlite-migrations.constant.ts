@@ -1,10 +1,10 @@
 import type { IStateSqliteMigration } from '../interfaces/state-sqlite-migration.interface';
+import { CREATE_GENERATIONS_TABLE_SQL } from '../../schema';
 import {
 	CREATE_FENCING_TOKENS_TABLE_SQL,
-	CREATE_GENERATIONS_TABLE_SQL,
 	CREATE_HOLDERS_TABLE_SQL,
 	CREATE_SWARM_CLAIMS_TABLE_SQL,
-} from '../../schema';
+} from './coordination.constant';
 
 /**
  * The oldest `user_version` this driver can bring forward. A store at or

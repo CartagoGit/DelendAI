@@ -284,6 +284,7 @@ un `parity-report.json` que el `state_health` plugin lee.
   - `packages/state/src/index.ts`
   - `packages/state-sqlite/src/lib/coordination-store.ts`
   - `packages/state-sqlite/src/lib/coordination-store.spec.ts`
+  - `packages/state-sqlite/src/lib/contracts/constants/coordination.constant.ts`
   - `packages/state-sqlite/src/lib/schema.ts`
   - `packages/state-sqlite/src/lib/contracts/constants/state-sqlite-migrations.constant.ts`
   - `packages/state-sqlite/src/lib/sqlite-driver.ts`
@@ -309,12 +310,13 @@ Drawn on 2026-09-06 over `better-sqlite3` with six tables. Delivered over `bun:s
 
 - **Status**: review
 - **Files**:
-  - `packages/state/src/lib/parity-sampler.ts`
+  - `packages/state/src/lib/parity-sampler.service.ts`
   - `packages/state/src/lib/parity-sampler.interface.ts`
   - `packages/state/tests/src/lib/parity-sampler.spec.ts`
   - `tools/scripts/state/parity-sampler.script.ts`
   - `tools/scripts/state/parity-report.ts`
   - `tools/scripts/state/parity-report.spec.ts`
+  - `tools/package.json`
   - `packages/state-sqlite/src/lib/driver-parity.spec.ts`
   - `.github/workflows/tier3.yml`
   - `package.json`
@@ -355,6 +357,7 @@ The sampling while a process runs stays where it shipped, in `createRegistryFaca
 - **Status**: review
 - **Files**:
   - `packages/core/src/lib/cli/state-registry-choice.ts`
+  - `packages/core/src/lib/contracts/constants/state-registry-choice.constant.ts`
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/src/lib/plugins/config-file-schema.ts`
   - `packages/core/src/lib/plugins/load-config-file.ts`

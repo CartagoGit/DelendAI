@@ -32,7 +32,7 @@ import type {
 	IResolvedProducerInput,
 } from '../../../src/lib/fingerprint';
 import type { Sha256Hex } from '../../../src/lib/hash';
-import type { TDefineRegistry } from './registry-contract.helper';
+import type { IDefineRegistry } from './registry-contract.helper';
 import type { IStateProducer } from '../../../src/lib/producer';
 import type { IStateInputSnapshot } from '../../../src/lib/producer';
 import type {
@@ -116,7 +116,7 @@ function mkProducer(
  */
 export const phaseTwoContract = (
 	driver: string,
-	define: TDefineRegistry,
+	define: IDefineRegistry,
 ): void => {
 	describe(`${driver}: Phase 0.2 — validateSnapshot (S2)`, () => {
 		it('accepts a well-formed snapshot', () => {
