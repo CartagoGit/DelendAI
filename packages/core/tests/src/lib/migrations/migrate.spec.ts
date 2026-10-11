@@ -3,6 +3,7 @@
  */
 import {
 	existsSync,
+	mkdirSync,
 	mkdtempSync,
 	readFileSync,
 	rmSync,
@@ -76,6 +77,22 @@ describe('migrateJsonFile (M14)', async () => {
 		path = join(dir, 'store.json');
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('has nothing to migrate where there is no file', async () => {
+		expect(
+			await migrateJsonFile(path, { migrators, targetVersion: 3 }),
+		).toBeNull();
+	});
+
+	it('fails on a file that is there and cannot be read, instead of taking it for absent', async () => {
+		// A directory in the file's place reads as an error that is not
+		// "no such file". Stepping over it migrated a project as if it
+		// had never had any state.
+		mkdirSync(path);
+		await expect(
+			migrateJsonFile(path, { migrators, targetVersion: 3 }),
+		).rejects.toThrow(/cannot read/u);
+	});
 
 	it('migrates, backs up the original, and writes the new shape', async () => {
 		writeFileSync(
