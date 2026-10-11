@@ -553,15 +553,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 32aeee8d7522, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: kept-unit-hydration.service makes a unit kept for its proposal follow the integration branch instead of going stale against it. Pinned by its spec.
 
 ### S38 — The lockfile audit is as strict as the forge's dependency alerts
-- **Status**: review
+- **Status**: done
 - shipped-in: `712200a99`
 - **Files**: `tools/scripts/lint/dependency-advisories.script.ts`, `tools/scripts/lint/dependency-advisories.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`lint:dependency-advisories` fails on an advisory of any severity in the lockfile, low included, unless it is excepted in date; it runs on every candidate into the integration branch, on the promotion, and in the daily sweep."
 - Asked by the owner on 2026-10-10: what the forge's dependency alerts detect should be caught on the integration branch, so the release branch only ever receives clean code. The forge computes those alerts for the default branch alone, so the integration branch cannot have its own; the lockfile audit added in x00879 S10 is its equivalent, but it let low-severity advisories through, which the forge lists. It now blocks every severity.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 32aeee8d7522, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: dependency-advisories.script makes the lockfile audit as strict as the forge's dependency alerts. Suite passes.
 
 ### S39 — A server at rest does not hold a third of a core
 
