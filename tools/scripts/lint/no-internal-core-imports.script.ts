@@ -580,11 +580,48 @@ export const formatBoundaryReport = (
 	return `${lines.join('\n')}\n`;
 };
 
+/**
+ * Manifest half, exports: an entry of a published package whose only
+ * condition is `types`, pointing into `src/`. The tarball ships `dist`
+ * alone, so the subpath type-checks in the monorepo and resolves to
+ * nothing once installed: `@delendai/api/public` exported six functions
+ * that way and no consumer could import one.
+ */
+export const detectUnshippedExports = async (
+	repoRoot: string = REPO_ROOT,
+): Promise<readonly IPublicationBoundaryFinding[]> => {
+	const packages = await readWorkspacePackages(repoRoot);
+	const published = new Set<string>(PUBLISH_ORDER);
+	const findings: IPublicationBoundaryFinding[] = [];
+	for (const pkg of packages.values()) {
+		if (!published.has(pkg.dir)) continue;
+		for (const [subpath, entry] of Object.entries(
+			pkg.manifest.exports ?? {},
+		)) {
+			if (hasRuntimeCondition(entry)) continue;
+			const types =
+				typeof entry === 'object' && entry !== null && 'types' in entry
+					? entry.types
+					: undefined;
+			if (typeof types !== 'string' || !types.startsWith('./src/'))
+				continue;
+			findings.push({
+				relPath: `${pkg.dir}/package.json`,
+				line: 1,
+				specifier: `${pkg.name}${subpath === '.' ? '' : subpath.slice(1)}`,
+				reason: `${pkg.name} exports "${subpath}" as types from ${types} and nothing else; the published package carries no src/, so the subpath cannot be imported once installed. Export its built "import" and "types" from dist.`,
+			});
+		}
+	}
+	return findings;
+};
+
 export const main = async (): Promise<number> => {
 	const findings = await detectInternalCoreImports();
 	const boundary = [
 		...(await detectPrivateDependencies()),
 		...(await detectPublicationBoundaryViolations()),
+		...(await detectUnshippedExports()),
 	];
 	const report = formatReport(findings);
 	const boundaryReport = formatBoundaryReport(boundary);
