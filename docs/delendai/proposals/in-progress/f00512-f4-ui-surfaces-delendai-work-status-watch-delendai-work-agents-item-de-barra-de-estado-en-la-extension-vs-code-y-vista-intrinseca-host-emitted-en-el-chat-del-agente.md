@@ -102,9 +102,11 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "No requiere `git checkout`: lee `git worktree list --porcelain` desde el cwd actual, igual que `delendai agents` de `f00277`."
   - "El output distingue con prefijo `*` el agente que está ejecutando en el cwd actual (vs los que están en otros worktrees)."
 - Shipped 2026-10-10: `bun run work:progress -- --agents` (and the foot of the default view) lists each agent whose last event falls in the last half hour, with the work item and the kind of that event (`activeAgents`).
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `9cef7f165a10`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — I cannot approve S3 because the delivered CLI surface is still `delendai work progress --agents`, not the accepted `delendai work agents [agentId]`. packages/cli/src/commands/work.command.ts exposes `progress` and routes `--agents` through packages/cli/src/lib/work-progress.service.ts; there is no dedicated `work agents` subcommand. The delivered slice note also says it shipped as `bun run work:progress -- --agents`. Please either deliver the accepted `work agents` command or update the acceptance and proposal text so they match the actual shipped `work progress --agents` surface before resubmitting.
 
 ### S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
 - **Status**: retired
