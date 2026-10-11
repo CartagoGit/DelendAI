@@ -190,15 +190,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at dd2a03cc9980, validate exit 0, tests 56/56 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: reconcile.service.ts plus the reconcile.interface.ts teach the ref lifecycle that a publication closed without merging is retired rather than left — the finding that 'the forward sync was reaped as soon as it opened' and, generally, that closed publications lingered. ref-lifecycle-guard.script.spec passes (run with S21 and S43's guard checks).
 
 ### S11 — An id reservation ends when a higher one supersedes it
-- **Status**: review
+- **Status**: done
 - shipped-in: `aba4404da`
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Reserving an id releases the forge's reservations of the same prefix below it, so the forge holds at most one id reservation per prefix; the counter every clone reads is unchanged."
 - Delivered: an id is reserved as `refs/delendai/ids/<id>` and nothing ever removed one: a ref per proposal created piled up on the forge (nine after one afternoon). Only the highest reservation of a prefix feeds the counter — the allocator hands out the next one above it — so a successful reservation now deletes the lower ones of its prefix in the same `send-pack` way it was made; a failure to delete leaves them, harmless. The spec (three reservations, two left, the counter still 812) fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: proposal-id-sources.ts ends an id reservation when a higher one supersedes it, which is the finding that 'the new/all reservation still blocked the next new proposal'. Pinned by proposal-id-sources.spec.
 
 ### S12 — A retired close pass ends once its closes have landed
 - **Status**: review
