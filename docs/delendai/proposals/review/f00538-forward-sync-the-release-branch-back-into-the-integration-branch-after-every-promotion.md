@@ -14,6 +14,8 @@ tags:
 last-transition-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
 last-correlation-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
 last-transition-from: in-progress
+shipped-in:
+  - "7dfa7abc3476102c786e172126e750286090d948"
 ---
 
 # f00538 — Forward-sync the release branch back into the integration branch after every promotion
@@ -68,10 +70,15 @@ fast-forwards a local clone and never touches the forge.
 
 ### S1 — Decide what carrying the release branch back amounts to, then open it
 
-- **Status**: done — `forwardSyncVerdict` classifies the gap as `in-sync`, `ancestry-only`, `content` or `conflict` from measured facts. The trial merge runs in a throwaway worktree. With `--apply` the script pushes `delendai/pr/forward-sync-<sha9>`, opens the pull request and arms auto-merge; inside a workflow it also dispatches `ci.yml` so the required check reports. It never force-pushes over an existing ref. A dry run against the forge on 2026-09-15 reported `ancestry-only` for `c7eda197a`. Branch names come from the development policy through `declaredBranches`, which `ref-lifecycle-guard` now shares instead of its private copy.
+- **Status**: done
 - **Files**: [`tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.interface.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/lib/declared-branches.ts`, `tools/scripts/lib/declared-branches.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `package.json`]
 - **Gate**: `npx vitest run tools/scripts/forge/forward-sync-release.script.spec.ts tools/scripts/lib/declared-branches.spec.ts`
 - shipped-in: `e07b21b26b02`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 7dfa7abc3476, validate exit 0, tests 22/22 — Gate npx vitest run forward-sync-release.script.spec.ts declared-branches.spec.ts: 22/22 pass. Read the delivery: forwardSyncVerdict classifies from measured facts (releaseIsAncestor -> in-sync; conflicts -> conflict; treeChanges -> content; else ancestry-only) at forward-sync-release.script.ts:83-85, and mergeOutcome (line 97) treats unmerged paths as the only conflict, which is the fix the S5 defect note describes. The trial merge runs in a throwaway worktree; --apply pushes delendai/pr/forward-sync-<sha9>, opens the pull request and arms auto-merge; it never force-pushes over an existing ref (line 365 reports the refusal instead). Branch names come from declaredBranches, and ref-lifecycle-guard now imports that shared module instead of a private copy (ref-lifecycle-guard.script.ts:48,143,377). Non-goals honoured: no push to a protected branch (a pull request + delendai-validate is the path), no conflict resolution (the conflict verdict names the next action and stops). Later commits touched these files (56cdbd7a4 ref-lifecycle reaping, 7425f7cf0 work progress) and extend rather than contradict the delivery.
+- review-attribution: claude-opus-5-5 from commit 7dfa7abc3476 names refs/heads/delendai/wip/claude-opus-5-5/implement/f00538-S5-g1/the-sync-merge-commits-with-its-hooks (7dfa7abc3476102c786e172126e750286090d948), opened by minimax-m31
 
 ### S2 — A history-only sync is a delivery, and only that one
 
