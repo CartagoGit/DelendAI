@@ -29,6 +29,7 @@ shipped-in:
   - "516a7cf4b51d58e91ac4073a7aad6df94ddf5aef"
   - "ca9ff5e6a712fe1ed960c1022f58469116349783"
   - "eb1e94c54f307621664c488e504e73e18147a110"
+  - "601a652075176a9809c87c1aeca8d9d364ebeae2"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -1049,10 +1050,15 @@ the good verdicts' shape (P1) becomes the required shape.
 - review-log: approved by glm-5.3-max — verified at 516a7cf4b51d, validate exit 0, tests 10/10 — Delivered by 516a7cf4b (PR #797 merge a3e03e9c9, on develop). A reviewer's queue is now read from its own unit: review-unit-tree.service.ts locates the worktree holding the unit and the verdicts it already recorded, so review next stops re-offering a slice this unit has already judged (the exact defect found 2026-10-05 with S18). Verified today in this worktree, agent env scrubbed: declared gate review-queue-swarm.tool.spec.ts green 10/10 exit 0; declared files all exist; the commit subject cites x00835 S35. Implementer claude-opus-5-5 (recorded in the wip branch/PR); different model, independence holds.
 
 ### S38 — A retired slice waits for no verdict
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/services/review-queue-slice.service.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue.tool.spec.ts`
 - Found 2026-10-05: `review next` offered this proposal's S25, retired that morning, as a slice needing a verdict, attributed to `claude-sonnet-5-5` from Git. A retired slice has no review round, so the queue asked Git who delivered its files and sent a reviewer to approve work that was given up on purpose. A slice whose status is `retired` is now settled in the queue, with a sentence that says why. What one slice needs from a reviewer moved to `review-queue-slice.service.ts`, which keeps the queue's service under 400 lines.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 601a65207517, validate exit 0, tests 15/15 — Delivered by 601a65207 (PR #808 merge b4a489a6f, on develop). A retired slice waits for no verdict: review-queue.service.ts drops retired slices from the needs-verdict list, so the queue can no longer send a reviewer to approve deliberately abandoned work (the S25 defect found 2026-10-05). Verified today in this worktree, agent env scrubbed: declared gate review-queue.tool.spec.ts green 15/15 exit 0 (shared with S39); declared files exist; commit subject cites x00835 S38. Implementer claude-opus-5-5; different model, independence holds.
+- review-attribution: claude-opus-5-5 from Merge pull request #808 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00835-S38-g1/a-retired-slice-waits-for-no-verdict (refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S38-g1/a-retired-slice-waits-for-no-verdict) (601a652075176a9809c87c1aeca8d9d364ebeae2), opened by glm-5.3-max
 
 ### S39 — The queue cites the delivery an approval is accepted with
 - **Status**: review
