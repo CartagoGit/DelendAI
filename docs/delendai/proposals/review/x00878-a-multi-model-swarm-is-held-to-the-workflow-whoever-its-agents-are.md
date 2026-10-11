@@ -15,6 +15,7 @@ shipped-in:
   - "732f19602ccd7dfaebeb5b3c3dfa5bb8f6c62c0c"
   - "aba4404daba70ff26b231e60c7efd4210a3eebfa"
   - "945143a0310a9453b5def0e30d544f093f5d06ab"
+  - "ef9ab171167c2cf92dc5b7c07c3801c1970f1137"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -132,7 +133,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-unit-generation.service.ts treats an open publication as a generation in use, which is the finding that 'work enter --alongside gave x00875-S29-g1 while delendai/pr/…/x00875-S29-g1/… (#861) was open, a second ref with the same identity; only --generation=2 avoided it'. Pinned by work-unit.service.spec.
 
 ### S7 — A claim holds while its holder lives, for every kind of work
-- **Status**: review
+- **Status**: done
 - shipped-in: `f7d6ef010`
 - **Files**: `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/services/claim-liveness.service.spec.ts`, `packages/core/src/lib/work-units/unit-fence.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/unit-fence.service.spec.ts`
 - **Gate**: type
@@ -143,8 +144,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A taken-over unit carries a higher generation; `work publish` by the previous holder after the takeover is refused, naming the unit that holds the slice now, so an agent that comes back cannot publish over the one that adopted its work."
 - Progress 2026-10-06, reviews: the review queue reads a claim through core's verdict on its unit (`claimHolding`, from `readUnitStandings`: the lease's heartbeat, or the unit's last commit where no lease is visible on this machine). A claim holds while its unit is live or its publication is open; a unit idle past its lease window, abandoned or delivered holds nothing, and its work stays where it is; a unit core has no verdict for holds. Still to do: implementation units (`work enter` holds a slice for an `idle` unit through `isUnitHolding`; the short window should apply there too), the verdict and claim tools reading the same predicate, and fencing (a taken-over claim's generation refusing the previous holder's writes).
 - Completed 2026-10-11. Fencing: `work publish` refuses a unit when a higher generation of its slice exists among the work refs and publications this clone knows of (`unit-fence.service.ts`), naming that unit; the commits stay where they are. Review packs are exempt: a model holds several at once, each its own generation. Decided against, and written out of the second acceptance line: the short window for implementation units. An implementing agent that is thinking, or running a ten-minute gate, looks idle; freeing its slice after one lease window puts two agents on the same slice, which costs more than the wait it saves. It holds until the conservative window and is then adopted with `work claim`, which is what gives the higher generation the fence reads.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at ef9ab171167c, validate exit 0, tests 65/65 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new claim-liveness.service.ts answers 'whether a unit holds its claims' and unit-fence.service.ts supplies the fencing token. The four specs are the criteria verbatim: 'is yes while its holder is live, local or as the remote co…', 'is yes while its publication is open, however quiet its ho…', 'is no once its holder has gone quiet, has gone, or has lan…', 'is yes for a unit nothing has judged'. This is the owner's analysis made product: a claim means a ref exists, which survives its agent.
 
 ### S8 — Asking the queue opens no unit
 - **Status**: review
