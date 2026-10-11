@@ -89,6 +89,8 @@ Verified: the description read "Headless (no subprocess spawning)" for a plugin 
 Verified: `extension.ts` catches a failed import of `./host/vscode-host-adapter` and falls back to the adapter written for tests, "to keep the canonical dashboard registrable". A surface that looks alive and answers nothing is worse than one that says it could not start.
 
 Delivered 2026-10-11: `resolveHostAdapter` answers the loaded adapter, the minimal one for an injected API, or nothing with the failure shown; `registerDashboardSurfaces` registers nothing when it answers nothing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A plugin says whether it can be used, not only that it loaded
 
