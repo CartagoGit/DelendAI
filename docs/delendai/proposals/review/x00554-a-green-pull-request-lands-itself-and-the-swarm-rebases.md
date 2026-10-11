@@ -15,6 +15,8 @@ last-transition-id: d1744948-b5c0-4105-a3ce-4946aad545c3
 last-correlation-id: d1744948-b5c0-4105-a3ce-4946aad545c3
 last-transition-from: in-progress
 last-transition-at: 2026-10-11T00:02:44.016Z
+shipped-in:
+  - "dea43b3d7f38"
 ---
 
 # x00554 — A green pull request lands itself and the swarm rebases
@@ -64,7 +66,7 @@ already hydrates the checkout.
 
 ### S1 — A green publication ref integrates without being asked
 
-- **Status**: done — a publication ref is armed for auto-merge without
+- **Status**: done
   anybody asking, and it is now armed **with the method the project
   declared**. That second half was missing and is the reason this slice
   says "honouring the policy's integration method": both arming sites
@@ -90,8 +92,10 @@ already hydrates the checkout.
   integration method. Nothing merges that the policy would not have
   merged by hand.
 - shipped-in: `dea43b3d7f38`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at dea43b3d7f38, validate exit 0, tests 50/50 — Verified the merge-method plumbing now resolves the declared policy and both arming paths use the declared flag. Slice-scoped specs for declared-branches, keep-the-queue-moving and forward-sync-release passed 50/50.
 
 ### S2 — What depends on the integration branch follows it, and what somebody is working on is told
 
