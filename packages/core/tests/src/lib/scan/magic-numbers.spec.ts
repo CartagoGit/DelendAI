@@ -45,4 +45,16 @@ describe('scan/magic-numbers — detectMagicNumbers', () => {
 			'export const a = 1;\nexport const b = 0;\nexport const c = 2;';
 		expect(detectMagicNumbers(body)).toHaveLength(0);
 	});
+
+	it('does not read a calendar date in a string as numbers', () => {
+		expect(
+			detectMagicNumbers(
+				'\tmeasuredAt: \'2026-10-11\',\n\tat: "2026-10-11T08:30:00Z",',
+			),
+		).toEqual([]);
+		// The same digits outside a date literal are still reported.
+		expect(
+			detectMagicNumbers('\tretries: 2026 - 10,').map((hit) => hit.value),
+		).toEqual(['2026', '10']);
+	});
 });

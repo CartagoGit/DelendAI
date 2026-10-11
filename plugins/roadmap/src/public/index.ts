@@ -86,3 +86,5 @@ export {
 	displayProjection,
 	renderDisplayProjection,
 } from '../lib/projection/roadmap-display.service';
+export type * from '../lib/contracts/interfaces/promotion-readiness.interface';
+export { promotionReadiness } from '../lib/promotion/promotion-readiness.service';

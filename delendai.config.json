@@ -321,8 +321,7 @@
 				"file": "docs/delendai/ROADMAP.md",
 				"versionFile": "packages/core/package.json",
 				"promotion": {
-					"blockingGates": ["proposal-done"],
-					"deferralPolicy": "report"
+					"blockingGates": ["proposal-done"]
 				}
 			}
 		},

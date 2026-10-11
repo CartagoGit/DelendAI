@@ -1,5 +1,7 @@
 import { definePluginManifest } from '@delendai/core/public';
 
+import { ROADMAP_TOKEN_BUDGET } from './src/lib/contracts/constants/token-budget.constant';
+
 export default definePluginManifest({
 	id: 'roadmap',
 	package: '@delendai/roadmap',
@@ -25,16 +27,7 @@ export default definePluginManifest({
 	// is never published: no preset may advertise a package an adopter
 	// cannot install. Reachable with `--plugins=roadmap` in this monorepo.
 	presets: [],
-	// Measured through an assembled host and a listing client
-	// (`roadmap-agnosticism.spec.ts`, which holds the listing under the
-	// hard cap): seven tools, 10,222 B; the largest one, 2,258 B.
-	tokenBudget: {
-		staticBytes: 10_250,
-		adaptiveActivationBytes: 2_260,
-		caps: { hard: 11_500, warning: 10_800 },
-		measuredAt: '2026-10-11',
-		source: 'token-budget-real',
-	},
+	tokenBudget: ROADMAP_TOKEN_BUDGET,
 	dependencies: ['@delendai/core', '@delendai/changelog', 'zod', 'yaml'],
 	capabilities: ['roadmap', 'release'],
 });
