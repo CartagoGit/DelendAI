@@ -18,6 +18,7 @@ last-transition-at: 2026-10-09T21:10:50.048Z
 shipped-in:
   - "97ed3389c329"
   - "7b07571790b18759adbefc1eec61d0db2d1797"
+  - "7cf206f4d2f8"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -159,7 +160,7 @@ and the interface file respectively, per `lint:types-in-contracts`
 
 ### S3 — Resolve project policy against framework force
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/src/lib/policy/resolve-policy.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/policy.interface.ts`, `plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts`]
 
 One pure function decides the effective answer from an ordered set of
@@ -171,8 +172,10 @@ recommendation; it does not win over `removed`, which resolves to
 
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts`
 - shipped-in: `7cf206f4d2f8`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 7cf206f4d2f8, validate exit 0, tests 47/47 — Delivered by 7cf206f4d2f8 (PR #714, f00547-S3-g1). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts, run inside the batch with the other five framework-knowledge specs -> 6 files / 47 tests passed, exit 0. Project policy resolves against framework force: the priority order is pinned by the spec rather than asserted by convention.
 
 ### S4 — Detected convention as an input, with its confidence
 
