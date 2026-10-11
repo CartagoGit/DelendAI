@@ -513,15 +513,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 5ca6586a7230, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: slice-reservation.service ends a slice's reservation when its unit's publication lands, which is the finding that '43 review reservations, 25 of them naming a unit whose work ref and publication no longer exist'. Pinned by slice-reservation.service.spec.
 
 ### S35 — The integration branch carries no code scanning alert again
-- **Status**: review
+- **Status**: done
 - shipped-in: `60a5c57f7`
 - **Files**: `plugins/changelog/src/lib/render/conventional-commit.ts`, `plugins/changelog/src/lib/render/conventional-commit.spec.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
 - **Gate**: type
 - acceptance:
   - "Code scanning reports no open alert on the integration branch: the commit parser's two patterns cannot backtrack on a run of whitespace (js/polynomial-redos #439, #440), and the publication no longer compares to `undefined` two values that never are (js/comparison-between-incompatible-types #436, #437)."
 - Found 2026-10-10 before promoting: four alerts had opened on the integration branch since the last promotion. The parser's patterns became reachable from library input when the roadmap package started calling it, and the comparisons came with the work-event journal. The pull requests' own `CodeQL` check had passed: the forge fails that check only from a severity threshold up, and these were below it. The parser had no spec; it has one, with the many-tabs line.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at ef9ab171167c, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the integration branch carries no code-scanning alert again. Pinned by conventional-commit.spec in this batch and by the dependency-advisories lint (S38).
 
 ### S36 — A promotion carries no open code scanning alert
 - **Status**: review
