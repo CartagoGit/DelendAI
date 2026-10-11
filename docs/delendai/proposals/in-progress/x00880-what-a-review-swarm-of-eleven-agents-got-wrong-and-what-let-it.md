@@ -199,6 +199,8 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
   - The brief a reviewer is handed says to run the slice's gate from the reviewer's own worktree, naming its path, and nothing wider: the whole validation runs once, on the pull request the pack becomes.
 
 Delivered 2026-10-11, smaller than first written. An approval citing the forge's certifying run as its evidence was taken out: it would have been a new reader of the forge inside the verdict, to save a gate that takes seconds. What cost a machine eleven whole suites at once was that nothing told a reviewer how much to run or where; the brief now does. The `validate exit` field of an approval already asks for "gate exit code" in the call the brief prints (observation 18 is the name of the field, not what fills it).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — What would stop a proposal from closing is found before a reviewer meets it
 
