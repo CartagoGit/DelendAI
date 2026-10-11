@@ -352,9 +352,10 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 
 ### S9 — Plataforma (P2)
 
-- **Status**: in-progress — verified 2026-10-01: eight of the eleven children are in `done/` (`f00272`, `f00273`, `r00035`, `r00041`, `r00042`, `x00287`, `v00132`, `d00014`). Open: `r00040` (ready), `f00274` and `f00275` (blocked).
+- **Status**: review — verified 2026-10-11: the eleven children are in `done/` (`f00272`, `f00273`, `r00035`, `r00040`, `r00041`, `r00042`, `x00287`, `v00132`, `f00274`, `f00275`, `d00014`). The three that were open on 2026-10-01 closed since: `f00274` on 2026-10-06, `r00040` and `f00275` on 2026-10-11, each by a reviewer's pack.
 - **Files**: [`packages/core/src/public`, `packages/client/src`, `plugins/proposals/src`, `packages/cli/src/commands/groups/doctor.ts`, `extensions/vscode/package.json`, `docs/delendai/plugins`]
 - **Gate**: `bun run validate`
+- shipped-in: `3dbba9bb6`, `dce7937f0`, `8bc1ace5d`
 
 
 `f00272` (métricas de superficie útil), `f00273` (ranking e histéresis),
