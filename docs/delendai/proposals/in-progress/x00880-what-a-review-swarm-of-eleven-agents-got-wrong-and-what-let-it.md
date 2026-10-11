@@ -148,6 +148,8 @@ Also delivered: the instructions every agent receives at start now end their "si
   - The queue does not offer a reviewer the fix of a round it reviewed: the slice waits for another reviewer, as the verdict would have said.
 
 Delivered 2026-10-11. A release already records why, in its commit; showing that to the next reviewer was dropped from this slice, because with the queue no longer offering what will be refused the reasons left are particular to one reviewer. A unit committing to a proposal another agent holds for review (observation 20) is not closed here: it is the orchestrator's rule to keep, and S9's hand-over check is what removes the reason to break it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A review unit is named by the product
 
