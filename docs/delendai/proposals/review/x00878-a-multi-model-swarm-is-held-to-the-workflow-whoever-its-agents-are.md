@@ -22,6 +22,7 @@ shipped-in:
   - "57bf941ed2d4f57546eb73e9195c9d089cfd4daa"
   - "9c7886ed7ea613f3a0322b477e49213e5f06282c"
   - "b65c20a21e1074d8952813f57866b9236aaac99e"
+  - "6995db016bba77a3093de329db0201d7a7dd1636"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -311,7 +312,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at b65c20a21e10, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the server's log says a thing once rather than every five minutes. Covered by work-checkout-publisher.spec in this batch and the server-log spec (S25).
 
 ### S20 — Everyday listings show live work, not what was given up
-- **Status**: review
+- **Status**: done
 - shipped-in: `43efdded3`
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - **Gate**: type
@@ -319,8 +320,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "`work status`, `work swarm` and the overview list live, waiting-for-review and adoptable units by default; retired, superseded and collectable ones are counted on one line and listed only with `--all`, so an agent asking what to do next is not paid for the history of every swarm."
 - Found 2026-10-07 by the external audit of the second swarm (ChatGPT, `.cache/chat-with-llms/2026_10_07_01:08_…`): after a swarm, the default listings enumerate every ended unit, a token cost on each call and a distraction for the next agent.
 - Delivered, for `work swarm`: units the verdict calls delivered or abandoned are counted on one line (`… N ended (delivered or abandoned); --all lists them`) and listed only with `--all`; `--json` still carries every unit. On this repository it folds three. `work status` already prints counts only. The overview is not changed. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 6995db016bba, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-swarm-relations.service makes everyday listings show live work rather than what was given up — the finding that the queue held 20 proposals where a swarm that worked would have left none. Pinned by work-swarm-relations.spec.
 
 ### S21 — The forge reaper sees a branch whose only extra commit merged landed work
 - **Status**: review
