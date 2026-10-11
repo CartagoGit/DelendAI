@@ -181,6 +181,8 @@ Not found. Four commands of the orchestrator ended with exit code 144 (128 + sig
   - When that leaves every slice in review, done or retired, the proposal goes to `review` by the same transition as any hand-over, and the answer says so, or says why it was refused.
 
 Found after the rest: f00757 was in progress with its four slices resubmitted days before. The way back to review was a second command its implementer had to remember, the mirror of the reopening that needs none.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
