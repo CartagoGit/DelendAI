@@ -2,7 +2,7 @@
 id: f00509
 title: "F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease"
 kind: feat
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-06
@@ -15,13 +15,14 @@ tags:
     - event-bus
     - state-engine
     - non-blocking
-last-transition-id: 44276a97-98b7-4acf-b804-2eb576b3fa02
-last-correlation-id: 44276a97-98b7-4acf-b804-2eb576b3fa02
-last-transition-from: in-progress
+last-transition-id: 83e38126-ca4e-4555-8b26-0dcbae2a8811
+last-correlation-id: 83e38126-ca4e-4555-8b26-0dcbae2a8811
+last-transition-from: review
 shipped-in:
   - "a9cb8d6a4"
   - "97320d4d7"
-last-transition-at: 2026-10-09T15:10:15.989Z
+  - "d05a5d98722d"
+last-transition-at: 2026-10-11T02:33:43.367Z
 ---
 
 # f00509 — F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease
@@ -46,7 +47,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - global_gate: type
 
 ### S1 — Paquete `packages/state-telemetry` + tabla `work_events` (SQLite + NDJSON fallback)
-- **Status**: review
+- **Status**: done
 - **Shipped-In**: 27c6cf021 feat(state-telemetry): scaffold work event bus
 - **Files**: `packages/state-telemetry/package.json` (sin entrada de subpath público: la declaraba apuntando a un barrel que esta slice no crea, y `lint:tsconfig-paths-coverage` la rechaza con razón — un subpath que no resuelve a nada. F2-S5, que es la dueña del barrel, añade export y barrel juntos), `packages/state-telemetry/tsconfig.json`, `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`
 - **Gate**: `bun test packages/state-telemetry/src/lib/events/work-event-store.spec.ts`
@@ -59,9 +60,11 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "F1-S1 NO crea `tools/scripts/lint/state-telemetry-purity.script.ts`; lo introduce F2-S1 (única slice responsable). Esta slice se limita al bus + tabla + tests, dejando la lint para cuando exista contenido que lintar."
 - Two-process test: `work-event-store.spec.ts` spawns two `bun` writers that wait for each other, open one store and append 200 events each at once; it asserts both exit 0, the count is 400, every id is distinct and each writer's events are all present in order. It exposed that opening the store could fail with SQLITE_BUSY, so `busy_timeout` is now set before the WAL switch and the boot statements retry on a busy file.
 - Concurrency proof (second delivery): `work-event-store.spec.ts` now also spawns three `bun` writers plus a fourth that appends an unbounded burst to the same SQLite file and is killed with SIGKILL once it is past a warm-up. It asserts the killed writer exits by signal, the survivors exit 0 and keep all 150 events each, no id repeats across all rows, ids only grow within each writer, every writer's payloads form an unbroken run from zero (no loss, no duplicate, no torn row), and a fresh append after the crash gets an id above every existing one. The SQLite store needed no change. The NDJSON fallback did: each process counted ids from one, so two processes wrote the same ids; `list()` now numbers events by their position in the append-only file and skips a torn last line, with a two-process spec.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
 - review-log: requested_changes by claude-opus-5-5 — Every other criterion holds (work-event-store.spec: the q00020 table, the config switch with NDJSON when absent or malformed, no failure at startup; the purity lint now runs in lint:architecture). Missing: the criterion 'two concurrent writes from different processes produce no duplicate rows' has no test; 'keeps the autoincrement id monotonic across closes' writes from one process in sequence. To approve: a bun-owned spec that spawns two processes appending to one store at once and asserts every id is distinct and every event is present.
+- review-log: approved by minimax-3.1 — verified at d05a5d98722d, validate exit 0, tests 12/12 — Gates: `bun test packages/state-telemetry/src/lib/events/work-event-store.spec.ts` (the slice's declared gate, bun-owned because it spawns real writer processes) → 12 pass / 0 fail, exit 0. `npx vitest run --root packages/state-telemetry` → 23 files / 128 tests, exit 0. `bun tools/scripts/lint/state-telemetry-purity.script.ts` → 0 violations. Repo typecheck exit 0. This slice had a requested_changes from claude-opus-5-5 that asked for exactly one thing: a bun-owned spec that spawns two processes appending to one store at once and asserts every id is distinct and every event present. That test now exists at work-event-store.spec.ts:103 and passes. The second delivery went further than asked, adding a killed-writer burst case that proves no torn row, no loss and no duplicate, and fixing the NDJSON fallback so ids are numbered by position in the append-only file. Both points the earlier review raised about CI are now true: the purity lint exists, reports 0 violations, and is chained into lint:architecture.
 
 ### S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
 - **Status**: done
