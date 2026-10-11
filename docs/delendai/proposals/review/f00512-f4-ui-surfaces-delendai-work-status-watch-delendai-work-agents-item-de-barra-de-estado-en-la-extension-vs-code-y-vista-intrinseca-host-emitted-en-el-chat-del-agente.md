@@ -2,7 +2,7 @@
 id: f00512
 title: "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-06
@@ -17,10 +17,10 @@ tags:
     - cli
     - vscode-extension
     - non-llm
-last-transition-id: 35fe19ee-8961-435c-bd61-572b6f2e7c45
-last-correlation-id: 35fe19ee-8961-435c-bd61-572b6f2e7c45
-last-transition-from: review
-last-transition-at: 2026-10-11T02:58:48.466Z
+last-transition-id: 249ff5c8-36d5-4061-8c33-eb18553fed59
+last-correlation-id: 249ff5c8-36d5-4061-8c33-eb18553fed59
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T07:18:17.814Z
 shipped-in:
   - "edf768be6a8c"
 ---
