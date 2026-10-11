@@ -48,6 +48,19 @@ describe('readyToClose', () => {
 		).toBe(false);
 	});
 
+	it('is ready when the slices say what delivered them, and with a slice retired', () => {
+		// The close copies the commits up; a retired slice delivered nothing
+		// to approve, and one of them kept a whole proposal from closing.
+		expect(
+			readyToClose(
+				doc(
+					'',
+					`${approved}- shipped-in: \`abc1234\`\n\n### S2 — dropped\n\n- **Status**: retired\n`,
+				),
+			),
+		).toBe(true);
+	});
+
 	it('waits for an approval by someone other than the implementer', () => {
 		expect(
 			readyToClose(
