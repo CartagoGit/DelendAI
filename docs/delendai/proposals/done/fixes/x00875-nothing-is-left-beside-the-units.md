@@ -2,13 +2,13 @@
 id: x00875
 title: "Nothing is left beside the units"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-05
-last-transition-id: e0796df3-f7eb-4576-8f54-7fd19b6c508d
-last-correlation-id: e0796df3-f7eb-4576-8f54-7fd19b6c508d
-last-transition-from: in-progress
+last-transition-id: b3171da4-6b72-4f7f-9581-d5ed706b6050
+last-correlation-id: b3171da4-6b72-4f7f-9581-d5ed706b6050
+last-transition-from: review
 shipped-in:
   - "9e405f09f7fb33f0a0dd0e055642ef2928955731"
   - "00128e2debe92950f0a065d9da76064bcf114914"
@@ -24,6 +24,8 @@ shipped-in:
   - "907b12101c096e1277c28ca8013d5fef2aa92c1d"
   - "97f1cecdb488f4d6187145e16723640fcb37922d"
   - "82d2d7d97f3b8b6addbe4e3ed7694c6f002afea2"
+  - "aba4404daba70ff26b231e60c7efd4210a3eebfa"
+last-transition-at: 2026-10-11T02:37:03.231Z
 ---
 
 # x00875 — Nothing is left beside the units
@@ -210,7 +212,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 
 ### S15 — No tracked file keeps the markers of an unfinished merge
 - **Status**: done
-- **Files**: `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-conflict-markers.script.spec.ts`, `package.json`, `docs/delendai/proposals/review/x00835-a-review-swarm-leaves-verdicts-that-can-be-checked-and-loses-none.md`, `docs/delendai/proposals/review/x00875-nothing-is-left-beside-the-units.md`
+- **Files**: `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-conflict-markers.script.spec.ts`, `package.json`, `docs/delendai/proposals/review/x00835-a-review-swarm-leaves-verdicts-that-can-be-checked-and-loses-none.md`, `docs/delendai/proposals/done/fixes/x00875-nothing-is-left-beside-the-units.md`
 - **Gate**: `bun run lint:no-conflict-markers && npx vitest run --project tools tools/scripts/lint/no-conflict-markers.script.spec.ts`
 - Found 2026-10-06: the documents of `x00835` and of this proposal reached `develop` with `<<<<<<< HEAD` and `>>>>>>>` lines in them. My batch script merged another open pull request of the same proposal into a unit, the merge stopped on a conflict, and the next step committed the tree as it was; every gate passed and the queue merged it. Markdown shows the markers as text, and nothing looked for them.
 - `lint:no-conflict-markers` refuses any tracked file with a line that starts with git's opening or closing marker (not `=======`, which is also a markdown underline), and runs first in `lint:architecture`, which CI runs. Both documents are repaired by keeping every side: each conflict was two pull requests appending different slices.
@@ -366,12 +368,14 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 57a631db9ae8, validate exit 0, tests 8/8 — Delivered by 57a631db9ae8, the newest delivery touching the slice's files (no merge names x00875-S28-g1, so the attribution is by declared files). The forge phase skips a commit the forge answers 422 for, so a commit only this machine has reports no runs instead of degrading the boot; any other failure, a 404 included, still reports unavailable. Gate forge-seam.service.spec.ts 8/8 exit 0. No acceptance bullet is declared for this slice.
 
 ### S29 — A close pass supersedes the one it built on
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`
 - **Gate**: `npx vitest run tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - Found 2026-10-06, right after S27 landed: the closer had two pull requests open closing the same five proposals (#846 from `batch-all-g2`, #848 from `batch-all-g4`). Each pass merges the open publication into its unit and publishes; under one reused generation that updated the same pull request, and with a generation per unit (S27) it opened a new one and left the old beside it. A pass with nothing new to close also republished, only to bring the open one level with the integration branch, which is the candidates' refresh's job. Now a pass publishes only when it closed something, and then retires the publication it merged (its tip kept, its pull request closed with the reason). #846 was retired by hand as superseded by #848, which contains it. Seen again before it landed: passes went on publishing beside each other (g15, g20, g21, g22 on top of g4), so a pass now merges every open publication of the closer, not the first, and retires all of them once its own is published. The four superseded ones were retired by hand for #866, which carries their closes. And none of them could ever land: `closed-with-independent-approval` refuses a review pack that changes proposals it did not claim, and the closer's close commit claimed nothing, so every pass's pull request was red in `lint-governance` and x00770, x00799, x00868, x00870 and x00873 stayed in review. The close commit now carries a `Claims:` trailer for each proposal it closes.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen-3.8-flash
+- review-log: approved by qwen-3.8-flash — verified at aba4404daba7, validate exit 0, tests 10/10 — Independently verified: the closer now adds a `Claims:` trailer per closed proposal (close-approved-proposals.script.ts:514 flatMap of closed.flatMap((id)=>['--trailer',`Claims: ${id}`])); the pass retires every other open publication (line 551); the close pass publishes only when it closed something (the surrounding logic in lines 127/136/283/294/297/351/543/551). The spec gate (tools/scripts/proposals/close-approved-proposals.script.spec.ts) is 10/10, exit 0. Not relying on the implementer's account alone: every requirement is grep-verified in HEAD.
 
 ## acceptance
 
