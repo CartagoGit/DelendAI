@@ -741,7 +741,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 30/30 — Judged at the superseding whole-proposal delivery 84217680c5c8 (slice ships in baf7794eb). cache.command.ts implements status|migrations|migrate --dry-run|gc --dry-run/--apply over runCacheLayoutStep; status previews without writing; gc previews unless --apply. Gate: vitest in packages/cli on cache.command.spec.ts + registry.spec.ts = 30/30. The one failing spec in src/commands is repair.command.spec.ts (ea63c1e0e, r00040), outside this slice's Files; cache.command and registry are green.
 
 ### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
-- **Status**: review
+- **Status**: done
 - shipped-in: `1632de660`
 - **Files**:
   - `packages/core/src/lib/cache/boot-eviction-throttle.service.ts`
@@ -757,8 +757,10 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The throttle sits in core around the boot sweep (`assemble.ts`), not in the `cache` plugin: the sweep and its `runOnBoot` posture are core's, and the plugin only contributes rules. The `cache_gc` tool and `delendai cache gc` are on-demand and are never throttled.
   - The default is no throttle, not 24 h: a default would change what every existing project's boot does. A project opts in with the value it wants.
   - The stamp lives in `.delendai/`, not in the cache directory the sweep evicts from.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 6/6 — Judged at the superseding whole-proposal delivery 84217680c5c8 (the slice itself ships in 1632de660; the merge keeps the same files). Gate: vitest --project core boot-eviction-throttle.service.spec.ts = 6/6: no interval writes nothing, dry-run respects the throttle, a virtual clock advanced 24h runs the sweep, a failure does not stamp. cache.evictionIntervalMs is opt-in (absent or 0 = today's behaviour), declared in config-file-schema + delendai.config.schema.json; the stamp lives in .delendai/cache-eviction-at.json and is written only after the sweep ran. The throttle sits in core around the boot sweep (assemble.ts), not in the cache plugin, as the correction records; on-demand cache_gc is never throttled.
 
 ## acceptance
 
