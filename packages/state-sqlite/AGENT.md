@@ -23,10 +23,10 @@ _(none)_
 
 ## Tests
 
+- packages/state-sqlite/src/lib/coordination-store.spec.ts
+- packages/state-sqlite/src/lib/driver-parity.spec.ts
 - packages/state-sqlite/src/lib/error-method.spec.ts
 - packages/state-sqlite/src/lib/lifecycle-state-store.spec.ts
-- packages/state-sqlite/src/lib/registry-facade.spec.ts
-- packages/state-sqlite/src/lib/sqlite-driver.spec.ts
 
 ## Do not
 

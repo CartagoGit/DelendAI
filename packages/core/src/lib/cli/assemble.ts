@@ -52,7 +52,6 @@ import type {
 	ICacheEvictionRegistry,
 } from '../contracts/interfaces/cache-eviction.interface';
 import { createCacheEvictionRegistry } from '../cache/eviction-registry';
-import { defineInMemoryStateRegistry } from '@delendai/state';
 import type { IStateRegistry } from '@delendai/contracts/state';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 import type { ILogsSink } from '../plugins/plugin-contract';
@@ -88,6 +87,7 @@ import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
 import { runThrottledBootSweep } from '../cache/boot-eviction-throttle.service';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import { chooseStateRegistry } from './state-registry-choice';
 import {
 	createJsonlRuntimeEventSink,
 	runtimeEventsPath,
@@ -214,7 +214,9 @@ export interface IAssembleCliDeps {
 	exists?: (absolutePath: string) => boolean;
 	/**
 	 * The state registry this boot should use. Defaults to the in-memory
-	 * one, which is what every boot got before — unconditionally.
+	 * one, which is what every boot got before — unconditionally; with
+	 * `state.parity.shadow.enabled` the SQLite driver runs beside it (see
+	 * `state-registry-choice.ts`).
 	 *
 	 * Core CONSTRUCTED that registry, which made the choice of storage
 	 * engine a fact of the core rather than of the project: a durable,
@@ -448,11 +450,12 @@ export const assembleCliConfig = async (
 	});
 	// Injected when the host knows better; the in-memory engine remains
 	// the default, so a boot that says nothing behaves exactly as before.
-	const stateRegistry =
-		deps.stateRegistry ??
-		defineInMemoryStateRegistry({
-			clock: () => Date.now(),
-		});
+	const stateRegistry = await chooseStateRegistry({
+		injected: deps.stateRegistry,
+		shadowEnabled: fileConfig.state?.parity?.shadow?.enabled === true,
+		cacheDirAbs: cacheDirContained.abs,
+		load: deps.import ?? ((specifier) => import(specifier)),
+	});
 	await bootstrapCacheLayout({
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,

@@ -1422,6 +1422,8 @@
         "@delendai/rules": "workspace:*",
         "@delendai/search": "workspace:*",
         "@delendai/security": "workspace:*",
+        "@delendai/state": "workspace:*",
+        "@delendai/state-sqlite": "workspace:*",
         "@delendai/state-telemetry": "workspace:*",
         "@delendai/status-marker": "workspace:*",
         "@delendai/tech-debt": "workspace:*",

@@ -2,12 +2,16 @@
 id: q00019
 title: "State Engine Phase 1 — SQLite shadow driver + parity sampler (no behaviour change, only shadow verifies legacy)"
 kind: plan
-status: ready
+status: review
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-06
 shipped-in:
   - "99d17f26d"
+last-transition-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
+last-correlation-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T17:23:17.736Z
 ---
 
 # q00019 — State Engine Phase 1
@@ -271,75 +275,108 @@ un `parity-report.json` que el `state_health` plugin lee.
 
 ## slices
 
-### S1 — `@delendai/state-sqlite` package + `SqliteStateRegistry`
+### S1 — The SQLite driver keeps what coordinates the generations, and the contract both drivers run
 
-- **Status**: pending — progress 2026-09-15 at `83fcaf6aa`. Running the in-memory registry's own specs (`registry.spec.ts`, `phase-0.2.spec.ts`) against `SqliteStateRegistry` failed 2 of 20: an incremental over unchanged inputs keeps its predecessor's input fingerprint, schema v1 made `fingerprint` UNIQUE, so the second generation of any scope failed `SQLITE_CONSTRAINT_UNIQUE` (reported as `state_store_unavailable`). Schema v2 keys rows by (scope, `generation_id`) and v1 stores migrate in place in one transaction. A restart also lost that state, because restoring a scope re-ran `rebuild` from inputs; `InMemoryStateRegistry.restore` now republishes the stored projections (validated like any build) and the driver rebuilds only when the store is refused. After the fix the same 20 pass and the SQLite suite is 26/26. Still missing, so this stays pending: durable leases, claims, fencing tokens and holders (generation ids and lease tokens still restart from 1 on a new process); the WAL checkpoint cadence; and a committed contract suite parameterised over both drivers — the run above used a throwaway harness, not a gate.
-- **Files**: `packages/state-sqlite/{package.json,tsconfig.json,README.md,src/index.ts,src/lib/driver.ts,src/lib/schema.ts,src/lib/migrations.ts,tests/src/driver.spec.ts}`
+- **Status**: review
+- **Files**:
+  - `packages/state/src/lib/scope-coordination.interface.ts`
+  - `packages/state/src/lib/driver-in-memory.ts`
+  - `packages/state/src/index.ts`
+  - `packages/state-sqlite/src/lib/coordination-store.ts`
+  - `packages/state-sqlite/src/lib/coordination-store.spec.ts`
+  - `packages/state-sqlite/src/lib/contracts/constants/coordination.constant.ts`
+  - `packages/state-sqlite/src/lib/schema.ts`
+  - `packages/state-sqlite/src/lib/contracts/constants/state-sqlite-migrations.constant.ts`
+  - `packages/state-sqlite/src/lib/sqlite-driver.ts`
+  - `packages/state/tests/src/contract/registry-contract.helper.ts`
+  - `packages/state/tests/src/contract/phase-0.2-contract.helper.ts`
+  - `packages/state/tests/src/registry.spec.ts`
+  - `packages/state/tests/src/phase-0.2.spec.ts`
+  - `packages/state-sqlite/src/lib/registry-contract.spec.ts`
 - **Gate**: `typecheck` + `test`
-- **Reality (2026-09-15)**: `SqliteStateRegistry` shipped in `3103565e0` over `bun:sqlite` (not `better-sqlite3`: SQLite runs under Bun here, and CI tests it with `bun test`). Its schema has two tables, `generations` (with the captured projections inside each row) and `drivers`; project leases, swarm claims, fencing and GC are delegated to an in-memory registry, so they are neither durable nor shared between processes. Still missing against this slice: the four tables for leases, claims, fencing tokens and holders; the WAL checkpoint cadence (PASSIVE, at most one per 64 publishes, TRUNCATE on shutdown); and the `IStateRegistry` contract suite run against the SQLite driver. Stays pending.
-- Implementa `StateRegistry` (Phase 0.2) sobre
-  `better-sqlite3` con `journal_mode=WAL`, `busy_timeout=150ms`,
-  synchronous=NORMAL.
-- Schema completo (ver §why this design): `state_generations`
-  con `fingerprint_json_canonical`, `state_projections`,
-  `state_project_leases`, `state_swarm_claims`,
-  `state_fencing_tokens`, `state_holders`.
-- WAL checkpoint con backpressure: máximo 1 cada 64 publishes
-  (configurable), `mode=PASSIVE`, más 1 TRUNCATE en process
-  shutdown vía `state_sqlite_checkpoint { mode: 'TRUNCATE' }`.
-- Tests espejo de `InMemoryStateRegistry` para garantizar que
-  las 55 aserciones de Phase 0.2 pasan también aquí (incluidos
-  los 9 nuevos tests de Phase 0.2).
+- shipped-in: `3103565e0`, `83fcaf6aa`, `6ca542c70790`, `971d30dbc955`
+- acceptance:
+  - `SqliteStateRegistry` implements `IStateRegistry` over `bun:sqlite` (WAL, `synchronous=NORMAL`), not `better-sqlite3`: SQLite runs under Bun here and CI tests it with `bun test`.
+  - Schema v3 stores, with the generations and in the same transaction, the counters that fencing tokens, lease serials and generation ids are minted from (`state_fencing_tokens`), the holders of each generation (`state_holders` — a project lease is a holder of kind `project-lease`, not a second table recording the same fact) and the swarm claims in force (`state_swarm_claims`). A v1 or v2 store is brought forward on open.
+  - After a restart a generation comes back under the id and fencing token it was published with, its holders with it; the next lease, claim or generation mints nothing that was handed out before. A release or renewal made through a handle is stored. A scope that only ever held a claim resumes too.
+  - The log is checkpointed passively every 64 publishes (`checkpointEveryPublishes`) and truncated once, when the registry closes.
+  - The registry contract is one text both drivers run: `registry.spec` and `phase-0.2.spec` became contracts a driver's spec calls with the way that driver is built. The in-memory driver runs them under vitest; the SQLite driver runs the same 20 assertions on a store on disk under `bun run test:sqlite`.
 
-### S2 — `state_parity_sampler` background tool
+Drawn on 2026-09-06 over `better-sqlite3` with six tables. Delivered over `bun:sqlite`; generations and their projections stay one row (`generations`, schema v2) and the three coordination tables are new in v3. `state_project_leases` is not a table: a lease is a holder, and two tables for it would be two records of one fact that can disagree.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
-- **Status**: pending
-- **Files**: `tools/scripts/state/parity-sampler.script.ts`,
-  `tools/scripts/lib/with-compute-lock.script.ts`
+### S2 — A standalone parity sampler, its report, and a nightly run
+
+- **Status**: review
+- **Files**:
+  - `packages/state/src/lib/parity-sampler.service.ts`
+  - `packages/state/src/lib/parity-sampler.interface.ts`
+  - `packages/state/tests/src/lib/parity-sampler.spec.ts`
+  - `tools/scripts/state/parity-sampler.script.ts`
+  - `tools/scripts/state/parity-report.ts`
+  - `tools/scripts/state/parity-report.spec.ts`
+  - `tools/package.json`
+  - `packages/state-sqlite/src/lib/driver-parity.spec.ts`
+  - `.github/workflows/tier3.yml`
+  - `package.json`
 - **Gate**: `lint` + `test`
-- **Reality (2026-09-15)**: the sampling exists inside the facade instead — `createRegistryFacade` samples parity (`sampleNow`, `samplerIntervalMs`) and `registry-facade.spec.ts` keeps the in-memory and SQLite registries in parity over 1000 operations (`3103565e0`). Still missing: the standalone sampler, the parity report JSON, a nightly CI run, and the separation of driver parity from replay and execution determinism. Stays pending.
-- Crea N scopes (project + swarm), corre K operaciones
-  aleatorias en AMBOS drivers en paralelo, y compara
-  `canonicalHash` por generación.
-- En cada diff, log estructurado al sink del plugin `logs`.
-- Resultado: `state-parity-report.json` con `{ runs, divergences
-  }` + lista de generaciones divergentes.
-- Reconciled 2026-10-07 against the tree: the sampling itself shipped inside `@delendai/state-sqlite` — `createRegistryFacade` (`packages/state-sqlite/src/lib/registry-facade.ts`, `sampleNow`, `samplerIntervalMs`), and `registry-facade.spec.ts` drives 1,000 operations through the in-memory and SQLite registries in parity. Still to do: the standalone sampler (`tools/scripts/state/parity-sampler.script.ts`), its `state-parity-report.json` with `driverParityDivergences`, `replayDeterminismDivergences` and `executionDeterminismDivergences` counted apart, and a nightly run that uploads it.
+- shipped-in: `07cec489969d`
+- acceptance:
+  - `sampleParity` feeds the same seeded random operations — builds, incrementals, leases taken and released, swarm claims renewed, collection — to the primary driver, the shadow driver and a replay of the primary, and counts three kinds of divergence apart: `driverParityDivergences`, `replayDeterminismDivergences` (the replay saw other inputs) and `executionDeterminismDivergences` (same inputs, another canonical hash). Each kind is proved by a planted divergence that the other two do not count.
+  - `bun run state:parity [--runs --operations --seed --out --strict]` wires the in-memory and SQLite drivers, writes `state-parity-report.json` with the seed, and exits non-zero under `--strict` when anything diverged.
+  - 1,000 random operations find no divergence between the two drivers (`driver-parity.spec.ts`, under `bun run test:sqlite`).
+  - `tier3` runs it nightly over 10,000 operations with `--strict` and keeps the report as an artifact whether it passed or not.
 
-### S3 — `@delendai/state` shadow harness
+The sampling while a process runs stays where it shipped, in `createRegistryFacade` (`sampleNow`, `samplerIntervalMs`).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
-- **Status**: pending
-- **Files**: `packages/state/tests/src/shadow/parity.spec.ts`
+### S3 — The property suites run against the SQLite driver
+
+- **Status**: review
+- **Files**:
+  - `packages/state/tests/src/contract/equivalence-property.helper.ts`
+  - `packages/state/tests/src/contract/determinism-property.helper.ts`
+  - `packages/state/tests/src/contract/corruption-property.helper.ts`
+  - `packages/state/tests/src/property/equivalence.spec.ts`
+  - `packages/state/tests/src/property/determinism.spec.ts`
+  - `packages/state/tests/src/property/corruption.spec.ts`
+  - `packages/state-sqlite/src/lib/registry-properties.spec.ts`
 - **Gate**: `test`
-- **Reality (2026-09-15)**: no shadow parity harness exists under `packages/state`. Stays pending.
-- Property test que carga `@delendai/state-sqlite`
-  condicionalmente (`env HAS_STATE_SQLITE=1`) y corre los
-  property tests de Phase 0.1 (equivalence, determinism,
-  corruption) contra el driver SQLite también.
-- Si el driver SQLite no está disponible, el suite se salta
-  con un mensaje claro.
-- Reconciled 2026-10-07: not started — no `packages/state/tests/src/shadow/parity.spec.ts`; the property suites (`equivalence`, `determinism`, `corruption`, 1,000 sequences by default since q00018 S5) run against the in-memory driver only.
+- shipped-in: `971d30dbc955`
+- acceptance:
+  - The three Phase 0.1 properties — an incremental build equals a clean rebuild, two registries fed the same sequence agree, a corrupt generation is recovered without replay — are contracts a driver's spec calls; the in-memory driver runs them as before.
+  - The SQLite driver runs the same three over 1,000 generated sequences each (`STATE_PROPERTY_RUNS` overrides, as for the in-memory run).
+  - They run where the driver can: under `bun run test:sqlite`, which CI runs as its own step. The plan's `HAS_STATE_SQLITE=1` switch inside the vitest run is not built — `bun:sqlite` has no resolution under the runner vitest uses, so a suite there could only ever skip.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
-### S4 — `@delendai/state-facade` + assemble wiring
+### S4 — A project can run the SQLite driver as a shadow
 
-- **Status**: pending
-- **Files**: `packages/state-facade/{package.json,tsconfig.json,src/index.ts,src/lib/facade.ts}`, `packages/core/src/lib/cli/assemble.ts`, `delendai.config.json#state.parity.shadow`
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/cli/state-registry-choice.ts`
+  - `packages/core/src/lib/contracts/constants/state-registry-choice.constant.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/src/lib/plugins/load-config-file.ts`
+  - `packages/core/schema/delendai.config.schema.json`
+  - `packages/core/tests/src/lib/cli/state-registry-choice.spec.ts`
+  - `packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts`
+  - `packages/state-sqlite/src/lib/registry-facade.ts`
 - **Gate**: `typecheck` + `test`
-- **Reality (2026-09-15)**: the facade shipped as `createRegistryFacade` inside `@delendai/state-sqlite`, not as a separate `state-facade` package. `assemble.ts` still builds `defineInMemoryStateRegistry`, and no `state.parity` config key exists. No first-party plugin calls `ctx.state` yet, so wiring the facade today would change nothing observable until a producer exists; q00020, q00021, f00509 and f00510 depend on this plan and are where that first consumer will come from. Stays pending.
-- `delendai.config.json#state.parity.shadow.enabled = false` (default).
-- `assemble.ts` consulta el flag: si está en `false`,
-  construye SOLO el driver en memoria y lo envuelve en la
-  facade (que entonces no tiene shadow). Si está en `true`,
-  intenta cargar `@delendai/state-sqlite`; si no está
-  disponible, falla con un mensaje claro (no degrada a
-  in-memory para el shadow, porque entonces el sampler no
-  tiene nada que muestrear).
-- La facade expone la MISMA superficie `IStateRegistry`. Las
-  llamadas a `hydrate` / `incremental` / `lookup` ejecutan en
-  primary y, si shadow está presente, replican en shadow;
-  `validateSnapshot` corre en ambos lados; el resultado de
-  cada call devuelve la respuesta del primary.
-- Reconciled 2026-10-07: the facade shipped in `@delendai/state-sqlite` (`createRegistryFacade`), not as a `state-facade` package, which this plan itself says is not needed until a producer reads `ctx.state`; `assemble.ts` accepts `deps.stateRegistry` and defaults to the in-memory registry. Still to do: the `state.parity.shadow.enabled` key (default false) and assemble building the facade and loading the SQLite driver only when it is set — worth doing once a first producer (q00020, q00021, f00510) calls `ctx.state`.
+- shipped-in: `3103565e0`, `6832f05a2e72`
+- acceptance:
+  - `state.parity.shadow.enabled` in `delendai.config.json` is optional and off by default; off, nothing loads `@delendai/state-sqlite` and the boot builds the in-memory engine exactly as before.
+  - On, the boot loads the driver by name and returns the parity facade over the in-memory engine (primary) and the SQLite driver (shadow, its store under the cache at `state/shadow.sqlite`). Proved by booting a throwaway project with the setting under Bun.
+  - On where the driver cannot load, the boot fails naming the setting and the package; it does not go on without a shadow.
+  - A registry the host hands in (`deps.stateRegistry`) wins over both.
+  - The facade's background sampler does not keep a process alive.
+
+The facade is `createRegistryFacade` in `@delendai/state-sqlite`, not a `state-facade` package: the facade exists to pair the SQLite driver with another, and a package of its own would hold one function.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Lint del boundary del nuevo paquete
 
@@ -352,13 +389,15 @@ un `parity-report.json` que el `state_health` plugin lee.
   nueva `state-engine-isolation.lint.ts` afirma que el contrato
   surface sigue siendo pure-TS y que el SQLite driver vive
   exclusivamente bajo `state-sqlite/`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## dependency graph
 
 ```mermaid
 graph TD
   S1[SQLite driver] --> S2[Parity sampler]
-  S1 --> S3[Shadow harness]
+  S1 --> S3[Properties on SQLite]
   S2 --> S4[assemble wiring]
   S3 --> S4
   S4 --> S5[Isolation lint]
@@ -370,38 +409,14 @@ graph TD
 
 ## acceptance
 
-- [ ] `packages/state-sqlite/package.json` declara `better-sqlite3`
-      como dep y exports el driver.
-- [ ] `packages/state-facade/package.json` exporta
-      `IStateRegistryFacade` con primary + (optional) shadow.
-- [ ] `delendai.config.json#state.parity.shadow.enabled` default
-      es `false`; cuando es `false`, ningún código intenta
-      cargar `@delendai/state-sqlite`.
-- [ ] `SqliteStateRegistry` cumple el contrato `IStateRegistry` de
-      Phase 0.2 + Phase 0.3 (x00504 S2-S5: digest_mismatch
-      invariant, sha256BytesHex raw bytes, driver-neutral
-      fingerprint, scope-local snapshot). Los 63 tests
-      correspondientes pasan también contra SQLite.
-      SQLite.
-- [ ] El schema incluye las 6 tablas (state_generations con
-      `fingerprint_json_canonical`, state_projections,
-      state_project_leases, state_swarm_claims,
-      state_fencing_tokens, state_holders).
-- [ ] WAL checkpoint es PASSIVE y limitado a 1 cada 64 publishes;
-      TRUNCATE sólo se ejecuta en shutdown vía herramienta
-      explícita.
-- [ ] `state_parity_sampler` corre 1000 ops aleatorias sin
-      divergencias en una instalación limpia, y separa driver
-      parity de replay/execution determinism.
-- [ ] CI ejecuta el sampler nightly y sube el `parity-report.json`
-      con `driverParityDivergences` y
-      `replayDeterminismDivergences` +
-      `executionDeterminismDivergences` como campos distintos.
-- [x] La lint isolations sigue green: `packages/state/src` es
-      pure-TS; `packages/state-sqlite/src` permite Node.
-- [ ] `bun run validate` verde.
-- [ ] Conventional Commit (`feat(state-facade+state-sqlite): …`)
-      firmado y pusheado.
+- [x] `SqliteStateRegistry` keeps the `IStateRegistry` contract: the assertions that pin the in-memory driver run unchanged against it, and so do the three property suites.
+- [x] What coordinates the generations — fencing counters, holders, swarm claims — is stored and survives a restart; schema v3, with v1 and v2 stores brought forward on open.
+- [x] The WAL is checkpointed passively at most once per 64 publishes and truncated once, on close.
+- [x] `state.parity.shadow.enabled` defaults to off; off, nothing loads `@delendai/state-sqlite`.
+- [x] The parity sampler runs 1,000 random operations without divergence and counts driver parity, replay determinism and execution determinism apart; a nightly run keeps its report.
+- [x] `packages/state/src` stays pure TypeScript; the SQLite driver lives only under `packages/state-sqlite`.
+
+Amended at hand-over (2026-10-11) to what was delivered: `bun:sqlite` rather than `better-sqlite3`, three coordination tables rather than six tables, and the facade inside `@delendai/state-sqlite` rather than a `state-facade` package. Each difference is explained in its slice.
 
 ## risks and mitigations
 
