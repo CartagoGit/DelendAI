@@ -112,7 +112,7 @@ Delivered 2026-10-11. The request reopens its proposal when it is recorded today
 
 - **Status**: review
 - **Files**:
-  - `plugins/proposals/src/lib/services/review-attribution.ts`
+  - `plugins/proposals/src/lib/services/shipped-in-from-slices.service.ts`
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
   - `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`
 - **Gate**: unit

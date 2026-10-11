@@ -116,7 +116,7 @@ import {
 	collectSliceStatuses,
 	guardTransitionToDone,
 } from '../services/proposal-completeness';
-import { withShippedInFromSlices } from '../services/review-attribution';
+import { withShippedInFromSlices } from '../services/shipped-in-from-slices.service';
 import { staleApprovals } from '../services/review-verdict-evidence';
 import { openReviewRounds } from '../services/review-handoff';
 import { createIndexFreeGitRunner } from '../shared/index-free-git-runner';

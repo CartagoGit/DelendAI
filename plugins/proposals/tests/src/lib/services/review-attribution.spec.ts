@@ -13,8 +13,8 @@ import {
 	needsAttributedRound,
 	unrecordedAttribution,
 	withShippedIn,
-	withShippedInFromSlices,
 } from '@delendai/proposals/lib/services/review-attribution';
+import { withShippedInFromSlices } from '@delendai/proposals/lib/services/shipped-in-from-slices.service';
 import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
