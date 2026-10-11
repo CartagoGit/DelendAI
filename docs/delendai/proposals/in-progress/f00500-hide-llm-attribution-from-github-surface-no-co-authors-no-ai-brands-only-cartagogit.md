@@ -52,6 +52,7 @@ Por qué ahora: el repo está en un ciclo de dogfooding intensivo con varios hos
 - **Shipped-In**: 2a7c8c71e chore: update .claude/agents/delendai-delivery-verifier.md ... (pre-existing chore that landed the trailer:none change)
 - **Files**: `delendai.config.json`
 - **Gate**: lint
+- shipped-in: `2a7c8c71e`
 
 Cambio mínimo y quirúrgico. Edita `delendai.config.json` y dentro de
 `plugins.commit-policy.options.audit` sustituye `"trailer": "co-authored-by"`
@@ -82,6 +83,7 @@ haga redundante.
 - **DependsOn**: [S1]
 - **Files**: `plugins/commit-policy/src/lib/contracts/options.ts`, `plugins/commit-policy/src/lib/audit/trailer.ts`, `plugins/commit-policy/README.md`, `plugins/commit-policy/tests/src/lib/audit/trailer.spec.ts`, `plugins/commit-policy/tests/src/lib/engine.spec.ts`, `plugins/commit-policy/tests/src/lib/dry-run-commit.spec.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`, `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts`, `plugins/commit-policy/tests/src/lib/services/scope.spec.ts`, `plugins/commit-policy/tests/src/lib/tools/run-tool.spec.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
 - **Gate**: lint
+- shipped-in: `f6c419c01`
 
 Hace que el default del plugin deje de filtrar attribution incluso en
 proyectos que todavía no han migrado a `trailer: 'none'` explícito.
@@ -125,6 +127,7 @@ Cambios concretos:
 - **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/agent-identity.interface.ts`, `plugins/proposals/src/lib/shared/agent-identity.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/shared/agent-identity.spec.ts`
 - **Gate**: type
+- shipped-in: `6dcaf0a5a`
 
 `agentWorktree` está desactivado por defecto en este repo, así que esta fuga
 no se materializa hoy — pero la preparamos para el día que se active, y de
