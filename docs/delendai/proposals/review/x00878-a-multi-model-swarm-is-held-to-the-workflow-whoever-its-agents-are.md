@@ -10,6 +10,8 @@ last-transition-id: 5a640b7c-07ad-4966-a4dd-cd3f95791bb6
 last-correlation-id: 5a640b7c-07ad-4966-a4dd-cd3f95791bb6
 last-transition-from: in-progress
 last-transition-at: 2026-10-11T00:52:48.735Z
+shipped-in:
+  - "715a80b1dac7de961456cf545c6b9c03e5c65f99"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -47,7 +49,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - global_gate: none
 
 ### S1 — An agent signs with the model it runs as
-- **Status**: review
+- **Status**: done
 - shipped-in: `715a80b1d`
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: type
@@ -55,8 +57,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs."
   - "One model has one spelling everywhere: the ref segment, the verdict line and the review lines agree (`minimax-m3.1`, not `minimax-m31` in the ref and something else in the document)."
 - Progress 2026-10-06: a verdict is signed with the same canonical spelling the unit's ref uses (`resolveWorkAgentId`: `GPT-5.4` and `gpt-5.4` are one reviewer), and a verdict recorded in a review unit is refused unless it is signed by the agent the unit is named after, so a pack has one reviewer and a name cannot be chosen per call. Both specs fail without the change. Still open: an identity that names no model (`illyria`, which was ChatGPT Luna 6.0) or a family without its version (`minimax-3` for MiniMax M3.1) cannot be told from a real model id by its spelling; that needs the identity to come from the host, which knows the model it runs (its declared agent id), rather than from the agent's own words.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 715a80b1dac7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: agent-alias.service.ts implements the one-spelling rule — aliasedIdentity compares lettersOf(agent) (lowercased, punctuation stripped) against the identities already in the refs and refuses a re-spelling with describeAlias naming the spelling to use. Its docblock names the exact finding: five instances of one model worked as minimax-3, minimax-m3, MiniMax-M3, minimaxm3, minimaxm3-3 and minimaxm3-batch, and every check comparing names took them for different agents. The spec 'is refused on a proposal another unit of the same model holds' pins the review-side effect.
 
 ### S2 — A verdict reaches the document only through the review tool
 - **Status**: review
