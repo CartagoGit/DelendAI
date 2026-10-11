@@ -102,6 +102,8 @@ Met while doing S1. Parking f00639 with "recorded in c00530" for a reason blocke
 Asked by the owner on 2026-10-11: refs, worktrees and branches had been left along the way. Counted then: four worktrees and local branches of review units the queue had retired on the forge hours before; a slice reservation of a unit whose pull request had merged; ten probe refs of the orchestrator's own in the shared clone (deleted by hand, they were never the product's); and twenty-three retired refs on the forge. The reaper already judged each of the first two kinds spent, with S3's rule for the retired ones. It had no caller: `work reap --apply` ran when somebody remembered. It is now a step of the one pass this machine runs after every merge. One of the four worktrees holds an edit its agent never committed; it is reported on every pass and not removed.
 
 Left as it is, and said: the retired refs. A retired tip is kept so that nothing is lost, and only one whose work the integration branch came to hold is dropped. Seventeen of the twenty-three belong to proposals that are closed; whether a closed proposal's retired units go after some days is a rule the owner has not given.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
