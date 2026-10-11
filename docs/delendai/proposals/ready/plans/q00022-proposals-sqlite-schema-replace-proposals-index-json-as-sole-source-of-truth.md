@@ -762,6 +762,28 @@ is not part of this plan.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S11 — The checked-in agent catalog lists no proposals
+
+- **Status**: review
+- **Files**:
+  - `tools/scripts/catalog/generate-agent-catalog.script.ts`
+  - `tools/scripts/catalog/generate-agent-catalog.spec.ts`
+  - `docs/delendai/agent-catalog.generated.json`
+  - `extensions/vscode/src/test/agent-catalog.spec.ts`
+  - `extensions/vscode/src/test/open-agent-catalog.spec.ts`
+  - `docs/delendai/REPO-RULES.md`
+  - `docs/delendai/CROSS-IDE.md`
+- **Gate**: unit
+- shipped-in: `19a1617b6633`
+- acceptance:
+  - `agent-catalog.generated.json` carries tools and skills, and nothing about any proposal.
+  - Moving a proposal from one state to another changes no generated file.
+  - The catalog generator does not scan or read the proposal registry.
+
+Found on 2026-10-11 while a swarm of eleven reviewers published verdicts. The checked-in catalog carried `proposals.actionable`, a copy of every open proposal's title and state: a second projection of the markdown, in a file every pull request shares. A pack that approved one proposal therefore changed a generated file, which the specs of three test zones read, and the queue's log says what followed: "it and #995, which lands first, both touch the apps, plugins, proposals, tools zone(s)". Each such pack ran the whole matrix again after every other merge, seven runs for a pack of one approval. Nothing in the product read the section: the board and the live catalog tool answer from the projection. The two specs of the editor extension that used it as sample data now pass none. The generator lost its in-memory registry scan with it, 260 lines.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - All S1-S5 slices land.
