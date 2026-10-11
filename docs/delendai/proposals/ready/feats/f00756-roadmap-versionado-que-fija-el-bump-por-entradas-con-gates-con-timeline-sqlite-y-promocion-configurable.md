@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: architecture
 date: 2026-10-06
+shipped-in:
+  - "94d62f666a80"
 ---
 
 # f00756 — Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable
@@ -114,7 +116,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - global_gate: type
 
 ### S1 — Contratos, esquema y máquina de estados del roadmap
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/roadmap/package.json`, `packages/roadmap/tsconfig.json`, `packages/roadmap/vitest.config.ts`, `tsconfig.base.json`, `packages/roadmap/src/index.ts`, `packages/roadmap/src/public/index.ts`, `packages/roadmap/src/lib/contracts/interfaces/roadmap.interface.ts`, `packages/roadmap/src/lib/contracts/schemas/roadmap.schema.ts`, `packages/roadmap/src/lib/contracts/constants/roadmap.constant.ts`, `packages/roadmap/src/lib/state-machine/roadmap-state-machine.service.ts`, `packages/roadmap/src/lib/validation/roadmap-reader.service.ts`, `packages/roadmap/src/lib/validation/bump-hint-validator.service.ts`, `packages/roadmap/tests/src/lib/state-machine/roadmap-state-machine.service.spec.ts`, `packages/roadmap/tests/src/lib/contracts/roadmap.schema.spec.ts`, `packages/roadmap/tests/src/lib/validation/bump-hint-validator.spec.ts`, `packages/roadmap/AGENT.md`
 - **Gate**: `bun x vitest run --root packages/roadmap`
 - acceptance:
@@ -124,8 +126,10 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "El esquema declara `schemaVersion` y la lectura rechaza una versión mayor con un motivo accionable, en vez de adivinar."
 - shipped: the `@delendai/roadmap` package with a strict Zod schema, a closed set of entry kinds, states and gate kinds, the state machine (`checkTransition` returns a reason, never throws), `readRoadmap` (refuses a newer `schemaVersion` with the way out) and `validateBumpHints`.
 - re-cut: `validateBumpHints` takes the bump deriver as a parameter instead of computing a bump itself. The code showed that any kind-to-bump mapping inside S1 would be a second copy of the changelog plugin's rule, which the non-goals forbid; S2 supplies the real deriver on top of `inferBump`. Specs live under `tests/src/lib/**` mirroring `src/lib`, because the file conventions give the state machine spec a `.service.spec.ts` name.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 94d62f666a80, validate exit 0, tests 88/88 — Gates: S1-S4 and S6 declare `bun x vitest run --root packages/roadmap` → 12 test files / 88 tests, exit 0. S5 declares `bun run test:sqlite` → 445 pass / 0 fail, exit 0, with the SqliteTimelineStore specs among them. `bun tools/scripts/lint/state-engine-purity.script.ts` → pure, no exceptions. Repo typecheck exit 0. Two things I checked rather than accepted, because both are claims that would be easy to assert and hard to notice. First, S2 says the bump must be derived by calling inferBump from @delendai/changelog/public rather than reimplemented locally, because a local mapping would be a second copy of the changelog plugin's rule. That is verified in the code — roadmap-bump-intent.service.ts imports inferBump at :3 and exposes it through inferBumpForKinds at :36 — and, better, the spec mocks the plugin so the test fails if the rule is ever recomputed locally. The authority field is a required property of the interface type (bump-intent.interface.ts:12), not an optional annotation, so no consumer can receive a bump payload without it. Second, S1 says the schema is `.strict()`. There is no literal `.strict()` call; every object uses `z.strictObject`, which is the zod v4 spelling of the same thing. I confirmed the behaviour rather than the spelling: three specs reject an unknown key on an entry, on a gate and on an estimate — the three places the acceptance names. S6's re-cut is worth stating plainly because it moves work out of the slice's own criterion: reconcile recomputes from the new inputs instead of applying a delta, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; and caching location is the registry driver's call, so the producer writes nothing at all. Both re-cuts make the guarantee stronger rather than weaker, and the purity spec backs them. S7 onward stay pending.
 
 ### S2 — Álgebra de gates y derivación de la intención de bump
 - **Status**: review
