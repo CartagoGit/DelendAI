@@ -94,10 +94,15 @@ export const pullRequestText = (
 	const delivering = meaningful.filter((subject) => DELIVERY.test(subject));
 	const own = delivering.filter((subject) => citesUnitOf(subject, branch));
 	const deliveries = own.length > 0 ? own : delivering;
-	const first =
-		deliveries[0] ?? verdictTitle(oldestFirst) ?? meaningful[0] ?? fallback;
+	// A pack of verdicts is named for them even when its reviewer also
+	// touched a document: "docs(…): x names y" titled a pack that closed
+	// three proposals.
+	const verdicts = deliveries.every((subject) => subject.startsWith('docs'))
+		? verdictTitle(oldestFirst)
+		: undefined;
+	const first = verdicts ?? deliveries[0] ?? meaningful[0] ?? fallback;
 	const title =
-		deliveries.length > 1
+		verdicts === undefined && deliveries.length > 1
 			? `${first} (+${String(deliveries.length - 1)} more)`
 			: first;
 	const listed = oldestFirst

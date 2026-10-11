@@ -157,6 +157,20 @@ describe('pullRequestText', () => {
 		).toBe('review: 3 verdict(s) on q00010, f00643');
 	});
 
+	it('titles a pack by its verdicts even when its reviewer touched a document', () => {
+		expect(
+			pullRequestText(
+				[
+					'docs(proposals): x00539 S4 names f00534 at its done location',
+					'chore(delendai): delendai_proposals_proposal_review x00835 S39 approve',
+					'chore(review): claim x00835',
+				],
+				'delendai/pr/glm-5.3-max/review/batch-all-g3/verdicts',
+				'review batch',
+			).title,
+		).toBe('review: 1 verdict(s) on x00835');
+	});
+
 	it('is titled by the oldest commit that delivers, past tool records, regeneration and merges', () => {
 		// Newest first, as `git log` lists them.
 		const text = pullRequestText(
