@@ -246,7 +246,7 @@ S1 verde.
 
 ### S3 — Cierre del plan
 
-- **Status**: in-progress
+- **Status**: review
   closed: 8 `done` with peer review, 1 (`c00156`) `done` without one and
   1 (`c00146`) `retired`, which is the single condition this plan closes
   on (below). `c00156` is the exception this slice names instead of
