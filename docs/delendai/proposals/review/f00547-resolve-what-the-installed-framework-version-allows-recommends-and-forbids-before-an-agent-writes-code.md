@@ -17,6 +17,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-09T21:10:50.048Z
 shipped-in:
   - "97ed3389c329"
+  - "7b07571790b18759adbefc1eec61d0db2d1797"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -111,7 +112,7 @@ coverage on `framework-version.ts` is 100% statements/functions/lines,
 
 ### S2 — A knowledge record with its evidence and its force
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/package.json`, `plugins/framework-knowledge/plugin.manifest.ts`, `plugins/framework-knowledge/tsconfig.json`, `plugins/framework-knowledge/vitest.config.ts`, `plugins/framework-knowledge/LICENSE`, `plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/src/public/index.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-record.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-force.constant.ts`, `plugins/framework-knowledge/src/lib/knowledge/knowledge-record.ts`, `plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts`, `plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts`, `bun.lock`]
 
 Every rule carries what it says, the framework version it applies to,
@@ -151,8 +152,10 @@ file contributes nothing to either side of the ratio). `FORCE_VALUES`
 and the interface file respectively, per `lint:types-in-contracts`
 (caught by `gates.sh`, not something the proposal anticipated).
 - shipped-in: `f75161fa8386`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 7b07571790b1, validate exit 0, tests 47/47 — Delivered by 7b07571790b18759adbefc1eec61d0db2d1797 (PR #778, f00547-S5-g1). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts (+ resolve-policy, detect-convention, knowledge-cache, guidance-convention, no-network) -> 6 files / 47 tests passed, exit 0. The record carries its evidence and its force; forceRank orders required above removed.
 
 ### S3 — Resolve project policy against framework force
 
