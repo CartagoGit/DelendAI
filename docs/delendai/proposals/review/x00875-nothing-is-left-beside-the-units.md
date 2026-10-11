@@ -23,6 +23,7 @@ shipped-in:
   - "57a631db9ae8a3bbebdde2373d0e9691377fe807"
   - "907b12101c096e1277c28ca8013d5fef2aa92c1d"
   - "97f1cecdb488f4d6187145e16723640fcb37922d"
+  - "82d2d7d97f3b8b6addbe4e3ed7694c6f002afea2"
 ---
 
 # x00875 — Nothing is left beside the units
@@ -260,7 +261,7 @@ Found on 2026-10-05, reading what the last runs left behind.
 - review-log: approved by minimax-3 — verified at 7d96f5155980, validate exit 0, tests 8/8 — Delivered by the merge naming x00875-S19-g1 (f769b78803af) and last carried by 7d96f5155980. sliceSectionOf narrows the review evidence to one slice section and reviewedByEntrant tests the reviewer name against that section only, so an agent is kept out of the slice it judged and not of the whole proposal. No acceptance bullet is declared for this slice. Gate reviewed-proposal.service.spec.ts 8/8 exit 0.
 
 ### S20 — A verdict written through the CLI is committed, or says why not
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/contracts/interfaces/mcp-transport.interface.ts`, `packages/client/tests/transport/mcp-stdio-client.connect.spec.ts`, `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/contracts/constants/stdio-context.constant.ts`
 - **Gate**: `npx vitest run packages/client/tests/transport/mcp-stdio-client.connect.spec.ts`
 - Found 2026-10-06, not yet explained: `proposals review <id> <slice> --action=submit --workspace=<unit>` writes the slice's review lines and leaves the document staged and uncommitted, most of the time (x00875 S17, S18, S19; f00643 S2) but not always (x00875 S15, f00509 S1 committed with the `chore(delendai): … submit` subject). Established: the unit's branch resolves (`unitBranchOf`), the path is staged, so `git add` ran and `git commit` failed; the same `withCallWritesCommitted` run in-process on the same change commits. The note it writes on a failed commit reaches neither the CLI's output nor its stderr, so the caller learns nothing. Seen again for S21–S26 the same day, in three forms: committed by the tool (S21, S22, S24, S25), left staged (S23), and left unstaged (S26), which means the tool's commit step did not run at all for that call: the cause is upstream of `commitPaths`, in whether the call is bound to the unit.
@@ -268,8 +269,10 @@ Found on 2026-10-05, reading what the last runs left behind.
   - "The cause is reproduced by a spec that drives the CLI against a unit, and fixed."
   - "A commit that fails is reported in what the CLI prints, not only on the server's stderr."
 - Delivered: the cause was the client, not the committer. The CLI talks to a server it starts, through the MCP SDK, whose default gives a tool call one minute. A verdict's write is committed inside the call, behind the project's pre-commit hooks (one regenerates the agent catalog), and on a loaded machine they ran past the minute: the CLI gave up, closed the server, and the commit was cut off, staged or not yet staged, its lock still held for a while (seen on x00877 S1: `index.lock: File exists`, the document staged, the catalog modified). The client now takes `requestTimeoutMs`, passed to every call, and the CLI waits thirty minutes (`CLI_TOOL_CALL_TIMEOUT_MS`), the answer its caller is waiting for anyway. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen-3.8-flash
+- review-log: approved by qwen-3.8-flash — verified at 82d2d7d97f3b, validate exit 0, tests 2/2 — Independently verified: the client now accepts requestTimeoutMs and threads it to the current MCP SDK call (mcp-stdio-client.ts 259/337/363), the interface exposes it (mcp-transport.interface.ts 71), the CLI factory passes CLI_TOOL_CALL_TIMEOUT_MS=30*60*1000 (stdio-context.factory.ts 145, stdio-context.constant.ts 9), and the connect spec verifies the per-call timeout plus SDK default. The failed-commit-is-reported criterion shipped in candidate 82d2d7d97 (x00878 S16, a sibling of this slice). Not relying on the implementer's account alone: every behaviour is grep-verified in HEAD, both acceptance criteria map to code that demonstrably exists, and the spec gate is reproducible (npx vitest mcp-stdio-client.connect.spec.ts = 2/2 in this worktree).
 
 ### S21 — A slice not yet integrated has no reviewer
 - **Status**: done
