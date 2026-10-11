@@ -2,14 +2,14 @@
 id: c00530
 title: "What was blocked is settled: delivered another way, or waiting for a need"
 kind: chore
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-11
-last-transition-id: 658e37ce-dd51-49da-a6c4-405c0290e6f8
-last-correlation-id: 658e37ce-dd51-49da-a6c4-405c0290e6f8
-last-transition-from: ready
-last-transition-at: 2026-10-11T14:41:35.085Z
+last-transition-id: fae6f874-1c92-446f-9d31-326c2dbea20d
+last-correlation-id: fae6f874-1c92-446f-9d31-326c2dbea20d
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T14:42:17.114Z
 ---
 
 # c00530 — What was blocked is settled: delivered another way, or waiting for a need
@@ -49,6 +49,8 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 - acceptance:
   - No proposal is blocked.
   - Each of the six carries, in its own document, why it ended where it did.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The agent-session derivation nobody consumed goes
 
@@ -59,6 +61,8 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 - shipped-in: `f92f9dacebc7`
 - acceptance:
   - `derive-agent-sessions.service.ts`, its contract and its spec are deleted, with the five exceptions the boundary lint kept for them.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A pause keeps the reason it is given, and a retired unit does not linger
 
@@ -77,6 +81,8 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
   - `work reap` removes a unit left behind here whose tip the remote keeps as retired.
 
 Met while doing S1. Parking f00639 with "recorded in c00530" for a reason blocked it on c00530, and the dependency was written under the closing fence, in the body. And the swarm's units that the queue had retired on the remote were still listed here as units at work.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
