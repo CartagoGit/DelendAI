@@ -2,15 +2,15 @@
 id: x00835
 title: "A review swarm leaves verdicts that can be checked, and loses none"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-03
 priority: P1
 related: [x00831, x00834, x00850]
-last-transition-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
-last-correlation-id: 56ca3e7f-3176-439f-8a8f-71a96d4dedb4
-last-transition-from: in-progress
+last-transition-id: 9adfb69c-5ac3-4c57-81d3-2390353386ae
+last-correlation-id: 9adfb69c-5ac3-4c57-81d3-2390353386ae
+last-transition-from: review
 shipped-in:
   - "f83c85addc9e"
   - "70f0d67de5cddf9a6ce91f75abf65e9eadbd2e77"
@@ -25,6 +25,13 @@ shipped-in:
   - "17d1fa53353c7b4de9ad67392f75e198b301c26d"
   - "657da3ff96183e12acf10efe5cef4ee54b54273f"
   - "345f73884420995774374681a50ff8ea6d827777"
+  - "5c102c170928cd0a35890fb33449cff0305dd296"
+  - "516a7cf4b51d58e91ac4073a7aad6df94ddf5aef"
+  - "ca9ff5e6a712fe1ed960c1022f58469116349783"
+  - "eb1e94c54f307621664c488e504e73e18147a110"
+  - "601a652075176a9809c87c1aeca8d9d364ebeae2"
+  - "ba673a55011e62f6c496143c97c97daeb41cd9fe"
+last-transition-at: 2026-10-11T03:07:04.575Z
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -1023,51 +1030,73 @@ the good verdicts' shape (P1) becomes the required shape.
 - The others are independent.
 
 ### S34 — The queue offers a reviewer no work its own model delivered
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-queue-reviewer.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`, `plugins/proposals/tests/src/lib/services/review-queue-reviewer.service.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/services/review-queue-reviewer.service.spec.ts`
 - Found 2026-10-05: `review next --agent=claude-opus-5-5` claimed `r00040`, every slice of which that same model had delivered, in a project whose `reviewIndependence` is `model`. The approval would have been refused as a self-approval after the reading was done, and the claim kept other reviewers out meanwhile.
 - `review_queue` now answers for the agent that asks. Under model independence, a slice waiting for a verdict that the asker's model delivered is `needs-another-reviewer`, with a sentence that says so, and it is not counted in `needsVerdict`. `review next` reads the same field, so it skips those proposals with no change of its own. Where another instance of the model may review, or the delivery is unrecorded, nothing changes: the approval decides.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 5c102c170928, validate exit 0, tests 4/4 — Delivered by 5c102c1709 (PR #795 merge 7fa7e95db, on develop). The queue no longer offers a reviewer work its own model delivered: review-queue-reviewer.service.ts filters slices by the asker's model identity and the schema/interface carry the field. Verified today in this worktree, agent env scrubbed: the slice's declared gate review-queue-reviewer.service.spec.ts green 4/4 exit 0; every declared file exists; the delivered commit cites x00835 S34 in its subject. No out-of-scope changes beyond the proposal's own documentation lines in the same commit. Implementer claude-opus-5-5 (recorded in the wip branch/PR); I am a different model, independence holds.
 
 ### S35 — A reviewer's queue is read from its own unit
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-unit-tree.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue-swarm.tool.spec.ts`
 - Found 2026-10-05: after `review approve x00835 S18` the very next `review next` offered S18 again. The verdict was a commit in the reviewer's unit; the queue read the shared checkout, where the slice still waited for one. A reviewer that trusted the queue would review the same slice for ever.
 - When the caller names its unit (`review next` always does), `review_queue` reads the proposals from that unit's worktree. A unit not checked out on this machine, or a proposals folder outside the workspace, reads as before.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 516a7cf4b51d, validate exit 0, tests 10/10 — Delivered by 516a7cf4b (PR #797 merge a3e03e9c9, on develop). A reviewer's queue is now read from its own unit: review-unit-tree.service.ts locates the worktree holding the unit and the verdicts it already recorded, so review next stops re-offering a slice this unit has already judged (the exact defect found 2026-10-05 with S18). Verified today in this worktree, agent env scrubbed: declared gate review-queue-swarm.tool.spec.ts green 10/10 exit 0; declared files all exist; the commit subject cites x00835 S35. Implementer claude-opus-5-5 (recorded in the wip branch/PR); different model, independence holds.
 
 ### S38 — A retired slice waits for no verdict
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/services/review-queue-slice.service.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue.tool.spec.ts`
 - Found 2026-10-05: `review next` offered this proposal's S25, retired that morning, as a slice needing a verdict, attributed to `claude-sonnet-5-5` from Git. A retired slice has no review round, so the queue asked Git who delivered its files and sent a reviewer to approve work that was given up on purpose. A slice whose status is `retired` is now settled in the queue, with a sentence that says why. What one slice needs from a reviewer moved to `review-queue-slice.service.ts`, which keeps the queue's service under 400 lines.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 601a65207517, validate exit 0, tests 15/15 — Delivered by 601a65207 (PR #808 merge b4a489a6f, on develop). A retired slice waits for no verdict: review-queue.service.ts drops retired slices from the needs-verdict list, so the queue can no longer send a reviewer to approve deliberately abandoned work (the S25 defect found 2026-10-05). Verified today in this worktree, agent env scrubbed: declared gate review-queue.tool.spec.ts green 15/15 exit 0 (shared with S39); declared files exist; commit subject cites x00835 S38. Implementer claude-opus-5-5; different model, independence holds.
+- review-attribution: claude-opus-5-5 from Merge pull request #808 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00835-S38-g1/a-retired-slice-waits-for-no-verdict (refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S38-g1/a-retired-slice-waits-for-no-verdict) (601a652075176a9809c87c1aeca8d9d364ebeae2), opened by glm-5.3-max
 
 ### S39 — The queue cites the delivery an approval is accepted with
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue.tool.spec.ts`
 - Found 2026-10-05 reviewing `x00770`: the approve call `review next` handed out cited each slice's recorded `shipped-in`, and every approval came back "is not the slice as it stands: x00770 was delivered again by aa99eb781d2f". The approval checks for a later delivery of the same files and the queue did not, so a reviewer who followed the call to the letter was refused five times.
 - The queue now asks the same question (`supersedingDelivery`) of the first candidate and, when a later delivery superseded it, cites that one first. The spec reproduces the case (a slice recording its first delivery, delivered again) and fails without the change.
 =======
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at ba673a55011e, validate exit 0, tests 15/15 — Delivered by ba673a550 (PR #838 merge c13884acd, on develop). The queue now cites the delivery an approval is accepted with: review-queue.service.ts checks for a later delivery of the same files and adds it as 'latest delivery' candidate, so the approve call no longer cites a stale shipped-in that the gate refuses (the x00770 five-refusal defect). Verified today in this worktree, agent env scrubbed: declared gate review-queue.tool.spec.ts green 15/15 exit 0; declared files exist; commit subject cites x00835 S39. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S37 — A session goes back to its own unit, whatever generation it is
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - Found 2026-10-05: I retired my stale review unit `batch-all-g1` and kept working in `batch-all-g2`. The next `review next --session=<g2's session>` entered a new `batch-all-g1` and claimed `x00870` there, and the approval of `x00870` with the same session went to `g2`, which had claimed nothing, and was refused. `chooseGeneration` took the first generation no other session held, so a generation freed by a retirement came before the one the session was in.
 - A session that holds a unit of that agent, proposal and slice now goes back to it, whichever generation; only a session that holds none takes the first free one. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at eb1e94c54f30, validate exit 0, tests 48/48 — Delivered by eb1e94c54 (PR #805 merge 345f73884, on develop). A session now goes back to its own unit whatever generation it is: work-unit-generation.service.ts treats any generation with a live publication as in use and re-enters the session's own unit first, fixing the g1/g2 cross-entry defect found 2026-10-05 (x00870 claimed in a phantom g1). Verified today in this worktree, agent env scrubbed (the spec deliberately expects a refusal when no agent is inferable): declared gate work-unit.service.spec.ts green 48/48 exit 0; declared files exist; commit subject cites x00835 S37. Implementer claude-opus-5-5; different model, independence holds.
+- review-attribution: claude-opus-5-5 from Merge pull request #805 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00835-S37-g1/a-session-re-enters-its-own-unit (refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S37-g1/a-session-re-enters-its-own-unit) (eb1e94c54f307621664c488e504e73e18147a110), opened by glm-5.3-max
+
 ### S36 — A reviewer can give the evidence each criterion asks for
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `packages/cli/src/contracts/interfaces/review-queue-view.interface.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/commands/review.command.spec.ts`
 - Found 2026-10-05 approving `x00870` S1: "approve requires empirical evidence: evidence.acceptanceCriteria must cover every declared criterion". The tool asks for one piece of evidence per declared criterion, and neither `delendai review approve` nor `delendai proposals review` could pass any. From a shell, no slice that declares acceptance criteria could be approved at all, whatever the reviewer had verified.
 - Both commands take `--criterion="<criterion> => <evidence>"`, once per criterion; the first ` => ` separates them, since evidence is free text. The call `review next` hands a reviewer now carries one `--criterion` per declared criterion, with the criterion already written, so a reviewer of any model fills in evidence instead of guessing a format. The brief moved to `lib/review/review-brief.service.ts` and the queue's shapes to `contracts/interfaces/`, which brings `review.command.ts` from 404 to 349 lines.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at ca9ff5e6a712, validate exit 0, tests 13/13 — Delivered by ca9ff5e6a (PR #804 merge 17d1fa533, on develop). Both review commands take --criterion="<criterion> => <evidence>" once per declared criterion (review-brief.service.ts builds the call with JSON-quoted pairs), so a reviewer can satisfy the acceptanceCriteria array instead of hitting the 'must cover every declared criterion' refusal found on x00870 S1. Verified today in this worktree, agent env scrubbed: declared gate review.command.spec.ts green 13/13 exit 0 under npx vitest --project @delendai/cli; declared files all exist; commit subject cites x00835 S36. Implementer claude-opus-5-5; different model, independence holds.
+- review-attribution: claude-opus-5-5 from Merge pull request #804 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00835-S36-g1/a-reviewer-can-cite-each-criterion (refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S36-g1/a-reviewer-can-cite-each-criterion) (ca9ff5e6a712fe1ed960c1022f58469116349783), opened by glm-5.3-max
 
 ## acceptance
 
