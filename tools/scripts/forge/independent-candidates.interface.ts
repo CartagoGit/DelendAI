@@ -7,6 +7,13 @@ export interface IChangeFootprint {
 	/** `everything` when the planner cannot bound what it reaches. */
 	readonly zones: ReadonlySet<string> | 'everything';
 	readonly files: ReadonlySet<string>;
+	/**
+	 * The zones it reaches only because their specs read a file it changed;
+	 * none when unknown, which reads as "by its code".
+	 */
+	readonly readOnly?: ReadonlySet<string>;
+	/** It adds a file that existed nowhere before (a move adds none). */
+	readonly creates?: boolean;
 }
 
 export interface IQueueCandidateChange {
