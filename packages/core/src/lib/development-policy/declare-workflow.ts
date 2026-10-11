@@ -61,13 +61,15 @@ const landRouteOf = (policy: IResolvedDevelopmentPolicy): ILandRoute => {
 };
 
 /**
- * Who `<you>` may be, where the project names its agents. An agent told
- * only "sign as yourself" asks its model, and one model gave three names.
+ * Who `<you>` is. An agent names itself: it is the one that knows what it
+ * runs as. Told only "sign as yourself", one model gave three names, so
+ * the step says what a name is made of; where the project lists its
+ * agents, it lists them instead.
  */
 const rosterClause = (policy: IResolvedDevelopmentPolicy): string => {
 	const roster = policy.coordination.roster ?? [];
 	return roster.length === 0
-		? ''
+		? ' `<you>` is the model you run as, written as its maker names it: maker, model, version, tier (`glm-5.3-flash`).'
 		: ` \`<you>\` is the name you were launched under, one of: ${roster.join(', ')}.`;
 };
 
