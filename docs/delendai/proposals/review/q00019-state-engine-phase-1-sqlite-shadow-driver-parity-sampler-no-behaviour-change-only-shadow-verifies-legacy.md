@@ -2,16 +2,16 @@
 id: q00019
 title: "State Engine Phase 1 — SQLite shadow driver + parity sampler (no behaviour change, only shadow verifies legacy)"
 kind: plan
-status: in-progress
+status: review
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-06
 shipped-in:
   - "99d17f26d"
-last-transition-id: f72702b5-bbf9-4492-a045-39842177090a
-last-correlation-id: f72702b5-bbf9-4492-a045-39842177090a
-last-transition-from: ready
-last-transition-at: 2026-10-11T17:22:21.804Z
+last-transition-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
+last-correlation-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T17:23:17.736Z
 ---
 
 # q00019 — State Engine Phase 1
@@ -302,6 +302,8 @@ un `parity-report.json` que el `state_health` plugin lee.
   - The registry contract is one text both drivers run: `registry.spec` and `phase-0.2.spec` became contracts a driver's spec calls with the way that driver is built. The in-memory driver runs them under vitest; the SQLite driver runs the same 20 assertions on a store on disk under `bun run test:sqlite`.
 
 Drawn on 2026-09-06 over `better-sqlite3` with six tables. Delivered over `bun:sqlite`; generations and their projections stay one row (`generations`, schema v2) and the three coordination tables are new in v3. `state_project_leases` is not a table: a lease is a holder, and two tables for it would be two records of one fact that can disagree.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A standalone parity sampler, its report, and a nightly run
 
@@ -325,6 +327,8 @@ Drawn on 2026-09-06 over `better-sqlite3` with six tables. Delivered over `bun:s
   - `tier3` runs it nightly over 10,000 operations with `--strict` and keeps the report as an artifact whether it passed or not.
 
 The sampling while a process runs stays where it shipped, in `createRegistryFacade` (`sampleNow`, `samplerIntervalMs`).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The property suites run against the SQLite driver
 
@@ -343,6 +347,8 @@ The sampling while a process runs stays where it shipped, in `createRegistryFaca
   - The three Phase 0.1 properties — an incremental build equals a clean rebuild, two registries fed the same sequence agree, a corrupt generation is recovered without replay — are contracts a driver's spec calls; the in-memory driver runs them as before.
   - The SQLite driver runs the same three over 1,000 generated sequences each (`STATE_PROPERTY_RUNS` overrides, as for the in-memory run).
   - They run where the driver can: under `bun run test:sqlite`, which CI runs as its own step. The plan's `HAS_STATE_SQLITE=1` switch inside the vitest run is not built — `bun:sqlite` has no resolution under the runner vitest uses, so a suite there could only ever skip.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A project can run the SQLite driver as a shadow
 
@@ -366,6 +372,8 @@ The sampling while a process runs stays where it shipped, in `createRegistryFaca
   - The facade's background sampler does not keep a process alive.
 
 The facade is `createRegistryFacade` in `@delendai/state-sqlite`, not a `state-facade` package: the facade exists to pair the SQLite driver with another, and a package of its own would hold one function.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Lint del boundary del nuevo paquete
 
@@ -378,6 +386,8 @@ The facade is `createRegistryFacade` in `@delendai/state-sqlite`, not a `state-f
   nueva `state-engine-isolation.lint.ts` afirma que el contrato
   surface sigue siendo pure-TS y que el SQLite driver vive
   exclusivamente bajo `state-sqlite/`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## dependency graph
 
