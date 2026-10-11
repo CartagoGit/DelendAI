@@ -45,6 +45,16 @@ Observed on the forge at 04:25–04:30 local time (refs under `delendai/wip/` an
 7. **Claims recorded in a unit with no reservation on the forge.** Units of `minimax-m31` carry commits `claim x00877`, `claim x00875` and `claim q00018`; `refs/delendai/claims/review/` held no ref for those three when listed at 04:27. Either the reservation was never pushed or it was released without a commit saying so. To be confirmed before it is given a slice.
 8. **Reservations that outlived their unit.** `refs/delendai/claims/slice/x00554/s2`, `…/q00010/s3` and `…/f00757/all` belong to units whose pull requests merged hours before. These are the orchestrator's own, not the swarm's; they are here because the same listing shows them. To be confirmed against the reservation reaper.
 
+Observed between 04:30 and 04:50:
+
+9. **A change requested that the document already carried.** `qwen3-flash` requested changes on q00010 S3 at 04:27:45: "Approve requires either (a) a real independent reviewer round … or (b) S3's acceptance text rewritten to enumerate c00156 as a named documented exception. Recommend (b)". Its unit is based on `f894a0987`, and the document at that commit already reads "`done` sin peer review y nombrada aquí como excepción con su motivo (`c00156`)" in the acceptance and "1 (`c00156`) `done` without one" in the status. The criterion it quotes as unmet is the wording of the round before, which survives in the previous reviewer's `review-log` line of the same section. A verdict was reached from the log of an earlier verdict rather than from the text under review. → S7.
+10. **Five more proposals reserved by one agent.** `glm-5.3-max` claimed q00014, x00539, r00048, f00536 and x00835 between 04:24:59 and 04:27:28 and had recorded no verdict on any of them fourteen minutes later; it released q00014 at 04:39 with no reason. → S4.
+11. **One proposal passed from hand to hand.** r00040 was claimed and released by `gpt-5.4` (04:20–04:22) and by `minimax-m31` (04:25–04:27), then claimed by `qwen3-flash` (04:29). `minimax-m31` did the same with x00877, x00875 and q00018, one unit each, five minutes each. No release says why, so each reviewer finds out for itself what the one before found. → S4.
+12. **Every reviewer runs the whole validation, for the same commit.** At 04:50 the machine's load was 35. `bun run validate` and `bun run test` (the whole repository's suite, about half an hour each) were running in the units of `minimax-3.1`, `glm-5.3-max` and `gpt-5.4` at once, queued behind one another on the compute lock, one of them for 32 minutes. The verdict tool asks each approval for a validation exit code and a test count, and gives no way to answer with the run that already certified that commit on the forge, so eleven reviewers each prove on one machine what one CI run proved once. → S8.
+13. **Tests run from the shared checkout.** A `vitest run` over specs of f00512 was running with the shared checkout as its working directory, not from a unit. Reading is allowed there; a test run writes caches and reports into the tree every other agent starts from. → S8.
+14. **A pull request titled "review batch".** #991, from `qwen-3.8-flash`, carries two approvals of x00875 under that title and a body that lists commit subjects. The title is what the queue and a person see. → S5.
+15. **A review pack fails on text its reviewer did not write.** By 04:55 four of the seven review packs opened were red on `lint-governance` or `lint-presets`, each for something in the proposal it closed, not in the verdict: x00875 named three unreferenced objects by hash (#991); f00538 quotes a tree, "produced tree `1a19f55e9`", which the cited-commits lint took for an orphan commit (#992); r00040 has a slice retired weeks ago, which the completeness lint counts as pending once the proposal is in `done/` (#996); and one pack left the agent catalog stale (#996). Every one of these rules only looks at `done/`, so a proposal carries the fault through `review/` unseen and the reviewer who approves it is the one stopped. A reviewer may not change the product, so it cannot fix what stops it. → S9.
+
 ### S2 — An agent has one name, and it is not the model's to choose
 
 - **Status**: pending
@@ -108,6 +118,45 @@ are theirs to give, once, and the product's to hold everyone to.
 - acceptance:
   - Review units of different agents, or of different sessions of one model, are not listed as duplicates of one another.
   - Two units implementing the same slice still are.
+
+### S7 — A reviewer judges the text under review, and the tool shows it which that is
+
+- **Status**: pending
+- **Files**:
+  - `packages/cli/src/lib/review/review-brief.service.ts`
+  - `packages/cli/src/lib/review/slice-sections.service.ts`
+- **Gate**: unit
+- acceptance:
+  - The section a reviewer is handed for a slice separates what is under review (status, files, acceptance, the implementer's notes) from the record of earlier rounds, and names the earlier rounds as history.
+  - When a slice comes back from "changes requested", the brief shows what changed in its section since that verdict.
+
+### S8 — An approval can rest on the run that already certified the commit
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/lib/tools/proposal-review.tool.ts`
+  - `packages/cli/src/commands/review.command.ts`
+- **Gate**: unit
+- acceptance:
+  - An approval may name the certifying run of the commit it verified (the forge's required check on that SHA) as its validation evidence; the tool reads the run's conclusion and refuses one that is not green or is of another commit.
+  - A reviewer is told, in the brief, that the commit it reviews is already certified and which focused gate the slice declares, so that the whole suite is run by the forge once and not by each reviewer.
+  - Review units run their commands from their own worktree; the brief gives the path, and the shared checkout is not offered as a place to run a gate.
+
+### S9 — What would stop a proposal from closing is found before a reviewer meets it
+
+- **Status**: review
+- **Files**:
+  - `tools/scripts/lint/proposal-slice-completeness.script.ts`
+  - `tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
+  - `tools/scripts/lint/proposal-cited-commits.script.ts`
+  - `tools/scripts/lint/proposal-cited-commits.script.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - A retired slice of a closed proposal is finished: the completeness lint does not report it as pending.
+  - A quoted tree or blob is not read as a citation of a commit.
+  - Still to do, and what makes this slice whole: the two rules run on a proposal when it is handed to review, as they will when it closes, so the implementer is the one told.
+
+Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a status a slice of a closed proposal may be in, and a hash that names a tree or a blob is skipped by the cited-commits lint. x00875's three citations of unreferenced objects were rewritten in its own unit. Not yet delivered: running both rules at the hand-over to review.
 
 ## acceptance
 
