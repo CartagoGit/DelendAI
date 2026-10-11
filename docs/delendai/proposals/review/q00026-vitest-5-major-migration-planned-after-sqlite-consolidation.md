@@ -269,7 +269,7 @@ Nothing else is in scope.
   - `docs/delendai/DEPENDENCY-VERSIONS.md`
   - `tools/scripts/test/journal-reporter.ts`
 - **Gate**: type
-- shipped-in: `c7d546899551`, `e5b76ed1a0a6`
+- shipped-in: `c7d546899551`, `e5b76ed1a0a6`, `08e13ad56bfd`
 - acceptance:
   - Every manifest that pinned `vitest` 4.1.11 pins 5.0.3 (68 workspaces and the root), the lockfile is regenerated, and the governed default in `DEPENDENCY-VERSIONS.md` says so: `bun run lint:dependency-versions` reports no unjustified drift.
   - The whole suite passes with no spec changed: 16,259 tests in 1,954 files.
