@@ -91,10 +91,10 @@ fast-forwards a local clone and never touches the forge.
 - **Gate**: `npx vitest run tools/scripts/lint/candidate-delivers.script.spec.ts`
 - shipped-in: `0bf0fe61e015`
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: claude-opus-5
 - review-reviewer: minimax-m31
 - review-log: approved by minimax-m31 — verified at d615fc5a2550, validate exit 0, tests 22/22 — Gate npx vitest run candidate-delivers.script.spec.ts: 22/22 pass. Attributed to d615fc5a2550 (the PR #236 head): 0bf0fe61e015 is the merge of it and its combined diff is empty, so it names no delivered file — the tool refuses it on exactly that ground. Acceptance criterion 3 is verified by named specs, not inference: 'still refuses the #100 shape: an empty candidate with no release tip in it', 'refuses a candidate whose base already has the release tip', and 'a fact it could not establish exempts nothing' (undefined when the event carries no head commit and when the forge call fails) all pass. It asks the forge compare API in CI and falls back to git merge-base --is-ancestor (candidate-delivers.script.ts:358), so the exemption is exactly as wide as the fact it rests on — the non-goal 'no weakened delivery gate'. changedSince is empty for this slice.
-- review-attribution: unrecorded — nothing in Git names who delivered d615fc5a2550b5079967172e87fd4792720d43e4: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m31
+- review-attribution: claude-opus-5 attested by claude-opus-5-5 — The session record of 2026-09-15 (Claude Code session 472154d3, 18:49 to 21:16 UTC) shows the model claude-opus-5 creating the branch delendai/pr/forward-sync-release, making commit d615fc5a2550 and opening pull request #236; the reviewer minimax-m31 is another model.
 
 ### S3 — Run it on every move of the release branch
 
