@@ -2,7 +2,7 @@
 id: x00554
 title: "A green pull request lands itself and the swarm rebases"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19
@@ -11,10 +11,13 @@ tags:
     - integration
     - hydration
     - swarm
-last-transition-id: d1744948-b5c0-4105-a3ce-4946aad545c3
-last-correlation-id: d1744948-b5c0-4105-a3ce-4946aad545c3
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T00:02:44.016Z
+last-transition-id: 05d356d4-80cb-4fa8-a97c-104d9af154d4
+last-correlation-id: 05d356d4-80cb-4fa8-a97c-104d9af154d4
+last-transition-from: review
+last-transition-at: 2026-10-11T02:30:43.581Z
+shipped-in:
+  - "dea43b3d7f38"
+  - "581b5720bad3e883dc9fce2aa42553c0221d4289"
 ---
 
 # x00554 — A green pull request lands itself and the swarm rebases
@@ -64,7 +67,7 @@ already hydrates the checkout.
 
 ### S1 — A green publication ref integrates without being asked
 
-- **Status**: done — a publication ref is armed for auto-merge without
+- **Status**: done
   anybody asking, and it is now armed **with the method the project
   declared**. That second half was missing and is the reason this slice
   says "honouring the policy's integration method": both arming sites
@@ -90,12 +93,14 @@ already hydrates the checkout.
   integration method. Nothing merges that the policy would not have
   merged by hand.
 - shipped-in: `dea43b3d7f38`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at dea43b3d7f38, validate exit 0, tests 50/50 — Verified the merge-method plumbing now resolves the declared policy and both arming paths use the declared flag. Slice-scoped specs for declared-branches, keep-the-queue-moving and forward-sync-release passed 50/50.
 
 ### S2 — What depends on the integration branch follows it, and what somebody is working on is told
 
-- **Status**: review
+- **Status**: done
 - shipped-in: `fd71074e1`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units`
 - **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `tools/scripts/forge/refresh-candidates.script.ts`, `packages/core/src/lib/work-units/work-swarm-relations.service.ts`
@@ -113,12 +118,14 @@ already hydrates the checkout.
   worktree in a conflict it did not start; it is told instead (S3), and
   the conflict, if there is one, is met once, by the agent, when it
   merges the integration branch before publishing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 581b5720bad3, validate exit 0, tests 36/36 — Verified kept units with no authored work fast-forward, candidate refresh respects the resolved publication namespace, and the queue no longer treats non-publication refs as its own. Slice-scoped checks passed 36/36.
 
 ### S3 — An agent is told its base moved under it
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/contracts/interfaces/work-swarm.interface.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - The boot and the work-status surface say, per work unit, whether it is
@@ -132,9 +139,11 @@ already hydrates the checkout.
   (and its `relations` in `--json`) now lists it under "to sort out" as
   `behind`, with how far its base moved and what to run in its worktree,
   after every other kind, since it is the mildest.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `581b5720bad3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 581b5720bad3, validate exit 0, tests 36/36 — Verified swarm relations now report work units whose base moved under them as behind, with actionable guidance for the owner, and the relation is covered by targeted work-swarm-relations tests. Slice-scoped checks passed 36/36.
 
 ## acceptance
 
