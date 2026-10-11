@@ -575,6 +575,8 @@ progress belongs to somebody, and the next step of the same job
 the walk of `docs/delendai/proposals/in-progress` that fed it; the kept
 unit lives where it is worked on and pushes its ref again with its next
 commit.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
