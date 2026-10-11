@@ -9,7 +9,6 @@ describe('createBuiltInExecutionEnvRegistry', () => {
 			'docker-cli',
 			'docker-compose',
 			'docker-exec',
-			'ssh',
 		]);
 	});
 
@@ -25,5 +24,25 @@ describe('createBuiltInExecutionEnvRegistry', () => {
 		expect(() =>
 			createBuiltInExecutionEnvRegistry().create('podman'),
 		).toThrow(/unknown execution environment "podman".*local/u);
+	});
+
+	it.each([
+		['docker-cli', { image: 'alpine:3' }],
+		[
+			'docker-compose',
+			{
+				workspaceRoot: '/work',
+				composeFile: 'compose.yml',
+				service: 'app',
+			},
+		],
+		['docker-exec', { container: 'app-1' }],
+		['ssh', { host: 'example.test' }],
+	])('builds the %s adapter from its options', (id, options) => {
+		const environment = createBuiltInExecutionEnvRegistry().create(
+			id,
+			options,
+		);
+		expect(environment.id.length).toBeGreaterThan(0);
 	});
 });

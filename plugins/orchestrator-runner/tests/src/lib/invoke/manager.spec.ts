@@ -338,3 +338,11 @@ describe('InvocationManager execution environment', () => {
 		expect(calls).toEqual(['prepare', 'invoke', 'teardown']);
 	});
 });
+
+describe('InvocationManager tokens and cancellation', () => {
+	it('mints a token and reports nothing to cancel for an unknown invocation', () => {
+		const manager = makeManager({ providers: [], startedIds: [] });
+		expect(manager.mintToken('inv_1', 'p', 2).length).toBeGreaterThan(0);
+		expect(manager.cancel('inv_missing')).toEqual({ cancelled: false });
+	});
+});
