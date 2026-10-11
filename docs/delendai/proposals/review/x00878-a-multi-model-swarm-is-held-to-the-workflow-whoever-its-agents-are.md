@@ -526,15 +526,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at ef9ab171167c, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the integration branch carries no code-scanning alert again. Pinned by conventional-commit.spec in this batch and by the dependency-advisories lint (S38).
 
 ### S36 — A promotion carries no open code scanning alert
-- **Status**: review
+- **Status**: done
 - shipped-in: `38a1e27d1`
 - **Files**: `tools/scripts/forge/promotion-alerts.script.ts`, `tools/scripts/forge/promotion-alerts.script.spec.ts`, `.github/workflows/release-pr-gate.yml`, `package.json`
 - **Gate**: type
 - acceptance:
   - "The release gate of a promotion asks the forge for the code scanning alerts open on the promotion's head branch and fails while there is one, naming each with its rule and location; when the forge cannot be asked it fails too."
 - Found 2026-10-10 with S35: nothing but a person counting kept alerts off the release branch. The pull request's `CodeQL` check fails only from a severity threshold up, so four alerts below it had reached the integration branch with every pull request green. `release-pr-gate`, a required check of the release branch, now counts them.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 732f19602ccd, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: promotion-alerts.script.ts keeps a promotion from carrying an open code-scanning alert — the finding that a promotion landed with an advisory open. Pinned by its spec.
 
 ### S37 — A unit kept for its proposal follows the integration branch
 - **Status**: review
