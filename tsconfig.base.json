@@ -367,6 +367,15 @@
 				"./plugins/changelog/src/public/index.ts"
 			],
 			"@delendai/changelog/*": ["./plugins/changelog/src/*"],
+			"@delendai/style-convention": [
+				"./plugins/style-convention/src/index.ts"
+			],
+			"@delendai/style-convention/public": [
+				"./plugins/style-convention/src/public/index.ts"
+			],
+			"@delendai/style-convention/*": [
+				"./plugins/style-convention/src/*"
+			],
 			"@delendai/execution-env": ["./plugins/execution-env/src/index.ts"],
 			"@delendai/execution-env/public": [
 				"./plugins/execution-env/src/public/index.ts"

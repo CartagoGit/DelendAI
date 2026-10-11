@@ -50,6 +50,7 @@
 		"@delendai/state-sqlite": "workspace:*",
 		"@delendai/state-telemetry": "workspace:*",
 		"@delendai/status-marker": "workspace:*",
+		"@delendai/style-convention": "workspace:*",
 		"@delendai/tech-debt": "workspace:*",
 		"@delendai/test-convention": "workspace:*",
 		"@delendai/test-kit": "workspace:*",
