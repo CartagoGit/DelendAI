@@ -275,7 +275,7 @@ Shipped: a pack rule may carry `pattern` (`directory`, `suffix`, `marker`); the 
 
 ### S8 — Trusted-domain adapters stay out; the posture is enforced
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/framework-knowledge/tests/src/no-network.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/no-network.spec.ts`
 
@@ -286,9 +286,11 @@ no preset. Fetching rules from the web is not part of this proposal; a
 future adapter would be its own, allow-listed proposal.
 
 Shipped: the spec scans every source of the plugin for a network module import or a network call and fails on any.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1e177dd3ce32`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 48754bc9a764, validate exit 0, tests 71/71 — Delivered by 1e177dd3ce (shipped-in) and re-delivered by 48754bc9a: no-network.spec.ts pins that trusted-domain adapters stay out and the offline posture is enforced. Verified today: no-network.spec.ts green within the 71/71 plugin battery. Different model; independence holds.
 
 ## acceptance
 
