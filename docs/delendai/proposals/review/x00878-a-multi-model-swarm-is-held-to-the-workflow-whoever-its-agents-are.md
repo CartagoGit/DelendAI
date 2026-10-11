@@ -14,6 +14,7 @@ shipped-in:
   - "715a80b1dac7de961456cf545c6b9c03e5c65f99"
   - "732f19602ccd7dfaebeb5b3c3dfa5bb8f6c62c0c"
   - "aba4404daba70ff26b231e60c7efd4210a3eebfa"
+  - "945143a0310a9453b5def0e30d544f093f5d06ab"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -105,15 +106,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery and matched the criteria to named specs. review-reservation.service.ts ties a reservation to its unit's existence, and the new tools/scripts/git/ended-reservations.service.ts computes the reservations whose unit is on the forge neither as a work ref nor as a publication. Specs: 'passes on once its unit has ended, and holds while its unit is on the forge', and for the reaper criterion 'are the ones whose unit is on the forge neither as a work ref nor as a' plus 'are dropped from the forge, and the live one stays'. The reaper that already removes finished units is the one that deletes them.
 
 ### S5 — A pack that cannot land is refused before it is published
-- **Status**: review
+- **Status**: done
 - shipped-in: `8ab254fd1`
 - **Files**: `plugins/proposals/src/lib/services/pack-governance.service.ts`, `plugins/proposals/src/public/index.ts`, `plugins/proposals/tests/src/lib/services/pack-governance.service.spec.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-pack-check.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`review finish` (and `review next` when it publishes a full pack) runs the pack's governance checks (independent approval, claimed proposals, cited commits) before publishing, and refuses with what to fix, so a reviewer is never told its pack is done while CI will refuse it."
 - Delivered: the predicates `closed-with-independent-approval` applied only in CI (approvals by someone other than the pack's author, proposals changed without a claim) now live in the proposals plugin (`packRefusals`), and the gate reads them from there; `review finish --session` asks them of the unit's own commits before `work publish`, and refuses with each reason and nothing published. #873 is the case: approvals signed by GPT-5.4 in a unit named for claude-opus-5-5, published and red for good. The spec fails without the change. Not covered: a pack published with the `work` tool directly, and the cited-commit check, which needs the forge.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 945143a0310a, validate exit 0, tests 65/65 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new pack-governance.service.ts refuses a pack before it is published, and the spec names the refusal the proposal logs — 'names the approvals of another reviewer, and the proposals it never claimed', which is exactly the lint-governance refusal that left #851, #856 and #858 waiting for a person while the agents reported done. review.command.spec covers the CLI side.
 
 ### S6 — An open publication is a generation in use
 - **Status**: review
