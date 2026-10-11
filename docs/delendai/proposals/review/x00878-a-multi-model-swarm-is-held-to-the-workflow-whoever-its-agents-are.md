@@ -19,6 +19,7 @@ shipped-in:
   - "6acb9a5b1e4f998182c8fd2805a66266b2360c0e"
   - "fe842da802fd76617e9c878ce2b2fdeebf3f10bc"
   - "dd2a03cc9980b93000ed25676c9a384ebe1cc871"
+  - "57bf941ed2d4f57546eb73e9195c9d089cfd4daa"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -230,15 +231,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: refresh-candidate-artifacts.script.ts adopts or retires a publication its author left in conflict instead of leaving it, which is the finding that packs 'waited for a person' with their verdicts. Pinned by refresh-candidate-artifacts.script.spec.
 
 ### S14 — A unit that only merged landed work in is delivered
-- **Status**: review
+- **Status**: done
 - shipped-in: `16db79850`
 - **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A unit whose only commits beyond the integration branch are merges joining commits the integration branch already holds is judged delivered and reaped like any other delivered unit."
 - Delivered: x00878 S4, S6 and S8 landed through #879, which carried them, and their units stood for good as `idle`: each had merged develop in before a publish that was refused, and that merge commit — joining two commits develop holds — was the one thing develop lacked. `carriesNothingBeyond` reads every commit past the integration branch and accepts only merges whose parents are integrated or among those merges; the unit verdict and the reaper's empty-unit rule (S9) both use it. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 56/56 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: landed-work.service.ts and unit-standings.service.ts classify a unit whose only extra commit merged landed work in as delivered. The spec 'judges a merged, quiet unit delivered, and a fresh empty one not' is the criterion; landed-work.service.spec covers the classification.
 
 ### S15 — A retired pack that changes no file is dropped
 - **Status**: review
