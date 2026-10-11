@@ -1,10 +1,6 @@
 # AGENT.md — plugin `plugins/style-convention`
 
-> Below the `<!-- delendai:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- delendai:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.

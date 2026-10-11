@@ -38,7 +38,6 @@ import {
 	extractUsedClasses,
 	globToRegExp,
 	parseAstro,
-	splitSelectorList,
 } from '@delendai/style-convention/public';
 
 export {
