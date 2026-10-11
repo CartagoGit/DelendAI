@@ -32,6 +32,8 @@ contains:
     unblocks:
         - { id: f00277, rationale: "AgentSession + delendai agents: su bloqueador actual (q00011 no consolidada) se sustituye por 'q00019 consolidada + F1/F2 entregados'. Esta propuesta ya no necesita esperar a q00011." }
         - { id: f00278, rationale: "WorkIntent + completion gates: la fase 'completed' que requiere deriva se beneficia de las snapshots de F2; reescribir su `related` para apuntar a F2." }
+shipped-in:
+  - "3df8e79e1462"
 ---
 
 # q00020 — Plan — Work Telemetry & Progress Runtime
@@ -202,13 +204,15 @@ Este plan **no entrega código propio**: orquesta las cuatro propuestas hijas de
 
 The gap this closes: nothing emitted work events at runtime, so any status view rendered empty. `@delendai/state-telemetry` stays private, so published code (core, the CLI, plugins) never imports it. Published code appends one JSON line per event to `<cacheDir>/telemetry/work-event-journal.ndjson` (append-only, a failure to record is swallowed and never fails the work); the private package claims that file by renaming it and appends every valid line to the event bus.
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/work-event-journal.constant.ts`, `packages/core/src/lib/contracts/interfaces/work-event-journal.interface.ts`, `packages/core/src/lib/work-units/work-event-journal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-event-journal.service.spec.ts`, `packages/state-telemetry/src/lib/events/contracts/interfaces/work-event-journal-drain.interface.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`, `packages/state-telemetry/src/public/index.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units/work-event-journal.service.spec.ts` and `npx vitest run --root packages/state-telemetry src/lib/events`
 - Unit enter journals `slice_claimed`; a successful publish journals `slice_submitted`.
 - `drainWorkEventJournal` validates the closed kinds and appends to any sink that has `append`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 3df8e79e1462, validate exit 0, tests 12/12 — S1: 12 tests (core journal 4 + state-telemetry events 8), exit 0. Delivery verified in the code: unit enter journals slice_claimed (work-event-journal.service.ts:74) and a successful publish journals slice_submitted (work-unit-publish.service.ts:324); drainWorkEventJournal validates the closed kinds with isWorkEventKind before appending to any sink that has append. The append helper swallows its own failures (catch at :58) so observing work can never fail it, pinned by specs 'appends one line in the shape the event bus stores', 'hashes the same facts to the same value whatever their order' and 'keeps earlier lines when another is appended'. Published code appends JSON lines rather than importing the private telemetry package, so core stays inside its public-surface budget and names no proposals vocabulary. S2: 2 files / 5 tests, exit 0. proposal-work-events.ts writes kind proposal_transition (:68) for a successful proposal_transition and slice_submitted (:82) for a review submit, both appended to the same journal file core writes. S3: 2 tests, exit 0. drainTelemetryJournals reads the work event journal into the bus via drainWorkEventJournal (:28) and the transition-duration journal into the ETA history via drainTransitionDurationJournal (:32); spec 'feeds the event bus and the duration history from their journals' plus 'drains nothing when no process has journalled yet'. bun run telemetry:drain exists in package.json and is the on-demand caller. These three slices declare no acceptance bullets of their own, so the criteria arrays are empty and the judgment rests on the delivery description each slice states, which I checked against the code rather than against prose.
 
 ### S2 — Runtime events: proposal transitions and review submissions
 
