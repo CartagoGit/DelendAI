@@ -25,7 +25,6 @@
 
 import { DEFAULT_INDEX_FS, type IIndexFs } from './index-reader-fs';
 import { decideIndexSource } from './index-source-policy';
-import { reportRegistryParity } from './index-reader-parity-report';
 import {
 	DEFAULT_PROPOSAL_INDEX_SOURCE,
 	PROPOSAL_INDEX_SOURCE_ENV_VAR,
@@ -316,14 +315,11 @@ const serveStrictSql = async (
 	);
 	rebuilt ||= fresh !== fromSql;
 	fromSql = fresh;
-	reportRegistryParity({
-		entries: fromSql.entries,
-		registry: await readJsonOrNull<IProposalIndexFile>(indexPathAbs, fs),
-		reconciledAt: fromSql.reconciledAt ?? null,
-		indexPathAbs,
-		rebuilt,
-		log,
-	});
+	// The projection answers alone. The registry file used to be read
+	// here on every call, to say how the two differed; it is a copy
+	// nobody keeps current, and its difference from a projection that is
+	// level with the markdown says nothing about either.
+	recordProposalIndexRead('sql-served', 0, rebuilt);
 	return fromSql.entries;
 };
 
