@@ -183,8 +183,12 @@ Nothing else is in scope.
 ### S1 — preflight inventory: snapshot files, reporter consumers, and pool config
 
 - **Status**: retired
+- **Files**:
+  - `tools/scripts/vitest/preflight.ts`
+  - `tools/scripts/vitest/preflight.spec.ts`
+  - `docs/delendai/vitest-preflight.md`
 - **Gate**: lint
-- retired-reason: the inventory was to tell S2 and S3 where the new major would break. Run on 2026-10-11, the migration broke nothing — 16,259 tests in 1,954 files pass unchanged on vitest 5.0.3, the journal reporter and the coverage summary keep their shape — so a script and a document listing touch points would describe a risk that did not materialise and would have to be maintained for no reader. What the run did find is recorded where it is acted on (S3, S4).
+- retired-reason: the inventory was to tell S2 and S3 where the new major would break. Run on 2026-10-11, the migration broke no test — 16,259 tests in 1,954 files pass unchanged on vitest 5.0.3, and the coverage summary keeps its shape — and the two things it did change were found by the gates in minutes (the reporter's type import, S2; the setup files in the coverage report, S3), so a script and a document listing touch points would describe a risk that did not materialise and would have to be maintained for no reader. What the run did find is recorded where it is acted on (S3, S4).
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
@@ -263,12 +267,13 @@ Nothing else is in scope.
   - `plugins/web-fetch/package.json`
   - `tools/package.json`
   - `docs/delendai/DEPENDENCY-VERSIONS.md`
+  - `tools/scripts/test/journal-reporter.ts`
 - **Gate**: type
 - shipped-in: `c7d546899551`, `e5b76ed1a0a6`
 - acceptance:
   - Every manifest that pinned `vitest` 4.1.11 pins 5.0.3 (68 workspaces and the root), the lockfile is regenerated, and the governed default in `DEPENDENCY-VERSIONS.md` says so: `bun run lint:dependency-versions` reports no unjustified drift.
   - The whole suite passes with no spec changed: 16,259 tests in 1,954 files.
-  - `tools/scripts/test/journal-reporter.ts` is unchanged and still appends one line per run.
+  - `tools/scripts/test/journal-reporter.ts` still appends one line per run with the same shape. Its types changed home: vitest 5 no longer exports `vitest/reporters`, so `Reporter` comes from `vitest/node` with the other reporter types, and the run-end reason is typed `TestRunEndReason`. No behaviour changed.
   - The target is 5.0.3, the current patch of the major the plan named as 5.0.0.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
