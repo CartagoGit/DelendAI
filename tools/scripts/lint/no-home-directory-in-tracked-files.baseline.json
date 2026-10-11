@@ -32,15 +32,6 @@
 		"tools/scripts/lint/no-absolute-local-imports.script.ts",
 		"tools/scripts/lint/no-absolute-local-imports.spec.ts",
 		"tools/scripts/lint/publication-scope.script.spec.ts",
-		"tools/scripts/lint/publication-scope.script.ts",
-		"tools/scripts/review/proposal-review-a00068.script.ts",
-		"tools/scripts/review/proposal-review-a00070.script.ts",
-		"tools/scripts/review/proposal-review-a00071.script.ts",
-		"tools/scripts/review/proposal-review-batch.script.ts",
-		"tools/scripts/review/proposal-review-c00089.script.ts",
-		"tools/scripts/review/proposal-review-c00123.script.ts",
-		"tools/scripts/review/proposal-review-d00004.script.ts",
-		"tools/scripts/review/proposal-review-f00144.script.ts",
-		"tools/scripts/review/proposal-review-f00372-f00373.script.ts"
+		"tools/scripts/lint/publication-scope.script.ts"
 	]
 }
