@@ -89,6 +89,8 @@ Observed at 09:40:
 Observed at 10:15:
 
 29. **The head of the queue restarted five times and never got its verdict.** #995 was "the head of the queue" in every pass from 06:50 to 10:15. Its checks were started at 07:30, 08:04, 09:01, 09:34 and 10:02, each time because a candidate armed earlier had landed and the head was brought forward again; with eleven pull requests sharing the runners a run took from twenty-five to eighty minutes, longer than the gap between two merges. The one run that finished (09:34) was red, on the changed-file coverage of the orchestrator's own change, and that verdict arrived twenty-six minutes after the head had already been refreshed past it. Every other candidate was "brought forward first — it and #995, which lands first", the green ones included. Two things compound: a refresh throws away a run in flight, and a candidate waits behind a head whose only claim to the place is its number. → S10.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — An agent has one name, and it is not the model's to choose
 
