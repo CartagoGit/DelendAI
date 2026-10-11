@@ -20,18 +20,20 @@ export const worktreeOfRef = (root: string, ref: string): string | undefined =>
 		?.slice('worktree '.length);
 
 /**
- * Remove the worktree (when nothing in it is somebody's edit) and then the
- * local branch. A worktree holding only regenerable files is removed with
+ * Remove the worktree (when nothing in it is somebody's edit, or the
+ * caller has kept those edits elsewhere) and then the local branch. A worktree holding only regenerable files is removed with
  * force: git counts them as changes and would otherwise keep it.
  */
 export const removeUnitCheckout = async (
 	root: string,
 	ref: string,
+	options: { readonly editsKept?: boolean } = {},
 ): Promise<IUnitRemoval> => {
 	const worktree = worktreeOfRef(root, ref);
 	if (worktree !== undefined) {
 		const state = inspectWorktree(worktree);
-		if (state.edited.length > 0) {
+		// Edits already kept elsewhere are no longer a reason to stay.
+		if (state.edited.length > 0 && options.editsKept !== true) {
 			return {
 				removedWorktree: null,
 				deletedBranch: false,
@@ -41,7 +43,9 @@ export const removeUnitCheckout = async (
 		const removed = readGit(root, [
 			'worktree',
 			'remove',
-			...(state.regenerable.length > 0 ? ['--force'] : []),
+			...(state.regenerable.length > 0 || state.edited.length > 0
+				? ['--force']
+				: []),
 			worktree,
 		]);
 		if (removed === undefined) {
