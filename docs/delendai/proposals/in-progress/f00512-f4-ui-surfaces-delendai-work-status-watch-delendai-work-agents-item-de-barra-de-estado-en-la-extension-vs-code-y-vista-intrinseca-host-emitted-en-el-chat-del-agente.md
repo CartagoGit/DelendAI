@@ -160,9 +160,11 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 Delivered in `f97df2512` (its message names S4 by mistake). The private
 package is built before the package that bundles it, because the
 declarations of the second are checked against those of the first.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `fd3995d2137a`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — The focused S6/S7 tests pass, but the slice acceptance also requires `bun run build` to build every workspace with the new wiring. After `bun install --frozen-lockfile`, `bun run build` still fails in the compile path this slice touches: multiple packages abort in `tools/scripts/compile/scss-plugin.ts` with `Cannot find package 'sass'`, including the CLI bundle step that now inlines `@delendai/state-telemetry`. Until the full build criterion is green, this slice is not accepted.
 
 ### S7 — `delendai work progress` in the published CLI
 
