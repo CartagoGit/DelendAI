@@ -2,15 +2,16 @@
 id: q00014
 title: "Plan autoaprendizaje, observabilidad de la salida MCP y economía de comandos: que el enjambre aprenda del proyecto en vez de redescubrirlo cada sesión"
 kind: plan
-status: review
+status: in-progress
 type: proposal
 track: quality
 date: 2026-09-03
 shipped-in:
   - 2a0ff85ac39cc174fda0646c571e21bc351d33d7
-last-transition-id: 4de50f1c-aa2b-456b-8a7b-cf63c18a5fe8
-last-correlation-id: 4de50f1c-aa2b-456b-8a7b-cf63c18a5fe8
-last-transition-from: in-progress
+last-transition-id: cef3ed46-99a5-43a1-8fba-ce5d6b2a145f
+last-correlation-id: cef3ed46-99a5-43a1-8fba-ce5d6b2a145f
+last-transition-from: review
+last-transition-at: 2026-10-11T13:03:36.052Z
 ---
 
 # q00014 — Autoaprendizaje, observabilidad de la salida y economía de comandos
@@ -169,7 +170,7 @@ trabajo redundante.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S7 — Higiene: que los defectos pequeños no puedan reaparecer
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `biome.json` — `noUnusedImports` pasa de warning a error. Un import muerto tras un refactor debe romper la build, no quedarse en un aviso que nadie lee.
   - `tools/scripts/lint/no-silent-gates.script.ts` — un gate que sale con código distinto de cero sin escribir NADA es un fallo del gate. Comprueba que cada script de `validate:run` produce salida en su camino de error.
