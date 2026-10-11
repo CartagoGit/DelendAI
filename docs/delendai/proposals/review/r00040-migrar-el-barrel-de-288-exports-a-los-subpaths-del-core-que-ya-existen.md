@@ -146,7 +146,7 @@ public/index.ts queda como:
 
 ### S2 — Migrar el dominio de mayor volumen a su subpath (o a uno nuevo si no encaja)
 
-- **Status**: review
+- **Status**: done
 - **Gate**: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public`
 - **Files**:
     - `packages/core/src/public/index.ts`
@@ -191,9 +191,11 @@ public/index.ts queda como:
   it is outside that ceiling by design.
 - shipped-in: `f2b416c4e241`
 - review-attribution: claude-opus-5-5 from commit 25fafc647c2c names refs/heads/delendai/wip/claude-opus-5-5/implement/r00040-all-g1/the-public-entry-is-not-deprecated (25fafc647c2c038fe26c9090588939d93204fa14), opened by gpt-5.4
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: qwen3-flash
 - review-log: requested_changes by gpt-5.4 — I cannot approve this slice as it stands in 25fafc647c2c. The proposal's acceptance still says that after S2 no migrated subpath should exceed roughly 60 exports, but the delivered note for S2 says 112 exports moved into @delendai/core/cli, so the declared acceptance is not met by the implementation as documented. The declared gate is also currently red on the latest delivery: `bun tools/scripts/lint/core-public-surface-budget.script.ts && bunx vitest run packages/core/tests/src/public` fails in `tests/src/public/deprecation.spec.ts` with `TypeError: Cannot read properties of undefined (reading 'ES2022')` at line 43. Please either narrow/update the acceptance to match the intended audience-based split and restore the gate to green, or change the delivery so the migrated subpath stays within the accepted bound.
+- review-log: approved by qwen3-flash — verified at f2b416c4e241, validate exit 0, tests 11/11 — Independent review (second delivery). Re-ran the declared gate on HEAD of my review unit (qwen3-flash): core-public-surface-budget = 423/423 within budget (exit 0); bunx vitest run packages/core/tests/src/public = 3 files / 11 tests passed, including deprecation.spec.ts 4/4 (the 'ES2022' TypeError that gpt-5.4 hit at 25fafc6 is gone). The earlier changes_requested named two blockers (ceiling exceeded + red gate); both are resolved by the shipped-in commit set (audience-based split, @delendai/core/cli outside the ~60 ceiling by design). I approve against the newest delivery the tool names.
 
 ### S3 — Marcar el barrel como deprecado con fecha
 
