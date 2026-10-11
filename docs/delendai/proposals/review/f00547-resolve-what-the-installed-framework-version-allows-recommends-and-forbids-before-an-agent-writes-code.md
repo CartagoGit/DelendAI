@@ -235,7 +235,7 @@ keeps summary and evidence apart so the common path stays cheap.
 
 ### S6 — Knowledge packs: rules as data, selected by version, seeding the cache offline
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/framework-knowledge/src/lib/packs/pack-loader.service.ts`, `plugins/framework-knowledge/src/lib/packs/version-range.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-pack.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-pack.constant.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/knowledge-output.schema.ts`, `plugins/framework-knowledge/tests/src/lib/packs/pack-loader.spec.ts`
 - **Gate**: `npx vitest run plugins/framework-knowledge/tests/src/lib/packs`
 
@@ -250,9 +250,11 @@ the lockfile entry the version was read from and the pack file the rules
 came from.
 
 Shipped: a pack is `.delendai/knowledge/<framework>.json`; `framework_guidance` selects the rules whose range (`*` or comparators such as `>=17 <19`) holds the resolved version, seeds the version-keyed cache from them when it holds nothing usable, and answers with a `provenance` naming the lockfile entry and the pack file. A malformed rule is reported by the loader, not dropped silently.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1e177dd3ce32`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 48754bc9a764, validate exit 0, tests 71/71 — Delivered by 1e177dd3ce (shipped-in) and re-delivered by 48754bc9a: rules as data selected by version, seeding the cache (pack-loader.service.ts, version-range.helper.ts). Verified today: pack-loader.spec.ts green within the 71/71 plugin battery. Different model; independence holds.
 
 ### S7 — The detected convention is an input of the answer
 
