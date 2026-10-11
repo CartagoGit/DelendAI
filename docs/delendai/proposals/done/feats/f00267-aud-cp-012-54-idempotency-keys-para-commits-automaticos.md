@@ -2,7 +2,7 @@
 id: f00267
 title: "AUD-CP-012/§54 — Idempotency keys para commits automáticos"
 kind: feat
-status: review
+status: done
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -18,9 +18,12 @@ related:
     - q00006
     - f00266 # engine usa processedEvents internamente
     - t00021 # test de replay
-last-transition-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
-last-correlation-id: c6cab903-cf42-48fa-9ce9-ce362466cf6d
-last-transition-from: in-progress
+last-transition-id: 4917458c-f6cc-413d-a6f9-20c3274e112b
+last-correlation-id: 4917458c-f6cc-413d-a6f9-20c3274e112b
+last-transition-from: review
+shipped-in:
+  - "d5dd77f035e6"
+last-transition-at: 2026-10-11T02:25:35.934Z
 ---
 
 # f00267 — Idempotency keys para commits automáticos
@@ -162,7 +165,7 @@ Política:
 
 ### S1 — `processed-events.ts` con TTL + `CommitPolicyEngine` lo consulta
 
-- **Status**: done — verified 2026-09-15 by an evidence pass (the `in_review` state below never received a recorded review). `processed-events.ts` keeps keys with a configurable TTL (30 days by default) and the engine checks and records them around the commit. Each acceptance point has a passing spec: replaying the same event returns `ALREADY_PROCESSED` without committing (`engine.spec.ts`, including after a restart in `processed-events.spec.ts`), an expired key is processed again, and a store read failure returns `STORE_READ_ERROR` without committing. `processed-events.spec.ts` 20/20 and `engine.spec.ts` 19/19.
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
 - **Gate**: type
 - **Dependency**: `f00266`
@@ -171,19 +174,24 @@ Política:
   - "replay del mismo evento → ALREADY_PROCESSED, sin commit"
   - "TTL expirado → vuelve a procesar (según policy)"
   - "I/O error de lectura → STORE_READ_ERROR, no commit"
-- review-state: in_review
-- review-implementer: copilot
 - shipped-in: `a3a56ccaeba9`
+- review-state: done
+- review-implementer: copilot
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at d5dd77f035e6, validate exit 0, tests 27/27 — Gate declared by the slice (npx vitest run --project commit-policy processed-events.spec.ts slice-replay.plugin.spec.ts): 2 files / 27 tests passed, exit 0. Repo typecheck (tsc --noEmit -p tsconfig.json) exit 0. The idempotency is real end to end, not only unit-tested: engine.ts consults the store before the commit and writes it around it. Replay is covered by slice-replay.plugin.spec.ts; the t00021 replay proposal the acceptance names never existed in the repository, which the slice's own note already records.
+
 ### S2 — The store stays bounded, and a question costs a stat
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/processed-events.interface.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
 - **Gate**: `npx vitest run --project commit-policy plugins/commit-policy/tests/src/lib/processed-events.spec.ts plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`
 - Measured 2026-10-05 against S1 as shipped. The file is not append-only: every write rewrites the map atomically, one line per key, so a key is never stored twice and the file grows only with distinct events, trimmed by the TTL. What the acceptance asked of "rotation" is a ceiling: `maxBytes` (default 4 MiB) drops the oldest records first, before their TTL, and records keep the order they were last written in.
 - `has(key)` re-read and re-parsed the whole file on every call, so each question cost as much as the history was long. It now asks only whether the file changed (size and modification time) and re-reads it then; another process's write is still seen at once. Over 10,000 records, 200 calls average under 5 ms (spec).
 - The replay suite the acceptance named, `t00021`, never existed. Replay is covered by `plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`, which this slice's gate runs.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `a3a56ccaeba9`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at d5dd77f035e6, validate exit 0, tests 27/27 — Gate declared by the slice: 2 files / 27 tests passed, exit 0. Repo typecheck exit 0. The rotation the acceptance describes is a ceiling rather than append-only rotation, which the slice's own Evidence states and which I confirmed in persist(): one line per key, atomic rewrite, oldest dropped first under maxBytes. has() no longer re-reads the whole file per question. The earlier open item — the has(key) bound under load had never been measured — is now measured and asserted by a spec over 10,000 records.
 
 ## acceptance
 
