@@ -77,7 +77,7 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
 - shipped-in: `186488db1e20`
 
 ### S3 — `eta-engine.ts` — cálculo de mediana + p80 por `(feature_vector_hash, actor_profile)`; fallback a `task_kind` global si la combinación específica tiene <5 muestras
-- **Status**: done — `86bd19eb0`. `eta-engine.ts` and `eta-aggregation.ts` landed with 25 passing specs; `tests/src/lib/eta/eta-fixtures.spec.ts` asserts a median relative p50 error <= 0.35 over 70 synthetic samples, the p80 aggregation, `insufficient_history`, and the task-kind fallback at confidence 0.6 vs 0.9. Verified 2026-09-15.
+- **Status**: done
 - **DependsOn**: [F3-S2]
 - **Files**: `packages/state-telemetry/src/lib/eta/eta-engine.ts`, `packages/state-telemetry/src/lib/eta/eta-engine.spec.ts`, `packages/state-telemetry/src/lib/eta/eta-aggregation.ts`, `packages/state-telemetry/src/lib/eta/eta-aggregation.spec.ts`
 - **Gate**: type
@@ -87,8 +87,10 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Si `(vector, actor)` tiene <5 muestras pero `(taskKind, actor)` tiene ≥5, se devuelve la ETA agregada por task_kind con `confidence: 0.6` (vs 0.9 del caso específico)."
   - "Test con fixture `tests/fixtures/eta-fixtures.spec.ts` (≥50 muestras sintéticas): la mediana de error de p50 sobre el dataset es ≤35%."
   - "`computeEta` no es un productor del State Engine — es una función pura invocada por `f00510` S5 al construir el snapshot. Esto evita meter cálculo en el `rebuild`/`reconcile`."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 0249c4a72dd2, validate exit 0, tests 128/128 — Gate declared by S2 (npx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts): 1 file / 8 tests passed, exit 0. The S4 gate (npx vitest run --root packages/state-telemetry) covers S1 and S3 too: 23 files / 128 tests passed, exit 0. Repo typecheck exit 0. Every criterion of S1 and S3 is pinned by a named assertion rather than by prose. The weight table is literally the formula the acceptance states; the hash stability and 100-vector uniqueness are separate specs; the p80 is a quantile with R type-7 interpolation, not a mean; the sample-size boundary is pinned on both sides (fallback at 4, no fallback at 5); and the <=35% median relative error is asserted directly. eta-engine.spec.ts also asserts computeEta never reaches the network or a model, which is the purity the fifth criterion asks for. Two criteria of S2 are met in a corrected shape that the slice itself documents and that I judged sound: the triple is an index rather than the primary key (many samples per key are the point of the table — the engine takes a median and a p80 over them), and the two sides meet through a journal file rather than a direct import because @delendai/proposals is published while @delendai/state-telemetry is private. Neither correction weakens the acceptance: the lookup is indexed and the 5% median guard is exported and tested on both branches.
 
 ### S4 — Integración con `f00510` — `progress_snapshots` gana campos `eta_p50_ms`, `eta_p80_ms`, `eta_reason`; sin llamada a LLM
 - **Status**: review
