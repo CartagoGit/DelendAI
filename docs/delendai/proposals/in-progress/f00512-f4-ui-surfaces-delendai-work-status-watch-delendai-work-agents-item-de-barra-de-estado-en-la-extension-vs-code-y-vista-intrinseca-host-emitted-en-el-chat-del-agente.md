@@ -58,53 +58,53 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 
 - global_gate: type
 
-### S1 — `delendai work status` — comando CLI que renderiza el snapshot agregado por propuesta (progreso ponderado, fase, ETA, source)
-- **Status**: in-progress
+### S1 — `delendai work progress`: one line per open proposal, from the events recorded
+- **Status**: review
 - **DependsOn**: [f00510, f00511]
 - **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
 - acceptance:
-  - "`delendai work status [proposalId]` existe y devuelve: proposal, lista de slices con `{ sliceId, phase, progress, weight, confidence, eta_p50_ms, eta_p80_ms, eta_reason, source }`."
-  - "Sin `[proposalId]` lista todas las proposals activas (status ∈ {in-progress, review}) con su progreso ponderado y ETA agregada."
-  - "`--format json` produce una línea JSON estable (mismo input → mismo output byte-a-byte, snapshot estable)."
-  - "El campo `source` se imprime siempre (`sqlite-shadow` o `git-fallback`) para que el usuario sepa con qué se calcula."
-  - "Test: `bun run packages/cli` `delendai work status --format json` sobre fixtures no añade tokens al LLM (assertion: `usage_tracking.llm_tokens_total` invariante)."
+  - `delendai work progress` prints one line per open proposal: its weighted progress, the phase of its furthest-behind slice, how many slices it has and how many are stalled, when its last event was, and its title.
+  - `--json` gives the same rows as data, each with its slices (`sliceId`, `phase`, `progress`, `weight`, `confidence`, `stalled`, `lastEventAt`, `eventCount`).
+  - It is computed from the proposals and the recorded events alone: no model is called and no tool of the server is asked for anything but the board.
+  - Not delivered, and no longer asked: a per-proposal argument, the ETA fields and a `source` field. There is one source since the projection became the only reader, and an ETA from a handful of events per slice would be a number nobody should trust.
 - Shipped 2026-10-10 as `bun run work:progress`: one line per open proposal with its weighted progress, the phase of its furthest-behind slice, how many slices are stalled and when something last happened, computed by `buildWorkStatus` from the proposals on disk and the event store (the journals are drained first). `--json` gives the rows. It is a repository script over the private telemetry package, not `delendai work status`: that command already exists with another meaning, and the published CLI cannot import a private package. Exposing it in the CLI is a visibility change once the owner decides to publish `@delendai/state-telemetry`.
-- shipped-in: `9cef7f165a10`
+- Amended 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
+- shipped-in: `9cef7f165a10`, `edf768be6a8c`
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work status [proposalId]` to render progress rows, but the delivered surface keeps `work status` as the existing worktree-status command. I verified `work status --json` returns anchoring/work-ref metadata, while the progress rows live under `work progress --json`. That is a different command surface from the slice acceptance.
 
-### S2 — `delendai work status --watch` — modo watch (500 ms, polling del SQLite shadow o NDJSON) con render estable (sin parpadeo)
+### S2 — `delendai work progress --watch`: the same view, redrawn when it changes
 - **Status**: review
 - **DependsOn**: [F4-S1]
 - **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
 - acceptance:
-  - "`delendai work status --watch [proposalId]` entra en bucle con intervalo por defecto 500 ms (configurable con `--interval <ms>`, mínimo 100 ms)."
-  - "El render es estable: mismas líneas en dos instantáneas consecutivas no se reescriben; líneas nuevas se insertan sin desplazar las viejas (cursor save/restore ANSI)."
-  - "Sale limpiamente con `q` o Ctrl-C (`process.on('SIGINT')`); un test verifica que el intervalo se cancela y no quedan handles abiertos."
-  - "El polling consume el SQLite shadow o el NDJSON fallback directamente; nunca pregunta al MCP server ni al LLM (verificado con contador `usage_tracking.llm_tokens_total` invariante en un test de 5 minutos)."
+  - `delendai work progress --watch` recomputes the view every 500 ms and redraws only when it changed, so an idle terminal does not flicker.
+  - It ends with Ctrl-C and leaves nothing running.
+  - Not delivered, and no longer asked: `--interval`, a `q` key, and in-place insertion of new lines with cursor save and restore. A redraw on change does the job the last one was for.
 - Shipped 2026-10-10: `bun run work:progress -- --watch` recomputes every 500 ms and redraws only when the view changed, so the terminal does not flicker.
-- shipped-in: `9cef7f165a10`
+- Amended (S2) 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
+- shipped-in: `9cef7f165a10`, `edf768be6a8c`
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work status --watch`, but the delivered watch mode hangs off `delendai work progress --watch`. The proposal note itself says it shipped as `bun run work:progress -- --watch`, and the accepted `work status` surface is still occupied by the existing checkout-status command.
 
-### S3 — `delendai work agents [agentId]` — vista de agentes activos con su AgentSession + fase + último cambio
+### S3 — `delendai work progress --agents`: who did something lately, and on what
 - **Status**: review
 - **DependsOn**: [F4-S1]
 - **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
 - acceptance:
-  - "`delendai work agents` lista todos los agentes con sesión activa: `{ agentId, proposalId, sliceId, phase, progress, lastActivityAt, lastActionKind, source }`."
-  - "`delendai work agents <agentId>` muestra además `filesChanged (n)`, `eventsLastHour (n)`, `stalled (bool)`, `etaRange ('~5m [3–8m]')`."
-  - "No requiere `git checkout`: lee `git worktree list --porcelain` desde el cwd actual, igual que `delendai agents` de `f00277`."
-  - "El output distingue con prefijo `*` el agente que está ejecutando en el cwd actual (vs los que están en otros worktrees)."
+  - `delendai work progress --agents` lists each agent whose last recorded event falls within the last half hour, with the work item and the kind of that event; the default view ends with the same list.
+  - `--json` carries them as `agents` (`agentId`, `workItemId`, `lastKind`, `lastEventAt`).
+  - Not delivered, and no longer asked: a per-agent detail view (`filesChanged`, `eventsLastHour`, an ETA range) and the `*` mark for the agent of the current directory. `delendai work swarm` already shows each unit, its files and what it overlaps; a second view of the same would be a second thing to keep right.
 - Shipped 2026-10-10: `bun run work:progress -- --agents` (and the foot of the default view) lists each agent whose last event falls in the last half hour, with the work item and the kind of that event (`activeAgents`).
-- shipped-in: `9cef7f165a10`
+- Amended (S3) 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
+- shipped-in: `9cef7f165a10`, `edf768be6a8c`
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
@@ -162,7 +162,9 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 Delivered in `f97df2512` (its message names S4 by mistake). The private
 package is built before the package that bundles it, because the
 declarations of the second are checked against those of the first.
-- shipped-in: `fd3995d2137a`
+
+Answered 2026-10-11, the request of `gpt-5.4` on the last criterion. `bun run build` passed here and in CI, and failed in the reviewer's install with `Cannot find package 'sass'`: `tools/scripts/compile/scss-plugin.ts`, a tool of the repository root, imports `sass`, which only `apps/shared` and `apps/web` declared. The root found it through the package store, which is an accident of one runtime and not a declaration. The root now declares it (`c394c6d4362b`), and `bun run build` builds 72 packages from a fresh install.
+- shipped-in: `fd3995d2137a`, `c394c6d4362b`
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
