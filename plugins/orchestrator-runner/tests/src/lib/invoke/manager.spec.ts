@@ -263,7 +263,6 @@ describe('InvocationManager execution environment', () => {
 
 	const managerIn = (
 		environment: ILifecycleEnvironment,
-		calls: string[],
 		invoker: IKindInvoker,
 	): InvocationManager =>
 		new InvocationManager({
@@ -297,11 +296,7 @@ describe('InvocationManager execution environment', () => {
 
 	it('prepares before the invoker and tears down after, logging both', async () => {
 		const calls: string[] = [];
-		const manager = managerIn(
-			environmentOf(calls),
-			calls,
-			orderedInvoker(calls),
-		);
+		const manager = managerIn(environmentOf(calls), orderedInvoker(calls));
 		const out = await manager.invoke({ task: 'do it' });
 		expect(calls).toEqual(['prepare', 'invoke', 'teardown']);
 		expect(out.result?.text).toBe('ok');
@@ -318,7 +313,6 @@ describe('InvocationManager execution environment', () => {
 		const calls: string[] = [];
 		const manager = managerIn(
 			environmentOf(calls, { ok: false, reason: 'no docker' }),
-			calls,
 			orderedInvoker(calls),
 		);
 		const out = await manager.invoke({ task: 'do it' });
@@ -330,7 +324,7 @@ describe('InvocationManager execution environment', () => {
 
 	it('tears down after an invocation that fails', async () => {
 		const calls: string[] = [];
-		const manager = managerIn(environmentOf(calls), calls, {
+		const manager = managerIn(environmentOf(calls), {
 			start: (): IActiveInvocation => {
 				calls.push('invoke');
 				return {
