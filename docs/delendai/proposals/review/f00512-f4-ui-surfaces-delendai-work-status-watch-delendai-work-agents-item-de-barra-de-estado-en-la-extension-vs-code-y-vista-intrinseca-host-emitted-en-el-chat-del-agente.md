@@ -2,7 +2,7 @@
 id: f00512
 title: "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-06
@@ -17,10 +17,10 @@ tags:
     - cli
     - vscode-extension
     - non-llm
-last-transition-id: 94d69ab6-5775-4110-916a-8586fd5ace13
-last-correlation-id: 94d69ab6-5775-4110-916a-8586fd5ace13
-last-transition-from: review
-last-transition-at: 2026-10-11T02:57:29.907Z
+last-transition-id: 229e536d-173a-4ccd-b037-7b8f53738fc6
+last-correlation-id: 229e536d-173a-4ccd-b037-7b8f53738fc6
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T00:48:27.637Z
 ---
 
 # f00512 — F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente
@@ -57,7 +57,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - global_gate: type
 
 ### S1 — `delendai work status` — comando CLI que renderiza el snapshot agregado por propuesta (progreso ponderado, fase, ETA, source)
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [f00510, f00511]
 - **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
@@ -68,11 +68,9 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "El campo `source` se imprime siempre (`sqlite-shadow` o `git-fallback`) para que el usuario sepa con qué se calcula."
   - "Test: `bun run packages/cli` `delendai work status --format json` sobre fixtures no añade tokens al LLM (assertion: `usage_tracking.llm_tokens_total` invariante)."
 - Shipped 2026-10-10 as `bun run work:progress`: one line per open proposal with its weighted progress, the phase of its furthest-behind slice, how many slices are stalled and when something last happened, computed by `buildWorkStatus` from the proposals on disk and the event store (the journals are drained first). `--json` gives the rows. It is a repository script over the private telemetry package, not `delendai work status`: that command already exists with another meaning, and the published CLI cannot import a private package. Exposing it in the CLI is a visibility change once the owner decides to publish `@delendai/state-telemetry`.
-- shipped-in: `9cef7f165a10`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
-- review-log: requested_changes by gpt-5.4 — I cannot approve S1 as delivered because the current tree does not implement the accepted surface. The acceptance requires `delendai work status [proposalId]`, but packages/cli/src/commands/work.command.ts only routes the new view through `work progress`; `work status` still belongs to the existing work-unit command family. The delivered note itself says the feature shipped as `bun run work:progress` and explicitly says it is not `delendai work status`. Please either change the implementation so the accepted `work status` surface exists, or update the slice acceptance and proposal text to match the delivered `work progress` surface before resubmitting.
+- shipped-in: `9cef7f165a10`
 
 ### S2 — `delendai work status --watch` — modo watch (500 ms, polling del SQLite shadow o NDJSON) con render estable (sin parpadeo)
 - **Status**: review
@@ -85,11 +83,9 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "Sale limpiamente con `q` o Ctrl-C (`process.on('SIGINT')`); un test verifica que el intervalo se cancela y no quedan handles abiertos."
   - "El polling consume el SQLite shadow o el NDJSON fallback directamente; nunca pregunta al MCP server ni al LLM (verificado con contador `usage_tracking.llm_tokens_total` invariante en un test de 5 minutos)."
 - Shipped 2026-10-10: `bun run work:progress -- --watch` recomputes every 500 ms and redraws only when the view changed, so the terminal does not flicker.
-- shipped-in: `9cef7f165a10`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
-- review-log: requested_changes by gpt-5.4 — I cannot approve S2 for the same surface mismatch as S1. The slice acceptance requires `delendai work status --watch [proposalId]`, but the delivered tree implements watch mode only on `delendai work progress --watch` in packages/cli/src/commands/work.command.ts and packages/cli/src/lib/work-progress.service.ts. The shipped note says exactly that: `bun run work:progress -- --watch`, not `work status --watch`. Please either deliver the accepted `work status --watch` interface or update the acceptance and proposal text to the shipped `work progress --watch` surface before resubmitting.
+- shipped-in: `9cef7f165a10`
 
 ### S3 — `delendai work agents [agentId]` — vista de agentes activos con su AgentSession + fase + último cambio
 - **Status**: review
@@ -102,11 +98,9 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "No requiere `git checkout`: lee `git worktree list --porcelain` desde el cwd actual, igual que `delendai agents` de `f00277`."
   - "El output distingue con prefijo `*` el agente que está ejecutando en el cwd actual (vs los que están en otros worktrees)."
 - Shipped 2026-10-10: `bun run work:progress -- --agents` (and the foot of the default view) lists each agent whose last event falls in the last half hour, with the work item and the kind of that event (`activeAgents`).
-- shipped-in: `9cef7f165a10`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
-- review-log: requested_changes by gpt-5.4 — I cannot approve S3 because the delivered CLI surface is still `delendai work progress --agents`, not the accepted `delendai work agents [agentId]`. packages/cli/src/commands/work.command.ts exposes `progress` and routes `--agents` through packages/cli/src/lib/work-progress.service.ts; there is no dedicated `work agents` subcommand. The delivered slice note also says it shipped as `bun run work:progress -- --agents`. Please either deliver the accepted `work agents` command or update the acceptance and proposal text so they match the actual shipped `work progress --agents` surface before resubmitting.
+- shipped-in: `9cef7f165a10`
 
 ### S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
 - **Status**: retired

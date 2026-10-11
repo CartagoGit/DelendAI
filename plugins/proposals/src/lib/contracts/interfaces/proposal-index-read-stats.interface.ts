@@ -7,11 +7,9 @@
  * How one `readProposalIndex` call was answered.
  *
  *   - `json-pinned` — the source is pinned to `json`; SQL was not consulted.
- *   - `sql-parity` — SQL served and matched the JSON index.
- *   - `sql-registry-stale` — SQL served; the JSON export predates the
- *     projection's last reconcile, so it was not compared.
- *   - `sql-divergence-reported` — pinned to `sql`: SQL served although the
- *     JSON index disagrees.
+ *   - `sql-served` — the source is `sql`: the projection answered, and
+ *     nothing was compared with it.
+ *   - `sql-parity` — `auto`: SQL served and matched the JSON index.
  *   - `sql-refused` — pinned to `sql`: the projection could not serve, so
  *     the read threw instead of falling back.
  *   - `fallback-unavailable` — `auto`: no usable database, JSON served.
@@ -21,9 +19,8 @@
  */
 export type IProposalIndexReadOutcome =
 	| 'json-pinned'
+	| 'sql-served'
 	| 'sql-parity'
-	| 'sql-divergence-reported'
-	| 'sql-registry-stale'
 	| 'sql-refused'
 	| 'fallback-unavailable'
 	| 'fallback-metadata-missing'
