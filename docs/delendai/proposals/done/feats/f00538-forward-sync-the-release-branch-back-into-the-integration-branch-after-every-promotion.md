@@ -40,7 +40,8 @@ while an audit was running. By the end of that audit it was 136 ahead and
 still 1 behind. The one commit is `c7eda197a`, "Merge pull request #178
 from CartagoGit/develop": the merge commit the last promotion wrote. It
 carries no patch of its own. A trial merge of `main` into `develop`
-produced tree `1a19f55e9`, byte-identical to `develop`'s tree.
+produced tree 1a19f55e9 — a tree object, not a commit, so it carries no
+code span — byte-identical to `develop`'s tree.
 
 Two different situations produce that same "1 behind":
 
