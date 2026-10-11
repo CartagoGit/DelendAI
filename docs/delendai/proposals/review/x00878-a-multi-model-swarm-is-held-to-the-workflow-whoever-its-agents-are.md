@@ -500,15 +500,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S34 — A slice's reservation ends when its unit's publication lands
-- **Status**: review
+- **Status**: done
 - shipped-in: `e99866382`
 - **Files**: `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A slice reservation whose unit has no branch on the forge and whose publication a merge on the integration branch names is released at once; one whose unit is simply gone is still kept for the abandonment window."
 - Found 2026-10-10: `work enter --slice=all` on this proposal was refused because S31 was "reserved on the forge", hours after its unit had published and merged (#951). The reaper released a branchless unit's reservation only after the whole abandonment window, which is right for a unit nobody knows the fate of and wrong for one that landed.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 5ca6586a7230, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: slice-reservation.service ends a slice's reservation when its unit's publication lands, which is the finding that '43 review reservations, 25 of them naming a unit whose work ref and publication no longer exist'. Pinned by slice-reservation.service.spec.
 
 ### S35 — The integration branch carries no code scanning alert again
 - **Status**: review
