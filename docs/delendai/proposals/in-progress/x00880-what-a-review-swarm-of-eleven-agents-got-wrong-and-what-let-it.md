@@ -295,6 +295,8 @@ Delivered 2026-10-11. Four specs published a review unit made of empty commits; 
   - An agent entering a slice that its own unit reserves, under another unit name, is told so, with the generation and the topic that resume that unit and how to bring its pull request in.
 
 Delivered 2026-10-11 as what the refusal says. Resuming without being told (taking the reserved unit's name when the entrant is its agent) is the fuller answer and is left for when it is needed twice.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
