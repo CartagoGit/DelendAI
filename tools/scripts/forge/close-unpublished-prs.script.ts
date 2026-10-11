@@ -29,6 +29,7 @@ import { execFileSync } from 'node:child_process';
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 import { prHeadProblem } from '../lint/pr-head-shape.script';
+import { FORWARD_SYNC_REF_PREFIX } from './forward-sync-release.script';
 
 interface IOpenPullRequest {
 	readonly number: number;
@@ -56,7 +57,8 @@ export const unpublishedPullRequests = (
 		// Only a publication: the sync of the release branch back is a pull
 		// request of history alone, and that is its delivery.
 		return pull.changedFiles === 0 &&
-			pull.headRefName.startsWith(branches.publicationRefPrefix)
+			pull.headRefName.startsWith(branches.publicationRefPrefix) &&
+			!pull.headRefName.startsWith(FORWARD_SYNC_REF_PREFIX)
 			? [
 					{
 						number: pull.number,
