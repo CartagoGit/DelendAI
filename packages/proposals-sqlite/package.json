@@ -44,7 +44,7 @@
 		"@delendai/state": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"files": [
 		"dist",
