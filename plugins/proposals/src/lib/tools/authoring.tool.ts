@@ -99,7 +99,10 @@ import {
 	type IReviewAttribution,
 } from '../services/review-attribution';
 import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
-import { moveProposalAfterVerdict } from './review-verdict-lifecycle';
+import {
+	everySliceHandedOver,
+	moveProposalAfterVerdict,
+} from './review-verdict-lifecycle';
 import { movesStayOutOfTheIndex } from '../shared/index-free-git-runner';
 import { buildCloseBlockerGuidance } from '../services/close-blocker';
 import {
@@ -299,6 +302,8 @@ export const REVIEW_OUTPUT_SCHEMA = z.object({
 	proposalCloseBlocker: z.string().optional(),
 	/** A change request sent the proposal back to `in-progress`. */
 	proposalReopened: z.boolean().optional(),
+	/** The submission left no slice to do and the proposal went to `review`. */
+	proposalHandedOver: z.boolean().optional(),
 });
 
 const toApproveEvidenceError = (reason: string): IToolTextResult =>
@@ -2281,6 +2286,7 @@ export const buildReviewRegistration = (
 				let nextRounds!: readonly IReviewRound[];
 				let autoTransitionRequested = false;
 				let reopenRequested = false;
+				let handOverRequested = false;
 				let attribution: IReviewAttribution | undefined;
 				let approvalOutcome: IApprovalOutcome | undefined;
 				// One journal per repository, whichever worktree reviews.
@@ -2608,6 +2614,20 @@ export const buildReviewRegistration = (
 							)?.toLowerCase() === 'review';
 						if (next.status === 'done') {
 							block = flipSliceStatusDone(block);
+						} else if (
+							args.action === 'submit' &&
+							/^[-*]\s*\*\*Status\*\*:\s*in-progress\b/imu.test(
+								block,
+							)
+						) {
+							// Handed in: the slice waits for its verdict, and
+							// says so. Left reading `in-progress`, a proposal
+							// whose every slice had been resubmitted stayed
+							// out of the review queue until somebody moved it.
+							block = block.replace(
+								/^([-*]\s*\*\*Status\*\*:)\s*in-progress\b/imu,
+								'$1 review',
+							);
 						} else if (next.status === 'changes_requested') {
 							// The work goes back to its author: the slice is
 							// open again, and so is the proposal, once. The
@@ -2642,6 +2662,15 @@ export const buildReviewRegistration = (
 							inReview &&
 							shouldAutoTransitionOnReviewState(next) &&
 							everySliceReviewed(entry.id, updated);
+						// The mirror of the reopening: the submission that leaves
+						// no slice to do hands the proposal back to review.
+						handOverRequested =
+							args.action === 'submit' &&
+							readFrontmatterField(
+								md,
+								'status',
+							)?.toLowerCase() === 'in-progress' &&
+							everySliceHandedOver(updated);
 						if (args.action === 'approve') {
 							approvalOutcome = describeApprovalOutcome(
 								next,
@@ -2733,6 +2762,7 @@ export const buildReviewRegistration = (
 				const lifecycle = await moveProposalAfterVerdict({
 					close: autoTransitionRequested,
 					reopen: reopenRequested,
+					handOver: handOverRequested,
 					proposalId: entry.id,
 					sliceId: args.sliceId,
 					agent: args.agent,
