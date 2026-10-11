@@ -460,6 +460,39 @@ describe('kpi history + trends', async () => {
 		expect(report.metrics.costUsd.direction).toBe('stable');
 		expect(report.metrics.financialSavingsUsd.direction).toBe('unknown');
 		expect(report.metrics.tokenSavings.direction).toBe('up');
+		// No snapshot measured the coordination tax: nothing to compare.
+		expect(report.metrics.coordinationTax.status).toBe('unavailable');
+
+		// Run over run, once the snapshots carry it.
+		const withTax = entries.map((entry, index) => ({
+			...entry,
+			snapshot: {
+				...entry.snapshot,
+				workflow: {
+					invariants: { total: 4, broken: 0, brokenIds: [] },
+					units: 2,
+					publicationsWaiting: 0,
+					agents: 1,
+					agentsThatProducedNothing: 0,
+					coordination: {
+						windowDays: 7,
+						commits: 100,
+						merges: 40,
+						bookkeeping: index === 0 ? 30 : 10,
+						tax: index === 0 ? 0.7 : 0.5,
+						landed: { units: 12, agents: 2 },
+					},
+				},
+			},
+		}));
+		const taxed = buildKpiTrendReport(withTax, { windowDays: 2 });
+		expect(taxed.metrics.coordinationTax).toMatchObject({
+			key: 'workflow.coordination.tax',
+			direction: 'down',
+			status: 'measured',
+			currentValue: 0.5,
+			previousValue: 0.7,
+		});
 	});
 
 	it('uses the default retention when none is configured', async () => {

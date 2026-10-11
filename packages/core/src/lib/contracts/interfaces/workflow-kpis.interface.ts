@@ -26,4 +26,9 @@ export interface ICoordinationCost {
 	readonly bookkeeping: number;
 	/** (merges + bookkeeping) / commits, to three decimals; 0 with no commits. */
 	readonly tax: number;
+	/**
+	 * What landed through publications in the window: how many units, and
+	 * from how many agents. Absent when the project publishes no refs.
+	 */
+	readonly landed?: { readonly units: number; readonly agents: number };
 }

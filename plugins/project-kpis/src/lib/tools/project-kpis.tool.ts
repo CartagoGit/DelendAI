@@ -651,6 +651,7 @@ const trendEntriesOf = (trend: IKpiTrendReport) => [
 	{ label: 'Cost USD', ...trend.metrics.costUsd },
 	{ label: 'Token savings', ...trend.metrics.tokenSavings },
 	{ label: 'Financial savings USD', ...trend.metrics.financialSavingsUsd },
+	{ label: 'Coordination tax', ...trend.metrics.coordinationTax },
 ];
 
 const historyEntriesOf = (history: IKpiHistoryReadResult) =>
