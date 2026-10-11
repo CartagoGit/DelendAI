@@ -23,6 +23,7 @@ import type {
 
 import type { IRoutingDecision } from '@delendai/core/public';
 
+import type { ILifecycleEnvironment } from '../contracts/interfaces/execution-env-lifecycle.interface';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference } from '../types';
 import type { FallbackStrategy } from './fallback';
@@ -137,6 +138,8 @@ export interface IBuildManagerOptions {
 	readonly executeApi: boolean;
 	readonly confirmBeforeExecute: boolean;
 	readonly autoBypassConfirmed: boolean;
+	/** Environment prepared before and released after each invocation. */
+	readonly environment?: ILifecycleEnvironment;
 	/** S7 circuit-breaker seam (see {@link InvocationManager}). */
 	readonly checkSpend?: (
 		decision: IRoutingDecision,
@@ -170,6 +173,9 @@ export const buildDefaultInvocationManager = (
 		executeApi: options.executeApi,
 		confirmBeforeExecute: options.confirmBeforeExecute,
 		autoBypassConfirmed: options.autoBypassConfirmed,
+		...(options.environment !== undefined
+			? { environment: options.environment }
+			: {}),
 		...(options.checkSpend !== undefined
 			? { checkSpend: options.checkSpend }
 			: {}),
