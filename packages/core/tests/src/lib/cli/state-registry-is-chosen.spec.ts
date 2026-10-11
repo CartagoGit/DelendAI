@@ -40,10 +40,12 @@ describe('the state registry a boot uses', () => {
 			'utf8',
 		);
 
-		expect(source).toContain('deps.stateRegistry ??');
-		// And the construction it falls back to is still there, so a boot
-		// that says nothing keeps working exactly as before.
-		expect(source).toContain('defineInMemoryStateRegistry({');
+		// The assembler hands the choice to `chooseStateRegistry`, whose
+		// own spec proves the injected one wins and the in-memory engine
+		// is the fallback; what must hold here is that the assembler no
+		// longer constructs an engine itself.
+		expect(source).toContain('injected: deps.stateRegistry');
+		expect(source).not.toContain('defineInMemoryStateRegistry(');
 	});
 
 	it('accepts a registry core could never have built itself', async () => {
