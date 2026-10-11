@@ -138,6 +138,25 @@ describe('pullRequestText', () => {
 		).toBe('review batch');
 	});
 
+	it('titles a pack of verdicts by what it judged, not by its bookkeeping', () => {
+		// Newest first, as git lists them: the pack that went out as
+		// "chore(review): release r00040" carried approvals of f00643.
+		expect(
+			pullRequestText(
+				[
+					'chore(delendai): delendai_proposals_proposal_review f00643 S3 approve',
+					'chore(delendai): delendai_proposals_proposal_review f00643 S2 approve',
+					'chore(review): claim f00643',
+					'chore(delendai): delendai_proposals_proposal_review q00010 S3 request_changes',
+					'chore(review): release r00040',
+					'chore(review): claim r00040',
+				],
+				'delendai/pr/gpt-5.4/review/batch-all-g3/review-pack',
+				'review batch',
+			).title,
+		).toBe('review: 3 verdict(s) on q00010, f00643');
+	});
+
 	it('is titled by the oldest commit that delivers, past tool records, regeneration and merges', () => {
 		// Newest first, as `git log` lists them.
 		const text = pullRequestText(
