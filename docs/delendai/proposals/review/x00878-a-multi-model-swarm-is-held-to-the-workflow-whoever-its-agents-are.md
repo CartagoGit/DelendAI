@@ -244,15 +244,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 56/56 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: landed-work.service.ts and unit-standings.service.ts classify a unit whose only extra commit merged landed work in as delivered. The spec 'judges a merged, quiet unit delivered, and a fresh empty one not' is the criterion; landed-work.service.spec covers the classification.
 
 ### S15 — A retired pack that changes no file is dropped
-- **Status**: review
+- **Status**: done
 - shipped-in: `aba4404da`
 - **Files**: `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work reap --apply` drops from the forge a retired tip whose commits change no file against where it left the integration branch (a pack retired before its first verdict holds only empty claim and release commits); a retired tip that changes a file is kept."
 - Delivered: six of the fifteen retired refs left after the swarm were review packs that never recorded a verdict, each a claim commit or two, and the landed-retired reaper kept them because empty commits are never contained in the integration branch. They are now dropped with the landed ones. The same afternoon, by hand and with a reason each, the other spent ones went too (contents identical on develop, closes landed through #878, a slice that landed under its next generation): fifty-two retired refs became four, each holding verdicts that have not landed. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: a retired pack that changes no file is dropped rather than published, which is the finding about publications that 'change no file'. Pinned by work-retire.service.spec.
 
 ### S16 — A submit through the CLI is committed, or the CLI says why
 - **Status**: review
