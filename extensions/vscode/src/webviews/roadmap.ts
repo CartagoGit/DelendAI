@@ -8,27 +8,16 @@
  */
 import { escapeHtml } from '@delendai/ui-extension/public';
 
-export interface IRoadmapViewHorizon {
-	readonly version: string;
-	readonly bumpHint?: string | undefined;
-	readonly counts: {
-		readonly total: number;
-		readonly delivered: number;
-		readonly withdrawn: number;
-		readonly open: number;
-	};
-	readonly entries: readonly {
-		readonly id: string;
-		readonly title: string;
-		readonly kind: string;
-		readonly state: string;
-	}[];
-}
+import type {
+	IRoadmapView,
+	IRoadmapViewHorizon,
+} from '../contracts/interfaces/roadmap-view.interface';
 
-export interface IRoadmapView {
-	readonly file: string;
-	readonly horizons: readonly IRoadmapViewHorizon[];
-}
+/** The sentences of the view, apart from the markup that carries them. */
+const ROADMAP_VIEW_COPY = {
+	source: 'The authority is',
+	live: 'What can be promoted now is answered by',
+} as const;
 
 /** The answer of `roadmap_show`, when it has the shape this view reads. */
 export const asRoadmapView = (answer: unknown): IRoadmapView | undefined => {
@@ -56,7 +45,7 @@ export const renderRoadmapWebview = (view: IRoadmapView): string =>
 		'<!doctype html>',
 		'<html lang="en"><head><meta charset="utf-8"><title>Roadmap</title></head><body>',
 		'<h1>Roadmap</h1>',
-		`<p>From <code>${escapeHtml(view.file)}</code>, the authority. What can be promoted now: <code>roadmap_readiness</code>.</p>`,
+		`<p>${escapeHtml(ROADMAP_VIEW_COPY.source)} <code>${escapeHtml(view.file)}</code>. ${escapeHtml(ROADMAP_VIEW_COPY.live)} <code>roadmap_readiness</code>.</p>`,
 		view.horizons.length === 0
 			? '<p>The roadmap file holds no version yet.</p>'
 			: view.horizons.map(horizonHtml).join('\n'),

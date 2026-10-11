@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { McpStdioClient } from '@delendai/client';
 
-import {
-	OPEN_ROADMAP_COMMAND,
-	registerOpenRoadmapCommand,
-} from '../commands/roadmap';
+import { registerOpenRoadmapCommand } from '../commands/roadmap';
+import { OPEN_ROADMAP_COMMAND } from '../contracts/constants/roadmap-command.constant';
 import type { ICommandVscodeApi } from '../commands/types';
 import { asRoadmapView, renderRoadmapWebview } from '../webviews/roadmap';
 
@@ -79,10 +77,10 @@ const clientWith = (
 			return { tools: tools.map((name) => ({ name })) };
 		},
 		async callTool() {
-			if (typeof answer === 'function') return (answer as () => never)();
+			if (typeof answer === 'function') answer();
 			return { structuredContent: answer };
 		},
-	} as never);
+	});
 
 describe('delendai.openRoadmap', () => {
 	it('opens a read-only panel from what the project calls its roadmap tool', async () => {

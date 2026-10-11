@@ -9,9 +9,9 @@
 import { withCsp } from '@delendai/ui-extension/public';
 
 import { asRoadmapView, renderRoadmapWebview } from '../webviews/roadmap';
+import { OPEN_ROADMAP_COMMAND } from '../contracts/constants/roadmap-command.constant';
 import type { ICommandDeps } from './types';
 
-export const OPEN_ROADMAP_COMMAND = 'delendai.openRoadmap';
 /** What the listing tool's name ends with, under any prefix. */
 const SHOW_TOOL_SUFFIX = '_roadmap_show';
 
