@@ -37,7 +37,7 @@ const swarm: StateScope = {
 	kind: 'swarm',
 	locator: {
 		repositoryInstanceId: asRepositoryInstanceId('repo'),
-		gitCommonDir: '/repo/.git',
+		swarmRoot: '/repo/.cache/swarm',
 	},
 };
 

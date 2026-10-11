@@ -19,6 +19,8 @@ export * from './lib/registry';
 export * from './lib/artifact-store.interface';
 export * from './lib/lifecycle-state.interface';
 export * from './lib/scope-coordination.interface';
+export * from './lib/parity-sampler.interface';
+export { parityProducer, sampleParity } from './lib/parity-sampler';
 export * from './lib/derivation-engine.interface';
 export * from './lib/reconciliation';
 export {
