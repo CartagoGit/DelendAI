@@ -15,6 +15,8 @@ last-transition-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
 last-correlation-id: 3c9c9e1f-43f4-4bf2-9c25-78e2bae67266
 last-transition-from: in-progress
 last-transition-at: 2026-10-09T21:10:50.048Z
+shipped-in:
+  - "7b07571790b18759adbefc1eec61d0db2d1797db"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -107,7 +109,7 @@ coverage on `framework-version.ts` is 100% statements/functions/lines,
 
 ### S2 — A knowledge record with its evidence and its force
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/package.json`, `plugins/framework-knowledge/plugin.manifest.ts`, `plugins/framework-knowledge/tsconfig.json`, `plugins/framework-knowledge/vitest.config.ts`, `plugins/framework-knowledge/LICENSE`, `plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/src/public/index.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-record.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-force.constant.ts`, `plugins/framework-knowledge/src/lib/knowledge/knowledge-record.ts`, `plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts`, `plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts`, `bun.lock`]
 
 Every rule carries what it says, the framework version it applies to,
@@ -147,8 +149,10 @@ file contributes nothing to either side of the ratio). `FORCE_VALUES`
 and the interface file respectively, per `lint:types-in-contracts`
 (caught by `gates.sh`, not something the proposal anticipated).
 - shipped-in: `f75161fa8386`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 7b07571790b1, validate exit 0, tests 14/14 — Plugin skeleton verified on develop: manifest maturity experimental with empty presets (stays out of every preset, enforced again by S8's posture), knowledge-record carries statement, version, provenance, retrieval date and one of the six forces (required/recommended/supported/discouraged/deprecated/removed). Gate: knowledge-record.spec.ts = 14/14.
 
 ### S3 — Resolve project policy against framework force
 
