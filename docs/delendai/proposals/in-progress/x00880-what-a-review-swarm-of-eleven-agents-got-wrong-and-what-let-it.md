@@ -187,17 +187,18 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
   - The section a reviewer is handed for a slice separates what is under review (status, files, acceptance, the implementer's notes) from the record of earlier rounds, and names the earlier rounds as history.
   - When a slice comes back from "changes requested", the brief shows what changed in its section since that verdict.
 
-### S8 — An approval can rest on the run that already certified the commit
+### S8 — A reviewer runs the slice's gate, in its own worktree
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `plugins/proposals/src/lib/tools/proposal-review.tool.ts`
-  - `packages/cli/src/commands/review.command.ts`
+  - `packages/cli/src/lib/review/review-brief.service.ts`
+  - `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: unit
+- shipped-in: `aee686896802`
 - acceptance:
-  - An approval may name the certifying run of the commit it verified (the forge's required check on that SHA) as its validation evidence; the tool reads the run's conclusion and refuses one that is not green or is of another commit.
-  - A reviewer is told, in the brief, that the commit it reviews is already certified and which focused gate the slice declares, so that the whole suite is run by the forge once and not by each reviewer.
-  - Review units run their commands from their own worktree; the brief gives the path, and the shared checkout is not offered as a place to run a gate.
+  - The brief a reviewer is handed says to run the slice's gate from the reviewer's own worktree, naming its path, and nothing wider: the whole validation runs once, on the pull request the pack becomes.
+
+Delivered 2026-10-11, smaller than first written. An approval citing the forge's certifying run as its evidence was taken out: it would have been a new reader of the forge inside the verdict, to save a gate that takes seconds. What cost a machine eleven whole suites at once was that nothing told a reviewer how much to run or where; the brief now does. The `validate exit` field of an approval already asks for "gate exit code" in the call the brief prints (observation 18 is the name of the field, not what fills it).
 
 ### S9 — What would stop a proposal from closing is found before a reviewer meets it
 
@@ -237,6 +238,8 @@ Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a
   - A candidate that changes the code of a zone is brought forward as it is today.
 
 Not started on purpose. The rule decides what lands unchecked against what, and it is worth changing on a measurement, not on the first cause found; S11 of q00022 may be most of it.
+
+What the rule has to keep, found while reading how candidates are compared. The queue tells two candidates apart by test zone, and a zone is reached two ways: its own code changed, or its specs read or list a file that changed. Verdict packs meet only the second way. But the second way is also what serialises two pull requests that each add a proposal under the same number, and that protection has to stay: two candidates that add files to one listed folder still wait on each other; two that change or move different existing files of it need not. Measured on #1007, a pack of verdicts alone: 34 jobs, of which ten are test shards with nothing to run (2 to 5 seconds each, a runner each) and fifteen are lints of 20 to 98 seconds.
 
 ## acceptance
 
