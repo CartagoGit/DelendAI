@@ -2,7 +2,7 @@
 id: q00021
 title: "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)"
 kind: plan
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-07
@@ -42,6 +42,10 @@ contains:
         - { id: b00239 S10, rationale: "Cuando entre el epoch cache-layout post-rebrand, el cierre de b00239 deja de tener que llevar el `LegacyMigrationManager` como pieza separada — todo cuelga del engine IMigration ya consolidado." }
         - { id: q00019, rationale: "El JsonToSqliteMigration (queue/progress/counters/checkpoint) reusa el epoch cache-layout y la conexión SqliteLifecycleStateStore; el lifecycle es la palanca que justifica pasar stores a SQLite." }
         - { id: q00020, rationale: "Si el layout de progress cambia (p.ej. de JSON a SQLite), la migración está versionada; progress deja de poder ser tratado accidentalmente como TTL cache." }
+last-transition-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
+last-correlation-id: 7f852e82-bd1d-4591-8e41-ea0db69db0ec
+last-transition-from: in-progress
+last-transition-at: 2026-10-10T23:53:48.591Z
 ---
 
 # q00021 — Plan — Cache Layout Lifecycle & Legacy Reaper
@@ -575,6 +579,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S0 — Inventario histórico (entregable: `f00513`)
 - **Status**: review
+- shipped-in: `f37f97fc0`
 - **Files**: `docs/delendai/proposals/done/chores/c00527-anexo-q00021-f00513-inventario-historico-de-cache-layout-epochs-1-9.md`
 - **Tarea**: tabla `old-path / current-path / owner / class / acción / introducido-en / seguro-borrar` para `r00010`, `f00065`, `f00080`, `x00052`, rebrand, proposal workflow refactors, `q00019` (SQLite stores), `q00020` (progress).
 - **Gate**: `bun run lint:proposals` (the annex parses and every link resolves).
@@ -585,6 +590,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S1 — Contratos puros (entregable: `f00526`)
 - **Status**: review
+- shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
   - `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`
@@ -603,6 +609,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S2 — Lifecycle state store (entregable: `f00527`)
 - **Status**: review
+- shipped-in: `11d9226de`
 - **Files**:
   - `packages/state/src/lib/lifecycle-state.interface.ts`
   - `packages/state/src/index.ts`
@@ -626,6 +633,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S3 — Integración en bootstrap (entregable: `f00528`)
 - **Status**: review
+- shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
   - `packages/core/src/lib/cache/cache-layout-helpers.service.ts`
@@ -651,6 +659,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S4 — Migraciones históricas (entregable: `f00529`)
 - **Status**: review
+- shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/cache/migrations/results-segregation.migration.ts`
   - `packages/core/src/lib/cache/migrations/canonical-scratch.migration.ts`
@@ -676,6 +685,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S5 — Hardcoded paths + lint (entregable: `f00530`)
 - **Status**: review
+- shipped-in: `cb6ceebff`
 - **Files**:
   - `tools/scripts/lint/no-legacy-cache-paths.script.ts`
   - `tools/scripts/lint/no-legacy-cache-paths.constant.ts`
@@ -697,6 +707,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S6 — CLI operator (entregable: `f00531`)
 - **Status**: review
+- shipped-in: `baf7794eb`
 - **Files**:
   - `packages/cli/src/commands/cache.command.ts`
   - `packages/cli/src/commands/cache.command.spec.ts`
@@ -717,6 +728,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 
 ### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
 - **Status**: review
+- shipped-in: `1632de660`
 - **Files**:
   - `packages/core/src/lib/cache/boot-eviction-throttle.service.ts`
   - `packages/core/src/lib/cli/assemble.ts`
@@ -731,6 +743,8 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The throttle sits in core around the boot sweep (`assemble.ts`), not in the `cache` plugin: the sweep and its `runOnBoot` posture are core's, and the plugin only contributes rules. The `cache_gc` tool and `delendai cache gc` are on-demand and are never throttled.
   - The default is no throttle, not 24 h: a default would change what every existing project's boot does. A project opts in with the value it wants.
   - The stamp lives in `.delendai/`, not in the cache directory the sweep evicts from.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
