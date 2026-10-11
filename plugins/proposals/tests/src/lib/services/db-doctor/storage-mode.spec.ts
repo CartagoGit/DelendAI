@@ -37,7 +37,7 @@ describe('proposal index read stats', () => {
 	it('maps every outcome to a parity status', () => {
 		expect(parityStatusOf(null)).toBe('not-observed');
 		expect(parityStatusOf('sql-parity')).toBe('parity');
-		expect(parityStatusOf('sql-divergence-reported')).toBe('divergent');
+		expect(parityStatusOf('fallback-divergence')).toBe('divergent');
 		expect(parityStatusOf('fallback-divergence')).toBe('divergent');
 		expect(parityStatusOf('json-pinned')).toBe('not-compared');
 		expect(parityStatusOf('fallback-unavailable')).toBe('unverified');
@@ -85,14 +85,15 @@ describe('proposal index read stats', () => {
 		await read('auto', null);
 		expect(getProposalIndexReadStats().last).toBe('fallback-unavailable');
 
+		// Under `sql` the projection answers alone: nothing is compared.
 		await read('sql', { entries: [], sourceCommit: 'abc' });
 		expect(getProposalIndexReadStats()).toMatchObject({
-			last: 'sql-divergence-reported',
-			lastDivergence: 1,
+			last: 'sql-served',
+			lastDivergence: 0,
 		});
 
 		await read('sql', { entries: [entry], sourceCommit: 'abc' });
-		expect(getProposalIndexReadStats().last).toBe('sql-parity');
+		expect(getProposalIndexReadStats().last).toBe('sql-served');
 
 		await expect(read('sql', null)).rejects.toThrow();
 		expect(getProposalIndexReadStats()).toMatchObject({
@@ -143,7 +144,7 @@ describe('storage_mode doctor check', () => {
 			stats: {
 				reads: 1,
 				fallbacks: 0,
-				last: 'sql-divergence-reported',
+				last: 'fallback-divergence',
 				lastDivergence: 2,
 				rebuilds: 0,
 			},
