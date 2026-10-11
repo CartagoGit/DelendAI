@@ -2,7 +2,7 @@
 id: x00554
 title: "A green pull request lands itself and the swarm rebases"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-19
@@ -11,9 +11,10 @@ tags:
     - integration
     - hydration
     - swarm
-last-transition-id: 69d1dcf8-c04f-4977-a23e-8248c1af1315
-last-correlation-id: 69d1dcf8-c04f-4977-a23e-8248c1af1315
-last-transition-from: ready
+last-transition-id: d1744948-b5c0-4105-a3ce-4946aad545c3
+last-correlation-id: d1744948-b5c0-4105-a3ce-4946aad545c3
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T00:02:44.016Z
 ---
 
 # x00554 — A green pull request lands itself and the swarm rebases
@@ -88,6 +89,9 @@ already hydrates the checkout.
   publication ref once the required checks pass, honouring the policy's
   integration method. Nothing merges that the policy would not have
   merged by hand.
+- shipped-in: `dea43b3d7f38`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — What depends on the integration branch follows it, and what somebody is working on is told
 
@@ -130,6 +134,7 @@ already hydrates the checkout.
   after every other kind, since it is the mildest.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `581b5720bad3`
 
 ## acceptance
 
