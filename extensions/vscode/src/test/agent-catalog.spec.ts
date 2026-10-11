@@ -28,24 +28,6 @@ interface IArtifactShape {
 		readonly tags: readonly string[];
 		readonly bodyPath: string;
 	}>;
-	readonly proposals: {
-		readonly actionable: ReadonlyArray<{
-			readonly id: string;
-			readonly title: string;
-			readonly track: string;
-			readonly status: 'ready' | 'in-progress' | 'paused';
-			readonly kind:
-				| 'feat'
-				| 'fix'
-				| 'refactor'
-				| 'chore'
-				| 'docs'
-				| 'plan'
-				| 'audit'
-				| 'unspecified';
-			readonly date: string;
-		}>;
-	};
 }
 
 const loadArtifact = async (): Promise<IArtifactShape> => {
@@ -71,19 +53,13 @@ const createSnapshot = async () => {
 		counts: {
 			tools: artifact.tools.length,
 			skills: artifact.skills.length,
-			proposals: artifact.proposals.actionable.length,
+			proposals: 0,
 		},
 		proposalStatusCounts: {
-			ready: artifact.proposals.actionable.filter(
-				(proposal) => proposal.status === 'ready',
-			).length,
-			'in-progress': artifact.proposals.actionable.filter(
-				(proposal) => proposal.status === 'in-progress',
-			).length,
+			ready: 0,
+			'in-progress': 0,
 			review: 0,
-			paused: artifact.proposals.actionable.filter(
-				(proposal) => proposal.status === 'paused',
-			).length,
+			paused: 0,
 			done: 0,
 			blocked: 0,
 			retired: 0,
@@ -91,7 +67,8 @@ const createSnapshot = async () => {
 		},
 		tools: artifact.tools,
 		skills: artifact.skills,
-		proposals: artifact.proposals.actionable,
+		// The checked-in catalog lists no proposals; the board serves them.
+		proposals: [],
 	};
 };
 
