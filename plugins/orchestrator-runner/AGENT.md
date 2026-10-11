@@ -27,6 +27,7 @@
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
+- @delendai/execution-env
 
 ## Writes
 
@@ -41,8 +42,8 @@
 
 - plugins/orchestrator-runner/tests/e2e/fallback-chain.e2e.spec.ts
 - plugins/orchestrator-runner/tests/e2e/invoke-real-subprocess.e2e.spec.ts
+- plugins/orchestrator-runner/tests/environment-loader.service.spec.ts
 - plugins/orchestrator-runner/tests/execution-env.service.spec.ts
-- plugins/orchestrator-runner/tests/src/lib/bootstrap.spec.ts
 
 ## Do not
 
