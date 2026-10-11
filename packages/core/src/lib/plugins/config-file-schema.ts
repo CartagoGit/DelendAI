@@ -173,6 +173,22 @@ export const CONFIG_FILE_SCHEMA = z
 			})
 			.strict()
 			.optional(),
+		// The state engine. `parity.shadow.enabled` (default off) runs the
+		// SQLite driver beside the in-memory one and samples their parity.
+		state: z
+			.object({
+				parity: z
+					.object({
+						shadow: z
+							.object({ enabled: z.boolean().optional() })
+							.strict()
+							.optional(),
+					})
+					.strict()
+					.optional(),
+			})
+			.strict()
+			.optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
 		development: DEVELOPMENT_CONFIG_SCHEMA,

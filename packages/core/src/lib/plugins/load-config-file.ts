@@ -103,6 +103,17 @@ export interface IEvidenceConfig {
 	readonly cleanup?: 'on-boot' | 'dry-run' | 'off';
 }
 
+/** The state engine's settings. */
+export interface IStateEngineConfig {
+	readonly parity?: {
+		/**
+		 * Run the SQLite driver beside the in-memory one and sample their
+		 * parity. Default off: nothing loads the driver unless this is set.
+		 */
+		readonly shadow?: { readonly enabled?: boolean };
+	};
+}
+
 /**
  * Solid-ISP: f00089 U5 — native default filesystem configuration.
  *
@@ -294,6 +305,8 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	readonly managedSurface?: IManagedSurfaceConfig;
 	/** Optional runtime evidence retention policy. */
 	readonly evidence?: IEvidenceConfig;
+	/** Optional state engine settings. */
+	readonly state?: IStateEngineConfig;
 	/**
 	 * Host-scoped capability gate for `agent_worktree`. Default `false`.
 	 * When `false` (or unset) the proposals plugin's
