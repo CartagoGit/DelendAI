@@ -123,15 +123,17 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-log: approved by gpt-5.4 — verified at 6f6e97ff7f9e, validate exit 0, tests 94/94 — Approved after rerunning the focused work-profile and guard spec pack for x00877. Old-shape work refs remain reportable to work doctor, guard hook state follows the declared profile, and the focused pack passed 94/94.
 
 ### S6 — The generated-files merge driver exists where it is configured
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/generated-merge-driver.service.ts`, `packages/cli/src/lib/generated-merge-driver.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`guard install` in an adopting project configures a merge driver that resolves to a file present there (the shipped CLI), or none."
 - Delivered: `guard install` configures the generated-files merge driver only where its script exists; in a project that does not carry it (every adopting project: it is this repository's tooling) nothing is configured, and a `merge.delendai-generated` section an older install left is removed. The spec fails without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `38b68714aebe`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 38b68714aebe, validate exit 0, tests 94/94 — Approved after rerunning the focused merge-driver and migration spec pack for x00877. The generated-files driver is configured only when the script is actually present in the adopting project, and the focused pack passed 94/94.
 
 ### S7 — The host-scope configs are migrated too
 - **Status**: review
