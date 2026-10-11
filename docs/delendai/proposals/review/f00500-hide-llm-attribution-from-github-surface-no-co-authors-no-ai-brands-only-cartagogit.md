@@ -2,14 +2,14 @@
 id: f00500
 title: "Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-09-03
-last-transition-id: 3270deb4-e55c-49b4-9195-a4d8bab92c07
-last-correlation-id: 3270deb4-e55c-49b4-9195-a4d8bab92c07
-last-transition-from: ready
-last-transition-at: 2026-10-11T14:32:32.702Z
+last-transition-id: f8dcecbd-035c-470d-97a3-2b485ba1bb06
+last-correlation-id: f8dcecbd-035c-470d-97a3-2b485ba1bb06
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T14:33:51.334Z
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
@@ -166,6 +166,8 @@ manualmente cuando lo necesite.
   - "`parseIdentity` sigue siendo lossless hacia atrás (ramas antiguas con host/model siguen parseando igual)."
   - "Tests nuevos para el camino redactado; tests viejos no se rompen."
   - "El wiring de la config va a través de `IDelendaiPluginConfig.options` y `proposals/index.ts` lo lee — el campo puede ser opcional, default `false`."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Repo surface cleanup: renombrar filenames que contienen marcas de LLM
 - **Status**: retired
@@ -216,6 +218,8 @@ con su nombre canónico: el wiki puede y debe mencionar Claude/Codex/Copilot.
   - "`git grep -iE '(claude-opus|minimax-m3|gpt-5-5|gpt-4|gemini)' docs/delendai/proposals/` no devuelve hits en filenames ni en la primera línea de cada doc."
 
 Retired 2026-10-11. Renaming closed documents so that no file name carries a model's name was decided against by what the project chose afterwards: an agent is named by the model it runs as, in its work refs and its pull requests, which is the same surface (x00878, x00880, x00882). What this proposal protects, and still holds, is authorship: no commit names a model as author or co-author. The four documents are closed records and keep their names.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Pre-commit hook + lint guard para AI attribution (defensa en profundidad)
 - **Status**: review
@@ -287,6 +291,8 @@ rechaza.
   - "Añadir `lint:no-llm-attribution` al script set en `package.json` para que `bun run validate` lo incluya."
 
 Delivered on 2026-09-04 in `0adb72233` and never marked: the lint exists with its spec, `lefthook.yml` runs it on every commit message (`no-llm-attribution`), and `package.json` names it. It refuses a commit today, as every agent that added the trailer has found.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Documentar la política de no-AI-attribution
 - **Status**: review
@@ -346,6 +352,8 @@ Hace que la política sea discoverable, no solo enforceable.
   - "Links renderizan, no hay contradicción entre el comportamiento del engine y la documentación."
 
 Delivered on 2026-09-04 in `1ab56e2e9`: `docs/PRIVACY.md` states the policy, and `README.md` and `.github/CONTRIBUTING.md` point to it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — Validación end-to-end del conjunto
 - **Status**: review
@@ -403,6 +411,8 @@ queda verde.
   - "`bun run validate` global verde."
 
 Delivered on 2026-09-04: the evidence script exists and the attribution lint reports `ok` on the tree as it is on 2026-10-11.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — History rewrite + .mailmap (limpieza histórica, opcional pero recomendado)
 - **Status**: review
@@ -415,6 +425,8 @@ Cierra la fuga histórica**.** El `.mailmap` es instantáneo y barato; el
 history rewrite es destructivo y opcional.
 
 Delivered on 2026-09-04, the tooling: `.mailmap`, the rewrite script with its spec, and the runbook. Running the rewrite is not part of the slice and was not done: it rewrites published history, needs a freeze, and is the owner's to call, as the slice says (`none` gate, manual).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8a — `.mailmap`
 
@@ -447,6 +459,8 @@ Verificar con: `git log --use-mailmap --format='%an <%ae>' | sort -u`
 GitHub respeta el mailmap para el **contributor graph** (colapsa aliases
 en el canonical). NO lo respeta para los commit pages individuales (esos
 siguen mostrando el autor original).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8b — `tools/scripts/git/rewrite-llm-attribution.script.ts`
 
@@ -467,11 +481,15 @@ Script que envuelve `git filter-repo` (preferido) con fallback a
 
 **Nunca** auto-corre en `bun run validate` — `gate: none` significa
 "manual con sign-off explícito".
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8c — Tests del script
 
 `tools/scripts/git/rewrite-llm-attribution.spec.ts` — usa `mkdtemp` +
 `git init` + 3 fixtures + asserts post-rewrite. NO toca el repo real.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8d — Runbook
 
@@ -493,6 +511,8 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
   - "Crear `docs/delendai/wiki/git-history-rewrite.md` con el runbook: (1) backup `git clone --mirror` antes; (2) ejecutar el script en una rama temporal; (3) validar que `git log --all --format='%B' | grep -iE 'co-authored-by:.*(claude|minimax)' | wc -l` da 0; (4) coordinar con collaborators para force-push; (5) dejar refs originales en `refs/original/*` para forensic recovery durante 30 días; (6) nota en CHANGELOG."
   - "El script NO se ejecuta automáticamente como parte de `bun run validate` — es `none` gate, manual con check-in explícito del maintainer."
   - "`.mailmap` se commitea y se pushea independientemente del rewrite; el rewrite requiere un window de freeze y un announcement."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
