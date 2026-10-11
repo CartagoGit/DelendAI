@@ -60,12 +60,16 @@ describe('the roadmap plugin', () => {
 		expect(writing).toEqual(['roadmap_plan_init', 'roadmap_plan_close']);
 	});
 
-	it('refuses options it does not know, and a file outside the workspace', () => {
-		expect(() => plugin.register(makeCtx({ branch: 'main' }))).toThrow(
-			/rejected its options/u,
-		);
-		expect(() =>
-			plugin.register(makeCtx({ file: '../ROADMAP.md' })),
-		).toThrow(/outside the workspace/u);
+	it('refuses options it does not know, and a file outside the workspace', async () => {
+		await expect(
+			Promise.resolve().then(() =>
+				plugin.register(makeCtx({ branch: 'main' })),
+			),
+		).rejects.toThrow(/rejected its options/u);
+		await expect(
+			Promise.resolve().then(() =>
+				plugin.register(makeCtx({ file: '../ROADMAP.md' })),
+			),
+		).rejects.toThrow(/outside the workspace/u);
 	});
 });

@@ -45,7 +45,7 @@ export interface IRoadmapToolOptions {
 	 * The roadmap as the current call sees it: an agent working in its
 	 * own checkout reads and changes the file there, not the server's.
 	 */
-	readonly workspace: () => IRoadmapWorkspace;
+	readonly workspace: () => Promise<IRoadmapWorkspace>;
 	/** Now, as an ISO timestamp; the timeline owns no clock. */
 	readonly now?: () => string;
 	/** Who the timeline says made a change, unless the caller names one. */

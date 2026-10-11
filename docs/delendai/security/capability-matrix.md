@@ -1,6 +1,6 @@
 # Capability Matrix
 
-> Generated 2026-10-07 from plugin manifests + the `lint:capabilities` static analysis. Regenerate with `bun tools/scripts/gen/capability-matrix.script.ts`.
+> Generated 2026-10-11 from plugin manifests + the `lint:capabilities` static analysis. Regenerate with `bun tools/scripts/gen/capability-matrix.script.ts`.
 
 Legend: ✅ declared & used · 🟡 declared but unused · 🔴 used but not declared · ⚪ absent
 
@@ -54,6 +54,7 @@ Legend: ✅ declared & used · 🟡 declared but unused · 🔴 used but not dec
 | quality-policy | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | refactor | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | remote-provider-core | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| roadmap | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | rules | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | search | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | security | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |

@@ -23,9 +23,10 @@ export const recordChange = async (
 ): Promise<
 	IRoadmapResult<{ readonly roadmap: IRoadmap; readonly recorded: number }>
 > => {
-	const changed = await options.workspace().roadmap.update(mutation);
+	const workspace = await options.workspace();
+	const changed = await workspace.roadmap.update(mutation);
 	if (!changed.ok) return changed;
-	const events = await options.workspace().timeline.list();
+	const events = await workspace.timeline.list();
 	if (!events.ok)
 		return { ok: true, value: { roadmap: changed.value, recorded: 0 } };
 	const drafts = pendingTimelineDrafts(changed.value, events.value, {
@@ -35,7 +36,7 @@ export const recordChange = async (
 	});
 	if (!drafts.ok)
 		return { ok: true, value: { roadmap: changed.value, recorded: 0 } };
-	const appended = await options.workspace().timeline.append(drafts.value);
+	const appended = await workspace.timeline.append(drafts.value);
 	return {
 		ok: true,
 		value: {

@@ -27,7 +27,7 @@ const roadmap = roadmapOf(
 );
 
 const stateOf = async (
-	project: ReturnType<typeof roadmapProject>,
+	project: Awaited<ReturnType<typeof roadmapProject>>,
 	id: string,
 ): Promise<unknown> => {
 	const shown = await call(buildRoadmapShowTool(project.options), {
@@ -38,7 +38,7 @@ const stateOf = async (
 
 describe('roadmap_plan_close', () => {
 	it('closes as delivered on passing gates, with no reason needed', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		project.write('src/gated.ts', 'export {};\n');
 		const tool = buildRoadmapPlanCloseTool(project.options);
 		expect(tool.writeRoot).toBe('caller-checkout');
@@ -58,7 +58,7 @@ describe('roadmap_plan_close', () => {
 	});
 
 	it('does not close as delivered on silence when a gate does not pass', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const tool = buildRoadmapPlanCloseTool(project.options);
 		const failing = await call(tool, { entry: 'gated', to: 'delivered' });
 		expect(codeOf(failing)).toBe('reason-required');
@@ -71,7 +71,7 @@ describe('roadmap_plan_close', () => {
 	});
 
 	it('closes as delivered against the gates when the reason is stated', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const answer = await call(buildRoadmapPlanCloseTool(project.options), {
 			entry: 'open',
 			to: 'delivered',
@@ -88,7 +88,7 @@ describe('roadmap_plan_close', () => {
 	});
 
 	it('always needs the reason something will not ship as promised', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const tool = buildRoadmapPlanCloseTool(project.options);
 		for (const to of ['deferred', 'dropped'] as const) {
 			expect(codeOf(await call(tool, { entry: 'open', to }))).toBe(
@@ -104,7 +104,7 @@ describe('roadmap_plan_close', () => {
 	});
 
 	it('pairs superseded with the entry that replaces it', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const tool = buildRoadmapPlanCloseTool(project.options);
 		expect(
 			codeOf(
@@ -139,7 +139,7 @@ describe('roadmap_plan_close', () => {
 	});
 
 	it('refuses a transition the state machine does not allow', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const answer = await call(buildRoadmapPlanCloseTool(project.options), {
 			entry: 'done',
 			to: 'dropped',
@@ -149,7 +149,7 @@ describe('roadmap_plan_close', () => {
 	});
 
 	it('names an entry it does not have and arguments it cannot read', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const tool = buildRoadmapPlanCloseTool(project.options);
 		expect(codeOf(await call(tool, { entry: 'zz', to: 'dropped' }))).toBe(
 			'unknown-entry',

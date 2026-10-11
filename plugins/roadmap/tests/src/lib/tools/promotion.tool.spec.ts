@@ -19,7 +19,7 @@ const roadmap = roadmapOf(
 
 describe('roadmap_promotion', () => {
 	it('names the project branches and what to do, and executes nothing', async () => {
-		const project = roadmapProject(roadmap, {
+		const project = await roadmapProject(roadmap, {
 			versionFile: 'package.json',
 		});
 		project.write('package.json', '{"version":"1.0.0"}\n');
@@ -44,7 +44,7 @@ describe('roadmap_promotion', () => {
 	});
 
 	it('says what holds a version back', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const answer = await call(buildRoadmapPromotionTool(project.options), {
 			version: '1.2.0',
 		});
@@ -55,7 +55,7 @@ describe('roadmap_promotion', () => {
 	});
 
 	it('has nothing to promote in a project with one branch', async () => {
-		const project = roadmapProject(
+		const project = await roadmapProject(
 			roadmap,
 			{},
 			{ integration: 'main', release: 'main' },
@@ -67,7 +67,7 @@ describe('roadmap_promotion', () => {
 	});
 
 	it('has nothing to do once every version is published', async () => {
-		const project = roadmapProject(roadmap, {
+		const project = await roadmapProject(roadmap, {
 			versionFile: 'package.json',
 		});
 		project.write('package.json', '{"version":"2.0.0"}\n');
@@ -78,13 +78,13 @@ describe('roadmap_promotion', () => {
 	});
 
 	it('refuses without a development policy, an unknown version or bad arguments', async () => {
-		const tool = buildRoadmapPromotionTool(roadmapProject(roadmap).options);
+		const project = await roadmapProject(roadmap);
+		const tool = buildRoadmapPromotionTool(project.options);
 		expect(codeOf(await call(tool, { version: '9.0.0' }))).toBe(
 			'unknown-version',
 		);
 		expect(codeOf(await call(tool, { v: 1 }))).toBe('invalid-arguments');
-		const { branches: _none, ...withoutPolicy } =
-			roadmapProject(roadmap).options;
+		const { branches: _none, ...withoutPolicy } = project.options;
 		expect(
 			codeOf(await call(buildRoadmapPromotionTool(withoutPolicy))),
 		).toBe('no-branches');

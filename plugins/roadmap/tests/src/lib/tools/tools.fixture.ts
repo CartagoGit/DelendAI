@@ -31,14 +31,14 @@ export interface IRoadmapProject {
 }
 
 /** A project whose roadmap file holds `roadmap` (no file when absent). */
-export const roadmapProject = (
+export const roadmapProject = async (
 	roadmap?: IRoadmap,
 	extra: Partial<IRoadmapOptions> = {},
 	branches: IRoadmapToolOptions['branches'] = {
 		integration: 'trunk',
 		release: 'release/2.x',
 	},
-): IRoadmapProject => {
+): Promise<IRoadmapProject> => {
 	const root = mkdtempSync(join(tmpdir(), 'roadmap-tools-'));
 	projects.push(root);
 	const write = (path: string, content: string): void => {
@@ -48,7 +48,7 @@ export const roadmapProject = (
 	if (roadmap !== undefined) {
 		write('ROADMAP.yaml', `${JSON.stringify(roadmap, null, '\t')}\n`);
 	}
-	const opened = openRoadmapWorkspace({
+	const opened = await openRoadmapWorkspace({
 		workspaceRoot: root,
 		docsDir: join(root, 'docs'),
 		options: { ...extra, file: 'ROADMAP.yaml' },
@@ -59,7 +59,7 @@ export const roadmapProject = (
 		write,
 		options: {
 			namespacePrefix: 'x',
-			workspace: () => opened.value,
+			workspace: () => Promise.resolve(opened.value),
 			now: () => '2026-10-11T00:00:00.000Z',
 			...(branches === undefined ? {} : { branches }),
 		},

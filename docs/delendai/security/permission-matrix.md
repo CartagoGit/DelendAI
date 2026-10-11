@@ -99,6 +99,13 @@
 | quality-policy | public | * | filesystem-read, filesystem-write, process |
 | refactor | public | * | filesystem-read, filesystem-write |
 | remote-provider-core | public | * | filesystem-read |
+| roadmap | private | roadmap_show | filesystem-read |
+| roadmap | private | roadmap_sync | filesystem-read |
+| roadmap | private | roadmap_readiness | filesystem-read |
+| roadmap | private | roadmap_delta | filesystem-read |
+| roadmap | private | roadmap_promotion | filesystem-read |
+| roadmap | private | roadmap_plan_init | filesystem-read, filesystem-write |
+| roadmap | private | roadmap_plan_close | filesystem-read, filesystem-write |
 | rules | public | * | filesystem-read, network, env-read |
 | search | public | * | filesystem-read, process, env-read |
 | security | public | * | filesystem-read, filesystem-write, process, env-read |

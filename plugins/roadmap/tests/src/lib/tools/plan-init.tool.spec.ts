@@ -19,7 +19,7 @@ afterEach(cleanProjects);
 
 describe('roadmap_plan_init', () => {
 	it('creates the file on first use and records who, when and why', async () => {
-		const project = roadmapProject();
+		const project = await roadmapProject();
 		const tool = buildRoadmapPlanInitTool(project.options);
 		expect(tool.effects).toEqual(['write']);
 		expect(tool.writeRoot).toBe('caller-checkout');
@@ -53,7 +53,7 @@ describe('roadmap_plan_init', () => {
 	});
 
 	it('refuses a version that already has a horizon, and writes nothing', async () => {
-		const project = roadmapProject(
+		const project = await roadmapProject(
 			roadmapOf(horizon('1.0.0', [entry('a', 'committed')])),
 		);
 		const before = readFileSync(join(project.root, 'ROADMAP.yaml'), 'utf8');
@@ -69,7 +69,7 @@ describe('roadmap_plan_init', () => {
 	});
 
 	it('needs a reason and a well-formed entry', async () => {
-		const project = roadmapProject();
+		const project = await roadmapProject();
 		const tool = buildRoadmapPlanInitTool(project.options);
 		expect(codeOf(await call(tool, { version: '1.0.0' }))).toBe(
 			'invalid-arguments',
@@ -87,8 +87,8 @@ describe('roadmap_plan_init', () => {
 });
 
 describe('where the roadmap may live', () => {
-	it('refuses a roadmap file outside the workspace', () => {
-		const opened = openRoadmapWorkspace({
+	it('refuses a roadmap file outside the workspace', async () => {
+		const opened = await openRoadmapWorkspace({
 			workspaceRoot: '/repo',
 			options: { file: '../elsewhere/ROADMAP.md' },
 		});
@@ -97,8 +97,8 @@ describe('where the roadmap may live', () => {
 		expect(opened.reason).toContain('outside the workspace');
 	});
 
-	it('refuses a timeline file outside the workspace', () => {
-		const opened = openRoadmapWorkspace({
+	it('refuses a timeline file outside the workspace', async () => {
+		const opened = await openRoadmapWorkspace({
 			workspaceRoot: '/repo',
 			options: { file: 'ROADMAP.md', timeline: '../../t.md' },
 		});

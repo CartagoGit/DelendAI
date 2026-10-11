@@ -40,6 +40,7 @@ export const buildRoadmapPromotionTool = (
 				outputSchema: OUTPUT,
 			},
 			async (args) => {
+				const workspace = await options.workspace();
 				const parsed = versionInputSchema.safeParse(args);
 				if (!parsed.success)
 					return invalidArguments(parsed.error.issues);
@@ -65,9 +66,9 @@ export const buildRoadmapPromotionTool = (
 						}),
 					);
 				}
-				const loaded = await loadRoadmap(options.workspace());
+				const loaded = await loadRoadmap(workspace);
 				if (!loaded.ok) return loaded.error;
-				const current = await options.workspace().currentVersion();
+				const current = await workspace.currentVersion();
 				const horizon =
 					parsed.data.version === undefined
 						? loaded.roadmap.horizons.find(
@@ -96,7 +97,7 @@ export const buildRoadmapPromotionTool = (
 				const readiness = horizonReadiness(
 					horizon,
 					loaded.evidence,
-					options.workspace().policy,
+					workspace.policy,
 				);
 				return toolJson(
 					OUTPUT.parse({

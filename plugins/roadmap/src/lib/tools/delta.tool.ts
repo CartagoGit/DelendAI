@@ -50,14 +50,15 @@ export const buildRoadmapDeltaTool = (
 				outputSchema: deltaOutputSchema,
 			},
 			async (args) => {
+				const workspace = await options.workspace();
 				const parsed = versionInputSchema.safeParse(args);
 				if (!parsed.success)
 					return invalidArguments(parsed.error.issues);
-				const loaded = await loadRoadmap(options.workspace());
+				const loaded = await loadRoadmap(workspace);
 				if (!loaded.ok) return loaded.error;
 				const asked = horizonsOf(loaded.roadmap, parsed.data.version);
 				if (!asked.ok) return asked.error;
-				const current = await options.workspace().currentVersion();
+				const current = await workspace.currentVersion();
 				return toolJson(
 					deltaOutputSchema.parse({
 						ok: true,
@@ -67,7 +68,7 @@ export const buildRoadmapDeltaTool = (
 								horizonReadiness(
 									horizon,
 									loaded.evidence,
-									options.workspace().policy,
+									workspace.policy,
 								),
 								isPublished(horizon.version, current),
 							),

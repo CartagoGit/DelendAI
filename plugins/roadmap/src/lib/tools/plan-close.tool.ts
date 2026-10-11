@@ -81,6 +81,7 @@ export const buildRoadmapPlanCloseTool = (
 				outputSchema: OUTPUT,
 			},
 			async (args) => {
+				const workspace = await options.workspace();
 				const parsed = INPUT.safeParse(args);
 				if (!parsed.success)
 					return invalidArguments(parsed.error.issues);
@@ -90,7 +91,7 @@ export const buildRoadmapPlanCloseTool = (
 					reason,
 					supersededBy,
 				} = parsed.data;
-				const loaded = await loadRoadmap(options.workspace());
+				const loaded = await loadRoadmap(workspace);
 				if (!loaded.ok) return loaded.error;
 				const detail = entryDetail(loaded.roadmap, entryId);
 				if (detail === undefined) {

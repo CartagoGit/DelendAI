@@ -42,9 +42,10 @@ export const buildRoadmapSyncTool = (
 				outputSchema: OUTPUT,
 			},
 			async () => {
-				const read = await options.workspace().roadmap.read();
+				const workspace = await options.workspace();
+				const read = await workspace.roadmap.read();
 				if (!read.ok) return roadmapUnreadable(read.reason);
-				const events = await options.workspace().timeline.list();
+				const events = await workspace.timeline.list();
 				if (!events.ok) {
 					return toolError(
 						events.reason,

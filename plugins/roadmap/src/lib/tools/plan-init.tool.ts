@@ -47,6 +47,7 @@ export const buildRoadmapPlanInitTool = (
 				outputSchema: OUTPUT,
 			},
 			async (args) => {
+				const workspace = await options.workspace();
 				const parsed = INPUT.safeParse(args);
 				if (!parsed.success)
 					return invalidArguments(parsed.error.issues);
@@ -91,7 +92,7 @@ export const buildRoadmapPlanInitTool = (
 				return toolJson(
 					OUTPUT.parse({
 						ok: true,
-						file: options.workspace().file,
+						file: workspace.file,
 						version,
 						entries: entries.length,
 						recorded: changed.value.recorded,

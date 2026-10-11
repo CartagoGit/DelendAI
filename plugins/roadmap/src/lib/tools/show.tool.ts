@@ -72,10 +72,11 @@ export const buildRoadmapShowTool = (
 				outputSchema: OUTPUT,
 			},
 			async (args) => {
+				const workspace = await options.workspace();
 				const parsed = INPUT.safeParse(args);
 				if (!parsed.success)
 					return invalidArguments(parsed.error.issues);
-				const loaded = await loadRoadmap(options.workspace());
+				const loaded = await loadRoadmap(workspace);
 				if (!loaded.ok) return loaded.error;
 				const asked = horizonsOf(loaded.roadmap, parsed.data.version);
 				if (!asked.ok) return asked.error;
@@ -93,7 +94,7 @@ export const buildRoadmapShowTool = (
 				return toolJson(
 					OUTPUT.parse({
 						ok: true,
-						file: options.workspace().file,
+						file: workspace.file,
 						horizons: summariseRoadmap(
 							loaded.roadmap,
 							parsed.data.version,

@@ -29,7 +29,7 @@ export default definePlugin({
 	describe:
 		'Versioned roadmap: what each target version promises, what of it is delivered, whether it can be promoted, and the bump its promises imply. Read tools plus init and close; it never bumps, merges, pushes or tags.',
 	optionsSchema: roadmapOptionsSchema,
-	register(ctx) {
+	async register(ctx) {
 		const parsed = roadmapOptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
@@ -47,17 +47,17 @@ export default definePlugin({
 				docsDir: resolve(workspaceRoot, ctx.docsDir),
 				options: { ...parsed.data, file },
 			});
-		const served = openIn(ctx.workspace.root);
+		const served = await openIn(ctx.workspace.root);
 		if (!served.ok) {
 			throw new Error(`roadmap plugin: ${served.reason}`);
 		}
 		const options = {
 			namespacePrefix: ctx.namespacePrefix,
 			// A call bound to an agent's checkout reads and writes there.
-			workspace: () => {
+			workspace: async () => {
 				const root = callerCheckout.executionRootOr(ctx.workspace.root);
 				if (root === ctx.workspace.root) return served.value;
-				const mine = openIn(root);
+				const mine = await openIn(root);
 				return mine.ok ? mine.value : served.value;
 			},
 			...(ctx.developmentPolicy === undefined

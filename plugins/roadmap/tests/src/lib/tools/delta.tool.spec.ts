@@ -26,7 +26,7 @@ const roadmap = roadmapOf(
 
 describe('roadmap_delta', () => {
 	it('returns exactly the three columns, the bump and the next action', async () => {
-		const project = roadmapProject(roadmap, {
+		const project = await roadmapProject(roadmap, {
 			versionFile: 'package.json',
 		});
 		project.write('a.ts', 'export {};\n');
@@ -56,7 +56,7 @@ describe('roadmap_delta', () => {
 	});
 
 	it('says published once the project version reaches the horizon', async () => {
-		const project = roadmapProject(roadmap, {
+		const project = await roadmapProject(roadmap, {
 			versionFile: 'package.json',
 		});
 		project.write('package.json', '{"version":"0.5.1"}\n');
@@ -66,12 +66,12 @@ describe('roadmap_delta', () => {
 	});
 
 	it('says null, not false, when nobody can say what is published', async () => {
-		const withoutFile = roadmapProject(roadmap);
+		const withoutFile = await roadmapProject(roadmap);
 		const first = await call(buildRoadmapDeltaTool(withoutFile.options));
 		expect(
 			(first.body.horizons as { published: unknown }[])[0]?.published,
 		).toBeNull();
-		const unreadable = roadmapProject(roadmap, {
+		const unreadable = await roadmapProject(roadmap, {
 			versionFile: 'package.json',
 		});
 		unreadable.write('package.json', '{not json');
@@ -82,7 +82,7 @@ describe('roadmap_delta', () => {
 	});
 
 	it('declares an output schema and refuses what it was not asked', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const tool = buildRoadmapDeltaTool(project.options);
 		expect((await call(tool)).outputSchema).toBeDefined();
 		expect(codeOf(await call(tool, { version: '7.0.0' }))).toBe(

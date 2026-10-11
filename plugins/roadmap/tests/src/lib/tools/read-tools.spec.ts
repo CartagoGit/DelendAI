@@ -32,7 +32,7 @@ const roadmap = roadmapOf(
 
 describe('roadmap_show', () => {
 	it('lists every horizon compactly, without the gates', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const answer = await call(buildRoadmapShowTool(project.options));
 		expect(answer.name).toBe('x_roadmap_show');
 		expect(answer.outputSchema).toBeDefined();
@@ -49,7 +49,7 @@ describe('roadmap_show', () => {
 	});
 
 	it('gives one entry whole on request', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const answer = await call(buildRoadmapShowTool(project.options), {
 			entry: 'a',
 		});
@@ -62,7 +62,7 @@ describe('roadmap_show', () => {
 	});
 
 	it('names what it does not have', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const tool = buildRoadmapShowTool(project.options);
 		expect(codeOf(await call(tool, { entry: 'zz' }))).toBe('unknown-entry');
 		const missing = await call(tool, { version: '9.9.9' });
@@ -72,13 +72,13 @@ describe('roadmap_show', () => {
 	});
 
 	it('answers with an empty roadmap when the file does not exist yet', async () => {
-		const project = roadmapProject();
+		const project = await roadmapProject();
 		const answer = await call(buildRoadmapShowTool(project.options));
 		expect(answer.body.horizons).toEqual([]);
 	});
 
 	it('reports a file it cannot read instead of throwing', async () => {
-		const project = roadmapProject();
+		const project = await roadmapProject();
 		project.write('ROADMAP.yaml', 'schemaVersion: one\nhorizons: 3\n');
 		const answer = await call(buildRoadmapShowTool(project.options));
 		expect(answer.isError).toBe(true);
@@ -89,7 +89,7 @@ describe('roadmap_show', () => {
 
 describe('roadmap_sync', () => {
 	it('names what a hand-edited file holds that the timeline never saw', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		const answer = await call(buildRoadmapSyncTool(project.options));
 		expect(answer.body.inSync).toBe(false);
 		expect(answer.body.recorded).toBe(0);
@@ -101,7 +101,7 @@ describe('roadmap_sync', () => {
 	});
 
 	it('is in sync after a tool made the change', async () => {
-		const project = roadmapProject();
+		const project = await roadmapProject();
 		await call(buildRoadmapPlanInitTool(project.options), {
 			version: '1.0.0',
 			reason: 'first plan',
@@ -117,7 +117,7 @@ describe('roadmap_sync', () => {
 	});
 
 	it('reports a timeline it cannot read', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		project.write('ROADMAP.timeline.md', '- {not json\n');
 		const answer = await call(buildRoadmapSyncTool(project.options));
 		expect(codeOf(answer)).toBe('timeline-unreadable');
@@ -130,7 +130,7 @@ describe('roadmap_sync', () => {
 
 describe('roadmap_readiness', () => {
 	it('answers per horizon from the evidence in the workspace', async () => {
-		const project = roadmapProject(roadmap);
+		const project = await roadmapProject(roadmap);
 		project.write('src/a.ts', 'export {};\n');
 		const answer = await call(buildRoadmapReadinessTool(project.options));
 		const [first, second] = answer.body.horizons as {
@@ -144,7 +144,7 @@ describe('roadmap_readiness', () => {
 	});
 
 	it('fails a delivered entry whose path is not there', async () => {
-		const project = roadmapProject(
+		const project = await roadmapProject(
 			roadmapOf(
 				horizon('1.0.0', [
 					entry('a', 'delivered', [
@@ -166,7 +166,7 @@ describe('roadmap_readiness', () => {
 	});
 
 	it('reads a proposal gate from the folder the proposal is in', async () => {
-		const project = roadmapProject(
+		const project = await roadmapProject(
 			roadmapOf(
 				horizon('1.0.0', [
 					entry('a', 'delivered', [
@@ -185,7 +185,7 @@ describe('roadmap_readiness', () => {
 	});
 
 	it('honours the gate kinds the project lets block', async () => {
-		const project = roadmapProject(
+		const project = await roadmapProject(
 			roadmapOf(
 				horizon('1.0.0', [
 					entry('a', 'delivered', [

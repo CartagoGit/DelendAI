@@ -44,10 +44,11 @@ export const buildRoadmapReadinessTool = (
 				outputSchema: OUTPUT,
 			},
 			async (args) => {
+				const workspace = await options.workspace();
 				const parsed = versionInputSchema.safeParse(args);
 				if (!parsed.success)
 					return invalidArguments(parsed.error.issues);
-				const loaded = await loadRoadmap(options.workspace());
+				const loaded = await loadRoadmap(workspace);
 				if (!loaded.ok) return loaded.error;
 				const asked = horizonsOf(loaded.roadmap, parsed.data.version);
 				if (!asked.ok) return asked.error;
@@ -58,7 +59,7 @@ export const buildRoadmapReadinessTool = (
 							horizonReadiness(
 								horizon,
 								loaded.evidence,
-								options.workspace().policy,
+								workspace.policy,
 							),
 						),
 					}),

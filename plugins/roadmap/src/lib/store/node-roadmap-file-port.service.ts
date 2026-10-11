@@ -1,17 +1,13 @@
-import { readFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 
 import {
 	quarantineCorruptFile,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@delendai/core/public';
 
 import type { IRoadmapFilePort } from '../contracts/interfaces/roadmap-store.interface';
-
-const isMissing = (error: unknown): boolean =>
-	typeof error === 'object' &&
-	error !== null &&
-	(error as { readonly code?: unknown }).code === 'ENOENT';
 
 /**
  * The file operations on a real disk: whole-file atomic writes, a lock
@@ -19,13 +15,13 @@ const isMissing = (error: unknown): boolean =>
  * files.
  */
 export const createNodeRoadmapFilePort = (): IRoadmapFilePort => ({
+	// The caller has already contained `path` in its workspace; the
+	// reader is rooted at the file's own directory so that a symlink
+	// placed there cannot carry the read anywhere else.
 	read: async (path) => {
-		try {
-			return await readFile(path, 'utf8');
-		} catch (error) {
-			if (isMissing(error)) return undefined;
-			throw error;
-		}
+		const reader = new SafeWorkspaceReader(dirname(path));
+		if ((await reader.exists(path)) === null) return undefined;
+		return (await reader.readText(path)).content;
 	},
 	write: (path, content) => writeFileAtomic(path, content),
 	quarantine: (path) => quarantineCorruptFile(path),

@@ -1,16 +1,19 @@
 /**
  * roadmap-workspace.service.ts — a project's roadmap, opened from what
  * the project declares. Every path it is given is resolved inside the
- * workspace or refused; nothing here knows a branch, a file name or a
+ * workspace — where it really is, symlinks followed — or refused; nothing here knows a branch, a file name or a
  * directory layout of its own.
  */
 // effect-boundary-authorized: read-only probes (does a path exist, which
 // folder holds a proposal, what a version file says) for the gate
 // evidence; every write goes through the injected IRoadmapFilePort.
-import { access, readdir, readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 
-import { resolveWorkspaceContained } from '@delendai/core/public';
+import {
+	resolveWorkspaceContainedEffective,
+	SafeWorkspaceReader,
+} from '@delendai/core/public';
 
 import { TIMELINE_SUFFIX } from '../contracts/constants/timeline.constant';
 import type { IRoadmapResult } from '../contracts/interfaces/roadmap.interface';
@@ -24,15 +27,6 @@ import { createNodeRoadmapFilePort } from '../store/node-roadmap-file-port.servi
 
 /** The directory, under the docs, that holds one folder per proposal status. */
 const PROPOSALS_DIR = 'proposals';
-
-const exists = async (path: string): Promise<boolean> => {
-	try {
-		await access(path);
-		return true;
-	} catch {
-		return false;
-	}
-};
 
 /** `ROADMAP.md` → `ROADMAP.timeline.md`, beside it. */
 export const timelineBeside = (file: string): string => {
@@ -60,12 +54,16 @@ const proposalStatusIn = async (
 	return found?.split(/[\\/]/u)[0];
 };
 
-export const openRoadmapWorkspace = (
+export const openRoadmapWorkspace = async (
 	input: IRoadmapWorkspaceInput,
-): IRoadmapResult<IRoadmapWorkspace> => {
+): Promise<IRoadmapResult<IRoadmapWorkspace>> => {
 	const { workspaceRoot, options } = input;
 	const files = input.files ?? createNodeRoadmapFilePort();
-	const file = resolveWorkspaceContained(workspaceRoot, options.file);
+	const reader = new SafeWorkspaceReader(workspaceRoot);
+	const file = await resolveWorkspaceContainedEffective(
+		workspaceRoot,
+		options.file,
+	);
 	if (!file.ok) {
 		return {
 			ok: false,
@@ -73,7 +71,10 @@ export const openRoadmapWorkspace = (
 		};
 	}
 	const timelineFile = options.timeline ?? timelineBeside(options.file);
-	const timeline = resolveWorkspaceContained(workspaceRoot, timelineFile);
+	const timeline = await resolveWorkspaceContainedEffective(
+		workspaceRoot,
+		timelineFile,
+	);
 	if (!timeline.ok) {
 		return {
 			ok: false,
@@ -91,13 +92,14 @@ export const openRoadmapWorkspace = (
 				deferralPolicy: options.promotion?.deferralPolicy,
 			},
 			pathExists: async (relativePath) => {
-				const contained = resolveWorkspaceContained(
+				const contained = await resolveWorkspaceContainedEffective(
 					workspaceRoot,
 					relativePath,
 				);
 				// A path outside the workspace is not this project's to
 				// look at: no evidence, rather than "it does not exist".
-				return contained.ok ? exists(contained.abs) : undefined;
+				if (!contained.ok) return undefined;
+				return (await reader.exists(relativePath)) !== null;
 			},
 			proposalStatus: (id) =>
 				input.docsDir === undefined
@@ -105,14 +107,9 @@ export const openRoadmapWorkspace = (
 					: proposalStatusIn(input.docsDir, id),
 			currentVersion: async () => {
 				if (options.versionFile === undefined) return undefined;
-				const contained = resolveWorkspaceContained(
-					workspaceRoot,
-					options.versionFile,
-				);
-				if (!contained.ok) return undefined;
 				try {
 					const parsed: unknown = JSON.parse(
-						await readFile(contained.abs, 'utf8'),
+						(await reader.readText(options.versionFile)).content,
 					);
 					const version = (parsed as { version?: unknown } | null)
 						?.version;
