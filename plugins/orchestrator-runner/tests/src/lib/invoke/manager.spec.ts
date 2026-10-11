@@ -18,6 +18,7 @@ import type {
 	IActiveInvocation,
 	IKindInvoker,
 } from '../../../../src/lib/invoke/types';
+import type { ILifecycleEnvironment } from '../../../../src/lib/contracts/interfaces/execution-env-lifecycle.interface';
 import type { SpendCheckOutcome } from '../../../../src/lib/invoke/spend-guard';
 
 const provider = (
@@ -241,5 +242,105 @@ describe('InvocationManager — spend that cannot be checked, and every kind tha
 		await manager.invoke({ task: 'do it' });
 		expect(consulted).toBe(0);
 		expect(startedIds).toEqual(['claude-code']);
+	});
+});
+
+describe('InvocationManager execution environment', () => {
+	const environmentOf = (
+		calls: string[],
+		prepare: { ok: boolean; reason?: string } = { ok: true },
+	): ILifecycleEnvironment => ({
+		id: 'fake-env',
+		prepare: async () => {
+			calls.push('prepare');
+			return prepare;
+		},
+		teardown: async () => {
+			calls.push('teardown');
+			return { ok: true };
+		},
+	});
+
+	const managerIn = (
+		environment: ILifecycleEnvironment,
+		calls: string[],
+		invoker: IKindInvoker,
+	): InvocationManager =>
+		new InvocationManager({
+			providers: [provider('solo', 1)],
+			availabilityOf: available,
+			invokers: {
+				cli: invoker,
+				api: invoker,
+				'mcp-server': invoker,
+				subscription: invoker,
+			},
+			defaultCostPreference: 'balanced',
+			invokeTimeoutMs: 1000,
+			maxFallbackDepth: 1,
+			fallbackStrategy: 'rerank',
+			executeApi: true,
+			confirmBeforeExecute: false,
+			autoBypassConfirmed: true,
+			environment,
+		});
+
+	const orderedInvoker = (calls: string[]): IKindInvoker => ({
+		start: (): IActiveInvocation => {
+			calls.push('invoke');
+			return {
+				promise: Promise.resolve({ text: 'ok' }),
+				cancel: () => undefined,
+			};
+		},
+	});
+
+	it('prepares before the invoker and tears down after, logging both', async () => {
+		const calls: string[] = [];
+		const manager = managerIn(
+			environmentOf(calls),
+			calls,
+			orderedInvoker(calls),
+		);
+		const out = await manager.invoke({ task: 'do it' });
+		expect(calls).toEqual(['prepare', 'invoke', 'teardown']);
+		expect(out.result?.text).toBe('ok');
+		expect(out.environmentLog?.map((e) => e.phase)).toEqual([
+			'prepare',
+			'teardown',
+		]);
+		expect(
+			out.environmentLog?.every((e) => typeof e.durationMs === 'number'),
+		).toBe(true);
+	});
+
+	it('returns environment-unavailable and never calls the invoker when prepare fails', async () => {
+		const calls: string[] = [];
+		const manager = managerIn(
+			environmentOf(calls, { ok: false, reason: 'no docker' }),
+			calls,
+			orderedInvoker(calls),
+		);
+		const out = await manager.invoke({ task: 'do it' });
+		expect(out.error?.code).toBe('environment-unavailable');
+		expect(out.userMessage).toContain('no docker');
+		expect(calls).not.toContain('invoke');
+		expect(out.environmentLog?.[0]?.ok).toBe(false);
+	});
+
+	it('tears down after an invocation that fails', async () => {
+		const calls: string[] = [];
+		const manager = managerIn(environmentOf(calls), calls, {
+			start: (): IActiveInvocation => {
+				calls.push('invoke');
+				return {
+					promise: Promise.reject(new Error('boom')),
+					cancel: () => undefined,
+				};
+			},
+		});
+		const out = await manager.invoke({ task: 'do it' });
+		expect(out.error?.code).toBe('all-providers-failed');
+		expect(calls).toEqual(['prepare', 'invoke', 'teardown']);
 	});
 });

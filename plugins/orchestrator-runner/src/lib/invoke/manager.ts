@@ -38,6 +38,11 @@ import type {
 	ITriedProvider,
 } from './types';
 import type { CostPreference } from '../types';
+import type {
+	IEnvironmentLogEntry,
+	ILifecycleEnvironment,
+} from '../contracts/interfaces/execution-env-lifecycle.interface';
+import { runInExecutionEnvironment } from '../services/execution-env.service';
 
 export type InvokeErrorCode =
 	| 'no-providers'
@@ -47,7 +52,8 @@ export type InvokeErrorCode =
 	| 'timeout-exceeded'
 	| 'cancelled'
 	| 'spend-limit-exceeded'
-	| 'spend-unverifiable';
+	| 'spend-unverifiable'
+	| 'environment-unavailable';
 
 export interface IInvokeArgs {
 	readonly task: string;
@@ -80,6 +86,8 @@ export interface IInvokeOutput {
 	/** True when the executed spend auto-bypassed confirmation (S7). */
 	readonly autoBypassed?: boolean;
 	readonly userMessage?: string;
+	/** Prepare and teardown of the execution environment, with durations. */
+	readonly environmentLog?: readonly IEnvironmentLogEntry[];
 }
 
 export interface ITimerHandle {
@@ -112,6 +120,11 @@ export interface IInvocationManagerOptions {
 		decision: IRoutingDecision,
 		strategy: FallbackStrategy,
 	) => SpendCheckOutcome;
+	/**
+	 * Where invocations run. When set, the environment is prepared before an
+	 * invocation and released after it; a failed prepare runs nothing.
+	 */
+	readonly environment?: ILifecycleEnvironment;
 	readonly now?: () => Date;
 	readonly newInvocationId?: () => string;
 	readonly setTimer?: (fn: () => void, ms: number) => ITimerHandle;
@@ -281,6 +294,33 @@ export class InvocationManager {
 	}
 
 	async invoke(args: IInvokeArgs): Promise<IInvokeOutput> {
+		const environment = this.opts.environment;
+		if (environment === undefined) return this.invokeChain(args);
+		const outcome = await runInExecutionEnvironment(environment, () =>
+			this.invokeChain(args),
+		);
+		if (outcome.result !== undefined) {
+			return { ...outcome.result, environmentLog: outcome.log };
+		}
+		const failure = outcome.failure ?? 'the invocation did not complete';
+		const mode: RoutingMode = args.mode ?? 'implement';
+		return {
+			decision: this.emptyDecision(
+				rewriteUnicodeForAgent(args.task),
+				mode,
+				args.sessionId ?? `sess_${randomUUID()}`,
+			),
+			error: {
+				code: 'environment-unavailable',
+				tried: [],
+				nextAvailableAt: this.nextAvailableAt(),
+			},
+			userMessage: failure,
+			environmentLog: outcome.log,
+		};
+	}
+
+	private async invokeChain(args: IInvokeArgs): Promise<IInvokeOutput> {
 		const mode: RoutingMode = args.mode ?? 'implement';
 		const costPref = args.costPreference ?? this.opts.defaultCostPreference;
 		const sessionId = args.sessionId ?? `sess_${randomUUID()}`;
