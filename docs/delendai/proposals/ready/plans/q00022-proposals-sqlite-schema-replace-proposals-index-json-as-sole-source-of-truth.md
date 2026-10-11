@@ -732,24 +732,35 @@ Three things S6 left that a project other than this one would have met:
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
 
-### S10 — The repository's own scripts read the projection, and the registry export goes
+### S10 — The registry file is nobody's to read; what named it by habit goes
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
-  - `plugins/proposals/src/lib/proposals/registry-export.service.ts`
-  - `tools/scripts/catalog/generate-agent-catalog.script.ts`
-  - `tools/scripts/lint/proposals.script.ts`
-  - `tools/scripts/proposals/collect-evidence.script.ts`
-- **Gate**: unit
+  - `tools/scripts/lint/no-home-directory-in-tracked-files.baseline.json`
+- **Gate**: none
 - acceptance:
-  - No script under `tools/scripts` opens the registry file: each reads through `readProposalIndex`.
-  - A full sync no longer writes the registry file, and nothing fails for its absence.
+  - No script of this repository parses the registry file.
+  - The nine one-off review scripts are gone.
 
-Nineteen scripts of this repository name the registry file (the review
-helpers, the catalog generator, three lints). They are tooling, not the
-product's read path, and each is a small change; together they are what
-keeps the export being written.
+Written on 2026-10-11 as "nineteen scripts read the registry". Reading
+them showed otherwise. Every one of them names the file only as the path
+it hands to a tool, and the reader takes that path as the address of the
+workspace, not as something to open: none parses it. The catalog
+generator builds its registry in memory from the markdown, on purpose,
+so that a checked-in catalog never depends on a cache of this machine.
+What was left to do was smaller and plainer: nine of the scripts were
+one-off records of the review of a single proposal each (`a00068`,
+`a00070`, `a00071`, `c00089`, `c00123`, `d00004`, `f00144`,
+`f00372-f00373` and a batch), referenced by nothing but the baseline of
+the home-directory lint, which had to excuse a path each of them
+carried. They are deleted, 550 lines, with their nine baseline entries.
+
+The export itself stays: `json` and `auto` are sources a project may
+pin, and a read that cannot locate a projection falls back to it.
+Removing those is a decision about compatibility, not a clean-up, and
+is not part of this plan.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
