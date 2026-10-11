@@ -109,6 +109,8 @@ already hydrates the checkout.
   worktree in a conflict it did not start; it is told instead (S3), and
   the conflict, if there is one, is met once, by the agent, when it
   merges the integration branch before publishing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — An agent is told its base moved under it
 
