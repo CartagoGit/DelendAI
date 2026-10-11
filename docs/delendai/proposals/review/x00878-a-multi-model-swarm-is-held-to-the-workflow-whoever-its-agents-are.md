@@ -30,6 +30,7 @@ shipped-in:
   - "5ca6586a7230b91298e062be4d3c9b1c1b937ea2"
   - "32aeee8d75229edfba38c08f2d9f8451eda2465b"
   - "4825b968e9285c8008ecadbedccfe6ab3a68be23"
+  - "78601cf18a172c72357b6d20d8791199197c0849"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -631,7 +632,7 @@ ref back (x00691); it now also takes it off.
 
 ### S41 — A fixture directory a background writer still uses is removed without failing the run
 
-- **Status**: review
+- **Status**: done
 - shipped-in: `12cd2bf82`
 - **Files**:
   - `plugins/usage-tracking/tests/src/lib/lifecycle-races.spec.ts`
@@ -647,8 +648,10 @@ touched nothing near it. The test registers the real plugin, whose
 summary is regenerated in the background with no way to wait for it; a
 file it wrote while `afterEach` was emptying the directory failed the
 removal, and with it the run.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 78601cf18a17, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: lifecycle-races.spec pins that a fixture directory a background writer still uses is removed without failing the run — the observed 'lifecycle-races' failure mode. Suite passes.
 
 ### S42 — A server answers its host in half the time: three network round trips at start, not seven
 
