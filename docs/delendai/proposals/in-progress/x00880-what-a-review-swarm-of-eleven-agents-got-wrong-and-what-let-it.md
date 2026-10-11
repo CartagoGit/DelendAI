@@ -265,6 +265,8 @@ What the rule has to keep, found while reading how candidates are compared. The 
   - `review next` does not try to publish such a unit when nothing else waits.
 
 Delivered 2026-10-11. Four specs published a review unit made of empty commits; each now records a verdict first, as a reviewer does.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
