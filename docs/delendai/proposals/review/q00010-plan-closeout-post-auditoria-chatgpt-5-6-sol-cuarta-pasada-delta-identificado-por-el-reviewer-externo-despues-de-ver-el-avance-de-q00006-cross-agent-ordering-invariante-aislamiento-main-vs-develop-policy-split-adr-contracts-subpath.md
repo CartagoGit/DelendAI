@@ -2,7 +2,7 @@
 id: q00010
 title: "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath"
 kind: plan
-status: in-progress
+status: review
 type: plan
 track: develop-audit-hardening-v4-closeout
 date: 2026-08-25
@@ -46,13 +46,13 @@ contains:
             rationale: "ADR 0007: registrar la decisión de usar subpath @delendai/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
-last-transition-id: f4d3dd45-0e62-421b-8903-234470f9cc34
-last-correlation-id: f4d3dd45-0e62-421b-8903-234470f9cc34
-last-transition-from: review
+last-transition-id: 41bb8092-c32e-42dd-8209-0e6214f03268
+last-correlation-id: 41bb8092-c32e-42dd-8209-0e6214f03268
+last-transition-from: in-progress
 shipped-in:
   - "6ab4f8f548bac7b59ee4c6d5d8f5915b657c4484"
   - "bbb1b27cdecb49caea37ca1055aa0182888a483b"
-last-transition-at: 2026-10-11T02:27:22.126Z
+last-transition-at: 2026-10-11T06:49:51.644Z
 ---
 
 # q00010 — Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada)
@@ -246,7 +246,7 @@ S1 verde.
 
 ### S3 — Cierre del plan
 
-- **Status**: in-progress
+- **Status**: review
   closed: 8 `done` with peer review, 1 (`c00156`) `done` without one and
   1 (`c00146`) `retired`, which is the single condition this plan closes
   on (below). `c00156` is the exception this slice names instead of
@@ -277,6 +277,14 @@ S1 verde.
     heredados (`x00258 superseded-by x00272`, `v00125
     superseded-by v00127`, `r00029 superseded-by d00012`).
 
+ANSWERED 2026-10-11 (implementer, `claude-opus-5-5`). Both requests below
+asked for the same thing and recommended option (b); it is what the
+acceptance above now says, since `6eae3b29052e` (PR #987): item 1 names
+`c00156` as the exception, `done` without peer review and with its reason,
+and the status paragraph counts 8 `done` with peer review, 1 `done`
+without and 1 `retired`. The text from here down is the record of the
+earlier round and quotes the sentence that was replaced.
+
 WHAT IS WRONG. S3's own sentence "All 10 children are closed: 9 done with peer review and 1 (c00146) retired" does not hold. c00156 (Track A.split, bifurcated branch protection) is status: done but carries NO peer review: its document has zero review-log lines and no review-reviewer field, and the journal has no approval for it. The other eight done children all carry one (x00269, x00270, c00145, x00272 by delivery_verifier; t00022 and t00023 by sonnet agents; v00127 by minimax-m3; d00012 by sonnet-worker-review). The true count is 8 done with peer review, 1 done without (c00156), 1 retired (c00146).
 
 WHERE. S3 acceptance item 1 requires each child to be done with peer review, or retired with the reason recorded in its own document. c00156 meets neither branch: it is done and unreviewed. The criterion is unmet, and the sentence asserting 9 done-with-peer-review is the very count that does not close.
@@ -289,9 +297,8 @@ WHAT MUST HOLD TO APPROVE. Either (a) c00156 gets a real independent review roun
 
 WHAT I DID VERIFY AND IT PASSES. All ten children are closed with none left in review, in-progress or ready (9 done; c00146 retired with its reason in its own document). The three supersede links read straight from the superseded proposals' frontmatter are correct: x00258 superseded-by x00272, v00125 superseded-by v00127, r00029 superseded-by d00012. bun tools/scripts/proposals/sync-proposal-counters.script.ts refreshes cleanly with exit 0 and 11 prefixes in sync, which is acceptance item 2. gpt-5.4's earlier complaint that the count did not close is resolved in the current S2 text ("Of the 10 children, 9 are done and 1 (c00146) is retired").
 - review-attribution: claude-opus-5-5 from commit bbb1b27cdecb names refs/heads/delendai/wip/claude-opus-5-5/implement/q00010-all-g1/the-plan-counts-its-children-once (bbb1b27cdecb49caea37ca1055aa0182888a483b), opened by minimax-3
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: qwen3-flash
 - review-log: requested_changes by minimax-3 — Second reviewer; I reached the same conclusion as Illyria's objection independently, and add the attribution defect that made it hard to see.
 - review-log: requested_changes by qwen3-flash — Verified independently: c00145/c00146/d00012/t00022/t00023/v00127/x00269/x00270/x00272 all carry >=1 'review-log: approved'; ONLY c00156 is status done with ZERO review-log lines (reviewlogs=0). So S3 acceptance item 1 ('each child done WITH peer review, or retired with recorded reason') is unmet for c00156. The implementer's own note already concedes this ('8 done with peer review, 1 (c00156) done without, 1 retired'). Approve requires either (a) a real independent reviewer round recorded in c00156's own file, or (b) S3's acceptance text rewritten to enumerate c00156 as a named documented exception (mirroring how c00146=retired is handled). Recommend (b): smaller change, and it keeps one coherent closure condition.
 
