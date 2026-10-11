@@ -2,7 +2,7 @@
 id: f00639
 title: "Optional capability providers — DelendAI works with zero extras, and gets better with any"
 kind: feat
-status: blocked
+status: ready
 type: proposal
 track: architecture
 date: 2026-09-25
@@ -13,6 +13,10 @@ related:
     - f00536 # context frugality: providers must not grow the context they save
     - f00509 # work event bus: receipts and outcomes are events
     - q00022 # SQLite authority: decision history needs one authority
+last-transition-id: 4e863fd8-7e0f-487f-94a8-e1f78450a16b
+last-correlation-id: 4e863fd8-7e0f-487f-94a8-e1f78450a16b
+last-transition-from: blocked
+last-transition-at: 2026-10-11T14:34:23.162Z
 ---
 
 # f00639 — Optional capability providers
