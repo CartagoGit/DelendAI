@@ -16,6 +16,7 @@ last-correlation-id: 38e5f9ef-ccfa-4ea4-9466-fd7f5d0ee26d
 last-transition-from: in-progress
 shipped-in:
   - "7dfa7abc3476102c786e172126e750286090d948"
+  - "d615fc5a2550b5079967172e87fd4792720d43e4"
 ---
 
 # f00538 — Forward-sync the release branch back into the integration branch after every promotion
@@ -82,10 +83,15 @@ fast-forwards a local clone and never touches the forge.
 
 ### S2 — A history-only sync is a delivery, and only that one
 
-- **Status**: done — `lint:candidate-delivers` accepts a zero-file pull request only when the release tip is in the candidate's history and not in its base's. It asks the forge's compare API in CI and falls back to `git merge-base --is-ancestor`. A fact it cannot establish exempts nothing, so the #100 shape (empty, with no release tip) is still refused.
+- **Status**: done
 - **Files**: [`tools/scripts/lint/candidate-delivers.script.ts`, `tools/scripts/lint/candidate-delivers.script.spec.ts`]
 - **Gate**: `npx vitest run tools/scripts/lint/candidate-delivers.script.spec.ts`
 - shipped-in: `0bf0fe61e015`
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at d615fc5a2550, validate exit 0, tests 22/22 — Gate npx vitest run candidate-delivers.script.spec.ts: 22/22 pass. Attributed to d615fc5a2550 (the PR #236 head): 0bf0fe61e015 is the merge of it and its combined diff is empty, so it names no delivered file — the tool refuses it on exactly that ground. Acceptance criterion 3 is verified by named specs, not inference: 'still refuses the #100 shape: an empty candidate with no release tip in it', 'refuses a candidate whose base already has the release tip', and 'a fact it could not establish exempts nothing' (undefined when the event carries no head commit and when the forge call fails) all pass. It asks the forge compare API in CI and falls back to git merge-base --is-ancestor (candidate-delivers.script.ts:358), so the exemption is exactly as wide as the fact it rests on — the non-goal 'no weakened delivery gate'. changedSince is empty for this slice.
+- review-attribution: unrecorded — nothing in Git names who delivered d615fc5a2550b5079967172e87fd4792720d43e4: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m31
 
 ### S3 — Run it on every move of the release branch
 
