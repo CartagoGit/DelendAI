@@ -10,6 +10,8 @@ last-transition-id: 74b4140b-ea9c-468a-86c3-6841218c2d9c
 last-correlation-id: 74b4140b-ea9c-468a-86c3-6841218c2d9c
 last-transition-from: in-progress
 last-transition-at: 2026-10-09T21:35:03.577Z
+shipped-in:
+  - "b6bc626ea9363cad35a15eb0b21ddda7e966a5cd"
 ---
 
 # x00877 — An upgrade leaves the project as its configuration says, and nothing else
@@ -42,16 +44,18 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - global_gate: none
 
 ### S1 — migrate status only reads
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`migrate status` and `migrate --dry-run` write nothing: the tree, the config and `.delendai/migrations-applied.json` are byte-identical before and after."
   - "Only `migrate run` applies a migration."
 - Delivered: two causes. `migrate` started an MCP server to run, and that server applied the migration guard as it booted; and the CLI's own guard ran before the command too. `migrate` is now an offline command (like `init` and `guard`), and the guard skips it: `migrate run` is the only way it applies. Probed in a throwaway mcp-vertex project: `status` and `--dry-run` leave it byte-identical, `run` migrates and writes its manifest and backup. The spec fails without the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `38b68714aebe`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at b6bc626ea936, validate exit 0, tests 94/94 — Approved after rerunning the focused migration and guard spec pack for x00877: 94/94 tests passed, and the CLI now keeps migrate status and dry-run read-only while migrate run remains the only applying path.
 
 ### S2 — The legacy proposal state is moved, and no copy of it stays behind
 - **Status**: review
