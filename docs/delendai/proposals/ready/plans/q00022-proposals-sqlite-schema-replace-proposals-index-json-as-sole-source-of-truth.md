@@ -547,6 +547,8 @@ the read statistics and its spec; a read under `sql` records
 were, for a project that pins them: `auto` is by definition a
 comparison. What still names the registry file is this repository's own
 tooling, which is S10.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
