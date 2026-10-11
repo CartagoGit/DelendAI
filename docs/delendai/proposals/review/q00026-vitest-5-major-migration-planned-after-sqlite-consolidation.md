@@ -2,7 +2,7 @@
 id: q00026
 title: "vitest 5 major migration planned after SQLite consolidation"
 kind: plan
-status: in-progress
+status: review
 type: proposal
 track: dependencies
 date: 2026-09-07
@@ -24,10 +24,10 @@ related:
   - f00518
 blocks:
   - the next dependabot/npm_and_yarn/development-* PR can land cleanly once this is done
-last-transition-id: 431187d1-80c7-4da2-a11e-af57301704f6
-last-correlation-id: 431187d1-80c7-4da2-a11e-af57301704f6
-last-transition-from: ready
-last-transition-at: 2026-10-11T16:23:57.581Z
+last-transition-id: 8042eaa5-7920-408e-a544-1e859d864359
+last-correlation-id: 8042eaa5-7920-408e-a544-1e859d864359
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T16:24:48.698Z
 ---
 
 # q00026 — vitest + @vitest/coverage-v8 4.x → 5.0.0 planned migration, blocked on SQLite consolidation
@@ -185,6 +185,8 @@ Nothing else is in scope.
 - **Status**: retired
 - **Gate**: lint
 - retired-reason: the inventory was to tell S2 and S3 where the new major would break. Run on 2026-10-11, the migration broke nothing — 16,259 tests in 1,954 files pass unchanged on vitest 5.0.3, the journal reporter and the coverage summary keep their shape — so a script and a document listing touch points would describe a risk that did not materialise and would have to be maintained for no reader. What the run did find is recorded where it is acted on (S3, S4).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — vitest 4.1.11 → 5.0.3 in every workspace
 
@@ -268,6 +270,8 @@ Nothing else is in scope.
   - The whole suite passes with no spec changed: 16,259 tests in 1,954 files.
   - `tools/scripts/test/journal-reporter.ts` is unchanged and still appends one line per run.
   - The target is 5.0.3, the current patch of the major the plan named as 5.0.0.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — @vitest/coverage-v8 4.1.11 → 5.0.3, and the one counting difference
 
@@ -282,6 +286,8 @@ Nothing else is in scope.
   - `@vitest/coverage-v8` moves with `vitest` in the same commit: version 5 of one requires version 5 of the other, so there is no installable state in between and the two bumps are not separable as the plan first drew them.
   - `vitest run --coverage --coverage.reporter=json-summary` writes `.cache/coverage/coverage-summary.json` with the same shape; `coverage-ratchet.script.ts` and `no-dead-modules.script.ts` read it unchanged.
   - vitest 5 reports the setup files every project loads when `coverage.include` matches them; vitest 4 left them out by itself. They are excluded in `vitest.config.ts` from the same list the projects load them from, and `bun run lint:no-dead-modules` passes.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — re-measure coverage + re-tighten ratchet thresholds
 
@@ -296,6 +302,8 @@ Nothing else is in scope.
   - Each floor is `floor(lower reading − 1.0)`: 82 → 86, 69 → 74, 83 → 87, 83 → 87. No floor is lowered.
   - `bun tools/scripts/coverage-ratchet.script.ts` exits 0 after the edit, and `bun run test:coverage` passes with the new floors.
   - `docs/delendai/coverage-ratchet.md` carries the table of readings and why the floors moved.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — verify CI parity (lint, typecheck, biome-baseline, dead-modules)
 
@@ -308,6 +316,8 @@ Nothing else is in scope.
   - `bun run lint:dependency-versions` exits 0 with no unjustified drift: the one gate the bump regressed, fixed by the governed table.
   - `bun run lint:no-dead-modules` exits 0, and `bun run test:coverage` exits 0 with the S4 floors.
   - The lint chain the publication runs, the typecheck and the biome baseline pass on the candidate; the pull request's required check is the evidence.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## Dependency graph
 
