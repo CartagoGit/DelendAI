@@ -49,8 +49,8 @@ const verdictTitle = (subjects: readonly string[]): string | undefined => {
 		(subject) => VERDICT.exec(subject)?.groups?.proposal ?? [],
 	);
 	if (judged.length === 0) return undefined;
-	const proposals = [...new Set(judged.map((id) => id.toLowerCase()))];
-	return `review: ${String(judged.length)} verdict(s) on ${proposals.join(', ')}`;
+	const ids = [...new Set(judged.map((id) => id.toLowerCase()))];
+	return `review: ${String(judged.length)} verdict(s) on ${ids.join(', ')}`;
 };
 
 /**
