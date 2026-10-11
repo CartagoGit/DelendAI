@@ -77,6 +77,7 @@ const testIo = (overrides: Record<string, unknown> = {}) => ({
 
 const createFixtureRoot = async (options?: {
 	readonly manifest?: any;
+	readonly skillBodies?: Readonly<Record<string, string>>;
 }): Promise<string> => {
 	const root = await mkdtemp(join(tmpdir(), 'agent-catalog-'));
 	const manifest = options?.manifest ?? baseManifest;
