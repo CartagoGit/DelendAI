@@ -20,6 +20,7 @@ shipped-in:
   - "7b07571790b18759adbefc1eec61d0db2d1797"
   - "7cf206f4d2f8"
   - "30680e32ef2b"
+  - "48754bc9a7646463f097c21b1cbaf6dfee9f81"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -200,7 +201,7 @@ instead of its own habits.
 
 ### S5 — The two tools, and a cache keyed by resolved version
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/src/index.ts`, `plugins/framework-knowledge/plugin.manifest.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/src/lib/tools/source.tool.ts`, `plugins/framework-knowledge/src/lib/tools/knowledge-output.schema.ts`, `plugins/framework-knowledge/src/lib/cache/knowledge-cache.service.ts`, `plugins/framework-knowledge/src/lib/resolve/installed-framework.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/knowledge-cache.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/knowledge-cache.constant.ts`, `plugins/framework-knowledge/tests/src/lib/cache/knowledge-cache.spec.ts`, `plugins/framework-knowledge/tests/src/lib/tools/framework-tools.spec.ts`, `plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts`, `packages/core/src/public/index.ts`]
 
 `framework_guidance { topic }` returns the small resolved answer;
@@ -229,9 +230,11 @@ keeps summary and evidence apart so the common path stays cheap.
   because it needs a project scan that no tool owns.
 - The spec lives at `tests/src/lib/cache/`, the repo's real convention,
   not next to the source as the first draft of this slice said.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `f75161fa8386`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 47/47 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955, the reconciling merge). Gate run verbatim: npx vitest run .../knowledge-cache.spec.ts -> within a 6-file / 47-test batch, exit 0; then bun run lint:unregistered-tools -> exit 0, 228 builders all wired. The cache is keyed by resolved version, so a changed lockfile entry is a different key.
 
 ### S6 — Knowledge packs: rules as data, selected by version, seeding the cache offline
 
