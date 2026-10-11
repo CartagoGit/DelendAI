@@ -194,6 +194,8 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
   - The answer is not a verdict: the reviewer who asked is still the last to have judged, and still may not verify the fix.
 
 Delivered 2026-10-11, and not as first written. The slice was to reshape the brief so that earlier rounds read as history. Following observation 26 to its cause showed the history was incomplete instead: q00010 S3 carried two requests for the same change, by `minimax-3` and then `qwen3-flash`, and between them the fix (#987) with nothing in the document to say so. `proposal_review { action: "submit", note }` took the implementer's note, answered `ok`, and kept none of it; a `resubmitted` line was written only when an approval was being voided. The second reviewer read an objection with no reply under it. The reply is now recorded.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — A reviewer runs the slice's gate, in its own worktree
 
