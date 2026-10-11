@@ -1511,6 +1511,14 @@
 				"status": "ready",
 				"kind": "plan",
 				"date": "2026-09-07"
+			},
+			{
+				"id": "x00880",
+				"title": "What a review swarm of eleven agents got wrong, and what let it",
+				"track": "swarm",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": "2026-10-11"
 			}
 		]
 	}
