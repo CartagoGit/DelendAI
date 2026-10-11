@@ -6,10 +6,10 @@ status: done
 type: proposal
 track: trust
 date: 2026-09-26
-last-transition-id: 0531f5cf-96b3-47d8-9241-a52332e43c97
-last-correlation-id: 0531f5cf-96b3-47d8-9241-a52332e43c97
+last-transition-id: 9f5001b3-be34-438f-9b6e-310f936f576f
+last-correlation-id: 9f5001b3-be34-438f-9b6e-310f936f576f
 last-transition-from: review
-last-transition-at: 2026-10-11T02:31:20.484Z
+last-transition-at: 2026-10-11T09:16:08.359Z
 shipped-in:
   - "ff589f828b9bb3ad18c8f483059268acfe78c141"
   - "652863cb5729b2376b25bc40c8490133a800c327"
@@ -48,6 +48,8 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.4
 - review-log: approved by gpt-5.4 — verified at ff589f828b9b, validate exit 0, tests 18/18 — Approved after rerunning the declared gate in the review worktree: 10/10 core startup-gate and idempotency tests plus 8/8 forge-seam tests passed, and the implementation matches the acceptance claims about seam binding, conditional reads and non-fatal unavailability.
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at ff589f828b9b, validate exit 0, tests 10/10 — Delivered by 4a1ca6f53 (PR #806, claude-sonnet-5-5; the queue cites the later merge ff589f828b of PR #832 which re-merged the same files with no code delta on this slice's paths). runStartupGate takes an optional forge seam and stops listing the phase NOT EXECUTED when bound; the host seam shells out to the user's own gh session with If-None-Match and answers unavailable instead of throwing. Evidence today in this worktree, agent env scrubbed: run-startup-gate.spec.ts + idempotency.spec.ts green 10/10 exit 0; all declared files exist; implementer is a different model, independence holds.
 
 ### S2 — A journal source is bound once its home is decided
 - **Status**: done
@@ -65,6 +67,8 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
 - review-log: approved by gpt-5.4 — verified at 652863cb5729, validate exit 0, tests 35/35 — Approved after rerunning the declared S2 gate in the review worktree. The recorded decision is present in the proposal, the implementation binds the journal source from the journal ref in core, and the focused gate passed 35/35.
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 652863cb5729, validate exit 0, tests 10/10 — Delivered by the S2 work merged via PR #832 (merge ff589f828b, claude-opus-5-5); the queue cites the later merge 652863cb5 (PR #960) which touched the same files delivering S3. The Decision block in the proposal records the maintainer-delegated home (refs/<namespace>/journal, git-ref NDJSON); journal-ref.service.ts binds IStartupJournalSource and the journal port dedupes on event identity so a replay imports once. Evidence today in this worktree, agent env scrubbed: journal-ref.service.spec.ts green 10/10 exit 0; declared files exist; implementer is a different model, independence holds.
 
 ### S3 — The journal is published to its ref
 - **Status**: done
@@ -82,6 +86,8 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
 - review-log: approved by gpt-5.4 — verified at 652863cb5729, validate exit 0, tests 16/16 — Approved after rerunning the declared S3 gate in the review worktree with complete worktree dependencies installed. The publisher retries by event identity, publication failure is non-fatal, and the focused gate passed 10/10 core, 2/2 host, and 4/4 startup-state-ports tests.
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at 652863cb5729, validate exit 0, tests 12/12 — Delivered by 9dba85760a (shipped-in) with the bulk in the PR #960 merge 652863cb5 (claude-opus-5-5): journal-publish.service.ts publishes the state database events to refs/delendai/journal as fast-forward commits, fetch-merges by event identity and retries on a rejected push, and a publication failure is reported without failing the boot. Evidence today in this worktree, agent env scrubbed: journal-publish.service.spec.ts + startup-state-ports.spec.ts + host-boot-journal.spec.ts green 12/12 exit 0; all declared files exist; implementer is a different model, independence holds.
 
 ## acceptance
 
