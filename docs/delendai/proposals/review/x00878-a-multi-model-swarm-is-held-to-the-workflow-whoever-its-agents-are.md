@@ -2,14 +2,14 @@
 id: x00878
 title: "A multi-model swarm is held to the workflow, whoever its agents are"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-06
-last-transition-id: ddb060d5-c100-44f3-8dbf-c0795cc2b808
-last-correlation-id: ddb060d5-c100-44f3-8dbf-c0795cc2b808
-last-transition-from: ready
-last-transition-at: 2026-10-09T22:29:16.500Z
+last-transition-id: 5a640b7c-07ad-4966-a4dd-cd3f95791bb6
+last-correlation-id: 5a640b7c-07ad-4966-a4dd-cd3f95791bb6
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T00:52:48.735Z
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -375,6 +375,8 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "Closing an approved proposal accepts, as its validate evidence, the integration branch's full CI run at the commit that carries the proposal's work, when that run is green; a local journalled validate run still counts, and neither a red nor a missing certification closes anything."
 - Found 2026-10-07 in the hydration log: `close-approved-proposals` failed 218 times with "x00834 refused — validate required: No validate run has been journalled for this workspace". Approved proposals waited for a local `validate` (the whole chain, about ten minutes, that nobody runs on the owner machine) while the integration branch's certified full run, a stronger proof of the same tree, sat green.
 - Retired 2026-10-07 on reading the code: closing already accepts the integration branch's certified full run as evidence (`certifiedDelivery` in `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, tried after the local journal), when every commit in the proposal's `shipped-in` is contained in a certified tip. The 218 refusals in the hydration log were for x00834 before it had `shipped-in`; it is done, and the passes since report nothing in review ready to close.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S30 — A proposal that moves folders keeps the approvals it already had
 - **Status**: review
