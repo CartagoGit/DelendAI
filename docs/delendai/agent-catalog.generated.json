@@ -1385,14 +1385,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00511",
-				"title": "F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico",
-				"track": "trust",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-09-06"
-			},
-			{
 				"id": "f00512",
 				"title": "F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente",
 				"track": "trust",
@@ -1519,14 +1511,6 @@
 				"status": "ready",
 				"kind": "plan",
 				"date": "2026-09-06"
-			},
-			{
-				"id": "q00021",
-				"title": "Plan — Cache Layout Lifecycle & Legacy Reaper: migraciones versionadas de layout para proyectos consumidores, sin LLM, sin coste de tokens, fast-path O(1)",
-				"track": "trust",
-				"status": "ready",
-				"kind": "plan",
-				"date": "2026-09-07"
 			},
 			{
 				"id": "q00022",
