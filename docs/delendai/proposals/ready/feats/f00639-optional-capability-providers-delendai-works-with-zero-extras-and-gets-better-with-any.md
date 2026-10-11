@@ -7,6 +7,7 @@ type: proposal
 track: architecture
 date: 2026-09-25
 priority: P2
+paused-reason: "Paused 2026-10-11: no consumer asks for an optional provider yet, and its own text says the first integration must come with a need. It resumes when one does."
 related:
     - f00551 # Batuta: a priority consumer, never absorbed by this
     - f00552 # authority/projections: receipts must declare their authority
@@ -18,7 +19,6 @@ last-correlation-id: bfa2aecc-2da7-4baa-95b9-d7bbfdc2ff7f
 last-transition-from: blocked
 last-transition-at: 2026-10-11T14:35:39.626Z
 ---
-paused-reason: "Paused 2026-10-11: no consumer asks for an optional provider yet, and its own text says the first integration must come with a need. It resumes when one does."
 
 # f00639 — Optional capability providers
 
