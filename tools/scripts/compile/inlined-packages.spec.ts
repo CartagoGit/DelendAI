@@ -93,6 +93,11 @@ describe('importedBySources', () => {
 				join(src, 'lib', 'thing.spec.ts'),
 				"import { fake } from '@x/kit';\n",
 			);
+			mkdirSync(join(src, 'lib', 'testing'));
+			writeFileSync(
+				join(src, 'lib', 'testing', 'server.helper.ts'),
+				"import { fake } from '@x/kit';\n",
+			);
 
 			expect(
 				importedBySources(src, [

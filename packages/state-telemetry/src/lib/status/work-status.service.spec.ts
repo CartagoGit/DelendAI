@@ -18,24 +18,11 @@ const MINUTE = 60_000;
 const proposal = {
 	id: 'f00001',
 	title: 'A thing',
-	markdown: [
-		'## slices',
-		'',
-		'### S1 — first',
-		'- **Status**: done',
-		'- acceptance:',
-		'  - "one"',
-		'  - "two"',
-		'',
-		'### S2 — second',
-		'- **Status**: in-progress',
-		'- acceptance:',
-		'  - "one"',
-		'',
-		'### S3 — dropped',
-		'- **Status**: retired',
-		'',
-	].join('\n'),
+	slices: [
+		{ id: 'S1', status: 'done', acceptanceCount: 2 },
+		{ id: 'S2', status: 'in-progress', acceptanceCount: 1 },
+		{ id: 'S3', status: 'retired', acceptanceCount: 0 },
+	],
 };
 
 const event = (
@@ -88,9 +75,7 @@ describe('buildWorkStatus', () => {
 	it('ignores events of work it was not asked about, and proposals without slices', () => {
 		expect(
 			buildWorkStatus({
-				proposals: [
-					{ id: 'q00002', title: 'A plan', markdown: 'no slices' },
-				],
+				proposals: [{ id: 'q00002', title: 'A plan', slices: [] }],
 				events: [event('zzz/S1', 'slice_claimed', 'agent-a', 1)],
 				now: NOW,
 			}),
@@ -102,15 +87,10 @@ describe('what the document says about a slice', () => {
 	const delivered = {
 		id: 'f00002',
 		title: 'Delivered',
-		markdown: [
-			'### S1 — a',
-			'- **Status**: review',
-			'- acceptance:',
-			'  - "one"',
-			'### S2 — b',
-			'- **Status**: review',
-			'',
-		].join('\n'),
+		slices: [
+			{ id: 'S1', status: 'review', acceptanceCount: 1 },
+			{ id: 'S2', status: 'review', acceptanceCount: 0 },
+		],
 	};
 
 	it('counts a slice handed to review as delivered and under review, with no event', () => {
