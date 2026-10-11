@@ -2,16 +2,17 @@
 id: f00541
 title: "Execution environments: local, Docker, Docker Compose, SSH, Docker Exec"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-15
-last-transition-id: 5fdde533-f187-4fce-9863-fb7540b0784d
-last-correlation-id: 5fdde533-f187-4fce-9863-fb7540b0784d
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T00:21:48.517Z
+last-transition-id: ed61a9f5-b989-44df-8aba-9975cdc74a25
+last-correlation-id: ed61a9f5-b989-44df-8aba-9975cdc74a25
+last-transition-from: review
+last-transition-at: 2026-10-11T04:38:29.337Z
 shipped-in:
   - "b201fe50ec0d28cf0a76c1370a2465c43cf488f7"
+  - "5db86437392ffbca82143e19efbc9f42874062f9"
 ---
 
 # f00541 — Execution environments: local, Docker, Docker Compose, SSH, Docker Exec
@@ -144,7 +145,7 @@ Today the agent implicitly assumes local execution against the repo. That breaks
 - review-log: approved by claude-opus-5-5 — verified at b201fe50ec0d, validate exit 0, tests 101/101 — Ran the plugin suite in the review unit (11 files, 101 tests, green) and read the code against each criterion; every command is an argv with the options ended before data, and nothing needs a daemon or a host to test.
 
 ### S8 — Lifecycle integration in orchestrator-runner
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/orchestrator-runner/src/lib/services/execution-env.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/execution-env-lifecycle.interface.ts`, `plugins/orchestrator-runner/src/public/index.ts`, `plugins/orchestrator-runner/tests/execution-env.service.spec.ts`, `plugins/orchestrator-runner/src/lib/invoke/manager.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/lib/options.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/package.json`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/execution-env-lifecycle.interface.ts`, `plugins/orchestrator-runner/src/lib/services/environment-loader.service.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager.spec.ts`, `plugins/orchestrator-runner/tests/environment-loader.service.spec.ts`, `plugins/execution-env/src/lib/registry/built-in-registry.service.ts`, `plugins/execution-env/src/public/index.ts`, `plugins/execution-env/tests/src/lib/registry/built-in-registry.spec.ts`
 - **Gate**: `npx vitest run --root plugins/orchestrator-runner tests/execution-env.service.spec.ts`
 - shipped: `runInExecutionEnvironment` prepares an environment, runs the slice, then tears down, logging each phase with its duration (and passing it to an `onLog` sink). When `prepare` fails or throws the slice is never called; teardown runs whenever prepare was attempted, also after a failing slice; a failed teardown after a good slice is reported as a failure. The environment is described by a two-method structural interface, so the runner takes no package dependency on the environment plugin.
@@ -153,9 +154,11 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Runner calls prepare before slice and teardown after, reporting durations in the slice log."
   - "On prepare failure, the slice is aborted before any code change."
 - shipped-in: `e1504fba93b0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-max
 - review-log: requested_changes by claude-opus-5-5 — runInExecutionEnvironment (plugins/orchestrator-runner/src/lib/services/execution-env.service.ts) is correct and its five specs pass: it prepares, never starts the slice when prepare fails, and always tears down, recording both durations. But nothing calls it: it is only exported from the plugin public index. The criterion says the RUNNER calls prepare before a slice and teardown after and reports the durations in the slice log; the runner own slice execution does neither. Wire it into the path that runs a slice (with the environment resolved from configuration, local when none is declared) and prove it with a spec that drives that path, or the helper is unused code.
+- review-log: approved by glm-5.3-max — verified at 5db86437392f, validate exit 0, tests 28/28 — Reviewed the integrated candidate 5db8643, including the runner wiring and focused tests: 28/28 pass.
 
 ## acceptance
 

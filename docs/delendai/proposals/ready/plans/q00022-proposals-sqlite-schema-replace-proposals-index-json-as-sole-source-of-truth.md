@@ -11,6 +11,7 @@ shipped-in:
   - "ce29bb976"
   - "6e7780392"
   - "0b82bb036"
+  - "56cf4016958d"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -252,7 +253,7 @@ that the audit calls obligatory.
 
 ### S4 — One projection chain, then SQLite-only reads (the markdown stays the authority)
 
-- **Status**: in-progress (phase 2 delivered 2026-09-30; phase 3 remains)
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
   - `plugins/proposals/src/lib/services/projection-refresh.ts`
@@ -291,8 +292,7 @@ that the audit calls obligatory.
   - `plugins/proposals/tests/src/lib/proposals/index-reader-db-resolution.spec.ts`
   - `plugins/proposals/tests/src/lib/proposals/index-reader-location.spec.ts`
   - `plugins/proposals/src/lib/tools/db-status.tool.ts`
-  - `plugins/proposals/src/lib/proposals/index-reader-parity-report.ts`
-  - `plugins/proposals/tests/src/lib/proposals/index-reader-stale-registry.spec.ts`
+  - `plugins/proposals/tests/src/lib/services/db-doctor/storage-mode.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -537,6 +537,22 @@ Acceptance:
 
 **Phase 3, 2026-10-07 — a stale export is not a divergence.** Every boot of the MCP server said `proposal index: serving the SQLite projection …; .cache/delendai/proposals/index.json differs on x00643, x00644, x00645`. The projection reconciles on its own; the registry export is written only by a full sync, which in a shared checkout nobody runs — units sync in their own worktrees — so the file there was a day old and every comparison reported the work done since as divergence. The SQL read now carries when its reconcile completed (`reconciledAt`, from `reconciliation_runs.completed_at`), and a registry generated before that is not compared: the read is counted as `sql-registry-stale` (parity `not-compared`) and says nothing. A registry newer than the projection is still compared. `index-reader-stale-registry.spec.ts` pins both; `test:sqlite` 417 pass. This narrows the registry's role to what phase 3 wants it to be, an export for the rollback; removing it from the read path entirely is still open.
 
+**Phase 3 closed 2026-10-11 — the registry is out of the read.** After
+S6 the last thing a read under `sql`, the default, did with the registry
+file was to open it, parse it and say how it differed from the
+projection. Every read paid for a 250 KB parse to compare an authority
+that is kept level with the markdown against a copy nobody keeps
+current. The comparison is gone, with its module, its two outcomes in
+the read statistics and its spec; a read under `sql` records
+`sql-served` and compares nothing. `auto` and `json` remain what they
+were, for a project that pins them: `auto` is by definition a
+comparison. What still names the registry file is this repository's own
+tooling, which is S10.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
+
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
 - **Status**: review — every acceptance item now has a spec; see the
@@ -568,7 +584,7 @@ slices without ids, timestamps or revisions:
 
 ### S6 — A projection behind the markdown is rebuilt before it answers, and the index has one reader
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/proposals/index-reader-stale.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/stale-projection-seams.interface.ts`
@@ -618,12 +634,14 @@ recorded. They are valid proposals and a stamped projection now.
 
 Measured in this repository (1188 proposals): a level read costs about
 130 ms; a rebuild about 9 s, once per change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
 
 ### S7 — A file the projection cannot represent is reported where the proposals are counted
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/set-aside.service.ts`
   - `packages/proposals-sqlite/src/index.ts`
@@ -646,12 +664,14 @@ of the rebuild and was stored nowhere, so a read that rebuilt on its own
 dropped it and the person who wrote the file had no way to learn why it
 was missing. Phase 3 of S4 removes the registry, so this had to be
 visible before it.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
 
 ### S8 — A file that returns is alive again
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler-revive.service.ts`
   - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
@@ -671,12 +691,14 @@ reader, which lists what exists now, left the three out for two weeks.
 The candidate is what the markdown holds: promotion skips a recorded
 disappearance the candidate contradicts, clears the retirement on the
 entity and removes the record.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
 
 ### S9 — The reader follows the project: its configured folder, with or without git, at a cost a server can pay
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/proposals/index-reader-location.ts`
   - `plugins/proposals/src/lib/proposals/index-reader-stale.ts`
@@ -705,6 +727,38 @@ Three things S6 left that a project other than this one would have met:
   1188 proposals). The servers of this repository, which read the index
   several times a second, sat at 27% of a core each. A level projection
   is now remembered as level for two seconds per process: 4 ms a read.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
+
+### S10 — The registry file is nobody's to read; what named it by habit goes
+
+- **Status**: review
+- **Files**:
+  - `tools/scripts/lint/no-home-directory-in-tracked-files.baseline.json`
+- **Gate**: none
+- acceptance:
+  - No script of this repository parses the registry file.
+  - The nine one-off review scripts are gone.
+
+Written on 2026-10-11 as "nineteen scripts read the registry". Reading
+them showed otherwise. Every one of them names the file only as the path
+it hands to a tool, and the reader takes that path as the address of the
+workspace, not as something to open: none parses it. The catalog
+generator builds its registry in memory from the markdown, on purpose,
+so that a checked-in catalog never depends on a cache of this machine.
+What was left to do was smaller and plainer: nine of the scripts were
+one-off records of the review of a single proposal each (`a00068`,
+`a00070`, `a00071`, `c00089`, `c00123`, `d00004`, `f00144`,
+`f00372-f00373` and a batch), referenced by nothing but the baseline of
+the home-directory lint, which had to excuse a path each of them
+carried. They are deleted, 550 lines, with their nine baseline entries.
+
+The export itself stays: `json` and `auto` are sources a project may
+pin, and a read that cannot locate a projection falls back to it.
+Removing those is a decision about compatibility, not a clean-up, and
+is not part of this plan.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
