@@ -28,6 +28,7 @@ shipped-in:
   - "5c102c170928cd0a35890fb33449cff0305dd296"
   - "516a7cf4b51d58e91ac4073a7aad6df94ddf5aef"
   - "ca9ff5e6a712fe1ed960c1022f58469116349783"
+  - "eb1e94c54f307621664c488e504e73e18147a110"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -1064,11 +1065,17 @@ the good verdicts' shape (P1) becomes the required shape.
 - review-implementer: claude-opus-5-5
 
 ### S37 — A session goes back to its own unit, whatever generation it is
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - Found 2026-10-05: I retired my stale review unit `batch-all-g1` and kept working in `batch-all-g2`. The next `review next --session=<g2's session>` entered a new `batch-all-g1` and claimed `x00870` there, and the approval of `x00870` with the same session went to `g2`, which had claimed nothing, and was refused. `chooseGeneration` took the first generation no other session held, so a generation freed by a retirement came before the one the session was in.
 - A session that holds a unit of that agent, proposal and slice now goes back to it, whichever generation; only a session that holds none takes the first free one. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at eb1e94c54f30, validate exit 0, tests 48/48 — Delivered by eb1e94c54 (PR #805 merge 345f73884, on develop). A session now goes back to its own unit whatever generation it is: work-unit-generation.service.ts treats any generation with a live publication as in use and re-enters the session's own unit first, fixing the g1/g2 cross-entry defect found 2026-10-05 (x00870 claimed in a phantom g1). Verified today in this worktree, agent env scrubbed (the spec deliberately expects a refusal when no agent is inferable): declared gate work-unit.service.spec.ts green 48/48 exit 0; declared files exist; commit subject cites x00835 S37. Implementer claude-opus-5-5; different model, independence holds.
+- review-attribution: claude-opus-5-5 from Merge pull request #805 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00835-S37-g1/a-session-re-enters-its-own-unit (refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S37-g1/a-session-re-enters-its-own-unit) (eb1e94c54f307621664c488e504e73e18147a110), opened by glm-5.3-max
+
 ### S36 — A reviewer can give the evidence each criterion asks for
 - **Status**: done
 - **Files**: `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `packages/cli/src/contracts/interfaces/review-queue-view.interface.ts`, `packages/cli/src/commands/review.command.spec.ts`
