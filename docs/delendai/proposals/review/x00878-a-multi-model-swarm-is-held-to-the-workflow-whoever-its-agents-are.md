@@ -26,6 +26,7 @@ shipped-in:
   - "030cdc1a3857da4062cfe1d5141f0538b9d70ff5"
   - "a0a4f48fa4ced941243d7ef49717d3c3a463225e"
   - "feb34020cf8fe3c34d518d486d176fa75c58e75b"
+  - "cda35c0a1811ad72655b2595554726a7da0cf9b0"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -460,7 +461,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 945143a0310a, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: closed-with-independent-approval.script.ts is the gate behind the refused #851/#856/#858. I ran it on the real tree: '0 proposal(s) closed here, each with an independent approval'. Wired into validate:run.
 
 ### S31 — A unit answers for what it deleted, not for what the branch gained
-- **Status**: review
+- **Status**: done
 - shipped-in: `45b11f65f`
 - **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `tools/scripts/lint/mass-content-removal.script.spec.ts`
 - **Gate**: type
@@ -468,8 +469,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "`lint:mass-content-removal` measures a branch from where it left the integration branch, read from the project's declared branches, so files the integration branch gained afterwards are not counted as deleted by a unit that never had them."
 - Found 2026-10-08 by the agent on f00757 S1: its unit, one merge behind, was refused for a mass removal of eight files it had never touched; they had landed on the integration branch after the unit left. The lint compared the two tips (`develop..branch`) and named the branch `develop` in code. It had no spec of its own; it has one now.
 - Follow-up 2026-10-09: the lint already had a spec, in `plugins/proposals/tests`, importing the script by a relative path; this slice's first publication (#942) did not see it, changed the diff range, and left the integration branch red on it, because a change under `tools/` does not select the proposals zone. Its cases now live in the spec beside the script, where the planner selects them with it, and the cross-zone copy is gone.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at cda35c0a1811, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: mass-content-removal.script.ts answers 'a commit says more than it did' in its product form — a branch whose deletions cross a threshold is not silently published. I ran it: 'no branch crosses the deletion threshold'. Wired into validate:run.
 
 ### S32 — A change reaches the zones of the files that import it by path
 - **Status**: review
