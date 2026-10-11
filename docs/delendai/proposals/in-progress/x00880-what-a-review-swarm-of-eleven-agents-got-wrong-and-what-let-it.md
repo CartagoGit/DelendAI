@@ -253,21 +253,29 @@ Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a
 
 ### S10 — Two packs of verdicts on different proposals do not wait on each other
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `tools/scripts/forge/independent-candidates.ts`
+  - `tools/scripts/ci/test-zones.script.ts`
+  - `tools/scripts/ci/test-zones.interface.ts`
+  - `tools/scripts/ci/test-zones.script.spec.ts`
   - `tools/scripts/forge/candidate-footprint.ts`
+  - `tools/scripts/forge/independent-candidates.ts`
+  - `tools/scripts/forge/independent-candidates.interface.ts`
+  - `tools/scripts/forge/independent-candidates.spec.ts`
 - **Gate**: unit
+- shipped-in: `439cb8bd4e6d`
 - acceptance:
-  - Measured first, after q00022 S11 has landed: how many CI runs a pack of verdicts takes from publication to merge, and which jobs they run.
-  - If it is still more than one run per pack: two candidates whose only common ground is a zone that reads their files as data, and that change no file in common, land without being brought forward; the integration branch's own run after each merge is what checks them together.
-  - A candidate that changes the code of a zone is brought forward as it is today.
+  - The planner says, of the zones a change reaches, which it reaches only because their specs read a file it changed.
+  - Two candidates whose common zones are all of that kind on both sides, that change no file in common and do not both add a new file, land without being brought forward.
+  - A candidate that changes the code of a zone is brought forward as it is today, and so is one against a footprint that does not say how it reaches a zone.
 
-Not started on purpose. The rule decides what lands unchecked against what, and it is worth changing on a measurement, not on the first cause found; S11 of q00022 may be most of it.
+First left for a measurement, and then measured (observations 24 and 29).
 
 What the rule has to keep, found while reading how candidates are compared. The queue tells two candidates apart by test zone, and a zone is reached two ways: its own code changed, or its specs read or list a file that changed. Verdict packs meet only the second way. But the second way is also what serialises two pull requests that each add a proposal under the same number, and that protection has to stay: two candidates that add files to one listed folder still wait on each other; two that change or move different existing files of it need not. Measured on #1007, a pack of verdicts alone: 34 jobs, of which ten are test shards with nothing to run (2 to 5 seconds each, a runner each) and fifteen are lints of 20 to 98 seconds.
 
 And what observation 29 adds to it: the measure to take is not only runs per pack but how long the head waits, and how many of its runs were cancelled by a refresh before they answered. A head that is brought forward while its checks are running loses them; one that is left alone until they answer does not, at the cost of landing one merge behind.
+
+Delivered 2026-10-11, the rule; the head that loses its run to a refresh is not touched here. Tried on the ten pull requests open at the time: the five packs of verdicts are independent of one another, except the two that both close f00538, which share its document; a pack and a pull request that changes code of a zone the pack's files are read by still wait on each other. What the rule gives up is a check that reads all those files together catching two packs that are each fine alone; the integration branch's own run after each merge is what is left to catch it, as its header already says of every candidate that lands beside another.
 
 ### S11 — A pack with no verdict is not published
 
