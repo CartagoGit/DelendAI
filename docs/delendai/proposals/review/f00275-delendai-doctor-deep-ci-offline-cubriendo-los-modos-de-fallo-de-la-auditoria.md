@@ -16,6 +16,8 @@ related: [q00011, f00276]
 last-transition-id: 3748813e-47c4-4977-ad5e-ce6966fde219
 last-correlation-id: 3748813e-47c4-4977-ad5e-ce6966fde219
 last-transition-from: in-progress
+shipped-in:
+  - "236586bbf31c"
 ---
 
 # f00275 — `delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría
@@ -114,7 +116,7 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
 
 ### S1 — `--ci`: salida estructurada + exit codes documentados
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `packages/cli/src/commands/groups/doctor.ts`
     - `packages/cli/src/contracts/constants/doctor-modes.constant.ts`
@@ -124,9 +126,11 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
     - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
 - Shipped: `--ci` adds a `ci` block (`exitCode`, `meaning`, `failing`, `skipped`) to the report and does not write the human recap. Exit codes stay 0/4/5 and are documented in `DOCTOR_CI_EXIT_MEANING`. Premise note: the file is still `groups/doctor.ts` (`commands/doctor.ts` is a dead duplicate, left untouched); the new flags are declared through the command's `flags` list.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `66b124669ad9`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 236586bbf31c, validate exit 0, tests 49/49 — Gate declared by all three slices (npx vitest run --project @delendai/cli deep-checks.service.spec.ts commands/groups/doctor.spec.ts): 2 files / 49 tests passed, exit 0. Repo typecheck exit 0. All three acceptance points are pinned by assertions rather than by prose. --ci adds a structured `ci` block (doctor.ts:323) with the documented exit meanings. --offline reports a marked check as `not-applicable` with a `skipped:` finding rather than as passed, and the spec asserts that at the section level. --deep reports the error-reporting self-test as its own section and the spec injects a fake exec, recording every argv it was handed and asserting zero calls reach `gh`. The slice's premise notes are honest and I confirmed both: the command file is groups/doctor.ts with commands/doctor.ts left as a dead duplicate, and no check in the pure registry opens a socket today, which is why no `requiresNetwork` property was needed there.
 
 ### S2 — `--offline`: marcar y saltar checks que requieren red
 
