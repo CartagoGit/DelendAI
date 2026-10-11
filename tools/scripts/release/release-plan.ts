@@ -82,6 +82,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/self-learning',
 	'plugins/skills-pack',
 	'plugins/status-marker',
+	'plugins/style-convention',
 	'plugins/tech-debt',
 	'plugins/test-convention',
 	'plugins/test-policy',

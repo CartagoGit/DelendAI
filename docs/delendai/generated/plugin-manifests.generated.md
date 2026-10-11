@@ -56,6 +56,7 @@
 | self-learning | @delendai/self-learning | public | experimental |  |
 | skills-pack | @delendai/skills-pack | public | stable | standard, swarm, full, web-app, backend-api |
 | status-marker | @delendai/status-marker | public | stable | swarm, full, dogfood, web-app |
+| style-convention | @delendai/style-convention | public | experimental |  |
 | tech-debt | @delendai/tech-debt | public | stable | dogfood |
 | test-convention | @delendai/test-convention | public | stable | swarm, full, dogfood, web-app, backend-api |
 | test-policy | @delendai/test-policy | public | stable | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
@@ -120,6 +121,7 @@
 | self-learning | 2700 | 3000 | 20 |
 | skills-pack | 2700 | 3000 | 20 |
 | status-marker | 2700 | 3000 | 20 |
+| style-convention | 3900 | 4200 | 20 |
 | tech-debt | 2700 | 3000 | 20 |
 | test-convention | 2700 | 3000 | 20 |
 | test-policy | 2700 | 3000 | 20 |
@@ -184,6 +186,7 @@
 | self-learning | filesystem-read, filesystem-write |  |
 | skills-pack | filesystem-read |  |
 | status-marker | filesystem-read |  |
+| style-convention | filesystem-read | style_profile: filesystem-read; style_impact: filesystem-read; style_check: filesystem-read |
 | tech-debt | filesystem-read |  |
 | test-convention | filesystem-read |  |
 | test-policy | filesystem-read, filesystem-write |  |
@@ -680,6 +683,15 @@
 | status-marker | web-app | yes | yes | yes |
 | status-marker | backend-api | no | no | yes |
 | status-marker | cli-tool | no | no | yes |
+| style-convention | minimal | no | no | yes |
+| style-convention | lean | no | no | yes |
+| style-convention | standard | no | no | yes |
+| style-convention | swarm | no | no | yes |
+| style-convention | full | no | no | yes |
+| style-convention | dogfood | no | no | yes |
+| style-convention | web-app | no | no | yes |
+| style-convention | backend-api | no | no | yes |
+| style-convention | cli-tool | no | no | yes |
 | tech-debt | minimal | no | no | yes |
 | tech-debt | lean | no | no | yes |
 | tech-debt | standard | no | no | yes |

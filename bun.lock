@@ -1294,6 +1294,21 @@
         "@delendai/core": "^0.1.1",
       },
     },
+    "plugins/style-convention": {
+      "name": "@delendai/style-convention",
+      "version": "0.1.0",
+      "dependencies": {
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@delendai/core": "workspace:*",
+        "typescript": "7.0.2",
+        "vitest": "5.0.3",
+      },
+      "peerDependencies": {
+        "@delendai/core": "^0.1.1",
+      },
+    },
     "plugins/tech-debt": {
       "name": "@delendai/tech-debt",
       "version": "0.1.1",
@@ -1425,6 +1440,7 @@
         "@delendai/state-sqlite": "workspace:*",
         "@delendai/state-telemetry": "workspace:*",
         "@delendai/status-marker": "workspace:*",
+        "@delendai/style-convention": "workspace:*",
         "@delendai/tech-debt": "workspace:*",
         "@delendai/test-convention": "workspace:*",
         "@delendai/test-kit": "workspace:*",
@@ -1744,6 +1760,8 @@
     "@delendai/state-telemetry": ["@delendai/state-telemetry@workspace:packages/state-telemetry"],
 
     "@delendai/status-marker": ["@delendai/status-marker@workspace:plugins/status-marker"],
+
+    "@delendai/style-convention": ["@delendai/style-convention@workspace:plugins/style-convention"],
 
     "@delendai/tech-debt": ["@delendai/tech-debt@workspace:plugins/tech-debt"],
 

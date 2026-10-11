@@ -313,6 +313,12 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 		"category": "code-intelligence"
 	},
 	{
+		"slug": "style-convention",
+		"displayName": "Style Convention",
+		"purpose": "The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.",
+		"category": "code-intelligence"
+	},
+	{
 		"slug": "tech-debt",
 		"displayName": "Tech Debt",
 		"purpose": "Tech-debt scanner (TODO/FIXME/HACK inventory).",

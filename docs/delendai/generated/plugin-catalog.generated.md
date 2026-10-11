@@ -62,6 +62,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `self-learning` | `@delendai/self-learning` | Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us. | manifest |
 | `skills-pack` | `@delendai/skills-pack` | Curated skill pack (debugging, perf, pr-review, security, incident, migration). | manifest |
 | `status-marker` | `@delendai/status-marker` | Status marker + closure canonical line. | manifest |
+| `style-convention` | `@delendai/style-convention` | The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token. | manifest |
 | `tech-debt` | `@delendai/tech-debt` | Tech-debt scanner (TODO/FIXME/HACK inventory). | manifest |
 | `test-convention` | `@delendai/test-convention` | Test-file convention enforcement (spec path, mock style, forbidden patterns). | manifest |
 | `test-policy` | `@delendai/test-policy` | Test policy mode (TDD, tests-after, free, none). | manifest |
@@ -126,6 +127,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `self-learning` | `@delendai/self-learning` | 0.1.0 | manifest |
 | `skills-pack` | `@delendai/skills-pack` | 0.1.1 | manifest |
 | `status-marker` | `@delendai/status-marker` | 0.1.1 | manifest |
+| `style-convention` | `@delendai/style-convention` | 0.1.0 | manifest |
 | `tech-debt` | `@delendai/tech-debt` | 0.1.1 | manifest |
 | `test-convention` | `@delendai/test-convention` | 0.1.1 | manifest |
 | `test-policy` | `@delendai/test-policy` | 0.1.1 | manifest |
@@ -190,6 +192,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `self-learning` | none | none |
 | `skills-pack` | none | standard, swarm, full, web-app, backend-api |
 | `status-marker` | none | swarm, full, dogfood, web-app |
+| `style-convention` | none | none |
 | `tech-debt` | none | dogfood |
 | `test-convention` | none | swarm, full, dogfood, web-app, backend-api |
 | `test-policy` | none | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
@@ -254,6 +257,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `self-learning` | manifest | self-learning |
 | `skills-pack` | manifest | skills |
 | `status-marker` | manifest | status-marker, closure |
+| `style-convention` | manifest | styles, design-tokens |
 | `tech-debt` | manifest | tech-debt |
 | `test-convention` | manifest | tests, convention |
 | `test-policy` | manifest | tests, policy |

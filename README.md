@@ -173,6 +173,7 @@ docs as the delivery and verification surfaces around that core.
 | `plugins/self-learning` | `@delendai/self-learning` | Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us. |
 | `plugins/skills-pack` | `@delendai/skills-pack` | Curated skill pack (debugging, perf, pr-review, security, incident, migration). |
 | `plugins/status-marker` | `@delendai/status-marker` | Status marker + closure canonical line. |
+| `plugins/style-convention` | `@delendai/style-convention` | The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token. |
 | `plugins/tech-debt` | `@delendai/tech-debt` | Tech-debt scanner (TODO/FIXME/HACK inventory). |
 | `plugins/test-convention` | `@delendai/test-convention` | Test-file convention enforcement (spec path, mock style, forbidden patterns). |
 | `plugins/test-policy` | `@delendai/test-policy` | Test policy mode (TDD, tests-after, free, none). |
