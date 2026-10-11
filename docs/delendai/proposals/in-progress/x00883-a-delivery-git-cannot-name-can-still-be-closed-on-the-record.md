@@ -75,6 +75,8 @@ between those two designs:
   - `proposal_review { action: "attest", implementer, note }` (CLI: `proposals review <id> <slice> --action=attest --implementer=<who> --note=<evidence>`) writes the implementer and a `review-attribution: <who> attested by <agent> — <evidence>` line on a slice reviewed as `unrecorded`.
   - It refuses a slice whose implementer is already named, a slice no review round was opened for, a name that is empty, `unrecorded` or more than one word, and evidence shorter than a sentence; a refusal writes nothing.
   - The reviewer's own lines are untouched, and an approval by the attested implementer itself still does not count.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Closing over an attestation is the owner's decision, taken on the record
 
