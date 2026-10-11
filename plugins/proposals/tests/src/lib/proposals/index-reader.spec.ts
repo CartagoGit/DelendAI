@@ -241,7 +241,7 @@ describe('readProposalIndex — forcing a source (f00535 S2)', () => {
 		).rejects.toBeInstanceOf(ProposalIndexSqlUnavailableError);
 	});
 
-	it('serves SQL over a diverging JSON when pinned, without reading the JSON at all', async () => {
+	it('serves SQL over a diverging JSON when pinned, and reports the difference once', async () => {
 		// Under `sql` the database is the authority. Letting the legacy
 		// copy override it would be the silent fallback again.
 		const sqlOnly = [
@@ -262,9 +262,8 @@ describe('readProposalIndex — forcing a source (f00535 S2)', () => {
 
 		expect(await read()).toEqual(sqlOnly);
 		await read();
-		// The registry is a copy nobody keeps current: how it differs
-		// from a level projection says nothing, so nothing is said.
-		expect(messages).toEqual([]);
+		expect(messages).toHaveLength(1);
+		expect(messages[0]).toContain('pinned to "sql"');
 	});
 
 	it('keeps auto falling back to JSON when SQL cannot serve', async () => {
