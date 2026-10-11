@@ -24,7 +24,11 @@ import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
 import { inspectWorktree } from './unit-worktree-state.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { carriesNothingBeyond } from './landed-work.service';
-import { integrationBase } from './work-unit-shared.service';
+import {
+	integrationBase,
+	integrationRemote,
+	readGit,
+} from './work-unit-shared.service';
 
 /** Whether `ref` carries no commit of its own beyond the integration branch. */
 const carriesNothing = (
@@ -47,13 +51,39 @@ export const reapDeliveredUnits = async (input: {
 		...(input.now === undefined ? {} : { now: input.now }),
 	});
 	const integration = integrationBase(root, policy);
+	// The tips kept on the remote for units retired there: a unit left
+	// behind here whose tip is one of them lost nothing by being removed,
+	// and stayed in every listing of the swarm as a unit at work.
+	const retiredTips = new Set(
+		(
+			readGit(root, [
+				'ls-remote',
+				'--',
+				integrationRemote(root, policy),
+				`refs/${policy.branches.namespacePrefix}/retired/*`,
+			]) ?? ''
+		)
+			.split('\n')
+			.map((line) => line.split('\t')[0] ?? '')
+			.filter((sha) => sha.length > 0),
+	);
+	const keptOnRemote = (ref: string): boolean => {
+		const tip = readGit(root, [
+			'rev-parse',
+			'-q',
+			'--verify',
+			`refs/heads/${ref}`,
+		]);
+		return tip !== undefined && retiredTips.has(tip);
+	};
 	const reaped: IReapedUnit[] = [];
 	for (const unit of standings) {
 		if (!hasLocalBranch(root, unit.ref)) continue;
 		const spent =
 			unit.standing === 'delivered' ||
 			(unit.standing === 'abandoned' &&
-				carriesNothing(root, integration, unit.ref));
+				(carriesNothing(root, integration, unit.ref) ||
+					keptOnRemote(unit.ref)));
 		if (!spent) continue;
 		const worktree = worktreeOfRef(root, unit.ref) ?? null;
 		const state =

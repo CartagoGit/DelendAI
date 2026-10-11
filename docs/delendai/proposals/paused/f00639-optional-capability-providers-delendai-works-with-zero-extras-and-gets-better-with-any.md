@@ -2,17 +2,22 @@
 id: f00639
 title: "Optional capability providers — DelendAI works with zero extras, and gets better with any"
 kind: feat
-status: blocked
+status: paused
 type: proposal
 track: architecture
 date: 2026-09-25
 priority: P2
+paused-reason: "Paused 2026-10-11: no consumer asks for an optional provider yet, and its own text says the first integration must come with a need. It resumes when one does."
 related:
     - f00551 # Batuta: a priority consumer, never absorbed by this
     - f00552 # authority/projections: receipts must declare their authority
     - f00536 # context frugality: providers must not grow the context they save
     - f00509 # work event bus: receipts and outcomes are events
     - q00022 # SQLite authority: decision history needs one authority
+last-transition-id: 63bd1974-e129-45c6-913b-a8f29466dde9
+last-correlation-id: 63bd1974-e129-45c6-913b-a8f29466dde9
+last-transition-from: ready
+last-transition-at: 2026-10-11T14:36:49.699Z
 ---
 
 # f00639 — Optional capability providers

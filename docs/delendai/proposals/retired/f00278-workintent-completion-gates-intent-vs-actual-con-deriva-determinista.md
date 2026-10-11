@@ -2,7 +2,7 @@
 id: f00278
 title: "`WorkIntent` + completion gates: intent vs. actual con deriva determinista"
 kind: feat
-status: blocked
+status: retired
 type: proposal
 track: trust
 date: 2026-08-29
@@ -26,6 +26,10 @@ unblocks-on:
       rationale: "Progress Projector: provee la `phase` canónica por `work_item_id` contra la que `compareIntentToActual` mide la deriva."
     - id: f00509
       rationale: "Work Event Bus: provee el stream que `f00510` consume y que `compareIntentToActual` puede volver a leer en el momento de la transición."
+last-transition-id: fb05d0a8-907a-427a-8511-b7eb5f34bab0
+last-correlation-id: fb05d0a8-907a-427a-8511-b7eb5f34bab0
+last-transition-from: blocked
+last-transition-at: 2026-10-11T14:30:27.860Z
 ---
 
 # f00278 — `WorkIntent` + completion gates: intent vs. actual con deriva determinista
