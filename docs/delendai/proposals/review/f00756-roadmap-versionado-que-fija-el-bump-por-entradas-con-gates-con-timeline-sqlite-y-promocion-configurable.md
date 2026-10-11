@@ -2,16 +2,16 @@
 id: f00756
 title: "Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-06
 shipped-in:
   - "94d62f666a80"
-last-transition-id: 1d1cec10-ad1a-41e4-9834-5c1d7d9ceeea
-last-correlation-id: 1d1cec10-ad1a-41e4-9834-5c1d7d9ceeea
-last-transition-from: ready
-last-transition-at: 2026-10-11T21:34:48.997Z
+last-transition-id: 2be11d02-836e-4509-bf7b-432441126f69
+last-correlation-id: 2be11d02-836e-4509-bf7b-432441126f69
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T21:35:28.201Z
 ---
 
 # f00756 — Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable
@@ -142,6 +142,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 94d62f666a80, validate exit 0, tests 88/88 — Gates: S1-S4 and S6 declare `bun x vitest run --root packages/roadmap` → 12 test files / 88 tests, exit 0. S5 declares `bun run test:sqlite` → 445 pass / 0 fail, exit 0, with the SqliteTimelineStore specs among them. `bun tools/scripts/lint/state-engine-purity.script.ts` → pure, no exceptions. Repo typecheck exit 0. Two things I checked rather than accepted, because both are claims that would be easy to assert and hard to notice. First, S2 says the bump must be derived by calling inferBump from @delendai/changelog/public rather than reimplemented locally, because a local mapping would be a second copy of the changelog plugin's rule. That is verified in the code — roadmap-bump-intent.service.ts imports inferBump at :3 and exposes it through inferBumpForKinds at :36 — and, better, the spec mocks the plugin so the test fails if the rule is ever recomputed locally. The authority field is a required property of the interface type (bump-intent.interface.ts:12), not an optional annotation, so no consumer can receive a bump payload without it. Second, S1 says the schema is `.strict()`. There is no literal `.strict()` call; every object uses `z.strictObject`, which is the zod v4 spelling of the same thing. I confirmed the behaviour rather than the spelling: three specs reject an unknown key on an entry, on a gate and on an estimate — the three places the acceptance names. S6's re-cut is worth stating plainly because it moves work out of the slice's own criterion: reconcile recomputes from the new inputs instead of applying a delta, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; and caching location is the registry driver's call, so the producer writes nothing at all. Both re-cuts make the guarantee stronger rather than weaker, and the purity spec backs them. S7 onward stay pending.
+- shipped-in: `099d28d2cc04`
 
 ### S2 — Álgebra de gates y derivación de la intención de bump
 - **Status**: done
@@ -159,6 +160,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 94d62f666a80, validate exit 0, tests 88/88 — Gates: S1-S4 and S6 declare `bun x vitest run --root packages/roadmap` → 12 test files / 88 tests, exit 0. S5 declares `bun run test:sqlite` → 445 pass / 0 fail, exit 0, with the SqliteTimelineStore specs among them. `bun tools/scripts/lint/state-engine-purity.script.ts` → pure, no exceptions. Repo typecheck exit 0. Two things I checked rather than accepted, because both are claims that would be easy to assert and hard to notice. First, S2 says the bump must be derived by calling inferBump from @delendai/changelog/public rather than reimplemented locally, because a local mapping would be a second copy of the changelog plugin's rule. That is verified in the code — roadmap-bump-intent.service.ts imports inferBump at :3 and exposes it through inferBumpForKinds at :36 — and, better, the spec mocks the plugin so the test fails if the rule is ever recomputed locally. The authority field is a required property of the interface type (bump-intent.interface.ts:12), not an optional annotation, so no consumer can receive a bump payload without it. Second, S1 says the schema is `.strict()`. There is no literal `.strict()` call; every object uses `z.strictObject`, which is the zod v4 spelling of the same thing. I confirmed the behaviour rather than the spelling: three specs reject an unknown key on an entry, on a gate and on an estimate — the three places the acceptance names. S6's re-cut is worth stating plainly because it moves work out of the slice's own criterion: reconcile recomputes from the new inputs instead of applying a delta, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; and caching location is the registry driver's call, so the producer writes nothing at all. Both re-cuts make the guarantee stronger rather than weaker, and the purity spec backs them. S7 onward stay pending.
+- shipped-in: `c3b20f7f3738`
 
 ### S3 — Store de la autoridad: lectura y escritura durable del fichero de roadmap
 - **Status**: done
@@ -176,6 +178,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 94d62f666a80, validate exit 0, tests 88/88 — Gates: S1-S4 and S6 declare `bun x vitest run --root packages/roadmap` → 12 test files / 88 tests, exit 0. S5 declares `bun run test:sqlite` → 445 pass / 0 fail, exit 0, with the SqliteTimelineStore specs among them. `bun tools/scripts/lint/state-engine-purity.script.ts` → pure, no exceptions. Repo typecheck exit 0. Two things I checked rather than accepted, because both are claims that would be easy to assert and hard to notice. First, S2 says the bump must be derived by calling inferBump from @delendai/changelog/public rather than reimplemented locally, because a local mapping would be a second copy of the changelog plugin's rule. That is verified in the code — roadmap-bump-intent.service.ts imports inferBump at :3 and exposes it through inferBumpForKinds at :36 — and, better, the spec mocks the plugin so the test fails if the rule is ever recomputed locally. The authority field is a required property of the interface type (bump-intent.interface.ts:12), not an optional annotation, so no consumer can receive a bump payload without it. Second, S1 says the schema is `.strict()`. There is no literal `.strict()` call; every object uses `z.strictObject`, which is the zod v4 spelling of the same thing. I confirmed the behaviour rather than the spelling: three specs reject an unknown key on an entry, on a gate and on an estimate — the three places the acceptance names. S6's re-cut is worth stating plainly because it moves work out of the slice's own criterion: reconcile recomputes from the new inputs instead of applying a delta, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; and caching location is the registry driver's call, so the producer writes nothing at all. Both re-cuts make the guarantee stronger rather than weaker, and the purity spec backs them. S7 onward stay pending.
+- shipped-in: `c3b20f7f3738`
 
 ### S4 — Timeline append-only sin binario (variante CI-safe)
 - **Status**: done
@@ -192,6 +195,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 94d62f666a80, validate exit 0, tests 88/88
+- shipped-in: `099d28d2cc04`
 
 ### S5 — Driver SQLite del timeline
 - **Status**: done
@@ -208,6 +212,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 94d62f666a80, validate exit 0, tests 88/88 — Gates: S1-S4 and S6 declare `bun x vitest run --root packages/roadmap` → 12 test files / 88 tests, exit 0. S5 declares `bun run test:sqlite` → 445 pass / 0 fail, exit 0, with the SqliteTimelineStore specs among them. `bun tools/scripts/lint/state-engine-purity.script.ts` → pure, no exceptions. Repo typecheck exit 0. Two things I checked rather than accepted, because both are claims that would be easy to assert and hard to notice. First, S2 says the bump must be derived by calling inferBump from @delendai/changelog/public rather than reimplemented locally, because a local mapping would be a second copy of the changelog plugin's rule. That is verified in the code — roadmap-bump-intent.service.ts imports inferBump at :3 and exposes it through inferBumpForKinds at :36 — and, better, the spec mocks the plugin so the test fails if the rule is ever recomputed locally. The authority field is a required property of the interface type (bump-intent.interface.ts:12), not an optional annotation, so no consumer can receive a bump payload without it. Second, S1 says the schema is `.strict()`. There is no literal `.strict()` call; every object uses `z.strictObject`, which is the zod v4 spelling of the same thing. I confirmed the behaviour rather than the spelling: three specs reject an unknown key on an entry, on a gate and on an estimate — the three places the acceptance names. S6's re-cut is worth stating plainly because it moves work out of the slice's own criterion: reconcile recomputes from the new inputs instead of applying a delta, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; and caching location is the registry driver's call, so the producer writes nothing at all. Both re-cuts make the guarantee stronger rather than weaker, and the purity spec backs them. S7 onward stay pending.
+- shipped-in: `c3b20f7f3738`
 
 ### S6 — El roadmap como IStateProducer del State Engine
 - **Status**: done
@@ -225,6 +230,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 94d62f666a80, validate exit 0, tests 88/88 — Gates: S1-S4 and S6 declare `bun x vitest run --root packages/roadmap` → 12 test files / 88 tests, exit 0. S5 declares `bun run test:sqlite` → 445 pass / 0 fail, exit 0, with the SqliteTimelineStore specs among them. `bun tools/scripts/lint/state-engine-purity.script.ts` → pure, no exceptions. Repo typecheck exit 0. Two things I checked rather than accepted, because both are claims that would be easy to assert and hard to notice. First, S2 says the bump must be derived by calling inferBump from @delendai/changelog/public rather than reimplemented locally, because a local mapping would be a second copy of the changelog plugin's rule. That is verified in the code — roadmap-bump-intent.service.ts imports inferBump at :3 and exposes it through inferBumpForKinds at :36 — and, better, the spec mocks the plugin so the test fails if the rule is ever recomputed locally. The authority field is a required property of the interface type (bump-intent.interface.ts:12), not an optional annotation, so no consumer can receive a bump payload without it. Second, S1 says the schema is `.strict()`. There is no literal `.strict()` call; every object uses `z.strictObject`, which is the zod v4 spelling of the same thing. I confirmed the behaviour rather than the spelling: three specs reject an unknown key on an entry, on a gate and on an estimate — the three places the acceptance names. S6's re-cut is worth stating plainly because it moves work out of the slice's own criterion: reconcile recomputes from the new inputs instead of applying a delta, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; and caching location is the registry driver's call, so the producer writes nothing at all. Both re-cuts make the guarantee stronger rather than weaker, and the purity spec backs them. S7 onward stay pending.
+- shipped-in: `c3b20f7f3738`
 
 ### S7 — Herramientas de lectura: show, sync, readiness y delta
 - **Status**: review
@@ -239,6 +245,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "`roadmap_show` devuelve un resumen compacto, no el fichero completo; el detalle va bajo demanda."
   - "Hay tests de contrato del payload de `delta` que fijan la forma del envelope, porque es lo que consumirán la web y la extensión."
 - shipped: the read model as four pure services (summary, readiness, delta, timeline sync) and the four tools over them. Readiness is `ready`, `not-ready` or `unknown` — unknown when nothing failed and a gate has no evidence; an estimate never takes part. `published` is `null`, not `false`, when nobody can say. The gate evidence is looked up once per call: which paths exist (contained where they really are, symlinks followed) and which status folder holds each proposal. Reads go through the safe reader.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — Herramientas de escritura: init, close y promoción
 - **Status**: review
@@ -252,6 +260,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Los nombres de rama de origen y destino se leen de la política de desarrollo del proyecto; ningún literal de rama aparece en el código del plugin, y un test lo comprueba fichero a fichero."
   - "Cerrar una entrada exige los gates en verde o una razón explícita; el silencio no es una opción."
 - shipped: `roadmap_plan_init` opens a target version (creating the file on first use), `roadmap_plan_close` closes an entry as delivered, deferred, dropped or superseded, and both record what the timeline lacks afterwards. They declare `writeRoot: caller-checkout`, so an agent in its own checkout changes the file there. `roadmap_promotion` names the branches, the verdict and the next action; in a project with one branch it says there is nothing to promote.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — Manifest, barrels, configuración declarativa y presupuesto de tokens
 - **Status**: review
@@ -265,6 +275,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "El presupuesto de tokens del manifiesto está medido, no heredado: 10.222 B para las siete herramientas, medido a través de un host ensamblado y un cliente que lista, y un test mantiene el listado bajo el tope duro."
   - "El README documenta el reparto autoridad/proyección y deja escrito, para un adoptante, que ninguna rama está hardcodeada."
 - shipped: the plugin entry point, its options schema (strict, everything optional), the manifest with per-tool permissions and a measured budget, and the README. No change to the core configuration schema was needed: a plugin's settings already have a home.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S10 — Proyección a JSON y guard de deriva
 - **Status**: review
@@ -277,6 +289,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La deriva entre el timeline y el markdown también se detecta: el markdown manda, el timeline es proyección, y el generador registra en él lo que al fichero le falta por contar."
   - "El generador no escribe fuera de `apps/web/src/data/` (más el timeline junto al fichero de roadmap) y es determinista: dos ejecuciones dan el mismo byte y la segunda no registra nada."
 - shipped: the display projection is a pure function of the authority file — no gate evidence, no clock — so that a proposal changing folder does not make an unrelated pull request drift. The generator and the guard run from `gen:all` and `gen:all:check`, the drift gate CI already runs; the roadmap is declared in `AUTHORITIES.md` with its two projections. The timeline the guard watches is the markdown one, which CI can read without a binary; the SQLite timeline stays a local cache of the same events. delendai declares its own roadmap (`docs/delendai/ROADMAP.md`), seeded from the feature proposals in flight, so the projection is not empty.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S11 — Superficies de lectura: web y extensión
 - **Status**: review
@@ -290,6 +304,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La página resuelve en los 12 idiomas del sitio: como el tablero de proposals, sus textos van en un mapa propio con inglés como fuente, español traducido y el resto resolviendo a inglés, así que no añade claves al diccionario del sitio ni a su gate."
   - "La vista de la extensión no guarda una copia propia: pregunta a `roadmap_show`, que lee el mismo fichero de autoridad del que sale la proyección de la web."
 - shipped: `/roadmap` and `/<lang>/roadmap`, built and read in English and Spanish with delendai's own roadmap in them; `delendai.openRoadmap`, a panel with scripts disabled and the default-deny content policy, which finds the tool under any prefix and tells a project with no roadmap that it has none. The page reuses the board styles of the proposals page rather than adding a stylesheet.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S12 — Prueba de agnóstico y cierre editorial
 - **Status**: review
@@ -303,6 +319,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Hay un e2e contra un servidor MCP en memoria que ejercita el ciclo completo: init → readiness → delta → close → promotion → sync."
   - "Documentado para un adoptante: qué es dogfooding en delendai y qué debe replicar él en su proyecto."
 - shipped: the end-to-end spec assembles a host as a host does and speaks to it through a listing MCP client, on three projects: other branch names, one branch, and no roadmap at all; a static spec proves no source file of the plugin names a branch; `ROADMAP-DOGFOOD.md` separates the product from this repository's own choices.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S13 — A promotion is opened on the cadence the project declares
 - **Status**: review
@@ -316,6 +334,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "A project with one branch, with no release branch, or with no schedule declared gets no workflow and no diagnostic; branch names, the cadence and the conditions come from the configuration, never from this repository's develop and main."
 - shipped: `promotionReadiness` (pure, in the plugin) judges the three conditions and names all that fail; `open-promotion` asks them of the forge and opens the pull request with the evidence in its body, or says what holds it back, and opens no second one for the same promotion; the workflow is rendered by `promotion-workflow.lib.ts` and written by the forge-settings script when a cadence is declared. Probed against the real forge with a temporary cadence, read-only: it reported the two required checks still running on the head and the six open entries of 0.2.0. delendai itself declares no cadence — turning on scheduled release pull requests is the owner's decision — so no workflow is generated here yet.
 - Asked by the owner on 2026-10-07: promotions of develop into main were opened by hand whenever someone noticed develop was stable, and the first one waited for 48 code scanning alerts nobody was tracking on develop. The roadmap already knows what the next version promises; this slice turns "is it time to promote" into a scheduled, evidence-backed pull request. It keeps decision 3 of `## why this design`: the plugin informs (readiness), the forge acts (a workflow that opens a pull request), and the merge stays behind the release gate.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## dependency graph
 
