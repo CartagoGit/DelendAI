@@ -2,7 +2,7 @@
 id: f00639
 title: "Optional capability providers — DelendAI works with zero extras, and gets better with any"
 kind: feat
-status: blocked
+status: ready
 type: proposal
 track: architecture
 date: 2026-09-25
@@ -13,10 +13,10 @@ related:
     - f00536 # context frugality: providers must not grow the context they save
     - f00509 # work event bus: receipts and outcomes are events
     - q00022 # SQLite authority: decision history needs one authority
-last-transition-id: b9fbb79b-ed8d-482a-a928-e4cb3d08e1c1
-last-correlation-id: b9fbb79b-ed8d-482a-a928-e4cb3d08e1c1
-last-transition-from: ready
-last-transition-at: 2026-10-11T14:34:46.987Z
+last-transition-id: bfa2aecc-2da7-4baa-95b9-d7bbfdc2ff7f
+last-correlation-id: bfa2aecc-2da7-4baa-95b9-d7bbfdc2ff7f
+last-transition-from: blocked
+last-transition-at: 2026-10-11T14:35:39.626Z
 ---
 paused-reason: "Paused 2026-10-11: no consumer asks for an optional provider yet, and its own text says the first integration must come with a need. It resumes when one does."
 
