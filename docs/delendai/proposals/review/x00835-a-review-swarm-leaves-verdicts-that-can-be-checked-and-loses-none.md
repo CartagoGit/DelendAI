@@ -30,6 +30,7 @@ shipped-in:
   - "ca9ff5e6a712fe1ed960c1022f58469116349783"
   - "eb1e94c54f307621664c488e504e73e18147a110"
   - "601a652075176a9809c87c1aeca8d9d364ebeae2"
+  - "ba673a55011e62f6c496143c97c97daeb41cd9fe"
 ---
 
 # x00835 — A review swarm leaves verdicts that can be checked, and loses none
@@ -1061,14 +1062,16 @@ the good verdicts' shape (P1) becomes the required shape.
 - review-attribution: claude-opus-5-5 from Merge pull request #808 from CartagoGit/delendai/pr/claude-opus-5-5/implement/x00835-S38-g1/a-retired-slice-waits-for-no-verdict (refs/heads/delendai/wip/claude-opus-5-5/implement/x00835-S38-g1/a-retired-slice-waits-for-no-verdict) (601a652075176a9809c87c1aeca8d9d364ebeae2), opened by glm-5.3-max
 
 ### S39 — The queue cites the delivery an approval is accepted with
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Gate**: `bunx vitest run --root plugins/proposals tests/src/lib/tools/review-queue.tool.spec.ts`
 - Found 2026-10-05 reviewing `x00770`: the approve call `review next` handed out cited each slice's recorded `shipped-in`, and every approval came back "is not the slice as it stands: x00770 was delivered again by aa99eb781d2f". The approval checks for a later delivery of the same files and the queue did not, so a reviewer who followed the call to the letter was refused five times.
 - The queue now asks the same question (`supersedingDelivery`) of the first candidate and, when a later delivery superseded it, cites that one first. The spec reproduces the case (a slice recording its first delivery, delivered again) and fails without the change.
 =======
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at ba673a55011e, validate exit 0, tests 15/15 — Delivered by ba673a550 (PR #838 merge c13884acd, on develop). The queue now cites the delivery an approval is accepted with: review-queue.service.ts checks for a later delivery of the same files and adds it as 'latest delivery' candidate, so the approve call no longer cites a stale shipped-in that the gate refuses (the x00770 five-refusal defect). Verified today in this worktree, agent env scrubbed: declared gate review-queue.tool.spec.ts green 15/15 exit 0; declared files exist; commit subject cites x00835 S39. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S37 — A session goes back to its own unit, whatever generation it is
 - **Status**: done
