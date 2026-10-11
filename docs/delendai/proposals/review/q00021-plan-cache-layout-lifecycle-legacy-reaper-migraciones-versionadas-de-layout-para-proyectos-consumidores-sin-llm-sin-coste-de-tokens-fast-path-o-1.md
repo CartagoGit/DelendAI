@@ -612,7 +612,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 34/34 — All 4 declared files exist on develop (judged at the superseding delivery 84217680c5c8, which only re-names the same work; the slice ships in 8ed4c1b71 and the merge keeps it byte-identical). cache-layout-migration.helper.ts has zero fs imports (acceptance). Gate run: vitest --project core cache-layout-migration.helper.spec.ts = 34/34 passed on the current tree. Pure rules present: assertDroppable/resolveMigrationChain/validateManifest/findOwningArtifact; ICacheLayoutMigration reuses IMigration['id'] + IMigrationPlanStep without extends, as the correction records.
 
 ### S2 — Lifecycle state store (entregable: `f00527`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `11d9226de`
 - **Files**:
   - `packages/state/src/lib/lifecycle-state.interface.ts`
@@ -632,8 +632,10 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The interface lives in `@delendai/state`, not in core: `@delendai/state-sqlite` depends on `state` and not on core, and both stores must implement the same type.
   - The marker is the store core actually uses today. Nothing in the product opens `state.sqlite` through core (core has no SQLite driver and the driver is a shadow with no consumer yet), so S3 wires the file store; the SQLite store is ready for the day the state engine hands core a connection.
   - The marker lock reuses `withFileMutex` (token ownership, heartbeat, stale takeover) rather than a new lock file protocol.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 453/453 — Judged at superseding delivery 84217680c5c8 (slice itself ships in 11d9226de; the merge keeps the same files). ILifecycleStateStore with both implementations verified: file store spec 8/8 under vitest (core) and the sqlite store through the bun-owned suite (bun run test:sqlite = 445 pass / 0 fail across 82 files, including lifecycle-state-store.spec.ts). getAppliedEpoch returns the exact epoch, corrupted marker counts as absent, BEGIN IMMEDIATE lock with in-process queue. Interface lives in @delendai/state, not core, as the correction records.
 
 ### S3 — Integración en bootstrap (entregable: `f00528`)
 - **Status**: review
