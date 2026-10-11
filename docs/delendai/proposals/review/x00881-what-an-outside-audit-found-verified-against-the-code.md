@@ -51,7 +51,7 @@ Verified: any failure of `readFile` returned `null`, the answer for "no such fil
 
 ### S2 — A published package exports nothing it does not ship
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/api/package.json`
   - `plugins/observability/package.json`
@@ -64,8 +64,10 @@ Verified: any failure of `readFile` returned `null`, the answer for "no such fil
   - The publication-boundary lint fails on an export of a published package whose only condition is `types` pointing into `src/`.
 
 Verified, and wider than reported: `@delendai/api` declared `./public` as `{ "types": "./src/public/index.ts" }` while shipping `dist` alone, though that module exports six functions; `@delendai/observability` did the same. The build already emitted `dist/public/index.js` for both, so only the manifests were wrong. The lint that checks what published code imports never looked at what a package offers that nobody imports yet.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at cb4f8082c031, validate exit 0, tests 21/21 — Delivered by a5d043eb8 (shipped-in) inside PR #995 (merge cb4f8082c, claude-opus-5-5). Both published packages resolve their /public exports to built files for values and types, and the publication-boundary lint now fails a types-only condition pointing into src/. Verified today, agent env scrubbed: no-internal-core-imports.script.spec.ts green 21/21 exit 0. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S3 — A package describes what it does today
 
