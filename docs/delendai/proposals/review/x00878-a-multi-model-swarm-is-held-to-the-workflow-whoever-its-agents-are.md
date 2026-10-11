@@ -32,6 +32,7 @@ shipped-in:
   - "4825b968e9285c8008ecadbedccfe6ab3a68be23"
   - "78601cf18a172c72357b6d20d8791199197c0849"
   - "6afac82076e3e24c4c646f90fcc830b5a689f7f4"
+  - "4a2c62df237242786cc2da091b2faed9d98ae9f0"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -442,15 +443,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at feb34020cf8f, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: keep-the-queue-moving.script.ts runs again a run that lost its required check, which is the finding that 'the forward sync could not pass tests' because no shard uploaded a report. Pinned by its spec.
 
 ### S29 — An approved proposal closes on the integration branch's certified run
-- **Status**: retired
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/validate-blocker.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`
 - **Gate**: type
 - acceptance:
   - "Closing an approved proposal accepts, as its validate evidence, the integration branch's full CI run at the commit that carries the proposal's work, when that run is green; a local journalled validate run still counts, and neither a red nor a missing certification closes anything."
 - Found 2026-10-07 in the hydration log: `close-approved-proposals` failed 218 times with "x00834 refused — validate required: No validate run has been journalled for this workspace". Approved proposals waited for a local `validate` (the whole chain, about ten minutes, that nobody runs on the owner machine) while the integration branch's certified full run, a stronger proof of the same tree, sat green.
 - Retired 2026-10-07 on reading the code: closing already accepts the integration branch's certified full run as evidence (`certifiedDelivery` in `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, tried after the local journal), when every commit in the proposal's `shipped-in` is contained in a certified tip. The 218 refusals in the hydration log were for x00834 before it had `shipped-in`; it is done, and the passes since report nothing in review ready to close.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 4a2c62df2372, validate exit 0, tests 39/39 — Gate: bun run typecheck exit 0 (declared gate); integration-evidence/journal-publish/journal-ref suites 39/39 pass in the S42 batch. Read integration-certification-evidence.service.ts, whose docblock states the three conditions: the newest recorded certification is green (an older green is not enough), it is at the commit that carries the proposal work, and it is the integration branch's own full run. It also accepts the owner machine certification the same way, and records an empty checkpoint as integrated because it carries nothing to land.
 
 ### S30 — A proposal that moves folders keeps the approvals it already had
 - **Status**: done
