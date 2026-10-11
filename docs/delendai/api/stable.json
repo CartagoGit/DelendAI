@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-10-11T12:57:16.090Z"
+		"generatedAt": "2026-10-11T21:19:18.808Z"
 	},
 	"tools": [
 		{
@@ -954,7 +954,8 @@
 							"submit",
 							"approve",
 							"request_changes",
-							"status"
+							"status",
+							"attest"
 						]
 					},
 					"agent": {
@@ -963,6 +964,10 @@
 					},
 					"note": {
 						"type": "string"
+					},
+					"implementer": {
+						"type": "string",
+						"minLength": 1
 					},
 					"evidence": {
 						"type": "object",

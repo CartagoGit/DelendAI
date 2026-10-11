@@ -303,3 +303,7 @@ export {
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';
+export {
+	attestedSlices,
+	attestImplementer,
+} from '../lib/services/attested-implementer.service';

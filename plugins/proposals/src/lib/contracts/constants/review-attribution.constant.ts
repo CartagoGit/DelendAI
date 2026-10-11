@@ -14,3 +14,12 @@ export const UNRECORDED_IMPLEMENTER = 'unrecorded';
  * an instance, so without it the same model's approval proves nothing.
  */
 export const ANOTHER_INSTANCE_MARK = '[another instance]';
+
+/**
+ * What an attribution line says when a person or an agent vouched for
+ * who delivered work that Git cannot name, with the evidence for it.
+ */
+export const ATTESTED_BY_MARK = 'attested by';
+
+/** The least an attestation's evidence may be: a sentence, not a word. */
+export const MIN_ATTESTATION_EVIDENCE_LENGTH = 40;
