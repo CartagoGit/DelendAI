@@ -113,6 +113,19 @@ describe('relationsOf', () => {
 		]);
 	});
 
+	it('does not call the review packs of a swarm duplicates of one another', () => {
+		const relations = relationsOf({
+			units: [
+				unit('ns/wip/agent-a/review/batch-all-g1/verdicts', []),
+				unit('ns/wip/agent-a/review/batch-all-g2/verdicts', []),
+				unit('ns/wip/agent-b/review/batch-all-g3/verdicts', []),
+			],
+			published: [],
+			sharedUnlanded: () => 0,
+		});
+		expect(relations).toEqual([]);
+	});
+
 	it('does not call an agent updating its own pull request a duplicate', () => {
 		expect(
 			relationsOf({
