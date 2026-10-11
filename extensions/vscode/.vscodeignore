@@ -1,0 +1,10 @@
+src/**
+scripts/**
+src/test/**
+dist/test/**
+**/*.spec.ts
+coverage/**
+node_modules/**
+*.vsix
+vitest.config.ts
+tsconfig.json

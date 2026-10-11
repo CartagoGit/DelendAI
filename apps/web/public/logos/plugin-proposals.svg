@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" role="img" aria-label="proposals plugin logo">
+	<rect x="0" y="0" width="36" height="36" rx="8" fill="hsl(80 55% 45%)" />
+	<g transform="translate(8 8)" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="11" height="14" rx="1"/><path d="M6 8h6M6 11h6M6 14h4"/><path d="M14 6l3 3-3 3"/></g>
+</svg>

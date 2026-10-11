@@ -1,0 +1,115 @@
+{
+	"name": "@delendai/core",
+	"version": "0.1.1",
+	"type": "module",
+	"description": "Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"skills",
+		"schema",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./version": {
+			"@delendai/source": {
+				"types": "./src/version.ts"
+			},
+			"types": "./dist/version.d.ts",
+			"import": "./dist/version.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		},
+		"./cli": {
+			"@delendai/source": {
+				"types": "./src/cli.ts"
+			},
+			"types": "./dist/cli.d.ts",
+			"import": "./dist/cli.js"
+		},
+		"./manifest": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		},
+		"./contracts": {
+			"@delendai/source": {
+				"types": "./src/contracts/index.ts"
+			},
+			"types": "./dist/contracts/index.d.ts",
+			"import": "./dist/contracts/index.js"
+		},
+		"./runtime": {
+			"@delendai/source": {
+				"types": "./src/runtime/index.ts"
+			},
+			"types": "./dist/runtime/index.d.ts",
+			"import": "./dist/runtime/index.js"
+		},
+		"./plugin": {
+			"@delendai/source": {
+				"types": "./src/plugin/index.ts"
+			},
+			"types": "./dist/plugin/index.d.ts",
+			"import": "./dist/plugin/index.js"
+		},
+		"./node": {
+			"@delendai/source": {
+				"types": "./src/node/index.ts"
+			},
+			"types": "./dist/node/index.d.ts",
+			"import": "./dist/node/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/core"
+	},
+	"dependencies": {
+		"@delendai/contracts": "workspace:*",
+		"@delendai/state": "workspace:*",
+		"@modelcontextprotocol/sdk": "^1.31.0",
+		"jsonc-parser": "3.3.1",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/delendai"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

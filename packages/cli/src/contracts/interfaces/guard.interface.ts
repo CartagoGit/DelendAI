@@ -1,0 +1,75 @@
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import type { IUnitRefFacts } from '@delendai/core/cli';
+
+/** The git hooks `delendai guard` answers for. */
+export type IGuardedHook =
+	| 'pre-commit'
+	| 'commit-msg'
+	| 'reference-transaction'
+	| 'pre-push'
+	| 'post-checkout'
+	| 'post-merge';
+
+/** What the guard reads from git and the project; injected by specs. */
+export interface IGuardFacts {
+	/** Short name of the checked-out branch; undefined when detached. */
+	readonly branch: () => string | undefined;
+	/** True while a merge is being concluded. */
+	readonly isMerge: () => boolean;
+	/**
+	 * True in the repository's MAIN working tree — the shared checkout a
+	 * pinned policy anchors — and false in a linked worktree, where an
+	 * agent legitimately has its own work ref checked out.
+	 */
+	readonly inMainWorktree: () => boolean;
+	/** Who the commit is authored as, `Name <email>`; undefined when unknown. */
+	readonly author?: () => string | undefined;
+	/** The configured identity, without command-line overrides. */
+	readonly configuredAuthor?: () => string | undefined;
+	/**
+	 * The agent the current linked worktree was made for by `work enter`;
+	 * undefined in the shared checkout or a worktree delendai did not make.
+	 */
+	readonly worktreeAgent?: () => string | undefined;
+	/**
+	 * Whether `sha`, the tip a push deletes from `deletedRef`, is still
+	 * reachable from another ref: the integration branch, a publication or
+	 * another work ref, not the deleted branch under any of its names.
+	 * `undefined` when the commit is not known here.
+	 */
+	readonly tipKept?: (sha: string, deletedRef: string) => boolean | undefined;
+	/** The worktree that has `ref` checked out, if any. */
+	readonly worktreeOf?: (ref: string) => string | undefined;
+	/**
+	 * The agent that owns the unit `branch` names, from its lease: the
+	 * evidence for a worktree delendai did not stamp.
+	 */
+	readonly leaseAgent?: (branch: string) => Promise<string | undefined>;
+	/**
+	 * The other refs of the unit a pushed work ref belongs to, and the one
+	 * its lease names (async: the leases are files).
+	 */
+	readonly unitRefs?: (
+		policy: IResolvedDevelopmentPolicy,
+		branch: string,
+	) => Promise<IUnitRefFacts | undefined>;
+	/**
+	 * Show life on the unit whose worktree this is; called when a commit
+	 * is allowed to proceed.
+	 */
+	readonly showLife?: (policy: IResolvedDevelopmentPolicy) => Promise<void>;
+	/** The commit `ref` points at now, if it exists (x00703). */
+	readonly refAt?: (ref: string) => string | undefined;
+	/** The paths the commit being made changes; undefined when unknown. */
+	readonly stagedPaths?: () => readonly string[] | undefined;
+	/** The project's documents directory (`docsDir`). */
+	readonly docsDir?: (workspace: string) => Promise<string>;
+	/** Everything git wrote to the hook's stdin. */
+	readonly stdin: () => Promise<string>;
+	/**
+	 * The policy the project works under: the one it declares, or the one
+	 * delendai adopts when it declares none. The same reader `delendai work`
+	 * uses, so the guard enforces the model the instructions describe.
+	 */
+	readonly policy: (workspace: string) => Promise<IResolvedDevelopmentPolicy>;
+}

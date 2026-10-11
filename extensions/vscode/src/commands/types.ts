@@ -1,0 +1,229 @@
+import type { IMcpLogHint, McpStdioClient } from '@delendai/client';
+import { DEFAULT_DENY, injectCspMeta } from '@delendai/ui-extension/webview';
+
+import type { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
+import type { ProposalBoardProvider } from '../providers/proposal-board-provider';
+import type { ICommandQuickPickItem } from '../contracts/interfaces/command-quick-pick-item.interface';
+
+import type { IDisposable, IWebviewPanel } from '../extension';
+import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
+import type { ToolTreeDataProvider } from '../providers/tool-tree-data-provider';
+import type {
+	IProposalDetail,
+	IToolDetail,
+} from '@delendai/ui-extension/webview';
+
+/** Minimal `vscode.Uri` surface this module needs (f00045 S3). */
+export interface IVscodeUri {
+	with(change: { readonly fragment?: string }): IVscodeUri;
+}
+
+export type IPrivateTerminalExecution = object;
+
+export interface IPrivateShellIntegration {
+	executeCommand(commandLine: string): IPrivateTerminalExecution;
+}
+
+export interface IPrivateTerminal {
+	readonly shellIntegration?: IPrivateShellIntegration;
+	sendText(text: string, addNewLine?: boolean): void;
+	show?(preserveFocus?: boolean): void;
+	dispose(): void;
+}
+
+export interface ICommandVscodeApi {
+	readonly ViewColumn: {
+		readonly One: number;
+	};
+	readonly commands: {
+		registerCommand(
+			command: string,
+			callback: (...args: readonly unknown[]) => unknown,
+		): IDisposable;
+		/** Dispatch a built-in command (e.g. `vscode.open`). f00045 S3. */
+		executeCommand?(
+			command: string,
+			...args: readonly unknown[]
+		): Thenable<unknown>;
+	};
+	/** `vscode.Uri` factory, used to build the "Open log" target. f00045 S3. */
+	readonly Uri?: {
+		file(path: string): IVscodeUri;
+	};
+	readonly window: {
+		readonly createTerminal?: (options: {
+			readonly name: string;
+			readonly hideFromUser?: boolean;
+			readonly cwd?: string;
+		}) => IPrivateTerminal;
+		readonly onDidChangeTerminalShellIntegration?: (
+			callback: (event: {
+				readonly terminal: IPrivateTerminal;
+				readonly shellIntegration: IPrivateShellIntegration;
+			}) => void,
+		) => IDisposable;
+		readonly onDidEndTerminalShellExecution?: (
+			callback: (event: {
+				readonly execution: IPrivateTerminalExecution;
+				readonly exitCode?: number;
+			}) => void,
+		) => IDisposable;
+		createWebviewPanel(
+			viewType: string,
+			title: string,
+			showOptions: number,
+			options: { readonly enableScripts?: boolean },
+		): IWebviewPanel;
+		showInformationMessage?(
+			message: string,
+			...actions: readonly string[]
+		): Thenable<string | undefined>;
+		showErrorMessage?(
+			message: string,
+			...actions: readonly string[]
+		): Thenable<string | undefined>;
+		showQuickPick?(
+			items: ReadonlyArray<ICommandQuickPickItem>,
+		): Thenable<ICommandQuickPickItem | undefined>;
+	};
+	readonly workspace?: {
+		readonly workspaceFolders?: ReadonlyArray<{
+			readonly uri: { readonly fsPath: string };
+		}>;
+	};
+	/** `vscode.env` subset — clipboard for the proposals "Copy error" action
+	 * (f00097 S4). Optional so test seams / alt hosts can omit it. */
+	readonly env?: {
+		readonly clipboard: { writeText(value: string): Thenable<void> };
+	};
+}
+
+/** Duck-typed log-hint guard — robust across the client package boundary. */
+const logHintOf = (err: unknown): IMcpLogHint | undefined => {
+	const hint = (err as { readonly logHint?: unknown })?.logHint;
+	if (
+		typeof hint === 'object' &&
+		hint !== null &&
+		typeof (hint as Record<string, unknown>).path === 'string' &&
+		typeof (hint as Record<string, unknown>).line === 'number' &&
+		typeof (hint as Record<string, unknown>).ts === 'string'
+	) {
+		return hint as IMcpLogHint;
+	}
+	return undefined;
+};
+
+export interface ICommandDeps {
+	readonly vscode: ICommandVscodeApi;
+	readonly client: McpStdioClient;
+	readonly toolTree?: Pick<ToolTreeDataProvider, 'refresh'>;
+	readonly memoryTree?: Pick<MemoryTreeDataProvider, 'refresh'>;
+	/** Proposals board provider (f00097 S4). `delendai.refresh` and
+	 * `delendai.proposals.refresh` invalidate its snapshot + repaint. */
+	readonly proposalsTree?: Pick<ProposalBoardProvider, 'refresh'>;
+	/** Optional host persistence layer (f00050 S7). Used by commands that
+	 * resolve the user's preferred language from `delendai:lang`. */
+	readonly globalState?: {
+		get<T>(key: string): T | undefined;
+		update(key: string, value: unknown): Thenable<void> | Promise<void>;
+	};
+	/** Plugin names the host actually loaded at activation (f00059 S3).
+	 * The toolbar uses this to drop action cards whose `requires` lists a
+	 * plugin that is NOT in the set, so users only see actions that
+	 * resolve. Omitted → every action is shown (legacy behaviour). */
+	readonly loadedPlugins?: readonly string[];
+	/** Host namespace prefix (f00081 S2). Resolved from
+	 * `delendai.server.prefix` at activation and threaded into every
+	 * service so a deployment started with `--prefix=acme` calls
+	 * `acme_*` tools. Omitted → the default `delendai_` is used. */
+	readonly namespacePrefix?: string;
+	/** Shared read-only proposals snapshot source (f00097 S3). When present,
+	 * the open-proposal command reuses it so the detail webview draws from the
+	 * same TTL cache as the sidebar board instead of refetching. Omitted → a
+	 * private source is built from `client` + `namespacePrefix`. */
+	readonly proposalsSource?: Pick<
+		ProposalsSnapshotSource,
+		'fetchProposalDetail'
+	>;
+	/**
+	 * Workspace root, used by the proposal detail webview to read the
+	 * markdown plan file when rendering the full plan content. Omitted →
+	 * the plan card is hidden (every other detail section still renders).
+	 */
+	readonly workspaceRoot?: string;
+	/**
+	 * Optional sink for host-agnostic detail models. When supplied, the
+	 * `openToolDetail` and `openProposal` commands prefer to deliver the
+	 * `IToolDetail` / `IProposalDetail` payload through the host shell
+	 * (e.g. the dashboard `WebviewView`) before falling back to opening a
+	 * standalone webview panel. Returning `true` suppresses the fallback
+	 * panel so the dashboard overlay is the only surface.
+	 */
+	readonly detailSink?: (
+		kind: 'tool' | 'proposal',
+		model: IToolDetail | IProposalDetail,
+	) => Promise<boolean> | boolean;
+}
+
+export const showCommandError = async (
+	vscode: ICommandVscodeApi,
+	action: string,
+	err: unknown,
+): Promise<void> => {
+	const detail = err instanceof Error ? err.message : String(err);
+	const message = `delendai: ${action} failed: ${detail}`;
+
+	// f00045 S3: when the failure carries a `logHint` (the server
+	// persisted the event and the client transport attached it to the
+	// McpToolError), offer a one-click "Open log" action that jumps to
+	// the exact JSONL line. The handlers never have to thread the hint
+	// through — it rides on the thrown error.
+	const hint = logHintOf(err);
+	if (
+		hint !== undefined &&
+		vscode.Uri !== undefined &&
+		vscode.commands.executeCommand !== undefined
+	) {
+		const choice = await vscode.window.showErrorMessage?.(
+			message,
+			'Open log',
+		);
+		if (choice === 'Open log') {
+			const target = vscode.Uri.file(hint.path).with({
+				fragment: `L${hint.line}`,
+			});
+			await vscode.commands.executeCommand('vscode.open', target);
+		}
+		return;
+	}
+
+	await vscode.window.showErrorMessage?.(message);
+};
+
+export const renderJsonHtml = (title: string, payload: object): string =>
+	// f00079 S1 (a00040 H2): every JSON webview is script-free, so the
+	// default-deny policy (`script-src 'none'`) applies as-is — closing
+	// the no-CSP gap for the overview / metrics / validation / proposals
+	// surfaces in one place.
+	injectCspMeta(
+		`<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>${escapeHtml(title)}</title>
+</head>
+<body>
+	<h1>${escapeHtml(title)}</h1>
+	<pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+</body>
+</html>`,
+		DEFAULT_DENY,
+	);
+
+export const escapeHtml = (value: string): string =>
+	value
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;');

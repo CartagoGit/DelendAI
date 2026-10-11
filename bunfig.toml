@@ -1,0 +1,22 @@
+[install]
+hoist = ["vitest", "typescript", "@types/bun", "@types/node", "zod", "@modelcontextprotocol/sdk"]
+
+[run]
+# r00045 S4: force every `bun` invocation to inject the source condition.
+# Without this, `bun tools/scripts/...` resolves `@delendai/<pkg>` against
+# the per-package `dist/` (now under `build/`) instead of `src/`, and
+# `gen-all --check` runs against stale compiled artefacts. The condition is
+# already declared in `tsconfig.base.json#customConditions`, but tsconfig
+# only affects tsc — bun resolves via its own loader.
+conditions = ["@delendai/source"]
+
+[test]
+runner = "bun"
+coverage = false
+# x00162 S2: registers scss-plugin.ts globally so any `bun test` spec
+# that transitively imports a `.scss` file (shared webview-rendering
+# helpers) gets the same default+compiledCss export shape the
+# production Bun.build() bundle already produces via that same
+# plugin — without this, those specs fail with
+# "Export named 'compiledCss' not found".
+preload = ["./tools/scripts/compile/scss-preload.ts"]

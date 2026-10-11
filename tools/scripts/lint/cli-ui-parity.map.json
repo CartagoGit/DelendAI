@@ -1,0 +1,308 @@
+{
+	"$about": "f00098 S4 — CLI↔UI parity contract. Every CLI command group maps to a UI affordance ({ kind: vscode-command | vscode-view | web-route, id }) or carries a documented waiver; every contributed VS Code command maps to a CLI counterpart (command or group) or carries a waiver. Enforced by tools/scripts/lint/cli-ui-parity.script.ts (bun run lint:cli-ui-parity).",
+	"cliGroups": {
+		"adopt": {
+			"waiver": "f00170: read-only adoption assessment (detect stack, recommend plugins, estimate tool-schema cost) for the terminal/agent onboarding flow; no interactive UI story planned"
+		},
+		"agents": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.openAutoAgentSelector",
+				"note": "f00119 S6: surfaces auto_status + (optional) auto_recommend; pin via the CLI or delendai.openConfigurationCenter"
+			}
+		},
+		"audit": {
+			"waiver": "agent-workflow audit planner; terminal/agent surface only, no interactive UI story planned"
+		},
+		"completion": {
+			"waiver": "shell-only: prints bash/zsh/fish completion scripts, meaningless inside a UI host"
+		},
+		"config": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.openSettings"
+			}
+		},
+		"conventions": {
+			"waiver": "repo-convention ratchet consumed by agents and lint gates; no interactive UI story planned"
+		},
+		"deps": {
+			"waiver": "dependency introspection for agents; terminal-first, no UI story planned"
+		},
+		"docs": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.openDocs"
+			}
+		},
+		"doctor": {
+			"waiver": "sectioned terminal health report with exit codes for scripts/CI; the dashboard is the interactive equivalent"
+		},
+		"fs": {
+			"waiver": "IDE-native: the editor and file explorer supersede fs read/write inside a UI host"
+		},
+		"git": {
+			"waiver": "IDE-native: VS Code's built-in SCM view supersedes the read-only git group"
+		},
+		"init": {
+			"waiver": "global/project IDE configuration bootstrap; terminal-first setup flow with no interactive UI story planned"
+		},
+		"init:global": {
+			"waiver": "global IDE configuration bootstrap; terminal-first setup flow with no separate interactive UI story planned"
+		},
+		"init:default": {
+			"waiver": "non-interactive bootstrap for scripts and fresh checkouts; shell-only by design"
+		},
+		"knowledge": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.openKnowledge"
+			}
+		},
+		"logs": {
+			"waiver": "log query/tail/correlate is terminal-first; no dedicated log view contributed yet"
+		},
+		"alias": {
+			"waiver": "b00239: provision the legacy human alias for the canonical CLI; purely a shell-level install/remove operation, no UI affordance planned"
+		},
+		"bridge": {
+			"waiver": "b00239: install legacy bin-name shims in the workspace; the migrate flow + rebrand-propagate tool are the UI counterparts, no dedicated view planned"
+		},
+		"guard": {
+			"waiver": "x00549: called by git hooks on every commit, branch creation and push; there is no human interaction to surface in a UI"
+		},
+		"repair": {
+			"waiver": "x00552: records the human conclusion that closes a startup repair task; the DEGRADED boot report prints the exact command, and the decision is a tracked file reviewed in a pull request rather than a UI action"
+		},
+		"work": {
+			"waiver": "x00553: persists work to its ref and gives an agent its own worktree; it is the git-side workflow an agent or a hook runs, and the UI surfaces the resulting work units rather than the plumbing"
+		},
+		"review": {
+			"waiver": "x00727: the reviewing agent's workflow over its review unit (next, approve, changes, finish); the UI shows the proposals and their verdicts, which is what these commands produce"
+		},
+		"migrate": {
+			"waiver": "transactional rebrand migration is explicitly destructive and review-gated; runs from the terminal with explicit confirm flags, no UI affordance planned"
+		},
+		"cache": {
+			"waiver": "operator command for the cache layout lifecycle; migrations run by the version on start, and gc is the cache_gc tool already reachable from the UI's tool list, so there is no separate affordance planned"
+		},
+		"memory": {
+			"ui": {
+				"kind": "vscode-view",
+				"id": "delendai.memory"
+			}
+		},
+		"metrics": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.showMetrics"
+			}
+		},
+		"notification": {
+			"waiver": "agent-coordination primitive (status/await-lock); not a human UI affordance"
+		},
+		"overview": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.showOverview"
+			}
+		},
+		"plugin": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.openDashboard",
+				"note": "the dashboard lists loaded plugins and their tools"
+			}
+		},
+		"project": {
+			"waiver": "project analyze/plan/create is an agent scaffolding surface; terminal-first, no UI story planned"
+		},
+		"proposals": {
+			"ui": {
+				"kind": "vscode-view",
+				"id": "delendai.proposals"
+			}
+		},
+		"quality": {
+			"waiver": "quality scope runner is terminal-first; the validate group carries the UI affordance (runValidation)"
+		},
+		"rules": {
+			"waiver": "rules engine consumed by agents and lint gates; terminal-first, no UI story planned"
+		},
+		"router-dashboard": {
+			"waiver": "f00140 S2 surfaces the recommendation + spend table as a CLI command (auto_status + auto_recommend + usage_report); the HTML webview renderer (S3) is staged for a future slice that wires it to a `vscode-view` command."
+		},
+		"scaffold": {
+			"waiver": "code generator that writes workspace files; terminal-first, no UI story planned"
+		},
+		"search": {
+			"waiver": "IDE-native: VS Code's built-in workspace search supersedes CLI text search"
+		},
+		"security": {
+			"waiver": "secret + dependency-CVE + license posture scanning for agents and CI; terminal-first, a VS Code posture panel is future work"
+		},
+		"status": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.openDashboard"
+			}
+		},
+		"status-marker": {
+			"waiver": "swarm status-marker protocol between agents; not a human UI affordance"
+		},
+		"test-convention": {
+			"waiver": "test-convention scanner for agents; terminal-first, no UI story planned"
+		},
+		"usage-tracking": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.providers.openDashboard",
+				"note": "f00098 S3: the provider dashboard renders the usage-cost card (usage_report + advise_spend)"
+			}
+		},
+		"validate": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.runValidation"
+			}
+		},
+		"validate-matrix": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "delendai.runValidation",
+				"note": "the validation command surfaces the configured matrix"
+			}
+		},
+		"web-fetch": {
+			"waiver": "agent web-fetch primitive; the IDE host has native browsing, no UI story planned"
+		}
+	},
+	"vscodeCommands": {
+		"delendai.openAutoAgentSelector": {
+			"cli": "agents",
+			"note": "f00119 S6: surfaces auto_status + (optional) auto_recommend; pin via the CLI or delendai.openConfigurationCenter"
+		},
+		"delendai.openAgentCatalog": {
+			"cli": "overview",
+			"note": "the agent catalog is the overview snapshot rendered as a webview"
+		},
+		"delendai.openAgentTimeline": {
+			"waiver": "VS Code-only observability viewer for the persisted agent timeline; no standalone CLI timeline command is registered yet"
+		},
+		"delendai.openRuntimeLog": {
+			"waiver": "VS Code-only runtime log viewer; the CLI exposes log querying but no equivalent command opens the persisted viewer"
+		},
+		"delendai.openDashboard": {
+			"cli": "status"
+		},
+		"delendai.openDashboardTab": {
+			"cli": "status",
+			"note": "same dashboard as delendai.openDashboard, opened in an editor tab instead of the side panel; one CLI counterpart serves both placements"
+		},
+		"delendai.providers.openDashboard": {
+			"cli": "usage-tracking report",
+			"note": "f00098 S3: the panel's usage card is the report; the provider half wraps agent tools (healthcheck_providers/get_quota) with no CLI group"
+		},
+		"delendai.providers.healthcheck": {
+			"waiver": "wraps the agent tool orchestrator-runner healthcheck_providers; the orchestrator has no CLI group (agent/MCP-first surface)"
+		},
+		"delendai.providers.pause": {
+			"waiver": "wraps the agent tool set_provider_state (manual availability override); no CLI group for the orchestrator yet"
+		},
+		"delendai.providers.resume": {
+			"waiver": "wraps the agent tool set_provider_state (manual availability override); no CLI group for the orchestrator yet"
+		},
+		"delendai.usage.report": {
+			"cli": "usage-tracking report"
+		},
+		"delendai.usage.clear": {
+			"cli": "usage-tracking clear",
+			"note": "both surfaces confirm: the CLI needs --confirm, the command shows a modal"
+		},
+		"delendai.adopt": {
+			"cli": "adopt"
+		},
+		"delendai.showOverview": {
+			"cli": "overview"
+		},
+		"delendai.refresh": {
+			"waiver": "UI refresh affordance; re-running the corresponding CLI command is the scriptable equivalent"
+		},
+		"delendai.runValidation": {
+			"cli": "validate"
+		},
+		"delendai.openProposal": {
+			"cli": "proposals board"
+		},
+		"delendai.proposals.refresh": {
+			"waiver": "view-title refresh button for the proposals view; UI mechanics only"
+		},
+		"delendai.proposals.copyError": {
+			"waiver": "clipboard affordance for the proposals view error state; UI mechanics only"
+		},
+		"delendai.showMetrics": {
+			"cli": "metrics"
+		},
+		"delendai.openDocs": {
+			"cli": "docs list"
+		},
+		"delendai.openDocsApi": {
+			"cli": "docs read"
+		},
+		"delendai.openKnowledge": {
+			"cli": "knowledge"
+		},
+		"delendai.toolSearch": {
+			"cli": "overview",
+			"note": "overview --full prints the complete tool map; fuzzy filtering is UI-side sugar"
+		},
+		"delendai.openToolDetail": {
+			"cli": "overview",
+			"note": "tool leaf detail view combines overview/listTools schemas and metrics for one tool"
+		},
+		"delendai.restartServer": {
+			"waiver": "extension-host process lifecycle; the CLI is a client of that server and cannot restart the host's instance"
+		},
+		"delendai.plugins.activation": {
+			"cli": "config show",
+			"note": "f00107 S3: overview activation report plus merge-aware config enabled toggles"
+		},
+		"delendai.openSettings": {
+			"cli": "config show"
+		},
+		"delendai.openConfigurationCenter": {
+			"cli": "config show",
+			"note": "schema-driven project configuration editor; config show is the read-only terminal counterpart"
+		},
+		"delendai.saveSettings": {
+			"cli": "config show",
+			"note": "internal settings-webview save handler; hidden from the command palette"
+		},
+		"delendai.resetSettings": {
+			"cli": "config show",
+			"note": "internal settings-webview reset handler; hidden from the command palette"
+		},
+		"delendai.openToolbar": {
+			"waiver": "UI navigation into the webview toolbar; no scriptable behaviour"
+		},
+		"delendai.memorySave": {
+			"cli": "memory save"
+		},
+		"delendai.memoryForget": {
+			"cli": "memory forget"
+		},
+		"delendai.setupGithub": {
+			"waiver": "guided IDE onboarding flow for GitHub issues; no CLI counterpart yet"
+		},
+		"delendai.externalMcps.ack": {
+			"waiver": "f00068 S5: wraps the external-mcps plugin's external_mcp_ack tool (human accept/reject of an external-server activation); the external-mcps discovery/ack surface is agent/MCP-first with no CLI group"
+		},
+		"delendai.startServerUntrusted": {
+			"waiver": "x00072 SEC-001 S1: manual override that spawns the stdio child in an untrusted workspace after the user reads the warning. No CLI counterpart (CLI refuses untrusted workspaces entirely); the gate is purely a VS Code affordance."
+		},
+		"delendai.openPluginConfig": {
+			"cli": "config show",
+			"note": "f00098: reuses Configuration Center (config show is the read-only CLI counterpart) with optional pluginId narrowing"
+		}
+	}
+}

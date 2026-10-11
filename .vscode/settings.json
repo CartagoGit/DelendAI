@@ -1,0 +1,207 @@
+{
+	"terminal.integrated.profiles.linux": {
+		"Bash (login)": {
+			"path": "/bin/bash",
+			"args": ["--login"]
+		}
+	},
+
+	// Por defecto (para todo lo que abra terminal: Copilot incluido) → Bash
+	"terminal.integrated.defaultProfile.linux": "Bash (login)",
+
+	// Habilitar prompt files de GitHub Copilot
+	"chat.promptFiles": true,
+
+	// TypeScript y JavaScript: usar la versión del workspace
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
+	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	// Format-on-save for the front surface (apps/web/**).
+	// The repo formatter is Biome — see /biome.json.
+	// Bun is the package manager and runner.
+	//
+	// To override locally, add to .vscode/settings.local.json (gitignored).
+
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "biomejs.biome",
+	// Evitar “organize imports” automático (puede variar por versión de TS)
+	"editor.codeActionsOnSave": {
+		"source.fixAll.biome": "explicit",
+		"source.organizeImports": "explicit"
+	},
+
+	// Scope format-on-save to the front (Astro site). Backend packages keep
+	// their existing formatter rules; nothing is changed outside apps/web.
+	"[astro]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[scss]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[html]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+
+	// ──────────────────────────────────────────────────────────────────────
+	// Copilot / Copilot Chat / agent mode: auto-approve everything.
+	//
+	// These settings make VS Code Copilot run without asking for confirmation
+	// before tool calls, file edits, terminal commands, or MCP server calls.
+	// The repo is a developer sandbox (`AGENTS.md` already declares this a
+	// trusted monorepo) so we trade friction for velocity. Override locally
+	// by adding the same keys to `.vscode/settings.local.json` (gitignored)
+	// and setting them back to false. See `.vscode/settings.local.json.example`
+	// for a starter override file.
+	// ──────────────────────────────────────────────────────────────────────
+
+	// Auto-approve ALL chat-mode tool calls (file edits, terminal, search,
+	// MCP, browser). Equivalent to Claude Code's `bypassPermissions`.
+	"chat.tools.autoApprove": true,
+
+	// Don't prompt before running terminal commands from chat.
+	"chat.tools.terminal.autoApprove": {
+		"*": true,
+		"tee": true
+	},
+
+	// Don't prompt before running MCP server tools.
+	"chat.mcp.autoApprove": true,
+
+	// Auto-start the MCP servers declared in .vscode/mcp.json on the first
+	// chat request of the session — no manual "Start" click per window.
+	// "newAndOutdated" (the VS Code default) also restarts servers whose
+	// config changed; set explicitly so a user-level "never" cannot win.
+	"chat.mcp.autostart": "newAndOutdated",
+
+	// Don't prompt before file edits / writes from chat.
+	"chat.edit.autoApprove": true,
+
+	// Don't prompt before inserting code at the cursor (next-edit suggestions
+	// already bypass by default; this covers the inline-chat confirm dialog).
+	"chat.inlineChat.acceptChangesWithCtrlEnter": true,
+	"chat.inlineChat.disableNotification": true,
+
+	// Auto-approve in the agent (autopilot-like) workflow.
+	"github.copilot.chat.agent.autoApprove": true,
+
+	// Don't show the "allow this command" dialog for terminal commands Copilot
+	// generates. The terminal still runs; only the prompt is suppressed.
+	"github.copilot.chat.runCommand.enabled": true,
+	"github.copilot.chat.commandExecution.alwaysAllow": true,
+
+	// Suppress telemetry permission prompts (these are unrelated to chat
+	// permissions but they pop up at first session start and add noise).
+	"github.copilot.telemetry.enabled": false,
+
+	// ──────────────────────────────────────────────────────────────────────
+	// Agent skills — make `delendai-status-marker-and-closure` discoverable
+	// in this workspace so the canonical close-marker behaviour is injected
+	// on every response. The skill itself lives at
+	// `plugins/status-marker/skills/delendai-status-marker-and-closure/`
+	// and is owned by the `@delendai/status-marker` plugin (per the SOLID
+	// ownership rules in `docs/delendai/skills/README.md`).
+	// Core + transversal skills are added for completeness so the host can
+	// discover every skill shipped by the project.
+	// ──────────────────────────────────────────────────────────────────────
+	"chat.agentSkills.enabled": true,
+	"chat.agentSkillsLocations": {
+		"./packages/core/skills": true,
+		"./plugins/status-marker/skills": true,
+		"./plugins/proposals/skills": true,
+		"./plugins/audit/skills": true,
+		"./plugins/quality/skills": true,
+		"./plugins/test-convention/skills": true,
+		"./plugins/conventions/skills": true,
+		"./plugins/web-fetch/skills": true,
+		"./plugins/memory/skills": true,
+		"./plugins/docs/skills": true,
+		"./plugins/git/skills": true,
+		"./plugins/search/skills": true,
+		"./plugins/deps/skills": true,
+		"./plugins/notification/skills": true,
+		"./plugins/logs/skills": true,
+		"./plugins/rules/skills": true,
+		"./plugins/issues/skills": true
+	},
+	"delendai.development.autoReload": true,
+
+	// ──────────────────────────────────────────────────────────────────────
+	// Peacock — workspace-scoped visual identity (morado agradable)
+	//
+	// Peacock (`johnpapa.vscode-peacock`) lee estos ajustes al activar el
+	// workspace y aplica la paleta a los elementos seleccionados más abajo.
+	// Al cerrar este proyecto, el contorno vuelve al color por defecto de
+	// VS Code; al abrir otro, se aplican los ajustes de Peacock de ese
+	// workspace.
+	//
+	// Nota: Peacock no controla el borde del sistema operativo de la
+	// ventana (`window.activeBorder`). En su lugar, colorea los bordes
+	// internos de VS Code (editor / sidebar / panel) y la barra de título
+	// / actividad / estado, que es el "contorno" visible dentro del IDE.
+	//
+	// Paleta:
+	//   - #A78BFA  violet-400 (Tailwind) — color principal
+	//   - #6D28D9  violet-700 (Tailwind) — color remoto (SSH / devcontainer)
+	// ──────────────────────────────────────────────────────────────────────
+	"peacock.color": "#A78BFA",
+	"peacock.remoteColor": "#6D28D9",
+	"peacock.affectStatusBar": true,
+	"peacock.affectActivityBar": true,
+	"peacock.affectTitleBar": true,
+	"peacock.affectEditorGroupBorder": true,
+	"peacock.affectSideBarBorder": true,
+	"peacock.affectPanelBorder": true,
+	"peacock.affectTabActiveBorder": true,
+	"peacock.affectStatusAndTitleBorders": true,
+	"peacock.elementAdjustments": {
+		"titleBar": "darken",
+		"activityBar": "lighten",
+		"statusBar": "none"
+	},
+	"peacock.darkenLightenPercentage": 6,
+	"workbench.colorCustomizations": {
+		"activityBar.activeBackground": "#8a53e1",
+		"activityBar.background": "#8a53e1",
+		"activityBar.foreground": "#e7e7e7",
+		"activityBar.inactiveForeground": "#e7e7e799",
+		"activityBarBadge.background": "#6d3613",
+		"activityBarBadge.foreground": "#e7e7e7",
+		"commandCenter.border": "#e7e7e799",
+		"editorGroup.border": "#8a53e1",
+		"panel.border": "#8a53e1",
+		"sash.hoverBorder": "#8a53e1",
+		"sideBar.border": "#8a53e1",
+		"statusBar.background": "#6d28d9",
+		"statusBar.border": "#6d28d9",
+		"statusBar.foreground": "#e7e7e7",
+		"statusBarItem.hoverBackground": "#8a53e1",
+		"statusBarItem.remoteBackground": "#6d28d9",
+		"statusBarItem.remoteForeground": "#e7e7e7",
+		"tab.activeBorder": "#8a53e1",
+		"titleBar.activeBackground": "#571faf",
+		"titleBar.activeForeground": "#e7e7e7",
+		"titleBar.border": "#571faf",
+		"titleBar.inactiveBackground": "#571faf99",
+		"titleBar.inactiveForeground": "#e7e7e799"
+	},
+	"[markdown]": {
+		"editor.defaultFormatter": "yzhang.markdown-all-in-one"
+	},
+	"[yaml]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	}
+}

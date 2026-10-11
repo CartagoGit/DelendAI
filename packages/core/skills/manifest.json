@@ -1,0 +1,285 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"generatedAt": "2026-07-26T08:00:00.000Z",
+	"skills": [
+		{
+			"id": "delendai-plugin-authoring",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding or changing an delendai plugin so tools, schemas, state, path containment, and durability rules stay correct.",
+			"bodyPath": "packages/core/skills/plugin-authoring/SKILL.md",
+			"tags": ["plugin-authoring", "contract", "core"],
+			"appliesTo": ["@delendai/*"]
+		},
+		{
+			"id": "delendai-failure-modes",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a tool returns ok:false or a swarm stalls to recover from lock conflicts, corruption, state drift, policy blocks, or timeouts.",
+			"bodyPath": "packages/core/skills/failure-modes/SKILL.md",
+			"tags": ["failure-modes", "recovery", "swarm"],
+			"appliesTo": ["@delendai/*"]
+		},
+		{
+			"id": "delendai-operator",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use at session start to call overview first, read recommendedNextAction, and choose the right preset before touching plugin-specific tools.",
+			"bodyPath": "packages/core/skills/operator/SKILL.md",
+			"tags": ["operator", "orientation", "presets"],
+			"appliesTo": ["@delendai/*"]
+		},
+		{
+			"id": "delendai-proposal-swarm-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use as the compact entrypoint for proposal work when you need the canonical swarm workflow without re-deriving the process.",
+			"bodyPath": "plugins/proposals/skills/proposal-swarm-runner/SKILL.md",
+			"tags": ["proposals", "swarm", "multi-agent"],
+			"appliesTo": ["@delendai/proposals"]
+		},
+		{
+			"id": "delendai-proposals-workflow-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use for end-to-end proposal execution: orient, select, claim, implement, validate, close, and sync without polling or hand-editing state.",
+			"bodyPath": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md",
+			"tags": ["proposals", "workflow", "compact"],
+			"appliesTo": ["@delendai/proposals"]
+		},
+		{
+			"id": "delendai-multi-agent-coordination",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when several agents share this repo to choose locks, await release notifications, and avoid duplicate MCP reads.",
+			"bodyPath": "plugins/proposals/skills/multi-agent-coordination/SKILL.md",
+			"tags": ["multi-agent", "coordination", "locking"],
+			"appliesTo": ["@delendai/proposals", "@delendai/notification"]
+		},
+		{
+			"id": "delendai-state-repair-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when proposals state is inconsistent after crashes or stale locks to diagnose issues and repair queue, claims, and index drift.",
+			"bodyPath": "plugins/proposals/skills/state-repair-playbook/SKILL.md",
+			"tags": ["state-health", "state-repair", "recovery"],
+			"appliesTo": ["@delendai/proposals"]
+		},
+		{
+			"id": "delendai-token-budget-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before verbose tools or when context grows too fast to keep sessions compact through compact calls, delegation, and metrics-aware discipline.",
+			"bodyPath": "packages/core/skills/delendai-token-budget-playbook/SKILL.md",
+			"tags": ["metrics", "token-budget", "compact"],
+			"appliesTo": ["@delendai/*"]
+		},
+		{
+			"id": "delendai-concurrency-patterns",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when concurrent agents or processes may touch the same files to choose between withFileMutex and agent_lock or agent_worktree.",
+			"bodyPath": "plugins/proposals/skills/concurrency-patterns/SKILL.md",
+			"tags": ["concurrency", "mutex", "locking"],
+			"appliesTo": ["@delendai/proposals", "@delendai/notification"]
+		},
+		{
+			"id": "delendai-audit-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before creating an audit proposal to follow the mandatory reading order, evidence bar, and output contract for full repo audits.",
+			"bodyPath": "plugins/audit/skills/delendai-audit-playbook/SKILL.md",
+			"tags": ["audit", "qualitative-analysis", "methodology"],
+			"appliesTo": ["@delendai/audit"]
+		},
+		{
+			"id": "delendai-conventional-commits-and-release",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before release-facing commits or bun run release so commit type, derived semver bump, and publish flow stay aligned with automation.",
+			"bodyPath": "packages/core/skills/conventional-commits-and-release/SKILL.md",
+			"tags": ["release", "conventional-commits", "versioning"],
+			"appliesTo": ["@delendai/core"]
+		},
+		{
+			"id": "delendai-token-budget-discipline",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use as the pointer to the canonical token-budget playbook whenever you need the current guidance for keeping sessions compact.",
+			"bodyPath": "packages/core/skills/token-budget-discipline/SKILL.md",
+			"tags": ["token-budget", "compact", "delegation"],
+			"appliesTo": ["@delendai/core"]
+		},
+		{
+			"id": "delendai-status-marker-and-closure",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when the status-marker plugin is loaded to choose the right close state, generate the canonical marker, and validate the final line.",
+			"bodyPath": "plugins/status-marker/skills/status-marker-and-closure/SKILL.md",
+			"tags": ["status-marker", "closure", "audit-trail"],
+			"appliesTo": ["@delendai/status-marker"]
+		},
+		{
+			"id": "delendai-audit-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when running or consolidating audits to follow the tool-level lifecycle, rubric, and ready-versus-done decision flow.",
+			"bodyPath": "plugins/audit/skills/audit-runner/SKILL.md",
+			"tags": ["audit", "lifecycle", "rubric"],
+			"appliesTo": ["@delendai/audit"]
+		},
+		{
+			"id": "delendai-quality-and-rules-gates",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before run_quality or apply_rules to understand command resolution, commandPolicy boundaries, and why a rules plan was selected.",
+			"bodyPath": "plugins/quality/skills/quality-and-rules-gates/SKILL.md",
+			"tags": ["quality", "rules", "gates"],
+			"appliesTo": ["@delendai/quality", "@delendai/rules"]
+		},
+		{
+			"id": "delendai-rules-solid-architecture",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding a rules preset, refactoring internals, or auditing the rules plugin so its SOLID boundaries remain intact.",
+			"bodyPath": "plugins/rules/skills/rules-solid-architecture/SKILL.md",
+			"tags": ["rules", "solid", "architecture", "contributor-guide"],
+			"appliesTo": ["@delendai/rules"]
+		},
+		{
+			"id": "delendai-rules-dogma-priority",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when deciding which lint or typecheck command wins; it explains the priority order project, then dogma, then the vendored default.",
+			"bodyPath": "plugins/rules/skills/delendai-rules-dogma-priority/SKILL.md",
+			"tags": [
+				"rules",
+				"dogma",
+				"priority",
+				"f00051-s11",
+				"contributor-guide"
+			],
+			"appliesTo": ["@delendai/rules"]
+		},
+		{
+			"id": "delendai-legacy-proposal-migration",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use only when migrating pre-f00016 pNNN proposals so the legacy mapping and required script order stay correct.",
+			"bodyPath": "plugins/proposals/skills/legacy-proposal-migration/SKILL.md",
+			"tags": ["legacy", "migration", "proposals"],
+			"appliesTo": ["@delendai/proposals"]
+		},
+		{
+			"id": "delendai-tabs-component",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
+			"bodyPath": "packages/core/skills/tabs-component/SKILL.md",
+			"tags": ["tabs", "brand-logo", "iconography", "f00069"],
+			"appliesTo": ["@delendai/web"]
+		},
+		{
+			"id": "delendai-external-mcps",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a workspace needs a capability native tools do not cover, to compose a third-party MCP server via catalog, suggest, validate_config, ack, and the lazy ext.<server>.<tool> call proxy.",
+			"bodyPath": "plugins/external-mcps/skills/external-mcps/SKILL.md",
+			"tags": ["external-mcps", "composition", "human-ack", "f00068"],
+			"appliesTo": ["@delendai/external-mcps"]
+		},
+		{
+			"id": "delendai-debugging-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a run fails or output looks wrong to triage logs, proposal state, and orphaned locks before repairing anything.",
+			"bodyPath": "plugins/skills-pack/skills/debugging-playbook/SKILL.md",
+			"tags": ["debugging", "triage", "logs", "state"],
+			"appliesTo": [
+				"@delendai/skills-pack",
+				"@delendai/logs",
+				"@delendai/proposals"
+			]
+		},
+		{
+			"id": "delendai-performance-optimization",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when performance regresses to benchmark first, profile the real hotspot, and validate improvements with the narrowest quality gate.",
+			"bodyPath": "plugins/skills-pack/skills/performance-optimization/SKILL.md",
+			"tags": ["performance", "benchmarking", "profiling", "quality"],
+			"appliesTo": [
+				"@delendai/skills-pack",
+				"@delendai/perf",
+				"@delendai/quality"
+			]
+		},
+		{
+			"id": "delendai-pr-review-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when reviewing a PR to check scope, history, CI, quality gates, and security signals before deciding.",
+			"bodyPath": "plugins/skills-pack/skills/pr-review-checklist/SKILL.md",
+			"tags": ["review", "pull-request", "quality", "security"],
+			"appliesTo": [
+				"@delendai/skills-pack",
+				"@delendai/git",
+				"@delendai/forge",
+				"@delendai/quality",
+				"@delendai/security"
+			]
+		},
+		{
+			"id": "delendai-security-hardening-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when hardening a project so audit, dependency, SAST, secret, and environment checks happen in one repeatable pass.",
+			"bodyPath": "plugins/skills-pack/skills/security-hardening-checklist/SKILL.md",
+			"tags": ["security", "hardening", "secrets", "dependencies"],
+			"appliesTo": [
+				"@delendai/skills-pack",
+				"@delendai/security",
+				"@delendai/env"
+			]
+		},
+		{
+			"id": "delendai-incident-response",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
+			"bodyPath": "plugins/skills-pack/skills/incident-response/SKILL.md",
+			"tags": ["incident", "operations", "logs", "recovery"],
+			"appliesTo": [
+				"@delendai/skills-pack",
+				"@delendai/observability",
+				"@delendai/logs",
+				"@delendai/notification",
+				"@delendai/proposals"
+			]
+		},
+		{
+			"id": "delendai-migrate-from-x",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when migrating off a legacy tool or pattern to extend the legacy migration discipline with codemods, rename, history checks, and final quality gates.",
+			"bodyPath": "plugins/skills-pack/skills/migrate-from-x/SKILL.md",
+			"tags": ["migration", "refactor", "legacy", "quality"],
+			"appliesTo": [
+				"@delendai/skills-pack",
+				"@delendai/refactor",
+				"@delendai/git",
+				"@delendai/quality",
+				"@delendai/proposals"
+			]
+		},
+		{
+			"id": "delendai-error-collection",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",
+			"bodyPath": "packages/core/skills/error-collection/SKILL.md",
+			"tags": ["error-collection", "sink", "redaction", "privacy"],
+			"appliesTo": ["@delendai/*"]
+		}
+	]
+}

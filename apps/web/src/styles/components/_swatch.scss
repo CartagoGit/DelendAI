@@ -1,0 +1,31 @@
+// _swatch.scss — theme colour swatches inside the settings modal.
+//
+// BEM root: .swatches (row container) and .swatch (single chip with a
+// small inner dot).  The inner dot `<span>` is nested with `&` to keep
+// the BEM scope.
+
+.swatches {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}
+.swatch {
+	width: 2.6rem;
+	height: 2.6rem;
+	border-radius: 10px;
+	border: 2px solid var(--line);
+	cursor: pointer;
+	display: grid;
+	place-items: end;
+	padding: 3px;
+	position: relative;
+
+	&[aria-pressed="true"] {
+		border-color: var(--accent);
+	}
+	& span {
+		width: 0.7rem;
+		height: 0.7rem;
+		border-radius: 50%;
+	}
+}

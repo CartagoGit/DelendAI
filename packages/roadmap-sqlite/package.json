@@ -1,0 +1,48 @@
+{
+	"name": "@delendai/roadmap-sqlite",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"description": "SQLite driver for the roadmap timeline: the same append-only contract as the markdown timeline, kept in a database under the plugin cache directory.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"delendai",
+		"roadmap",
+		"release",
+		"timeline",
+		"sqlite"
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "bun test --timeout 30000 tests",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/roadmap-sqlite"
+	},
+	"dependencies": {
+		"@delendai/roadmap": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	}
+}

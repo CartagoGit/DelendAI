@@ -1,0 +1,150 @@
+node_modules/
+
+# Legacy plugin tool verification scratch dir. The proposals lock
+# specs now write ephemeral state under `.cache/delendai/verify-tmp/`
+# (the canonical cache root, see `DEFAULT_CORE_PATHS.cacheDir`); this
+# entry is kept for old local runs whose `.verify-tmp/agents.lock.*`
+# files were never migrated and would otherwise show up as untracked.
+.verify-tmp/
+
+# Monorepo-wide artifact layout (see docs/delendai/AGENT-BOOTSTRAP.md → "Build / dist layout"):
+#   build/<group>/<name>/         — bundler/compiler outputs (typedoc, astrosite, vsce staging…)
+#   build/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
+# Per-package `dist/` inside packages/*/ and plugins/*/ IS ignored (see the
+# entries at the bottom of this block). It used to be tracked, and the note
+# saying so outlived the change by long enough to contradict the r00045 note
+# twelve lines below it.
+#
+# Anchored to repo root (`/build/`): an unanchored `build/` also matched
+# `tools/scripts/build/` — a real, wired-in (`package.json#build:stable-manifest`)
+# SOURCE directory, not a build-output one — silently excluding it from git
+# since it was created (f00152). Found via the CI reality-gate investigation
+# in q00005's Track D (x00251/x00252 follow-up); root-cause fixed here rather
+# than baselined away.
+#
+# r00045 S1: the canonical build tree is `/build/{group}/{name}/{version}/`.
+# Every package and plugin compiles into that single tree, and `npm publish`
+# (or `vsce`) packs its own slice from a staging copy under `tmpdir()`.
+#
+# Per-package `dist/` IS still produced, on every build, as a gitignored
+# mirror of that tree — an earlier version of this note claimed it was "no
+# longer produced", which was never true. It has to exist: all 62 manifests
+# declare `"main": "./dist/index.js"`, and `exports` cannot escape the
+# package directory with `../build`, so resolution by package name has
+# nowhere else to look. Wipe it with `git clean -fdX packages plugins`; the
+# next build regenerates it.
+/build/
+/dist/
+
+# Legacy per-package build output name (pre-convention). Safe to remove.
+packages/*/build/
+apps/*/build/
+plugins/*/build/
+
+# The per-package mirrors described above. Not legacy and not going away:
+# they are what `main` / `exports` resolve to in development.
+packages/*/dist/
+apps/*/dist/
+plugins/*/dist/
+
+# Legacy: .vsix artefacts used to be dropped at extensions/vscode/<name>.vsix.
+# Active VSIX files are now under build/extensions/vscode/<version>/.
+apps/*/*.vsix
+extensions/*/*.vsix
+
+.cache/
+.delendai/
+site/
+.astro/
+# f00054 S1: root vitest coverage is centralized under .cache/coverage (see
+# vitest.config.ts); this also ignores any per-package coverage/ output.
+coverage/
+apps/web/src/data/capabilities.json
+apps/web/src/data/manifests/
+# x00052: proposals/index.json — regenerable cache artefact. Lives under
+# .cache/delendai/proposals/index.json (see plugins/proposals/src/lib/
+# contracts/constants/default-path-layout.constant.ts#proposalIndexFile);
+# the legacy docs/ path is ignored here so an old checkout cannot
+# accidentally re-commit it. The on-disk copy in docs/ is harmless
+# (no longer written by proposals_sync_proposals) and can be deleted
+# manually.
+docs/delendai/proposals/index.json
+# Generated symlink: apps/web/public/api -> ../../../build/docs-api.
+# Created by `apps/web/scripts/sync-public-api.ts` (run automatically by
+# apps/web dev/build). Do NOT commit the symlink itself.
+apps/web/public/api
+*.tsbuildinfo
+.DS_Store
+pack/
+
+# Track the text lockfile (bun.lock) for reproducible installs across machines
+# + CI --frozen-lockfile; ignore only the legacy binary form.
+bun.lockb
+
+# Stray TypeScript declaration emits inside source trees are NOT ignored on
+# purpose. The build emits declarations to dist/; a .d.ts next to a .ts source
+# is always an accident, and hiding it here only hides whatever emitted it.
+# `tools/scripts/hooks/pre-commit.ts` refuses to commit one, so the accident
+# stays visible in `git status` instead of silently disappearing (i00004 S2).
+
+# Personal-machine overrides of the shared agent config files. The shared
+# autopilot defaults live in `.vscode/settings.json`, `.claude/settings.json`,
+# `.continue/config.json`, `.cursor/rules/*.mdc` and `.aider.conf.yml`;
+# per-machine overrides use the `.local` suffix and MUST NOT be tracked
+# (they usually contain API keys, model choices, or stricter permission
+# settings).
+.vscode/settings.local.json
+.claude/settings.local.json
+.continue/config.local.json
+
+# Agent session notes dropped at the repo root. These are transient
+# per-session digests (consolidation steps, workarounds, lessons
+# learned) that belong in the agent's memory / notes system, not in
+# the public history. The `delendai-session-*.md` glob matches the
+# convention used by recent sessions.
+#
+# NOTE (2026-06-21, n007): the broader `*session*.md` glob was removed.
+# Cross-session handoff summaries are now first-class proposals of kind
+# `resume` (prefix `n`) living under `docs/delendai/proposals/done/resumes/` and
+# MUST be tracked. The narrower `delendai-session-*.md` glob below
+# still catches the ad-hoc transient notes that show up at the repo root.
+delendai-session-*.md
+!.agents/sessions/
+
+# f00065 S2: the repo has exactly ONE cache root — the root `.cache/`
+# (ignored above). There is no per-folder cache. The historical
+# `tools/scripts/.cache/` (rules plugin runtime snapshots, materialized when a
+# process was launched with cwd=tools/scripts) is no longer a documented
+# default: `bun run lint:cache` (tools/scripts/lint/check-cache.script.ts)
+# FAILS if any `.cache` appears outside the root, so a stray per-folder cache is
+# caught instead of silently ignored. Run delendai tools from the repo root.
+
+# metrics gate run artifacts. The candidate snapshot now lives under
+# `.cache/delendai/metrics/candidate.json` (covered by the `.cache/` rule);
+# the tracked fallback baseline lives in config/. The root rules below are
+# legacy protection for pre-migration local copies.
+/metrics-candidate.json
+/metrics-baseline.json
+
+
+.vscode/*.code-workspace
+
+# Coordination files created and deleted by `withFileMutex` while a write
+# is in flight. They are never work. Untracked, they still raced git:
+# `gen-all`'s drift-check (`git diff --exit-code`) saw one appear and
+# blocked a push, and commit-policy's dirty-set sweep staged one that
+# vanished before `git add` ran, failing the whole commit and losing a
+# batch of finished work. Invisible to git is the only correct state.
+*.mutex
+*.tmp-*
+
+# Operational SQLite databases. These are derived, rebuildable projections
+# (q00022 / q00019): the markdown files and the event log are the truth, the
+# .sqlite file is a cache that `reconcile` can regenerate at any time. They are
+# binary, machine-local, and must never enter a commit.
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite.staging
+*.sqlite.staging-wal
+*.sqlite.staging-shm

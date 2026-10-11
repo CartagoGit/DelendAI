@@ -1,0 +1,449 @@
+// the `<prefix>_scaffold` MCP tool: lets any agent in the host
+// workspace generate new tools, prompts, skills, agent adapters or a
+// complete host project. Dry-run by default; writes refuse to overwrite
+// existing files unless keepLegacy is enabled, in which case the old bytes are
+// preserved under legacy/ before fresh templates are written.
+
+import { copyFile, mkdir, rename, stat, unlink } from 'node:fs/promises';
+import { basename, dirname, extname } from 'node:path';
+
+import z from 'zod';
+
+import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
+import {
+	createFileSystemBatchWriter,
+	type IBatchAtomicWriter,
+	type IBatchOperation,
+} from '../shared/batch-atomic-writer';
+import { resolveHostScaffoldDefaults } from './detect-existing-install';
+import type {
+	IScaffoldAgentSlot,
+	IScaffoldHostOptions,
+	IScaffoldedFile,
+} from './scaffold-host';
+import {
+	scaffoldAgentFile,
+	scaffoldClientFiles,
+	scaffoldHostProject,
+	scaffoldPluginFiles,
+	scaffoldPromptFile,
+	scaffoldSkillFile,
+	scaffoldToolFile,
+} from './scaffold-host';
+
+export interface IScaffoldToolOptions {
+	readonly namespacePrefix: string;
+	readonly workspace: IWorkspacePathProvider;
+	readonly projectName: string;
+	readonly projectPackageName: string;
+	readonly defaultModel?: string;
+	readonly keepLegacy?: boolean;
+	/**
+	 * r00003 S11 (CONC-2, DIP): the scaffold tool writes the generated
+	 * files through a batch atomic writer. Hosts can inject their own
+	 * implementation (e.g. an in-memory writer for tests, a noop writer
+	 * for dry-run-only hosts); the default is the filesystem-backed
+	 * `createFileSystemBatchWriter` keyed by `workspace.root`.
+	 */
+	readonly batchWriter?: IBatchAtomicWriter;
+}
+
+export const SCAFFOLD_INPUT_SCHEMA = z.object({
+	kind: z
+		.enum(['tool', 'prompt', 'skill', 'agent', 'host', 'plugin', 'client'])
+		.describe('What to generate.'),
+	name: z
+		.string()
+		.optional()
+		.describe('Artefact name (tool/prompt/skill), e.g. "render stats".'),
+	description: z
+		.string()
+		.optional()
+		.describe('One-line description for the artefact.'),
+	slot: z
+		.enum([
+			'orchestrator',
+			'proposal_guardian',
+			'implementation_runner',
+			'delivery_verifier',
+			'technical_investigator',
+		])
+		.optional()
+		.describe('Agent slot (kind "agent").'),
+	dryRun: z
+		.boolean()
+		.optional()
+		.describe('Default true: return the files without writing.'),
+	keepLegacy: z
+		.boolean()
+		.optional()
+		.describe(
+			'Override the config-level keepLegacy for this scaffold call.',
+		),
+	existingDelendai: z
+		.boolean()
+		.optional()
+		.describe(
+			'For kind: "host". When true, skip emitting libs/mcp-project/, ' +
+				'.vscode/mcp.json and host-config.ts — the project already wires ' +
+				'delendai via its own delendai.config.json + plugins/. ' +
+				'Agents / instructions / skill are still emitted. Defaults to false.',
+		),
+	mcpServerName: z
+		.string()
+		.optional()
+		.describe(
+			"The MCP server's actual registration key in the target editor " +
+				'config (.vscode/mcp.json / .mcp.json). Copilot agent files and ' +
+				'instructions reference this key to qualify tool names. Defaults ' +
+				'to "mcp-project-<namespacePrefix>" (the greenfield key). Pass the ' +
+				"project's real key when existingDelendai is true — it almost " +
+				'never matches the greenfield default.',
+		),
+});
+
+export type IScaffoldArgs = z.infer<typeof SCAFFOLD_INPUT_SCHEMA>;
+
+// r00002 S2 — mirrors `IScaffoldedFile` (scaffold-host.ts).
+const SCAFFOLDED_FILE_SCHEMA = z.object({
+	path: z.string(),
+	content: z.string(),
+});
+
+export interface IScaffoldReport {
+	readonly kind: IScaffoldArgs['kind'];
+	readonly dryRun: boolean;
+	readonly files: readonly IScaffoldedFile[];
+	readonly written: readonly string[];
+	readonly skipped: readonly string[];
+	readonly moved: readonly string[];
+	readonly kept: readonly string[];
+	readonly errors: readonly string[];
+}
+
+// r00002 S2 — mirrors `IScaffoldReport` above field-for-field.
+// r00001 S0 — exported so the golden snapshot test can pin the schema shape.
+export const SCAFFOLD_REPORT_SCHEMA = z.object({
+	kind: SCAFFOLD_INPUT_SCHEMA.shape.kind,
+	dryRun: z.boolean(),
+	files: z.array(SCAFFOLDED_FILE_SCHEMA),
+	written: z.array(z.string()),
+	skipped: z.array(z.string()),
+	moved: z.array(z.string()),
+	kept: z.array(z.string()),
+	errors: z.array(z.string()),
+});
+
+const pathExists = async (absolutePath: string): Promise<boolean> => {
+	try {
+		await stat(absolutePath);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+const legacyPathFor = async (
+	workspace: IWorkspacePathProvider,
+	relativePath: string,
+): Promise<{
+	readonly relativePath: string;
+	readonly absolutePath: string;
+}> => {
+	const ext = extname(relativePath);
+	const base = basename(relativePath, ext);
+	const ts = Date.now().toString(36);
+	for (let index = 0; index < 1000; index += 1) {
+		const suffix = index === 0 ? '' : `-${index.toString(36)}`;
+		const candidate = `legacy/${base}-${ts}${suffix}${ext}`;
+		const absolutePath = workspace.resolve(candidate);
+		if (!(await pathExists(absolutePath))) {
+			return { relativePath: candidate, absolutePath };
+		}
+	}
+	throw new Error(`could not allocate legacy path for ${relativePath}`);
+};
+
+const moveToLegacy = async (
+	source: string,
+	destination: string,
+): Promise<'rename' | 'copy-unlink'> => {
+	try {
+		await rename(source, destination);
+		return 'rename';
+	} catch (error) {
+		const code =
+			typeof error === 'object' && error !== null && 'code' in error
+				? (error as { code?: unknown }).code
+				: undefined;
+		if (code !== 'EXDEV') throw error;
+		await copyFile(source, destination);
+		await unlink(source);
+		return 'copy-unlink';
+	}
+};
+
+export const buildScaffoldReport = async (
+	options: IScaffoldToolOptions,
+	args: IScaffoldArgs,
+): Promise<IScaffoldReport> => {
+	// r00003 S11: when the caller did not inject a batchWriter, fall
+	// back to the filesystem-backed default keyed by the workspace
+	// root. This keeps `buildScaffoldReport` callable from contexts
+	// that only constructed `IScaffoldToolOptions` (e.g. host tests
+	// or CLI smoke flows) without having to know about the writer.
+	const batchWriter: IBatchAtomicWriter =
+		options.batchWriter ??
+		createFileSystemBatchWriter(options.workspace.root);
+
+	// x00201 S2: an explicit args.existingDelendai/mcpServerName always
+	// wins; an omitted value auto-detects from the workspace instead of
+	// defaulting to the greenfield shape a guest-mode project doesn't want.
+	const resolvedInstall = await resolveHostScaffoldDefaults(
+		args,
+		options.workspace,
+	);
+
+	const hostOptions: IScaffoldHostOptions = {
+		projectName: options.projectName,
+		namespacePrefix: options.namespacePrefix,
+		projectPackageName: options.projectPackageName,
+		...(options.defaultModel !== undefined
+			? { defaultModel: options.defaultModel }
+			: {}),
+		...(resolvedInstall?.mcpServerName !== undefined
+			? { mcpServerName: resolvedInstall.mcpServerName }
+			: {}),
+	};
+	const dryRun = args.dryRun ?? true;
+	const errors: string[] = [];
+	let files: readonly IScaffoldedFile[] = [];
+	const keepLegacy = args.keepLegacy ?? options.keepLegacy ?? false;
+
+	const name = args.name ?? '';
+	const description = args.description ?? `TODO: describe ${name}.`;
+	switch (args.kind) {
+		case 'tool':
+			if (name.length === 0) errors.push('kind "tool" requires name');
+			else
+				files = [
+					scaffoldToolFile(
+						options.namespacePrefix,
+						name,
+						description,
+					),
+				];
+			break;
+		case 'prompt':
+			if (name.length === 0) errors.push('kind "prompt" requires name');
+			else
+				files = [
+					scaffoldPromptFile(
+						options.namespacePrefix,
+						name,
+						description,
+					),
+				];
+			break;
+		case 'skill':
+			if (name.length === 0) errors.push('kind "skill" requires name');
+			else
+				files = [
+					scaffoldSkillFile(
+						options.namespacePrefix,
+						name,
+						description,
+					),
+				];
+			break;
+		case 'agent':
+			files = [
+				scaffoldAgentFile(
+					hostOptions,
+					(args.slot ?? 'orchestrator') as IScaffoldAgentSlot,
+				),
+			];
+			break;
+		case 'host':
+			files = scaffoldHostProject({
+				...hostOptions,
+				...(resolvedInstall?.existingDelendai !== undefined
+					? { existingDelendai: resolvedInstall.existingDelendai }
+					: {}),
+			});
+			break;
+		case 'plugin':
+			if (name.length === 0) errors.push('kind "plugin" requires name');
+			else
+				files = scaffoldPluginFiles({
+					pluginName: name,
+					description,
+				});
+			break;
+		case 'client':
+			if (name.length === 0) errors.push('kind "client" requires name');
+			else
+				files = scaffoldClientFiles({
+					clientName: name,
+					description,
+				});
+			break;
+	}
+
+	const written: string[] = [];
+	const skipped: string[] = [];
+	const moved: string[] = [];
+	const kept: string[] = [];
+	const toWrite: IBatchOperation[] = [];
+	// (original path, legacy relative + absolute) so a failed batch can
+	// roll every keepLegacy move back to its original location.
+	const legacyMoves: Array<{
+		path: string;
+		legacyRelativePath: string;
+		legacyAbsolutePath: string;
+	}> = [];
+	if (!dryRun && errors.length === 0) {
+		for (const file of files) {
+			const absolute = options.workspace.resolve(file.path);
+			const alreadyExists = await pathExists(absolute);
+			if (alreadyExists) {
+				if (!keepLegacy) {
+					skipped.push(file.path);
+					kept.push(file.path);
+					continue;
+				}
+				try {
+					const legacy = await legacyPathFor(
+						options.workspace,
+						file.path,
+					);
+					await mkdir(dirname(legacy.absolutePath), {
+						recursive: true,
+					});
+					const strategy = await moveToLegacy(
+						absolute,
+						legacy.absolutePath,
+					);
+					moved.push(legacy.relativePath);
+					legacyMoves.push({
+						path: file.path,
+						legacyRelativePath: legacy.relativePath,
+						legacyAbsolutePath: legacy.absolutePath,
+					});
+					if (strategy === 'copy-unlink') {
+						errors.push(
+							`${file.path}: moved via copy+unlink fallback after cross-device rename`,
+						);
+					}
+				} catch (error) {
+					errors.push(
+						`${file.path}: ${error instanceof Error ? error.message : String(error)}`,
+					);
+					continue;
+				}
+			}
+			toWrite.push({ path: file.path, content: file.content });
+		}
+
+		// r00003 S11 (CONC-2, S + D): the actual writes go through the
+		// batch writer in one atomic step. The planning loop above is
+		// still per-file (because keepLegacy moves are themselves
+		// observable file ops that we record individually); only the
+		// new-content writes are batched. If the batch fails, every
+		// committed file is rolled back — no partial scaffold on disk.
+		if (toWrite.length > 0) {
+			const batchResult = await batchWriter.writeAll(toWrite);
+			if (batchResult.ok) {
+				written.push(...batchResult.committed);
+			} else {
+				for (const err of batchResult.errors) {
+					errors.push(`${err.path}: ${err.reason}`);
+				}
+				// x00183 F3: roll every keepLegacy move back so a failed
+				// batch leaves the workspace exactly as it was — the
+				// original file back in place, nothing stranded under
+				// legacy/. Restored files leave `moved` and join `kept`.
+				for (const entry of legacyMoves) {
+					try {
+						await moveToLegacy(
+							entry.legacyAbsolutePath,
+							options.workspace.resolve(entry.path),
+						);
+						const idx = moved.indexOf(entry.legacyRelativePath);
+						if (idx !== -1) moved.splice(idx, 1);
+						kept.push(entry.path);
+					} catch (error) {
+						errors.push(
+							`${entry.path}: rollback failed (${error instanceof Error ? error.message : String(error)})`,
+						);
+					}
+				}
+			}
+		}
+	}
+	return {
+		kind: args.kind,
+		dryRun,
+		files,
+		written,
+		skipped,
+		moved,
+		kept,
+		errors,
+	};
+};
+
+/** Registration for the host's `<prefix>_scaffold` tool. */
+export const buildScaffoldToolRegistration = (
+	options: IScaffoldToolOptions,
+): IToolRegistration => {
+	// Hosts that pass their own `batchWriter` win. Otherwise the
+	// filesystem-backed default is built per call, from the workspace
+	// root as the call sees it: a writer built once, at registration,
+	// would write every call's files into the server's root.
+	const batchWriterForCall = (): IBatchAtomicWriter =>
+		options.batchWriter ??
+		createFileSystemBatchWriter(options.workspace.root);
+
+	return {
+		id: 'scaffold',
+		effects: ['write'],
+		writeRoot: 'caller-checkout',
+		summary:
+			'Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).',
+		tags: ['bootstrap'],
+		register: async (server) => {
+			server.registerTool(
+				`${options.namespacePrefix}_scaffold`,
+				{
+					title: 'DelendAI Scaffold Project',
+					outputSchema: SCAFFOLD_REPORT_SCHEMA,
+					description:
+						'Generate host artefacts from delendai templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes skip existing files unless keepLegacy moves them under legacy/ first.',
+					inputSchema: SCAFFOLD_INPUT_SCHEMA,
+				},
+				async (args: IScaffoldArgs) => {
+					const report = await buildScaffoldReport(
+						{ ...options, batchWriter: batchWriterForCall() },
+						args,
+					);
+					return {
+						content: [
+							{
+								type: 'text' as const,
+								// Compact (H3): the response is agent-context tokens;
+								// structuredContent below carries the typed payload.
+								text: JSON.stringify(report),
+							},
+						],
+						structuredContent: report as unknown as Record<
+							string,
+							unknown
+						>,
+					};
+				},
+			);
+		},
+	};
+};

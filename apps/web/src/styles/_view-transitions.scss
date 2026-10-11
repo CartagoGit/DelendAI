@@ -1,0 +1,59 @@
+// _view-transitions.scss — View Transitions API styling (Astro ClientRouter).
+//
+// Header, footer, drawer and the two modals carry `transition:persist` so
+// they stay mounted across navigations — no remount, no jump. They do NOT
+// set `transition:name` (x124 S1): the name would trigger a morph between
+// the old and new DOM state, and the nav/footer copy changes with the
+// language, producing a visible flicker. With just `transition:persist`,
+// the browser snapshots the element once and the new page's `astro-snap`
+// pass replaces the contents in place without animating them — exactly
+// the static behaviour we want for chrome that lives on every page.
+//
+// The selectors below are pseudo-element functions and are allow-listed
+// in stylelint.config.mjs (IGNORE_SELECTORS).
+
+// Default <main> root fade-in with a tiny upward drift.
+::view-transition-old(root) {
+	animation-duration: 0.22s;
+	animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+}
+::view-transition-new(root) {
+	animation-duration: 0.28s;
+	animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+	animation-name: main-in;
+}
+@keyframes main-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+// Hero / page-title morph targets (any element with `transition:name="page-title"`).
+::view-transition-old(page-title),
+::view-transition-new(page-title) {
+	animation-duration: 0.22s;
+	animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+	mix-blend-mode: normal;
+}
+
+// Respect system-level reduced motion (separate from the data-motion setting).
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(root),
+	::view-transition-new(root),
+	::view-transition-old(page-title),
+	::view-transition-new(page-title) {
+		animation-duration: 0s;
+	}
+	@keyframes main-in {
+		from,
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+}

@@ -1,0 +1,40 @@
+{
+	"name": "@delendai/context-compiler",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"description": "Thin context compiler facade over @delendai/state artifacts and derivations.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/context-compiler"
+	},
+	"dependencies": {
+		"@delendai/state": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	}
+}

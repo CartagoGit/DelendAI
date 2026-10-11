@@ -1,0 +1,190 @@
+// _plugin-details.scss — collapsible per-plugin capability lists.
+//
+// BEM root: .pd with __row, __summary, __icon, __title, __counts, __count,
+// __chev, __body, __group, __list, __name, __effects, __meta, __more.
+//
+// Built on the native <details>/<summary> elements: accessible by
+// default, no JS, no ARIA, no polyfill. The smooth height transition
+// uses `interpolate-size: allow-keywords` when the browser supports
+// it (modern Chromium / Firefox 134+); older browsers get the
+// instant open/close with no animation rather than a broken state.
+//
+// `name="plugin-capabilities"` makes the rows behave as an exclusive
+// accordion (only one open at a time), which matches user
+// expectations when scanning a list of 11 plugins.
+
+.pd {
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+	margin-top: 1.2rem;
+
+	// When the browser supports `interpolate-size`, the open/close
+	// animates the height smoothly. The rest of the styles are
+	// browser-agnostic.
+	@supports (interpolate-size: allow-keywords) {
+		:root {
+			interpolate-size: allow-keywords;
+		}
+	}
+}
+.pd__row {
+	border: 1px solid color-mix(in srgb, var(--fg) 12%, var(--line));
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--fg) 4%, var(--card));
+	overflow: hidden;
+	transition: border-color 0.2s ease, background 0.2s ease;
+
+	&[open] {
+		border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+		background: color-mix(in srgb, var(--accent) 4%, var(--card));
+
+		.pd__chev {
+			transform: rotate(180deg);
+		}
+	}
+}
+.pd__summary {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	padding: 0.7rem 0.95rem;
+	cursor: pointer;
+	list-style: none;
+	user-select: none;
+	outline: none;
+
+	&::-webkit-details-marker {
+		display: none; // hide the default arrow in WebKit
+	}
+
+	&:hover {
+		background: color-mix(in srgb, var(--accent) 6%, transparent);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
+	}
+}
+.pd__icon {
+	display: grid;
+	place-items: center;
+	flex: 0 0 auto;
+	width: 26px;
+	height: 26px;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--fg) 6%, var(--card));
+	overflow: hidden;
+	font-size: 0.78rem;
+	font-weight: 800;
+}
+.pd__icon-fallback {
+	color: var(--muted);
+	font-size: 0.7rem;
+}
+.pd__title {
+	display: flex;
+	align-items: baseline;
+	gap: 0.7rem;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.pd__title-code {
+	font-size: 0.92rem;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.pd__counts {
+	display: inline-flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.pd__count {
+	font-size: 0.74rem;
+	padding: 0.1rem 0.45rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--accent) 12%, var(--card));
+	color: var(--accent);
+	font-weight: 600;
+	white-space: nowrap;
+}
+.pd__chev {
+	flex: 0 0 auto;
+	font-size: 0.85rem;
+	color: var(--muted);
+	transition: transform 0.2s ease;
+}
+.pd__body {
+	padding: 0 0.95rem 0.95rem 0.95rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.95rem;
+	border-top: 1px solid color-mix(in srgb, var(--fg) 8%, var(--line));
+	margin-top: 0.1rem;
+	padding-top: 0.85rem;
+
+	& h4 {
+		margin: 0 0 0.5rem;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--muted);
+	}
+}
+.pd__group {
+	display: flex;
+	flex-direction: column;
+}
+.pd__list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+}
+.pd__item {
+	padding: 0.55rem 0.7rem;
+	background: color-mix(in srgb, var(--fg) 3%, var(--card));
+	border-radius: 8px;
+	border: 1px solid color-mix(in srgb, var(--fg) 8%, var(--line));
+}
+.pd__item-body {
+	margin: 0.25rem 0 0;
+	color: color-mix(in srgb, var(--fg) 80%, transparent);
+	font-size: 0.88rem;
+}
+.pd__name {
+	font-size: 0.84rem;
+	color: var(--accent);
+	word-break: break-all;
+}
+.pd__effects {
+	display: inline-flex;
+	gap: 0.3rem;
+	margin-top: 0.3rem;
+	flex-wrap: wrap;
+}
+.pd__meta {
+	font-size: 0.72rem;
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--fg) 8%, var(--card));
+	color: var(--muted);
+	font-family: var(--font-mono, monospace);
+}
+.pd__more {
+	margin-top: 0.4rem;
+	align-self: flex-start;
+	font-size: 0.88rem;
+	color: var(--accent);
+	text-decoration: none;
+	font-weight: 600;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}

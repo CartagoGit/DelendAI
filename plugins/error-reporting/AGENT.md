@@ -1,0 +1,61 @@
+# AGENT.md — plugin `plugins/error-reporting`
+
+> Below the `<!-- delendai:begin agent-md -->
+## Purpose
+
+- Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off.
+
+## Public API
+
+- default
+- OptionsSchema
+- DEFAULT_BACKOFF_BASE_MS
+- DEFAULT_BACKOFF_JITTER_RATIO
+- DEFAULT_BACKOFF_MAX_MS
+- DEFAULT_CIRCUIT_BREAKER_THRESHOLD
+- DEFAULT_LABELS
+- DEFAULT_MAX_ISSUES_PER_DAY
+- DEFAULT_TARGET_REPO
+- DEFAULT_DEDUPE_WINDOW_HOURS
+- ERR_REPORTING_OPTION_DEPRECATED
+- resolveOptions
+- SAFE_REPORTER_FAILURE_CODES
+- classifyInternalError
+
+## Depends on
+
+- @delendai/commit-policy
+- @modelcontextprotocol/sdk
+- zod
+- @delendai/core
+
+## Writes
+
+- <host workspace>/.delendai/cache/error-reporting/
+
+## Entry points
+
+- ./dist/index.js
+- src/index.ts (default export → IMcpPlugin)
+
+## Tests
+
+- plugins/error-reporting/tests/frame-extractor.spec.ts
+- plugins/error-reporting/tests/funnel-counter-store.spec.ts
+- plugins/error-reporting/tests/funnel-reconciliation.spec.ts
+- plugins/error-reporting/tests/in-flight-reports.service.spec.ts
+
+## Do not
+
+- An agent does not run `git stash`: git refuses it for agents (`delendai guard`, reference-transaction), because every worktree shares one stash and stashed work is invisible to the work model. Commit, or checkpoint to your work ref, instead.
+- Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
+- Do not import `@delendai/core/lib/...`; use `@delendai/core/public`.
+- Do not run user-facing shell or destructive tools without `dryRunSupported: true`.
+- Do not surface absolute host paths; use `workspaceRoot`-relative paths only.
+
+## Token hotspots
+
+_(none)_
+
+<!-- delendai:end agent-md -->
+
