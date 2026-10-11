@@ -87,7 +87,7 @@ Verified: the description read "Headless (no subprocess spawning)" for a plugin 
 
 ### S4 — The editor extension does not go on with a test double for a host
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `extensions/vscode/src/extension.ts`
   - `extensions/vscode/src/host/resolve-host-adapter.ts`
@@ -102,8 +102,10 @@ Verified: the description read "Headless (no subprocess spawning)" for a plugin 
 Verified: `extension.ts` catches a failed import of `./host/vscode-host-adapter` and falls back to the adapter written for tests, "to keep the canonical dashboard registrable". A surface that looks alive and answers nothing is worse than one that says it could not start.
 
 Delivered 2026-10-11: `resolveHostAdapter` answers the loaded adapter, the minimal one for an injected API, or nothing with the failure shown; `registerDashboardSurfaces` registers nothing when it answers nothing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — verified at cb4f8082c031, validate exit 0, tests 4/4 — Delivered by d23f50b36 (shipped-in) merged inside PR #995 (cb4f8082c, claude-opus-5-5): the VS Code extension stops on a loadable-host failure and says so instead of continuing on the test double; the minimal adapter is reserved for injected APIs. Verified today in this worktree, agent env scrubbed: resolve-host-adapter.spec.ts green 4/4 exit 0; declared files exist. Implementer claude-opus-5-5; different model, independence holds.
 
 ### S5 — A plugin says whether it can be used, not only that it loaded
 
