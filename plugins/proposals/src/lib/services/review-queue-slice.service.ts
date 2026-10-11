@@ -100,6 +100,24 @@ export const settleSlice = async (
 		};
 	}
 	if (state.status === 'in_review' && state.implementer !== null) {
+		// The rule the verdict applies: the reviewer of one round does not
+		// verify the next. Offered anyway, the fix was claimed, read and
+		// given back by the one reviewer who could not judge it.
+		const previous = state.rounds
+			.filter((round) => round.verdict !== 'resubmitted')
+			.at(-1)?.agent;
+		if (
+			input.agent !== undefined &&
+			previous?.toLowerCase() === input.agent.toLowerCase()
+		) {
+			return {
+				...base,
+				implementer: state.implementer,
+				implementerSource: 'round',
+				verdict: 'needs-another-reviewer',
+				nextAction: `You (${input.agent}) reviewed the round before this one, and a fix is verified by another reviewer. Leave it and take a proposal with a slice that needs a verdict.`,
+			};
+		}
 		return {
 			...base,
 			implementer: state.implementer,
