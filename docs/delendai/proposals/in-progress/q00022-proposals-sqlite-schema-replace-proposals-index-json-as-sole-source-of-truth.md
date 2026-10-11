@@ -240,7 +240,16 @@ that the audit calls obligatory.
   - `packages/proposals-sqlite/src/lib/repository/outbox-repo.ts` (new)
   - `packages/proposals-sqlite/src/lib/repository/quarantine-repo.ts` (new)
   - `packages/proposals-sqlite/src/lib/repository/digest.ts` (new — sha256 over canonical projections)
-  - `packages/proposals-sqlite/tests/src/lib/repository/*.spec.ts` (new — one per repo)
+  - `packages/proposals-sqlite/tests/src/lib/repository/digest.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/repository/lifecycle-hooks.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/repository/lifecycle-repo.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/repository/mutation-commands-repo.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/repository/outbox-repo.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/repository/plans-repo.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/repository/proposals-repo.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/repository/quarantine-repo.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/repository/revision-cas.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/repository/slices-repo.spec.ts`
 - **Gate**: type
 - acceptance:
   - The side-ledger repos (`lifecycle-repo`, `outbox-repo`,
