@@ -45,7 +45,7 @@ import {
 	readPeerReviewLog,
 	type IPeerReviewLogEntry,
 } from '../shared/peer-review-log';
-import { parseProposalSlicePlan } from '../swarm/proposal-slice-plan';
+import { slicesViewOf } from '../services/proposal-slices-view.service';
 
 export interface IProposalGetToolOptions {
 	readonly namespacePrefix: string;
@@ -138,34 +138,10 @@ const buildCompactSummary = (
 	};
 };
 
-/** A slice in one of these is delivered or dropped: nothing left to read. */
-const DELIVERED_SLICE_STATUSES: ReadonlySet<string> = new Set([
-	'done',
-	'review',
-	'retired',
-]);
-
 const buildSlices = (
 	loaded: ILoadedProposalDocument,
 ): Extract<IProposalReadOutput, { view: 'slices' }>['slices'] =>
-	(
-		parseProposalSlicePlan(loaded.doc.frontmatter.id, loaded.raw)?.slices ??
-		[]
-	).map((slice) => {
-		const written = slice.documentStatus ?? slice.status;
-		return {
-			id: slice.sliceId,
-			status: written,
-			title: slice.title,
-			...(DELIVERED_SLICE_STATUSES.has(written)
-				? {}
-				: {
-						dependsOn: [...slice.dependsOn],
-						files: [...slice.files],
-						acceptance: [...slice.acceptanceCriteria],
-					}),
-		};
-	});
+	slicesViewOf(loaded.doc.frontmatter.id, loaded.raw);
 
 const buildDetailProposal = (
 	loaded: ILoadedProposalDocument,

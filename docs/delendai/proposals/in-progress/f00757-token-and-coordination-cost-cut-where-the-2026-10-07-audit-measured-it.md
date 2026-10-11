@@ -62,7 +62,7 @@ The tools an agent sees are what it pays for on every request, and the proposals
 
 ### S3 — A plan document has a generated compact view
 - **Status**: review
-- **Files**: `packages/cli/src/lib/review/slice-sections.service.ts`, `packages/cli/src/lib/review/slice-sections.service.spec.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `plugins/proposals/src/lib/tools/proposal-get.tool.ts`, `plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts`, `plugins/proposals/tests/src/lib/tools/proposal-get-slices.spec.ts`, `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`
+- **Files**: `packages/cli/src/lib/review/slice-sections.service.ts`, `packages/cli/src/lib/review/slice-sections.service.spec.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `plugins/proposals/src/lib/tools/proposal-get.tool.ts`, `plugins/proposals/src/lib/services/proposal-slices-view.service.ts`, `plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts`, `plugins/proposals/tests/src/lib/tools/proposal-get-slices.spec.ts`, `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`
 - **Gate**: type
 - acceptance:
   - "Each plan or proposal over a size threshold has a generated view of its open slices, dependencies and remaining acceptance, and work enter and the review brief read that view instead of the whole document."
