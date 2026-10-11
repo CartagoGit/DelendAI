@@ -11,6 +11,7 @@ shipped-in:
   - "ce29bb976"
   - "6e7780392"
   - "0b82bb036"
+  - "56cf4016958d"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -252,7 +253,7 @@ that the audit calls obligatory.
 
 ### S4 — One projection chain, then SQLite-only reads (the markdown stays the authority)
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
   - `plugins/proposals/src/lib/services/projection-refresh.ts`
@@ -547,8 +548,10 @@ the read statistics and its spec; a read under `sql` records
 were, for a project that pins them: `auto` is by definition a
 comparison. What still names the registry file is this repository's own
 tooling, which is S10.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 56cf4016958d, validate exit 0, tests 32/32 — Gates: `npx vitest run` over the five proposal specs this proposal's slices name (projection-refresh, index-reader-rebuild, index-single-reader, index-reader-stale-projection, index-reader-location) → 5 files / 32 tests, exit 0. `bun run test:sqlite` → 445 pass / 0 fail across 82 files, exit 0. Repo typecheck exit 0. S4 and S5 declare no acceptance bullets of their own — S4 states its intent in prose under its Progress notes and S5 was closed after an evidence pass — so their criteria arrays are empty and the judgment rests on the delivery description, checked against the code. Two criteria here are worth naming because they are the ones that could have been quietly wrong. S6 criterion 4 (a database that cannot serve and is never rebuilt over) and criterion 3 (a tree where no registry file was ever written) are the failure modes that produce a confident zero. Both are pinned: 'still sees an edit on disk where git cannot say anything', 'keeps what it had when the rebuild leaves nothing better', and 'does not rebuild on what it cannot tell' — the last one matters most, because a reader that guesses is worse than one that refuses. S8 exists because a real defect was found on 2026-10-10: `proposals status` counted 1102 done where the markdown holds 1105, because every candidate inherited the disappearances recorded before it and promotion applied them unconditionally. The fix makes the candidate authoritative — promotion skips a recorded disappearance the candidate contradicts, clears the retirement and removes the record. That is a correctness fix in the reconciler's promote path, and the e2e tombstone spec covers resurrection appending exactly one lifecycle event. S9's last criterion (a projection found level is not re-checked by the same process for two seconds; a new process always checks) is pinned by 'checks a level projection once per window, and again after it' — the cache is per-process, so a fresh server never inherits a stale verdict.
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
