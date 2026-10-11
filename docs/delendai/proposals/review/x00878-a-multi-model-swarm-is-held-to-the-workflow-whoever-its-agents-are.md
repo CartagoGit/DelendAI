@@ -91,7 +91,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: unit-adoption.service.ts plus the new free-directory.helper.ts release the new/all reservation and the <agent>-new-all worktree directory once proposals create has named the unit's proposal, which is the finding that 'work enter --proposal=new was refused until given --alongside and --dir'. unit-adoption.service.spec and work-unit.service.spec both pass.
 
 ### S4 — A review reservation ends with its unit
-- **Status**: review
+- **Status**: done
 - shipped-in: `aba4404da`
 - **Files**: `plugins/proposals/src/lib/services/review-reservation.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`, `tools/scripts/git/ended-reservations.service.ts`, `tools/scripts/git/ended-reservations.service.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`
 - **Gate**: type
@@ -99,8 +99,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A reservation whose unit has neither a work ref nor a publication on the forge is free at once, whatever its hours, and the queue does not count it as held."
   - "Such a reservation ref is deleted by the reaper that already removes finished units, so none outlives its unit on the forge."
 - Delivered: a reservation whose unit is on the forge neither as a work ref nor as a publication (one `ls-remote` of the path after the agent matches both), and that is older than `REVIEW_RESERVATION_UNIT_GRACE_SECONDS` (15 minutes, the time a fresh unit needs to be pushed), counts as lapsed: the next reviewer takes it over at once. The namespace maintenance that runs after every merge drops such reservations from the forge, each only if it is still the commit it read. A dry run on this repository's forge found 14 to drop. Both specs fail without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery and matched the criteria to named specs. review-reservation.service.ts ties a reservation to its unit's existence, and the new tools/scripts/git/ended-reservations.service.ts computes the reservations whose unit is on the forge neither as a work ref nor as a publication. Specs: 'passes on once its unit has ended, and holds while its unit is on the forge', and for the reaper criterion 'are the ones whose unit is on the forge neither as a work ref nor as a' plus 'are dropped from the forge, and the live one stays'. The reaper that already removes finished units is the one that deletes them.
 
 ### S5 — A pack that cannot land is refused before it is published
 - **Status**: review
