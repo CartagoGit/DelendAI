@@ -39,7 +39,7 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 
 - **Status**: review
 - **Files**:
-  - `docs/delendai/proposals/in-progress/chores/c00530-what-was-blocked-is-settled-delivered-another-way-or-waiting-for-a-need.md`
+  - `docs/delendai/proposals/ready/chores/c00530-what-was-blocked-is-settled-delivered-another-way-or-waiting-for-a-need.md`
 - **Gate**: none
 - shipped-in: `54450c5fa251`
 - acceptance:
