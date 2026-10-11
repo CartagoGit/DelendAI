@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-09T20:59:09.970Z
 shipped-in:
   - "ff589f828b9bb3ad18c8f483059268acfe78c141"
+  - "652863cb5729b2376b25bc40c8490133a800c327"
 ---
 
 # f00643 — The startup forge and journal phases run in a real host
@@ -49,7 +50,7 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - review-log: approved by gpt-5.4 — verified at ff589f828b9b, validate exit 0, tests 18/18 — Approved after rerunning the declared gate in the review worktree: 10/10 core startup-gate and idempotency tests plus 8/8 forge-seam tests passed, and the implementation matches the acceptance claims about seam binding, conditional reads and non-fatal unavailability.
 
 ### S2 — A journal source is bound once its home is decided
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/startup-reconciler/seams.interface.ts`, `packages/core/src/lib/startup-reconciler/journal-ref.service.ts`, `packages/core/src/lib/startup-reconciler/journal-ref.constant.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.interface.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.constant.ts`, `packages/core/tests/src/lib/startup-reconciler/journal-ref.service.spec.ts`, `packages/core/tests/src/lib/startup-gate/run-startup-gate.spec.ts`, `docs/delendai/ADOPTER-CONFIG-FOOTGUNS.md`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler/journal-ref.service.spec.ts packages/core/tests/src/lib/startup-gate`
@@ -59,9 +60,11 @@ Every MCP boot logs `phases NOT EXECUTED: forge, journal` (seen again on 2026-09
 - acceptance:
   - "The maintainer's decision on where the coordination journal ships is recorded in this proposal."
   - "The host binds an `IStartupJournalSource` reading from there, and replaying the same events twice imports them once."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `205650657f2c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 652863cb5729, validate exit 0, tests 35/35 — Approved after rerunning the declared S2 gate in the review worktree. The recorded decision is present in the proposal, the implementation binds the journal source from the journal ref in core, and the focused gate passed 35/35.
 
 ### S3 — The journal is published to its ref
 - **Status**: review
