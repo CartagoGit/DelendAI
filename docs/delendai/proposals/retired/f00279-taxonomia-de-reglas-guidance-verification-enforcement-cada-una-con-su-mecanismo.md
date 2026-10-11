@@ -2,7 +2,7 @@
 id: f00279
 title: "Taxonomía de reglas guidance/verification/enforcement, cada una con su mecanismo"
 kind: feat
-status: blocked
+status: retired
 type: proposal
 track: trust
 date: 2026-08-29
@@ -13,6 +13,10 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P1
 related: [q00011, f00278]
+last-transition-id: 32b3eb65-e5e2-47c7-a64d-cc1aab6ec3f5
+last-correlation-id: 32b3eb65-e5e2-47c7-a64d-cc1aab6ec3f5
+last-transition-from: blocked
+last-transition-at: 2026-10-11T14:31:02.212Z
 ---
 
 # f00279 — Taxonomía de reglas guidance/verification/enforcement, cada una con su mecanismo

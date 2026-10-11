@@ -2,7 +2,7 @@
 id: f00277
 title: "`AgentSession` + `delendai agents`: ver qué hacen todos los agentes en worktrees sin cambiar de rama"
 kind: feat
-status: blocked
+status: retired
 type: proposal
 track: trust
 date: 2026-08-29
@@ -26,6 +26,10 @@ unblocks-on:
       rationale: "Work Event Bus: sin este bus, `AgentSession.modifiedFiles` se reconstruye a mano desde logs dispersos."
     - id: f00510
       rationale: "Progress Projector: provee `phase`, `progress`, `confidence`, `stalled` por `(agent, slice)` que `AgentSession` proyecta."
+last-transition-id: c8d06fab-da11-43bd-817b-e9d0a68907e5
+last-correlation-id: c8d06fab-da11-43bd-817b-e9d0a68907e5
+last-transition-from: blocked
+last-transition-at: 2026-10-11T14:29:57.993Z
 ---
 
 # f00277 — `AgentSession` + `delendai agents`: ver qué hacen todos los agentes en worktrees sin cambiar de rama
