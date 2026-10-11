@@ -2,7 +2,7 @@
 id: f00275
 title: "`delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría"
 kind: feat
-status: review
+status: done
 type: proposal
 track: product
 date: 2026-08-29
@@ -13,11 +13,12 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00276]
-last-transition-id: 3748813e-47c4-4977-ad5e-ce6966fde219
-last-correlation-id: 3748813e-47c4-4977-ad5e-ce6966fde219
-last-transition-from: in-progress
+last-transition-id: 3c3014ad-8515-4108-a258-93c201301054
+last-correlation-id: 3c3014ad-8515-4108-a258-93c201301054
+last-transition-from: review
 shipped-in:
   - "236586bbf31c"
+last-transition-at: 2026-10-11T02:30:54.506Z
 ---
 
 # f00275 — `delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría
@@ -152,7 +153,7 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
 
 ### S3 — `--deep`: registro de checks caros + primer check (error-reporting self-test)
 
-- **Status**: review
+- **Status**: done
 - **Files**:
     - `packages/cli/src/commands/groups/doctor.ts`
     - `packages/cli/src/contracts/constants/doctor-modes.constant.ts`
@@ -162,9 +163,11 @@ delendai doctor --deep         → checks actuales + DEEP_CHECKS[]
     - `packages/cli/src/lib/doctor/deep-checks.service.spec.ts`
 - **Gate**: `npx vitest run --project @delendai/cli packages/cli/src/lib/doctor/deep-checks.service.spec.ts packages/cli/src/commands/groups/doctor.spec.ts`
 - Shipped: `defaultDeepChecks()` registry and the `error-reporting-self-test` check. The plugin is imported by a computed specifier so the CLI takes no static dependency; if it cannot be loaded the section is a `warn` that says it was skipped. Offline it passes `live: false`, so the `gh` checks come back marked skipped. The spec injects a runner with a fake exec and asserts zero `gh issue create` calls. File names follow the lints (`*.service.ts`), not the names drafted here.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `66b124669ad9`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 236586bbf31c, validate exit 0, tests 49/49 — Gate declared by all three slices (npx vitest run --project @delendai/cli deep-checks.service.spec.ts commands/groups/doctor.spec.ts): 2 files / 49 tests passed, exit 0. Repo typecheck exit 0. All three acceptance points are pinned by assertions rather than by prose. --ci adds a structured `ci` block (doctor.ts:323) with the documented exit meanings. --offline reports a marked check as `not-applicable` with a `skipped:` finding rather than as passed, and the spec asserts that at the section level. --deep reports the error-reporting self-test as its own section and the spec injects a fake exec, recording every argv it was handed and asserting zero calls reach `gh`. The slice's premise notes are honest and I confirmed both: the command file is groups/doctor.ts with commands/doctor.ts left as a dead duplicate, and no check in the pure registry opens a socket today, which is why no `requiresNetwork` property was needed there.
 
 ## dependency graph
 
