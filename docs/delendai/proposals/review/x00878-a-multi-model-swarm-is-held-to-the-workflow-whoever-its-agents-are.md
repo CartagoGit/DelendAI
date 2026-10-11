@@ -21,6 +21,7 @@ shipped-in:
   - "dd2a03cc9980b93000ed25676c9a384ebe1cc871"
   - "57bf941ed2d4f57546eb73e9195c9d089cfd4daa"
   - "9c7886ed7ea613f3a0322b477e49213e5f06282c"
+  - "b65c20a21e1074d8952813f57866b9236aaac99e"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -297,15 +298,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 9c7886ed7ea6, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: swarm-boot.spec pins that retired work that is dropped is not taken for lost work — the finding that thirty empty worktrees were 'retired by hand except four still inside their holder's lease'.
 
 ### S19 — The server's log says a thing once, not every five minutes
-- **Status**: review
+- **Status**: done
 - shipped-in: `5852dfc15`
 - **Files**: `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The work-checkout publisher writes a pass's report to the server's log only when it differs from the previous pass's."
 - Delivered: after the swarm stopped, the MCP server's log carried the same `work-checkouts.published` line — four empty units, "no commits of its own yet" — every five minutes for a day, burying the boot reports that mattered. The server's report writer now keeps the last line and writes a new one only when the outcome changes. The spec fails without the change.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at b65c20a21e10, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the server's log says a thing once rather than every five minutes. Covered by work-checkout-publisher.spec in this batch and the server-log spec (S25).
 
 ### S20 — Everyday listings show live work, not what was given up
 - **Status**: review
