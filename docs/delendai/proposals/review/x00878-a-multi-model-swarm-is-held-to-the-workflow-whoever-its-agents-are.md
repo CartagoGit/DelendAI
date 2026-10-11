@@ -24,6 +24,7 @@ shipped-in:
   - "b65c20a21e1074d8952813f57866b9236aaac99e"
   - "6995db016bba77a3093de329db0201d7a7dd1636"
   - "030cdc1a3857da4062cfe1d5141f0538b9d70ff5"
+  - "a0a4f48fa4ced941243d7ef49717d3c3a463225e"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -408,15 +409,17 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-log: approved by minimax-m31 — verified at 030cdc1a3857, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: hydrate-candidates-after-merge.script.ts keeps a queue moving when all its candidates are behind — the finding that 'a queue whose candidates are all behind still moves'. Pinned by its spec.
 
 ### S27 — A stale generated catalog does not stop its own regeneration
-- **Status**: review
+- **Status**: done
 - shipped-in: `8f0491843`
 - **Files**: `packages/core/src/lib/plugins/managed-lazy-catalog-lookup.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/core/src/lib/plugins/managed-plugin-environment.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `tools/scripts/generate/managed-lazy-catalog.script.ts`, `packages/core/tests/src/lib/plugins/managed-lazy-catalog-lookup.spec.ts`, `packages/core/tests/src/lib/project/tool-surface-runtime.exposure.spec.ts`, `plugins/proposals/tests/src/lib/surface/disclosure.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The generated managed lazy catalog exports one runtime value, the catalog array; what is derived from it (the lookup by id) is computed in authored code, so a stale copy of the file cannot break the import chain of the generator that replaces it."
 - Found 2026-10-07 while repairing two candidates: a merge left an older `managed-lazy-catalog.generated.ts` without `MANAGED_LAZY_PLUGIN_BY_ID`. The generator imports `@delendai/core/public`, which imports `assemble-plugins`, which imported that export, so every generator, gate and pre-push hook failed with "Export named 'MANAGED_LAZY_PLUGIN_BY_ID' not found" and the file could only be restored by hand. The map now lives in `managed-lazy-catalog-lookup.ts`, and a spec holds the generated module to its single export.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at a0a4f48fa4ce, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: managed-lazy-catalog-lookup.spec, tool-surface-runtime.exposure.spec and disclosure.spec together pin that a stale generated catalog does not stop its own regeneration. All three suites pass.
 
 ### S28 — A run that lost its required check runs again
 - **Status**: review
