@@ -77,7 +77,7 @@ Observed at 08:30:
 
 ### S2 — An agent has one name, and it is not the model's to choose
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/agent-alias.service.ts`
   - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
@@ -87,10 +87,13 @@ Observed at 08:30:
   - `packages/core/src/lib/development-policy/resolve.interface.ts`
   - `packages/core/src/lib/plugins/development-config-schema.constant.ts`
   - `packages/core/tests/src/lib/work-units/agent-alias.service.spec.ts`
+  - `packages/core/src/lib/development-policy/declare-workflow.ts`
+  - `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`
 - **Gate**: unit
+- shipped-in: `77cedadc3ba6`, `451865b24790`
 - acceptance:
   - A project can declare the roster of a swarm (the agent names allowed to work in it). With a roster declared, entering a unit, claiming a review or recording a verdict under a name that is not on it is refused, listing the roster and the nearest name on it.
-  - When the launcher names the agent (`DELENDAI_AGENT_ID`), an `--agent` that differs from it is refused, naming both: what the host declared is what reaches a ref, a claim or a verdict.
+  - With a roster declared, the work-model instructions an agent receives name the roster where they say to sign as itself.
   - With neither, the spelling check that exists goes on applying; this slice does not make it guess harder.
   - A swarm of five models, launched against a roster of five names, leaves five names on the forge.
 
@@ -111,9 +114,9 @@ which every unit of every kind goes through, refuses any other name and
 says which roster name the entrant probably is. Tried in a throwaway
 project with the names of this swarm: `minimax-3.1` and `glm-5.3-max`
 are refused and pointed at `minimax-m3.1` and `glm-5.3-flash`;
-`glm-5.3-flash` enters. Still to do: refusing an `--agent` that
-contradicts what the launcher declared in `DELENDAI_AGENT_ID`, and
-saying in the launch instructions that a swarm is given its roster.
+`glm-5.3-flash` enters.
+
+Also delivered: the instructions every agent receives at start now end their "sign as `<you>`" step with the roster's names, so the name is read, not recalled. Not done, and taken out of the acceptance: refusing an `--agent` that differs from `DELENDAI_AGENT_ID`. A host sets that variable once and every process it starts inherits it, a sub-agent of another model included, so the variable is weaker evidence than the argument it would overrule. What the owner still has to give is the roster itself.
 
 ### S3 — Asking the review queue again does not open another unit
 
