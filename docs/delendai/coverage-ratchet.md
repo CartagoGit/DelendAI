@@ -42,7 +42,8 @@ regressing — a bug to find and fix, not a number to relax.
 
 | Date | Runner | Statements | Branches | Functions | Lines | Floors after |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2026-08-29 | vitest 4 | 83.45 | 70.78 | 82.63 | 84.90 | 82 / 69 / 83 / 83 |
+| 2026-07-14 | vitest 4 | 83.45 | 70.78 | 82.63 | 84.90 | — |
+| 2026-08-29 | vitest 4 | not recorded | not recorded | not recorded | not recorded | 82 / 69 / 83 / 83 |
 | 2026-10-11 (run 1) | vitest 5.0.3 | 87.26 | 75.02 | 88.89 | 88.93 | — |
 | 2026-10-11 (run 2) | vitest 5.0.3 | 87.25 | 75.00 | 88.88 | 88.92 | 86 / 74 / 87 / 87 |
 
