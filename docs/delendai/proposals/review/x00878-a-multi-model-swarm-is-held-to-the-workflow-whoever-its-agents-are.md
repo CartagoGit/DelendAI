@@ -20,6 +20,7 @@ shipped-in:
   - "fe842da802fd76617e9c878ce2b2fdeebf3f10bc"
   - "dd2a03cc9980b93000ed25676c9a384ebe1cc871"
   - "57bf941ed2d4f57546eb73e9195c9d089cfd4daa"
+  - "9c7886ed7ea613f3a0322b477e49213e5f06282c"
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -282,7 +283,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S18 — Retired work that is dropped is not taken for lost work
-- **Status**: review
+- **Status**: done
 - shipped-in: `dce8dc092`
 - **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`, `packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts`, `config/delendai/repair-resolutions.json`
 - **Gate**: type
@@ -290,8 +291,10 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "A checkpoint the reconciler once saw kept as retired work is not reported as vanished after its retired ref is dropped; one dropped before this clone ever saw it retired still is."
 - Found 2026-10-07 in the MCP server's boot log: after S12 and the analysed drops of the same day, every boot was DEGRADED with mutations blocked, on five `integration-evidence.ref-vanished` blockers — close passes of the queue and the `illyria` pack, retired with a reason and dropped once their content was on develop or judged worthless. Seeing a checkpoint retired only wrote a note on each boot, so the moment its tip went, the work looked lost.
 - Delivered: the first time the reconciler sees a checkpoint kept as retired work, it records that in the journal (`recovery-decision`, `retired`, with the commit), and a checkpoint so recorded is reported as retired, not vanished, after the ref is dropped: dropping is itself the decision (`work retired --drop --reason`, or the reapers' evidence). A checkpoint this clone never saw retired still asks. The five that were already blocking are resolved in `config/delendai/repair-resolutions.json` with what each held. The spec that asked again after a drop now pins the new contract, and a new case pins the one that still asks.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 9c7886ed7ea6, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: swarm-boot.spec pins that retired work that is dropped is not taken for lost work — the finding that thirty empty worktrees were 'retired by hand except four still inside their holder's lease'.
 
 ### S19 — The server's log says a thing once, not every five minutes
 - **Status**: review
