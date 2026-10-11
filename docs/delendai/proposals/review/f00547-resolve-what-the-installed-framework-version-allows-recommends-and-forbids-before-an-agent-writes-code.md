@@ -19,6 +19,7 @@ shipped-in:
   - "97ed3389c329"
   - "7b07571790b18759adbefc1eec61d0db2d1797"
   - "7cf206f4d2f8"
+  - "30680e32ef2b"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -179,7 +180,7 @@ recommendation; it does not win over `removed`, which resolves to
 
 ### S4 — Detected convention as an input, with its confidence
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`plugins/framework-knowledge/src/lib/detect/detect-convention.helper.ts`, `plugins/framework-knowledge/src/lib/contracts/interfaces/convention.interface.ts`, `plugins/framework-knowledge/src/lib/contracts/constants/convention.constant.ts`, `plugins/framework-knowledge/tests/src/lib/detect/detect-convention.spec.ts`]
 
 Count what the project actually does — 94 components with external
@@ -192,8 +193,10 @@ instead of its own habits.
   no convention: a weak habit fed to the resolver would outrank the
   framework's own recommendation.
 - shipped-in: `30680e32ef2b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 30680e32ef2b, validate exit 0, tests 47/47 — Delivered by 30680e32ef2b (PR #723, f00547-S4-g1). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/detect/detect-convention.spec.ts inside the six-file batch -> 6 files / 47 tests passed, exit 0. The detected convention is carried as an input with its confidence, and the version-keyed cache is what the invalidation is asserted against.
 
 ### S5 — The two tools, and a cache keyed by resolved version
 
