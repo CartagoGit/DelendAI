@@ -59,6 +59,8 @@ Three more findings of the same day belong here, because each is the same job do
   - No invariant holds "every candidate contains the integration branch": it is what named the removed command as a remedy.
 
 Delivered 2026-10-11. The hydrator had stopped calling the second refresher weeks ago, for the reason written in its own header; the script stayed, `work doctor` kept reporting candidates behind as a broken invariant with that script as the fix, and the orchestrator did what the doctor said, on a loop of its own outside the product. That loop is stopped (two shell scripts, four days old). 365 lines of refresher, its spec and its types are deleted with the invariant. The host server's own hydration is what brings candidates forward now, and nothing else.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — An agent names itself, and a model keeps the first name it signed with
 
