@@ -2,20 +2,21 @@
 id: x00877
 title: "An upgrade leaves the project as its configuration says, and nothing else"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-10-06
-last-transition-id: 74b4140b-ea9c-468a-86c3-6841218c2d9c
-last-correlation-id: 74b4140b-ea9c-468a-86c3-6841218c2d9c
-last-transition-from: in-progress
-last-transition-at: 2026-10-09T21:35:03.577Z
+last-transition-id: 27cdb1a9-ef91-498a-8091-855cc5d3f3c9
+last-correlation-id: 27cdb1a9-ef91-498a-8091-855cc5d3f3c9
+last-transition-from: review
+last-transition-at: 2026-10-11T02:45:42.111Z
 shipped-in:
   - "b6bc626ea9363cad35a15eb0b21ddda7e966a5cd"
   - "fc1a589e2059b0cf11263be473526d1dc8c5dfb0"
   - "38b68714aebe"
   - "a6095f9df9cdc8dcb74544abb762cfe1d33b803f"
   - "6f6e97ff7f9e8551a9798d5ec56f197b9b732edd"
+  - "46a8640284a9"
 ---
 
 # x00877 — An upgrade leaves the project as its configuration says, and nothing else
@@ -149,15 +150,17 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-log: approved by gpt-5.4 — verified at a6095f9df9cd, validate exit 0, tests 94/94 — Approved after rerunning the focused migrate command spec pack for x00877. Host-scope config migration is explicit and opt-in, workspace migrate run stays out of user-level configs, and the focused pack passed 94/94.
 
 ### S8 — The rebrand check runs on every pull request
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "`migrate:rebrand:check` runs in CI's governance job on every pull request, so a live file that spells the old product name fails the pull request that brings it in, not the integration branch after the merge."
 - Found 2026-10-07: #887 brought a spec that spells the old name (it is about it), its pull request was green, and develop's full run went red on `rebrand-propagate.spec.ts`: that spec walks the whole tree, so the tools shard's selection by changed imports skipped it on the pull request. The queue then armed nothing for seven hours. The check takes two seconds; it now runs beside the other governance lints on every pull request.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `46a8640284a9`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 46a8640284a9, validate exit 0, tests 94/94 — Approved after verifying ci.yml directly in the review worktree. CI runs on pull requests and lint-governance now includes migrate:rebrand:check, so the old-name check runs before merge rather than only on develop.
 
 ## acceptance
 
