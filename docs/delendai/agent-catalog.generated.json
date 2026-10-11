@@ -1513,14 +1513,6 @@
 				"date": "2026-09-07"
 			},
 			{
-				"id": "x00878",
-				"title": "A multi-model swarm is held to the workflow, whoever its agents are",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-10-06"
-			},
-			{
 				"id": "x00881",
 				"title": "What an outside audit found, verified against the code",
 				"track": "architecture",

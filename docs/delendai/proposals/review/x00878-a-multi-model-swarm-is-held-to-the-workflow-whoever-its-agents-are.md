@@ -2,14 +2,14 @@
 id: x00878
 title: "A multi-model swarm is held to the workflow, whoever its agents are"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-10-06
-last-transition-id: ddb060d5-c100-44f3-8dbf-c0795cc2b808
-last-correlation-id: ddb060d5-c100-44f3-8dbf-c0795cc2b808
-last-transition-from: ready
-last-transition-at: 2026-10-09T22:29:16.500Z
+last-transition-id: 5a640b7c-07ad-4966-a4dd-cd3f95791bb6
+last-correlation-id: 5a640b7c-07ad-4966-a4dd-cd3f95791bb6
+last-transition-from: in-progress
+last-transition-at: 2026-10-11T00:52:48.735Z
 ---
 
 # x00878 — A multi-model swarm is held to the workflow, whoever its agents are
@@ -48,6 +48,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S1 — An agent signs with the model it runs as
 - **Status**: review
+- shipped-in: `715a80b1d`
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -59,6 +60,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S2 — A verdict reaches the document only through the review tool
 - **Status**: review
+- shipped-in: `911e83f1d`
 - **Files**: `tools/scripts/lint/verdicts-through-the-tool.script.ts`, `tools/scripts/lint/verdicts-through-the-tool.script.spec.ts`, `package.json`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -69,6 +71,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S3 — A created proposal releases the reservation and directory of its `new` unit
 - **Status**: review
+- shipped-in: `aba4404da`
 - **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/free-directory.helper.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -79,6 +82,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S4 — A review reservation ends with its unit
 - **Status**: review
+- shipped-in: `aba4404da`
 - **Files**: `plugins/proposals/src/lib/services/review-reservation.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`, `tools/scripts/git/ended-reservations.service.ts`, `tools/scripts/git/ended-reservations.service.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`
 - **Gate**: type
 - acceptance:
@@ -90,6 +94,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S5 — A pack that cannot land is refused before it is published
 - **Status**: review
+- shipped-in: `8ab254fd1`
 - **Files**: `plugins/proposals/src/lib/services/pack-governance.service.ts`, `plugins/proposals/src/public/index.ts`, `plugins/proposals/tests/src/lib/services/pack-governance.service.spec.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-pack-check.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -100,6 +105,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S6 — An open publication is a generation in use
 - **Status**: review
+- shipped-in: `aba4404da`
 - **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -109,18 +115,23 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 - review-implementer: claude-opus-5-5
 
 ### S7 — A claim holds while its holder lives, for every kind of work
-- **Status**: in-progress
-- **Files**: `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/services/claim-liveness.service.spec.ts`
+- **Status**: review
+- shipped-in: `f7d6ef010`
+- **Files**: `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/services/claim-liveness.service.spec.ts`, `packages/core/src/lib/work-units/unit-fence.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/unit-fence.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A claim on a proposal or a slice (review, implementation, any unit kind) holds only while the unit that made it has a live lease (its heartbeat within the lease window); without one it no longer blocks another agent, and the queue and `work enter` say so."
-  - "Two windows, not one: the exclusive claim lapses on a short window, the unit's work is judged abandoned on the conservative one; a lapsed claim frees the work, it never deletes it (the unit becomes recoverable, its commits and branch stay)."
+  - "A review claim lapses on the short window; a unit of implementation holds its slice until the conservative one, and is then taken with `work claim`. A lapsed claim frees the work, it never deletes it (the unit becomes recoverable, its commits and branch stay)."
   - "A unit whose publication is open keeps its claim whatever its heartbeat: its verdicts or its work can still land, and another agent must not duplicate them (states live, recoverable, published, integrated)."
-  - "A taken-over claim carries a higher generation; a write by the previous holder after the takeover is refused as stale (fencing), so an agent that comes back cannot write over the one that adopted its work."
+  - "A taken-over unit carries a higher generation; `work publish` by the previous holder after the takeover is refused, naming the unit that holds the slice now, so an agent that comes back cannot publish over the one that adopted its work."
 - Progress 2026-10-06, reviews: the review queue reads a claim through core's verdict on its unit (`claimHolding`, from `readUnitStandings`: the lease's heartbeat, or the unit's last commit where no lease is visible on this machine). A claim holds while its unit is live or its publication is open; a unit idle past its lease window, abandoned or delivered holds nothing, and its work stays where it is; a unit core has no verdict for holds. Still to do: implementation units (`work enter` holds a slice for an `idle` unit through `isUnitHolding`; the short window should apply there too), the verdict and claim tools reading the same predicate, and fencing (a taken-over claim's generation refusing the previous holder's writes).
+- Completed 2026-10-11. Fencing: `work publish` refuses a unit when a higher generation of its slice exists among the work refs and publications this clone knows of (`unit-fence.service.ts`), naming that unit; the commits stay where they are. Review packs are exempt: a model holds several at once, each its own generation. Decided against, and written out of the second acceptance line: the short window for implementation units. An implementing agent that is thinking, or running a ten-minute gate, looks idle; freeing its slice after one lease window puts two agents on the same slice, which costs more than the wait it saves. It holds until the conservative window and is then adopted with `work claim`, which is what gives the higher generation the fence reads.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — Asking the queue opens no unit
 - **Status**: review
+- shipped-in: `635e8014f`
 - **Files**: `packages/cli/src/lib/review/review-peek.service.ts`, `packages/cli/src/commands/review.command.spec.ts`
 - **Gate**: type
 - `review next` without a session reads the queue first and enters a unit only when a proposal waits for a verdict that nobody holds; otherwise it answers that nothing is waiting, and no ref, worktree or lease is made. The spec (three questions, no unit) fails without the change.
@@ -129,6 +140,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S9 — A unit nobody holds leaves nothing behind
 - **Status**: review
+- shipped-in: `a27a36abf`
 - **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -139,6 +151,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S10 — A publication closed without merging is retired, not left
 - **Status**: review
+- shipped-in: `4cff4cdb3`
 - **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/tests/src/lib/ref-lifecycle/reconcile.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -149,6 +162,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S11 — An id reservation ends when a higher one supersedes it
 - **Status**: review
+- shipped-in: `aba4404da`
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -159,6 +173,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S12 — A retired close pass ends once its closes have landed
 - **Status**: review
+- shipped-in: `aba4404da`
 - **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`, `tools/scripts/proposals/close-approved-proposals.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -169,6 +184,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S13 — A publication its author left in conflict is adopted or retired, not left
 - **Status**: review
+- shipped-in: `aba4404da`
 - **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -180,6 +196,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S14 — A unit that only merged landed work in is delivered
 - **Status**: review
+- shipped-in: `16db79850`
 - **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -190,6 +207,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S15 — A retired pack that changes no file is dropped
 - **Status**: review
+- shipped-in: `aba4404da`
 - **Files**: `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -200,6 +218,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S16 — A submit through the CLI is committed, or the CLI says why
 - **Status**: review
+- shipped-in: `82d2d7d97`
 - **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/core/src/lib/contracts/constants/call-writes.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`, `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/lib/stdio-context.factory.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -211,6 +230,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S17 — A merge leaves the proposal-id counter level with what it brought
 - **Status**: review
+- shipped-in: `fdcc7cc82`
 - **Files**: `lefthook.yml`
 - **Gate**: type
 - acceptance:
@@ -221,6 +241,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S18 — Retired work that is dropped is not taken for lost work
 - **Status**: review
+- shipped-in: `dce8dc092`
 - **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`, `packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts`, `config/delendai/repair-resolutions.json`
 - **Gate**: type
 - acceptance:
@@ -232,6 +253,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S19 — The server's log says a thing once, not every five minutes
 - **Status**: review
+- shipped-in: `5852dfc15`
 - **Files**: `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -242,6 +264,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S20 — Everyday listings show live work, not what was given up
 - **Status**: review
+- shipped-in: `43efdded3`
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -253,6 +276,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S21 — The forge reaper sees a branch whose only extra commit merged landed work
 - **Status**: review
+- shipped-in: `32ed30544`
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -263,6 +287,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S22 — The unit that wrote a proposal holds none of its slices
 - **Status**: review
+- shipped-in: `5cb03cdc2`
 - **Files**: `packages/core/src/lib/work-units/slice-holders.service.ts`, `packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -274,6 +299,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S23 — The boot sees a checkpoint whose only extra commit merged landed work
 - **Status**: review
+- shipped-in: `16db79850`
 - **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/checkpoint-containment.ts`, `packages/core/tests/src/lib/work-units/landed-work.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -285,6 +311,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S24 — A unit another unit of its agent published ends with that publication
 - **Status**: review
+- shipped-in: `2cb7b16cd`
 - **Files**: `packages/core/src/lib/work-units/carried-units.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/carried-units.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -296,6 +323,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S25 — The server keeps its own log in the workspace
 - **Status**: review
+- shipped-in: `0d94f21ef`
 - **Files**: `packages/core/src/lib/shared/server-log.ts`, `packages/core/src/lib/contracts/constants/server-log.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/server-log.spec.ts`, `packages/cli/src/index.ts`, `tools/scripts/host/host-server.script.ts`
 - **Gate**: type
 - acceptance:
@@ -306,6 +334,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S26 — A queue whose candidates are all behind still moves
 - **Status**: review
+- shipped-in: `b63130d64`
 - **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`, `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -318,6 +347,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S27 — A stale generated catalog does not stop its own regeneration
 - **Status**: review
+- shipped-in: `8f0491843`
 - **Files**: `packages/core/src/lib/plugins/managed-lazy-catalog-lookup.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/core/src/lib/plugins/managed-plugin-environment.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `tools/scripts/generate/managed-lazy-catalog.script.ts`, `packages/core/tests/src/lib/plugins/managed-lazy-catalog-lookup.spec.ts`, `packages/core/tests/src/lib/project/tool-surface-runtime.exposure.spec.ts`, `plugins/proposals/tests/src/lib/surface/disclosure.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -328,6 +358,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S28 — A run that lost its required check runs again
 - **Status**: review
+- shipped-in: `32973e074`
 - **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -344,9 +375,12 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
   - "Closing an approved proposal accepts, as its validate evidence, the integration branch's full CI run at the commit that carries the proposal's work, when that run is green; a local journalled validate run still counts, and neither a red nor a missing certification closes anything."
 - Found 2026-10-07 in the hydration log: `close-approved-proposals` failed 218 times with "x00834 refused — validate required: No validate run has been journalled for this workspace". Approved proposals waited for a local `validate` (the whole chain, about ten minutes, that nobody runs on the owner machine) while the integration branch's certified full run, a stronger proof of the same tree, sat green.
 - Retired 2026-10-07 on reading the code: closing already accepts the integration branch's certified full run as evidence (`certifiedDelivery` in `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, tried after the local journal), when every commit in the proposal's `shipped-in` is contained in a certified tip. The 218 refusals in the hydration log were for x00834 before it had `shipped-in`; it is done, and the passes since report nothing in review ready to close.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S30 — A proposal that moves folders keeps the approvals it already had
 - **Status**: review
+- shipped-in: `61fae55e1`
 - **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -357,6 +391,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S31 — A unit answers for what it deleted, not for what the branch gained
 - **Status**: review
+- shipped-in: `45b11f65f`
 - **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `tools/scripts/lint/mass-content-removal.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -368,6 +403,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S32 — A change reaches the zones of the files that import it by path
 - **Status**: review
+- shipped-in: `3bbd128f0`
 - **Files**: `tools/scripts/ci/path-importers.ts`, `tools/scripts/ci/path-importers.spec.ts`, `tools/scripts/ci/test-zones.script.ts`
 - **Gate**: type
 - acceptance:
@@ -378,6 +414,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S33 — What the product writes in its cache is not stray
 - **Status**: review
+- shipped-in: `6afac8207`
 - **Files**: `tools/scripts/lint/check-stray-cache-files.script.ts`
 - **Gate**: type
 - acceptance:
@@ -388,6 +425,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S34 — A slice's reservation ends when its unit's publication lands
 - **Status**: review
+- shipped-in: `e99866382`
 - **Files**: `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -398,6 +436,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S35 — The integration branch carries no code scanning alert again
 - **Status**: review
+- shipped-in: `60a5c57f7`
 - **Files**: `plugins/changelog/src/lib/render/conventional-commit.ts`, `plugins/changelog/src/lib/render/conventional-commit.spec.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
 - **Gate**: type
 - acceptance:
@@ -408,6 +447,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S36 — A promotion carries no open code scanning alert
 - **Status**: review
+- shipped-in: `38a1e27d1`
 - **Files**: `tools/scripts/forge/promotion-alerts.script.ts`, `tools/scripts/forge/promotion-alerts.script.spec.ts`, `.github/workflows/release-pr-gate.yml`, `package.json`
 - **Gate**: type
 - acceptance:
@@ -418,6 +458,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S37 — A unit kept for its proposal follows the integration branch
 - **Status**: review
+- shipped-in: `b4da637b8`
 - **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -428,6 +469,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 
 ### S38 — The lockfile audit is as strict as the forge's dependency alerts
 - **Status**: review
+- shipped-in: `712200a99`
 - **Files**: `tools/scripts/lint/dependency-advisories.script.ts`, `tools/scripts/lint/dependency-advisories.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -439,6 +481,7 @@ On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1
 ### S39 — A server at rest does not hold a third of a core
 
 - **Status**: review
+- shipped-in: `4618f848a`
 - **Files**:
   - `plugins/commit-policy/src/lib/services/slice-persisted.service.ts`
   - `plugins/commit-policy/src/lib/triggers/slice-listener.ts`
@@ -472,6 +515,7 @@ project.
 ### S40 — A work ref leaves the forge when its work lands, while its unit goes on
 
 - **Status**: review
+- shipped-in: `5852dfc15`
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.interface.ts`
@@ -496,6 +540,7 @@ ref back (x00691); it now also takes it off.
 ### S41 — A fixture directory a background writer still uses is removed without failing the run
 
 - **Status**: review
+- shipped-in: `12cd2bf82`
 - **Files**:
   - `plugins/usage-tracking/tests/src/lib/lifecycle-races.spec.ts`
 - **Gate**: unit
@@ -516,6 +561,7 @@ removal, and with it the run.
 ### S42 — A server answers its host in half the time: three network round trips at start, not seven
 
 - **Status**: review
+- shipped-in: `dce8dc092`
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/git-seam.ts`
   - `packages/core/src/lib/startup-reconciler/journal-ref.service.ts`
@@ -553,6 +599,7 @@ one another and still run in sequence.
 ### S43 — The forge cleans a landed work ref itself, and two checks stop disagreeing about it
 
 - **Status**: review
+- shipped-in: `4cff4cdb3`
 - **Files**:
   - `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`
   - `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`
