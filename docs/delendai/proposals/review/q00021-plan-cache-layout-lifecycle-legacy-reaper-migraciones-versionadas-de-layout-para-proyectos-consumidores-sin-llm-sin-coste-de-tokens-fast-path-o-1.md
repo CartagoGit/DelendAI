@@ -638,7 +638,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 453/453 — Judged at superseding delivery 84217680c5c8 (slice itself ships in 11d9226de; the merge keeps the same files). ILifecycleStateStore with both implementations verified: file store spec 8/8 under vitest (core) and the sqlite store through the bun-owned suite (bun run test:sqlite = 445 pass / 0 fail across 82 files, including lifecycle-state-store.spec.ts). getAppliedEpoch returns the exact epoch, corrupted marker counts as absent, BEGIN IMMEDIATE lock with in-process queue. Interface lives in @delendai/state, not core, as the correction records.
 
 ### S3 — Integración en bootstrap (entregable: `f00528`)
-- **Status**: review
+- **Status**: done
 - shipped-in: `8ed4c1b71`
 - **Files**:
   - `packages/core/src/lib/cache/run-pending-cache-layout-migrations.service.ts`
@@ -660,8 +660,10 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - The registry is empty in this slice and an empty registry makes the runner a no-op (`unregistered`, no read, no write): recording epoch 5 before the migrators of S4 exist would mark workspaces migrated that were never migrated.
   - Known limit: when `cacheDir` was just changed in the configuration, the layout step runs against the new directory before the config transition moves the old cache into it.
   - The cache directory is resolved lazily, only when there is something to carry, so the fast path never parses the configuration.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84217680c5c8, validate exit 0, tests 375/375 — Judged at superseding delivery 84217680c5c8 (slice ships in 8ed4c1b71). All 10 declared files exist on develop. Gate: vitest --project core packages/core/tests/src/lib/cache packages/core/tests/src/lib/workspace-migration = 375/375 across 31 files: fast path (1 read, 0 writes on second boot), crash does not advance the epoch, two concurrent processes run the chain once, gap and downgrade fail with a message. ensureWorkspaceMigrated runs the cache-layout step before the identity migrators and maps the result to IMigrationOutcome.
 
 ### S4 — Migraciones históricas (entregable: `f00529`)
 - **Status**: review
