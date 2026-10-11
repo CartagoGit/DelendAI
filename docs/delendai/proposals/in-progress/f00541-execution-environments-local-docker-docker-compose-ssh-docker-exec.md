@@ -153,9 +153,8 @@ Today the agent implicitly assumes local execution against the repo. That breaks
   - "Runner calls prepare before slice and teardown after, reporting durations in the slice log."
   - "On prepare failure, the slice is aborted before any code change."
 - shipped-in: `e1504fba93b0`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: claude-opus-5-5
 - review-log: requested_changes by claude-opus-5-5 — runInExecutionEnvironment (plugins/orchestrator-runner/src/lib/services/execution-env.service.ts) is correct and its five specs pass: it prepares, never starts the slice when prepare fails, and always tears down, recording both durations. But nothing calls it: it is only exported from the plugin public index. The criterion says the RUNNER calls prepare before a slice and teardown after and reports the durations in the slice log; the runner own slice execution does neither. Wire it into the path that runs a slice (with the environment resolved from configuration, local when none is declared) and prove it with a spec that drives that path, or the helper is unused code.
 
 ## acceptance
