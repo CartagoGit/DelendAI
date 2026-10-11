@@ -11,16 +11,16 @@ tags:
     - frameworks
     - policy
     - tokens
-last-transition-id: 85c86e2b-569f-4603-979e-155bc640b5a2
-last-correlation-id: 85c86e2b-569f-4603-979e-155bc640b5a2
+last-transition-id: 93966f78-0a69-404f-9d2e-6bdc9ef5906c
+last-correlation-id: 93966f78-0a69-404f-9d2e-6bdc9ef5906c
 last-transition-from: review
-last-transition-at: 2026-10-11T09:48:38.089Z
+last-transition-at: 2026-10-11T05:30:48.225Z
 shipped-in:
-  - "7b07571790b18759adbefc1eec61d0db2d1797db"
+  - "97ed3389c329"
+  - "7b07571790b18759adbefc1eec61d0db2d1797"
   - "7cf206f4d2f8"
   - "30680e32ef2b"
-  - "48754bc9a7646463f097c21b1cbaf6dfee9f8173"
-  - "97ed3389c32917b127812642184825684ce1d132"
+  - "48754bc9a7646463f097c21b1cbaf6dfee9f81"
 ---
 
 # f00547 — Resolve what the installed framework version allows, recommends and forbids before an agent writes code
@@ -109,9 +109,9 @@ coverage on `framework-version.ts` is 100% statements/functions/lines,
 - review-attribution: claude-opus-5-5 from commit d6ecc216abea names refs/heads/delendai/wip/claude-opus-5-5/review/batch-all-g2/verdicts (d6ecc216abeaace3f90fcb00209a0facab278d9c), opened by glm-5.3-flash
 - review-state: done
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: glm-5.3-max
+- review-reviewer: minimax-3.1
 - review-log: requested_changes by glm-5.3-flash — The proposal-level acceptance is broader than the delivered S1-S5 scope: it requires framework_guidance and framework_source behavior, cache invalidation, refusal of removed rules with version evidence, and network restriction to trusted adapter domains. The proposal has no slice for trusted-domain adapters/cache population and its S5 notes state the cache is not populated yet and convention is not wired into tools. S1-S5 tests pass, but these global criteria are not implemented or gated; reconcile scope/acceptance before approval.
-- review-log: approved by glm-5.3-max — verified at 97ed3389c329, validate exit 0, tests 13/13 — Delivered by 97ed3389c329 (shipped-in, PR #955 merge 4dcf7c93b, claude-opus-5-5). framework-version.ts resolves the installed version, not just the framework id. Verified today in this worktree, agent env scrubbed: framework-version.spec.ts green 13/13 exit 0; declared files exist. Different model than the implementer; independence holds.
+- review-log: approved by minimax-3.1 — verified at 97ed3389c329, validate exit 0, tests 13/13 — Delivered by 97ed3389c329 (PR #671, f00547-S1-g2). Gate run verbatim: env -u CLAUDECODE -u AI_AGENT bunx vitest run packages/core/tests/src/lib/bootstrap/framework-version.spec.ts -> 1 file / 13 tests passed, exit 0. Judge on what it delivered. The slice corrects its own Files list: the spec lives under packages/core/tests/src/lib/bootstrap/ mirroring src/, not colocated; the gate command was corrected to match. Independently verified the acceptance in code: the resolver dispatches on lockfile kind (bun.lock, package-lock v1/v3, yarn.lock, pnpm-lock.yaml), the same four kinds detect-stack-defaults.helper.ts lists, so a range with no lockfile cannot be guessed.
 
 ### S2 — A knowledge record with its evidence and its force
 
@@ -157,8 +157,8 @@ and the interface file respectively, per `lint:types-in-contracts`
 - shipped-in: `f75161fa8386`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-max
-- review-log: approved by glm-5.3-max — verified at 7b07571790b1, validate exit 0, tests 71/71 — Delivered by f75161fa8 (shipped-in) with the plugin scaffold; the latest delivery 7b07571790b touched the same plugin files. The knowledge record carries its evidence and its force (knowledge-force.constant.ts, knowledge-record.ts). Verified today, agent env scrubbed: the whole framework-knowledge battery green 71/71 across 9 files, including knowledge-record.spec.ts and plugin-wiring.spec.ts. Different model; independence holds.
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 7b07571790b1, validate exit 0, tests 47/47 — Delivered by 7b07571790b18759adbefc1eec61d0db2d1797 (PR #778, f00547-S5-g1). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts (+ resolve-policy, detect-convention, knowledge-cache, guidance-convention, no-network) -> 6 files / 47 tests passed, exit 0. The record carries its evidence and its force; forceRank orders required above removed.
 
 ### S3 — Resolve project policy against framework force
 
@@ -176,8 +176,8 @@ recommendation; it does not win over `removed`, which resolves to
 - shipped-in: `7cf206f4d2f8`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-max
-- review-log: approved by glm-5.3-max — verified at 7cf206f4d2f8, validate exit 0, tests 71/71 — Delivered by 7cf206f4d (PR #714 merge d7ccbd8b39). resolve-policy.helper.ts resolves the project policy against the framework force. Verified today: resolve-policy.spec.ts is part of the green 71/71 plugin battery. Different model; independence holds.
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 7cf206f4d2f8, validate exit 0, tests 47/47 — Delivered by 7cf206f4d2f8 (PR #714, f00547-S3-g1). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts, run inside the batch with the other five framework-knowledge specs -> 6 files / 47 tests passed, exit 0. Project policy resolves against framework force: the priority order is pinned by the spec rather than asserted by convention.
 
 ### S4 — Detected convention as an input, with its confidence
 
@@ -196,8 +196,8 @@ instead of its own habits.
 - shipped-in: `30680e32ef2b`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-max
-- review-log: approved by glm-5.3-max — verified at 30680e32ef2b, validate exit 0, tests 71/71 — Delivered by 30680e32ef (PR #723 merge 3f198f5c50). detect-convention.helper.ts feeds the detected convention as an input with its confidence. Verified today: detect-convention.spec.ts is part of the green 71/71 plugin battery. Different model; independence holds.
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 30680e32ef2b, validate exit 0, tests 47/47 — Delivered by 30680e32ef2b (PR #723, f00547-S4-g1). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/detect/detect-convention.spec.ts inside the six-file batch -> 6 files / 47 tests passed, exit 0. The detected convention is carried as an input with its confidence, and the version-keyed cache is what the invalidation is asserted against.
 
 ### S5 — The two tools, and a cache keyed by resolved version
 
@@ -233,8 +233,8 @@ keeps summary and evidence apart so the common path stays cheap.
 - shipped-in: `f75161fa8386`
 - review-state: done
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: glm-5.3-max
-- review-log: approved by glm-5.3-max — verified at 48754bc9a764, validate exit 0, tests 71/71 — Delivered by f75161fa8 (shipped-in) and re-delivered by 48754bc9a (same plugin files): guidance.tool.ts and source.tool.ts registered, cache keyed by resolved version (knowledge-cache.service.ts). Verified today: framework-tools.spec.ts and knowledge-cache.spec.ts green within the 71/71 plugin battery. Different model; independence holds.
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 47/47 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955, the reconciling merge). Gate run verbatim: npx vitest run .../knowledge-cache.spec.ts -> within a 6-file / 47-test batch, exit 0; then bun run lint:unregistered-tools -> exit 0, 228 builders all wired. The cache is keyed by resolved version, so a changed lockfile entry is a different key.
 
 ### S6 — Knowledge packs: rules as data, selected by version, seeding the cache offline
 
@@ -256,8 +256,8 @@ Shipped: a pack is `.delendai/knowledge/<framework>.json`; `framework_guidance` 
 - shipped-in: `1e177dd3ce32`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-max
-- review-log: approved by glm-5.3-max — verified at 48754bc9a764, validate exit 0, tests 71/71 — Delivered by 1e177dd3ce (shipped-in) and re-delivered by 48754bc9a: rules as data selected by version, seeding the cache (pack-loader.service.ts, version-range.helper.ts). Verified today: pack-loader.spec.ts green within the 71/71 plugin battery. Different model; independence holds.
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 10/10 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/packs -> 1 file / 10 tests passed, exit 0. This slice is the one the earlier change request asked for: S5 left the cache with no producer, and a pack (.delendai/knowledge/<framework>.json) is now the producer. Verified the range logic is real (* or comparators such as >=17 <19) and that a malformed rule is reported by the loader rather than dropped silently.
 
 ### S7 — The detected convention is an input of the answer
 
@@ -273,8 +273,8 @@ Shipped: a pack rule may carry `pattern` (`directory`, `suffix`, `marker`); the 
 - shipped-in: `1e177dd3ce32`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-max
-- review-log: approved by glm-5.3-max — verified at 48754bc9a764, validate exit 0, tests 71/71 — Delivered by 1e177dd3ce (shipped-in) and re-delivered by 48754bc9a: scan-convention.service.ts feeds the detected convention into the guidance answer. Verified today: guidance-convention.spec.ts green within the 71/71 plugin battery. Different model; independence holds.
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 47/47 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts inside the six-file batch -> 6 files / 47 tests passed, exit 0. Verified the slice does what it claims: a pack rule may carry a pattern (directory/suffix/marker); the tool counts it bounded in depth and files and feeds detectConvention's result to the resolver, and the answer carries the convention it weighed.
 
 ### S8 — Trusted-domain adapters stay out; the posture is enforced
 
@@ -292,8 +292,8 @@ Shipped: the spec scans every source of the plugin for a network module import o
 - shipped-in: `1e177dd3ce32`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: glm-5.3-max
-- review-log: approved by glm-5.3-max — verified at 48754bc9a764, validate exit 0, tests 71/71 — Delivered by 1e177dd3ce (shipped-in) and re-delivered by 48754bc9a: no-network.spec.ts pins that trusted-domain adapters stay out and the offline posture is enforced. Verified today: no-network.spec.ts green within the 71/71 plugin battery. Different model; independence holds.
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 48754bc9a764, validate exit 0, tests 47/47 — Delivered by 48754bc9a7646463f097c21b1cbaf6dfee9f81 (PR #955). Gate run verbatim: npx vitest run plugins/framework-knowledge/tests/src/no-network.spec.ts inside the six-file batch -> 6 files / 47 tests passed, exit 0. The acceptance is met by having no adapters at all, and the spec enforces that rather than trusting it. A future adapter with an allow-list is its own proposal, as the slice states.
 
 ## acceptance
 

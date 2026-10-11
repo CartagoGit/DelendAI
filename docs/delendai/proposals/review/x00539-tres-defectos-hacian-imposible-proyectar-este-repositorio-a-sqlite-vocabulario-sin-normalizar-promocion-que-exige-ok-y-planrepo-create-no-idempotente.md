@@ -115,7 +115,7 @@ candidato en orden canonico (uid, path), que es determinista.
 - **Status**: done
 - shipped-in: `eaf03fb5c`
 - **DependsOn**: [S1, S2, S3]
-- **Files**: `docs/delendai/proposals/ready/feats/f00534-proposals-db-reconcile-la-primera-escritura-de-produccion-en-proposals-sqlite-que-hoy-no-existe-porque-nada-la-crea.md`
+- **Files**: `docs/delendai/proposals/done/feats/f00534-proposals-db-reconcile-la-primera-escritura-de-produccion-en-proposals-sqlite-que-hoy-no-existe-porque-nada-la-crea.md`
 - **Gate**: none
 - acceptance:
   - "Se vuelve a ejecutar la medicion de paridad de f00534 S3 sobre el repositorio real y se registra la cifra nueva junto a la anterior (3 de 894, 0.34%)."

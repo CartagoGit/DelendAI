@@ -14,6 +14,7 @@ import {
 	unrecordedAttribution,
 	withShippedIn,
 } from '@delendai/proposals/lib/services/review-attribution';
+import { withShippedInFromSlices } from '@delendai/proposals/lib/services/shipped-in-from-slices.service';
 import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
@@ -180,5 +181,30 @@ describe('attributeDelivery refusals', () => {
 			kind: 'unusable',
 			reason: 'commit abc1234 does not exist in this clone',
 		});
+	});
+});
+
+describe('withShippedInFromSlices', () => {
+	const document = (frontmatter: string): string =>
+		`---\nid: x00001\nstatus: review\n${frontmatter}---\n\n### S1 — one\n- **Status**: done\n- shipped-in: \`eaf03fb5c\`\n\n### S2 — two\n- **Status**: done\n- shipped-in: \`eaf03fb5c\`, \`12345e678\`\n`;
+
+	it('fills the frontmatter from what the slices record, once each', () => {
+		const filled = withShippedInFromSlices(document(''));
+		const yaml = extractYamlBlock(filled);
+		expect(
+			guardShippedInPresent(
+				parseFrontmatterBlock(yaml ?? '') as Record<string, unknown>,
+			).ok,
+		).toBe(true);
+		expect(filled.match(/eaf03fb5c/gu)).toHaveLength(3);
+		expect(filled).toContain('- "12345e678"');
+	});
+
+	it('leaves a frontmatter that already says alone, and a document whose slices say nothing', () => {
+		const said = document('shipped-in:\n  - "abc1234"\n');
+		expect(withShippedInFromSlices(said)).toBe(said);
+		const silent =
+			'---\nid: x00002\n---\n\n### S1 — one\n- **Status**: done\n';
+		expect(withShippedInFromSlices(silent)).toBe(silent);
 	});
 });

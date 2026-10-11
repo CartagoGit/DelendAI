@@ -116,6 +116,7 @@ import {
 	collectSliceStatuses,
 	guardTransitionToDone,
 } from '../services/proposal-completeness';
+import { withShippedInFromSlices } from '../services/shipped-in-from-slices.service';
 import { staleApprovals } from '../services/review-verdict-evidence';
 import { openReviewRounds } from '../services/review-handoff';
 import { createIndexFreeGitRunner } from '../shared/index-free-git-runner';
@@ -1227,15 +1228,18 @@ export const runProposalTransition = async (
 	// a00069 S11: force bypass is audited (reason already required + non-empty).
 	const requirePeer = options.requirePeerReview !== false;
 	// Whatever path leads to `done` and whatever flag is passed, every
-	// finished slice carries an independent approval (x00718). The gate
-	// below judges `review → done`; `force` used to skip it, and a jump to
-	// `done` from any other status never met it. A plan closes when its
-	// proposals have (`close_plan` sets `skipDfaForPlanClosure`).
+	// finished slice carries an independent approval (x00718): `force`
+	// used to skip it, and a jump to `done` from any other status never
+	// met it. The close from `review` is judged here too, by the rule the
+	// repository's own check applies to a closed proposal: left to the
+	// log-based gate below alone, an approval of work nobody could be
+	// named for closed its proposal, and the pack that carried it was
+	// refused. A plan closes when its proposals have (`close_plan` sets
+	// `skipDfaForPlanClosure`).
 	if (
 		requirePeer &&
 		finalTo === 'done' &&
-		args.skipDfaForPlanClosure !== true &&
-		(args.force === true || from !== 'review')
+		args.skipDfaForPlanClosure !== true
 	) {
 		const unapproved = unapprovedSlices(raw, options.reviewIndependence);
 		if (unapproved.length > 0) {
@@ -1371,7 +1375,12 @@ export const runProposalTransition = async (
 	}
 
 	if (finalTo === 'done') {
-		const yamlBlock = extractYamlBlock(raw);
+		// What delivered the proposal is taken from its slices when the
+		// frontmatter does not repeat it: written before the move below,
+		// which reads the document again.
+		const closing = withShippedInFromSlices(raw);
+		if (closing !== raw) await writeFileAtomic(found.absPath, closing);
+		const yamlBlock = extractYamlBlock(closing);
 		const frontmatter =
 			yamlBlock === null
 				? {}

@@ -222,10 +222,21 @@ export const sliceHeldOnForge = (input: {
 		),
 		branchesOf: (unit) => [`${work}${unit}`, `${publication}${unit}`],
 	});
-	return reservation.kind === 'taken'
-		? refused(
-				`${input.proposal} ${reservation.slice} is reserved on the forge by ${reservation.agent}: two units on one slice do the same work twice and collide when they land.`,
-				`Its unit is \`${reservation.unit}\`. Wait for it to land, take a slice nobody holds, or pass --alongside for a deliberate second attempt.`,
-			)
-		: undefined;
+	if (reservation.kind !== 'taken') return undefined;
+	// The entrant's own unit, published and gone from this clone: it is
+	// refused the name it would be given now, and told how to go back to
+	// the one it has. Told only "wait or take another slice", an agent
+	// with a conflict to resolve in its own pull request had no way in.
+	if (reservation.agent === input.agent) {
+		const [, generation = '', topic = ''] =
+			/-g(\d+)\/([^/]+)$/u.exec(reservation.unit) ?? [];
+		return refused(
+			`${input.proposal} ${reservation.slice} is reserved on the forge by your own unit, \`${reservation.unit}\`, which this entry would not have resumed.`,
+			`Go back to it: add --generation=${generation} --topic=${topic}. If it is published, bring its pull request in first (\`git merge origin/${publication}${reservation.unit}\`) and publish again from there.`,
+		);
+	}
+	return refused(
+		`${input.proposal} ${reservation.slice} is reserved on the forge by ${reservation.agent}: two units on one slice do the same work twice and collide when they land.`,
+		`Its unit is \`${reservation.unit}\`. Wait for it to land, take a slice nobody holds, or pass --alongside for a deliberate second attempt.`,
+	);
 };

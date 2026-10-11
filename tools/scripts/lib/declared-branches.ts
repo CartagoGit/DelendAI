@@ -51,3 +51,7 @@ export const declaredMergeMethod = (
 export const mergeFlagFor = (
 	method: IDeclaredPolicy['integration']['mergeMethod'],
 ): string => `--${method}`;
+
+/** How long a unit's lease runs, in minutes, as the policy declares it. */
+export const declaredLeaseTtlMinutes = (root: string = repoRoot()): number =>
+	declaredPolicy(root).coordination.leaseTtlMinutes;
