@@ -71,6 +71,10 @@ Observed at 07:00:
 
 23. **Most releases were the product's doing, and observations 4, 10 and 11 misread them.** Read in full at 07:20, the release commits of the swarm give their reasons, and the reasons are refusals the reviewer met after claiming: "this agent already reviewed the prior round" (`gpt-5.4`, r00040); "S1 is changes_requested and only the implementer can resubmit it … nothing here can receive a verdict"; "proposal_review refuses this slice with missing-submit-identity"; "the guard requires the fix-verifier to differ from glm-5.3-flash". The queue offered work the verdict would refuse, and the claim tool took a proposal with nothing in it to judge. What was recorded here as agents dropping work for no reason was written from commit subjects alone. → S4.
 
+Observed at 08:30:
+
+24. **A verdict costs the whole matrix, seven times.** The pack #1001 (`gpt-5.4`) changes one proposal document and the generated agent catalog. Between 05:13 and 07:28 it ran the full CI seven times, and so did #992 and #996; #991 ran it five times before landing. The queue's log says why on every pass: "#1001 is brought forward first — it and #995, which lands first, both touch the apps, plugins, proposals, tools zone(s)", and of a pack of verdicts alone, "#1007 … both touch the proposals zone(s)". Two causes. The checked-in catalog listed every open proposal with its state, so any verdict that closed a proposal rewrote a generated file that the specs of three zones read; that copy is removed in q00022 S11 (#1011). And every pack changes files under the proposals folder, which one zone reads whole, so no two packs are ever independent and each one's checks are thrown away when another lands. With eleven reviewers the second is quadratic. → S10.
+
 ### S2 — An agent has one name, and it is not the model's to choose
 
 - **Status**: in-progress
@@ -202,6 +206,20 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
   - A slice whose implementer the product cannot name is not offered to the review queue as ordinary work: the queue says the close is the owner's, as the closing gate will.
 
 Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a status a slice of a closed proposal may be in, and a hash that names a tree or a blob is skipped by the cited-commits lint. x00875's three citations of unreferenced objects were rewritten in its own unit. Not yet delivered: running both rules at the hand-over to review.
+
+### S10 — Two packs of verdicts on different proposals do not wait on each other
+
+- **Status**: pending
+- **Files**:
+  - `tools/scripts/forge/independent-candidates.ts`
+  - `tools/scripts/forge/candidate-footprint.ts`
+- **Gate**: unit
+- acceptance:
+  - Measured first, after q00022 S11 has landed: how many CI runs a pack of verdicts takes from publication to merge, and which jobs they run.
+  - If it is still more than one run per pack: two candidates whose only common ground is a zone that reads their files as data, and that change no file in common, land without being brought forward; the integration branch's own run after each merge is what checks them together.
+  - A candidate that changes the code of a zone is brought forward as it is today.
+
+Not started on purpose. The rule decides what lands unchecked against what, and it is worth changing on a measurement, not on the first cause found; S11 of q00022 may be most of it.
 
 ## acceptance
 
