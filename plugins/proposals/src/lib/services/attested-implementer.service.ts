@@ -21,6 +21,7 @@ import {
 	MIN_ATTESTATION_EVIDENCE_LENGTH,
 	UNRECORDED_IMPLEMENTER,
 } from '../contracts/constants/review-attribution.constant';
+import type { IAttestation } from '../contracts/interfaces/attestation.interface';
 
 const escapeRegExp = (text: string): string =>
 	text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
@@ -38,15 +39,6 @@ const ATTESTED_LINE = new RegExp(
 	`^- review-attribution:\\s*\\S+\\s+${ATTESTED_BY_MARK}\\s`,
 	'mu',
 );
-
-export interface IAttestation {
-	/** Who delivered the slice. */
-	readonly implementer: string;
-	/** Who vouches for it. */
-	readonly attestedBy: string;
-	/** Where the name comes from. */
-	readonly evidence: string;
-}
 
 /**
  * The proposal with the slice's implementer attested, or why not. Only a
