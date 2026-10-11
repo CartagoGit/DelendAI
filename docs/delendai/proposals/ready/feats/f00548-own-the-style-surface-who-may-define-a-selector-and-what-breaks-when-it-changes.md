@@ -61,54 +61,83 @@ and leaves the two ratchets as the authorities they already are.
 
 ### S1 — A selector's owner, and who consumes it
 
-- **Status**: pending
-- **Files**: [`plugins/style-convention/src/lib/graph/selector-graph.service.ts`, `plugins/style-convention/src/lib/graph/selector-graph.service.spec.ts`, `plugins/style-convention/src/lib/contracts/interfaces/selector-graph.interface.ts`]
-
-Build the graph the existing ratchets already half-walk: every selector,
-the file that defines it, and every markup surface that uses it. The
-scss parsing rules follow f00099's parser exactly — same nesting
-expansion, same comma-list splitting — so the two never disagree about
-what a stylesheet defines.
-
-- **Gate**: `npx vitest run plugins/style-convention/tests/src/lib/graph/selector-graph.service.spec.ts`
+- **Status**: review
+- **Files**:
+  - `plugins/style-convention/package.json`
+  - `plugins/style-convention/tsconfig.json`
+  - `plugins/style-convention/vitest.config.ts`
+  - `plugins/style-convention/LICENSE`
+  - `plugins/style-convention/src/lib/parse/style-sources.service.ts`
+  - `plugins/style-convention/src/lib/parse/path-glob.helper.ts`
+  - `plugins/style-convention/src/lib/contracts/interfaces/style-sources.interface.ts`
+  - `plugins/style-convention/src/lib/contracts/interfaces/selector-graph.interface.ts`
+  - `plugins/style-convention/src/lib/graph/selector-graph.service.ts`
+  - `plugins/style-convention/tests/src/lib/graph/selector-graph.service.spec.ts`
+  - `tools/scripts/lint/style-integrity.script.ts`
+  - `tools/package.json`
+  - `tsconfig.base.json`
+  - `bun.lock`
+- **Gate**: `npx vitest run --project style-convention`
+- shipped-in: `b8e94ffcfeb8`, `efbf09506405`
+- acceptance:
+  - The graph holds every selector with the files that define it and the surfaces that use it; a markup file's own `<style>` block defines selectors for that file.
+  - The parser is the integrity ratchet's own, moved here and imported by the ratchet, so the two cannot disagree about nesting or comma lists; the ratchet's verdict is unchanged (415 used classes against 541 defined, its 22 specs green).
 
 ### S2 — `style_impact`: what a change to this selector reaches
 
-- **Status**: pending
-- **Files**: [`plugins/style-convention/src/lib/tools/style-impact.tool.ts`, `plugins/style-convention/src/lib/tools/style-impact.tool.spec.ts`]
-
-Given a selector or a file, answer which components, pages and shared
-surfaces consume it, and which of those cross a package boundary. An
-agent asked to restyle one page learns, before editing, that the
-selector is shared with two others.
-
-- **Gate**: `npx vitest run plugins/style-convention/tests/src/lib/tools/style-impact.tool.spec.ts`
+- **Status**: review
+- **Files**:
+  - `plugins/style-convention/src/lib/tools/style-impact.tool.ts`
+  - `plugins/style-convention/src/lib/tools/style-envelope.helper.ts`
+  - `plugins/style-convention/src/lib/profile/style-workspace.service.ts`
+  - `plugins/style-convention/src/lib/contracts/interfaces/style-workspace.interface.ts`
+  - `packages/core/tests/src/lib/e2e/style-convention-over-mcp.spec.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/e2e/style-convention-over-mcp.spec.ts`
+- shipped-in: `de74749fbd71`
+- acceptance:
+  - Given a selector, or a file, it answers where each selector is defined, every surface that uses it, and which of those are in another package than every file that defines it.
+  - A selector nothing defines or uses is refused by name rather than answered as "no impact".
 
 ### S3 — `style_check`: ownership and hard-coded values
 
-- **Status**: pending
-- **Files**: [`plugins/style-convention/src/lib/tools/style-check.tool.ts`, `plugins/style-convention/src/lib/tools/style-check.tool.spec.ts`]
-
-Refuse, with the reason named: defining a selector another layer owns,
-forking a shared block, and hard-coding a literal that an existing
-design token already names. Delegates to f00102 rather than re-deciding
-for `delendai-*` classes.
-
-- **Gate**: `npx vitest run plugins/style-convention/tests/src/lib/tools/style-check.tool.spec.ts`
+- **Status**: review
+- **Files**:
+  - `plugins/style-convention/src/lib/check/style-check.service.ts`
+  - `plugins/style-convention/src/lib/tools/style-check.tool.ts`
+  - `plugins/style-convention/tests/src/lib/check/style-check.service.spec.ts`
+- **Gate**: `npx vitest run --project style-convention`
+- shipped-in: `efbf09506405`, `de74749fbd71`
+- acceptance:
+  - It refuses, with the reason and the remedy named: a selector whose prefix another layer owns, a second definition of a selector defined in another file, and a hard-coded value an existing design token names — and it names the token.
+  - A class under a prefix another gate owns is not decided here: the finding names that gate (`sharedAuthority`), which in this repository is `lint:shared-ui-ratchet`.
+  - It checks the file on disk or the stylesheet as it would be saved.
 
 ### S4 — `style_profile`: the project's declared style architecture
 
-- **Status**: pending
-- **Files**: [`plugins/style-convention/src/index.ts`, `plugins/style-convention/src/lib/profile/style-profile.service.ts`, `plugins/style-convention/src/lib/profile/style-profile.service.spec.ts`]
+- **Status**: review
+- **Files**:
+  - `plugins/style-convention/src/index.ts`
+  - `plugins/style-convention/src/public/index.ts`
+  - `plugins/style-convention/plugin.manifest.ts`
+  - `plugins/style-convention/README.md`
+  - `plugins/style-convention/src/lib/contracts/constants/style-profile.constant.ts`
+  - `plugins/style-convention/src/lib/contracts/constants/token-budget.constant.ts`
+  - `plugins/style-convention/src/lib/contracts/schemas/style-options.schema.ts`
+  - `plugins/style-convention/src/lib/profile/style-profile.service.ts`
+  - `plugins/style-convention/src/lib/tools/style-profile.tool.ts`
+  - `plugins/style-convention/tests/src/lib/profile/style-profile.service.spec.ts`
+  - `apps/web/public/logos/plugin-style-convention.svg`
+  - `tools/scripts/release/release-plan.ts`
+  - `README.md`
+- **Gate**: `npx vitest run --project style-convention`
+- shipped-in: `efbf09506405`, `de74749fbd71`
+- acceptance:
+  - The architecture is declared once — `scss-bem`, `css-modules`, `tailwind`, `legacy-global` — with folder overrides (the last match wins), and `style_profile` says what applies to one path.
+  - A folder declared `legacy-global` gets no finding from `style_check`.
+  - Under `tailwind`, a directive the installed major does not accept (`@utility` on 3, `@tailwind` on 4) is refused; with no version installed, or a directive the table does not know, nothing is said.
+  - A project that declares no `styleRoots` gets no tool and no diagnostic.
 
-Declare the architecture once — scss-bem, css-modules, tailwind,
-legacy-global — per scope, with folder overrides so `src/legacy/**` is
-not "fixed" by an agent that mistook it for drift. Tailwind specifics
-(`@apply`, `@utility`, `@reference`) resolve through f00547 against
-the installed version, so an unsupported directive is refused rather
-than emitted.
-
-- **Gate**: `npx vitest run plugins/style-convention/tests/src/lib/profile/style-profile.service.spec.ts && bun run lint:unregistered-tools`
+Re-cut at delivery: the installed version of the utility framework is read from the project's own manifest by this plugin. The plan sent it through f00547, whose public surface holds knowledge records and no version resolver; a directive table of ten lines did not justify adding one there.
 
 ## acceptance
 
