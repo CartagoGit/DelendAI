@@ -36,6 +36,7 @@ import { repoRoot } from '../lib/monorepo-paths';
 import {
 	extractDefinedClasses,
 	extractUsedClasses,
+	globToRegExp,
 	parseAstro,
 	splitSelectorList,
 } from '@delendai/style-convention/public';
@@ -43,6 +44,7 @@ import {
 export {
 	extractDefinedClasses,
 	extractUsedClasses,
+	globToRegExp,
 	parseAstro,
 	splitSelectorList,
 } from '@delendai/style-convention/public';
@@ -126,18 +128,6 @@ const abs = (path: string): string =>
 	isAbsolute(path) ? path : join(REPO_ROOT, path);
 
 /** Replace every non-newline char with a space, preserving line numbers. */
-
-/** Minimal file glob: `**` crosses directories, `*`/`?` stay within one. */
-export const globToRegExp = (glob: string): RegExp => {
-	const globstarSentinel = '__DELENDAI_GLOBSTAR_SENTINEL__';
-	const escaped = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&');
-	const pattern = escaped
-		.replace(/\*\*/g, globstarSentinel)
-		.replace(/\*/g, '[^/]*')
-		.replace(/\?/g, '[^/]')
-		.replaceAll(globstarSentinel, '.*');
-	return new RegExp(`^${pattern}$`);
-};
 
 const isBuiltinIgnored = (className: string): boolean =>
 	BUILTIN_IGNORES.some((pattern) => pattern.test(className));
