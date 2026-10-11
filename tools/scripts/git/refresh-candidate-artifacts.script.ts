@@ -34,6 +34,8 @@ import { join } from 'node:path';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
+import { dropConflictingVerdicts } from './stale-verdict-conflicts';
+
 import {
 	candidateDispositions,
 	toBringForward,
@@ -189,6 +191,23 @@ const pushCandidate = (
 	}
 };
 
+const PROPOSALS_DIR = 'docs/delendai/proposals';
+
+/** Whether a publication is a unit that records verdicts. */
+const isReviewPack = (
+	policy: IResolvedDevelopmentPolicy,
+	candidate: string,
+): boolean => {
+	const prefix = policy.branches.publicationRefPrefix.replace(
+		/^(refs\/)?(heads\/)?/u,
+		'',
+	);
+	return (
+		candidate.startsWith(prefix) &&
+		candidate.slice(prefix.length).split('/')[1] === 'review'
+	);
+};
+
 /**
  * Finish a merge whose every conflict is in a regenerated file, taking
  * the integration branch's side (the generator rewrites it next). Any
@@ -197,6 +216,8 @@ const pushCandidate = (
 const takeRegeneratedSide = (
 	dir: string,
 	regenerated: ReadonlySet<string>,
+	/** Something else was resolved already: nothing left is not a failure. */
+	settled = false,
 ): boolean => {
 	const conflicted = (
 		git(dir, ['diff', '--name-only', '--diff-filter=U']) ?? ''
@@ -204,14 +225,16 @@ const takeRegeneratedSide = (
 		.split('\n')
 		.filter((path) => path.length > 0);
 	if (
-		conflicted.length === 0 ||
+		(conflicted.length === 0 && !settled) ||
 		conflicted.some((path) => !regenerated.has(path))
 	) {
 		git(dir, ['merge', '--abort']);
 		return false;
 	}
-	git(dir, ['checkout', '--theirs', '--', ...conflicted]);
-	git(dir, ['add', '--', ...conflicted]);
+	if (conflicted.length > 0) {
+		git(dir, ['checkout', '--theirs', '--', ...conflicted]);
+		git(dir, ['add', '--', ...conflicted]);
+	}
 	return (
 		gitAsCommitter(dir, [
 			'-c',
@@ -280,6 +303,8 @@ export const refreshCandidate = (input: {
 	readonly run?: (command: string, cwd: string) => boolean;
 	/** Files a conflict may be resolved in; the declared projections by default. */
 	readonly regenerated?: ReadonlySet<string>;
+	/** Where the proposals are kept; the repository's own by default. */
+	readonly proposalsDir?: string;
 }): ICandidateRefresh => {
 	const { root, policy, remote, candidate } = input;
 	const dir = mkdtempSync(join(tmpdir(), 'candidate-refresh-'));
@@ -318,11 +343,22 @@ export const refreshCandidate = (input: {
 			'--no-edit',
 			`${remote}/${policy.branches.integration}`,
 		]);
+		// A pack of verdicts gives up the ones on documents that changed
+		// under it; anything else that conflicts is still its author's.
+		const dropped =
+			merged === undefined && isReviewPack(policy, candidate)
+				? dropConflictingVerdicts({
+						dir,
+						proposalsDir: input.proposalsDir ?? PROPOSALS_DIR,
+						git,
+					})
+				: [];
 		if (
 			merged === undefined &&
 			!takeRegeneratedSide(
 				dir,
 				input.regenerated ?? REGENERATED_PROJECTIONS,
+				dropped.length > 0,
 			)
 		) {
 			return {
@@ -376,7 +412,10 @@ export const refreshCandidate = (input: {
 			: {
 					candidate,
 					state: 'refreshed',
-					detail: 'merged and regenerated',
+					detail:
+						dropped.length === 0
+							? 'merged and regenerated'
+							: `merged and regenerated; dropped the verdicts on ${dropped.join(', ')}, whose documents changed under them`,
 				};
 	} finally {
 		git(root, ['worktree', 'remove', '--force', dir]);
