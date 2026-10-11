@@ -37,6 +37,8 @@ The owner had the `develop` branch audited from outside on 2026-10-11 (anchored 
   - A file that exists and cannot be read (no permission, an I/O error, a directory in its place) fails the migration with the path and the cause.
 
 Verified: any failure of `readFile` returned `null`, the answer for "no such file". A state file the process could not read was stepped over and the project migrated as if it had never had one.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A published package exports nothing it does not ship
 
