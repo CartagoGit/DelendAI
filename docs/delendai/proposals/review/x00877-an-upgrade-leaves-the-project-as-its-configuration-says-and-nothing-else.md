@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-09T21:35:03.577Z
 shipped-in:
   - "b6bc626ea9363cad35a15eb0b21ddda7e966a5cd"
+  - "fc1a589e2059b0cf11263be473526d1dc8c5dfb0"
 ---
 
 # x00877 — An upgrade leaves the project as its configuration says, and nothing else
@@ -58,7 +59,7 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
 - review-log: approved by gpt-5.4 — verified at b6bc626ea936, validate exit 0, tests 94/94 — Approved after rerunning the focused migration and guard spec pack for x00877: 94/94 tests passed, and the CLI now keeps migrate status and dry-run read-only while migrate run remains the only applying path.
 
 ### S2 — The legacy proposal state is moved, and no copy of it stays behind
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/state-dir.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/state-dir.constant.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/state-dir.migrator.spec.ts`, `packages/proposals-sqlite/tests/src/lib/state-dir-agreement.spec.ts`, `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`, `plugins/proposals/tests/src/lib/proposals/sync-legacy-registry.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -67,10 +68,12 @@ A probe drove the real CLI in throwaway adopting projects the same day (an mcp-v
   - "After it, the proposals tools open the database without the manual remedy."
   - "A committed `docs/<docsDir>/proposals/index.json` (the old location) is removed by `migrate run`; it is regenerable and nothing reads it."
   - "The comments that still describe it as a committed variant are corrected."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - Delivered, split by owner (core may know nothing of the proposals plugin's storage, which `lint:core-proposals-boundary` enforces and which the first version broke): core's `stateDirectoryMigrator:v1` moves every file of its legacy state directory `.delendai/state/` to `.cache/delendai/state/` (SQLite sidecars before their database), never over a file already there, and removes the emptied directory; `state-dir-agreement.spec.ts` in `@delendai/proposals-sqlite` pins that its database opens there. The registry's old committed copy beside the proposals is the plugin's to remove: a full sync deletes `<proposalsDir>/index.json` (an index-only sync, which makes no tracked change, leaves it). Probed end to end before the split in a throwaway project; the specs fail without the change.
 - shipped-in: `3f9e395cd57c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at fc1a589e2059, validate exit 0, tests 94/94 — Approved after rerunning the focused migration and proposals spec pack for x00877. The legacy state migrator moves sidecars and database safely, conflicts do not overwrite, the proposals-sqlite location is pinned, and the legacy committed registry cleanup is covered by green focused specs.
 
 ### S3 — Every host file and instruction file names delendai
 - **Status**: review
