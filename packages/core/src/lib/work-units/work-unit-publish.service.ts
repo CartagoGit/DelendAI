@@ -173,9 +173,15 @@ export const published = async (
 				.split('\n')
 				.filter((commit) => commit.length > 0);
 		const own = commitsOver(workRef);
-		if (own.length === 0) {
+		// Judged by what it changes, not by its commits: a claim is a commit
+		// with no change, and a unit holding only a claim was published as a
+		// pull request that delivered nothing and sat red in the queue.
+		const changes =
+			readGit(root, ['diff', '--name-only', `${base}...${workRef}`]) ??
+			'';
+		if (own.length === 0 || changes.trim().length === 0) {
 			return refused(
-				`\`${workRef}\` records no verdict of its own: it holds nothing over \`${policy.branches.integration}\` but merges.`,
+				`\`${workRef}\` records no verdict of its own: it changes nothing over \`${policy.branches.integration}\`.`,
 				'There is nothing to publish. Record a verdict in this unit; a unit that will record none is removed with its worktree and its branch.',
 			);
 		}

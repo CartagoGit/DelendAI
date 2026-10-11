@@ -110,6 +110,21 @@ describe('work enter on two machines', () => {
 		).toBe(0);
 	});
 
+	it('tells an agent refused by its own unit how to go back to it', async () => {
+		const { first, second } = twoMachines();
+		expect(
+			(await enter(first.root, 'agent-a', 'S1', '--topic=the-work')).code,
+		).toBe(0);
+
+		// The same agent, from a clone that has no ref of that unit, under
+		// the name this entry would give it.
+		const back = await enter(second.root, 'agent-a', 'S1', '--topic=again');
+
+		expect(back.code).not.toBe(0);
+		expect(back.error).toContain('reserved on the forge by your own unit');
+		expect(back.error).toContain('--generation=1 --topic=the-work');
+	});
+
 	it('frees the slice when the unit that held it is retired', async () => {
 		const { first, second } = twoMachines();
 		const held = (await enter(first.root, 'agent-a', 'S1')).data as {
