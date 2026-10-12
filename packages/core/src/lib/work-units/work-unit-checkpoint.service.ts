@@ -43,7 +43,7 @@ export const checkpointed = async (
 		.split(',')
 		.map((entry) => entry.trim())
 		.filter((entry) => entry.length > 0);
-	const agent = agentFor(args);
+	const agent = agentFor(args, root);
 	if (
 		proposal === undefined ||
 		slice === undefined ||

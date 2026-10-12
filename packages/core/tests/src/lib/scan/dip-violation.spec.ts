@@ -55,4 +55,20 @@ describe('scan/dip-violation — detectDipViolations', () => {
 		);
 		expect(hits).toHaveLength(0);
 	});
+
+	it('does not flag the provider-model bridge, read by sync identity resolution', () => {
+		// The bridge answers "who is working" for the git guard (a one-shot
+		// process per hook), `work enter` and every ref-naming call site —
+		// all synchronous by contract. What it reads is a small JSON entry
+		// the provider rewrites every request.
+		const body = [
+			"import { existsSync, readFileSync } from 'node:fs';",
+			'export const providerModelId = () => readFileSync(p);',
+		].join('\n');
+		const hits = detectDipViolations(
+			'packages/core/src/lib/work-identity/provider-model-bridge.helper.ts',
+			body,
+		);
+		expect(hits).toHaveLength(0);
+	});
 });

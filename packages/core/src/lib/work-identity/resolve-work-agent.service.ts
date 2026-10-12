@@ -93,7 +93,11 @@ export const normalizeWorkAgentId = (value: string): string =>
 /**
  * The agent, in the order of how specific each source is about WHO did
  * the work: the exact model, then what the environment declares, then
- * the name the MCP client reported at the handshake. Never the machine.
+ * the model the chat provider OBSERVED serving this conversation (the
+ * provider bridge — an observed model id, marked by nothing because it
+ * names a model), then the name the MCP client reported at the
+ * handshake (marked `client-` because it names an application). Never
+ * the machine.
  */
 export const resolveWorkAgentId = (
 	sources: IWorkAgentSources,
@@ -112,6 +116,7 @@ export const resolveWorkAgentId = (
 	for (const [value, source] of [
 		[sources.model, 'model'],
 		[sources.environment, 'environment'],
+		[sources.provider, 'provider'],
 		[sources.client, 'client'],
 	] as const) {
 		const raw = read(value);

@@ -61,7 +61,10 @@ const recordEntered = async (
 		await recordUnitEntered({
 			cwd: workspaceOf(ctx),
 			ref: data.ref,
-			owner: { agent: agentFor(args), session: data.session ?? null },
+			owner: {
+				agent: agentFor(args, workspaceOf(ctx)),
+				session: data.session ?? null,
+			},
 			worktree: data.path ?? null,
 			clientCwd: ctx.cwd,
 			serverRoot: workspaceOf(ctx),

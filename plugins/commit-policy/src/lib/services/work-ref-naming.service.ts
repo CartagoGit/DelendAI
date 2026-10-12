@@ -34,15 +34,19 @@ export const workRefAgent =
 			...(sources.host === undefined
 				? {}
 				: { environment: sources.host }),
+			...(sources.provider === undefined
+				? {}
+				: { provider: sources.provider }),
 			...(sources.clientName === undefined
 				? {}
 				: { client: sources.clientName }),
 		}).id;
 
 /**
- * Whether those sources DECLARE an agent: its model, or the id the
- * environment gives it. A name inferred from the connecting program, or
- * from nothing, identifies no agent.
+ * Whether those sources DECLARE an agent: its model, the id the
+ * environment gives it, or the model the provider OBSERVED serving this
+ * conversation. A name inferred from the connecting program, or from
+ * nothing, identifies no agent.
  */
 export const workRefAgentDeclared =
 	(sources: IWorkRefAgentSources): (() => boolean) =>
@@ -52,8 +56,15 @@ export const workRefAgentDeclared =
 			...(sources.host === undefined
 				? {}
 				: { environment: sources.host }),
+			...(sources.provider === undefined
+				? {}
+				: { provider: sources.provider }),
 		}).source;
-		return source === 'model' || source === 'environment';
+		return (
+			source === 'model' ||
+			source === 'environment' ||
+			source === 'provider'
+		);
 	};
 
 export const agentIdOf = (agentId: IWorkRefAgentId): string =>

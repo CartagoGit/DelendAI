@@ -1,5 +1,10 @@
 /** Where a resolved agent identity came from, most specific first. */
-export type IWorkAgentSource = 'model' | 'environment' | 'client' | 'none';
+export type IWorkAgentSource =
+	| 'model'
+	| 'environment'
+	| 'provider'
+	| 'client'
+	| 'none';
 
 /** The identity, and how specific the thing that supplied it was. */
 export interface IWorkAgentIdentity {
@@ -18,6 +23,13 @@ export interface IWorkAgentSources {
 	readonly model?: string | (() => string | undefined) | undefined;
 	/** What the environment declares, e.g. `DELENDAI_AGENT_ID`. */
 	readonly environment?: string | (() => string | undefined) | undefined;
+	/**
+	 * The model the chat provider observed serving this conversation, read
+	 * from the provider bridge (see `provider-model-bridge.ts`). An observed
+	 * model id, not a client name: the provider that routes the requests
+	 * knows exactly which model answered, and publishes it.
+	 */
+	readonly provider?: string | (() => string | undefined) | undefined;
 	/** The name the MCP client reported, e.g. `codex-mcp-client`. */
 	readonly client?: string | (() => string | undefined) | undefined;
 }

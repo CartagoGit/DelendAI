@@ -36,6 +36,9 @@ import {
 import { deriveProtectedBranches } from './lib/persistence/derive-branch-policy';
 import { createPolicyPersistence } from './lib/persistence/wip-persistence';
 import { anchorFromPolicy, createWipEngine } from '@delendai/core/public';
+// Declared core surface (`./cli`), because a plugin must install from npm:
+// the `lib/` path only resolves through tsconfig paths in this monorepo.
+import { providerModelId } from '@delendai/core/cli';
 
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
@@ -504,6 +507,7 @@ export default definePlugin({
 		const workRefAgentId = workRefAgent({
 			model: identityCtx.hostIdentity?.model,
 			host: identityCtx.hostIdentity?.host,
+			provider: () => providerModelId({ workspace: ctx.workspace.root }),
 			clientName: () => ctx.clientIdentity?.name(),
 		});
 		const wipEngine =
@@ -536,6 +540,8 @@ export default definePlugin({
 			agentDeclared: workRefAgentDeclared({
 				model: identityCtx.hostIdentity?.model,
 				host: identityCtx.hostIdentity?.host,
+				provider: () =>
+					providerModelId({ workspace: ctx.workspace.root }),
 			}),
 			resolveTopic: createSliceTopicResolver({
 				run,
