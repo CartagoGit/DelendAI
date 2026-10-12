@@ -237,7 +237,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - **DependsOn**: [S2, S6]
 - **Files**: `plugins/roadmap/package.json`, `plugins/roadmap/vitest.config.ts`, `tsconfig.base.json`, `bun.lock`, `plugins/roadmap/src/lib/contracts/constants/read-model.constant.ts`, `plugins/roadmap/src/lib/contracts/interfaces/read-model.interface.ts`, `plugins/roadmap/src/lib/contracts/interfaces/roadmap-workspace.interface.ts`, `plugins/roadmap/src/lib/read-model/roadmap-summary.service.ts`, `plugins/roadmap/src/lib/read-model/roadmap-readiness.service.ts`, `plugins/roadmap/src/lib/read-model/roadmap-delta.service.ts`, `plugins/roadmap/src/lib/read-model/roadmap-sync.service.ts`, `plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts`, `plugins/roadmap/src/lib/workspace/gate-evidence.service.ts`, `plugins/roadmap/src/lib/store/node-roadmap-file-port.service.ts`, `plugins/roadmap/src/lib/tools/shared/envelope.helper.ts`, `packages/core/src/lib/shared/tool-invalid-arguments.ts`, `packages/core/src/lib/contracts/interfaces/argument-issue.interface.ts`, `packages/core/src/plugin/index.ts`, `plugins/style-convention/src/lib/tools/style-envelope.helper.ts`, `plugins/roadmap/src/lib/tools/show.tool.ts`, `plugins/roadmap/src/lib/tools/sync.tool.ts`, `plugins/roadmap/src/lib/tools/readiness.tool.ts`, `plugins/roadmap/src/lib/tools/delta.tool.ts`, `plugins/roadmap/tests/src/lib/read-model/read-model.fixture.ts`, `plugins/roadmap/tests/src/lib/read-model/roadmap-summary.service.spec.ts`, `plugins/roadmap/tests/src/lib/read-model/roadmap-readiness.service.spec.ts`, `plugins/roadmap/tests/src/lib/read-model/roadmap-delta.service.spec.ts`, `plugins/roadmap/tests/src/lib/read-model/roadmap-sync.service.spec.ts`, `plugins/roadmap/tests/src/lib/tools/tools.fixture.ts`, `plugins/roadmap/tests/src/lib/tools/read-tools.spec.ts`, `plugins/roadmap/tests/src/lib/tools/delta.tool.spec.ts`
 - **Gate**: type
-- shipped-in: `8430d35b5151`, `19ea4623b213`, `974bae616b52`, `9f056a38c813`
+- shipped-in: `cd69b79aa520`
 - acceptance:
   - "Las cuatro herramientas declaran `outputSchema` y devuelven `toolJson`/`toolError`; ninguna lanza excepciones hacia el host."
   - "Todas son read-only: no aceptan ninguna entrada que cause escritura y el manifest no les asigna `filesystem-write`."
@@ -253,7 +253,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - **DependsOn**: [S3, S6]
 - **Files**: `plugins/roadmap/src/lib/tools/plan-init.tool.ts`, `plugins/roadmap/src/lib/tools/plan-close.tool.ts`, `plugins/roadmap/src/lib/tools/promotion.tool.ts`, `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts`, `plugins/roadmap/tests/src/lib/tools/plan-init.tool.spec.ts`, `plugins/roadmap/tests/src/lib/tools/plan-close.tool.spec.ts`, `plugins/roadmap/tests/src/lib/tools/promotion.tool.spec.ts`
 - **Gate**: type
-- shipped-in: `19ea4623b213`, `974bae616b52`, `9f056a38c813`, `2cd6a99b8303`
+- shipped-in: `cd69b79aa520`
 - acceptance:
   - "Toda ruta que el proyecto declara o que un gate nombra se resuelve dentro del workspace, siguiendo symlinks (`resolveWorkspaceContainedEffective`, la forma física de `resolveWorkspaceContained`); hay tests que prueban que `../` se rechaza para el fichero de roadmap y para el timeline."
   - "La promoción es **informativa**: devuelve si las condiciones exigidas se cumplen y NO ejecuta merge, push ni tag bajo ninguna circunstancia."
@@ -268,7 +268,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - **DependsOn**: [S7, S8]
 - **Files**: `plugins/roadmap/plugin.manifest.ts`, `plugins/roadmap/src/index.ts`, `plugins/roadmap/src/public/index.ts`, `plugins/roadmap/src/lib/contracts/schemas/roadmap-options.schema.ts`, `plugins/roadmap/README.md`, `plugins/roadmap/LICENSE`, `README.md`, `plugins/roadmap/tests/src/index.spec.ts`
 - **Gate**: type
-- shipped-in: `19ea4623b213`, `974bae616b52`, `2cd6a99b8303`
+- shipped-in: `cd69b79aa520`
 - acceptance:
   - "La sección de roadmap (`plugins.roadmap.options`) es opcional: un proyecto que no declare `file` sigue arrancando igual, sin herramientas del plugin y sin diagnóstico."
   - "El manifiesto no declara `git-write` en ninguna herramienta y `filesystem-write` sólo en las que de verdad escriben."
@@ -283,7 +283,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - **DependsOn**: [S3, S9]
 - **Files**: `plugins/roadmap/src/lib/contracts/interfaces/roadmap-display.interface.ts`, `plugins/roadmap/src/lib/projection/roadmap-display.service.ts`, `plugins/roadmap/tests/src/lib/projection/roadmap-display.service.spec.ts`, `tools/scripts/gen/roadmap-projection.lib.ts`, `tools/scripts/gen/roadmap-projection.script.ts`, `tools/scripts/lint/roadmap-drift.script.ts`, `tools/scripts/lint/roadmap-drift.script.spec.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/gen/repo-authorities.constant.ts`, `tools/scripts/git/generated-merge-driver.constant.ts`, `packages/cli/src/contracts/constants/generated-refresh.constant.ts`, `.gitattributes`, `tools/package.json`, `apps/web/src/data/roadmaps.json`, `docs/delendai/ROADMAP.md`, `docs/delendai/ROADMAP.timeline.md`, `delendai.config.json`, `tools/scripts/lint/preset-drift.script.ts`, `tools/scripts/lint/preset-drift.script.spec.ts`
 - **Gate**: type
-- shipped-in: `5f9e54fddc3b`
+- shipped-in: `cd69b79aa520`, `37a0d9143548`
 - acceptance:
   - "El guard falla si la proyección commiteada no coincide con la derivada del fichero de autoridad; el remedio es regenerar, nunca editar el JSON."
   - "La deriva entre el timeline y el markdown también se detecta: el markdown manda, el timeline es proyección, y el generador registra en él lo que al fichero le falta por contar."
@@ -297,7 +297,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - **DependsOn**: [S10]
 - **Files**: `apps/web/src/components/RoadmapSection.astro`, `apps/web/src/components/roadmap/EntryCard.astro`, `apps/web/src/components/roadmap/ProgressBar.astro`, `apps/web/src/pages/roadmap.astro`, `apps/web/src/pages/[lang]/roadmap.astro`, `apps/web/src/i18n/roadmap-board.ts`, `extensions/vscode/src/webviews/roadmap.ts`, `extensions/vscode/src/commands/roadmap.ts`, `extensions/vscode/src/extension.ts`, `extensions/vscode/package.json`, `extensions/vscode/src/test/open-roadmap.spec.ts`, `extensions/vscode/src/test/smoke.spec.ts`, `extensions/vscode/src/contracts/interfaces/roadmap-view.interface.ts`, `extensions/vscode/src/contracts/constants/roadmap-command.constant.ts`, `apps/web/src/contracts/interfaces/roadmap-board.interface.ts`, `tools/scripts/lint/cli-ui-parity.map.json`
 - **Gate**: type
-- shipped-in: `b41e37769511`, `323723a2f60c`
+- shipped-in: `cd69b79aa520`
 - acceptance:
   - "La web sigue el patrón de `proposals.astro`: sitio estático, fuente de datos generada, sin llamadas a herramientas en vivo."
   - "La web muestra intención (qué está prometido y en qué punto va); el estado vivo y consultable lo dan las herramientas y la extensión. Es el mismo reparto que ya hace la página de proposals."
@@ -312,7 +312,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - **DependsOn**: [S9, S11]
 - **Files**: `packages/core/tests/src/lib/e2e/roadmap-agnosticism.spec.ts`, `plugins/roadmap/tests/src/lib/store/agnosticism.spec.ts`, `docs/delendai/ROADMAP-DOGFOOD.md`
 - **Gate**: e2e
-- shipped-in: `2cd6a99b8303`, `2c8947986b5c`
+- shipped-in: `cd69b79aa520`
 - acceptance:
   - "El test carga una configuración sintética con `trunk → release/2.x` y verifica que ninguna ruta de código asume `develop`/`main`."
   - "El test carga una configuración sintética con una sola rama (sin rama de release) y verifica que el plugin no falla."
@@ -327,7 +327,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - **DependsOn**: [S7, S9]
 - **Files**: `plugins/roadmap/src/lib/contracts/interfaces/promotion-readiness.interface.ts`, `plugins/roadmap/src/lib/promotion/promotion-readiness.service.ts`, `plugins/roadmap/tests/src/lib/promotion/promotion-readiness.service.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/governance/promotion-workflow.lib.ts`, `tools/scripts/governance/promotion-workflow.lib.spec.ts`, `tools/scripts/governance/forge-settings.script.ts`
 - **Gate**: type
-- shipped-in: `099d28d2cc04`
+- shipped-in: `cd69b79aa520`
 - acceptance:
   - "A project that declares `plugins.roadmap.options.promotion.schedule` (a cron expression, or `on-ready`) gets a workflow, projected from that configuration like the other forge settings, that opens the release pull request from the integration branch into the release branch when the cadence comes round and the promotion is ready: the checks the integration branch requires are green on its head, code scanning reports no open alert on it, and the roadmap's blocking gates for the next version pass."
   - "When it is not ready, the workflow opens nothing and states every condition that held it back; it never merges, never bumps and never tags: the release branch's own gate still decides, and the plugin keeps no git-write permission."
