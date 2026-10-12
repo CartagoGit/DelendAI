@@ -1,9 +1,15 @@
-/** Where a resolved agent identity came from, most specific first. */
+/**
+ * Where a resolved agent identity came from, most specific first.
+ * `policy` is not a discovery: it is the name the project's
+ * `development.identity` axis chose for an actor nothing named a model
+ * (f00758), and reads as declared because it is.
+ */
 export type IWorkAgentSource =
 	| 'model'
 	| 'environment'
 	| 'provider'
 	| 'client'
+	| 'policy'
 	| 'none';
 
 /** The identity, and how specific the thing that supplied it was. */

@@ -6,9 +6,11 @@ import { execFileSync } from 'node:child_process';
 
 import { anchorFromPolicy, createWipEngine } from '../wip-engine/index';
 import { resolveWorkAgentId } from '../work-identity/resolve-work-agent.service';
+import { applyIdentityPolicy } from '../work-identity/identity-policy.helper';
 import { providerModelId } from '../work-identity/provider-model-bridge.helper';
 import { resolveWorkRef } from '../wip-engine/ref-name';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.interface';
 import {
 	isWorkKind,
 	isHostApplicationId,
@@ -118,20 +120,44 @@ export const gitVerbatim = (
 export const agentFor = (
 	args: readonly string[],
 	workspace?: string | undefined,
+	axis?: IPolicyIdentity | undefined,
 ): string => {
-	const identity = resolveWorkAgentId({
-		...(scalarArg(args, 'agent') === undefined
-			? {}
-			: { model: scalarArg(args, 'agent') }),
-		environment: process.env.DELENDAI_AGENT_ID,
-		// Lazy on purpose: the resolver reads sources in order and calls
-		// this thunk only when nothing declared an identity, so a host
-		// that names its model never touches the bridge file.
-		provider: () =>
-			providerModelId(workspace === undefined ? {} : { workspace }),
-	});
+	const identity = applyIdentityPolicy(
+		resolveWorkAgentId({
+			...(scalarArg(args, 'agent') === undefined
+				? {}
+				: { model: scalarArg(args, 'agent') }),
+			environment: process.env.DELENDAI_AGENT_ID,
+			// Lazy on purpose: the resolver reads sources in order and calls
+			// this thunk only when nothing declared an identity, so a host
+			// that names its model never touches the bridge file. The axis
+			// can switch the bridge off without the file ever being read.
+			...(axis?.providerBridge === false
+				? {}
+				: {
+						provider: () =>
+							providerModelId(
+								workspace === undefined ? {} : { workspace },
+							),
+					}),
+		}),
+		axis,
+	);
 	return identity.source === 'none' ? '' : identity.id;
 };
+
+/**
+ * What a refusal for a missing identity adds when the project declared
+ * the identity axis (f00758): the knob it already turned, named, so the
+ * operator is told what THEIR policy refused and how to open it — not
+ * just the generic remedy.
+ */
+export const identityRemedy = (policy: IResolvedDevelopmentPolicy): string =>
+	policy.identity === undefined
+		? ''
+		: policy.identity.providerBridge === false
+			? ' This project closed the provider bridge (development.identity.providerBridge: false): declare the model with --agent or DELENDAI_AGENT_ID, or allow the bridge, or give unrecognizedModel a default name.'
+			: ' This project refuses identities no source named a model (development.identity.unrecognizedModel: "refuse"): declare the model with --agent or DELENDAI_AGENT_ID, or set unrecognizedModel.use to one default name.';
 
 export const workspaceOf = (ctx: IWorkUnitContext): string =>
 	ctx.globals.workspace.length > 0 ? ctx.globals.workspace : ctx.cwd;
@@ -299,12 +325,16 @@ export const sessionFor = (args: readonly string[]): string | undefined => {
 export const withSessionOfCwd = (
 	args: readonly string[],
 	cwd: string,
+	axis?: IPolicyIdentity | undefined,
 ): readonly string[] => {
 	if (sessionFor(args) !== undefined) return args;
 	const top = readGit(cwd, ['rev-parse', '--show-toplevel']);
 	if (top === undefined) return args;
 	const stamped = worktreeSession(top);
-	if (stamped === undefined || worktreeAgent(top) !== agentFor(args, top))
+	if (
+		stamped === undefined ||
+		worktreeAgent(top) !== agentFor(args, top, axis)
+	)
 		return args;
 	return [...args, `--session=${stamped}`];
 };

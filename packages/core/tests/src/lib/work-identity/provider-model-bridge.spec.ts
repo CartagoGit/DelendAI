@@ -162,3 +162,82 @@ describe('agentFor over the bridge', () => {
 		});
 	});
 });
+
+describe('the development.identity axis rules what agentFor counts (f00758)', () => {
+	const withBridge = async (run: (bridgeFile: string) => Promise<void>) => {
+		const previousFile = process.env.DELENDAI_PROVIDER_MODEL_FILE;
+		const previousAgent = process.env.DELENDAI_AGENT_ID;
+		delete process.env.DELENDAI_AGENT_ID;
+		try {
+			const { file, env } = bridge();
+			process.env.DELENDAI_PROVIDER_MODEL_FILE =
+				env.DELENDAI_PROVIDER_MODEL_FILE;
+			await run(file);
+		} finally {
+			if (previousFile === undefined)
+				delete process.env.DELENDAI_PROVIDER_MODEL_FILE;
+			else process.env.DELENDAI_PROVIDER_MODEL_FILE = previousFile;
+			if (previousAgent !== undefined)
+				process.env.DELENDAI_AGENT_ID = previousAgent;
+		}
+	};
+
+	it('providerBridge:false closes the bridge, and declared ids still work', async () => {
+		const { agentFor } = await import(
+			'@delendai/core/lib/work-units/work-unit-shared.service'
+		);
+		await withBridge(async (file) => {
+			write(file, { model: 'gpt-5.6-sol', at: new Date().toISOString() });
+			expect(agentFor([], undefined, { providerBridge: false })).toBe('');
+			expect(
+				agentFor(['--agent=claude-opus-5'], undefined, {
+					providerBridge: false,
+				}),
+			).toBe('claude-opus-5');
+			process.env.DELENDAI_AGENT_ID = 'minimax-m3.1';
+			try {
+				expect(agentFor([], undefined, { providerBridge: false })).toBe(
+					'minimax-m3.1',
+				);
+			} finally {
+				delete process.env.DELENDAI_AGENT_ID;
+			}
+		});
+	});
+
+	it('unrecognizedModel.use names what nothing named a model', async () => {
+		const { agentFor } = await import(
+			'@delendai/core/lib/work-units/work-unit-shared.service'
+		);
+		await withBridge(async (file) => {
+			const axis = { unrecognizedModel: { use: 'Shared Agent' } };
+			// Nothing declared, nothing observed: the project's default names it.
+			expect(agentFor([], undefined, axis)).toBe('shared-agent');
+			// A client name (an application, not a model) is renamed too…
+			// …but an observed model keeps its own name.
+			write(file, { model: 'gpt-5.6-sol', at: new Date().toISOString() });
+			expect(agentFor([], undefined, axis)).toBe('gpt-5.6-sol');
+			// With the bridge closed, the observation stops counting and the
+			// default name takes over — one knob, still one answer.
+			expect(
+				agentFor([], undefined, { ...axis, providerBridge: false }),
+			).toBe('shared-agent');
+		});
+	});
+
+	it('never renames a declared model identity', async () => {
+		const { agentFor } = await import(
+			'@delendai/core/lib/work-units/work-unit-shared.service'
+		);
+		const axis = { unrecognizedModel: { use: 'shared-agent' } };
+		expect(agentFor(['--agent=claude-opus-5'], undefined, axis)).toBe(
+			'claude-opus-5',
+		);
+		process.env.DELENDAI_AGENT_ID = 'minimax-m3.1';
+		try {
+			expect(agentFor([], undefined, axis)).toBe('minimax-m3.1');
+		} finally {
+			delete process.env.DELENDAI_AGENT_ID;
+		}
+	});
+});

@@ -130,7 +130,10 @@ export const retired = async (
 	const standing = await unitVerdictOf({ root, policy }, plan.workBranch);
 	if (standing?.standing === 'live') {
 		const owner = standing.owner?.agent;
-		if (owner !== undefined && owner !== agentFor(args, root)) {
+		if (
+			owner !== undefined &&
+			owner !== agentFor(args, root, policy.identity)
+		) {
 			return refused(
 				`\`${plan.unit}\` is live: ${standing.reason}.`,
 				`It is ${owner}'s to retire. Ask its owner, or retire it once it has gone quiet.`,
