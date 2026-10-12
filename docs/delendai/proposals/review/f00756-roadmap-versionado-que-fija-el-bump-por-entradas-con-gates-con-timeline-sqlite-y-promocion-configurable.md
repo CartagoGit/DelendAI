@@ -304,6 +304,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La página resuelve en los 12 idiomas del sitio: como el tablero de proposals, sus textos van en un mapa propio con inglés como fuente, español traducido y el resto resolviendo a inglés, así que no añade claves al diccionario del sitio ni a su gate."
   - "La vista de la extensión no guarda una copia propia: pregunta a `roadmap_show`, que lee el mismo fichero de autoridad del que sale la proyección de la web."
 - shipped: `/roadmap` and `/<lang>/roadmap`, built and read in English and Spanish with delendai's own roadmap in them; `delendai.openRoadmap`, a panel with scripts disabled and the default-deny content policy, which finds the tool under any prefix and tells a project with no roadmap that it has none. The page reuses the board styles of the proposals page rather than adding a stylesheet.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S12 — Prueba de agnóstico y cierre editorial
 - **Status**: review
