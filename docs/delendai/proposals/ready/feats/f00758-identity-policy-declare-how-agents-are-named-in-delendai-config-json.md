@@ -72,17 +72,17 @@ Resolved into `IPolicyIdentity` next to `IPolicyGuard`; validate rule
 - global_gate: `bun run typecheck`
 
 ### S1 — policy axis: resolve, validate, schema
-- **Status**: pending
+- **Status**: done (6c5f278fb)
 - **Files**: `packages/core/src/lib/contracts/interfaces/policy-identity.interface.ts`, `packages/core/src/lib/development-policy/resolve-identity.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/policy-identity.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/development-policy`
 
 ### S2 — enforcement in the work engine
-- **Status**: pending
+- **Status**: done (3018a57d4)
 - **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units packages/core/tests/src/lib/work-identity`
 
 ### S3 — enforcement in the CLI and commit-policy; docs
-- **Status**: pending
+- **Status**: done (1ee6c5c4b)
 - **Files**: `packages/cli/src/index.ts`, `packages/cli/src/commands/groups/group-helpers.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-naming.interface.ts`, `plugins/commit-policy/src/lib/services/work-ref-naming.service.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: `npx vitest run --project @delendai/cli && npx vitest run --project commit-policy plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts && bun run lint:prompt-size`
 
