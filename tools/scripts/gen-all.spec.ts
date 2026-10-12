@@ -95,6 +95,10 @@ describe('gen-all.script', () => {
 				cmd: 'bun tools/scripts/gen/capability-matrix.script.ts',
 			},
 			{
+				name: 'roadmap-projection',
+				cmd: 'bun tools/scripts/gen/roadmap-projection.script.ts',
+			},
+			{
 				name: 'token-budget-dashboard',
 				cmd: 'bun tools/scripts/report/token-budget-dashboard.script.ts',
 			},
@@ -140,6 +144,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check': 0,
 			'bun tools/scripts/gen/authorities.script.ts --check': 0,
 			'bun tools/scripts/gen/capability-matrix.script.ts': 0,
+			'bun tools/scripts/lint/roadmap-drift.script.ts': 0,
 			'bun tools/scripts/gen/agent-md.script.ts': 0,
 			'bun tools/scripts/report/token-budget-dashboard.script.ts': 0,
 			'bun tools/scripts/catalog/render-host-hints.script.ts --check': 0,
@@ -162,6 +167,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
 			'bun tools/scripts/gen/authorities.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
+			'bun tools/scripts/lint/roadmap-drift.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
 			// The token dashboard is NOT here: it measures rather than
 			// derives, so `--check` neither runs it nor attributes drift
@@ -235,6 +241,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
 			'bun tools/scripts/gen/authorities.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
+			'bun tools/scripts/lint/roadmap-drift.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
 			// The measured step is absent here too — see the case above.
 			'bun tools/scripts/catalog/render-host-hints.script.ts --check',

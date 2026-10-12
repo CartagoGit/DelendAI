@@ -118,7 +118,8 @@ describe('f00100 S4 — contributes-completeness ratchet', () => {
 		// f00192 S1: openAgentTimeline is the 34th.
 		// Runtime observer log command is the 35th.
 		// `openDashboardTab` (dashboard in an editor tab) is the 37th.
-		// `delendai.adopt` (adoption plan reachable without a config) is the 38th.
-		expect(contributed.length).toBe(38);
+		// `delendai.adopt` (adoption plan reachable without a config) is the 38th;
+		// `delendai.openRoadmap` (the read-only roadmap panel) the 39th.
+		expect(contributed.length).toBe(39);
 	});
 });
