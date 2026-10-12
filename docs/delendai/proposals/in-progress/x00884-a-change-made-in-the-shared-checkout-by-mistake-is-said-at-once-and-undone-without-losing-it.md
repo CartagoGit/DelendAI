@@ -2,10 +2,14 @@
 id: x00884
 title: "A change made in the shared checkout by mistake is said at once, and undone without losing it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-12
+last-transition-id: df90d586-f9ea-4fe0-ac22-5260710d3dcd
+last-correlation-id: df90d586-f9ea-4fe0-ac22-5260710d3dcd
+last-transition-from: ready
+last-transition-at: 2026-10-12T23:23:31.454Z
 ---
 
 # x00884 — A change made in the shared checkout by mistake is said at once, and undone without losing it
