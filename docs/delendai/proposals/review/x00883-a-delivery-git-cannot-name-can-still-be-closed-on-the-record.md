@@ -2,14 +2,14 @@
 id: x00883
 title: "A delivery Git cannot name can still be closed, on the record"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-11
-last-transition-id: 2dcc0c0b-41ab-4fc7-b68c-0fff7a5e981c
-last-correlation-id: 2dcc0c0b-41ab-4fc7-b68c-0fff7a5e981c
-last-transition-from: ready
-last-transition-at: 2026-10-11T21:20:56.030Z
+last-transition-id: 3e99130c-5f01-4d68-b48c-ebca58cb3c0c
+last-correlation-id: 3e99130c-5f01-4d68-b48c-ebca58cb3c0c
+last-transition-from: in-progress
+last-transition-at: 2026-10-12T23:53:44.834Z
 ---
 
 # x00883 — A delivery Git cannot name can still be closed, on the record
@@ -121,6 +121,8 @@ between those two designs:
   - The stuck publication (#1008) is retired with its tip kept at `refs/delendai/retired/minimax-m31/review/f00538-review-g1/the-cited-tree-is-not-a-commit`.
 
 Delivered differently from the plan: the attestation was first committed on #1008 itself, and `verdicts-through-the-tool` rightly refused a review line not committed by the tool. Doing it inside a reconcile unit is the path the product already had.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
