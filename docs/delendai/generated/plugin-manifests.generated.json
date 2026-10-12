@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-10-11T21:56:29.563Z",
+	"generatedAt": "2026-10-12T23:30:09.670Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -2042,6 +2042,69 @@
 			]
 		},
 		{
+			"id": "roadmap",
+			"package": "@delendai/roadmap",
+			"version": "0.1.0",
+			"visibility": "private",
+			"summary": "Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply.",
+			"tags": [
+				"roadmap",
+				"release",
+				"timeline"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
+			],
+			"toolPermissions": {
+				"roadmap_show": [
+					"filesystem-read"
+				],
+				"roadmap_sync": [
+					"filesystem-read"
+				],
+				"roadmap_readiness": [
+					"filesystem-read"
+				],
+				"roadmap_delta": [
+					"filesystem-read"
+				],
+				"roadmap_promotion": [
+					"filesystem-read"
+				],
+				"roadmap_plan_init": [
+					"filesystem-read",
+					"filesystem-write"
+				],
+				"roadmap_plan_close": [
+					"filesystem-read",
+					"filesystem-write"
+				]
+			},
+			"presets": [],
+			"tokenBudget": {
+				"staticBytes": 10250,
+				"adaptiveActivationBytes": 2260,
+				"caps": {
+					"hard": 11500,
+					"warning": 10800
+				},
+				"measuredAt": "2026-10-11",
+				"source": "token-budget-real"
+			},
+			"dependencies": [
+				"@delendai/core",
+				"@delendai/changelog",
+				"zod",
+				"yaml"
+			],
+			"capabilities": [
+				"roadmap",
+				"release"
+			]
+		},
+		{
 			"id": "rules",
 			"package": "@delendai/rules",
 			"version": "0.1.1",
@@ -3588,6 +3651,47 @@
 				"filesystem-read"
 			],
 			"tokenBudgetBytes": 2700
+		},
+		{
+			"origin": "first-party",
+			"id": "roadmap",
+			"package": "@delendai/roadmap",
+			"summary": "Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply.",
+			"tags": [
+				"roadmap",
+				"release",
+				"timeline"
+			],
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
+			],
+			"tokenBudgetBytes": 10250,
+			"toolPermissions": {
+				"roadmap_show": [
+					"filesystem-read"
+				],
+				"roadmap_sync": [
+					"filesystem-read"
+				],
+				"roadmap_readiness": [
+					"filesystem-read"
+				],
+				"roadmap_delta": [
+					"filesystem-read"
+				],
+				"roadmap_promotion": [
+					"filesystem-read"
+				],
+				"roadmap_plan_init": [
+					"filesystem-read",
+					"filesystem-write"
+				],
+				"roadmap_plan_close": [
+					"filesystem-read",
+					"filesystem-write"
+				]
+			}
 		},
 		{
 			"origin": "first-party",
@@ -5821,6 +5925,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "roadmap",
+			"warning": 10800,
+			"hard": 11500,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "rules",
 			"warning": 2700,
 			"hard": 3000,
@@ -6479,6 +6589,38 @@
 			"permissions": [
 				"filesystem-read"
 			]
+		},
+		{
+			"id": "roadmap",
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
+			],
+			"toolPermissions": {
+				"roadmap_show": [
+					"filesystem-read"
+				],
+				"roadmap_sync": [
+					"filesystem-read"
+				],
+				"roadmap_readiness": [
+					"filesystem-read"
+				],
+				"roadmap_delta": [
+					"filesystem-read"
+				],
+				"roadmap_promotion": [
+					"filesystem-read"
+				],
+				"roadmap_plan_init": [
+					"filesystem-read",
+					"filesystem-write"
+				],
+				"roadmap_plan_close": [
+					"filesystem-read",
+					"filesystem-write"
+				]
+			}
 		},
 		{
 			"id": "rules",
@@ -9596,6 +9738,69 @@
 		},
 		{
 			"pluginId": "remote-provider-core",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "dogfood",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
