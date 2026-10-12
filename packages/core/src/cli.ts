@@ -20,6 +20,11 @@ export type { IAssembleCliDeps, IAssembledCliConfig } from './lib/cli/assemble';
 // A git hook asks the project's development policy whether a commit, a
 // branch creation or a push may proceed (`delendai guard <hook>`).
 export { judgeGitOperation } from './lib/development-policy/git-guard';
+// The model a chat provider observed serving this conversation, read
+// from the provider bridge. Exported here — not from the public barrel,
+// whose budget is full — because the CLI resolves and reports agent
+// identity itself.
+export { providerModelId } from './lib/work-identity/provider-model-bridge.helper';
 // What a refusal says next: how work starts and lands in this profile.
 export { briefWorkModel } from './lib/development-policy/declare-workflow';
 export {

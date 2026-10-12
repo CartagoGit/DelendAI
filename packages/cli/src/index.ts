@@ -6,6 +6,7 @@ import { runCli as runServerCli, serveRefusal } from '@delendai/core/cli';
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
 import { resolveWorkAgentId } from '@delendai/core/public';
+import { providerModelId } from '@delendai/core/cli';
 
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
@@ -226,11 +227,15 @@ export const runHumanCli = async (
  */
 const unnamedAgentNotice = (
 	env: NodeJS.ProcessEnv = process.env,
+	workspace?: string,
 ): readonly string[] => {
 	const identity = resolveWorkAgentId({
 		environment: env.DELENDAI_AGENT_ID,
+		provider: () =>
+			providerModelId(workspace === undefined ? {} : { workspace }),
 	});
-	if (identity.source === 'environment') return [];
+	if (identity.source === 'environment' || identity.source === 'provider')
+		return [];
 	return [
 		`work refs will be named \`${identity.id}\` — no model or agent is declared here.`,
 		'      fix: set DELENDAI_AGENT_ID to the exact model doing the work (e.g. claude-opus-5).',
@@ -355,7 +360,7 @@ export const runEntry = async (
 		// that are kept are not news, and a server that recites its own
 		// health on every start is a server whose output gets ignored.
 		// Read-only, like everything else here — x00591.
-		for (const line of unnamedAgentNotice()) {
+		for (const line of unnamedAgentNotice(process.env, workspaceRoot)) {
 			report(`[delendai] ${line}`);
 		}
 		for (const line of await brokenInvariants(workspaceRoot)) {

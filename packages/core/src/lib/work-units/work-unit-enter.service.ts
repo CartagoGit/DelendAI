@@ -98,7 +98,7 @@ export const entered = async (
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {
 	const unit = [
-		agentFor(args),
+		agentFor(args, workspaceOf(ctx)),
 		scalarArg(args, 'kind') ?? '',
 		scalarArg(args, 'proposal') ?? '',
 		scalarArg(args, 'slice') ?? '',
@@ -153,7 +153,7 @@ export const enteredHeld = async (
 	const { root, policy } = opened;
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
-	const agent = agentFor(args);
+	const agent = agentFor(args, root);
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
 			'A worktree belongs to one identity and one unit of work.',

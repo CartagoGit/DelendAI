@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process';
 
 import { anchorFromPolicy, createWipEngine } from '../wip-engine/index';
 import { resolveWorkAgentId } from '../work-identity/resolve-work-agent.service';
+import { providerModelId } from '../work-identity/provider-model-bridge.helper';
 import { resolveWorkRef } from '../wip-engine/ref-name';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import {
@@ -101,15 +102,33 @@ export const gitVerbatim = (
 /**
  * Who this invocation is working as. One resolver for the whole system
  * (x00560): an explicit `--agent`, then what the environment declares,
- * and never the machine — a ref named after a computer says who owns the
- * hardware, not who did the work.
+ * then the model the chat provider observed serving this conversation
+ * (the provider bridge, read lazily so a declared identity never touches
+ * the filesystem), and never the machine — a ref named after a computer
+ * says who owns the hardware, not who did the work.
+ *
+ * A host that exposes no model (Copilot Chat with a BYO provider) used to
+ * end here with an empty identity, and every `work` operation refused:
+ * the agent could only invent a model id or stop. The bridge names the
+ * model the provider actually served — observed, with a freshness
+ * window so a stale entry from another conversation never attributes
+ * work. `workspace`, when known, tightens the match to entries written
+ * by a provider serving THIS workspace.
  */
-export const agentFor = (args: readonly string[]): string => {
+export const agentFor = (
+	args: readonly string[],
+	workspace?: string | undefined,
+): string => {
 	const identity = resolveWorkAgentId({
 		...(scalarArg(args, 'agent') === undefined
 			? {}
 			: { model: scalarArg(args, 'agent') }),
 		environment: process.env.DELENDAI_AGENT_ID,
+		// Lazy on purpose: the resolver reads sources in order and calls
+		// this thunk only when nothing declared an identity, so a host
+		// that names its model never touches the bridge file.
+		provider: () =>
+			providerModelId(workspace === undefined ? {} : { workspace }),
 	});
 	return identity.source === 'none' ? '' : identity.id;
 };
@@ -285,7 +304,7 @@ export const withSessionOfCwd = (
 	const top = readGit(cwd, ['rev-parse', '--show-toplevel']);
 	if (top === undefined) return args;
 	const stamped = worktreeSession(top);
-	if (stamped === undefined || worktreeAgent(top) !== agentFor(args))
+	if (stamped === undefined || worktreeAgent(top) !== agentFor(args, top))
 		return args;
 	return [...args, `--session=${stamped}`];
 };

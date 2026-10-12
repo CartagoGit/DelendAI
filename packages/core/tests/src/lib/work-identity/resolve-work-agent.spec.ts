@@ -80,6 +80,56 @@ describe('resolveWorkAgentId (x00560)', () => {
 		});
 	});
 
+	it('takes the model a provider observed over a client name', () => {
+		// The handshake says which APPLICATION connected; the provider
+		// bridge says which MODEL served the conversation. A model names
+		// who did the work, so it wins — and unlike `client-…` it is not
+		// marked, because it is a model id, observed rather than invented.
+		expect(
+			resolveWorkAgentId({
+				provider: 'gpt-5.6-sol',
+				client: 'Visual Studio Code',
+			}),
+		).toEqual({ id: 'gpt-5.6-sol', source: 'provider' });
+	});
+
+	it('keeps a declared model or environment ahead of the bridge', () => {
+		expect(
+			resolveWorkAgentId({
+				model: 'claude-opus-5',
+				provider: 'gpt-5.6-sol',
+			}),
+		).toEqual({ id: 'claude-opus-5', source: 'model' });
+		expect(
+			resolveWorkAgentId({
+				environment: 'minimax-m3.1',
+				provider: 'gpt-5.6-sol',
+			}),
+		).toEqual({ id: 'minimax-m3.1', source: 'environment' });
+	});
+
+	it('calls the provider thunk only when nothing else answered', () => {
+		// The bridge reads the filesystem; a host that declared its model
+		// must never pay for it, and a stale bridge on disk must never
+		// shadow a declared identity.
+		let called = false;
+		resolveWorkAgentId({
+			environment: 'codex',
+			provider: () => {
+				called = true;
+				return 'gpt-5.6-sol';
+			},
+		});
+		expect(called).toBe(false);
+		resolveWorkAgentId({
+			provider: () => {
+				called = true;
+				return 'gpt-5.6-sol';
+			},
+		});
+		expect(called).toBe(true);
+	});
+
 	it('treats blank and whitespace declarations as absent', () => {
 		expect(
 			resolveWorkAgentId({

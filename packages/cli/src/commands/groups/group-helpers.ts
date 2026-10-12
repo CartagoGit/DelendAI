@@ -26,6 +26,7 @@ import {
 	compileWorkRefParser,
 	resolveWorkAgentId,
 } from '@delendai/core/public';
+import { providerModelId } from '@delendai/core/cli';
 
 import type { ICliCommandResult } from '../../contracts/interfaces/cli-command.interface';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
@@ -83,18 +84,22 @@ export const usage = (line: string): ICliCommandResult => ({
 
 /**
  * Who this invocation works as: an explicit `--agent`, then what the
- * environment declares (`DELENDAI_AGENT_ID`) — the same answer the work
- * commands and the tools give. `undefined` when nobody declared one; the
- * machine is never a guess.
+ * environment declares (`DELENDAI_AGENT_ID`), then the model the chat
+ * provider observed serving this conversation — the same answer the work
+ * commands and the tools give. `undefined` when nothing names a model;
+ * the machine is never a guess, and neither is a client name.
  */
 export const agentArg = (
 	args: readonly string[],
 	env: NodeJS.ProcessEnv = process.env,
+	workspace?: string,
 ): string | undefined => {
 	const explicit = scalarArg(args, 'agent');
 	const identity = resolveWorkAgentId({
 		...(explicit === undefined ? {} : { model: explicit }),
 		environment: env.DELENDAI_AGENT_ID,
+		provider: () =>
+			providerModelId(workspace === undefined ? {} : { workspace }),
 	});
 	return identity.source === 'none' ? undefined : identity.id;
 };
@@ -149,4 +154,4 @@ export const resolveAgent = async (
 	cwd: string,
 	env: NodeJS.ProcessEnv = process.env,
 ): Promise<string | undefined> =>
-	agentArg(args, env) ?? (await agentOfCheckout(cwd));
+	agentArg(args, env, cwd) ?? (await agentOfCheckout(cwd));

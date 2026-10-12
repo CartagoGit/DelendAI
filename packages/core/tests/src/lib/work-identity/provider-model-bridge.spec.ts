@@ -1,0 +1,164 @@
+/**
+ * provider-model-bridge.spec.ts — the model a chat provider observed, read
+ * back within the window it is still a statement about now.
+ */
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
+
+import {
+	PROVIDER_MODEL_MAX_AGE_MS,
+	providerModelBridgePath,
+	providerModelId,
+} from '@delendai/core/lib/work-identity/provider-model-bridge.helper';
+
+const dirs: string[] = [];
+const bridge = (): { file: string; env: NodeJS.ProcessEnv } => {
+	const dir = mkdtempSync(join(tmpdir(), 'provider-bridge-'));
+	dirs.push(dir);
+	const file = join(dir, 'provider-model.json');
+	return { file, env: { DELENDAI_PROVIDER_MODEL_FILE: file } };
+};
+
+afterEach(() => {
+	for (const dir of dirs.splice(0))
+		rmSync(dir, { recursive: true, force: true });
+});
+
+const write = (file: string, entry: unknown): void =>
+	writeFileSync(file, JSON.stringify(entry));
+
+describe('providerModelBridgePath', () => {
+	it('prefers the override variable over the user cache default', () => {
+		expect(
+			providerModelBridgePath({
+				DELENDAI_PROVIDER_MODEL_FILE: '/x/y.json',
+			}),
+		).toBe('/x/y.json');
+		const fallback = providerModelBridgePath({});
+		expect(
+			fallback.endsWith(
+				join('.cache', 'delendai', 'provider-model.json'),
+			),
+		).toBe(true);
+	});
+});
+
+describe('providerModelId', () => {
+	it('names the model a fresh entry observed', () => {
+		const { file, env } = bridge();
+		write(file, {
+			model: 'gpt-5.6-sol',
+			at: new Date().toISOString(),
+			provider: 'universal-chat-provider',
+		});
+		expect(providerModelId({ env })).toBe('gpt-5.6-sol');
+	});
+
+	it('says nothing when no provider has published', () => {
+		const { env } = bridge();
+		expect(providerModelId({ env })).toBeUndefined();
+	});
+
+	it('refuses a malformed or model-less entry rather than guessing', () => {
+		const { file, env } = bridge();
+		writeFileSync(file, '{ not json');
+		expect(providerModelId({ env })).toBeUndefined();
+		write(file, { at: new Date().toISOString() });
+		expect(providerModelId({ env })).toBeUndefined();
+		write(file, { model: '   ', at: new Date().toISOString() });
+		expect(providerModelId({ env })).toBeUndefined();
+	});
+
+	it('refuses an entry older than the freshness window', () => {
+		const { file, env } = bridge();
+		const stale = new Date(Date.now() - PROVIDER_MODEL_MAX_AGE_MS - 1000);
+		write(file, { model: 'gpt-5.6-sol', at: stale.toISOString() });
+		expect(providerModelId({ env, now: new Date() })).toBeUndefined();
+		// Just inside the window, the observation still counts.
+		const fresh = new Date(Date.now() - PROVIDER_MODEL_MAX_AGE_MS + 60_000);
+		write(file, { model: 'gpt-5.6-sol', at: fresh.toISOString() });
+		expect(providerModelId({ env, now: new Date() })).toBe('gpt-5.6-sol');
+	});
+
+	it('ignores an entry from a conversation in another workspace', () => {
+		const { file, env } = bridge();
+		write(file, {
+			model: 'claude-opus-5',
+			at: new Date().toISOString(),
+			workspace: '/projects/other',
+		});
+		expect(providerModelId({ env, workspace: '/projects/delendai' })).toBe(
+			undefined,
+		);
+		// A worktree under the workspace is still this conversation's work.
+		expect(
+			providerModelId({
+				env,
+				workspace: '/projects/other/.cache/delendai/.worktrees/w',
+			}),
+		).toBe('claude-opus-5');
+		// An entry that names no workspace names no conversation to conflict with.
+		write(file, { model: 'gpt-5.6-sol', at: new Date().toISOString() });
+		expect(providerModelId({ env, workspace: '/anywhere' })).toBe(
+			'gpt-5.6-sol',
+		);
+	});
+});
+
+describe('agentFor over the bridge', () => {
+	const withBridge = async (run: (bridgeFile: string) => Promise<void>) => {
+		const previousFile = process.env.DELENDAI_PROVIDER_MODEL_FILE;
+		const previousAgent = process.env.DELENDAI_AGENT_ID;
+		delete process.env.DELENDAI_AGENT_ID;
+		try {
+			const { file, env } = bridge();
+			process.env.DELENDAI_PROVIDER_MODEL_FILE =
+				env.DELENDAI_PROVIDER_MODEL_FILE;
+			await run(file);
+		} finally {
+			if (previousFile === undefined)
+				delete process.env.DELENDAI_PROVIDER_MODEL_FILE;
+			else process.env.DELENDAI_PROVIDER_MODEL_FILE = previousFile;
+			if (previousAgent !== undefined)
+				process.env.DELENDAI_AGENT_ID = previousAgent;
+		}
+	};
+
+	it('names a host that declares no model after what the provider served', async () => {
+		const { agentFor } = await import(
+			'@delendai/core/lib/work-units/work-unit-shared.service'
+		);
+		await withBridge(async (file) => {
+			// Nothing published yet: still nobody.
+			expect(agentFor([])).toBe('');
+			write(file, { model: 'GPT-5.6-Sol', at: new Date().toISOString() });
+			expect(agentFor([])).toBe('gpt-5.6-sol');
+			// An explicit declaration still wins over the observation.
+			expect(agentFor(['--agent=claude-opus-5'])).toBe('claude-opus-5');
+			process.env.DELENDAI_AGENT_ID = 'minimax-m3.1';
+			try {
+				expect(agentFor([])).toBe('minimax-m3.1');
+			} finally {
+				delete process.env.DELENDAI_AGENT_ID;
+			}
+		});
+	});
+
+	it('only reads a bridge entry written for this workspace', async () => {
+		const { agentFor } = await import(
+			'@delendai/core/lib/work-units/work-unit-shared.service'
+		);
+		await withBridge(async (file) => {
+			write(file, {
+				model: 'claude-opus-5',
+				at: new Date().toISOString(),
+				workspace: '/projects/other',
+			});
+			expect(agentFor([], '/projects/delendai')).toBe('');
+			expect(agentFor([], '/projects/other')).toBe('claude-opus-5');
+		});
+	});
+});

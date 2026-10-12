@@ -33,7 +33,7 @@ export const claimed = async (
 ): Promise<IWorkUnitResult> => {
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
-	const agent = agentFor(args);
+	const agent = agentFor(args, opened.root);
 	const ref = scalarArg(args, 'ref');
 	const candidates = claimableWorkRefs({
 		root: opened.root,

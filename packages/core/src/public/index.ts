@@ -269,10 +269,7 @@ export {
 } from '../lib/commands/process-group';
 export type { IRunArgvOutcome } from '../lib/contracts/interfaces/run-command.interface';
 export type { IPeerPluginRegistry } from '../lib/plugins/plugin-contract';
-export {
-	fsRead,
-	fsWrite,
-} from '../lib/shared/fs-tools';
+export { fsRead, fsWrite } from '../lib/shared/fs-tools';
 export {
 	safeRename,
 	SafeRenameTargetExistsError,
@@ -371,10 +368,7 @@ export { CAPABILITY_TAGS } from '../lib/contracts/interfaces/provider-capabiliti
 // --- f00188 (Track F / security): capability schema + enforcement ----
 export { splitCapability } from '../lib/capabilities/schema';
 // @adopter-api a plugin author validates a capability string or version range before writing it into a manifest
-export {
-	isCapability,
-	parseCapability,
-} from '../lib/capabilities/schema';
+export { isCapability, parseCapability } from '../lib/capabilities/schema';
 
 // --- f00194 (Track K / capability versioning): semver-aware requires ---
 // @adopter-api a plugin author validates a capability string or version range before writing it into a manifest
@@ -388,10 +382,7 @@ export type { IVersionedCapability } from '../lib/capabilities/versioning';
 // --- f00189 (Track F / security): dryRun transversal protocol -------
 export { buildDryRunResult } from '../lib/dry-run/protocol';
 // @adopter-api a plugin author registering a mutating tool checks its dry-run manifest and result against the protocol delendai enforces
-export {
-	dryRunRequiredFor,
-	isDryRunResult,
-} from '../lib/dry-run/protocol';
+export { dryRunRequiredFor, isDryRunResult } from '../lib/dry-run/protocol';
 export type { IDryRunResult } from '../lib/dry-run/protocol';
 export { planDryRun } from '../lib/dry-run/enforce';
 // @adopter-api a plugin author registering a mutating tool checks its dry-run manifest and result against the protocol delendai enforces
@@ -447,10 +438,7 @@ export type {
 export { TOKEN_BUDGETS } from '../lib/contracts/constants/token-budgets.constant';
 export type { ITokenBudgetCeiling } from '../lib/contracts/constants/token-budgets.constant';
 // — transversal `detail: compact | normal | full` contract.
-export {
-	DETAIL_LEVELS,
-	projectDetail,
-} from '../lib/contracts/detail.contract';
+export { DETAIL_LEVELS, projectDetail } from '../lib/contracts/detail.contract';
 export type {
 	Detail,
 	DetailProjection,
@@ -463,10 +451,7 @@ export type { Surface } from '../lib/budgets/types';
 // — Token ROI per plugin (KPI).
 export type { ITruncatedEnvelope } from '../lib/contracts/interfaces/truncation.interface';
 // — Cost-aware routing utility (Track L, P2).
-export {
-	rankCandidates,
-	utility,
-} from '../lib/routing/utility';
+export { rankCandidates, utility } from '../lib/routing/utility';
 export type { IProviderCandidate } from '../lib/routing/utility';
 // — Model-aware presets (Track L, P2).
 export { detectModelTier } from '../lib/presets/model-profiles';
@@ -491,10 +476,7 @@ export {
 export type { IPayloadPercentile } from '../lib/metrics/payload-percentile';
 // (Track D): plugin lifecycle metrics.
 export type { IPluginMetricsSnapshot } from '../lib/observability/plugin-metrics';
-export type {
-	IRuntimeEvent,
-	RuntimeEventInput,
-} from '../contracts';
+export type { IRuntimeEvent, RuntimeEventInput } from '../contracts';
 // (Track M): cross-plugin activation KPIs.
 export {
 	hydrateKpis,
@@ -579,10 +561,7 @@ export type {
 } from '../lib/contracts/interfaces/finding.interface';
 export type { IFinding } from '../contracts';
 export { aggregateScans } from '../lib/external-tool/aggregate-scans';
-export {
-	probeTool,
-	realProbeDeps,
-} from '../lib/external-tool/probe';
+export { probeTool, realProbeDeps } from '../lib/external-tool/probe';
 export {
 	sortFindings,
 	summarizeFindings,
@@ -662,10 +641,7 @@ export { withIncidentLogging } from '../lib/tools/with-incident-logging';
 // S2: scan helpers - pure utilities adopted by the SOLID-compliance
 // lint and any future lint. See `packages/core/src/lib/scan/` for the
 // full module set; this block re-exports the public surface.
-export {
-	fnv1a,
-	lineOf,
-} from '../lib/scan';
+export { fnv1a, lineOf } from '../lib/scan';
 export type { IWalkTsFilesOptions } from '../lib/scan';
 // --- error collection (f00251) -------------------------------------------
 export type { IErrorSink } from '../lib/error-collection/sink.interface';
@@ -678,10 +654,7 @@ export { createDefaultRedactionPolicy } from '../lib/error-collection/redaction-
 
 // --- f00201 (Track O / q00006 §55): workflow transactions -----------
 export { plan, execute } from '../lib/transactions/plan';
-export type {
-	IStep,
-	ITransactionResult,
-} from '../lib/transactions/types';
+export type { IStep, ITransactionResult } from '../lib/transactions/types';
 
 // --- q00022 (x00510 S1.5): workspace-migration public API -----------
 // CLI + migrate command + rebrand-propagate script need to import these
@@ -869,10 +842,7 @@ export { compileWorkRefParser } from '../lib/startup-reconciler/index';
 // The desired-state builder is public because the committed governance
 // YAML is RENDERED from it. Keeping it internal is what let a second
 // derivation grow in `tools/` and disagree with this one.
-export {
-	callerCheckout,
-	sharedCheckout,
-} from '../lib/shared/shared-checkout';
+export { callerCheckout, sharedCheckout } from '../lib/shared/shared-checkout';
 export { projectBranches } from '../lib/development-policy/project-branches';
 /**
  * Whether a branch provably delivered its work, by the ref-lifecycle verdict.

@@ -2,6 +2,12 @@
 export interface IWorkRefAgentSources {
 	readonly model?: string | undefined;
 	readonly host?: string | undefined;
+	/**
+	 * The model the chat provider observed serving this conversation, read
+	 * lazily from the provider bridge. Lazy because it touches the
+	 * filesystem, and a host that declares its model must never pay for it.
+	 */
+	readonly provider?: () => string | undefined;
 	/** The MCP handshake client name; known only after the handshake. */
 	readonly clientName?: () => string | undefined;
 	/**

@@ -74,7 +74,7 @@ export const journalEnteredUnit = async (
 		kind: 'slice_claimed',
 		proposal,
 		slice,
-		actor: agentFor(args),
+		actor: agentFor(args, root),
 		detail: { unitKind: scalarArg(args, 'kind') ?? 'implement' },
 	});
 };

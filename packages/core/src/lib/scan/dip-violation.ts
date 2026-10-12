@@ -52,6 +52,12 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// reader (server boot, the git guard, `work`); the one fact it reads
 	// from disk is a small journal, so the read stays synchronous too.
 	/packages\/core\/src\/lib\/development-policy\/adoption-record\.ts$/,
+	// The provider-model bridge is read by identity resolution, which is
+	// synchronous by contract: the git guard, `work enter` and every
+	// ref-naming call site ask "who is working" inline, and the guard is
+	// a one-shot process each hook starts. The fact it reads is a small
+	// JSON entry the provider rewrites every request.
+	/packages\/core\/src\/lib\/work-identity\/provider-model-bridge\.helper\.ts$/,
 ];
 
 /** Sync node:fs functions that are not allowed outside boot. */

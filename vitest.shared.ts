@@ -97,6 +97,8 @@ export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 	resolve(workspaceRoot, 'tools/scripts/lib/quiet-git-setup.ts'),
 	// No git a test spawns reads the machine's own configuration.
 	resolve(workspaceRoot, 'tools/scripts/lib/hermetic-git-setup.ts'),
+	// No test reads the machine's provider-model bridge.
+	resolve(workspaceRoot, 'tools/scripts/lib/hermetic-agent-bridge-setup.ts'),
 ];
 
 /**
