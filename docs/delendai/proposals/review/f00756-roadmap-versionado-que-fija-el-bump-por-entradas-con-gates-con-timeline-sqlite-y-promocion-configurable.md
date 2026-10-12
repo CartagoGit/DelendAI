@@ -319,6 +319,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Hay un e2e contra un servidor MCP en memoria que ejercita el ciclo completo: init → readiness → delta → close → promotion → sync."
   - "Documentado para un adoptante: qué es dogfooding en delendai y qué debe replicar él en su proyecto."
 - shipped: the end-to-end spec assembles a host as a host does and speaks to it through a listing MCP client, on three projects: other branch names, one branch, and no roadmap at all; a static spec proves no source file of the plugin names a branch; `ROADMAP-DOGFOOD.md` separates the product from this repository's own choices.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S13 — A promotion is opened on the cadence the project declares
 - **Status**: review
