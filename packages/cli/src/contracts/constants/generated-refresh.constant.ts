@@ -21,6 +21,7 @@ export const GENERATED_REFRESH_PATHS: readonly string[] = [
 	'docs/delendai/generated',
 	'docs/delendai/security/permission-matrix.md',
 	'docs/delendai/security/capability-matrix.md',
+	'apps/web/src/data/roadmaps.json',
 	'docs/delendai/plugins/auto-generated',
 	'apps/web/src/data/plugins/catalog.generated.ts',
 	'apps/web/src/generated/plugin-manifest-catalog.generated.ts',

@@ -20,6 +20,7 @@ docs/delendai/generated/plugin-catalog.generated.md     merge=delendai-generated
 docs/delendai/generated/observability-provenance.generated.md merge=delendai-generated
 docs/delendai/security/permission-matrix.md             merge=delendai-generated
 docs/delendai/security/capability-matrix.md             merge=delendai-generated
+apps/web/src/data/roadmaps.json                         merge=delendai-generated
 docs/delendai/plugins/auto-generated/**                 merge=delendai-generated
 apps/web/src/data/plugins/catalog.generated.ts          merge=delendai-generated
 apps/web/src/generated/plugin-manifest-catalog.generated.ts merge=delendai-generated
