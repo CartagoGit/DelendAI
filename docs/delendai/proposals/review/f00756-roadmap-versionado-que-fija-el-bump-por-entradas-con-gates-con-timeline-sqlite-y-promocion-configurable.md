@@ -334,6 +334,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "A project with one branch, with no release branch, or with no schedule declared gets no workflow and no diagnostic; branch names, the cadence and the conditions come from the configuration, never from this repository's develop and main."
 - shipped: `promotionReadiness` (pure, in the plugin) judges the three conditions and names all that fail; `open-promotion` asks them of the forge and opens the pull request with the evidence in its body, or says what holds it back, and opens no second one for the same promotion; the workflow is rendered by `promotion-workflow.lib.ts` and written by the forge-settings script when a cadence is declared. Probed against the real forge with a temporary cadence, read-only: it reported the two required checks still running on the head and the six open entries of 0.2.0. delendai itself declares no cadence — turning on scheduled release pull requests is the owner's decision — so no workflow is generated here yet.
 - Asked by the owner on 2026-10-07: promotions of develop into main were opened by hand whenever someone noticed develop was stable, and the first one waited for 48 code scanning alerts nobody was tracking on develop. The roadmap already knows what the next version promises; this slice turns "is it time to promote" into a scheduled, evidence-backed pull request. It keeps decision 3 of `## why this design`: the plugin informs (readiness), the forge acts (a workflow that opens a pull request), and the merge stays behind the release gate.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## dependency graph
 
