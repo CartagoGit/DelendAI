@@ -275,6 +275,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "El presupuesto de tokens del manifiesto está medido, no heredado: 10.222 B para las siete herramientas, medido a través de un host ensamblado y un cliente que lista, y un test mantiene el listado bajo el tope duro."
   - "El README documenta el reparto autoridad/proyección y deja escrito, para un adoptante, que ninguna rama está hardcodeada."
 - shipped: the plugin entry point, its options schema (strict, everything optional), the manifest with per-tool permissions and a measured budget, and the README. No change to the core configuration schema was needed: a plugin's settings already have a home.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S10 — Proyección a JSON y guard de deriva
 - **Status**: review
