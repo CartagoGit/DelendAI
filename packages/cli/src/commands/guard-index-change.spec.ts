@@ -12,9 +12,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
 	AGENT_ENVIRONMENT_MARKERS,
 	DELENDAI_SESSION_VARIABLE,
+	renderGuardBlock,
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { renderGuardBlock } from '@delendai/core/lib/guard-hooks/guard-hook-block.helper';
 
 import { runHumanCli } from '../index';
 import { indexWarning } from './guard.command';
