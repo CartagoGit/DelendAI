@@ -27,7 +27,9 @@ import {
 const quote = (value: string): string => `'${value.replaceAll("'", `'\\''`)}'`;
 
 const readsStdin = (hook: IGuardHookName): boolean =>
-	hook !== 'pre-commit' && hook !== 'commit-msg';
+	hook !== 'pre-commit' &&
+	hook !== 'commit-msg' &&
+	hook !== 'post-index-change';
 
 /**
  * Find delendai on the machine the hook is RUNNING on.
@@ -113,6 +115,25 @@ export const renderGuardBlock = (
 ): string => {
 	const resolve = resolveDelendai(invocation);
 	const missing = MISSING(hook);
+	if (hook === 'post-index-change') {
+		// Git writes the index for a `status`, an `add`, every checkout of
+		// every worktree. The guard is only asked when it could have
+		// something to say: in the shared checkout (its git directory is
+		// the common one), with an index that no longer matches HEAD. The
+		// variable keeps the guard's own git calls from asking again.
+		return [
+			GUARD_BLOCK_BEGIN,
+			'if [ -z "${DELENDAI_INDEX_GUARD:-}" ] && [ "$(git rev-parse --absolute-git-dir 2>/dev/null)" = "$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" ] && ! git diff --cached --quiet 2>/dev/null; then',
+			'\tDELENDAI_INDEX_GUARD=1',
+			'\texport DELENDAI_INDEX_GUARD',
+			...resolve.map((line) => `\t${line}`),
+			'\tif [ -n "$delendai_guard_runner" ]; then',
+			...invoke(hook, '', 'true').map((line) => `\t\t${line}`),
+			'\tfi',
+			'fi',
+			GUARD_BLOCK_END,
+		].join('\n');
+	}
 	if (!readsStdin(hook)) {
 		return [
 			GUARD_BLOCK_BEGIN,
