@@ -164,6 +164,11 @@
 				"category": "DelendAI"
 			},
 			{
+				"command": "delendai.openRoadmap",
+				"title": "Open Roadmap",
+				"category": "DelendAI"
+			},
+			{
 				"command": "delendai.toolSearch",
 				"title": "Search Tools",
 				"category": "DelendAI",

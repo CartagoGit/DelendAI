@@ -56,6 +56,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `quality-policy` | `@delendai/quality-policy` | Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands. | manifest |
 | `refactor` | `@delendai/refactor` | Refactor primitives (symbols, definition, references, rename, codemod). | manifest |
 | `remote-provider-core` | `@delendai/remote-provider-core` | Shared remote-provider foundation: validated config, injectable HTTP, normalized errors. | manifest |
+| `roadmap` | `@delendai/roadmap` | Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply. | manifest |
 | `rules` | `@delendai/rules` | Lint/type rules engine (frameworks, dogmas, presets). | manifest |
 | `search` | `@delendai/search` | Code search (semantic + symbol + references). | manifest |
 | `security` | `@delendai/security` | Security audit (CVEs, SAST, secrets, env). | manifest |
@@ -121,6 +122,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `quality-policy` | `@delendai/quality-policy` | 0.1.0 | manifest |
 | `refactor` | `@delendai/refactor` | 0.1.1 | manifest |
 | `remote-provider-core` | `@delendai/remote-provider-core` | 0.1.1 | manifest |
+| `roadmap` | `@delendai/roadmap` | 0.1.0 | manifest |
 | `rules` | `@delendai/rules` | 0.1.1 | manifest |
 | `search` | `@delendai/search` | 0.1.1 | manifest |
 | `security` | `@delendai/security` | 0.1.1 | manifest |
@@ -186,6 +188,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `quality-policy` | none | dogfood |
 | `refactor` | none | standard, swarm, full, web-app, backend-api |
 | `remote-provider-core` | none | full |
+| `roadmap` | none | none |
 | `rules` | none | standard, swarm, full, dogfood, web-app, backend-api |
 | `search` | none | minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | `security` | none | dogfood |
@@ -251,6 +254,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `quality-policy` | manifest | quality-policy |
 | `refactor` | manifest | refactor |
 | `remote-provider-core` | manifest | remote-provider |
+| `roadmap` | manifest | roadmap, release |
 | `rules` | manifest | rules, lint |
 | `search` | manifest | lexical-search, regex-search, semantic-search, hybrid-search |
 | `security` | manifest | security, audit |
