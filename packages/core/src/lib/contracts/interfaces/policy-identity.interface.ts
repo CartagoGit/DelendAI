@@ -34,3 +34,13 @@ export interface IPolicyIdentity {
 	/** What an identity nothing named a model becomes. Default `'refuse'`. */
 	readonly unrecognizedModel?: IUnrecognizedModelPolicy | undefined;
 }
+
+/**
+ * The `development.identity` block as a config file writes it. Loosely
+ * typed on purpose: `resolve-identity.ts` carries an unrecognised value
+ * through so the validator names it back to the operator.
+ */
+export interface IIdentityConfigInput {
+	readonly providerBridge?: unknown;
+	readonly unrecognizedModel?: unknown;
+}

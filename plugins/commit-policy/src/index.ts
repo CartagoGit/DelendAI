@@ -509,6 +509,7 @@ export default definePlugin({
 			host: identityCtx.hostIdentity?.host,
 			provider: () => providerModelId({ workspace: ctx.workspace.root }),
 			clientName: () => ctx.clientIdentity?.name(),
+			identity: ctx.developmentPolicy?.identity,
 		});
 		const wipEngine =
 			ctx.developmentPolicy !== undefined &&
@@ -542,6 +543,7 @@ export default definePlugin({
 				host: identityCtx.hostIdentity?.host,
 				provider: () =>
 					providerModelId({ workspace: ctx.workspace.root }),
+				identity: ctx.developmentPolicy?.identity,
 			}),
 			resolveTopic: createSliceTopicResolver({
 				run,

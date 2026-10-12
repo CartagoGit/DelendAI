@@ -54,6 +54,10 @@ export const applyIdentityPolicy = (
 	identity: IWorkAgentIdentity,
 	axis: IPolicyIdentity | undefined,
 ): IWorkAgentIdentity => {
+	// No axis declared: the chain PR #1037 landed, untouched — a client
+	// name keeps its `client-` marker here; only a project that RULES on
+	// identity changes what any source counts as.
+	if (axis === undefined) return identity;
 	if (declaresModel(identity)) return identity;
 	const recognized =
 		identity.source === 'provider' && axis?.providerBridge !== false;

@@ -97,6 +97,46 @@ describe('workRefAgent — who a work ref is named after', () => {
 		);
 		expect(workRefAgentDeclared({})()).toBe(false);
 	});
+
+	it('lets the project identity axis rule what counts (f00758)', () => {
+		// Bridge closed: an observed model stops naming the ref, and with a
+		// project default the default names it instead.
+		expect(
+			workRefAgent({
+				provider: () => 'gpt-5.6-sol',
+				identity: { providerBridge: false },
+			})(),
+		).toBe('unknown-agent');
+		expect(
+			workRefAgent({
+				provider: () => 'gpt-5.6-sol',
+				identity: {
+					providerBridge: false,
+					unrecognizedModel: { use: 'shared-agent' },
+				},
+			})(),
+		).toBe('shared-agent');
+		// A declared model is never ruled on.
+		expect(
+			workRefAgent({
+				model: 'claude-opus-5',
+				identity: { unrecognizedModel: { use: 'shared-agent' } },
+			})(),
+		).toBe('claude-opus-5');
+		// The default name counts as declared: it is the project speaking.
+		expect(
+			workRefAgentDeclared({
+				identity: { unrecognizedModel: { use: 'shared-agent' } },
+			})(),
+		).toBe(true);
+		expect(
+			workRefAgentDeclared({ identity: { providerBridge: false } })(),
+		).toBe(false);
+		// No axis: nothing changes (the PR #1037 chain).
+		expect(workRefAgent({ provider: () => 'gpt-5.6-sol' })()).toBe(
+			'gpt-5.6-sol',
+		);
+	});
 });
 
 describe('slice topics', () => {

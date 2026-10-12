@@ -17,6 +17,14 @@ describe('applyIdentityPolicy', () => {
 		expect(
 			applyIdentityPolicy(id('gpt-5.6-sol', 'provider'), undefined),
 		).toEqual(id('gpt-5.6-sol', 'provider'));
+		// A client name keeps its marked id too: only a project that RULES
+		// on identity changes what a name counts as.
+		expect(
+			applyIdentityPolicy(
+				id('client-visual-studio-code', 'client'),
+				undefined,
+			),
+		).toEqual(id('client-visual-studio-code', 'client'));
 		expect(
 			applyIdentityPolicy(id(WORK_AGENT_UNKNOWN, 'none'), undefined)
 				.source,

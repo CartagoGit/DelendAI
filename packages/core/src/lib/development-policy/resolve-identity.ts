@@ -9,15 +9,12 @@
  * to the operator, exactly as every other axis does.
  */
 import type {
+	IIdentityConfigInput,
 	IPolicyIdentity,
 	IUnrecognizedModelPolicy,
 } from '../contracts/interfaces/policy-identity.interface';
 
-/** The `development.identity` block as a config file writes it. */
-export interface IIdentityConfigInput {
-	readonly providerBridge?: unknown;
-	readonly unrecognizedModel?: unknown;
-}
+export type { IIdentityConfigInput };
 
 /**
  * Whether `value` is the rename form: `{ use: <non-empty string> }`.

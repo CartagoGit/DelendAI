@@ -25,6 +25,14 @@ export { judgeGitOperation } from './lib/development-policy/git-guard';
 // whose budget is full — because the CLI resolves and reports agent
 // identity itself.
 export { providerModelId } from './lib/work-identity/provider-model-bridge.helper';
+// What the project's `development.identity` axis does to a resolved
+// identity (f00758). One helper, three consumers: the work engine, the
+// CLI and commit-policy — the x00560 "one answer" rule, extended.
+export { applyIdentityPolicy } from './lib/work-identity/identity-policy.helper';
+export type {
+	IPolicyIdentity,
+	IUnrecognizedModelPolicy,
+} from './lib/contracts/interfaces/policy-identity.interface';
 // What a refusal says next: how work starts and lands in this profile.
 export { briefWorkModel } from './lib/development-policy/declare-workflow';
 export {

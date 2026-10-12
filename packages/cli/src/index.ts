@@ -7,6 +7,7 @@ import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
 import { resolveWorkAgentId } from '@delendai/core/public';
 import { providerModelId } from '@delendai/core/cli';
+import { applyIdentityPolicy, readWorkspacePolicy } from '@delendai/core/cli';
 
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
@@ -225,16 +226,27 @@ export const runHumanCli = async (
  * operator can only act on it if somebody says so — by the time it shows
  * up in the graph the branch already exists. The remedy is one variable.
  */
-const unnamedAgentNotice = (
+const unnamedAgentNotice = async (
 	env: NodeJS.ProcessEnv = process.env,
 	workspace?: string,
-): readonly string[] => {
-	const identity = resolveWorkAgentId({
-		environment: env.DELENDAI_AGENT_ID,
-		provider: () =>
-			providerModelId(workspace === undefined ? {} : { workspace }),
-	});
-	if (identity.source === 'environment' || identity.source === 'provider')
+): Promise<readonly string[]> => {
+	const policy =
+		workspace === undefined
+			? undefined
+			: await readWorkspacePolicy(workspace).catch(() => undefined);
+	const identity = applyIdentityPolicy(
+		resolveWorkAgentId({
+			environment: env.DELENDAI_AGENT_ID,
+			provider: () =>
+				providerModelId(workspace === undefined ? {} : { workspace }),
+		}),
+		policy?.identity,
+	);
+	if (
+		identity.source === 'environment' ||
+		identity.source === 'provider' ||
+		identity.source === 'policy'
+	)
 		return [];
 	return [
 		`work refs will be named \`${identity.id}\` — no model or agent is declared here.`,
@@ -360,7 +372,10 @@ export const runEntry = async (
 		// that are kept are not news, and a server that recites its own
 		// health on every start is a server whose output gets ignored.
 		// Read-only, like everything else here — x00591.
-		for (const line of unnamedAgentNotice(process.env, workspaceRoot)) {
+		for (const line of await unnamedAgentNotice(
+			process.env,
+			workspaceRoot,
+		)) {
 			report(`[delendai] ${line}`);
 		}
 		for (const line of await brokenInvariants(workspaceRoot)) {
