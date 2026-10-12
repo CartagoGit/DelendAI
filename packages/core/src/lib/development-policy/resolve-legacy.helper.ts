@@ -12,17 +12,15 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 import type { ILegacyDevelopmentInput } from './resolve.interface';
 import { expandProfile } from './profiles';
 
-export const asRecord = (
-	value: unknown,
-): Record<string, unknown> | undefined =>
+const asRecord = (value: unknown): Record<string, unknown> | undefined =>
 	typeof value === 'object' && value !== null && !Array.isArray(value)
 		? (value as Record<string, unknown>)
 		: undefined;
 
-export const asString = (value: unknown): string | undefined =>
+const asString = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;
 
-export const asPositiveNumber = (value: unknown): number | undefined =>
+const asPositiveNumber = (value: unknown): number | undefined =>
 	typeof value === 'number' && Number.isFinite(value) && value >= 0
 		? value
 		: undefined;
@@ -32,7 +30,7 @@ export const asPositiveNumber = (value: unknown): number | undefined =>
  * `slice` + `interval` together is the continuous case; either alone maps
  * to itself; neither leaves the profile's own value in place.
  */
-export const readCadence = (
+const readCadence = (
 	options: Record<string, unknown> | undefined,
 ): { strategy?: 'slice' | 'interval' | 'continuous'; minutes?: number } => {
 	const cadence = asRecord(options?.cadence);
