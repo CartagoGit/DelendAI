@@ -2,14 +2,14 @@
 id: f00758
 title: "Identity policy: declare how agents are named in delendai.config.json"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-12
-last-transition-id: c4222260-94d2-4b5a-ac2c-dce03162ffb4
-last-correlation-id: c4222260-94d2-4b5a-ac2c-dce03162ffb4
-last-transition-from: ready
-last-transition-at: 2026-10-12T16:14:30.699Z
+last-transition-id: 907a3a7c-523c-4f08-9e6d-f8746e3528e9
+last-correlation-id: 907a3a7c-523c-4f08-9e6d-f8746e3528e9
+last-transition-from: in-progress
+last-transition-at: 2026-10-12T16:15:07.165Z
 ---
 
 # f00758 — Identity policy: declare how agents are named in delendai.config.json
@@ -73,16 +73,19 @@ Resolved into `IPolicyIdentity` next to `IPolicyGuard`; validate rule
 - **Status**: done (6c5f278fb)
 - **Files**: `packages/core/src/lib/contracts/interfaces/policy-identity.interface.ts`, `packages/core/src/lib/development-policy/resolve-identity.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/policy-identity.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/development-policy`
+- shipped-in: `1ee6c5c4bd1f`
 
 ### S2 — enforcement in the work engine
 - **Status**: done (3018a57d4)
 - **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units packages/core/tests/src/lib/work-identity`
+- shipped-in: `3018a57d4357`
 
 ### S3 — enforcement in the CLI and commit-policy; docs
 - **Status**: done (1ee6c5c4b)
 - **Files**: `packages/cli/src/index.ts`, `packages/cli/src/commands/groups/group-helpers.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-naming.interface.ts`, `plugins/commit-policy/src/lib/services/work-ref-naming.service.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: `npx vitest run --project @delendai/cli && npx vitest run --project commit-policy plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts && bun run lint:prompt-size`
+- shipped-in: `1ee6c5c4bd1f`
 
 ## dependency graph
 
