@@ -23,6 +23,7 @@ import {
 import type { IPublicationGranularity } from '../contracts/interfaces/publication-unit.interface';
 import { deriveCapabilities } from './derive';
 import { guardOverride } from './resolve-guard';
+import { identityOverride } from './resolve-identity';
 import { releaseBranchOf } from './release-branch';
 import {
 	DEFAULT_DEVELOPMENT_PROFILE,
@@ -173,6 +174,7 @@ const applyOverrides = (
 	return {
 		...base,
 		...guardOverride(input.guard),
+		...identityOverride(input.identity),
 		branches: {
 			namespacePrefix,
 			integration:

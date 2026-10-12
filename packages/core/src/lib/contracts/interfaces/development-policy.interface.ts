@@ -18,6 +18,7 @@
 
 import type { IPolicyAdoption } from './policy-adoption.interface';
 import type { IPolicyGuard } from './policy-guard.interface';
+import type { IPolicyIdentity } from './policy-identity.interface';
 import type { IPolicyPublication } from './publication-unit.interface';
 /** How agents get a working tree to edit. */
 export const WORKSPACE_STRATEGIES = [
@@ -380,6 +381,8 @@ export interface IResolvedDevelopmentPolicy {
 	readonly recovery: IPolicyRecovery;
 	readonly governance: IPolicyGovernance;
 	readonly guard?: IPolicyGuard;
+	/** The agent-identity axis; absent keeps the chain every source feeds. */
+	readonly identity?: IPolicyIdentity;
 }
 
 /** Current `IResolvedDevelopmentPolicy.version`. */

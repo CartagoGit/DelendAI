@@ -24,15 +24,113 @@ PR #1037 added the provider bridge as an identity source, but whether a bridge-o
 - Validating model ids against a vendor registry — 'unrecognised' here means 'not a declared model identity', not 'not a model this vendor sells'.
 - Touching the roster (coordination.roster), which already decides WHO may work; this axis decides HOW a name counts.
 
+## why this design
+
+The policy already carries one axis about naming actors: `guard.unknownActor`
+(`resolve-guard.ts` + `policy-guard.interface.ts` + a validate rule + a
+regenerated schema entry). This proposal adds a sibling axis with the same
+shape — a declared value is stored, an absent key keeps today's behaviour, an
+unrecognised value is carried through so `validateDevelopmentPolicy` names it
+back to the operator. Enforcement lives where identity is resolved
+(`agentFor`, `agentArg`, `workRefAgent`), so one axis with three readers,
+not three parallel rules.
+
+## non-goals (design)
+
+- No vendor model registry: `unrecognizedModel` classifies HOW an identity
+  arrived (declared vs observed vs nothing), not whether the id is a real
+  product.
+
+## architecture
+
+```jsonc
+"development": {
+  "identity": {
+    // default true: accept the observed model from the provider bridge
+    "providerBridge": true,
+    // default "refuse": what to do with an identity no source named a
+    // model (bridge off, or nothing declared at all)
+    //   "refuse"      — keep refusing, naming this axis as the reason
+    //   { "use": "x" } — name it `x` (normalised) instead
+    "unrecognizedModel": "refuse"
+  }
+}
+```
+
+Resolved into `IPolicyIdentity` next to `IPolicyGuard`; validate rule
+`identity.unrecognizedModel` / `identity.providerBridge`; enforced in:
+
+1. `agentFor(args, workspace)` — reads the axis from the resolved policy of
+   the workspace it is entering (already opens the policy).
+2. CLI `agentArg` / `unnamedAgentNotice` — the boot notice says what the
+   policy will do instead of promising a model name.
+3. commit-policy `workRefAgent` / `workRefAgentDeclared` — the same axis
+   passed through `IWorkRefAgentSources`.
+
 ## slices
 
-- global_gate: none
+- global_gate: `bun run typecheck`
 
-### S1 — TODO
+### S1 — policy axis: resolve, validate, schema
 - **Status**: pending
-- **Files**: `TODO`
-- **Gate**: none
+- **Files**: `packages/core/src/lib/contracts/interfaces/policy-identity.interface.ts`, `packages/core/src/lib/development-policy/resolve-identity.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/policy-identity.spec.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/development-policy`
+
+### S2 — enforcement in the work engine
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units packages/core/tests/src/lib/work-identity`
+
+### S3 — enforcement in the CLI and commit-policy; docs
+- **Status**: pending
+- **Files**: `packages/cli/src/index.ts`, `packages/cli/src/commands/groups/group-helpers.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-naming.interface.ts`, `plugins/commit-policy/src/lib/services/work-ref-naming.service.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
+- **Gate**: `npx vitest run --project @delendai/cli && npx vitest run --project commit-policy plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts && bun run lint:prompt-size`
+
+## dependency graph
+
+S1 -> S2 -> S3 (each slice consumes the previous one's axis; no disjointness).
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- A project with no `development.identity` key behaves exactly as after PR
+  #1037 (chain: model -> environment -> provider -> client); the axis is
+  inert until declared.
+- `development.identity.providerBridge: false` makes a bridge-only identity
+  resolve to nothing, and the refusal names the axis and its remedy
+  (declare `DELENDAI_AGENT_ID`, or allow the bridge).
+- `development.identity.unrecognizedModel: { use: "shared-agent" }` names
+  every identity no source declared a model as `shared-agent`, so a project
+  that does not care WHICH model works still gets refs and commit authors
+  it can read.
+- `development.identity.unrecognizedModel: "refuse"` (the default) keeps
+  today's refusal, but the message names the new axis so an operator knows
+  the knob exists.
+- An unrecognised `unrecognizedModel` word (e.g. `"whatever"`) is carried
+  through resolution (the schema takes any non-empty string) and reported by
+  `validateDevelopmentPolicy` with path `identity.unrecognizedModel`, like
+  every strategy axis. A non-boolean `providerBridge` is rejected one level
+  earlier by the config schema, which names the same path.
+- The regenerated `delendai.config.schema.json` accepts the block and
+  rejects unknown keys inside it (`additionalProperties: false`).
+- `agentFor`, CLI `agentArg` and commit-policy `workRefAgent` all read the
+  SAME axis — one policy, three consumers — with a spec per consumer.
+- All of it lands on `develop` through one pull request, CI green.
+
+## risks
+
+- **Byte budget**: AGENT-BOOTSTRAP.md is at 31997/32000B. The docs slice
+  must reword existing lines, not just add; the served instruction
+  (`AGENT_IDENTITY_INSTRUCTION`) may also need a one-line mention. Accepted:
+  the knob is discoverable via the refusal message even if docs stay terse.
+- **Sync read in agentFor**: the policy read must stay lazy so declared
+  identities never pay for it (same argument as the bridge thunk).
+- **Drift between the three consumers**: mitigated by one resolver reading
+  one axis; the specs pin all three to the same behaviour.
+
+## notes
+
+- The refusal text must keep the x00694/x00699 guarantees: never invent,
+  never use the machine.
+- `unrecognizedModel.use` is normalised through `normalizeWorkAgentId`, and
+  a value that cannot survive normalisation is a validation violation, not
+  a silent empty ref.
