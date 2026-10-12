@@ -289,6 +289,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La deriva entre el timeline y el markdown también se detecta: el markdown manda, el timeline es proyección, y el generador registra en él lo que al fichero le falta por contar."
   - "El generador no escribe fuera de `apps/web/src/data/` (más el timeline junto al fichero de roadmap) y es determinista: dos ejecuciones dan el mismo byte y la segunda no registra nada."
 - shipped: the display projection is a pure function of the authority file — no gate evidence, no clock — so that a proposal changing folder does not make an unrelated pull request drift. The generator and the guard run from `gen:all` and `gen:all:check`, the drift gate CI already runs; the roadmap is declared in `AUTHORITIES.md` with its two projections. The timeline the guard watches is the markdown one, which CI can read without a binary; the SQLite timeline stays a local cache of the same events. delendai declares its own roadmap (`docs/delendai/ROADMAP.md`), seeded from the feature proposals in flight, so the projection is not empty. Configuring a private plugin here met two rules that contradicted each other — the `dogfood` preset must mirror the configured plugins, and no preset may list a private plugin — so the mirror rule now leaves private plugins out.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S11 — Superficies de lectura: web y extensión
 - **Status**: review
