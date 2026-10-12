@@ -311,7 +311,38 @@ const HOOKS: readonly IGuardedHook[] = [
 	'pre-push',
 	'post-checkout',
 	'post-merge',
+	'post-index-change',
 ];
+
+/**
+ * What to say when the index of the shared checkout has just been
+ * changed on the integration branch. Nothing commits there, so whatever
+ * was staged is an operation that landed in the wrong place — usually a
+ * script that carried on after `work enter` refused. Empty when there is
+ * nothing to say: another branch, a linked worktree, or an index that is
+ * simply following the integration branch.
+ */
+export const indexWarning = (
+	policy: IResolvedDevelopmentPolicy,
+	facts: {
+		readonly branch: string | undefined;
+		readonly inMainWorktree: boolean;
+		/** Staged paths that differ from HEAD. */
+		readonly staged: readonly string[];
+		/** Whether the index is the tree of the integration branch's remote tip. */
+		readonly followsIntegration: boolean;
+	},
+): string => {
+	if (!policy.workspace.pinnedCheckout || !facts.inMainWorktree) return '';
+	if (facts.branch !== policy.branches.integration) return '';
+	if (facts.staged.length === 0 || facts.followsIntegration) return '';
+	const shown = facts.staged.slice(0, 3).join(', ');
+	return [
+		`delendai guard: this command just changed ${String(facts.staged.length)} path(s) in the SHARED checkout, on \`${policy.branches.integration}\` (${shown}${facts.staged.length > 3 ? ', …' : ''}).`,
+		'Nothing commits here, and every unit starts from this tree. If you meant to be in your unit, the `cd` before this command did not happen: check that `delendai work enter` printed a path.',
+		'Undo it now, losing nothing: `delendai work rescue` keeps what was written under a ref and restores the checkout.',
+	].join('\n');
+};
 
 /**
  * What to say when the shared checkout has just left the integration
@@ -490,7 +521,7 @@ export const createGuardCommand = (
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge> [hook args]',
+	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge|post-index-change> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
 		// A Map, not an object indexed by user input: `delendai guard
@@ -563,6 +594,29 @@ export const createGuardCommand = (
 			policy,
 			unitAgent: stamped,
 		});
+		if (hook === 'post-index-change') {
+			if (agentMarker === undefined) return { code: EXIT_CODE.OK };
+			const remoteTree = git(workspace, [
+				'rev-parse',
+				'-q',
+				'--verify',
+				`refs/remotes/origin/${policy.branches.integration}^{tree}`,
+			]);
+			const warning = indexWarning(policy, {
+				branch: facts.branch(),
+				inMainWorktree: facts.inMainWorktree(),
+				staged: (
+					git(workspace, ['diff', '--cached', '--name-only']) ?? ''
+				)
+					.split('\n')
+					.filter((path) => path.length > 0),
+				followsIntegration:
+					remoteTree !== undefined &&
+					remoteTree === git(workspace, ['write-tree']),
+			});
+			if (warning.length > 0) process.stderr.write(`${warning}\n`);
+			return { code: EXIT_CODE.OK };
+		}
 		if (hook === 'post-checkout') {
 			// A warning is still a limit on how somebody uses their own
 			// checkout; it is for agents, like every other verdict here.
