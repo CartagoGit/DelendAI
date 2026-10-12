@@ -18,6 +18,7 @@
 
 import type { IPolicyAdoption } from './policy-adoption.interface';
 import type { IPolicyGuard } from './policy-guard.interface';
+import type { IPolicyIdentity } from './policy-identity.interface';
 import type { IPolicyPublication } from './publication-unit.interface';
 /** How agents get a working tree to edit. */
 export const WORKSPACE_STRATEGIES = [
@@ -380,20 +381,13 @@ export interface IResolvedDevelopmentPolicy {
 	readonly recovery: IPolicyRecovery;
 	readonly governance: IPolicyGovernance;
 	readonly guard?: IPolicyGuard;
+	/** The agent-identity axis; absent keeps the chain every source feeds. */
+	readonly identity?: IPolicyIdentity;
 }
 
 /** Current `IResolvedDevelopmentPolicy.version`. */
 export const DEVELOPMENT_POLICY_VERSION = 2;
 
-/** A rejected policy combination: startup fails closed rather than improvise. */
-export interface IDevelopmentPolicyViolation {
-	/** Stable id so tests and docs can reference a rule without prose. */
-	readonly rule: string;
-	/** Dotted path of the offending axis, e.g. `coordination.strategy`. */
-	readonly path: string;
-	/** What is wrong, in one sentence. */
-	readonly message: string;
-	/** The concrete change that resolves it. */
-	readonly remedy: string;
-	readonly severity?: 'warning'; // absent: the violation stops startup
-}
+// Split out (SRP ceiling): the complaint shape lives in its own file and
+// is re-exported here so every import site keeps working unchanged.
+export type { IDevelopmentPolicyViolation } from './policy-violation.interface';

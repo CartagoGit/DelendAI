@@ -14,6 +14,17 @@ export interface IDevelopmentConfigInput {
 		| { readonly visibility?: string | undefined }
 		| undefined;
 	readonly guard?: { readonly unknownActor?: string | undefined } | undefined;
+	/**
+	 * The agent-identity axis (f00758), loosely typed like every other
+	 * config input: `resolve-identity.ts` carries an unrecognised value
+	 * through so the validator names it back.
+	 */
+	readonly identity?:
+		| {
+				readonly providerBridge?: unknown;
+				readonly unrecognizedModel?: unknown;
+		  }
+		| undefined;
 	readonly branches?:
 		| {
 				readonly namespacePrefix?: string | undefined;

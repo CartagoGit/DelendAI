@@ -9,6 +9,7 @@ import type {
 } from '../contracts/interfaces/work-event-journal.interface';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
+import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.interface';
 import { sharedCheckout } from '../shared/shared-checkout';
 import { scalarArg } from './command-args.helper';
 import { agentFor } from './work-unit-shared.service';
@@ -65,6 +66,7 @@ export const journalEnteredUnit = async (
 	root: string,
 	args: readonly string[],
 	entry: IWorkUnitResult,
+	axis?: IPolicyIdentity | undefined,
 ): Promise<void> => {
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
@@ -74,7 +76,7 @@ export const journalEnteredUnit = async (
 		kind: 'slice_claimed',
 		proposal,
 		slice,
-		actor: agentFor(args, root),
+		actor: agentFor(args, root, axis),
 		detail: { unitKind: scalarArg(args, 'kind') ?? 'implement' },
 	});
 };

@@ -76,4 +76,39 @@ describe('resolveAgent', () => {
 		const root = unitCheckout('develop');
 		expect(await resolveAgent([], root, {})).toBeUndefined();
 	});
+
+	it('names the project default when development.identity says so (f00758)', async () => {
+		const root = unitCheckout('develop');
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({
+				development: {
+					profile: 'shared-checkout-pr',
+					identity: {
+						providerBridge: false,
+						unrecognizedModel: { use: 'shared-agent' },
+					},
+				},
+			}),
+		);
+		// Nothing declared anywhere: the axis names it; a flag still wins.
+		expect(await resolveAgent([], root, {})).toBe('shared-agent');
+		expect(await resolveAgent(['--agent=Flag-One'], root, {})).toBe(
+			'flag-one',
+		);
+	});
+
+	it('names nobody when the axis refuses and nothing is declared', async () => {
+		const root = unitCheckout('develop');
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({
+				development: {
+					profile: 'shared-checkout-pr',
+					identity: { providerBridge: false },
+				},
+			}),
+		);
+		expect(await resolveAgent([], root, {})).toBeUndefined();
+	});
 });

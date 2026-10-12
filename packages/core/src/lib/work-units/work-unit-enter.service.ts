@@ -24,12 +24,15 @@ import {
 } from './reviewed-proposal.service';
 import { scalarArg } from './command-args.helper';
 import { journalEnteredUnit } from './work-event-journal.service';
+import { readWorkspacePolicy } from './development-policy.service';
+import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.interface';
 
 import {
 	agentFor,
 	claimWorktree,
 	readGit,
 	heldByAnother,
+	identityRemedy,
 	integrationBase,
 	kindInAgent,
 	openWork,
@@ -97,19 +100,26 @@ export const entered = async (
 	args: readonly string[],
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {
+	// The unit key is named by the identity, and what counts as one is the
+	// project's axis (f00758): read the policy before locking, so two
+	// entries under one policy take one lock.
+	const policy = await readWorkspacePolicy(workspaceOf(ctx));
 	const unit = [
-		agentFor(args, workspaceOf(ctx)),
+		agentFor(args, workspaceOf(ctx), policy.identity),
 		scalarArg(args, 'kind') ?? '',
 		scalarArg(args, 'proposal') ?? '',
 		scalarArg(args, 'slice') ?? '',
 	].join('/');
-	return oneEntryAtATime(unit, () => enteredLocked(unit, args, ctx));
+	return oneEntryAtATime(unit, () =>
+		enteredLocked(unit, args, ctx, policy.identity),
+	);
 };
 
 export const enteredLocked = async (
 	unit: string,
 	args: readonly string[],
 	ctx: IWorkUnitContext,
+	axis?: IPolicyIdentity | undefined,
 ): Promise<IWorkUnitResult> => {
 	const root = workspaceOf(ctx);
 	const common = readGit(root, [
@@ -127,7 +137,7 @@ export const enteredLocked = async (
 		if (held.kind === 'acquired') {
 			try {
 				const entry = await enteredHeld(args, ctx);
-				await journalEnteredUnit(workspaceOf(ctx), args, entry);
+				await journalEnteredUnit(workspaceOf(ctx), args, entry, axis);
 				return entry;
 			} finally {
 				await held.release();
@@ -153,11 +163,11 @@ export const enteredHeld = async (
 	const { root, policy } = opened;
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
-	const agent = agentFor(args, root);
+	const agent = agentFor(args, root, policy.identity);
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
 			'A worktree belongs to one identity and one unit of work.',
-			'work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>] [--alongside]; --agent defaults to DELENDAI_AGENT_ID.',
+			`work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>] [--alongside]; --agent defaults to DELENDAI_AGENT_ID.${identityRemedy(policy)}`,
 		);
 	}
 	if (policy.branches.workRefTemplate.length === 0) {

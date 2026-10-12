@@ -70,7 +70,7 @@ export const published = async (
 	const root = mainWorktreeOf(opened.root);
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
-	const agent = agentFor(args, root);
+	const agent = agentFor(args, root, policy.identity);
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
 			'Publishing needs the unit of work it is publishing.',

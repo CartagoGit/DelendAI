@@ -1,3 +1,5 @@
+import type { IPolicyIdentity } from '@delendai/core/cli';
+
 /** Everything that can name the agent of a work ref, most specific first. */
 export interface IWorkRefAgentSources {
 	readonly model?: string | undefined;
@@ -10,6 +12,12 @@ export interface IWorkRefAgentSources {
 	readonly provider?: () => string | undefined;
 	/** The MCP handshake client name; known only after the handshake. */
 	readonly clientName?: () => string | undefined;
+	/**
+	 * The project's `development.identity` axis (f00758): the same rule the
+	 * work engine and the CLI obey, so one project gives one answer about
+	 * who is working wherever a ref, a lease or a commit author is named.
+	 */
+	readonly identity?: IPolicyIdentity | undefined;
 	/**
 	 * Removed as a source (x00560): a ref named after the machine says
 	 * who owns the hardware, and collapses every agent on one machine

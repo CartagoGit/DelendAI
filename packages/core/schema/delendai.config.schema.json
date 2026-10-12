@@ -171,6 +171,36 @@
 					},
 					"additionalProperties": false
 				},
+				"identity": {
+					"type": "object",
+					"properties": {
+						"providerBridge": {
+							"type": "boolean"
+						},
+						"unrecognizedModel": {
+							"anyOf": [
+								{
+									"type": "string",
+									"minLength": 1
+								},
+								{
+									"type": "object",
+									"properties": {
+										"use": {
+											"type": "string",
+											"minLength": 1
+										}
+									},
+									"required": [
+										"use"
+									],
+									"additionalProperties": false
+								}
+							]
+						}
+					},
+					"additionalProperties": false
+				},
 				"workRefs": {
 					"type": "object",
 					"properties": {

@@ -22,11 +22,13 @@
 import { execFileSync } from 'node:child_process';
 
 import { readWorkspacePolicy } from '@delendai/core/cli';
+import { applyIdentityPolicy, providerModelId } from '@delendai/core/cli';
+import type { IPolicyIdentity } from '@delendai/core/cli';
 import {
 	compileWorkRefParser,
 	resolveWorkAgentId,
 } from '@delendai/core/public';
-import { providerModelId } from '@delendai/core/cli';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import type { ICliCommandResult } from '../../contracts/interfaces/cli-command.interface';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
@@ -85,22 +87,28 @@ export const usage = (line: string): ICliCommandResult => ({
 /**
  * Who this invocation works as: an explicit `--agent`, then what the
  * environment declares (`DELENDAI_AGENT_ID`), then the model the chat
- * provider observed serving this conversation — the same answer the work
- * commands and the tools give. `undefined` when nothing names a model;
- * the machine is never a guess, and neither is a client name.
+ * provider observed serving this conversation — ruled on by the
+ * project's `development.identity` axis, the same answer the work
+ * commands and the tools give (f00758). `undefined` when nothing names a
+ * model and the axis renames nothing; the machine is never a guess, and
+ * neither is a client name.
  */
 export const agentArg = (
 	args: readonly string[],
 	env: NodeJS.ProcessEnv = process.env,
 	workspace?: string,
+	axis?: IPolicyIdentity,
 ): string | undefined => {
 	const explicit = scalarArg(args, 'agent');
-	const identity = resolveWorkAgentId({
-		...(explicit === undefined ? {} : { model: explicit }),
-		environment: env.DELENDAI_AGENT_ID,
-		provider: () =>
-			providerModelId(workspace === undefined ? {} : { workspace }),
-	});
+	const identity = applyIdentityPolicy(
+		resolveWorkAgentId({
+			...(explicit === undefined ? {} : { model: explicit }),
+			environment: env.DELENDAI_AGENT_ID,
+			provider: () =>
+				providerModelId(workspace === undefined ? {} : { workspace }),
+		}),
+		axis,
+	);
 	return identity.source === 'none' ? undefined : identity.id;
 };
 
@@ -137,21 +145,31 @@ const currentBranch = (cwd: string): string | undefined => {
 };
 
 /** The agent named by the unit this working tree is on, if it is one. */
-const agentOfCheckout = async (cwd: string): Promise<string | undefined> => {
+const agentOfCheckout = async (
+	cwd: string,
+	policy?: IResolvedDevelopmentPolicy,
+): Promise<string | undefined> => {
 	const branch = currentBranch(cwd);
 	if (branch === undefined) return undefined;
-	const policy = await readWorkspacePolicy(cwd).catch(() => undefined);
-	return agentOfWorkBranch(policy?.branches.workRefTemplate, branch);
+	const read =
+		policy ?? (await readWorkspacePolicy(cwd).catch(() => undefined));
+	return agentOfWorkBranch(read?.branches.workRefTemplate, branch);
 };
 
 /**
  * `agentArg`, then the unit the call runs in: an agent working in its
  * unit's worktree has already said who it is in the ref's name, and the
  * CLI should not ask again. Explicit flag and environment still win.
+ * The policy is read once and serves both halves.
  */
 export const resolveAgent = async (
 	args: readonly string[],
 	cwd: string,
 	env: NodeJS.ProcessEnv = process.env,
-): Promise<string | undefined> =>
-	agentArg(args, env, cwd) ?? (await agentOfCheckout(cwd));
+): Promise<string | undefined> => {
+	const policy = await readWorkspacePolicy(cwd).catch(() => undefined);
+	return (
+		agentArg(args, env, cwd, policy?.identity) ??
+		(await agentOfCheckout(cwd, policy))
+	);
+};

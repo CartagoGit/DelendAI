@@ -26,6 +26,8 @@ import {
 	type IResolvedDevelopmentPolicy,
 } from '../contracts/interfaces/development-policy.interface';
 import { UNKNOWN_ACTORS } from '../contracts/interfaces/policy-guard.interface';
+import { UNRECOGNIZED_MODEL_POLICIES } from '../contracts/interfaces/policy-identity.interface';
+import { normalizeWorkAgentId } from '../work-identity/resolve-work-agent.service';
 import { DEVELOPMENT_PROFILES } from './profiles';
 import { policyAlignmentAdvisories } from './policy-alignment-advisories';
 import { persistenceRouteKind } from './resolve';
@@ -100,6 +102,30 @@ const validateVocabulary = (
 			UNKNOWN_ACTORS,
 			out,
 		);
+	}
+	if (policy.identity !== undefined) {
+		const unrecognized = policy.identity.unrecognizedModel;
+		if (unrecognized !== undefined) {
+			if (typeof unrecognized === 'string') {
+				oneOf(
+					'identity.unrecognizedModel',
+					unrecognized,
+					UNRECOGNIZED_MODEL_POLICIES,
+					out,
+				);
+			} else if (normalizeWorkAgentId(unrecognized.use).length === 0) {
+				// A rename that normalises to nothing would name the ref
+				// `…/wip//…`, which is not a ref at all. The resolver only
+				// stores a non-empty `use`, but a value that is all
+				// punctuation survives the store and must fail here.
+				out.push({
+					rule: 'identity-unusable-rename',
+					path: 'identity.unrecognizedModel.use',
+					message: `\`${unrecognized.use}\` cannot name an agent: nothing of it survives the id normalisation.`,
+					remedy: 'Use letters, digits, dot, dash or underscore (e.g. "shared-agent").',
+				});
+			}
+		}
 	}
 	oneOf(
 		'integration.mergeMethod',
