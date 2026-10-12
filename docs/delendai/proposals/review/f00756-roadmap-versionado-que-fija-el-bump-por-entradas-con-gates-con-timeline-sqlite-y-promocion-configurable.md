@@ -245,6 +245,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "`roadmap_show` devuelve un resumen compacto, no el fichero completo; el detalle va bajo demanda."
   - "Hay tests de contrato del payload de `delta` que fijan la forma del envelope, porque es lo que consumirán la web y la extensión."
 - shipped: the read model as four pure services (summary, readiness, delta, timeline sync) and the four tools over them. Readiness is `ready`, `not-ready` or `unknown` — unknown when nothing failed and a gate has no evidence; an estimate never takes part. `published` is `null`, not `false`, when nobody can say. The gate evidence is looked up once per call: which paths exist (contained where they really are, symlinks followed) and which status folder holds each proposal. Reads go through the safe reader.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — Herramientas de escritura: init, close y promoción
 - **Status**: review
