@@ -2,10 +2,14 @@
 id: f00758
 title: "Identity policy: declare how agents are named in delendai.config.json"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-12
+last-transition-id: c4222260-94d2-4b5a-ac2c-dce03162ffb4
+last-correlation-id: c4222260-94d2-4b5a-ac2c-dce03162ffb4
+last-transition-from: ready
+last-transition-at: 2026-10-12T16:14:30.699Z
 ---
 
 # f00758 — Identity policy: declare how agents are named in delendai.config.json
@@ -18,12 +22,6 @@ Let a project declare its identity model in development.identity instead of inhe
 
 PR #1037 added the provider bridge as an identity source, but whether a bridge-observed name counts is not a project decision: a project that wants only declared model ids, or that wants identities nothing named a model mapped to one default, has no way to say so. Identity is load-bearing — it names work refs, commit authors and review attribution — so its rules belong in the policy the project declares, next to guard.unknownActor.
 
-## non-goals
-
-- Changing what a project that declares nothing gets: the chain model -> environment -> provider -> client stays the default.
-- Validating model ids against a vendor registry — 'unrecognised' here means 'not a declared model identity', not 'not a model this vendor sells'.
-- Touching the roster (coordination.roster), which already decides WHO may work; this axis decides HOW a name counts.
-
 ## why this design
 
 The policy already carries one axis about naming actors: `guard.unknownActor`
@@ -35,11 +33,11 @@ back to the operator. Enforcement lives where identity is resolved
 (`agentFor`, `agentArg`, `workRefAgent`), so one axis with three readers,
 not three parallel rules.
 
-## non-goals (design)
+## non-goals
 
-- No vendor model registry: `unrecognizedModel` classifies HOW an identity
-  arrived (declared vs observed vs nothing), not whether the id is a real
-  product.
+- Changing what a project that declares nothing gets: the chain model -> environment -> provider -> client stays the default.
+- Validating model ids against a vendor registry — 'unrecognised' here means 'not a declared model identity', not 'not a model this vendor sells': `unrecognizedModel` classifies HOW an identity arrived (declared vs observed vs nothing).
+- Touching the roster (coordination.roster), which already decides WHO may work; this axis decides HOW a name counts.
 
 ## architecture
 
@@ -116,7 +114,7 @@ S1 -> S2 -> S3 (each slice consumes the previous one's axis; no disjointness).
   SAME axis — one policy, three consumers — with a spec per consumer.
 - All of it lands on `develop` through one pull request, CI green.
 
-## risks
+## risks and mitigations
 
 - **Byte budget**: AGENT-BOOTSTRAP.md is at 31997/32000B. The docs slice
   must reword existing lines, not just add; the served instruction
