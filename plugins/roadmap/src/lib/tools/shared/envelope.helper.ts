@@ -7,6 +7,7 @@
 import z from 'zod';
 
 import { toolError } from '@delendai/core/public';
+import { toolInvalidArguments } from '@delendai/core/plugin';
 
 import { ROADMAP_GATE_STATUSES } from '../../contracts/constants/gate.constant';
 import {
@@ -39,14 +40,8 @@ export const versionInputSchema = z
 	.object({ version: z.string().min(1).optional() })
 	.strict();
 
-export const invalidArguments = (issues: readonly z.core.$ZodIssue[]) =>
-	toolError(
-		issues
-			.map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-			.join('; '),
-		'Fix the arguments and call again.',
-		'invalid-arguments',
-	);
+/** The refusal for arguments the input schema rejected. */
+export const invalidArguments = toolInvalidArguments;
 
 export const roadmapUnreadable = (reason: string) =>
 	toolError(
