@@ -8,7 +8,8 @@ export type IGuardedHook =
 	| 'reference-transaction'
 	| 'pre-push'
 	| 'post-checkout'
-	| 'post-merge';
+	| 'post-merge'
+	| 'post-index-change';
 
 /** What the guard reads from git and the project; injected by specs. */
 export interface IGuardFacts {
