@@ -7,7 +7,7 @@
 export const WORK_COMMAND = {
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|progress|swarm|doctor|claim|enter|checkpoint|publish|retire|retired|reap> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--alongside] [--all] [--watch] [--agents] [--workspace=<path>]',
+	usage: 'work <status|progress|swarm|doctor|claim|enter|checkpoint|publish|retire|retired|reap|rescue> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--alongside] [--all] [--watch] [--agents] [--workspace=<path>]',
 	flags: [
 		'proposal',
 		'slice',

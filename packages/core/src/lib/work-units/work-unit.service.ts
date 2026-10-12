@@ -20,6 +20,7 @@ import { readWorkspacePolicy } from './development-policy.service';
 import { recordUnitEntered, touchUnitOfCheckout } from './unit-lease.service';
 import { pruneUnitLeases } from './unit-standings.service';
 import { reaped } from './work-unit-reap.service';
+import { rescued } from './shared-checkout-rescue.service';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 
 /**
@@ -92,6 +93,7 @@ export const runWorkUnit = async (
 		return result;
 	}
 	if (sub === 'reap') return reaped(args, ctx);
+	if (sub === 'rescue') return rescued(args, ctx);
 	if (sub === 'publish') {
 		const result = await published(args, ctx);
 		await pruneEndedLeases(ctx);
