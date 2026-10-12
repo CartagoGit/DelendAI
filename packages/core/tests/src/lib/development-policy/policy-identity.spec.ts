@@ -62,11 +62,13 @@ describe('development.identity resolves', () => {
 	});
 
 	it('ignores a block with nothing usable in it', () => {
+		// The resolver reads the block as `unknown` fields precisely so a
+		// config that a stricter reader would reject degrades inert here.
 		expect(
 			resolveDevelopmentPolicy({
 				development: {
 					profile: 'shared-checkout-pr',
-					identity: { providerBridge: 'yes' as unknown as boolean },
+					identity: { providerBridge: 'yes' },
 				},
 			}).identity,
 		).toBeUndefined();
