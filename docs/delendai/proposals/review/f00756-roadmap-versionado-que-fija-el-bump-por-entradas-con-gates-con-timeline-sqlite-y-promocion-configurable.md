@@ -260,6 +260,8 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Los nombres de rama de origen y destino se leen de la política de desarrollo del proyecto; ningún literal de rama aparece en el código del plugin, y un test lo comprueba fichero a fichero."
   - "Cerrar una entrada exige los gates en verde o una razón explícita; el silencio no es una opción."
 - shipped: `roadmap_plan_init` opens a target version (creating the file on first use), `roadmap_plan_close` closes an entry as delivered, deferred, dropped or superseded, and both record what the timeline lacks afterwards. They declare `writeRoot: caller-checkout`, so an agent in its own checkout changes the file there. `roadmap_promotion` names the branches, the verdict and the next action; in a project with one branch it says there is nothing to promote.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — Manifest, barrels, configuración declarativa y presupuesto de tokens
 - **Status**: review
