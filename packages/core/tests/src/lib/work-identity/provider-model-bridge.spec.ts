@@ -265,6 +265,24 @@ describe('providerModelReading', () => {
 		});
 	});
 
+	it('names the freshest model when one workspace has several entries', () => {
+		const { file, env } = bridge();
+		const now = Date.now();
+		write(file, {
+			entries: {
+				'/work/a': {
+					model: 'older',
+					at: new Date(now - 60_000).toISOString(),
+				},
+				'/work/a/.worktrees/u': {
+					model: 'newer',
+					at: new Date(now).toISOString(),
+				},
+			},
+		});
+		expect(providerModelId({ env, workspace: '/work/a' })).toBe('newer');
+	});
+
 	it('says why it named nothing, and how to fix it', () => {
 		const { file, env } = bridge();
 		const absent = providerModelReading({ env });
