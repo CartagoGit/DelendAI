@@ -705,6 +705,9 @@ export const createGuardCommand = (
 			return { code: EXIT_CODE.OK };
 		}
 		if (hook === 'post-commit') {
+			// A commit is a sign of life: without it, an agent working in its
+			// tree without delendai's commands looked idle within the hour.
+			await touchUnitOfCheckout(workspace, policy).catch(() => undefined);
 			reportUnitPush(workspace, policy, facts);
 			publishUnitLeavingProgress(workspace, policy, facts);
 			return { code: EXIT_CODE.OK };

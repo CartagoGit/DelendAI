@@ -7,7 +7,13 @@
  * whether anything is enforced at all.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
@@ -270,5 +276,86 @@ describe('delendai guard post-commit', () => {
 			spy.mockRestore();
 		}
 		expect(written.join('')).toContain('on this machine only');
+	}, 60_000);
+});
+
+describe('delendai guard post-commit, when the proposal leaves in-progress', () => {
+	it('starts the publication outside the hook, without the git environment git gave the hook', async () => {
+		const root = repo(
+			'{ "development": { "profile": "shared-checkout-pr", "branches": { "namespacePrefix": "delendai" } } }',
+		);
+		const git = (cwd: string, ...args: string[]) =>
+			execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+		const unit = mkdtempSync(join(tmpdir(), 'guard-leave-'));
+		roots.push(unit);
+		const branch = 'delendai/wip/agent/implement/x1-all-g1/topic';
+		const tree = join(unit, 'u');
+		git(root, 'worktree', 'add', '-q', '-b', branch, tree);
+		const move = (from: string | undefined, to: string) => {
+			execFileSync('mkdir', [
+				'-p',
+				join(tree, 'docs/delendai/proposals', to),
+			]);
+			if (from === undefined)
+				writeFileSync(
+					join(tree, 'docs/delendai/proposals', to, 'x1-a.md'),
+					'# x1\n',
+				);
+			else
+				git(
+					tree,
+					'mv',
+					`docs/delendai/proposals/${from}/x1-a.md`,
+					`docs/delendai/proposals/${to}/x1-a.md`,
+				);
+			git(tree, 'add', '-A');
+			git(tree, 'commit', '-q', '-m', `x1 to ${to}`);
+		};
+		move(undefined, 'in-progress');
+		move('in-progress', 'review');
+		// The "CLI" the hook starts: it records what it was given.
+		const seen = join(unit, 'seen.txt');
+		const entry = join(unit, 'fake-cli.mjs');
+		writeFileSync(
+			entry,
+			`import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(seen)}, JSON.stringify({ gitDir: process.env.GIT_DIR ?? null, args: process.argv.slice(2) }));\n`,
+		);
+		const argv = process.argv[1];
+		const gitDir = process.env.GIT_DIR;
+		process.argv[1] = entry;
+		// What git exports to a hook running in the unit's worktree.
+		process.env.GIT_DIR = git(tree, 'rev-parse', '--absolute-git-dir');
+		const written: string[] = [];
+		const spy = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation((chunk: string | Uint8Array) => {
+				written.push(String(chunk));
+				return true;
+			});
+		try {
+			expect(
+				(
+					await createGuardCommand().run(
+						['post-commit'],
+						contextFor(tree),
+					)
+				).code,
+			).toBe(0);
+		} finally {
+			spy.mockRestore();
+			process.argv[1] = argv ?? '';
+			if (gitDir === undefined) delete process.env.GIT_DIR;
+			else process.env.GIT_DIR = gitDir;
+		}
+		expect(written.join('')).toContain('left in-progress');
+		for (let attempt = 0; attempt < 100 && !existsSync(seen); attempt++)
+			await new Promise((resolve) => setTimeout(resolve, 50));
+		const started = JSON.parse(readFileSync(seen, 'utf8')) as {
+			gitDir: string | null;
+			args: string[];
+		};
+		expect(started.gitDir).toBeNull();
+		expect(started.args).toContain('--proposal=x1');
+		expect(started.args).toContain('publish');
 	}, 60_000);
 });

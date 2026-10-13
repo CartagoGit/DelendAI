@@ -67,6 +67,9 @@ export const reaped = async (
 	// A kept unit whose owner is not live gives its dependencies back;
 	// entering it again installs them.
 	const dependencies = await releaseIdleDependencies({
+		quietSeconds: leaseWindowSeconds(
+			opened.policy.coordination.leaseTtlMinutes,
+		),
 		units: kept.map((unit) => ({
 			ref: unit.ref,
 			standing: unit.standing,

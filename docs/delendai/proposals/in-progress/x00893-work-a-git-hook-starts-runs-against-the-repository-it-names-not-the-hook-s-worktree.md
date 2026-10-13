@@ -56,6 +56,32 @@ Two departures on 2026-10-14, the night x00892 merged:
 - acceptance:
   - At start, a unit is published for leaving in-progress only when one of its own commits (beyond the integration branch) had its proposal in progress and its tip no longer has. A unit that created a proposal and is still writing it is left alone.
 
+### S3 — A new proposal that edits existing files and adds one does not redden the integration branch
+
+- **Status**: pending
+- **Files**:
+  - `tools/scripts/lint/proposal-already-implemented.script.ts`
+  - `tools/tests/lint/proposal-already-implemented.spec.ts`
+- **Gate**: type
+- evidence: on 2026-10-14 `lint:proposals` failed on develop, and on every pull request, with five slices of the ready proposals f00759, f00760 and f00761 called `partial`. Each edits files that exist and adds a new module: not started, not half-done. A slice whose files were all tracked was already judged by whether they predate the proposal; a slice with some tracked was not, and the comparison was by day, so a file created hours before its proposal the same day counted as the slice's own.
+- acceptance:
+  - A slice whose tracked files all predate the proposal, by the instant the proposal's document was added, is "modifies existing" whether or not its new files exist yet, and never counted as stuck.
+  - A tracked file created after the proposal still makes the slice partial.
+
+### S4 — A unit in use keeps its dependencies
+
+- **Status**: pending
+- **Files**:
+  - `packages/core/src/lib/work-units/idle-unit-dependencies.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-reap.service.ts`
+  - `packages/cli/src/commands/guard.command.ts`
+  - `packages/core/tests/src/lib/work-units/idle-unit-dependencies.service.spec.ts`
+- **Gate**: type
+- evidence: on 2026-10-14 the `node_modules` of the units of x00892 and x00893 were removed three times while their agent was running commands in them (`Cannot find module yaml`, `better-sqlite3`). x00889 S4 released the dependencies of any unit not `live`. The lease heartbeat only moves on delendai's own commands, so an agent working in its tree for half an hour looked idle.
+- acceptance:
+  - Only an abandoned unit whose worktree has not been written within the lease window loses its dependencies.
+  - A commit on a unit's branch renews its heartbeat (`post-commit`).
+
 ## acceptance
 
 - A proposal leaving in-progress has its pull request opened and its branch ended by the hook alone.

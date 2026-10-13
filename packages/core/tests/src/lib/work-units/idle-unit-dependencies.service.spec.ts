@@ -30,21 +30,34 @@ describe('releaseIdleDependencies', () => {
 	it('reports without --apply and removes with it, leaving live units alone', async () => {
 		const idle = worktree(true);
 		const live = worktree(true);
+		// Quiet beyond the window but not abandoned: its owner may be working.
+		const quiet = worktree(true);
 		const bare = worktree(false);
 		const units = [
-			{ ref: 'wip/idle', worktree: idle, standing: 'idle' as const },
+			{ ref: 'wip/idle', worktree: idle, standing: 'abandoned' as const },
+			{ ref: 'wip/quiet', worktree: quiet, standing: 'idle' as const },
 			{ ref: 'wip/live', worktree: live, standing: 'live' as const },
 			{ ref: 'wip/bare', worktree: bare, standing: 'abandoned' as const },
 			{ ref: 'wip/gone', worktree: null, standing: 'idle' as const },
 		];
 
-		const reported = await releaseIdleDependencies({ units, apply: false });
+		const reported = await releaseIdleDependencies({
+			units,
+			apply: false,
+			quietSeconds: 60,
+			now: Date.now() / 1000 + 3600,
+		});
 		expect(reported).toEqual([
 			{ ref: 'wip/idle', worktree: idle, removed: false },
 		]);
 		expect(existsSync(join(idle, 'node_modules'))).toBe(true);
 
-		const applied = await releaseIdleDependencies({ units, apply: true });
+		const applied = await releaseIdleDependencies({
+			units,
+			apply: true,
+			quietSeconds: 60,
+			now: Date.now() / 1000 + 3600,
+		});
 		expect(applied).toEqual([
 			{ ref: 'wip/idle', worktree: idle, removed: true },
 		]);
@@ -61,5 +74,23 @@ describe('releaseIdleDependencies', () => {
 		expect(
 			await reenteredUnit(bare, undefined, 'wip/x', 'develop'),
 		).toEqual({});
+	});
+
+	it('keeps the dependencies of an abandoned unit whose tree was written within the window', async () => {
+		const recent = worktree(true);
+		expect(
+			await releaseIdleDependencies({
+				units: [
+					{
+						ref: 'wip/recent',
+						worktree: recent,
+						standing: 'abandoned',
+					},
+				],
+				apply: true,
+				quietSeconds: 3600,
+			}),
+		).toEqual([]);
+		expect(existsSync(join(recent, 'node_modules'))).toBe(true);
 	});
 });
