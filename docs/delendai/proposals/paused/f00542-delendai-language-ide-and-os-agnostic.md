@@ -31,6 +31,26 @@ last-transition-from: ready
 > (installer, IDE generators, transports, signing, cross-OS CI) until a
 > real non-TS plugin author exists.
 
+> **Extracted 2026-10-13** (the owner: take out of the paused proposals what is
+> useful now, keep the rest paused, and reference where it went). This proposal
+> stays paused as the record of the full vision; these parts are done in their
+> own proposals:
+>
+> - S3 (OS abstraction) → **f00759**, one machine profile: one detection of the
+>   OS and WSL, one resolver of the editors' user directories, and a lint
+>   against platform reads outside it.
+> - S6 (IDE connectors) → **f00760**, agents declared once in a host-neutral
+>   form and written for the hosts the project uses (declared in `hosts`, or
+>   detected), from one host registry that covers Cursor, Windsurf, OpenCode,
+>   Gemini CLI, Continue and the terminal agents besides Copilot, Claude and
+>   Codex.
+> - S1 + S2 (manifest, polyglot runtime) → **f00761**, a published JSON Schema
+>   of the plugin manifest, and an MCP server in any language as the runtime.
+>
+> Still paused here: S4 (native installers), S5 (polyglot quality presets),
+> S7 (alternate transports), S8 (signing), S9 (cross-OS CI matrix), S10 (guides
+> beyond f00761's).
+
 ## Goal
 
 Make delendai work for **any programming language, any IDE, and any OS** without compromising the current TypeScript dogfooding experience. Concretely: a language-agnostic plugin manifest (JSON Schema, available in TS/Python/Go/Rust/Java/.NET), a polyglot plugin runtime registry (bun/node/python/go/rust/java/dotnet/native), an OS abstraction layer (Linux/macOS/Windows/WSL/BSD), a universal bootstrap installer (deb/rpm/pkg/msi/winget/scoop/brew/tarball), language-agnostic quality presets (Python, Rust, Go, Java, .NET, Elixir, Ruby, PHP, Swift), IDE connector generators (VS Code, JetBrains, Cursor, Neovim), and signature verification for plugins.
