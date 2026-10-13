@@ -94,17 +94,19 @@ describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 		expect(sink.registry).toBeDefined();
 		expect(assembled.cacheEvictionRegistry).toBe(sink.registry);
 
-		// 2. Boot sweep ran and reported the rule's would-be removal.
-		expect(assembled.cacheEvictionBootReport.dryRun).toBe(true);
-		expect(assembled.cacheEvictionBootReport.rulesEvaluated).toBe(1);
+		// 2. Boot sweep ran, applied by default, over the plugin's rule and
+		// the core's two rules for the cache root.
+		expect(assembled.cacheEvictionBootReport.dryRun).toBe(false);
+		expect(assembled.cacheEvictionBootReport.rulesEvaluated).toBe(3);
 		expect(assembled.cacheEvictionBootReport.removed).toHaveLength(1);
 		expect(assembled.cacheEvictionBootReport.removed[0]?.path).toBe(
 			'capture/2026-06-01.jsonl',
 		);
 
-		// 3. Boot sweep was a dry-run, so the file is still on disk.
-		const info = await stat(join(cacheDir, 'capture', '2026-06-01.jsonl'));
-		expect(info.isFile()).toBe(true);
+		// 3. Applied: the file the rule named is gone.
+		await expect(
+			stat(join(cacheDir, 'capture', '2026-06-01.jsonl')),
+		).rejects.toThrow();
 
 		// Every real assembly creates the typed runtime evidence root, even
 		// when the operator has disabled the human-facing startup report.
@@ -160,7 +162,7 @@ describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 		await expect(stat(victim)).rejects.toThrow();
 	});
 
-	it('does NOT delete on boot when runOnBoot=apply but the cache plugin is absent', async () => {
+	it('only reports, deleting nothing, when the project declares a dry run', async () => {
 		await mkdir(join(cacheDir, 'capture'), { recursive: true });
 		const survivor = join(cacheDir, 'capture', '2026-06-01.jsonl');
 		await writeFile(survivor, 'old\n');
@@ -168,14 +170,13 @@ describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 		const sink: IPluginSink = {};
 		const assembled = await assembleCliConfig(baseArgs(workspace), {
 			readFile: fileReader(
-				JSON.stringify({ cache: { runOnBoot: 'apply' } }),
+				JSON.stringify({ cache: { runOnBoot: 'dry-run' } }),
 			),
 			import: capturingImport(sink),
 		});
 
-		// The contributing plugin is named `capture`, not `cache`, so the
-		// apply gate stays closed: dry-run, file survives.
 		expect(assembled.cacheEvictionBootReport.dryRun).toBe(true);
+		expect(assembled.cacheEvictionBootReport.removed).toHaveLength(1);
 		const info = await stat(survivor);
 		expect(info.isFile()).toBe(true);
 	});
@@ -197,7 +198,7 @@ describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 		expect(assembled.cacheEvictionBootReport.removed).toHaveLength(0);
 	});
 
-	it('does NOT run the boot sweep if the registry has no rules', async () => {
+	it('evaluates only the core rules when no plugin registers any', async () => {
 		const silentImport = async (
 			_specifier: string,
 		): Promise<{ default: unknown }> => ({
@@ -211,7 +212,7 @@ describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 			import: silentImport,
 		});
 		expect(assembled.cacheEvictionBootReport.removed).toHaveLength(0);
-		expect(assembled.cacheEvictionBootReport.rulesEvaluated).toBe(0);
+		expect(assembled.cacheEvictionBootReport.rulesEvaluated).toBe(2);
 	});
 
 	it('rejects a cacheDir that escapes the workspace', async () => {

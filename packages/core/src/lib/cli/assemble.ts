@@ -87,6 +87,7 @@ import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
 import { runThrottledBootSweep } from '../cache/boot-eviction-throttle.service';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import { coreEvictionRules } from '../cache/core-eviction-rules';
 import { validProviderRoster } from '../plugins/provider-roster.helper';
 import { reportAgentGrants } from '../scaffold/agent-grant-report';
 import { reportPluginAgents } from '../scaffold/plugin-agents-report';
@@ -451,6 +452,8 @@ export const assembleCliConfig = async (
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
 	});
+	for (const rule of coreEvictionRules())
+		cacheEvictionRegistry.register(rule);
 	// Injected when the host knows better; the in-memory engine remains
 	// the default, so a boot that says nothing behaves exactly as before.
 	const stateRegistry = await chooseStateRegistry({
@@ -1361,24 +1364,14 @@ export const assembleCliConfig = async (
 	// `IAssembledCliConfig.cacheEvictionBootReport` so the doctor
 	// (and CLI tests) can assert what the sweep would have done.
 	//
-	// Posture is governed by `config.cache.runOnBoot` (f00072 S3),
-	// defaulting to `'dry-run'` (safe: deletes nothing, only logs the
-	// report). The destructive `'apply'` mode is honoured ONLY when the
-	// opt-in `cache` plugin is loaded — without it no plugin contributes
-	// the static rules and a stray `apply` config would be a no-op
-	// anyway, but gating on the plugin keeps the core agnostic: a host
-	// that never loads `cache` can never trigger deletion. `'off'` skips
-	// the sweep entirely (empty report).
-	const cacheRunOnBoot = fileConfig.cache?.runOnBoot ?? 'dry-run';
-	// Ask the surface, not `loaded`: under the managed-lazy route nothing
-	// is imported until it is called, so `loaded` is empty and this gate
-	// read `false` for every adopter on the default surface — silently
-	// turning a configured `apply` posture into a no-op. The plugin is
-	// startup-activated when a sweep is configured
-	// (`requiresBootSweepActivation`), so its rules are registered by the
-	// time the sweep runs.
-	const cachePluginLoaded = surfacePluginNames.includes('cache');
-	const cacheEvictionApply = cacheRunOnBoot === 'apply' && cachePluginLoaded;
+	// Posture is governed by `config.cache.runOnBoot`. A cache sheds what
+	// its owners said nobody needs, so `'apply'` is the default; it used to
+	// be `'dry-run'`, gated on the `cache` plugin, and the cache only grew.
+	// Every rule is registered by the owner of the path it names (the core
+	// for its root, each plugin for its namespace). `'dry-run'` reports
+	// without deleting and `'off'` skips the sweep: both are declared.
+	const cacheRunOnBoot = fileConfig.cache?.runOnBoot ?? 'apply';
+	const cacheEvictionApply = cacheRunOnBoot === 'apply';
 	const cacheEvictionBootReport: ICacheEvictionReport =
 		cacheRunOnBoot === 'off'
 			? {

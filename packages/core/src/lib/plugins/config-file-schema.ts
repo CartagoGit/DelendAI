@@ -323,9 +323,9 @@ export const CONFIG_FILE_SCHEMA = z
 			// source of truth for `--check`).
 			.meta({ uniqueItems: true })
 			.optional(),
-		// S3 — cache eviction policy. Additive + backward
-		// compatible: a config without this block defaults to
-		// `runOnBoot: 'dry-run'` (the boot sweep only logs a report).
+		// Cache eviction policy. Without this block the boot sweep applies
+		// the owners' rules (`runOnBoot: 'apply'`); `'dry-run'` reports
+		// without deleting, `'off'` skips it.
 		cache: z
 			.object({
 				runOnBoot: z.enum(['dry-run', 'apply', 'off']).optional(),
