@@ -453,6 +453,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'ack',
 				'status',
 				'call',
+				'verify_result',
 			],
 			[],
 			[],

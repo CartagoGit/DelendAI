@@ -47,10 +47,14 @@
 		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
+		"@delendai/conventions": "workspace:*",
+		"@delendai/framework-knowledge": "workspace:*",
+		"@delendai/style-convention": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",
+		"@delendai/test-kit": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "5.0.3"
