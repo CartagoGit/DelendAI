@@ -301,4 +301,40 @@ describe('a slice reservation whose unit is gone', () => {
 		]);
 		expect(claims(first.git)).not.toContain('x00001/s3');
 	});
+
+	it('releases a review claim whose unit is gone, which names its branch in full', async () => {
+		const { first } = twoMachines();
+		const tree = first.git('rev-parse', 'HEAD^{tree}');
+		const parent = first.git('rev-parse', 'HEAD');
+		// What a review claim is: a commit naming the branch of its unit.
+		const claim = first.git(
+			'commit-tree',
+			tree,
+			'-p',
+			parent,
+			'-m',
+			'review claim x00001 1\n\nUnit: refs/heads/delendai/wip/agent-c/review/batch-all-g1/verdicts\nAgent: agent-c',
+		);
+		first.git(
+			'push',
+			'-q',
+			'origin',
+			`${claim}:refs/delendai/claims/review/x00001`,
+		);
+		const now = Math.floor(Date.now() / 1000);
+		expect(await reap(first.root, true, now)).toEqual([]);
+
+		const later = await reap(first.root, true, now + DAY);
+		expect(later).toEqual([
+			{
+				slice: 'review/x00001',
+				ref: 'refs/delendai/claims/review/x00001',
+				unit: 'agent-c/review/batch-all-g1/verdicts',
+				outcome: 'released',
+			},
+		]);
+		expect(
+			first.git('ls-remote', 'origin', 'refs/delendai/claims/review/*'),
+		).toBe('');
+	});
 });

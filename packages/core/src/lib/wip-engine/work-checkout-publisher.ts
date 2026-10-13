@@ -30,6 +30,7 @@ import type {
 } from './work-checkout-publisher.interface';
 import { holdWorkRef } from './work-ref-lock';
 import { publishWorkRef } from './work-ref-publication';
+import { changedReports } from './work-checkout-reports';
 
 /**
  * How often to publish, or `undefined` when the policy does not ask for
@@ -346,27 +347,6 @@ export const startWorkCheckoutPublisher = (
 		stop: () => {
 			if (timer !== undefined) clearInterval(timer);
 		},
-	};
-};
-
-/**
- * A report writer that writes a pass's report only when it differs from
- * the last one. The publisher runs every few minutes, and four empty units
- * of a stopped swarm put the same "no commits of its own yet" line into
- * the server's log every five minutes for a day.
- */
-export const changedReports = (
-	write: (line: string) => void,
-): ((moved: unknown) => void) => {
-	let last = '';
-	return (moved) => {
-		const line = JSON.stringify({
-			event: 'work-checkouts.published',
-			moved,
-		});
-		if (line === last) return;
-		last = line;
-		write(line);
 	};
 };
 
