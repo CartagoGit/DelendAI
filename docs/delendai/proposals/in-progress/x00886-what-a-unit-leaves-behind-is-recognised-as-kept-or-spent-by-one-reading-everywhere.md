@@ -84,8 +84,19 @@ The server log pasted with the same request showed two more departures: the chec
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S4 — A unit ends once every slice of its proposal is handed in
+
+- **Status**: pending
+- **Files**:
+  - `packages/core/src/lib/work-units/publication-target.service.ts`
+  - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - A proposal counts as in progress for its unit only while its file is in `in-progress/` and some slice is not yet in review, approved or done. Once every slice is handed in, the unit is judged delivered and reaped after its publication merges, rather than fast-forwarded and kept.
+
 ## acceptance
 
 - A boot over a repository whose only leftover is a checkpoint kept under a later retired tip reports HEALTHY.
 - `work reap` on this repository lists the spent review claim and the empty stray refs, and keeps the strays that carry a commit.
 - The server log no longer repeats an unchanged unit's skip.
+- After this proposal's publication merged, its unit's branch and worktree stayed and were fast-forwarded to develop (observed 2026-10-13). With S4 they are reaped.
