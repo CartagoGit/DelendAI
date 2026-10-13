@@ -2,10 +2,14 @@
 id: f00759
 title: "one answer to which machine this is, and where its editors keep their files"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: b4a1621d-9957-4f5f-9c6d-e45b4b8e1ad3
+last-correlation-id: b4a1621d-9957-4f5f-9c6d-e45b4b8e1ad3
+last-transition-from: ready
+last-transition-at: 2026-10-13T23:02:05.003Z
 ---
 
 # f00759 — one answer to which machine this is, and where its editors keep their files
