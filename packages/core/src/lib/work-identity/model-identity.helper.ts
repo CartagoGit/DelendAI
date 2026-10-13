@@ -97,8 +97,14 @@ export const canonicalModelId = (
 };
 
 /** Where the models this machine was seen running are remembered. */
-export const seenModelsPath = (): string =>
-	join(homedir(), '.cache', 'delendai', SEEN_MODELS_FILE);
+export const seenModelsPath = (
+	env: NodeJS.ProcessEnv = process.env,
+): string => {
+	const declared = env[SEEN_MODELS_VARIABLE]?.trim();
+	return declared !== undefined && declared.length > 0
+		? declared
+		: join(homedir(), '.cache', 'delendai', SEEN_MODELS_FILE);
+};
 
 /** The model ids this machine was seen running; none when unreadable. */
 export const seenModels = (

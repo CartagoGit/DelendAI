@@ -35,7 +35,7 @@ import { join } from 'node:path';
 import type { IProviderModelReading } from '../contracts/interfaces/provider-model-reading.interface';
 import type { IHostChatModel } from '../contracts/interfaces/host-chat-model.interface';
 import { hostChatModel } from './host-chat-model.helper';
-import { rememberSeenModel } from './model-identity.helper';
+import { rememberSeenModel, seenModelsPath } from './model-identity.helper';
 import {
 	PROVIDER_MODEL_BRIDGE_FILE,
 	PROVIDER_MODEL_BRIDGE_VARIABLE,
@@ -128,7 +128,7 @@ export const providerModelReading = (
 	if ('model' in published || input.workspace === undefined) return published;
 	const seen = observedHostModel(input.workspace, input.now, input.env);
 	if (seen === undefined) return published;
-	rememberSeenModel(seen.model);
+	rememberSeenModel(seen.model, seenModelsPath(input.env ?? process.env));
 	return { model: seen.model, provider: `host:${seen.host}` };
 };
 

@@ -9,6 +9,7 @@ import {
 	modelStage,
 	rememberSeenModel,
 	seenModels,
+	seenModelsPath,
 } from '../../../../src/lib/work-identity/model-identity.helper';
 
 const KNOWN = [
@@ -64,5 +65,18 @@ describe('the seen-model catalog', () => {
 		} finally {
 			rmSync(dir, { recursive: true, force: true });
 		}
+	});
+});
+
+describe('seenModelsPath', () => {
+	it('takes the override, else the user cache', () => {
+		expect(
+			seenModelsPath({ DELENDAI_SEEN_MODELS_FILE: '/tmp/x.json' }),
+		).toBe('/tmp/x.json');
+		expect(
+			seenModelsPath({}).endsWith(
+				join('.cache', 'delendai', 'models-seen.json'),
+			),
+		).toBe(true);
 	});
 });
