@@ -93,4 +93,17 @@ describe('releaseIdleDependencies', () => {
 		).toEqual([]);
 		expect(existsSync(join(recent, 'node_modules'))).toBe(true);
 	});
+
+	it('passes over a unit whose worktree is gone', async () => {
+		const gone = join(worktree(false), 'not-there');
+		expect(
+			await releaseIdleDependencies({
+				units: [
+					{ ref: 'wip/gone', worktree: gone, standing: 'abandoned' },
+				],
+				apply: true,
+				quietSeconds: 1,
+			}),
+		).toEqual([]);
+	});
 });
