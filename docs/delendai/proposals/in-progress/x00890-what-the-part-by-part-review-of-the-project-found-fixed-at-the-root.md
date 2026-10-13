@@ -33,7 +33,7 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 
 ### S1 — A review claim taken on a merged branch is recognised as spent
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/stray-refs-reap.service.ts`
   - `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`
@@ -42,6 +42,8 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 - acceptance:
   - A root commit whose tree is the tree of any commit develop reaches (within the same history bound) is a snapshot already held and is removed by `work reap --apply`; a root commit over a tree nobody has is still kept.
   - `work doctor` reports the stray-refs invariant as holding on the clone where the three refs were found, after one `work reap --apply`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — An editor configuration with comments is edited, never a reason for `init` to stop
 
