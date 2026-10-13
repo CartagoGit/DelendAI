@@ -158,8 +158,10 @@ describe('reportGuardHooks leaves the repository alone', () => {
 		const root = repo(POLICY);
 		const outcome = await reportGuardHooks({ workspaceRoot: root });
 		const text = outcome.lines.join('\n');
-		expect(text).toContain('pre-commit: absent');
+		expect(text).toMatch(/absent \([^)]*pre-commit/u);
 		expect(text).toContain('delendai guard install');
+		// One line for the state, one for the remedy: not one per hook.
+		expect(outcome.lines.length).toBeLessThanOrEqual(2);
 	});
 
 	it('stays quiet for a project that says off, or declares no policy', async () => {

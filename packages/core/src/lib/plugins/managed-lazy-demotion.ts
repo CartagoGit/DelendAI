@@ -37,8 +37,8 @@ export const buildManagedLazyDemotionNotice = (input: {
 	return {
 		unindexed,
 		lines: [
-			`[delendai] lazy plugin loading is OFF: ${unindexed.join(', ')} ${unindexed.length === 1 ? 'is' : 'are'} not in the managed-lazy catalog, so the whole surface fell back to eager loading.`,
-			'[delendai] Every tool still works; boot is slower and the full tool surface is registered up front. Fix with `bun tools/scripts/generate/managed-lazy-catalog.script.ts`.',
+			`[delendai] lazy plugin loading is off for this start: ${unindexed.join(', ')} ${unindexed.length === 1 ? 'is' : 'are'} not in the catalog delendai ships (a plugin of this project's own, or one added since), so every plugin is loaded now.`,
+			'[delendai] Every tool works. What this start loads is recorded in the project cache, so the next start loads every plugin lazily; a plugin is recorded again when its file changes.',
 		],
 	};
 };

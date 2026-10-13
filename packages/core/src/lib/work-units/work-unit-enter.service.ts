@@ -51,6 +51,7 @@ import {
 	providerBridgeSilence,
 	providerModelReading,
 } from '../work-identity/provider-model-bridge.helper';
+import { installUnitDependencies } from './unit-dependencies.service';
 
 /**
  * Give this agent its own working tree on its own ref.
@@ -386,11 +387,13 @@ export const enteredHeld = async (
 	// instance took this unit as free (x00731).
 	const path = resolve(root, dir);
 	const claimed = claimWorktree(path, agent, session);
+	const dependencies = await installUnitDependencies(path);
 	return withBriefing(ctx, root, policy, agent, {
 		ref,
 		branch,
 		path,
 		created: true,
 		session: claimed,
+		dependencies,
 	});
 };

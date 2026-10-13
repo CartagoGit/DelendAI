@@ -112,7 +112,9 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 		`version        ${report.identity.version}`,
 		`workspace      ${report.identity.workspace}`,
 		`preset         ${report.identity.preset}`,
-		`surface        ${report.identity.surfaceMode} · ${report.runtime.lazyActivation ? 'lazy loading enabled' : 'eager loading'}`,
+		// "Lazy" only when modules are loaded lazily: a start that fell back to
+		// eager loading said "lazy loading enabled" beside "module loading eager".
+		`surface        ${report.identity.surfaceMode} · ${report.runtime.lazyActivation && report.runtime.moduleLoading !== 'eager' ? 'lazy loading enabled' : 'eager loading'}`,
 		`tools          ${report.catalog.toolsExposed} visible / ${report.catalog.toolsAvailable} available`,
 		`plugins        ${report.catalog.pluginsConfigured} configured · ${report.catalog.pluginsLoaded ?? report.catalog.pluginsWarm} loaded · ${report.catalog.pluginsWarm} warm`,
 		...(report.identity.surfaceModeReason !== undefined
@@ -174,11 +176,14 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 
 	// ─── Plugin loading summary (medium+) ──────────────────────────
 	if (report.reconciliation.plugins.length > 0) {
+		// Plugins only: the core is not one, and counting it here made this
+		// list one longer than the "plugins … loaded" line above.
 		const loadedPlugins = report.reconciliation.plugins
 			.filter(
 				(plugin) =>
-					plugin.status === 'active-internal' ||
-					plugin.status === 'loaded-hidden',
+					plugin.pluginName !== 'core' &&
+					(plugin.status === 'active-internal' ||
+						plugin.status === 'loaded-hidden'),
 			)
 			.map((plugin) => plugin.pluginName);
 		const lazyPlugins = report.reconciliation.plugins

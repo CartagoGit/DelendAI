@@ -63,6 +63,7 @@ import {
 	DELENDAI_TO_DELENDAI_V1_ID,
 	delendaiToDelendAIV1,
 } from './migrations/delendai-to-delendai-v1';
+import { createPolicyAlignmentMigrator } from './migrators/policy-alignment.migrator';
 
 /**
  * The migrations a workspace runs, in declaration order.
@@ -107,6 +108,9 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	// migrators may still be renaming, and it is the only entry that
 	// PROPOSES something rather than renaming what is already there.
 	createDevelopmentPolicyMigrator(),
+	// After the block is written: settings an older delendai wrote that the
+	// policy now contradicts are removed, rather than warned about forever.
+	createPolicyAlignmentMigrator(),
 ] as const;
 
 /** The migrations this registry currently ships, as a frozen map. */
