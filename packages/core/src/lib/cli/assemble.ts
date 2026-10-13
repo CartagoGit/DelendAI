@@ -87,6 +87,8 @@ import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
 import { runThrottledBootSweep } from '../cache/boot-eviction-throttle.service';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import { reportAgentGrants } from '../scaffold/agent-grant-report';
+import { reportPluginAgents } from '../scaffold/plugin-agents-report';
 import { chooseStateRegistry } from './state-registry-choice';
 import {
 	createJsonlRuntimeEventSink,
@@ -728,6 +730,11 @@ export const assembleCliConfig = async (
 		cacheDirAbs: cacheDirContained.abs,
 		createPluginDirs: false,
 	});
+	await reportAgentGrants(workspace.root, corePrefix);
+	// Only a project that has a configuration is written to: a server
+	// started anywhere else adopts nothing behind anyone's back.
+	if (rawConfig !== undefined)
+		await reportPluginAgents(workspace.root, corePrefix, loadResult.loaded);
 
 	const {
 		validationMatrix,

@@ -30,6 +30,7 @@ import type { IErrorCollector } from '../error-collection/collector.interface';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
 import type { IStateRegistry } from '@delendai/contracts/state';
 import type { IHostSubagentRuntime } from '@delendai/contracts';
+import type { IAgentRoleContribution } from '../contracts/interfaces/agent-role-contribution.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -359,6 +360,12 @@ export interface IMcpPluginRegistrations {
 	readonly resources?: readonly IResourceRegistration[];
 	readonly knowledge?: readonly IKnowledgeEntry[];
 	readonly skills?: readonly ISkillEntry[];
+	/**
+	 * Agent roles this plugin brings. A project that activates the plugin
+	 * gets an agent for each at its next start; deactivating the plugin
+	 * removes the ones nobody edited.
+	 */
+	readonly agentRoles?: readonly IAgentRoleContribution[];
 	readonly onToolCall?:
 		| ((
 				toolName: string,
