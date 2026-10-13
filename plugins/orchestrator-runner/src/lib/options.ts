@@ -10,6 +10,7 @@
  * writes the canonical root block; wiring the root read is a follow-up
  * (needs a core ctx addition) and is out of S4 scope. Documented in README.
  */
+import type { IProviderCapabilities } from '@delendai/core/public';
 import z from 'zod';
 
 export const CapabilityTagSchema = z.enum([
@@ -162,3 +163,15 @@ export const DEFAULT_OPTIONS = {
 	confirmBeforeExecute: true,
 	autoBypassConfirmed: false,
 };
+
+/**
+ * The roster the runner routes over: its own \`providers\` option when it
+ * declares one, even an empty one, else the root roster the core passed.
+ */
+export const rosterFor = (
+	own: readonly unknown[] | undefined,
+	root: readonly IProviderCapabilities[] | undefined,
+): readonly IProviderCapabilities[] =>
+	own !== undefined
+		? (own as readonly IProviderCapabilities[])
+		: (root ?? []);
