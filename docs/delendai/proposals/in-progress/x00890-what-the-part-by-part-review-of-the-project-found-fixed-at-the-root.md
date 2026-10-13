@@ -47,7 +47,7 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 
 ### S2 — An editor configuration with comments is edited, never a reason for `init` to stop
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/install/merge-config.ts`
   - `packages/core/src/lib/install/installer.ts`
@@ -61,6 +61,8 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
   - A configuration with comments has the server added as an edit of its text: every comment, sibling and the user's formatting stay. An unchanged one is returned byte for byte.
   - A configuration that cannot be read as a JSON object is skipped and reported (`left as it is: …`), and every other target is still set up.
   - The server-name detection and the grant reconciler read the same files as JSONC.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The install smoke never writes the developer's own editor configurations
 
