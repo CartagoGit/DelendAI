@@ -62,6 +62,12 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// a one-shot process each hook starts. The fact it reads is a small
 	// JSON entry the provider rewrites every request.
 	/packages\/core\/src\/lib\/work-identity\/provider-model-bridge\.helper\.ts$/,
+	// The same synchronous reading, when no provider publishes: the
+	// editor's chat sessions for the workspace (read from their end, the
+	// result kept a few seconds), and the small catalog of models this
+	// machine was seen running that names a spelling one way.
+	/packages\/core\/src\/lib\/work-identity\/host-chat-model\.helper\.ts$/,
+	/packages\/core\/src\/lib\/work-identity\/model-identity\.helper\.ts$/,
 ];
 
 /** Sync node:fs functions that are not allowed outside boot. */

@@ -2,14 +2,14 @@
 id: x00887
 title: "The model a chat provider serves reaches delendai through a channel the product owns"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 0be7674e-66be-443a-8640-1c31e0bd03db
-last-correlation-id: 0be7674e-66be-443a-8640-1c31e0bd03db
-last-transition-from: ready
-last-transition-at: 2026-10-13T04:11:30.063Z
+last-transition-id: 950e9949-caa6-40f4-8732-d85605dc1920
+last-correlation-id: 950e9949-caa6-40f4-8732-d85605dc1920
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T10:39:40.207Z
 ---
 
 # x00887 — The model a chat provider serves reaches delendai through a channel the product owns
@@ -54,6 +54,7 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
   - Entries are kept per workspace (a map, or one file per workspace key), so two windows on different workspaces never erase each other. The single-file format is still read.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `37b96b404cb6`
 
 ### S2 — The bridge's state is reported, never silent
 
@@ -69,18 +70,54 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
   - The bridge reports why it gave nothing: `absent`, `stale` (with its age), `other-workspace` or `malformed`. `work enter`'s identity refusal and the server's start-up notice show that reason and the remedy (a provider that publishes, `DELENDAI_PROVIDER_MODEL_FILE`, or `DELENDAI_AGENT_ID`).
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `37b96b404cb6`
 
-### S3 — The writer comes from a channel the product owns
+### S3 — The model is read from the editor itself, no provider needed
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `extensions/vscode/src`
+  - `packages/core/src/lib/work-identity/host-chat-model.helper.ts`
+  - `packages/core/src/lib/contracts/constants/host-chat-model.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/host-chat-model.interface.ts`
+  - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
+  - `packages/core/tests/src/lib/work-identity/host-chat-model.helper.spec.ts`
+  - `tools/scripts/lib/hermetic-agent-bridge-setup.ts`
+  - `packages/core/src/lib/scan/dip-violation.ts`
+  - `packages/core/tests/src/lib/scan/dip-violation.spec.ts`
 - **Gate**: type
 - acceptance:
-  - The bridge's writer is delivered by a channel delendai owns or that the provider's author accepts upstream: delendai's own VS Code extension where the host API exposes the serving model, or an upstream contribution to the provider implementing the S1 contract. Opening that contribution is an outward action and needs the owner's go-ahead. No step edits an installed extension.
-  - When the provider and the server run in different hosts (local UI against WSL or a remote), the server is told where the provider writes. For example, delendai's extension sets `DELENDAI_PROVIDER_MODEL_FILE` when it registers the server, so an entry written on one side is read on the other.
+  - The owner ruled out a contribution to a provider's repository (2026-10-13): delendai learns the model without any program's cooperation.
+  - VS Code-family editors (Code, Insiders, Cursor, VSCodium, Windsurf; their Windows side from WSL included) record, for every chat request, the model it went to (`modelId`, `<vendor>/<id>`), in the chat sessions they keep per workspace. When no provider publishes the bridge, the newest of those sessions for the workspace, or one containing it, names the model while it is recent.
+  - Specs never read the machine's editor: the hermetic setup points the observer at an empty directory.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `37b96b404cb6`
+
+### S4 — One identity per model, its release stage included
+
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/work-identity/model-identity.helper.ts`
+  - `packages/core/src/lib/work-identity/model-spelling.helper.ts`
+  - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
+  - `packages/core/tests/src/lib/work-identity/model-identity.helper.spec.ts`
+  - `packages/core/src/lib/work-identity/identity-policy.helper.ts`
+  - `packages/core/src/lib/development-policy/resolve-identity.ts`
+  - `packages/core/src/lib/development-policy/resolve.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/policy-identity.interface.ts`
+  - `packages/core/src/lib/plugins/development-config-schema.constant.ts`
+  - `packages/core/schema/delendai.config.schema.json`
+- **Gate**: type
+- acceptance:
+  - Observed on 2026-10-13: one model signed reviews and work as `minimax-3`, `minimax-3.1`, `minimax-m3`, `minimax-m3.1`, `minimax-m31` and `MiniMax-M3`. The editor's record names it `minimax/MiniMax-M3.1-Flash-Preview`.
+  - Every model id an identity source gives is named canonically: the vendor's own id, lower-cased, its stage (`preview`) kept, so the released model is a different identity. A spelling that names no model exactly is resolved to the one model this machine was seen running whose brand, version digits and words it fits. A spelling that fits several models, or none, is kept as written. A client application's name is never treated as a model.
+  - The models seen are remembered in the user cache (`~/.cache/delendai/models-seen.json`, overridable), fed by the editor observation.
+  - A project declares spellings for agents whose machine never saw the model in an editor (a swarm on another host): `development.identity.aliases`, e.g. `{ "minimax-3.1": "minimax/MiniMax-M3.1-Flash-Preview" }`, applied to every source but a client's name.
+- shipped-in: `37b96b404cb6`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
-- In a VS Code window served by Universal Chat Provider, a `work enter` with no `--agent` and no `DELENDAI_AGENT_ID` names the unit after the model that served the turn. With the provider absent, the refusal says that no provider publishes and how to fix it.
+- In a VS Code window served by Universal Chat Provider or any other model provider, a `work enter` with no `--agent` and no `DELENDAI_AGENT_ID` names the unit after the model the editor recorded serving the turn, with no cooperation from the provider. With the provider absent, the refusal says that no provider publishes and how to fix it.
 - Two windows on different workspaces served by different models each keep their own identity.
