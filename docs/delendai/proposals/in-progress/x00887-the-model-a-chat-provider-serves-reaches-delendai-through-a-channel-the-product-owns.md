@@ -2,10 +2,14 @@
 id: x00887
 title: "The model a chat provider serves reaches delendai through a channel the product owns"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 0be7674e-66be-443a-8640-1c31e0bd03db
+last-correlation-id: 0be7674e-66be-443a-8640-1c31e0bd03db
+last-transition-from: ready
+last-transition-at: 2026-10-13T04:11:30.063Z
 ---
 
 # x00887 — The model a chat provider serves reaches delendai through a channel the product owns
