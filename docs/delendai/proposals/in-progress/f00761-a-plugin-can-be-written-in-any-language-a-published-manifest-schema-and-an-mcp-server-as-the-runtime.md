@@ -2,10 +2,14 @@
 id: f00761
 title: "a plugin can be written in any language: a published manifest schema, and an MCP server as the runtime"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 9a291648-28d2-4ff3-a93f-1946d5242222
+last-correlation-id: 9a291648-28d2-4ff3-a93f-1946d5242222
+last-transition-from: ready
+last-transition-at: 2026-10-13T23:42:14.660Z
 ---
 
 # f00761 — a plugin can be written in any language: a published manifest schema, and an MCP server as the runtime
