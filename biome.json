@@ -107,7 +107,8 @@
 				"apps/web/src/generated/**/*.generated.ts",
 				"apps/web/src/data/plugins/catalog.generated.ts",
 				"docs/delendai/generated/**",
-				"packages/core/schema/delendai.config.schema.json"
+				"packages/core/schema/delendai.config.schema.json",
+				"packages/core/schema/delendai.plugin-manifest.schema.json"
 			],
 			"formatter": {
 				"enabled": false
