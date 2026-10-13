@@ -11,6 +11,9 @@ _(none)_
 
 ## Depends on
 
+- @delendai/conventions
+- @delendai/framework-knowledge
+- @delendai/style-convention
 - zod
 - @delendai/core
 
@@ -27,8 +30,8 @@ _(none)_
 
 - plugins/external-mcps/src/lib/subprocess/env-filter.spec.ts
 - plugins/external-mcps/tests/src/lib/activation-policy.spec.ts
+- plugins/external-mcps/tests/src/lib/capability/capability-registry.service.spec.ts
 - plugins/external-mcps/tests/src/lib/catalog.spec.ts
-- plugins/external-mcps/tests/src/lib/configuration-metadata.spec.ts
 
 ## Do not
 
