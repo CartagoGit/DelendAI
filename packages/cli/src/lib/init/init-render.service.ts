@@ -21,6 +21,8 @@ import {
 } from '@delendai/core/public';
 import type { IFileReader } from '@delendai/core/contracts';
 import {
+	DEFAULT_DELENDAI_SERVER_NAME,
+	hostToolSetReference,
 	applyJsoncEdits,
 	deriveSourceRoots,
 	renderPluginConfigComment,
@@ -270,7 +272,7 @@ export const mergeDelendaiServerEntry = (
 	launch: ICanonicalLaunch,
 	existingContent: string,
 	kind: 'servers' | 'mcpServers' = 'servers',
-	serverName = 'DelendAI',
+	serverName = DEFAULT_DELENDAI_SERVER_NAME,
 ): string | undefined => {
 	let parsed: unknown;
 	try {
@@ -309,7 +311,7 @@ export const mergeDelendaiServerEntry = (
 /** Renders `.vscode/mcp.json` with the canonical launch shape. */
 export const renderVscodeMcpJson = (
 	launch: ICanonicalLaunch,
-	serverName = 'DelendAI',
+	serverName = DEFAULT_DELENDAI_SERVER_NAME,
 ): IRenderedFile => {
 	const content = {
 		servers: {
@@ -324,7 +326,7 @@ export const renderVscodeMcpJson = (
 
 export const renderGenericMcpJson = (
 	launch: ICanonicalLaunch,
-	serverName = 'DelendAI',
+	serverName = DEFAULT_DELENDAI_SERVER_NAME,
 ): IRenderedFile => ({
 	relPath: '.mcp.json',
 	content: `${JSON.stringify(
@@ -353,12 +355,12 @@ const renderAgentFile = (
 		body: string;
 	},
 	namespacePrefix = 'delendai',
-	serverName = 'delendai',
+	serverName = DEFAULT_DELENDAI_SERVER_NAME,
 ): IRenderedFile => {
 	const isRoot = descriptor.role === 'orchestrator';
 	const tools = isRoot
-		? `[read, search, edit, execute, todo, agent, ${serverName}/*]`
-		: `[read, search, edit, execute, todo, ${serverName}/*]`;
+		? `[read, search, edit, execute, todo, agent, ${hostToolSetReference(serverName)}/*]`
+		: `[read, search, edit, execute, todo, ${hostToolSetReference(serverName)}/*]`;
 	const frontmatter = [
 		'---',
 		`name: ${namespacePrefix}-${descriptor.role}`,
@@ -451,7 +453,7 @@ export const renderAgentFiles = async (
 	} = {},
 ): Promise<readonly IRenderedFile[]> => {
 	const namespacePrefix = options.namespacePrefix ?? 'delendai';
-	const serverName = options.serverName ?? namespacePrefix;
+	const serverName = options.serverName ?? DEFAULT_DELENDAI_SERVER_NAME;
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
 	// x00160 S2: one Copilot file + one Claude Code file per role.
 	// Extended to emit Codex CLI files as well so a Codex adopter of

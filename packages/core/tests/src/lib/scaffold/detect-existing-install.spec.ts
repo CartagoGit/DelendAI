@@ -80,6 +80,22 @@ describe('isDelendaiLaunchShape', () => {
 });
 
 describe('findDelendaiServerName', () => {
+	it('finds the delendai key in a Zed ("context_servers") config', () => {
+		expect(
+			findDelendaiServerName(
+				JSON.stringify({
+					context_servers: {
+						other: { command: 'foo' },
+						Mine: {
+							command: 'npx',
+							args: ['-y', '@delendai/core'],
+						},
+					},
+				}),
+			),
+		).toBe('Mine');
+	});
+
 	it('finds the delendai key in a .vscode/mcp.json-shaped ("servers") config, ignoring unrelated servers', () => {
 		expect(
 			findDelendaiServerName(POSTMAN_EXPORTER_SHAPED_VSCODE_MCP_JSON),
