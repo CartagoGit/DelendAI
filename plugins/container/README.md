@@ -10,7 +10,10 @@ delendai --plugins=container
 ```
 
 Registers `<prefix>_container_inspect`, `<prefix>_container_logs`, and
-`<prefix>_container_lint`.
+`<prefix>_container_lint` everywhere. In a repository that uses Docker (a
+root `Dockerfile`, compose file or `.devcontainer/`), it also registers the
+tools that change things: `<prefix>_container_build`, `<prefix>_k8s_apply`,
+and the Docker tools below. Elsewhere the plugin stays passive.
 
 ## Tools
 
@@ -112,3 +115,26 @@ Example findings:
 ```
 
 All normalization stays in pure parsers and rules so the lint works fully offline.
+
+## Docker tools
+
+Registered only where the repository uses Docker. Each one runs the `docker`
+CLI, and every one follows the same consent rules.
+
+| Tool | What it does | Consent |
+| --- | --- | --- |
+| `<prefix>_container_pull` | Pull an image. With `policy: "if-not-present"` (the default), it pulls only when the image is missing. | `confirm` |
+| `<prefix>_container_run` | Run a container. It gets `--rm` unless you give it a `name`. | `confirm`; `confirmRisk` when it reaches the host |
+| `<prefix>_container_exec` | Run a command in a running container. | `confirm` |
+| `<prefix>_container_compose` | `services` lists the compose file's services: their ports, the names of their environment variables, and their mounts. `ps` and `logs` read. `up`, `down` and `exec` act on the project's compose file. `up` starts one `service` unless you pass `all: true`. | `confirm` for `up`, `down` and `exec` |
+| `<prefix>_container_network` | `ls`, `inspect`, `create` or `rm` a network. | `confirm` for `create` and `rm` |
+| `<prefix>_container_volume` | `ls`, `inspect`, `create` or `rm` a volume. | `confirm` for `create` and `rm` |
+
+`dryRun: true` returns the exact `docker` command and runs nothing.
+
+## Safety
+
+- **Nothing changes without `confirm: true`.** Reading commands (`ps`, `logs`, `ls`, `inspect`, `services`) need no consent.
+- **Reaching the host needs its own consent.** Some containers hand the host to whatever runs inside them: a privileged container, a container with the docker socket mounted, or one sharing the host's network, process or IPC namespace. Such a container runs only with `confirmRisk: true`, and `confirm` never implies it, so a script that confirms every call still cannot start one by accident. The refusal lists exactly what the container would reach, so a person can approve that and nothing more. A compose `up` checks the same risks for every service it would start.
+- **Environment values are never returned.** `services` lists variable names only. A compose file keeps its secrets in those values.
+- **What is out of scope.** There is no host-wide clean-up (`system prune`), no registry push, no socket adapter, and no Podman.

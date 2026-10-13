@@ -8,6 +8,8 @@ import {
 	buildContainerLogsToolRegistrations,
 } from './lib/tools/container-lint.tool';
 import { buildContainerBuildToolRegistrations } from './lib/tools/container-build.tool';
+import { buildContainerDockerToolRegistrations } from './lib/tools/container-docker.tool';
+import { dockerSignals } from './lib/detect/docker-signals.service';
 
 const OptionsSchema = z.object({});
 
@@ -17,13 +19,16 @@ export default definePlugin({
 	describe:
 		'Container inspection: container_ps + container_images (Docker) + k8s_get (Kubernetes) — read-only by default. Probes docker/kubectl via r00012.',
 	optionsSchema: OptionsSchema,
-	register(ctx) {
+	async register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
 				`container plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
+		// The tools that change images, containers, networks and volumes
+		// exist only where the repository says it uses Docker.
+		const usesDocker = (await dockerSignals(ctx.workspace.root)).length > 0;
 		return {
 			tools: [
 				...buildContainerInspectToolRegistrations({
@@ -36,9 +41,17 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
 				}),
-				...buildContainerBuildToolRegistrations({
-					namespacePrefix: ctx.namespacePrefix,
-				}),
+				...(usesDocker
+					? [
+							...buildContainerBuildToolRegistrations({
+								namespacePrefix: ctx.namespacePrefix,
+							}),
+							...buildContainerDockerToolRegistrations({
+								namespacePrefix: ctx.namespacePrefix,
+								workspaceRootAbs: ctx.workspace.root,
+							}),
+						]
+					: []),
 			],
 			knowledge: [
 				{

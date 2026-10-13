@@ -12,7 +12,7 @@ date: 2026-09-15
 
 ## Goal
 
-Provide the agent with tools to **control Docker** (build, run, exec, compose up/down/logs/ps, network, volume) from inside an existing environment. The plugin is only active when the repository signals Docker usage (Dockerfile, compose file, .devcontainer/); when absent, tools stay passive and only docker_inspect_repo is available. Defaults are fail-safe: network=none, pullPolicy=if-not-present, cleanupOnExit=always, no socket or privileged containers without explicit user confirmation.
+Give the agent tools to **control Docker** (build, run, exec, compose up/down/logs/ps, network, volume) from inside an existing environment. The plugin is only active when the repository signals Docker usage (Dockerfile, compose file, .devcontainer/); when absent, tools stay passive and only docker_inspect_repo is available. Defaults are fail-safe: network=none, pullPolicy=if-not-present, cleanupOnExit=always, no socket or privileged containers without explicit user confirmation.
 
 ## why
 
@@ -29,73 +29,87 @@ P4 lets the agent **run inside** Docker; P5 lets the agent **use** Docker as a t
 
 - global_gate: type
 
-### S1 — Contract and repo autodetection
-- **Status**: pending
-- **Files**: `plugins/docker/src/lib/contracts/interfaces/docker.interface.ts`, `plugins/docker/adapter/cli.ts`, `plugins/docker/src/lib/adapter/socket.service.ts`, `plugins/docker/src/lib/repo-detector.service.ts`, `plugins/docker/package.json`, `plugins/docker/tests/detect.spec.ts`
+The owner decided (2026-10-09) that these tools extend `plugins/container`, which already inspects, lints and builds, instead of creating `plugins/docker`. The slices below are written for that home.
+
+### S1 — Autodetection, and a passive plugin without it
+
+- **Status**: review
+- **Files**:
+  - `plugins/container/src/lib/detect/docker-signals.service.ts`
+  - `plugins/container/src/lib/contracts/constants/docker-signals.constant.ts`
+  - `plugins/container/src/index.ts`
+  - `plugins/container/src/lib/detect/docker-signals.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "Autodetect only enables active tools when Dockerfile, docker-compose.yml, compose.yaml, or .devcontainer/ exist at the repo root."
-  - "Passive mode exposes only docker_inspect_repo when no signals are found."
-  - "CLI adapter is default; socket adapter requires explicit opt-in with confirmation."
+  - The tools that change images, containers, networks and volumes (including the existing `container_build` and `k8s_apply`) are registered only when a root `Dockerfile`, compose file or `.devcontainer/` exists. Without one, the plugin inspects and lints only.
+  - The CLI is the only adapter. A socket adapter is out of scope.
 
-### S2 — Unit commands: pull, build, run, exec, inspect
-- **Status**: pending
-- **Files**: `plugins/docker/tools/pull.ts`, `plugins/docker/tools/build.ts`, `plugins/docker/tools/run.ts`, `plugins/docker/tools/exec.ts`, `plugins/docker/tools/inspect.ts`, `plugins/docker/tests/unit-commands.spec.ts`
+### S2 — Pull, run and exec under one set of consent rules
+
+- **Status**: review
+- **Files**:
+  - `plugins/container/src/lib/run/docker-command.service.ts`
+  - `plugins/container/src/lib/run/docker-risk.helper.ts`
+  - `plugins/container/src/lib/contracts/interfaces/docker-command.interface.ts`
+  - `plugins/container/src/lib/tools/container-docker.tool.ts`
+  - `plugins/container/src/lib/tools/container-docker.tool.spec.ts`
+  - `plugins/container/package.json`
 - **Gate**: type
 - acceptance:
-  - "Each command shells out to docker CLI with structured stdout and stderr capture."
-  - "docker_run with --privileged or --volume /var/run/docker.sock requires interactive confirmation even from a script."
-  - "docker_pull respects pullPolicy=if-not-present."
+  - Each tool runs the docker CLI and returns structured stdout, stderr and exit code. A missing CLI is a typed `install-missing` answer.
+  - A change needs `confirm: true`, and `dryRun: true` returns the command without running it.
+  - A privileged container, a docker socket mount, or the host's network, pid or ipc namespace also needs `confirmRisk: true`, which `confirm` never implies.
+  - `container_pull` with `policy: "if-not-present"` (the default) pulls only a missing image.
 
-### S3 — Compose awareness (parser + tools)
-- **Status**: pending
-- **Files**: `plugins/docker/src/lib/compose-parser.service.ts`, `plugins/docker/tools/compose.ts`, `plugins/docker/tests/compose.spec.ts`
+### S3 — Compose: the services, and up, down, logs, ps, exec
+
+- **Status**: review
+- **Files**:
+  - `plugins/container/src/lib/compose/compose-parser.service.ts`
+  - `plugins/container/src/lib/tools/container-docker.tool.ts`
+  - `plugins/container/src/lib/tools/container-docker.tool.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "Parser handles compose YAML to the extent needed to enumerate services, ports, env, mounts."
-  - "Tools: compose_up, compose_down, compose_logs, compose_ps, compose_exec."
-  - "compose_up targets a single service by default; --all flag for the full stack."
+  - The parser lists services with their image or build context, ports, environment variable names (never values) and mounts.
+  - `container_compose` covers `services`, `ps`, `logs`, `up`, `down` and `exec`. `up` starts one named service unless `all: true`, refuses a service the file does not declare, and checks every service it would start for host-reaching risks.
 
-### S4 — Network and volume tools
-- **Status**: pending
-- **Files**: `plugins/docker/tools/network.ts`, `plugins/docker/tools/volume.ts`, `plugins/docker/tests/network-volume.spec.ts`
+### S4 — Networks and volumes
+
+- **Status**: review
+- **Files**:
+  - `plugins/container/src/lib/tools/container-docker.tool.ts`
+  - `plugins/container/src/lib/tools/container-docker.tool.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "Network tools: create, list, connect, disconnect, remove."
-  - "Volume tools: list, inspect, prune testing artifacts (scope-tagged, never docker volume prune host-wide)."
+  - `container_network` and `container_volume` list and inspect freely. `create` and `rm` need `confirm` and a name.
 
-### S5 — Tests with sandboxed containers
-- **Status**: pending
-- **Files**: `plugins/docker/tests/integration/up-down.spec.ts`, `plugins/docker/tests/integration/sandbox.spec.ts`, `plugins/docker/tests/integration/cleanup.spec.ts`
+### S5 — Against the real daemon, in a sandbox of its own
+
+- **Status**: review
+- **Files**:
+  - `plugins/container/src/lib/tools/container-docker.integration.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "Integration tests use unique container and volume names per test."
-  - "Cleanup is verified; no orphan containers or volumes persist across runs."
-  - "Skipped automatically when docker CLI is not available; CI failure never caused by absent docker."
+  - Where a daemon answers, the spec creates, lists and removes a network and a volume under a unique name. It removes them however the spec ends. It runs a throwaway container only from an image already present, never pulling, and checks that nothing is left behind. Without a daemon it is skipped.
 
-### S6 — Documentation and security guide
-- **Status**: pending
-- **Files**: `docs/delendai/docker-plugin.md`, `docs/delendai/docker-plugin-security.md`, `CHANGELOG.md`
-- **Gate**: lint
+### S6 — Documentation and the safety guide
+
+- **Status**: review
+- **Files**:
+  - `plugins/container/README.md`
+- **Gate**: type
 - acceptance:
-  - "docs cover 3 example stacks: WordPress dev (compose), Node dev container, self-hosted runner image."
-  - "Security guide explains the autodetection rationale and how to opt in to socket or privileged mode safely."
+  - The README lists each tool and the consent it needs. A safety section explains why reaching the host needs its own consent, why environment values are never returned, and what stays out of scope.
 
 ## acceptance
 
-- Autodetect only enables active tools when Dockerfile, docker-compose.yml, compose.yaml, or .devcontainer/ exist at the repo root.
-- Passive mode exposes only docker_inspect_repo when no signals are found.
-- CLI adapter is default; socket adapter requires explicit opt-in with confirmation.
-- Each command shells out to docker CLI with structured stdout and stderr capture.
-- docker_run with --privileged or --volume /var/run/docker.sock requires interactive confirmation even from a script.
-- docker_pull respects pullPolicy=if-not-present.
-- Parser handles compose YAML to the extent needed to enumerate services, ports, env, mounts.
-- Tools: compose_up, compose_down, compose_logs, compose_ps, compose_exec.
-- compose_up targets a single service by default; --all flag for the full stack.
-- Network tools: create, list, connect, disconnect, remove.
-- Volume tools: list, inspect, prune testing artifacts (scope-tagged, never docker volume prune host-wide).
-- Integration tests use unique container and volume names per test.
-- Cleanup is verified; no orphan containers or volumes persist across runs.
-- Skipped automatically when docker CLI is not available; CI failure never caused by absent docker.
-- docs cover 3 example stacks: WordPress dev (compose), Node dev container, self-hosted runner image.
-- Security guide explains the autodetection rationale and how to opt in to socket or privileged mode safely.
+- Without a root `Dockerfile`, compose file or `.devcontainer/`, the plugin registers only its reading tools (inspect, logs, lint).
+- Every Docker tool runs the CLI, returns structured stdout, stderr and exit code, and answers a missing CLI with `install-missing`.
+- A change needs `confirm: true`. A container that reaches the host (privileged, the docker socket, the host's network, pid or ipc namespace) also needs `confirmRisk: true`, which `confirm` never implies, from any caller.
+- `container_pull` pulls only a missing image under the default `if-not-present` policy.
+- The compose parser lists services, ports, environment variable names (never values) and mounts. `container_compose up` starts one service unless `all: true`.
+- Networks and volumes are listed and inspected freely, and created or removed only with `confirm`.
+- The integration spec uses names of its own, removes everything it created, never pulls, and is skipped without a daemon.
+- The README documents each tool's consent and the safety rationale.
+
+Cut at hand-over, and why: network `connect`/`disconnect` and scope-tagged volume pruning (no consumer asked; `rm` covers the spec's clean-up); the three example stacks in the docs (left for when a consumer brings one); a socket adapter (the CLI is the only adapter).
