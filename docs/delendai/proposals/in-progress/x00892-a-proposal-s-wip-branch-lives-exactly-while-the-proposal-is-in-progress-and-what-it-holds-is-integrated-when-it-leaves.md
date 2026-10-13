@@ -2,10 +2,14 @@
 id: x00892
 title: "a proposal's wip branch lives exactly while the proposal is in progress, and what it holds is integrated when it leaves"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: a32cd4bd-158d-4057-b151-48283bcd3892
+last-correlation-id: a32cd4bd-158d-4057-b151-48283bcd3892
+last-transition-from: ready
+last-transition-at: 2026-10-13T20:45:32.718Z
 ---
 
 # x00892 — a proposal's wip branch lives exactly while the proposal is in progress, and what it holds is integrated when it leaves
