@@ -39,6 +39,33 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
   - A root commit whose tree is the tree of any commit develop reaches (within the same history bound) is a snapshot already held and is removed by `work reap --apply`; a root commit over a tree nobody has is still kept.
   - `work doctor` reports the stray-refs invariant as holding on the clone where the three refs were found, after one `work reap --apply`.
 
+### S2 — An editor configuration with comments is edited, never a reason for `init` to stop
+
+- **Status**: pending
+- **Files**:
+  - `packages/core/src/lib/install/merge-config.ts`
+  - `packages/core/src/lib/install/installer.ts`
+  - `packages/core/src/lib/scaffold/detect-existing-install.ts`
+  - `packages/core/src/lib/scaffold/agent-grant-reconcile.service.ts`
+  - `packages/core/tests/src/lib/install/merge-config.spec.ts`
+  - `packages/core/tests/src/lib/install/installer.spec.ts`
+- **Gate**: type
+- evidence: `delendai init --force` exited 1 with `SyntaxError: JSON Parse error: Unrecognized token '/'` in `mergeServerEntry` on a machine whose `~/.gemini/antigravity-ide/mcp_config.json` carries a comment. Editor MCP configurations are JSONC (VS Code `mcp.json`, Zed settings, Antigravity), and `JSON.parse` stopped the whole set-up at the first one.
+- acceptance:
+  - A configuration with comments has the server added as an edit of its text: every comment, sibling and the user's formatting stay. An unchanged one is returned byte for byte.
+  - A configuration that cannot be read as a JSON object is skipped and reported (`left as it is: …`), and every other target is still set up.
+  - The server-name detection and the grant reconciler read the same files as JSONC.
+
+### S3 — The install smoke never writes the developer's own editor configurations
+
+- **Status**: pending
+- **Files**:
+  - `tools/scripts/verify/external-install-smoke.script.ts`
+- **Gate**: type
+- evidence: `verify:external-install` runs `init --force` with the inherited home directory, and `init` writes every editor configuration it detects there. On this machine `~/.cursor/mcp.json`, `~/.codeium/windsurf/mcp_config.json` and `~/.config/Claude/claude_desktop_config.json` all changed within 40 ms of each other on 2026-10-11, the signature of one automated `init`.
+- acceptance:
+  - The smoke's `init` runs with a home directory inside its scratch folder (`HOME`, `USERPROFILE`, `XDG_CONFIG_HOME`, `APPDATA`); a local run leaves every file under the real home untouched.
+
 ## acceptance
 
 - Every slice names the evidence that showed its defect and is closed with the check that shows it gone.
