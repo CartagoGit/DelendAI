@@ -71,4 +71,14 @@ describe('scan/dip-violation — detectDipViolations', () => {
 		);
 		expect(hits).toHaveLength(0);
 	});
+
+	it('exempts the editor and catalog readers the same identity resolution uses', () => {
+		const body =
+			"import { readFileSync } from 'node:fs';\nexport const x = () => readFileSync(p);";
+		for (const path of [
+			'packages/core/src/lib/work-identity/host-chat-model.helper.ts',
+			'packages/core/src/lib/work-identity/model-identity.helper.ts',
+		])
+			expect(detectDipViolations(path, body)).toHaveLength(0);
+	});
 });
