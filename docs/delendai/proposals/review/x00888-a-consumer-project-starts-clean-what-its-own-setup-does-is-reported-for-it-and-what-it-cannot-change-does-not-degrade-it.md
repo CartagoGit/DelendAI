@@ -76,6 +76,7 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - **Status**: review
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/forge-cli-missing.helper.ts`
+  - `packages/core/src/lib/contracts/constants/forge-cli-missing.constant.ts`
   - `packages/core/src/lib/startup-reconciler/phases/reconcile-forge.ts`
   - `packages/core/src/lib/startup-reconciler/phases/inspect-governance.ts`
   - `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`
