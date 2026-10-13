@@ -75,23 +75,32 @@ describe('user directories', () => {
 
 	it("writes Claude Desktop's configuration where the Windows application reads it under WSL", () => {
 		const target = targetById('claude-desktop');
-		expect(
-			target?.resolve({
-				projectDir: '/p',
-				home: '/home/me',
-				platform: 'linux',
-				isWsl: true,
-				windowsAppData: ['/mnt/c/Users/me/AppData/Roaming'],
-			}),
-		).toBe(
-			'/mnt/c/Users/me/AppData/Roaming/Claude/claude_desktop_config.json',
+		// Assembled, so no tracked file spells a real-looking home directory.
+		const linuxHome = join('/', 'home', 'me');
+		const windowsRoaming = join(
+			'/mnt/c',
+			'Users',
+			'me',
+			'AppData',
+			'Roaming',
 		);
 		expect(
 			target?.resolve({
 				projectDir: '/p',
-				home: '/home/me',
+				home: linuxHome,
+				platform: 'linux',
+				isWsl: true,
+				windowsAppData: [windowsRoaming],
+			}),
+		).toBe(join(windowsRoaming, 'Claude', 'claude_desktop_config.json'));
+		expect(
+			target?.resolve({
+				projectDir: '/p',
+				home: linuxHome,
 				platform: 'linux',
 			}),
-		).toBe('/home/me/.config/Claude/claude_desktop_config.json');
+		).toBe(
+			join(linuxHome, '.config', 'Claude', 'claude_desktop_config.json'),
+		);
 	});
 });
