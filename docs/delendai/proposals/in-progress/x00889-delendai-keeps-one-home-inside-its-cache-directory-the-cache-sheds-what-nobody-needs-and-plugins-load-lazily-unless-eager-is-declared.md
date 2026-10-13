@@ -2,10 +2,14 @@
 id: x00889
 title: "delendai keeps one home inside its cache directory, the cache sheds what nobody needs, and plugins load lazily unless eager is declared"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 1e074144-e4b7-4504-9497-f93464a57a81
+last-correlation-id: 1e074144-e4b7-4504-9497-f93464a57a81
+last-transition-from: ready
+last-transition-at: 2026-10-13T15:56:05.006Z
 ---
 
 # x00889 — delendai keeps one home inside its cache directory, the cache sheds what nobody needs, and plugins load lazily unless eager is declared
@@ -39,6 +43,9 @@ What the code does today:
 - **Files**:
   - `packages/core/src/lib/cli/assemble-plugins.ts`
   - `packages/core/src/lib/plugins/managed-lazy-local-catalog.service.ts`
+  - `packages/core/src/lib/plugins/managed-lazy-catalog-lookup.ts`
+  - `packages/core/tests/src/lib/cli/managed-lazy-local-plugin.spec.ts`
+  - `packages/core/tests/src/lib/cli/core-meta-tools.spec.ts`
 - **Gate**: type
 - acceptance:
   - A plugin the generated catalog lacks is imported and registered once, in isolation, to learn what it offers. Its runtime is disposed and its entry recorded in the project cache; the start then serves every plugin lazily. No start falls back to eager loading unless `managedSurface.loading: "eager"` is declared.
@@ -49,30 +56,67 @@ What the code does today:
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/cli/assemble.ts`
-  - `packages/core/src/lib/cache/core-eviction-rules.ts`
+  - `packages/core/src/lib/cache/core-eviction-rules.helper.ts`
+  - `packages/core/src/lib/contracts/constants/core-eviction.constant.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/tests/src/lib/cache/core-eviction-rules.helper.spec.ts`
+  - `packages/core/tests/src/lib/cli/assemble.eviction.spec.ts`
 - **Gate**: type
 - acceptance:
   - The start-up sweep applies the eviction rules. A dry run is what a project declares, not the default.
-  - The core registers rules for what it owns: rotated logs, `results/` past its retention, and files at the cache root that no rule or known record owns, after a grace period. Each removal is reported once.
+  - The core registers rules for what it owns at the cache root: rotated logs (`*.log.N`) older than 7 days and the loose files one-off proposal runs leave there (`f00282-type-gate.log`) older than 30 days. Each removal is reported once.
 
 ### S3 — Everything delendai keeps is inside the cache directory
 
 - **Status**: pending
 - **Files**:
-  - `packages/core/src/lib/workspace-migration/migrators/dot-delendai-home.migrator.ts`
+  - `packages/core/src/lib/contracts/constants/delendai-records.constant.ts`
+  - `packages/core/src/lib/shared/delendai-records.ts`
+  - `packages/core/src/lib/workspace-migration/legacy-records-relocation.service.ts`
+  - `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`
+  - `packages/core/src/lib/workspace-migration/migration-journal-path.constant.ts`
+  - `packages/core/src/lib/workspace-migration/migration-registry.ts`
+  - `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
+  - `packages/core/src/lib/workspace-migration/migrators/cache-and-docs.migrator.ts`
+  - `packages/core/src/lib/workspace-migration/transaction/migration-manifest.ts`
+  - `packages/core/src/lib/workspace-migration/transaction/rollback.ts`
+  - `packages/core/src/lib/contracts/constants/config-transition.constant.ts`
+  - `packages/core/src/lib/cache/boot-eviction-throttle.service.ts`
+  - `packages/core/src/lib/cache/file-lifecycle-state-store.service.ts`
+  - `packages/core/src/lib/adopt/adopt-project.tool.ts`
+  - `packages/core/src/lib/adopt/project-profile.service.ts`
+  - `packages/core/src/lib/contracts/interfaces/project-profile.interface.ts`
+  - `packages/core/src/lib/development-policy/adoption-record.ts`
+  - `packages/core/src/lib/scan/dip-violation.ts`
+  - `packages/core/src/runtime/index.ts`
+  - `plugins/commit-policy/src/lib/services/commit-driver.ts`
+  - `tools/scripts/lint/check-ephemeral-paths.script.ts`
+  - `packages/core/tests/src/lib/workspace-migration/legacy-records-relocation.service.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/legacy-migration-manager.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/config-transitions.service.spec.ts`
+  - `packages/core/tests/src/lib/cache/migrations/cache-layout-history.spec.ts`
+  - `packages/core/tests/src/lib/cache/file-lifecycle-state-store.service.spec.ts`
+  - `packages/core/tests/src/lib/adopt/project-profile.spec.ts`
+  - `packages/core/tests/src/lib/scan/dip-violation.spec.ts`
 - **Gate**: type
 - acceptance:
   - The journal, the applied-configuration record, the cache-layout record, the project profile, migration backups and locks are written under the configured cache directory. A project that has `.delendai/` has it moved there once, and the folder removed when empty.
   - A change of `cacheDir` is still detected: the last cache directory is remembered where no cache move can lose it (the clone's git directory), not in a folder of the project tree.
+  - The relocation runs at every start before the journal is read (the owner's rule: every layout change ships its migration): each file of `.delendai/` is moved to `<cacheDir>/records/`, a file already there wins, and `.delendai/` is removed once empty; a cache-dir move whose destination holds only `records/` still completes.
 
 ### S4 — A kept unit does not keep its dependencies while it waits
 
 - **Status**: pending
 - **Files**:
+  - `packages/core/src/lib/work-units/idle-unit-dependencies.service.ts`
   - `packages/core/src/lib/work-units/work-unit-reap.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+  - `packages/core/src/lib/contracts/interfaces/unit-dependencies.interface.ts`
+  - `packages/core/tests/src/lib/work-units/idle-unit-dependencies.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - A unit kept for its proposal's next slice that has been idle past the lease window has its installed dependencies removed; entering it again installs them (x00888 S6).
+  - `work reap --apply` removes `node_modules` from every kept unit whose owner is not live (idle or abandoned past the lease window) and reports each under `dependencies`; without `--apply` it only reports. Entering an existing unit installs its dependencies again (x00888 S6), so its work is untouched.
 
 ## acceptance
 
