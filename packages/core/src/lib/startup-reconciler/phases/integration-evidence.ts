@@ -180,9 +180,24 @@ export const runIntegrationEvidencePhase = async (input: {
 						break;
 					}
 				}
-				const keptRetired =
-					!kept &&
-					(input.retiredTips ?? []).includes(generation.wipHeadSha);
+				// Retiring keeps the unit's LAST tip, which may carry merges
+				// on top of the checkpoint recorded here: the checkpoint is
+				// kept when it is the tip or any ancestor of it.
+				let keptRetired = false;
+				if (!kept) {
+					for (const tip of input.retiredTips ?? []) {
+						if (
+							tip === generation.wipHeadSha ||
+							(await input.git.isAncestor(
+								generation.wipHeadSha,
+								tip,
+							))
+						) {
+							keptRetired = true;
+							break;
+						}
+					}
+				}
 				if (keptRetired && !seenRetired.has(generation.wipHeadSha)) {
 					// Once per checkpoint: the record that outlives the ref.
 					input.ports.journal.append({
