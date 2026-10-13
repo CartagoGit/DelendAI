@@ -125,7 +125,11 @@ const looksLikeDecorationLine = (line: string): boolean =>
 const GIT_FAILURE_REASON_MAX = 600;
 
 export const createGitRunner =
-	(cwd: string, timeoutMs = 60_000): IGitRunner =>
+	(
+		cwd: string,
+		timeoutMs = 60_000,
+		env: NodeJS.ProcessEnv | undefined = undefined,
+	): IGitRunner =>
 	(args) =>
 		new Promise<IGitRunResult>((resolve) => {
 			execFile(
@@ -133,6 +137,7 @@ export const createGitRunner =
 				[...args],
 				{
 					cwd: executionRootOr(cwd),
+					...(env === undefined ? {} : { env }),
 					encoding: 'utf8',
 					timeout: timeoutMs,
 					maxBuffer: 8 * 1024 * 1024,

@@ -86,6 +86,23 @@ What the code does today:
   - A project that has agents for hosts it does not use (the three folders init wrote unconditionally) has `hosts` recorded from what it actually uses. The generated agents of unused hosts are removed; an agent file edited by hand is kept and reported, as `syncPluginAgents` does today.
   - A project with no `hosts` and agents for several hosts keeps them all: the migration infers, it never drops a host somebody may be using.
 
+### S5 — A push that only keeps a unit's work safe is not judged as a publication
+
+- **Status**: pending
+- **Files**:
+  - `packages/core/src/lib/contracts/constants/durability-push.constant.ts`
+  - `packages/core/src/lib/work-units/unit-push.service.ts`
+  - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
+  - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
+  - `packages/core/src/lib/shared/git-write.ts`
+  - `lefthook.yml`
+  - `packages/core/tests/src/lib/work-units/unit-push.service.spec.ts`
+- **Gate**: type
+- evidence: on 2026-10-13, the first commit of this unit was pushed by the new `post-commit` hook (x00891) and refused by this repository's pre-push `drift-check` (the configuration schema was stale mid-work): "committed here but origin refused it". The pre-push hook runs every publication check (`gen:all --check`, publication proof, format) on every push, so a wip branch, which is durability, not a publication, stayed on one machine whenever the work was unfinished.
+- acceptance:
+  - The pushes delendai makes to keep a unit's branch on the forge carry `DELENDAI_DURABILITY_PUSH=1`, and this repository's publication checks skip such a push. Secrets, empty commits, the guard and the integration-branch protections still run on it.
+  - A push without the variable, a publication included, runs every check as before.
+
 ## acceptance
 
 - A project gets agents only for the hosts it uses, declared or detected.

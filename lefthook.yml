@@ -291,20 +291,31 @@ pre-commit:
 # mechanism. The mechanism is `bun run forge:publish`, which runs the
 # same pre-flight itself and cannot be skipped by a file set it does not
 # consult. A gate whose activation nobody can predict is not a gate.
+# A push delendai makes only to keep a unit's branch on the forge (after a
+# commit, at start) carries DELENDAI_DURABILITY_PUSH=1: the checks that judge
+# a publication skip it, since a wip branch is not one and refusing it left
+# the work on one machine. Secrets, empty commits, the guard and the
+# integration-branch protections run on every push.
 pre-push:
     parallel: false
     commands:
         # Full-repo format check before pushing. Advisory: prints the
         # unformatted files but never blocks the push.
         format-check-all:
+            skip:
+                - run: test "${DELENDAI_DURABILITY_PUSH:-}" = 1
             env: *hook-locale
             run: bun run format:all:check || true
         format-check-web:
+            skip:
+                - run: test "${DELENDAI_DURABILITY_PUSH:-}" = 1
             env: *hook-locale
             run: bun run format:web:check || true
         # Full-site SCSS BEM lint (matches what `bun run validate` runs in CI).
         # Advisory: prints violations but does not block the push.
         lint-scss-all:
+            skip:
+                - run: test "${DELENDAI_DURABILITY_PUSH:-}" = 1
             env: *hook-locale
             run: bun run lint:scss || true
 
@@ -334,6 +345,8 @@ pre-push:
             run: bun tools/scripts/lint/no-empty-commits.script.ts
 
         drift-check:
+            skip:
+                - run: test "${DELENDAI_DURABILITY_PUSH:-}" = 1
             env: *hook-locale
             run: bun tools/scripts/gen-all.script.ts --check
 
@@ -378,6 +391,8 @@ pre-push:
         # `use_stdin: true` for the same reason as the guard below it:
         # the refs being pushed exist only on git's stdin.
         publication-proof:
+            skip:
+                - run: test "${DELENDAI_DURABILITY_PUSH:-}" = 1
             env: *hook-locale
             use_stdin: true
             run: bun run lint:publication-proof
