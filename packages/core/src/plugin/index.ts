@@ -43,3 +43,6 @@ export { resolveWorkspaceContainedPhysicalSync } from '../lib/shared/contain-rea
 // advice from the resolved policy, so it cannot contradict it.
 export { describeWorkIsolation } from '../lib/development-policy/work-isolation';
 export type { IWorkIsolation } from '../lib/contracts/interfaces/work-isolation.interface';
+
+/** The refusal a plugin's tool gives for arguments its input schema rejected. */
+export { toolInvalidArguments } from '../lib/shared/tool-invalid-arguments';

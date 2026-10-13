@@ -78,6 +78,24 @@ export const REPO_AUTHORITIES: readonly IAuthorityDeclaration[] = [
 		driftGate: 'gen:all:check',
 	},
 	{
+		domain: 'roadmap',
+		// Edited by hand or by the roadmap tools, reviewed in a pull
+		// request: the only place a version's promises are decided.
+		authority: 'docs/delendai/ROADMAP.md',
+		projections: [
+			{
+				path: 'apps/web/src/data/roadmaps.json',
+				producer: 'tools/scripts/gen/roadmap-projection.script.ts',
+			},
+			{
+				path: 'docs/delendai/ROADMAP.timeline.md',
+				producer: 'tools/scripts/gen/roadmap-projection.script.ts',
+			},
+		],
+		rebuild: GEN_ALL,
+		driftGate: 'gen:all:check',
+	},
+	{
 		domain: 'catalog-wire-cost',
 		// Measured, not edited: the bytes the running server's tools/list
 		// actually sends.

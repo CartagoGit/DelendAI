@@ -16,6 +16,36 @@ const repoRootFromSpec = (): string => {
 	return join(specDir, '..', '..', '..', '..', '..', '..');
 };
 
+/**
+ * The plugins the live root config loads that a preset may list: all but
+ * the private ones, which are never published (`changelog`, `roadmap`).
+ */
+const publishedConfigPlugins = async (): Promise<readonly string[]> => {
+	const root = repoRootFromSpec();
+	const config = JSON.parse(
+		await readFile(join(root, 'delendai.config.json'), 'utf8'),
+	) as { plugins?: Readonly<Record<string, unknown>> };
+	const published: string[] = [];
+	for (const id of Object.keys(config.plugins ?? {})) {
+		let isPrivate = false;
+		try {
+			isPrivate =
+				(
+					JSON.parse(
+						await readFile(
+							join(root, 'plugins', id, 'package.json'),
+							'utf8',
+						),
+					) as { private?: unknown }
+				).private === true;
+		} catch {
+			isPrivate = false;
+		}
+		if (!isPrivate) published.push(id);
+	}
+	return published;
+};
+
 describe('PRESET_CATALOG', async () => {
 	it('lists presets in ⊇ order: minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool', async () => {
 		expect(PRESET_CATALOG.map((def) => def.id)).toEqual(PRESET_KIND);
@@ -316,17 +346,8 @@ describe('resolvePresetMembers', async () => {
 
 	it('resolves dogfood to ONLY the plugin keys from the live root config', async () => {
 		const resolved = resolvePresetMembers('dogfood');
-		const config = JSON.parse(
-			await readFile(
-				join(repoRootFromSpec(), 'delendai.config.json'),
-				'utf8',
-			),
-		) as {
-			plugins?: Readonly<Record<string, unknown>>;
-		};
-		expect([...resolved].sort()).toEqual(
-			Object.keys(config.plugins ?? {}).sort(),
-		);
+		const published = await publishedConfigPlugins();
+		expect([...resolved].sort()).toEqual([...published].sort());
 	});
 
 	it('documents the canonical preset roles from PRE-004', async () => {
@@ -479,16 +500,8 @@ describe('preset alias (b00239 rename)', () => {
 		// correctly — the legacy caller still sees the exact
 		// delendai.config.json snapshot.
 		const resolved = resolvePresetMembers('vertex');
-		const config = JSON.parse(
-			await readFile(
-				join(repoRootFromSpec(), 'delendai.config.json'),
-				'utf8',
-			),
-		) as {
-			plugins?: Readonly<Record<string, unknown>>;
-		};
 		expect([...resolved].sort()).toEqual(
-			Object.keys(config.plugins ?? {}).sort(),
+			[...(await publishedConfigPlugins())].sort(),
 		);
 	});
 

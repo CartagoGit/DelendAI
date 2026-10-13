@@ -1,0 +1,52 @@
+{
+	"name": "@delendai/roadmap",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"description": "Versioned roadmap: what each target version promises, what of it is delivered, whether it can be promoted, and the bump its promises imply (asked of the changelog plugin). A git-tracked authority file, an append-only timeline, read tools plus init and close. Load with `delendai --plugins=roadmap`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"delendai",
+		"roadmap",
+		"release",
+		"timeline"
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/roadmap"
+	},
+	"dependencies": {
+		"@delendai/changelog": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/state": "workspace:*",
+		"yaml": "2.9.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "5.0.3",
+		"fast-check": "3.23.2"
+	}
+}

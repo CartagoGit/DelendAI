@@ -31,6 +31,10 @@ import {
 	branchProtectionModule,
 	settingsDocument,
 } from './forge-settings.lib';
+import {
+	PROMOTION_WORKFLOW_PATH,
+	promotionWorkflowDocument,
+} from './promotion-workflow.lib';
 
 const HEADER = [
 	'# GENERATED — do not edit.',
@@ -89,7 +93,27 @@ const buildTargets = (root: string): readonly ITarget[] => {
 		);
 	}
 
+	// The cadence a promotion is opened on, declared with the roadmap. A
+	// project with one branch or no cadence gets no workflow.
+	const schedule = (
+		config.plugins?.roadmap?.options?.promotion as
+			| { schedule?: unknown }
+			| undefined
+	)?.schedule;
+	const promotion = promotionWorkflowDocument(
+		policy,
+		typeof schedule === 'string' ? schedule : undefined,
+	);
+
 	return [
+		...(promotion === undefined
+			? []
+			: [
+					{
+						path: join(root, PROMOTION_WORKFLOW_PATH),
+						body: render(promotion),
+					},
+				]),
 		{
 			path: join(root, '.github/settings.yml'),
 			body: render(settingsDocument(policy)),

@@ -71,6 +71,12 @@ export const GENERATED_MERGE_RULES: readonly IGeneratedMergeRule[] = [
 			'the matrix is a projection of every plugin capability declaration together',
 	},
 	{
+		paths: ['apps/web/src/data/roadmaps.json'],
+		steps: ['roadmap-projection'],
+		because:
+			'the matrix is a projection of every plugin capability declaration together',
+	},
+	{
 		paths: ['docs/delendai/CORE-PUBLIC-API-INVENTORY.md'],
 		steps: ['core-public-inventory'],
 		because:

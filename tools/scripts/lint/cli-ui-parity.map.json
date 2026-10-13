@@ -186,6 +186,9 @@
 			"cli": "overview",
 			"note": "the agent catalog is the overview snapshot rendered as a webview"
 		},
+		"delendai.openRoadmap": {
+			"waiver": "VS Code-only read-only view of what the roadmap_show tool answers; the CLI has no roadmap group yet"
+		},
 		"delendai.openAgentTimeline": {
 			"waiver": "VS Code-only observability viewer for the persisted agent timeline; no standalone CLI timeline command is registered yet"
 		},

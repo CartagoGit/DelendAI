@@ -115,6 +115,7 @@
 | quality-policy | 2700 | 3000 | 20 |
 | refactor | 2700 | 3000 | 20 |
 | remote-provider-core | 2700 | 3000 | 20 |
+| roadmap | 10800 | 11500 | 20 |
 | rules | 2700 | 3000 | 20 |
 | search | 2700 | 3000 | 20 |
 | security | 2700 | 3000 | 20 |
@@ -180,6 +181,7 @@
 | quality-policy | filesystem-read, filesystem-write, process |  |
 | refactor | filesystem-read, filesystem-write |  |
 | remote-provider-core | filesystem-read |  |
+| roadmap | filesystem-read, filesystem-write | roadmap_show: filesystem-read; roadmap_sync: filesystem-read; roadmap_readiness: filesystem-read; roadmap_delta: filesystem-read; roadmap_promotion: filesystem-read; roadmap_plan_init: filesystem-read, filesystem-write; roadmap_plan_close: filesystem-read, filesystem-write |
 | rules | filesystem-read, network, env-read |  |
 | search | filesystem-read, process, env-read |  |
 | security | filesystem-read, filesystem-write, process, env-read |  |
@@ -629,6 +631,15 @@
 | remote-provider-core | web-app | no | no | yes |
 | remote-provider-core | backend-api | no | no | yes |
 | remote-provider-core | cli-tool | no | no | yes |
+| roadmap | minimal | no | no | yes |
+| roadmap | lean | no | no | yes |
+| roadmap | standard | no | no | yes |
+| roadmap | swarm | no | no | yes |
+| roadmap | full | no | no | yes |
+| roadmap | dogfood | no | no | yes |
+| roadmap | web-app | no | no | yes |
+| roadmap | backend-api | no | no | yes |
+| roadmap | cli-tool | no | no | yes |
 | rules | minimal | no | no | yes |
 | rules | lean | no | no | yes |
 | rules | standard | yes | yes | yes |
