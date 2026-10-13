@@ -7,14 +7,9 @@
  * protocol reads: no second gate is invented here.
  */
 import { CAPABILITIES } from '../contracts/constants/capability-registry.constant';
-import type {
-	ICapability,
-	ICapabilityName,
-} from '../contracts/interfaces/capability.interface';
+import type { ICapability } from '../contracts/interfaces/capability.interface';
 
-export const CAPABILITY_NAMES: readonly ICapabilityName[] = CAPABILITIES.map(
-	(capability) => capability.name,
-);
+export { CAPABILITY_NAMES } from '../contracts/constants/capability-registry.constant';
 
 /** The capability of that name, or `undefined` for one nobody declared. */
 export const capabilityOf = (name: string): ICapability | undefined =>

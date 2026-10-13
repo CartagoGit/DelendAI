@@ -9,6 +9,7 @@
  */
 import { createHash } from 'node:crypto';
 
+import { RAW_HANDLE_HEX_LENGTH } from '../contracts/constants/external-answer.constant';
 import type { INormalizedAnswer } from '../contracts/interfaces/external-answer.interface';
 
 const MAX_FACTS = 80;
@@ -57,7 +58,7 @@ export const normalizeResponse = async (
 	keep: (handle: string, json: string) => Promise<void>,
 ): Promise<INormalizedAnswer> => {
 	const json = JSON.stringify(raw ?? null);
-	const handle = `ext-raw:${createHash('sha256').update(json).digest('hex').slice(0, 16)}`;
+	const handle = `ext-raw:${createHash('sha256').update(json).digest('hex').slice(0, RAW_HANDLE_HEX_LENGTH)}`;
 	await keep(handle, json);
 	const result = (
 		typeof raw === 'object' && raw !== null ? raw : {}

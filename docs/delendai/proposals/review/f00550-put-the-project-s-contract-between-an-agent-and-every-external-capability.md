@@ -94,6 +94,7 @@ one invented here.
   - `plugins/external-mcps/package.json`
   - `plugins/framework-knowledge/src/public/index.ts`
   - `plugins/external-mcps/tests/src/lib/contract/project-contract.service.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/contract/capability-gateway.service.spec.ts`
 
 Assemble what the project requires — resolved framework and version,
 style architecture, design-token policy, placement rules, existing
@@ -112,6 +113,7 @@ because the gateway must not hard-depend on three unshipped plugins.
 - **Files**:
   - `plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`
   - `plugins/external-mcps/src/lib/contracts/interfaces/external-answer.interface.ts`
+  - `plugins/external-mcps/src/lib/contracts/constants/external-answer.constant.ts`
   - `plugins/external-mcps/tests/src/lib/normalize/normalize-response.service.spec.ts`
 
 A large external payload becomes the small normalised facts the agent

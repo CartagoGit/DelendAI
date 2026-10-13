@@ -8,9 +8,7 @@
  * plugin is active: a server with none of them still gets a valid, smaller
  * contract, so the gateway never depends on all three being loaded.
  */
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
+import { SafeWorkspaceReader } from '@delendai/core/public';
 import { resolveInstalledFramework } from '@delendai/framework-knowledge/public';
 import {
 	designTokensOf,
@@ -46,12 +44,13 @@ const stylePart = async (
 		input.optionsOf('style-convention'),
 	);
 	const profile = resolveStyleProfile(parsed.success ? parsed.data : {});
+	const reader = new SafeWorkspaceReader(input.workspaceRoot);
 	const tokens: { name: string; value: string }[] = [];
 	for (const file of profile.tokenFiles) {
-		const text = await readFile(
-			join(input.workspaceRoot, file),
-			'utf8',
-		).catch(() => undefined);
+		const text = await reader
+			.readText(file)
+			.then((read) => read.content)
+			.catch(() => undefined);
 		if (text === undefined) continue;
 		for (const token of designTokensOf({ path: file, text }))
 			tokens.push({ name: token.name, value: token.value });

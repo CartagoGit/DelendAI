@@ -2,7 +2,10 @@
  * capability-registry.constant.ts — the capabilities, and the effects
  * each carries, in core's effect vocabulary.
  */
-import type { ICapability } from '../interfaces/capability.interface';
+import type {
+	ICapability,
+	ICapabilityName,
+} from '../interfaces/capability.interface';
 
 export const CAPABILITIES: readonly ICapability[] = [
 	{
@@ -42,3 +45,8 @@ export const CAPABILITIES: readonly ICapability[] = [
 		summary: 'change rows or the schema of a database',
 	},
 ];
+
+/** The names a call may give as its capability. */
+export const CAPABILITY_NAMES: readonly ICapabilityName[] = CAPABILITIES.map(
+	(capability) => capability.name,
+);
