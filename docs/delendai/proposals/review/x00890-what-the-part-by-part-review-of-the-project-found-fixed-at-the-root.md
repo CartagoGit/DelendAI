@@ -2,14 +2,14 @@
 id: x00890
 title: "what the part-by-part review of the project found, fixed at the root"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 6db080f0-2744-4b87-9e9e-4e709c5d9340
-last-correlation-id: 6db080f0-2744-4b87-9e9e-4e709c5d9340
-last-transition-from: ready
-last-transition-at: 2026-10-13T16:55:16.370Z
+last-transition-id: 4863cf40-e9d3-4dd1-9f05-140538cac5a1
+last-correlation-id: 4863cf40-e9d3-4dd1-9f05-140538cac5a1
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T16:56:30.832Z
 ---
 
 # x00890 — what the part-by-part review of the project found, fixed at the root
@@ -44,6 +44,7 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
   - `work doctor` reports the stray-refs invariant as holding on the clone where the three refs were found, after one `work reap --apply`.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `8452a84f5388`
 
 ### S2 — An editor configuration with comments is edited, never a reason for `init` to stop
 
@@ -63,16 +64,20 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
   - The server-name detection and the grant reconciler read the same files as JSONC.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `86cd7ecb0f6f`
 
 ### S3 — The install smoke never writes the developer's own editor configurations
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `tools/scripts/verify/external-install-smoke.script.ts`
 - **Gate**: type
 - evidence: `verify:external-install` runs `init --force` with the inherited home directory, and `init` writes every editor configuration it detects there. On this machine `~/.cursor/mcp.json`, `~/.codeium/windsurf/mcp_config.json` and `~/.config/Claude/claude_desktop_config.json` all changed within 40 ms of each other on 2026-10-11, the signature of one automated `init`.
 - acceptance:
   - The smoke's `init` runs with a home directory inside its scratch folder (`HOME`, `USERPROFILE`, `XDG_CONFIG_HOME`, `APPDATA`); a local run leaves every file under the real home untouched.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `86cd7ecb0f6f`
 
 ## acceptance
 
