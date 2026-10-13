@@ -40,7 +40,7 @@ What the code does today:
 
 ### S1 — One detection of the operating system and WSL
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/platform/system-profile.helper.ts`
   - `packages/core/src/lib/cli/run-init.ts`
@@ -50,6 +50,8 @@ What the code does today:
 - acceptance:
   - `run-init.ts` and `init-global.command.ts` take WSL from the system profile; no product file outside `platform/` reads `/proc/version`.
   - A WSL shell that sets `WSL_DISTRO_NAME` but whose `/proc/version` says nothing is WSL to init as it is to the profile.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The editors' user directories come from one resolver, the Windows side of WSL included
 
