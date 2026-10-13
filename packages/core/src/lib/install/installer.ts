@@ -9,8 +9,9 @@ import {
 	type IInstallEnv,
 } from './ide-targets';
 import { mergeServerEntry, type IMergeAction } from './merge-config';
+import { DEFAULT_DELENDAI_SERVER_NAME } from '../contracts/constants/mcp-server-name.constant';
+import { findDelendaiServerName } from '../scaffold/detect-existing-install';
 
-export const SERVER_NAME = 'delendai';
 export const PACKAGE = '@delendai/core';
 
 export type IOsId = 'linux' | 'macos' | 'windows' | 'wsl';
@@ -126,7 +127,8 @@ export const installToTarget = async (
 	const { json, action } = mergeServerEntry(
 		existing,
 		target.kind,
-		SERVER_NAME,
+		(existing === null ? undefined : findDelendaiServerName(existing)) ??
+			DEFAULT_DELENDAI_SERVER_NAME,
 		entry,
 	);
 	if (action !== 'unchanged') {

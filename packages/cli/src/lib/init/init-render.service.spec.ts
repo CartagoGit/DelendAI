@@ -260,7 +260,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		}
 	});
 
-	it('grants the fixed delendai/* server key, never a bare or stale tool name', async () => {
+	it('grants the default server, not one named after the namespace prefix', async () => {
 		const files = await renderAgentFiles('/no-catalog', {
 			namespacePrefix: 'acme',
 			locale: 'en',
@@ -269,11 +269,33 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 			f.relPath.startsWith('.github/agents/'),
 		);
 		for (const file of githubFiles) {
-			expect(file.content).toContain('acme/*');
+			expect(file.content).toContain('delendai/*]');
+			expect(file.content).not.toContain('acme/*');
 			expect(file.content).not.toContain('search_search');
 			expect(file.content).not.toContain('acme_search_search');
 		}
 	});
+
+	it.each([
+		['delendai', 'delendai'],
+		['DelendAI', 'delendai'],
+		['My Project MCP', 'my-project-mcp'],
+	])(
+		'grants server %s by the reference the host gives it (%s)',
+		async (serverName, reference) => {
+			const files = await renderAgentFiles('/no-catalog', {
+				locale: 'en',
+				serverName,
+			});
+			const githubFiles = files.filter((f) =>
+				f.relPath.startsWith('.github/agents/'),
+			);
+			expect(githubFiles.length).toBeGreaterThan(0);
+			for (const file of githubFiles) {
+				expect(file.content).toContain(`${reference}/*]`);
+			}
+		},
+	);
 
 	it('uses the namespace for agent files and the configured MCP server key', async () => {
 		const bundle = await renderInitBundle(

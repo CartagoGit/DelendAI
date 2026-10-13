@@ -264,27 +264,6 @@ export interface DelendaiConfigurationCenterOutput {
 	}>;
 }
 
-export type DelendaiContainerContainerBuildOutput = {
-	ok: true;
-	command: string;
-	exitCode: number;
-	imageId?: string;
-} | {
-	ok: false;
-	reason: string;
-	nextAction: string;
-} | {
-	ok: "dry-run";
-	command: string;
-} | {
-	ok: false;
-	isError: true;
-	error: {
-		reason: "install-missing";
-		nextAction?: string;
-	};
-};
-
 export type DelendaiContainerContainerInspectOutput = {
 	ok: true;
 	kind: "docker-ps";
@@ -347,26 +326,6 @@ export type DelendaiContainerContainerLogsOutput = {
 } | {
 	ok: "skipped";
 	hint: string;
-};
-
-export type DelendaiContainerK8sApplyOutput = {
-	ok: true;
-	command: string;
-	exitCode: number;
-} | {
-	ok: false;
-	reason: string;
-	nextAction: string;
-} | {
-	ok: "dry-run";
-	command: string;
-} | {
-	ok: false;
-	isError: true;
-	error: {
-		reason: "install-missing";
-		nextAction?: string;
-	};
 };
 
 export interface DelendaiCreatePluginOutput {
@@ -1395,11 +1354,9 @@ export interface IDelendaiToolOutputs {
 	"delendai_completion_report_complete": DelendaiCompletionReportCompleteOutput;
 	"delendai_completion_status": DelendaiCompletionStatusOutput;
 	"delendai_configuration_center": DelendaiConfigurationCenterOutput;
-	"delendai_container_container_build": DelendaiContainerContainerBuildOutput;
 	"delendai_container_container_inspect": DelendaiContainerContainerInspectOutput;
 	"delendai_container_container_lint": DelendaiContainerContainerLintOutput;
 	"delendai_container_container_logs": DelendaiContainerContainerLogsOutput;
-	"delendai_container_k8s_apply": DelendaiContainerK8sApplyOutput;
 	"delendai_create_plugin": DelendaiCreatePluginOutput;
 	"delendai_create_project": DelendaiCreateProjectOutput;
 	"delendai_diagram_diagram_deps": DelendaiDiagramDiagramDepsOutput;

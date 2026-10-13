@@ -14,6 +14,7 @@ import {
 	agentToolProfile,
 	type IAgentHostTool,
 } from '../agents/agent-tool-profiles';
+import { hostToolSetReference } from './mcp-server-name.helper';
 
 export interface IScaffoldedFile {
 	readonly path: string;
@@ -140,7 +141,7 @@ const copilotTools = (
 	const profile = agentToolProfile(slot);
 	const tools: readonly string[] = [
 		...profile.tools,
-		`${resolveMcpServerName(options)}/*`,
+		`${hostToolSetReference(resolveMcpServerName(options))}/*`,
 	];
 	return `[${tools.join(', ')}]`;
 };
@@ -356,7 +357,7 @@ This file is only the Copilot adapter; the agent contract lives in \`${serverNam
 
 ## Compact lane
 
-1. First call \`${prefix}_overview\` once per turn (tool: \`${serverName}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
+1. First call \`${prefix}_overview\` once per turn (tool: \`${hostToolSetReference(serverName)}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
 2. ${isRoot ? `Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. Work directly when the task is small; delegate only when the slice needs more than 3 tool calls, multiple files, or repeated MCP reads.` : `Work only within the assigned role: ${profile.purpose}`}
 3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
 4. When the server loads the \`proposals\` plugin (\`delendai --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.

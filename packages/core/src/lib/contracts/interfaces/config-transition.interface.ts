@@ -28,6 +28,12 @@ export interface IAppliedConfigSnapshot {
 	readonly docsDir: string;
 	/** Enabled plugin names, sorted. */
 	readonly plugins: readonly string[];
+	/**
+	 * The tool and agent prefix the workspace was set up with. Absent in a
+	 * record written before it was kept: a change from an unknown prefix
+	 * is not acted on.
+	 */
+	readonly namespacePrefix?: string;
 }
 
 /** Where a transition runs, and whether it may change anything. */
