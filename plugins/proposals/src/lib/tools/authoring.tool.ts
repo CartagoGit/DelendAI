@@ -67,6 +67,7 @@ import {
 	parseReviewState,
 	renderReviewLines,
 	withClosingLines,
+	flipSliceStatusReview,
 	reviewTransition,
 	type IReviewRound,
 } from '../swarm/proposal-review';
@@ -2678,20 +2679,12 @@ export const buildReviewRegistration = (
 							)?.toLowerCase() === 'review';
 						if (next.status === 'done') {
 							block = flipSliceStatusDone(block);
-						} else if (
-							args.action === 'submit' &&
-							/^[-*]\s*\*\*Status\*\*:\s*in-progress\b/imu.test(
-								block,
-							)
-						) {
+						} else if (args.action === 'submit') {
 							// Handed in: the slice waits for its verdict, and
 							// says so. Left reading `in-progress`, a proposal
 							// whose every slice had been resubmitted stayed
 							// out of the review queue until somebody moved it.
-							block = block.replace(
-								/^([-*]\s*\*\*Status\*\*:)\s*in-progress\b/imu,
-								'$1 review',
-							);
+							block = flipSliceStatusReview(block);
 						} else if (next.status === 'changes_requested') {
 							// The work goes back to its author: the slice is
 							// open again, and so is the proposal, once. The
