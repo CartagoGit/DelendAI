@@ -13,6 +13,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { reportPluginAgents } from '../../../../src/lib/scaffold/plugin-agents-report';
 import { syncPluginAgents } from '../../../../src/lib/scaffold/plugin-agents.service';
+import { AGENT_HOSTS } from '../../../../src/lib/contracts/constants/agent-hosts.constant';
+
+const hostsNamed = (...ids: string[]) =>
+	AGENT_HOSTS.filter((host) => ids.includes(host.id));
 
 const role = {
 	role: 'migration-runner',
@@ -22,8 +26,16 @@ const role = {
 
 describe('syncPluginAgents', () => {
 	let root: string;
-	const sync = (contributions = [{ plugin: 'db', role }]) =>
-		syncPluginAgents({ root, namespacePrefix: 'acme', contributions });
+	const sync = (
+		contributions = [{ plugin: 'db', role }],
+		hosts = hostsNamed('copilot', 'claude'),
+	) =>
+		syncPluginAgents({
+			root,
+			namespacePrefix: 'acme',
+			contributions,
+			hosts,
+		});
 	const copilot = () =>
 		join(root, '.github/agents/acme-migration-runner.agent.md');
 	beforeEach(() => {
@@ -49,6 +61,29 @@ describe('syncPluginAgents', () => {
 		]);
 		expect(readFileSync(copilot(), 'utf8')).toContain('acme-tools/*]');
 		expect(await sync()).toEqual([]);
+	});
+
+	it("writes for the hosts the project uses, and removes a host's agent once it stops using it", async () => {
+		expect(
+			(await sync(undefined, hostsNamed('opencode', 'cursor'))).map(
+				(change) => [change.path, change.action],
+			),
+		).toEqual([['.opencode/agent/acme-migration-runner.md', 'created']]);
+		expect(
+			readFileSync(
+				join(root, '.opencode/agent/acme-migration-runner.md'),
+				'utf8',
+			),
+		).toContain('mode: subagent');
+		expect(
+			(await sync(undefined, hostsNamed('claude'))).map((change) => [
+				change.path,
+				change.action,
+			]),
+		).toEqual([
+			['.claude/agents/acme-migration-runner.md', 'created'],
+			['.opencode/agent/acme-migration-runner.md', 'removed'],
+		]);
 	});
 
 	it('rewrites a changed declaration, and removes the agents of a plugin that left', async () => {
@@ -93,8 +128,12 @@ describe('syncPluginAgents', () => {
 		const loaded = [
 			{ plugin: { name: 'db' }, registrations: { agentRoles: [role] } },
 		];
-		await reportPluginAgents(root, 'acme', loaded, (line) =>
-			lines.push(line),
+		await reportPluginAgents(
+			root,
+			'acme',
+			loaded,
+			['copilot', 'claude'],
+			(line) => lines.push(line),
 		);
 		expect(lines).toEqual([
 			'[delendai] agent .github/agents/acme-migration-runner.agent.md (plugin db) created.\n',

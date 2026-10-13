@@ -66,7 +66,7 @@ export const initDefaultCommand: ICliCommand = {
 	name: 'init:default',
 	summary:
 		'Non-interactive bootstrap with safe project-preserving defaults (dogfood preset + managed instructions + skills + agents + scaffold).',
-	usage: 'init:default [--dry-run] [--delendai-root=<path>] [--plugin-paths-root=<path>]',
+	usage: 'init:default [--dry-run] [--delendai-root=<path>] [--plugin-paths-root=<path>] [--hosts=<id,id>]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
 		// Honour `--help` / `-h` as an early-return before any IO. The
 		// global dispatcher (`runHumanCli`) only handles `--help` at the

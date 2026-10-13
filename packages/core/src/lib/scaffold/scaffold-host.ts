@@ -9,6 +9,8 @@
 // generated scaffold tool; proposal-workflow tools are shown as
 // conditional on loading the `proposals` plugin.
 
+import { AGENT_HOSTS } from '../contracts/constants/agent-hosts.constant';
+import { renderAgentFor } from '../hosts/agent-renderers.helper';
 import { toKebabCase } from '../shared/string-normalize';
 import {
 	agentToolProfile,
@@ -22,6 +24,12 @@ export interface IScaffoldedFile {
 }
 
 export interface IScaffoldHostOptions {
+	/**
+	 * The agent hosts to write agents for (`AGENT_HOSTS` ids). Absent:
+	 * Copilot, Claude Code and Codex CLI, the set this scaffold wrote before
+	 * hosts could be chosen.
+	 */
+	readonly hosts?: readonly string[];
 	/** Project display name, e.g. `Acme Quest`. */
 	readonly projectName: string;
 	/** Tool namespace, e.g. `acme` → `acme_*` tools. */
@@ -734,16 +742,57 @@ cwd = "${targetDir === '.' ? '.' : targetDir}"
  * `libs/mcp-project/` server. The agents, instructions and skill are
  * still emitted (those are the contract surface any host needs).
  */
+/** The hosts a scaffold writes agents for when none are named. */
+const DEFAULT_SCAFFOLD_HOSTS: readonly string[] = [
+	'copilot',
+	'claude',
+	'codex',
+];
+
 export const scaffoldHostProject = (
 	options: IScaffoldHostOptions,
 ): readonly IScaffoldedFile[] => {
+	const hosts = options.hosts ?? DEFAULT_SCAFFOLD_HOSTS;
+	const slots: readonly IScaffoldAgentSlot[] = [
+		'orchestrator',
+		...SUBAGENT_SLOTS,
+	];
+	const forHost = (
+		id: string,
+		render: (slot: IScaffoldAgentSlot) => IScaffoldedFile,
+	): readonly IScaffoldedFile[] =>
+		hosts.includes(id) ? slots.map(render) : [];
 	const agentFiles: IScaffoldedFile[] = [
-		scaffoldAgentFile(options, 'orchestrator'),
-		...SUBAGENT_SLOTS.map((slot) => scaffoldAgentFile(options, slot)),
-		scaffoldClaudeAgentFile(options, 'orchestrator'),
-		...SUBAGENT_SLOTS.map((slot) => scaffoldClaudeAgentFile(options, slot)),
-		scaffoldCodexAgentFile(options, 'orchestrator'),
-		...SUBAGENT_SLOTS.map((slot) => scaffoldCodexAgentFile(options, slot)),
+		...forHost('copilot', (slot) => scaffoldAgentFile(options, slot)),
+		...forHost('claude', (slot) => scaffoldClaudeAgentFile(options, slot)),
+		...forHost('codex', (slot) => scaffoldCodexAgentFile(options, slot)),
+		// Any other host that reads agent files gets the Claude Code body in
+		// its own format, through the one renderer every writer shares.
+		...AGENT_HOSTS.filter(
+			(host) =>
+				host.agents !== undefined &&
+				!['copilot', 'claude', 'codex'].includes(host.id) &&
+				hosts.includes(host.id),
+		).flatMap((host) =>
+			slots.flatMap((slot) => {
+				const claude = scaffoldClaudeAgentFile(options, slot);
+				const [, header = '', body = ''] =
+					/^---\n([\s\S]*?)\n---\n\n?([\s\S]*)$/u.exec(
+						claude.content,
+					) ?? [];
+				const file = renderAgentFor(host, {
+					name: kebab(slot),
+					description:
+						/^description: (.*)$/mu.exec(header)?.[1] ?? '',
+					instructions: body,
+					entryPoint: slot === 'orchestrator',
+					serverToolSet: hostToolSetReference(
+						resolveMcpServerName(options),
+					),
+				});
+				return file === undefined ? [] : [file];
+			}),
+		),
 	];
 	const hostFiles: IScaffoldedFile[] = options.existingDelendai
 		? []

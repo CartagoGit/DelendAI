@@ -750,6 +750,7 @@ export const assembleCliConfig = async (
 			workspace.root,
 			corePrefix,
 			pluginAgentSources,
+			fileConfig.hosts,
 		);
 
 	const {
