@@ -38,10 +38,10 @@
 
 ## Tests
 
+- plugins/container/src/index.spec.ts
+- plugins/container/src/lib/compose/compose-parser.service.spec.ts
 - plugins/container/src/lib/detect/docker-signals.service.spec.ts
 - plugins/container/src/lib/inspect/docker-images.spec.ts
-- plugins/container/src/lib/inspect/docker-ps.spec.ts
-- plugins/container/src/lib/inspect/parse-docker-images.spec.ts
 
 ## Do not
 
