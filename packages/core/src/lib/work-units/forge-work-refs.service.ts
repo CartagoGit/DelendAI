@@ -55,6 +55,12 @@ export const hangingForgeWorkRefs = (input: {
 	readonly leaseTtlMinutes: number;
 	/** Seconds since the epoch; the clock, unless a test says otherwise. */
 	readonly now?: number | undefined;
+	/**
+	 * Whether the ref's proposal is still open. Its one wip branch outlives
+	 * every pull request until the proposal is done, so a branch whose work
+	 * landed is not hanging while that holds.
+	 */
+	readonly stillOpen?: ((ref: string) => boolean) | undefined;
 }): readonly { readonly ref: string; readonly why: string }[] => {
 	const now = input.now ?? Math.floor(Date.now() / 1000);
 	const limit = abandonedAfterSeconds(input.leaseTtlMinutes);
@@ -65,7 +71,10 @@ export const hangingForgeWorkRefs = (input: {
 			'--count',
 			`${input.remote}/${input.integration}..${tracked}`,
 		]);
-		if (ahead === '0') return [{ ref, why: 'landed' }];
+		if (ahead === '0')
+			return input.stillOpen?.(ref) === true
+				? []
+				: [{ ref, why: 'landed' }];
 		const tipAt = Number(
 			git(input.root, ['log', '-1', '--format=%ct', tracked]),
 		);

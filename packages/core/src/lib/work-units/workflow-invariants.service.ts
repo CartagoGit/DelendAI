@@ -36,6 +36,9 @@ import {
 import { idleUnitsInvariant } from './idle-units.service';
 import { profileBranchesInvariant } from './profile-branches.service';
 import { strayRefsInvariant } from './stray-refs.service';
+import { unitsOnForgeInvariant } from './units-on-forge.service';
+import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
+import { proposalStillOpen } from './publication-target.service';
 import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
@@ -265,6 +268,16 @@ export const checkWorkflowInvariants = (input: {
 		),
 		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
 		now: input.now,
+		stillOpen: (ref) => {
+			const proposal = workUnitIdentityOf(policy, ref)?.proposal;
+			return (
+				proposal !== undefined &&
+				proposalStillOpen(root, proposal, [
+					`refs/remotes/${remote}/${ref}`,
+					`refs/remotes/${remote}/${integration}`,
+				])
+			);
+		},
 	});
 	add({
 		scope: 'forge',
@@ -280,6 +293,8 @@ export const checkWorkflowInvariants = (input: {
 						.join(', ')}`,
 		remedy: 'publish the unit (`delendai work publish`); one that will not land is retired with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
+
+	add(unitsOnForgeInvariant({ root, remote, integration, workPrefix }));
 
 	// 8. A publication still on the forge holds something the integration
 	// branch lacks.

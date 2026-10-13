@@ -30,3 +30,7 @@ process.env.DELENDAI_SEEN_MODELS_FILE = join(
 	tmpdir(),
 	`delendai-no-seen-models-${process.pid}.json`,
 );
+
+// A server a spec starts must not fetch or push the units of whatever
+// repository it was started in.
+process.env.DELENDAI_UNIT_FORGE_SYNC = 'off';

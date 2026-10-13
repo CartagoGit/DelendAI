@@ -39,9 +39,18 @@ What the code does today, measured on this clone on 2026-10-13:
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/unit-push.interface.ts`
   - `packages/core/src/lib/guard-hooks/guard-hook-block.helper.ts`
   - `packages/core/src/lib/work-units/unit-push.service.ts`
-  - `packages/core/src/lib/wip-engine/work-ref-publication.ts`
+  - `packages/core/src/cli.ts`
+  - `packages/cli/src/commands/guard.command.ts`
+  - `packages/cli/src/contracts/constants/guard-hooks.constant.ts`
+  - `packages/cli/src/contracts/interfaces/guard.interface.ts`
+  - `lefthook.yml`
+  - `packages/core/tests/src/lib/work-units/unit-push.service.spec.ts`
+  - `packages/cli/src/commands/guard-facts.spec.ts`
+  - `packages/cli/src/lib/guard-hooks.service.spec.ts`
+  - `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - A commit or merge on a work ref, made in its worktree by any means, is pushed to the same branch on the forge before the command returns. A push the forge refuses (the branch moved on another machine) is reported with the command that reconciles it, never forced.
@@ -51,7 +60,14 @@ What the code does today, measured on this clone on 2026-10-13:
 
 - **Status**: pending
 - **Files**:
-  - `packages/core/src/lib/work-units/work-publish.service.ts`
+  - `packages/core/src/lib/work-units/publication-target.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+  - `packages/core/src/lib/work-units/unit-standings.service.ts`
+  - `packages/core/src/lib/work-units/unit-reaper.service.ts`
+  - `packages/core/src/lib/work-units/unit-removal.service.ts`
+  - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - Publishing pushes the wip branch's tip to its `pr/…` branch and opens or updates the pull request. The wip branch, local and on the forge, and its worktree stay while the proposal is not done.
@@ -75,22 +91,29 @@ What the code does today, measured on this clone on 2026-10-13:
 
 - **Status**: pending
 - **Files**:
+  - `packages/core/src/lib/contracts/constants/unit-forge-sync.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
   - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
-  - `packages/core/src/lib/startup/reconcile-startup.ts`
+  - `packages/core/src/lib/project/create-mcp-project.ts`
+  - `tools/scripts/lib/hermetic-agent-bridge-setup.ts`
+  - `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - At every start, each unit of this clone with commits the forge lacks is pushed. Each wip branch of the same agent on the forge that this clone lacks, or holds behind, is fetched and its unit fast-forwarded. A branch that diverged is a blocker naming the reconciling command.
   - Uncommitted edits in a kept unit's worktree are committed as a durable checkpoint and pushed (`checkpoint.durableWip`), so changing machine never leaves work only on disk.
-  - A start in a project with the old layout (local-only wip branches; units under the old per-kind, per-slice names) migrates them: pushed, then renamed onto the proposal's branch, with nothing lost. The rename is journalled.
+  - A project with the old layout (wip branches that exist only on this clone) has them pushed at its first start on this code; branch names keep their shape (S3), so nothing is renamed. `DELENDAI_UNIT_FORGE_SYNC=off` turns the pass off, which the test suites do.
 
 ### S5 — The doctor sees work that is not on the forge
 
 - **Status**: pending
 - **Files**:
+  - `packages/core/src/lib/work-units/units-on-forge.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+  - `packages/core/src/lib/work-units/forge-work-refs.service.ts`
 - **Gate**: type
 - acceptance:
-  - An invariant reports every unit whose branch holds commits the forge lacks, or uncommitted edits, with the repair; a start that repairs them leaves it holding.
+  - `units-on-the-forge` reports every unit whose branch holds commits the forge lacks, or uncommitted edits, with the repair; a start that repairs them leaves it holding.
+  - A wip branch on the forge whose work landed is not reported as hanging (`no-remote-work-refs`) while its proposal is open.
 
 ## acceptance
 
