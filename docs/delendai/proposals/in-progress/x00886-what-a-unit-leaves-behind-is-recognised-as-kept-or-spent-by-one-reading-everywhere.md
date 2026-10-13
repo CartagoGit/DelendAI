@@ -80,6 +80,8 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - The publisher's report names a unit only when its outcome or reason changed since the last report that named it.
   - The restart line describes what the server ran before the restart and no longer says it still applies the old rules.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
