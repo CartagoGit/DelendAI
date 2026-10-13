@@ -7,17 +7,33 @@
  * no docs, and the agent had to know to call `adopt_project` first.
  * Now the first start adopts the project with the defaults, exactly as
  * `adopt_project` with `write: true` would, and says what it created.
- * Only a Git work tree's root counts as a project: a server started in a
- * home or scratch directory writes nothing there.
+ * Consent is the project's own: only a Git work tree whose own MCP
+ * configuration (`.vscode/mcp.json`, `.mcp.json`) registers delendai is
+ * set up. A server a user-wide configuration starts in every project an
+ * editor opens writes nothing in them — that is what once rewrote files
+ * in projects that had nothing to do with delendai.
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { createWorkspaceFileReader } from '../bootstrap/workspace-file-reader';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import { DEFAULT_CONFIG_FILENAME } from '../plugins/load-config-file';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
+import { findDelendaiServerName } from '../scaffold/detect-existing-install';
 import { runAdoptProject } from './adopt-project.tool';
+
+const PROJECT_MCP_CONFIGS = ['.vscode/mcp.json', '.mcp.json'] as const;
+
+/** Whether the project itself registers delendai as one of its servers. */
+const projectRegistersDelendai = (root: string): boolean =>
+	PROJECT_MCP_CONFIGS.some((file) => {
+		const path = join(root, file);
+		return (
+			existsSync(path) &&
+			findDelendaiServerName(readFileSync(path, 'utf8')) !== undefined
+		);
+	});
 
 /**
  * The files the first start created, or `undefined` when the project
@@ -30,6 +46,7 @@ export const firstRunSetup = async (
 	if (existsSync(join(workspaceRoot, DEFAULT_CONFIG_FILENAME)))
 		return undefined;
 	if (!existsSync(join(workspaceRoot, '.git'))) return undefined;
+	if (!projectRegistersDelendai(workspaceRoot)) return undefined;
 	const workspace = createWorkspacePathProvider(workspaceRoot);
 	const outcome = await runAdoptProject(
 		{

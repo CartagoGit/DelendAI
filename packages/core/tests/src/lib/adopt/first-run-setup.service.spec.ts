@@ -2,6 +2,7 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	readFileSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
@@ -21,6 +22,15 @@ describe('firstRunSetup', () => {
 		const root = mkdtempSync(join(tmpdir(), 'first-run-'));
 		roots.push(root);
 		if (withGit) mkdirSync(join(root, '.git'));
+		mkdirSync(join(root, '.vscode'));
+		writeFileSync(
+			join(root, '.vscode/mcp.json'),
+			JSON.stringify({
+				servers: {
+					Acme: { command: 'npx', args: ['-y', '@delendai/core'] },
+				},
+			}),
+		);
 		writeFileSync(
 			join(root, 'package.json'),
 			JSON.stringify({ name: 'acme' }),
@@ -47,6 +57,26 @@ describe('firstRunSetup', () => {
 		const root = project(false);
 		expect(await firstRunSetup(root)).toBeUndefined();
 		expect(existsSync(join(root, 'delendai.config.json'))).toBe(false);
+	});
+
+	it('writes nothing in a project that does not register delendai itself', async () => {
+		const root = project();
+		writeFileSync(
+			join(root, '.vscode/mcp.json'),
+			JSON.stringify({ servers: {} }),
+		);
+		expect(await firstRunSetup(root)).toBeUndefined();
+		expect(existsSync(join(root, 'delendai.config.json'))).toBe(false);
+	});
+
+	it('grants the agents the server name the project registered', async () => {
+		const root = project();
+		await firstRunSetup(root);
+		const agent = readFileSync(
+			join(root, '.github/agents/orchestrator.agent.md'),
+			'utf8',
+		);
+		expect(agent).toContain('acme/*');
 	});
 
 	it('says what it created, once', async () => {

@@ -9,12 +9,15 @@
  * delendai's tools, and nothing said so. At each start the grants of the
  * agents named with the project's prefix are compared with the servers
  * the project registers; a grant of no registered server is replaced by
- * delendai's. Grants of the project's other servers, and agents delendai
- * did not name, are never touched.
+ * delendai's. An agent is delendai's when it is named with the project's
+ * prefix (`delendai init`) or after one of delendai's roles
+ * (`adopt_project`). Grants of the project's other servers, and agents
+ * delendai did not name, are never touched.
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { AGENT_SLOTS } from '../contracts/constants/agent-slots.constant';
 import type { IAgentGrantChange } from '../contracts/interfaces/agent-grant-reconcile.interface';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { findDelendaiServerName } from './detect-existing-install';
@@ -22,6 +25,16 @@ import { hostToolSetReference } from './mcp-server-name.helper';
 
 const MCP_CONFIG_FILES = ['.vscode/mcp.json', '.mcp.json'] as const;
 const COPILOT_AGENTS_DIR = '.github/agents';
+
+/** delendai's role names, as `adopt_project` writes them and in kebab case. */
+const ROLE_NAMES: ReadonlySet<string> = new Set(
+	AGENT_SLOTS.flatMap((slot) => [slot, slot.replaceAll('_', '-')]),
+);
+
+/** Whether delendai wrote an agent of this name: its prefix, or a role. */
+const namedByDelendai = (name: string | undefined, prefix: string): boolean =>
+	name !== undefined &&
+	(name === prefix || name.startsWith(`${prefix}-`) || ROLE_NAMES.has(name));
 
 const readText = (path: string): Promise<string | undefined> =>
 	readFile(path, 'utf8').catch(() => undefined);
@@ -94,10 +107,11 @@ export const reconcileAgentGrants = async (input: {
 		const text = await readText(join(input.root, path));
 		if (text === undefined) continue;
 		const { name, toolsLine } = frontMatter(text);
-		const ours =
-			name === input.namespacePrefix ||
-			name?.startsWith(`${input.namespacePrefix}-`) === true;
-		if (!ours || toolsLine === undefined) continue;
+		if (
+			!namedByDelendai(name, input.namespacePrefix) ||
+			toolsLine === undefined
+		)
+			continue;
 		const inner = toolsLine.slice(
 			toolsLine.indexOf('[') + 1,
 			toolsLine.lastIndexOf(']'),

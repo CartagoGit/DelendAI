@@ -72,6 +72,20 @@ describe('reconcileAgentGrants', () => {
 		expect(read('.github/agents/other.agent.md')).toContain('gone/*');
 	});
 
+	it('recognises the agents adopt_project names after their role', async () => {
+		write(
+			'.github/agents/proposal_guardian.agent.md',
+			agent('proposal_guardian', 'read, gone/*'),
+		);
+		const changes = await reconcileAgentGrants({
+			root,
+			namespacePrefix: 'acme',
+		});
+		expect(changes.map((change) => change.path)).toEqual([
+			'.github/agents/proposal_guardian.agent.md',
+		]);
+	});
+
 	it('only reports when told not to apply', async () => {
 		write('.github/agents/acme.agent.md', agent('acme', 'read'));
 		const changes = await reconcileAgentGrants({
