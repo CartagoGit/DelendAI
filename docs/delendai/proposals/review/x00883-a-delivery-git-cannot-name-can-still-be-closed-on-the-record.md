@@ -2,14 +2,14 @@
 id: x00883
 title: "A delivery Git cannot name can still be closed, on the record"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-11
-last-transition-id: 2dcc0c0b-41ab-4fc7-b68c-0fff7a5e981c
-last-correlation-id: 2dcc0c0b-41ab-4fc7-b68c-0fff7a5e981c
-last-transition-from: ready
-last-transition-at: 2026-10-11T21:20:56.030Z
+last-transition-id: 3e99130c-5f01-4d68-b48c-ebca58cb3c0c
+last-correlation-id: 3e99130c-5f01-4d68-b48c-ebca58cb3c0c
+last-transition-from: in-progress
+last-transition-at: 2026-10-12T23:53:44.834Z
 ---
 
 # x00883 — A delivery Git cannot name can still be closed, on the record
@@ -110,13 +110,19 @@ between those two designs:
 
 ### S4 — The pull request that was stuck is closed through the mechanism
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `docs/delendai/proposals/done/feats/f00538-forward-sync-the-release-branch-back-into-the-integration-branch-after-every-promotion.md`
 - **Gate**: none
+- shipped-in: `3d65fe48ef68`
 - acceptance:
-  - On its own publication (`delendai/pr/minimax-m31/review/f00538-review-g1/the-cited-tree-is-not-a-commit`), once S1 and S2 are on the integration branch: S2 and S3 of f00538 are attested to `claude-opus-5`, the model the session record of 2026-09-15 shows making `d615fc5a2550`; the reviewer's verdicts stay the reviewer's.
-  - The pull request carries the owner's label — the owner asked on 2026-10-11 for this branch to be put right with the fix — its required check passes, and it merges through the queue.
+  - S2 and S3 of f00538 are attested to `claude-opus-5`, with the session record of 2026-09-15 as evidence, through `proposal_review action=attest` inside a reconcile unit, so the tool commits its own lines; the reviewer's verdicts are carried as minimax-m31's tool wrote them.
+  - The reconciliation (#1035) carried the owner's label — the owner asked on 2026-10-11 for this branch to be put right with the fix — passed its required check and merged through the queue; f00538 is done.
+  - The stuck publication (#1008) is retired with its tip kept at `refs/delendai/retired/minimax-m31/review/f00538-review-g1/the-cited-tree-is-not-a-commit`.
+
+Delivered differently from the plan: the attestation was first committed on #1008 itself, and `verdicts-through-the-tool` rightly refused a review line not committed by the tool. Doing it inside a reconcile unit is the path the product already had.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
