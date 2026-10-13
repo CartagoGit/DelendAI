@@ -41,7 +41,7 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 
 ### S1 — A published bridge contract, one entry per workspace
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
   - `packages/core/src/lib/work-identity/provider-model-bridge.constant.ts`
@@ -57,7 +57,7 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 
 ### S2 — The bridge's state is reported, never silent
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
   - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
