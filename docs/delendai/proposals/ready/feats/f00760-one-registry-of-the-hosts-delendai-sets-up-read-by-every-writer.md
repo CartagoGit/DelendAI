@@ -63,7 +63,7 @@ What the code does today:
 
 - **Status**: pending
 - **Files**:
-  - `packages/core/src/lib/hosts/agent-renderers.ts`
+  - `packages/core/src/lib/hosts/agent-renderers.helper.ts`
   - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
   - `packages/core/src/lib/scaffold/agent-grant-reconcile.service.ts`
   - `packages/cli/src/commands/init/init.command.ts`
