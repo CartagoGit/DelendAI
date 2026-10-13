@@ -125,6 +125,8 @@ The server log pasted with the same request showed two more departures: the chec
 - **Gate**: type
 - acceptance:
   - `work enter` without `--generation`, for an agent whose own generation of that proposal and slice has an open publication, is refused. The refusal gives the generation, the topic and the merge that resume it, whether or not the forge still holds a reservation. `--alongside` still opens a deliberate next generation.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
