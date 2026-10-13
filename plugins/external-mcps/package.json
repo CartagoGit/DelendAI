@@ -47,6 +47,9 @@
 		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
+		"@delendai/conventions": "workspace:*",
+		"@delendai/framework-knowledge": "workspace:*",
+		"@delendai/style-convention": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

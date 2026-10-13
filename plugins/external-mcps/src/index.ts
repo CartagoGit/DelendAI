@@ -31,7 +31,9 @@ import {
 import { buildAckToolRegistration } from './lib/tools/ack.tool';
 import { buildCatalogToolRegistration } from './lib/tools/catalog.tool';
 import { buildDiscoverToolRegistration } from './lib/tools/discover.tool';
+import { createCapabilityGateway } from './lib/contract/capability-gateway.service';
 import { buildCallToolRegistration } from './lib/tools/invoke-proxy';
+import { buildVerifyResultToolRegistration } from './lib/tools/verify-result.tool';
 import { buildStatusToolRegistration } from './lib/tools/status.tool';
 import { buildSuggestToolRegistration } from './lib/tools/suggest.tool';
 import { buildValidateConfigToolRegistration } from './lib/tools/validate-config.tool';
@@ -93,6 +95,14 @@ export default definePlugin({
 			joinRel(ctx.pluginCacheDir, 'pending-acks.json'),
 		);
 		const ackStore = createPendingAcksStore(pendingAcksPath);
+		const gateway = createCapabilityGateway({
+			workspaceRoot: ctx.workspace.root,
+			active: (plugin) => ctx.peerPlugins?.has(plugin) === true,
+			optionsOf: (plugin) => ctx.pluginOptions?.get(plugin) ?? {},
+			rawDir: ctx.workspace.resolve(
+				joinRel(ctx.pluginCacheDir, 'raw-answers'),
+			),
+		});
 		let detectedCache: ReadonlySet<string> | undefined;
 		const detect = async (): Promise<ReadonlySet<string>> => {
 			if (detectedCache === undefined) {
@@ -163,6 +173,11 @@ export default definePlugin({
 							options.requireHumanAckWhenLlmDecides,
 						hasRecordedAck: (serverId) =>
 							ackStore.isAcked(serverId),
+						gateway,
+					}),
+					buildVerifyResultToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						gateway,
 					}),
 				],
 			},

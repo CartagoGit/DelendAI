@@ -657,6 +657,82 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 		expect(payload).toEqual({ ok: true, result: { content: [] } });
 	});
 
+	it('a capability carries the contract, the facts and the components a design may already be', async () => {
+		const h = makeHarness({ fs: entry() });
+		const kept: string[] = [];
+		const tool = await captureTool(
+			buildCallToolRegistration({
+				namespacePrefix: 'external-mcps',
+				registry: h.registry,
+				llmDecidesActivation: true,
+				requireHumanAckWhenLlmDecides: false,
+				gateway: {
+					contract: async () => ({
+						placement: { profile: 'typescript' },
+						from: ['conventions'],
+					}),
+					keep: async (handle) => {
+						kept.push(handle);
+					},
+					components: async () => [
+						'src/ui/primary-button.tsx',
+						'src/ui/card.tsx',
+					],
+				},
+			}),
+		);
+		const pending = tool.handler({
+			server: 'fs',
+			tool: 'get_frame',
+			capability: 'design.read',
+		});
+		h.children[0]?.reply(0, {
+			result: {
+				structuredContent: {
+					frame: { name: 'Primary Button', width: 120 },
+				},
+			},
+		});
+		const payload = CallOutputSchema.parse(
+			(await pending).structuredContent,
+		);
+		expect(payload.ok).toBe(true);
+		expect(payload.contract).toEqual({
+			placement: { profile: 'typescript' },
+			from: ['conventions'],
+		});
+		expect(payload.normalized?.facts).toEqual({
+			'frame.name': 'Primary Button',
+			'frame.width': 120,
+		});
+		expect(kept).toEqual([payload.normalized?.handle]);
+		expect(payload.reuse?.[0]?.path).toBe('src/ui/primary-button.tsx');
+		expect(payload.result).toBeUndefined();
+	});
+
+	it('a destructive capability needs an ack even when the activation knobs allow the call', async () => {
+		const h = makeHarness({ fs: entry() });
+		const tool = await captureTool(
+			buildCallToolRegistration({
+				namespacePrefix: 'external-mcps',
+				registry: h.registry,
+				llmDecidesActivation: true,
+				requireHumanAckWhenLlmDecides: false,
+			}),
+		);
+		const payload = CallOutputSchema.parse(
+			(
+				await tool.handler({
+					server: 'fs',
+					tool: 'drop',
+					capability: 'database.write',
+				})
+			).structuredContent,
+		);
+		expect(payload).toMatchObject({ ok: false, code: 'ack-required' });
+		expect(h.spawnCalls).toHaveLength(0);
+	});
+
 	it('proceeds without any ack when the knob is off', async () => {
 		const h = makeHarness({ fs: entry() });
 		const tool = await captureTool(
