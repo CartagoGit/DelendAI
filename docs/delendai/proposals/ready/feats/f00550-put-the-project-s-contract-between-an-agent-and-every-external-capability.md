@@ -59,7 +59,13 @@ belong and what may import what. This proposal is where they are spent.
 ### S1 — Capability names, and which effects they carry
 
 - **Status**: pending
-- **Files**: [`plugins/external-mcps/src/lib/capability/capability-registry.service.ts`, `plugins/external-mcps/src/lib/capability/capability-registry.service.spec.ts`, `plugins/external-mcps/src/lib/contracts/interfaces/capability.interface.ts`]
+- **Files**:
+  - `plugins/external-mcps/src/lib/capability/capability-registry.service.ts`
+  - `plugins/external-mcps/src/lib/contracts/constants/capability-registry.constant.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/capability.interface.ts`
+  - `plugins/external-mcps/src/lib/tools/invoke-proxy.ts`
+  - `plugins/external-mcps/tests/src/lib/capability/capability-registry.service.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`
 
 Name capabilities rather than products — `design.read`, `design.tokens`,
 `browser.inspect`, `browser.screenshot`, `database.query` — and classify
@@ -68,12 +74,19 @@ each with core's existing effect vocabulary (`write`, `spawn`,
 the machinery the dry-run protocol already keys off rather than a new
 one invented here.
 
-- **Gate**: `npx vitest run plugins/external-mcps/tests/src/lib/capability/capability-registry.service.spec.ts`
+- **Gate**: `npx vitest run --project external-mcps`
 
 ### S2 — The effective project contract, as one small payload
 
 - **Status**: pending
-- **Files**: [`plugins/external-mcps/src/lib/contract/project-contract.service.ts`, `plugins/external-mcps/src/lib/contract/project-contract.service.spec.ts`]
+- **Files**:
+  - `plugins/external-mcps/src/lib/contract/project-contract.service.ts`
+  - `plugins/external-mcps/src/lib/contract/capability-gateway.service.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/project-contract.interface.ts`
+  - `plugins/external-mcps/src/index.ts`
+  - `plugins/external-mcps/package.json`
+  - `plugins/framework-knowledge/src/public/index.ts`
+  - `plugins/external-mcps/tests/src/lib/contract/project-contract.service.spec.ts`
 
 Assemble what the project requires — resolved framework and version,
 style architecture, design-token policy, placement rules, existing
@@ -81,43 +94,54 @@ components — from f00547, f00548 and f00549, each optional.
 A host that loads none of them still gets a valid, smaller contract,
 because the gateway must not hard-depend on three unshipped plugins.
 
-- **Gate**: `npx vitest run plugins/external-mcps/tests/src/lib/contract/project-contract.service.spec.ts`
+- **Gate**: `npx vitest run --project external-mcps`
 
 ### S3 — Normalise the answer, and keep a handle to the raw one
 
 - **Status**: pending
-- **Files**: [`plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`, `plugins/external-mcps/src/lib/normalize/normalize-response.service.spec.ts`]
+- **Files**:
+  - `plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/external-answer.interface.ts`
+  - `plugins/external-mcps/tests/src/lib/normalize/normalize-response.service.spec.ts`
 
 A large external payload becomes the small normalised facts the agent
 needs, with the raw artifact kept behind a handle for the rare case that
 needs it. This is the same summary/evidence split f00547 uses, for
 the same token reason.
 
-- **Gate**: `npx vitest run plugins/external-mcps/tests/src/lib/normalize/normalize-response.service.spec.ts`
+- **Gate**: `npx vitest run --project external-mcps`
 
 ### S4 — Prefer what already exists over what was just described
 
 - **Status**: pending
-- **Files**: [`plugins/external-mcps/src/lib/reuse/match-existing.service.ts`, `plugins/external-mcps/src/lib/reuse/match-existing.service.spec.ts`]
+- **Files**:
+  - `plugins/external-mcps/src/lib/reuse/match-existing.service.ts`
+  - `plugins/external-mcps/tests/src/lib/reuse/match-existing.service.spec.ts`
 
 Before an external description becomes a new component, match it against
 the components the project already has and report the candidates with
 their similarity, so "add a third button" is a decision someone makes
 rather than a default.
 
-- **Gate**: `npx vitest run plugins/external-mcps/tests/src/lib/reuse/match-existing.service.spec.ts`
+- **Gate**: `npx vitest run --project external-mcps`
 
 ### S5 — Verify the result against the project, not against the source
 
 - **Status**: pending
-- **Files**: [`plugins/external-mcps/src/lib/verify/verify-against-contract.service.ts`, `plugins/external-mcps/src/lib/verify/verify-against-contract.service.spec.ts`]
+- **Files**:
+  - `plugins/external-mcps/src/lib/verify/verify-against-contract.service.ts`
+  - `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_verify_result.ts`
+  - `apps/web/src/i18n/tools/index.ts`
+  - `plugins/external-mcps/tests/src/lib/catalog.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/verify/verify-against-contract.service.spec.ts`
 
 After the work, check what was produced against the same contract that
 went in: placement, style ownership, design tokens instead of literals,
 and framework-version legality. A conflict between the external source
 and the project resolves to the project, with the conflict named.
 
-- **Gate**: `npx vitest run plugins/external-mcps/tests/src/lib/verify/verify-against-contract.service.spec.ts`
+- **Gate**: `npx vitest run --project external-mcps`
 
 ## acceptance
 
