@@ -39,7 +39,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S1 — A checkpoint kept under a later retired tip is not lost
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
   - `packages/core/src/lib/startup-reconciler/retired-tips.service.ts`
@@ -54,7 +54,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S2 — The reaper releases spent review claims and empty stray refs
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`
   - `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`
@@ -72,7 +72,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S3 — The server log says each change once, and a restart in the past tense
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
   - `packages/core/src/lib/wip-engine/work-checkout-reports.ts`
@@ -89,7 +89,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S4 — A unit ends once every slice of its proposal is handed in
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
@@ -99,6 +99,19 @@ The server log pasted with the same request showed two more departures: the chec
 - shipped-in: `5a1d2173bf57`
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+
+### S5 — A handed-in slice says so, whichever way it was handed in
+
+- **Status**: review
+- **Files**:
+  - `plugins/proposals/src/lib/swarm/proposal-review.ts`
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `plugins/proposals/src/lib/services/review-handoff.ts`
+  - `plugins/proposals/tests/src/lib/proposal-review.spec.ts`
+  - `plugins/proposals/tests/src/lib/services/review-handoff.spec.ts`
+- **Gate**: type
+- acceptance:
+  - Submitting a slice that reads `pending` or `in-progress` sets its Status line to `review`. Handing the proposal to review aligns every slice already in review the same way, so a proposal in `review/` never carries a slice the completeness gate counts as not started.
 
 ## acceptance
 
