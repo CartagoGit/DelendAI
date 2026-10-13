@@ -97,6 +97,7 @@ What the code does today:
   - `packages/core/src/runtime/index.ts`
   - `plugins/commit-policy/src/lib/services/commit-driver.ts`
   - `tools/scripts/lint/check-ephemeral-paths.script.ts`
+  - `tools/scripts/lint/check-stray-cache-files.script.ts`
   - `packages/core/tests/src/lib/workspace-migration/legacy-records-relocation.service.spec.ts`
   - `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
   - `packages/core/tests/src/lib/workspace-migration/legacy-migration-manager.spec.ts`
