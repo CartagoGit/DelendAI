@@ -77,7 +77,7 @@ What the code does today:
 
 ### S3 — Agents are declared once and rendered per host
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/hosts/agent-renderers.helper.ts`
   - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
@@ -93,6 +93,8 @@ What the code does today:
 - acceptance:
   - delendai's catalog agents and every plugin's `agentRoles` are one host-neutral description (name, description, instructions, entry point, server tool set); each host's renderer turns it into that host's file and front matter (Copilot tool grants and picker visibility, OpenCode `mode`).
   - init, the plugin agent writer and the scaffold write through the registry for the project's hosts; a contributed role reaches every one of them, and the grant reconciler reads the Copilot folder from the registry, the one format that grants by server.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A project with the old layout is migrated at start
 
