@@ -14,7 +14,6 @@
  */
 import { joinRel, runCommand } from '@delendai/core/public';
 import { definePlugin } from '@delendai/core/plugin';
-import type { IProviderCapabilities } from '@delendai/core/public';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';
 import { HealthStore } from './lib/healthcheck/store';
@@ -23,7 +22,7 @@ import { SpendLimitsStore } from './lib/invoke/limits-store';
 import { spendCapsFrom } from './lib/invoke/spend-caps.helper';
 import { spendCheckerFor } from './lib/invoke/spend-guard';
 import { resolveLoopDetectionSeam } from './lib/loop-detection-seam';
-import { DEFAULT_OPTIONS, OptionsSchema } from './lib/options';
+import { DEFAULT_OPTIONS, OptionsSchema, rosterFor } from './lib/options';
 import type { ILifecycleEnvironment } from './lib/contracts/interfaces/execution-env-lifecycle.interface';
 import { loadExecutionEnvironment } from './lib/services/environment-loader.service';
 import { SessionStore } from './lib/router/session';
@@ -51,12 +50,10 @@ export default definePlugin({
 		if (peers.length > 0) assertUsageTrackingLoaded(peers);
 
 		const build = (environment: ILifecycleEnvironment | undefined) => {
-			// The provider roster. Canonical home is the root-level
-			// `providers` config block (S5 writes it); until core surfaces that
-			// on the context, S4 reads a fully-typed roster from this plugin's
-			// own options as a pragmatic source (documented in the README).
-			const providers = (options.providers ??
-				[]) as readonly IProviderCapabilities[];
+			// The provider roster: this plugin's own option when it declares
+			// one (an empty one included), else the root `providers` block,
+			// which the core validates and passes on the context.
+			const providers = rosterFor(options.providers, ctx.providers);
 			const ttlSeconds =
 				options.sessionStickinessTtlSeconds ??
 				DEFAULT_OPTIONS.sessionStickinessTtlSeconds;
