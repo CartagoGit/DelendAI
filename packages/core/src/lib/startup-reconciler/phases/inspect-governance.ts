@@ -56,13 +56,17 @@ export const runGovernancePhase = async (input: {
 	readonly seam: IStartupGovernanceSeam | undefined;
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly repository: IStartupRepositoryKey;
-	/** The forge's CLI is not installed: what it cannot read is noted, not blocking. */
-	readonly forgeCliMissing?: boolean | undefined;
+	/** What the forge phase found: a forge CLI that is not installed is noted there, and so here. */
+	readonly forgeFindings?:
+		| readonly { readonly code: string; readonly kind: string }[]
+		| undefined;
 }): Promise<IGovernancePhaseResult> => {
 	if (input.policy.governance.strategy === 'none') return { findings: [] };
+	const forgeCliMissing = (input.forgeFindings ?? []).some(
+		(entry) => entry.code === 'forge.unavailable' && entry.kind === 'note',
+	);
 	const unverifiableKind = (): 'blocker' | 'note' =>
-		input.forgeCliMissing === true ||
-		!input.policy.governance.failClosedOnUnverifiable
+		forgeCliMissing || !input.policy.governance.failClosedOnUnverifiable
 			? 'note'
 			: 'blocker';
 	if (input.seam === undefined) {
@@ -138,10 +142,9 @@ export const runGovernancePhase = async (input: {
 				phase: 'governance',
 				kind: unverifiableKind(),
 				subject: diff.notExecutable.join(', '),
-				message:
-					input.forgeCliMissing === true
-						? `${String(diff.notExecutable.length)} governed propert(ies) were not evaluated: ${FORGE_CLI_MISSING_NOTE}`
-						: `${String(diff.notExecutable.length)} governed propert(ies) could not be evaluated.`,
+				message: forgeCliMissing
+					? `${String(diff.notExecutable.length)} governed propert(ies) were not evaluated: ${FORGE_CLI_MISSING_NOTE}`
+					: `${String(diff.notExecutable.length)} governed propert(ies) could not be evaluated.`,
 			}),
 		);
 	}

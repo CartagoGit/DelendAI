@@ -328,10 +328,7 @@ const reconcileUnderLock = async (args: {
 		seam: input.governance,
 		policy,
 		repository,
-		forgeCliMissing: forge.findings.some(
-			(entry) =>
-				entry.code === 'forge.unavailable' && entry.kind === 'note',
-		),
+		forgeFindings: forge.findings,
 	});
 	collect(phases, {
 		phase: 'governance',
