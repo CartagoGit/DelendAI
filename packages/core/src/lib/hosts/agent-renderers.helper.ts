@@ -11,7 +11,7 @@ import type {
 	IHostNeutralAgent,
 } from '../contracts/interfaces/agent-host.interface';
 
-const frontMatter = (lines: readonly string[]): string =>
+const frontMatterOf = (lines: readonly string[]): string =>
 	['---', ...lines, '---'].join('\n');
 
 const HEADERS: Readonly<
@@ -20,7 +20,7 @@ const HEADERS: Readonly<
 	// VS Code Copilot: tools are granted by server tool set, and only the
 	// entry point appears in the agent picker.
 	copilot: (agent) =>
-		frontMatter([
+		frontMatterOf([
 			`name: ${agent.name}`,
 			`description: ${agent.description}`,
 			`tools: [read, search, edit, execute, todo, ${agent.entryPoint ? 'agent, ' : ''}${agent.serverToolSet}/*]`,
@@ -28,19 +28,19 @@ const HEADERS: Readonly<
 		]),
 	// Claude Code and Codex CLI: name and description; tools are inherited.
 	claude: (agent) =>
-		frontMatter([
+		frontMatterOf([
 			`name: ${agent.name}`,
 			`description: ${agent.description}`,
 		]),
 	codex: (agent) =>
-		frontMatter([
+		frontMatterOf([
 			`name: ${agent.name}`,
 			`description: ${agent.description}`,
 		]),
 	// OpenCode: the file name is the agent's name; `mode` says whether a
 	// person picks it or another agent delegates to it.
 	opencode: (agent) =>
-		frontMatter([
+		frontMatterOf([
 			`description: ${agent.description}`,
 			`mode: ${agent.entryPoint ? 'primary' : 'subagent'}`,
 		]),
