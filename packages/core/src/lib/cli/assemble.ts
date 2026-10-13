@@ -87,7 +87,7 @@ import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
 import { runThrottledBootSweep } from '../cache/boot-eviction-throttle.service';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
-import { coreEvictionRules } from '../cache/core-eviction-rules';
+import { coreEvictionRules } from '../cache/core-eviction-rules.helper';
 import { validProviderRoster } from '../plugins/provider-roster.helper';
 import { reportAgentGrants } from '../scaffold/agent-grant-report';
 import { reportPluginAgents } from '../scaffold/plugin-agents-report';

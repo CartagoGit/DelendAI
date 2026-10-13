@@ -52,6 +52,10 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// reader (server boot, the git guard, `work`); the one fact it reads
 	// from disk is a small journal, so the read stays synchronous too.
 	/packages\/core\/src\/lib\/development-policy\/adoption-record\.ts$/,
+	// Where those records live: the policy readers, the guard and identity
+	// resolve the records folder inline, so finding it stays synchronous
+	// (one small config read, one pointer file in the git directory).
+	/packages\/core\/src\/lib\/shared\/delendai-records\.ts$/,
 	// The provider-model bridge is read by identity resolution, which is
 	// synchronous by contract: the git guard, `work enter` and every
 	// ref-naming call site ask "who is working" inline, and the guard is

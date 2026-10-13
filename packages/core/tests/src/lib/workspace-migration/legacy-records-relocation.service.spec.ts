@@ -16,7 +16,7 @@ import {
 	recordsDir,
 	rememberAppliedCacheDir,
 } from '../../../../src/lib/shared/delendai-records';
-import { relocateLegacyRecords } from '../../../../src/lib/workspace-migration/legacy-records-relocation';
+import { relocateLegacyRecords } from '../../../../src/lib/workspace-migration/legacy-records-relocation.service';
 
 describe('an older layout is moved into the records folder', () => {
 	const roots: string[] = [];

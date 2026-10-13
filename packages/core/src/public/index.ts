@@ -843,8 +843,6 @@ export { compileWorkRefParser } from '../lib/startup-reconciler/index';
 // YAML is RENDERED from it. Keeping it internal is what let a second
 // derivation grow in `tools/` and disagree with this one.
 export { callerCheckout, sharedCheckout } from '../lib/shared/shared-checkout';
-// @adopter-api a plugin keeps a record about the workspace (a lock, a journal) where delendai keeps its own: the records folder of the cache directory
-export { recordPath } from '../lib/shared/delendai-records';
 export { projectBranches } from '../lib/development-policy/project-branches';
 /**
  * Whether a branch provably delivered its work, by the ref-lifecycle verdict.

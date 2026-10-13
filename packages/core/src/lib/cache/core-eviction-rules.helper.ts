@@ -1,5 +1,5 @@
 /**
- * core-eviction-rules.ts — what the core owns at the cache root and
+ * core-eviction-rules.helper.ts — what the core owns at the cache root and
  * removes once nobody needs it.
  *
  * Plugins register rules for their own namespaces; the cache root had

@@ -72,7 +72,7 @@ const defaultModifiedAt: IModifiedAtReader = async (file) => {
 };
 
 import type { IForeignLockProvider } from '../contracts/interfaces/foreign-lock.interface';
-import { recordPath } from '@delendai/core/public';
+import { recordPath } from '@delendai/core/runtime';
 
 /**
  * Non-slice trigger context. Threshold and interval events carry

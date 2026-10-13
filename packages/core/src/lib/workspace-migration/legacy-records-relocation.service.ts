@@ -1,5 +1,5 @@
 /**
- * legacy-records-relocation.ts — an older delendai's `.delendai/` folder is
+ * legacy-records-relocation.service.ts — an older delendai's `.delendai/` folder is
  * moved into the cache directory's records folder at start.
  *
  * Runs before the migration journal is read, because the journal is one

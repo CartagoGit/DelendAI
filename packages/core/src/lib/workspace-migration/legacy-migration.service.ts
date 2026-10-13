@@ -61,7 +61,7 @@ export type {
 import {
 	removeLegacyFolderIfSpent,
 	relocateLegacyRecords,
-} from './legacy-records-relocation';
+} from './legacy-records-relocation.service';
 
 /**
  * Run every pending migration, in registry order.

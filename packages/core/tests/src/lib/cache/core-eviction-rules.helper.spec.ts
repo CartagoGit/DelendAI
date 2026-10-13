@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { coreEvictionRules } from '../../../../src/lib/cache/core-eviction-rules';
+import { coreEvictionRules } from '../../../../src/lib/cache/core-eviction-rules.helper';
 
 describe('coreEvictionRules', () => {
 	const dirs: string[] = [];

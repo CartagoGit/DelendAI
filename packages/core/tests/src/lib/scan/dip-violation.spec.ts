@@ -71,4 +71,15 @@ describe('scan/dip-violation — detectDipViolations', () => {
 		);
 		expect(hits).toHaveLength(0);
 	});
+
+	it('exempts the records-folder resolver, synchronous by contract', () => {
+		const body =
+			"import { readFileSync } from 'node:fs';\nexport const x = () => readFileSync(p);";
+		expect(
+			detectDipViolations(
+				'packages/core/src/lib/shared/delendai-records.ts',
+				body,
+			),
+		).toHaveLength(0);
+	});
 });
