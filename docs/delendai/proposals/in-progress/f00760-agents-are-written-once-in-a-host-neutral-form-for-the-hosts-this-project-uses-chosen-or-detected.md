@@ -40,7 +40,7 @@ What the code does today:
 
 ### S1 — One host registry, many hosts
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`
@@ -49,6 +49,8 @@ What the code does today:
 - acceptance:
   - One declaration per host (`AGENT_HOSTS`) gives where its agent files go and in which format, its instructions file, and the evidence that it is in use (paths in the project, variables in the environment).
   - It covers Copilot, Claude Code, Codex CLI, OpenCode, Cursor, Windsurf, Gemini CLI, Continue and the terminal agents that read `AGENTS.md`. A host whose agent format is not known gets instructions only.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The project chooses its hosts; detection fills in when it does not
 
