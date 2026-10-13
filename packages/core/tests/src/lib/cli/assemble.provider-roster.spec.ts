@@ -23,13 +23,20 @@ const provider = (id: string) => ({
 	weaknesses: [],
 });
 
-let handed: readonly { readonly id: string }[] | undefined | 'unregistered' =
-	'unregistered';
+let handed: readonly { readonly id: string }[] | undefined;
+let registeredOnce = false;
+
+/** Read back through a function: the assignment happens in a callback the compiler cannot follow. */
+const handedIds = (): readonly string[] => {
+	if (!registeredOnce) throw new Error('the plugin never registered');
+	return (handed ?? []).map((entry) => entry.id);
+};
 
 const plugin = {
 	name: 'rosterPlugin',
 	register: (context: { providers?: readonly { readonly id: string }[] }) => {
 		handed = context.providers;
+		registeredOnce = true;
 		return {};
 	},
 };
@@ -55,23 +62,19 @@ const assemble = async (config: unknown) =>
 
 describe('the provider roster a plugin is handed', () => {
 	it('is the root roster without its invalid entries', async () => {
-		handed = 'unregistered';
+		registeredOnce = false;
 		await assemble({
 			providers: [
 				provider('alpha'),
 				{ ...provider('beta'), kind: 'telepathy' },
 			],
 		});
-		expect(
-			handed === 'unregistered'
-				? []
-				: (handed ?? []).map((entry) => entry.id),
-		).toEqual(['alpha']);
+		expect(handedIds()).toEqual(['alpha']);
 	});
 
 	it('is empty when the configuration declares none', async () => {
-		handed = 'unregistered';
+		registeredOnce = false;
 		await assemble(undefined);
-		expect(handed).toEqual([]);
+		expect(handedIds()).toEqual([]);
 	});
 });

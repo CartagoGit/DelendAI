@@ -86,7 +86,7 @@ const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
  * `CAPABILITY_TAGS` so the schema, the contract and the runner plugin
  * never drift.
  */
-export const PROVIDER_ENTRY_SCHEMA = z
+const PROVIDER_ENTRY_SCHEMA = z
 	.object({
 		id: z
 			.string()
@@ -108,6 +108,9 @@ export const PROVIDER_ENTRY_SCHEMA = z
 	})
 	.strict();
 
+/** One root roster entry, checked by the schema `--check` uses. */
+export const parseProviderEntry = (entry: unknown) =>
+	PROVIDER_ENTRY_SCHEMA.safeParse(entry);
 const PLUGIN_REGISTRY_ENTRY_SCHEMA = z
 	.object({
 		id: z.string(),

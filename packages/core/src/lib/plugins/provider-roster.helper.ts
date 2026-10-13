@@ -9,7 +9,7 @@
  */
 import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IProviderRoster } from '../contracts/interfaces/provider-roster.interface';
-import { PROVIDER_ENTRY_SCHEMA } from './config-file-schema';
+import { parseProviderEntry } from './config-file-schema';
 
 export const validProviderRoster = (raw: unknown): IProviderRoster => {
 	if (!Array.isArray(raw)) return { providers: [], rejected: [] };
@@ -17,7 +17,7 @@ export const validProviderRoster = (raw: unknown): IProviderRoster => {
 	const rejected: { index: number; id?: string; reason: string }[] = [];
 	const seen = new Set<string>();
 	raw.forEach((entry: unknown, index) => {
-		const parsed = PROVIDER_ENTRY_SCHEMA.safeParse(entry);
+		const parsed = parseProviderEntry(entry);
 		const id =
 			typeof entry === 'object' &&
 			entry !== null &&
