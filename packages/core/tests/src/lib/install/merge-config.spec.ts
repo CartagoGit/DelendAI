@@ -60,4 +60,25 @@ describe('mergeServerEntry (M39) — never clobbers the user’s config', async 
 		});
 		expect(JSON.parse(r.json).servers.delendai.type).toBe('stdio');
 	});
+
+	it('keeps the comments of a JSONC configuration, and reports an unchanged one byte for byte', async () => {
+		const existing =
+			'{\n\t// servers this editor starts\n\t"servers": {\n\t\t"peer": { "command": "p" },\n\t},\n}\n';
+		const added = mergeServerEntry(existing, 'servers', 'delendai', ENTRY);
+		expect(added.action).toBe('added');
+		expect(added.json).toContain('// servers this editor starts');
+		const again = mergeServerEntry(
+			added.json,
+			'servers',
+			'delendai',
+			ENTRY,
+		);
+		expect(again).toEqual({ json: added.json, action: 'unchanged' });
+	});
+
+	it('refuses a document that is not an object', () => {
+		expect(() =>
+			mergeServerEntry('[]', 'servers', 'delendai', ENTRY),
+		).toThrow('not a JSON object');
+	});
 });

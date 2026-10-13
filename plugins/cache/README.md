@@ -40,31 +40,33 @@ The report lists `removed` (id, path, bytes), `skipped`, `errors`,
 | `s3-driver-snapshots` | `s3-driver/*` | `olderThanDays: 7` |
 | `s4-s5-driver-snapshots` | `s4-s5-driver/*` | `olderThanDays: 7` |
 | `rules-snapshots` | `rules/*` | `olderThanDays: 30` |
-| `state-journal-roll` | `state` | `keepLastN: 5` |
-| `cache-worktrees-orphans` | `.worktrees` | `keepLastN: 3` |
 
 Every `olderThanDays` lifetime is capped at `maxAgeDays` (default 30)
 so a host can **shorten** (never silently lengthen) the defaults.
+
+No rule touches the units (`.worktrees/`), delendai's records or the
+state database: the core refuses a rule over them. Units are removed by
+`delendai work reap`, which keeps any uncommitted edit on the forge
+first.
 
 ## Boot sweep
 
 The core runs the registry once on boot. Posture is governed by
 `config.cache.runOnBoot` in `delendai.config.json`:
 
-- `'dry-run'` (default) — log the report, delete nothing.
-- `'apply'` — delete on boot (only when this plugin is loaded).
+- `'apply'` (default) — delete on boot what the registered rules name.
+- `'dry-run'` — log the report, delete nothing.
 - `'off'` — skip the boot sweep entirely.
 
 ## Configuration
 
 ```jsonc
 {
-  "cache": { "runOnBoot": "dry-run", "maxAgeDays": 30 },
+  "cache": { "runOnBoot": "apply", "maxAgeDays": 30 },
   "plugins": {
     "cache": {
       "options": {
-        "maxAgeDays": 14,
-        "worktrees": { "enabled": true, "keepLastN": 3 }
+        "maxAgeDays": 14
       }
     }
   }

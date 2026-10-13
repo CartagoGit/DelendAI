@@ -30,6 +30,7 @@ import type {
 	ICacheEvictionWhen,
 } from '../contracts/interfaces/cache-eviction.interface';
 import { resolveWorkspaceContained } from '../shared/contain-path';
+import { assertEvictable } from './eviction-protected-paths.helper';
 
 /** Date-shaped names (`YYYY-MM-DD`, optionally with `.ext`) let us
  *  pin TTLs on the filename itself, more robust than mtime for files
@@ -98,6 +99,7 @@ export const createCacheEvictionRegistry = (
 		if (deps.cacheDirAbs.length === 0) {
 			throw new Error('cache eviction registry: cacheDirAbs is empty');
 		}
+		assertEvictable(rule.id, rule.path, checkPath);
 	};
 
 	const resolveTargetAbs = (relPath: string): string =>

@@ -23,13 +23,17 @@ const lines = (text: string | undefined): readonly string[] =>
 /** How far back the integration branch's trees are read for a snapshot. */
 const SNAPSHOT_HISTORY = 5000;
 
-/** The trees the integration branch has had, newest first. */
+/**
+ * The trees of the commits the integration branch reaches, newest first.
+ * Every parent, not only the first: a review claim is taken on the
+ * reviewer's branch, which reaches the integration branch through a
+ * merge, so its tree is never one of the first-parent line's.
+ */
 const integrationTrees = (root: string, base: string): ReadonlySet<string> =>
 	new Set(
 		lines(
 			readGit(root, [
 				'log',
-				'--first-parent',
 				`--max-count=${String(SNAPSHOT_HISTORY)}`,
 				'--format=%T',
 				base,

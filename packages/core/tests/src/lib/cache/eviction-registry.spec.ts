@@ -112,6 +112,32 @@ describe('createCacheEvictionRegistry', () => {
 				}),
 			).toThrow(/escapes workspace/);
 		});
+
+		it('rejects a rule over the units, the records or the state database', () => {
+			for (const path of [
+				'.worktrees',
+				'.worktrees/*',
+				'./state',
+				'state/proposals.sqlite',
+				'records/*',
+			])
+				expect(() =>
+					registry.register({
+						id: `over-${path}`,
+						owner: 'x',
+						path,
+						when: { kind: 'keepLastN', n: 1 },
+					}),
+				).toThrow(/is not eviction's to remove/);
+			expect(() =>
+				registry.register({
+					id: 'beside',
+					owner: 'x',
+					path: 'statements/*',
+					when: { kind: 'olderThanDays', days: 7 },
+				}),
+			).not.toThrow();
+		});
 	});
 
 	describe('olderThanDays', () => {
@@ -202,7 +228,7 @@ describe('createCacheEvictionRegistry', () => {
 
 	describe('keepLastN', () => {
 		it('keeps the most-recent N entries by mtime, removes the rest', async () => {
-			const dir = join(cacheDir, 'state');
+			const dir = join(cacheDir, 'journal');
 			await mkdir(dir, { recursive: true });
 			for (let i = 0; i < 5; i++) {
 				const f = join(dir, `${i}.jsonl`);
@@ -211,9 +237,9 @@ describe('createCacheEvictionRegistry', () => {
 			}
 
 			registry.register({
-				id: 'state-journal',
+				id: 'journal-roll',
 				owner: 'cache',
-				path: 'state',
+				path: 'journal',
 				when: { kind: 'keepLastN', n: 2 },
 			});
 
@@ -221,9 +247,9 @@ describe('createCacheEvictionRegistry', () => {
 			// Newest are `4.jsonl` (today) and `3.jsonl` (yesterday); the
 			// other three should be flagged for removal.
 			expect(dry.removed.map((r) => r.path).sort()).toEqual([
-				'state/0.jsonl',
-				'state/1.jsonl',
-				'state/2.jsonl',
+				'journal/0.jsonl',
+				'journal/1.jsonl',
+				'journal/2.jsonl',
 			]);
 			expect(dry.totalBytes).toBeGreaterThan(0);
 
@@ -235,14 +261,14 @@ describe('createCacheEvictionRegistry', () => {
 		});
 
 		it('is a no-op when there are fewer than N entries', async () => {
-			const dir = join(cacheDir, 'state');
+			const dir = join(cacheDir, 'journal');
 			await mkdir(dir, { recursive: true });
 			await writeFile(join(dir, 'only.jsonl'), 'one\n');
 
 			registry.register({
-				id: 'state-journal',
+				id: 'journal-roll',
 				owner: 'cache',
-				path: 'state',
+				path: 'journal',
 				when: { kind: 'keepLastN', n: 5 },
 			});
 
@@ -254,7 +280,7 @@ describe('createCacheEvictionRegistry', () => {
 			await writeFile(join(cacheDir, 'not-a-dir'), 'x');
 
 			registry.register({
-				id: 'state-journal',
+				id: 'journal-roll',
 				owner: 'cache',
 				path: 'not-a-dir',
 				when: { kind: 'keepLastN', n: 1 },
