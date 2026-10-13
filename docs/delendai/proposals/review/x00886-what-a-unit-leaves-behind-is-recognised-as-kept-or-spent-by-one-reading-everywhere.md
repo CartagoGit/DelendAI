@@ -2,14 +2,14 @@
 id: x00886
 title: "What a unit leaves behind is recognised as kept or spent by one reading, everywhere"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 3b87adb7-03ea-48fb-9e43-dcf6a57ebd86
-last-correlation-id: 3b87adb7-03ea-48fb-9e43-dcf6a57ebd86
-last-transition-from: ready
-last-transition-at: 2026-10-13T00:52:28.729Z
+last-transition-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
+last-correlation-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T04:05:37.876Z
 ---
 
 # x00886 — What a unit leaves behind is recognised as kept or spent by one reading, everywhere
@@ -50,6 +50,7 @@ The server log pasted with the same request showed two more departures: the chec
   - Retired tips absent from the local object store are fetched before ancestry is asked.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `708edad24396`
 
 ### S2 — The reaper releases spent review claims and empty stray refs
 
@@ -67,6 +68,7 @@ The server log pasted with the same request showed two more departures: the chec
   - `work reap` reports `strays`: a ref under the namespace prefix but outside the product's namespaces is removed only when every commit it adds is empty or a snapshot of a tree already on the integration branch; any other is listed as kept. Without `--apply` nothing is removed.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `708edad24396`
 
 ### S3 — The server log says each change once, and a restart in the past tense
 
@@ -83,6 +85,7 @@ The server log pasted with the same request showed two more departures: the chec
   - The restart line describes what the server ran before the restart and no longer says it still applies the old rules.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `708edad24396`
 
 ### S4 — A unit ends once every slice of its proposal is handed in
 
@@ -93,6 +96,9 @@ The server log pasted with the same request showed two more departures: the chec
 - **Gate**: type
 - acceptance:
   - A proposal counts as in progress for its unit only while its file is in `in-progress/` and some slice is not yet in review, approved or done. Once every slice is handed in, the unit is judged delivered and reaped after its publication merges, rather than fast-forwarded and kept.
+- shipped-in: `5a1d2173bf57`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
