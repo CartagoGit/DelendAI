@@ -95,6 +95,7 @@ describe('installing into a plain repository', () => {
 			'created',
 			'created',
 			'created',
+			'created',
 		]);
 		for (const hook of [
 			'pre-commit',
@@ -103,6 +104,7 @@ describe('installing into a plain repository', () => {
 			'pre-push',
 			'post-checkout',
 			'post-merge',
+			'post-commit',
 			'post-index-change',
 		]) {
 			expect(statSync(join(hooksDir, hook)).mode & 0o111).not.toBe(0);
@@ -117,12 +119,14 @@ describe('installing into a plain repository', () => {
 			'unchanged',
 			'unchanged',
 			'unchanged',
+			'unchanged',
 		]);
 		expect(
 			inspectGuardHooks(root).hooks.every((h) => h.state === 'installed'),
 		).toBe(true);
 
 		expect(uninstallGuardHooks(root).hooks.map((h) => h.state)).toEqual([
+			'removed',
 			'removed',
 			'removed',
 			'removed',
@@ -171,6 +175,7 @@ describe('installing beside existing hooks under core.hooksPath', () => {
 			['pre-push', 'updated'],
 			['post-checkout', 'created'],
 			['post-merge', 'created'],
+			['post-commit', 'created'],
 			['post-index-change', 'created'],
 		]);
 
@@ -299,6 +304,7 @@ describe('what the guard does not write into', () => {
 			'created',
 			'created',
 			'unsupported',
+			'created',
 			'created',
 			'created',
 			'created',

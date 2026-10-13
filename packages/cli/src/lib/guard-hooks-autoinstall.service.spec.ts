@@ -200,6 +200,7 @@ describe('what the report tells a lefthook project', () => {
 			'pre-push',
 			'post-checkout',
 			'post-merge',
+			'post-commit',
 			'post-index-change',
 		]) {
 			const dir = join(root, '.git', 'hooks');

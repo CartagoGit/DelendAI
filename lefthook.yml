@@ -440,6 +440,15 @@ format_web:
             env: *hook-locale
             run: bun run format:web
 
+# A commit on a unit's branch is pushed to the same branch on the forge at
+# once (`persistence.autoPushAfterCommit`), so no work exists only on one
+# machine. It never refuses: the commit has already happened, and a push
+# the forge turns down is reported with the command that reconciles it.
+post-commit:
+    commands:
+        delendai-guard:
+            run: bun "$(git rev-parse --path-format=absolute --git-common-dir)/../packages/cli/src/index.ts" --workspace="$(git rev-parse --show-toplevel)" guard post-commit
+
 # x00559 — a merge resolves a generated file by regenerating it, and the
 # regeneration a merge driver performs sees only half a tree. This runs
 # once the merge is finished, against what actually landed, and writes

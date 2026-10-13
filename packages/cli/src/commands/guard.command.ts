@@ -14,7 +14,7 @@ import { resolve as resolvePath } from 'node:path';
 import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
-import { gitActorMarker } from '@delendai/core/cli';
+import { gitActorMarker, pushUnitTip } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -304,6 +304,28 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	policy: async (root) => readWorkspacePolicy(root),
 });
 
+/**
+ * Push the unit's branch after a commit or merge in its worktree, and say
+ * so only when the forge refused it: a refused push is work that exists on
+ * this machine alone.
+ */
+const reportUnitPush = (
+	workspace: string,
+	policy: IResolvedDevelopmentPolicy,
+	facts: Pick<IGuardFacts, 'branch' | 'inMainWorktree'>,
+): void => {
+	const pushed = pushUnitTip({
+		cwd: workspace,
+		branch: facts.branch(),
+		inMainWorktree: facts.inMainWorktree(),
+		policy,
+	});
+	if (pushed.status === 'refused')
+		process.stderr.write(
+			`delendai guard: ${pushed.branch} was committed here but ${pushed.remote} refused it (${pushed.detail}). The work is on this machine only until it is reconciled: ${pushed.repair}\n`,
+		);
+};
+
 const HOOKS: readonly IGuardedHook[] = [
 	'pre-commit',
 	'commit-msg',
@@ -311,6 +333,7 @@ const HOOKS: readonly IGuardedHook[] = [
 	'pre-push',
 	'post-checkout',
 	'post-merge',
+	'post-commit',
 	'post-index-change',
 ];
 
@@ -521,7 +544,7 @@ export const createGuardCommand = (
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge|post-index-change> [hook args]',
+	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge|post-commit|post-index-change> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
 		// A Map, not an object indexed by user input: `delendai guard
@@ -634,11 +657,18 @@ export const createGuardCommand = (
 			if (warning.length > 0) process.stderr.write(`${warning}\n`);
 			return { code: EXIT_CODE.OK };
 		}
+		if (hook === 'post-commit') {
+			reportUnitPush(workspace, policy, facts);
+			return { code: EXIT_CODE.OK };
+		}
 		// A merge that resolved a generated file did so mid-tree; here the
 		// tree is finished, so the generators run against what landed
 		// (x00559). It never refuses: a merge has already happened.
 		if (hook === 'post-merge') {
-			if (landedAsFastForward(workspace)) return { code: EXIT_CODE.OK };
+			if (landedAsFastForward(workspace)) {
+				reportUnitPush(workspace, policy, facts);
+				return { code: EXIT_CODE.OK };
+			}
 			const outcome = refreshGeneratedAfterMerge({
 				root: workspace,
 				paths: GENERATED_REFRESH_PATHS,
@@ -657,6 +687,7 @@ export const createGuardCommand = (
 					`delendai guard (post-merge): regenerated ${outcome.paths.join(', ')}, and could not commit ${outcome.paths.length === 1 ? 'it' : 'them'} here. The change is staged. ${briefWorkModel(policy).land}\n`,
 				);
 			}
+			reportUnitPush(workspace, policy, facts);
 			return { code: EXIT_CODE.OK };
 		}
 		// A pushed work ref is judged with what is known about its unit.
