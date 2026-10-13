@@ -323,11 +323,11 @@ const reconcileUnderLock = async (args: {
 		counters: {},
 		findings: checkout.findings,
 	});
-
 	const governance = await runGovernancePhase({
 		seam: input.governance,
 		policy,
 		repository,
+		forgeFindings: forge.findings,
 	});
 	collect(phases, {
 		phase: 'governance',

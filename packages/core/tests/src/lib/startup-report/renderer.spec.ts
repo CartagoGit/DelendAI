@@ -220,7 +220,7 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 			const report = buildStartupReport(baseInput(), 'compact');
 			const out = renderStartupReportPlain(report);
 			expect(out).toContain('Plugin loading');
-			expect(out).toContain('loaded at startup (3)');
+			expect(out).toContain('loaded at startup (2)');
 			expect(out).toContain('lazy loaded on demand (0)');
 		});
 
@@ -228,15 +228,28 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 			const report = buildStartupReport(baseInput(), 'medium');
 			const out = renderStartupReportPlain(report);
 			expect(out).toContain('Plugin loading');
-			expect(out).toContain('loaded at startup (3)');
-			expect(out).toContain(
-				'loaded at startup (3): core, git, proposals',
-			);
+			expect(out).toContain('loaded at startup (2)');
+			expect(out).toContain('loaded at startup (2): git, proposals');
 			expect(out).toContain('lazy loaded on demand (0): none');
 			expect(out).not.toContain('    - ');
 			expect(out).not.toContain(
 				'plugin                 status    available  visible  schemas  tokens  budget',
 			);
+		});
+
+		it('says eager loading when the modules were loaded eagerly, lazy activation or not', () => {
+			const input = baseInput();
+			const eager = renderStartupReportPlain(
+				buildStartupReport(
+					{
+						...input,
+						runtime: { ...input.runtime, moduleLoading: 'eager' },
+					},
+					'medium',
+				),
+			);
+			expect(eager).toContain('· eager loading');
+			expect(eager).not.toContain('lazy loading enabled');
 		});
 
 		it('explains each visible medium-level section', () => {

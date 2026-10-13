@@ -49,7 +49,11 @@ import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surfac
 import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
 import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IManagedLazyPluginCatalogEntry } from '../plugins/managed-lazy-catalog.generated';
-import { managedLazyPluginEntry } from '../plugins/managed-lazy-catalog-lookup';
+import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import {
+	localLazyPluginIdFor,
+	managedLazyPluginEntry,
+} from '../plugins/managed-lazy-catalog-lookup';
 import {
 	createManagedLazyRuntime,
 	validateManagedLazyConfiguration,
@@ -65,6 +69,11 @@ import {
 } from '../plugins/single-slot-hooks';
 import { disposeLoadedPlugins } from '../plugins/load-plugins-runtime.helper';
 import type { IToolSurfaceLazyBinding } from '../contracts/interfaces/tool-surface.interface';
+import {
+	localLazyCatalogPath,
+	recordLocalLazyCatalog,
+	useLocalLazyCatalog,
+} from '../plugins/managed-lazy-local-catalog.service';
 
 /** Wraps a raw dispose sweep so a second call is a guaranteed no-op. */
 const idempotentDisposePlugins = (
@@ -259,7 +268,7 @@ const lazyPluginIdFor = (specifier: string): string | undefined => {
 		const id = specifier.slice(prefix.length);
 		return managedLazyPluginEntry(id) !== undefined ? id : undefined;
 	}
-	return undefined;
+	return localLazyPluginIdFor(specifier);
 };
 
 const sourceForLazyPlugin = (input: {
@@ -828,6 +837,16 @@ export const assemblePlugins = async (
 			!disabledConfigPlugins.has(matchedKey)
 		);
 	});
+	// A plugin the project ships itself is not in the catalog delendai
+	// generates; what an earlier start recorded about it stands in.
+	const localCatalog = localLazyCatalogPath(
+		args.workspace,
+		fileConfig.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+	);
+	await useLocalLazyCatalog(localCatalog);
+	const unindexedPlugins = effectivePlugins.filter(
+		(specifier) => lazyPluginIdFor(specifier) === undefined,
+	);
 	const managedLazy = await tryAssembleManagedLazy({
 		liveServer: input.liveServer,
 		args,
@@ -852,6 +871,13 @@ export const assemblePlugins = async (
 			importFn ??
 			((specifier) => nodeDynamicImport(specifier, args.workspace)),
 	});
+	// Loaded eagerly because of them: record them, so the next start is lazy.
+	if (unindexedPlugins.length > 0)
+		await recordLocalLazyCatalog(
+			localCatalog,
+			loadResult.loaded,
+			unindexedPlugins,
+		);
 	const configurationErrors = loadResult.errors.filter(
 		(error) => error.specifier === 'configuration',
 	);
