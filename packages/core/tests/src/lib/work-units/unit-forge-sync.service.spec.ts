@@ -7,7 +7,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { createGitRunner } from '@delendai/core/lib/shared/git-write';
@@ -182,5 +182,43 @@ describe('syncUnitsWithForge', () => {
 		expect(judged().holds).toBe(true);
 		writeFileSync(join(unit, 'c.txt'), 'c\n');
 		expect(judged().observed).toContain('1 uncommitted change(s)');
+	});
+
+	it('reports a forge it cannot reach, and changes nothing', async () => {
+		const { home } = machines();
+		const synced = await syncUnitsWithForge({
+			run: createGitRunner(home),
+			runIn: (cwd) => createGitRunner(cwd),
+			policy,
+			remote: 'nowhere',
+			isLive: () => false,
+		});
+		expect(synced).toEqual([
+			expect.objectContaining({ outcome: 'failed' }),
+		]);
+	});
+
+	it('says at start, on stderr, what it could not do', async () => {
+		const { home } = machines();
+		git(
+			home,
+			'remote',
+			'set-url',
+			'origin',
+			join(home, 'no-forge-here.git'),
+		);
+		const written: string[] = [];
+		const spy = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation((chunk: string | Uint8Array) => {
+				written.push(String(chunk));
+				return true;
+			});
+		try {
+			await syncUnitsAtStart({ root: home, policy, env: {} });
+		} finally {
+			spy.mockRestore();
+		}
+		expect(written.join('')).toContain('failed');
 	});
 });

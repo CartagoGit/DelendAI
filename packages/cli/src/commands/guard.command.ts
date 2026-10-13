@@ -17,6 +17,7 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
 import {
 	gitActorMarker,
+	hookFreeEnvironment,
 	publicationOnLeavingProgress,
 	pushUnitTip,
 } from '@delendai/core/cli';
@@ -361,6 +362,9 @@ const publishUnitLeavingProgress = (
 	const out = openSync(log, 'a');
 	spawn(process.execPath, [entry, `--workspace=${root}`, 'work', ...args], {
 		cwd: root,
+		// Without the variables git gave this hook: inherited, they pointed
+		// every git command of the publication at the worktree it removes.
+		env: hookFreeEnvironment(),
 		detached: true,
 		stdio: ['ignore', out, out],
 	}).unref();
@@ -701,6 +705,9 @@ export const createGuardCommand = (
 			return { code: EXIT_CODE.OK };
 		}
 		if (hook === 'post-commit') {
+			// A commit is a sign of life: without it, an agent working in its
+			// tree without delendai's commands looked idle within the hour.
+			await touchUnitOfCheckout(workspace, policy).catch(() => undefined);
 			reportUnitPush(workspace, policy, facts);
 			publishUnitLeavingProgress(workspace, policy, facts);
 			return { code: EXIT_CODE.OK };
