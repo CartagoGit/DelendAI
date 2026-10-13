@@ -55,7 +55,7 @@ What the code does today:
 
 ### S2 — The editors' user directories come from one resolver, the Windows side of WSL included
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/platform/user-directories.helper.ts`
   - `packages/core/src/lib/install/ide-targets.ts`
@@ -67,6 +67,8 @@ What the code does today:
 - acceptance:
   - One helper returns the user-configuration roots of this machine (`APPDATA`, `~/Library/Application Support`, `XDG_CONFIG_HOME`, and under WSL the Windows users' `AppData/Roaming`), honouring the existing `DELENDAI_HOST_USER_DIRS` override.
   - `ide-targets.ts` and `hostUserDirs` read it. Under WSL, Claude Desktop, which runs on Windows, gets its configuration in the Windows user's `AppData/Roaming` instead of the Linux home it never reads.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A platform question asked outside the profile is refused by a lint
 
