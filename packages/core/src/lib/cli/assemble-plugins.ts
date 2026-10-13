@@ -355,6 +355,16 @@ export const requiresPolicyStartupActivation = (
 	);
 };
 
+/** Lazy loading is the default; only a declared `eager` or the native surface opt out. */
+const lazyLoadingRequested = (
+	args: IDelendaiCliArgs,
+	fileConfig: IDelendaiConfigFile,
+): boolean =>
+	(fileConfig.managedSurface?.loading ?? 'lazy') === 'lazy' &&
+	args.surfaceMode !== 'native' &&
+	args.tokens.surface !== 'native' &&
+	fileConfig.surfaceMode !== 'native';
+
 const tryAssembleManagedLazy = async (input: {
 	readonly args: IDelendaiCliArgs;
 	readonly fileConfig: IDelendaiConfigFile;
@@ -844,9 +854,48 @@ export const assemblePlugins = async (
 		fileConfig.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
 	);
 	await useLocalLazyCatalog(localCatalog);
-	const unindexedPlugins = effectivePlugins.filter(
+	const pluginImport =
+		importFn ??
+		((specifier: string) => nodeDynamicImport(specifier, args.workspace));
+	let unindexedPlugins = effectivePlugins.filter(
 		(specifier) => lazyPluginIdFor(specifier) === undefined,
 	);
+	// Lazy unless eager is declared: a plugin the catalog does not know is
+	// discovered (loaded once, in isolation, to learn what it offers, then
+	// released and recorded), never a reason to load every plugin.
+	let lazyPlugins = effectivePlugins;
+	if (unindexedPlugins.length > 0 && lazyLoadingRequested(args, fileConfig)) {
+		const discovered = await loadPlugins({
+			specifiers: unindexedPlugins,
+			workspaceRoot: args.workspace,
+			buildContext,
+			import: pluginImport,
+		});
+		await recordLocalLazyCatalog(
+			localCatalog,
+			discovered.loaded,
+			unindexedPlugins,
+		);
+		await Promise.all(
+			discovered.loaded.map((entry) =>
+				Promise.resolve(entry.runtime.dispose?.()).catch(
+					() => undefined,
+				),
+			),
+		);
+		await useLocalLazyCatalog(localCatalog);
+		unindexedPlugins = effectivePlugins.filter(
+			(specifier) => lazyPluginIdFor(specifier) === undefined,
+		);
+		// What could not even be loaded is left out and said, not served eagerly.
+		for (const specifier of unindexedPlugins)
+			process.stderr.write(
+				`[delendai] plugin ${specifier} could not be loaded, so it is not served: ${discovered.errors.find((error) => error.specifier === specifier)?.message ?? 'it registered nothing delendai can record'}\n`,
+			);
+		lazyPlugins = effectivePlugins.filter(
+			(specifier) => !unindexedPlugins.includes(specifier),
+		);
+	}
 	const managedLazy = await tryAssembleManagedLazy({
 		liveServer: input.liveServer,
 		args,
@@ -855,7 +904,7 @@ export const assemblePlugins = async (
 		configPluginNames,
 		disabledConfigPlugins,
 		peerRegistry,
-		effectivePlugins,
+		effectivePlugins: lazyPlugins,
 		buildContext,
 		importFn:
 			importFn ??
@@ -867,17 +916,8 @@ export const assemblePlugins = async (
 		specifiers: effectivePlugins,
 		workspaceRoot: args.workspace,
 		buildContext,
-		import:
-			importFn ??
-			((specifier) => nodeDynamicImport(specifier, args.workspace)),
+		import: pluginImport,
 	});
-	// Loaded eagerly because of them: record them, so the next start is lazy.
-	if (unindexedPlugins.length > 0)
-		await recordLocalLazyCatalog(
-			localCatalog,
-			loadResult.loaded,
-			unindexedPlugins,
-		);
 	const configurationErrors = loadResult.errors.filter(
 		(error) => error.specifier === 'configuration',
 	);
