@@ -42,6 +42,27 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
    tools — the name is compared without normalising its case where the
    host normalises it.
 
+### Found on 2026-10-13, reading the code
+
+- **Four defaults for one name.** `init` registers the server as
+  `DelendAI` (`init-answers.schema.ts`); the agent renderer of `init`
+  falls back to the namespace prefix, `delendai`
+  (`init-render.service.ts`); `adopt` falls back to `delendai`
+  (`adopt-project.tool.ts`); the host scaffold falls back to
+  `mcp-project-<prefix>` (`scaffold-host.ts`). Whichever path wrote a
+  project's agents decides what their `tools:` grant names, and only one
+  of them matches the key the server was registered under. One constant,
+  and the name read from the project's own MCP configuration
+  (`findDelendaiServerName`), must be the only answers.
+- **The start creates no agent.** Agent files are written by `init` and
+  by the scaffold tools only; `assembleCliConfig` never looks for them,
+  so a project whose server was registered by hand (or under another
+  name) never gets them.
+- **The grant keeps the name's case.** `tools: [..., <serverName>/*]` is
+  written as registered; a host that normalises the server name to lower
+  case finds no tool behind `DelendAI/*`. S4 checks what each host
+  expects and emits that.
+
 ## non-goals
 
 - **No silent overwrite of what a person wrote.** Reconciling to a new
@@ -90,7 +111,10 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/scaffold/scaffold-host.ts`
-  - `packages/core/src/lib/development-policy/resolve.ts`
+  - `packages/core/src/lib/scaffold/detect-existing-install.ts`
+  - `packages/core/src/lib/adopt/adopt-project.tool.ts`
+  - `packages/cli/src/lib/init/init-render.service.ts`
+  - `packages/cli/src/lib/init/init-answers.schema.ts`
 - **Gate**: type
 - acceptance:
   - A server started under a custom name creates the same agents as one under the default name.
