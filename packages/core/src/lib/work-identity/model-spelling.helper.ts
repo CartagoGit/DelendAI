@@ -14,13 +14,29 @@ const STAGE_WORDS = new Set([
 	'rc',
 ]);
 
+const EDGE_SEPARATORS = new Set(['-', '.', '_']);
+
+/**
+ * `value` without the separators at either end. An index walk, not
+ * `/[-._]+$/`: an anchored run backtracks on every start position, so a
+ * long run of `-` from an editor's model id took quadratic time.
+ */
+const withoutEdgeSeparators = (value: string): string => {
+	let start = 0;
+	let end = value.length;
+	while (start < end && EDGE_SEPARATORS.has(value.charAt(start))) start++;
+	while (end > start && EDGE_SEPARATORS.has(value.charAt(end - 1))) end--;
+	return value.slice(start, end);
+};
+
 export const normalizedModelId = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replaceAll(/[^a-z0-9._-]+/gu, '-')
-		.replaceAll(/-{2,}/gu, '-')
-		.replace(/^[-._]+|[-._]+$/gu, '');
+	withoutEdgeSeparators(
+		value
+			.trim()
+			.toLowerCase()
+			.replaceAll(/[^a-z0-9._-]+/gu, '-')
+			.replaceAll(/-{2,}/gu, '-'),
+	);
 
 /** A model id without the `<vendor>/` the editor prefixes it with. */
 export const withoutVendor = (value: string): string =>

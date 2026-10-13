@@ -11,6 +11,7 @@ import {
 	seenModels,
 	seenModelsPath,
 } from '../../../../src/lib/work-identity/model-identity.helper';
+import { normalizedModelId } from '../../../../src/lib/work-identity/model-spelling.helper';
 
 const KNOWN = [
 	'minimax/MiniMax-M3',
@@ -110,5 +111,13 @@ describe('declared aliases', () => {
 				axis,
 			).id,
 		).not.toBe('minimax-m3.1-flash-preview');
+	});
+});
+
+describe('normalizedModelId', () => {
+	it('drops separators at both ends, and a long run of them in linear time', () => {
+		expect(normalizedModelId('  ._MiniMax M3.1_- ')).toBe('minimax-m3.1');
+		expect(normalizedModelId('-'.repeat(200_000))).toBe('');
+		expect(normalizedModelId(`a${'-'.repeat(200_000)}!`)).toBe('a');
 	});
 });
