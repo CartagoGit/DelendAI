@@ -15,6 +15,11 @@
  * inside it, such as a unit's worktree. Two chats open on one workspace
  * with different models are told apart only by which spoke last.
  */
+import { isWslHere } from '../platform/system-profile.helper';
+import {
+	userConfigRoot,
+	windowsAppDataUnderWsl,
+} from '../platform/user-directories.helper';
 import {
 	existsSync,
 	readdirSync,
@@ -51,17 +56,16 @@ export const hostUserDirs = (
 	const declared = env[HOST_USER_DIRS_VARIABLE]?.trim();
 	if (declared !== undefined && declared.length > 0)
 		return declared.split(delimiter).filter((path) => path.length > 0);
-	const home = homedir();
-	const roots =
-		process.platform === 'win32'
-			? [env.APPDATA ?? join(home, 'AppData', 'Roaming')]
-			: process.platform === 'darwin'
-				? [join(home, 'Library', 'Application Support')]
-				: [env.XDG_CONFIG_HOME ?? join(home, '.config')];
-	// A server in WSL serves an editor whose state lives on the Windows side.
-	if (process.platform === 'linux' && existsSync('/mnt/c/Users'))
-		for (const user of listDir('/mnt/c/Users'))
-			roots.push(join('/mnt/c/Users', user, 'AppData', 'Roaming'));
+	const roots = [
+		userConfigRoot({
+			home: homedir(),
+			platform: process.platform,
+			appData: env.APPDATA,
+			xdgConfigHome: env.XDG_CONFIG_HOME,
+		}),
+		// A server in WSL serves an editor whose state lives on the Windows side.
+		...(isWslHere(env) ? windowsAppDataUnderWsl() : []),
+	];
 	return roots.flatMap((root) =>
 		HOST_CHAT_PRODUCTS.map((product) => join(root, product, 'User')).filter(
 			(dir) => existsSync(join(dir, 'workspaceStorage')),

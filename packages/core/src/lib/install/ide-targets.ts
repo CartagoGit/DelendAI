@@ -1,5 +1,7 @@
 import { join } from 'node:path';
 
+import { userConfigRoot } from '../platform/user-directories.helper';
+
 import type { IMcpConfigKind } from './merge-config';
 
 /** Where this target's config lives + how it shapes an stdio MCP server. */
@@ -27,47 +29,27 @@ export interface IInstallEnv {
 	readonly appData?: string | undefined;
 	/** True when running in WSL (Linux userland under Windows). */
 	readonly isWsl?: boolean | undefined;
+	/** Under WSL, the Windows users' `AppData/Roaming` (`windowsAppDataUnderWsl`). */
+	readonly windowsAppData?: readonly string[] | undefined;
 }
 
 const claudeDesktopPath = (ctx: IInstallEnv): string => {
-	if (ctx.platform === 'darwin') {
-		return join(
-			ctx.home,
-			'Library',
-			'Application Support',
-			'Claude',
-			'claude_desktop_config.json',
-		);
-	}
-	if (ctx.platform === 'win32') {
-		return join(
-			ctx.appData ?? join(ctx.home, 'AppData', 'Roaming'),
-			'Claude',
-			'claude_desktop_config.json',
-		);
-	}
-	return join(ctx.home, '.config', 'Claude', 'claude_desktop_config.json');
+	// Claude Desktop runs on Windows: under WSL its configuration is the
+	// Windows user's, not the Linux home's, which it never reads.
+	const windows = ctx.isWsl === true ? ctx.windowsAppData?.[0] : undefined;
+	return join(
+		windows ?? userConfigRoot(ctx),
+		'Claude',
+		'claude_desktop_config.json',
+	);
 };
 
-const zedSettingsPath = (ctx: IInstallEnv): string => {
-	if (ctx.platform === 'darwin') {
-		return join(
-			ctx.home,
-			'Library',
-			'Application Support',
-			'Zed',
-			'settings.json',
-		);
-	}
-	if (ctx.platform === 'win32') {
-		return join(
-			ctx.appData ?? join(ctx.home, 'AppData', 'Roaming'),
-			'Zed',
-			'settings.json',
-		);
-	}
-	return join(ctx.home, '.config', 'zed', 'settings.json');
-};
+const zedSettingsPath = (ctx: IInstallEnv): string =>
+	join(
+		userConfigRoot(ctx),
+		ctx.platform === 'darwin' || ctx.platform === 'win32' ? 'Zed' : 'zed',
+		'settings.json',
+	);
 
 /** Every IDE/agent `init` knows how to configure. */
 export const IDE_TARGETS: readonly IIdeInstallTarget[] = [
