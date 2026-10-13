@@ -122,7 +122,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['container', 'docker', 'kubernetes'],
 			permissions: ['filesystem-read', 'process', 'container'],
 			tokenBudgetBytes: 6200,
-			toolPermissions: { 'container_inspect': ['container'], 'container_logs': ['container'], 'container_lint': ['filesystem-read'], 'k8s_apply': ['container', 'process'], 'container_build': ['container', 'process'] },
+			toolPermissions: { 'container_inspect': ['container'], 'container_logs': ['container'], 'container_lint': ['filesystem-read'], 'k8s_apply': ['container', 'process'], 'container_build': ['container', 'process'], 'container_pull': ['container', 'process'], 'container_run': ['container', 'process'], 'container_exec': ['container', 'process'], 'container_compose': ['container', 'process', 'filesystem-read'], 'container_network': ['container', 'process'], 'container_volume': ['container', 'process'] },
 		},
 		{
 			origin: 'first-party',

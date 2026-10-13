@@ -266,7 +266,19 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'container',
 			'@delendai/container',
-			['container_inspect', 'container_logs', 'container_lint'],
+			[
+				'container_inspect',
+				'container_logs',
+				'container_lint',
+				'container_build',
+				'k8s_apply',
+				'container_pull',
+				'container_run',
+				'container_exec',
+				'container_compose',
+				'container_network',
+				'container_volume',
+			],
 			[],
 			[],
 			[

@@ -128,6 +128,14 @@
 			"plugin": "container"
 		},
 		{
+			"name": "delendai_container_container_compose",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_container_container_exec",
+			"plugin": "container"
+		},
+		{
 			"name": "delendai_container_container_inspect",
 			"plugin": "container"
 		},
@@ -137,6 +145,22 @@
 		},
 		{
 			"name": "delendai_container_container_logs",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_container_container_network",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_container_container_pull",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_container_container_run",
+			"plugin": "container"
+		},
+		{
+			"name": "delendai_container_container_volume",
 			"plugin": "container"
 		},
 		{
