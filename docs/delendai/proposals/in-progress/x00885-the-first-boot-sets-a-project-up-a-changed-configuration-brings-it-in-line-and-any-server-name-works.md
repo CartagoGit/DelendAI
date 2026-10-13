@@ -145,6 +145,8 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - acceptance:
   - A server started under a custom name creates the same agents as one under the default name.
   - The tool prefix an agent matches is derived from the server name the way the host derives it (case included), so a name with upper case letters is recognised; a spec covers lower, upper and mixed case.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Existing agents are brought in line with the server they serve
 
