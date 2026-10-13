@@ -88,19 +88,27 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 - **Status**: pending
 - **Files**:
-  - `packages/core/src/lib/cli/assemble.ts`
-  - `packages/core/src/lib/scaffold/detect-existing-install.ts`
+  - `packages/core/src/lib/adopt/first-run-setup.service.ts`
+  - `packages/core/src/lib/adopt/adopt-project.tool.ts`
+  - `packages/core/src/lib/contracts/interfaces/adopt-project.interface.ts`
+  - `packages/core/src/lib/cli/run-cli.ts`
+  - `packages/core/tests/src/lib/adopt/first-run-setup.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - Starting the server in a project with no delendai creates the configuration, the cache layout, the docs directory and the agent files `delendai init` would create with its defaults, and says so once in the startup report.
+  - Starting the server in a project with no delendai, whose own MCP configuration registers delendai, creates the configuration, the docs root and the agent files `adopt_project` writes with its defaults, and says so once on stderr. A server started by a user-wide configuration in a project that does not register delendai writes nothing.
   - A second start creates nothing and says nothing.
 
 ### S3 — A changed configuration brings what is derived in line
 
 - **Status**: pending
 - **Files**:
+  - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.ts`
   - `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
-  - `packages/core/src/lib/cache/cache-layout-bootstrap.ts`
+  - `packages/core/src/lib/contracts/interfaces/config-transition.interface.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/schema/delendai.config.schema.json`
+  - `packages/core/tests/src/lib/workspace-migration/namespace-prefix-transition.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/config-transitions.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - The configuration a project was last set up with is recorded; a start under a different one moves, regenerates or creates the cache, docs and generated configuration it implies, and reports each change.
@@ -110,11 +118,19 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 - **Status**: pending
 - **Files**:
+  - `packages/core/src/lib/contracts/constants/mcp-server-name.constant.ts`
+  - `packages/core/src/lib/scaffold/mcp-server-name.helper.ts`
   - `packages/core/src/lib/scaffold/scaffold-host.ts`
   - `packages/core/src/lib/scaffold/detect-existing-install.ts`
   - `packages/core/src/lib/adopt/adopt-project.tool.ts`
+  - `packages/core/src/lib/install/installer.ts`
+  - `packages/core/src/cli.ts`
   - `packages/cli/src/lib/init/init-render.service.ts`
   - `packages/cli/src/lib/init/init-answers.schema.ts`
+  - `packages/cli/src/lib/init/init-render.service.spec.ts`
+  - `packages/core/tests/src/lib/scaffold/mcp-server-name.helper.spec.ts`
+  - `packages/core/tests/src/lib/scaffold/detect-existing-install.spec.ts`
+  - `packages/core/tests/src/lib/install/installer.spec.ts`
 - **Gate**: type
 - acceptance:
   - A server started under a custom name creates the same agents as one under the default name.
@@ -124,10 +140,12 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 - **Status**: pending
 - **Files**:
-  - `packages/cli/src/lib/init/init-render.service.ts`
-  - `packages/cli/src/lib/init/init-catalog.constant.ts`
-  - `packages/core/src/lib/scaffold/detect-existing-install.ts`
+  - `packages/core/src/lib/scaffold/agent-grant-reconcile.service.ts`
+  - `packages/core/src/lib/scaffold/agent-grant-report.ts`
+  - `packages/core/src/lib/contracts/interfaces/agent-grant-reconcile.interface.ts`
   - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/tests/src/lib/scaffold/agent-grant-reconcile.service.spec.ts`
+  - `packages/core/tests/src/lib/scaffold/agent-grant-report.spec.ts`
 - **Gate**: type
 - acceptance:
   - At start, every agent file delendai manages is compared with what the resolved server name and tool catalogue imply. A grant naming another server, a missing tool group, or one the server no longer serves is rewritten in the managed block, and the start-up report names each file changed.
@@ -138,10 +156,12 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 - **Status**: pending
 - **Files**:
-  - `packages/cli/src/lib/init/init-catalog.constant.ts`
-  - `packages/cli/src/lib/init/init-render.service.ts`
-  - `packages/core/src/lib/plugins/load-config-file.ts`
-  - `packages/core/tests/src/lib/e2e/first-boot.e2e.spec.ts`
+  - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
+  - `packages/core/src/lib/scaffold/plugin-agents-report.ts`
+  - `packages/core/src/lib/contracts/interfaces/agent-role-contribution.interface.ts`
+  - `packages/core/src/lib/plugins/plugin-contract.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/tests/src/lib/scaffold/plugin-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - The agents created and the tools each is granted come from the consuming project's resolved configuration: the plugins it activates, including plugins the project ships itself and delendai does not. They no longer come from a fixed list written for this repository.
