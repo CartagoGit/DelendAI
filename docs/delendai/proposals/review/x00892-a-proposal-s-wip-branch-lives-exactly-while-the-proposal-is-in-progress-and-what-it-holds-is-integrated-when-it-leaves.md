@@ -2,14 +2,14 @@
 id: x00892
 title: "a proposal's wip branch lives exactly while the proposal is in progress, and what it holds is integrated when it leaves"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: a32cd4bd-158d-4057-b151-48283bcd3892
-last-correlation-id: a32cd4bd-158d-4057-b151-48283bcd3892
-last-transition-from: ready
-last-transition-at: 2026-10-13T20:45:32.718Z
+last-transition-id: b7b88859-0aae-49fe-b649-bd889268c80c
+last-correlation-id: b7b88859-0aae-49fe-b649-bd889268c80c
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T20:49:08.578Z
 ---
 
 # x00892 — a proposal's wip branch lives exactly while the proposal is in progress, and what it holds is integrated when it leaves
@@ -62,6 +62,7 @@ What x00891 (merged in #1066) does instead:
   - Later work on a proposal in progress continues on its branch, whatever kind or slice it is entered for, however the template spells `refs/heads/`. A second session of the same agent working in parallel gets its own unit instead of being refused.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `f40a7f7af195`
 
 ### S2 — Leaving in-progress integrates what the branch holds, then ends it
 
@@ -77,6 +78,7 @@ What x00891 (merged in #1066) does instead:
   - The publication runs detached from the commit (it removes the worktree the hook runs in) and logs to `delendai-unit-publications.log` in the repository's git directory. Run again, it finds nothing to do; one the forge refuses leaves the branch, pushed, and the next start retries it (S3).
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `f40a7f7af195`
 
 ### S3 — A unit whose proposal left in-progress on another machine is integrated at start
 
@@ -90,10 +92,11 @@ What x00891 (merged in #1066) does instead:
   - At start, a unit of this clone whose proposal is no longer in progress on its own tip, that still holds work the integration branch lacks, and whose owner is not live, is published through `work publish` (the same path as S2) and its branch ends. A live unit is left to its owner's hook. A review unit is not one of these.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `f40a7f7af195`
 
 ### S4 — A hook the project's lefthook.yml declares runs, and is not called installed before it does
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/cli/src/lib/guard-hooks.service.ts`
   - `packages/cli/src/lib/guard-hooks-autoinstall.service.ts`
@@ -104,6 +107,9 @@ What x00891 (merged in #1066) does instead:
 - acceptance:
   - A hook whose section runs the guard but whose script lefthook has not written is reported `absent`, naming `lefthook install`.
   - At start, the project's own lefthook installs what its configuration declares, so the next commit runs the hook. Nothing else is written.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `2e7f2750e44a`
 
 ## acceptance
 
