@@ -2,14 +2,14 @@
 id: x00885
 title: "The first boot sets a project up, a changed configuration brings it in line, and any server name works"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-12
-last-transition-id: 67307e5a-ad51-4aa9-9bd0-0b714509e333
-last-correlation-id: 67307e5a-ad51-4aa9-9bd0-0b714509e333
-last-transition-from: ready
-last-transition-at: 2026-10-13T01:25:06.619Z
+last-transition-id: 2edde023-7b55-41f9-aa09-1736b4fd71e5
+last-correlation-id: 2edde023-7b55-41f9-aa09-1736b4fd71e5
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T04:08:20.808Z
 ---
 
 # x00885 — The first boot sets a project up, a changed configuration brings it in line, and any server name works
@@ -89,6 +89,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - An end-to-end spec boots the real server (as a host starts it, over stdio) in an empty project, in a project set up with one configuration and started with another, and under a server name with upper case letters; each case states what it finds today, before any fix.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `e8d9249d3634`
 
 ### S2 — A first start creates what is missing, with the defaults
 
@@ -105,6 +106,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - A second start creates nothing and says nothing.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `bc07007153dc`
 
 ### S3 — A changed configuration brings what is derived in line
 
@@ -123,6 +125,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - What a person edited is kept and reported, never overwritten.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `bc07007153dc`
 
 ### S4 — Any server name, in any case, gets its agents and its tools
 
@@ -147,6 +150,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - The tool prefix an agent matches is derived from the server name the way the host derives it (case included), so a name with upper case letters is recognised; a spec covers lower, upper and mixed case.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `6b9f76b08247`
 
 ### S5 — Existing agents are brought in line with the server they serve
 
@@ -165,6 +169,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - Renaming the server in the host's MCP configuration and restarting leaves every agent granting the new name's tools, and none granting the old.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `e22de8ba84d4`
 
 ### S6 — The agents and their tools follow the project, including its own plugins
 
@@ -183,6 +188,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - The end-to-end spec runs in a throwaway consumer project with a local plugin (not this repository, whose dogfood setup hides the defect). It shows the plugin's tools granted to the agents that use them.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `e22de8ba84d4`
 
 ## acceptance
 
