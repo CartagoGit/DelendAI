@@ -42,26 +42,34 @@ What the code does today:
 
 - **Status**: pending
 - **Files**:
-  - `packages/core/src/lib/hosts/host-registry.constant.ts`
-  - `packages/core/src/lib/contracts/interfaces/host-registry.interface.ts`
+  - `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`
+  - `packages/core/src/cli.ts`
 - **Gate**: type
 - acceptance:
-  - One declaration per host says what delendai writes for it and how it is recognised: the MCP configuration (scope, path, top-level key, `type: stdio`), the agent folder, file name and renderer, the instructions file, and the evidence of use (files, folders, environment such as the terminal agent's own variables).
-  - It covers at least the hosts any of the five lists names today, plus OpenCode, Gemini CLI, Continue and the terminal agents that read `AGENTS.md`. A host whose agent format is not known writes instructions only.
-  - A spec fails if any writer still names a host the registry lacks.
+  - One declaration per host (`AGENT_HOSTS`) gives where its agent files go and in which format, its instructions file, and the evidence that it is in use (paths in the project, variables in the environment).
+  - It covers Copilot, Claude Code, Codex CLI, OpenCode, Cursor, Windsurf, Gemini CLI, Continue and the terminal agents that read `AGENTS.md`. A host whose agent format is not known gets instructions only.
 
 ### S2 — The project chooses its hosts; detection fills in when it does not
 
 - **Status**: pending
 - **Files**:
-  - `packages/core/src/lib/plugins/config-file-schema.ts`
   - `packages/core/src/lib/hosts/project-hosts.service.ts`
+  - `packages/core/src/lib/hosts/declared-hosts.helper.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/src/lib/plugins/load-config-file.ts`
+  - `packages/core/schema/delendai.config.schema.json`
   - `packages/cli/src/commands/init/init.command.ts`
+  - `packages/cli/src/commands/init/init-default.command.ts`
+  - `packages/cli/src/contracts/interfaces/init.interface.ts`
+  - `packages/cli/src/lib/init/init-answers.schema.ts`
+  - `packages/core/tests/src/lib/hosts/project-hosts.service.spec.ts`
+  - `packages/cli/src/commands/init/init-hosts-flag.spec.ts`
 - **Gate**: type
 - acceptance:
-  - `hosts` in `delendai.config.json` names the hosts the project uses (`["cursor", "opencode"]`). When it is absent, the hosts are the ones detected in the project and on the machine. When nothing is detected, init asks (or, unattended, writes the host-neutral `AGENTS.md` only).
-  - `init --hosts=<a,b>` writes that choice into the configuration, and init reports which hosts it chose and why (declared, detected, or asked).
-  - Nothing is written for a host outside the set: no empty agent folder, no instructions file, no MCP entry.
+  - `hosts` in `delendai.config.json` (or `DELENDAI_HOSTS` for one run) names the hosts the project uses. Absent, they are the ones its tree and environment show.
+  - `init --hosts=<a,b>` writes that choice into the configuration. Without it, init writes agents for the hosts found and for the ones it configures the server for (`.vscode/mcp.json`, `.mcp.json`): Copilot and Claude Code. Codex, OpenCode and the rest only when declared or shown.
+  - No agent is written for a host outside the set. Which editors get an MCP entry stays decided by the install targets (`--target`), as before.
 
 ### S3 — Agents are declared once and rendered per host
 
@@ -69,22 +77,29 @@ What the code does today:
 - **Files**:
   - `packages/core/src/lib/hosts/agent-renderers.helper.ts`
   - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
+  - `packages/core/src/lib/scaffold/plugin-agents-report.ts`
   - `packages/core/src/lib/scaffold/agent-grant-reconcile.service.ts`
-  - `packages/cli/src/commands/init/init.command.ts`
+  - `packages/core/src/lib/scaffold/scaffold-host.ts`
+  - `packages/core/src/lib/scaffold/scaffold-tool.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/cli/src/lib/init/init-render.service.ts`
+  - `packages/core/tests/src/lib/scaffold/plugin-agents.service.spec.ts`
+  - `packages/cli/src/lib/init/init-render.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - delendai's own agents and every plugin's `agentRoles` are one host-neutral description (name, description, instructions, the tools it needs as capabilities). Each host's renderer turns it into that host's file, front matter and tool grants.
-  - The plugin agent writer, the grant reconciler and init write only through the renderers, for the project's hosts. A contributed role reaches every one of them.
+  - delendai's catalog agents and every plugin's `agentRoles` are one host-neutral description (name, description, instructions, entry point, server tool set); each host's renderer turns it into that host's file and front matter (Copilot tool grants and picker visibility, OpenCode `mode`).
+  - init, the plugin agent writer and the scaffold write through the registry for the project's hosts; a contributed role reaches every one of them, and the grant reconciler reads the Copilot folder from the registry, the one format that grants by server.
 
 ### S4 — A project with the old layout is migrated at start
 
 - **Status**: pending
 - **Files**:
-  - `packages/core/src/lib/workspace-migration/migrators/project-hosts.migrator.ts`
+  - `packages/core/src/lib/hosts/project-hosts.service.ts`
+  - `packages/cli/src/commands/init/init.command.ts`
 - **Gate**: type
 - acceptance:
-  - A project that has agents for hosts it does not use (the three folders init wrote unconditionally) has `hosts` recorded from what it actually uses. The generated agents of unused hosts are removed; an agent file edited by hand is kept and reported, as `syncPluginAgents` does today.
-  - A project with no `hosts` and agents for several hosts keeps them all: the migration infers, it never drops a host somebody may be using.
+  - A project from before `hosts` keeps every host it has agents for: their folders are evidence, so nothing is dropped and nothing has to be rewritten at start.
+  - A project that declares `hosts` has the generated agents of the other hosts removed at the next start (plugin agents) or init (catalog agents); a file edited by hand is kept and reported.
 
 ### S5 — A push that only keeps a unit's work safe is not judged as a publication
 
