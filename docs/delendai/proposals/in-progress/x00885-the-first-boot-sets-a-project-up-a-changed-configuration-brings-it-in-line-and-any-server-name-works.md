@@ -121,6 +121,8 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - acceptance:
   - The configuration a project was last set up with is recorded; a start under a different one moves, regenerates or creates the cache, docs and generated configuration it implies, and reports each change.
   - What a person edited is kept and reported, never overwritten.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Any server name, in any case, gets its agents and its tools
 
