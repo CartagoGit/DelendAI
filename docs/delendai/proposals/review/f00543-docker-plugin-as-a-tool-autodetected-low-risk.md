@@ -43,6 +43,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - `plugins/container/src/lib/contracts/constants/docker-signals.constant.ts`
   - `plugins/container/src/index.ts`
   - `plugins/container/src/lib/detect/docker-signals.service.spec.ts`
+  - `plugins/container/src/index.spec.ts`
 - **Gate**: type
 - acceptance:
   - The Docker tools are always registered, so what the plugin offers (and the generated catalog) never depends on the folder the server starts in. Without a root `Dockerfile`, compose file or `.devcontainer/`, every change they would make is refused with the reason, and reading stays free.
@@ -77,6 +78,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 - **Status**: review
 - **Files**:
   - `plugins/container/src/lib/compose/compose-parser.service.ts`
+  - `plugins/container/src/lib/compose/compose-parser.service.spec.ts`
   - `plugins/container/src/lib/tools/container-docker.tool.ts`
   - `plugins/container/src/lib/tools/container-docker.tool.spec.ts`
 - **Gate**: type

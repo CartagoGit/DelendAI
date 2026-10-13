@@ -193,6 +193,69 @@ describe('container docker tools', () => {
 		);
 	});
 
+	it('refuses compose without a compose file, and runs logs, down and exec on it', async () => {
+		expect(
+			await (await mount(root())).call('container_compose', {
+				action: 'ps',
+			}),
+		).toMatchObject({
+			ok: false,
+			reason: 'no compose file at the workspace root',
+		});
+		const dir = root();
+		writeFileSync(
+			join(dir, 'docker-compose.yml'),
+			'services:\n  web:\n    image: nginx\n',
+		);
+		const { call, calls } = await mount(dir);
+		expect(
+			await call('container_compose', {
+				action: 'logs',
+				service: 'web',
+				tail: 5,
+			}),
+		).toMatchObject({ ok: true });
+		expect(calls.at(-1)).toEqual([
+			'docker',
+			'compose',
+			'-f',
+			'docker-compose.yml',
+			'logs',
+			'--no-color',
+			'--tail',
+			'5',
+			'web',
+		]);
+		expect(
+			await call('container_compose', { action: 'down', confirm: true }),
+		).toMatchObject({ ok: true });
+		expect(
+			await call('container_compose', {
+				action: 'exec',
+				service: 'web',
+				command: ['ls'],
+				confirm: true,
+			}),
+		).toMatchObject({ ok: true });
+		expect(calls.at(-1)).toEqual([
+			'docker',
+			'compose',
+			'-f',
+			'docker-compose.yml',
+			'exec',
+			'-T',
+			'web',
+			'ls',
+		]);
+		expect(
+			await call('container_exec', {
+				container: 'web',
+				command: ['ls'],
+				confirm: true,
+			}),
+		).toMatchObject({ ok: true });
+	});
+
 	it('creates and removes networks and volumes only with confirm', async () => {
 		const { call } = await mount(root());
 		expect(await call('container_network', { action: 'ls' })).toMatchObject(

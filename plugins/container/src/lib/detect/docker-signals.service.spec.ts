@@ -50,6 +50,14 @@ const run = async (root: string) => {
 };
 
 describe('docker signals', () => {
+	it('names none for a folder it cannot read', async () => {
+		expect(
+			await dockerSignals(
+				join(tmpdir(), 'no-such-folder-for-docker-signals'),
+			),
+		).toEqual([]);
+	});
+
 	it('names the root entries that say the project uses Docker; without them the tools only read', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'docker-signals-'));
 		try {
