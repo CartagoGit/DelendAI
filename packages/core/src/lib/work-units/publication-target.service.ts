@@ -152,7 +152,8 @@ export const proposalStillInProgress = (
 	ref: string,
 ): boolean => {
 	const file = proposalFileAt(root, proposal, ref);
-	if (file?.includes('/proposals/in-progress/') !== true) return false;
+	const inProgressFolder = file?.includes('/proposals/in-progress/') === true;
+	if (!inProgressFolder || file === undefined) return false;
 	const text = git(root, ['show', `${ref}:${file}`]);
 	if (text === undefined) return true;
 	const slices = text.split(/^###\s+S\d[^\n]*$/mu).slice(1);
