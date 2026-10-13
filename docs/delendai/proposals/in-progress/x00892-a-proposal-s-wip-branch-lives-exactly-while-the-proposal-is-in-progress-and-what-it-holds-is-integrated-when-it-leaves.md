@@ -80,7 +80,7 @@ What x00891 (merged in #1066) does instead:
 
 ### S3 — A unit whose proposal left in-progress on another machine is integrated at start
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
@@ -88,6 +88,8 @@ What x00891 (merged in #1066) does instead:
 - **Gate**: type
 - acceptance:
   - At start, a unit of this clone whose proposal is no longer in progress on its own tip, that still holds work the integration branch lacks, and whose owner is not live, is published through `work publish` (the same path as S2) and its branch ends. A live unit is left to its owner's hook. A review unit is not one of these.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A hook the project's lefthook.yml declares runs, and is not called installed before it does
 
