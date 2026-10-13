@@ -76,11 +76,11 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 	},
 	{
 		file: 'packages/core/src/lib/work-units/publication-target.service.ts',
-		symbolOrLiteral: '/proposals/(done|retired|legacy)/',
+		symbolOrLiteral: '/proposals/in-progress/',
 		category: 'path',
 		destination: 'adapter',
-		needle: 'const FINISHED_FOLDER = /\\/proposals\\/(?:done|retired|legacy)\\//u;',
-		note: 'The unit-of-work engine (x00735) asks whether a proposal is finished by its folder, to keep its one wip branch until then; the status belongs behind an adapter the plugin provides.',
+		needle: 'const IN_PROGRESS_FOLDER = /\\/proposals\\/in-progress\\//u;',
+		note: 'The unit-of-work engine (x00735) asks whether a proposal is in progress by its folder, the one state that keeps its wip branch; the status belongs behind an adapter the plugin provides.',
 	},
 	{
 		file: 'packages/core/src/lib/work-units/publication-pull-request.service.ts',

@@ -130,37 +130,27 @@ const proposalFileAt = (
 				file.endsWith('.md'),
 		);
 
-/** Proposal folders that mean the proposal is finished: its branch may end. */
-const FINISHED_FOLDER = /\/proposals\/(?:done|retired|legacy)\//u;
+/** The folder of a proposal in progress, the one state that keeps a wip branch. */
+const IN_PROGRESS_FOLDER = /\/proposals\/in-progress\//u;
 
 /**
- * Whether a proposal is still open, so its one wip branch lives on. A
- * proposal keeps one branch from its creation until it is finished, and
- * every pull request is cut from that branch. Fixes asked for in review,
- * or after a red pull request, are committed on it and published into
- * the next pull request. The branch ends only once the proposal is done
- * (or retired), read on every ref given: the unit's own tip, and the
- * integration branch, where review closes it.
+ * Whether `proposal` is in progress in the tree of `ref`, the unit's own
+ * tip: the unit is where its proposal is moved. A proposal keeps exactly
+ * one wip branch while it is in progress, pushed on every commit, and
+ * every pull request of that time is cut from it. The commit that moves
+ * it out (to review, ready, blocked, paused or done) is followed by the
+ * integration of what the branch holds, and the branch ends.
  *
- * Read before, as "a slice is still to be handed in", a proposal handed
- * to review ended its branch at the same publication. Re-entering it
- * then started from the integration branch, and its open pull request
- * had to be merged back in by hand.
+ * Read before as "until done", a proposal parked in ready or handed to
+ * review kept a branch and a worktree nobody would work on; read as "a
+ * slice still to hand in", the folder and the slices disagreed.
  */
-export const proposalStillOpen = (
+export const proposalInProgress = (
 	root: string,
 	proposal: string,
-	refs: readonly string[],
-): boolean => {
-	let found = false;
-	for (const ref of refs) {
-		const file = proposalFileAt(root, proposal, ref);
-		if (file === undefined) continue;
-		found = true;
-		if (FINISHED_FOLDER.test(file)) return false;
-	}
-	return found;
-};
+	ref: string,
+): boolean =>
+	IN_PROGRESS_FOLDER.test(proposalFileAt(root, proposal, ref) ?? '');
 
 export const proposalSliceCount = (
 	root: string,

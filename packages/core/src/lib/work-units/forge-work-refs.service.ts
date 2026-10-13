@@ -56,8 +56,8 @@ export const hangingForgeWorkRefs = (input: {
 	/** Seconds since the epoch; the clock, unless a test says otherwise. */
 	readonly now?: number | undefined;
 	/**
-	 * Whether the ref's proposal is still open. Its one wip branch outlives
-	 * every pull request until the proposal is done, so a branch whose work
+	 * Whether the ref's proposal is in progress. Its one wip branch
+	 * outlives every pull request of that time, so a branch whose work
 	 * landed is not hanging while that holds.
 	 */
 	readonly stillOpen?: ((ref: string) => boolean) | undefined;

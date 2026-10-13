@@ -38,7 +38,7 @@ import { profileBranchesInvariant } from './profile-branches.service';
 import { strayRefsInvariant } from './stray-refs.service';
 import { unitsOnForgeInvariant } from './units-on-forge.service';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
-import { proposalStillOpen } from './publication-target.service';
+import { proposalInProgress } from './publication-target.service';
 import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
@@ -272,10 +272,11 @@ export const checkWorkflowInvariants = (input: {
 			const proposal = workUnitIdentityOf(policy, ref)?.proposal;
 			return (
 				proposal !== undefined &&
-				proposalStillOpen(root, proposal, [
+				proposalInProgress(
+					root,
+					proposal,
 					`refs/remotes/${remote}/${ref}`,
-					`refs/remotes/${remote}/${integration}`,
-				])
+				)
 			);
 		},
 	});

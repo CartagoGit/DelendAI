@@ -694,7 +694,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('keeps the branch of a proposal that is not done, unasked', async () => {
+	it('keeps the branch of a proposal in progress, unasked', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -732,10 +732,10 @@ describe('delendai work (x00553)', () => {
 		).steps;
 		expect(
 			steps.find((step) => step.name === 'keep-work-ref')?.detail,
-		).toContain('x00553 is not done');
+		).toContain('x00553 is in progress');
 	});
 
-	it('ends the branch when the published tree has its proposal done', async () => {
+	it('ends the branch when the published tree takes its proposal out of progress', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);

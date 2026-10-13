@@ -278,18 +278,19 @@ export const enteredHeld = async (
 			...(await reenteredUnit(root, path, ref, base)),
 		});
 	}
-	// A proposal in progress keeps one branch: a later slice continues on
-	// the branch the agent already has for it.
+	// A proposal in progress keeps one branch: later work continues on the
+	// branch the agent already has for it, unless another session is
+	// working in it, whose work runs alongside on its own unit.
 	const continued = liveProposalBranch(
 		policy.branches.workRefTemplate,
 		ref,
 		existing,
 	);
-	if (continued !== undefined) {
-		const path = continued.path ?? undefined;
-		const held =
-			path === undefined ? undefined : heldByAnother(path, session);
-		if (held !== undefined) return held;
+	if (
+		continued !== undefined &&
+		heldByAnother(continued.path, session) === undefined
+	) {
+		const path = continued.path;
 		const claimed =
 			path === undefined ? session : claimWorktree(path, agent, session);
 		return withBriefing(ctx, root, policy, agent, {

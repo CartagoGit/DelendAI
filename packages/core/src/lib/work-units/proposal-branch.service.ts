@@ -19,6 +19,10 @@ const partsOf = (template: string, ref: string) => {
 		: { agent: rest.slice(0, slash), ...parts };
 };
 
+/** A branch name however it is spelled: `refs/heads/x`, `heads/x` or `x`. */
+const withoutRefsHeads = (name: string): string =>
+	name.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
 /** The kinds of unit that write a proposal's own document. */
 const PROPOSAL_WRITING_KINDS: ReadonlySet<string> = new Set([
 	'implement',
@@ -40,7 +44,11 @@ export const liveProposalBranch = (
 	ref: string,
 	worktreeListing: string,
 ): { readonly ref: string; readonly path: string } | undefined => {
-	const wanted = partsOf(template, ref);
+	// The template may be spelled `heads/…` and the refs `refs/heads/…`:
+	// compared as written, no branch ever matched, and every entry opened
+	// a second branch for a proposal that already had one.
+	const shape = withoutRefsHeads(template);
+	const wanted = partsOf(shape, withoutRefsHeads(ref));
 	// Only the work that writes the proposal continues on its branch:
 	// creating it and implementing it are one branch. A review round, an
 	// audit or any other kind of work is its own unit.
@@ -56,7 +64,7 @@ export const liveProposalBranch = (
 			.find((line) => line.startsWith('worktree '))
 			?.slice('worktree '.length);
 		if (branch === undefined || path === undefined) continue;
-		const found = partsOf(template, branch);
+		const found = partsOf(shape, withoutRefsHeads(branch));
 		if (
 			found !== undefined &&
 			found.agent === wanted.agent &&
@@ -69,10 +77,6 @@ export const liveProposalBranch = (
 	}
 	return undefined;
 };
-
-/** A branch name however it is spelled: `refs/heads/x`, `heads/x` or `x`. */
-const withoutRefsHeads = (name: string): string =>
-	name.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /**
  * The checked-out units that carry `proposal` and write its document,

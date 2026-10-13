@@ -41,10 +41,21 @@ What x00891 (merged in #1066) does instead:
   - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
   - `packages/core/src/lib/work-units/unit-standings.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+  - `packages/core/src/lib/work-units/forge-work-refs.service.ts`
+  - `packages/core/src/lib/work-units/proposal-branch.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-generation.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+  - `tools/scripts/inspect/core-proposals-boundary.script.ts`
+  - `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
+  - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/proposal-branch.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - One function says whether a unit's proposal is in progress, read on the unit's own tip. The publish command, the standings, the reaper and the doctor all ask it, and none keeps a reading of its own.
   - A publication from a proposal in progress keeps the branch and its worktree. One from a proposal in any other state ends them, after the publication is proven.
+  - Later work on a proposal in progress continues on its branch, whatever kind or slice it is entered for, however the template spells `refs/heads/`. A second session of the same agent working in parallel gets its own unit instead of being refused.
 
 ### S2 — Leaving in-progress integrates what the branch holds, then ends it
 
