@@ -120,9 +120,38 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - A server started under a custom name creates the same agents as one under the default name.
   - The tool prefix an agent matches is derived from the server name the way the host derives it (case included), so a name with upper case letters is recognised; a spec covers lower, upper and mixed case.
 
+### S5 — Existing agents are brought in line with the server they serve
+
+- **Status**: pending
+- **Files**:
+  - `packages/cli/src/lib/init/init-render.service.ts`
+  - `packages/cli/src/lib/init/init-catalog.constant.ts`
+  - `packages/core/src/lib/scaffold/detect-existing-install.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+- **Gate**: type
+- acceptance:
+  - At start, every agent file delendai manages is compared with what the resolved server name and tool catalogue imply. A grant naming another server, a missing tool group, or one the server no longer serves is rewritten in the managed block, and the start-up report names each file changed.
+  - Lines a person added outside the managed block are kept and reported. An agent file with no managed block is never rewritten, only reported.
+  - Renaming the server in the host's MCP configuration and restarting leaves every agent granting the new name's tools, and none granting the old.
+
+### S6 — The agents and their tools follow the project, including its own plugins
+
+- **Status**: pending
+- **Files**:
+  - `packages/cli/src/lib/init/init-catalog.constant.ts`
+  - `packages/cli/src/lib/init/init-render.service.ts`
+  - `packages/core/src/lib/plugins/load-config-file.ts`
+  - `packages/core/tests/src/lib/e2e/first-boot.e2e.spec.ts`
+- **Gate**: type
+- acceptance:
+  - The agents created and the tools each is granted come from the consuming project's resolved configuration: the plugins it activates, including plugins the project ships itself and delendai does not. They no longer come from a fixed list written for this repository.
+  - A plugin may declare the agent roles it contributes, or the tools an existing role needs. Activating it adds those roles or grants at the next start; deactivating it removes them.
+  - The end-to-end spec runs in a throwaway consumer project with a local plugin (not this repository, whose dogfood setup hides the defect). It shows the plugin's tools granted to the agents that use them.
+
 ## acceptance
 
 - A first start in an empty project leaves it set up with the defaults.
 - A start under a changed configuration leaves cache, docs and generated configuration matching it, with nothing a person wrote lost.
 - A server under any name, in any case, has its agents created and its tools recognised.
+- Agents already on disk are corrected to the current server name and tool catalogue at each start, and reflect the plugins the project activates, its own included.
 
