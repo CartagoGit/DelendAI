@@ -2,14 +2,14 @@
 id: f00760
 title: "agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 7d1a559c-e710-4f05-bb26-80204b4a0dd6
-last-correlation-id: 7d1a559c-e710-4f05-bb26-80204b4a0dd6
-last-transition-from: ready
-last-transition-at: 2026-10-13T21:27:06.888Z
+last-transition-id: 8e8c772c-0cea-47ef-9f9e-d6024d6d22c9
+last-correlation-id: 8e8c772c-0cea-47ef-9f9e-d6024d6d22c9
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T21:58:04.320Z
 ---
 
 # f00760 — agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected
@@ -51,6 +51,7 @@ What the code does today:
   - It covers Copilot, Claude Code, Codex CLI, OpenCode, Cursor, Windsurf, Gemini CLI, Continue and the terminal agents that read `AGENTS.md`. A host whose agent format is not known gets instructions only.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `b90125c462c3`
 
 ### S2 — The project chooses its hosts; detection fills in when it does not
 
@@ -74,6 +75,7 @@ What the code does today:
   - No agent is written for a host outside the set. Which editors get an MCP entry stays decided by the install targets (`--target`), as before.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `b90125c462c3`
 
 ### S3 — Agents are declared once and rendered per host
 
@@ -95,6 +97,7 @@ What the code does today:
   - init, the plugin agent writer and the scaffold write through the registry for the project's hosts; a contributed role reaches every one of them, and the grant reconciler reads the Copilot folder from the registry, the one format that grants by server.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `b90125c462c3`
 
 ### S4 — A project with the old layout is migrated at start
 
@@ -108,10 +111,11 @@ What the code does today:
   - A project that declares `hosts` has the generated agents of the other hosts removed at the next start (plugin agents) or init (catalog agents); a file edited by hand is kept and reported.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `b90125c462c3`
 
 ### S5 — A push that only keeps a unit's work safe is not judged as a publication
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/durability-push.constant.ts`
   - `packages/core/src/lib/work-units/unit-push.service.ts`
@@ -125,6 +129,9 @@ What the code does today:
 - acceptance:
   - The pushes delendai makes to keep a unit's branch on the forge carry `DELENDAI_DURABILITY_PUSH=1`, and this repository's publication checks skip such a push. Secrets, empty commits, the guard and the integration-branch protections still run on it.
   - A push without the variable, a publication included, runs every check as before.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `a632bacdd285`
 
 ## acceptance
 
