@@ -348,8 +348,9 @@ describe('delendai guard post-commit, when the proposal leaves in-progress', () 
 			else process.env.GIT_DIR = gitDir;
 		}
 		expect(written.join('')).toContain('left in-progress');
-		for (let attempt = 0; attempt < 100 && !existsSync(seen); attempt++)
-			await new Promise((resolve) => setTimeout(resolve, 50));
+		await vi.waitFor(() => expect(existsSync(seen)).toBe(true), {
+			timeout: 10_000,
+		});
 		const started = JSON.parse(readFileSync(seen, 'utf8')) as {
 			gitDir: string | null;
 			args: string[];
