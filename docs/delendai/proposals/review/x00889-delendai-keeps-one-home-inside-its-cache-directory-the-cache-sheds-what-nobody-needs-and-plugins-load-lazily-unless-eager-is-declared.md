@@ -46,10 +46,12 @@ What the code does today:
   - `packages/core/src/lib/plugins/managed-lazy-catalog-lookup.ts`
   - `packages/core/tests/src/lib/cli/managed-lazy-local-plugin.spec.ts`
   - `packages/core/tests/src/lib/cli/core-meta-tools.spec.ts`
+  - `packages/core/tests/src/lib/plugins/managed-lazy-local-catalog.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - A plugin the generated catalog lacks is imported and registered once, in isolation, to learn what it offers. Its runtime is disposed and its entry recorded in the project cache; the start then serves every plugin lazily. No start falls back to eager loading unless `managedSurface.loading: "eager"` is declared.
   - A recorded plugin is not imported at start until its file changes. Lazily activated plugins are released by the idle eviction as any other.
+  - A discovered plugin that contributes anything a tool call does not bring in (agent roles, error sinks, observers, hooks) is activated at start, and the agent roles of the plugins a lazy start activated are the ones it writes: none is removed because the plugin was not imported.
 - shipped-in: `a22f77f06e75`
 - review-state: in_review
 - review-implementer: claude-opus-5-5

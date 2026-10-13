@@ -70,6 +70,7 @@ import {
 } from '../plugins/single-slot-hooks';
 import { disposeLoadedPlugins } from '../plugins/load-plugins-runtime.helper';
 import type { IToolSurfaceLazyBinding } from '../contracts/interfaces/tool-surface.interface';
+import type { IPluginAgentSource } from '../contracts/interfaces/agent-role-contribution.interface';
 import {
 	localLazyCatalogPath,
 	recordLocalLazyCatalog,
@@ -159,6 +160,12 @@ export interface IAssemblePluginsResult {
 	 * `false` for every plugin under the default surface.
 	 */
 	readonly surfacePluginNames: readonly string[];
+	/**
+	 * The plugins whose agent roles the start writes. `loadResult.loaded`
+	 * is empty under managed-lazy assembly, so reading roles from it wrote
+	 * none and removed the ones a project's plugin had written before.
+	 */
+	readonly pluginAgentSources: readonly IPluginAgentSource[];
 	/**
 	 * Dispose every plugin runtime this assembly activated (eager: all of
 	 * them up front; lazy: whichever the session actually activated), in
@@ -482,6 +489,7 @@ const tryAssembleManagedLazy = async (input: {
 	const resources: IResourceRegistration[] = [];
 	const knowledge: IKnowledgeEntry[] = [];
 	const pendingRegistrations = new Map<string, IMcpPluginRegistrations>();
+	const pluginAgentSources: IPluginAgentSource[] = [];
 	const lazyRuntime = createManagedLazyRuntime({
 		namespacePrefix: input.corePrefix,
 		liveServer: input.liveServer,
@@ -491,6 +499,8 @@ const tryAssembleManagedLazy = async (input: {
 		importFn: input.importFn,
 		onActivated: ({ plugin, registrations, resolvedSpecifier }) => {
 			pendingRegistrations.set(plugin.name, registrations);
+			if (registrations.agentRoles)
+				pluginAgentSources.push({ plugin, registrations });
 			if (registrations.prompts) prompts.push(...registrations.prompts);
 			if (registrations.resources)
 				resources.push(...registrations.resources);
@@ -793,6 +803,7 @@ const tryAssembleManagedLazy = async (input: {
 		},
 		moduleLoading: 'lazy',
 		surfacePluginNames: pluginIds,
+		pluginAgentSources,
 		disposePlugins: idempotentDisposePlugins(async () => {
 			const failures = await lazyRuntime.disposeAll();
 			return failures.map((failure) => ({
@@ -1349,6 +1360,7 @@ export const assemblePlugins = async (
 		})),
 		moduleLoading: 'eager',
 		surfacePluginNames: loadResult.loaded.map((entry) => entry.plugin.name),
+		pluginAgentSources: loadResult.loaded,
 		disposePlugins: idempotentDisposePlugins(async () => {
 			const failures: {
 				readonly pluginName: string;

@@ -675,6 +675,7 @@ export const assembleCliConfig = async (
 		lazyToolActivators,
 		moduleLoading,
 		surfacePluginNames,
+		pluginAgentSources,
 		lazyPluginPackages,
 		lazyPluginActivators,
 		consumeLazyPluginRegistrations,
@@ -746,7 +747,11 @@ export const assembleCliConfig = async (
 	// Only a project that has a configuration is written to: a server
 	// started anywhere else adopts nothing behind anyone's back.
 	if (rawConfig !== undefined)
-		await reportPluginAgents(workspace.root, corePrefix, loadResult.loaded);
+		await reportPluginAgents(
+			workspace.root,
+			corePrefix,
+			pluginAgentSources,
+		);
 
 	const {
 		validationMatrix,

@@ -87,6 +87,16 @@ export const useLocalLazyCatalog = async (
 };
 
 /** What a loaded plugin registered, as the lazy runtime needs it. */
+/** What the lazy runtime registers when a tool or listing first needs it. */
+const SERVED_ON_DEMAND: ReadonlySet<string> = new Set([
+	'tools',
+	'activation',
+	'prompts',
+	'resources',
+	'knowledge',
+	'skills',
+]);
+
 export const localLazyRecordOf = async (
 	loaded: ILoadedPlugin,
 ): Promise<ILocalLazyCatalogRecord | undefined> => {
@@ -95,11 +105,12 @@ export const localLazyRecordOf = async (
 		mtimeMs: -1,
 	};
 	const registrations = loaded.registrations;
-	const observes =
-		registrations.onToolStart !== undefined ||
-		registrations.onToolCall !== undefined ||
-		registrations.onToolCancel !== undefined ||
-		registrations.logsSink !== undefined;
+	// Anything the lazy runtime cannot serve on demand (agent roles, error
+	// sinks, observers, hooks) is needed from the start, so the plugin is
+	// activated at start like a catalog plugin that declares it.
+	const observes = Object.entries(registrations).some(
+		([key, value]) => value !== undefined && !SERVED_ON_DEMAND.has(key),
+	);
 	return {
 		specifier: loaded.specifier,
 		resolved: loaded.resolved,
