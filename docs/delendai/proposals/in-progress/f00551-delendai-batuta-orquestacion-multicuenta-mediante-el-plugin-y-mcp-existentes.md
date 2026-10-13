@@ -65,6 +65,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - acceptance:
   - "El contexto del plugin recibe providers de la configuración raíz; options.providers prevalece incluso cuando es []."
   - "Pruebas de registro, routing y ausencia de roster; executeApi:false sigue rechazando gasto. No equivale al registro multicuenta de S1."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S1 — Registro canónico multicuenta y migraciones
 - **Status**: pending
