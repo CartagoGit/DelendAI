@@ -39,7 +39,7 @@ What x00891 (merged in #1066) does instead:
 
 ### S1 — In progress is the one state that keeps a wip branch
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
@@ -60,6 +60,8 @@ What x00891 (merged in #1066) does instead:
   - One function says whether a unit's proposal is in progress, read on the unit's own tip. The publish command, the standings, the reaper and the doctor all ask it, and none keeps a reading of its own.
   - A publication from a proposal in progress keeps the branch and its worktree. One from a proposal in any other state ends them, after the publication is proven.
   - Later work on a proposal in progress continues on its branch, whatever kind or slice it is entered for, however the template spells `refs/heads/`. A second session of the same agent working in parallel gets its own unit instead of being refused.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Leaving in-progress integrates what the branch holds, then ends it
 
