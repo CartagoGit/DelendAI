@@ -181,6 +181,8 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - The agents created and the tools each is granted come from the consuming project's resolved configuration: the plugins it activates, including plugins the project ships itself and delendai does not. They no longer come from a fixed list written for this repository.
   - A plugin may declare the agent roles it contributes, or the tools an existing role needs. Activating it adds those roles or grants at the next start; deactivating it removes them.
   - The end-to-end spec runs in a throwaway consumer project with a local plugin (not this repository, whose dogfood setup hides the defect). It shows the plugin's tools granted to the agents that use them.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
