@@ -58,6 +58,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - `plugins/container/src/lib/run/docker-command.service.ts`
   - `plugins/container/src/lib/run/docker-risk.helper.ts`
   - `plugins/container/src/lib/contracts/interfaces/docker-command.interface.ts`
+  - `plugins/container/src/lib/contracts/constants/docker-tool-input.constant.ts`
   - `plugins/container/src/lib/tools/container-docker.tool.ts`
   - `plugins/container/src/lib/tools/container-docker.tool.spec.ts`
   - `plugins/container/package.json`

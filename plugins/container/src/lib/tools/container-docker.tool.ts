@@ -7,91 +7,25 @@
  * a container the host also needs `confirmRisk`, and reading needs
  * nothing. Registered only in a repository that uses Docker.
  */
-import z from 'zod';
+import type z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { SafeWorkspaceReader, toolJson } from '@delendai/core/public';
 
 import { parseCompose } from '../compose/compose-parser.service';
+import { DOCKER_LOG_TAIL_DEFAULT } from '../contracts/constants/docker-signals.constant';
+import {
+	RESULT,
+	COMPOSE_FILES,
+	PULL_INPUT,
+	RUN_INPUT,
+	EXEC_INPUT,
+	COMPOSE_INPUT,
+	RESOURCE_INPUT,
+} from '../contracts/constants/docker-tool-input.constant';
 import type { IDockerDeps } from '../contracts/interfaces/docker-command.interface';
 import { runDocker } from '../run/docker-command.service';
 import { containerRisks } from '../run/docker-risk.helper';
-
-const NAME = z
-	.string()
-	.min(1)
-	.max(256)
-	.regex(/^[\w./:@-]+$/u);
-const CONSENT = {
-	confirm: z.boolean().optional(),
-	confirmRisk: z.boolean().optional(),
-	dryRun: z.boolean().optional(),
-};
-const RESULT = z.looseObject({
-	ok: z.union([z.boolean(), z.literal('dry-run')]),
-});
-const COMPOSE_FILES = [
-	'compose.yaml',
-	'compose.yml',
-	'docker-compose.yaml',
-	'docker-compose.yml',
-];
-
-const PULL_INPUT = z
-	.object({
-		image: NAME,
-		policy: z.enum(['always', 'if-not-present']).optional(),
-		...CONSENT,
-	})
-	.strict();
-const RUN_INPUT = z
-	.object({
-		image: NAME,
-		command: z.array(z.string().max(4096)).max(64).optional(),
-		name: NAME.optional(),
-		env: z
-			.record(
-				z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/u),
-				z.string().max(4096),
-			)
-			.optional(),
-		ports: z
-			.array(z.string().regex(/^[\d.:]+(?:\/(?:tcp|udp))?$/u))
-			.max(32)
-			.optional(),
-		mounts: z.array(z.string().min(1).max(2048)).max(32).optional(),
-		network: z.string().max(256).optional(),
-		privileged: z.boolean().optional(),
-		pid: z.string().max(64).optional(),
-		ipc: z.string().max(64).optional(),
-		detach: z.boolean().optional(),
-		...CONSENT,
-	})
-	.strict();
-const EXEC_INPUT = z
-	.object({
-		container: NAME,
-		command: z.array(z.string().max(4096)).min(1).max(64),
-		...CONSENT,
-	})
-	.strict();
-const COMPOSE_INPUT = z
-	.object({
-		action: z.enum(['services', 'ps', 'logs', 'up', 'down', 'exec']),
-		service: NAME.optional(),
-		all: z.boolean().optional(),
-		command: z.array(z.string().max(4096)).max(64).optional(),
-		tail: z.number().int().positive().max(10_000).optional(),
-		...CONSENT,
-	})
-	.strict();
-const RESOURCE_INPUT = z
-	.object({
-		action: z.enum(['ls', 'inspect', 'create', 'rm']),
-		name: NAME.optional(),
-		...CONSENT,
-	})
-	.strict();
 
 const refuse = (reason: string, nextAction: string) =>
 	toolJson({ ok: false, reason, nextAction });
@@ -269,7 +203,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 								'logs',
 								'--no-color',
 								'--tail',
-								String(args.tail ?? 200),
+								String(args.tail ?? DOCKER_LOG_TAIL_DEFAULT),
 								...(args.service === undefined
 									? []
 									: [args.service]),
