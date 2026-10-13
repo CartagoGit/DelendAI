@@ -83,13 +83,30 @@ export const guardHooksFollowMode = (
 	return { follows: true };
 };
 
-const describe = (report: IGuardHooksReport): string[] => [
-	`guard hooks ${report.dir}`,
-	...report.hooks.map(
-		(entry) =>
-			`  ${entry.hook}: ${entry.state}${entry.reason === undefined ? '' : ` — ${entry.reason}`}`,
-	),
-];
+/**
+ * One line per state, not per hook: a project with none installed was
+ * shown every hook on a line of its own at every start. A hook with a
+ * reason of its own keeps its line, because the reason is the remedy.
+ */
+const describe = (report: IGuardHooksReport): string[] => {
+	const plain = new Map<string, string[]>();
+	const explained: string[] = [];
+	for (const entry of report.hooks) {
+		if (entry.reason !== undefined) {
+			explained.push(`  ${entry.hook}: ${entry.state} — ${entry.reason}`);
+			continue;
+		}
+		plain.set(entry.state, [...(plain.get(entry.state) ?? []), entry.hook]);
+	}
+	const states = [...plain.entries()].map(
+		([state, hooks]) =>
+			`${String(hooks.length)} ${state} (${hooks.join(', ')})`,
+	);
+	return [
+		`guard hooks in ${report.dir}: ${states.join('; ') || 'none'}`,
+		...explained,
+	];
+};
 
 /** Nothing to say, and nothing done. */
 const SILENT = (
