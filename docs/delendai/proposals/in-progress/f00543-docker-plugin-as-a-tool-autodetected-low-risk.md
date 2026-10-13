@@ -2,10 +2,14 @@
 id: f00543
 title: "Docker plugin as a tool (autodetected, low-risk)"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-15
+last-transition-id: f0e21fec-3632-4f01-a207-6c3cfae9af04
+last-correlation-id: f0e21fec-3632-4f01-a207-6c3cfae9af04
+last-transition-from: ready
+last-transition-at: 2026-10-13T04:41:17.484Z
 ---
 
 # f00543 — Docker plugin as a tool (autodetected, low-risk)
