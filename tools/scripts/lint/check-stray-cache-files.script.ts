@@ -46,6 +46,7 @@
  * closes both gaps.
  */
 
+import { RECORDS_DIR } from '../../../packages/core/src/lib/contracts/constants/delendai-records.constant';
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
@@ -81,6 +82,9 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	'telemetry',
 	// The server's own log, one file per day (`logs/mcp-server/`).
 	'logs',
+	// What delendai keeps about the workspace (migration journal, applied
+	// configuration, project profile, backups), moved here from `.delendai/`.
+	RECORDS_DIR,
 	// Per-plugin ephemeral exec dir (f00080)
 	// Per-agent git worktrees — not source code, never stray.
 	'.worktrees',

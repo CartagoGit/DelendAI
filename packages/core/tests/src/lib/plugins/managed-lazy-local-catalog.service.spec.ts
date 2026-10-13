@@ -14,6 +14,7 @@ import {
 } from '../../../../src/lib/plugins/managed-lazy-catalog-lookup';
 import {
 	localLazyCatalogPath,
+	localLazyRecordOf,
 	recordLocalLazyCatalog,
 	useLocalLazyCatalog,
 } from '../../../../src/lib/plugins/managed-lazy-local-catalog.service';
@@ -72,6 +73,9 @@ describe('the project-local lazy catalog', () => {
 			knowledgeIds: ['acme-notes'],
 			summary: 'Acme tools',
 		});
+		expect(managedLazyPluginEntry('acme-app')?.startupActivation).toBe(
+			undefined,
+		);
 
 		writeFileSync(file, 'export default { changed: true };\n');
 		utimesSync(
@@ -89,5 +93,37 @@ describe('the project-local lazy catalog', () => {
 				join(tmpdir(), 'no-such-local-lazy.json'),
 			),
 		).toEqual([]);
+	});
+
+	it('activates at start a plugin that contributes what no tool call brings in', async () => {
+		const plugin = (registrations: ILoadedPlugin['registrations']) =>
+			fakePartial<ILoadedPlugin>({
+				specifier: './p.ts',
+				resolved: join(tmpdir(), 'no-such-plugin.ts'),
+				plugin: fakePartial<ILoadedPlugin['plugin']>({ name: 'p' }),
+				registrations,
+			});
+		const contributing: ILoadedPlugin['registrations'][] = [
+			{ errorSinks: [] },
+			{
+				agentRoles: [
+					{
+						role: 'migration-runner',
+						description: 'd',
+						instructions: 'i',
+					},
+				],
+			},
+			{ beforeToolCall: () => undefined },
+		];
+		for (const registrations of contributing)
+			expect(
+				(await localLazyRecordOf(plugin(registrations)))?.entry
+					.startupActivation,
+			).toBe(true);
+		expect(
+			(await localLazyRecordOf(plugin({ tools: [], skills: [] })))?.entry
+				.startupActivation,
+		).toBeUndefined();
 	});
 });

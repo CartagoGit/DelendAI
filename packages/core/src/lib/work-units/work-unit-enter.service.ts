@@ -9,7 +9,7 @@ import type {
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import { withBriefing } from './work-unit-enter-briefing.service';
-import { hydratedIdleUnit } from './kept-unit-hydration.service';
+import { reenteredUnit } from './kept-unit-hydration.service';
 import { readSwarm } from './work-swarm.service';
 import { entrantNameRefusal } from './agents-seen.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
@@ -51,7 +51,7 @@ import {
 	providerBridgeSilence,
 	providerModelReading,
 } from '../work-identity/provider-model-bridge.helper';
-import { installUnitDependencies } from './unit-dependencies.service';
+import { enteredDependencies } from './unit-dependencies.service';
 
 /**
  * Give this agent its own working tree on its own ref.
@@ -275,7 +275,7 @@ export const enteredHeld = async (
 			path: path ?? null,
 			created: false,
 			session: claimed,
-			...hydratedIdleUnit(root, path, ref, base),
+			...(await reenteredUnit(root, path, ref, base)),
 		});
 	}
 	// A proposal in progress keeps one branch: a later slice continues on
@@ -298,7 +298,7 @@ export const enteredHeld = async (
 			path: continued.path,
 			created: false,
 			session: claimed,
-			...hydratedIdleUnit(root, path, continued.ref, base),
+			...(await reenteredUnit(root, path, continued.ref, base)),
 		});
 	}
 	const createdRef =
@@ -387,13 +387,12 @@ export const enteredHeld = async (
 	// instance took this unit as free (x00731).
 	const path = resolve(root, dir);
 	const claimed = claimWorktree(path, agent, session);
-	const dependencies = await installUnitDependencies(path);
 	return withBriefing(ctx, root, policy, agent, {
 		ref,
 		branch,
 		path,
 		created: true,
 		session: claimed,
-		dependencies,
+		...(await enteredDependencies(path)),
 	});
 };
