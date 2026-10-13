@@ -2,14 +2,14 @@
 id: x00888
 title: "A consumer project starts clean: what its own setup does is reported for it, and what it cannot change does not degrade it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: b5535df0-8997-463c-b8e7-79ab37d3c490
-last-correlation-id: b5535df0-8997-463c-b8e7-79ab37d3c490
-last-transition-from: ready
-last-transition-at: 2026-10-13T11:05:59.538Z
+last-transition-id: 73873464-02e3-46b6-8cad-f5e1deedf50a
+last-correlation-id: 73873464-02e3-46b6-8cad-f5e1deedf50a
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T11:06:19.843Z
 ---
 
 # x00888 — A consumer project starts clean: what its own setup does is reported for it, and what it cannot change does not degrade it
@@ -54,6 +54,9 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - acceptance:
   - A plugin delendai's generated catalog cannot list (one the project ships itself) costs one eager start: that start records what it registered, with its file's state, in the project cache, and the next start loads every plugin lazily, until the plugin's file changes.
   - No message a consumer sees names a script that exists only in delendai's repository.
+- shipped-in: `107a19ddf06e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The summary says one thing about loading and counts
 
@@ -64,6 +67,9 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - **Gate**: type
 - acceptance:
   - "lazy loading enabled" is printed only when some plugin is lazily loaded, and the plugin counts agree (core is either counted everywhere or nowhere).
+- shipped-in: `6578fa35d352`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — An absent optional CLI is a notice, not a degraded start
 
@@ -77,6 +83,9 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - **Gate**: type
 - acceptance:
   - When the forge CLI is not installed, the forge and governance phases report a notice naming what is not checked and how to enable it. The reconciliation is not DEGRADED for it. A forge that is installed but fails stays a blocker.
+- shipped-in: `deec84f26d8a`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A configuration an older delendai wrote follows the current policy
 
@@ -89,6 +98,9 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - **Gate**: type
 - acceptance:
   - Settings the current development profile contradicts, such as push automation under `shared-checkout-merge`, are removed by a start-up migration, once, journalled and reported, with JSONC edits that keep the file's comments and formatting, instead of being warned about at every start.
+- shipped-in: `461134ccdfb8`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — The guard report is one line
 
@@ -99,6 +111,9 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - **Gate**: type
 - acceptance:
   - Guard hooks are reported in one line per state (count and names), plus one line per hook that carries a reason of its own, and the install command.
+- shipped-in: `866fd5faddfd`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — A unit is entered with what its checks need
 
@@ -113,6 +128,9 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - **Gate**: type
 - acceptance:
   - Entering a unit in a project with a lockfile installs its dependencies into the worktree with the project's package manager, scripts disabled, or says in the entry's answer that it could not and the command that will; the first publish no longer fails on a missing module.
+- shipped-in: `bd4d0957feba`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
