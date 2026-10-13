@@ -81,7 +81,7 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 
 ### S4 — Eviction never removes a unit, delendai's records or the state database
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/core-eviction.constant.ts`
   - `packages/core/src/lib/cache/eviction-registry.ts`
@@ -97,6 +97,8 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
   - The core refuses to register a rule whose path is, or is inside, `.worktrees`, `records` or `state`, naming the path it refused.
   - The `cache` plugin contributes neither rule; its `worktrees` option is accepted and ignored, so no configuration stops validating.
   - A sweep over a cache with units of any age removes none of them.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
