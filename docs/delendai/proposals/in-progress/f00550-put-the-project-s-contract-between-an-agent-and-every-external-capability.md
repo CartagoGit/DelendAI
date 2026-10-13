@@ -2,7 +2,7 @@
 id: f00550
 title: "Put the project's contract between an agent and every external capability"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,6 +11,10 @@ tags:
     - capabilities
     - design
     - verification
+last-transition-id: 5842b254-8c49-44de-baa5-04c71c4b01a1
+last-correlation-id: 5842b254-8c49-44de-baa5-04c71c4b01a1
+last-transition-from: ready
+last-transition-at: 2026-10-13T04:29:15.573Z
 ---
 
 # f00550 — Put the project's contract between an agent and every external capability
