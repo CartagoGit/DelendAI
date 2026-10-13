@@ -2,14 +2,14 @@
 id: x00891
 title: "a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 04421704-0ac6-4bab-8d35-aa10eb5a024b
-last-correlation-id: 04421704-0ac6-4bab-8d35-aa10eb5a024b
-last-transition-from: ready
-last-transition-at: 2026-10-13T18:31:46.892Z
+last-transition-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
+last-correlation-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T18:34:16.094Z
 ---
 
 # x00891 — a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it
@@ -61,6 +61,7 @@ What the code does today, measured on this clone on 2026-10-13:
   - A commit on the integration branch or any branch outside the work namespace pushes nothing.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `1dedc5fe2ef8`
 
 ### S2 — Publishing cuts a pull request from the branch and leaves the branch alone
 
@@ -83,6 +84,7 @@ What the code does today, measured on this clone on 2026-10-13:
   - The wip branch is retired (kept under `refs/<namespace>/retired/`) only when its proposal reaches done or is abandoned, and only once everything on it is on develop.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `fa8e882cf28b`
 
 ### S3 — One wip branch per proposal
 
@@ -98,6 +100,7 @@ What the code does today, measured on this clone on 2026-10-13:
   - Branch names keep their current shape, so no existing branch is renamed and no ref migration is needed.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `8d77df6e6782`
 
 ### S4 — A start leaves every unit in step with the forge
 
@@ -116,10 +119,11 @@ What the code does today, measured on this clone on 2026-10-13:
   - A project with the old layout (wip branches that exist only on this clone) has them pushed at its first start on this code; branch names keep their shape (S3), so nothing is renamed. `DELENDAI_UNIT_FORGE_SYNC=off` turns the pass off, which the test suites do.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `97dbb57c51db`
 
 ### S5 — The doctor sees work that is not on the forge
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/units-on-forge.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
@@ -128,6 +132,9 @@ What the code does today, measured on this clone on 2026-10-13:
 - acceptance:
   - `units-on-the-forge` reports every unit whose branch holds commits the forge lacks, or uncommitted edits, with the repair; a start that repairs them leaves it holding.
   - A wip branch on the forge whose work landed is not reported as hanging (`no-remote-work-refs`) while its proposal is open.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `97dbb57c51db`
 
 ## acceptance
 
