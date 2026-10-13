@@ -54,6 +54,7 @@ import { toolError, toolOk } from '../shared/tool-response';
 import { withFileMutex } from '../shared/with-file-mutex';
 import { PROJECT_PROFILE_FILENAME } from '../contracts/interfaces/project-profile.interface';
 import { detectExistingDelendaiInstall } from '../scaffold/detect-existing-install';
+import { DEFAULT_DELENDAI_SERVER_NAME } from '../contracts/constants/mcp-server-name.constant';
 
 const CONFIG_FILENAME = 'delendai.config.json';
 
@@ -333,7 +334,7 @@ const resolveAdoptionMcpServerName = async (
 ): Promise<string> => {
 	if (explicitMcpServerName !== undefined) return explicitMcpServerName;
 	const detected = await detectExistingDelendaiInstall(deps.workspace);
-	return detected.mcpServerName ?? 'delendai';
+	return detected.mcpServerName ?? DEFAULT_DELENDAI_SERVER_NAME;
 };
 
 const discoverProjectProfileWorkspaces = async (

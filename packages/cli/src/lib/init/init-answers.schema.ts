@@ -21,7 +21,7 @@
  */
 import z from 'zod';
 
-import { PRESET_KIND } from '@delendai/core/cli';
+import { DEFAULT_DELENDAI_SERVER_NAME, PRESET_KIND } from '@delendai/core/cli';
 
 import { PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
 
@@ -47,7 +47,7 @@ export const InitAnswers = z.object({
 	namespacePrefix: z.string().min(1).default('delendai'),
 
 	/** Server key used by generated MCP host configuration files. */
-	serverName: z.string().min(1).default('DelendAI'),
+	serverName: z.string().min(1).default(DEFAULT_DELENDAI_SERVER_NAME),
 
 	/** Resolved preset id. `dogfood` is the operator's recommended default
 	 * (snapshot of delendai.config.json — see `init:default`). */
