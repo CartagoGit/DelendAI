@@ -314,6 +314,18 @@ export const renderReviewLines = (state: IReviewState): string[] => {
  * `after` is what follows the slice in the document: the next heading, or
  * the newlines the document ends with.
  */
+/**
+ * A slice handed in reads `review` in its Status line. Its round alone
+ * said so: a slice submitted while still `pending` kept that word beside
+ * `review-state: in_review`, and the proposal moved to review/ with
+ * slices the completeness gate counts as never started.
+ */
+export const flipSliceStatusReview = (block: string): string =>
+	block.replace(
+		/^([-*]\s*\*\*Status\*\*:)\s*(?:pending|in-progress)\b/imu,
+		'$1 review',
+	);
+
 export const withClosingLines = (
 	body: string,
 	lines: readonly string[],

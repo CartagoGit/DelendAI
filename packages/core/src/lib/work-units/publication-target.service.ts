@@ -130,19 +130,37 @@ const proposalFileAt = (
 				file.endsWith('.md'),
 		);
 
+/** A slice's own state lines: handed to review, approved or closed. */
+const HANDED_IN =
+	/^[-*]\s*(?:review-state:\s*(?:in_review|done|approved)|\*\*Status\*\*:\s*(?:review|done))\b/mu;
+
 /**
  * Whether the work being published still has its proposal in progress.
  * A proposal keeps one work branch while it is in progress and publishes
  * its slices from it; the publication that moves it on (to review) is
  * the one that ends the branch.
+ *
+ * In progress means a slice is still to be handed in, not only that the
+ * file sits in `in-progress/`. Slices submitted one by one leave the file
+ * there with every slice in review; read by its folder alone, such a
+ * proposal kept its unit, and the unit was fast-forwarded and kept after
+ * its publication merged, for a next slice that did not exist.
  */
 export const proposalStillInProgress = (
 	root: string,
 	proposal: string,
 	ref: string,
-): boolean =>
-	proposalFileAt(root, proposal, ref)?.includes('/proposals/in-progress/') ===
-	true;
+): boolean => {
+	const file = proposalFileAt(root, proposal, ref);
+	const inProgressFolder = file?.includes('/proposals/in-progress/') === true;
+	if (!inProgressFolder || file === undefined) return false;
+	const text = git(root, ['show', `${ref}:${file}`]);
+	if (text === undefined) return true;
+	const slices = text.split(/^###\s+S\d[^\n]*$/mu).slice(1);
+	return (
+		slices.length === 0 || slices.some((slice) => !HANDED_IN.test(slice))
+	);
+};
 
 export const proposalSliceCount = (
 	root: string,

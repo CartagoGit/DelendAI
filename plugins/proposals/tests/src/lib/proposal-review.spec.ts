@@ -6,6 +6,7 @@ import {
 	renderReviewLines,
 	reviewTransition,
 	type IReviewState,
+	flipSliceStatusReview,
 } from '@delendai/proposals/lib/swarm/proposal-review';
 
 describe('proposal review state machine (M35)', async () => {
@@ -161,5 +162,19 @@ describe('proposal review state machine (M35)', async () => {
 		const approved = reviewTransition(submitted, 'approve', 'eagle');
 		expect(approved.ok).toBe(true);
 		expect(approved.next?.rounds).toHaveLength(1);
+	});
+});
+
+describe('flipSliceStatusReview', () => {
+	it('says review once a pending or in-progress slice is handed in', () => {
+		expect(flipSliceStatusReview('- **Status**: pending\n- x')).toBe(
+			'- **Status**: review\n- x',
+		);
+		expect(flipSliceStatusReview('- **Status**: in-progress\n')).toBe(
+			'- **Status**: review\n',
+		);
+		expect(flipSliceStatusReview('- **Status**: done\n')).toBe(
+			'- **Status**: done\n',
+		);
 	});
 });
