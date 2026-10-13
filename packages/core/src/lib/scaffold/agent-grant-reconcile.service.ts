@@ -22,6 +22,7 @@ import type { IAgentGrantChange } from '../contracts/interfaces/agent-grant-reco
 import { writeFileAtomic } from '../shared/atomic-write';
 import { findDelendaiServerName } from './detect-existing-install';
 import { hostToolSetReference } from './mcp-server-name.helper';
+import { parseJsonc } from '../config/jsonc-document';
 
 const MCP_CONFIG_FILES = ['.vscode/mcp.json', '.mcp.json'] as const;
 const COPILOT_AGENTS_DIR = '.github/agents';
@@ -55,14 +56,13 @@ const registeredServers = async (
 		const text = await readText(join(root, file));
 		if (text === undefined) continue;
 		delendai ??= findDelendaiServerName(text);
-		try {
-			const parsed = JSON.parse(text) as Record<string, unknown>;
-			const servers = parsed.servers ?? parsed.mcpServers;
-			if (typeof servers === 'object' && servers !== null)
-				names.push(...Object.keys(servers));
-		} catch {
-			// An unreadable config registers nothing; detection said so already.
-		}
+		// An unreadable config registers nothing; detection said so already.
+		const parsed = parseJsonc(text).value;
+		if (typeof parsed !== 'object' || parsed === null) continue;
+		const record = parsed as Record<string, unknown>;
+		const servers = record.servers ?? record.mcpServers;
+		if (typeof servers === 'object' && servers !== null)
+			names.push(...Object.keys(servers));
 	}
 	return delendai === undefined ? { names } : { names, delendai };
 };

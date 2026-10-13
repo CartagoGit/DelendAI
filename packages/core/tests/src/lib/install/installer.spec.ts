@@ -61,6 +61,30 @@ describe('IDE installer (M39)', async () => {
 		expect(cfg.servers.DelendAI.type).toBe('stdio');
 	});
 
+	it('installToTarget edits a configuration with comments in place, and skips one it cannot read', async () => {
+		const settings = join(dir, '.config/zed/settings.json');
+		mkdirSync(join(dir, '.config/zed'), { recursive: true });
+		writeFileSync(
+			settings,
+			'// my editor\n{\n\t"theme": "dark", // kept\n}\n',
+		);
+		const edited = await installToTarget(targetById('zed')!, env(), {
+			via: 'npx',
+		});
+		expect(edited.action).toBe('added');
+		const text = readFileSync(settings, 'utf8');
+		expect(text).toContain('// my editor');
+		expect(text).toContain('// kept');
+		expect(text).toContain('"DelendAI"');
+
+		writeFileSync(settings, '[1, 2]\n');
+		const skipped = await installToTarget(targetById('zed')!, env(), {
+			via: 'npx',
+		});
+		expect(skipped).toMatchObject({ action: 'skipped', path: settings });
+		expect(readFileSync(settings, 'utf8')).toBe('[1, 2]\n');
+	});
+
 	it('installToTarget creates the Zed config with the context_servers shape', async () => {
 		const r = await installToTarget(targetById('zed')!, env(), {
 			via: 'npx',
