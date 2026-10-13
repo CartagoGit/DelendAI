@@ -13,6 +13,10 @@ import type {
 	IPolicyIdentity,
 	IUnrecognizedModelPolicy,
 } from '../contracts/interfaces/policy-identity.interface';
+import {
+	normalizedModelId,
+	withoutVendor,
+} from '../work-identity/model-spelling.helper';
 
 export type { IIdentityConfigInput };
 
@@ -40,6 +44,26 @@ const unrecognizedModelOf = (
 	return asRename(value);
 };
 
+/** The declared aliases, keys and values named the way a work ref names a model. */
+const aliasesOf = (
+	value: unknown,
+): Readonly<Record<string, string>> | undefined => {
+	if (typeof value !== 'object' || value === null || Array.isArray(value))
+		return undefined;
+	const entries = Object.entries(value).filter(
+		(entry): entry is [string, string] =>
+			typeof entry[1] === 'string' && entry[1].length > 0,
+	);
+	return entries.length === 0
+		? undefined
+		: Object.fromEntries(
+				entries.map(([from, to]) => [
+					normalizedModelId(from),
+					normalizedModelId(withoutVendor(to)),
+				]),
+			);
+};
+
 export const identityOverride = (
 	input: IIdentityConfigInput | undefined,
 ): { readonly identity?: IPolicyIdentity } => {
@@ -49,12 +73,18 @@ export const identityOverride = (
 			? input.providerBridge
 			: undefined;
 	const unrecognizedModel = unrecognizedModelOf(input.unrecognizedModel);
-	if (providerBridge === undefined && unrecognizedModel === undefined)
+	const aliases = aliasesOf(input.aliases);
+	if (
+		providerBridge === undefined &&
+		unrecognizedModel === undefined &&
+		aliases === undefined
+	)
 		return {};
 	return {
 		identity: {
 			...(providerBridge === undefined ? {} : { providerBridge }),
 			...(unrecognizedModel === undefined ? {} : { unrecognizedModel }),
+			...(aliases === undefined ? {} : { aliases }),
 		},
 	};
 };
