@@ -131,11 +131,7 @@ const proposalFileAt = (
 		);
 
 /** Proposal folders that mean the proposal is finished: its branch may end. */
-const FINISHED_FOLDERS = [
-	'/proposals/done/',
-	'/proposals/retired/',
-	'/proposals/legacy/',
-];
+const FINISHED_FOLDER = /\/proposals\/(?:done|retired|legacy)\//u;
 
 /**
  * Whether a proposal is still open, so its one wip branch lives on. A
@@ -161,8 +157,7 @@ export const proposalStillOpen = (
 		const file = proposalFileAt(root, proposal, ref);
 		if (file === undefined) continue;
 		found = true;
-		if (FINISHED_FOLDERS.some((folder) => file.includes(folder)))
-			return false;
+		if (FINISHED_FOLDER.test(file)) return false;
 	}
 	return found;
 };

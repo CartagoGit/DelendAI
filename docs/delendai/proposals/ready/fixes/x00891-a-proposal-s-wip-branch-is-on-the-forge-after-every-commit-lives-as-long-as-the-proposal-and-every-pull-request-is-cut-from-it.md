@@ -65,6 +65,8 @@ What the code does today, measured on this clone on 2026-10-13:
   - `packages/core/src/lib/work-units/unit-standings.service.ts`
   - `packages/core/src/lib/work-units/unit-reaper.service.ts`
   - `packages/core/src/lib/work-units/unit-removal.service.ts`
+  - `tools/scripts/inspect/core-proposals-boundary.script.ts`
+  - `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
   - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
   - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
   - `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
