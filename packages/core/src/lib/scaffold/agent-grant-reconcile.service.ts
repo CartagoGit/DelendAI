@@ -109,6 +109,9 @@ export const reconcileAgentGrants = async (input: {
 		const path = join(COPILOT_AGENTS_DIR, entry);
 		const text = await readText(join(input.root, path));
 		if (text === undefined) continue;
+		// A plugin's agent is rendered for the current server by its own
+		// sync; rewriting it here would read there as a hand edit.
+		if (text.includes('<!-- delendai:plugin-agent ')) continue;
 		const { name, toolsLine } = frontMatter(text);
 		if (
 			!namedByDelendai(name, input.namespacePrefix) ||
