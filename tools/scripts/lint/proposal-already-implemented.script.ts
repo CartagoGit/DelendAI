@@ -226,6 +226,12 @@ export const classifyFullyTracked = (
 		readonly file: string;
 		readonly origin: IGitFileOrigin | undefined;
 	}[],
+	/**
+	 * When the proposal's own document was added (ISO 8601). Compared by
+	 * instant: a file created earlier the same day is one the slice edits,
+	 * which the frontmatter's day alone cannot tell.
+	 */
+	proposalSince?: string,
 ):
 	| {
 			readonly kind: 'modifies-existing';
@@ -235,13 +241,19 @@ export const classifyFullyTracked = (
 			readonly kind: 'files-already-tracked';
 			readonly evidence: readonly string[];
 	  } => {
+	const since =
+		proposalSince === undefined ? Number.NaN : Date.parse(proposalSince);
 	const preExisting =
-		proposalDate === undefined
+		proposalDate === undefined && Number.isNaN(since)
 			? []
 			: origins
 					.filter(
 						({ origin }) =>
-							origin !== undefined && origin.date < proposalDate,
+							origin !== undefined &&
+							(Number.isNaN(since)
+								? proposalDate !== undefined &&
+									origin.date < proposalDate
+								: Date.parse(origin.iso) < since),
 					)
 					.map(({ file }) => file);
 	if (preExisting.length > 0)
@@ -301,17 +313,33 @@ export const scanAlreadyImplemented = (
 					(_f, idx) => !trackedFlags[idx],
 				);
 				const hasShippedIn = shippedInOk(fm);
-				const classified = allTracked
-					? classifyFullyTracked(
-							proposalDateOf(fm),
-							slice.files.map((file) => ({
-								file,
-								origin: gitFileOrigin(root, file, {
-									follow: true,
-								}),
-							})),
-						)
-					: undefined;
+				// A slice that edits files older than its proposal and adds new
+				// ones is not started, not half-done: its tracked files are
+				// judged the way a fully tracked slice's are. Read as partial,
+				// every new proposal that modifies code and adds a module
+				// reddened the integration branch the day it was written.
+				const trackedFiles = slice.files.filter(
+					(_f, idx) => trackedFlags[idx],
+				);
+				const classifiedTracked = classifyFullyTracked(
+					proposalDateOf(fm),
+					trackedFiles.map((file) => ({
+						file,
+						origin: gitFileOrigin(root, file, {
+							follow: true,
+						}),
+					})),
+					gitFileOrigin(root, relative(root, proposalAbs), {
+						follow: true,
+					})?.iso,
+				);
+				const classified =
+					allTracked ||
+					(classifiedTracked.kind === 'modifies-existing' &&
+						classifiedTracked.preExisting.length ===
+							trackedFiles.length)
+						? classifiedTracked
+						: undefined;
 				if (classified?.kind === 'modifies-existing') {
 					findings.push({
 						relPath: rel,
