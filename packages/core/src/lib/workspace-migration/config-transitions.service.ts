@@ -44,6 +44,7 @@ import { lstat, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import { namespacePrefixTransition } from './namespace-prefix-transition.service';
 import { APPLIED_CONFIG_PATH } from '../contracts/constants/config-transition.constant';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type {
@@ -95,6 +96,7 @@ export const snapshotOf = (
 		.filter(([, entry]) => entry.enabled !== false)
 		.map(([name]) => name)
 		.sort((left, right) => left.localeCompare(right)),
+	namespacePrefix: config.namespacePrefix ?? 'delendai',
 });
 
 export const sameSnapshot = (
@@ -103,6 +105,7 @@ export const sameSnapshot = (
 ): boolean =>
 	left.cacheDir === right.cacheDir &&
 	left.docsDir === right.docsDir &&
+	left.namespacePrefix === right.namespacePrefix &&
 	left.plugins.length === right.plugins.length &&
 	left.plugins.every((name, index) => name === right.plugins[index]);
 
@@ -114,7 +117,9 @@ const isSnapshot = (value: unknown): value is IAppliedConfigSnapshot => {
 		typeof record.cacheDir === 'string' &&
 		typeof record.docsDir === 'string' &&
 		Array.isArray(record.plugins) &&
-		record.plugins.every((name) => typeof name === 'string')
+		record.plugins.every((name) => typeof name === 'string') &&
+		(record.namespacePrefix === undefined ||
+			typeof record.namespacePrefix === 'string')
 	);
 };
 
@@ -249,6 +254,7 @@ export const defaultConfigTransitions = (): readonly IConfigTransition[] => [
 	cacheDirTransition(),
 	removedPluginCacheTransition(),
 	docsDirTransition(),
+	namespacePrefixTransition(),
 ];
 
 export const reconcileConfigTransitions = async (input: {

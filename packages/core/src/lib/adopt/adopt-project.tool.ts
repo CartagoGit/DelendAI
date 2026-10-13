@@ -43,6 +43,9 @@ import type {
 	IAdoptProjectPlan,
 	IAdoptProjectToolDeps,
 	IBuildAdoptProjectPlanInput,
+	IAdoptProjectArgs,
+	IAdoptProjectOutcome,
+	IAdoptProjectResult,
 } from '../contracts/interfaces/adopt-project.interface';
 import type { IProjectProfileWorkspace } from '../contracts/interfaces/project-profile.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
@@ -54,6 +57,7 @@ import { toolError, toolOk } from '../shared/tool-response';
 import { withFileMutex } from '../shared/with-file-mutex';
 import { PROJECT_PROFILE_FILENAME } from '../contracts/interfaces/project-profile.interface';
 import { detectExistingDelendaiInstall } from '../scaffold/detect-existing-install';
+import { DEFAULT_DELENDAI_SERVER_NAME } from '../contracts/constants/mcp-server-name.constant';
 
 const CONFIG_FILENAME = 'delendai.config.json';
 
@@ -333,7 +337,7 @@ const resolveAdoptionMcpServerName = async (
 ): Promise<string> => {
 	if (explicitMcpServerName !== undefined) return explicitMcpServerName;
 	const detected = await detectExistingDelendaiInstall(deps.workspace);
-	return detected.mcpServerName ?? 'delendai';
+	return detected.mcpServerName ?? DEFAULT_DELENDAI_SERVER_NAME;
 };
 
 const discoverProjectProfileWorkspaces = async (
@@ -371,6 +375,146 @@ const discoverProjectProfileWorkspaces = async (
 	return discovered;
 };
 
+/**
+ * Adopts the project: the plan, and with `write: true` the files it
+ * writes. The `adopt_project` tool and the first start of a server in a
+ * project with no delendai both go through here, so a project set up by
+ * either ends the same.
+ */
+export const runAdoptProject = async (
+	deps: IAdoptProjectToolDeps,
+	args: IAdoptProjectArgs,
+): Promise<IAdoptProjectOutcome> => {
+	const ok = (data: IAdoptProjectResult): IAdoptProjectOutcome => ({
+		ok: true,
+		data,
+	});
+	const stage = isAdoptionStage(args.stage)
+		? args.stage
+		: DEFAULT_ADOPTION_STAGE;
+	const analysis = await analyzeProject(deps.reader);
+	const topLevelDirs = await deps.reader.listDir('');
+	const namespacePrefix = args.namespacePrefix ?? deps.namespacePrefix;
+	const mcpServerName = await resolveAdoptionMcpServerName(
+		deps,
+		args.mcpServerName,
+	);
+	const discoveredWorkspaces =
+		analysis.projectType === 'monorepo'
+			? await discoverProjectProfileWorkspaces(deps, mcpServerName)
+			: [];
+	const assessment = buildAdoptionAssessment(analysis, topLevelDirs, {
+		projectName: args.projectName ?? analysis.name ?? 'Workspace',
+		namespacePrefix,
+		mcpServerName,
+		docsDir: deps.corePaths.docsDir,
+		...(args.defaultModel !== undefined
+			? { defaultModel: args.defaultModel }
+			: {}),
+		...(args.repo !== undefined ? { repo: args.repo } : {}),
+	});
+	const plan = applyStageFilter(
+		buildAdoptProjectPlan({
+			analysis,
+			topLevelDirs,
+			projectName: args.projectName ?? analysis.name ?? 'Workspace',
+			namespacePrefix,
+			mcpServerName,
+			docsDir: deps.corePaths.docsDir,
+			...(args.defaultModel !== undefined
+				? { defaultModel: args.defaultModel }
+				: {}),
+			...(args.repo !== undefined ? { repo: args.repo } : {}),
+			deferredPluginIds: deferredAtStage(stage),
+		}),
+		stage,
+	);
+
+	if (args.analyze === true) {
+		return ok({
+			preset: plan.preset,
+			stage,
+			config: plan.config,
+			rationale: plan.rationale,
+			assessment,
+			wrote: false,
+			created: [],
+			skipped: [],
+			residual: plan.residual,
+		});
+	}
+
+	if (args.write !== true) {
+		return ok({
+			preset: plan.preset,
+			stage,
+			config: plan.config,
+			rationale: plan.rationale,
+			assessment,
+			wrote: false,
+			created: [],
+			skipped: [],
+			residual: plan.residual,
+		});
+	}
+
+	// 1. Config — merge with any existing project config unless
+	// an intentional replacement was requested.
+	let config = plan.config;
+	const existingText = await deps.reader.readFile(CONFIG_FILENAME);
+	const existing = parseExistingConfig(existingText);
+	if (existing !== undefined && args.overwrite !== true) {
+		config = mergeDerivedConfig(plan.config, existing);
+	} else if (existingText !== undefined && existing === undefined) {
+		return {
+			ok: false,
+			error: `${CONFIG_FILENAME} is not valid JSON`,
+			remedy: 'Fix the project configuration or pass overwrite:true to intentionally replace it.',
+		};
+	}
+	const configAbs = deps.workspace.resolve(CONFIG_FILENAME);
+	await withFileMutex(configAbs, () =>
+		writeFileAtomic(configAbs, `${JSON.stringify(config, null, '\t')}\n`),
+	);
+
+	// 2. Persist the derived project profile so later tools can reuse
+	// the current analysis instead of rediscovering the workspace.
+	const profileWrite = await persistProjectProfile({
+		workspace: deps.workspace,
+		analysis,
+		assessment,
+		discoveredWorkspaces,
+	});
+
+	// 3. Generated scaffold + plugin-contributed adoption files — skip any
+	// file the project already owns (project instructions win).
+	const created: string[] = [];
+	const skipped: string[] = [];
+	if (profileWrite.created) {
+		created.push(PROJECT_PROFILE_FILENAME);
+	}
+	for (const file of plan.files) {
+		if (await deps.reader.exists(file.path)) {
+			skipped.push(file.path);
+			continue;
+		}
+		await writeFileAtomic(deps.workspace.resolve(file.path), file.content);
+		created.push(file.path);
+	}
+
+	return ok({
+		preset: plan.preset,
+		stage,
+		config,
+		rationale: plan.rationale,
+		assessment,
+		wrote: true,
+		created,
+		skipped,
+		residual: plan.residual,
+	});
+};
+
 export const buildAdoptProjectToolRegistration = (
 	deps: IAdoptProjectToolDeps,
 ): IToolRegistration => ({
@@ -398,160 +542,11 @@ export const buildAdoptProjectToolRegistration = (
 				}),
 				outputSchema: ADOPT_PROJECT_OUTPUT_SCHEMA,
 			},
-			async (args: {
-				analyze?: boolean | undefined;
-				write?: boolean | undefined;
-				overwrite?: boolean | undefined;
-				projectName?: string | undefined;
-				namespacePrefix?: string | undefined;
-				mcpServerName?: string | undefined;
-				defaultModel?: string | undefined;
-				repo?: string | undefined;
-				stage?: (typeof ADOPTION_STAGES)[number] | undefined;
-			}) => {
-				const stage = isAdoptionStage(args.stage)
-					? args.stage
-					: DEFAULT_ADOPTION_STAGE;
-				const analysis = await analyzeProject(deps.reader);
-				const topLevelDirs = await deps.reader.listDir('');
-				const namespacePrefix =
-					args.namespacePrefix ?? deps.namespacePrefix;
-				const mcpServerName = await resolveAdoptionMcpServerName(
-					deps,
-					args.mcpServerName,
-				);
-				const discoveredWorkspaces =
-					analysis.projectType === 'monorepo'
-						? await discoverProjectProfileWorkspaces(
-								deps,
-								mcpServerName,
-							)
-						: [];
-				const assessment = buildAdoptionAssessment(
-					analysis,
-					topLevelDirs,
-					{
-						projectName:
-							args.projectName ?? analysis.name ?? 'Workspace',
-						namespacePrefix,
-						mcpServerName,
-						docsDir: deps.corePaths.docsDir,
-						...(args.defaultModel !== undefined
-							? { defaultModel: args.defaultModel }
-							: {}),
-						...(args.repo !== undefined ? { repo: args.repo } : {}),
-					},
-				);
-				const plan = applyStageFilter(
-					buildAdoptProjectPlan({
-						analysis,
-						topLevelDirs,
-						projectName:
-							args.projectName ?? analysis.name ?? 'Workspace',
-						namespacePrefix,
-						mcpServerName,
-						docsDir: deps.corePaths.docsDir,
-						...(args.defaultModel !== undefined
-							? { defaultModel: args.defaultModel }
-							: {}),
-						...(args.repo !== undefined ? { repo: args.repo } : {}),
-						deferredPluginIds: deferredAtStage(stage),
-					}),
-					stage,
-				);
-
-				if (args.analyze === true) {
-					return toolOk({
-						preset: plan.preset,
-						stage,
-						config: plan.config,
-						rationale: plan.rationale,
-						assessment,
-						wrote: false,
-						created: [],
-						skipped: [],
-						residual: plan.residual,
-					});
-				}
-
-				if (args.write !== true) {
-					return toolOk({
-						preset: plan.preset,
-						stage,
-						config: plan.config,
-						rationale: plan.rationale,
-						assessment,
-						wrote: false,
-						created: [],
-						skipped: [],
-						residual: plan.residual,
-					});
-				}
-
-				// 1. Config — merge with any existing project config unless
-				// an intentional replacement was requested.
-				let config = plan.config;
-				const existingText =
-					await deps.reader.readFile(CONFIG_FILENAME);
-				const existing = parseExistingConfig(existingText);
-				if (existing !== undefined && args.overwrite !== true) {
-					config = mergeDerivedConfig(plan.config, existing);
-				} else if (
-					existingText !== undefined &&
-					existing === undefined
-				) {
-					return toolError(
-						`${CONFIG_FILENAME} is not valid JSON`,
-						'Fix the project configuration or pass overwrite:true to intentionally replace it.',
-					);
-				}
-				const configAbs = deps.workspace.resolve(CONFIG_FILENAME);
-				await withFileMutex(configAbs, () =>
-					writeFileAtomic(
-						configAbs,
-						`${JSON.stringify(config, null, '\t')}\n`,
-					),
-				);
-
-				// 2. Persist the derived project profile so later tools can reuse
-				// the current analysis instead of rediscovering the workspace.
-				const profileWrite = await persistProjectProfile({
-					workspace: deps.workspace,
-					analysis,
-					assessment,
-					discoveredWorkspaces,
-				});
-
-				// 3. Generated scaffold + plugin-contributed adoption files — skip any
-				// file the project already owns (project instructions win).
-				const created: string[] = [];
-				const skipped: string[] = [];
-				if (profileWrite.created) {
-					created.push(PROJECT_PROFILE_FILENAME);
-				}
-				for (const file of plan.files) {
-					if (await deps.reader.exists(file.path)) {
-						skipped.push(file.path);
-						continue;
-					}
-					await writeFileAtomic(
-						deps.workspace.resolve(file.path),
-						file.content,
-					);
-					created.push(file.path);
-				}
-
-				return toolOk({
-					preset: plan.preset,
-					stage,
-					config,
-					rationale: plan.rationale,
-					assessment,
-					wrote: true,
-					created,
-					skipped,
-					residual: plan.residual,
-				});
+			async (args: IAdoptProjectArgs) => {
+				const outcome = await runAdoptProject(deps, args);
+				return outcome.ok
+					? toolOk({ ...outcome.data })
+					: toolError(outcome.error, outcome.remedy);
 			},
 		);
 	},

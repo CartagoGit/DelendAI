@@ -5,6 +5,10 @@
 		"$schema": {
 			"type": "string"
 		},
+		"namespacePrefix": {
+			"type": "string",
+			"pattern": "^[a-z][a-z0-9_]*$"
+		},
 		"cacheDir": {
 			"type": "string"
 		},
