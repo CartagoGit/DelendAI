@@ -33,6 +33,9 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 import type { IProviderModelReading } from '../contracts/interfaces/provider-model-reading.interface';
+import type { IHostChatModel } from '../contracts/interfaces/host-chat-model.interface';
+import { hostChatModel } from './host-chat-model.helper';
+import { rememberSeenModel } from './model-identity.helper';
 import {
 	PROVIDER_MODEL_BRIDGE_FILE,
 	PROVIDER_MODEL_BRIDGE_VARIABLE,
@@ -64,7 +67,7 @@ interface IProviderModelEntry {
  * What the bridge reads: the model, or why it names none. The reason is
  * what an identity refusal tells the person, instead of silence.
  */
-export const providerModelReading = (
+const bridgeReading = (
 	input: {
 		readonly workspace?: string | undefined;
 		readonly now?: Date | undefined;
@@ -106,6 +109,48 @@ export const providerModelReading = (
 			? { provider: freshest.entry.provider }
 			: {}),
 	};
+};
+
+/**
+ * What the bridge reads, or, when no provider publishes, what the editor
+ * itself recorded serving this workspace's last chat request. The editor
+ * needs no cooperation from the extension that provides the model, so a
+ * provider that never writes the bridge is still named.
+ */
+export const providerModelReading = (
+	input: {
+		readonly workspace?: string | undefined;
+		readonly now?: Date | undefined;
+		readonly env?: NodeJS.ProcessEnv | undefined;
+	} = {},
+): IProviderModelReading => {
+	const published = bridgeReading(input);
+	if ('model' in published || input.workspace === undefined) return published;
+	const seen = observedHostModel(input.workspace, input.now, input.env);
+	if (seen === undefined) return published;
+	rememberSeenModel(seen.model);
+	return { model: seen.model, provider: `host:${seen.host}` };
+};
+
+/** One host reading per workspace for a few seconds: the editor's files are slow to walk. */
+const HOST_READING_TTL_MS = 10_000;
+const hostReadings = new Map<
+	string,
+	{ readonly at: number; readonly value: IHostChatModel | undefined }
+>();
+const observedHostModel = (
+	workspace: string,
+	now: Date | undefined,
+	env: NodeJS.ProcessEnv | undefined,
+): IHostChatModel | undefined => {
+	if (now !== undefined || env !== undefined)
+		return hostChatModel({ workspace, now, env });
+	const cached = hostReadings.get(workspace);
+	if (cached !== undefined && Date.now() - cached.at < HOST_READING_TTL_MS)
+		return cached.value;
+	const value = hostChatModel({ workspace });
+	hostReadings.set(workspace, { at: Date.now(), value });
+	return value;
 };
 
 /**
