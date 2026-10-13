@@ -17,14 +17,17 @@ import {
 	openWork,
 } from './work-unit-shared.service';
 import { reapHusks } from './worktree-husks.service';
+import { reapStrayRefs } from './stray-refs-reap.service';
 
 /**
  * `work reap [--apply]` — remove the worktree and local branch of every
  * delivered unit whose worktree holds no edit of its own, and every
  * directory beside the units that is no unit, keeping on the forge what
  * such a directory held that no commit has; and drop from the forge the
- * retired work the integration branch came to hold and the slice
- * reservations whose unit is gone. Reports only, without `--apply`.
+ * retired work the integration branch came to hold, the slice
+ * reservations and review claims whose unit is gone, and the refs
+ * outside every namespace that carry no work. Reports only, without
+ * `--apply`.
  */
 export const reaped = async (
 	args: readonly string[],
@@ -87,8 +90,14 @@ export const reaped = async (
 		apply: args.includes('--apply'),
 		now: Math.floor(Date.now() / 1000),
 	});
+	// A ref outside every namespace a clone holds, carrying no work.
+	const strays = reapStrayRefs({
+		root,
+		policy: opened.policy,
+		apply: args.includes('--apply'),
+	});
 	return {
 		code: EXIT_CODE.OK,
-		data: { units, advanced, husks, retired, reservations },
+		data: { units, advanced, husks, retired, reservations, strays },
 	};
 };

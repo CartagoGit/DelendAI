@@ -1,6 +1,7 @@
 /**
- * slice-reservation-reap.service.ts — a slice reservation whose unit is
- * gone from the forge is released, not left for the next entrant.
+ * slice-reservation-reap.service.ts — a slice reservation or a review
+ * claim whose unit is gone from the forge is released, not left for the
+ * next entrant.
  *
  * A reservation is released when its unit is retired. A unit that lands
  * is not retired: its branches go, and its reservation stayed. It kept
@@ -37,12 +38,17 @@ export const reapSpentReservations = (input: {
 	readonly now: number;
 }): readonly ISpentReservation[] => {
 	const { root, policy, remote } = input;
-	const prefix = `${namespacedRef(policy.branches.namespacePrefix, 'claims', 'slice')}/`;
+	// Slice reservations and review claims are one kind of thing: a ref
+	// naming the unit that holds them. A review claim whose unit died used
+	// to stay on the forge for good — f00538's outlived the proposal it
+	// claimed — because only slice reservations were looked at.
+	const claimsRoot = `${namespacedRef(policy.branches.namespacePrefix, 'claims')}/`;
+	const prefixes = [`${claimsRoot}slice/`, `${claimsRoot}review/`];
 	const listed = readGit(root, [
 		'ls-remote',
 		'--',
 		remote,
-		`${prefix}*`,
+		...prefixes.map((prefix) => `${prefix}*`),
 		'refs/heads/*',
 	]);
 	if (listed === undefined) return [];
@@ -53,7 +59,9 @@ export const reapSpentReservations = (input: {
 			const [commit = '', ref = ''] = line.split('\t');
 			return { commit, ref };
 		});
-	const claims = refs.filter((each) => each.ref.startsWith(prefix));
+	const claims = refs.filter((each) =>
+		prefixes.some((prefix) => each.ref.startsWith(prefix)),
+	);
 	if (claims.length === 0) return [];
 	const branches = new Set(
 		refs
@@ -110,15 +118,35 @@ export const reapSpentReservations = (input: {
 		// Not readable: nothing says its unit is gone.
 		if (shown === undefined) return [];
 		const [stamp = '0', ...body] = shown.split('\n');
-		const unit =
-			/^Unit: (?<unit>.+)$/mu.exec(body.join('\n'))?.groups?.unit ?? '';
+		// A slice reservation names the unit; a review claim names its
+		// branch. Both read as the unit's name.
+		const named = (
+			/^Unit: (?<unit>.+)$/mu.exec(body.join('\n'))?.groups?.unit ?? ''
+		)
+			.trim()
+			.replace(/^refs\/heads\//u, '');
+		const unit = [work, publication].reduce(
+			(name, prefix) =>
+				prefix.length > 0 && name.startsWith(prefix)
+					? name.slice(prefix.length)
+					: name,
+			named,
+		);
 		const held =
 			branches.has(`${work}${unit}`) ||
 			branches.has(`${publication}${unit}`) ||
 			(input.now - Number(stamp) <= grace && !landed(unit));
 		return held
 			? []
-			: [{ slice: claim.ref.slice(prefix.length), ref: claim.ref, unit }];
+			: [
+					{
+						slice: claim.ref.startsWith(prefixes[0] ?? '')
+							? claim.ref.slice((prefixes[0] ?? '').length)
+							: claim.ref.slice(claimsRoot.length),
+						ref: claim.ref,
+						unit,
+					},
+				];
 	});
 	if (spent.length === 0) return [];
 	if (!input.apply) {
