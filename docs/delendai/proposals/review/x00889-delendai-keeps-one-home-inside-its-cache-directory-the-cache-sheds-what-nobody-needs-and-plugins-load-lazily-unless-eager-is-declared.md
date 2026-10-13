@@ -2,14 +2,14 @@
 id: x00889
 title: "delendai keeps one home inside its cache directory, the cache sheds what nobody needs, and plugins load lazily unless eager is declared"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 1e074144-e4b7-4504-9497-f93464a57a81
-last-correlation-id: 1e074144-e4b7-4504-9497-f93464a57a81
-last-transition-from: ready
-last-transition-at: 2026-10-13T15:56:05.006Z
+last-transition-id: bcad8670-aa1c-4090-81e7-59fa5baa358b
+last-correlation-id: bcad8670-aa1c-4090-81e7-59fa5baa358b
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T15:56:28.609Z
 ---
 
 # x00889 — delendai keeps one home inside its cache directory, the cache sheds what nobody needs, and plugins load lazily unless eager is declared
@@ -39,7 +39,7 @@ What the code does today:
 
 ### S1 — An unknown plugin is discovered, not a reason to load everything
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/cli/assemble-plugins.ts`
   - `packages/core/src/lib/plugins/managed-lazy-local-catalog.service.ts`
@@ -50,10 +50,13 @@ What the code does today:
 - acceptance:
   - A plugin the generated catalog lacks is imported and registered once, in isolation, to learn what it offers. Its runtime is disposed and its entry recorded in the project cache; the start then serves every plugin lazily. No start falls back to eager loading unless `managedSurface.loading: "eager"` is declared.
   - A recorded plugin is not imported at start until its file changes. Lazily activated plugins are released by the idle eviction as any other.
+- shipped-in: `a22f77f06e75`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The cache sheds what nobody needs, by default
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/src/lib/cache/core-eviction-rules.helper.ts`
@@ -65,10 +68,13 @@ What the code does today:
 - acceptance:
   - The start-up sweep applies the eviction rules. A dry run is what a project declares, not the default.
   - The core registers rules for what it owns at the cache root: rotated logs (`*.log.N`) older than 7 days and the loose files one-off proposal runs leave there (`f00282-type-gate.log`) older than 30 days. Each removal is reported once.
+- shipped-in: `62f28f4907b4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Everything delendai keeps is inside the cache directory
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/delendai-records.constant.ts`
   - `packages/core/src/lib/shared/delendai-records.ts`
@@ -104,10 +110,13 @@ What the code does today:
   - The journal, the applied-configuration record, the cache-layout record, the project profile, migration backups and locks are written under the configured cache directory. A project that has `.delendai/` has it moved there once, and the folder removed when empty.
   - A change of `cacheDir` is still detected: the last cache directory is remembered where no cache move can lose it (the clone's git directory), not in a folder of the project tree.
   - The relocation runs at every start before the journal is read (the owner's rule: every layout change ships its migration): each file of `.delendai/` is moved to `<cacheDir>/records/`, a file already there wins, and `.delendai/` is removed once empty; a cache-dir move whose destination holds only `records/` still completes.
+- shipped-in: `62f28f4907b4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A kept unit does not keep its dependencies while it waits
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/idle-unit-dependencies.service.ts`
   - `packages/core/src/lib/work-units/work-unit-reap.service.ts`
@@ -117,6 +126,9 @@ What the code does today:
 - **Gate**: type
 - acceptance:
   - `work reap --apply` removes `node_modules` from every kept unit whose owner is not live (idle or abandoned past the lease window) and reports each under `dependencies`; without `--apply` it only reports. Entering an existing unit installs its dependencies again (x00888 S6), so its work is untouched.
+- shipped-in: `0bffe320eaa4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
