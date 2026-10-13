@@ -24,7 +24,7 @@ import { createWorkspacePathProvider } from '../workspace/create-workspace-path-
 import { findDelendaiServerName } from '../scaffold/detect-existing-install';
 import { runAdoptProject } from './adopt-project.tool';
 
-const DOCS_README = `# delendai\n\nThe documents delendai keeps for this project (proposals, skills, plans) live under this folder. Its location is \`docsDir\` in \`${DEFAULT_CONFIG_FILENAME}\`.\n`;
+const DOCS_README = `# delendai\n\nThe documents delendai and its plugins keep for this project live under this folder. Its location is \`docsDir\` in \`${DEFAULT_CONFIG_FILENAME}\`.\n`;
 
 const PROJECT_MCP_CONFIGS = ['.vscode/mcp.json', '.mcp.json'] as const;
 
