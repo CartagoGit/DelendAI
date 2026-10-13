@@ -2,10 +2,14 @@
 id: x00885
 title: "The first boot sets a project up, a changed configuration brings it in line, and any server name works"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-12
+last-transition-id: 67307e5a-ad51-4aa9-9bd0-0b714509e333
+last-correlation-id: 67307e5a-ad51-4aa9-9bd0-0b714509e333
+last-transition-from: ready
+last-transition-at: 2026-10-13T01:25:06.619Z
 ---
 
 # x00885 — The first boot sets a project up, a changed configuration brings it in line, and any server name works
