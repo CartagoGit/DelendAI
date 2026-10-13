@@ -65,6 +65,8 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - `work reap` releases a review claim whose unit is gone, as it does a slice claim.
   - `work reap` reports `strays`: a ref under the namespace prefix but outside the product's namespaces is removed only when every commit it adds is empty or a snapshot of a tree already on the integration branch; any other is listed as kept. Without `--apply` nothing is removed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The server log says each change once, and a restart in the past tense
 
