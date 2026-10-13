@@ -7,7 +7,13 @@
  * decision reads both: the proposal's file and what is already published.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -360,6 +366,36 @@ describe('what the decision reads', () => {
 		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(false);
 		expect(proposalStillInProgress(root, 'x00001', 'HEAD~1')).toBe(true);
 		expect(proposalStillInProgress(root, 'x09999', 'HEAD')).toBe(false);
+	});
+
+	it('is not in progress once every slice is handed in, though the file stays in in-progress', () => {
+		const { root } = setup(2);
+		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
+			recursive: true,
+		});
+		const moved = 'docs/delendai/proposals/in-progress/x00001-a-change.md';
+		git(
+			root,
+			'mv',
+			'docs/delendai/proposals/ready/fixes/x00001-a-change.md',
+			moved,
+		);
+		git(root, 'commit', '-q', '-m', 'start');
+		const handIn = (slice: string) => {
+			const text = readFileSync(join(root, moved), 'utf8');
+			writeFileSync(
+				join(root, moved),
+				text.replace(
+					new RegExp(`(### ${slice}[^\\n]*\\n)`, 'u'),
+					'$1- review-state: in_review\n',
+				),
+			);
+			git(root, 'commit', '-q', '-am', `submit ${slice}`);
+		};
+		handIn('S1');
+		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(true);
+		handIn('S2');
+		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(false);
 	});
 
 	it('counts added and removed lines against the base', () => {
