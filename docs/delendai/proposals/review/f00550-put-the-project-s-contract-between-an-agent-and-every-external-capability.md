@@ -2,7 +2,7 @@
 id: f00550
 title: "Put the project's contract between an agent and every external capability"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,10 +11,10 @@ tags:
     - capabilities
     - design
     - verification
-last-transition-id: 5842b254-8c49-44de-baa5-04c71c4b01a1
-last-correlation-id: 5842b254-8c49-44de-baa5-04c71c4b01a1
-last-transition-from: ready
-last-transition-at: 2026-10-13T04:29:15.573Z
+last-transition-id: 37a13aba-2057-40fd-8b9a-6e7b95f0ac58
+last-correlation-id: 37a13aba-2057-40fd-8b9a-6e7b95f0ac58
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T04:29:38.947Z
 ---
 
 # f00550 — Put the project's contract between an agent and every external capability
@@ -79,6 +79,9 @@ the machinery the dry-run protocol already keys off rather than a new
 one invented here.
 
 - **Gate**: `npx vitest run --project external-mcps`
+- shipped-in: `43ae7c9678ab`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The effective project contract, as one small payload
 
@@ -99,6 +102,9 @@ A host that loads none of them still gets a valid, smaller contract,
 because the gateway must not hard-depend on three unshipped plugins.
 
 - **Gate**: `npx vitest run --project external-mcps`
+- shipped-in: `43ae7c9678ab`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Normalise the answer, and keep a handle to the raw one
 
@@ -114,6 +120,9 @@ needs it. This is the same summary/evidence split f00547 uses, for
 the same token reason.
 
 - **Gate**: `npx vitest run --project external-mcps`
+- shipped-in: `43ae7c9678ab`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Prefer what already exists over what was just described
 
@@ -128,6 +137,9 @@ their similarity, so "add a third button" is a decision someone makes
 rather than a default.
 
 - **Gate**: `npx vitest run --project external-mcps`
+- shipped-in: `43ae7c9678ab`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Verify the result against the project, not against the source
 
@@ -146,6 +158,9 @@ and framework-version legality. A conflict between the external source
 and the project resolves to the project, with the conflict named.
 
 - **Gate**: `npx vitest run --project external-mcps`
+- shipped-in: `43ae7c9678ab`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
