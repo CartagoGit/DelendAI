@@ -31,7 +31,7 @@ cost-tier targets are `{plan:4, review:3, implement:2, explore:1}` (CRITICAL N10
 
 | Field | Default | Meaning |
 |---|---|---|
-| `providers` | `[]` | The provider roster (pragmatic S4 source; canonical home is the root-level `providers` block that S5's bootstrap writes). Empty → `advise_routing` returns a `handoff` pointing at bootstrap. |
+| `providers` | unset | This plugin's own roster. When it is set, the runner routes over it, even when it is empty (`[]` turns routing off). When it is unset, the runner routes over the root-level `providers` block, which the core validates and passes to every plugin with invalid entries left out and named at start. With neither, `advise_routing` returns a `handoff` pointer. |
 | `sessionStickinessTtlSeconds` | `300` | How long a `sessionId` keeps its routing decision. |
 | `defaultCostPreference` | `balanced` | `minimize` \| `balanced` \| `maximize` when a caller omits it. |
 | `dependencies` | – | Passthrough for injected cross-plugin deps (e.g. the shared loop detector). |
