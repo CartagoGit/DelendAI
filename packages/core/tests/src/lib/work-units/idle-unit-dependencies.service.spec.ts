@@ -9,6 +9,8 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { releaseIdleDependencies } from '@delendai/core/lib/work-units/idle-unit-dependencies.service';
+import { reenteredUnit } from '@delendai/core/lib/work-units/kept-unit-hydration.service';
+import { enteredDependencies } from '@delendai/core/lib/work-units/unit-dependencies.service';
 
 describe('releaseIdleDependencies', () => {
 	const roots: string[] = [];
@@ -48,5 +50,16 @@ describe('releaseIdleDependencies', () => {
 		]);
 		expect(existsSync(join(idle, 'node_modules'))).toBe(false);
 		expect(existsSync(join(live, 'node_modules'))).toBe(true);
+	});
+
+	it('gives a unit entered again its dependencies, and a unit with no worktree nothing', async () => {
+		const bare = worktree(false);
+		expect(await enteredDependencies(undefined)).toEqual({});
+		expect((await enteredDependencies(bare)).dependencies?.status).toBe(
+			'skipped',
+		);
+		expect(
+			await reenteredUnit(bare, undefined, 'wip/x', 'develop'),
+		).toEqual({});
 	});
 });

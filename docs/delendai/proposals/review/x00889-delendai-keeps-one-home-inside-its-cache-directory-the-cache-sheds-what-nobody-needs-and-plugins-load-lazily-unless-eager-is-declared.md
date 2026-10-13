@@ -121,6 +121,8 @@ What the code does today:
   - `packages/core/src/lib/work-units/idle-unit-dependencies.service.ts`
   - `packages/core/src/lib/work-units/work-unit-reap.service.ts`
   - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+  - `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`
+  - `packages/core/src/lib/work-units/unit-dependencies.service.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-dependencies.interface.ts`
   - `packages/core/tests/src/lib/work-units/idle-unit-dependencies.service.spec.ts`
 - **Gate**: type
