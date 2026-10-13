@@ -2,12 +2,16 @@
 id: f00551
 title: "DelendAI Batuta — orquestación multicuenta mediante el plugin y MCP existentes"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: batuta
 date: 2026-09-20
 shipped-in:
   - "f56c411a0e78"
+last-transition-id: 74b0902b-61cf-4bcd-9ed1-8b636ada639d
+last-correlation-id: 74b0902b-61cf-4bcd-9ed1-8b636ada639d
+last-transition-from: ready
+last-transition-at: 2026-10-13T04:51:45.784Z
 ---
 
 # f00551 — DelendAI Batuta — orquestación multicuenta mediante el plugin y MCP existentes
