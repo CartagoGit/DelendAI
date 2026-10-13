@@ -112,6 +112,8 @@ The server log pasted with the same request showed two more departures: the chec
 - **Gate**: type
 - acceptance:
   - Submitting a slice that reads `pending` or `in-progress` sets its Status line to `review`. Handing the proposal to review aligns every slice already in review the same way, so a proposal in `review/` never carries a slice the completeness gate counts as not started.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
