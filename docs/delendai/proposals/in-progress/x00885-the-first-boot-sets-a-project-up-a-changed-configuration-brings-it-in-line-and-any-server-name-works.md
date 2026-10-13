@@ -87,6 +87,8 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - **Gate**: type
 - acceptance:
   - An end-to-end spec boots the real server (as a host starts it, over stdio) in an empty project, in a project set up with one configuration and started with another, and under a server name with upper case letters; each case states what it finds today, before any fix.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A first start creates what is missing, with the defaults
 
