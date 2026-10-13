@@ -73,6 +73,7 @@ The server log pasted with the same request showed two more departures: the chec
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
+  - `packages/core/src/lib/wip-engine/work-checkout-reports.ts`
   - `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
   - `tools/scripts/host/host-supervisor-process.ts`
   - `tools/scripts/host/host-supervisor-process.spec.ts`

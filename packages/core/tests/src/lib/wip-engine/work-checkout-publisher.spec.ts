@@ -27,13 +27,13 @@ import {
 
 import type { IWorkCheckoutPublication } from '../../../../src/lib/wip-engine/work-checkout-publisher.interface';
 import {
-	changedReports,
 	publishWorkCheckouts,
 	startWorkCheckoutPublisher,
 	workCheckoutCadenceMinutes,
 	workCheckoutRefs,
 } from '../../../../src/lib/wip-engine/work-checkout-publisher';
 import { planRetirement } from '../../../../src/lib/work-units/work-retire.service';
+import { changedReports } from '../../../../src/lib/wip-engine/work-checkout-reports';
 
 const execFileAsync = promisify(execFile);
 const cleanups: Array<() => Promise<void>> = [];
