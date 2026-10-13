@@ -62,12 +62,14 @@ What the code does today, measured on this clone on 2026-10-13:
 
 - **Status**: pending
 - **Files**:
-  - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
-  - `packages/core/src/lib/development-policy/profiles.ts`
+  - `packages/core/src/lib/work-units/proposal-branch.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-generation.service.ts`
+  - `packages/core/tests/src/lib/work-units/proposal-branch.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - Entering any kind or slice of a proposal an agent already has a branch for continues on that branch: creating the proposal, implementing it and fixing it are one branch, `wip/<agent>/<proposal>/<topic>`.
-  - The pull requests cut from it keep the kind and slice in their own names, so the forge still shows what each one carries.
+  - Entering a proposal to create or implement it, for any slice, continues on the branch the agent already has for that proposal: creating it, implementing it and fixing it are one branch. A review or an audit stays its own unit.
+  - Publishing names the unit by any of those kinds and slices and finds that one branch, so a pull request is always cut from it.
+  - Branch names keep their current shape, so no existing branch is renamed and no ref migration is needed.
 
 ### S4 — A start leaves every unit in step with the forge
 

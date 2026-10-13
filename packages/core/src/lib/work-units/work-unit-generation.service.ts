@@ -3,6 +3,7 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 import { REVIEW_BATCH_ID } from '../development-policy/profiles.constant';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
 import { scalarArg } from './command-args.helper';
+import { liveProposalBranch } from './proposal-branch.service';
 import { publicationRefFromWorkRef } from './work-publish.service';
 import { worktreeSession } from './worktree-agent.service';
 
@@ -329,6 +330,14 @@ export const existingWorkRef = (
 	const own = named.filter((each) => sessionHolding(root, each) === session);
 	if (session !== undefined && own.length === 1) return own[0] ?? ref;
 	if (exists(ref)) return ref;
+	// Creating and implementing a proposal are one branch: the unit named
+	// for one kind may be the branch entered for the other.
+	const continued = liveProposalBranch(
+		policy.branches.workRefTemplate,
+		ref,
+		readGit(root, ['worktree', 'list', '--porcelain']) ?? '',
+	)?.ref;
+	if (continued !== undefined) return continued;
 	if (named.length === 1) return named[0] ?? ref;
 	if (scalarArg(args, 'kind') !== undefined) return ref;
 	const template = policy.branches.workRefTemplate;
