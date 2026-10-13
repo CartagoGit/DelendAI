@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname } from 'node:path';
 
 import type { ILifecycleScope, ILifecycleStateStore } from '@delendai/state';
 

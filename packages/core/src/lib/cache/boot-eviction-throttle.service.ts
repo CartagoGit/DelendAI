@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname } from 'node:path';
 
 import { CACHE_EVICTION_STAMP_PATH } from '../contracts/constants/cache-layout.constant';
 import type {

@@ -44,7 +44,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	DEFAULT_MIGRATIONS,
 	DEFAULT_MIGRATION_IDS,
-	MIGRATION_JOURNAL_PATH,
 	createFileSystemJournal,
 } from '@delendai/core/lib/workspace-migration/migration-registry';
 import { DELENDAI_TO_DELENDAI_V1_ID } from '@delendai/core/lib/workspace-migration/migrations/delendai-to-delendai-v1';

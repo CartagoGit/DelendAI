@@ -12,7 +12,6 @@
  * `.delendai/`, which a work unit's worktree does not carry.
  */
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 import { sharedCheckout } from '../shared/shared-checkout';
 import { MIGRATION_JOURNAL_FILE } from '../workspace-migration/migration-journal-path.constant';
