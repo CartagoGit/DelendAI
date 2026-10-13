@@ -86,7 +86,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S3 — One wip branch per proposal
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/proposal-branch.service.ts`
   - `packages/core/src/lib/work-units/work-unit-generation.service.ts`
@@ -96,6 +96,8 @@ What the code does today, measured on this clone on 2026-10-13:
   - Entering a proposal to create or implement it, for any slice, continues on the branch the agent already has for that proposal: creating it, implementing it and fixing it are one branch. A review or an audit stays its own unit.
   - Publishing names the unit by any of those kinds and slices and finds that one branch, so a pull request is always cut from it.
   - Branch names keep their current shape, so no existing branch is renamed and no ref migration is needed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A start leaves every unit in step with the forge
 
