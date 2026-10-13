@@ -44,7 +44,7 @@ import { lstat, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
-import { namespacePrefixTransition } from './namespace-prefix-transition';
+import { namespacePrefixTransition } from './namespace-prefix-transition.service';
 import { APPLIED_CONFIG_PATH } from '../contracts/constants/config-transition.constant';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type {

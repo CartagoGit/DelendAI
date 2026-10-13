@@ -1,5 +1,5 @@
 /**
- * namespace-prefix-transition.ts — `namespacePrefix` changed: the agents
+ * namespace-prefix-transition.service.ts — `namespacePrefix` changed: the agents
  * delendai wrote follow it.
  *
  * The prefix names every tool (`<prefix>_overview`) and the agents `init`

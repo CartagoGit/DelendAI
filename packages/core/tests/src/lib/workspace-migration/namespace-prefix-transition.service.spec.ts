@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IAppliedConfigSnapshot } from '../../../../src/lib/contracts/interfaces/config-transition.interface';
-import { namespacePrefixTransition } from '../../../../src/lib/workspace-migration/namespace-prefix-transition';
+import { namespacePrefixTransition } from '../../../../src/lib/workspace-migration/namespace-prefix-transition.service';
 
 const snapshot = (namespacePrefix?: string): IAppliedConfigSnapshot => ({
 	version: 1,

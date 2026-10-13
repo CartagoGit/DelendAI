@@ -112,12 +112,12 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 - **Status**: pending
 - **Files**:
-  - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.ts`
+  - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.service.ts`
   - `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
   - `packages/core/src/lib/contracts/interfaces/config-transition.interface.ts`
   - `packages/core/src/lib/plugins/config-file-schema.ts`
   - `packages/core/schema/delendai.config.schema.json`
-  - `packages/core/tests/src/lib/workspace-migration/namespace-prefix-transition.spec.ts`
+  - `packages/core/tests/src/lib/workspace-migration/namespace-prefix-transition.service.spec.ts`
   - `packages/core/tests/src/lib/workspace-migration/config-transitions.service.spec.ts`
 - **Gate**: type
 - acceptance:
