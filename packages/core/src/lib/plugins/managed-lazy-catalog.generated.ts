@@ -979,6 +979,29 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			},
 		),
 		tools(
+			'roadmap',
+			'@delendai/roadmap',
+			[
+				'roadmap_show',
+				'roadmap_sync',
+				'roadmap_readiness',
+				'roadmap_delta',
+				'roadmap_plan_init',
+				'roadmap_plan_close',
+				'roadmap_promotion',
+			],
+			[],
+			[],
+			[],
+			[],
+			[],
+			{
+				summary:
+					'Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply.',
+				tags: ['roadmap', 'release', 'timeline'],
+			},
+		),
+		tools(
 			'rules',
 			'@delendai/rules',
 			['get_rules', 'check_rules', 'apply_rules'],

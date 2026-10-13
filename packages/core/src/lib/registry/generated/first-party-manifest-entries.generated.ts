@@ -550,6 +550,16 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'roadmap',
+			package: '@delendai/roadmap',
+			summary: 'Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply.',
+			tags: ['roadmap', 'release', 'timeline'],
+			permissions: ['filesystem-read', 'filesystem-write'],
+			tokenBudgetBytes: 10250,
+			toolPermissions: { 'roadmap_show': ['filesystem-read'], 'roadmap_sync': ['filesystem-read'], 'roadmap_readiness': ['filesystem-read'], 'roadmap_delta': ['filesystem-read'], 'roadmap_promotion': ['filesystem-read'], 'roadmap_plan_init': ['filesystem-read', 'filesystem-write'], 'roadmap_plan_close': ['filesystem-read', 'filesystem-write'] },
+		},
+		{
+			origin: 'first-party',
 			id: 'rules',
 			package: '@delendai/rules',
 			summary: 'Lint/type rules engine (frameworks, dogmas, presets).',

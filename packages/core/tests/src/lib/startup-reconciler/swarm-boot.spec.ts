@@ -135,6 +135,48 @@ describe('a swarm does not degrade the boot (x00702)', () => {
 		);
 	});
 
+	it('does not call a checkpoint lost when the retired tip is a later commit of its unit', async () => {
+		// Retiring keeps the unit's LAST tip; a review pack refreshed after
+		// its checkpoint was recorded is retired with merges on top of it.
+		// The checkpoint is then an ancestor of the retired tip, not the
+		// tip, and this clone has never fetched that tip.
+		const ref = `${WORK}agent-a/review/batch-all-g5/review-pack`;
+		const laptop = origin.clone('laptop');
+		laptop.write('src/beta.ts', 'export const beta = 3;\n');
+		await laptop.checkpoint({
+			ref,
+			paths: ['src/beta.ts'],
+			message: 'wip',
+		});
+		laptop.push(`${ref}:${ref}`);
+		const office = origin.clone('office');
+		const database = createTestStateDatabase({
+			path: join(office.dir, '.delendai', 'state', 'work.sqlite'),
+		});
+		await boot(office, database);
+
+		laptop.write('src/beta.ts', 'export const beta = 4;\n');
+		const later = await laptop.checkpoint({
+			ref,
+			paths: ['src/beta.ts'],
+			message: 'refreshed',
+		});
+		const retired = namespacedRef(
+			testPolicy().branches.namespacePrefix,
+			'retired',
+			'agent-a/review/batch-all-g5/review-pack',
+		);
+		laptop.push(`${later}:${retired}`, `:${ref}`);
+		const report = await boot(office, database);
+
+		expect(report.blockers.map((item) => item.code)).not.toContain(
+			'integration-evidence.ref-vanished',
+		);
+		expect(report.findings.map((item) => item.code)).toContain(
+			'integration-evidence.checkpoint-retired',
+		);
+	});
+
 	it('still asks about a checkpoint dropped before this clone ever saw it retired', async () => {
 		const ref = `${WORK}agent-a/implement/f1-s3-g1/never-seen`;
 		const laptop = origin.clone('laptop');

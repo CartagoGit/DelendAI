@@ -42,6 +42,14 @@
 			"decidedAt": "2026-10-06T22:58:35.791Z"
 		},
 		{
+			"taskId": "2e44e373a81c041d626c3d42dfa7b403",
+			"evidenceDigest": "15f974b8e58a7dc9a0a2b72266b11a3b",
+			"decision": "resolved-elsewhere",
+			"reason": "The checkpoint 48951acdb is an ancestor of refs/delendai/retired/gpt-5.4/review/batch-all-g5/review-pack (3b1f5db6b) on origin: the unit was retired with its tip kept. The reconciler compared retired tips by equality instead of ancestry; fixed in x00886.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-13T00:39:15.721Z"
+		},
+		{
 			"taskId": "33bbdd0d34ddcb854dafc519345805b9",
 			"evidenceDigest": "377c2df78082b7ef9628e68b36820973",
 			"decision": "resolved-elsewhere",

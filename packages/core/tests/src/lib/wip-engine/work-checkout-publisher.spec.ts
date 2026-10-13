@@ -27,13 +27,13 @@ import {
 
 import type { IWorkCheckoutPublication } from '../../../../src/lib/wip-engine/work-checkout-publisher.interface';
 import {
-	changedReports,
 	publishWorkCheckouts,
 	startWorkCheckoutPublisher,
 	workCheckoutCadenceMinutes,
 	workCheckoutRefs,
 } from '../../../../src/lib/wip-engine/work-checkout-publisher';
 import { planRetirement } from '../../../../src/lib/work-units/work-retire.service';
+import { changedReports } from '../../../../src/lib/wip-engine/work-checkout-reports';
 
 const execFileAsync = promisify(execFile);
 const cleanups: Array<() => Promise<void>> = [];
@@ -482,5 +482,24 @@ describe('changedReports', () => {
 		report([{ ref: 'r', outcome: 'published' }]);
 		report(idle);
 		expect(lines).toHaveLength(3);
+	});
+
+	it('does not say an idle unit again when another unit comes and goes', () => {
+		const lines: string[] = [];
+		const report = changedReports((line) => lines.push(line));
+		const idle = {
+			ref: 'r',
+			outcome: 'skipped',
+			reason: 'no commits of its own yet',
+		};
+		const other = { ref: 'o', outcome: 'published' };
+		report([idle]);
+		report([idle, other]);
+		report([idle]);
+		report([idle, other]);
+		expect(lines.map((line) => JSON.parse(line).moved)).toEqual([
+			[idle],
+			[other],
+		]);
 	});
 });

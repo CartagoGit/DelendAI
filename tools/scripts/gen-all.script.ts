@@ -183,6 +183,13 @@ export const STEPS: readonly IStep[] = [
 		description: 'Regenerate the capability matrix documentation.',
 	},
 	{
+		name: 'roadmap-projection',
+		cmd: ['bun', 'tools/scripts/gen/roadmap-projection.script.ts'],
+		checkCmd: ['bun', 'tools/scripts/lint/roadmap-drift.script.ts'],
+		description:
+			'Regenerate what the roadmap file projects to: the JSON the site reads and the timeline.',
+	},
+	{
 		name: 'token-budget-dashboard',
 		cmd: ['bun', 'tools/scripts/report/token-budget-dashboard.script.ts'],
 		description: 'Regenerate the token budget dashboard.',
