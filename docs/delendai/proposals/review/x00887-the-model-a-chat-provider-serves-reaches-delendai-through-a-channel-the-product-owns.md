@@ -98,6 +98,7 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 - **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-identity/model-identity.helper.ts`
+  - `packages/core/src/lib/work-identity/model-spelling.helper.ts`
   - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
   - `packages/core/tests/src/lib/work-identity/model-identity.helper.spec.ts`
   - `packages/core/src/lib/work-identity/identity-policy.helper.ts`

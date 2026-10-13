@@ -18,83 +18,15 @@ import {
 	SEEN_MODELS_FILE,
 	SEEN_MODELS_VARIABLE,
 } from '../contracts/constants/host-chat-model.constant';
-import type { IModelSpelling } from '../contracts/interfaces/host-chat-model.interface';
 
-const STAGE_WORDS = new Set([
-	'preview',
-	'beta',
-	'alpha',
-	'exp',
-	'experimental',
-	'rc',
-]);
+import { normalizedModelId, withoutVendor } from './model-spelling.helper';
 
-const normalized = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replaceAll(/[^a-z0-9._-]+/gu, '-')
-		.replaceAll(/-{2,}/gu, '-')
-		.replace(/^[-._]+|[-._]+$/gu, '');
-
-/** A model id without the `<vendor>/` the editor prefixes it with. */
-export const withoutVendor = (value: string): string =>
-	value.slice(value.lastIndexOf('/') + 1);
-
-/** How a spelling reads: its brand, its version digits, and its other words. */
-export const spellingOf = (id: string): IModelSpelling => {
-	const [brand = '', ...rest] = normalized(id).split('-');
-	const digits = rest
-		.filter((token) => /\d/u.test(token))
-		.map((token) => token.replaceAll(/\D/gu, ''))
-		.join('');
-	const words = rest.filter(
-		(token) => !/\d/u.test(token) && token.length > 0,
-	);
-	return { brand, digits, words };
-};
-
-/** `preview` when the model's own id says it is not released yet, else `stable`. */
-export const modelStage = (id: string): 'preview' | 'stable' =>
-	spellingOf(id).words.some((word) => STAGE_WORDS.has(word))
-		? 'preview'
-		: 'stable';
-
-/**
- * The canonical id of `raw`: a declared alias first, then the model id
- * itself when it is one the machine knows, then the one known model its
- * brand, digits and words fit. A spelling that fits none, or several,
- * stays as it was written: guessing would put one model's work under
- * another's name.
- */
-export const canonicalModelId = (
-	raw: string,
-	known: readonly string[],
-	aliases: Readonly<Record<string, string>> = {},
-): string => {
-	const id = normalized(withoutVendor(raw));
-	const alias = aliases[id] ?? aliases[normalized(raw)];
-	if (alias !== undefined) return normalized(withoutVendor(alias));
-	const models = [
-		...new Set(known.map((model) => normalized(withoutVendor(model)))),
-	];
-	if (models.includes(id)) return id;
-	const asked = spellingOf(id);
-	if (asked.digits.length === 0) return id;
-	const fitting = models.filter((model) => {
-		const candidate = spellingOf(model);
-		return (
-			candidate.brand === asked.brand &&
-			candidate.digits === asked.digits &&
-			asked.words.every((word) => candidate.words.includes(word))
-		);
-	});
-	if (fitting.length === 1) return fitting[0] ?? id;
-	const exact = fitting.filter(
-		(model) => spellingOf(model).words.length === asked.words.length,
-	);
-	return exact.length === 1 ? (exact[0] ?? id) : id;
-};
+export {
+	canonicalModelId,
+	modelStage,
+	spellingOf,
+	withoutVendor,
+} from './model-spelling.helper';
 
 /** Where the models this machine was seen running are remembered. */
 export const seenModelsPath = (
@@ -129,7 +61,7 @@ export const rememberSeenModel = (
 ): void => {
 	try {
 		const known = seenModels(path);
-		const id = normalized(withoutVendor(model));
+		const id = normalizedModelId(withoutVendor(model));
 		if (known.includes(id)) return;
 		if (!existsSync(dirname(path)))
 			mkdirSync(dirname(path), { recursive: true });

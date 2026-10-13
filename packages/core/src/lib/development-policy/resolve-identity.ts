@@ -13,8 +13,10 @@ import type {
 	IPolicyIdentity,
 	IUnrecognizedModelPolicy,
 } from '../contracts/interfaces/policy-identity.interface';
-import { withoutVendor } from '../work-identity/model-identity.helper';
-import { normalizeWorkAgentId } from '../work-identity/resolve-work-agent.service';
+import {
+	normalizedModelId,
+	withoutVendor,
+} from '../work-identity/model-spelling.helper';
 
 export type { IIdentityConfigInput };
 
@@ -56,8 +58,8 @@ const aliasesOf = (
 		? undefined
 		: Object.fromEntries(
 				entries.map(([from, to]) => [
-					normalizeWorkAgentId(from),
-					normalizeWorkAgentId(withoutVendor(to)),
+					normalizedModelId(from),
+					normalizedModelId(withoutVendor(to)),
 				]),
 			);
 };
