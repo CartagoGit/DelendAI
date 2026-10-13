@@ -1,0 +1,45 @@
+---
+/**
+ * KnowledgeSection.astro — body of the `/knowledge` index.
+ *
+ * Thin wrapper around `CapabilityGrid`. Knowledge cards link to the
+ * per-knowledge detail when one exists; for now they render as plain
+ * cards (no detail route yet).
+ */
+import { type Lang, useTranslations } from '#I18N/ui';
+import { describeKnowledge } from '#I18N/tools';
+import capabilities from '#MANIFESTS/capabilities.json';
+import CapabilityGrid from '#COMPONENTS/CapabilityGrid.astro';
+
+interface Props {
+	readonly lang: Lang;
+	readonly heading: string;
+}
+const { lang, heading: _heading } = Astro.props;
+const t = useTranslations(lang);
+
+type IKnowledge = { id: string; title: string; namespace: string };
+const knowledge = (capabilities.knowledge ?? []) as IKnowledge[];
+---
+
+<section id="knowledge" class="section">
+	<div class="container">
+		<p class="lead">{t.knowledge.lead}</p>
+		<div class="stat-row">
+			<div class="stat">
+				<b>{capabilities.counts.knowledge ?? knowledge.length}</b>
+				<span>{t.knowledge.count}</span>
+			</div>
+		</div>
+		<CapabilityGrid
+			kind="knowledge"
+			items={knowledge}
+			labels={{ stat: t.knowledge.count, empty: t.knowledge.lead }}
+			describe={(k) => {
+				const it = k as IKnowledge;
+				return describeKnowledge(it.id, lang) ?? it.title;
+			}}
+			sectionId="knowledge"
+		/>
+	</div>
+</section>

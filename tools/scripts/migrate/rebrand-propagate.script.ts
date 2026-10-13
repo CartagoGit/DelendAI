@@ -1,0 +1,433 @@
+#!/usr/bin/env bun
+// rebrand-propagate.script.ts — end-to-end rebrand sweep.
+//
+// When the project changes its public brand (e.g. `mcp-vertex` → `delendai`),
+// three layers of the monorepo must be kept in lockstep or stale strings
+// keep leaking through:
+//
+//   1. Source files under src/ across packages and plugins — docstrings
+//      and literal strings.
+//   2. Bundles: packages/<name>/dist/<entry>.js,
+//      plugins/<name>/dist/<entry>.js,
+//      and build/<group>/<name>/<version>/<entry>.js (publishable).
+//      Run `bun run build` (root) to rebuild — see
+//      tools/scripts/compile/build.script.ts.
+//   3. Generated manifest: apps/web/src/data/manifests/capabilities.json.
+//      Run `bun run --cwd apps/web gen:capabilities`.
+//
+// The tool registry and the website both read from layer 3, so a fix that
+// only touches layer 1 silently keeps emitting the old brand until the
+// build is re-run. This script runs all three layers in order and verifies
+// the result with a global grep, so a CI gate can fail on a partial
+// rebrand.
+//
+// Usage:
+//   bun run tools/scripts/migrate/rebrand-propagate.script.ts \
+//       --from=mcp-vertex --to=delendai
+//
+//   bun run tools/scripts/migrate/rebrand-propagate.script.ts --check
+//
+// See docs/delendai/BRAND.md (canonical brand contract).
+
+import { spawnSync } from 'node:child_process';
+import {
+	existsSync,
+	readFileSync,
+	readdirSync,
+	statSync,
+	type Stats,
+} from 'node:fs';
+import { extname, join, relative, resolve } from 'node:path';
+import { readRegularFile } from '../lib/read-text-if-present';
+
+import { scanLegacyIdentity } from '@delendai/core/cli';
+
+interface IOptions {
+	from: string;
+	to: string;
+	check: boolean;
+}
+
+const parseArgs = (argv: readonly string[]): IOptions => {
+	const opts: IOptions = { from: 'mcp-vertex', to: 'delendai', check: false };
+	for (const raw of argv) {
+		if (raw === '--check') opts.check = true;
+		else if (raw.startsWith('--from='))
+			opts.from = raw.slice('--from='.length);
+		else if (raw.startsWith('--to=')) opts.to = raw.slice('--to='.length);
+		else if (raw === '--help' || raw === '-h') {
+			console.log(
+				'Usage: bun run tools/scripts/migrate/rebrand-propagate.script.ts ' +
+					'[--from=<needle>] [--to=<replacement>] [--check]',
+			);
+			process.exit(0);
+		}
+	}
+	return opts;
+};
+
+const ROOT = resolve(import.meta.dir, '..', '..', '..');
+const SCAN_ROOT = (() => {
+	// Allow `bun run ... --root=<path>` so the spec can point at an
+	// isolated fixture instead of the real monorepo. Defaults to ROOT.
+	const arg = process.argv.find((a) => a.startsWith('--root='));
+	return arg ? resolve(process.cwd(), arg.slice('--root='.length)) : ROOT;
+})();
+
+const runStep = (label: string, cmd: readonly string[], cwd = ROOT): void => {
+	console.log(`\n→ ${label}`);
+	console.log(`  $ ${cmd.join(' ')}  (cwd=${relative(ROOT, cwd) || '.'})`);
+	const result = spawnSync(cmd[0]!, cmd.slice(1), {
+		cwd,
+		stdio: 'inherit',
+		env: process.env,
+	});
+	if (result.status !== 0) {
+		throw new Error(`${label} failed with exit ${result.status}`);
+	}
+};
+
+const SCAN_EXTENSIONS = new Set([
+	'.ts',
+	'.tsx',
+	'.js',
+	'.mjs',
+	'.cjs',
+	'.json',
+]);
+
+// Directories that are NEVER scanned (tooling / VCS / docs / cache).
+const SKIP_DIRS = new Set([
+	'node_modules',
+	'.cache',
+	'.git',
+	'.worktrees',
+	'docs',
+]);
+
+// Bundled output directories: skipped by default (they are generated),
+// included when `--check` runs against a brand-new bundle so a partial
+// rebuild can be flagged. The brand propagation tool always re-builds
+// these before scanning, so the default skip is safe for production.
+const BUILD_DIRS = new Set(['build', 'dist']);
+
+const SKIP_PATHS = [
+	'CHANGELOG.md',
+	'llm-subject-substitutions.json',
+	'rewrite-llm-attribution',
+	'proposal-files-exist.baseline',
+	// Proposal-slice-completeness baseline carries historical proposal
+	// slugs from pre-rebrand audits (\`mcp-vertex-…\` audit titles); they
+	// are file names, not product references, and renaming them would
+	// silently drop audit rows from the baseline. Substring match.
+	'proposal-slice-completeness.baseline',
+	// Same category, same reason: `proposal-cited-commits.baseline.json`
+	// records the FILENAMES of pre-rebrand audit proposals
+	// (`mcp-vertex-auditoria-completa-…md`). Those are historical
+	// artefacts on disk, not references to the product, and rewriting
+	// them would point the baseline at files that do not exist.
+	'proposal-cited-commits.baseline',
+	// The test-zone read map lists every root file a zone read, which
+	// includes the proposals, and so the file names of pre-rebrand audits.
+	// Same category as the two baselines above.
+	'zone-reads.generated.json',
+	'/legacy/',
+	// The migration script documents both names by design — exclude itself
+	// and its spec so the post-migration sweep does not flag the canonical
+	// references to the old brand that the tests intentionally carry.
+	'rebrand-propagate.script.ts',
+	'rebrand-propagate.spec.ts', // BRAND.md is the canonical doc that explains the brand contract;
+	// it MUST mention the retired brand (`mcp-vertex`) as part of the
+	// list of disallowed tokens. Excluding it lets the doc teach the
+	// contract without tripping its own enforcement (x00510 S1.7).
+	'BRAND.md',
+];
+
+// These paths intentionally model or preserve the PRE-rebrand identity.
+// They are not brand leaks in the current product surface; they are the
+// compatibility and migration corpus that teaches DelendAI how to rewrite
+// a legacy workspace safely.
+//
+// ## Read this before adding a file here, and before running the sweep
+//
+// This list is the difference between a stale reference and a PAYLOAD.
+// Everywhere else in the repository `mcp-vertex` is a leftover to be
+// rewritten; here it is the thing being migrated FROM, and rewriting it
+// destroys the migration.
+//
+// That has already happened once. A sweep rewrote the migrator's own
+// rename table to read `from: 'delendai.config.json', to:
+// 'delendai.config.json'` — source identical to destination — so the
+// migrator detected the NEW name, planned a rename of a path onto
+// itself, and reported `migrated:` on every boot of every adopted
+// project while a real `mcp-vertex` workspace went untouched. It shipped
+// that way from the commit that introduced it, and the specs did not
+// catch it because the sweep had rewritten their fixtures too.
+//
+// So: a file lands here when the old name is what it is ABOUT.
+const INTENTIONAL_LEGACY_PATHS = [
+	'packages/cli/src/contracts/constants/bridge.constant.ts',
+	'packages/cli/src/lib/bridge/',
+	'packages/cli/dist/index.js',
+	'packages/core/src/lib/contracts/constants/legacy-identity.constant.ts',
+	'packages/core/src/lib/workspace-migration/',
+	'packages/core/dist/lib/contracts/constants/legacy-identity.constant.d.ts',
+	'packages/core/dist/lib/workspace-migration/',
+	'packages/core/tests/src/lib/workspace-migration/',
+	// Proves that `delendai guard` does NOT migrate: git holds its locks
+	// while a hook runs, so a migration there writes to the workspace
+	// mid-commit. The fixture has to be a genuine legacy workspace, which
+	// means the old spelling is the assertion.
+	'packages/cli/src/index.spec.ts',
+	// Proves that `migrate status` reports the old name a live file still
+	// carries, so its fixture has to carry it.
+	'packages/cli/src/commands/migrate.command.spec.ts',
+	// Flags the old shell-completion name wherever it is left behind, so it
+	// has to spell it.
+	'tools/scripts/lint/i18n-english-prose.script.ts',
+	'tools/scripts/lint/i18n-english-prose.script.spec.ts',
+	'packages/test-kit/src/lib/fixtures/legacy-workspace/',
+	'packages/test-kit/dist/',
+	'build/packages/cli/',
+	'build/packages/core/',
+	'build/packages/test-kit/',
+] as const;
+
+const REPO_SCANNER_EXCLUDE_PREFIXES = [
+	'.git',
+	'.cache',
+	'.worktrees',
+	'node_modules',
+	'build',
+] as const;
+
+const REPO_SCANNER_HISTORICAL_PATHS = [
+	'docs/delendai/proposals/',
+	'docs/delendai/evidence/',
+] as const;
+
+interface IFindOptions {
+	readonly includeBuild: boolean;
+}
+
+const isIntentionalLegacyPath = (rel: string): boolean =>
+	INTENTIONAL_LEGACY_PATHS.some(
+		(prefix) => rel === prefix || rel.startsWith(prefix),
+	);
+
+const isRepoScannerHistoricalPath = (rel: string): boolean =>
+	REPO_SCANNER_HISTORICAL_PATHS.some(
+		(prefix) => rel === prefix || rel.startsWith(prefix),
+	);
+
+const keepRepoScannerLiveHit = (rel: string): boolean => {
+	if (rel.includes('/dist/')) return false;
+	if (SKIP_PATHS.some((skip) => rel.includes(skip))) return false;
+	if (isIntentionalLegacyPath(rel)) return false;
+	if (isRepoScannerHistoricalPath(rel)) return false;
+	return true;
+};
+
+const scanRepoLegacyIdentity = async (
+	root: string,
+): Promise<
+	readonly { file: string; line: number; spelling: string; text: string }[]
+> => {
+	const result = await scanLegacyIdentity(root, {
+		excludePrefixes: [...REPO_SCANNER_EXCLUDE_PREFIXES],
+	});
+	return result.liveHits.filter((hit) => keepRepoScannerLiveHit(hit.file));
+};
+
+// Brand contract assertions. The two-form rule (`delendai` for machine
+// surfaces, `DelendAI` for prose) and the origin phrase (*AI delenda
+// est*) live in `docs/delendai/BRAND.md`. These checks fail the gate if
+// the contract doc is missing, has been edited to drop the origin
+// paragraph, or no longer references both forms.
+const BRAND_CONTRACT_PATH = 'docs/delendai/BRAND.md';
+const BRAND_DOCS: ReadonlyArray<{
+	readonly path: string;
+	readonly mustContainAll: readonly string[];
+}> = [
+	{
+		path: BRAND_CONTRACT_PATH,
+		mustContainAll: ['DelendAI', '`delendai`', 'AI delenda est'],
+	},
+	{
+		path: 'docs/delendai/README-DELENDAI.md',
+		mustContainAll: ['DelendAI', 'AI delenda est'],
+	},
+	{
+		path: 'docs/delendai/VISION-AND-OPERATING-MODEL.md',
+		mustContainAll: ['DelendAI', 'AI delenda est'],
+	},
+];
+
+interface IBrandContract {
+	readonly ok: boolean;
+	readonly lines: readonly string[];
+}
+
+const checkBrandContract = (root: string): IBrandContract => {
+	const lines: string[] = [];
+	let ok = true;
+	for (const doc of BRAND_DOCS) {
+		const abs = join(root, doc.path);
+		if (!existsSync(abs)) {
+			lines.push(`✘ ${doc.path} missing`);
+			ok = false;
+			continue;
+		}
+		const content = readFileSync(abs, 'utf8');
+		const missing = doc.mustContainAll.filter(
+			(token) => !content.includes(token),
+		);
+		if (missing.length === 0) {
+			lines.push(`✓ ${doc.path} — contract tokens present`);
+		} else {
+			lines.push(`✘ ${doc.path} missing tokens: ${missing.join(', ')}`);
+			ok = false;
+		}
+	}
+	return { ok, lines };
+};
+
+// Walk the repo and return every file under dir whose contents contain
+// needle, respecting the project's exclude rules.
+const findFilesWith = (
+	dir: string,
+	needle: string,
+	opts: IFindOptions,
+): string[] => {
+	const matches: string[] = [];
+	const walk = (current: string): void => {
+		let entries: string[];
+		try {
+			entries = readdirSync(current);
+		} catch {
+			return;
+		}
+		for (const name of entries) {
+			const abs = join(current, name);
+			let st: Stats;
+			try {
+				st = statSync(abs);
+			} catch {
+				continue;
+			}
+			if (st.isDirectory()) {
+				const base = abs.split('/').pop()!;
+				if (SKIP_DIRS.has(base)) continue;
+				if (BUILD_DIRS.has(base) && !opts.includeBuild) continue;
+				walk(abs);
+			} else if (SCAN_EXTENSIONS.has(extname(name))) {
+				const rel = relative(SCAN_ROOT, abs);
+				if (SKIP_PATHS.some((skip) => rel.includes(skip))) continue;
+				if (isIntentionalLegacyPath(rel)) continue;
+				// Read through the descriptor it was checked on (no symlink).
+				const content = readRegularFile(abs);
+				if (content === undefined) continue;
+				if (content.includes(needle)) matches.push(rel);
+			}
+		}
+	};
+	if (existsSync(dir)) walk(dir);
+	return matches.sort();
+};
+
+const main = async (): Promise<void> => {
+	const opts = parseArgs(process.argv.slice(2));
+	console.log(`Rebrand propagation: "${opts.from}" → "${opts.to}"`);
+	console.log(
+		`Mode: ${opts.check ? 'check-only (read-only)' : 'full sweep'}`,
+	);
+
+	if (!opts.check) {
+		// Layer 2: rebuild all bundles.
+		runStep('Rebuild bundles (bun run build)', ['bun', 'run', 'build']);
+		// Layer 3: regenerate the capabilities manifest.
+		runStep('Regenerate capabilities.json', [
+			'bun',
+			'run',
+			'--cwd',
+			'apps/web',
+			'gen:capabilities',
+		]);
+	}
+
+	// Layer 1+2+3 verification: in full-sweep mode the scan covers source
+	// AND bundles after the rebuild. In check-only mode it intentionally
+	// ignores generated bundles so the gate measures the authoring surface
+	// instead of whatever stale build artefacts happen to be checked in or
+	// left behind in a shared worktree.
+	const liveHits = findFilesWith(SCAN_ROOT, opts.from, {
+		includeBuild: !opts.check,
+	});
+	const newHits = findFilesWith(SCAN_ROOT, opts.to, { includeBuild: false });
+
+	console.log('\nVerification:');
+	console.log(
+		`  - "${opts.from}" still appears in ${liveHits.length} live file(s)`,
+	);
+	if (liveHits.length > 0) {
+		for (const file of liveHits.slice(0, 20))
+			console.log(`      · ${file}`);
+		if (liveHits.length > 20)
+			console.log(`      · …(+${liveHits.length - 20} more)`);
+	}
+	console.log(
+		`  - "${opts.to}" already used in ${newHits.length} live source file(s)`,
+	);
+
+	if (liveHits.length > 0) {
+		console.error(
+			`\n✘ Rebrand propagation INCOMPLETE — ${liveHits.length} file(s) still reference "${opts.from}".`,
+		);
+		console.error(
+			`  Inspect the files above, migrate their source, then re-run this script.`,
+		);
+		process.exit(1);
+	}
+
+	const scannerLiveHits = await scanRepoLegacyIdentity(SCAN_ROOT);
+	console.log('\nLegacy identity scanner:');
+	console.log(
+		`  - ${scannerLiveHits.length} repo-owned LIVE hit(s) after historical/fixture filters`,
+	);
+	if (scannerLiveHits.length > 0) {
+		for (const hit of scannerLiveHits.slice(0, 20))
+			console.log(
+				`      · ${hit.file}:${hit.line} [${hit.spelling}] ${hit.text.trim()}`,
+			);
+		if (scannerLiveHits.length > 20)
+			console.log(`      · …(+${scannerLiveHits.length - 20} more)`);
+		console.error(
+			`\n✘ Legacy identity scanner INCOMPLETE — ${scannerLiveHits.length} repo-owned LIVE hit(s) remain.`,
+		);
+		console.error(
+			'  Rename the active surface or move the file into the intentional legacy corpus before re-running this check.',
+		);
+		process.exit(1);
+	}
+
+	// Brand contract assertions: the lowercase ↔ DelendAI split and the
+	// origin phrase are codified in docs/delendai/BRAND.md. They are part
+	// of the same --check gate so a partial migration (e.g. a brand
+	// string rename that forgets the origin paragraph) cannot silently
+	// pass. See docs/delendai/BRAND.md for the full contract.
+	const brandDocsContract = checkBrandContract(ROOT);
+	console.log('\nBrand contract:');
+	for (const line of brandDocsContract.lines) console.log(`  ${line}`);
+	if (!brandDocsContract.ok) {
+		console.error(
+			`\n✘ Brand contract INCOMPLETE — see docs/delendai/BRAND.md.`,
+		);
+		process.exit(1);
+	}
+
+	console.log(
+		`\n✓ Rebrand propagation clean — every layer (source + bundles + manifest) uses "${opts.to}", brand contract green.`,
+	);
+};
+
+void main();

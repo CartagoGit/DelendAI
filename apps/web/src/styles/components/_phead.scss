@@ -1,0 +1,39 @@
+// _phead.scss — plugin detail page header (h1 + tagline + meta).
+//
+// BEM root: .phead with __crumb, __meta, __count.  The `.tagline` paragraph
+// and `<code>` inside `<h1>` are nested with `&` to keep the BEM scope.
+
+.phead {
+	padding: clamp(2rem, 5vw, 3.2rem) 0 1.5rem;
+	border-bottom: 1px solid var(--line);
+
+	& h1 {
+		font-size: clamp(1.6rem, 4vw, 2.4rem);
+		margin: 0 0 0.6rem;
+		letter-spacing: -0.02em;
+	}
+	& h1 code {
+		color: var(--accent);
+	}
+	& .tagline {
+		color: var(--muted);
+		max-width: 46rem;
+		margin: 0 0 1rem;
+		font-size: clamp(0.98rem, 2vw, 1.1rem);
+	}
+}
+.phead__crumb {
+	display: inline-block;
+	margin-bottom: 1rem;
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+.phead__meta {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+.phead__count {
+	color: var(--muted);
+	font-size: 0.85rem;
+}

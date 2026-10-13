@@ -1,0 +1,42 @@
+{
+	"updatedAt": "2026-06-25T14:00:00.000Z",
+	"source": "bundled snapshot (fallback when LiteLLM is unreachable)",
+	"models": {
+		"gpt-4o": {
+			"kind": "api",
+			"inputCostPer1k": 0.005,
+			"outputCostPer1k": 0.015,
+			"contextWindow": 128000
+		},
+		"gpt-4o-mini": {
+			"kind": "api",
+			"inputCostPer1k": 0.00015,
+			"outputCostPer1k": 0.0006,
+			"contextWindow": 128000
+		},
+		"anthropic/claude-opus-4-8": {
+			"kind": "api",
+			"inputCostPer1k": 0.015,
+			"outputCostPer1k": 0.075,
+			"contextWindow": 200000
+		},
+		"anthropic/claude-3-5-sonnet": {
+			"kind": "api",
+			"inputCostPer1k": 0.003,
+			"outputCostPer1k": 0.015,
+			"contextWindow": 200000
+		},
+		"claude-code-max": {
+			"kind": "subscription",
+			"subscriptionUsd": 200,
+			"marginalCostUsd": null,
+			"fixedCost": true
+		},
+		"copilot-subscription": {
+			"kind": "subscription",
+			"subscriptionUsd": 10,
+			"marginalCostUsd": null,
+			"fixedCost": true
+		}
+	}
+}

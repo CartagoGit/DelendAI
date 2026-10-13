@@ -1,0 +1,3 @@
+# Ensures `plugins/issues/` is committed even when it has no runtime files yet.
+# The `issues` plugin is the GitHub-issue ingestion surface (lives on the host,
+# not in swarm presets) and ships its own node_modules + dist at install time.

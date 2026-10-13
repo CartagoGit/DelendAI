@@ -1,0 +1,28 @@
+// _locale-picker.scss — the <noscript> language fallback on the home page
+// (pages/index.astro). JS-disabled visitors get an inline list of locale
+// links above the canonical English copy. Lives in the global sheet (not
+// an Astro scoped block) because Astro does not scope-annotate elements
+// inside <noscript> (f00099 S1 — previously unstyled).
+
+.locale-picker {
+	width: min(100% - 2rem, var(--maxw, 72rem));
+	margin: 1rem auto 0;
+	padding: 0.9rem 1.1rem;
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	font-size: 0.9rem;
+
+	& p {
+		margin: 0 0 0.5rem;
+		color: var(--muted);
+	}
+	& ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 1rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+}

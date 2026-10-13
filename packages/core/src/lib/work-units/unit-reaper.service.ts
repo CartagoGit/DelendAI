@@ -1,0 +1,155 @@
+/**
+ * unit-reaper.service.ts — a delivered unit's worktree and local branch
+ * are reaped, not left for somebody to remember.
+ *
+ * `work publish` removes the worktree only when the tree is clean at that
+ * instant, and `gen:all` or an install between the last commit and the
+ * publish leaves it dirty — after which nobody comes back. The verdict
+ * says the work is delivered and its owner has gone quiet; what is left
+ * is a copy of the repository and a branch inviting development on a
+ * stale ref.
+ *
+ * Nothing real is lost: a worktree holding an edit somebody made is kept
+ * and reported with the paths; one holding only regenerable files is not.
+ * Once the unit is abandoned nobody is coming back for those edits, so
+ * they are kept on the forge as a retired ref and the unit removed — the
+ * alternative was a copy of the repository left here for good.
+ *
+ * A unit whose owner went away before committing anything is reaped the
+ * same way: it carries no commit the integration branch lacks, so its
+ * branch and worktree hold nothing. A swarm left one such unit per agent
+ * it started, each a full copy of the repository, and none was ever
+ * delivered for this reaper to see.
+ */
+import { keepUncommittedEdits } from './unit-edits-kept.service';
+import type { IReapedUnit } from './unit-lease.interface';
+import {
+	dropForgeCopy,
+	removeUnitCheckout,
+	worktreeOfRef,
+} from './unit-removal.service';
+import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
+import { inspectWorktree } from './unit-worktree-state.service';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { carriesNothingBeyond } from './landed-work.service';
+import {
+	integrationBase,
+	integrationRemote,
+	readGit,
+} from './work-unit-shared.service';
+
+/** Whether `ref` carries no commit of its own beyond the integration branch. */
+const carriesNothing = (
+	root: string,
+	base: string | undefined,
+	ref: string,
+): boolean =>
+	base !== undefined && carriesNothingBeyond(root, `refs/heads/${ref}`, base);
+
+export const reapDeliveredUnits = async (input: {
+	readonly root: string;
+	readonly policy: IResolvedDevelopmentPolicy;
+	readonly apply: boolean;
+	readonly now?: number | undefined;
+}): Promise<readonly IReapedUnit[]> => {
+	const { root, policy, apply } = input;
+	const standings = await readUnitStandings({
+		root,
+		policy,
+		...(input.now === undefined ? {} : { now: input.now }),
+	});
+	const integration = integrationBase(root, policy);
+	// The tips kept on the remote for units retired there: a unit left
+	// behind here whose tip is one of them lost nothing by being removed,
+	// and stayed in every listing of the swarm as a unit at work.
+	const remote = integrationRemote(root, policy);
+	const retiredTips = new Set(
+		(
+			readGit(root, [
+				'ls-remote',
+				'--',
+				remote,
+				`refs/${policy.branches.namespacePrefix}/retired/*`,
+			]) ?? ''
+		)
+			.split('\n')
+			.map((line) => line.split('\t')[0] ?? '')
+			.filter((sha) => sha.length > 0),
+	);
+	const keptOnRemote = (ref: string): boolean => {
+		const tip = readGit(root, [
+			'rev-parse',
+			'-q',
+			'--verify',
+			`refs/heads/${ref}`,
+		]);
+		return tip !== undefined && retiredTips.has(tip);
+	};
+	const reaped: IReapedUnit[] = [];
+	for (const unit of standings) {
+		if (!hasLocalBranch(root, unit.ref)) continue;
+		const spent =
+			unit.standing === 'delivered' ||
+			(unit.standing === 'abandoned' &&
+				(carriesNothing(root, integration, unit.ref) ||
+					keptOnRemote(unit.ref)));
+		if (!spent) continue;
+		const worktree = worktreeOfRef(root, unit.ref) ?? null;
+		const state =
+			worktree === null
+				? { edited: [], regenerable: [] }
+				: inspectWorktree(worktree);
+		const base = {
+			ref: unit.ref,
+			worktree,
+			edited: state.edited,
+			regenerable: state.regenerable,
+		};
+		if (state.edited.length > 0) {
+			if (unit.standing !== 'abandoned' || worktree === null) {
+				reaped.push({ ...base, outcome: 'kept' });
+				continue;
+			}
+			if (!apply) {
+				reaped.push({ ...base, outcome: 'would-retire' });
+				continue;
+			}
+			const keptAt = keepUncommittedEdits({
+				root,
+				policy,
+				remote,
+				ref: unit.ref,
+				worktree,
+			});
+			// Not kept (no forge to keep them on): the unit stays.
+			const gone =
+				keptAt !== undefined &&
+				(await removeUnitCheckout(root, unit.ref, { editsKept: true }))
+					.deletedBranch;
+			reaped.push(
+				gone
+					? { ...base, outcome: 'retired', keptAt }
+					: { ...base, outcome: 'kept' },
+			);
+			continue;
+		}
+		if (!apply) {
+			reaped.push({ ...base, outcome: 'would-remove' });
+			continue;
+		}
+		const tip = readGit(root, [
+			'rev-parse',
+			'-q',
+			'--verify',
+			`refs/heads/${unit.ref}`,
+		]);
+		const removal = await removeUnitCheckout(root, unit.ref);
+		if (removal.deletedBranch && tip !== undefined)
+			dropForgeCopy(root, remote, unit.ref, tip);
+		reaped.push({
+			...base,
+			outcome: removal.deletedBranch ? 'removed' : 'kept',
+		});
+	}
+	return reaped;
+};

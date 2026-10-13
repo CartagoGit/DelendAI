@@ -1,0 +1,20 @@
+{
+	"generatedAt": "2026-08-30T00:00:00.000Z",
+	"tools": [
+		{
+			"id": "proposals.get",
+			"budget": { "adaptive": 4096, "native": 12000 },
+			"used": { "adaptive": 800, "native": 2100 },
+			"status": { "adaptive": "ok", "native": "ok" }
+		},
+		{
+			"id": "proposals.list",
+			"budget": { "adaptive": 4096, "native": 14000 },
+			"used": { "adaptive": 5200, "native": 3100 },
+			"status": { "adaptive": "breach", "native": "ok" }
+		}
+	],
+	"documentedDeficits": [
+		{ "tool": "proposals.list", "surface": "adaptive", "ratio": 1.2695 }
+	]
+}

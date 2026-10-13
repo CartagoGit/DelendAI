@@ -1,0 +1,83 @@
+{
+	"repo": "CartagoGit/delendai",
+	"generatedAt": null,
+	"healthy": false,
+	"discrepancies": [
+		"dry-run: GitHub API was not contacted; main health is unverified"
+	],
+	"observations": [
+		"dry-run: develop was not observed because GitHub API access was disabled"
+	],
+	"main": {
+		"ref": "main",
+		"role": "gate",
+		"protection": {
+			"verified": false,
+			"protected": false,
+			"requiredStatusChecks": {
+				"strict": null,
+				"contexts": []
+			},
+			"enforceAdmins": null,
+			"requiredLinearHistory": null,
+			"allowForcePushes": null,
+			"allowDeletions": null,
+			"raw": null,
+			"diff": [
+				"main: branch protection could not be verified via GitHub API"
+			]
+		},
+		"ciVerified": false,
+		"ciStatus": "unknown",
+		"headSha": null,
+		"totalCheckRuns": 0,
+		"latestCheckRunId": null,
+		"latestConclusion": null,
+		"latestHtmlUrl": null,
+		"requiredCheckRuns": [
+			{
+				"id": null,
+				"name": "delendai-validate",
+				"status": null,
+				"conclusion": null,
+				"htmlUrl": null
+			},
+			{
+				"id": null,
+				"name": "release-pr-gate",
+				"status": null,
+				"conclusion": null,
+				"htmlUrl": null
+			}
+		]
+	},
+	"develop": {
+		"ref": "develop",
+		"role": "observation",
+		"protection": {
+			"verified": false,
+			"protected": false,
+			"requiredStatusChecks": {
+				"strict": null,
+				"contexts": []
+			},
+			"enforceAdmins": null,
+			"requiredLinearHistory": null,
+			"allowForcePushes": null,
+			"allowDeletions": null,
+			"raw": null,
+			"diff": [
+				"develop: branch protection could not be verified via GitHub API"
+			]
+		},
+		"ciVerified": false,
+		"ciStatus": "unknown",
+		"headSha": null,
+		"totalCheckRuns": 0,
+		"latestCheckRunId": null,
+		"latestConclusion": null,
+		"latestHtmlUrl": null,
+		"requiredCheckRuns": []
+	},
+	"note": "Auto-populated by bun tools/scripts/ci/verify-main-health.script.ts (v00127), run nightly by .github/workflows/verify-develop-health.yml. This checked-in copy is a bootstrap placeholder: nothing has been verified, so it reports no colour rather than a stale one."
+}
