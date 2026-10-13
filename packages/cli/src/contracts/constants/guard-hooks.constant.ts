@@ -17,6 +17,9 @@ export const GUARDED_HOOKS: readonly IGuardHookName[] = [
 	// A merge that resolved a generated file mid-tree leaves it computed
 	// from an incomplete tree; this is where the finished tree is (x00559).
 	'post-merge',
+	// A commit on a unit's branch is pushed to the same branch at once,
+	// so no work exists only on one machine (`autoPushAfterCommit`).
+	'post-commit',
 	// Git offers no veto before the index is written either. An agent
 	// whose command landed in the shared checkout by mistake — a script
 	// that did not stop when `work enter` refused — is told in that

@@ -20,7 +20,7 @@ import type {
 import { carriesNothingBeyond } from './landed-work.service';
 import { judgeUnit, leaseWindowSeconds } from './unit-verdict.service';
 import { listWorkRefs } from './work-swarm.service';
-import { proposalStillInProgress } from './publication-target.service';
+import { proposalStillOpen } from './publication-target.service';
 import { publicationRefFromWorkRef } from './work-publish.service';
 import {
 	integrationBase,
@@ -145,6 +145,7 @@ export const readUnitStandings = async (
 			: await listUnitLeases(common);
 	const window = leaseWindowSeconds(policy.coordination.leaseTtlMinutes);
 	const refs = listWorkRefs(root, policy);
+	const integration = integrationBase(root, policy);
 	const identities = new Map(
 		[...refs.keys()].map((name) => [
 			name,
@@ -167,7 +168,10 @@ export const readUnitStandings = async (
 				proposalInProgress:
 					delivery.delivered &&
 					mine !== undefined &&
-					proposalStillInProgress(root, mine.proposal, sha),
+					proposalStillOpen(root, mine.proposal, [
+						sha,
+						...(integration === undefined ? [] : [integration]),
+					]),
 				claimedByOther:
 					mine !== undefined &&
 					[...identities.entries()].some(

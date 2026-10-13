@@ -9,6 +9,7 @@ export type IGuardedHook =
 	| 'pre-push'
 	| 'post-checkout'
 	| 'post-merge'
+	| 'post-commit'
 	| 'post-index-change';
 
 /** What the guard reads from git and the project; injected by specs. */

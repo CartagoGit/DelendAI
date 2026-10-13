@@ -694,7 +694,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('keeps the branch of a proposal still in progress, unasked', async () => {
+	it('keeps the branch of a proposal that is not done, unasked', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -732,17 +732,17 @@ describe('delendai work (x00553)', () => {
 		).steps;
 		expect(
 			steps.find((step) => step.name === 'keep-work-ref')?.detail,
-		).toContain('x00553 is still in progress');
+		).toContain('x00553 is not done');
 	});
 
-	it('ends the branch when the published tree takes its proposal out of progress', async () => {
+	it('ends the branch when the published tree has its proposal done', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
 		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
 		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
-		const doc = 'docs/delendai/proposals/blocked/x00553-probe.md';
-		mkdirSync(join(root, 'docs/delendai/proposals/blocked'), {
+		const doc = 'docs/delendai/proposals/done/x00553-probe.md';
+		mkdirSync(join(root, 'docs/delendai/proposals/done'), {
 			recursive: true,
 		});
 		writeFileSync(join(root, doc), '# x00553\n\n### S1 — one\n');

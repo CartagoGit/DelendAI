@@ -61,6 +61,8 @@ export {
 } from './lib/contracts/constants/agent-environment.constant';
 export { readUnitRefFacts } from './lib/work-units/unit-ref-facts.service';
 export { touchUnitOfCheckout } from './lib/work-units/unit-lease.service';
+export { pushUnitTip } from './lib/work-units/unit-push.service';
+export type { IUnitPush } from './lib/contracts/interfaces/unit-push.interface';
 // The verdict on every unit of work and the reaper, for the repo's own
 // reclaim scripts.
 export {

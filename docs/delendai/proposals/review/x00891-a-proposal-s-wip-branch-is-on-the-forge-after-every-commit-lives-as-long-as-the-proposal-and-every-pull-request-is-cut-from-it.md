@@ -2,10 +2,14 @@
 id: x00891
 title: "a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
+last-correlation-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T18:34:16.094Z
 ---
 
 # x00891 — a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it
@@ -36,59 +40,101 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S1 — Every commit on a unit's branch is on the forge at once
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/unit-push.interface.ts`
   - `packages/core/src/lib/guard-hooks/guard-hook-block.helper.ts`
   - `packages/core/src/lib/work-units/unit-push.service.ts`
-  - `packages/core/src/lib/wip-engine/work-ref-publication.ts`
+  - `packages/core/src/cli.ts`
+  - `packages/cli/src/commands/guard.command.ts`
+  - `packages/cli/src/contracts/constants/guard-hooks.constant.ts`
+  - `packages/cli/src/contracts/interfaces/guard.interface.ts`
+  - `lefthook.yml`
+  - `packages/core/tests/src/lib/work-units/unit-push.service.spec.ts`
+  - `packages/cli/src/commands/guard-facts.spec.ts`
+  - `packages/cli/src/lib/guard-hooks.service.spec.ts`
+  - `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - A commit or merge on a work ref, made in its worktree by any means, is pushed to the same branch on the forge before the command returns. A push the forge refuses (the branch moved on another machine) is reported with the command that reconciles it, never forced.
   - A commit on the integration branch or any branch outside the work namespace pushes nothing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `1dedc5fe2ef8`
 
 ### S2 — Publishing cuts a pull request from the branch and leaves the branch alone
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/work-units/work-publish.service.ts`
+  - `packages/core/src/lib/work-units/publication-target.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+  - `packages/core/src/lib/work-units/unit-standings.service.ts`
+  - `packages/core/src/lib/work-units/unit-reaper.service.ts`
+  - `packages/core/src/lib/work-units/unit-removal.service.ts`
+  - `tools/scripts/inspect/core-proposals-boundary.script.ts`
+  - `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
+  - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - Publishing pushes the wip branch's tip to its `pr/…` branch and opens or updates the pull request. The wip branch, local and on the forge, and its worktree stay while the proposal is not done.
   - A fix made on the wip branch after a red pull request is published into the same open pull request. After a merge, the next publication opens a new pull request from the same wip branch, carrying only what develop lacks.
   - The wip branch is retired (kept under `refs/<namespace>/retired/`) only when its proposal reaches done or is abandoned, and only once everything on it is on develop.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `fa8e882cf28b`
 
 ### S3 — One wip branch per proposal
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
-  - `packages/core/src/lib/development-policy/profiles.ts`
+  - `packages/core/src/lib/work-units/proposal-branch.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-generation.service.ts`
+  - `packages/core/tests/src/lib/work-units/proposal-branch.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - Entering any kind or slice of a proposal an agent already has a branch for continues on that branch: creating the proposal, implementing it and fixing it are one branch, `wip/<agent>/<proposal>/<topic>`.
-  - The pull requests cut from it keep the kind and slice in their own names, so the forge still shows what each one carries.
+  - Entering a proposal to create or implement it, for any slice, continues on the branch the agent already has for that proposal: creating it, implementing it and fixing it are one branch. A review or an audit stays its own unit.
+  - Publishing names the unit by any of those kinds and slices and finds that one branch, so a pull request is always cut from it.
+  - Branch names keep their current shape, so no existing branch is renamed and no ref migration is needed.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `8d77df6e6782`
 
 ### S4 — A start leaves every unit in step with the forge
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
+  - `packages/core/src/lib/contracts/constants/unit-forge-sync.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
   - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
-  - `packages/core/src/lib/startup/reconcile-startup.ts`
+  - `packages/core/src/lib/project/create-mcp-project.ts`
+  - `tools/scripts/lib/hermetic-agent-bridge-setup.ts`
+  - `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - At every start, each unit of this clone with commits the forge lacks is pushed. Each wip branch of the same agent on the forge that this clone lacks, or holds behind, is fetched and its unit fast-forwarded. A branch that diverged is a blocker naming the reconciling command.
   - Uncommitted edits in a kept unit's worktree are committed as a durable checkpoint and pushed (`checkpoint.durableWip`), so changing machine never leaves work only on disk.
-  - A start in a project with the old layout (local-only wip branches; units under the old per-kind, per-slice names) migrates them: pushed, then renamed onto the proposal's branch, with nothing lost. The rename is journalled.
+  - A project with the old layout (wip branches that exist only on this clone) has them pushed at its first start on this code; branch names keep their shape (S3), so nothing is renamed. `DELENDAI_UNIT_FORGE_SYNC=off` turns the pass off, which the test suites do.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `97dbb57c51db`
 
 ### S5 — The doctor sees work that is not on the forge
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
+  - `packages/core/src/lib/work-units/units-on-forge.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+  - `packages/core/src/lib/work-units/forge-work-refs.service.ts`
 - **Gate**: type
 - acceptance:
-  - An invariant reports every unit whose branch holds commits the forge lacks, or uncommitted edits, with the repair; a start that repairs them leaves it holding.
+  - `units-on-the-forge` reports every unit whose branch holds commits the forge lacks, or uncommitted edits, with the repair; a start that repairs them leaves it holding.
+  - A wip branch on the forge whose work landed is not reported as hanging (`no-remote-work-refs`) while its proposal is open.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `97dbb57c51db`
 
 ## acceptance
 

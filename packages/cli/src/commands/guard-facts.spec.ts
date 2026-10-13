@@ -180,8 +180,8 @@ describe('delendai guard status through the CLI entry', () => {
 			readonly hooks: ReadonlyArray<Record<string, unknown>>;
 		};
 		// pre-commit, commit-msg, reference-transaction, pre-push,
-		// post-checkout, post-merge and post-index-change.
-		expect(envelope.hooks).toHaveLength(7);
+		// post-checkout, post-merge, post-commit and post-index-change.
+		expect(envelope.hooks).toHaveLength(8);
 		expect(envelope.hooks[0]).toMatchObject({
 			hook: 'pre-commit',
 			state: 'absent',
@@ -226,4 +226,49 @@ describe('delendai guard install / status / uninstall', () => {
 		expect(attempt.code).not.toBe(0);
 		expect(attempt.out).toContain('unsupported — lefthook');
 	});
+});
+
+describe('delendai guard post-commit', () => {
+	it("pushes a unit's branch to the forge, and says so when the forge refuses it", async () => {
+		const root = repo(
+			'{ "development": { "profile": "shared-checkout-pr", "branches": { "namespacePrefix": "delendai" } } }',
+		);
+		const git = (cwd: string, ...args: string[]) =>
+			execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+		const remote = mkdtempSync(join(tmpdir(), 'guard-forge-'));
+		roots.push(remote);
+		git(remote, 'init', '-q', '--bare', '-b', 'develop');
+		git(root, 'remote', 'add', 'origin', remote);
+		git(root, 'push', '-q', 'origin', 'develop');
+		const unit = mkdtempSync(join(tmpdir(), 'guard-unit-'));
+		roots.push(unit);
+		const branch = 'delendai/wip/agent/x1-all-g1/topic';
+		git(root, 'worktree', 'add', '-q', '-b', branch, join(unit, 'u'));
+		const tree = join(unit, 'u');
+		writeFileSync(join(tree, 'b.txt'), 'b\n');
+		git(tree, 'add', '-A');
+		git(tree, 'commit', '-q', '-m', 'work');
+		const hook = () =>
+			createGuardCommand().run(['post-commit'], contextFor(tree));
+
+		expect((await hook()).code).toBe(0);
+		expect(git(remote, 'rev-parse', branch)).toBe(
+			git(tree, 'rev-parse', 'HEAD'),
+		);
+
+		git(tree, 'commit', '-q', '--amend', '-m', 'rewritten');
+		const written: string[] = [];
+		const spy = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation((chunk: string | Uint8Array) => {
+				written.push(String(chunk));
+				return true;
+			});
+		try {
+			expect((await hook()).code).toBe(0);
+		} finally {
+			spy.mockRestore();
+		}
+		expect(written.join('')).toContain('on this machine only');
+	}, 60_000);
 });

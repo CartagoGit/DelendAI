@@ -7,13 +7,7 @@
  * decision reads both: the proposal's file and what is already published.
  */
 import { execFileSync } from 'node:child_process';
-import {
-	mkdirSync,
-	mkdtempSync,
-	readFileSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -29,7 +23,7 @@ import {
 	changedLines,
 	choosePublicationTarget,
 	proposalSliceCount,
-	proposalStillInProgress,
+	proposalStillOpen,
 	publicationPattern,
 } from '@delendai/core/lib/work-units/publication-target.service';
 
@@ -339,63 +333,34 @@ describe('what the decision reads', () => {
 		expect(proposalSliceCount(root, 'x09999')).toBeUndefined();
 	});
 
-	it('says whether the published work still has its proposal in progress', () => {
+	it('keeps a proposal open until it is done, on the unit or on the integration branch', () => {
 		const { root } = setup(2);
-		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(false);
-		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
-			recursive: true,
-		});
-		git(
-			root,
-			'mv',
-			'docs/delendai/proposals/ready/fixes/x00001-a-change.md',
-			'docs/delendai/proposals/in-progress/x00001-a-change.md',
-		);
-		git(root, 'commit', '-q', '-m', 'start');
-		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(true);
-		mkdirSync(join(root, 'docs/delendai/proposals/review'), {
-			recursive: true,
-		});
-		git(
-			root,
-			'mv',
-			'docs/delendai/proposals/in-progress/x00001-a-change.md',
-			'docs/delendai/proposals/review/x00001-a-change.md',
-		);
-		git(root, 'commit', '-q', '-m', 'to review');
-		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(false);
-		expect(proposalStillInProgress(root, 'x00001', 'HEAD~1')).toBe(true);
-		expect(proposalStillInProgress(root, 'x09999', 'HEAD')).toBe(false);
-	});
-
-	it('is not in progress once every slice is handed in, though the file stays in in-progress', () => {
-		const { root } = setup(2);
-		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
-			recursive: true,
-		});
-		const moved = 'docs/delendai/proposals/in-progress/x00001-a-change.md';
-		git(
-			root,
-			'mv',
-			'docs/delendai/proposals/ready/fixes/x00001-a-change.md',
-			moved,
-		);
-		git(root, 'commit', '-q', '-m', 'start');
-		const handIn = (slice: string) => {
-			const text = readFileSync(join(root, moved), 'utf8');
-			writeFileSync(
-				join(root, moved),
-				text.replace(
-					new RegExp(`(### ${slice}[^\\n]*\\n)`, 'u'),
-					'$1- review-state: in_review\n',
-				),
+		const move = (from: string, to: string) => {
+			mkdirSync(join(root, `docs/delendai/proposals/${to}`), {
+				recursive: true,
+			});
+			git(
+				root,
+				'mv',
+				`docs/delendai/proposals/${from}/x00001-a-change.md`,
+				`docs/delendai/proposals/${to}/x00001-a-change.md`,
 			);
-			git(root, 'commit', '-q', '-am', `submit ${slice}`);
+			git(root, 'commit', '-q', '-m', `to ${to}`);
 		};
-		handIn('S1');
-		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(true);
-		handIn('S2');
-		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(false);
+		expect(proposalStillOpen(root, 'x00001', ['HEAD'])).toBe(true);
+		move('ready/fixes', 'in-progress');
+		expect(proposalStillOpen(root, 'x00001', ['HEAD'])).toBe(true);
+		move('in-progress', 'review');
+		// Handed to review, its branch still takes the fixes review asks for.
+		expect(proposalStillOpen(root, 'x00001', ['HEAD'])).toBe(true);
+		move('review', 'done');
+		expect(proposalStillOpen(root, 'x00001', ['HEAD'])).toBe(false);
+		// Done on the integration branch ends it, whatever the unit's tip says.
+		expect(proposalStillOpen(root, 'x00001', ['HEAD~1', 'HEAD'])).toBe(
+			false,
+		);
+		expect(proposalStillOpen(root, 'x00001', ['HEAD~1'])).toBe(true);
+		expect(proposalStillOpen(root, 'x09999', ['HEAD'])).toBe(false);
 	});
 
 	it('counts added and removed lines against the base', () => {

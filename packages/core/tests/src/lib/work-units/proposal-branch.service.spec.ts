@@ -66,6 +66,29 @@ describe('liveProposalBranch', () => {
 		).toBeUndefined();
 	});
 
+	it("implements a proposal on the branch that created it, and never on a review's", () => {
+		const T =
+			'refs/heads/delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
+		const created =
+			'refs/heads/delendai/wip/agent-a/create/f00001-all-g1/t';
+		expect(
+			liveProposalBranch(
+				T,
+				'refs/heads/delendai/wip/agent-a/implement/f00001-all-g1/t',
+				listing(created),
+			),
+		).toEqual({ ref: created, path: '/repo/.wt/0' });
+		expect(
+			liveProposalBranch(
+				T,
+				'refs/heads/delendai/wip/agent-a/implement/f00001-all-g1/t',
+				listing(
+					'refs/heads/delendai/wip/agent-a/review/f00001-all-g1/t',
+				),
+			),
+		).toBeUndefined();
+	});
+
 	it('reads nothing from a ref outside the template', () => {
 		expect(
 			liveProposalBranch(
