@@ -2,14 +2,14 @@
 id: f00543
 title: "Docker plugin as a tool (autodetected, low-risk)"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-09-15
-last-transition-id: f0e21fec-3632-4f01-a207-6c3cfae9af04
-last-correlation-id: f0e21fec-3632-4f01-a207-6c3cfae9af04
-last-transition-from: ready
-last-transition-at: 2026-10-13T04:41:17.484Z
+last-transition-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
+last-correlation-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T04:41:38.972Z
 ---
 
 # f00543 — Docker plugin as a tool (autodetected, low-risk)
@@ -47,6 +47,9 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 - acceptance:
   - The tools that change images, containers, networks and volumes (including the existing `container_build` and `k8s_apply`) are registered only when a root `Dockerfile`, compose file or `.devcontainer/` exists. Without one, the plugin inspects and lints only.
   - The CLI is the only adapter. A socket adapter is out of scope.
+- shipped-in: `79da5118f701`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Pull, run and exec under one set of consent rules
 
@@ -64,6 +67,9 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - A change needs `confirm: true`, and `dryRun: true` returns the command without running it.
   - A privileged container, a docker socket mount, or the host's network, pid or ipc namespace also needs `confirmRisk: true`, which `confirm` never implies.
   - `container_pull` with `policy: "if-not-present"` (the default) pulls only a missing image.
+- shipped-in: `79da5118f701`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Compose: the services, and up, down, logs, ps, exec
 
@@ -76,6 +82,9 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 - acceptance:
   - The parser lists services with their image or build context, ports, environment variable names (never values) and mounts.
   - `container_compose` covers `services`, `ps`, `logs`, `up`, `down` and `exec`. `up` starts one named service unless `all: true`, refuses a service the file does not declare, and checks every service it would start for host-reaching risks.
+- shipped-in: `79da5118f701`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Networks and volumes
 
@@ -86,6 +95,9 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 - **Gate**: type
 - acceptance:
   - `container_network` and `container_volume` list and inspect freely. `create` and `rm` need `confirm` and a name.
+- shipped-in: `79da5118f701`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Against the real daemon, in a sandbox of its own
 
@@ -95,6 +107,9 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 - **Gate**: type
 - acceptance:
   - Where a daemon answers, the spec creates, lists and removes a network and a volume under a unique name. It removes them however the spec ends. It runs a throwaway container only from an image already present, never pulling, and checks that nothing is left behind. Without a daemon it is skipped.
+- shipped-in: `79da5118f701`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Documentation and the safety guide
 
@@ -104,6 +119,9 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 - **Gate**: type
 - acceptance:
   - The README lists each tool and the consent it needs. A safety section explains why reaching the host needs its own consent, why environment values are never returned, and what stays out of scope.
+- shipped-in: `79da5118f701`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
