@@ -62,7 +62,7 @@ belong and what may import what. This proposal is where they are spent.
 
 ### S1 — Capability names, and which effects they carry
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/external-mcps/src/lib/capability/capability-registry.service.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/capability-registry.constant.ts`
@@ -85,7 +85,7 @@ one invented here.
 
 ### S2 — The effective project contract, as one small payload
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/external-mcps/src/lib/contract/project-contract.service.ts`
   - `plugins/external-mcps/src/lib/contract/capability-gateway.service.ts`
@@ -108,7 +108,7 @@ because the gateway must not hard-depend on three unshipped plugins.
 
 ### S3 — Normalise the answer, and keep a handle to the raw one
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`
   - `plugins/external-mcps/src/lib/contracts/interfaces/external-answer.interface.ts`
@@ -126,7 +126,7 @@ the same token reason.
 
 ### S4 — Prefer what already exists over what was just described
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/external-mcps/src/lib/reuse/match-existing.service.ts`
   - `plugins/external-mcps/tests/src/lib/reuse/match-existing.service.spec.ts`
@@ -143,7 +143,7 @@ rather than a default.
 
 ### S5 — Verify the result against the project, not against the source
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/external-mcps/src/lib/verify/verify-against-contract.service.ts`
   - `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`
