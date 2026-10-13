@@ -836,6 +836,34 @@
 			"name": "delendai_resolve_capability"
 		},
 		{
+			"name": "delendai_roadmap_roadmap_delta",
+			"plugin": "roadmap"
+		},
+		{
+			"name": "delendai_roadmap_roadmap_plan_close",
+			"plugin": "roadmap"
+		},
+		{
+			"name": "delendai_roadmap_roadmap_plan_init",
+			"plugin": "roadmap"
+		},
+		{
+			"name": "delendai_roadmap_roadmap_promotion",
+			"plugin": "roadmap"
+		},
+		{
+			"name": "delendai_roadmap_roadmap_readiness",
+			"plugin": "roadmap"
+		},
+		{
+			"name": "delendai_roadmap_roadmap_show",
+			"plugin": "roadmap"
+		},
+		{
+			"name": "delendai_roadmap_roadmap_sync",
+			"plugin": "roadmap"
+		},
+		{
 			"name": "delendai_rules_apply_rules",
 			"plugin": "rules"
 		},

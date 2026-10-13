@@ -365,6 +365,37 @@ export const findManifestPresetDrift = (
 			detail: `manifest declares preset membership for plugin "${row.pluginId}" and preset "${row.presetId}" as ${row.declared ? 'present' : 'absent'}, but PRESET_CATALOG resolves it as ${row.catalogMember ? 'present' : 'absent'}.`,
 		}));
 
+/**
+ * The configured plugins a preset can name: every one but the private
+ * ones. A private plugin is never published, so no preset may list it
+ * (an adopter could not install it) — which the mirror rule below would
+ * otherwise demand the moment this repository configures one for itself.
+ */
+export const presetEligible = async (
+	configPluginIds: readonly string[],
+	rootDir: string,
+): Promise<readonly string[]> => {
+	const eligible: string[] = [];
+	for (const id of configPluginIds) {
+		let isPrivate = false;
+		try {
+			isPrivate =
+				(
+					JSON.parse(
+						await readFile(
+							resolve(rootDir, 'plugins', id, 'package.json'),
+							'utf8',
+						),
+					) as { private?: unknown }
+				).private === true;
+		} catch {
+			// No manifest to read: the mirror rule judges it as before.
+		}
+		if (!isPrivate) eligible.push(id);
+	}
+	return eligible;
+};
+
 export const findDogfoodConfigDrift = (
 	configPluginIds: readonly string[],
 	dogfoodMembers: readonly string[] = resolvePresetMembers('dogfood'),
@@ -402,7 +433,10 @@ export const detectCatalogPresetDrift = async (
 		const config = JSON.parse(configRaw) as {
 			plugins?: Readonly<Record<string, unknown>>;
 		};
-		const configPluginIds = Object.keys(config.plugins ?? {}).sort();
+		const configPluginIds = await presetEligible(
+			Object.keys(config.plugins ?? {}).sort(),
+			rootDir,
+		);
 		const diff = findDogfoodConfigDrift(configPluginIds);
 		if (diff.missing.length > 0 || diff.unexpected.length > 0) {
 			const parts: string[] = [];
