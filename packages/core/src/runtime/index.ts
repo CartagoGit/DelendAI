@@ -14,6 +14,9 @@ export {
 	writeFileAtomicSync,
 } from '../lib/shared/atomic-write';
 export { withFileMutex } from '../lib/shared/with-file-mutex';
+// Where a plugin keeps a record about the workspace (a lock, a journal):
+// the records folder of the cache directory, as delendai keeps its own.
+export { recordPath } from '../lib/shared/delendai-records';
 export { SafeWorkspaceReader } from '../lib/filesystem/safe-workspace-reader';
 export type { ISafeWorkspaceReaderOptions } from '../lib/filesystem/safe-workspace-reader';
 export { WorkspaceContainmentError } from '../lib/filesystem/safe-workspace-reader.errors';

@@ -67,3 +67,15 @@ export const installUnitDependencies = async (
 		};
 	}
 };
+
+/**
+ * What entering a unit did about its dependencies, for the answer. A
+ * unit entered again installs them too: a kept unit nobody worked on
+ * gave them back to the disk (`work reap`).
+ */
+export const enteredDependencies = async (
+	path: string | undefined,
+): Promise<{ readonly dependencies?: IUnitDependencies }> =>
+	path === undefined
+		? {}
+		: { dependencies: await installUnitDependencies(path) };

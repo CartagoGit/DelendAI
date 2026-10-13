@@ -21,7 +21,7 @@
  * Dry-run by default (`write: false`): returns the full plan without
  * touching disk. Pass `write: true` to persist it.
  */
-import { posix as pathPosix } from 'node:path';
+import { posix as pathPosix, relative } from 'node:path';
 
 import z from 'zod';
 
@@ -55,9 +55,10 @@ import { persistProjectProfile } from './project-profile.service';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { toolError, toolOk } from '../shared/tool-response';
 import { withFileMutex } from '../shared/with-file-mutex';
-import { PROJECT_PROFILE_FILENAME } from '../contracts/interfaces/project-profile.interface';
 import { detectExistingDelendaiInstall } from '../scaffold/detect-existing-install';
 import { DEFAULT_DELENDAI_SERVER_NAME } from '../contracts/constants/mcp-server-name.constant';
+import { PROJECT_PROFILE_RECORD } from '../contracts/constants/delendai-records.constant';
+import { recordPath } from '../shared/delendai-records';
 
 const CONFIG_FILENAME = 'delendai.config.json';
 
@@ -491,7 +492,12 @@ export const runAdoptProject = async (
 	const created: string[] = [];
 	const skipped: string[] = [];
 	if (profileWrite.created) {
-		created.push(PROJECT_PROFILE_FILENAME);
+		created.push(
+			relative(
+				deps.workspace.root,
+				recordPath(deps.workspace.root, PROJECT_PROFILE_RECORD),
+			),
+		);
 	}
 	for (const file of plan.files) {
 		if (await deps.reader.exists(file.path)) {

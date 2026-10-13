@@ -58,6 +58,10 @@ export type {
 	IMigrationPlanStep,
 	IMigrationRunResult,
 } from '../contracts/interfaces/workspace-migration.interface';
+import {
+	removeLegacyFolderIfSpent,
+	relocateLegacyRecords,
+} from './legacy-records-relocation.service';
 
 /**
  * Run every pending migration, in registry order.
@@ -197,6 +201,9 @@ export const ensureWorkspaceMigrated = async (input: {
 	if (!(await hasAdopted(input.workspaceRoot))) {
 		return { outcomes: [{ status: 'not-needed' }], acted: false };
 	}
+	// Before the journal is read: it is one of the records an older delendai
+	// kept at the workspace root, and the cache directory holds them now.
+	await relocateLegacyRecords(input.workspaceRoot);
 	const identity = await runPendingMigrations({
 		migrations: input.migrations,
 		journal: input.journal,
@@ -249,6 +256,8 @@ export const ensureWorkspaceMigrated = async (input: {
 		acted: migrated.acted || transitions.acted,
 		transitions,
 	};
+	// The state directory migrator may just have emptied the old folder.
+	await removeLegacyFolderIfSpent(input.workspaceRoot);
 	if (result.acted) input.report?.(result);
 	return result;
 };

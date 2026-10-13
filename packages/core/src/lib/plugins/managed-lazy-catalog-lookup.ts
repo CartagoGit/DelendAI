@@ -30,6 +30,10 @@ export const managedLazyPluginEntry = (
 ): IManagedLazyPluginCatalogEntry | undefined =>
 	ENTRIES_BY_ID.get(id) ?? LOCAL_BY_ID.get(id);
 
+/** Whether `id` is a plugin this project recorded, not one delendai ships. */
+export const isLocalLazyPlugin = (id: string): boolean =>
+	!ENTRIES_BY_ID.has(id) && LOCAL_BY_ID.has(id);
+
 /** The id a project-local plugin's specifier was recorded under, if it was. */
 export const localLazyPluginIdFor = (specifier: string): string | undefined =>
 	LOCAL_ID_BY_SPECIFIER.get(specifier);

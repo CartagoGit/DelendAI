@@ -62,9 +62,9 @@ const readRecords = async (
  * Puts this project's recorded plugins into the lazy lookup, the ones
  * whose file is still as it was recorded. Returns the specifiers used.
  */
-export const useLocalLazyCatalog = async (
+const currentRecords = async (
 	path: string,
-): Promise<readonly string[]> => {
+): Promise<readonly ILocalLazyCatalogRecord[]> => {
 	const current: ILocalLazyCatalogRecord[] = [];
 	for (const record of await readRecords(path)) {
 		const now = await fingerprintOf(record.resolved);
@@ -75,22 +75,42 @@ export const useLocalLazyCatalog = async (
 		)
 			current.push(record);
 	}
+	return current;
+};
+
+export const useLocalLazyCatalog = async (
+	path: string,
+): Promise<readonly string[]> => {
+	const current = await currentRecords(path);
 	useLocalLazyEntries(current);
 	return current.map((record) => record.specifier);
 };
 
 /** What a loaded plugin registered, as the lazy runtime needs it. */
+/** What the lazy runtime registers when a tool or listing first needs it. */
+const SERVED_ON_DEMAND: ReadonlySet<string> = new Set([
+	'tools',
+	'activation',
+	'prompts',
+	'resources',
+	'knowledge',
+	'skills',
+]);
+
 export const localLazyRecordOf = async (
 	loaded: ILoadedPlugin,
 ): Promise<ILocalLazyCatalogRecord | undefined> => {
-	const fingerprint = await fingerprintOf(loaded.resolved);
-	if (fingerprint === undefined) return undefined;
+	const fingerprint = (await fingerprintOf(loaded.resolved)) ?? {
+		size: -1,
+		mtimeMs: -1,
+	};
 	const registrations = loaded.registrations;
-	const observes =
-		registrations.onToolStart !== undefined ||
-		registrations.onToolCall !== undefined ||
-		registrations.onToolCancel !== undefined ||
-		registrations.logsSink !== undefined;
+	// Anything the lazy runtime cannot serve on demand (agent roles, error
+	// sinks, observers, hooks) is needed from the start, so the plugin is
+	// activated at start like a catalog plugin that declares it.
+	const observes = Object.entries(registrations).some(
+		([key, value]) => value !== undefined && !SERVED_ON_DEMAND.has(key),
+	);
 	return {
 		specifier: loaded.specifier,
 		resolved: loaded.resolved,
@@ -116,7 +136,11 @@ export const localLazyRecordOf = async (
 	};
 };
 
-/** Records the loaded plugins the catalog did not index, keeping the others' records. */
+/**
+ * Serves the loaded plugins the catalog did not index from this start on,
+ * and records the ones whose file can be fingerprinted. Returns the
+ * specifiers now served.
+ */
 export const recordLocalLazyCatalog = async (
 	path: string,
 	loaded: readonly ILoadedPlugin[],
@@ -125,25 +149,40 @@ export const recordLocalLazyCatalog = async (
 	const records = new Map(
 		(await readRecords(path)).map((record) => [record.specifier, record]),
 	);
-	const recorded: string[] = [];
+	const current = await currentRecords(path);
+	const discovered: ILocalLazyCatalogRecord[] = [];
+	let persist = false;
 	for (const plugin of loaded.filter((entry) =>
 		unindexed.includes(entry.specifier),
 	)) {
 		const record = await localLazyRecordOf(plugin);
 		if (record === undefined) continue;
+		discovered.push(record);
+		// A plugin with no file to fingerprint (a package, a module served
+		// from memory) is served now and discovered again next start.
+		if (record.fingerprint.size < 0) continue;
 		records.set(record.specifier, record);
-		recorded.push(record.specifier);
+		persist = true;
 	}
-	if (recorded.length === 0) return [];
-	try {
-		await mkdir(dirname(path), { recursive: true });
-		const file: ILocalLazyCatalogFile = {
-			version: 1,
-			records: [...records.values()],
-		};
-		await writeFile(path, `${JSON.stringify(file, null, '\t')}\n`);
-	} catch {
-		return [];
-	}
-	return recorded;
+	useLocalLazyEntries([
+		...current.filter(
+			(kept) =>
+				!discovered.some(
+					(record) => record.specifier === kept.specifier,
+				),
+		),
+		...discovered,
+	]);
+	if (persist)
+		try {
+			await mkdir(dirname(path), { recursive: true });
+			const file: ILocalLazyCatalogFile = {
+				version: 1,
+				records: [...records.values()],
+			};
+			await writeFile(path, `${JSON.stringify(file, null, '\t')}\n`);
+		} catch {
+			// Served from memory this start; recorded again next time.
+		}
+	return discovered.map((record) => record.specifier);
 };
