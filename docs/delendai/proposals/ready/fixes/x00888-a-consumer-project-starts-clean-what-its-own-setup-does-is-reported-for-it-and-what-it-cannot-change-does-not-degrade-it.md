@@ -23,6 +23,7 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 3. **The summary contradicts itself.** "surface managed · lazy loading enabled" next to "module loading eager" and "lazy loaded on demand (0)"; "plugins 32 configured · 32 loaded" next to "loaded at startup (33)".
 4. **A missing optional CLI degrades the start.** Without `gh` on PATH, `forge.unavailable` and `governance.unverifiable` are reported as ERROR blockers and the reconciliation as DEGRADED, while mutations are not blocked: an alarm the project cannot clear except by installing a tool it may not use.
 5. **A configuration written for an older delendai is not brought in line.** `push-automation-contradicts-policy` is warned at every start: `plugins.commit-policy.options.push.*` contradicts the `shared-checkout-merge` profile. The project upgraded delendai, so the configuration delendai itself once wrote should follow (x00885's owner rule: a changed configuration brings what is derived in line).
+7. **A unit cannot publish until someone installs its dependencies.** `work enter` creates a worktree without `node_modules`, and the pre-push proof runs the typecheck, so the first publish of every unit fails (seen twice on 2026-10-13, for documentation-only units). The remedy is in a memory, not in the product.
 6. **The guard report takes nine lines every start.** A project whose hooks live in `.husky` gets each absent hook listed on its own line, at every start, before the remedy.
 
 ## non-goals
@@ -80,7 +81,16 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - acceptance:
   - Absent guard hooks are reported in one line naming their count, where they would go and the command that installs them.
 
+### S6 — A unit is entered with what its checks need
+
+- **Status**: pending
+- **Files**:
+  - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+- **Gate**: type
+- acceptance:
+  - Entering a unit in a project with a lockfile installs its dependencies into the worktree with the project's package manager, scripts disabled, or says in the entry's answer that it could not and the command that will; the first publish no longer fails on a missing module.
+
 ## acceptance
 
-- azur-lx's start-up log, replayed, shows none of the six departures.
+- azur-lx's start-up log, replayed, shows none of these departures.
 - New findings from consumer projects outside the dogfood configuration are added here as slices.
