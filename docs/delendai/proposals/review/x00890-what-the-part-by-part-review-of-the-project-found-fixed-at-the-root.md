@@ -79,6 +79,25 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 - review-implementer: claude-opus-5-5
 - shipped-in: `86cd7ecb0f6f`
 
+### S4 — Eviction never removes a unit, delendai's records or the state database
+
+- **Status**: pending
+- **Files**:
+  - `packages/core/src/lib/contracts/constants/core-eviction.constant.ts`
+  - `packages/core/src/lib/cache/eviction-registry.ts`
+  - `packages/core/src/lib/plugins/load-config-file.ts`
+  - `packages/core/tests/src/lib/cache/eviction-registry.spec.ts`
+  - `plugins/cache/src/lib/static-rules.ts`
+  - `plugins/cache/src/index.ts`
+  - `plugins/cache/README.md`
+  - `plugins/cache/tests/registry.spec.ts`
+- **Gate**: type
+- evidence: on 2026-10-13 at 19:09, the first start of the host server on the code that made the boot sweep apply by default (x00889 S2), the live unit `claude-opus-5-5-x00890-all` lost every file but `node_modules` while its gates were running in it; `work doctor` then reported it under `no-leftover-worktrees`. The `cache` plugin registers `cache-worktrees-orphans` (`.worktrees`, keep the newest 3 by mtime) and `state-journal-roll` (`state`, keep the newest 5 entries: the state database, its WAL and shared-memory files are entries). Both had only ever run as a dry run. The unit's commits were safe on its branch; uncommitted work would have been lost.
+- acceptance:
+  - The core refuses to register a rule whose path is, or is inside, `.worktrees`, `records` or `state`, naming the path it refused.
+  - The `cache` plugin contributes neither rule; its `worktrees` option is accepted and ignored, so no configuration stops validating.
+  - A sweep over a cache with units of any age removes none of them.
+
 ## acceptance
 
 - Every slice names the evidence that showed its defect and is closed with the check that shows it gone.
