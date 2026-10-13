@@ -115,6 +115,19 @@ The server log pasted with the same request showed two more departures: the chec
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S6 — Re-entering a published unit goes back to it
+
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/work-units/work-unit-generation.service.ts`
+  - `packages/core/src/lib/work-units/publication-target.service.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - `work enter` without `--generation`, for an agent whose own generation of that proposal and slice has an open publication, is refused. The refusal gives the generation, the topic and the merge that resume it, whether or not the forge still holds a reservation. `--alongside` still opens a deliberate next generation.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - A boot over a repository whose only leftover is a checkpoint kept under a later retired tip reports HEALTHY.

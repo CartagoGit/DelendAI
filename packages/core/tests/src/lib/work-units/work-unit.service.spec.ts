@@ -367,6 +367,35 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
+	it('sends an agent back to its own open publication instead of starting a second one', async () => {
+		const root = repoWith(PINNED);
+		const enter = [
+			'enter',
+			'--proposal=x00001',
+			'--slice=S1',
+			'--agent=glm-5',
+		];
+		const first = await command.run(
+			[...enter, '--topic=first'],
+			contextFor(root),
+		);
+		const data = first.data as { path: string; branch: string };
+		git(
+			root,
+			'update-ref',
+			`refs/heads/${data.branch.replace('/wip/', '/pr/')}`,
+			'HEAD',
+		);
+		git(root, 'worktree', 'remove', '--force', data.path);
+		git(root, 'update-ref', '-d', `refs/heads/${data.branch}`);
+
+		const again = await command.run(enter, contextFor(root));
+
+		expect(again.code).not.toBe(0);
+		expect(again.error).toContain('open publication of your own');
+		expect(again.error).toContain('--generation=1 --topic=first');
+	});
+
 	it('refuses to publish a review unit that changed the product', async () => {
 		const root = repoWith(PINNED);
 		const entered = await command.run(

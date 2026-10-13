@@ -32,14 +32,14 @@ export const sessionHolding = (
 	return path === undefined ? undefined : worktreeSession(path);
 };
 
-/** True while a publication of `workRef`'s generation exists, here or on a remote. */
+/** The publication of `workRef`'s generation, here or on a remote, while one exists. */
 const publishedUnder = (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	workRef: string,
-): boolean => {
+): string | undefined => {
 	const publication = publicationRefFromWorkRef(policy, workRef);
-	if (publication === undefined) return false;
+	if (publication === undefined) return undefined;
 	const unitDir = publication.slice(0, publication.lastIndexOf('/') + 1);
 	const branchDir = unitDir.replace(/^refs\/heads\//u, '');
 	const found = readGit(root, [
@@ -49,7 +49,7 @@ const publishedUnder = (
 		`${unitDir}*`,
 		`refs/remotes/*/${branchDir}*`,
 	]);
-	return found !== undefined && found.length > 0;
+	return found !== undefined && found.length > 0 ? found : undefined;
 };
 
 /** A string as a literal inside a regular expression. */
@@ -187,7 +187,25 @@ export const chooseGeneration = (
 			// Nor is any unit's while its publication is open: a second
 			// work ref with the identity of an open pull request is two
 			// refs the startup reconciler cannot tell apart.
-			if (!publishedUnder(root, policy, exact)) return { generation };
+			const published = publishedUnder(root, policy, exact);
+			if (published === undefined) return { generation };
+			// The entrant's own open publication: a new generation would
+			// open a second pull request for the same work and leave the
+			// first one red. Sent back to it, as a reservation sends it, the
+			// entry is the same whether or not the forge still holds one.
+			if (
+				proposal !== REVIEW_BATCH_ID &&
+				!args.includes('--alongside') &&
+				refs.size === 0
+			) {
+				const topic = /\/([^/]+)$/u.exec(published)?.[1] ?? '';
+				return {
+					refusal: refused(
+						`${proposal} ${slice} has an open publication of your own, \`${published.replace(/^refs\/(?:heads|remotes\/[^/]+)\//u, '')}\`, which a new generation would not resume.`,
+						`Go back to it: add --generation=${String(generation)} --topic=${topic}, bring its pull request in (\`git merge ${published.replace(/^refs\/(?:heads\/|remotes\/)/u, '')}\`) and publish again from there. Pass --alongside for a deliberate second attempt.`,
+					),
+				};
+			}
 			continue;
 		}
 		if (proposal !== REVIEW_BATCH_ID) {
