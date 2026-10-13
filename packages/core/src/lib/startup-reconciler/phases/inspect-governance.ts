@@ -39,6 +39,7 @@ import type {
 } from '../seams.interface';
 
 import type { IGovernancePhaseResult } from './inspect-governance.interface';
+import { FORGE_CLI_MISSING_NOTE } from '../forge-cli-missing.helper';
 
 export type { IGovernancePhaseResult } from './inspect-governance.interface';
 
@@ -55,8 +56,15 @@ export const runGovernancePhase = async (input: {
 	readonly seam: IStartupGovernanceSeam | undefined;
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly repository: IStartupRepositoryKey;
+	/** The forge's CLI is not installed: what it cannot read is noted, not blocking. */
+	readonly forgeCliMissing?: boolean | undefined;
 }): Promise<IGovernancePhaseResult> => {
 	if (input.policy.governance.strategy === 'none') return { findings: [] };
+	const unverifiableKind = (): 'blocker' | 'note' =>
+		input.forgeCliMissing === true ||
+		!input.policy.governance.failClosedOnUnverifiable
+			? 'note'
+			: 'blocker';
 	if (input.seam === undefined) {
 		return {
 			findings: input.policy.governance.failClosedOnUnverifiable
@@ -86,9 +94,7 @@ export const runGovernancePhase = async (input: {
 				finding({
 					code: 'governance.unverifiable',
 					phase: 'governance',
-					kind: input.policy.governance.failClosedOnUnverifiable
-						? 'blocker'
-						: 'note',
+					kind: unverifiableKind(),
 					subject: `${target.owner}/${target.repository}`,
 					message:
 						'Live forge governance could not be read; nothing was inferred from its absence.',
@@ -130,11 +136,12 @@ export const runGovernancePhase = async (input: {
 			finding({
 				code: 'governance.unverifiable',
 				phase: 'governance',
-				kind: input.policy.governance.failClosedOnUnverifiable
-					? 'blocker'
-					: 'note',
+				kind: unverifiableKind(),
 				subject: diff.notExecutable.join(', '),
-				message: `${String(diff.notExecutable.length)} governed propert(ies) could not be evaluated.`,
+				message:
+					input.forgeCliMissing === true
+						? `${String(diff.notExecutable.length)} governed propert(ies) were not evaluated: ${FORGE_CLI_MISSING_NOTE}`
+						: `${String(diff.notExecutable.length)} governed propert(ies) could not be evaluated.`,
 			}),
 		);
 	}
