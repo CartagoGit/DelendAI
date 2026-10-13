@@ -297,6 +297,13 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	 * and the promise could not be exercised by anybody.
 	 */
 	readonly namespacePrefix?: string;
+	/**
+	 * The editor and agent hosts this project uses (`copilot`, `claude`,
+	 * `codex`, `opencode`, `cursor`, `windsurf`, `gemini`, `continue`,
+	 * `agents-md`). delendai writes agents and instructions for these
+	 * only. Absent: the hosts found in the project.
+	 */
+	readonly hosts?: readonly string[];
 	/** Optional explicit surface override. Omitted => managed. */
 	readonly surfaceMode?: IMcpToolSurfaceMode;
 	/** Optional operator-facing startup report configuration. */

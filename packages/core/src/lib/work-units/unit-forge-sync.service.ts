@@ -18,6 +18,7 @@ import type {
 	IUnitForgeSync,
 	IUnitForgeSyncInput,
 } from '../contracts/interfaces/unit-forge-sync.interface';
+import { DURABILITY_PUSH_VARIABLE } from '../contracts/constants/durability-push.constant';
 import { UNIT_FORGE_SYNC_VARIABLE } from '../contracts/constants/unit-forge-sync.constant';
 import { createGitRunner } from '../shared/git-write';
 import { resolveDurabilityRemote } from '../wip-engine/durability-remote';
@@ -105,7 +106,7 @@ export const syncUnitsWithForge = async (
 	const isAncestor = async (a: string, b: string): Promise<boolean> =>
 		(await run(['merge-base', '--is-ancestor', a, b])).ok;
 	const push = (branch: string) =>
-		run([
+		(input.runPush ?? run)([
 			'push',
 			'--quiet',
 			remote,
@@ -303,6 +304,10 @@ export const syncUnitsAtStart = async (input: {
 		);
 		const synced = await syncUnitsWithForge({
 			run,
+			runPush: createGitRunner(input.root, 120_000, {
+				...process.env,
+				[DURABILITY_PUSH_VARIABLE]: '1',
+			}),
 			runIn: (cwd) => createGitRunner(cwd),
 			policy: input.policy,
 			remote,

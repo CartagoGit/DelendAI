@@ -6,6 +6,7 @@ import type {
 	IPluginAgentChange,
 	IPluginAgentSource,
 } from '../contracts/interfaces/agent-role-contribution.interface';
+import { projectAgentHosts } from '../hosts/project-hosts.service';
 import { syncPluginAgents } from './plugin-agents.service';
 
 const said: Record<IPluginAgentChange['action'], string> = {
@@ -20,12 +21,15 @@ export const reportPluginAgents = async (
 	root: string,
 	namespacePrefix: string,
 	loaded: readonly IPluginAgentSource[],
+	declaredHosts?: readonly string[],
 	write: (line: string) => void = (line) => process.stderr.write(line),
 ): Promise<void> => {
 	try {
 		const changes = await syncPluginAgents({
 			root,
 			namespacePrefix,
+			hosts: (await projectAgentHosts({ root, declared: declaredHosts }))
+				.hosts,
 			contributions: loaded.flatMap(({ plugin, registrations }) =>
 				(registrations.agentRoles ?? []).map((role) => ({
 					plugin: plugin.name,

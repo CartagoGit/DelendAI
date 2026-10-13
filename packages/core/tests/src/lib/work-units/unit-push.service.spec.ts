@@ -3,7 +3,7 @@
  * same branch on the forge, and a refused push says how to reconcile.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -121,5 +121,26 @@ describe('pushUnitTip', () => {
 		expect(run(remote, 'rev-parse', BRANCH)).toBe(tip);
 		expect(dropForgeCopy(root, 'origin', BRANCH, tip)).toBe(true);
 		expect(run(remote, 'branch', '--list', BRANCH)).toBe('');
+	});
+
+	it("says it is a durability push, so a project's publication checks can let it through", () => {
+		const { run, remote, root, unit } = setup();
+		const hook = join(root, '.git', 'hooks', 'pre-push');
+		writeFileSync(
+			hook,
+			'#!/bin/sh\ntest "$DELENDAI_DURABILITY_PUSH" = 1\n',
+		);
+		chmodSync(hook, 0o755);
+		expect(
+			pushUnitTip({
+				cwd: unit,
+				branch: BRANCH,
+				inMainWorktree: false,
+				policy,
+			}).status,
+		).toBe('pushed');
+		expect(run(remote, 'rev-parse', BRANCH)).toBe(
+			run(unit, 'rev-parse', 'HEAD'),
+		);
 	});
 });

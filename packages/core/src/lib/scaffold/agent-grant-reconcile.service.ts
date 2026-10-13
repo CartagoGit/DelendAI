@@ -17,6 +17,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { AGENT_HOSTS } from '../contracts/constants/agent-hosts.constant';
 import { AGENT_SLOTS } from '../contracts/constants/agent-slots.constant';
 import type { IAgentGrantChange } from '../contracts/interfaces/agent-grant-reconcile.interface';
 import { writeFileAtomic } from '../shared/atomic-write';
@@ -25,7 +26,11 @@ import { hostToolSetReference } from './mcp-server-name.helper';
 import { parseJsonc } from '../config/jsonc-document';
 
 const MCP_CONFIG_FILES = ['.vscode/mcp.json', '.mcp.json'] as const;
-const COPILOT_AGENTS_DIR = '.github/agents';
+// Only the Copilot format grants tools by server tool set; the other
+// hosts' agents inherit their tools, so there is nothing to reconcile.
+const COPILOT_AGENTS_DIR =
+	AGENT_HOSTS.find((host) => host.agents?.format === 'copilot')?.agents
+		?.dir ?? '.github/agents';
 
 /** delendai's role names, as `adopt_project` writes them and in kebab case. */
 const ROLE_NAMES: ReadonlySet<string> = new Set(
