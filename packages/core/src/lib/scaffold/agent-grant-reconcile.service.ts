@@ -32,7 +32,10 @@ const ROLE_NAMES: ReadonlySet<string> = new Set(
 );
 
 /** Whether delendai wrote an agent of this name: its prefix, or a role. */
-const namedByDelendai = (name: string | undefined, prefix: string): boolean =>
+export const namedByDelendai = (
+	name: string | undefined,
+	prefix: string,
+): boolean =>
 	name !== undefined &&
 	(name === prefix || name.startsWith(`${prefix}-`) || ROLE_NAMES.has(name));
 
@@ -65,7 +68,7 @@ const registeredServers = async (
 };
 
 /** The `name:` and `tools:` lines of a file's front matter, when it has one. */
-const frontMatter = (
+export const frontMatter = (
 	text: string,
 ): { readonly name?: string; readonly toolsLine?: string } => {
 	const lines = text.split('\n');
