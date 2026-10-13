@@ -98,7 +98,7 @@ What the code does today:
 
 ### S4 — A project with the old layout is migrated at start
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/hosts/project-hosts.service.ts`
   - `packages/cli/src/commands/init/init.command.ts`
@@ -106,6 +106,8 @@ What the code does today:
 - acceptance:
   - A project from before `hosts` keeps every host it has agents for: their folders are evidence, so nothing is dropped and nothing has to be rewritten at start.
   - A project that declares `hosts` has the generated agents of the other hosts removed at the next start (plugin agents) or init (catalog agents); a file edited by hand is kept and reported.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A push that only keeps a unit's work safe is not judged as a publication
 
