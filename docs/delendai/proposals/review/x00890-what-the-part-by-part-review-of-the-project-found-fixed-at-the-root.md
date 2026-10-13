@@ -85,6 +85,8 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 - **Files**:
   - `packages/core/src/lib/contracts/constants/core-eviction.constant.ts`
   - `packages/core/src/lib/cache/eviction-registry.ts`
+  - `packages/core/src/lib/cache/eviction-protected-paths.helper.ts`
+  - `tools/scripts/verify/cache-eviction-verify.script.ts`
   - `packages/core/src/lib/plugins/load-config-file.ts`
   - `packages/core/tests/src/lib/cache/eviction-registry.spec.ts`
   - `plugins/cache/src/lib/static-rules.ts`

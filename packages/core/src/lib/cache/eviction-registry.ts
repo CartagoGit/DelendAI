@@ -29,8 +29,8 @@ import type {
 	ICacheEvictionSkipped,
 	ICacheEvictionWhen,
 } from '../contracts/interfaces/cache-eviction.interface';
-import { EVICTION_PROTECTED_PATHS } from '../contracts/constants/core-eviction.constant';
 import { resolveWorkspaceContained } from '../shared/contain-path';
+import { assertEvictable } from './eviction-protected-paths.helper';
 
 /** Date-shaped names (`YYYY-MM-DD`, optionally with `.ext`) let us
  *  pin TTLs on the filename itself, more robust than mtime for files
@@ -99,19 +99,7 @@ export const createCacheEvictionRegistry = (
 		if (deps.cacheDirAbs.length === 0) {
 			throw new Error('cache eviction registry: cacheDirAbs is empty');
 		}
-		// The boot sweep applies by default: a rule over the units removed
-		// live worktrees, their uncommitted work with them.
-		const segments = checkPath
-			.split(/[\\/]/u)
-			.filter((segment) => segment.length > 0 && segment !== '.');
-		const protectedRoot = EVICTION_PROTECTED_PATHS.find(
-			(root) => segments[0] === root,
-		);
-		if (protectedRoot !== undefined) {
-			throw new Error(
-				`cache eviction rule '${rule.id}': '${protectedRoot}' is not eviction's to remove (${rule.path})`,
-			);
-		}
+		assertEvictable(rule.id, rule.path, checkPath);
 	};
 
 	const resolveTargetAbs = (relPath: string): string =>
