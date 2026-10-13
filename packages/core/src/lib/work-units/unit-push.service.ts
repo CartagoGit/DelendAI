@@ -12,6 +12,7 @@
  */
 import { execFileSync } from 'node:child_process';
 
+import { DURABILITY_PUSH_VARIABLE } from '../contracts/constants/durability-push.constant';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IUnitPush } from '../contracts/interfaces/unit-push.interface';
 import { integrationRemote } from './work-unit-shared.service';
@@ -53,7 +54,12 @@ export const pushUnitTip = (input: {
 				remote,
 				`refs/heads/${branch}:refs/heads/${branch}`,
 			],
-			{ cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+			{
+				cwd,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'pipe'],
+				env: { ...process.env, [DURABILITY_PUSH_VARIABLE]: '1' },
+			},
 		);
 		return { status: 'pushed', branch, remote };
 	} catch (error) {

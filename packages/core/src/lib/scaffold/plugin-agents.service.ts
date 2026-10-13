@@ -5,8 +5,9 @@
  * The agents a project got were a fixed list written for delendai's own
  * roles, whatever the project activated. A plugin, including one the
  * project ships itself, can now declare the roles it brings
- * (`agentRoles`); at each start every contributed role has its Copilot
- * and Claude Code agent, a role whose plugin left has its agents removed,
+ * (`agentRoles`); at each start every contributed role has its agent for
+ * each host the project uses, a role whose plugin left (or a host the
+ * project no longer uses) has its agents removed,
  * and a changed declaration rewrites them. Each file carries a marker
  * with the hash of what delendai wrote: a file a person edited since is
  * reported and never rewritten or removed.
@@ -15,7 +16,11 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { AGENT_HOSTS } from '../contracts/constants/agent-hosts.constant';
 import { DEFAULT_DELENDAI_SERVER_NAME } from '../contracts/constants/mcp-server-name.constant';
+import type { IAgentHost } from '../contracts/interfaces/agent-host.interface';
+import { renderAgentForHosts } from '../hosts/agent-renderers.helper';
+import { projectAgentHosts } from '../hosts/project-hosts.service';
 import type {
 	IAgentRoleContribution,
 	IPluginAgentChange,
@@ -56,25 +61,20 @@ const serverName = async (root: string): Promise<string> => {
 	return DEFAULT_DELENDAI_SERVER_NAME;
 };
 
-/** The files one contributed role is written to, with their content. */
+/** The files one contributed role is written to, one per agent host. */
 const renderRole = (
 	prefix: string,
 	server: string,
 	role: IAgentRoleContribution,
-): readonly { readonly path: string; readonly content: string }[] => {
-	const name = `${prefix}-${role.role}`;
-	const description = role.description.replace(/\s+/gu, ' ').trim();
-	return [
-		{
-			path: `.github/agents/${name}.agent.md`,
-			content: `---\nname: ${name}\ndescription: ${description}\ntools: [read, search, edit, execute, todo, ${hostToolSetReference(server)}/*]\nuser-invocable: false\n---\n\n${role.instructions.trim()}\n`,
-		},
-		{
-			path: `.claude/agents/${name}.md`,
-			content: `---\nname: ${name}\ndescription: ${description}\n---\n\n${role.instructions.trim()}\n`,
-		},
-	];
-};
+	hosts: readonly IAgentHost[],
+): readonly { readonly path: string; readonly content: string }[] =>
+	renderAgentForHosts(hosts, {
+		name: `${prefix}-${role.role}`,
+		description: role.description.replace(/\s+/gu, ' ').trim(),
+		instructions: role.instructions,
+		entryPoint: false,
+		serverToolSet: hostToolSetReference(server),
+	});
 
 export const syncPluginAgents = async (input: {
 	readonly root: string;
@@ -84,8 +84,12 @@ export const syncPluginAgents = async (input: {
 		readonly role: IAgentRoleContribution;
 	}[];
 	readonly apply?: boolean;
+	/** The hosts to write for; the project's own (declared or found) when absent. */
+	readonly hosts?: readonly IAgentHost[];
 }): Promise<readonly IPluginAgentChange[]> => {
 	const apply = input.apply !== false;
+	const hosts =
+		input.hosts ?? (await projectAgentHosts({ root: input.root })).hosts;
 	const server = await serverName(input.root);
 	const wanted = new Map<
 		string,
@@ -93,7 +97,12 @@ export const syncPluginAgents = async (input: {
 	>();
 	for (const { plugin, role } of input.contributions) {
 		if (!ROLE_ID.test(role.role)) continue;
-		for (const file of renderRole(input.namespacePrefix, server, role))
+		for (const file of renderRole(
+			input.namespacePrefix,
+			server,
+			role,
+			hosts,
+		))
 			wanted.set(file.path, {
 				plugin,
 				content: signed(file.content, plugin),
@@ -117,7 +126,11 @@ export const syncPluginAgents = async (input: {
 			action: existing === undefined ? 'created' : 'updated',
 		});
 	}
-	for (const dir of ['.github/agents', '.claude/agents']) {
+	// Every host's folder is swept: an agent written for a host the project
+	// no longer uses goes like one whose plugin left.
+	for (const dir of AGENT_HOSTS.flatMap((host) =>
+		host.agents === undefined ? [] : [host.agents.dir],
+	)) {
 		const files = await readdir(join(input.root, dir)).catch(
 			() => [] as string[],
 		);

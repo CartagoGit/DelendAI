@@ -21,8 +21,11 @@ import {
 } from '@delendai/core/public';
 import type { IFileReader } from '@delendai/core/contracts';
 import {
+	AGENT_HOSTS,
 	DEFAULT_DELENDAI_SERVER_NAME,
 	hostToolSetReference,
+	projectAgentHosts,
+	renderAgentForHosts,
 	applyJsoncEdits,
 	deriveSourceRoots,
 	renderPluginConfigComment,
@@ -177,6 +180,7 @@ export const renderDelendaiConfig = (
 			'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json',
 		cacheDir: '.cache/delendai',
 		docsDir: 'docs/delendai',
+		...(answers.hosts === undefined ? {} : { hosts: answers.hosts }),
 		plugins: {},
 		...(development === undefined ? {} : { development }),
 	};
@@ -337,133 +341,51 @@ export const renderGenericMcpJson = (
 });
 
 /**
- * x00202 S1: `tools:` now grants the fixed `delendai/*` wildcard
- * (matching `renderVscodeMcpJson`/`renderGenericMcpJson`, which always
- * register the server under the literal key `delendai` regardless of
- * `namespacePrefix` — the tool NAMES are prefixed, the server KEY is
- * not) instead of the descriptor's own tool list, which had no server
- * qualification and at least one stale entry. `user-invocable: false`
- * on every role but `orchestrator` is the flag that keeps a bounded
- * subagent out of the Copilot agent picker (f00031) — previously
- * omitted here entirely, so every `delendai init` adopter got all 5 agents
- * visible and selectable.
+ * Render delendai's agents from the live catalog, once per host the
+ * project uses: the `hosts` it declares, or else the ones found in it
+ * together with the ones init itself configures the server for (VS Code's
+ * `.vscode/mcp.json` for Copilot, `.mcp.json` for Claude Code).
  */
-const renderAgentFile = (
-	descriptor: {
-		role: string;
-		description: string;
-		body: string;
-	},
-	namespacePrefix = 'delendai',
-	serverName = DEFAULT_DELENDAI_SERVER_NAME,
-): IRenderedFile => {
-	const isRoot = descriptor.role === 'orchestrator';
-	const tools = isRoot
-		? `[read, search, edit, execute, todo, agent, ${hostToolSetReference(serverName)}/*]`
-		: `[read, search, edit, execute, todo, ${hostToolSetReference(serverName)}/*]`;
-	const frontmatter = [
-		'---',
-		`name: ${namespacePrefix}-${descriptor.role}`,
-		`description: ${descriptor.description}`,
-		`tools: ${tools}`,
-		`user-invocable: ${isRoot}`,
-		'---',
-	].join('\n');
-	return {
-		relPath: `.github/agents/${namespacePrefix}-${descriptor.role}.agent.md`,
-		content: `${frontmatter}\n\n${descriptor.body}\n`,
-	};
-};
-
-/**
- * x00160 S2 — Claude Code's own subagent format
- * (`.claude/agents/*.md`), rendered alongside the Copilot `.agent.md`
- * variant above. AGENT-BOOTSTRAP.md §8.2 unconditionally tells every
- * Claude Code host to delegate to the orchestrator subagent; without
- * this, `delendai init` never created one — reproduced live in
- * delendai's own repo, whose `.claude/agents/` didn't exist at all.
- *
- * Schema verified against Claude Code's documented subagent contract
- * (code.claude.com/docs/en/sub-agents): required `name` (kebab-case)
- * + `description`; `tools`, when present, is a COMMA-SEPARATED
- * STRING, not a YAML list — the descriptor never carried a `tools`
- * field to begin with (x00202 S1 removed it: Claude Code's tool
- * vocabulary doesn't map to a namespaced MCP tool id list anyway), so
- * omitting the frontmatter key inherits every tool available to
- * subagents in the session, same as before.
- */
-const renderClaudeAgentFile = (
-	descriptor: {
-		role: string;
-		description: string;
-		body: string;
-	},
-	namespacePrefix = 'delendai',
-): IRenderedFile => {
-	const frontmatter = [
-		'---',
-		`name: ${namespacePrefix}-${descriptor.role}`,
-		`description: ${descriptor.description}`,
-		'---',
-	].join('\n');
-	return {
-		relPath: `.claude/agents/${namespacePrefix}-${descriptor.role}.md`,
-		content: `${frontmatter}\n\n${descriptor.body}\n`,
-	};
-};
-
-/**
- * Codex CLI custom-subagent format
- * (`.codex/agents/*.md`), rendered alongside the Copilot and Claude
- * variants. Codex CLI treats a subagent file as a named, invocable
- * prompt template — `name` (kebab-case) + `description` are the only
- * required keys; everything else is host-managed.
- *
- * AGENT-BOOTSTRAP.md §8.3 tells Codex sessions how to invoke these
- * subagents; without it the Codex host reads only `AGENTS.md` (shared
- * with Copilot Chat) and never knows they exist.
- */
-const renderCodexAgentFile = (
-	descriptor: {
-		role: string;
-		description: string;
-		body: string;
-	},
-	namespacePrefix = 'delendai',
-): IRenderedFile => {
-	const frontmatter = [
-		'---',
-		`name: ${namespacePrefix}-${descriptor.role}`,
-		`description: ${descriptor.description}`,
-		'---',
-	].join('\n');
-	return {
-		relPath: `.codex/agents/${namespacePrefix}-${descriptor.role}.md`,
-		content: `${frontmatter}\n\n${descriptor.body}\n`,
-	};
-};
-
-/** S3 — render `.github/agents/delendai-<role>.agent.md` from the live catalog. */
 export const renderAgentFiles = async (
 	workspaceRoot: string,
 	options: {
 		readonly namespacePrefix?: string;
 		readonly locale?: string;
 		readonly serverName?: string;
+		/** Host ids the project declares (`hosts`). */
+		readonly hosts?: readonly string[];
 	} = {},
 ): Promise<readonly IRenderedFile[]> => {
 	const namespacePrefix = options.namespacePrefix ?? 'delendai';
 	const serverName = options.serverName ?? DEFAULT_DELENDAI_SERVER_NAME;
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
-	// x00160 S2: one Copilot file + one Claude Code file per role.
-	// Extended to emit Codex CLI files as well so a Codex adopter of
-	// `delendai init` gets the subagents AGENT-BOOTSTRAP.md §8.3 references.
-	return descriptors.flatMap((descriptor) => [
-		renderAgentFile(descriptor, namespacePrefix, serverName),
-		renderClaudeAgentFile(descriptor, namespacePrefix),
-		renderCodexAgentFile(descriptor, namespacePrefix),
-	]);
+	const found = await projectAgentHosts({
+		root: workspaceRoot,
+		declared: options.hosts,
+	});
+	// Declared hosts are the project's word; otherwise the ones found, and
+	// always the ones init itself configures the server for.
+	const hosts =
+		found.source === 'declared'
+			? found.hosts
+			: AGENT_HOSTS.filter(
+					(host) =>
+						INIT_CONFIGURED_HOSTS.includes(host.id) ||
+						found.hosts.includes(host),
+				);
+	return descriptors.flatMap((descriptor) =>
+		renderAgentForHosts(hosts, {
+			name: `${namespacePrefix}-${descriptor.role}`,
+			description: descriptor.description,
+			instructions: descriptor.body,
+			entryPoint: descriptor.role === 'orchestrator',
+			serverToolSet: hostToolSetReference(serverName),
+		}).map((file) => ({ relPath: file.path, content: file.content })),
+	);
 };
+
+/** The hosts init writes the server's configuration for whatever it finds. */
+const INIT_CONFIGURED_HOSTS: readonly string[] = ['copilot', 'claude'];
 
 // f00092: the 3-fragment model collapsed to a single canonical fragment.
 // The host-specific footnote now lives inline in each hand-edited host
@@ -598,6 +520,9 @@ export const renderInitBundle = async (
 				namespacePrefix: answers.namespacePrefix,
 				serverName: answers.serverName,
 				locale: 'en',
+				...(answers.hosts === undefined
+					? {}
+					: { hosts: answers.hosts }),
 			})),
 		);
 	}

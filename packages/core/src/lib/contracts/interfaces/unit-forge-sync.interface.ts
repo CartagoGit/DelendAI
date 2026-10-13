@@ -31,6 +31,8 @@ export interface IUnitForgeSync {
 /** What one pass needs: git here and in each worktree, and who is live. */
 export interface IUnitForgeSyncInput {
 	readonly run: IGitRunner;
+	/** The runner pushes go through; `run` when absent. */
+	readonly runPush?: IGitRunner;
 	/** A runner in another directory: a unit's worktree. */
 	readonly runIn: (cwd: string) => IGitRunner;
 	readonly policy: IResolvedDevelopmentPolicy;

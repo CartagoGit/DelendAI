@@ -59,9 +59,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		// alongside the Copilot one — AGENT-BOOTSTRAP.md §8.2 tells every
 		// Claude Code host to delegate to it, so init must create it.
 		expect(rels.some((r) => r.startsWith('.claude/agents/'))).toBe(true);
-		// Codex CLI custom-subagent format, parallel to Claude. AGENT-BOOTSTRAP.md
-		// §8.3 tells every Codex CLI host to invoke them by name.
-		expect(rels.some((r) => r.startsWith('.codex/agents/'))).toBe(true);
+		// Codex only when the project declares it or shows it: a project is
+		// not filled with every host's folders.
+		expect(rels.some((r) => r.startsWith('.codex/agents/'))).toBe(false);
 		expect(rels).toContain('AGENTS.md');
 		expect(rels).toContain('CLAUDE.md');
 		expect(rels).toContain('.github/copilot-instructions.md');
@@ -297,12 +297,28 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		},
 	);
 
+	it("writes agents only for the hosts the project declares, in each one's format", async () => {
+		const files = await renderAgentFiles('/no-catalog', {
+			locale: 'en',
+			hosts: ['opencode', 'cursor'],
+		});
+		expect(files.length).toBeGreaterThan(0);
+		expect(
+			files.every((file) => file.relPath.startsWith('.opencode/agent/')),
+		).toBe(true);
+		const entry = files.find((file) =>
+			file.relPath.endsWith('-orchestrator.md'),
+		);
+		expect(entry?.content).toContain('mode: primary');
+	});
+
 	it('uses the namespace for agent files and the configured MCP server key', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers(
 				{
 					namespacePrefix: 'acme',
 					serverName: 'acme-tools',
+					hosts: ['copilot', 'claude', 'codex'],
 				},
 				'/tmp/example-ws',
 			),
