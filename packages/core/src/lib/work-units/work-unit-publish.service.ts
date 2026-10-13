@@ -16,7 +16,7 @@ import {
 } from './work-publish.service';
 import {
 	choosePublicationTarget,
-	proposalStillOpen,
+	proposalInProgress,
 } from './publication-target.service';
 import { openPublicationPullRequest } from './publication-pull-request.service';
 import { landWorkUnit } from './work-unit-land.service';
@@ -199,13 +199,13 @@ export const published = async (
 			);
 		}
 	}
-	// A proposal's one wip branch outlives every publication until the
-	// proposal is done: fixes and next slices are committed on it.
-	const inProgress = proposalStillOpen(root, proposal, [workRef, base]);
+	// A proposal's one wip branch outlives every publication while the
+	// proposal is in progress: its next work is committed on it.
+	const inProgress = proposalInProgress(root, proposal, workRef);
 	const keepWorkRef = args.includes('--keep-work-ref') || inProgress;
 	const keepWorkRefBecause =
 		inProgress && !args.includes('--keep-work-ref')
-			? `${proposal} is not done, and its fixes and next slices are committed on this branch`
+			? `${proposal} is in progress, and its next work is committed on this branch`
 			: undefined;
 	// A profile that integrates by merge has no pull request to publish
 	// into: the unit lands here, certified by the local gate, or not at all.

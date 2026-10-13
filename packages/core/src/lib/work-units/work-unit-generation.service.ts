@@ -331,13 +331,17 @@ export const existingWorkRef = (
 	if (session !== undefined && own.length === 1) return own[0] ?? ref;
 	if (exists(ref)) return ref;
 	// Creating and implementing a proposal are one branch: the unit named
-	// for one kind may be the branch entered for the other.
+	// for one kind may be the branch entered for the other, unless another
+	// session works in it.
 	const continued = liveProposalBranch(
 		policy.branches.workRefTemplate,
 		ref,
 		readGit(root, ['worktree', 'list', '--porcelain']) ?? '',
 	)?.ref;
-	if (continued !== undefined) return continued;
+	const holder =
+		continued === undefined ? undefined : sessionHolding(root, continued);
+	if (continued !== undefined && (holder === undefined || holder === session))
+		return continued;
 	if (named.length === 1) return named[0] ?? ref;
 	if (scalarArg(args, 'kind') !== undefined) return ref;
 	const template = policy.branches.workRefTemplate;

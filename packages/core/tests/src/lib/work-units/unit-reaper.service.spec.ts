@@ -259,7 +259,7 @@ describe('a publication that moved ahead of its unit', () => {
 });
 
 describe('a landed unit whose proposal awaits its hand-off', () => {
-	it('is kept while the proposal is open, in review too, and reaped once it is done', async () => {
+	it('is kept while the proposal is in progress, and reaped once it leaves', async () => {
 		const repo = unitRepo();
 		const start = wall();
 		const ref = unitRef('handoff', 'x7-S1-g1');
@@ -304,10 +304,7 @@ describe('a landed unit whose proposal awaits its hand-off', () => {
 			git(worktree, 'commit', '-q', '-m', `chore: x7 to ${to}`);
 			git(repo.root, 'merge', '-q', '--no-ff', '-m', `merge ${to}`, ref);
 		};
-		// In review its branch still takes the fixes review asks for.
 		move('review');
-		expect(await standing()).toBe('idle');
-		move('done');
 		expect(await standing()).toBe('delivered');
 	});
 });

@@ -27,6 +27,8 @@ import type {
 	IWorkUnitResult,
 } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
+import { syncUnitsAtStart } from '@delendai/core/lib/work-units/unit-forge-sync.service';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 const roots: string[] = [];
 const command = { run: runWorkUnit };
@@ -694,7 +696,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('keeps the branch of a proposal that is not done, unasked', async () => {
+	it('keeps the branch of a proposal in progress, unasked', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -732,10 +734,10 @@ describe('delendai work (x00553)', () => {
 		).steps;
 		expect(
 			steps.find((step) => step.name === 'keep-work-ref')?.detail,
-		).toContain('x00553 is not done');
+		).toContain('x00553 is in progress');
 	});
 
-	it('ends the branch when the published tree has its proposal done', async () => {
+	it('ends the branch when the published tree takes its proposal out of progress', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -768,6 +770,50 @@ describe('delendai work (x00553)', () => {
 		expect(
 			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/wip/**'),
 		).toBe('');
+	});
+
+	it('publishes at start a unit whose proposal left in-progress, and ends its branch', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		execFileSync('git', ['push', '-q', 'origin', 'develop'], { cwd: root });
+		const doc = 'docs/delendai/proposals/review/x00553-probe.md';
+		mkdirSync(join(root, 'docs/delendai/proposals/review'), {
+			recursive: true,
+		});
+		writeFileSync(join(root, doc), '# x00553\n\n### S1 — one\n');
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await checkpoint(root, [`--paths=a.ts,${doc}`]);
+		const branch = git(
+			root,
+			'for-each-ref',
+			'--format=%(refname:short)',
+			'refs/heads/delendai/wip',
+		);
+		expect(branch).not.toBe('');
+
+		const synced = await syncUnitsAtStart({
+			root,
+			policy: resolveDevelopmentPolicy(PINNED),
+			env: {},
+			write: () => undefined,
+			// A start long after its owner went quiet.
+			now: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60,
+		});
+		expect(synced).toContainEqual({ branch, outcome: 'published' });
+		expect(
+			git(
+				root,
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/heads/delendai/wip',
+			),
+		).toBe('');
+		expect(
+			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
+		).not.toBe('');
 	});
 
 	it('runs a review batch as one branch, claimed by commits, published once (f00644)', async () => {

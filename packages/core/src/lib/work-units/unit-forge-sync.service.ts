@@ -22,7 +22,14 @@ import { UNIT_FORGE_SYNC_VARIABLE } from '../contracts/constants/unit-forge-sync
 import { createGitRunner } from '../shared/git-write';
 import { resolveDurabilityRemote } from '../wip-engine/durability-remote';
 import { resolveWorkRef } from '../wip-engine/ref-name';
+import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
+import { carriesNothingBeyond } from './landed-work.service';
+import { proposalInProgress } from './publication-target.service';
 import { readUnitStandings } from './unit-standings.service';
+import { listWorkRefs } from './work-swarm.service';
+import { integrationBase } from './work-unit-shared.service';
+import { runWorkUnit } from './work-unit.service';
 
 const lines = (text: string): readonly string[] =>
 	text.split('\n').filter((line) => line.length > 0);
@@ -206,6 +213,65 @@ export const syncUnitsWithForge = async (
 };
 
 /**
+ * Publish, through the work model, every unit whose proposal is no longer
+ * in progress on its own tip and that still holds work the integration
+ * branch lacks: its proposal left in-progress on another machine, or the
+ * publication that should have followed could not run. The publication
+ * ends the branch.
+ */
+const publishUnitsOutOfProgress = async (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	live: ReadonlySet<string>,
+): Promise<readonly IUnitForgeSync[]> => {
+	const base = integrationBase(root, policy);
+	if (base === undefined) return [];
+	const parser = compileWorkRefParser(
+		policy.branches.workRefTemplate,
+		policy.branches.workRefPrefix,
+		{ requireKind: false },
+	);
+	const done: IUnitForgeSync[] = [];
+	for (const [ref] of listWorkRefs(root, policy)) {
+		const unit = parser?.parse(`refs/heads/${ref}`);
+		if (
+			unit === undefined ||
+			live.has(ref) ||
+			live.has(`refs/heads/${ref}`) ||
+			unit.kind === 'review' ||
+			proposalInProgress(root, unit.proposal, `refs/heads/${ref}`) ||
+			carriesNothingBeyond(root, `refs/heads/${ref}`, base)
+		)
+			continue;
+		const result = await runWorkUnit(
+			[
+				'publish',
+				`--kind=${unit.kind}`,
+				`--proposal=${unit.proposal}`,
+				`--slice=${unit.slice}`,
+				`--agent=${unit.agent}`,
+				`--generation=${String(unit.generation)}`,
+				...(unit.topic === undefined ? [] : [`--topic=${unit.topic}`]),
+			],
+			{
+				cwd: root,
+				globals: { workspace: root, json: true, format: 'json' },
+			},
+		);
+		done.push(
+			result.code === EXIT_CODE.OK
+				? { branch: ref, outcome: 'published' }
+				: {
+						branch: ref,
+						outcome: 'failed',
+						detail: `its proposal is out of progress and its work could not be published: ${result.error ?? 'refused'}`,
+					},
+		);
+	}
+	return done;
+};
+
+/**
  * The start-up pass a server runs, reported on stderr (stdout is the MCP
  * transport). Never fails the start.
  */
@@ -214,6 +280,8 @@ export const syncUnitsAtStart = async (input: {
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly env?: NodeJS.ProcessEnv;
 	readonly write?: (line: string) => void;
+	/** Seconds since the epoch, to judge who is live; the clock otherwise. */
+	readonly now?: number;
 }): Promise<readonly IUnitForgeSync[]> => {
 	const env = input.env ?? process.env;
 	const write = input.write ?? ((line) => process.stderr.write(line));
@@ -227,6 +295,7 @@ export const syncUnitsAtStart = async (input: {
 				await readUnitStandings({
 					root: input.root,
 					policy: input.policy,
+					...(input.now === undefined ? {} : { now: input.now }),
 				})
 			)
 				.filter((unit) => unit.standing === 'live')
@@ -240,11 +309,16 @@ export const syncUnitsAtStart = async (input: {
 			isLive: (branch) =>
 				live.has(branch) || live.has(`refs/heads/${branch}`),
 		});
-		for (const each of synced)
+		const published = await publishUnitsOutOfProgress(
+			input.root,
+			input.policy,
+			live,
+		);
+		for (const each of [...synced, ...published])
 			write(
 				`[delendai] unit ${each.branch}: ${each.outcome}${each.detail === undefined ? '' : ` — ${each.detail}`}${each.repair === undefined ? '' : ` — reconcile with: ${each.repair}`}\n`,
 			);
-		return synced;
+		return [...synced, ...published];
 	} catch (error) {
 		write(
 			`[delendai] could not bring the units in step with the forge: ${error instanceof Error ? error.message : String(error)}\n`,

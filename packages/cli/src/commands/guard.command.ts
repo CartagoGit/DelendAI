@@ -8,13 +8,18 @@
  * judges an undeclared project against the policy delendai adopts for it,
  * the same one `delendai work` and the served instructions describe.
  */
-import { execFileSync } from 'node:child_process';
-import { resolve as resolvePath } from 'node:path';
+import { execFileSync, spawn } from 'node:child_process';
+import { openSync } from 'node:fs';
+import { dirname, join, resolve as resolvePath } from 'node:path';
 
 import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
-import { gitActorMarker, pushUnitTip } from '@delendai/core/cli';
+import {
+	gitActorMarker,
+	publicationOnLeavingProgress,
+	pushUnitTip,
+} from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -324,6 +329,44 @@ const reportUnitPush = (
 		process.stderr.write(
 			`delendai guard: ${pushed.branch} was committed here but ${pushed.remote} refused it (${pushed.detail}). The work is on this machine only until it is reconciled: ${pushed.repair}\n`,
 		);
+};
+
+/**
+ * When this commit moved the unit's proposal out of in-progress, publish
+ * what its branch holds through the work model, which then ends the
+ * branch. Detached: the publication removes the worktree this hook runs
+ * in, and must outlive the commit that triggered it. Its output goes to
+ * a log beside the repository's own git directory.
+ */
+const publishUnitLeavingProgress = (
+	workspace: string,
+	policy: IResolvedDevelopmentPolicy,
+	facts: Pick<IGuardFacts, 'branch' | 'inMainWorktree'>,
+): void => {
+	const args = publicationOnLeavingProgress({
+		cwd: workspace,
+		branch: facts.branch(),
+		inMainWorktree: facts.inMainWorktree(),
+		policy,
+	});
+	const entry = process.argv[1];
+	if (args === undefined || entry === undefined) return;
+	const common = execFileSync(
+		'git',
+		['rev-parse', '--path-format=absolute', '--git-common-dir'],
+		{ cwd: workspace, encoding: 'utf8' },
+	).trim();
+	const root = dirname(common);
+	const log = join(common, 'delendai-unit-publications.log');
+	const out = openSync(log, 'a');
+	spawn(process.execPath, [entry, `--workspace=${root}`, 'work', ...args], {
+		cwd: root,
+		detached: true,
+		stdio: ['ignore', out, out],
+	}).unref();
+	process.stderr.write(
+		`delendai guard: its proposal left in-progress, so ${facts.branch() ?? 'the unit'} is being published the way the work model integrates, and then ends (${log}).\n`,
+	);
 };
 
 const HOOKS: readonly IGuardedHook[] = [
@@ -659,6 +702,7 @@ export const createGuardCommand = (
 		}
 		if (hook === 'post-commit') {
 			reportUnitPush(workspace, policy, facts);
+			publishUnitLeavingProgress(workspace, policy, facts);
 			return { code: EXIT_CODE.OK };
 		}
 		// A merge that resolved a generated file did so mid-tree; here the

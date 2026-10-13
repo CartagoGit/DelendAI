@@ -23,7 +23,7 @@ import {
 	changedLines,
 	choosePublicationTarget,
 	proposalSliceCount,
-	proposalStillOpen,
+	proposalInProgress,
 	publicationPattern,
 } from '@delendai/core/lib/work-units/publication-target.service';
 
@@ -333,7 +333,7 @@ describe('what the decision reads', () => {
 		expect(proposalSliceCount(root, 'x09999')).toBeUndefined();
 	});
 
-	it('keeps a proposal open until it is done, on the unit or on the integration branch', () => {
+	it('keeps a wip branch exactly while its proposal is in progress', () => {
 		const { root } = setup(2);
 		const move = (from: string, to: string) => {
 			mkdirSync(join(root, `docs/delendai/proposals/${to}`), {
@@ -347,20 +347,20 @@ describe('what the decision reads', () => {
 			);
 			git(root, 'commit', '-q', '-m', `to ${to}`);
 		};
-		expect(proposalStillOpen(root, 'x00001', ['HEAD'])).toBe(true);
+		expect(proposalInProgress(root, 'x00001', 'HEAD')).toBe(false);
 		move('ready/fixes', 'in-progress');
-		expect(proposalStillOpen(root, 'x00001', ['HEAD'])).toBe(true);
-		move('in-progress', 'review');
-		// Handed to review, its branch still takes the fixes review asks for.
-		expect(proposalStillOpen(root, 'x00001', ['HEAD'])).toBe(true);
-		move('review', 'done');
-		expect(proposalStillOpen(root, 'x00001', ['HEAD'])).toBe(false);
-		// Done on the integration branch ends it, whatever the unit's tip says.
-		expect(proposalStillOpen(root, 'x00001', ['HEAD~1', 'HEAD'])).toBe(
-			false,
-		);
-		expect(proposalStillOpen(root, 'x00001', ['HEAD~1'])).toBe(true);
-		expect(proposalStillOpen(root, 'x09999', ['HEAD'])).toBe(false);
+		expect(proposalInProgress(root, 'x00001', 'HEAD')).toBe(true);
+		for (const [from, to] of [
+			['in-progress', 'review'],
+			['review', 'paused'],
+			['paused', 'blocked'],
+			['blocked', 'done'],
+		] as const) {
+			move(from, to);
+			expect(proposalInProgress(root, 'x00001', 'HEAD')).toBe(false);
+		}
+		expect(proposalInProgress(root, 'x00001', 'HEAD~4')).toBe(true);
+		expect(proposalInProgress(root, 'x09999', 'HEAD')).toBe(false);
 	});
 
 	it('counts added and removed lines against the base', () => {

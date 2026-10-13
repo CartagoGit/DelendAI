@@ -89,6 +89,23 @@ describe('liveProposalBranch', () => {
 		).toBeUndefined();
 	});
 
+	it('matches however the template and the refs spell refs/heads', () => {
+		const shapes = [
+			'heads/delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
+			'refs/heads/delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
+		];
+		for (const shape of shapes)
+			expect(
+				liveProposalBranch(
+					shape,
+					'refs/heads/delendai/wip/agent-a/implement/f00001-all-g1/t',
+					listing(
+						'refs/heads/delendai/wip/agent-a/create/f00001-all-g1/t',
+					),
+				)?.ref,
+			).toBe('refs/heads/delendai/wip/agent-a/create/f00001-all-g1/t');
+	});
+
 	it('reads nothing from a ref outside the template', () => {
 		expect(
 			liveProposalBranch(

@@ -14,6 +14,8 @@ export type IUnitForgeSyncOutcome =
 	| 'fetched'
 	/** Uncommitted edits of a unit nobody is working in were committed and pushed. */
 	| 'kept-uncommitted'
+	/** Its proposal left in-progress; its work was integrated and the branch ended. */
+	| 'published'
 	/** Both sides moved: nothing was overwritten; `repair` reconciles it. */
 	| 'diverged'
 	/** Something could not be done; `detail` says what. */
