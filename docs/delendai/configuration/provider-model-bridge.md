@@ -15,7 +15,7 @@ One entry per workspace, keyed by the workspace's absolute path:
 ```json
 {
   "entries": {
-    "/home/me/projects/acme": {
+    "/work/acme": {
       "model": "claude-opus-5-5",
       "provider": "my-chat-provider",
       "at": "2026-10-13T09:30:00.000Z"
