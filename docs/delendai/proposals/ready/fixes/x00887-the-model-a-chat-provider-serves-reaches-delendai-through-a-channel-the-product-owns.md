@@ -42,7 +42,8 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
   - `packages/core/src/lib/work-identity/provider-model-bridge.constant.ts`
   - `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`
-  - `docs/delendai/integrations/provider-model-bridge.md`
+  - `docs/delendai/configuration/provider-model-bridge.md`
+  - `packages/core/src/lib/contracts/interfaces/provider-model-reading.interface.ts`
 - **Gate**: type
 - acceptance:
   - The format (model, at, provider, workspace) and where it is written are documented for provider authors in a page delendai publishes. The page is host-agnostic and names no single provider as the reference.
@@ -53,10 +54,13 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
-  - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+  - `packages/core/src/cli.ts`
+  - `packages/cli/src/index.ts`
+  - `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`
 - **Gate**: type
 - acceptance:
-  - The bridge reports why it gave nothing: `absent`, `stale` (with its age), `other-workspace` or `malformed`. The doctor and the identity refusal show that reason and the remedy (a provider that publishes, `DELENDAI_PROVIDER_MODEL_FILE`, or `DELENDAI_AGENT_ID`).
+  - The bridge reports why it gave nothing: `absent`, `stale` (with its age), `other-workspace` or `malformed`. `work enter`'s identity refusal and the server's start-up notice show that reason and the remedy (a provider that publishes, `DELENDAI_PROVIDER_MODEL_FILE`, or `DELENDAI_AGENT_ID`).
 
 ### S3 — The writer comes from a channel the product owns
 
