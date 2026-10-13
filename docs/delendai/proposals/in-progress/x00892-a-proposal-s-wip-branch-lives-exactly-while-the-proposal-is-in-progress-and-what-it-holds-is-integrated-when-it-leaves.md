@@ -65,7 +65,7 @@ What x00891 (merged in #1066) does instead:
 
 ### S2 — Leaving in-progress integrates what the branch holds, then ends it
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/unit-leaves-progress.service.ts`
   - `packages/core/src/cli.ts`
@@ -75,6 +75,8 @@ What x00891 (merged in #1066) does instead:
 - acceptance:
   - A commit on a unit's branch that moves its proposal out of `in-progress/` (to review, ready, blocked, paused or done), made by any tool, host or person, is followed at once by the unit's publication through the work model's own path: a pull request, a merge through the local gate, or nothing to do for a model without branches. The branch and its worktree end once that is proven.
   - The publication runs detached from the commit (it removes the worktree the hook runs in) and logs to `delendai-unit-publications.log` in the repository's git directory. Run again, it finds nothing to do; one the forge refuses leaves the branch, pushed, and the next start retries it (S3).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A unit whose proposal left in-progress on another machine is integrated at start
 
