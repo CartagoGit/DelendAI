@@ -87,6 +87,7 @@ import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
 import { runThrottledBootSweep } from '../cache/boot-eviction-throttle.service';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import { reportAgentGrants } from '../scaffold/agent-grant-report';
 import { chooseStateRegistry } from './state-registry-choice';
 import {
 	createJsonlRuntimeEventSink,
@@ -728,6 +729,7 @@ export const assembleCliConfig = async (
 		cacheDirAbs: cacheDirContained.abs,
 		createPluginDirs: false,
 	});
+	await reportAgentGrants(workspace.root, corePrefix);
 
 	const {
 		validationMatrix,
