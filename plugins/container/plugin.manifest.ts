@@ -23,6 +23,15 @@ export default definePluginManifest({
 		container_lint: ['filesystem-read'],
 		k8s_apply: ['container', 'process'],
 		container_build: ['container', 'process'],
+		// The docker tools run the docker CLI; the ones that change
+		// something do so only with consent, and only where the
+		// repository uses Docker.
+		container_pull: ['container', 'process'],
+		container_run: ['container', 'process'],
+		container_exec: ['container', 'process'],
+		container_compose: ['container', 'process', 'filesystem-read'],
+		container_network: ['container', 'process'],
+		container_volume: ['container', 'process'],
 	},
 	tokenBudget: {
 		staticBytes: 6_200,
@@ -32,6 +41,6 @@ export default definePluginManifest({
 		measuredAt: '2026-08-25',
 		source: 'token-budget-real',
 	},
-	dependencies: ['@delendai/core', 'zod'],
+	dependencies: ['@delendai/core', 'yaml', 'zod'],
 	capabilities: ['container', 'docker', 'kubernetes'],
 });
