@@ -2,10 +2,14 @@
 id: x00888
 title: "A consumer project starts clean: what its own setup does is reported for it, and what it cannot change does not degrade it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: b5535df0-8997-463c-b8e7-79ab37d3c490
+last-correlation-id: b5535df0-8997-463c-b8e7-79ab37d3c490
+last-transition-from: ready
+last-transition-at: 2026-10-13T11:05:59.538Z
 ---
 
 # x00888 — A consumer project starts clean: what its own setup does is reported for it, and what it cannot change does not degrade it
