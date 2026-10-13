@@ -93,6 +93,33 @@ describe('reapStrayRefs', () => {
 		);
 	});
 
+	it('removes a claim taken on a branch the integration branch merged', () => {
+		const { root, git } = repo();
+		// The reviewer's branch claims on its own commit, and reaches the
+		// integration branch through a merge: its tree is never one of the
+		// first-parent line's.
+		git('switch', '-q', '-c', 'review');
+		writeFileSync(join(root, 'r.txt'), 'r\n');
+		git('add', 'r.txt');
+		git('commit', '-q', '-m', 'chore(review): claim x3');
+		const reviewTree = git('rev-parse', 'HEAD^{tree}');
+		git('switch', '-q', 'develop');
+		writeFileSync(join(root, 'd.txt'), 'd\n');
+		git('add', 'd.txt');
+		git('commit', '-q', '-m', 'meanwhile');
+		git('merge', '-q', '--no-ff', '--no-edit', 'review');
+		const claim = git('commit-tree', reviewTree, '-m', 'review claim x3');
+		git('update-ref', 'refs/delendai-remote-claims/x3', claim);
+		expect(
+			reapStrayRefs({ root, policy, apply: true }).find(
+				(each) => each.ref === 'refs/delendai-remote-claims/x3',
+			),
+		).toEqual({
+			ref: 'refs/delendai-remote-claims/x3',
+			outcome: 'removed',
+		});
+	});
+
 	it('never touches branches, tags or the product namespace', () => {
 		const { root, git } = repo();
 		git('update-ref', 'refs/delendai/journal', 'HEAD');
