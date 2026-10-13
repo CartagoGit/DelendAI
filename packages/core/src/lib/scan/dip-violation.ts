@@ -56,6 +56,11 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// resolve the records folder inline, so finding it stays synchronous
 	// (one small config read, one pointer file in the git directory).
 	/packages\/core\/src\/lib\/shared\/delendai-records\.ts$/,
+	// The users' configuration roots: read by the install targets, whose
+	// path resolvers are synchronous, and by the editor-session reader of
+	// identity resolution (synchronous by contract). One directory listing
+	// under WSL.
+	/packages\/core\/src\/lib\/platform\/user-directories\.helper\.ts$/,
 	// The provider-model bridge is read by identity resolution, which is
 	// synchronous by contract: the git guard, `work enter` and every
 	// ref-naming call site ask "who is working" inline, and the guard is

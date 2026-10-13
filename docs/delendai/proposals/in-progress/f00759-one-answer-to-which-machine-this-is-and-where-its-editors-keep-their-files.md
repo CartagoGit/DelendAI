@@ -59,6 +59,8 @@ What the code does today:
   - `packages/core/src/lib/install/ide-targets.ts`
   - `packages/core/src/lib/work-identity/host-chat-model.helper.ts`
   - `packages/core/tests/src/lib/platform/user-directories.helper.spec.ts`
+  - `packages/core/src/lib/scan/dip-violation.ts`
+  - `packages/core/tests/src/lib/scan/dip-violation.spec.ts`
 - **Gate**: type
 - acceptance:
   - One helper returns the user-configuration roots of this machine (`APPDATA`, `~/Library/Application Support`, `XDG_CONFIG_HOME`, and under WSL the Windows users' `AppData/Roaming`), honouring the existing `DELENDAI_HOST_USER_DIRS` override.
