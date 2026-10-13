@@ -5,7 +5,9 @@
  * runs only with `confirm: true`, `dryRun: true` shows the argv and runs
  * nothing, a command whose settings reach the host also needs
  * `confirmRisk: true`, and a missing CLI is a typed answer, not a crash.
- * Reading commands (`ps`, `logs`, `ls`, `inspect`) need no consent.
+ * Reading commands (`ps`, `logs`, `ls`, `inspect`) need no consent. In a
+ * repository with no Docker signal, every change is refused: the plugin
+ * stays passive there, whatever the caller consents to.
  */
 import {
 	probeTool,
@@ -40,6 +42,17 @@ export const runDocker = async (
 			ok: 'dry-run',
 			command: shown,
 			...(command.risks.length > 0 ? { risks: [...command.risks] } : {}),
+		};
+	if (
+		command.mutating &&
+		deps.usesDocker !== undefined &&
+		!(await deps.usesDocker())
+	)
+		return {
+			ok: false,
+			reason: 'this repository shows no sign of using Docker (no root Dockerfile, compose file or .devcontainer/)',
+			nextAction:
+				'The Docker tools only read here. Add the file that says the project uses Docker, or run the command yourself.',
 		};
 	if (command.mutating && consent.confirm !== true)
 		return {

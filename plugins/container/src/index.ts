@@ -19,16 +19,21 @@ export default definePlugin({
 	describe:
 		'Container inspection: container_ps + container_images (Docker) + k8s_get (Kubernetes) — read-only by default. Probes docker/kubectl via r00012.',
 	optionsSchema: OptionsSchema,
-	async register(ctx) {
+	register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
 				`container plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
-		// The tools that change images, containers, networks and volumes
-		// exist only where the repository says it uses Docker.
-		const usesDocker = (await dockerSignals(ctx.workspace.root)).length > 0;
+		// Registered everywhere, so what the plugin offers does not depend on
+		// the folder it starts in; the Docker tools act only where the
+		// repository says it uses Docker, and say so elsewhere.
+		let signals: Promise<readonly string[]> | undefined;
+		const usesDocker = async (): Promise<boolean> => {
+			signals ??= dockerSignals(ctx.workspace.root);
+			return (await signals).length > 0;
+		};
 		return {
 			tools: [
 				...buildContainerInspectToolRegistrations({
@@ -41,17 +46,14 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
 				}),
-				...(usesDocker
-					? [
-							...buildContainerBuildToolRegistrations({
-								namespacePrefix: ctx.namespacePrefix,
-							}),
-							...buildContainerDockerToolRegistrations({
-								namespacePrefix: ctx.namespacePrefix,
-								workspaceRootAbs: ctx.workspace.root,
-							}),
-						]
-					: []),
+				...buildContainerBuildToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+				}),
+				...buildContainerDockerToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+					deps: { usesDocker },
+				}),
 			],
 			knowledge: [
 				{

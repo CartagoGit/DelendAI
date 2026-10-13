@@ -10,10 +10,11 @@ delendai --plugins=container
 ```
 
 Registers `<prefix>_container_inspect`, `<prefix>_container_logs`, and
-`<prefix>_container_lint` everywhere. In a repository that uses Docker (a
-root `Dockerfile`, compose file or `.devcontainer/`), it also registers the
-tools that change things: `<prefix>_container_build`, `<prefix>_k8s_apply`,
-and the Docker tools below. Elsewhere the plugin stays passive.
+`<prefix>_container_lint`, `<prefix>_container_build`, `<prefix>_k8s_apply`
+and the Docker tools below. The Docker tools change something only in a
+repository that uses Docker (a root `Dockerfile`, compose file or
+`.devcontainer/`). Elsewhere they only read, and any change is refused with
+the reason.
 
 ## Tools
 
@@ -118,8 +119,7 @@ All normalization stays in pure parsers and rules so the lint works fully offlin
 
 ## Docker tools
 
-Registered only where the repository uses Docker. Each one runs the `docker`
-CLI, and every one follows the same consent rules.
+Each one runs the `docker` CLI, and every one follows the same consent rules.
 
 | Tool | What it does | Consent |
 | --- | --- | --- |

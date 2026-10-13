@@ -10,6 +10,8 @@ export interface IDockerDeps {
 	readonly runExec?: IArgvExec | undefined;
 	/** Where compose files are resolved: the workspace root. */
 	readonly cwd?: string | undefined;
+	/** Whether the repository uses Docker; a change is refused where it does not. */
+	readonly usesDocker?: (() => Promise<boolean>) | undefined;
 }
 
 /** A docker command and how much consent it needs. */

@@ -45,7 +45,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - `plugins/container/src/lib/detect/docker-signals.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - The tools that change images, containers, networks and volumes (including the existing `container_build` and `k8s_apply`) are registered only when a root `Dockerfile`, compose file or `.devcontainer/` exists. Without one, the plugin inspects and lints only.
+  - The Docker tools are always registered, so what the plugin offers (and the generated catalog) never depends on the folder the server starts in. Without a root `Dockerfile`, compose file or `.devcontainer/`, every change they would make is refused with the reason, and reading stays free.
   - The CLI is the only adapter. A socket adapter is out of scope.
 - shipped-in: `79da5118f701`
 - review-state: in_review
@@ -126,7 +126,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ## acceptance
 
-- Without a root `Dockerfile`, compose file or `.devcontainer/`, the plugin registers only its reading tools (inspect, logs, lint).
+- Without a root `Dockerfile`, compose file or `.devcontainer/`, the Docker tools only read: every change is refused with the reason. They are registered everywhere, so the catalog does not depend on where it is generated.
 - Every Docker tool runs the CLI, returns structured stdout, stderr and exit code, and answers a missing CLI with `install-missing`.
 - A change needs `confirm: true`. A container that reaches the host (privileged, the docker socket, the host's network, pid or ipc namespace) also needs `confirmRisk: true`, which `confirm` never implies, from any caller.
 - `container_pull` pulls only a missing image under the default `if-not-present` policy.
