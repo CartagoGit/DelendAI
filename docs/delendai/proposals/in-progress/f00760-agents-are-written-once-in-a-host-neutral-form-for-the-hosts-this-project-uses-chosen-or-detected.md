@@ -54,7 +54,7 @@ What the code does today:
 
 ### S2 — The project chooses its hosts; detection fills in when it does not
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/hosts/project-hosts.service.ts`
   - `packages/core/src/lib/hosts/declared-hosts.helper.ts`
@@ -72,6 +72,8 @@ What the code does today:
   - `hosts` in `delendai.config.json` (or `DELENDAI_HOSTS` for one run) names the hosts the project uses. Absent, they are the ones its tree and environment show.
   - `init --hosts=<a,b>` writes that choice into the configuration. Without it, init writes agents for the hosts found and for the ones it configures the server for (`.vscode/mcp.json`, `.mcp.json`): Copilot and Claude Code. Codex, OpenCode and the rest only when declared or shown.
   - No agent is written for a host outside the set. Which editors get an MCP entry stays decided by the install targets (`--target`), as before.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Agents are declared once and rendered per host
 
