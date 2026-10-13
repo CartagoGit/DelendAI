@@ -86,7 +86,7 @@ const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
  * `CAPABILITY_TAGS` so the schema, the contract and the runner plugin
  * never drift.
  */
-const PROVIDER_ENTRY_SCHEMA = z
+export const PROVIDER_ENTRY_SCHEMA = z
 	.object({
 		id: z
 			.string()

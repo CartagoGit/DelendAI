@@ -87,6 +87,7 @@ import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
 import { runThrottledBootSweep } from '../cache/boot-eviction-throttle.service';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import { validProviderRoster } from '../plugins/provider-roster.helper';
 import { reportAgentGrants } from '../scaffold/agent-grant-report';
 import { reportPluginAgents } from '../scaffold/plugin-agents-report';
 import { chooseStateRegistry } from './state-registry-choice';
@@ -575,6 +576,13 @@ export const assembleCliConfig = async (
 			describe: (args: readonly string[]) => args.join(' '),
 		},
 	});
+	// Once per start: every plugin gets the same validated roster, and an
+	// entry left out is said once, not once per plugin.
+	const providerRoster = validProviderRoster(fileConfig.providers);
+	for (const entry of providerRoster.rejected)
+		process.stderr.write(
+			`[delendai] providers[${String(entry.index)}]${entry.id === undefined ? '' : ` (${entry.id})`} is left out of the roster: ${entry.reason}\n`,
+		);
 	const buildContext = (
 		pluginName: string,
 		cacheNamespace?: string,
@@ -627,6 +635,7 @@ export const assembleCliConfig = async (
 			cacheEvictionRegistry,
 			state: stateRegistry,
 			peerPlugins: peerRegistry.registry,
+			providers: providerRoster.providers,
 			toolRegistry,
 			effects: pluginEffects,
 			...(resolvedLogsSink !== undefined

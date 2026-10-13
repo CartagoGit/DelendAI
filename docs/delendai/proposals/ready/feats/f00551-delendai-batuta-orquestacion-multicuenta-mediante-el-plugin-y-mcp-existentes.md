@@ -43,9 +43,20 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-log: approved by minimax-3.1 — verified at f56c411a0e78, validate exit 0, tests 1/1 — Gate declared by the slice (bun run lint:proposals): exit 0, no new findings. The deliverable docs/delendai/batuta/reconciliation.md exists (62 lines) and landed in commit 2d45a1072. This is a documentation slice and I judged it as one: the question is whether the reconciliation is honest and specific, not whether it proves runtime support. It is both. The document opens by pinning the inspected SHA, tabulates existing evidence against remaining work per area, and — the criterion that matters most — refuses to blur real dispatch against passthrough: it records that port resolution fails when no port exists, and separately that the subscription invoker returns an explicit textual passthrough invoking no provider. It also does not overclaim. The evidence-limits section states plainly that no accounts, credentials or quotas were inspected and no providers or paid calls were executed, and requires later reports to distinguish mocks, fake CLIs, real processes and consented real calls. The first increment is defined with exclusive paths and explicitly says completing S1a does not complete S1 or CA-01..CA-19. It even records two failed publication attempts as evidence limits rather than hiding them. S1a through S8 stay pending; this verdict covers S0 only.
 
 ### S1a — Conectar roster raíz al runner manteniendo override explícito
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S0]
-- **Files**: `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/tests/src/lib/cli/assemble.spec.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/src/lib/options.ts`, `plugins/orchestrator-runner/tests/src/lib/plugin.spec.ts`, `plugins/orchestrator-runner/README.md`
+- **Files**:
+  - `packages/core/src/lib/plugins/plugin-contract.ts`
+  - `packages/core/src/lib/plugins/provider-roster.helper.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/src/lib/contracts/interfaces/provider-roster.interface.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/tests/src/lib/plugins/provider-roster.helper.spec.ts`
+  - `packages/core/tests/src/lib/cli/assemble.provider-roster.spec.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/src/lib/options.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/options.spec.ts`
+  - `plugins/orchestrator-runner/README.md`
 - **Gate**: type
 - acceptance:
   - "El contexto del plugin recibe providers de la configuración raíz; options.providers prevalece incluso cuando es []."
