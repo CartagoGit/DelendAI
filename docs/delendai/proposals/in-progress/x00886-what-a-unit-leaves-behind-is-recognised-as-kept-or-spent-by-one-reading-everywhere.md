@@ -2,10 +2,14 @@
 id: x00886
 title: "What a unit leaves behind is recognised as kept or spent by one reading, everywhere"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 3b87adb7-03ea-48fb-9e43-dcf6a57ebd86
+last-correlation-id: 3b87adb7-03ea-48fb-9e43-dcf6a57ebd86
+last-transition-from: ready
+last-transition-at: 2026-10-13T00:52:28.729Z
 ---
 
 # x00886 — What a unit leaves behind is recognised as kept or spent by one reading, everywhere
