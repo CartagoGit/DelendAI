@@ -90,11 +90,11 @@ describe('the model the editor recorded', () => {
 	});
 
 	it('reads workspace folders as every host writes them', () => {
-		expect(folderPathOf('file:///home/me/p')).toBe('/home/me/p');
-		expect(folderPathOf('vscode-remote://wsl%2Bubuntu/home/me/p%20x')).toBe(
-			'/home/me/p x',
+		expect(folderPathOf('file:///srv/me/p')).toBe('/srv/me/p');
+		expect(folderPathOf('vscode-remote://wsl%2Bubuntu/srv/me/p%20x')).toBe(
+			'/srv/me/p x',
 		);
-		expect(folderPathOf('file:///c%3A/Users/me/p')).toBe('c:/Users/me/p');
+		expect(folderPathOf('file:///c%3A/work/p')).toBe('c:/work/p');
 		expect(folderPathOf('untitled:1')).toBeUndefined();
 	});
 });

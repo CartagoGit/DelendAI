@@ -82,6 +82,8 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
   - `packages/core/tests/src/lib/work-identity/host-chat-model.helper.spec.ts`
   - `tools/scripts/lib/hermetic-agent-bridge-setup.ts`
+  - `packages/core/src/lib/scan/dip-violation.ts`
+  - `packages/core/tests/src/lib/scan/dip-violation.spec.ts`
 - **Gate**: type
 - acceptance:
   - The owner ruled out a contribution to a provider's repository (2026-10-13): delendai learns the model without any program's cooperation.
