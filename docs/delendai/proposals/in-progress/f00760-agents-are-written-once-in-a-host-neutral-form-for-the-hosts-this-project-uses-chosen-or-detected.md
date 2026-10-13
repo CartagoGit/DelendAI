@@ -2,10 +2,14 @@
 id: f00760
 title: "agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 7d1a559c-e710-4f05-bb26-80204b4a0dd6
+last-correlation-id: 7d1a559c-e710-4f05-bb26-80204b4a0dd6
+last-transition-from: ready
+last-transition-at: 2026-10-13T21:27:06.888Z
 ---
 
 # f00760 — agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected
