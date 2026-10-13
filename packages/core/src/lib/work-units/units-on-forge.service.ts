@@ -26,9 +26,7 @@ export const unitsOnForgeInvariant = (input: {
 		.flatMap((block) => {
 			const path = /^worktree (.+)$/mu.exec(block)?.[1];
 			const branch = /^branch refs\/heads\/(.+)$/mu.exec(block)?.[1];
-			return path !== undefined &&
-				branch !== undefined &&
-				branch.startsWith(workPrefix)
+			return path !== undefined && branch?.startsWith(workPrefix) === true
 				? [{ path, branch }]
 				: [];
 		});

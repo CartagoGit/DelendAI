@@ -14,7 +14,10 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
-import type { IUnitForgeSync } from '../contracts/interfaces/unit-forge-sync.interface';
+import type {
+	IUnitForgeSync,
+	IUnitForgeSyncInput,
+} from '../contracts/interfaces/unit-forge-sync.interface';
 import { UNIT_FORGE_SYNC_VARIABLE } from '../contracts/constants/unit-forge-sync.constant';
 import { createGitRunner } from '../shared/git-write';
 import { resolveDurabilityRemote } from '../wip-engine/durability-remote';
@@ -57,16 +60,6 @@ const worktreesByBranch = async (
 	}
 	return found;
 };
-
-export interface IUnitForgeSyncInput {
-	readonly run: IGitRunner;
-	/** A runner in another directory: a unit's worktree. */
-	readonly runIn: (cwd: string) => IGitRunner;
-	readonly policy: IResolvedDevelopmentPolicy;
-	readonly remote: string;
-	/** Whether somebody is working in the unit now; its edits are theirs. */
-	readonly isLive: (branch: string) => boolean;
-}
 
 export const syncUnitsWithForge = async (
 	input: IUnitForgeSyncInput,

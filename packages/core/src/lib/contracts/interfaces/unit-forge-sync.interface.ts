@@ -2,6 +2,8 @@
  * unit-forge-sync.interface.ts — what a start did to bring each unit in
  * step with the forge.
  */
+import type { IResolvedDevelopmentPolicy } from './development-policy.interface';
+import type { IGitRunner } from './git-runner.interface';
 
 export type IUnitForgeSyncOutcome =
 	/** This clone had commits the forge lacked; they were pushed. */
@@ -22,4 +24,15 @@ export interface IUnitForgeSync {
 	readonly outcome: IUnitForgeSyncOutcome;
 	readonly detail?: string;
 	readonly repair?: string;
+}
+
+/** What one pass needs: git here and in each worktree, and who is live. */
+export interface IUnitForgeSyncInput {
+	readonly run: IGitRunner;
+	/** A runner in another directory: a unit's worktree. */
+	readonly runIn: (cwd: string) => IGitRunner;
+	readonly policy: IResolvedDevelopmentPolicy;
+	readonly remote: string;
+	/** Whether somebody is working in the unit now; its edits are theirs. */
+	readonly isLive: (branch: string) => boolean;
 }
