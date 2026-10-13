@@ -88,7 +88,8 @@ export const syncPluginAgents = async (input: {
 	readonly hosts?: readonly IAgentHost[];
 }): Promise<readonly IPluginAgentChange[]> => {
 	const apply = input.apply !== false;
-	const hosts = input.hosts ?? projectAgentHosts({ root: input.root }).hosts;
+	const hosts =
+		input.hosts ?? (await projectAgentHosts({ root: input.root })).hosts;
 	const server = await serverName(input.root);
 	const wanted = new Map<
 		string,

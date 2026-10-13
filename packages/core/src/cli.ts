@@ -206,6 +206,13 @@ export type {
 } from './lib/contracts/interfaces/plugin-wiring.interface';
 export { diagnosePluginWiring } from './lib/scaffold/diagnose-plugin-wiring';
 export { hostToolSetReference } from './lib/scaffold/mcp-server-name.helper';
+export { renderAgentForHosts } from './lib/hosts/agent-renderers.helper';
+export { projectAgentHosts } from './lib/hosts/project-hosts.service';
+export { AGENT_HOSTS } from './lib/contracts/constants/agent-hosts.constant';
+export type {
+	IAgentHost,
+	IHostNeutralAgent,
+} from './lib/contracts/interfaces/agent-host.interface';
 export { DEFAULT_DELENDAI_SERVER_NAME } from './lib/contracts/constants/mcp-server-name.constant';
 export { runCreatePlugin } from './lib/scaffold/create-plugin.tool';
 export { scaffoldExtensionHostFiles } from './lib/scaffold/scaffold-extension-host';

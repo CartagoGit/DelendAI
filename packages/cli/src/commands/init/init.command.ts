@@ -38,6 +38,7 @@ import {
 	managedPluginEnvironmentRequirements,
 	parseJsonc,
 } from '@delendai/core/cli';
+import { AGENT_HOSTS } from '@delendai/core/cli';
 import {
 	buildSchemaFromRequirements,
 	checkSchema,
@@ -104,11 +105,11 @@ import type { Dirent } from 'node:fs';
 
 const HIGH_ENV_SEVERITIES = new Set(['critical', 'high']);
 
-const MANAGED_AGENT_DIRECTORIES = [
-	'.github/agents',
-	'.claude/agents',
-	'.codex/agents',
-] as const;
+// Every host's agent folder (`AGENT_HOSTS`): a stale generated agent goes
+// whichever host it was written for.
+const MANAGED_AGENT_DIRECTORIES: readonly string[] = AGENT_HOSTS.flatMap(
+	(host) => (host.agents === undefined ? [] : [host.agents.dir]),
+);
 
 const GENERATED_AGENT_MARKER =
 	'This file is a thin redirector. The canonical contract lives in the';
@@ -399,6 +400,7 @@ export const parseFlags = (args: readonly string[]): IInitFlags => {
 		force: boolean;
 		delendaiRoot?: string;
 		pluginPathsRoot?: string;
+		hosts?: readonly string[];
 	} = { dryRun: false, force: false };
 	for (const arg of args) {
 		if (arg === '--dry-run') out.dryRun = true;
@@ -407,6 +409,12 @@ export const parseFlags = (args: readonly string[]): IInitFlags => {
 			out.delendaiRoot = arg.slice('--delendai-root='.length);
 		else if (arg.startsWith('--plugin-paths-root='))
 			out.pluginPathsRoot = arg.slice('--plugin-paths-root='.length);
+		else if (arg.startsWith('--hosts='))
+			out.hosts = arg
+				.slice('--hosts='.length)
+				.split(',')
+				.map((id) => id.trim())
+				.filter((id) => id.length > 0);
 	}
 	return out;
 };
@@ -451,6 +459,7 @@ export const detectAndDecorateAnswers = async (
 		workspaceRoot,
 		...(detected !== undefined ? { detected } : {}),
 		...partial,
+		...(flags.hosts === undefined ? {} : { hosts: flags.hosts }),
 		serverName:
 			partial.serverName ??
 			deriveMcpServerName(detected?.projectName, workspaceRoot),
@@ -783,7 +792,7 @@ export const runInitWithAnswers = async (
 export const initCommand: ICliCommand = {
 	name: 'init',
 	summary: 'Interactive workspace bootstrap for delendai.',
-	usage: 'init [--dry-run] [--force] [--delendai-root=<path>] [--plugin-paths-root=<path>]',
+	usage: 'init [--dry-run] [--force] [--delendai-root=<path>] [--plugin-paths-root=<path>] [--hosts=<id,id>]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
 		const flags = parseFlags(args);
 		// Detect first so the prompts can show the operator what was

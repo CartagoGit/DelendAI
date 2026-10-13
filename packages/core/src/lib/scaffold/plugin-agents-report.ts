@@ -28,7 +28,8 @@ export const reportPluginAgents = async (
 		const changes = await syncPluginAgents({
 			root,
 			namespacePrefix,
-			hosts: projectAgentHosts({ root, declared: declaredHosts }).hosts,
+			hosts: (await projectAgentHosts({ root, declared: declaredHosts }))
+				.hosts,
 			contributions: loaded.flatMap(({ plugin, registrations }) =>
 				(registrations.agentRoles ?? []).map((role) => ({
 					plugin: plugin.name,

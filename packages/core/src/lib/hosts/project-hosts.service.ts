@@ -9,7 +9,7 @@
  * show, and the agent folders already there count, so no host a project
  * relies on is dropped.
  */
-import { existsSync } from 'node:fs';
+import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
@@ -25,20 +25,30 @@ const byIds = (ids: readonly string[]): readonly IAgentHost[] =>
 	AGENT_HOSTS.filter((host) => ids.includes(host.id));
 
 /** Whether `host` shows in the project at `root` or in `env`. */
-export const hostInUse = (
+export const hostInUse = async (
 	root: string,
 	host: IAgentHost,
 	env: NodeJS.ProcessEnv,
-): boolean =>
-	host.evidence.paths.some((path) => existsSync(join(root, path))) ||
-	(host.evidence.env ?? []).some((name) => env[name] !== undefined);
+): Promise<boolean> => {
+	if ((host.evidence.env ?? []).some((name) => env[name] !== undefined))
+		return true;
+	const found = await Promise.all(
+		host.evidence.paths.map((path) =>
+			access(join(root, path)).then(
+				() => true,
+				() => false,
+			),
+		),
+	);
+	return found.includes(true);
+};
 
-export const projectAgentHosts = (input: {
+export const projectAgentHosts = async (input: {
 	readonly root: string;
 	/** `hosts` from the configuration, when it says. */
 	readonly declared?: readonly string[] | undefined;
 	readonly env?: NodeJS.ProcessEnv;
-}): IProjectHosts => {
+}): Promise<IProjectHosts> => {
 	const env = input.env ?? process.env;
 	const fromEnv = env[HOSTS_VARIABLE]
 		?.split(',')
@@ -47,9 +57,10 @@ export const projectAgentHosts = (input: {
 	const declared = fromEnv ?? input.declared;
 	if (declared !== undefined)
 		return { hosts: byIds(declared), source: 'declared' };
-	const detected = AGENT_HOSTS.filter((host) =>
-		hostInUse(input.root, host, env),
+	const inUse = await Promise.all(
+		AGENT_HOSTS.map((host) => hostInUse(input.root, host, env)),
 	);
+	const detected = AGENT_HOSTS.filter((_, index) => inUse[index] === true);
 	return detected.length > 0
 		? { hosts: detected, source: 'detected' }
 		: { hosts: [], source: 'none' };
