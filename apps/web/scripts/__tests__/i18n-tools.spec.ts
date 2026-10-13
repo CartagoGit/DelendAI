@@ -12,7 +12,21 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { describeTool } from '../../src/i18n/tools';
+import type { Lang } from '#I18N/shared';
+
+import {
+	describeKnowledge,
+	describePrompt,
+	describePromptArg,
+	describeResource,
+	describeResourceName,
+	describeTool,
+	describeToolArg,
+	registerKnowledgeI18n,
+	registerPromptI18n,
+	registerResourceI18n,
+	registerToolI18n,
+} from '../../src/i18n/tools';
 
 describe('describeTool (per-tool i18n catalogue)', () => {
 	it('resolves delendai_overview in every supported language', () => {
@@ -60,5 +74,64 @@ describe('listRegisteredTools (check-i18n gate surface)', () => {
 		expect(codes.length).toBe(12);
 		expect(codes).toContain('en');
 		expect(codes).toContain('es');
+	});
+});
+
+describe('the prompt, resource and knowledge catalogues', () => {
+	const LANGS: readonly Lang[] = [
+		'en',
+		'es',
+		'fr',
+		'de',
+		'it',
+		'pt',
+		'ja',
+		'zh',
+		'hi',
+		'ar',
+		'th',
+		'vi',
+	];
+	const all = (word: string): Readonly<Record<Lang, string>> =>
+		Object.fromEntries(
+			LANGS.map((lang) => [lang, `${word} (${lang})`]),
+		) as Readonly<Record<Lang, string>>;
+
+	it('resolves what is registered, per language, and nothing else', () => {
+		registerToolI18n('spec_tool', {
+			description: all('tool'),
+			arguments: { path: all('path') },
+		});
+		registerPromptI18n('spec_prompt', {
+			description: all('prompt'),
+			arguments: { goal: all('goal') },
+		});
+		registerResourceI18n('spec://resource', {
+			name: all('name'),
+			description: all('resource'),
+		});
+		registerKnowledgeI18n('spec-knowledge', { title: all('title') });
+		expect(describeToolArg('delendai_spec_tool', 'path', 'es')).toBe(
+			'path (es)',
+		);
+		expect(describePrompt('spec_prompt', 'fr')).toBe('prompt (fr)');
+		expect(describePromptArg('spec_prompt', 'goal', 'de')).toBe(
+			'goal (de)',
+		);
+		expect(describeResourceName('spec://resource', 'it')).toBe('name (it)');
+		expect(describeResource('spec://resource', 'pt')).toBe('resource (pt)');
+		expect(describeKnowledge('spec-knowledge', 'ja')).toBe('title (ja)');
+		expect(describePrompt('missing', 'es')).toBeUndefined();
+		expect(
+			describeToolArg('delendai_spec_tool', 'missing', 'es'),
+		).toBeUndefined();
+	});
+
+	it('describes verify_result in every language', () => {
+		for (const lang of LANGS)
+			expect(
+				describeTool('delendai_external-mcps_verify_result', lang)
+					?.length ?? 0,
+			).toBeGreaterThan(40);
 	});
 });

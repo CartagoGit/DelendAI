@@ -151,6 +151,7 @@ rather than a default.
   - `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`
   - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_verify_result.ts`
   - `apps/web/src/i18n/tools/index.ts`
+  - `apps/web/scripts/__tests__/i18n-tools.spec.ts`
   - `plugins/external-mcps/tests/src/lib/catalog.spec.ts`
   - `plugins/external-mcps/tests/src/lib/tools/verify-result.tool.spec.ts`
   - `plugins/external-mcps/tests/src/lib/verify/verify-against-contract.service.spec.ts`
