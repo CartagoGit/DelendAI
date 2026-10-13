@@ -103,6 +103,8 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - acceptance:
   - Starting the server in a project with no delendai, whose own MCP configuration registers delendai, creates the configuration, the docs root and the agent files `adopt_project` writes with its defaults, and says so once on stderr. A server started by a user-wide configuration in a project that does not register delendai writes nothing.
   - A second start creates nothing and says nothing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A changed configuration brings what is derived in line
 
