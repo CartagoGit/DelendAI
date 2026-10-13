@@ -28,7 +28,7 @@ import { carriesNothingBeyond } from './landed-work.service';
 import { proposalInProgress } from './publication-target.service';
 import { readUnitStandings } from './unit-standings.service';
 import { listWorkRefs } from './work-swarm.service';
-import { integrationBase } from './work-unit-shared.service';
+import { integrationBase, readGit } from './work-unit-shared.service';
 import { runWorkUnit } from './work-unit.service';
 
 const lines = (text: string): readonly string[] =>
@@ -219,6 +219,23 @@ export const syncUnitsWithForge = async (
  * publication that should have followed could not run. The publication
  * ends the branch.
  */
+/**
+ * Whether one of the unit's own commits had its proposal in progress. A
+ * unit that only created its proposal, still being written, never had it
+ * in progress, so it has not left it: published at start, one went out
+ * with its template text seconds after it was created.
+ */
+const wasInProgressOnUnit = (
+	root: string,
+	proposal: string,
+	ref: string,
+	base: string,
+): boolean =>
+	(readGit(root, ['rev-list', `${base}..${ref}`]) ?? '')
+		.split('\n')
+		.filter((sha) => sha.length > 0)
+		.some((sha) => proposalInProgress(root, proposal, sha));
+
 const publishUnitsOutOfProgress = async (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
@@ -240,7 +257,8 @@ const publishUnitsOutOfProgress = async (
 			live.has(`refs/heads/${ref}`) ||
 			unit.kind === 'review' ||
 			proposalInProgress(root, unit.proposal, `refs/heads/${ref}`) ||
-			carriesNothingBeyond(root, `refs/heads/${ref}`, base)
+			carriesNothingBeyond(root, `refs/heads/${ref}`, base) ||
+			!wasInProgressOnUnit(root, unit.proposal, `refs/heads/${ref}`, base)
 		)
 			continue;
 		const result = await runWorkUnit(

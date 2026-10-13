@@ -40,6 +40,7 @@ Two departures on 2026-10-14, the night x00892 merged:
   - `packages/cli/src/commands/guard.command.ts`
   - `packages/core/src/lib/shared/hook-free-environment.helper.ts`
   - `packages/core/src/cli.ts`
+  - `packages/core/tests/src/lib/shared/hook-free-environment.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - The process the `post-commit` hook starts has none of `HOOK_GIT_ENVIRONMENT` in its environment, so its git commands answer about the checkout it is started in.
@@ -50,6 +51,7 @@ Two departures on 2026-10-14, the night x00892 merged:
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - At start, a unit is published for leaving in-progress only when one of its own commits (beyond the integration branch) had its proposal in progress and its tip no longer has. A unit that created a proposal and is still writing it is left alone.

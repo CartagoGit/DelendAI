@@ -772,6 +772,37 @@ describe('delendai work (x00553)', () => {
 		).toBe('');
 	});
 
+	it('leaves at start a unit that only created its proposal, still being written', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		execFileSync('git', ['push', '-q', 'origin', 'develop'], { cwd: root });
+		const doc = 'docs/delendai/proposals/ready/fixes/x00553-probe.md';
+		mkdirSync(join(root, 'docs/delendai/proposals/ready/fixes'), {
+			recursive: true,
+		});
+		writeFileSync(join(root, doc), '# x00553\n\nTODO\n');
+		await checkpoint(root, [`--paths=${doc}`]);
+		const synced = await syncUnitsAtStart({
+			root,
+			policy: resolveDevelopmentPolicy(PINNED),
+			env: {},
+			write: () => undefined,
+			now: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60,
+		});
+		expect(synced.some((each) => each.outcome === 'published')).toBe(false);
+		expect(
+			git(
+				root,
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/heads/delendai/wip',
+			),
+		).not.toBe('');
+	});
+
 	it('publishes at start a unit whose proposal left in-progress, and ends its branch', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
@@ -779,13 +810,15 @@ describe('delendai work (x00553)', () => {
 		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
 		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
 		execFileSync('git', ['push', '-q', 'origin', 'develop'], { cwd: root });
+		// In progress on the unit, then out of it: the move a start finds.
+		const working = 'docs/delendai/proposals/in-progress/x00553-probe.md';
 		const doc = 'docs/delendai/proposals/review/x00553-probe.md';
-		mkdirSync(join(root, 'docs/delendai/proposals/review'), {
+		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
 			recursive: true,
 		});
-		writeFileSync(join(root, doc), '# x00553\n\n### S1 — one\n');
+		writeFileSync(join(root, working), '# x00553\n\n### S1 — one\n');
 		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await checkpoint(root, [`--paths=a.ts,${doc}`]);
+		await checkpoint(root, [`--paths=a.ts,${working}`]);
 		const branch = git(
 			root,
 			'for-each-ref',
@@ -793,6 +826,25 @@ describe('delendai work (x00553)', () => {
 			'refs/heads/delendai/wip',
 		);
 		expect(branch).not.toBe('');
+		const tree = mkdtempSync(join(tmpdir(), 'work-cmd-unit-'));
+		roots.push(tree);
+		git(root, 'worktree', 'add', '-q', join(tree, 'u'), branch);
+		mkdirSync(join(tree, 'u', 'docs/delendai/proposals/review'), {
+			recursive: true,
+		});
+		git(join(tree, 'u'), 'mv', working, doc);
+		git(join(tree, 'u'), 'commit', '-q', '-m', 'docs: x00553 to review');
+		git(root, 'worktree', 'remove', '--force', join(tree, 'u'));
+		expect(
+			git(
+				root,
+				'ls-tree',
+				'-r',
+				'--name-only',
+				branch,
+				'docs/delendai/proposals',
+			),
+		).toBe(doc);
 
 		const synced = await syncUnitsAtStart({
 			root,
