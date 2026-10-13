@@ -83,6 +83,17 @@ describe('scan/dip-violation — detectDipViolations', () => {
 		).toHaveLength(0);
 	});
 
+	it("exempts the users' configuration roots, read by synchronous path resolvers", () => {
+		const body =
+			"import { readdirSync } from 'node:fs';\nexport const x = () => readdirSync(p);";
+		expect(
+			detectDipViolations(
+				'packages/core/src/lib/platform/user-directories.helper.ts',
+				body,
+			),
+		).toHaveLength(0);
+	});
+
 	it('exempts the editor and catalog readers the same identity resolution uses', () => {
 		const body =
 			"import { readFileSync } from 'node:fs';\nexport const x = () => readFileSync(p);";
