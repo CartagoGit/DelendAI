@@ -54,7 +54,8 @@ export const isDelendaiLaunchShape = (entry: IMcpServerLaunchShape): boolean =>
 /**
  * Parses the raw text of an editor MCP config file (`.vscode/mcp.json`'s
  * `{ servers: {...} }` shape, or `.mcp.json`'s `{ mcpServers: {...} }`
- * shape — both exist in the wild; delendai's own repo uses the second)
+ * shape — both exist in the wild; delendai's own repo uses the second —
+ * or Zed's `{ context_servers: {...} }`)
  * and returns the key of the first server entry whose launch shape
  * matches delendai. Returns `undefined` on unparsable JSON or no match,
  * never throws — a malformed config is the target project's problem, not
@@ -71,7 +72,8 @@ export const findDelendaiServerName = (
 	}
 	if (typeof parsed !== 'object' || parsed === null) return undefined;
 	const record = parsed as Record<string, unknown>;
-	const servers = record.servers ?? record.mcpServers;
+	const servers =
+		record.servers ?? record.mcpServers ?? record.context_servers;
 	if (typeof servers !== 'object' || servers === null) return undefined;
 	for (const [name, entry] of Object.entries(
 		servers as Record<string, unknown>,

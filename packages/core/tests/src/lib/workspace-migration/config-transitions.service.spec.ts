@@ -66,6 +66,7 @@ describe('snapshotOf', () => {
 			cacheDir: '.cache/delendai',
 			docsDir: 'docs/delendai',
 			plugins: ['alpha', 'zeta'],
+			namespacePrefix: 'delendai',
 		});
 	});
 });
