@@ -148,6 +148,9 @@ export const CONFIG_FILE_SCHEMA = z
 			.string()
 			.regex(/^[a-z][a-z0-9_]*$/u)
 			.optional(),
+		// The editor and agent hosts this project uses (`agent-hosts.constant`
+		// ids). Absent: the hosts found in the project.
+		hosts: z.array(z.string().min(1)).optional(),
 		cacheDir: z.string().optional(),
 		docsDir: z.string().optional(),
 		surfaceMode: z.enum(MCP_TOOL_SURFACE_MODE).optional(),
