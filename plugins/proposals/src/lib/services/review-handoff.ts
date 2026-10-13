@@ -23,6 +23,7 @@ import { basename, dirname } from 'node:path';
 import {
 	parseReviewState,
 	renderReviewLines,
+	flipSliceStatusReview,
 	reviewTransition,
 	withClosingLines,
 } from '../swarm/proposal-review';
@@ -55,8 +56,9 @@ export const openReviewRounds = async (input: {
 	const opened: string[] = [];
 	await withFileMutex(input.docPathAbs, async () => {
 		const reader = new SafeWorkspaceReader(dirname(input.docPathAbs));
-		let markdown = (await reader.readText(basename(input.docPathAbs)))
+		const original = (await reader.readText(basename(input.docPathAbs)))
 			.content;
+		let markdown = original;
 		const plan = parseProposalSlicePlan(input.proposalId, markdown);
 		for (const slice of plan?.slices ?? []) {
 			const re = sliceBlockRe(slice.sliceId);
@@ -64,8 +66,15 @@ export const openReviewRounds = async (input: {
 			if (match === null) continue;
 			const body = match[2] ?? '';
 			const state = parseReviewState(body);
-			if (state.status === 'in_review' || state.status === 'done')
+			if (state.status === 'in_review') {
+				// A round opened earlier, slice by slice, may have left the
+				// Status line behind; the hand-off is where it is caught.
+				const aligned = flipSliceStatusReview(body);
+				if (aligned !== body)
+					markdown = markdown.replace(re, `${match[1]}${aligned}`);
 				continue;
+			}
+			if (state.status === 'done') continue;
 			const submitted = reviewTransition(
 				state,
 				'submit',
@@ -73,14 +82,14 @@ export const openReviewRounds = async (input: {
 			);
 			if (!submitted.ok || submitted.next === undefined) continue;
 			const block = withClosingLines(
-				body.replace(REVIEW_LINE_RE, ''),
+				flipSliceStatusReview(body.replace(REVIEW_LINE_RE, '')),
 				renderReviewLines(submitted.next),
 				markdown.slice((match.index ?? 0) + match[0].length),
 			);
 			markdown = markdown.replace(re, `${match[1]}${block}`);
 			opened.push(slice.sliceId);
 		}
-		if (opened.length > 0)
+		if (markdown !== original)
 			await writeFileAtomic(input.docPathAbs, markdown);
 	});
 	for (const sliceId of opened) {
