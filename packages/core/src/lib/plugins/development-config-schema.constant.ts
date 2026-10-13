@@ -69,6 +69,9 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 		identity: z
 			.object({
 				providerBridge: z.boolean().optional(),
+				aliases: z
+					.record(z.string().min(1), z.string().min(1))
+					.optional(),
 				unrecognizedModel: z
 					.union([
 						z.string().min(1),

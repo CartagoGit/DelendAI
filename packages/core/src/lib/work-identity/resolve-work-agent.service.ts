@@ -56,6 +56,7 @@ export type {
 	IWorkAgentSource,
 	IWorkAgentSources,
 } from './resolve-work-agent.interface';
+import { canonicalModelId, seenModels } from './model-identity.helper';
 
 const read = (value: string | (() => string | undefined) | undefined) => {
 	const resolved = typeof value === 'function' ? value() : value;
@@ -121,7 +122,11 @@ export const resolveWorkAgentId = (
 	] as const) {
 		const raw = read(value);
 		if (raw === undefined) continue;
-		const id = normalizeWorkAgentId(raw);
+		// A model, however its source spelt it, is named one way: the
+		// application a client names is not a model and keeps its name.
+		const id = normalizeWorkAgentId(
+			source === 'client' ? raw : canonicalModelId(raw, seenModels()),
+		);
 		if (id.length === 0) continue;
 		return {
 			id: source === 'client' ? `${CLIENT_ID_PREFIX}${id}` : id,

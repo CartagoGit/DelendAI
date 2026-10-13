@@ -33,6 +33,12 @@ export interface IPolicyIdentity {
 	readonly providerBridge?: boolean | undefined;
 	/** What an identity nothing named a model becomes. Default `'refuse'`. */
 	readonly unrecognizedModel?: IUnrecognizedModelPolicy | undefined;
+	/**
+	 * Spellings this project knows name one model, e.g. `"minimax-3.1":
+	 * "minimax-m3.1-flash-preview"`: for agents whose machine never saw the
+	 * model in an editor, so the seen-model catalog cannot resolve them.
+	 */
+	readonly aliases?: Readonly<Record<string, string>> | undefined;
 }
 
 /**
@@ -43,4 +49,5 @@ export interface IPolicyIdentity {
 export interface IIdentityConfigInput {
 	readonly providerBridge?: unknown;
 	readonly unrecognizedModel?: unknown;
+	readonly aliases?: unknown;
 }
