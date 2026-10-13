@@ -37,55 +37,75 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 
 ### S1 — Project-local plugins stay out of the lazy decision, and remedies name commands the project has
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/plugins/managed-lazy-demotion.ts`
+  - `packages/core/src/lib/plugins/managed-lazy-local-catalog.service.ts`
+  - `packages/core/src/lib/plugins/managed-lazy-catalog-lookup.ts`
+  - `packages/core/src/lib/contracts/interfaces/managed-lazy-local-catalog.interface.ts`
+  - `packages/core/src/lib/cli/assemble-plugins.ts`
+  - `packages/core/tests/src/lib/plugins/managed-lazy-demotion.spec.ts`
+  - `packages/core/tests/src/lib/plugins/managed-lazy-local-catalog.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - A plugin loaded from a path inside the project is loaded at start on its own; the first-party plugins stay lazy.
+  - A plugin delendai's generated catalog cannot list (one the project ships itself) costs one eager start: that start records what it registered, with its file's state, in the project cache, and the next start loads every plugin lazily, until the plugin's file changes.
   - No message a consumer sees names a script that exists only in delendai's repository.
 
 ### S2 — The summary says one thing about loading and counts
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/cli/startup-report.ts`
+  - `packages/core/src/lib/startup-report/renderer.ts`
+  - `packages/core/tests/src/lib/startup-report/renderer.spec.ts`
 - **Gate**: type
 - acceptance:
   - "lazy loading enabled" is printed only when some plugin is lazily loaded, and the plugin counts agree (core is either counted everywhere or nowhere).
 
 ### S3 — An absent optional CLI is a notice, not a degraded start
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
+  - `packages/core/src/lib/startup-reconciler/forge-cli-missing.helper.ts`
   - `packages/core/src/lib/startup-reconciler/phases/reconcile-forge.ts`
+  - `packages/core/src/lib/startup-reconciler/phases/inspect-governance.ts`
+  - `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`
+  - `packages/core/tests/src/lib/startup-reconciler/forge-cli-missing.spec.ts`
 - **Gate**: type
 - acceptance:
   - When the forge CLI is not installed, the forge and governance phases report a notice naming what is not checked and how to enable it. The reconciliation is not DEGRADED for it. A forge that is installed but fails stays a blocker.
 
 ### S4 — A configuration an older delendai wrote follows the current policy
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
+  - `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`
+  - `packages/core/src/lib/workspace-migration/migrators/policy-alignment.constant.ts`
+  - `packages/core/src/lib/workspace-migration/migration-registry.ts`
+  - `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
 - **Gate**: type
 - acceptance:
-  - Settings the current development profile contradicts, such as push automation under `shared-checkout-merge`, are removed by a configuration transition at start, recorded and reported once, instead of being warned about at every start.
+  - Settings the current development profile contradicts, such as push automation under `shared-checkout-merge`, are removed by a start-up migration, once, journalled and reported, with JSONC edits that keep the file's comments and formatting, instead of being warned about at every start.
 
 ### S5 — The guard report is one line
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/cli/src/lib/guard-hooks-autoinstall.service.ts`
+  - `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - Absent guard hooks are reported in one line naming their count, where they would go and the command that installs them.
+  - Guard hooks are reported in one line per state (count and names), plus one line per hook that carries a reason of its own, and the install command.
 
 ### S6 — A unit is entered with what its checks need
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
+  - `packages/core/src/lib/work-units/unit-dependencies.service.ts`
+  - `packages/core/src/lib/contracts/constants/unit-dependencies.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/unit-dependencies.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`
   - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+  - `packages/core/tests/src/lib/work-units/unit-dependencies.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - Entering a unit in a project with a lockfile installs its dependencies into the worktree with the project's package manager, scripts disabled, or says in the entry's answer that it could not and the command that will; the first publish no longer fails on a missing module.
