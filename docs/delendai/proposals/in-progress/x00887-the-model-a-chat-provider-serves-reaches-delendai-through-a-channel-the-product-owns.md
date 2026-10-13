@@ -67,6 +67,8 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 - **Gate**: type
 - acceptance:
   - The bridge reports why it gave nothing: `absent`, `stale` (with its age), `other-workspace` or `malformed`. `work enter`'s identity refusal and the server's start-up notice show that reason and the remedy (a provider that publishes, `DELENDAI_PROVIDER_MODEL_FILE`, or `DELENDAI_AGENT_ID`).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The writer comes from a channel the product owns
 
