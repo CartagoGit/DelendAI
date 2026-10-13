@@ -483,4 +483,23 @@ describe('changedReports', () => {
 		report(idle);
 		expect(lines).toHaveLength(3);
 	});
+
+	it('does not say an idle unit again when another unit comes and goes', () => {
+		const lines: string[] = [];
+		const report = changedReports((line) => lines.push(line));
+		const idle = {
+			ref: 'r',
+			outcome: 'skipped',
+			reason: 'no commits of its own yet',
+		};
+		const other = { ref: 'o', outcome: 'published' };
+		report([idle]);
+		report([idle, other]);
+		report([idle]);
+		report([idle, other]);
+		expect(lines.map((line) => JSON.parse(line).moved)).toEqual([
+			[idle],
+			[other],
+		]);
+	});
 });

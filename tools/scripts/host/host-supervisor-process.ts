@@ -12,6 +12,22 @@ import { createStaleRuntimeWatch } from '@delendai/core/cli';
 import { createHostSupervisor } from './host-supervisor';
 import type { ISupervisedChild } from './host-supervisor.interface';
 
+/**
+ * What to say once the server moved onto the checkout's code. The reason
+ * it was restarted is the stale server's own advisory, written in the
+ * present ("It still applies the rules it started with"), which the
+ * restart has just made false: read on its own, the line contradicted
+ * itself.
+ */
+export const restartNotice = (reason: string): string =>
+	`[delendai] restarted onto the checkout's current code. Before the restart: ${reason
+		.replace(
+			/^This delendai server started at /u,
+			'the server had started at ',
+		)
+		.replace(/\s*It still applies the rules it started with\.?/u, '')
+		.trim()}`;
+
 /** Set on the child, so it serves instead of supervising again. */
 export const SUPERVISED_ENV = 'DELENDAI_SUPERVISED';
 /** `0` runs the server without a supervisor. */
@@ -94,9 +110,7 @@ export const runSupervised = (
 			if (reason === undefined) return;
 			const outcome = await supervisor.restart();
 			if (outcome.restarted) {
-				process.stderr.write(
-					`[delendai] restarted onto the checkout's current code. ${reason}\n`,
-				);
+				process.stderr.write(`${restartNotice(reason)}\n`);
 				watch = createStaleRuntimeWatch(sourceRoot);
 			}
 		});
