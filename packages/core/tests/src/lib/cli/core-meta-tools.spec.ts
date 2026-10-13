@@ -92,6 +92,9 @@ const assemble = async () => {
 		import: async () => ({ default: fakePlugin }),
 		readFile: async () =>
 			JSON.stringify({
+				// These specs read what a plugin loaded at start contributes:
+				// the declared eager loading, now the only way to get it.
+				managedSurface: { loading: 'eager' },
 				validationMatrix: {
 					scopes: {
 						full: [{ command: 'bun test', expect: 'exit0' }],
@@ -246,6 +249,7 @@ describe('core meta-tools', async () => {
 			readFile: async (absolutePath) =>
 				absolutePath.endsWith('delendai.config.json')
 					? JSON.stringify({
+							managedSurface: { loading: 'eager' },
 							plugins: {
 								'my-local': { path: './local.js' },
 								rules: { enabled: false, origin: 'bundled' },

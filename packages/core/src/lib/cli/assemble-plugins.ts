@@ -51,6 +51,7 @@ import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IManagedLazyPluginCatalogEntry } from '../plugins/managed-lazy-catalog.generated';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import {
+	isLocalLazyPlugin,
 	localLazyPluginIdFor,
 	managedLazyPluginEntry,
 } from '../plugins/managed-lazy-catalog-lookup';
@@ -681,7 +682,9 @@ const tryAssembleManagedLazy = async (input: {
 	}
 	const contributions = pluginIds.map((id) => ({
 		id,
-		origin: 'bundled' as const,
+		origin: isLocalLazyPlugin(id)
+			? ('local-path' as const)
+			: ('bundled' as const),
 		source: sourceForLazyPlugin({
 			id,
 			args: input.args,
@@ -883,7 +886,6 @@ export const assemblePlugins = async (
 				),
 			),
 		);
-		await useLocalLazyCatalog(localCatalog);
 		unindexedPlugins = effectivePlugins.filter(
 			(specifier) => lazyPluginIdFor(specifier) === undefined,
 		);
