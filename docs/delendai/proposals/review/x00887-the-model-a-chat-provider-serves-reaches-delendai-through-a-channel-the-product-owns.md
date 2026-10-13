@@ -100,11 +100,18 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
   - `packages/core/src/lib/work-identity/model-identity.helper.ts`
   - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
   - `packages/core/tests/src/lib/work-identity/model-identity.helper.spec.ts`
+  - `packages/core/src/lib/work-identity/identity-policy.helper.ts`
+  - `packages/core/src/lib/development-policy/resolve-identity.ts`
+  - `packages/core/src/lib/development-policy/resolve.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/policy-identity.interface.ts`
+  - `packages/core/src/lib/plugins/development-config-schema.constant.ts`
+  - `packages/core/schema/delendai.config.schema.json`
 - **Gate**: type
 - acceptance:
   - Observed on 2026-10-13: one model signed reviews and work as `minimax-3`, `minimax-3.1`, `minimax-m3`, `minimax-m3.1`, `minimax-m31` and `MiniMax-M3`. The editor's record names it `minimax/MiniMax-M3.1-Flash-Preview`.
   - Every model id an identity source gives is named canonically: the vendor's own id, lower-cased, its stage (`preview`) kept, so the released model is a different identity. A spelling that names no model exactly is resolved to the one model this machine was seen running whose brand, version digits and words it fits. A spelling that fits several models, or none, is kept as written. A client application's name is never treated as a model.
   - The models seen are remembered in the user cache (`~/.cache/delendai/models-seen.json`, overridable), fed by the editor observation.
+  - A project declares spellings for agents whose machine never saw the model in an editor (a swarm on another host): `development.identity.aliases`, e.g. `{ "minimax-3.1": "minimax/MiniMax-M3.1-Flash-Preview" }`, applied to every source but a client's name.
 - shipped-in: `37b96b404cb6`
 - review-state: in_review
 - review-implementer: claude-opus-5-5

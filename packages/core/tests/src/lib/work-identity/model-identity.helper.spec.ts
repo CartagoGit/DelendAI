@@ -80,3 +80,35 @@ describe('seenModelsPath', () => {
 		).toBe(true);
 	});
 });
+
+describe('declared aliases', () => {
+	it('name a spelling the machine never saw as the model the project says it is', async () => {
+		const { applyIdentityPolicy } = await import(
+			'../../../../src/lib/work-identity/identity-policy.helper'
+		);
+		const { identityOverride } = await import(
+			'../../../../src/lib/development-policy/resolve-identity'
+		);
+		const axis = identityOverride({
+			aliases: { 'MiniMax-3.1': 'minimax/MiniMax-M3.1-Flash-Preview' },
+		}).identity;
+		expect(axis?.aliases).toEqual({
+			'minimax-3.1': 'minimax-m3.1-flash-preview',
+		});
+		expect(
+			applyIdentityPolicy(
+				{ id: 'minimax-3.1', source: 'environment' },
+				axis,
+			),
+		).toEqual({
+			id: 'minimax-m3.1-flash-preview',
+			source: 'environment',
+		});
+		expect(
+			applyIdentityPolicy(
+				{ id: 'client-minimax-3.1', source: 'client' },
+				axis,
+			).id,
+		).not.toBe('minimax-m3.1-flash-preview');
+	});
+});

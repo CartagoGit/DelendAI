@@ -58,6 +58,14 @@ export const applyIdentityPolicy = (
 	// name keeps its `client-` marker here; only a project that RULES on
 	// identity changes what any source counts as.
 	if (axis === undefined) return identity;
+	// A spelling the project declared names its one model, whatever the source.
+	const aliased =
+		identity.source === 'client' ? undefined : axis.aliases?.[identity.id];
+	if (aliased !== undefined)
+		return applyIdentityPolicy(
+			{ ...identity, id: aliased },
+			{ ...axis, aliases: undefined },
+		);
 	if (declaresModel(identity)) return identity;
 	const recognized =
 		identity.source === 'provider' && axis?.providerBridge !== false;
