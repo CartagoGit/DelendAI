@@ -19,3 +19,14 @@ process.env.DELENDAI_PROVIDER_MODEL_FILE = join(
 	tmpdir(),
 	`delendai-no-provider-bridge-${process.pid}`,
 );
+
+// Neither the editors' chat sessions nor the models this machine was seen
+// running may name the model a spec runs under.
+process.env.DELENDAI_HOST_USER_DIRS = join(
+	tmpdir(),
+	`delendai-no-host-user-dirs-${process.pid}`,
+);
+process.env.DELENDAI_SEEN_MODELS_FILE = join(
+	tmpdir(),
+	`delendai-no-seen-models-${process.pid}.json`,
+);
