@@ -81,7 +81,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S1 — Reproduce each of the three in a throwaway consumer project
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/tests/src/lib/e2e/first-boot.e2e.spec.ts`
 - **Gate**: type
@@ -93,7 +93,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S2 — A first start creates what is missing, with the defaults
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/adopt/first-run-setup.service.ts`
   - `packages/core/src/lib/adopt/adopt-project.tool.ts`
@@ -110,7 +110,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S3 — A changed configuration brings what is derived in line
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.service.ts`
   - `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
@@ -129,7 +129,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S4 — Any server name, in any case, gets its agents and its tools
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/mcp-server-name.constant.ts`
   - `packages/core/src/lib/scaffold/mcp-server-name.helper.ts`
@@ -154,7 +154,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S5 — Existing agents are brought in line with the server they serve
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/scaffold/agent-grant-reconcile.service.ts`
   - `packages/core/src/lib/scaffold/agent-grant-report.ts`
@@ -173,7 +173,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S6 — The agents and their tools follow the project, including its own plugins
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
   - `packages/core/src/lib/scaffold/plugin-agents-report.ts`
