@@ -24,6 +24,12 @@
 | container | public | container_lint | filesystem-read |
 | container | public | k8s_apply | container, process |
 | container | public | container_build | container, process |
+| container | public | container_pull | container, process |
+| container | public | container_run | container, process |
+| container | public | container_exec | container, process |
+| container | public | container_compose | container, process, filesystem-read |
+| container | public | container_network | container, process |
+| container | public | container_volume | container, process |
 | context-for-change | public | * | filesystem-read |
 | conventions | public | * | filesystem-read |
 | database | public | * | env-read, database |

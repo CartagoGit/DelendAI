@@ -96,6 +96,7 @@ import { externalMcpsAckI18n } from '#I18N/tools/external-mcps/delendai_external
 import { externalMcpsCallI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_call';
 import { externalMcpsCatalogI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_catalog';
 import { externalMcpsStatusI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_status';
+import { externalMcpsVerifyResultI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_verify_result';
 import { externalMcpsSuggestI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_suggest';
 import { externalMcpsValidateConfigI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_validate_config';
 import { orchestratorRunnerAdviseRoutingI18n } from '#I18N/tools/orchestrator-runner/delendai_orchestrator-runner_advise_routing';
@@ -303,6 +304,10 @@ registerToolI18n('delendai_external-mcps_ack', externalMcpsAckI18n);
 registerToolI18n('delendai_external-mcps_call', externalMcpsCallI18n);
 registerToolI18n('delendai_external-mcps_catalog', externalMcpsCatalogI18n);
 registerToolI18n('delendai_external-mcps_status', externalMcpsStatusI18n);
+registerToolI18n(
+	'delendai_external-mcps_verify_result',
+	externalMcpsVerifyResultI18n,
+);
 registerToolI18n('delendai_external-mcps_suggest', externalMcpsSuggestI18n);
 registerToolI18n(
 	'delendai_external-mcps_validate_config',

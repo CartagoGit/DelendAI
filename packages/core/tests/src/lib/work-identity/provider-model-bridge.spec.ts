@@ -10,8 +10,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
 	PROVIDER_MODEL_MAX_AGE_MS,
+	providerBridgeSilence,
 	providerModelBridgePath,
 	providerModelId,
+	providerModelReading,
 } from '@delendai/core/lib/work-identity/provider-model-bridge.helper';
 
 const dirs: string[] = [];
@@ -239,5 +241,66 @@ describe('the development.identity axis rules what agentFor counts (f00758)', ()
 		} finally {
 			delete process.env.DELENDAI_AGENT_ID;
 		}
+	});
+});
+
+describe('providerModelReading', () => {
+	it('keeps one entry per workspace, so two windows do not erase each other', () => {
+		const { file, env } = bridge();
+		const at = new Date().toISOString();
+		write(file, {
+			entries: {
+				'/work/a': { model: 'model-a', at, provider: 'p' },
+				'/work/b': { model: 'model-b', at, provider: 'p' },
+			},
+		});
+		expect(providerModelId({ env, workspace: '/work/a' })).toBe('model-a');
+		expect(
+			providerModelId({ env, workspace: '/work/b/.worktrees/x' }),
+		).toBe('model-b');
+		expect(
+			providerModelReading({ env, workspace: '/work/c' }),
+		).toMatchObject({
+			reason: 'other-workspace',
+		});
+	});
+
+	it('names the freshest model when one workspace has several entries', () => {
+		const { file, env } = bridge();
+		const now = Date.now();
+		write(file, {
+			entries: {
+				'/work/a': {
+					model: 'older',
+					at: new Date(now - 60_000).toISOString(),
+				},
+				'/work/a/.worktrees/u': {
+					model: 'newer',
+					at: new Date(now).toISOString(),
+				},
+			},
+		});
+		expect(providerModelId({ env, workspace: '/work/a' })).toBe('newer');
+	});
+
+	it('says why it named nothing, and how to fix it', () => {
+		const { file, env } = bridge();
+		const absent = providerModelReading({ env });
+		expect(absent).toMatchObject({ reason: 'absent', path: file });
+		expect(providerBridgeSilence(absent)).toContain('does not exist');
+		write(file, {
+			model: 'old',
+			at: new Date(
+				Date.now() - 2 * PROVIDER_MODEL_MAX_AGE_MS,
+			).toISOString(),
+		});
+		const stale = providerModelReading({ env });
+		expect(stale).toMatchObject({ reason: 'stale' });
+		expect(providerBridgeSilence(stale)).toContain('min old');
+		writeFileSync(file, '{');
+		expect(providerModelReading({ env })).toMatchObject({
+			reason: 'malformed',
+		});
+		expect(providerBridgeSilence({ model: 'm' })).toBeUndefined();
 	});
 });

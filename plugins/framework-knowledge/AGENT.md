@@ -8,6 +8,7 @@
 ## Public API
 
 - default
+- resolveInstalledFramework
 - createKnowledgeRecord
 - FORCE_VALUES
 - forceRank

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-10-12T23:30:09.670Z",
+	"generatedAt": "2026-10-13T05:07:33.773Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -487,6 +487,31 @@
 				"container_build": [
 					"container",
 					"process"
+				],
+				"container_pull": [
+					"container",
+					"process"
+				],
+				"container_run": [
+					"container",
+					"process"
+				],
+				"container_exec": [
+					"container",
+					"process"
+				],
+				"container_compose": [
+					"container",
+					"process",
+					"filesystem-read"
+				],
+				"container_network": [
+					"container",
+					"process"
+				],
+				"container_volume": [
+					"container",
+					"process"
 				]
 			},
 			"presets": [
@@ -510,6 +535,7 @@
 			},
 			"dependencies": [
 				"@delendai/core",
+				"yaml",
 				"zod"
 			],
 			"capabilities": [
@@ -2803,6 +2829,31 @@
 					"process"
 				],
 				"container_build": [
+					"container",
+					"process"
+				],
+				"container_pull": [
+					"container",
+					"process"
+				],
+				"container_run": [
+					"container",
+					"process"
+				],
+				"container_exec": [
+					"container",
+					"process"
+				],
+				"container_compose": [
+					"container",
+					"process",
+					"filesystem-read"
+				],
+				"container_network": [
+					"container",
+					"process"
+				],
+				"container_volume": [
 					"container",
 					"process"
 				]
@@ -6140,6 +6191,31 @@
 					"process"
 				],
 				"container_build": [
+					"container",
+					"process"
+				],
+				"container_pull": [
+					"container",
+					"process"
+				],
+				"container_run": [
+					"container",
+					"process"
+				],
+				"container_exec": [
+					"container",
+					"process"
+				],
+				"container_compose": [
+					"container",
+					"process",
+					"filesystem-read"
+				],
+				"container_network": [
+					"container",
+					"process"
+				],
+				"container_volume": [
 					"container",
 					"process"
 				]
