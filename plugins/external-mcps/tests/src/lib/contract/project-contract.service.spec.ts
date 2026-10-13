@@ -37,6 +37,22 @@ describe('buildProjectContract', () => {
 		).toEqual({ from: [] });
 	});
 
+	it('leaves out a part its plugin cannot answer: no framework installed, a missing token file', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'contract-empty-'));
+		roots.push(root);
+		const contract = await buildProjectContract({
+			workspaceRoot: root,
+			active: (plugin) => plugin !== 'conventions',
+			optionsOf: (plugin) =>
+				plugin === 'style-convention'
+					? { tokenFiles: ['missing.css'] }
+					: {},
+		});
+		expect(contract.framework).toBeUndefined();
+		expect(contract.style?.tokens).toEqual([]);
+		expect(contract.from).toEqual(['style-convention']);
+	});
+
 	it('takes each part from the plugin that owns it', async () => {
 		const contract = await buildProjectContract({
 			workspaceRoot: project(),

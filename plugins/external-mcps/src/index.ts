@@ -102,6 +102,7 @@ export default definePlugin({
 			rawDir: ctx.workspace.resolve(
 				joinRel(ctx.pluginCacheDir, 'raw-answers'),
 			),
+			git: ctx.effects?.git,
 		});
 		let detectedCache: ReadonlySet<string> | undefined;
 		const detect = async (): Promise<ReadonlySet<string>> => {

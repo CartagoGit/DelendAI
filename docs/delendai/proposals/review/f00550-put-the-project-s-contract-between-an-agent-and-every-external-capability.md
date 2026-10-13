@@ -152,6 +152,7 @@ rather than a default.
   - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_verify_result.ts`
   - `apps/web/src/i18n/tools/index.ts`
   - `plugins/external-mcps/tests/src/lib/catalog.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/tools/verify-result.tool.spec.ts`
   - `plugins/external-mcps/tests/src/lib/verify/verify-against-contract.service.spec.ts`
 
 After the work, check what was produced against the same contract that
