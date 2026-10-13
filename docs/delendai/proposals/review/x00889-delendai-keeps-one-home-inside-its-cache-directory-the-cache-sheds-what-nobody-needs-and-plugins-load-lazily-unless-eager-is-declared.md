@@ -110,7 +110,7 @@ What the code does today:
   - `packages/core/tests/src/lib/scan/dip-violation.spec.ts`
 - **Gate**: type
 - acceptance:
-  - The journal, the applied-configuration record, the cache-layout record, the project profile, migration backups and locks are written under the configured cache directory. A project that has `.delendai/` has it moved there once, and the folder removed when empty.
+  - The journal, the applied-configuration record, the cache-layout record, the project profile, migration backups and locks are written under the configured cache directory. A project that has `.delendai/` has those records moved there once, and the folder removed when nothing else is left. What the project writes there itself (workspace skills in `skills/`, knowledge packs in `knowledge/`) stays where it is.
   - A change of `cacheDir` is still detected: the last cache directory is remembered where no cache move can lose it (the clone's git directory), not in a folder of the project tree.
   - The relocation runs at every start before the journal is read (the owner's rule: every layout change ships its migration): each file of `.delendai/` is moved to `<cacheDir>/records/`, a file already there wins, and `.delendai/` is removed once empty; a cache-dir move whose destination holds only `records/` still completes.
 - shipped-in: `62f28f4907b4`
@@ -137,6 +137,6 @@ What the code does today:
 
 ## acceptance
 
-- A project's root has no `.delendai/` after a start; everything delendai keeps is under its cache directory.
+- After a start no record delendai keeps is outside its cache directory; `.delendai/` remains only for what the project wrote in it.
 - A start with an unknown plugin serves the whole surface lazily, and the summary says so.
 - A start removes what the eviction rules say is no longer needed, and says what it removed.

@@ -72,6 +72,24 @@ describe('an older layout is moved into the records folder', () => {
 		expect(existsSync(legacy)).toBe(false);
 	});
 
+	it('leaves what the project wrote itself in .delendai/, and the folder with it', async () => {
+		const root = workspace();
+		const legacy = join(root, '.delendai');
+		mkdirSync(join(legacy, 'skills', 'acme'), { recursive: true });
+		mkdirSync(join(legacy, 'knowledge'), { recursive: true });
+		writeFileSync(join(legacy, 'skills', 'acme', 'SKILL.md'), '# acme\n');
+		writeFileSync(join(legacy, 'migrations-applied.json'), '[]\n');
+
+		const outcome = await relocateLegacyRecords(root);
+
+		expect(outcome.moved).toEqual(['migrations-applied.json']);
+		expect(existsSync(join(legacy, 'skills', 'acme', 'SKILL.md'))).toBe(
+			true,
+		);
+		expect(existsSync(join(legacy, 'knowledge'))).toBe(true);
+		expect(existsSync(join(recordsDir(root), 'skills'))).toBe(false);
+	});
+
 	it('finds the records where the cache was last applied, wherever the configuration now points', () => {
 		const root = workspace();
 		expect(recordsDir(root)).toBe(

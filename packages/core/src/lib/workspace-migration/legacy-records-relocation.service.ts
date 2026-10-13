@@ -4,8 +4,11 @@
  *
  * Runs before the migration journal is read, because the journal is one
  * of the files it moves: read first, the journal would look empty and
- * every migration would be asked again. Each entry is renamed into place;
- * an entry the records folder already has is left where it was and
+ * every migration would be asked again. Only delendai's own records move:
+ * `.delendai/` also holds what the project writes itself (workspace skills
+ * in `skills/`, knowledge packs in `knowledge/`), and moving those into an
+ * ignored cache took them from the project. Each record is renamed into
+ * place; one the records folder already has is left where it was and
  * reported, never overwritten. `state/` is not moved here: the state
  * directory migrator owns where the state database goes. The old folder
  * is removed once nothing but its own ignore file is left.
@@ -13,8 +16,32 @@
 import { readdir, rename, rm, rmdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { LEGACY_RECORDS_DIR } from '../contracts/constants/delendai-records.constant';
+import {
+	CACHE_EVICTION_STAMP_PATH,
+	CACHE_LAYOUT_MARKER_PATH,
+} from '../contracts/constants/cache-layout.constant';
+import { APPLIED_CONFIG_FILE } from '../contracts/constants/config-transition.constant';
+import {
+	LEGACY_RECORDS_DIR,
+	PROJECT_PROFILE_RECORD,
+} from '../contracts/constants/delendai-records.constant';
 import { ensureRecordsDir } from '../shared/delendai-records';
+import { MIGRATION_JOURNAL_FILE } from './migration-journal-path.constant';
+import { MIGRATION_MANIFESTS_DIR } from './transaction/migration-manifest';
+import { BACKUP_SNAPSHOTS_DIR } from './transaction/rollback';
+
+/** What an older delendai wrote in `.delendai/`, by the name it gave it. */
+const LEGACY_RECORDS: ReadonlySet<string> = new Set([
+	MIGRATION_JOURNAL_FILE,
+	APPLIED_CONFIG_FILE,
+	PROJECT_PROFILE_RECORD,
+	CACHE_LAYOUT_MARKER_PATH.at(-1) ?? '',
+	CACHE_EVICTION_STAMP_PATH.at(-1) ?? '',
+	MIGRATION_MANIFESTS_DIR.at(-1) ?? '',
+	BACKUP_SNAPSHOTS_DIR.at(-1) ?? '',
+	// The commit driver's lock (`plugins/commit-policy`).
+	'index-lock',
+]);
 
 const exists = (path: string): Promise<boolean> =>
 	stat(path).then(
@@ -36,7 +63,7 @@ export const relocateLegacyRecords = async (
 	const moved: string[] = [];
 	const kept: string[] = [];
 	for (const name of entries) {
-		if (name === '.gitignore' || name === 'state') continue;
+		if (!LEGACY_RECORDS.has(name)) continue;
 		const target = join(records, name);
 		if (await exists(target)) {
 			kept.push(name);
