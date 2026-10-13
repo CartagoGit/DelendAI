@@ -6,7 +6,11 @@ import { runCli as runServerCli, serveRefusal } from '@delendai/core/cli';
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
 import { resolveWorkAgentId } from '@delendai/core/public';
-import { providerModelId } from '@delendai/core/cli';
+import {
+	providerBridgeSilence,
+	providerModelId,
+	providerModelReading,
+} from '@delendai/core/cli';
 import { applyIdentityPolicy, readWorkspacePolicy } from '@delendai/core/cli';
 
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
@@ -248,9 +252,13 @@ const unnamedAgentNotice = async (
 		identity.source === 'policy'
 	)
 		return [];
+	const silence = providerBridgeSilence(
+		providerModelReading(workspace === undefined ? {} : { workspace }),
+	);
 	return [
 		`work refs will be named \`${identity.id}\` — no model or agent is declared here.`,
 		'      fix: set DELENDAI_AGENT_ID to the exact model doing the work (e.g. claude-opus-5).',
+		...(silence === undefined ? [] : [`      provider bridge: ${silence}`]),
 	];
 };
 
