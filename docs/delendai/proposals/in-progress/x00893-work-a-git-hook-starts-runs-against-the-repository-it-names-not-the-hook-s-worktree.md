@@ -2,10 +2,14 @@
 id: x00893
 title: "work a git hook starts runs against the repository it names, not the hook's worktree"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 04568291-94f4-4fcc-afde-a575c2fc1379
+last-correlation-id: 04568291-94f4-4fcc-afde-a575c2fc1379
+last-transition-from: ready
+last-transition-at: 2026-10-13T22:03:58.218Z
 ---
 
 # x00893 — work a git hook starts runs against the repository it names, not the hook's worktree
