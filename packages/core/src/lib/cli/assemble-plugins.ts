@@ -683,7 +683,7 @@ const tryAssembleManagedLazy = async (input: {
 	const contributions = pluginIds.map((id) => ({
 		id,
 		origin: isLocalLazyPlugin(id)
-			? ('local-path' as const)
+			? ('user-local' as const)
 			: ('bundled' as const),
 		source: sourceForLazyPlugin({
 			id,
