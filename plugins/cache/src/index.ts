@@ -24,9 +24,8 @@ import { buildGcRegistration } from './lib/tools/gc-tool';
  *
  * Built-in static rules (see `static-rules.ts`) cover the one-shot
  * snapshot directories (`drift/`, `bootstrap/`, `verify/`, the
- * `s3-driver/` + `s4-s5-driver/` lint snapshots, `rules/`), the bounded
- * `state/` journal, and the orphan git worktrees crashed agents leave
- * under `.worktrees/` (f00072 S5).
+ * `s3-driver/` + `s4-s5-driver/` lint snapshots, `rules/`). The units,
+ * the records and the state database are never eviction's to remove.
  *
  * Activation is opt-in: `delendai --plugins=cache`. No network, no
  * secrets, no `process.env`. Hosts that never load it keep the current
@@ -42,9 +41,9 @@ const OptionsSchema = z
 		 */
 		maxAgeDays: z.number().int().min(1).optional(),
 		/**
-		 * Orphan-worktree sweeper tuning (f00072 S5). `enabled` (default
-		 * true) toggles the rule; `keepLastN` (default 3) keeps the
-		 * most-recent N worktrees by mtime under `.worktrees/`.
+		 * Accepted and ignored. It tuned a sweep that kept the newest
+		 * worktrees by mtime and removed live units with it; units are
+		 * removed by `work reap`.
 		 */
 		worktrees: z
 			.object({
@@ -77,9 +76,6 @@ export default definePlugin({
 				? registerStaticRules(registry, {
 						...(options.maxAgeDays !== undefined
 							? { maxAgeDays: options.maxAgeDays }
-							: {}),
-						...(options.worktrees !== undefined
-							? { worktrees: options.worktrees }
 							: {}),
 					})
 				: [];

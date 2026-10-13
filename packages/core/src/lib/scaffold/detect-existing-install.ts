@@ -21,6 +21,7 @@ import { readFile, stat } from 'node:fs/promises';
 
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { IExistingDelendaiInstall } from '../contracts/interfaces/existing-delendai-install.interface';
+import { parseJsonc } from '../config/jsonc-document';
 
 export type { IExistingDelendaiInstall } from '../contracts/interfaces/existing-delendai-install.interface';
 
@@ -64,12 +65,7 @@ export const isDelendaiLaunchShape = (entry: IMcpServerLaunchShape): boolean =>
 export const findDelendaiServerName = (
 	jsonText: string,
 ): string | undefined => {
-	let parsed: unknown;
-	try {
-		parsed = JSON.parse(jsonText);
-	} catch {
-		return undefined;
-	}
+	const parsed = parseJsonc(jsonText).value;
 	if (typeof parsed !== 'object' || parsed === null) return undefined;
 	const record = parsed as Record<string, unknown>;
 	const servers =

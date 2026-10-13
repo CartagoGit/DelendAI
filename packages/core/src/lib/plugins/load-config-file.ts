@@ -243,20 +243,20 @@ export interface ILoopDetectorConfig {
  * All fields are optional with safe defaults — an existing config
  * without a `cache` block behaves exactly as before:
  *
- * - `runOnBoot` defaults to `'dry-run'`: the boot sweep only logs the
- *   report (it removes nothing). `'apply'` is the only mode that
- *   actually deletes; `'off'` skips the sweep entirely.
+ * - `runOnBoot` defaults to `'apply'`: the boot sweep removes what the
+ *   owners' rules say nobody needs. `'dry-run'` only logs the report;
+ *   `'off'` skips the sweep entirely.
  * - `maxAgeDays` is the upper cap applied to every `olderThanDays`
  *   rule, so a host can shorten (never silently lengthen) the built-in
  *   lifetimes without editing plugin code. Default 30.
- * - `worktrees` tunes the orphan-worktree sweeper (f00072 S5): keep
- *   the most-recent `keepLastN` crashed-agent worktrees under
- *   `<cacheDir>/.worktrees/`, prune the rest. Default on, keep 3.
+ * - `worktrees` is accepted and ignored. It tuned a sweep that kept the
+ *   newest worktrees by mtime and removed live units with it; units are
+ *   removed by `work reap`, and eviction never touches `.worktrees/`.
  */
 export interface IDelendaiCacheWorktreesConfig {
-	/** Default true. When false the worktree-orphan rule never applies. */
+	/** Ignored. */
 	readonly enabled?: boolean;
-	/** Default 3. Keep the most-recent N worktrees by mtime. */
+	/** Ignored. */
 	readonly keepLastN?: number;
 }
 
@@ -274,7 +274,7 @@ export interface IDelendaiCachePolicyConfig {
 	readonly evictionIntervalMs?: number;
 	/** Upper cap (days) applied to every `olderThanDays` rule. Default 30. */
 	readonly maxAgeDays?: number;
-	/** Orphan-worktree sweeper tuning (f00072 S5). */
+	/** Accepted and ignored; see {@link IDelendaiCacheWorktreesConfig}. */
 	readonly worktrees?: IDelendaiCacheWorktreesConfig;
 }
 
