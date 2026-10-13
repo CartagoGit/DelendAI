@@ -2,10 +2,14 @@
 id: x00891
 title: "a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 04421704-0ac6-4bab-8d35-aa10eb5a024b
+last-correlation-id: 04421704-0ac6-4bab-8d35-aa10eb5a024b
+last-transition-from: ready
+last-transition-at: 2026-10-13T18:31:46.892Z
 ---
 
 # x00891 — a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it
