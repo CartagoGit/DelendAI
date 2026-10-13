@@ -130,36 +130,41 @@ const proposalFileAt = (
 				file.endsWith('.md'),
 		);
 
-/** A slice's own state lines: handed to review, approved or closed. */
-const HANDED_IN =
-	/^[-*]\s*(?:review-state:\s*(?:in_review|done|approved)|\*\*Status\*\*:\s*(?:review|done))\b/mu;
+/** Proposal folders that mean the proposal is finished: its branch may end. */
+const FINISHED_FOLDERS = [
+	'/proposals/done/',
+	'/proposals/retired/',
+	'/proposals/legacy/',
+];
 
 /**
- * Whether the work being published still has its proposal in progress.
- * A proposal keeps one work branch while it is in progress and publishes
- * its slices from it; the publication that moves it on (to review) is
- * the one that ends the branch.
+ * Whether a proposal is still open, so its one wip branch lives on. A
+ * proposal keeps one branch from its creation until it is finished, and
+ * every pull request is cut from that branch. Fixes asked for in review,
+ * or after a red pull request, are committed on it and published into
+ * the next pull request. The branch ends only once the proposal is done
+ * (or retired), read on every ref given: the unit's own tip, and the
+ * integration branch, where review closes it.
  *
- * In progress means a slice is still to be handed in, not only that the
- * file sits in `in-progress/`. Slices submitted one by one leave the file
- * there with every slice in review; read by its folder alone, such a
- * proposal kept its unit, and the unit was fast-forwarded and kept after
- * its publication merged, for a next slice that did not exist.
+ * Read before, as "a slice is still to be handed in", a proposal handed
+ * to review ended its branch at the same publication. Re-entering it
+ * then started from the integration branch, and its open pull request
+ * had to be merged back in by hand.
  */
-export const proposalStillInProgress = (
+export const proposalStillOpen = (
 	root: string,
 	proposal: string,
-	ref: string,
+	refs: readonly string[],
 ): boolean => {
-	const file = proposalFileAt(root, proposal, ref);
-	const inProgressFolder = file?.includes('/proposals/in-progress/') === true;
-	if (!inProgressFolder || file === undefined) return false;
-	const text = git(root, ['show', `${ref}:${file}`]);
-	if (text === undefined) return true;
-	const slices = text.split(/^###\s+S\d[^\n]*$/mu).slice(1);
-	return (
-		slices.length === 0 || slices.some((slice) => !HANDED_IN.test(slice))
-	);
+	let found = false;
+	for (const ref of refs) {
+		const file = proposalFileAt(root, proposal, ref);
+		if (file === undefined) continue;
+		found = true;
+		if (FINISHED_FOLDERS.some((folder) => file.includes(folder)))
+			return false;
+	}
+	return found;
 };
 
 export const proposalSliceCount = (

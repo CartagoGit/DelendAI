@@ -23,7 +23,11 @@
  */
 import { keepUncommittedEdits } from './unit-edits-kept.service';
 import type { IReapedUnit } from './unit-lease.interface';
-import { removeUnitCheckout, worktreeOfRef } from './unit-removal.service';
+import {
+	dropForgeCopy,
+	removeUnitCheckout,
+	worktreeOfRef,
+} from './unit-removal.service';
 import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
 import { inspectWorktree } from './unit-worktree-state.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
@@ -133,7 +137,15 @@ export const reapDeliveredUnits = async (input: {
 			reaped.push({ ...base, outcome: 'would-remove' });
 			continue;
 		}
+		const tip = readGit(root, [
+			'rev-parse',
+			'-q',
+			'--verify',
+			`refs/heads/${unit.ref}`,
+		]);
 		const removal = await removeUnitCheckout(root, unit.ref);
+		if (removal.deletedBranch && tip !== undefined)
+			dropForgeCopy(root, remote, unit.ref, tip);
 		reaped.push({
 			...base,
 			outcome: removal.deletedBranch ? 'removed' : 'kept',

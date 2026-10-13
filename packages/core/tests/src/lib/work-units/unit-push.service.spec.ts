@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { pushUnitTip } from '@delendai/core/lib/work-units/unit-push.service';
+import { dropForgeCopy } from '@delendai/core/lib/work-units/unit-removal.service';
 
 const policy = resolveDevelopmentPolicy({
 	development: {
@@ -102,5 +103,23 @@ describe('pushUnitTip', () => {
 			`git fetch origin ${BRANCH}`,
 		);
 		expect(run(remote, 'rev-parse', BRANCH)).toBe(pushedTip);
+	});
+
+	it("drops the forge's copy of a spent unit only while it is at the tip removed", () => {
+		const { run, remote, root, unit } = setup();
+		pushUnitTip({
+			cwd: unit,
+			branch: BRANCH,
+			inMainWorktree: false,
+			policy,
+		});
+		const tip = run(unit, 'rev-parse', 'HEAD');
+		// Moved on another machine: somebody's work, kept.
+		expect(dropForgeCopy(root, 'origin', BRANCH, 'f'.repeat(40))).toBe(
+			false,
+		);
+		expect(run(remote, 'rev-parse', BRANCH)).toBe(tip);
+		expect(dropForgeCopy(root, 'origin', BRANCH, tip)).toBe(true);
+		expect(run(remote, 'branch', '--list', BRANCH)).toBe('');
 	});
 });

@@ -67,6 +67,27 @@ export const removeUnitCheckout = async (
 	};
 };
 
+/**
+ * Drop the forge's copy of a unit's branch once the unit is spent, only
+ * while it is still at `tip`: a copy another machine moved on is
+ * somebody's work and stays. A unit's branch is pushed on every commit,
+ * so without this a finished proposal's branch stayed on the forge for
+ * good.
+ */
+export const dropForgeCopy = (
+	root: string,
+	remote: string,
+	ref: string,
+	tip: string,
+): boolean =>
+	readGit(root, [
+		'push',
+		'--quiet',
+		`--force-with-lease=refs/heads/${ref}:${tip}`,
+		remote,
+		`:refs/heads/${ref}`,
+	]) !== undefined;
+
 /** Whether `ref` lies in the work namespace the policy declares. */
 export const inWorkNamespace = (prefixSource: string, ref: string): boolean => {
 	const prefix = shortName(prefixSource);
