@@ -138,6 +138,13 @@ const PLUGIN_REGISTRY_SOURCE_SCHEMA = z
 export const CONFIG_FILE_SCHEMA = z
 	.object({
 		$schema: z.string().optional(),
+		// The type always declared it and the boot always read it; without
+		// it here the key that renames every tool was refused as unknown,
+		// and the refusal stopped every configuration transition.
+		namespacePrefix: z
+			.string()
+			.regex(/^[a-z][a-z0-9_]*$/u)
+			.optional(),
 		cacheDir: z.string().optional(),
 		docsDir: z.string().optional(),
 		surfaceMode: z.enum(MCP_TOOL_SURFACE_MODE).optional(),

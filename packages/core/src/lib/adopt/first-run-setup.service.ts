@@ -19,9 +19,12 @@ import { join } from 'node:path';
 import { createWorkspaceFileReader } from '../bootstrap/workspace-file-reader';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import { DEFAULT_CONFIG_FILENAME } from '../plugins/load-config-file';
+import { writeFileAtomic } from '../shared/atomic-write';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
 import { findDelendaiServerName } from '../scaffold/detect-existing-install';
 import { runAdoptProject } from './adopt-project.tool';
+
+const DOCS_README = `# delendai\n\nThe documents delendai keeps for this project (proposals, skills, plans) live under this folder. Its location is \`docsDir\` in \`${DEFAULT_CONFIG_FILENAME}\`.\n`;
 
 const PROJECT_MCP_CONFIGS = ['.vscode/mcp.json', '.mcp.json'] as const;
 
@@ -57,9 +60,20 @@ export const firstRunSetup = async (
 		},
 		{ write: true },
 	);
-	return outcome.ok
-		? [DEFAULT_CONFIG_FILENAME, ...outcome.data.created]
-		: undefined;
+	if (!outcome.ok) return undefined;
+	// The docs root the configuration names; adoption writes the agents but
+	// not this, and the server warns at every start while it is missing.
+	const docsDir =
+		typeof outcome.data.config.docsDir === 'string'
+			? outcome.data.config.docsDir
+			: DEFAULT_CORE_PATHS.docsDir;
+	const docsReadme = join(docsDir, 'README.md');
+	const created = [DEFAULT_CONFIG_FILENAME, ...outcome.data.created];
+	if (!existsSync(join(workspaceRoot, docsReadme))) {
+		await writeFileAtomic(join(workspaceRoot, docsReadme), DOCS_README);
+		created.push(docsReadme);
+	}
+	return created;
 };
 
 /** The first start's one line, or nothing; never fails a start. */

@@ -50,6 +50,7 @@ describe('firstRunSetup', () => {
 			created?.some((path) => path.startsWith('.github/agents/')),
 		).toBe(true);
 		expect(existsSync(join(root, 'delendai.config.json'))).toBe(true);
+		expect(created).toContain('docs/delendai/README.md');
 		expect(await firstRunSetup(root)).toBeUndefined();
 	});
 
