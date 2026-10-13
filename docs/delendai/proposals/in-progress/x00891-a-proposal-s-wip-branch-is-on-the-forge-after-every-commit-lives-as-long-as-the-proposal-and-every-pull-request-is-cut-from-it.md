@@ -40,7 +40,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S1 — Every commit on a unit's branch is on the forge at once
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-push.interface.ts`
@@ -59,6 +59,8 @@ What the code does today, measured on this clone on 2026-10-13:
 - acceptance:
   - A commit or merge on a work ref, made in its worktree by any means, is pushed to the same branch on the forge before the command returns. A push the forge refuses (the branch moved on another machine) is reported with the command that reconciles it, never forced.
   - A commit on the integration branch or any branch outside the work namespace pushes nothing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Publishing cuts a pull request from the branch and leaves the branch alone
 
