@@ -45,6 +45,7 @@ What the code does today:
   - `packages/core/src/lib/platform/system-profile.helper.ts`
   - `packages/core/src/lib/cli/run-init.ts`
   - `packages/cli/src/commands/init/init-global.command.ts`
+  - `packages/core/src/cli.ts`
 - **Gate**: type
 - acceptance:
   - `run-init.ts` and `init-global.command.ts` take WSL from the system profile; no product file outside `platform/` reads `/proc/version`.
@@ -57,20 +58,24 @@ What the code does today:
   - `packages/core/src/lib/platform/user-directories.helper.ts`
   - `packages/core/src/lib/install/ide-targets.ts`
   - `packages/core/src/lib/work-identity/host-chat-model.helper.ts`
+  - `packages/core/tests/src/lib/platform/user-directories.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - One helper returns the user-configuration roots of this machine (`APPDATA`, `~/Library/Application Support`, `XDG_CONFIG_HOME`, and under WSL the Windows users' `AppData/Roaming`), honouring the existing `DELENDAI_HOST_USER_DIRS` override.
-  - `ide-targets.ts` and `hostUserDirs` read it; under WSL, `init` offers the Windows-side configuration of an editor installed there.
+  - `ide-targets.ts` and `hostUserDirs` read it. Under WSL, Claude Desktop, which runs on Windows, gets its configuration in the Windows user's `AppData/Roaming` instead of the Linux home it never reads.
 
 ### S3 — A platform question asked outside the profile is refused by a lint
 
 - **Status**: pending
 - **Files**:
   - `tools/scripts/lint/platform-reads.script.ts`
-  - `packages/core/src/lib/platform/system-profile.helper.ts`
+  - `tools/scripts/lint/platform-reads.constant.ts`
+  - `tools/scripts/lint/platform-reads.baseline.json`
+  - `tools/scripts/lint/platform-reads.script.spec.ts`
+  - `package.json`
 - **Gate**: type
 - acceptance:
-  - A lint, chained into a CI-run script, fails on `process.platform`, `os.platform()` or `/proc/version` in product code outside `platform/`, with a baseline of today's reads that may only shrink.
+  - `lint:platform-reads`, chained into `lint:architecture`, fails on `process.platform`, `os.platform()` or `/proc/version` in product code outside `platform/` beyond a per-file baseline of today's reads, which may only shrink (16 files, after S1 and S2).
   - The reads S1 and S2 replace are gone from the baseline.
 
 ## acceptance
