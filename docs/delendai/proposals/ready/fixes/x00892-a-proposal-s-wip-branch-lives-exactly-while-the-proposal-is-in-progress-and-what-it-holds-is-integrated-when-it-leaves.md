@@ -62,20 +62,24 @@ What x00891 (merged in #1066) does instead:
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/work-units/unit-leaves-progress.service.ts`
+  - `packages/core/src/cli.ts`
   - `packages/cli/src/commands/guard.command.ts`
+  - `packages/core/tests/src/lib/work-units/unit-leaves-progress.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - A commit on a unit's branch that moves its proposal out of `in-progress/` (to review, ready, blocked, paused or done), made by any tool, host or person, is followed at once by the unit's publication through the work model's own path: a pull request, a merge through the local gate, or nothing to do for a model without branches. The branch and its worktree end once that is proven.
-  - Running it twice does nothing the second time; a publication the forge refuses leaves the branch, pushed, with the reason and the command to retry.
+  - The publication runs detached from the commit (it removes the worktree the hook runs in) and logs to `delendai-unit-publications.log` in the repository's git directory. Run again, it finds nothing to do; one the forge refuses leaves the branch, pushed, and the next start retries it (S3).
 
 ### S3 — A unit whose proposal left in-progress on another machine is integrated at start
 
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
+  - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - At start, a unit of this clone whose proposal is no longer in progress, on its own tip or on the integration branch, and that still holds work the integration branch lacks, is published through the same path as S2 and then ended. A unit that holds nothing is ended.
+  - At start, a unit of this clone whose proposal is no longer in progress on its own tip, that still holds work the integration branch lacks, and whose owner is not live, is published through `work publish` (the same path as S2) and its branch ends. A live unit is left to its owner's hook. A review unit is not one of these.
 
 ### S4 — A hook the project's lefthook.yml declares runs, and is not called installed before it does
 
