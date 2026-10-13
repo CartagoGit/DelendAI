@@ -16,6 +16,7 @@ import {
 	frontMatter,
 	namedByDelendai,
 } from '../scaffold/agent-grant-reconcile.service';
+import { escapeRegex } from '../scaffold/wire-plugin-structure.service';
 import { writeFileAtomic } from '../shared/atomic-write';
 
 const AGENT_DIRS = [
@@ -23,9 +24,6 @@ const AGENT_DIRS = [
 	'.claude/agents',
 	'.codex/agents',
 ] as const;
-
-const escape = (text: string): string =>
-	text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 
 /** The prefix pair when it changed from a known one, else nothing. */
 const prefixChange = (
@@ -47,9 +45,9 @@ const followPrefix = async (
 	const text = await readFile(path, 'utf8');
 	if (!namedByDelendai(frontMatter(text).name, from)) return;
 	const rewritten = text
-		.replace(new RegExp(`\\b${escape(from)}_`, 'gu'), `${to}_`)
+		.replace(new RegExp(`\\b${escapeRegex(from)}_`, 'gu'), `${to}_`)
 		.replace(
-			new RegExp(`^name: ${escape(from)}(-|$)`, 'mu'),
+			new RegExp(`^name: ${escapeRegex(from)}(-|$)`, 'mu'),
 			`name: ${to}$1`,
 		);
 	if (rewritten !== text) await writeFileAtomic(path, rewritten);

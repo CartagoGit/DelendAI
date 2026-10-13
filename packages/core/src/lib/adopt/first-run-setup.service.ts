@@ -13,7 +13,7 @@
  * editor opens writes nothing in them — that is what once rewrote files
  * in projects that had nothing to do with delendai.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createWorkspaceFileReader } from '../bootstrap/workspace-file-reader';
@@ -29,14 +29,22 @@ const DOCS_README = `# delendai\n\nThe documents delendai and its plugins keep f
 const PROJECT_MCP_CONFIGS = ['.vscode/mcp.json', '.mcp.json'] as const;
 
 /** Whether the project itself registers delendai as one of its servers. */
-const projectRegistersDelendai = (root: string): boolean =>
-	PROJECT_MCP_CONFIGS.some((file) => {
-		const path = join(root, file);
-		return (
-			existsSync(path) &&
-			findDelendaiServerName(readFileSync(path, 'utf8')) !== undefined
+const projectRegistersDelendai = async (root: string): Promise<boolean> => {
+	for (const file of PROJECT_MCP_CONFIGS) {
+		const text = await readFile(join(root, file), 'utf8').catch(
+			() => undefined,
 		);
-	});
+		if (text !== undefined && findDelendaiServerName(text) !== undefined)
+			return true;
+	}
+	return false;
+};
+
+const exists = (path: string): Promise<boolean> =>
+	stat(path).then(
+		() => true,
+		() => false,
+	);
 
 /**
  * The files the first start created, or `undefined` when the project
@@ -46,10 +54,10 @@ export const firstRunSetup = async (
 	workspaceRoot: string,
 	namespacePrefix = 'delendai',
 ): Promise<readonly string[] | undefined> => {
-	if (existsSync(join(workspaceRoot, DEFAULT_CONFIG_FILENAME)))
+	if (await exists(join(workspaceRoot, DEFAULT_CONFIG_FILENAME)))
 		return undefined;
-	if (!existsSync(join(workspaceRoot, '.git'))) return undefined;
-	if (!projectRegistersDelendai(workspaceRoot)) return undefined;
+	if (!(await exists(join(workspaceRoot, '.git')))) return undefined;
+	if (!(await projectRegistersDelendai(workspaceRoot))) return undefined;
 	const workspace = createWorkspacePathProvider(workspaceRoot);
 	const outcome = await runAdoptProject(
 		{
@@ -69,7 +77,7 @@ export const firstRunSetup = async (
 			: DEFAULT_CORE_PATHS.docsDir;
 	const docsReadme = join(docsDir, 'README.md');
 	const created = [DEFAULT_CONFIG_FILENAME, ...outcome.data.created];
-	if (!existsSync(join(workspaceRoot, docsReadme))) {
+	if (!(await exists(join(workspaceRoot, docsReadme)))) {
 		await writeFileAtomic(join(workspaceRoot, docsReadme), DOCS_README);
 		created.push(docsReadme);
 	}
