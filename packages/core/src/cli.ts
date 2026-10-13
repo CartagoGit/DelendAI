@@ -24,7 +24,11 @@ export { judgeGitOperation } from './lib/development-policy/git-guard';
 // from the provider bridge. Exported here — not from the public barrel,
 // whose budget is full — because the CLI resolves and reports agent
 // identity itself.
-export { providerModelId } from './lib/work-identity/provider-model-bridge.helper';
+export {
+	providerBridgeSilence,
+	providerModelId,
+	providerModelReading,
+} from './lib/work-identity/provider-model-bridge.helper';
 // What the project's `development.identity` axis does to a resolved
 // identity (f00758). One helper, three consumers: the work engine, the
 // CLI and commit-policy — the x00560 "one answer" rule, extended.
