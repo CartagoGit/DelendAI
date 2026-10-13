@@ -48,6 +48,8 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - A checkpoint that is a retired tip, or an ancestor of one, is reported kept; the boot does not go DEGRADED for it.
   - Retired tips absent from the local object store are fetched before ancestry is asked.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The reaper releases spent review claims and empty stray refs
 
