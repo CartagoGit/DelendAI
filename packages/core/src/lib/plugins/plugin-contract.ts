@@ -31,6 +31,7 @@ import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-ca
 import type { IStateRegistry } from '@delendai/contracts/state';
 import type { IHostSubagentRuntime } from '@delendai/contracts';
 import type { IAgentRoleContribution } from '../contracts/interfaces/agent-role-contribution.interface';
+import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -179,6 +180,12 @@ export interface IMcpPluginContext {
 	 * treat absent as a no-op registry (always empty).
 	 */
 	readonly peerPlugins?: IPeerPluginRegistry | undefined;
+	/**
+	 * The root `providers` roster of the configuration, valid entries only.
+	 * A plugin with its own roster option keeps it: the root one is what
+	 * it uses when it declares none.
+	 */
+	readonly providers?: readonly IProviderCapabilities[] | undefined;
 	/**
 	 * f00153 S4 — incident helper exposed by the `logs` plugin. A
 	 * peer plugin emits a structured incident by calling

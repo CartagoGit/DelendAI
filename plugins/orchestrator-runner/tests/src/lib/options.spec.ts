@@ -10,7 +10,9 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { ProviderSchema } from '../../../src/lib/options';
+import type { IProviderCapabilities } from '@delendai/core/public';
+
+import { ProviderSchema, rosterFor } from '../../../src/lib/options';
 
 const baseProvider = {
 	id: 'a-new-host',
@@ -45,5 +47,29 @@ describe('ProviderSchema — subscription.tool (x00183 F7)', () => {
 			invoke: { kind: 'subscription', tool: '' },
 		});
 		expect(result.success).toBe(false);
+	});
+});
+
+describe('rosterFor', () => {
+	const root: readonly IProviderCapabilities[] = [
+		{
+			id: 'root-provider',
+			kind: 'cli',
+			invoke: { kind: 'cli', command: 'root-provider' },
+			modelId: 'root-model',
+			contextWindow: 200_000,
+			costTier: 3,
+			strengths: [],
+			weaknesses: [],
+		},
+	];
+	it('routes over the root roster when the plugin declares none', () => {
+		expect(rosterFor(undefined, root)).toBe(root);
+		expect(rosterFor(undefined, undefined)).toEqual([]);
+	});
+
+	it("keeps the plugin's own roster, an empty one included", () => {
+		expect(rosterFor([{ id: 'own' }], root)).toEqual([{ id: 'own' }]);
+		expect(rosterFor([], root)).toEqual([]);
 	});
 });

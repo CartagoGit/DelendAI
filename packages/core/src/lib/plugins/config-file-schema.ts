@@ -108,6 +108,9 @@ const PROVIDER_ENTRY_SCHEMA = z
 	})
 	.strict();
 
+/** One root roster entry, checked by the schema `--check` uses. */
+export const parseProviderEntry = (entry: unknown) =>
+	PROVIDER_ENTRY_SCHEMA.safeParse(entry);
 const PLUGIN_REGISTRY_ENTRY_SCHEMA = z
 	.object({
 		id: z.string(),
