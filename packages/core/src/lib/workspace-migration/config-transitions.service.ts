@@ -41,11 +41,21 @@
 
 import { readConfigText } from '../work-units/command-args.helper';
 import { lstat, readFile, rm } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
 import { namespacePrefixTransition } from './namespace-prefix-transition.service';
-import { APPLIED_CONFIG_PATH } from '../contracts/constants/config-transition.constant';
+import { APPLIED_CONFIG_FILE } from '../contracts/constants/config-transition.constant';
+import {
+	DEFAULT_CACHE_DIR,
+	LEGACY_RECORDS_DIR,
+	RECORDS_DIR,
+} from '../contracts/constants/delendai-records.constant';
+import {
+	recordPath,
+	recordsDir,
+	rememberAppliedCacheDir,
+} from '../shared/delendai-records';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type {
 	IAppliedConfigSnapshot,
@@ -62,7 +72,6 @@ import {
 import { writeFileAtomic } from '../shared/atomic-write';
 
 /** Where the applied-configuration record lives, for the report to name. */
-const RECORD_PATH = APPLIED_CONFIG_PATH.join('/');
 import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 
@@ -127,14 +136,27 @@ const isSnapshot = (value: unknown): value is IAppliedConfigSnapshot => {
 export const readAppliedSnapshot = async (
 	workspaceRoot: string,
 ): Promise<IAppliedConfigSnapshot | undefined> => {
-	try {
-		const parsed: unknown = JSON.parse(
-			await readFile(join(workspaceRoot, ...APPLIED_CONFIG_PATH), 'utf8'),
-		);
-		return isSnapshot(parsed) ? parsed : undefined;
-	} catch {
-		return undefined;
+	// Where the cache was last applied first; then the default cache and an
+	// older delendai's root folder, for a workspace with no git directory
+	// to remember the cache in, or one not migrated yet.
+	for (const path of [
+		recordPath(workspaceRoot, APPLIED_CONFIG_FILE),
+		join(
+			workspaceRoot,
+			DEFAULT_CACHE_DIR,
+			RECORDS_DIR,
+			APPLIED_CONFIG_FILE,
+		),
+		join(workspaceRoot, LEGACY_RECORDS_DIR, APPLIED_CONFIG_FILE),
+	]) {
+		try {
+			const parsed: unknown = JSON.parse(await readFile(path, 'utf8'));
+			if (isSnapshot(parsed)) return parsed;
+		} catch {
+			// Not there: the next place.
+		}
 	}
+	return undefined;
 };
 
 export const writeAppliedSnapshot = async (
@@ -144,9 +166,12 @@ export const writeAppliedSnapshot = async (
 	// Same reason as the migration journal: this is written on first
 	// sight of a workspace, so the directory it lands in must not be a
 	// surprise in somebody's `git status`.
-	await ensureSelfIgnoringDir(join(workspaceRoot, APPLIED_CONFIG_PATH[0]));
+	// Remembered first: the record is written where the cache now is, and
+	// the next start finds it there, whatever the cache was called before.
+	rememberAppliedCacheDir(workspaceRoot, snapshot.cacheDir);
+	await ensureSelfIgnoringDir(recordsDir(workspaceRoot));
 	await writeFileAtomic(
-		join(workspaceRoot, ...APPLIED_CONFIG_PATH),
+		recordPath(workspaceRoot, APPLIED_CONFIG_FILE),
 		`${JSON.stringify(snapshot, null, '\t')}\n`,
 	);
 };
@@ -273,7 +298,10 @@ export const reconcileConfigTransitions = async (input: {
 			outcomes: [],
 			acted: false,
 			recorded: 'withheld',
-			recordPath: RECORD_PATH,
+			recordPath: relative(
+				input.workspaceRoot,
+				recordPath(input.workspaceRoot, APPLIED_CONFIG_FILE),
+			),
 			skipped: `${DEFAULT_CONFIG_FILENAME} has problems (${diagnosis.issues.join('; ')}); no configuration change was applied, because an unreadable file would read as "every plugin removed"`,
 		};
 	}
@@ -306,7 +334,10 @@ export const reconcileConfigTransitions = async (input: {
 				outcomes,
 				acted: true,
 				recorded: 'withheld',
-				recordPath: RECORD_PATH,
+				recordPath: relative(
+					input.workspaceRoot,
+					recordPath(input.workspaceRoot, APPLIED_CONFIG_FILE),
+				),
 			};
 		}
 		outcomes.push({ status: 'applied', id: transition.id, steps });
@@ -338,6 +369,9 @@ export const reconcileConfigTransitions = async (input: {
 			: alreadyMatches
 				? 'unchanged'
 				: 'withheld',
-		recordPath: RECORD_PATH,
+		recordPath: relative(
+			input.workspaceRoot,
+			recordPath(input.workspaceRoot, APPLIED_CONFIG_FILE),
+		),
 	};
 };

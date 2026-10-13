@@ -8,6 +8,7 @@ import type {
 } from '../contracts/interfaces/cache-eviction.interface';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
+import { recordPath } from '../shared/delendai-records';
 
 /**
  * Whether a boot sweep is due. No interval (or 0) means every boot, which
@@ -58,7 +59,10 @@ export const runThrottledBootSweep = async (input: {
 }): Promise<ICacheEvictionReport> => {
 	const now = (input.now ?? Date.now)();
 	const throttled = input.intervalMs !== undefined && input.intervalMs > 0;
-	const stampAbs = join(input.workspaceRoot, ...CACHE_EVICTION_STAMP_PATH);
+	const stampAbs = recordPath(
+		input.workspaceRoot,
+		CACHE_EVICTION_STAMP_PATH.at(-1) ?? 'cache-eviction-at.json',
+	);
 	if (throttled) {
 		const due = isBootSweepDue({
 			lastAt: await readStamp(stampAbs),

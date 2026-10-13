@@ -41,7 +41,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { MIGRATION_JOURNAL_PATH } from './migration-journal-path.constant';
+import {
+	MIGRATION_JOURNAL_FILE,
+	MIGRATION_JOURNAL_PATH,
+} from './migration-journal-path.constant';
 import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 
 import type {
@@ -64,6 +67,7 @@ import {
 	delendaiToDelendAIV1,
 } from './migrations/delendai-to-delendai-v1';
 import { createPolicyAlignmentMigrator } from './migrators/policy-alignment.migrator';
+import { recordPath } from '../shared/delendai-records';
 
 /**
  * The migrations a workspace runs, in declaration order.
@@ -120,8 +124,21 @@ export const DEFAULT_MIGRATION_IDS: ReadonlySet<IMigrationId> = new Set(
 
 export { MIGRATION_JOURNAL_PATH };
 
-const journalAbsolutePath = (workspaceRoot: string): string =>
-	join(workspaceRoot, ...MIGRATION_JOURNAL_PATH);
+/**
+ * Where a workspace's journal is, fixed the first time it is asked for in
+ * this process. A migration run renames the cache and rewrites the
+ * configuration's `cacheDir` while it records each step; resolved again at
+ * every write, the journal followed those half-way states and was split
+ * across the old cache and the new one.
+ */
+const journalPaths = new Map<string, string>();
+const journalAbsolutePath = (workspaceRoot: string): string => {
+	const known = journalPaths.get(workspaceRoot);
+	if (known !== undefined) return known;
+	const path = recordPath(workspaceRoot, MIGRATION_JOURNAL_FILE);
+	journalPaths.set(workspaceRoot, path);
+	return path;
+};
 
 /**
  * Read the journal as a list of ids. Missing file → empty list (a

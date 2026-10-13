@@ -72,6 +72,7 @@ const defaultModifiedAt: IModifiedAtReader = async (file) => {
 };
 
 import type { IForeignLockProvider } from '../contracts/interfaces/foreign-lock.interface';
+import { recordPath } from '@delendai/core/public';
 
 /**
  * Non-slice trigger context. Threshold and interval events carry
@@ -671,7 +672,7 @@ export const commitWithGuard = async (
 		buildIsolatedGitEnv(join(tmpDir, 'index'), args.authorFlag),
 		args.gitTimeoutMs,
 	);
-	const lockPath = join(args.workspaceRoot, '.delendai', 'index-lock');
+	const lockPath = recordPath(args.workspaceRoot, 'index-lock');
 	return await withFileMutex(
 		lockPath,
 		async () => {

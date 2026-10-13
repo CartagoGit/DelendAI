@@ -53,6 +53,7 @@ import {
 	runPendingMigrations,
 } from '@delendai/core/lib/workspace-migration/legacy-migration.service';
 import type { IMigrationJournal } from '@delendai/core/lib/contracts/interfaces/workspace-migration.interface';
+import { recordPath } from '@delendai/core/lib/shared/delendai-records';
 
 /**
  * Recursive sorted-relative-path hash: enumerate every regular file
@@ -211,9 +212,9 @@ describe('acceptance #3 — already-migrated workspace is a no-op', () => {
 			journal: createFileSystemJournal(),
 			workspaceRoot,
 		});
-		expect(existsSync(join(workspaceRoot, ...MIGRATION_JOURNAL_PATH))).toBe(
-			false,
-		);
+		expect(
+			existsSync(recordPath(workspaceRoot, 'migrations-applied.json')),
+		).toBe(false);
 	});
 
 	it('skips plan when detect returns false', async () => {
@@ -260,7 +261,10 @@ describe('acceptance #4 — idempotency, verified by hash', () => {
 		expect(first.acted).toBe(true);
 
 		const afterFirstHash = await hashWorkspace(workspaceRoot);
-		const journalPath = join(workspaceRoot, ...MIGRATION_JOURNAL_PATH);
+		const journalPath = recordPath(
+			workspaceRoot,
+			'migrations-applied.json',
+		);
 		expect(existsSync(journalPath)).toBe(true);
 		const recordedFirst = await readFile(journalPath, 'utf8');
 		expect(recordedFirst).toContain(DELENDAI_TO_DELENDAI_V1_ID);
@@ -303,7 +307,10 @@ describe('acceptance #4 — idempotency, verified by hash', () => {
 			journal,
 			workspaceRoot,
 		});
-		const journalPath = join(workspaceRoot, ...MIGRATION_JOURNAL_PATH);
+		const journalPath = recordPath(
+			workspaceRoot,
+			'migrations-applied.json',
+		);
 		const recorded = await readFile(journalPath, 'utf8');
 		const parsed: unknown = JSON.parse(recorded);
 		expect(Array.isArray(parsed)).toBe(true);

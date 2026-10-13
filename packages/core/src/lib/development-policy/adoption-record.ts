@@ -15,7 +15,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { sharedCheckout } from '../shared/shared-checkout';
-import { MIGRATION_JOURNAL_PATH } from '../workspace-migration/migration-journal-path.constant';
+import { MIGRATION_JOURNAL_FILE } from '../workspace-migration/migration-journal-path.constant';
+import { recordPath } from '../shared/delendai-records';
 import {
 	DEVELOPMENT_POLICY_CONFIG_FILE,
 	DEVELOPMENT_POLICY_MIGRATOR_ID,
@@ -25,7 +26,7 @@ import type { IPolicyAdoption } from '../contracts/interfaces/policy-adoption.in
 const journalIds = (root: string): readonly unknown[] => {
 	try {
 		const parsed: unknown = JSON.parse(
-			readFileSync(join(root, ...MIGRATION_JOURNAL_PATH), 'utf8'),
+			readFileSync(recordPath(root, MIGRATION_JOURNAL_FILE), 'utf8'),
 		);
 		return Array.isArray(parsed) ? parsed : [];
 	} catch {

@@ -312,7 +312,9 @@ describe('recording the applied configuration is acting (x00607)', () => {
 		// appeared in somebody's repository.
 		expect(result.outcomes).toStrictEqual([]);
 		expect(result.acted).toBe(true);
-		expect(result.recordPath).toBe('.delendai/applied-config.json');
+		expect(result.recordPath).toBe(
+			'.cache/delendai/records/applied-config.json',
+		);
 		await expect(read(result.recordPath)).resolves.toContain('proposals');
 	});
 

@@ -4,8 +4,11 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createFileLifecycleStateStore } from '@delendai/core/lib/cache/file-lifecycle-state-store.service';
-import { CACHE_LAYOUT_MARKER_PATH } from '@delendai/core/lib/contracts/constants/cache-layout.constant';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
+import {
+	recordPath,
+	recordsDir,
+} from '@delendai/core/lib/shared/delendai-records';
 
 // Enough turns of the event loop for a caller that is not locked out to
 // run its own steps in the middle of ours; no clock is involved.
@@ -45,14 +48,14 @@ describe('createFileLifecycleStateStore', () => {
 		).toBe(9);
 	});
 
-	it('writes the marker under .delendai and nowhere else', async () => {
+	it('writes the marker in the records folder and nowhere else', async () => {
 		const root = workspace();
 		await createFileLifecycleStateStore(root).setAppliedEpoch(
 			'cache-layout',
 			9,
 		);
 		const raw = await readFile(
-			join(root, ...CACHE_LAYOUT_MARKER_PATH),
+			recordPath(root, 'cache-layout-applied.json'),
 			'utf8',
 		);
 		expect(JSON.parse(raw)).toEqual({ 'cache-layout': 9 });
@@ -60,9 +63,9 @@ describe('createFileLifecycleStateStore', () => {
 
 	it('treats a damaged marker as no marker', async () => {
 		const root = workspace();
-		await mkdir(join(root, '.delendai'), { recursive: true });
+		await mkdir(recordsDir(root), { recursive: true });
 		await writeFile(
-			join(root, ...CACHE_LAYOUT_MARKER_PATH),
+			recordPath(root, 'cache-layout-applied.json'),
 			'{not json',
 			'utf8',
 		);
@@ -74,9 +77,9 @@ describe('createFileLifecycleStateStore', () => {
 
 	it('ignores an epoch that is not an integer', async () => {
 		const root = workspace();
-		await mkdir(join(root, '.delendai'), { recursive: true });
+		await mkdir(recordsDir(root), { recursive: true });
 		await writeFile(
-			join(root, ...CACHE_LAYOUT_MARKER_PATH),
+			recordPath(root, 'cache-layout-applied.json'),
 			'{"cache-layout":"9"}',
 			'utf8',
 		);
