@@ -101,7 +101,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S4 — A start leaves every unit in step with the forge
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/unit-forge-sync.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
@@ -114,6 +114,8 @@ What the code does today, measured on this clone on 2026-10-13:
   - At every start, each unit of this clone with commits the forge lacks is pushed. Each wip branch of the same agent on the forge that this clone lacks, or holds behind, is fetched and its unit fast-forwarded. A branch that diverged is a blocker naming the reconciling command.
   - Uncommitted edits in a kept unit's worktree are committed as a durable checkpoint and pushed (`checkpoint.durableWip`), so changing machine never leaves work only on disk.
   - A project with the old layout (wip branches that exist only on this clone) has them pushed at its first start on this code; branch names keep their shape (S3), so nothing is renamed. `DELENDAI_UNIT_FORGE_SYNC=off` turns the pass off, which the test suites do.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — The doctor sees work that is not on the forge
 
