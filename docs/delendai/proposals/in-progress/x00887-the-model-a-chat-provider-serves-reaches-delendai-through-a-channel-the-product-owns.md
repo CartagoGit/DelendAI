@@ -52,6 +52,8 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 - acceptance:
   - The format (model, at, provider, workspace) and where it is written are documented for provider authors in a page delendai publishes. The page is host-agnostic and names no single provider as the reference.
   - Entries are kept per workspace (a map, or one file per workspace key), so two windows on different workspaces never erase each other. The single-file format is still read.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The bridge's state is reported, never silent
 
