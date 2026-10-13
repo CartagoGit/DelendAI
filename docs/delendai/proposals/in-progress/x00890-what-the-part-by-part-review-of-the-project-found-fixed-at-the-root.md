@@ -2,10 +2,14 @@
 id: x00890
 title: "what the part-by-part review of the project found, fixed at the root"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 6db080f0-2744-4b87-9e9e-4e709c5d9340
+last-correlation-id: 6db080f0-2744-4b87-9e9e-4e709c5d9340
+last-transition-from: ready
+last-transition-at: 2026-10-13T16:55:16.370Z
 ---
 
 # x00890 — what the part-by-part review of the project found, fixed at the root
