@@ -64,7 +64,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S2 — Publishing cuts a pull request from the branch and leaves the branch alone
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
@@ -81,6 +81,8 @@ What the code does today, measured on this clone on 2026-10-13:
   - Publishing pushes the wip branch's tip to its `pr/…` branch and opens or updates the pull request. The wip branch, local and on the forge, and its worktree stay while the proposal is not done.
   - A fix made on the wip branch after a red pull request is published into the same open pull request. After a merge, the next publication opens a new pull request from the same wip branch, carrying only what develop lacks.
   - The wip branch is retired (kept under `refs/<namespace>/retired/`) only when its proposal reaches done or is abandoned, and only once everything on it is on develop.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — One wip branch per proposal
 
