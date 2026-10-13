@@ -2,14 +2,14 @@
 id: f00759
 title: "one answer to which machine this is, and where its editors keep their files"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: b4a1621d-9957-4f5f-9c6d-e45b4b8e1ad3
-last-correlation-id: b4a1621d-9957-4f5f-9c6d-e45b4b8e1ad3
-last-transition-from: ready
-last-transition-at: 2026-10-13T23:02:05.003Z
+last-transition-id: 9505f630-8fe4-4558-8ad9-86476ee9db03
+last-correlation-id: 9505f630-8fe4-4558-8ad9-86476ee9db03
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T23:19:42.440Z
 ---
 
 # f00759 — one answer to which machine this is, and where its editors keep their files
@@ -52,6 +52,7 @@ What the code does today:
   - A WSL shell that sets `WSL_DISTRO_NAME` but whose `/proc/version` says nothing is WSL to init as it is to the profile.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `dee6e54e1a7d`
 
 ### S2 — The editors' user directories come from one resolver, the Windows side of WSL included
 
@@ -69,10 +70,11 @@ What the code does today:
   - `ide-targets.ts` and `hostUserDirs` read it. Under WSL, Claude Desktop, which runs on Windows, gets its configuration in the Windows user's `AppData/Roaming` instead of the Linux home it never reads.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `a369e1b8bfd1`
 
 ### S3 — A platform question asked outside the profile is refused by a lint
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `tools/scripts/lint/platform-reads.script.ts`
   - `tools/scripts/lint/platform-reads.constant.ts`
@@ -83,6 +85,9 @@ What the code does today:
 - acceptance:
   - `lint:platform-reads`, chained into `lint:architecture`, fails on `process.platform`, `os.platform()` or `/proc/version` in product code outside `platform/` beyond a per-file baseline of today's reads, which may only shrink (16 files, after S1 and S2).
   - The reads S1 and S2 replace are gone from the baseline.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `baffcd376c20`
 
 ## acceptance
 
