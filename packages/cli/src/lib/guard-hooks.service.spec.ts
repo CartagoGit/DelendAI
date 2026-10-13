@@ -275,12 +275,22 @@ describe('what the guard does not write into', () => {
 		expect(lefthookRunsGuard(root, 'pre-commit')).toBe(true);
 		// `guard post-merge` in another hook's section does not count.
 		expect(lefthookRunsGuard(root, 'pre-push')).toBe(false);
+		// What `lefthook install` writes for the hooks it runs.
+		writeFileSync(
+			join(locateHooks(root).dir, 'pre-commit'),
+			'#!/bin/sh\nlefthook run pre-commit\n',
+		);
 		const report = inspectGuardHooks(root);
 		const entry = (hook: string) =>
 			report.hooks.find((item) => item.hook === hook);
 		expect(entry('pre-commit')?.state).toBe('installed');
 		expect(entry('pre-push')?.state).toBe('absent');
 		expect(entry('pre-push')?.reason).toContain('lefthook.yml');
+		// Declared, but lefthook never wrote its script: it runs nothing.
+		expect(entry('post-merge')).toMatchObject({
+			state: 'absent',
+			reason: expect.stringContaining('lefthook install'),
+		});
 	});
 
 	it('reports husky v9, whose hooks directory it regenerates', () => {

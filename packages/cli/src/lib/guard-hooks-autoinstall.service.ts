@@ -27,7 +27,7 @@ import type {
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 import { isRecord } from './helpers/cli-command.helper';
 import { readConfigText } from './config-file.service';
-import { inspectGuardHooks } from './guard-hooks.service';
+import { inspectGuardHooks, installLefthookHooks } from './guard-hooks.service';
 
 /** What the project asks for, or `absent` when it declares no policy. */
 export const guardHooksMode = async (
@@ -117,9 +117,11 @@ const SILENT = (
 });
 
 /**
- * Look at the guard a workspace declares and report it. Writes nothing,
- * whatever the configuration says, and never throws: a repository that
- * cannot be inspected still gets its server.
+ * Look at the guard a workspace declares and report it, and never throw:
+ * a repository that cannot be inspected still gets its server. The one
+ * thing written is what the project's own lefthook configuration already
+ * declares, by its own lefthook: a section it never installed runs
+ * nothing, and the start must leave the hooks the project asked for.
  *
  * `development.guardHooks: "install"` is honoured as a statement of
  * intent — the report names the command — not as permission to write
@@ -132,7 +134,16 @@ export const reportGuardHooks = async (input: {
 	const mode = await guardHooksMode(input.workspaceRoot);
 	if (mode === 'absent' || mode === 'off') return SILENT(mode);
 	try {
-		const report = inspectGuardHooks(input.workspaceRoot);
+		const first = inspectGuardHooks(input.workspaceRoot);
+		// What the project's own lefthook.yml declares is installed at start:
+		// a section lefthook never wrote a script for runs nothing.
+		const declaredOnly = first.hooks.some(
+			(entry) => entry.reason?.includes('lefthook install') === true,
+		);
+		const report =
+			declaredOnly && installLefthookHooks(input.workspaceRoot)
+				? inspectGuardHooks(input.workspaceRoot)
+				: first;
 		// A missing hook that carries its own reason already says how to
 		// fix it; `guard install` is the fix only for the others.
 		const missing = report.hooks.some(

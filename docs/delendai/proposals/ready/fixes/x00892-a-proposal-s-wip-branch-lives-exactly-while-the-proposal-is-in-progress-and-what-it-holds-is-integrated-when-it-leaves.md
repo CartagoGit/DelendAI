@@ -77,6 +77,20 @@ What x00891 (merged in #1066) does instead:
 - acceptance:
   - At start, a unit of this clone whose proposal is no longer in progress, on its own tip or on the integration branch, and that still holds work the integration branch lacks, is published through the same path as S2 and then ended. A unit that holds nothing is ended.
 
+### S4 — A hook the project's lefthook.yml declares runs, and is not called installed before it does
+
+- **Status**: pending
+- **Files**:
+  - `packages/cli/src/lib/guard-hooks.service.ts`
+  - `packages/cli/src/lib/guard-hooks-autoinstall.service.ts`
+  - `packages/cli/src/lib/guard-hooks.service.spec.ts`
+  - `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
+- **Gate**: type
+- evidence: after x00891 added a `post-commit` section to `lefthook.yml`, `delendai guard status` reported `post-commit: installed` on this clone while `.git/hooks/post-commit` did not exist: lefthook writes a hook's script only at `lefthook install`, and the guard counted a declared section as installed. Commits in units were not pushed.
+- acceptance:
+  - A hook whose section runs the guard but whose script lefthook has not written is reported `absent`, naming `lefthook install`.
+  - At start, the project's own lefthook installs what its configuration declares, so the next commit runs the hook. Nothing else is written.
+
 ## acceptance
 
 - A wip branch exists exactly while its proposal is in progress.

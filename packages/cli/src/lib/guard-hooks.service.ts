@@ -311,17 +311,54 @@ export const uninstallGuardHooks = (
 	};
 };
 
+/** The reason a hook lefthook.yml declares, but lefthook never installed, gives. */
+const LEFTHOOK_NOT_INSTALLED =
+	'declared in lefthook.yml, and lefthook has not installed it yet: `lefthook install`';
+
+/**
+ * Have lefthook write the scripts its configuration declares, from the
+ * project's own lefthook. A section added to `lefthook.yml` runs nothing
+ * until then; the start does it, so a hook the project declared is a
+ * hook that runs. Returns whether lefthook was found and ran.
+ */
+export const installLefthookHooks = (workspaceRoot: string): boolean => {
+	const bin = join(workspaceRoot, 'node_modules', '.bin', 'lefthook');
+	if (!existsSync(bin)) return false;
+	try {
+		execFileSync(bin, ['install'], {
+			cwd: workspaceRoot,
+			stdio: ['ignore', 'pipe', 'pipe'],
+		});
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 export const inspectGuardHooks = (workspaceRoot: string): IGuardHooksReport => {
 	const location = locateHooks(workspaceRoot);
 	const lefthook = location.manager === 'lefthook';
 	return {
 		dir: location.dir,
 		hooks: GUARDED_HOOKS.map((hook) => {
+			const script = readHook(join(location.dir, hook));
+			// A section lefthook has not written its script for yet runs
+			// nothing: declared is not installed.
+			const declaredOnly =
+				lefthook &&
+				lefthookRunsGuard(workspaceRoot, hook) &&
+				script === undefined;
 			const installed =
-				readHook(join(location.dir, hook))?.includes(
-					GUARD_BLOCK_BEGIN,
-				) === true ||
-				(lefthook && lefthookRunsGuard(workspaceRoot, hook));
+				script?.includes(GUARD_BLOCK_BEGIN) === true ||
+				(lefthook &&
+					lefthookRunsGuard(workspaceRoot, hook) &&
+					!declaredOnly);
+			if (declaredOnly)
+				return {
+					hook,
+					state: 'absent' as const,
+					reason: LEFTHOOK_NOT_INSTALLED,
+				};
 			// Under lefthook a missing guard is fixed in its configuration;
 			// `guard install` would write a block lefthook overwrites.
 			return installed

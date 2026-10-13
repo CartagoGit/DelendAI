@@ -218,6 +218,19 @@ describe('what the report tells a lefthook project', () => {
 	});
 });
 
+describe('a hook lefthook.yml declares but lefthook never installed', () => {
+	it('is not reported as installed, and names the command that installs it', async () => {
+		const root = repo(POLICY);
+		writeFileSync(
+			join(root, 'lefthook.yml'),
+			'post-commit:\n  commands:\n    delendai-guard:\n      run: delendai guard post-commit\n',
+		);
+		const outcome = await reportGuardHooks({ workspaceRoot: root });
+		const text = outcome.lines.join('\n');
+		expect(text).toMatch(/post-commit: absent — .*lefthook install/u);
+	});
+});
+
 describe('guardHooksFollowMode', () => {
 	const report = (
 		states: readonly ('installed' | 'absent')[],
