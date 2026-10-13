@@ -12,3 +12,6 @@ export const APPLIED_CONFIG_PATH = [
 	'.delendai',
 	'applied-config.json',
 ] as const;
+
+/** The applied-configuration record's file name inside the records folder. */
+export const APPLIED_CONFIG_FILE = 'applied-config.json';

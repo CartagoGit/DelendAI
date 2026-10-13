@@ -47,7 +47,8 @@ describe('the shipped cache layout history', () => {
 			['results/usage-tracking/u.jsonl', 'use'],
 		] as const)
 			expect(await readFile(join(cache, path), 'utf8')).toBe(body);
-		expect((await readdir(cache)).sort()).toEqual(['results']);
+		// `records/` is delendai's own folder, which a layout move leaves where it is.
+		expect((await readdir(cache)).sort()).toEqual(['records', 'results']);
 		expect(
 			await createFileLifecycleStateStore(root).getAppliedEpoch(
 				'cache-layout',

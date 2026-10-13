@@ -21,6 +21,10 @@ import {
 } from '@delendai/core/lib/adopt/project-profile.service';
 import type { IToolRegistration } from '@delendai/core/public';
 import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import {
+	recordPath,
+	recordsDir,
+} from '@delendai/core/lib/shared/delendai-records';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -246,9 +250,9 @@ describe('project-profile service (f00280 S1)', () => {
 
 	it('quarantines corrupt persisted state and rewrites a fresh profile', async () => {
 		const workspace = createWorkspacePathProvider(root);
-		mkdirSync(join(root, '.delendai'), { recursive: true });
+		mkdirSync(recordsDir(root), { recursive: true });
 		writeFileSync(
-			join(root, '.delendai/project-profile.json'),
+			recordPath(root, 'project-profile.json'),
 			'{ not valid json',
 			'utf8',
 		);
@@ -268,10 +272,7 @@ describe('project-profile service (f00280 S1)', () => {
 		expect(persisted.created).toBe(true);
 		expect(persisted.corruptBackupPath).toBeNull();
 		const written = JSON.parse(
-			await readFile(
-				join(root, '.delendai/project-profile.json'),
-				'utf8',
-			),
+			await readFile(recordPath(root, 'project-profile.json'), 'utf8'),
 		);
 		expect(written.projectName).toBe('acme');
 		expect(written.workspaces[0].path).toBe('.');
@@ -319,9 +320,9 @@ describe('project-profile service (f00280 S1)', () => {
 			'utf8',
 		);
 		mkdirSync(join(root, 'apps/old'), { recursive: true });
-		mkdirSync(join(root, '.delendai'), { recursive: true });
+		mkdirSync(recordsDir(root), { recursive: true });
 		writeFileSync(
-			join(root, '.delendai/project-profile.json'),
+			recordPath(root, 'project-profile.json'),
 			JSON.stringify({
 				version: 1,
 				createdAt: '2026-08-01T00:00:00.000Z',
@@ -380,10 +381,7 @@ describe('project-profile service (f00280 S1)', () => {
 		const result = parse(await adopt({ write: true }));
 		expect(result.ok).toBe(true);
 		const profile = JSON.parse(
-			await readFile(
-				join(root, '.delendai/project-profile.json'),
-				'utf8',
-			),
+			await readFile(recordPath(root, 'project-profile.json'), 'utf8'),
 		);
 		expect(profile.createdAt).toBe('2026-08-01T00:00:00.000Z');
 		expect(profile.projectName).toBe('fixture');
@@ -435,10 +433,7 @@ describe('project-profile service (f00280 S1)', () => {
 		const result = parse(await adopt({ write: true }));
 		expect(result.ok).toBe(true);
 		const profile = JSON.parse(
-			await readFile(
-				join(root, '.delendai/project-profile.json'),
-				'utf8',
-			),
+			await readFile(recordPath(root, 'project-profile.json'), 'utf8'),
 		);
 		expect(profile.workspaces).toHaveLength(1);
 		expect(profile.workspaces[0].path).toBe('.');

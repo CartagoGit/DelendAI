@@ -13,6 +13,8 @@
  * again, it is fast-forwarded to the integration base first. One that
  * holds commits, or uncommitted changes, is its agent's to bring forward.
  */
+import type { IUnitDependencies } from '../contracts/interfaces/unit-dependencies.interface';
+import { enteredDependencies } from './unit-dependencies.service';
 import type { IHydratedUnit } from './unit-lease.interface';
 import { readGit } from './work-unit-shared.service';
 
@@ -45,6 +47,23 @@ export const hydratedIdleUnit = (
 	]);
 	return moved === undefined ? {} : { hydrated: true };
 };
+
+/**
+ * A unit entered again: brought forward when it holds nothing of its
+ * own, then given its dependencies back if `work reap` released them.
+ */
+export const reenteredUnit = async (
+	root: string,
+	path: string | undefined,
+	ref: string,
+	base: string,
+): Promise<{
+	readonly hydrated?: true;
+	readonly dependencies?: IUnitDependencies;
+}> => ({
+	...hydratedIdleUnit(root, path, ref, base),
+	...(await enteredDependencies(path)),
+});
 
 /**
  * Bring forward every unit of this clone that holds nothing of its own.

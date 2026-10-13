@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname } from 'node:path';
 
 import type { ILifecycleScope, ILifecycleStateStore } from '@delendai/state';
 
@@ -10,6 +10,7 @@ import {
 import { writeFileAtomic } from '../shared/atomic-write';
 import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 import { withFileMutex } from '../shared/with-file-mutex';
+import { recordPath } from '../shared/delendai-records';
 
 type IMarkerContent = Partial<Record<ILifecycleScope, number>>;
 
@@ -56,7 +57,10 @@ const readMarker = async (markerAbs: string): Promise<IMarkerContent> => {
 export const createFileLifecycleStateStore = (
 	workspaceRoot: string,
 ): ILifecycleStateStore => {
-	const markerAbs = join(workspaceRoot, ...CACHE_LAYOUT_MARKER_PATH);
+	const markerAbs = recordPath(
+		workspaceRoot,
+		CACHE_LAYOUT_MARKER_PATH.at(-1) ?? 'cache-layout-applied.json',
+	);
 	return {
 		getAppliedEpoch: async (scope) =>
 			(await readMarker(markerAbs))[scope] ?? null,
