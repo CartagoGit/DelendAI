@@ -47,6 +47,10 @@ import {
 	existingWorkRef,
 	unitGeneration,
 } from './work-unit-generation.service';
+import {
+	providerBridgeSilence,
+	providerModelReading,
+} from '../work-identity/provider-model-bridge.helper';
 
 /**
  * Give this agent its own working tree on its own ref.
@@ -167,7 +171,7 @@ export const enteredHeld = async (
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
 			'A worktree belongs to one identity and one unit of work.',
-			`work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>] [--alongside]; --agent defaults to DELENDAI_AGENT_ID.${identityRemedy(policy)}`,
+			`work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>] [--alongside]; --agent defaults to DELENDAI_AGENT_ID.${identityRemedy(policy)}${agent.length === 0 && policy.identity?.providerBridge !== false ? ` Provider bridge: ${providerBridgeSilence(providerModelReading({ workspace: root })) ?? 'it named a model the identity policy refused.'}` : ''}`,
 		);
 	}
 	if (policy.branches.workRefTemplate.length === 0) {

@@ -32,6 +32,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
+import type { IProviderModelReading } from '../contracts/interfaces/provider-model-reading.interface';
 import {
 	PROVIDER_MODEL_BRIDGE_FILE,
 	PROVIDER_MODEL_BRIDGE_VARIABLE,
@@ -60,46 +61,103 @@ interface IProviderModelEntry {
 }
 
 /**
- * The model id the bridge currently reports, or `undefined` when the
- * file is absent, unreadable, malformed, stale, or — when `workspace` is
- * given — belongs to another workspace's conversation.
+ * What the bridge reads: the model, or why it names none. The reason is
+ * what an identity refusal tells the person, instead of silence.
  */
-export const providerModelId = (
+export const providerModelReading = (
 	input: {
 		readonly workspace?: string | undefined;
 		readonly now?: Date | undefined;
 		readonly env?: NodeJS.ProcessEnv | undefined;
 	} = {},
-): string | undefined => {
+): IProviderModelReading => {
 	const env = input.env ?? process.env;
 	const path = providerModelBridgePath(env);
-	if (!existsSync(path)) return undefined;
-	let entry: IProviderModelEntry;
+	if (!existsSync(path)) return { reason: 'absent', path };
+	let parsed: unknown;
 	try {
-		entry = JSON.parse(readFileSync(path, 'utf8')) as IProviderModelEntry;
+		parsed = JSON.parse(readFileSync(path, 'utf8'));
 	} catch {
 		// A half-written file says nothing; the next request rewrites it.
-		return undefined;
+		return { reason: 'malformed', path };
 	}
-	if (typeof entry.model !== 'string' || entry.model.trim().length === 0)
-		return undefined;
-	if (typeof entry.at !== 'string') return undefined;
-	const observed = Date.parse(entry.at);
+	const candidates = entriesOf(parsed);
+	if (candidates.length === 0) return { reason: 'malformed', path };
 	const now = (input.now ?? new Date()).getTime();
-	if (
-		Number.isNaN(observed) ||
-		observed > now + PROVIDER_MODEL_MAX_AGE_MS ||
-		now - observed > PROVIDER_MODEL_MAX_AGE_MS
-	)
-		return undefined;
-	if (
-		input.workspace !== undefined &&
-		typeof entry.workspace === 'string' &&
-		entry.workspace.length > 0 &&
-		!sameConversationWorkspace(entry.workspace, input.workspace)
-	)
-		return undefined;
-	return entry.model.trim();
+	const mine = candidates.filter(
+		(entry) =>
+			input.workspace === undefined ||
+			typeof entry.workspace !== 'string' ||
+			entry.workspace.length === 0 ||
+			sameConversationWorkspace(entry.workspace, input.workspace),
+	);
+	if (mine.length === 0) return { reason: 'other-workspace', path };
+	const freshest = mine
+		.map((entry) => ({ entry, observed: Date.parse(String(entry.at)) }))
+		.filter(({ observed }) => !Number.isNaN(observed))
+		.sort((left, right) => right.observed - left.observed)[0];
+	if (freshest === undefined) return { reason: 'malformed', path };
+	const ageMs = now - freshest.observed;
+	if (ageMs > PROVIDER_MODEL_MAX_AGE_MS || -ageMs > PROVIDER_MODEL_MAX_AGE_MS)
+		return { reason: 'stale', path, ageMs };
+	return {
+		model: String(freshest.entry.model).trim(),
+		...(typeof freshest.entry.provider === 'string'
+			? { provider: freshest.entry.provider }
+			: {}),
+	};
+};
+
+/**
+ * The model id the bridge currently reports, or `undefined` when the
+ * file is absent, unreadable, malformed, stale, or — when `workspace` is
+ * given — belongs to another workspace's conversation.
+ */
+export const providerModelId = (
+	input: Parameters<typeof providerModelReading>[0] = {},
+): string | undefined => {
+	const reading = providerModelReading(input);
+	return 'model' in reading ? reading.model : undefined;
+};
+
+/**
+ * The entries a bridge file holds. One provider writes a single entry;
+ * the per-workspace form keeps one entry per workspace under `entries`,
+ * so two windows on different workspaces no longer erase each other.
+ */
+const entriesOf = (parsed: unknown): readonly IProviderModelEntry[] => {
+	if (typeof parsed !== 'object' || parsed === null) return [];
+	const record = parsed as Record<string, unknown>;
+	const raw =
+		typeof record.entries === 'object' && record.entries !== null
+			? Object.entries(record.entries as Record<string, unknown>).map(
+					([workspace, entry]) =>
+						typeof entry === 'object' && entry !== null
+							? { workspace, ...(entry as IProviderModelEntry) }
+							: undefined,
+				)
+			: [record as IProviderModelEntry];
+	return raw.filter(
+		(entry): entry is IProviderModelEntry =>
+			entry !== undefined &&
+			typeof entry.model === 'string' &&
+			entry.model.trim().length > 0 &&
+			typeof entry.at === 'string',
+	);
+};
+
+/** What to tell a person when the bridge named no model, and how to fix it. */
+export const providerBridgeSilence = (
+	reading: IProviderModelReading,
+): string | undefined => {
+	if ('model' in reading) return undefined;
+	const why = {
+		absent: `no chat provider publishes the model it serves (${reading.path} does not exist)`,
+		malformed: `${reading.path} holds no readable model entry`,
+		stale: `the last model a provider published is ${String(Math.round((reading.ageMs ?? 0) / 60_000))} min old, older than the ${String(PROVIDER_MODEL_MAX_AGE_MS / 60_000)} min that still say who is working now`,
+		'other-workspace': `${reading.path} names the model of another workspace's conversation, not this one's`,
+	}[reading.reason];
+	return `${why}. A provider that writes the bridge (docs/delendai/configuration/provider-model-bridge.md), ${PROVIDER_MODEL_BRIDGE_VARIABLE} pointing at where yours writes, or DELENDAI_AGENT_ID names it.`;
 };
 
 /**

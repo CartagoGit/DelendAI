@@ -2,10 +2,14 @@
 id: x00887
 title: "The model a chat provider serves reaches delendai through a channel the product owns"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 0be7674e-66be-443a-8640-1c31e0bd03db
+last-correlation-id: 0be7674e-66be-443a-8640-1c31e0bd03db
+last-transition-from: ready
+last-transition-at: 2026-10-13T04:11:30.063Z
 ---
 
 # x00887 — The model a chat provider serves reaches delendai through a channel the product owns
@@ -37,26 +41,34 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 
 ### S1 — A published bridge contract, one entry per workspace
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
   - `packages/core/src/lib/work-identity/provider-model-bridge.constant.ts`
   - `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`
-  - `docs/delendai/integrations/provider-model-bridge.md`
+  - `docs/delendai/configuration/provider-model-bridge.md`
+  - `packages/core/src/lib/contracts/interfaces/provider-model-reading.interface.ts`
 - **Gate**: type
 - acceptance:
   - The format (model, at, provider, workspace) and where it is written are documented for provider authors in a page delendai publishes. The page is host-agnostic and names no single provider as the reference.
   - Entries are kept per workspace (a map, or one file per workspace key), so two windows on different workspaces never erase each other. The single-file format is still read.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The bridge's state is reported, never silent
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
-  - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+  - `packages/core/src/cli.ts`
+  - `packages/cli/src/index.ts`
+  - `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`
 - **Gate**: type
 - acceptance:
-  - The bridge reports why it gave nothing: `absent`, `stale` (with its age), `other-workspace` or `malformed`. The doctor and the identity refusal show that reason and the remedy (a provider that publishes, `DELENDAI_PROVIDER_MODEL_FILE`, or `DELENDAI_AGENT_ID`).
+  - The bridge reports why it gave nothing: `absent`, `stale` (with its age), `other-workspace` or `malformed`. `work enter`'s identity refusal and the server's start-up notice show that reason and the remedy (a provider that publishes, `DELENDAI_PROVIDER_MODEL_FILE`, or `DELENDAI_AGENT_ID`).
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The writer comes from a channel the product owns
 

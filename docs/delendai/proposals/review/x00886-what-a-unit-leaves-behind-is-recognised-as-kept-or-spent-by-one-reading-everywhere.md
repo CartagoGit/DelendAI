@@ -2,14 +2,14 @@
 id: x00886
 title: "What a unit leaves behind is recognised as kept or spent by one reading, everywhere"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 3b87adb7-03ea-48fb-9e43-dcf6a57ebd86
-last-correlation-id: 3b87adb7-03ea-48fb-9e43-dcf6a57ebd86
-last-transition-from: ready
-last-transition-at: 2026-10-13T00:52:28.729Z
+last-transition-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
+last-correlation-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T04:05:37.876Z
 ---
 
 # x00886 — What a unit leaves behind is recognised as kept or spent by one reading, everywhere
@@ -39,7 +39,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S1 — A checkpoint kept under a later retired tip is not lost
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
   - `packages/core/src/lib/startup-reconciler/retired-tips.service.ts`
@@ -50,10 +50,11 @@ The server log pasted with the same request showed two more departures: the chec
   - Retired tips absent from the local object store are fetched before ancestry is asked.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `708edad24396`
 
 ### S2 — The reaper releases spent review claims and empty stray refs
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`
   - `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`
@@ -67,10 +68,11 @@ The server log pasted with the same request showed two more departures: the chec
   - `work reap` reports `strays`: a ref under the namespace prefix but outside the product's namespaces is removed only when every commit it adds is empty or a snapshot of a tree already on the integration branch; any other is listed as kept. Without `--apply` nothing is removed.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `708edad24396`
 
 ### S3 — The server log says each change once, and a restart in the past tense
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
   - `packages/core/src/lib/wip-engine/work-checkout-reports.ts`
@@ -83,9 +85,39 @@ The server log pasted with the same request showed two more departures: the chec
   - The restart line describes what the server ran before the restart and no longer says it still applies the old rules.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `708edad24396`
+
+### S4 — A unit ends once every slice of its proposal is handed in
+
+- **Status**: review
+- **Files**:
+  - `packages/core/src/lib/work-units/publication-target.service.ts`
+  - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - A proposal counts as in progress for its unit only while its file is in `in-progress/` and some slice is not yet in review, approved or done. Once every slice is handed in, the unit is judged delivered and reaped after its publication merges, rather than fast-forwarded and kept.
+- shipped-in: `5a1d2173bf57`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S5 — A handed-in slice says so, whichever way it was handed in
+
+- **Status**: review
+- **Files**:
+  - `plugins/proposals/src/lib/swarm/proposal-review.ts`
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `plugins/proposals/src/lib/services/review-handoff.ts`
+  - `plugins/proposals/tests/src/lib/proposal-review.spec.ts`
+  - `plugins/proposals/tests/src/lib/services/review-handoff.spec.ts`
+- **Gate**: type
+- acceptance:
+  - Submitting a slice that reads `pending` or `in-progress` sets its Status line to `review`. Handing the proposal to review aligns every slice already in review the same way, so a proposal in `review/` never carries a slice the completeness gate counts as not started.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
 - A boot over a repository whose only leftover is a checkpoint kept under a later retired tip reports HEALTHY.
 - `work reap` on this repository lists the spent review claim and the empty stray refs, and keeps the strays that carry a commit.
 - The server log no longer repeats an unchanged unit's skip.
+- After this proposal's publication merged, its unit's branch and worktree stayed and were fast-forwarded to develop (observed 2026-10-13). With S4 they are reaped.
