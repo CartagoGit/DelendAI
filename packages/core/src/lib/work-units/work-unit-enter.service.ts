@@ -51,6 +51,7 @@ import {
 	providerBridgeSilence,
 	providerModelReading,
 } from '../work-identity/provider-model-bridge.helper';
+import type { IUnitDependencies } from '../contracts/interfaces/unit-dependencies.interface';
 import { installUnitDependencies } from './unit-dependencies.service';
 
 /**
@@ -79,6 +80,16 @@ const ENTER_POLL_MS = 200;
  * second waits for the first, then sees g1 held by another session and
  * takes g2.
  */
+
+// A kept unit left idle gives its dependencies back to the disk (the
+// reaper removes them), so going back into one installs them again.
+const reenteredDependencies = async (
+	path: string | undefined,
+): Promise<{ dependencies?: IUnitDependencies }> =>
+	path === undefined
+		? {}
+		: { dependencies: await installUnitDependencies(path) };
+
 export const entering = new Map<string, Promise<unknown>>();
 
 /**
@@ -275,6 +286,7 @@ export const enteredHeld = async (
 			path: path ?? null,
 			created: false,
 			session: claimed,
+			...(await reenteredDependencies(path)),
 			...hydratedIdleUnit(root, path, ref, base),
 		});
 	}
@@ -298,6 +310,7 @@ export const enteredHeld = async (
 			path: continued.path,
 			created: false,
 			session: claimed,
+			...(await reenteredDependencies(path)),
 			...hydratedIdleUnit(root, path, continued.ref, base),
 		});
 	}

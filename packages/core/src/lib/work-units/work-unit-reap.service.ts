@@ -6,6 +6,7 @@ import type {
 import { reapLandedRetired } from './retired-landed.service';
 import { reapSpentReservations } from './slice-reservation-reap.service';
 import { hydrateKeptUnits } from './kept-unit-hydration.service';
+import { releaseIdleDependencies } from './idle-unit-dependencies.service';
 import { reapDeliveredUnits } from './unit-reaper.service';
 import { worktreeOfRef } from './unit-removal.service';
 import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
@@ -26,7 +27,8 @@ import { reapStrayRefs } from './stray-refs-reap.service';
  * such a directory held that no commit has; and drop from the forge the
  * retired work the integration branch came to hold, the slice
  * reservations and review claims whose unit is gone, and the refs
- * outside every namespace that carry no work. Reports only, without
+ * outside every namespace that carry no work; and give back the
+ * dependencies of the kept units nobody works on. Reports only, without
  * `--apply`.
  */
 export const reaped = async (
@@ -45,24 +47,31 @@ export const reaped = async (
 	// A unit the reaper just judged spent is not also brought forward.
 	const spent = new Set<string>();
 	for (const unit of units) spent.add(unit.ref);
+	const kept = (
+		await readUnitStandings({
+			root: opened.root,
+			policy: opened.policy,
+		})
+	).filter(
+		(unit) => !spent.has(unit.ref) && hasLocalBranch(opened.root, unit.ref),
+	);
 	const advanced = hydrateKeptUnits({
 		root: opened.root,
 		base: integrationBase(opened.root, opened.policy),
-		units: (
-			await readUnitStandings({
-				root: opened.root,
-				policy: opened.policy,
-			})
-		)
-			.filter(
-				(unit) =>
-					!spent.has(unit.ref) &&
-					hasLocalBranch(opened.root, unit.ref),
-			)
-			.map((unit) => ({
-				ref: unit.ref,
-				worktree: worktreeOfRef(opened.root, unit.ref),
-			})),
+		units: kept.map((unit) => ({
+			ref: unit.ref,
+			worktree: worktreeOfRef(opened.root, unit.ref),
+		})),
+		apply: args.includes('--apply'),
+	});
+	// A kept unit whose owner is not live gives its dependencies back;
+	// entering it again installs them.
+	const dependencies = await releaseIdleDependencies({
+		units: kept.map((unit) => ({
+			ref: unit.ref,
+			standing: unit.standing,
+			worktree: worktreeOfRef(opened.root, unit.ref) ?? null,
+		})),
 		apply: args.includes('--apply'),
 	});
 	const root = mainWorktreeOf(opened.root);
@@ -98,6 +107,14 @@ export const reaped = async (
 	});
 	return {
 		code: EXIT_CODE.OK,
-		data: { units, advanced, husks, retired, reservations, strays },
+		data: {
+			units,
+			advanced,
+			dependencies,
+			husks,
+			retired,
+			reservations,
+			strays,
+		},
 	};
 };
