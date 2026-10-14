@@ -137,7 +137,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S4 — Any server name, in any case, gets its agents and its tools
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/mcp-server-name.constant.ts`
   - `packages/core/src/lib/scaffold/mcp-server-name.helper.ts`
@@ -156,9 +156,11 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - acceptance:
   - A server started under a custom name creates the same agents as one under the default name.
   - The tool prefix an agent matches is derived from the server name the way the host derives it (case included), so a name with upper case letters is recognised; a spec covers lower, upper and mixed case.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `6b9f76b08247`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 1876ce52b3c0, validate exit 0, tests 68/68 — S4: single default name constant (DEFAULT_DELENDAI_SERVER_NAME) + hostToolSetReference normalization wired into scaffold/install/init. 68/68 covering specs, e2e upper-case-name case green.
 
 ### S5 — Existing agents are brought in line with the server they serve
 
