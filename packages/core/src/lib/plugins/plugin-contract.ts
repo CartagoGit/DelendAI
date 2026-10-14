@@ -571,6 +571,13 @@ export interface IMcpPlugin {
 	readonly availability?: (
 		ctx: IMcpPluginContext,
 	) => IPluginAvailability | Promise<IPluginAvailability>;
+	/**
+	 * A harmless check that the plugin works here: read-only by contract,
+	 * no paid call, no remote write. Run when the plugin registers and
+	 * says nothing worse than `registered`; a pass makes it `verified`,
+	 * and a throw or a probe slower than a few seconds `degraded`.
+	 */
+	readonly probe?: (ctx: IMcpPluginContext) => Promise<void> | void;
 	register(
 		ctx: IMcpPluginContext,
 		signal?: AbortSignal,

@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { RECORDS_DIR } from '../contracts/constants/delendai-records.constant';
 import type { IPluginAvailability } from '../contracts/interfaces/plugin-availability.interface';
 import type { IPluginAvailabilityRecord } from '../contracts/interfaces/plugin-availability-record.interface';
-import { availabilityOf } from './plugin-availability.service';
+import { provenAvailabilityOf } from './plugin-availability.service';
 import type { IMcpPlugin, IMcpPluginContext } from './plugin-contract';
 
 /** Where the answers of one workspace live. */
@@ -32,11 +32,11 @@ const fileOf = (dir: string, plugin: string): string =>
  * returned.
  */
 export const readAndRecordAvailability = async (
-	plugin: Pick<IMcpPlugin, 'name' | 'availability'>,
+	plugin: Pick<IMcpPlugin, 'name' | 'availability' | 'probe'>,
 	ctx: IMcpPluginContext,
 	now: () => Date = () => new Date(),
 ): Promise<IPluginAvailability> => {
-	const availability = await availabilityOf(plugin, ctx);
+	const availability = await provenAvailabilityOf(plugin, ctx, now);
 	const record: IPluginAvailabilityRecord = {
 		plugin: plugin.name,
 		...availability,

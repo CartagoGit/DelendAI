@@ -130,14 +130,18 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 ### S6 — A read-only probe proves a plugin
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/plugins/plugin-contract.ts`
+  - `packages/core/src/lib/plugins/plugin-availability.service.ts`
   - `packages/core/src/lib/plugins/plugin-availability-record.service.ts`
-  - `packages/cli/src/commands/groups/plugins.ts`
+  - `packages/core/tests/src/lib/plugins/plugin-availability.service.spec.ts`
+  - `plugins/roadmap/src/index.ts`
+  - `plugins/roadmap/tests/src/availability.spec.ts`
 - **Gate**: type
 - acceptance:
-  - A plugin may declare a probe, read-only by contract; `plugin doctor --probe` loads the configured plugins in isolation and runs each one: a pass records `verified` with the time, a failure `degraded` with the reason.
+  - A plugin may declare `probe(ctx)`, read-only by contract. When it registers and says nothing worse than `registered`, the probe runs within 5 seconds: a pass records `verified` with the time, a throw or a timeout `degraded` with the reason, and a plugin that already says what it is missing is not probed.
+  - roadmap proves a declared roadmap by reading it through the workspace's safe reader, so a configured file that is not there shows as degraded instead of registered.
 
 ## acceptance
 
