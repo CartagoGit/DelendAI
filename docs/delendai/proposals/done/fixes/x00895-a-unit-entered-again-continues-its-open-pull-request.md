@@ -2,14 +2,16 @@
 id: x00895
 title: "a unit entered again continues its open pull request"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: ce9b7efe-65f2-4098-9217-41bf47e2f39b
-last-correlation-id: ce9b7efe-65f2-4098-9217-41bf47e2f39b
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T02:45:57.677Z
+last-transition-id: 26cf35fa-f4f9-4467-ab73-a3a18eb026d5
+last-correlation-id: 26cf35fa-f4f9-4467-ab73-a3a18eb026d5
+last-transition-from: review
+last-transition-at: 2026-10-14T10:45:06.468Z
+shipped-in:
+  - "a448ff44107f8fe3e620e3844d7bfc5c1bfe7cd8"
 ---
 
 # x00895 — a unit entered again continues its open pull request
@@ -33,7 +35,7 @@ On 2026-10-14 #1073 (x00894) had a conflict with develop. Its work branch had en
 
 ### S1 — A new work ref starts at its unit's unlanded publication
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/unit-start-point.service.ts`
   - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
@@ -43,9 +45,10 @@ On 2026-10-14 #1073 (x00894) had a conflict with develop. Its work branch had en
   - A work ref created by `work enter` whose publication branch exists on the integration remote, and is not an ancestor of the integration base, points at that publication's tip.
   - With no publication, or one that has landed, or a branch outside the work and publication prefixes, the work ref starts at the integration base, as before.
 - shipped-in: `875a9f27a588`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
-
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at a448ff44107f, validate exit 0, tests 4/4 — Delivery attribution: the work landed as 875a9f27a588 inside PR #1076 and reached develop through the merge a448ff441, whose first-parent diff touches exactly the three declared files, so that is the commit approved here. Gate type: `bun run typecheck` exit 0 in the pack worktree. Tests: `bun x vitest run --root packages/core tests/src/lib/work-units/unit-start-point.service.spec.ts` -> 1 file / 4 tests, exit 0. One behaviour worth naming: unitStartPoint runs `git fetch` as a side effect of computing the start point, because merge-base needs the publication object present locally; it degrades to base when that fetch fails, so a forge hiccup cannot strand a unit. Non-goals respected: nothing brings the publication up to date with the integration branch (that stays the agent step), and a publication that has landed still starts at the base. Scope is the enter path only; no out-of-scope file changed.
 
 ## acceptance
 

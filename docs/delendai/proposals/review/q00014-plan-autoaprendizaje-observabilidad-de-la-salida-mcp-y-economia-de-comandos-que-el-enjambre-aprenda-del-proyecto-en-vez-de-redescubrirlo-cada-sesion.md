@@ -7,7 +7,8 @@ type: proposal
 track: quality
 date: 2026-09-03
 shipped-in:
-  - 2a0ff85ac39cc174fda0646c571e21bc351d33d7
+  - "2a0ff85ac39cc174fda0646c571e21bc351d33d7"
+  - "ca0015b37fbee5dc51c9d202120c2e96e9959911"
 last-transition-id: 476fdabf-e4fc-40df-98ed-114080c3fce7
 last-correlation-id: 476fdabf-e4fc-40df-98ed-114080c3fce7
 last-transition-from: in-progress
@@ -174,7 +175,7 @@ trabajo redundante.
 - shipped-in: `44a43e5c880c`
 ### S7 — Higiene: que los defectos pequeños no puedan reaparecer
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `biome.json` — `noUnusedImports` pasa de warning a error. Un import muerto tras un refactor debe romper la build, no quedarse en un aviso que nadie lee.
   - `tools/scripts/lint/no-silent-gates.script.ts` — un gate que sale con código distinto de cero sin escribir NADA es un fallo del gate. Comprueba que cada script de `validate:run` produce salida en su camino de error.
@@ -185,10 +186,12 @@ trabajo redundante.
 - **Divergencia**: el spec declarado en `tools/scripts/lint/tests/` no llegó a existir. Los specs viven junto a su script, como el resto de `tools/scripts/lint/*.script.spec.ts`. No existían porque los dos scripts calculaban su raíz con `import.meta.dir`, que solo existe en Bun, y ninguno se podía importar bajo vitest. Ahora usan `fileURLToPath(import.meta.url)`.
 - review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 - shipped-in: `48cca4f984ea`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
 - review-log: requested_changes by qwen-3.8-max — WHAT IS WRONG: the slice's declared Files list includes `tools/scripts/lint/tests/no-duplicate-implementation.spec.ts`, and that spec does not exist. WHERE: `tools/scripts/lint/tests/` directory does not exist at all; repo-wide search `find . -path ./node_modules -prune -o -type f -name '*.spec.ts' -print | xargs grep -ln 'no-duplicate-implementation|no-silent-gates|shadowed-export|silent-exit'` returns zero hits, and `git log --all -- '*duplicate-implementation*spec*'` returns zero commits, so the file never existed in history and is not a rename under the role-suffix convention either. HOW TO REPRODUCE: `ls tools/scripts/lint/tests/` fails with ENOENT on develop @ 522aabfc3. WHY IT MATTERS: `no-duplicate-implementation.script.ts` itself claims at line 114 of its own docblock that 'an entry with an empty `reason` fails this gate's own spec' — the script references a spec that does not exist, so its documented self-test is unbacked. WHAT I DID VERIFY AND HOLDS: both lints exist and pass (`bun run lint:no-duplicate-implementation` exit 0, 'debt 98 → 89'; `bun run lint:no-silent-gates` exit 0, '135 gate script(s) … all report on their failure path'); both are wired into `validate:run` (package.json line 226); biome.json declares noUnusedImports: error for TS (line 138, with a documented astro exception) plus a baseline script that the evidence pass proved ratchets (aa4f41eef); plan acceptance point 6 is evidenced by measured defect reintroduction in the proposal. WHAT MUST HOLD TO APPROVE: either the spec lands and passes (`env -u CLAUDECODE -u AI_AGENT npx vitest run tools/scripts/lint/tests/no-duplicate-implementation.spec.ts` green) covering at least the [shadowed-export] and [silent-exit] failure paths, or an explicit documented divergence in the slice Status/notes (as S2/S4/S5 carry for their renames) stating the spec was dropped and what covers the lints instead — the docblock claim at line 114 of no-duplicate-implementation.script.ts must then be corrected by whoever owns it, not by this reviewer. Implementer is unrecorded: independence could not be verified; this review was performed identically to a recorded delivery.
 - review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: The spec the request found missing exists beside each script since 48cca4f984ea: tools/scripts/lint/no-duplicate-implementation.script.spec.ts and no-silent-gates.script.spec.ts (run here: both pass). The Files list names them; the tests/ folder first declared was never the convention, as the slice now says under Divergencia.
+- review-log: approved by gpt-5.4 — verified at ca0015b37fbe, validate exit 0, tests 7/7 — Reviewed q00014 S7 against its focused gates. Typecheck passed, both hygiene lints run green, and the two spec files introduced beside the scripts now pass 7/7, covering the previously missing shadowed-export, silent-exit and silent-failure-branch cases while matching the documented divergence in the slice.
 
 ## acceptance
 
