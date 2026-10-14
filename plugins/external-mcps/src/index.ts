@@ -15,6 +15,8 @@
  * two tool one-liners. A session that never composes an external server
  * pays nothing; discovery is one compact `catalog` call away.
  */
+import { readFileSync } from 'node:fs';
+
 import { joinRel } from '@delendai/core/public';
 import { definePlugin } from '@delendai/core/plugin';
 
@@ -24,6 +26,7 @@ import {
 } from './lib/detect/detect-rules';
 import { OptionsSchema, ServerEntrySchema } from './lib/options-schema';
 import { createPendingAcksStore } from './lib/ack/pending-acks';
+import { manifestPluginOf } from './lib/catalog/manifest-plugin.service';
 import {
 	ExternalServerRegistry,
 	type IRegistryServerEntry,
@@ -73,10 +76,29 @@ export default definePlugin({
 				([, entry]) => entry.enabled !== false,
 			),
 		);
+		// A server with a `delendai.plugin.json` beside it is a plugin: a
+		// manifest that does not validate, or that does not grant what the
+		// server asks for, keeps it from booting and says why in `status`.
+		const refusals: Record<string, string> = {};
+		for (const [id, entry] of Object.entries(enabledServers)) {
+			const plugin = manifestPluginOf({
+				workspaceRoot: ctx.workspace.root,
+				entry,
+				read: (path) => {
+					try {
+						return readFileSync(path, 'utf8');
+					} catch {
+						return undefined;
+					}
+				},
+			});
+			if (plugin.kind === 'refused') refusals[id] = plugin.reason;
+		}
 		const registry = new ExternalServerRegistry({
 			servers: enabledServers as Readonly<
 				Record<string, IRegistryServerEntry>
 			>,
+			refusals,
 			// Invariant: workspace comes from the context, never process.cwd().
 			workspaceRoot: ctx.workspace.root,
 		});
@@ -85,7 +107,7 @@ export default definePlugin({
 		// Detection ANNOTATES catalog/suggest output (`detected: true`) — it
 		// never activates a server (S4). Evidence (the workspace package.json)
 		// is read lazily on first use and memoised; the workspace root comes
-		// from the context, never process.cwd().
+		// from the context, never the process's working directory.
 		// x00097 S1: ONE durable pending-acks ledger backs both sides of the
 		// activation gate — the `ack` tool writes it, the `call` proxy reads
 		// it (same path, same file mutex). Accepting an ack therefore enables
@@ -131,7 +153,9 @@ export default definePlugin({
 						id: `ext.${id}`,
 						origin: 'external' as const,
 						source: 'config' as const,
-						active: options.servers?.[id]?.enabled !== false,
+						active:
+							options.servers?.[id]?.enabled !== false &&
+							refusals[id] === undefined,
 						// Child tools stay behind one shared `call` proxy, so each
 						// declared server adds zero direct tools to the host prompt.
 						toolCount: 0,

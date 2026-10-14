@@ -314,6 +314,8 @@ export interface IServerRegistryOptions {
 	readonly callTimeoutMs?: number;
 	/** Clock seam for `bootedAt` stamps (tests). Default `Date.now`. */
 	readonly now?: () => number;
+	/** Declared servers that are never booted, id → why (their manifest). */
+	readonly refusals?: Readonly<Record<string, string>>;
 }
 
 /** One compact `external_mcp_status` row. */
@@ -428,6 +430,7 @@ export class ExternalServerRegistry {
 	status(): IServerStatusRow[] {
 		return this.declaredIds().map((id) => {
 			const state = this.runtime.get(id);
+			const lastError = state?.lastError ?? this.options.refusals?.[id];
 			return {
 				id,
 				declared: true,
@@ -436,9 +439,7 @@ export class ExternalServerRegistry {
 				...(state?.bootedAt !== undefined
 					? { bootedAt: state.bootedAt }
 					: {}),
-				...(state?.lastError !== undefined
-					? { lastError: state.lastError }
-					: {}),
+				...(lastError !== undefined ? { lastError } : {}),
 			};
 		});
 	}
@@ -537,6 +538,19 @@ export class ExternalServerRegistry {
 		const cached = this.runtime.get(id);
 		if (cached?.running) return cached;
 
+		const refusal = this.options.refusals?.[id];
+		if (refusal !== undefined) {
+			const refused: IServerRuntime = {
+				transport: null,
+				running: false,
+				pid: undefined,
+				bootedAt: undefined,
+				lastError: refusal,
+				waiters: new Map(),
+			};
+			this.runtime.set(id, refused);
+			return refused;
+		}
 		const entry = this.options.servers[id];
 		if (entry === undefined) {
 			throw new Error(
