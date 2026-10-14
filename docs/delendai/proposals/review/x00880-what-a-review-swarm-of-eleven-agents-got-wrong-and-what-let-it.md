@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-11T08:48:56.360Z
 shipped-in:
   - "5ebd1b302a07a95609073e064c59eb87113520ce"
+  - "386d9c53664f"
 ---
 
 # x00880 — What a review swarm of eleven agents got wrong, and what let it
@@ -199,7 +200,7 @@ Delivered 2026-10-11, the title (observation 17). The other half as first writte
 
 ### S6 — The swarm view does not report review packs as duplicates
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/work-swarm-relations.service.ts`
   - `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
@@ -210,8 +211,10 @@ Delivered 2026-10-11, the title (observation 17). The other half as first writte
   - Two units implementing the same slice still are.
 
 Delivered 2026-10-11: a unit whose kind reads work rather than does it is left out of the duplicate relation. Run against the live swarm, "to sort out" went from every pack of every reviewer to the one real overlap, the two units of observation 19.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 386d9c53664f, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as b93e9014bf16 in the x00880 branch and reached develop through the merge 386d9c53 (PR #999), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/core` over publication-pull-request.service.spec.ts, work-swarm-relations.spec.ts and slice-reservation.service.spec.ts -> 3 files / 35 tests, exit 0. No defect found. Read via a delegated pass and spot-checked.
 
 ### S7 — A reviewer is shown what answered the request before it
 
