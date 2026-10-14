@@ -99,17 +99,30 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - Every registration, eager or lazy, reads the plugin's availability with the context it registered with and keeps it, with the time, in one file per plugin in the workspace's records (`<cacheDir>/records/plugin-availability/`). Plugins register side by side, and one shared file would lose writers. A failure to keep it never fails the registration.
   - `delendai plugin doctor` lists every plugin that has registered in this workspace with its state, what is missing, the fix and when it was read, and says how to get an answer when none has.
 
-### S4 — A read-only probe proves a plugin, and the overview and configuration center show the same states
+### S4 — The overview shows the same states, from the same record
+
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/contracts/interfaces/activation-report.interface.ts`
+  - `packages/core/src/lib/plugins/activation-report.ts`
+  - `packages/core/src/lib/cli/assemble-plugins.ts`
+  - `packages/core/tests/src/lib/plugins/activation-report.spec.ts`
+  - `packages/core/tests/src/lib/cli/core-meta-tools.spec.ts`
+- **Gate**: type
+- acceptance:
+  - Each entry of the activation report (the overview with `activation: true`, eager or lazy surface) carries the plugin's kept availability record when it has one: the same record `plugin doctor` lists.
+
+### S5 — A read-only probe proves a plugin, and the configuration center shows the states
 
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/plugins/plugin-contract.ts`
   - `packages/core/src/lib/plugins/plugin-availability-record.service.ts`
-  - `packages/core/src/lib/contracts/interfaces/activation-report.interface.ts`
+  - `extensions/vscode/src/providers/tool-tree-node.ts`
 - **Gate**: type
 - acceptance:
-  - A plugin may declare a probe, read-only by contract; `plugin doctor --probe` loads the configured plugins in isolation, runs each probe, and a passing probe records `verified` with the time it passed, a failing one `degraded` with the reason.
-  - The overview and the configuration center read the same record, so the three surfaces cannot disagree.
+  - A plugin may declare a probe, read-only by contract; `plugin doctor --probe` loads the configured plugins in isolation and runs each probe: a pass records `verified` with the time, a failure `degraded` with the reason.
+  - The VS Code configuration center shows each plugin's state and what is missing next to its tool count, from the same record.
 
 ## acceptance
 

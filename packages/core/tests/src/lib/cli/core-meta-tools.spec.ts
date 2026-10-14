@@ -179,6 +179,11 @@ describe('core meta-tools', async () => {
 					active: true,
 					source: 'flag',
 					toolCount: 2,
+					// What it said when it registered, as plugin doctor lists it.
+					availability: expect.objectContaining({
+						plugin: 'demo',
+						state: 'registered',
+					}),
 				},
 				{
 					id: 'ext.demo-child',
