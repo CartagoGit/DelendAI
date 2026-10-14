@@ -85,4 +85,48 @@ describe('compact_status — units of work', () => {
 		expect(status.units).toBeUndefined();
 		expect(status.locks?.active).toBe(0);
 	});
+
+	it('counts the proposals in review a reviewer holds apart from those waiting', async () => {
+		const options = workspaceWithUnits([]);
+		const root = options.workspaceRoot ?? '';
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{ id: 'x00001', status: 'review' },
+					{ id: 'x00002', status: 'review' },
+				],
+			}),
+		);
+		git(
+			root,
+			'branch',
+			'delendai/wip/gpt-5.4/review/batch-all-g1/verdicts',
+		);
+		const unit = join(root, '..', 'reviewer');
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			unit,
+			'delendai/wip/gpt-5.4/review/batch-all-g1/verdicts',
+		);
+		git(
+			unit,
+			'commit',
+			'--allow-empty',
+			'-q',
+			'--no-verify',
+			'-m',
+			'chore(review): claim x00001',
+			'--trailer',
+			'Claims: x00001',
+		);
+
+		const status = await collectCompactStatus(options, ['proposals']);
+
+		expect(status.proposals?.byStatus['in-review']).toBe(1);
+		expect(status.proposals?.byStatus.review).toBe(1);
+	});
 });
