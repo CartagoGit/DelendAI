@@ -2,14 +2,14 @@
 id: x00891
 title: "a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
-last-correlation-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T18:34:16.094Z
+last-transition-id: 9e8d1851-4c41-4b37-a557-8cac622b0c3e
+last-correlation-id: 9e8d1851-4c41-4b37-a557-8cac622b0c3e
+last-transition-from: review
+last-transition-at: 2026-10-14T16:40:50.728Z
 shipped-in:
   - "3b5acac71b1e"
 ---
@@ -133,7 +133,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S5 — The doctor sees work that is not on the forge
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/units-on-forge.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
@@ -142,9 +142,11 @@ What the code does today, measured on this clone on 2026-10-13:
 - acceptance:
   - `units-on-the-forge` reports every unit whose branch holds commits the forge lacks, or uncommitted edits, with the repair; a start that repairs them leaves it holding.
   - A wip branch on the forge whose work landed is not reported as hanging (`no-remote-work-refs`) while its proposal is open.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `97dbb57c51db`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 2/2: (1) units-on-forge.service.ts:54-61 reports a unit holding commits the forge lacks or uncommitted edits; unit-forge-sync.service.spec.ts:177-184 shows "1 commit(s)… (2) forge-work-refs.service.ts:75-77 excludes a landed branch from the hanging list while stillOpen, and workflow-invariants.service.ts:266-276 computes stillOpen … — The doctor reports units the forge lacks and skips landed-but-open wip branches.
 
 ## acceptance
 
