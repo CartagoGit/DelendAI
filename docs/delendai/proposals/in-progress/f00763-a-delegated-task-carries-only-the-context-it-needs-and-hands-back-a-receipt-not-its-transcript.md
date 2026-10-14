@@ -128,7 +128,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - **Gate**: type
 - acceptance:
   - A host may return a receipt with the result: status (`done`, `failed`, `needs-decision`), the files changed, the checks run and their result, and only the exceptions that need the orchestrator's decision.
-  - The outcome `_dispatch` returns keeps each output longer than 280 characters behind a reference to the artifact store (`outputRef`), with a 280-character extract and the receipt beside it, so the orchestrator reads a receipt, not a transcript.
+  - The outcome `_dispatch` returns gives each receipt on one line (`done · files: a.ts · checks: typecheck ok · needs: none`) and keeps each output longer than 280 characters behind a reference to the artifact store (`outputRef`), with a 280-character extract, so the orchestrator reads a receipt, not a transcript. One line rather than the structure keeps the plugin's tool surface under its hard token budget, and is what the model reads anyway.
 
 ### S5 — The saving is measured
 

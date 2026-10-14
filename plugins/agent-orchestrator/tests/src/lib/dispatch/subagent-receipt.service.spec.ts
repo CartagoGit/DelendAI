@@ -6,7 +6,10 @@ import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
 import type { IPlanOutcome } from '../../../../src/lib/dispatch/contracts';
-import { withReceipts } from '../../../../src/lib/dispatch/subagent-receipt.service';
+import {
+	receiptLine,
+	withReceipts,
+} from '../../../../src/lib/dispatch/subagent-receipt.service';
 
 const outcomeWith = (output: string): IPlanOutcome =>
 	fakePartial<IPlanOutcome>({
@@ -65,8 +68,33 @@ describe('withReceipts', () => {
 		expect(kept).toEqual([['slot-1:s1', 'x'.repeat(1000)]]);
 		expect(step?.result?.outputRef).toBe('output:slot-1:s1@abc');
 		expect(step?.result?.output).toHaveLength(280);
-		expect(step?.result?.receipt?.filesChanged).toEqual(['a.ts']);
+		expect(step?.result?.receipt).toBe(
+			'done · files: a.ts · checks: typecheck ok · needs: none',
+		);
 		expect(outcome.steps[1]?.result).toBeNull();
+	});
+
+	it('renders an empty receipt as none, and keeps the whole output without a store', async () => {
+		const outcome = await withReceipts(outcomeWith('y'.repeat(1000)));
+		expect(outcome.steps[0]?.result?.output).toHaveLength(1000);
+		expect(
+			receiptLine({
+				status: 'failed',
+				filesChanged: [],
+				checks: [{ command: 'tests', ok: false }],
+				exceptions: ['pick a name'],
+			}),
+		).toBe(
+			'failed · files: none · checks: tests failed · needs: pick a name',
+		);
+		expect(
+			receiptLine({
+				status: 'done',
+				filesChanged: [],
+				checks: [],
+				exceptions: [],
+			}),
+		).toBe('done · files: none · checks: none · needs: none');
 	});
 
 	it('leaves a short output where it is', async () => {

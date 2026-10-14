@@ -47,14 +47,8 @@ const SubagentResultSchema = z.object({
 	output: z.string(),
 	schemaOk: z.boolean(),
 	hadError: z.boolean(),
-	receipt: z
-		.object({
-			status: z.enum(['done', 'failed', 'needs-decision']),
-			filesChanged: z.array(z.string()),
-			checks: z.array(z.object({ command: z.string(), ok: z.boolean() })),
-			exceptions: z.array(z.string()),
-		})
-		.optional(),
+	/** The subagent's receipt, on one line: status, files, checks, decisions. */
+	receipt: z.string().optional(),
 	outputRef: z.string().optional(),
 });
 
@@ -403,7 +397,7 @@ export function buildDispatchRegistration(
 				`${namespacePrefix}_dispatch`,
 				{
 					description:
-						'Plan and execute a task via the configured orchestration policy. Returns the per-step outcome, rotation log, and budget snapshot. Linear-only in S2.',
+						'Plan and run a task under the policy: the receipt and output reference of each step, rotations and budget.',
 					inputSchema: INPUT_SCHEMA,
 					outputSchema: PlanOutcomeSchema,
 				},
