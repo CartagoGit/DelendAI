@@ -35,14 +35,18 @@ describe('otherReviewPacks', () => {
 	it("keeps other agents' packs that still hold work, and nothing else", () => {
 		const packs = otherReviewPacks(
 			[
-				unit('reviewer-a', 'review/batch-all-g1/work'),
-				unit('reviewer-b', 'review/batch-all-g1/work'),
-				unit('reviewer-b', 'implement/x1-S1-g1/work'),
-				unit('reviewer-c', 'review/batch-all-g1/work', 0),
+				unit('gpt-5.4', 'review/batch-all-g1/work'),
+				unit('gemini-3.8-flash', 'review/batch-all-g1/work'),
+				unit('gemini-3.8-flash', 'implement/x1-S1-g1/work'),
+				unit(
+					'minimax-m3.1-flash-preview',
+					'review/batch-all-g1/work',
+					0,
+				),
 			],
-			'reviewer-a',
+			'gpt-5.4',
 		);
-		expect(packs.map((pack) => pack.agent)).toEqual(['reviewer-b']);
+		expect(packs.map((pack) => pack.agent)).toEqual(['gemini-3.8-flash']);
 		expect(packs[0]?.subject).toBe('review/batch-all-g1/work');
 	});
 });
@@ -150,17 +154,17 @@ describe('work publish of a review pack', () => {
 
 	it("is refused when it carries another reviewer's pack, and names it", async () => {
 		const root = repository();
-		const other = await unitOf(root, 'reviewer-b');
+		const other = await unitOf(root, 'gemini-3.8-flash');
 		other.write(DOC, 'closed\nverdict of b\n');
 		other.git('commit', '-qam', 'docs(review): verdict of b');
 
-		const mine = await unitOf(root, 'reviewer-a');
+		const mine = await unitOf(root, 'gpt-5.4');
 		mine.git('merge', '-q', '--no-edit', other.branch);
 		mine.write('docs/proposals/done/note.md', 'verdict of a\n');
 		mine.git('add', '-A');
 		mine.git('commit', '-qm', 'docs(review): verdict of a');
 
-		const result = await work(root, 'publish', 'reviewer-a');
+		const result = await work(root, 'publish', 'gpt-5.4');
 		expect(result.code).not.toBe(0);
 		expect(result.error).toContain("carries another reviewer's pack");
 		expect(result.error).toContain(other.branch);
@@ -168,11 +172,11 @@ describe('work publish of a review pack', () => {
 
 	it('is refused when it deletes a document', async () => {
 		const root = repository();
-		const mine = await unitOf(root, 'reviewer-a');
+		const mine = await unitOf(root, 'gpt-5.4');
 		mine.git('rm', '-q', DOC);
 		mine.git('commit', '-qm', 'docs(review): drop a stale copy');
 
-		const result = await work(root, 'publish', 'reviewer-a');
+		const result = await work(root, 'publish', 'gpt-5.4');
 		expect(result.code).not.toBe(0);
 		expect(result.error).toContain('never removes one');
 		expect(result.error).toContain(DOC);
@@ -180,7 +184,7 @@ describe('work publish of a review pack', () => {
 
 	it('is refused when it holds a claim and no verdict', async () => {
 		const root = repository();
-		const mine = await unitOf(root, 'reviewer-a');
+		const mine = await unitOf(root, 'gpt-5.4');
 		mine.git(
 			'commit',
 			'-q',
@@ -191,7 +195,7 @@ describe('work publish of a review pack', () => {
 			'Claims: x00001',
 		);
 
-		const result = await work(root, 'publish', 'reviewer-a');
+		const result = await work(root, 'publish', 'gpt-5.4');
 		expect(result.code).not.toBe(0);
 		expect(result.error).toContain('changes nothing over');
 	});

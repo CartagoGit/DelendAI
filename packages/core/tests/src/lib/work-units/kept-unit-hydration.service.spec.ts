@@ -52,7 +52,7 @@ describe('work enter on a unit kept from before', () => {
 				'enter',
 				'--proposal=x00001',
 				'--slice=S1',
-				'--agent=agent-a',
+				'--agent=glm-5.3-flash',
 				`--session=${session}`,
 			],
 			fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({

@@ -7,6 +7,7 @@
  * came from. Together they are what the project knows of who works in
  * it, without anyone having written a list.
  */
+import { describeAgentNameShape } from './agent-name-canon.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { isWorkKind } from '../development-policy/work-ref-placeholders';
 import {
@@ -99,6 +100,8 @@ export const entrantNameRefusal = (input: {
 	if (offRoster !== undefined) {
 		return { what: 'This project names who works in it.', how: offRoster };
 	}
+	// A re-spelling of a name already at work is pointed at that name,
+	// before anything is said about how names are written.
 	const seen = agentsSeen(input);
 	const respelled = aliasedIdentity(agent, seen);
 	if (respelled !== undefined) {
@@ -106,6 +109,13 @@ export const entrantNameRefusal = (input: {
 			what: 'An identity is spelled one way.',
 			how: describeAlias(agent, respelled),
 		};
+	}
+	const shape = describeAgentNameShape(
+		agent,
+		policy.branches.namespacePrefix,
+	);
+	if (shape !== undefined) {
+		return { what: 'An agent names itself in one shape.', how: shape };
 	}
 	const first = firstSpelling(agent, seen, roster);
 	return first === undefined

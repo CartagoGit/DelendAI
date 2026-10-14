@@ -22,7 +22,10 @@ import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
-import { CALL_WRITES_NOT_COMMITTED } from '../contracts/constants/call-writes.constant';
+import {
+	CALL_WRITES_NOT_COMMITTED,
+	COMMIT_TIMEOUT_MS,
+} from '../contracts/constants/call-writes.constant';
 import type { IPendingCallWrite } from '../contracts/interfaces/pending-call-writes.interface';
 import { unitBranchOf } from '../development-policy/project-branches';
 import { createGitRunner } from './git-write';
@@ -30,14 +33,6 @@ import {
 	readPendingCallWrites,
 	writePendingCallWrites,
 } from './pending-call-writes.store';
-
-/**
- * How long a commit of a call's writes may take. A commit runs the
- * repository's hooks, which in a busy swarm took more than the 60 seconds
- * a git call gets: the commit was killed and the verdict left behind,
- * six times in one day. The hooks decide, not the runner's default.
- */
-const COMMIT_TIMEOUT_MS = 10 * 60_000;
 
 /** Longest commit subject this writes; the rest of the call goes nowhere. */
 const MAX_SUBJECT_LENGTH = 72;
@@ -246,7 +241,7 @@ const contentOf = (state: string | undefined): string | undefined =>
  */
 export const commitPendingCallWrites = async (
 	root: string,
-	git: IGitRunner = createGitRunner(root),
+	git: IGitRunner = createGitRunner(root, COMMIT_TIMEOUT_MS),
 ): Promise<number> => {
 	const pending = await readPendingCallWrites(git);
 	if (pending.length === 0) return 0;
