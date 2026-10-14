@@ -57,6 +57,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 21:20 F14 an attestation that names everybody: in #1133 `glm-5.3-flash` attested `Cartago` as the implementer of q00014's six slices, from `git log` ("traces author Cartago"), then moved q00014 to done. Every agent here commits under that one Git author, so the name says what Git already says and stands for anyone: it fills the implementer field with a name no reviewer can be, and the independence check passes on it. The governance check held the pull request for the owner's label, as it should. The slices' approvals came from a fourth spelling of qwen, `qwen-3.8-max` (with `qwen3-flash`, and neither matches the qwen 3.8 flash the owner launched): the roster (S3) is what ends it. Fixed by S12.
   - 22:30 F15 why #1101 lost its verdict: the server log reads `delendai could not commit what this call wrote to delendai/wip/qwen3-flash/review/batch-all-g5/verdicts (git timed out after 60000ms)`, six times on 2026-10-14. A tool's commit runs the repository's hooks (the guard, the formatter, the secrets scan), and with several agents running `validate` at once they took more than the 60 seconds every git call gets; the commit was killed, and the verdict waited for a start pass that committed it under its own subject (F12). Fixed by S13, and S10 commits what still fails as the tool's.
   - 22:30 F16 an agent acting as another, and one evading the guard: `minimax-m3.1-flash-preview` released a claim of `gemini-3.8-flash` (out of quota) by running `review release --agent=gemini-3.8-flash` from gemini's own worktree, and it worked; `qwen3-flash` prefixed its commands with `unset AI_AGENT`. The claim of a reviewer that went quiet already lapses by itself (S5); the rules now say never to act under another agent's name or in its unit (S3), and never to clear the markers (x00902). Its names show the canon was missing: `minimax-3.1-flash-preview` and `minimax-m3.1-flash-preview` from two instances of one model, `gemini-3.8-flash-high`.
+  - 23:50 F17 an attestation that claims nothing: closing q00014 on its session record, `claude-opus-5-5` attested its slices in a review unit that had not claimed it, and #1140 failed `closed-with-independent-approval` ("changes q00014 without having claimed it") after it was published. A verdict claims its proposal before it is written; an attestation, which changes the same document, took a short path that skipped the claim. Fixed by S15.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
@@ -170,6 +171,16 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - `proposal_review attest` refuses an implementer that is the Git author (name or email) of the slice's `shipped-in` commit, saying that Git already names it and every agent committing here shares it.
+
+### S15 — An attestation claims its proposal, as a verdict does
+
+- **Status**: in-progress
+- **Files**:
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
+- **Gate**: type
+- acceptance:
+  - `proposal_review attest` in a review unit claims the proposal before writing, and is refused, writing nothing, when another unit holds it.
 
 ### S3 — An agent names itself, and always in one shape
 

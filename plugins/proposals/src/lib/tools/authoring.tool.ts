@@ -2248,7 +2248,25 @@ export const buildReviewRegistration = (
 
 				if (args.action === 'attest') {
 					// Its own short path: it names who delivered work Git
-					// cannot name, and moves no round.
+					// cannot name, and moves no round. It changes the
+					// proposal all the same, so its unit claims it first, as
+					// a verdict does: a pack that changed a proposal it never
+					// claimed was refused by the governance check after it
+					// was published.
+					const unclaimed = await verdictClaimRefusal(
+						scoped.run ?? createGitRunner(scoped.workspaceRoot),
+						scoped.developmentPolicy?.branches,
+						entry.id,
+						scoped.developmentPolicy?.branches.integration ??
+							'HEAD',
+						options.namespacePrefix,
+					);
+					if (unclaimed !== undefined) {
+						return toolError(
+							unclaimed.reason,
+							unclaimed.nextAction,
+						);
+					}
 					return withFileMutex(docPath, async () => {
 						const md = await readTextOrNull(docPath);
 						if (md === null)

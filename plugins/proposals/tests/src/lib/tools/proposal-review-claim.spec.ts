@@ -286,3 +286,39 @@ describe('the review lines a verdict writes', () => {
 		);
 	});
 });
+
+describe('an attestation in a review unit', () => {
+	const UNRECORDED = `${SLICE_S1('done')}- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: agent-c
+- review-log: approved by agent-c — checked
+`;
+	const ATTEST = {
+		action: 'attest' as const,
+		agent: 'agent-b',
+		implementer: 'agent-a',
+		note: 'the session record of 2026-09-15 shows agent-a making the commit',
+	};
+
+	it('claims the proposal it changes, as a verdict does', async () => {
+		repo.proposalInReview(UNRECORDED);
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
+
+		const attested = await repo.review(ATTEST);
+
+		expect(attested.isError).toBe(false);
+		expect(claimsOnHead()).toEqual(['x00001']);
+	});
+
+	it('is refused on a proposal another unit holds, and writes nothing', async () => {
+		repo.proposalInReview(UNRECORDED);
+		otherUnit(REVIEW_UNIT('agent-d', 1), 'x00001');
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
+
+		const refused = await repo.review(ATTEST);
+
+		expect(refused.isError).toBe(true);
+		expect(refused.text).toContain('held by another review unit (agent-d)');
+		expect(claimsOnHead()).toEqual([]);
+	});
+});
