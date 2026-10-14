@@ -2,14 +2,14 @@
 id: x00894
 title: "what the 2026-10-13 outside review found, verified against develop and fixed at the root"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 4611473e-8dae-4d74-aedf-1a204b81fe43
-last-correlation-id: 4611473e-8dae-4d74-aedf-1a204b81fe43
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T01:56:22.461Z
+last-transition-id: 4f06a9a8-8b86-4028-b4a2-1c4ec40b0f90
+last-correlation-id: 4f06a9a8-8b86-4028-b4a2-1c4ec40b0f90
+last-transition-from: review
+last-transition-at: 2026-10-14T12:47:30.057Z
 shipped-in:
   - "0933d683b201"
 ---
@@ -167,7 +167,7 @@ Verified on develop:
 
 ### S8 — A contract verification names what it could not check
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`
   - `plugins/external-mcps/src/lib/contract/project-contract.service.ts`
@@ -177,9 +177,11 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - The verdict lists, beside what was checked, each part of the contract that could not be resolved and why, so an empty finding list is never read as full conformance.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `16bb680a9648`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0933d683b201, validate exit 0, tests 4/4; acceptance 1/1: (1) Pinned by an assertion that states the criterion as its own comment: project-contract.service.spec.ts builds a contract with `from: []` and asserts `unresolved… — Delivered and approved at the merge 0933d683b (PR #1073) per the supersede guard. Gate `type`. This criterion exists to stop a clean-looking verdict from being read as full conformance, which is a claim about HONESTY rather than about code paths — so the evidence I wanted was an assertion where the finding list is empty AND the contract still reports what it could not resolve. That is exactly what project-contract.service.spec.ts does, and it carries the criterion's own reasoning as a comment on the assertion: `from: []` with `// Empty, and it says so part by part: no finding is not conformance.` Then it asserts the unresolved list is populated per part — `expect.objectContaining({ part: 'framework' })`, `{ part: 'style', reason: 'style-convention is not active' }`, `{ part: 'placement', reason: 'conventions is not active' }` — so each unresolved part is named AND carries a reason, which is the criterion's "and why". A neighbouring case covers the subtler one: `{ part: 'placement', reason: 'no conventions profile is configured; the TypeScript profile was assumed' }`, i.e. a value that was guessed rather than read is reported as assumed. The shape is typed as { part: 'framework'|'style'|'placement', reason: string }, so a part cannot be listed without a reason. Suite 4 pass / 0 fail.
 
 ## acceptance
 
