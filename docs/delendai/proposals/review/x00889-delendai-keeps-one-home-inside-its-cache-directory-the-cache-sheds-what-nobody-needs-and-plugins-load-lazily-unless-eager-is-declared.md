@@ -82,7 +82,7 @@ What the code does today:
 
 ### S3 — Everything delendai keeps is inside the cache directory
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/delendai-records.constant.ts`
   - `packages/core/src/lib/shared/delendai-records.ts`
@@ -120,8 +120,10 @@ What the code does today:
   - A change of `cacheDir` is still detected: the last cache directory is remembered where no cache move can lose it (the clone's git directory), not in a folder of the project tree.
   - The relocation runs at every start before the journal is read (the owner's rule: every layout change ships its migration): each file of `.delendai/` is moved to `<cacheDir>/records/`, a file already there wins, and `.delendai/` is removed once empty; a cache-dir move whose destination holds only `records/` still completes.
 - shipped-in: `62f28f4907b4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at e23c19e3b5fe, validate exit 0, tests 84/84 — Approved S3: all 84 tests pass across 8 test files and typecheck passes with exit code 0
 
 ### S4 — A kept unit does not keep its dependencies while it waits
 
