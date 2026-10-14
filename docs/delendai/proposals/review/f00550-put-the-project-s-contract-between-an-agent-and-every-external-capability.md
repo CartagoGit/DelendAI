@@ -15,6 +15,8 @@ last-transition-id: 37a13aba-2057-40fd-8b9a-6e7b95f0ac58
 last-correlation-id: 37a13aba-2057-40fd-8b9a-6e7b95f0ac58
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T04:29:38.947Z
+shipped-in:
+  - "25582a9738c0"
 ---
 
 # f00550 — Put the project's contract between an agent and every external capability
@@ -62,7 +64,7 @@ belong and what may import what. This proposal is where they are spent.
 
 ### S1 — Capability names, and which effects they carry
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/external-mcps/src/lib/capability/capability-registry.service.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/capability-registry.constant.ts`
@@ -80,8 +82,10 @@ one invented here.
 
 - **Gate**: `npx vitest run --project external-mcps`
 - shipped-in: `43ae7c9678ab`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 25582a9738c0, validate exit 0, tests 156/156 — Approving 25582a9738c0, the commit the supersede guard names — the merge of PR #1048, where all six declared files land; the slice's own 43ae7c967 ("feat(external-mcps): a capability call carries the project's contract, and wha…") also carries them. This slice declares no per-slice acceptance list, so I judged it against the proposal-level acceptance items it owns: the capability registry and the invoke proxy that put the project's contract between an agent and the external call. Evidence: the whole plugin under the repo's real runner — `vitest run --root plugins/external-mcps` → 22 test files, 156 tests, all pass (the 156/156 above), with capability-registry.service.spec.ts pinning the registry. Gate `none`, so there is no gate exit to report. One honest note on how I measured, because it changed my answer: I first ran this suite under `bun test` and got 149 pass / 1 fail, the failure being `vi.waitFor is not a function` in server-registry.spec.ts (a file this slice does declare). That was my harness, not a defect — the spec imports `vi` from 'vitest' at line 14 and bun:test's `vi` has no waitFor. Under `vitest run`, which is what plugins/external-mcps/vitest.config.ts actually configures, that same file is 39 pass / 0 fail and the plugin is fully green. I would rather state the runner than quote only the flattering number. ACC1 and ACC2 are in this slice's path (contract carried into the call; the gateway routes through the existing ack/effect flow rather than around it); ACC3 and ACC4 belong to S4/S5 and are judged in their own verdicts.
 
 ### S2 — The effective project contract, as one small payload
 
