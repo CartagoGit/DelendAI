@@ -101,13 +101,18 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S3 — A host adapter turns the manifest into a bounded prompt
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/subagents/delegation-prompt.helper.ts`
+  - `packages/core/tests/src/lib/subagents/delegation-prompt.helper.spec.ts`
+  - `packages/core/src/runtime/index.ts`
+  - `packages/contracts/src/host-subagent-runtime.interface.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/port-resolution.helper.spec.ts`
 - **Gate**: type
 - acceptance:
-  - A host that runs subagents through its own tool (a `Task`-like call) gets a prompt rendered from the manifest: objective, constraints, references to open, tools to use, the output to return. Nothing from the parent conversation goes in.
-  - A host that can enforce the manifest (an adapter with context control) is used as such, and the receipt says which of the two happened.
+  - A host runtime that does not declare `enforcesManifest` receives, as the subagent's instruction, the manifest rendered as a bounded prompt: objective, the manifest and contract it may open (and through what), the tools it may use, its input budget, the checks it is done by and the receipt to return. Nothing from the parent conversation goes in.
+  - A host that declares `enforcesManifest` gets the manifest as such, and every request says which of the two happened (`metadata.delegationPath`: `prompt` or `enforced`).
 
 ### S4 — The subagent hands back a receipt
 
