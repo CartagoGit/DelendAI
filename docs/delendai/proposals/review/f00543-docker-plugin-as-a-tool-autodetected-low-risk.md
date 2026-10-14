@@ -114,15 +114,17 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S5 — Against the real daemon, in a sandbox of its own
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/src/lib/tools/container-docker.integration.spec.ts`
 - **Gate**: type
 - acceptance:
   - Where a daemon answers, the spec creates, lists and removes a network and a volume under a unique name. It removes them however the spec ends. It runs a throwaway container only from an image already present, never pulling, and checks that nothing is left behind. Without a daemon it is skipped.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5b6b9e1e2, validate exit 0, tests 52/53; acceptance 1/1: (1) A daemon WAS available (`docker info` succeeds here), and the spec ran for real rather than skipping: container-docker.integration.spec.ts > 'creates, lists an… — This is the only slice in the proposal that talks to something outside the repository, so I checked whether it actually ran rather than accepting a skip as evidence. `docker info` succeeds in this environment — the daemon is UP — and the spec executed for real: container-docker.integration.spec.ts > 'creates, lists and removes its own network and volume' passed in 3635ms against the live daemon, not against a stub. Every clause of ACC0 is then visible in the source and satisfied: one unique `sandbox` name under which both the network and the volume are created; list asserting the name is present and, after rm, a second list asserting `.not.toContain(sandbox)` — that is the criterion's 'checks that nothing is left behind' asserted rather than assumed; and cleanup that happens however the spec ends via `afterAll(() => { docker('network','rm',sandbox); docker('volume','rm','-f',sandbox); })`. The container half is gated by `it.skipIf(!alpine)`, so it runs only from an image ALREADY PRESENT and never pulls — and in this environment that test is the single skip in the suite (52 passed | 1 skipped of 53), which is precisely the behaviour the criterion describes rather than a gap in coverage. I checked that skip deliberately instead of waving it through: a test that pulled its image would be a test that mutates shared machine state and needs network, and this one refuses to. The daemon-absent case is the same guard's other half.
 
 ### S6 — Documentation and the safety guide
 
