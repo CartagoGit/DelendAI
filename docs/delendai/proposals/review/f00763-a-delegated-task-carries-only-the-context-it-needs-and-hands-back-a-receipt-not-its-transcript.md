@@ -80,7 +80,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S2b — The orchestrator compiles the manifest from the task
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts`
   - `plugins/agent-orchestrator/src/lib/contracts/interfaces/delegation-manifest.interface.ts`
@@ -100,8 +100,10 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - Each step `_dispatch` runs is delegated with a manifest compiled from the files its task names (read inside the workspace), the hash of the orchestration policy in force, and the policy's per-subagent token budget as its input budget; the same task gives the same manifest.
   - A step whose referenced context is over its input budget is not sent: it fails, so the orchestrator splits or escalates it.
   - The delegation is built on the first dispatch, so registering the plugin costs nothing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 5/5; acceptance 3/3: (1) delegation-manifest.service.ts:100-141: refs are compiled from the task's declared sources through the store, contractHash carries the policy hash, inputBudget… (2) delegation-manifest.service.ts:26-35 + 122-125: tokens = ceil(bytes/BYTES_PER_TOKEN); over budget it throws DelegationTooLargeError with the remedy 'split the … (3) delegation-manifest.service.ts: the compile function is returned by the factory and only runs inside the per-dispatch closure; nothing compiles at registration… — Judged at afe78b60d2e7 (PR #1132 merge). The three criteria read directly in the delivered service: deterministic compile over stored refs, refusal with remedy on over-budget context, and lazy first-dispatch construction. @delendai/context-compiler is published in the release plan after @delendai/state as the decision records. Gate 'type': bun run typecheck exit 0. Spec: delegation-manifest.service.spec.ts 5 pass / 0 fail in my worktree.
 
 ### S2c — The code, docs and memory around a task's files join its manifest
 
