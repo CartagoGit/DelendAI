@@ -218,7 +218,7 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
 
 ### S7 — A reviewer is shown what answered the request before it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/swarm/proposal-review.ts`
   - `plugins/proposals/tests/src/lib/proposal-review.spec.ts`
@@ -232,10 +232,12 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
   - The answer is not a verdict: the reviewer who asked is still the last to have judged, and still may not verify the fix.
 
 Delivered 2026-10-11, and not as first written. The slice was to reshape the brief so that earlier rounds read as history. Following observation 26 to its cause showed the history was incomplete instead: q00010 S3 carried two requests for the same change, by `minimax-3` and then `qwen3-flash`, and between them the fix (#987) with nothing in the document to say so. `proposal_review { action: "submit", note }` took the implementer's note, answered `ok`, and kept none of it; a `resubmitted` line was written only when an approval was being voided. The second reviewer read an objection with no reply under it. The reply is now recorded.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 
 The same round left one more thing half-written. `gpt-5.4` sent back four slices of f00512 in one pack; the first request reopened the proposal and set its slice to `in-progress`, and the other three, finding the proposal already open, kept `Status: review` beside `review-state: changes_requested`. Each request now reopens its own slice.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 3928d9fc7578 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root plugins/proposals` over review-claim.tool.spec.ts, review-queue-candidates.spec.ts, proposal-review.spec.ts and proposal-review-attribution.spec.ts -> 4 files / 35 tests, exit 0. The branch commit 3928d9fc touches only two of the four declared files, so on its own it would be refused as incomplete delivery evidence; the merge is what carries the rest. Noted so the attribution is not mistaken for a thinner delivery than it was.
 
 ### S8 — A reviewer runs the slice's gate, in its own worktree
 
