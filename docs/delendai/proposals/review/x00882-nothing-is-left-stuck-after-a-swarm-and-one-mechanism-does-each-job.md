@@ -95,7 +95,7 @@ Delivered 2026-10-11, after the owner's answer to x00880 S2: the agent knows wha
 
 ### S3 — A request for changes always has someone who can answer it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/proposals/sent-back-proposals.ts`
   - `tools/scripts/proposals/sent-back-proposals.spec.ts`
@@ -111,8 +111,10 @@ Delivered 2026-10-11, after the owner's answer to x00880 S2: the agent knows wha
   - A retired slice does not keep an approved proposal from being closed by the same pass.
 
 Delivered 2026-10-11. The request reopens its proposal when it is recorded today; these two were recorded before it did. One waited on `GitHub`, the committer of a merge, read as an implementer.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at e85866cead43, validate exit 0, tests 14/14 — Delivery attribution: the work landed as 823b391ef850 in the x00882 branch and reached develop through the merge e85866cead43, whose first-parent diff carries the same declared files, so the guard names the merge and that is the commit approved here. Gate none: `bun x vitest run --root tools scripts/proposals/sent-back-proposals.spec.ts scripts/proposals/close-approved-proposals.script.spec.ts` -> 2 files / 14 tests, exit 0, covering the three cases this slice added to sent-back-proposals.spec.ts and the retired-slice case in the close pass. I also ran the delivered pass read-only on today's tree to see criterion 2 for myself rather than take the note's word: it reports "ready to close: x00539; to return to work: none", which is consistent - the pass itself already returned f00271 and q00014 in a30bf36cd and their slices have been resubmitted since. Non-goals respected: nothing here publishes another reviewer's verdicts. Scope is the declared five files.
 
 ### S4 — An approved proposal closes without a field nobody writes
 
