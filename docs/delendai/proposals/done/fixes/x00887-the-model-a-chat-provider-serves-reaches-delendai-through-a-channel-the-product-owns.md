@@ -2,14 +2,14 @@
 id: x00887
 title: "The model a chat provider serves reaches delendai through a channel the product owns"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 950e9949-caa6-40f4-8732-d85605dc1920
-last-correlation-id: 950e9949-caa6-40f4-8732-d85605dc1920
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T10:39:40.207Z
+last-transition-id: cd41dbeb-ae41-4d4d-b545-d05badf01195
+last-correlation-id: cd41dbeb-ae41-4d4d-b545-d05badf01195
+last-transition-from: review
+last-transition-at: 2026-10-14T12:55:22.016Z
 shipped-in:
   - "84b48b38e"
 ---
@@ -103,7 +103,7 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 
 ### S4 — One identity per model, its release stage included
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-identity/model-identity.helper.ts`
   - `packages/core/src/lib/work-identity/model-spelling.helper.ts`
@@ -122,8 +122,10 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
   - The models seen are remembered in the user cache (`~/.cache/delendai/models-seen.json`, overridable), fed by the editor observation.
   - A project declares spellings for agents whose machine never saw the model in an editor (a swarm on another host): `development.identity.aliases`, e.g. `{ "minimax-3.1": "minimax/MiniMax-M3.1-Flash-Preview" }`, applied to every source but a client's name.
 - shipped-in: `37b96b404cb6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 84b48b38e, validate exit 0, tests 14/14; acceptance 4/4: (1) The six observed spellings and the editor's own id are both recorded, and they are what the canonicalisation exists to reconcile. Verified in the model-identit… (2) Pinned by the model-identity spec's canonicalisation and ambiguity cases (14 pass / 0 fail), which cover the resolved case, the ambiguous case kept as written,… (3) Confirmed in the delivered code: model-identity.helper.ts imports SEEN_MODELS_FILE (host-chat-model.constant.ts:25 names it 'models-seen.json'), and `seenModel… (4) The declared axis exists in the plugin config and the schema: plugins/proposals/src/index.ts:151 declares redactIdentity and the identity axis carries aliases;… — Delivered and approved at the merge 84b48b38e (PR #1056) per the supersede guard. Gate `type`. This is the slice that motivated the whole proposal — one model signing as six different identities — so I checked each criterion against the delivered mechanism rather than against a pass count. ACC2 is the literal one and it is confirmed in code: model-identity.helper.ts imports SEEN_MODELS_FILE, which host-chat-model.constant.ts:25 names 'models-seen.json', and `seenModelsPath` at :32-38 defaults to join(homedir(), '.cache', 'delendai', SEEN_MODELS_FILE) after consulting an environment override — the criterion's exact path AND its overridability, both present. ACC3 exists for the swarm case the observed spellings reveal: an agent on another host never ran in this machine's editor, so its model cannot be in the cache, and the project must be able to declare it — which it does through the identity axis, with applyIdentityPolicy as the single applier shared by the agent engine, the CLI and commit-policy, and the rule excluding a client's name so an alias cannot land on 'Visual Studio Code'. ACC1's spec suite (14 pass / 0 fail, the 14/14 above) covers canonicalisation to the vendor's lower-cased id with its stage kept, resolution of an unmatched spelling to the one seen model it fits, and the two honest refusals: ambiguous or unfitting spellings are kept as written rather than guessed.
 
 ## acceptance
 
