@@ -2,7 +2,7 @@
 id: q00022
 title: "Proposals SQLite schema — replace proposals/INDEX.json as sole source of truth"
 kind: plan
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -34,10 +34,10 @@ related:
   - f00514
   - f00515
   - r00049
-last-transition-id: bcbfd984-5f5e-47f4-870a-e6cb461bf145
-last-correlation-id: bcbfd984-5f5e-47f4-870a-e6cb461bf145
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T10:21:00.018Z
+last-transition-id: a847143d-2ec4-4e65-af44-97e60378a9ca
+last-correlation-id: a847143d-2ec4-4e65-af44-97e60378a9ca
+last-transition-from: review
+last-transition-at: 2026-10-14T17:20:31.656Z
 ---
 
 # q00022 — Proposals SQLite schema (replaces proposals/INDEX.json)

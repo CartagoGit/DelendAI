@@ -42,7 +42,9 @@ import type { IOrchestratorPolicy } from './lib/policy/policy.js';
 import type { OrchestratorEngine } from './lib/policy/policy.js';
 import { InMemoryTelemetrySink } from './lib/telemetry/event.js';
 import { buildDispatchRegistration } from './lib/tools/dispatch.tool.js';
+import { changeContextReader } from './lib/dispatch/change-context-reader.helper.js';
 import {
+	changeContextSource,
 	delegationFor,
 	taskFilesSource,
 } from './lib/dispatch/delegation-manifest.service.js';
@@ -201,7 +203,25 @@ export default definePlugin({
 			compiled ??= delegationFor({
 				store: contextStore(),
 				scope: contextScope(),
-				sources: [taskFilesSource(ctx.workspace.root)],
+				sources: [
+					taskFilesSource(ctx.workspace.root),
+					// The code, docs and memory around those files, when the
+					// server has context-for-change loaded.
+					...(ctx.peerPlugins?.has('context-for-change') === true
+						? [
+								changeContextSource(
+									changeContextReader({
+										workspaceRoot: ctx.workspace.root,
+										namespacePrefix: ctx.namespacePrefix,
+										options:
+											ctx.pluginOptions?.get(
+												'context-for-change',
+											) ?? {},
+									}),
+								),
+							]
+						: []),
+				],
 				contractHash: canonicalStateHash(
 					JSON.parse(JSON.stringify(policy)),
 				),
