@@ -43,17 +43,21 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 ### S1 — One availability contract every plugin answers
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/plugin-availability.interface.ts`
+  - `packages/core/src/lib/contracts/constants/plugin-availability.constant.ts`
   - `packages/core/src/lib/plugins/plugin-contract.ts`
+  - `packages/core/src/lib/plugins/plugin-availability.service.ts`
+  - `packages/core/tests/src/lib/plugins/plugin-availability.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - A plugin may return `availability()` with one state from a fixed set (`library`, `needs-configuration`, `needs-installation`, `needs-host-adapter`, `registered`, `verified`, `degraded`), what is missing, and the command or option that fixes it. A plugin that returns nothing is `registered`.
+  - A plugin may declare `availability(ctx)`, read from the same context `register` gets and without side effects, returning one state from a fixed set (`library`, `needs-configuration`, `needs-installation`, `needs-host-adapter`, `registered`, `verified`, `degraded`), what is missing, and the option or command that fixes it.
+  - `availabilityOf` is the one reading of it: a plugin that does not answer is `registered`, and one whose answer throws is `degraded`, with the reason.
 
 ### S2 — The plugins that are not plainly usable say why
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `plugins/roadmap/src/index.ts`
   - `plugins/style-convention/src/index.ts`
@@ -62,9 +66,17 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - `plugins/audit-orchestrator/src/index.ts`
   - `plugins/execution-env/src/index.ts`
   - `plugins/remote-provider-core/src/index.ts`
+  - `plugins/roadmap/tests/src/availability.spec.ts`
+  - `plugins/style-convention/tests/src/availability.spec.ts`
+  - `plugins/browser/src/availability.spec.ts`
+  - `plugins/agent-orchestrator/tests/src/availability.spec.ts`
+  - `plugins/audit-orchestrator/tests/src/availability.spec.ts`
+  - `plugins/execution-env/tests/src/availability.spec.ts`
+  - `plugins/remote-provider-core/tests/availability.spec.ts`
 - **Gate**: type
 - acceptance:
-  - Each of these reports its real state and what is missing in this project, read from its own options and the host's capabilities.
+  - Each of these reports its real state and what is missing in this project, read from its own options and the host's ports: roadmap without `file` and style-convention without `styleRoots` need configuration; browser without a driver, and agent-orchestrator or audit-orchestrator without a subagent runtime or port factory, need a host adapter; execution-env and remote-provider-core are libraries.
+  - audit-orchestrator dispatches through the host's subagent runtime when there is one, as agent-orchestrator does; it ignored the runtime, so it could only ever refuse.
 
 ### S3 — A plugin doctor proves availability without side effects
 
