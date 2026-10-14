@@ -302,7 +302,7 @@ Nothing else is in scope.
 
 ### S4 — re-measure coverage + re-tighten ratchet thresholds
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `vitest.config.ts`
   - `docs/delendai/coverage-ratchet.md`
@@ -313,8 +313,10 @@ Nothing else is in scope.
   - Each floor is `floor(lower reading − 1.0)`: 82 → 86, 69 → 74, 83 → 87, 83 → 87. No floor is lowered.
   - `bun tools/scripts/coverage-ratchet.script.ts` exits 0 after the edit, and `bun run test:coverage` passes with the new floors.
   - `docs/delendai/coverage-ratchet.md` carries the table of readings and why the floors moved.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0fc8afc626a7, validate exit 0, tests 1/1 — Approved at 0fc8afc626a7, the commit the supersede guard names (the merge of PR #1031); the slice's own 6e71dbe9e ("test(coverage): the floors follow the suite on vitest 5; setup files stay out") carries both declared files. Gate `lint`. The heart of this slice is arithmetic, so I recomputed it rather than reading it: from the lower reading the criterion gives, floor(87.25 − 1.0) = 86, floor(75.00 − 1.0) = 74, floor(88.88 − 1.0) = 87, floor(88.92 − 1.0) = 87 — and vitest.config.ts:262-266 carries exactly `statements: 86, branches: 74, functions: 87, lines: 87`. The rule is the gate's own rather than a convention: coverage-ratchet.script.ts:82 computes `Math.floor(measured[metric] - margin)` and resolves that thresholds block at :128-129, so the criterion and the enforcement agree by construction. ACC2's second half — "No floor is lowered" — holds: 82→86, 69→74, 83→87, 83→87 are all increases. ACC1's two readings are in the file the criterion asks for: docs/delendai/coverage-ratchet.md:47 (run 1, 87.26 / 75.02 / 88.89 / 88.93) and :48 (run 2, 87.25 / 75.00 / 88.88 / 88.92, with the resulting floors), both tagged vitest 5.0.3, plus :57-58 noting that run 1 predated the setup-file exclusion and is shown recomputed — the kind of note that keeps the table honest. ACC4 is met by that file and by the policy prose at vitest.config.ts:130-144 (drift <0.1pt per metric, the 1.0pt margin as ~10x that, and "Never lower a threshold below its current value — that would mean coverage regressed, which is a bug to fix, not a number to accommodate"). ACC3's `test:coverage` pass is S5's declared evidence and the whole-repository run the queue assigns to the PR; I have that run in flight rather than asserting a result I have not seen, so this verdict is scoped to the threshold contract I did verify. Evidence 1/1 is the dependency-versions gate measured for this proposal.
 
 ### S5 — verify CI parity (lint, typecheck, biome-baseline, dead-modules)
 
