@@ -2,14 +2,16 @@
 id: f00758
 title: "Identity policy: declare how agents are named in delendai.config.json"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-12
-last-transition-id: 907a3a7c-523c-4f08-9e6d-f8746e3528e9
-last-correlation-id: 907a3a7c-523c-4f08-9e6d-f8746e3528e9
-last-transition-from: in-progress
-last-transition-at: 2026-10-12T16:15:07.165Z
+last-transition-id: a168427d-1f9b-4c1a-9b6c-2bb024cfb53c
+last-correlation-id: a168427d-1f9b-4c1a-9b6c-2bb024cfb53c
+last-transition-from: review
+last-transition-at: 2026-10-14T11:34:42.062Z
+shipped-in:
+  - "ffcb615bdd563fe9ff32ce637081d05c4bd9b578"
 ---
 
 # f00758 — Identity policy: declare how agents are named in delendai.config.json
@@ -70,22 +72,37 @@ Resolved into `IPolicyIdentity` next to `IPolicyGuard`; validate rule
 - global_gate: `bun run typecheck`
 
 ### S1 — policy axis: resolve, validate, schema
-- **Status**: done (6c5f278fb)
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/policy-identity.interface.ts`, `packages/core/src/lib/development-policy/resolve-identity.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/policy-identity.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/development-policy`
 - shipped-in: `1ee6c5c4bd1f`
+- review-state: done
+- review-implementer: qwen-3.8-max
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at ffcb615bdd56, validate exit 0, tests 7/7 — Approved S1: 7/7 tests pass in policy-identity.spec.ts, typecheck clean, and PR #1038 merged
+- review-attribution: qwen-3.8-max from commit ffcb615bdd56 names refs/heads/delendai/wip/qwen-3.8-max/implement/batch-all-g2/identity-policy (ffcb615bdd563fe9ff32ce637081d05c4bd9b578), opened by gemini-3.8-flash
 
 ### S2 — enforcement in the work engine
-- **Status**: done (3018a57d4)
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units packages/core/tests/src/lib/work-identity`
 - shipped-in: `3018a57d4357`
+- review-state: done
+- review-implementer: qwen-3.8-max
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at ffcb615bdd56, validate exit 0, tests 14/14 — Approved S2: 14/14 tests pass in provider-model-bridge.spec.ts under vitest, and PR #1038 merged
+- review-attribution: qwen-3.8-max from commit ffcb615bdd56 names refs/heads/delendai/wip/qwen-3.8-max/implement/batch-all-g2/identity-policy (ffcb615bdd563fe9ff32ce637081d05c4bd9b578), opened by gemini-3.8-flash
 
 ### S3 — enforcement in the CLI and commit-policy; docs
-- **Status**: done (1ee6c5c4b)
+- **Status**: done
 - **Files**: `packages/cli/src/index.ts`, `packages/cli/src/commands/groups/group-helpers.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-naming.interface.ts`, `plugins/commit-policy/src/lib/services/work-ref-naming.service.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: `npx vitest run --project @delendai/cli && npx vitest run --project commit-policy plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts && bun run lint:prompt-size`
 - shipped-in: `1ee6c5c4bd1f`
+- review-state: done
+- review-implementer: qwen-3.8-max
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at ffcb615bdd56, validate exit 0, tests 14/14 — Approved S3: 14/14 tests pass in work-ref-naming.service.spec.ts, prompt-size budget ok, and PR #1038 merged
+- review-attribution: qwen-3.8-max from commit ffcb615bdd56 names refs/heads/delendai/wip/qwen-3.8-max/implement/batch-all-g2/identity-policy (ffcb615bdd563fe9ff32ce637081d05c4bd9b578), opened by gemini-3.8-flash
 
 ## dependency graph
 
