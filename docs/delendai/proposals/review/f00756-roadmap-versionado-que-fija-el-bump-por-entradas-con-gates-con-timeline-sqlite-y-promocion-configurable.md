@@ -328,7 +328,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 5/5; acceptance 4/4: (1) packages/core/tests/src/lib/e2e/roadmap-agnosticism.spec.ts 3/3 pass on HEAD. (2) Same e2e spec single-branch case; plugins/roadmap/tests/src/lib/store/agnosticism.spec.ts 2/2. (3) roadmap-agnosticism e2e covers the full loop in memory. (4) docs/delendai/ROADMAP-DOGFOOD.md present + referenced. — S12: agnosticism e2e (3/3 core + 2/2 store) proves no develop/main hardcoded, single-branch doesn't fail, full MCP cycle, plus ROADMAP-DOGFOOD.md.
 
 ### S13 — A promotion is opened on the cadence the project declares
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S7, S9]
 - **Files**: `plugins/roadmap/src/lib/contracts/interfaces/promotion-readiness.interface.ts`, `plugins/roadmap/src/lib/promotion/promotion-readiness.service.ts`, `plugins/roadmap/tests/src/lib/promotion/promotion-readiness.service.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/governance/promotion-workflow.lib.ts`, `tools/scripts/governance/promotion-workflow.lib.spec.ts`, `tools/scripts/governance/forge-settings.script.ts`
 - **Gate**: type
@@ -339,8 +339,10 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "A project with one branch, with no release branch, or with no schedule declared gets no workflow and no diagnostic; branch names, the cadence and the conditions come from the configuration, never from this repository's develop and main."
 - shipped: `promotionReadiness` (pure, in the plugin) judges the three conditions and names all that fail; `open-promotion` asks them of the forge and opens the pull request with the evidence in its body, or says what holds it back, and opens no second one for the same promotion; the workflow is rendered by `promotion-workflow.lib.ts` and written by the forge-settings script when a cadence is declared. Probed against the real forge with a temporary cadence, read-only: it reported the two required checks still running on the head and the six open entries of 0.2.0. delendai itself declares no cadence — turning on scheduled release pull requests is the owner's decision — so no workflow is generated here yet.
 - Asked by the owner on 2026-10-07: promotions of develop into main were opened by hand whenever someone noticed develop was stable, and the first one waited for 48 code scanning alerts nobody was tracking on develop. The roadmap already knows what the next version promises; this slice turns "is it time to promote" into a scheduled, evidence-backed pull request. It keeps decision 3 of `## why this design`: the plugin informs (readiness), the forge acts (a workflow that opens a pull request), and the merge stays behind the release gate.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 25/25; acceptance 3/3: (1) tools/scripts/governance/promotion-workflow.lib.spec.ts + forge/open-promotion.script.spec.ts 15/15 pass; promotion-readiness.service + promotion.tool 10/10. (2) promotion-readiness.service.spec + promotion.tool.spec assert not-ready path; manifest has no git-write (S9). (3) open-promotion/governance scripts read from config; same 15/15 cover empty-config. — S13: promotion workflow generated from project's declared schedule; readiness conditions (green checks, no open alert, roadmap gates pass); never merges/tags; no git-write. open-promotion + promotion-workflow 15/15 + plugin promotion-readiness/tool 10/10.
 
 ## dependency graph
 
