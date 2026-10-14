@@ -2,17 +2,18 @@
 id: q00019
 title: "State Engine Phase 1 — SQLite shadow driver + parity sampler (no behaviour change, only shadow verifies legacy)"
 kind: plan
-status: review
+status: done
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-06
 shipped-in:
   - "99d17f26d"
   - "cc68dd17d0c341c53566cbfe01c98020939f3344"
-last-transition-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
-last-correlation-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T17:23:17.736Z
+  - "93a1d2e2a5cf66a7ca4676c04a233a8998fd21e3"
+last-transition-id: 4219c229-2294-40d6-b5c8-6d00852b0cff
+last-correlation-id: 4219c229-2294-40d6-b5c8-6d00852b0cff
+last-transition-from: review
+last-transition-at: 2026-10-14T11:28:38.489Z
 ---
 
 # q00019 — State Engine Phase 1
@@ -389,7 +390,7 @@ The facade is `createRegistryFacade` in `@delendai/state-sqlite`, not a `state-f
 
 ### S5 — Lint del boundary del nuevo paquete
 
-- **Status**: done — `99d17f26d`. Satisfied by phase 0 work that predates this plan: `state-engine-purity` and `no-node-imports-in-state` both run green (0 violations, verified live 2026-09-15) — `packages/state/src` is pure TypeScript, `@delendai/state` may not import `@delendai/state-sqlite`, and the SQLite driver lives only under `packages/state-sqlite`. Correction 2026-09-15: that evidence was incomplete. `no-node-imports-in-state` does exist and does report 0 violations, but it had no `lint:` alias, no workflow step and no place in `validate:run`, so nothing enforced the invariant and a regression would have landed unnoticed. It runs in CI and `validate:run` from `bf6e0a7e4`.
+- **Status**: done
 - **Files**: `tools/scripts/lint/no-node-imports-in-state.script.ts`
 - **Gate**: `lint`
 - La nueva lint deja de buscar dentro de `packages/state-sqlite/`
@@ -398,8 +399,10 @@ The facade is `createRegistryFacade` in `@delendai/state-sqlite`, not a `state-f
   nueva `state-engine-isolation.lint.ts` afirma que el contrato
   surface sigue siendo pure-TS y que el SQLite driver vive
   exclusivamente bajo `state-sqlite/`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 93a1d2e2a5cf, validate exit 0, tests 1/1 — Reviewed q00019 S5 against the focused lint gate. bun run lint:no-node-imports-in-state reports 0 violations, the lint has its own package.json alias, and validate:run includes lint:no-node-imports-in-state so the state/state-sqlite boundary is now actually enforced.
 
 ## dependency graph
 
