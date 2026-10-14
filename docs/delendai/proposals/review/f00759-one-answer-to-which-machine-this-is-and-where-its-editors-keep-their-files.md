@@ -10,6 +10,8 @@ last-transition-id: 9505f630-8fe4-4558-8ad9-86476ee9db03
 last-correlation-id: 9505f630-8fe4-4558-8ad9-86476ee9db03
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T23:19:42.440Z
+shipped-in:
+  - "e6c2e5ac0c56"
 ---
 
 # f00759 — one answer to which machine this is, and where its editors keep their files
@@ -40,7 +42,7 @@ What the code does today:
 
 ### S1 — One detection of the operating system and WSL
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/platform/system-profile.helper.ts`
   - `packages/core/src/lib/cli/run-init.ts`
@@ -52,9 +54,11 @@ What the code does today:
 - acceptance:
   - `run-init.ts` and `init-global.command.ts` take WSL from the system profile; no product file outside `platform/` reads `/proc/version`.
   - A WSL shell that sets `WSL_DISTRO_NAME` but whose `/proc/version` says nothing is WSL to init as it is to the profile.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `dee6e54e1a7d`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at e6c2e5ac0c56, validate exit 0, tests 1/1 — Approving e6c2e5ac0c56, the commit the supersede guard names (the merge of PR #1071 where all six declared files land; the slice's own dee6e54e1 carries 4 of 6). Gate `type`: `bun run typecheck` exits 0. ACC0 is the "one detector" claim and the enforcement is the part worth checking: `git grep -l '/proc/version' -- '*.ts'` returns exactly one product file — packages/core/src/lib/platform/system-profile.helper.ts — plus the baseline file, its own spec and the lint script. The lint that holds the line is green from my worktree: `bun run lint:platform-reads` → '✓ platform-reads: no platform question outside packages/core/src/lib/platform/ beyond the baseline.' run-init.ts and init-global.command.ts each sit in the baseline at one read, which is the residue this slice leaves — I describe it that way rather than implying the slice erased them, because "no product file outside platform/ reads /proc/version" is the criterion's wording and the baseline is exactly the honest mechanism that makes the wording enforceable over time. ACC1 I read rather than assumed: system-profile.helper.ts:61-67 returns true as soon as `WSL_DISTRO_NAME !== undefined || WSL_INTEROP !== undefined` on a linux family, and only falls through to `/microsoft|wsl/i` against procVersion when neither variable is set — so a shell exporting WSL_DISTRO_NAME with a procVersion that says nothing, or an unreadable one (readProcVersion swallows the error and yields undefined at :79-85), is still WSL. That is precisely the criterion's case. The header at :70-75 states the defect being fixed: "init and the global install each read /proc/version with a regex of their own, so a shell that sets WSL_DISTRO_NAME and a stripped one could be told apart differently by each" — which is why one detector, not two regexes. Evidence 1/1 is the platform-reads gate this proposal introduces.
 
 ### S2 — The editors' user directories come from one resolver, the Windows side of WSL included
 
