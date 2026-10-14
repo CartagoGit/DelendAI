@@ -10,6 +10,8 @@ last-transition-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
 last-correlation-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T04:05:37.876Z
+shipped-in:
+  - "708edad24396"
 ---
 
 # x00886 — What a unit leaves behind is recognised as kept or spent by one reading, everywhere
@@ -39,7 +41,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S1 — A checkpoint kept under a later retired tip is not lost
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
   - `packages/core/src/lib/startup-reconciler/retired-tips.service.ts`
@@ -48,9 +50,11 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - A checkpoint that is a retired tip, or an ancestor of one, is reported kept; the boot does not go DEGRADED for it.
   - Retired tips absent from the local object store are fetched before ancestry is asked.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `708edad24396`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 708edad24396, validate exit 0, tests 5/5 — Verified S1: checkpoints under retired tips are kept without degrading boot; remote tips are fetched before ancestry checks. 5/5 tests passing.
 
 ### S2 — The reaper releases spent review claims and empty stray refs
 
