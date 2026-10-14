@@ -24,6 +24,9 @@ export const PUBLISH_ORDER: readonly string[] = [
 	// `plugins/proposals` + `packages/context-compiler` consume it, so it
 	// must be packed and installed before them.
 	'packages/state',
+	// Compiles a delegated task's context into a manifest of references;
+	// `plugins/agent-orchestrator` declares it, so it goes before that plugin.
+	'packages/context-compiler',
 	'packages/core',
 	// x00530 S2: `plugins/proposals` imports the SQLite proposal repos
 	// from it, so it must be packed and installed before that plugin.
