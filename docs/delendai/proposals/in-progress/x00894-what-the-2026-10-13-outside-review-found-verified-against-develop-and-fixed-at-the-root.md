@@ -99,12 +99,14 @@ Verified on develop:
 
 ### S5 — A verification step that ran nothing says so
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
 - **Gate**: type
 - acceptance:
   - The receipt lists each `verify` step as planned and not executed, so no reader takes it for a passed check.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — A persisted override yields to a changed configuration
 
