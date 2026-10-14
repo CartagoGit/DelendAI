@@ -179,6 +179,33 @@ describe('definePluginManifest', () => {
 		).toThrow(/must match id/u);
 	});
 
+	it('lets a plugin from outside delendai ship under its own package name', () => {
+		const outside = {
+			id: 'weather',
+			version: '0.1.0',
+			visibility: 'public' as const,
+			summary: 'Reports the weather for a city.',
+			tags: ['weather'],
+			maturity: 'experimental' as const,
+			permissions: ['network' as const],
+			presets: [],
+			tokenBudget: 400,
+			dependencies: [],
+			capabilities: [],
+		};
+		expect(
+			definePluginManifest({ ...outside, package: '@acme/weather-mcp' })
+				.package,
+		).toBe('@acme/weather-mcp');
+		expect(
+			definePluginManifest({ ...outside, package: 'weather-mcp' })
+				.package,
+		).toBe('weather-mcp');
+		expect(() =>
+			definePluginManifest({ ...outside, package: 'Not A Name' }),
+		).toThrow(/npm package name/u);
+	});
+
 	it('rejects invalid permission categories', () => {
 		expect(() =>
 			definePluginManifest({

@@ -60,27 +60,62 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
-### S2 — An MCP server with a manifest is a plugin
+### S2 — An MCP server with a manifest is judged by it
+
+- **Status**: in-progress
+- **Files**:
+  - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
+  - `plugins/external-mcps/src/lib/contracts/constants/manifest-plugin.constant.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/manifest-plugin.interface.ts`
+  - `plugins/external-mcps/src/lib/subprocess/server-registry.ts`
+  - `plugins/external-mcps/src/index.ts`
+  - `plugins/external-mcps/tests/src/lib/catalog/manifest-plugin.service.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`
+- **Gate**: type
+- acceptance:
+  - A `delendai.plugin.json` in the directory of a declared server's command, or of a path-like argument (`python3 tools/server.py`), is validated against the plugin manifest schema.
+  - A manifest that does not validate keeps the server from booting: `external_mcp_status` reports it with the schema path of each problem, a routed call fails with that reason, and its activation entry is inactive.
+  - A server that asks for host environment variables is refused unless its manifest declares `env-read` or `secrets`.
+
+### S3 — A worked plugin in another language
+
+- **Status**: in-progress
+- **Files**:
+  - `docs/delendai/examples/python-plugin/README.md`
+  - `docs/delendai/examples/python-plugin/server.py`
+  - `docs/delendai/examples/python-plugin/delendai.plugin.json`
+  - `docs/delendai/examples/python-plugin/delendai.config.json`
+  - `plugins/external-mcps/tests/src/lib/e2e/python-plugin.e2e.spec.ts`
+- **Gate**: type
+- acceptance:
+  - The example's README walks through a plugin written as a small Python MCP server (standard library only) with its manifest and the configuration that declares it, beside the existing TypeScript example.
+  - An end-to-end spec reads the example's own configuration, judges its manifest, boots its server with `python3` and gets the tool's answer through the external-mcps registry. It needs the registry to open the MCP session first, which x00897 adds.
+
+### S4 — A manifest plugin from outside delendai ships under its own package name
+
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+  - `packages/core/schema/delendai.plugin-manifest.schema.json`
+  - `packages/core/tests/src/lib/manifest/define-plugin-manifest.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/catalog/manifest-plugin.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - `package` accepts any npm package name, scoped or not; a name in the `@delendai/` scope must still be `@delendai/<id>`, and delendai's own plugins stay bound to their package.json by `lint:manifest-vs-package`.
+  - The published JSON Schema carries the same pattern.
+  - A manifest may name its schema in `$schema`: the published schema allows no other unknown key, and the runtime parse accepts it too, so an editor and delendai agree on the same file.
+
+### S5 — A manifest plugin's tools enter the lazy catalog and its agent roles are written
 
 - **Status**: pending
 - **Files**:
+  - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+  - `packages/core/schema/delendai.plugin-manifest.schema.json`
   - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
   - `packages/core/src/lib/plugins/managed-lazy-local-catalog.service.ts`
 - **Gate**: type
 - acceptance:
-  - A `delendai.plugin.json` beside an MCP server's command, valid against the schema, makes that server a plugin: its tools are in the lazy catalog, its declared permissions are enforced, and its agent roles are written like a TypeScript plugin's.
-  - A manifest that does not validate is refused at start with the schema's own error path.
-
-### S3 — A worked plugin in another language
-
-- **Status**: pending
-- **Files**:
-  - `docs/delendai/guides/plugin-in-any-language.md`
-  - `packages/core/tests/src/lib/e2e/manifest-plugin.e2e.spec.ts`
-- **Gate**: type
-- acceptance:
-  - The guide walks through a plugin written as a small Python MCP server with its manifest, from nothing to a tool called through delendai.
-  - An end-to-end spec starts delendai with such a plugin (a script that needs no installed runtime beyond the one CI has) and calls its tool through the lazy surface.
+  - The manifest can declare the tools the server offers and the agent roles it ships; the tools enter the lazy catalog without booting the server, and the roles are written like a TypeScript plugin's.
 
 ## acceptance
 
