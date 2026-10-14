@@ -68,6 +68,26 @@ export const isWslEnvironment = (input: {
 };
 
 /**
+ * Whether this process runs under WSL: the one answer every caller asks
+ * for. `init` and the global install each read `/proc/version` with a
+ * regex of their own, so a shell that sets `WSL_DISTRO_NAME` and a stripped
+ * one could be told apart differently by each.
+ */
+export const isWslHere = (
+	env: Readonly<Record<string, string | undefined>> = process.env,
+	platformId: string = platform(),
+	readProcVersion: () => string | undefined = () => {
+		try {
+			return readFileSync('/proc/version', 'utf8');
+		} catch {
+			return undefined;
+		}
+	},
+): boolean =>
+	classifyOsFamily(platformId) === 'linux' &&
+	isWslEnvironment({ platformId, env, procVersion: readProcVersion() });
+
+/**
  * Normalise a locale tag for comparison: `en_US.UTF-8` and `en_US.utf8`
  * are the same locale spelled two ways, and `locale -a` prints the
  * second while environments almost always carry the first.

@@ -10,11 +10,7 @@ import { runCli } from './lib/cli/run-cli';
  */
 export { assembleCliConfig } from './lib/cli/assemble';
 export { runCli } from './lib/cli/run-cli';
-export {
-	detectIsWsl,
-	formatInstallReport,
-	parseInitArgs,
-} from './lib/cli/run-init';
+export { formatInstallReport, parseInitArgs } from './lib/cli/run-init';
 export type { IAssembleCliDeps, IAssembledCliConfig } from './lib/cli/assemble';
 
 // A git hook asks the project's development policy whether a commit, a
@@ -214,6 +210,8 @@ export type {
 	IAgentHost,
 	IHostNeutralAgent,
 } from './lib/contracts/interfaces/agent-host.interface';
+export { isWslHere } from './lib/platform/system-profile.helper';
+export { windowsAppDataUnderWsl } from './lib/platform/user-directories.helper';
 export { DEFAULT_DELENDAI_SERVER_NAME } from './lib/contracts/constants/mcp-server-name.constant';
 export { runCreatePlugin } from './lib/scaffold/create-plugin.tool';
 export { scaffoldExtensionHostFiles } from './lib/scaffold/scaffold-extension-host';
