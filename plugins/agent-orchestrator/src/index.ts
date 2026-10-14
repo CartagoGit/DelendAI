@@ -72,6 +72,9 @@ const OptionsSchema = z
 	})
 	.strict();
 
+/** Hex characters of an output's hash its reference carries. */
+const OUTPUT_REF_HASH = 12;
+
 export default definePlugin({
 	name: 'agent-orchestrator',
 	version: '0.1.0',
@@ -217,7 +220,7 @@ export default definePlugin({
 				{ scope: contextScope(), kind: 'artifact', id: `output:${id}` },
 				{ output },
 			);
-			return `output:${id}@${record.contentHash.slice(0, 12)}`;
+			return `output:${id}@${record.contentHash.slice(0, OUTPUT_REF_HASH)}`;
 		};
 		return {
 			tools: [
