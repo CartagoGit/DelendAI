@@ -361,7 +361,7 @@ The sampling while a process runs stays where it shipped, in `createRegistryFaca
 
 ### S4 — A project can run the SQLite driver as a shadow
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/cli/state-registry-choice.ts`
   - `packages/core/src/lib/contracts/constants/state-registry-choice.constant.ts`
@@ -382,8 +382,10 @@ The sampling while a process runs stays where it shipped, in `createRegistryFaca
   - The facade's background sampler does not keep a process alive.
 
 The facade is `createRegistryFacade` in `@delendai/state-sqlite`, not a `state-facade` package: the facade exists to pair the SQLite driver with another, and a package of its own would hold one function.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at cc68dd17d0c3, validate exit 0, tests 33/33 — Reviewed q00019 S4 on the shadow-driver selection path. The config flag is optional and default-off, enabling it selects the parity facade over the in-memory and SQLite drivers at state/shadow.sqlite, explicit load failures are named, injected registries still win, and the focused core tests passed 33/33.
 
 ### S5 — Lint del boundary del nuevo paquete
 
