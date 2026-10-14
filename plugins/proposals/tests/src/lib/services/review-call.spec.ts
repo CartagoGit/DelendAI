@@ -26,6 +26,9 @@ describe('reviewCall', () => {
 			'acceptanceCriteria: [{ criterion: "<each acceptance item>"',
 		);
 		expect(call).toContain('agent: "<you — not claude-opus-5-5>"');
+		expect(call).toContain(
+			"A failing check the slice did not touch is not the slice's: give the claim back (delendai_review_claim { release:",
+		);
 	});
 
 	it('still bounds the checks when the slice ships no spec', () => {

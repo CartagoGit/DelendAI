@@ -38,7 +38,10 @@ export const reviewCall = (
 	return (
 		`Read the diff of ${hash}, ${checks}, and check every acceptance item; do not edit code. ` +
 		`Then ${prefix}_proposal_review { proposalId: "${proposalId}", sliceId: "${sliceId}", action: "approve", agent: "${who}", note: "<what you verified and how>", evidence: { commitHash: "${hash}", validateExitCode: 0, testsPassing: <n>, testsTotal: <n>, acceptanceCriteria: [{ criterion: "<each acceptance item>", evidence: "<how you checked it>" }] } } ` +
-		`— or action: "request_changes", commitHash: "${hash}", note: "<what is wrong, where, how to reproduce, what must hold to approve>".`
+		`— or action: "request_changes", commitHash: "${hash}", note: "<what is wrong, where, how to reproduce, what must hold to approve>". ` +
+		// A reviewer whose whole-suite run failed on steps the slice never
+		// touched sent the slice back to its implementer for them.
+		`A failing check the slice did not touch is not the slice's: give the claim back (${prefix}_review_claim { release: "<the failing step and why it is not this slice's>" }) instead of requesting changes.`
 	);
 };
 
