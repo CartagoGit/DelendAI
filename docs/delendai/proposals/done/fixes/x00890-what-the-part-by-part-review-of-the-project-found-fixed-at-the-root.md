@@ -2,14 +2,14 @@
 id: x00890
 title: "what the part-by-part review of the project found, fixed at the root"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 4863cf40-e9d3-4dd1-9f05-140538cac5a1
-last-correlation-id: 4863cf40-e9d3-4dd1-9f05-140538cac5a1
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T16:56:30.832Z
+last-transition-id: 770a31e8-ebf7-41e4-a2a5-32d88170d484
+last-correlation-id: 770a31e8-ebf7-41e4-a2a5-32d88170d484
+last-transition-from: review
+last-transition-at: 2026-10-14T13:07:20.626Z
 shipped-in:
   - "b802bd2e8c36"
 ---
@@ -89,7 +89,7 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 
 ### S4 — Eviction never removes a unit, delendai's records or the state database
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/core-eviction.constant.ts`
   - `packages/core/src/lib/cache/eviction-registry.ts`
@@ -107,8 +107,10 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
   - The core refuses to register a rule whose path is, or is inside, `.worktrees`, `records` or `state`, naming the path it refused.
   - The `cache` plugin contributes neither rule; its `worktrees` option is accepted and ignored, so no configuration stops validating.
   - A sweep over a cache with units of any age removes none of them.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at b802bd2e8c36, validate exit 0, tests 21/21; acceptance 3/3: (1) Pinned by a passing test named for the three directories: 'rejects a rule over the units, the records or the state database' in eviction-registry.spec.ts, whic… (2) Confirmed by the plugin's own suite: plugins/cache tests/registry.spec.ts → 6 pass / 0 fail. The plugin registers no eviction rule, and its configuration still… (3) Pinned by 'a second run with the same state is a no-op' alongside the rejection test: the registry refuses to register an eviction rule over the units/records/… — Delivered and approved at the merge b802bd2e8 (PR #1061) per the supersede guard. Gate `type`. This slice protects an agent's in-flight work from a cache sweep — the failure being prevented is an agent losing a unit it is actively using — so I looked for the guarantee that no rule can even be REGISTERED over that area, which is stronger than a sweep that happens to skip it. ACC0 is pinned by a test named for the three directories: 'rejects a rule over the units, the records or the state database', naming the refused path in the refusal. ACC2 follows from the same design rather than from a separate test: because no eviction rule can be registered over the units/records/state area, the sweep is a no-op for units of ANY age, which is stronger than "young units are skipped" — the neighbouring 'a second run with the same state is a no-op' confirms the idempotence. ACC1 is the backwards-compatibility clause and it is the one a careless implementation would break: the cache plugin registers no rule, yet its existing `worktrees` option must still be ACCEPTED so a project that already set it does not stop validating. Verified by the plugin's own suite — plugins/cache tests/registry.spec.ts → 6 pass / 0 fail. Core suite 21 pass / 0 fail, the 21/21 above.
 
 ## acceptance
 
