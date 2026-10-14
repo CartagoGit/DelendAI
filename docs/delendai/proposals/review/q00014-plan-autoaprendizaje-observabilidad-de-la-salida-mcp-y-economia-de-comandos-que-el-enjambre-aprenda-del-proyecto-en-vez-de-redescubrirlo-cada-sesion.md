@@ -122,10 +122,10 @@ trabajo redundante.
   - `plugins/error-reporting/tests/src/lib/intake/server-log-reader.spec.ts` — fixtures con los logs reales de 2026-09-02 (anonimizados) que contenían los cinco bugs.
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: unattributable
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering specs anyway. Verified in the current develop tree: (1) plugins/error-reporting/src/lib/intake/server-log-reader.helper.ts and log-diagnosis.helper.ts exist (planned log-diagnosis.ts carries the repo role-suffix convention, documented in the proposal notes); diagnose-log.tool.ts and log-intake.interface.ts exist; (2) server-log-reader.spec.ts green 11/11 via env -u CLAUDECODE -u AI_AGENT npx vitest run: it classifies the twelve-hour push retry loop, the 'Failed to parse message' stdout corruption and the .mutex pathspec failure from rewritten copies of the 2026-09-02 incidents, and asserts no log text or machine identifier reaches a finding (privacy validator intact, per non-goals); (3) plan acceptance point 3 itself is documented as not verifiable from this repository (original host log absent) — the slice's deliverable is the parser/diagnosis/tool/spec, all present and registered; the proposal's own evidence pass states this limitation honestly; (4) bun run typecheck exit 0, bun run lint:architecture exit 0. Full bun run validate is red workspace-wide since 2026-09-21T06:16Z on shared-branch breakage unrelated to this slice.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: unattributable attested by claude-opus-5-5 — No single implementer can be named. Its readers were added on 2026-09-03/04 by commits 9def714f5, 8180156f6 and e103a844d (subjects of other proposals, no agent, no work ref, no trailer, in no session transcript here), and its spec on 2026-09-14 by 065b06f1c in session 472154d3 (claude-opus-5): two hands, one of them unknown. Named unattributable, not guessed; the reviewer qwen-3.8-max had no part in that history.
 - shipped-in: `277e670d0656`
 ### S4 — Plugin `self-learning`: superficie y almacén
 
