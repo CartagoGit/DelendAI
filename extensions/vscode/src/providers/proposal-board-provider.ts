@@ -84,11 +84,13 @@ const STATUS_META = new Map<
 	['pending', { rank: 0, label: 'Pending' }],
 	['ready', { rank: 1, label: 'Ready' }],
 	['in_progress', { rank: 2, label: 'In progress' }],
-	['review', { rank: 3, label: 'Review' }],
-	['paused', { rank: 4, label: 'Paused' }],
-	['blocked', { rank: 5, label: 'Blocked' }],
-	['done', { rank: 6, label: 'Done' }],
-	['retired', { rank: 7, label: 'Retired' }],
+	// A reviewer is on it, apart from what waits for one.
+	['in_review', { rank: 3, label: 'In review' }],
+	['review', { rank: 4, label: 'Waiting for review' }],
+	['paused', { rank: 5, label: 'Paused' }],
+	['blocked', { rank: 6, label: 'Blocked' }],
+	['done', { rank: 7, label: 'Done' }],
+	['retired', { rank: 8, label: 'Retired' }],
 ]);
 
 /** Normalise a raw status so `in-progress` and `in_progress` group together. */

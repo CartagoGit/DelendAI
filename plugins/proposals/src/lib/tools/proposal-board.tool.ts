@@ -1,4 +1,8 @@
 import { dirname, join } from 'node:path';
+import {
+	reviewersAtWork,
+	reviewStateOf,
+} from '../services/review-state.service';
 import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
@@ -121,6 +125,19 @@ export const buildProposalBoardRegistration = (
 						: CLAIMABLE_STATUSES;
 				const proposals = await readProposalIndex(options.indexPathAbs);
 				const locks = await readActiveLocks(options.lockPathAbs);
+				// A proposal in review a reviewer holds shows as in-review.
+				const atWork =
+					args.progress === true &&
+					options.developmentPolicy !== undefined
+						? await reviewersAtWork(
+								options.workspaceRoot,
+								options.developmentPolicy,
+							)
+						: new Map<string, readonly string[]>();
+				const shown = (p: { id: string; status?: string }): string =>
+					p.status === 'review'
+						? reviewStateOf(p.id, atWork)
+						: (p.status ?? 'unknown');
 				const actionable = proposals.filter(
 					(p) =>
 						wanted.includes(p.status ?? '') &&
@@ -144,7 +161,7 @@ export const buildProposalBoardRegistration = (
 							// that is the norm, not the exception.
 							return {
 								id: p.id,
-								status: p.status ?? 'unknown',
+								status: shown(p),
 								slices: [],
 								unreadable: `index points at ${p.file}, which does not exist — run sync_proposals`,
 							};
@@ -153,7 +170,7 @@ export const buildProposalBoardRegistration = (
 						if (parsed === null) {
 							return {
 								id: p.id,
-								status: p.status ?? 'unknown',
+								status: shown(p),
 								slices: [],
 								unreadable:
 									'the document has no parseable `## Slices` section',
@@ -162,7 +179,7 @@ export const buildProposalBoardRegistration = (
 						const plan = deriveSliceStatuses(parsed, locks);
 						return {
 							id: p.id,
-							status: p.status ?? 'unknown',
+							status: shown(p),
 							...(args.progress === true && p.title !== undefined
 								? { title: p.title }
 								: {}),

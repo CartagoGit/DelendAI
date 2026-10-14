@@ -99,7 +99,7 @@ describe('proposals board e2e (f00097 S6)', () => {
 		expect(labels).toEqual([
 			'Ready',
 			'In progress',
-			'Review',
+			'Waiting for review',
 			'Paused',
 			'Blocked',
 			'Done',

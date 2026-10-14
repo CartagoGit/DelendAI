@@ -1,7 +1,7 @@
 ---
 id: x00905
 title: "A proposal being reviewed reads in-review, not waiting for review"
-kind: feat
+kind: fix
 status: in-progress
 type: proposal
 track: general
@@ -40,7 +40,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S1 — One function says whether a proposal in review is being reviewed
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `plugins/proposals/src/lib/services/review-state.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/review-state.interface.ts`
@@ -51,17 +51,18 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S2 — Every surface shows in-review apart from review
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
-  - `plugins/proposals/src/lib/services/review-queue-view.service.ts`
-  - `packages/client/src/lib/services/overview.service.ts`
   - `extensions/vscode/src/providers/proposal-board-provider.ts`
+  - `extensions/vscode/src/test/proposals-board.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/compact-status-units.spec.ts`
 - **Gate**: type
 - acceptance:
   - `proposals status` counts `in-review` and `review` apart (`byStatus`), the two adding up to what `review` counted before.
-  - The board, the review queue and the editor's tree show the same split, through `reviewStateOf`, with who holds each proposal under review.
+  - The board (with `progress`) gives a proposal under review the status `in-review`, through `reviewStateOf`; the editor's board groups it as "In review", apart from "Waiting for review".
+  - The review queue needs nothing new: it already reads the same claims and offers no proposal another reviewer holds.
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
