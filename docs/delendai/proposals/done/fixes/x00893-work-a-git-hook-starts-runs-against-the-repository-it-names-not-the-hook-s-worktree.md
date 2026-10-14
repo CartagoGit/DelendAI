@@ -2,14 +2,14 @@
 id: x00893
 title: "work a git hook starts runs against the repository it names, not the hook's worktree"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 3a3b8fe3-7fef-4814-8c08-eef0e9543526
-last-correlation-id: 3a3b8fe3-7fef-4814-8c08-eef0e9543526
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T03:37:19.663Z
+last-transition-id: 083a0951-f560-49be-9512-68b65b151b4b
+last-correlation-id: 083a0951-f560-49be-9512-68b65b151b4b
+last-transition-from: review
+last-transition-at: 2026-10-14T11:25:51.084Z
 shipped-in:
   - "c0e5842ff516"
 ---
@@ -87,7 +87,7 @@ Two departures on 2026-10-14, the night x00892 merged:
 
 ### S4 — A unit in use keeps its dependencies
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/idle-unit-dependencies.service.ts`
   - `packages/core/src/lib/work-units/work-unit-reap.service.ts`
@@ -99,8 +99,10 @@ Two departures on 2026-10-14, the night x00892 merged:
   - Only an abandoned unit whose worktree has not been written within the lease window loses its dependencies.
   - A commit on a unit's branch renews its heartbeat (`post-commit`).
 - shipped-in: `c0e5842ff516`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at c0e5842ff516, validate exit 0, tests 4/4 — Approved S4: all 4 tests pass and typecheck passes with exit code 0
 
 ## acceptance
 
