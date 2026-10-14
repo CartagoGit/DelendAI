@@ -2,14 +2,16 @@
 id: x00889
 title: "delendai keeps one home inside its cache directory, the cache sheds what nobody needs, and plugins load lazily unless eager is declared"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: bcad8670-aa1c-4090-81e7-59fa5baa358b
-last-correlation-id: bcad8670-aa1c-4090-81e7-59fa5baa358b
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T15:56:28.609Z
+last-transition-id: abd217c8-3dca-41ec-856f-27ce5d7acdd0
+last-correlation-id: abd217c8-3dca-41ec-856f-27ce5d7acdd0
+last-transition-from: review
+last-transition-at: 2026-10-14T10:39:58.856Z
+shipped-in:
+  - "e23c19e3b5fef5d7da87b7b8e8a8a769b293af7e"
 ---
 
 # x00889 — delendai keeps one home inside its cache directory, the cache sheds what nobody needs, and plugins load lazily unless eager is declared
@@ -39,7 +41,7 @@ What the code does today:
 
 ### S1 — An unknown plugin is discovered, not a reason to load everything
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/cli/assemble-plugins.ts`
   - `packages/core/src/lib/plugins/managed-lazy-local-catalog.service.ts`
@@ -53,12 +55,14 @@ What the code does today:
   - A recorded plugin is not imported at start until its file changes. Lazily activated plugins are released by the idle eviction as any other.
   - A discovered plugin that contributes anything a tool call does not bring in (agent roles, error sinks, observers, hooks) is activated at start, and the agent roles of the plugins a lazy start activated are the ones it writes: none is removed because the plugin was not imported.
 - shipped-in: `a22f77f06e75`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at e23c19e3b5fe, validate exit 0, tests 17/17 — Approved S1: all 17 tests pass across 3 test files and typecheck passes with exit code 0
 
 ### S2 — The cache sheds what nobody needs, by default
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/src/lib/cache/core-eviction-rules.helper.ts`
@@ -71,12 +75,14 @@ What the code does today:
   - The start-up sweep applies the eviction rules. A dry run is what a project declares, not the default.
   - The core registers rules for what it owns at the cache root: rotated logs (`*.log.N`) older than 7 days and the loose files one-off proposal runs leave there (`f00282-type-gate.log`) older than 30 days. Each removal is reported once.
 - shipped-in: `62f28f4907b4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at e23c19e3b5fe, validate exit 0, tests 8/8 — Approved S2: all 8 tests pass across 2 test files and typecheck passes with exit code 0
 
 ### S3 — Everything delendai keeps is inside the cache directory
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/delendai-records.constant.ts`
   - `packages/core/src/lib/shared/delendai-records.ts`
@@ -114,12 +120,14 @@ What the code does today:
   - A change of `cacheDir` is still detected: the last cache directory is remembered where no cache move can lose it (the clone's git directory), not in a folder of the project tree.
   - The relocation runs at every start before the journal is read (the owner's rule: every layout change ships its migration): each file of `.delendai/` is moved to `<cacheDir>/records/`, a file already there wins, and `.delendai/` is removed once empty; a cache-dir move whose destination holds only `records/` still completes.
 - shipped-in: `62f28f4907b4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at e23c19e3b5fe, validate exit 0, tests 84/84 — Approved S3: all 84 tests pass across 8 test files and typecheck passes with exit code 0
 
 ### S4 — A kept unit does not keep its dependencies while it waits
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/idle-unit-dependencies.service.ts`
   - `packages/core/src/lib/work-units/work-unit-reap.service.ts`
@@ -132,8 +140,10 @@ What the code does today:
 - acceptance:
   - `work reap --apply` removes `node_modules` from every kept unit whose owner is not live (idle or abandoned past the lease window) and reports each under `dependencies`; without `--apply` it only reports. Entering an existing unit installs its dependencies again (x00888 S6), so its work is untouched.
 - shipped-in: `0bffe320eaa4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at e23c19e3b5fe, validate exit 0, tests 4/4 — Approved S4: all 4 tests pass and typecheck passes with exit code 0
 
 ## acceptance
 

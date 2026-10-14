@@ -2,14 +2,18 @@
 id: x00886
 title: "What a unit leaves behind is recognised as kept or spent by one reading, everywhere"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
-last-correlation-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T04:05:37.876Z
+last-transition-id: feb9084c-2165-4936-8d85-df17f2326c0d
+last-correlation-id: feb9084c-2165-4936-8d85-df17f2326c0d
+last-transition-from: review
+last-transition-at: 2026-10-14T11:02:34.396Z
+shipped-in:
+  - "708edad24396"
+  - "facf2968c1e6d6915b7b86272ab1e01e5040ebb3"
+  - "6ee9769b01941d8c1dc6981af5fc9b25457a943d"
 ---
 
 # x00886 — What a unit leaves behind is recognised as kept or spent by one reading, everywhere
@@ -39,7 +43,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S1 — A checkpoint kept under a later retired tip is not lost
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
   - `packages/core/src/lib/startup-reconciler/retired-tips.service.ts`
@@ -48,13 +52,15 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - A checkpoint that is a retired tip, or an ancestor of one, is reported kept; the boot does not go DEGRADED for it.
   - Retired tips absent from the local object store are fetched before ancestry is asked.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `708edad24396`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 708edad24396, validate exit 0, tests 5/5 — Verified S1: checkpoints under retired tips are kept without degrading boot; remote tips are fetched before ancestry checks. 5/5 tests passing.
 
 ### S2 — The reaper releases spent review claims and empty stray refs
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`
   - `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`
@@ -66,13 +72,15 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - `work reap` releases a review claim whose unit is gone, as it does a slice claim.
   - `work reap` reports `strays`: a ref under the namespace prefix but outside the product's namespaces is removed only when every commit it adds is empty or a snapshot of a tree already on the integration branch; any other is listed as kept. Without `--apply` nothing is removed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `708edad24396`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 708edad24396, validate exit 0, tests 12/12 — Verified S2: work reap releases spent review claims and empty stray refs while keeping working ones. 12/12 tests passing.
 
 ### S3 — The server log says each change once, and a restart in the past tense
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
   - `packages/core/src/lib/wip-engine/work-checkout-reports.ts`
@@ -83,13 +91,15 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - The publisher's report names a unit only when its outcome or reason changed since the last report that named it.
   - The restart line describes what the server ran before the restart and no longer says it still applies the old rules.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `708edad24396`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 708edad24396, validate exit 0, tests 25/25 — Approved S3: all 25 tests pass across 2 test files and typecheck passes with exit code 0
 
 ### S4 — A unit ends once every slice of its proposal is handed in
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
@@ -97,12 +107,14 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - A proposal counts as in progress for its unit only while its file is in `in-progress/` and some slice is not yet in review, approved or done. Once every slice is handed in, the unit is judged delivered and reaped after its publication merges, rather than fast-forwarded and kept.
 - shipped-in: `5a1d2173bf57`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at facf2968c1e6, validate exit 0, tests 14/14 — Approved S4: all 14 tests pass and typecheck passes with exit code 0
 
 ### S5 — A handed-in slice says so, whichever way it was handed in
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/swarm/proposal-review.ts`
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
@@ -112,12 +124,14 @@ The server log pasted with the same request showed two more departures: the chec
 - **Gate**: type
 - acceptance:
   - Submitting a slice that reads `pending` or `in-progress` sets its Status line to `review`. Handing the proposal to review aligns every slice already in review the same way, so a proposal in `review/` never carries a slice the completeness gate counts as not started.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 6ee9769b0194, validate exit 0, tests 12/12 — Approved S5: all 12 tests pass across 2 test files and typecheck passes with exit code 0
 
 ### S6 — Re-entering a published unit goes back to it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/work-unit-generation.service.ts`
   - `packages/core/src/lib/work-units/publication-target.service.ts`
@@ -125,8 +139,10 @@ The server log pasted with the same request showed two more departures: the chec
 - **Gate**: type
 - acceptance:
   - `work enter` without `--generation`, for an agent whose own generation of that proposal and slice has an open publication, is refused. The refusal gives the generation, the topic and the merge that resume it, whether or not the forge still holds a reservation. `--alongside` still opens a deliberate next generation.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 6ee9769b0194, validate exit 0, tests 51/51 — Approved S6: all 51 tests pass and typecheck passes with exit code 0
 
 ## acceptance
 
