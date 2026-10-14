@@ -258,7 +258,7 @@ Delivered 2026-10-11, smaller than first written. An approval citing the forge's
 
 ### S9 — What would stop a proposal from closing is found before a reviewer meets it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/proposal-slice-completeness.script.ts`
   - `tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
@@ -278,10 +278,12 @@ Delivered 2026-10-11, smaller than first written. An approval citing the forge's
   - An approval of work nobody can be named for is recorded and does not close its proposal: every path to `done` applies the rule the repository's check applies, and the queue says beforehand that the close is the owner's.
 
 Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a status a slice of a closed proposal may be in, and a hash that names a tree or a blob is skipped by the cited-commits lint. x00875's three citations of unreferenced objects were rewritten in its own unit. Then the rest. Both rules now read `review/` as well as `done/`; run over the fifteen proposals waiting today they found one real thing, twice: f00512 and f00536 each have a retired slice naming files that were never written, which the completeness rule would have held against whoever approved them. A retired slice is no longer asked for its files, and the baseline shrank by eight entries for it. And the cause of observation 21: the close from `review` was judged by the review log alone, so an approval over an unrecorded implementer closed f00538, and the per-slice rule in CI refused the pack. `proposal_transition` now applies that one rule on every path to `done`; the approval stands, the proposal stays in review, and the answer says why.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 
 One more thing the wider rule met, in CI and not here: q00014 S2 lists `journal-reporter.ts` and describes it as writing to a journal under the cache folder, and the Files parser took the journal's path for a second declared file. It exists on a machine that has run the suite and nowhere else. A sub-bullet that names its file and then describes it now declares that file only; nineteen such paths left the baseline.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 76/76 — Delivery attribution: the behaviour landed as 30005836854c in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root tools` over test-zones.script.spec.ts, independent-candidates.spec.ts, proposal-slice-completeness.script.spec.ts and proposal-cited-commits.script.spec.ts -> 4 files / 76 tests, exit 0; and `bun x vitest run --root plugins/proposals` over review-claim.tool.spec.ts, review-queue-candidates.spec.ts, proposal-review.spec.ts and proposal-review-attribution.spec.ts -> 4 files / 35 tests, exit 0 for the attribution half. Two coverage gaps I checked and am recording rather than treating as defects: no candidate commit changes proposal-cited-commits.script.spec.ts, so the tree/blob assertion is present in the tree but is not part of the listed delivery diff; and the review-directory expansion of the cited-commits lint is implemented but not asserted by the declared spec. Both are missing assertions around code that is present.
 
 ### S10 — Two packs of verdicts on different proposals do not wait on each other
 
