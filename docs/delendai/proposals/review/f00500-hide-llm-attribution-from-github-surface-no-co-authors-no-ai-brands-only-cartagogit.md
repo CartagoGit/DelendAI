@@ -512,9 +512,11 @@ Script que envuelve `git filter-repo` (preferido) con fallback a
 
 `tools/scripts/git/rewrite-llm-attribution.spec.ts` — usa `mkdtemp` +
 `git init` + 3 fixtures + asserts post-rewrite. NO toca el repo real.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
-
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 4614529d8b15, validate exit 0, tests 14/14 — tools/scripts/git/rewrite-llm-attribution.spec.ts exists and I ran it: 14 pass / 0 fail, 36 assertions, across 3 suites. It exercises the three-commit shape the section asks for, and does so against a throwaway repo rather than a mock: `sanitizeCommitMessage` (clean message left byte-identical, LLM Co-authored-by stripped), `rewriteFastExportStream` (rewrites identity and message and keeps the byte count honest — the invariant that matters for a fast-export rewrite), and `does not touch a commit that was already clean`, which is the regression guard against the rewrite churning history. The 14/14 is this run from my review worktree.
+- **Status**: done
 ### S8d — Runbook
 
 `docs/delendai/wiki/git-history-rewrite.md` con los pasos numerados
