@@ -32,3 +32,25 @@ export interface IDelegatedTask {
 
 /** Whether a delegation went with a manifest or with an instruction only. */
 export type IDelegationKind = 'manifest' | 'instruction-only';
+
+/** Where a dispatch's tool result carries its delegation records (`_meta`). */
+export const DELEGATION_RECORDS_META_KEY = 'delendai/delegations';
+
+/**
+ * One delegated step, as it is measured: what it was given and what it
+ * cost. Observed token figures are the host's, and absent when the host
+ * reports only a total.
+ */
+export interface IDelegationRecord {
+	readonly tags: readonly string[];
+	readonly role: string;
+	readonly delegation: IDelegationKind;
+	/** How a manifest reached the subagent. */
+	readonly path?: 'prompt' | 'enforced' | undefined;
+	readonly manifestBytes?: number | undefined;
+	readonly tokensUsed: number;
+	readonly inputTokens?: number | undefined;
+	readonly outputTokens?: number | undefined;
+	/** The subagent asked for context beyond its manifest. */
+	readonly contextRequested?: boolean | undefined;
+}

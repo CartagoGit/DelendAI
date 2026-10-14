@@ -42,6 +42,11 @@ export interface IHostSubagentResult {
 	readonly schemaOk: boolean;
 	readonly hadError: boolean;
 	readonly receipt?: IHostSubagentReceipt | undefined;
+	/** The input and output tokens the host observed, when it counts them. */
+	readonly inputTokens?: number | undefined;
+	readonly outputTokens?: number | undefined;
+	/** The subagent asked for more context than its manifest gave. */
+	readonly contextRequested?: boolean | undefined;
 }
 
 export interface IHostSubagentRuntime {
