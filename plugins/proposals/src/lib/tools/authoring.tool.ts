@@ -5,6 +5,7 @@ import { languageRefusal } from '../services/documentation-language.service';
 import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
+import { describeOffRoster } from '@delendai/core/cli';
 import type { IToolTextResult } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../contracts/constants/create-proposal.constant';
@@ -72,7 +73,10 @@ import {
 	reviewTransition,
 	type IReviewRound,
 } from '../swarm/proposal-review';
-import { recordShippingCommit } from '../swarm/slice-shipping-record';
+import {
+	readShippingCommit,
+	recordShippingCommit,
+} from '../swarm/slice-shipping-record';
 import {
 	describeApprovalOutcome,
 	quorumForReview,
@@ -2113,6 +2117,32 @@ const verdictWouldBeRefused = async (
  * agent reviews the fix — the loop repeats until a reviewer has no objection.
  * `status` reads the current review state without changing it.
  */
+/** The Git author, name and email, of the commit a slice cites as shipped. */
+const deliveringAuthorOf = async (
+	root: string,
+	markdown: string,
+	sliceId: string,
+): Promise<readonly string[]> => {
+	const block = new RegExp(
+		`^### ${sliceIdPattern(sliceId)}\\s+—[^\\n]*\\n([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+		'm',
+	).exec(markdown)?.[1];
+	const commit = block === undefined ? undefined : readShippingCommit(block);
+	if (commit === undefined) return [];
+	const shown = await createGitRunner(root)([
+		'log',
+		'-1',
+		'--format=%an%x00%ae',
+		commit,
+	]);
+	return shown.ok
+		? shown.output
+				.trim()
+				.split('\0')
+				.filter((each) => each.length > 0)
+		: [];
+};
+
 export const buildReviewRegistration = (
 	options: IAuthoringToolOptions & {
 		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
@@ -2154,6 +2184,21 @@ export const buildReviewRegistration = (
 			}) => {
 				const args = { ...rawArgs };
 				const scoped = scopeToCaller(options);
+				const offRoster =
+					args.action === 'approve' ||
+					args.action === 'request_changes'
+						? describeOffRoster(
+								args.agent,
+								scoped.developmentPolicy?.coordination.roster ??
+									[],
+							)
+						: undefined;
+				if (offRoster !== undefined) {
+					return toolError(
+						`No verdict under \`${args.agent}\`.`,
+						offRoster,
+					);
+				}
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
 					scoped,
@@ -2213,6 +2258,11 @@ export const buildReviewRegistration = (
 							implementer: args.implementer ?? '',
 							attestedBy: args.agent,
 							evidence: redactedNote.text,
+							deliveredBy: await deliveringAuthorOf(
+								scoped.workspaceRoot,
+								md,
+								args.sliceId,
+							),
 						});
 						if (!attested.ok) {
 							return toolError(

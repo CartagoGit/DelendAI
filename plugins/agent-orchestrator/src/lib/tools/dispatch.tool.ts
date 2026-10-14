@@ -5,10 +5,12 @@
  */
 import type { IStepDelegate } from '../contracts/interfaces/delegation-manifest.interface.js';
 import type { ITask } from '../policy/types.js';
+import { takeDelegations } from '../dispatch/delegation-records.helper.js';
 import { withReceipts } from '../dispatch/subagent-receipt.service.js';
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
+import { DELEGATION_RECORDS_META_KEY } from '@delendai/contracts';
 import { toolError, toolJson } from '@delendai/core/public';
 
 import type { OrchestratorEngine } from '../policy/policy.js';
@@ -420,7 +422,17 @@ export function buildDispatchRegistration(
 								? { override: args.override }
 								: {}),
 						});
-						return toolJson(outcome);
+						const taken = takeDelegations(outcome, args.task.tags);
+						const result = toolJson(taken.outcome);
+						return taken.records.length === 0
+							? result
+							: {
+									...result,
+									_meta: {
+										[DELEGATION_RECORDS_META_KEY]:
+											taken.records,
+									},
+								};
 					} catch (err) {
 						const refusal = dispatchPortRefusal(err);
 						if (refusal !== undefined) return refusal;

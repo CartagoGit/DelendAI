@@ -2,14 +2,14 @@
 id: f00763
 title: "a delegated task carries only the context it needs, and hands back a receipt, not its transcript"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: 11bc0c08-aabc-465c-8a54-5c84e2c01e43
-last-correlation-id: 11bc0c08-aabc-465c-8a54-5c84e2c01e43
-last-transition-from: ready
-last-transition-at: 2026-10-14T09:22:15.413Z
+last-transition-id: fe303d9e-8340-4087-b125-88858c2300f4
+last-correlation-id: fe303d9e-8340-4087-b125-88858c2300f4
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T20:01:24.850Z
 ---
 
 # f00763 — a delegated task carries only the context it needs, and hands back a receipt, not its transcript
@@ -38,7 +38,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S1 — A delegated task is a manifest, not a prompt
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/contracts/src/delegated-task.interface.ts`
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
@@ -50,10 +50,13 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - acceptance:
   - `IDelegatedTask` carries an objective, the project contract's hash, a context manifest id, the allowed tools, the expected output schema, the acceptance checks, an input budget, and whether more context may be requested and through which tool; `IHostSubagentRequest.task` carries it.
   - The orchestrator's dispatch port passes a step's task to the host runtime, and marks every request's `metadata.delegation` as `manifest` or `instruction-only`: the current instruction-only request still works, and the gap stays measurable.
+- shipped-in: `75306cffdc66`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2a — context-compiler has a store and an engine to run on
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/context-store/file-artifact-store.ts`
   - `packages/core/tests/src/lib/context-store/file-artifact-store.spec.ts`
@@ -66,10 +69,12 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - A file-backed `IArtifactStore` keeps each artifact by key, one file each, written whole and renamed into place, keeping its first `createdAt`; it lists by scope and kind and deletes.
   - A derivation engine derives a value once per input fingerprint and keeps it in the store when given one, so a restart does not derive it again.
   - `context-compiler` compiles a manifest of references against them, gives the same manifest for the same references, and expands a reference back to its content.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2b — The orchestrator compiles the manifest from the task
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts`
   - `plugins/agent-orchestrator/src/lib/contracts/interfaces/delegation-manifest.interface.ts`
@@ -89,10 +94,12 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - Each step `_dispatch` runs is delegated with a manifest compiled from the files its task names (read inside the workspace), the hash of the orchestration policy in force, and the policy's per-subagent token budget as its input budget; the same task gives the same manifest.
   - A step whose referenced context is over its input budget is not sent: it fails, so the orchestrator splits or escalates it.
   - The delegation is built on the first dispatch, so registering the plugin costs nothing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2c — The code, docs and memory around a task's files join its manifest
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts`
   - `plugins/agent-orchestrator/src/index.ts`
@@ -106,10 +113,12 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - acceptance:
   - When the server has `context-for-change` loaded, each section it gathers for the files a task names (the code around them, the docs that cover them, the facts `memory` holds) is an item of the step's manifest, read with that plugin's own options. A task with no files asks it nothing, and what it cannot gather is simply not referenced.
   - `context-for-change` is an optional peer of agent-orchestrator: an install without it delegates with the task's own files only.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A host adapter turns the manifest into a bounded prompt
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/subagents/delegation-prompt.helper.ts`
   - `packages/core/tests/src/lib/subagents/delegation-prompt.helper.spec.ts`
@@ -121,10 +130,13 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - acceptance:
   - A host runtime that does not declare `enforcesManifest` receives, as the subagent's instruction, the manifest rendered as a bounded prompt: objective, the manifest and contract it may open (and through what), the tools it may use, its input budget, the checks it is done by and the receipt to return. Nothing from the parent conversation goes in.
   - A host that declares `enforcesManifest` gets the manifest as such, and every request says which of the two happened (`metadata.delegationPath`: `prompt` or `enforced`).
+- shipped-in: `75306cffdc66`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The subagent hands back a receipt
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
   - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
@@ -137,16 +149,38 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - acceptance:
   - A host may return a receipt with the result: status (`done`, `failed`, `needs-decision`), the files changed, the checks run and their result, and only the exceptions that need the orchestrator's decision.
   - The outcome `_dispatch` returns gives each receipt on one line (`done · files: a.ts · checks: typecheck ok · needs: none`) and keeps each output longer than 280 characters behind a reference to the artifact store (`outputRef`), with a 280-character extract, so the orchestrator reads a receipt, not a transcript. One line rather than the structure keeps the plugin's tool surface under its hard token budget, and is what the model reads anyway.
+- shipped-in: `75306cffdc66`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — The saving is measured
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
-  - `plugins/usage-tracking/src/index.ts`
+  - `packages/contracts/src/delegated-task.interface.ts`
+  - `packages/contracts/src/host-subagent-runtime.interface.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/delegation-records.helper.ts`
+  - `plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/delegation-records.helper.spec.ts`
+  - `plugins/agent-orchestrator/tests/src/delegation-wiring.spec.ts`
+  - `plugins/usage-tracking/package.json`
+  - `plugins/usage-tracking/src/lib/contracts/invocation-record.interface.ts`
+  - `plugins/usage-tracking/src/lib/contracts/delegation-rollup.interface.ts`
+  - `plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts`
+  - `plugins/usage-tracking/src/lib/services/delegation-rollup.service.ts`
+  - `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`
+  - `plugins/usage-tracking/tests/src/lib/services/delegation-rollup.service.spec.ts`
+  - `bun.lock`
 - **Gate**: type
+- delivered: the port measures each step (`IDelegationRecord`: role, delegation, path, manifest bytes, the reported total, and the input and output tokens and context request the host observed, when it reports them); the dispatch tool moves the records out of the outcome into the result's `_meta` (`delendai/delegations`), so the wire payload and its schema stay as the receipts made them; usage-tracking keeps them on the invocation record, and the usage summary's `delegation` rows compare manifest and instruction-only steps per kind of task, the observed figures counted only over the steps that have them.
 - decision (2026-10-14): the receipts are not persisted today (`closeReceipt` only returns them), and agent-orchestrator's tool surface sits near its hard token budget, so the report is not a new orchestrator tool. Each dispatch hands one record per delegated step (task tags, delegation `manifest` or `instruction-only`, path `prompt` or `enforced`, manifest bytes, the subagent's observed input and output tokens, whether more context was asked for) to usage-tracking, which already persists records; its report groups them by task kind and compares the two kinds of delegation, observed figures apart from estimates.
 - acceptance:
   - Each delegation records the subagent's observed input and output tokens, the manifest size, and whether more context was requested. A report compares delegations with and without a manifest on the same kinds of task, observed figures apart from estimates.
+- shipped-in: `2770bf946c91`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

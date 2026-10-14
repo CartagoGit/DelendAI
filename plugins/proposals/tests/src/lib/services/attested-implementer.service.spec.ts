@@ -79,6 +79,22 @@ describe('attestImplementer', () => {
 		]);
 	});
 
+	it('refuses the Git author of the delivering commit, which every agent here shares', () => {
+		const result = attestImplementer(PROPOSAL, 'S2', {
+			...attestation,
+			implementer: 'Cartago',
+			deliveredBy: ['Cartago', 'owner@example.test'],
+		});
+		expect(result.ok).toBe(false);
+		expect(result.ok ? '' : result.reason).toContain('Git author');
+		expect(
+			attestImplementer(PROPOSAL, 'S2', {
+				...attestation,
+				deliveredBy: ['Cartago'],
+			}).ok,
+		).toBe(true);
+	});
+
 	it('refuses a slice Git or a submitter already names', () => {
 		const result = attestImplementer(PROPOSAL, 'S1', attestation);
 		expect(result).toMatchObject({ ok: false });
