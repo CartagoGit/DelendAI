@@ -69,15 +69,35 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S2b — The orchestrator compiles the manifest from the task
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts`
+  - `plugins/agent-orchestrator/src/lib/contracts/interfaces/delegation-manifest.interface.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
+  - `plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts`
+  - `plugins/agent-orchestrator/src/index.ts`
   - `plugins/agent-orchestrator/package.json`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/delegation-manifest.service.spec.ts`
+  - `packages/core/src/runtime/index.ts`
+  - `packages/context-compiler/package.json`
+  - `packages/context-compiler/README.md`
+  - `tools/scripts/release/release-plan.ts`
+  - `bun.lock`
 - **Gate**: type
-- decision (2026-10-14): the orchestrator reads the task's context through ports it is given (the files `context-for-change` names, the facts `memory` holds, the effective configuration), wired from those plugins' public entries only when they are loaded. Each source's items are put into the file artifact store of S2a and compiled into one manifest, whose id the `IDelegatedTask` carries. With no source loaded, the step goes as a manifest with no references rather than as an instruction only, and says which sources were missing.
+- decision (2026-10-14): the orchestrator reads the task's context through sources it is given, kept in the file artifact store of S2a and compiled into one manifest whose id the `IDelegatedTask` carries. `context-compiler` was private, and a published plugin may not depend on a private package (x00530), so it is published, after `@delendai/state` in the publish order.
 - acceptance:
-  - Each delegated step gets a manifest built with `context-compiler`: the files `context-for-change` names for the task, the facts `memory` holds for this project, and the effective project configuration. References are by hash, so the subagent expands only what it opens.
-  - A step whose manifest would exceed its input budget is split or escalated, not sent whole.
+  - Each step `_dispatch` runs is delegated with a manifest compiled from the files its task names (read inside the workspace), the hash of the orchestration policy in force, and the policy's per-subagent token budget as its input budget; the same task gives the same manifest.
+  - A step whose referenced context is over its input budget is not sent: it fails, so the orchestrator splits or escalates it.
+  - The delegation is built on the first dispatch, so registering the plugin costs nothing.
+
+### S2c — The facts memory holds and context-for-change's files join the manifest
+
+- **Status**: pending
+- **Files**:
+  - `plugins/agent-orchestrator/src/index.ts`
+- **Gate**: type
+- acceptance:
+  - When `memory` and `context-for-change` are loaded, their public entries are sources of the manifest: the facts memory holds for the project and the files context-for-change names for the task.
 
 ### S3 — A host adapter turns the manifest into a bounded prompt
 
