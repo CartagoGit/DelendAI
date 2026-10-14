@@ -2,14 +2,14 @@
 id: x00888
 title: "A consumer project starts clean: what its own setup does is reported for it, and what it cannot change does not degrade it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 73873464-02e3-46b6-8cad-f5e1deedf50a
-last-correlation-id: 73873464-02e3-46b6-8cad-f5e1deedf50a
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T11:06:19.843Z
+last-transition-id: 0b39865e-1e7e-4d47-b91c-0ca1b72e799d
+last-correlation-id: 0b39865e-1e7e-4d47-b91c-0ca1b72e799d
+last-transition-from: review
+last-transition-at: 2026-10-14T12:29:12.718Z
 shipped-in:
   - "d1f3561f2bde55c3669210cea310cded45e96d33"
 ---
@@ -79,7 +79,7 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 
 ### S3 — An absent optional CLI is a notice, not a degraded start
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/forge-cli-missing.helper.ts`
   - `packages/core/src/lib/contracts/constants/forge-cli-missing.constant.ts`
@@ -91,8 +91,10 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - acceptance:
   - When the forge CLI is not installed, the forge and governance phases report a notice naming what is not checked and how to enable it. The reconciliation is not DEGRADED for it. A forge that is installed but fails stays a blocker.
 - shipped-in: `deec84f26d8a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d1f3561f2bde, validate exit 0, tests 13/13 — Delivery attribution: this proposal landed in one unit and one pull request, and d1f3561f2bde (PR #1055) is the merge whose first-parent diff touches all of each slice's declared files, so that is the commit the guard names throughout. The branch commits that carry each slice are the substantive work; the refactor 1fec9a43 changes nothing declared for S1, S2, S4, S5 and S6. Gates: `bun x vitest run --root packages/core` over managed-lazy-demotion.spec.ts, managed-lazy-local-catalog.service.spec.ts, renderer.spec.ts, forge-cli-missing.spec.ts and policy-alignment.migrator.spec.ts -> 5 files / 30 tests, exit 0; `bun x vitest run --root packages/cli src/lib/guard-hooks-autoinstall.service.spec.ts` -> 1 file / 15 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. I read the reconcile-forge wiring myself because the criterion turns on which severity the missing-CLI path produces, and that is decided at the call site rather than in the helper.
 
 ### S4 — A configuration an older delendai wrote follows the current policy
 
