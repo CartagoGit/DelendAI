@@ -151,6 +151,7 @@ const EXPECTED_COMMANDS = [
 	'proposals plan',
 	'plugin search',
 	'plugin add',
+	'plugin doctor',
 	'project-plugin create',
 	'project-plugin inspect',
 	'project-plugin repair',

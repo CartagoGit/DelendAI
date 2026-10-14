@@ -11,7 +11,10 @@
  */
 import {
 	buildPluginAddRecipe,
+	DEFAULT_CORE_PATHS,
+	readPluginAvailabilities,
 	type IPluginAddRecipe,
+	type IPluginAvailabilityRecord,
 } from '@delendai/core/cli';
 
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
@@ -83,8 +86,45 @@ const pluginAddCommand: ICliCommand = {
 	},
 };
 
+/** States in which a plugin's tools can be used as they are. */
+const USABLE = new Set(['library', 'registered', 'verified']);
+
+const formatAvailability = (
+	records: readonly IPluginAvailabilityRecord[],
+): string => {
+	if (records.length === 0) {
+		return 'No plugin has registered in this workspace yet: start delendai here, then run this again.\n';
+	}
+	const lines = records.map((record) => {
+		const mark = USABLE.has(record.state) ? '*' : '!';
+		const missing =
+			record.missing === undefined ? '' : `: ${record.missing}`;
+		const fix =
+			record.fix === undefined ? '' : `\n      fix: ${record.fix}`;
+		return `  ${mark} ${record.plugin} [${record.state}]${missing} (read ${record.readAt})${fix}`;
+	});
+	return `${lines.join('\n')}\n`;
+};
+
+const pluginDoctorCommand: ICliCommand = {
+	name: 'plugin doctor',
+	summary:
+		'Whether each plugin can work in this workspace, as it last said when it registered: its state, what is missing and the fix.',
+	async run(_args, ctx) {
+		const records = await readPluginAvailabilities(
+			ctx.cwd,
+			ctx.globals.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+		);
+		return data({
+			plugins: records,
+			formatted: formatAvailability(records),
+		});
+	},
+};
+
 export const pluginsCommands: readonly ICliCommand[] = [
 	pluginSearchCommand,
 	pluginAddCommand,
+	pluginDoctorCommand,
 	...projectPluginCommands,
 ];
