@@ -89,7 +89,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S3 — A worked plugin in another language
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/examples/python-plugin/README.md`
   - `docs/delendai/examples/python-plugin/server.py`
@@ -101,8 +101,10 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - The example's README walks through a plugin written as a small Python MCP server (standard library only) with its manifest and the configuration that declares it, beside the existing TypeScript example.
   - An end-to-end spec reads the example's own configuration, judges its manifest, boots its server with `python3` and gets the tool's answer through the external-mcps registry. It needs the registry to open the MCP session first, which x00897 adds.
 - shipped-in: `26022f4d8975`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at e86c98f8c35d, validate exit 0, tests 60/60 — Reviewed f00761 S3 on the cross-language worked example. The Python plugin example is documented and configured beside its manifest, and the end-to-end external-mcps test boots it with python3 and gets the expected tool answer. The focused suite passed 60/60.
 
 ### S4 — A manifest plugin from outside delendai ships under its own package name
 
