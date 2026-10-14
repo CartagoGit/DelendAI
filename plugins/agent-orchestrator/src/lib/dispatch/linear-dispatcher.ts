@@ -162,14 +162,8 @@ export class LinearDispatcher {
 		// Orchestrator-only or verify-only steps don't touch subagents —
 		// they're the orchestrator's own budget spend, recorded below.
 		if (step.kind === 'orchestrate' || step.kind === 'verify') {
-			// We don't have a subagent budget for orchestrator work, but
-			// we still record a single orchestrator tick so the budget
-			// surface stays honest. Tokens for orchestrator work are
-			// reported via the orchestrator itself; the dispatcher here
-			// records 0 for the step (the host logs them at the tool
-			// boundary).
-			// Without a counter from the host the spend is unknown: 0, and
-			// the outcome says so, never one "token" per step.
+			// The orchestrator's own spend: what the host's counter says, or
+			// 0 and `unknown` in the outcome, never one "token" per step.
 			this.#budget.recordOrchestrator(this.#orchestratorTokens?.() ?? 0);
 			return {
 				order: step.order,
