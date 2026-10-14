@@ -66,26 +66,30 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
   - `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `plugins/proposals/src/lib/services/review-attribution.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-review-sent-back.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/review-repo.ts`
 - **Gate**: type
+- decision: the review ends when no slice of the proposal waits for a verdict (`reviewStanding`), whoever judged each and whenever its pack lands. That is the one moment every path shares — the CLI, the `work` tool, an MCP host — where a publication-time hook would have had to be wired into each.
 - acceptance:
-  - A change request records its finding on the slice and leaves the proposal in review while its reviewer goes on.
-  - When the pack that judged it is published: every slice approved → `done` (as today); any slice sent back → `ready`, the findings on each slice that was sent back, for the next implementer to take; some slices not judged → the proposal stays in `review`, waiting for the rest.
-  - `review → ready` is a transition the glossary admits; `review → in-progress` stays for an implementer who takes the proposal back.
+  - A change request records its finding on the slice, which reads `pending` (work to do again), and leaves the proposal in review while any slice still waits.
+  - Once none waits: every slice approved → `done` (as before; a retired slice counts as reviewed); any slice sent back → `ready`, the finding on each slice sent back, for the next implementer to take (`review → ready` is admitted; `review → in-progress` stays for an implementer taking it back).
 
 ### S4 — A review that stopped half way reads waiting again
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
-  - `plugins/proposals/src/lib/services/review-state.service.ts`
   - `plugins/proposals/tests/src/lib/services/review-state.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - A claim given back, lapsed, or whose pack was retired leaves the proposal `review` (waiting) at once, and the review queue offers the slices nobody judged; the slices judged before it stopped keep their verdicts.
+  - A claim given back (or lapsed, or whose pack was retired) holds nothing, so the proposal reads `review` at once, through S1; the slices judged before keep their verdicts, and the review queue offers the rest.
 
 ## acceptance
 
