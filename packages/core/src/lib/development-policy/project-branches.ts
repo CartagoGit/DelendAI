@@ -18,6 +18,7 @@ import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.int
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
 import { liveUnitsOfProposal } from '../work-units/proposal-branch.service';
+import { worktreeSession } from '../work-units/worktree-agent.service';
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -234,7 +235,12 @@ export const unitBranchOf = async (
  */
 export const callerUnitCheckout = async (
 	root: string,
-	wanted: { readonly proposal: string; readonly agent?: string | undefined },
+	wanted: {
+		readonly proposal: string;
+		readonly agent?: string | undefined;
+		/** The caller's session: a unit another session holds is not its. */
+		readonly session?: string | undefined;
+	},
 ): Promise<ICallerUnit> => {
 	const policy = await readPolicyOrNone(root);
 	if (policy === undefined) return { status: 'none' };
@@ -243,11 +249,20 @@ export const callerUnitCheckout = async (
 	}
 	const listing = worktreeListing(root);
 	if (listing === undefined) return { status: 'none' };
+	// Two instances of one model share its name: the unit a sibling holds
+	// is not the caller's, and a verdict written there is in the wrong pack.
 	const units = liveUnitsOfProposal(
 		policy.branches.workRefTemplate,
 		listing,
 		wanted,
-	);
+	).filter((unit) => {
+		const held = worktreeSession(unit.path);
+		return (
+			wanted.session === undefined ||
+			held === undefined ||
+			held === wanted.session
+		);
+	});
 	const [only, ...others] = units;
 	if (only === undefined) return { status: 'none' };
 	return others.length === 0
