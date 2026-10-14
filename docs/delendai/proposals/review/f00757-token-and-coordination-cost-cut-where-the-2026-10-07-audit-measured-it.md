@@ -13,6 +13,7 @@ last-transition-at: 2026-10-11T13:34:42.254Z
 shipped-in:
   - "dd039031e185"
   - "cc1aae7f4aea"
+  - "f894a0987be88a976715426daa6de9ee33121ec5"
 ---
 
 # f00757 — Token and coordination cost cut where the 2026-10-07 audit measured it
@@ -35,7 +36,7 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - global_gate: none
 
 ### S1 — The proposals plugin loads its tools in capability packs
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/surface/packs.ts`, `plugins/proposals/src/lib/surface/disclosure.ts`, `plugins/proposals/src/lib/contracts/constants/proposals-tool-pack.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/proposals-pack.interface.ts`, `plugins/proposals/tests/src/lib/surface/packs.spec.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: `npx vitest run --project proposals plugins/proposals/tests/src/lib/surface`
 - acceptance:
@@ -46,9 +47,11 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - Correction 2026-10-07, measured before building: the 79,022 B is the `native` surface. Under the runtime's default (`managed`, adaptive) the bootstrap is 6,251 B, and the first proposals call lists only the 8 tools `disclosure.ts` marks essential — 16,999 B (`TOKEN-BUDGETS.md`, dogfood row; the MCP log shows the host discovering 15 tools after proposals activates, 7 core + 8). Every other proposals tool is already reached through the router without being listed. So packs save a read-only managed session about 12 KB (close_slice, create_proposal, proposal_adopt and agent_lock among the essentials), and the full 65 KB only for hosts that run `native`. Narrower and cheaper first step: make the essential set depend on what the session does (read, author, review, work) instead of one fixed eight, through the existing `disclosure` seam, before any new pack concept in core.
 
 - Delivered, on the narrower design (no new concept in core): the five packs exist as a typed map (`packs.ts`: every registration id in exactly one pack, compared with the generated catalog), and the fixed eight essentials became four: `auto_work`, `get_proposal_workflow`, `compact_status`, `continue_proposal` (the start verb plus the read pack). `create_proposal`, `proposal_adopt`, `close_slice` and `agent_lock` are contextual: still authorized and callable through the router and named by `auto_work` and `continue_proposal` as the exact next action, but no longer listed. No schema changed. Measured with `tokens:dashboard:generate` under the managed surface, proposals row: 8 tools / 16,999 B before, 4 tools / 4,835 B after, 12,164 B less on every first proposals call (swarm and full presets: native manifest 169,240 -> 157,072 B and 198,612 -> 186,444 B). A spec lists the real server and proves a read-only session lists only read-pack tools plus the start verb, under 8,000 B, while a repair-pack tool (`state_health`) still answers through the router. Not built: an `activatePack` seam in core; the router already reaches every unlisted tool, so a pack activation would only list more schemas, and the remaining native-surface saving (79,022 B) belongs to hosts that run `native` without progressive disclosure.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `8874b22913bc`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at f894a0987be8, validate exit 0, tests 10/10; acceptance 2/2: (1) Read packs.ts and its constant at the delivery. PROPOSALS_TOOL_PACK maps every registration id to exactly one of the five packs the criterion names - read, aut… (2) The measurement is made by the spec rather than only written down, which is the stronger form: a read-only session is listed and its tools/list size asserted t… — Delivery attribution: this proposal landed in one unit and one pull request, and f894a0987be8 is the merge whose first-parent diff touches this slice's declared files, so that is the commit the guard names; the branch commits (8874b229 for S1, 944f1ae9 for S3, ff28bd06 for S4) carry the substantive work. Gates: `bun x vitest run --root plugins/proposals` over surface/packs.spec.ts and proposal-get-slices.spec.ts -> 2 files / 10 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. I read the spec's own byte assertions rather than trusting the recorded table, because the criterion asks for a measurement and a spec that asserts the ceiling is a measurement that cannot silently go stale.
 
 ### S2 — A publication carries its regenerated views in the same commit
 - **Status**: retired
