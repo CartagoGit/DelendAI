@@ -2,14 +2,14 @@
 id: f00543
 title: "Docker plugin as a tool (autodetected, low-risk)"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-15
-last-transition-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
-last-correlation-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T04:41:38.972Z
+last-transition-id: 11180e3a-acbf-4176-95b3-9d629ef52cbe
+last-correlation-id: 11180e3a-acbf-4176-95b3-9d629ef52cbe
+last-transition-from: review
+last-transition-at: 2026-10-14T10:45:37.875Z
 shipped-in:
   - "5b6b9e1e2d0c00840393a25137fe1b78f8479c8e"
 ---
@@ -81,7 +81,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S3 — Compose: the services, and up, down, logs, ps, exec
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `plugins/container/src/lib/compose/compose-parser.service.ts`
   - `plugins/container/src/lib/compose/compose-parser.service.spec.ts`
@@ -92,8 +92,10 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - The parser lists services with their image or build context, ports, environment variable names (never values) and mounts.
   - `container_compose` covers `services`, `ps`, `logs`, `up`, `down` and `exec`. `up` starts one named service unless `all: true`, refuses a service the file does not declare, and checks every service it would start for host-reaching risks.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — `container_compose up` does not enforce the full host-reaching risk contract promised by this slice. In plugins/container/src/lib/contracts/interfaces/docker-command.interface.ts, `IComposeService` only carries mounts, and in plugins/container/src/lib/compose/compose-parser.service.ts the parser never reads `privileged`, `network_mode`, `pid`, or `ipc`. Then plugins/container/src/lib/tools/container-docker.tool.ts computes compose `up` risks from `containerRisks({ mounts: service.mounts })` only. A compose service that is privileged or uses `network_mode: host`, `pid: host`, or `ipc: host` can therefore start with `confirm: true` and no `confirmRisk: true`, which violates the second acceptance criterion. Please extend the compose model/parser plus the `up` risk check and add coverage for those cases.
 
 ### S4 — Networks and volumes
 
