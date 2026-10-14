@@ -34,10 +34,10 @@
 
 ## Tests
 
-- plugins/browser/src/availability.spec.ts
 - plugins/browser/src/lib/page/browser-page.tool.spec.ts
 - plugins/browser/src/lib/page/playwright-probe.spec.ts
 - plugins/browser/src/lib/tools/browser-a11y.tool.spec.ts
+- plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts
 
 ## Do not
 
