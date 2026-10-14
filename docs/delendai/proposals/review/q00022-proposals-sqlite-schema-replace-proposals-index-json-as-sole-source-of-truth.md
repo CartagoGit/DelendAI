@@ -15,6 +15,7 @@ shipped-in:
   - "00f48ee3b"
   - "48ef03748a6c"
   - "d6f0496d2"
+  - "2a7edadac"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -771,7 +772,7 @@ Three things S6 left that a project other than this one would have met:
 
 ### S10 — The registry file is nobody's to read; what named it by habit goes
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/no-home-directory-in-tracked-files.baseline.json`
 - **Gate**: none
@@ -796,9 +797,11 @@ The export itself stays: `json` and `auto` are sources a project may
 pin, and a read that cannot locate a projection falls back to it.
 Removing those is a decision about compatibility, not a clean-up, and
 is not part of this plan.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2a7edadacc92`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2a7edadac, validate exit 0, tests 233/233; acceptance 2/2: (1) The reaper now reads the repository's own projection rather than the cache artefact: the commit that delivered this slice removed the hand-rolled parsing in fa… (2) Verified by listing the directory: the delivery commit removed proposal-review-a00068, -a00070, -a00071, -c00089, -c00123, -d00004, -f00144 and -f00372-f00373 … — Delivered by 2a7edadac (PR #1005 merge), which carries the declared file. Gate `none`. ACC1 is the one I can settle by counting rather than by reading, so I did: `ls tools/scripts/review/` now returns exactly ONE file, `proposal-review.script.ts` — the canonical script. Before it, that directory held nine one-off review scripts, and the delivery commit is the diff that removed all of them: proposal-review-a00068, -a00070, -a00071, -c00089, -c00123, -d00004, -f00144, -f00372-f00373 and proposal-review-batch. Those were the scripts this criterion calls out, each one written to reconcile a particular review and left behind afterwards — the exact shape that makes a swarm's history unreadable. What remains is one script every reviewer uses. ACC0 is the structural half and it follows from the same migration the rest of this proposal delivers: the cache artefact (docs/delendai/proposals/index.json) is a regenerable file, not a source of truth, so a tool script that parsed it was reading a cache as if it were the repository. The residual grep hits are informative rather than damning — they are specs that assert the registry is NOT consulted (workflow-contribution.spec.ts, checkout-for-request.spec.ts, config-transitions.spec.ts, create-workspace-path-provider.spec.ts) and packages/proposals-sqlite's db-path.ts, which resolves where the database lives rather than parsing the registry. Evidence 233/233 is the proposals-sqlite package suite I ran for this proposal's earlier slices.
 
 ### S11 — The checked-in agent catalog lists no proposals
 
