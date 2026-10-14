@@ -44,6 +44,8 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 13:40 F3 two empty queue units, `delendai-queue/review/batch-all-g4/close-approved-202610141129` and `…141131` (11:25, no commit beyond develop); at 13:48 neither is on the forge: the closer's next pass swept them, as designed. No fix.
   - 13:40 F4 approvals look unchecked: every gemini-3.8-flash verdict on x00893 S1–S4 reads only "all N tests pass and typecheck passes". `approve` does demand evidence for every acceptance line of the slice (`evidence.acceptanceCriteria`), but `approvalNote` writes only the commit and the test count, so the per-line evidence a reviewer gave never reaches the line a person reads. Fixed by S2.
   - 13:55 F5 a reviewer runs the whole suite for one slice: `minimax-m3.1-flash-preview` g4 runs `test:coverage` (`vitest run --coverage`, every project) to review one slice, at a machine load of 21. The queue told reviewers only to "run the slice gate" and asked for `validateExitCode: 0`, so the biggest command reads as the safe one; and its example approval left out `acceptanceCriteria`, which approve requires. Fixed by S4.
+  - 14:29 F6 a claim outlives its reviewer: `qwen3-flash` claimed x00885 at 12:31 (unit `qwen3-flash/review/batch-all-g5/verdicts`) and at 14:29 had recorded nothing, its other unit quiet since 12:52; a review claim lasted four hours unless its unit had left the forge, so x00885 was closed to every other reviewer while the unit sat there. Fixed by S5.
+  - 14:29 F7 one instance's claim lands in its sibling's unit: `minimax-m3.1-flash-preview` released x00887 at 12:39 because "this session resolved to an existing unit (batch-all-g1) held by a sibling instance". Two instances of one model share its name (F2), and the second's call resolved to the first's unit before it had its own. Open: to trace through the review tools' unit resolution.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
@@ -65,6 +67,17 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - A slice's next action tells the reviewer to run its gate and the slice's own spec files, named, and not the whole suite, which CI ran on the delivering commit.
   - Its example approval carries `acceptanceCriteria`, one entry per acceptance item, as approve requires.
+
+### S5 — A review claim lapses when its reviewer's unit has gone quiet
+
+- **Status**: in-progress
+- **Files**:
+  - `plugins/proposals/src/lib/services/review-reservation.service.ts`
+  - `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`
+  - `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`
+- **Gate**: type
+- acceptance:
+  - Past the 15-minute grace, a claim passes to the next reviewer when its holder's unit has left the forge, as before, or when that unit's tip has not moved for an hour; a reviewer at work commits a verdict per slice. The four-hour lapse stays as the outer bound.
 
 ### S3 — The project declares who works in it
 
