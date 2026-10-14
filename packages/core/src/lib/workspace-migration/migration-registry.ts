@@ -62,6 +62,7 @@ import { createPackageManifestMigrator } from './migrators/package-manifest.migr
 import { createVscodeMigrator } from './migrators/vscode.migrator';
 import { createGitignoreMigrator } from './migrators/gitignore.migrator';
 import { createStateDirMigrator } from './migrators/state-dir.migrator';
+import { createStrayMemberCacheMigrator } from './migrators/stray-member-cache.migrator';
 import {
 	DELENDAI_TO_DELENDAI_V1_ID,
 	delendaiToDelendAIV1,
@@ -108,6 +109,8 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	createVscodeMigrator(),
 	// The state directory an older delendai kept at `.delendai/state`.
 	createStateDirMigrator(),
+	// The caches a server wrote inside a workspace member.
+	createStrayMemberCacheMigrator(),
 	// Last, and deliberately so: it reads the config file the earlier
 	// migrators may still be renaming, and it is the only entry that
 	// PROPOSES something rather than renaming what is already there.
