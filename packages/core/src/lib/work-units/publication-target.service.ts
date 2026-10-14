@@ -152,6 +152,16 @@ export const proposalInProgress = (
 ): boolean =>
 	IN_PROGRESS_FOLDER.test(proposalFileAt(root, proposal, ref) ?? '');
 
+/** The ids of the proposals a tree holds in progress, from its paths. */
+export const inProgressProposals = (paths: readonly string[]): string[] =>
+	paths.flatMap((path) => {
+		if (!IN_PROGRESS_FOLDER.test(path)) return [];
+		const id = /^([a-z]\d{5})-[^/]*\.md$/u.exec(
+			path.split('/').pop() ?? '',
+		)?.[1];
+		return id === undefined ? [] : [id];
+	});
+
 export const proposalSliceCount = (
 	root: string,
 	proposal: string,

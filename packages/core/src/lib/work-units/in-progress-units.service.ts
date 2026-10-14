@@ -16,15 +16,6 @@ import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 const bare = (prefix: string): string =>
 	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
-/** The proposal ids a tree holds under `in-progress/`. */
-export const inProgressProposals = (paths: readonly string[]): string[] =>
-	paths.flatMap((path) => {
-		const match = /\/proposals\/in-progress\/([a-z]\d{5})-[^/]*\.md$/u.exec(
-			path,
-		);
-		return match?.[1] === undefined ? [] : [match[1]];
-	});
-
 /**
  * The invariant, from the proposals in progress on the integration branch
  * and every branch name there is, here and on the forge.

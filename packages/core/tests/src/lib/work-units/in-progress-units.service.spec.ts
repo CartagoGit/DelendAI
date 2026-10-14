@@ -5,10 +5,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import {
-	inProgressProposals,
-	strandedProposalsInvariant,
-} from '@delendai/core/lib/work-units/in-progress-units.service';
+import { strandedProposalsInvariant } from '@delendai/core/lib/work-units/in-progress-units.service';
+import { inProgressProposals } from '@delendai/core/lib/work-units/publication-target.service';
 
 const policy = resolveDevelopmentPolicy({
 	development: {

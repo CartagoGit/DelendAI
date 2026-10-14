@@ -36,13 +36,13 @@ import {
 import { idleUnitsInvariant } from './idle-units.service';
 import { profileBranchesInvariant } from './profile-branches.service';
 import { strayRefsInvariant } from './stray-refs.service';
-import {
-	inProgressProposals,
-	strandedProposalsInvariant,
-} from './in-progress-units.service';
+import { strandedProposalsInvariant } from './in-progress-units.service';
 import { unitsOnForgeInvariant } from './units-on-forge.service';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
-import { proposalInProgress } from './publication-target.service';
+import {
+	inProgressProposals,
+	proposalInProgress,
+} from './publication-target.service';
 import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
