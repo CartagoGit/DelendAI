@@ -2,14 +2,14 @@
 id: x00885
 title: "The first boot sets a project up, a changed configuration brings it in line, and any server name works"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-12
-last-transition-id: 2edde023-7b55-41f9-aa09-1736b4fd71e5
-last-correlation-id: 2edde023-7b55-41f9-aa09-1736b4fd71e5
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T04:08:20.808Z
+last-transition-id: 3456c354-5dee-46fd-aca2-b054ca2e32e1
+last-correlation-id: 3456c354-5dee-46fd-aca2-b054ca2e32e1
+last-transition-from: review
+last-transition-at: 2026-10-14T12:43:19.335Z
 shipped-in:
   - "1876ce52b3c04c121d945f9318bffb0b00af1aa4"
 ---
@@ -185,7 +185,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S6 — The agents and their tools follow the project, including its own plugins
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
   - `packages/core/src/lib/scaffold/plugin-agents-report.ts`
@@ -198,9 +198,11 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - The agents created and the tools each is granted come from the consuming project's resolved configuration: the plugins it activates, including plugins the project ships itself and delendai does not. They no longer come from a fixed list written for this repository.
   - A plugin may declare the agent roles it contributes, or the tools an existing role needs. Activating it adds those roles or grants at the next start; deactivating it removes them.
   - The end-to-end spec runs in a throwaway consumer project with a local plugin (not this repository, whose dogfood setup hides the defect). It shows the plugin's tools granted to the agents that use them.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e22de8ba84d4`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 1876ce52b3c0, validate exit 0, tests 6/6 — S6: plugin-contributed agent roles/grants driven by project config incl. local plugins; assemble wires reportPluginAgents. 6/6 spec + e2e local-plugin scenario green.
 
 ## acceptance
 
