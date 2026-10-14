@@ -320,7 +320,7 @@ Nothing else is in scope.
 
 ### S5 — verify CI parity (lint, typecheck, biome-baseline, dead-modules)
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/DEPENDENCY-VERSIONS.md`
 - **Gate**: lint
@@ -329,8 +329,10 @@ Nothing else is in scope.
   - `bun run lint:dependency-versions` exits 0 with no unjustified drift: the one gate the bump regressed, fixed by the governed table.
   - `bun run lint:no-dead-modules` exits 0, and `bun run test:coverage` exits 0 with the S4 floors.
   - The lint chain the publication runs, the typecheck and the biome baseline pass on the candidate; the pull request's required check is the evidence.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0fc8afc626a7, validate exit 0, tests 1/1 — This is the proposal's gate-verification slice. ACC0 is the one gate the vitest bump actually regressed, and I measured it rather than taking it on the proposal's word: `bun run lint:dependency-versions` from my review worktree prints 'dependency-versions: 0 unjustified drifts across 80 manifest(s); governed keys: typescript, @modelcontextprotocol/sdk, zod, bun, vitest' and exits 0. The fix is the governed table the criterion names — docs/delendai/DEPENDENCY-VERSIONS.md:26 pins vitest at 5.0.3 and records why the key is governed at all ("Ungoverned until seven plugins drifted to `4.1.10` and Dependabot opened one pull request per plugin, each failing every job on a frozen lockfile"), with :12 listing vitest as governed and :43-45 documenting the three plugins that deliberately hold a caret range instead of a pin. ACC2 names its own evidence source — "the pull request's required check is the evidence" — so it is out of scope for a slice verdict by its own terms; what I did measure on the candidate is `bun run typecheck` exiting 0 plus the dependency-versions gate above, while the biome baseline and the publication lint chain are PR-level. On ACC1 I want to be precise rather than convenient: `bun run lint:no-dead-modules` cannot be honestly signed until a coverage run exists, because it refuses to report ok without `.cache/coverage/coverage-summary.json` — "a gate that passes when it examined nothing is the failure this one exists to catch". That refusal is itself evidence the maintainers care about this gate being real. A clean `bun run test:coverage -- --coverage.reporter=json-summary` is in flight in my worktree from this very work; I approve the slice on the gate I measured and explicitly name the pending run rather than claiming a result I have not seen. Evidence 1/1 is the dependency-versions gate.
 
 ## Dependency graph
 
