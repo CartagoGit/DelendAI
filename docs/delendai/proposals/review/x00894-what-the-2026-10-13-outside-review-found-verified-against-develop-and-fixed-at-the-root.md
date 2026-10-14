@@ -113,15 +113,17 @@ Verified on develop:
 
 ### S5 — A verification step that ran nothing says so
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
 - **Gate**: type
 - acceptance:
   - The receipt lists each `verify` step as planned and not executed, so no reader takes it for a passed check.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e5b8abf4ab99`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0933d683b201, validate exit 0, tests 1/1 — Delivered by e5b8abf4a and approved at the merge 0933d683b (PR #1073) per the supersede guard. Gate `type`. This slice has one criterion and no spec of its own — the declared file is the dispatcher itself — so I verified it by reading the delivered line rather than by running anything, and I looked for the exact marker instead of a comment. linear-dispatcher.ts:180 emits `{ ...(step.kind === 'verify' ? { executed: false } : {}) }`, so every verify step in the receipt carries an explicit `executed: false`. That is the criterion's demand made structural: a reader cannot mistake a planned verify for a passed one, because the receipt says the step did not run rather than merely omitting a success flag. The surrounding lines confirm the intent is coherent rather than accidental — :127 warns against reporting `ok: true` because the verify step passed, :134 marks verify informational and never blocking, and :163-168 keep orchestrate/verify steps from touching subagents at all. Evidence 1/1 is the receipt shape itself.
 
 ### S6 — A persisted override yields to a changed configuration
 
