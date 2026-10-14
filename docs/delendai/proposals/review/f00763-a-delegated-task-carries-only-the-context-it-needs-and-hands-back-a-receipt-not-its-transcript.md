@@ -128,7 +128,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S3 — A host adapter turns the manifest into a bounded prompt
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/subagents/delegation-prompt.helper.ts`
   - `packages/core/tests/src/lib/subagents/delegation-prompt.helper.spec.ts`
@@ -141,8 +141,10 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - A host runtime that does not declare `enforcesManifest` receives, as the subagent's instruction, the manifest rendered as a bounded prompt: objective, the manifest and contract it may open (and through what), the tools it may use, its input budget, the checks it is done by and the receipt to return. Nothing from the parent conversation goes in.
   - A host that declares `enforcesManifest` gets the manifest as such, and every request says which of the two happened (`metadata.delegationPath`: `prompt` or `enforced`).
 - shipped-in: `75306cffdc66`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 11/11; acceptance 2/2: (1) delegation-prompt.helper.ts renders from the manifest alone: Objective (:17), Context: manifest + project contract (:18), tools clause (:25), Done when: accept… (2) host-subagent-runtime.interface.ts declares enforcesManifest; port-resolution.helper.ts:76-77 chooses path = prompted ? 'prompt' : 'enforced' and writes it int… — Judged at afe78b60d2e7 (PR #1132 merge). The prompt is rendered strictly from the IDelegatedTask fields — no session or parent-context interpolation exists in the helper — and the two delivery paths are distinguished by metadata.delegationPath exactly as the criterion words it. Gate 'type': typecheck exit 0 in my worktree. Specs: delegation-prompt.helper.spec.ts 2 pass / 0 fail; port-resolution.helper.spec.ts 11 pass / 0 fail.
 
 ### S4 — The subagent hands back a receipt
 
