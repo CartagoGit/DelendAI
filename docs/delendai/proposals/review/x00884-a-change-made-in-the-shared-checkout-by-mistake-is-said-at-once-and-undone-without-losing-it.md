@@ -10,6 +10,8 @@ last-transition-id: 41dba1b1-fa8d-4f10-abd8-41f9ed3ad477
 last-correlation-id: 41dba1b1-fa8d-4f10-abd8-41f9ed3ad477
 last-transition-from: in-progress
 last-transition-at: 2026-10-12T23:24:05.322Z
+shipped-in:
+  - "c3d0794f1a6f"
 ---
 
 # x00884 — A change made in the shared checkout by mistake is said at once, and undone without losing it
@@ -49,7 +51,7 @@ are intelligent and broke it; imagine a careless model."
 
 ### S1 — The shared checkout says so the moment its index changes
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/guard-hooks/guard-hook-block.helper.ts`
   - `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`
@@ -62,8 +64,10 @@ are intelligent and broke it; imagine a careless model."
 - acceptance:
   - A `post-index-change` hook, installed with the other guarded hooks, asks the guard only in the shared checkout and only when the index differs from HEAD; it cannot be re-entered by the guard's own git calls and never fails the command that wrote the index.
   - To an agent (or an actor a pinned checkout takes for one) the guard says how many paths changed, where, that the `cd` into the unit did not happen, and the command that undoes it. A person, another branch, a linked worktree, and an index that only follows the integration branch's tip get nothing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c3d0794f1a6f, validate exit 0, tests 4/4 — Approving c3d0794f1a6f, the commit the supersede guard names — the merge (PR #1040) where all six declared files land together; the slice's own commit e50a508569 ("fix(guard): a change written in the shared checkout by mistake is said at once, and undone without losing it") touched 0 of them on its own. I judged the behaviour from what git actually runs, because a hook's correctness is a property of the installed file. All six declared files exist in the tree. Gate `type`: `bun run typecheck` from my worktree exits 0. ACC1, against `.git/hooks/post-index-change` as installed, gates on one conjunction: `-z "${DELENDAI_INDEX_GUARD:-}"` (re-entrancy — DELENDAI_INDEX_GUARD=1 is exported BEFORE the CLI is invoked, so the guard's own git calls cannot re-enter it), `[ "$(git rev-parse --absolute-git-dir)" = "$(git rev-parse --path-format=absolute --git-common-dir)" ]` (shared checkout only — in a linked worktree the absolute git dir is .git/worktrees/<name>, differing from the common dir), and `! git diff --cached --quiet` (index differs from HEAD). It never fails the command that wrote the index: both invocation lines carry `|| true` (:25, :27). Registered alongside the other guarded hooks. ACC2's message is in shared-checkout-rescue.service.ts: it says the `cd` did not happen (:32-34), names the ref it kept, and gives the undo at :118 — `restore: git checkout ${keptAt} -- <path>   (or: git diff HEAD ${keptAt})` — with three refusal paths that each end "nothing was restored" (:68, :88, :100). The negatives in ACC2 need no separate mechanism: a linked worktree fails the equal-git-dir test, an index that only follows the integration tip fails the staged-diff test. Evidence: the rescue spec, 4 pass / 0 fail, 19 assertions.
 
 ### S2 — `work rescue` keeps what was written, then restores the checkout
 
