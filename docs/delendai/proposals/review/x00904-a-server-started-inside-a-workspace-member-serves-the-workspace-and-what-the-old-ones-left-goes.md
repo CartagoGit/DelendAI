@@ -2,10 +2,14 @@
 id: x00904
 title: "A server started inside a workspace member serves the workspace, and what the old ones left goes"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: 79cec78e-684a-40cd-bf04-c50e9b3660cd
+last-correlation-id: 79cec78e-684a-40cd-bf04-c50e9b3660cd
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T23:05:34.751Z
 ---
 
 # x00904 — A server started inside a workspace member serves the workspace, and what the old ones left goes
@@ -28,7 +32,7 @@ A delendai server started anywhere inside a configured workspace serves that wor
 
 ### S1 — The workspace is the nearest configured directory, and the stray caches go at start
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/workspace/nearest-configured-root.helper.ts`
   - `packages/core/src/lib/plugins/parse-cli-args.ts`
@@ -43,6 +47,9 @@ A delendai server started anywhere inside a configured workspace serves that wor
   - Without `--workspace`, the server serves the nearest directory up from its working directory that holds `delendai.config.json`, never leaving the repository; with none, its working directory, as before.
   - At start, the workspace migrations remove `<member>/.cache/delendai` from the directories one and two levels down when everything in it regenerates (runtime, evidence, results, logs, scratch), and `.cache` with it when it is left empty; a cache holding anything else, and a member with its own configuration, are left and reported. The run is journalled like every other migration.
   - Run against this repository it plans exactly one removal: `packages/core/.cache/delendai`.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `ee0dfe5f0546`
 
 ## acceptance
 
