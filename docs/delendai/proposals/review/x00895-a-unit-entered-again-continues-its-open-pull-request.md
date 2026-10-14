@@ -2,10 +2,14 @@
 id: x00895
 title: "a unit entered again continues its open pull request"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: ce9b7efe-65f2-4098-9217-41bf47e2f39b
+last-correlation-id: ce9b7efe-65f2-4098-9217-41bf47e2f39b
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T02:45:57.677Z
 ---
 
 # x00895 — a unit entered again continues its open pull request
@@ -29,7 +33,7 @@ On 2026-10-14 #1073 (x00894) had a conflict with develop. Its work branch had en
 
 ### S1 — A new work ref starts at its unit's unlanded publication
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/unit-start-point.service.ts`
   - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
@@ -38,3 +42,7 @@ On 2026-10-14 #1073 (x00894) had a conflict with develop. Its work branch had en
 - acceptance:
   - A work ref created by `work enter` whose publication branch exists on the integration remote, and is not an ancestor of the integration base, points at that publication's tip.
   - With no publication, or one that has landed, or a branch outside the work and publication prefixes, the work ref starts at the integration base, as before.
+- shipped-in: `875a9f27a588`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
