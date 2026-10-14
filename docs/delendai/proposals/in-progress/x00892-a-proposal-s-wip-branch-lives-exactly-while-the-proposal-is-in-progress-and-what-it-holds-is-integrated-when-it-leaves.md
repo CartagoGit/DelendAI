@@ -41,7 +41,7 @@ What x00891 (merged in #1066) does instead:
 
 ### S1 — In progress is the one state that keeps a wip branch
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
@@ -64,9 +64,8 @@ What x00891 (merged in #1066) does instead:
   - Later work on a proposal in progress continues on its branch, whatever kind or slice it is entered for, however the template spells `refs/heads/`. A second session of the same agent working in parallel gets its own unit instead of being refused.
 - shipped-in: `f40a7f7af195`
 - answer to the change request: the failing case ('names what a publication is missing instead of guessing') failed only under the reviewer's own `DELENDAI_AGENT_ID=gpt-5.4`, which the spec read as the agent; it passes as CI runs it, and since x00901 S11 every suite clears the agent's identity before its specs run, so it passes under any agent too (`DELENDAI_AGENT_ID=gpt-5.4 vitest run work-unit.service.spec.ts`: 51/51).
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — The focused gate for the work-unit branch/publication changes does not pass. Running typecheck plus the targeted work-unit specs left the suite at 117/118, with work-unit.service.spec.ts still failing the case 'names what a publication is missing instead of guessing'. Instead of refusing work publish --proposal=x00553 --slice=S1 with the missing --agent guidance, the current behavior now guesses a work ref and errors with 'resolve-work-ref: refs/heads/delendai/wip/gpt-5.4/implement/x00553-S1-g1/work does not exist'. That regression sits directly in the branch/publication path this slice changes, so I cannot accept S1 until the publish/enter path preserves the expected refusal behavior and the focused suite is green.
 
 ### S2 — Leaving in-progress integrates what the branch holds, then ends it
