@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-11T12:25:10.976Z
 shipped-in:
   - "e85866cead43cd3f39a2841bfec9f9d1d3f205a6"
+  - "dbdf8ce12c60f5a2dced786f1aa05795e3c40df3"
 ---
 
 # x00882 — Nothing is left stuck after a swarm, and one mechanism does each job
@@ -118,7 +119,7 @@ Delivered 2026-10-11. The request reopens its proposal when it is recorded today
 
 ### S4 — An approved proposal closes without a field nobody writes
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/shipped-in-from-slices.service.ts`
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
@@ -129,8 +130,10 @@ Delivered 2026-10-11. The request reopens its proposal when it is recorded today
   - Closing a proposal whose slices record what delivered them fills the proposal's `shipped-in` from them; the close is refused only when no slice says.
 
 Delivered 2026-10-11. An approval writes the field since x00692; x00539 was approved before, and every one of its slices names `eaf03fb5c`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at dbdf8ce12c60, validate exit 0, tests 17/17 — Delivery attribution: the behaviour landed as 7dfaf85bbdcd and dbdf8ce12c60 then moved the helper out of review-attribution.ts into its own shipped-in-from-slices.service.ts, repointing the import and the spec; dbdf8ce1 is the newest candidate that still changes this slice's declared files, so it is the commit the guard names and the one approved here. Both commits are the same proposal's own follow-up, not a superseding change. Gate none: `bun x vitest run --root plugins/proposals tests/src/lib/services/review-attribution.spec.ts` -> 1 file / 17 tests, exit 0, including the two cases this slice added. The move to a separate file is the SRP split lint:solid requires at 400 LOC and does not alter behaviour; I read both sides of it. Scope is the declared three files.
 
 ### S5 — A pack that cannot land is settled by the queue, and says so
 
