@@ -15,6 +15,8 @@ last-transition-id: 15403476-c6cc-4c0b-a66d-bc829fa72db4
 last-correlation-id: 15403476-c6cc-4c0b-a66d-bc829fa72db4
 last-transition-from: in-progress
 last-transition-at: 2026-10-11T22:04:27.507Z
+shipped-in:
+  - "9bbb94ffd"
 ---
 
 # f00548 — Own the style surface: who may define a selector, and what breaks when it changes
@@ -65,7 +67,7 @@ and leaves the two ratchets as the authorities they already are.
 
 ### S1 — A selector's owner, and who consumes it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/style-convention/package.json`
   - `plugins/style-convention/tsconfig.json`
@@ -86,8 +88,10 @@ and leaves the two ratchets as the authorities they already are.
 - acceptance:
   - The graph holds every selector with the files that define it and the surfaces that use it; a markup file's own `<style>` block defines selectors for that file.
   - The parser is the integrity ratchet's own, moved here and imported by the ratchet, so the two cannot disagree about nesting or comma lists; the ratchet's verdict is unchanged (415 used classes against 541 defined, its 22 specs green).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 9bbb94ffd, validate exit 0, tests 28/28 — Delivered by b8e94ffcf ("refactor(styles): one reading of what a stylesheet defines and what markup use…"), which carries 10 of the 14 declared files; the merge 9bbb94ffd (PR #1036) carries all 14. Gate `none`. This slice's whole purpose is to stop two implementations of "what does this stylesheet define" from drifting apart, so ACC1's second half is the claim that actually matters and I checked it by import rather than by reading the header: tools/scripts/lint/style-integrity.script.ts imports from `@delendai/style-convention/public` at three sites, i.e. the ratchet now consumes this slice's parser instead of keeping a private one — the "moved here and imported by the ratchet" structure, which is what makes disagreement impossible rather than merely unlikely. The behaviour that could have broken in the move is pinned by a test named for it: 'reads nesting and comma lists as the integrity ratchet does'. ACC0 has two: 'lists what each file defines' and 'knows a markup file defines what its own style block declares' — the latter being exactly the criterion's markup rule. And the ratchet itself runs green from my worktree: '✓ style-integrity: 65 scss + 100 astro files scanned; 430 used classes checked against 541 defined (7 waived, 4 built-in ignores)'. One number differs from the criterion and the reason is benign: it quotes 415 used classes, the tree now has 430 — the DEFINED count (541) is identical, and "used" legitimately grows as markup is added across the repo since the slice was written. The verdict is unchanged in the sense the criterion means: same defined surface, no new drift. Evidence 28/28 is the whole style-convention plugin suite (4 files, all green).
 
 ### S2 — `style_impact`: what a change to this selector reaches
 
