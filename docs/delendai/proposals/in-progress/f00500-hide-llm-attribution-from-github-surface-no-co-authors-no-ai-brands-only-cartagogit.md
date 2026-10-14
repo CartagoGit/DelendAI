@@ -2,14 +2,14 @@
 id: f00500
 title: "Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-03
-last-transition-id: f8dcecbd-035c-470d-97a3-2b485ba1bb06
-last-correlation-id: f8dcecbd-035c-470d-97a3-2b485ba1bb06
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T14:33:51.334Z
+last-transition-id: 09d2aaf2-6360-4df8-bf8b-e3071624f2a9
+last-correlation-id: 09d2aaf2-6360-4df8-bf8b-e3071624f2a9
+last-transition-from: review
+last-transition-at: 2026-10-14T11:18:09.204Z
 shipped-in:
   - "2a7c8c71e"
   - "329106a2b282ea0b97dc301c81e7c846baae4c79"
@@ -537,8 +537,20 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
   - "Crear `docs/delendai/wiki/git-history-rewrite.md` con el runbook: (1) backup `git clone --mirror` antes; (2) ejecutar el script en una rama temporal; (3) validar que `git log --all --format='%B' | grep -iE 'co-authored-by:.*(claude|minimax)' | wc -l` da 0; (4) coordinar con collaborators para force-push; (5) dejar refs originales en `refs/original/*` para forensic recovery durante 30 días; (6) nota en CHANGELOG."
   - "El script NO se ejecuta automáticamente como parte de `bun run validate` — es `none` gate, manual con check-in explícito del maintainer."
   - "`.mailmap` se commitea y se pushea independientemente del rewrite; el rewrite requiere un window de freeze y un announcement."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — One declared criterion is unmet, and only that one. ACC5 of the six asks the runbook to carry "(6) nota en CHANGELOG". docs/delendai/wiki/git-history-rewrite.md never mentions the changelog: `grep -ni changelog` returns nothing across the whole document, and the five-step runbook (0 preflight, 1 mirror backup, 2 apply, 3 verify, 4 force-push, 5 cleanup) has no CHANGELOG step anywhere. Nothing in the repo compensates: `grep -niE 'privacy|attribution|mailmap|f00500' CHANGELOG.md` is also empty.
+
+Where: docs/delendai/wiki/git-history-rewrite.md — the runbook is missing the CHANGELOG note the criterion names.
+
+Why it matters: the runbook is the thing a maintainer follows on the one occasion the rewrite is actually applied. It already announces the rewrite in Step 4.2/4.3 (tracking issue + contributors channel) and keeps `refs/original/*` and the mirror for 30 days (Step 5), but the durable, in-repo record of "history was rewritten" — the entry Keep a Changelog expects, and the one this repo's own header commits to — is the step that got dropped. An applied rewrite would be invisible to anyone reading CHANGELOG.md.
+
+How to reproduce: `grep -ni changelog docs/delendai/wiki/git-history-rewrite.md` → no output. Compare with `grep -ni 'changelog' docs/delendai/wiki/git-history-rewrite.md` after the fix → must name it.
+
+What must hold to approve: the runbook carries the CHANGELOG note, and `grep -ni changelog docs/delendai/wiki/git-history-rewrite.md` returns the step (a line telling the operator to add the rewrite to CHANGELOG.md, ideally in the same block as the Step 4 announcement). A pointer plus an explicit entry location is enough; nothing else in the slice needs to move.
+
+The other five criteria are met and I checked each: ACC1 the .mailmap is committed and independent of the rewrite (61 lines, canonical Cartago, and `git check-mailmap` collapses every identity the section enumerates — `GitHub Copilot <copilot@anthropic.com>`, `copilot <copilot@local>`, `copilot-minimax-m3 <copilot-minimax-m3>`, `MiniMax-M3 <noreply@MiniMax.local>` all resolve to Cartago; dependabot[bot] and the three Volarich identities correctly left uncollapsed). ACC2 the script exists and does more than the pseudo-code — `git bundle`/mirror backup, `applySubstitutions`, `neutraliseAgentBranches`, `rewriteFastExportStream`, `git filter-repo` with a `filter-branch --msg-filter` fallback, `.mailmap` applied in the same pass. ACC3 the spec covers the three-commit fixture and I ran it: 14 pass / 0 fail, 36 assertions, including 'does not touch a commit that was already clean'. ACC4 steps 1, 3.1, 4.1 and 5 are all present, and 4.1 is stronger than asked (`--force-with-lease`, not `--force`). ACC6 holds in its first clause: `.mailmap` is committed and was pushed independently of any rewrite, and the rewrite itself is correctly not wired into `bun run validate` — it appears in no package.json script and defaults to dry-run (`const apply = args.includes('--apply')` at :498, printing `dry run: no refs touched` at :531). Only the CHANGELOG half of ACC6 is missing.
 
 ## acceptance
 
