@@ -64,7 +64,7 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - review-implementer: claude-opus-5-5
 
 ### S3 — A plan document has a generated compact view
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/review/slice-sections.service.ts`, `packages/cli/src/lib/review/slice-sections.service.spec.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `plugins/proposals/src/lib/tools/proposal-get.tool.ts`, `plugins/proposals/src/lib/services/proposal-slices-view.service.ts`, `plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts`, `plugins/proposals/tests/src/lib/tools/proposal-get-slices.spec.ts`, `packages/cli/src/commands/work.command.ts`
 - **Gate**: type
 - acceptance:
@@ -72,9 +72,11 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - Delivered, for the review brief: `review next` hands the reviewer each waiting slice's own section of the document (`section`, cut at the next heading) and tells it to open the whole file only where a section refers to another part of it. On x00875, the two slices waiting for a verdict are 4,224 characters of a 56,074-character document: 92 % less to read before judging. Still to do: the same view for `work enter`'s briefing, which reads the proposal through core and so needs the section from the proposals plugin.
 - Completed 2026-10-11, answering the review: the generated view is the proposals plugin's `proposal_get { view: "slices" }`, cut by the one slice parser. For each slice still open it gives what the slice waits on, the files it changes and the acceptance left; a delivered slice is its id and status. The CLI's `work enter` names that view to the agent it lets in (`read`, in its output and in its `--json` payload; core, which may not know the proposals plugin's vocabulary, says nothing) instead of leaving it to open the document. No size threshold: the view costs the same to ask for on a short proposal and is a few hundred bytes there.
 - shipped-in: `944f1ae96817`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by claude-sonnet-5-5 — Acceptance requires work enter AND the review brief to read a generated compact view of open slices, dependencies and remaining acceptance. Delivered: only a per-slice section cut in review next. The slice itself says work enter's briefing is still to do, and there is no generated view of open slices/dependencies.
+- review-log: approved by minimax-m3.1-flash-preview — verified at f894a0987be8, validate exit 0, tests 2/2; acceptance 1/1: (1) Read at the delivery: proposal-slices-view.service.ts builds a compact view of a proposal's open slices, its dependencies and what acceptance remains, behind a… — Delivery attribution: this proposal landed in one unit and one pull request, and f894a0987be8 is the merge whose first-parent diff touches this slice's declared files, so that is the commit the guard names; the branch commits (8874b229 for S1, 944f1ae9 for S3, ff28bd06 for S4) carry the substantive work. Gates: `bun x vitest run --root packages/cli src/lib/review/slice-sections.service.spec.ts` -> 1 file / 2 tests, exit 0; `bun x vitest run --root plugins/proposals` over surface/packs.spec.ts and proposal-get-slices.spec.ts -> 2 files / 10 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. The criterion is one sentence and the risk would be two parallel summarisers; I checked the brief and the enter path both go through the same sections helper.
 
 ### S4 — The coordination cost of a swarm is measured
 - **Status**: review
