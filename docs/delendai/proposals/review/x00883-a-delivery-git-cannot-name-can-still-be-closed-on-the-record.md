@@ -84,7 +84,7 @@ between those two designs:
 
 ### S2 — Closing over an attestation is the owner's decision, taken on the record
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/closed-with-independent-approval.script.ts`
   - `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
@@ -93,8 +93,10 @@ between those two designs:
 - acceptance:
   - `closed-with-independent-approval` fails a pull request that closes a proposal with an attested slice, names the proposal and the slices, and passes once the pull request carries the owner's label (`delendai:owner-reconcile`).
   - A proposal Git names throughout is judged exactly as before.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7fce45c6e, validate exit 0, tests 2/2 — Delivered by 8bbc9885b and merged as 7fce45c6e (PR #1033), carrying both declared files. Gate `type`. This slice adds a gate, so the evidence that matters is the gate refusing, not the gate passing. I ran it: `bun run lint:closed-with-independent-approval` → '✓ closed-with-independent-approval: 0 proposal(s) closed here, each with an independent approval.' — green in the state it should be green in, on a tree where the closure at issue has already been reconciled. Its own spec (closed-with-independent-approval.script.spec.ts) exercises the failing branch against fixtures and passes, which is what makes the passing run meaningful rather than vacuous. ACC0's three parts are all present: the lint keys off the attested slice list (served by attestedSlices, itself covered by two passing tests — 'names the slices closed on an attestation' and 'is empty for a proposal Git names throughout'), and it names the proposal and the slices in its report rather than emitting a bare failure. The owner's label (`delendai:owner-reconcile`) is the documented escape, and the procedure text is explicit that applying it is the owner's call, not a reviewer's. ACC1 is pinned by name and is the one I would have otherwise skipped: 'attestedSlices > is empty for a proposal Git names throughout'. When no slice is unrecorded there is no attestation, so the gate falls back to exactly its previous rule — this slice adds no new judgement for a proposal whose history Git already accounts for.
 
 ### S3 — A publication nobody moves any more is reported
 
