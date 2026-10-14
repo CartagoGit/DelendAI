@@ -182,7 +182,7 @@ Delivered 2026-10-11. A release already records why, in its commit; showing that
 
 ### S5 — A pack of verdicts is titled by what it judged
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/publication-pull-request.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
@@ -192,8 +192,10 @@ Delivered 2026-10-11. A release already records why, in its commit; showing that
   - The pull request of a review pack is titled with the number of verdicts it carries and the proposals they are on, whatever its first commit was.
 
 Delivered 2026-10-11, the title (observation 17). The other half as first written, review units named only by the product, is not done and is taken out: a unit is found by what it is and not by its name, so the names the swarm invented (`packs-1011`, `review-pack-g2`) cost a reader and nothing else, while refusing a topic would change the entry the queue's own closing unit goes through.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 20ed91d2e3ee in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/core` over publication-pull-request.service.spec.ts, work-swarm-relations.spec.ts and slice-reservation.service.spec.ts -> 3 files / 35 tests, exit 0. Small and complete against the criterion; nothing else in the declared files changed.
 
 ### S6 — The swarm view does not report review packs as duplicates
 
