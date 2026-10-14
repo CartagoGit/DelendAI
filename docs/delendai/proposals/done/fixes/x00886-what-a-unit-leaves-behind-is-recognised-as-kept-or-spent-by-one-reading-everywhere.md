@@ -2,14 +2,14 @@
 id: x00886
 title: "What a unit leaves behind is recognised as kept or spent by one reading, everywhere"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
-last-correlation-id: cbe6dc23-379a-4c82-9057-e0c5fe333dca
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T04:05:37.876Z
+last-transition-id: feb9084c-2165-4936-8d85-df17f2326c0d
+last-correlation-id: feb9084c-2165-4936-8d85-df17f2326c0d
+last-transition-from: review
+last-transition-at: 2026-10-14T11:02:34.396Z
 shipped-in:
   - "708edad24396"
   - "facf2968c1e6d6915b7b86272ab1e01e5040ebb3"
@@ -131,7 +131,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S6 — Re-entering a published unit goes back to it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/work-unit-generation.service.ts`
   - `packages/core/src/lib/work-units/publication-target.service.ts`
@@ -139,8 +139,10 @@ The server log pasted with the same request showed two more departures: the chec
 - **Gate**: type
 - acceptance:
   - `work enter` without `--generation`, for an agent whose own generation of that proposal and slice has an open publication, is refused. The refusal gives the generation, the topic and the merge that resume it, whether or not the forge still holds a reservation. `--alongside` still opens a deliberate next generation.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 6ee9769b0194, validate exit 0, tests 51/51 — Approved S6: all 51 tests pass and typecheck passes with exit code 0
 
 ## acceptance
 
