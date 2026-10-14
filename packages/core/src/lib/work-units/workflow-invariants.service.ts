@@ -26,7 +26,7 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
+import { hookFreeEnvironment } from '../shared/hook-free-environment.helper';
 
 import {
 	hangingForgeWorkRefs,
@@ -54,26 +54,13 @@ export type {
 	IInvariantScope,
 } from '../contracts/interfaces/workflow-invariants.interface';
 
-/**
- * The environment without what git sets for a hook. Run from a hook in a
- * linked worktree, `GIT_DIR` and `GIT_INDEX_FILE` point at THAT worktree,
- * so every question asked of the shared checkout was answered by the
- * worktree: a unit mid-merge was reported as the shared checkout, off
- * the integration branch and full of changes.
- */
-const outsideAHook = (): NodeJS.ProcessEnv => {
-	const env = { ...process.env };
-	for (const key of HOOK_GIT_ENVIRONMENT) delete env[key];
-	return env;
-};
-
 const git = (root: string, args: readonly string[]): string => {
 	try {
 		return execFileSync('git', [...args], {
 			cwd: root,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
-			env: outsideAHook(),
+			env: hookFreeEnvironment(),
 		}).trim();
 	} catch {
 		return '';
