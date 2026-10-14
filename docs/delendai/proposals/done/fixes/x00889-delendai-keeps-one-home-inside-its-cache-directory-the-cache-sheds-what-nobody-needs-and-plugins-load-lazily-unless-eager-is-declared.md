@@ -2,14 +2,14 @@
 id: x00889
 title: "delendai keeps one home inside its cache directory, the cache sheds what nobody needs, and plugins load lazily unless eager is declared"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: bcad8670-aa1c-4090-81e7-59fa5baa358b
-last-correlation-id: bcad8670-aa1c-4090-81e7-59fa5baa358b
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T15:56:28.609Z
+last-transition-id: abd217c8-3dca-41ec-856f-27ce5d7acdd0
+last-correlation-id: abd217c8-3dca-41ec-856f-27ce5d7acdd0
+last-transition-from: review
+last-transition-at: 2026-10-14T10:39:58.856Z
 shipped-in:
   - "e23c19e3b5fef5d7da87b7b8e8a8a769b293af7e"
 ---
@@ -127,7 +127,7 @@ What the code does today:
 
 ### S4 — A kept unit does not keep its dependencies while it waits
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/idle-unit-dependencies.service.ts`
   - `packages/core/src/lib/work-units/work-unit-reap.service.ts`
@@ -140,8 +140,10 @@ What the code does today:
 - acceptance:
   - `work reap --apply` removes `node_modules` from every kept unit whose owner is not live (idle or abandoned past the lease window) and reports each under `dependencies`; without `--apply` it only reports. Entering an existing unit installs its dependencies again (x00888 S6), so its work is untouched.
 - shipped-in: `0bffe320eaa4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at e23c19e3b5fe, validate exit 0, tests 4/4 — Approved S4: all 4 tests pass and typecheck passes with exit code 0
 
 ## acceptance
 
