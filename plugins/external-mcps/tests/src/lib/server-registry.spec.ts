@@ -181,6 +181,7 @@ const makeHarness = (
 		callTimeoutMs?: number;
 		hostEnv?: Readonly<Record<string, string | undefined>>;
 		now?: () => number;
+		refusals?: Readonly<Record<string, string>>;
 		initialize?: FakeChild['answerInitialize'];
 	} = {},
 ): IHarness => {
@@ -205,6 +206,7 @@ const makeHarness = (
 		servers,
 		workspaceRoot: '/fake/workspace',
 		...(over.hostEnv !== undefined ? { hostEnv: over.hostEnv } : {}),
+		...(over.refusals !== undefined ? { refusals: over.refusals } : {}),
 		spawner,
 		setTimer: timerHarness.setTimer,
 		...(over.callTimeoutMs !== undefined
@@ -517,6 +519,24 @@ describe('ExternalServerRegistry — MCP session', () => {
 });
 
 describe('ExternalServerRegistry — failure paths', () => {
+	it('a server refused by its manifest never spawns, and says why', async () => {
+		const h = makeHarness(
+			{ fs: entry({ eager: true }) },
+			{ refusals: { fs: 'manifest: tags: tags must not be empty' } },
+		);
+		h.registry.bootEager();
+		expect(h.registry.status()[0]?.lastError).toContain(
+			'tags must not be empty',
+		);
+		const outcome = await h.registry.call('fs', 'read_file', {});
+		expect(outcome).toEqual({
+			ok: false,
+			code: 'call-failed',
+			message: 'manifest: tags: tags must not be empty',
+		});
+		expect(h.spawnCalls).toHaveLength(0);
+	});
+
 	it('unknown server → {ok:false, code:unknown-server} and NO spawn', async () => {
 		const h = makeHarness({ fs: entry() });
 		const outcome = await h.registry.call('nope', 'x', {});

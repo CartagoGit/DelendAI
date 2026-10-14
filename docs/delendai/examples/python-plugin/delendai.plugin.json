@@ -1,0 +1,15 @@
+{
+	"$schema": "../../../../packages/core/schema/delendai.plugin-manifest.schema.json",
+	"id": "greeter",
+	"package": "greeter-mcp",
+	"version": "0.1.0",
+	"visibility": "public",
+	"summary": "Greets someone by name, from a Python MCP server.",
+	"tags": ["example"],
+	"maturity": "experimental",
+	"permissions": ["process"],
+	"presets": [],
+	"tokenBudget": 200,
+	"dependencies": [],
+	"capabilities": []
+}
