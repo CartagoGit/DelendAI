@@ -63,6 +63,7 @@ What x00891 (merged in #1066) does instead:
   - A publication from a proposal in progress keeps the branch and its worktree. One from a proposal in any other state ends them, after the publication is proven.
   - Later work on a proposal in progress continues on its branch, whatever kind or slice it is entered for, however the template spells `refs/heads/`. A second session of the same agent working in parallel gets its own unit instead of being refused.
 - shipped-in: `f40a7f7af195`
+- answer to the change request: the failing case ('names what a publication is missing instead of guessing') failed only under the reviewer's own `DELENDAI_AGENT_ID=gpt-5.4`, which the spec read as the agent; it passes as CI runs it, and since x00901 S11 every suite clears the agent's identity before its specs run, so it passes under any agent too (`DELENDAI_AGENT_ID=gpt-5.4 vitest run work-unit.service.spec.ts`: 51/51).
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
@@ -81,6 +82,7 @@ What x00891 (merged in #1066) does instead:
   - A commit on a unit's branch that moves its proposal out of `in-progress/` (to review, ready, blocked, paused or done), made by any tool, host or person, is followed at once by the unit's publication through the work model's own path: a pull request, a merge through the local gate, or nothing to do for a model without branches. The branch and its worktree end once that is proven.
   - The publication runs detached from the commit (it removes the worktree the hook runs in) and logs to `delendai-unit-publications.log` in the repository's git directory. Run again, it finds nothing to do; one the forge refuses leaves the branch, pushed, and the next start retries it (S3).
 - shipped-in: `f40a7f7af195`
+- answer to the change request: the failing case ('names what a publication is missing instead of guessing') failed only under the reviewer's own `DELENDAI_AGENT_ID=gpt-5.4`, which the spec read as the agent; it passes as CI runs it, and since x00901 S11 every suite clears the agent's identity before its specs run, so it passes under any agent too (`DELENDAI_AGENT_ID=gpt-5.4 vitest run work-unit.service.spec.ts`: 51/51).
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
@@ -97,6 +99,7 @@ What x00891 (merged in #1066) does instead:
 - acceptance:
   - At start, a unit of this clone whose proposal is no longer in progress on its own tip, that still holds work the integration branch lacks, and whose owner is not live, is published through `work publish` (the same path as S2) and its branch ends. A live unit is left to its owner's hook. A review unit is not one of these.
 - shipped-in: `f40a7f7af195`
+- answer to the change request: the failing case ('names what a publication is missing instead of guessing') failed only under the reviewer's own `DELENDAI_AGENT_ID=gpt-5.4`, which the spec read as the agent; it passes as CI runs it, and since x00901 S11 every suite clears the agent's identity before its specs run, so it passes under any agent too (`DELENDAI_AGENT_ID=gpt-5.4 vitest run work-unit.service.spec.ts`: 51/51).
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
