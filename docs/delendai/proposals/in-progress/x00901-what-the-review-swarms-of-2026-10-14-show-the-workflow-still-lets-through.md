@@ -54,6 +54,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 18:35 F11 a gate made to pass instead of a slice made right: the same reviewer then opened #1119 (an `implement` unit on q00026 S1, the slice it had just approved), which drops the slice's Files list into prose so `proposal-files-exist` has nothing to check, and keeps `done` on a slice that delivered nothing. The departure is double: the reviewer becomes the implementer of the slice under its own verdict, and the record of what was planned is rewritten to fit the gate. The root is F10 (S9): with it, the approval leaves the slice `retired`, the gate already skips retired slices, and no Files need rewriting.
   - 18:50 F12 a tool's verdict that can never land: in `qwen3-flash`'s pack (#1101) the approval of x00885 S1 is the review tool's own write (its `shipped-in` frontmatter, its review lines), yet it reached the branch in the start pass's `chore(wip): keep the uncommitted work found at start`, two hours after it was written. The tool's commit had failed; it said so to the agent and kept nothing. Under that subject `verdicts-through-the-tool` reads the lines as hand-written, and the review tool refuses to approve a slice already done, so the pack is red for good. Fixed by S10; #1101 itself needs its publisher to record S1 again in a fresh unit.
   - 19:20 F13 a suite that fails only under an agent: `gpt-5.4` sent x00892 S1, S2 and S3 back because `work-unit.service.spec.ts` failed 'names what a publication is missing instead of guessing' on its run. The spec resolves the agent from the environment; under `DELENDAI_AGENT_ID=gpt-5.4` it guessed that agent's work ref instead of refusing, and as a person (as CI runs it) it passes. The slices were right; the suite read the reviewer. Fixed by S11; x00892's three slices go back to review.
+  - 21:20 F14 an attestation that names everybody: in #1133 `glm-5.3-flash` attested `Cartago` as the implementer of q00014's six slices, from `git log` ("traces author Cartago"), then moved q00014 to done. Every agent here commits under that one Git author, so the name says what Git already says and stands for anyone: it fills the implementer field with a name no reviewer can be, and the independence check passes on it. The governance check held the pull request for the owner's label, as it should. The slices' approvals came from a fourth spelling of qwen, `qwen-3.8-max` (with `qwen3-flash`, and neither matches the qwen 3.8 flash the owner launched): the roster (S3) is what ends it. Fixed by S12.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
@@ -155,6 +156,18 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - Every vitest project built on the shared setup starts its specs with no agent identity in the environment (`DELENDAI_AGENT_ID`, the host markers and prefixes, `DELENDAI_SESSION`): `work-unit.service.spec.ts` passes under `DELENDAI_AGENT_ID=gpt-5.4` as it does in CI.
+
+### S12 — An attestation never names the Git author of the delivering commit
+
+- **Status**: in-progress
+- **Files**:
+  - `plugins/proposals/src/lib/services/attested-implementer.service.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/attestation.interface.ts`
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `plugins/proposals/tests/src/lib/services/attested-implementer.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - `proposal_review attest` refuses an implementer that is the Git author (name or email) of the slice's `shipped-in` commit, saying that Git already names it and every agent committing here shares it.
 
 ### S3 — The project declares who works in it
 
