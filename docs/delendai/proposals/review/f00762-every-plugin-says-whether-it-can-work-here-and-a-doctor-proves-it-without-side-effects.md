@@ -2,14 +2,14 @@
 id: f00762
 title: "every plugin says whether it can work here, and a doctor proves it without side effects"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: b0f00962-07a9-4999-828a-5f8ab90abca5
-last-correlation-id: b0f00962-07a9-4999-828a-5f8ab90abca5
-last-transition-from: ready
-last-transition-at: 2026-10-14T03:56:26.242Z
+last-transition-id: c567099b-4587-45e1-abfe-f8c4c93ffe7d
+last-correlation-id: c567099b-4587-45e1-abfe-f8c4c93ffe7d
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T08:49:47.848Z
 ---
 
 # f00762 — every plugin says whether it can work here, and a doctor proves it without side effects
@@ -43,7 +43,7 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 ### S1 — One availability contract every plugin answers
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/plugin-availability.interface.ts`
   - `packages/core/src/lib/contracts/constants/plugin-availability.constant.ts`
@@ -54,10 +54,13 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 - acceptance:
   - A plugin may declare `availability(ctx)`, read from the same context `register` gets and without side effects, returning one state from a fixed set (`library`, `needs-configuration`, `needs-installation`, `needs-host-adapter`, `registered`, `verified`, `degraded`), what is missing, and the option or command that fixes it.
   - `availabilityOf` is the one reading of it: a plugin that does not answer is `registered`, and one whose answer throws is `degraded`, with the reason.
+- shipped-in: `c783f75cb2eb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The plugins that are not plainly usable say why
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/roadmap/src/index.ts`
   - `plugins/style-convention/src/index.ts`
@@ -80,10 +83,13 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - audit-orchestrator dispatches through the host's subagent runtime when there is one, as agent-orchestrator does; it ignored the runtime, so it could only ever refuse.
 
 - decision (2026-10-14): one record. Every registration reads the plugin's availability with its own context and keeps it with the time, one file per plugin in the workspace's records (`<cacheDir>/records/plugin-availability/`). `plugin doctor`, the overview and the configuration center read that record, so a lazy plugin nobody loaded this start shows its last known state and when it was read, instead of a second computation that could disagree.
+- shipped-in: `c783f75cb2eb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Every registration keeps what the plugin said, and a doctor lists it
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/plugins/plugin-availability-record.service.ts`
   - `packages/core/src/lib/contracts/interfaces/plugin-availability-record.interface.ts`
@@ -98,10 +104,13 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 - acceptance:
   - Every registration, eager or lazy, reads the plugin's availability with the context it registered with and keeps it, with the time, in one file per plugin in the workspace's records (`<cacheDir>/records/plugin-availability/`). Plugins register side by side, and one shared file would lose writers. A failure to keep it never fails the registration.
   - `delendai plugin doctor` lists every plugin that has registered in this workspace with its state, what is missing, the fix and when it was read, and says how to get an answer when none has.
+- shipped-in: `c783f75cb2eb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The overview shows the same states, from the same record
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/activation-report.interface.ts`
   - `packages/core/src/lib/plugins/activation-report.ts`
@@ -111,10 +120,13 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 - **Gate**: type
 - acceptance:
   - Each entry of the activation report (the overview with `activation: true`, eager or lazy surface) carries the plugin's kept availability record when it has one: the same record `plugin doctor` lists.
+- shipped-in: `c03b522535b9`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — The VS Code configuration center shows each plugin's state
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/client/src/lib/contracts/interfaces/plugin-availability.interface.ts`
   - `packages/client/src/lib/services/overview.service.ts`
@@ -127,10 +139,13 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 - acceptance:
   - `OverviewService.pluginAvailability()` reads each plugin's kept record from the overview's activation report.
   - The plugin tree shows a state that is not plainly usable next to the tool count (`3 tools · needs configuration`), with what is missing and the fix as its tooltip; a server that cannot answer leaves the tree as it was.
+- shipped-in: `064976f5134c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — A read-only probe proves a plugin
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/plugins/plugin-contract.ts`
   - `packages/core/src/lib/plugins/plugin-availability.service.ts`
@@ -142,6 +157,9 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 - acceptance:
   - A plugin may declare `probe(ctx)`, read-only by contract. When it registers and says nothing worse than `registered`, the probe runs within 5 seconds: a pass records `verified` with the time, a throw or a timeout `degraded` with the reason, and a plugin that already says what it is missing is not probed.
   - roadmap proves a declared roadmap by reading it through the workspace's safe reader, so a configured file that is not there shows as degraded instead of registered.
+- shipped-in: `c783f75cb2eb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
