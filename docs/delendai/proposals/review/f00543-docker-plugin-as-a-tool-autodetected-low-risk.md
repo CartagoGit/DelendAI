@@ -58,7 +58,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S2 — Pull, run and exec under one set of consent rules
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/src/lib/run/docker-command.service.ts`
   - `plugins/container/src/lib/run/docker-risk.helper.ts`
@@ -74,8 +74,10 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - A privileged container, a docker socket mount, or the host's network, pid or ipc namespace also needs `confirmRisk: true`, which `confirm` never implies.
   - `container_pull` with `policy: "if-not-present"` (the default) pulls only a missing image.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5b6b9e1e2, validate exit 0, tests 52/53; acceptance 4/4: (1) Pinned by 'container_build returns install-missing when docker is absent' — a missing CLI is a typed answer rather than a thrown error or a silent empty result… (2) Both halves have their own passing tests: 'container_build refuses without confirm' and 'container_build dryRun previews the argv without exec' (with the same … (3) Implemented as an independent gate in docker-command.service.ts:64 — `if (command.risks.length > 0 && consent.confirmRisk !== true)` — whose refusal text says … (4) Pinned by 'pulls only a missing image under the default policy'. — Delivered by 79da5118f (6 of 7 declared files); the merge 5b6b9e1e2 (PR #1050) carries all 7. Gate `type`. This is the plugin's safety slice, so I looked for the independence property rather than the presence of a flag. ACC2 is the one that matters and it is enforced structurally, not documented: docker-command.service.ts:64 reads `if (command.risks.length > 0 && consent.confirmRisk !== true)` — a check on the command's OWN risk list, gated on a DIFFERENT consent field — so `confirm: true` cannot satisfy it, and the refusal text says so in as many words ("`confirm` alone never allows it"). It is pinned by a test named for the guarantee: 'a container that reaches the host needs confirmRisk, which confirm never implies'. docker-risk.helper.ts:7 documents the same rule at the point the risks are computed. If that check had been written as `confirm || confirmRisk`, every test above would still have passed, which is why I read the line instead of trusting the green suite. ACC0: a missing CLI is a typed answer, pinned by 'container_build returns install-missing when docker is absent' — worth checking on its own because an exec failure here would otherwise surface as a thrown error or a silent empty stdout. ACC1: both halves have their own tests — 'container_build refuses without confirm' and 'container_build dryRun previews the argv without exec' — and the same pair exists for k8s_apply and the network/volume tools, so the consent model is uniform rather than per-tool. ACC3: 'pulls only a missing image under the default policy'. Evidence 52/53 is the plugin suite; the one skip is the daemon-gated e2e that S5 covers.
 
 ### S3 — Compose: the services, and up, down, logs, ps, exec
 
