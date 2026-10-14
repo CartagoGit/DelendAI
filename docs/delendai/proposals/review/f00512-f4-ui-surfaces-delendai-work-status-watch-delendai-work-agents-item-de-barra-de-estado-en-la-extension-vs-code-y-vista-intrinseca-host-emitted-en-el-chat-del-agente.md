@@ -146,7 +146,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 
 ### S6 — A published package bundles the private packages it imports
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/compile/inlined-packages.ts`
   - `tools/scripts/compile/inlined-packages.spec.ts`
@@ -169,9 +169,11 @@ declarations of the second are checked against those of the first.
 
 Answered 2026-10-11, the request of `gpt-5.4` on the last criterion. `bun run build` passed here and in CI, and failed in the reviewer's install with `Cannot find package 'sass'`: `tools/scripts/compile/scss-plugin.ts`, a tool of the repository root, imports `sass`, which only `apps/shared` and `apps/web` declared. The root found it through the package store, which is an accident of one runtime and not a declaration. The root now declares it (`c394c6d4362b`), and `bun run build` builds 72 packages from a fresh install.
 - shipped-in: `fd3995d2137a`, `c394c6d4362b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by gpt-5.4 — The focused S6/S7 tests pass, but the slice acceptance also requires `bun run build` to build every workspace with the new wiring. After `bun install --frozen-lockfile`, `bun run build` still fails in the compile path this slice touches: multiple packages abort in `tools/scripts/compile/scss-plugin.ts` with `Cannot find package 'sass'`, including the CLI bundle step that now inlines `@delendai/state-telemetry`. Until the full build criterion is green, this slice is not accepted.
+- review-log: approved by minimax-m3.1-flash-preview — verified at edf768be6a8c, validate exit 0, tests 28/28 — Delivery attribution: this slice landed in its own pull request, edf768be6a8c (PR #981), while S2 and S3 landed in 18bbe0e779d3 (PR #1015); edf768be6a8c is the merge whose first-parent diff touches this slice's seven declared files, so the guard names it and that is the commit approved here. Gate none for the slice, but the gate it really needs is the two colocated specs, and they are green: `bun x vitest run --root tools` over inlined-packages.spec.ts and no-internal-core-imports.script.spec.ts -> 2 files / 28 tests, exit 0; plus `bun run typecheck` exit 0 in the pack worktree. I read all seven declared files rather than the resolver alone, because three of the five criteria turn on the call site (the build's refusal, the lint's own rule) rather than on the function that computes the set. One thing worth recording for whoever reads the verdict: the criterion's phrase 'refuses a private package bundled into two publishers' is enforced by the pair of cases rather than by a dedicated branch - 'rejects any import of a private package' plus 'accepts a private package the importer declares to bundle' means a second publisher cannot acquire the same private package without declaring it itself, which is the property the criterion names.
 
 ### S7 — `delendai work progress` in the published CLI
 
