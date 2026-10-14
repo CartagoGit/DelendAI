@@ -2,10 +2,14 @@
 id: x00901
 title: "what the review swarms of 2026-10-14 show the workflow still lets through"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: 05f0d5f4-41d9-4788-89c4-e8c2662ca0cc
+last-correlation-id: 05f0d5f4-41d9-4788-89c4-e8c2662ca0cc
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T23:06:15.473Z
 ---
 
 # x00901 — what the review swarms of 2026-10-14 show the workflow still lets through
@@ -29,7 +33,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S1 — The findings, as they are observed
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `docs/delendai/proposals/in-progress/x00901-what-the-review-swarms-of-2026-10-14-show-the-workflow-still-lets-through.md`
 - **Gate**: type
@@ -58,20 +62,26 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 22:30 F15 why #1101 lost its verdict: the server log reads `delendai could not commit what this call wrote to delendai/wip/qwen3-flash/review/batch-all-g5/verdicts (git timed out after 60000ms)`, six times on 2026-10-14. A tool's commit runs the repository's hooks (the guard, the formatter, the secrets scan), and with several agents running `validate` at once they took more than the 60 seconds every git call gets; the commit was killed, and the verdict waited for a start pass that committed it under its own subject (F12). Fixed by S13, and S10 commits what still fails as the tool's.
   - 22:30 F16 an agent acting as another, and one evading the guard: `minimax-m3.1-flash-preview` released a claim of `gemini-3.8-flash` (out of quota) by running `review release --agent=gemini-3.8-flash` from gemini's own worktree, and it worked; `qwen3-flash` prefixed its commands with `unset AI_AGENT`. The claim of a reviewer that went quiet already lapses by itself (S5); the rules now say never to act under another agent's name or in its unit (S3), and never to clear the markers (x00902). Its names show the canon was missing: `minimax-3.1-flash-preview` and `minimax-m3.1-flash-preview` from two instances of one model, `gemini-3.8-flash-high`.
   - 23:50 F17 an attestation that claims nothing: closing q00014 on its session record, `claude-opus-5-5` attested its slices in a review unit that had not claimed it, and #1140 failed `closed-with-independent-approval` ("changes q00014 without having claimed it") after it was published. A verdict claims its proposal before it is written; an attestation, which changes the same document, took a short path that skipped the claim. Fixed by S15.
+- shipped-in: `3e998d361bdf`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/services/review-verdict-evidence.ts`
   - `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - **Gate**: type
 - acceptance:
   - The review-log line of an approval reads `verified at <commit>, validate exit 0, tests N/M; acceptance K/K: (1) … (2) …`, each criterion's evidence on one line and clipped to 160 characters, then the reviewer's reason.
+- shipped-in: `e83bd8cd7e22`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The review queue names the checks a slice needs, and the approval it asks for
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/services/review-queue-slice.service.ts`
   - `plugins/proposals/tests/src/lib/services/review-call.spec.ts`
@@ -79,10 +89,13 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - A slice's next action tells the reviewer to run its gate and the slice's own spec files, named, and not the whole suite, which CI ran on the delivering commit.
   - Its example approval carries `acceptanceCriteria`, one entry per acceptance item, as approve requires.
+- shipped-in: `b34e7ef5629d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A review claim lapses when its reviewer's unit has gone quiet
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/services/review-reservation.service.ts`
   - `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`
@@ -90,10 +103,13 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - Past the 15-minute grace, a claim passes to the next reviewer when its holder's unit has left the forge, as before, or when that unit's tip has not moved for an hour; a reviewer at work commits a verdict per slice. The four-hour lapse stays as the outer bound.
+- shipped-in: `2d3fcbd61cb3`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — A call from the shared checkout acts in its own session's unit
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/development-policy/project-branches.ts`
   - `packages/core/src/lib/shared/bind-write-root.ts`
@@ -102,10 +118,13 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - A write tool called from the shared checkout with a `session` acts only in a unit that session holds, or one no session holds; a unit stamped for another session of the same agent is not a candidate.
+- shipped-in: `2d3fcbd61cb3`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — The queue keeps a work branch it cannot tell about
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/lint/in-progress-work-refs.helper.ts`
   - `tools/scripts/lint/in-progress-work-refs.helper.spec.ts`
@@ -113,20 +132,26 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - Only a read the forge answers with 404 (no in-progress folder at that tip) lets the queue reap a work ref; any other failed read (rate limit, network) keeps it, and a later run decides.
+- shipped-in: `ca442e742326`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — A check the slice did not touch sends the claim back, not the slice
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/services/review-queue-slice.service.ts`
   - `plugins/proposals/tests/src/lib/services/review-call.spec.ts`
 - **Gate**: type
 - acceptance:
   - A slice's next action tells the reviewer that a failing check the slice did not touch is not the slice's, and to give the claim back with that failure as its reason instead of requesting changes.
+- shipped-in: `b34e7ef5629d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — Approving a retired slice keeps it retired
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/swarm/proposal-review.ts`
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
@@ -134,10 +159,13 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - An approve (or a close) of a slice whose Status is `retired` leaves it `retired`, in either spelling of the Status line; a delivered slice still turns `done`.
+- shipped-in: `3e998d361bdf`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S10 — A tool's writes whose commit failed are committed as the tool's
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/shared/commit-call-writes.ts`
   - `packages/core/src/lib/shared/pending-call-writes.store.ts`
@@ -149,20 +177,26 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - When a tool's commit fails, its subject and the content it left in each path are kept beside the worktree's git metadata.
   - The next tool call in that worktree, and the start pass before it keeps uncommitted work, commit those paths under the tool's subject while their content is still the tool's; a path changed since is left to whoever commits it.
+- shipped-in: `98003fdc9819`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S11 — A suite does not read the identity of the agent running it
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/test/hermetic-agent-identity-setup.ts`
   - `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
   - Every vitest project built on the shared setup starts its specs with no agent identity in the environment (`DELENDAI_AGENT_ID`, the host markers and prefixes, `DELENDAI_SESSION`): `work-unit.service.spec.ts` passes under `DELENDAI_AGENT_ID=gpt-5.4` as it does in CI.
+- shipped-in: `5ddb4f933a0c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S12 — An attestation never names the Git author of the delivering commit
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/services/attested-implementer.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/attestation.interface.ts`
@@ -171,20 +205,26 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - `proposal_review attest` refuses an implementer that is the Git author (name or email) of the slice's `shipped-in` commit, saying that Git already names it and every agent committing here shares it.
+- shipped-in: `3e998d361bdf`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S15 — An attestation claims its proposal, as a verdict does
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: type
 - acceptance:
   - `proposal_review attest` in a review unit claims the proposal before writing, and is refused, writing nothing, when another unit holds it.
+- shipped-in: `3e998d361bdf`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — An agent names itself, and always in one shape
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/agent-name-canon.service.ts`
   - `packages/core/src/lib/contracts/constants/agent-name-canon.constant.ts`
@@ -203,10 +243,13 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - `work enter` refuses a name not written in the canon — lowercase, hyphen-separated, the maker first in letters only, the version as the maker publishes it in a part of its own, then the tier, no effort word — and says what is wrong and how it would read (`qwen3-flash` → `qwen-3…`; `gemini-3.8-flash-high` → leave `high` out). A re-spelling of a name already at work is pointed at that name first. The product's own actors (`<namespace>-<role>`, the queue) keep their names.
   - The rules every agent receives state the canon with examples.
   - A declared roster stays optional, for an owner who wants to hold a swarm to fixed names.
+- shipped-in: `98003fdc9819`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S13 — A commit of a tool's writes has the time its hooks need
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/call-writes.constant.ts`
   - `packages/core/src/lib/shared/commit-call-writes.ts`
@@ -214,6 +257,9 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - The commit of a call's writes, the commit of pending writes and the start pass's commit run with a ten-minute limit (`COMMIT_TIMEOUT_MS`), not the 60 seconds of a plain git call: they run the repository's hooks.
+- shipped-in: `98003fdc9819`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
