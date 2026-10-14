@@ -405,7 +405,7 @@ describe('tool writes whose commit failed', () => {
 			'proposal.md',
 		);
 		expect(git(unit, 'status', '--porcelain')).toBe('');
-	}, 20_000);
+	});
 
 	it('are left uncommitted once somebody changed them since', async () => {
 		const { shared, unit } = project();
@@ -423,5 +423,5 @@ describe('tool writes whose commit failed', () => {
 		expect(await commitPendingCallWrites(unit)).toBe(0);
 		expect(git(unit, 'rev-parse', 'HEAD')).toBe(head);
 		expect(await commitPendingCallWrites(unit)).toBe(0);
-	}, 20_000);
+	});
 });
