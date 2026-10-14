@@ -154,10 +154,10 @@ trabajo redundante.
   - `plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts` — incluye el caso negativo: una correlación con soporte bajo NO debe convertirse en lección.
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: claude-opus-5
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering spec anyway. Verified in the current develop tree: (1) plugins/self-learning/src/lib/lessons/derive-lessons.helper.ts and confidence.helper.ts exist; scoreConfidence weighs support, recency and counterexamples and a counterexample-recent lesson degrades (spec asserts 'degrades when nothing recent supports it'); (2) tools/lessons.tool.ts exposes self_learning_lessons with an optional goal filter — one tool, not two duplicated schemas, as the slice Status documents; (3) derive-lessons.spec.ts green 12/12 including the mandated negative case: a low-support correlation must NOT become a lesson ('what a history does not support' describe block); (4) no core coupling: grep of the lessons dir shows imports stay inside the plugin plus typed contracts. typecheck exit 0; lint:architecture exit 0. Plan acceptance point 4 (a full round with self-learning enabled) remains documented as not verified by the proposal itself and is a plan-level acceptance item, not this slice's deliverable — the slice ships derive/score/tool/spec and all four exist and pass. Full validate red workspace-wide since 2026-09-21 on unrelated shared-branch breakage.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: claude-opus-5 attested by claude-opus-5-5 — Claude Code session 472154d3-359d-40e6-b3ea-eb3fca374b5b (~/.claude/projects/-home-cartago--projects-delendai/472154d3-359d-40e6-b3ea-eb3fca374b5b.jsonl): every file this slice declares was added by commit 4cd5d2ae7 on 2026-09-14, written by that session in plugins/self-learning while it ran as claude-opus-5.
 - shipped-in: `a3a779958bb8`
 ### S6 — Compactación automática de conversación con criterio de pérdida
 
