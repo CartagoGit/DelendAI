@@ -8,6 +8,7 @@ track: swarm-scope-v1
 date: 2026-09-06
 shipped-in:
   - "99d17f26d"
+  - "cc68dd17d0c341c53566cbfe01c98020939f3344"
 last-transition-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
 last-correlation-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
 last-transition-from: in-progress
@@ -277,7 +278,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 
 ### S1 — The SQLite driver keeps what coordinates the generations, and the contract both drivers run
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/state/src/lib/scope-coordination.interface.ts`
   - `packages/state/src/lib/driver-in-memory.ts`
@@ -303,8 +304,10 @@ un `parity-report.json` que el `state_health` plugin lee.
   - The registry contract is one text both drivers run: `registry.spec` and `phase-0.2.spec` became contracts a driver's spec calls with the way that driver is built. The in-memory driver runs them under vitest; the SQLite driver runs the same 20 assertions on a store on disk under `bun run test:sqlite`.
 
 Drawn on 2026-09-06 over `better-sqlite3` with six tables. Delivered over `bun:sqlite`; generations and their projections stay one row (`generations`, schema v2) and the three coordination tables are new in v3. `state_project_leases` is not a table: a lease is a holder, and two tables for it would be two records of one fact that can disagree.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at cc68dd17d0c3, validate exit 0, tests 33/33 — Reviewed q00019 S1 across the SQLite contract and coordination slices. The driver is wired around bun:sqlite with WAL-related schema setup, the coordination state survives restarts and renewals, the shared contract is exercised for both drivers, and the focused registry/coordination/core tests passed 33/33.
 
 ### S2 — A standalone parity sampler, its report, and a nightly run
 
