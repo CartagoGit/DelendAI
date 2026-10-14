@@ -22,6 +22,7 @@ export * from './lib/scope-coordination.interface';
 export * from './lib/parity-sampler.interface';
 export { parityProducer, sampleParity } from './lib/parity-sampler.service';
 export * from './lib/derivation-engine.interface';
+export { createMemoDerivationEngine } from './lib/memo-derivation-engine.service';
 export * from './lib/reconciliation';
 export {
 	defineInMemoryStateRegistry,

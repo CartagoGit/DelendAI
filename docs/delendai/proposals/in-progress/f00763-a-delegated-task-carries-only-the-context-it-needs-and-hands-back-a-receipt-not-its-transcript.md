@@ -53,14 +53,19 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S2a — context-compiler has a store and an engine to run on
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
-  - `packages/state/src/lib/file-artifact-store.ts`
-  - `packages/state/src/lib/memo-derivation-engine.ts`
+  - `packages/core/src/lib/context-store/file-artifact-store.ts`
+  - `packages/core/tests/src/lib/context-store/file-artifact-store.spec.ts`
+  - `packages/state/src/lib/memo-derivation-engine.service.ts`
+  - `packages/state/src/index.ts`
+  - `packages/state/tests/src/lib/memo-derivation-engine.spec.ts`
 - **Gate**: type
-- decision (2026-10-14): `context-compiler` needs an `IArtifactStore` and an `IDerivationEngine`, and both exist only as interfaces in `packages/state`: the only implementations are in specs, so the compiler cannot run anywhere today. S2 starts by giving it a content-addressed, file-backed store under the workspace's records and a derivation engine that memoises by input fingerprint.
+- decision (2026-10-14): `context-compiler` needs an `IArtifactStore` and an `IDerivationEngine`, and both existed only as interfaces in `packages/state`, implemented in specs alone: the compiler could not run anywhere. The derivation engine, pure, lives in `packages/state`; the file-backed store lives in core, because the state engine admits no Node import (`no-node-imports-in-state`).
 - acceptance:
-  - A file-backed `IArtifactStore` keeps each artifact once by key under `<cacheDir>/records/context/`, and a derivation engine returns the cached value for an input fingerprint it has seen. `context-compiler`'s own specs pass against them as well as against their map fakes.
+  - A file-backed `IArtifactStore` keeps each artifact by key, one file each, written whole and renamed into place, keeping its first `createdAt`; it lists by scope and kind and deletes.
+  - A derivation engine derives a value once per input fingerprint and keeps it in the store when given one, so a restart does not derive it again.
+  - `context-compiler` compiles a manifest of references against them, gives the same manifest for the same references, and expands a reference back to its content.
 
 ### S2b — The orchestrator compiles the manifest from the task
 
