@@ -205,3 +205,4 @@ implementan en ese orden porque la proyección de lectura tiene valor
 inmediato por sí sola (responde ya "qué están tocando mis agentes"),
 mientras que la comparación de alineación necesita que `WorkIntent`
 exista primero.
+- Retired on 2026-10-14 (c00530 S1): superseded. `delendai work swarm` lists every unit of work with its agent, proposal, worktree, branch, tip and files, and `delendai work progress --agents` lists who did something lately; its one delivered slice had no consumer and was removed with c00530.

@@ -68,6 +68,7 @@ import {
 	parseReviewState,
 	renderReviewLines,
 	withClosingLines,
+	flipSliceStatusDone,
 	flipSliceStatusReview,
 	reviewTransition,
 	type IReviewRound,
@@ -894,25 +895,6 @@ export const createProposalDocument = async (
 		indexCount: sync.count,
 		redactedSecrets: redactions,
 	};
-};
-
-/**
- * x00098 S2: flip a slice block's status bullet to done, whichever of
- * the two accepted spellings the document uses (`- **Status**:` is the
- * canonical form the generator emits; `- status:` is the legacy one).
- * Appends the canonical bullet when the block has neither.
- */
-const flipSliceStatusDone = (block: string): string => {
-	if (/^[-*]\s*\*\*Status\*\*:/m.test(block)) {
-		return block.replace(
-			/^[-*]\s*\*\*Status\*\*:.*$/m,
-			'- **Status**: done',
-		);
-	}
-	if (/^[-*]\s*status:/m.test(block)) {
-		return block.replace(/^[-*]\s*status:.*$/m, '- status: done');
-	}
-	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
 };
 
 /** A slice a reviewer sent back is open work again, whatever it claimed. */

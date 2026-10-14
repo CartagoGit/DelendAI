@@ -12,15 +12,24 @@
  *
  * Only the paths the call changed are committed, and only in a unit's
  * worktree (`unitBranchOf`). A call that fails commits nothing. A commit
- * that fails never fails the call: the result says so, and what to run.
+ * that fails never fails the call: the result says so, and what to run,
+ * and the writes are kept as pending. The next call in the worktree, or
+ * the start pass, commits them under the tool's subject while they are
+ * still as the tool left them: committed under any other subject, a
+ * verdict reads as written by hand and its pack can never land.
  */
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { CALL_WRITES_NOT_COMMITTED } from '../contracts/constants/call-writes.constant';
+import type { IPendingCallWrite } from '../contracts/interfaces/pending-call-writes.interface';
 import { unitBranchOf } from '../development-policy/project-branches';
 import { createGitRunner } from './git-write';
+import {
+	readPendingCallWrites,
+	writePendingCallWrites,
+} from './pending-call-writes.store';
 
 /** Longest commit subject this writes; the rest of the call goes nowhere. */
 const MAX_SUBJECT_LENGTH = 72;
@@ -217,6 +226,45 @@ const commitRetryingLocks = async (
 	return outcome;
 };
 
+/** A path's content, from its dirty state (`<status code>:<hash>`). */
+const contentOf = (state: string | undefined): string | undefined =>
+	state?.slice(state.indexOf(':') + 1);
+
+/**
+ * Commit the writes a tool left pending in `root`, each under the tool's
+ * subject, while every one of its paths is still as the tool left it. A
+ * path changed since is somebody else's edit too: that record is dropped
+ * and its paths left for whoever commits them. Returns how many committed.
+ */
+export const commitPendingCallWrites = async (
+	root: string,
+	git: IGitRunner = createGitRunner(root),
+): Promise<number> => {
+	const pending = await readPendingCallWrites(git);
+	if (pending.length === 0) return 0;
+	const state = await dirtyState(git, root);
+	if (state === undefined) return 0;
+	const kept: IPendingCallWrite[] = [];
+	let committed = 0;
+	for (const write of pending) {
+		const paths = Object.keys(write.paths);
+		// The content decides, not the index: the failed commit had
+		// already staged what the tool wrote.
+		const untouched = paths.every(
+			(path) =>
+				contentOf(state.get(path)) === contentOf(write.paths[path]),
+		);
+		if (!untouched) continue;
+		const outcome = await commitRetryingLocks(() =>
+			commitPaths(git, root, paths, write.subject),
+		);
+		if (outcome.ok) committed += 1;
+		else kept.push(write);
+	}
+	await writePendingCallWrites(git, kept);
+	return committed;
+};
+
 /** Calls in one worktree run one after another, so each commits its own. */
 const inFlight = new Map<string, Promise<unknown>>();
 
@@ -249,6 +297,7 @@ export const withCallWritesCommitted = async (
 	const branch = await unitBranchOf(root);
 	if (branch === undefined) return call();
 	return oneAtATime(root, async () => {
+		await commitPendingCallWrites(root, git);
 		const before = await dirtyState(git, root);
 		const result = await call();
 		if (before === undefined || isErrorResult(result)) return result;
@@ -261,6 +310,15 @@ export const withCallWritesCommitted = async (
 			commitPaths(git, root, paths, subject),
 		);
 		if (committed.ok) return result;
+		await writePendingCallWrites(git, [
+			...(await readPendingCallWrites(git)),
+			{
+				subject,
+				paths: Object.fromEntries(
+					paths.map((path) => [path, after.get(path) ?? '']),
+				),
+			},
+		]);
 		const said = `${CALL_WRITES_NOT_COMMITTED} what this call wrote to ${branch} (${(committed.reason ?? 'git refused').replace(/\s+/gu, ' ').trim()}). Commit it yourself before going on: git -C ${root} add -A -- ${paths.join(' ')} && git -C ${root} commit -m "${subject}"`;
 		const note = said.slice('[delendai] '.length);
 		process.stderr.write(`${said}\n`);
