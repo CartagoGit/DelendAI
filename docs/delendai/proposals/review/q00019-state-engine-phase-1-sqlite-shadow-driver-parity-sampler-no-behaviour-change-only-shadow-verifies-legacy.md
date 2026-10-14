@@ -339,7 +339,7 @@ The sampling while a process runs stays where it shipped, in `createRegistryFaca
 
 ### S3 — The property suites run against the SQLite driver
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/state/tests/src/contract/equivalence-property.helper.ts`
   - `packages/state/tests/src/contract/determinism-property.helper.ts`
@@ -354,8 +354,10 @@ The sampling while a process runs stays where it shipped, in `createRegistryFaca
   - The three Phase 0.1 properties — an incremental build equals a clean rebuild, two registries fed the same sequence agree, a corrupt generation is recovered without replay — are contracts a driver's spec calls; the in-memory driver runs them as before.
   - The SQLite driver runs the same three over 1,000 generated sequences each (`STATE_PROPERTY_RUNS` overrides, as for the in-memory run).
   - They run where the driver can: under `bun run test:sqlite`, which CI runs as its own step. The plan's `HAS_STATE_SQLITE=1` switch inside the vitest run is not built — `bun:sqlite` has no resolution under the runner vitest uses, so a suite there could only ever skip.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at cc68dd17d0c3, validate exit 0, tests 14/14 — Reviewed q00019 S3 on the property-suite migration. The three Phase 0.1 properties are now shared contracts that still cover in-memory behavior and also run against the SQLite driver over 1000 generated sequences, with the focused parity/property suite passing 14/14.
 
 ### S4 — A project can run the SQLite driver as a shadow
 
