@@ -317,7 +317,7 @@ Delivered 2026-10-11, the rule; the head that loses its run to a refresh is not 
 
 ### S11 — A pack with no verdict is not published
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
   - `packages/cli/src/lib/review/review-pack-check.service.ts`
@@ -332,8 +332,10 @@ Delivered 2026-10-11, the rule; the head that loses its run to a refresh is not 
   - `review next` does not try to publish such a unit when nothing else waits.
 
 Delivered 2026-10-11. Four specs published a review unit made of empty commits; each now records a verdict first, as a reviewer does.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 81/81 — Delivery attribution: the behaviour landed as a83c2ec9f284 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/core` over review-pack-scope.spec.ts, work-unit.service.spec.ts and declare-workflow.spec.ts -> 3 files / 81 tests, exit 0; and `bun x vitest run --root packages/cli src/commands/review.command.spec.ts` -> 1 file / 13 tests, exit 0 for the CLI branch. Coverage gap noted: the empty-queue assertion in the delivered spec covers 'there was nothing waiting before the unit opened', not 'a resumed unit that keeps only a claim'. The implementation is the criterion's and I read it; the assertion is thin.
 
 ### S12 — An agent can go back to a unit it published
 
