@@ -18,6 +18,7 @@ import { isUnitHolding, readUnitStandings } from './unit-standings.service';
 import { DEFAULT_UNITS_DIRECTORY } from './units-directory.constant';
 import { freeDirectory } from './free-directory.helper';
 import { liveProposalBranch } from './proposal-branch.service';
+import { createUnitRef } from './unit-start-point.service';
 import {
 	reviewedByEntrant,
 	topicForNewUnit,
@@ -327,14 +328,11 @@ export const enteredHeld = async (
 		});
 		if (reservedElsewhere !== undefined) return reservedElsewhere;
 	}
-	if (createdRef) {
-		// From the integration branch, by plumbing: no checkout moves.
-		if (readGit(root, ['update-ref', ref, base]) === undefined) {
-			return refused(
-				`Could not create ${ref}.`,
-				'Inspect the repository; nothing was changed.',
-			);
-		}
+	if (createdRef && !createUnitRef({ root, policy, ref, branch, base })) {
+		return refused(
+			`Could not create ${ref}.`,
+			'Inspect the repository; nothing was changed.',
+		);
 	}
 	// The agent is part of the path, as it is of the unit (x00695): two
 	// reviewers each entering `--proposal=batch --slice=all` were both sent
