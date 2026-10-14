@@ -79,7 +79,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - review-log: approved by minimax-m3.1-flash-preview — verified at 18bbe0e77, validate exit 0, tests 1/1 — Delivered by 9cef7f165 (PR #965), which carries 6 of the 7 declared files; the merge 18bbe0e77 (PR #1015) is the other valid candidate. Gate `type`. This slice's criteria are about a rendered surface, so I ran it rather than reading the renderer. ACC0: `bun run cli work progress` in this checkout prints one line per open proposal with every field named — `c00530   [################....]  80%  reviewing     5 slice(s)  3d ago  What was blocked is settled…` and `f00551   [###.................]  16%  investigating 10 slice(s)  31h ago  DelendAI Batuta…`. Bar = weighted progress, the word after it = the furthest-behind slice's phase, then slice count, last-event age, title. ACC1: `--json` gives the same rows as data and carries all eight per-slice fields. One naming deviation I want to be explicit about rather than gloss: the criterion says the rows have `slices`, and on the delivered surface `slices` on a row is the COUNT while the per-slice objects live under `snapshots`. Every field the criterion enumerates is present there — verified on a live row: sliceId, phase, progress, weight, confidence, stalled, lastEventAt, eventCount (plus proposalId, workItemId, uncertainty). So the data contract is fully met and only the key name differs; I judged it met because the criterion's intent is that the per-slice detail be machine-readable, and it is. If the owner reads ACC1 as a literal key-name requirement, that is a one-line rename and the right follow-up. ACC2 is the clause I can only check by absence, and absence is the right instrument here: `grep -rln 'languageModel|completion|generateText|chatModel'` across the work-progress projection in packages/cli and packages/core returns nothing, so there is no model client in the path at all. ACC3 is a list of things NOT delivered, and all three absences hold on the delivered surface: `work progress --help` offers --agents, --watch, --all and no --interval, no per-proposal filter, no ETA/source flag; the row keys are lastEventAt, phase, progress, proposalId, slices, snapshots, stalled, title. The criterion's reasoning is also borne out by the data I saw — f00500's snapshots carry eventCount 0 with confidence 0 and uncertainty 1, which is exactly why an ETA computed from them should not exist. Evidence 1/1 is the command's own live output.
 
 ### S2 — `delendai work progress --watch`: the same view, redrawn when it changes
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [F4-S1]
 - **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
@@ -90,12 +90,14 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10: `bun run work:progress -- --watch` recomputes every 500 ms and redraws only when the view changed, so the terminal does not flicker.
 - Amended (S2) 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
 - shipped-in: `9cef7f165a10`, `edf768be6a8c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work status --watch`, but the delivered watch mode hangs off `delendai work progress --watch`. The proposal note itself says it shipped as `bun run work:progress -- --watch`, and the accepted `work status` surface is still occupied by the existing checkout-status command.
+- review-log: approved by minimax-m3.1-flash-preview — verified at 18bbe0e779d3, validate exit 0, tests 7/7 — Delivery attribution: S2 and S3 landed in 18bbe0e779d3 (PR #1015), the merge whose first-parent diff touches this slice's declared files, so the guard names it and that is the commit approved here. Gates: `bun x vitest run --root packages/state-telemetry src/lib/status/work-status.service.spec.ts` -> 1 file / 7 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. Read this one myself - the criterion is about what the loop does and does not do, which is twelve lines of code, and reading them is cheaper than delegating.
 
 ### S3 — `delendai work progress --agents`: who did something lately, and on what
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [F4-S1]
 - **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
@@ -106,9 +108,11 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10: `bun run work:progress -- --agents` (and the foot of the default view) lists each agent whose last event falls in the last half hour, with the work item and the kind of that event (`activeAgents`).
 - Amended (S3) 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
 - shipped-in: `9cef7f165a10`, `edf768be6a8c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work agents [agentId]`, but `delendai work agents` is not implemented: the CLI answers `Unknown subcommand 'agents'`. The delivered agent view is only available as `delendai work progress --agents`, so the promised command was not delivered.
+- review-log: approved by minimax-m3.1-flash-preview — verified at 18bbe0e779d3, validate exit 0, tests 7/7 — Delivery attribution: S2 and S3 landed in 18bbe0e779d3 (PR #1015), the merge whose first-parent diff touches this slice's declared files, so the guard names it and that is the commit approved here. Gates: `bun x vitest run --root packages/state-telemetry src/lib/status/work-status.service.spec.ts` -> 1 file / 7 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. Both halves of the first criterion - the window and the fields - are pinned by the same constant I read, so the numbers in the note are the delivered ones.
 
 ### S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
 - **Status**: retired
@@ -142,7 +146,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 
 ### S6 — A published package bundles the private packages it imports
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/compile/inlined-packages.ts`
   - `tools/scripts/compile/inlined-packages.spec.ts`
@@ -165,9 +169,11 @@ declarations of the second are checked against those of the first.
 
 Answered 2026-10-11, the request of `gpt-5.4` on the last criterion. `bun run build` passed here and in CI, and failed in the reviewer's install with `Cannot find package 'sass'`: `tools/scripts/compile/scss-plugin.ts`, a tool of the repository root, imports `sass`, which only `apps/shared` and `apps/web` declared. The root found it through the package store, which is an accident of one runtime and not a declaration. The root now declares it (`c394c6d4362b`), and `bun run build` builds 72 packages from a fresh install.
 - shipped-in: `fd3995d2137a`, `c394c6d4362b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by gpt-5.4 — The focused S6/S7 tests pass, but the slice acceptance also requires `bun run build` to build every workspace with the new wiring. After `bun install --frozen-lockfile`, `bun run build` still fails in the compile path this slice touches: multiple packages abort in `tools/scripts/compile/scss-plugin.ts` with `Cannot find package 'sass'`, including the CLI bundle step that now inlines `@delendai/state-telemetry`. Until the full build criterion is green, this slice is not accepted.
+- review-log: approved by minimax-m3.1-flash-preview — verified at edf768be6a8c, validate exit 0, tests 28/28 — Delivery attribution: this slice landed in its own pull request, edf768be6a8c (PR #981), while S2 and S3 landed in 18bbe0e779d3 (PR #1015); edf768be6a8c is the merge whose first-parent diff touches this slice's seven declared files, so the guard names it and that is the commit approved here. Gate none for the slice, but the gate it really needs is the two colocated specs, and they are green: `bun x vitest run --root tools` over inlined-packages.spec.ts and no-internal-core-imports.script.spec.ts -> 2 files / 28 tests, exit 0; plus `bun run typecheck` exit 0 in the pack worktree. I read all seven declared files rather than the resolver alone, because three of the five criteria turn on the call site (the build's refusal, the lint's own rule) rather than on the function that computes the set. One thing worth recording for whoever reads the verdict: the criterion's phrase 'refuses a private package bundled into two publishers' is enforced by the pair of cases rather than by a dedicated branch - 'rejects any import of a private package' plus 'accepts a private package the importer declares to bundle' means a second publisher cannot acquire the same private package without declaring it itself, which is the property the criterion names.
 
 ### S7 — `delendai work progress` in the published CLI
 
