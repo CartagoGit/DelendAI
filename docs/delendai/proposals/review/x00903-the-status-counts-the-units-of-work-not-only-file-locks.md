@@ -2,10 +2,14 @@
 id: x00903
 title: "The status counts the units of work, not only file locks"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: 0d5e0175-3848-43a1-9ae8-1e4217581c4e
+last-correlation-id: 0d5e0175-3848-43a1-9ae8-1e4217581c4e
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T19:55:22.993Z
 ---
 
 # x00903 — The status counts the units of work, not only file locks
@@ -31,7 +35,7 @@ The owner, 2026-10-14, with a dozen agents reviewing and implementing at once: `
 
 ### S1 — `compact_status` reports units by standing
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/src/index.ts`
@@ -46,6 +50,9 @@ The owner, 2026-10-14, with a dozen agents reviewing and implementing at once: `
   - Without a policy, or when `fields` leaves `units` out, there is no `units` field.
   - The tool's description says that `locks` are task-queue file locks and that worktree units take none.
   - The proposals plugin stays under its hard token budget: `units` is one string, not an object, in the output schema.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `2f47d9f777b6`
 
 ## acceptance
 
