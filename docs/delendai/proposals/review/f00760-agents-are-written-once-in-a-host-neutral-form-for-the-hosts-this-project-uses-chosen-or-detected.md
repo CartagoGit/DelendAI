@@ -59,7 +59,7 @@ What the code does today:
 
 ### S2 — The project chooses its hosts; detection fills in when it does not
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/hosts/project-hosts.service.ts`
   - `packages/core/src/lib/hosts/declared-hosts.helper.ts`
@@ -77,9 +77,11 @@ What the code does today:
   - `hosts` in `delendai.config.json` (or `DELENDAI_HOSTS` for one run) names the hosts the project uses. Absent, they are the ones its tree and environment show.
   - `init --hosts=<a,b>` writes that choice into the configuration. Without it, init writes agents for the hosts found and for the ones it configures the server for (`.vscode/mcp.json`, `.mcp.json`): Copilot and Claude Code. Codex, OpenCode and the rest only when declared or shown.
   - No agent is written for a host outside the set. Which editors get an MCP entry stays decided by the install targets (`--target`), as before.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b90125c462c3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ba4e95c31, validate exit 0, tests 11/11; acceptance 3/3: (1) All three paths have their own passing test in project-hosts.service.spec.ts: 'takes the declared hosts, the environment over the configuration' (the one-run o… (2) Pinned by 'scaffolds agents only for the hosts named' — the write is scoped to the named set, which is what makes the rest of the criterion true by consequence… (3) The negative is the substance of 'scaffolds agents only for the hosts named' — the test asserts absence, not just presence. The independence of the MCP-entry d… — Delivered by b90125c46 (9 of 11 declared files); the merge ba4e95c31 (PR #1069) carries all 11. Gate `type`. ACC0 names three resolution paths and I looked for a test per path rather than one happy-path test, because a resolver that only honours the config key would pass a single test and still be wrong two thirds of the time. All three exist in project-hosts.service.spec.ts: 'takes the declared hosts, the environment over the configuration' (the one-run override wins over the file), 'reads the hosts a configuration declares, and nothing from a missing or odd one' (an absent or malformed value yields nothing instead of a guess — the failure mode that would silently activate the wrong hosts), and 'finds the hosts the tree and the environment show, and none in an empty project' (detection when nothing is declared, including the empty case so detection cannot manufacture hosts). ACC1: 'scaffolds agents only for the hosts named' is the whole clause — `--hosts=<a,b>` persists the choice, and without it the write covers the detected hosts plus the two the server is configured for. ACC2's first half is the same test read as a negative: it asserts that no agent appears for a host outside the set, which is the clause that would be easiest to satisfy by accident once init also writes agents for MCP targets. The second half is independence — which editors get an MCP entry stays with `--target` — and the adapter specs keep that separate ('always emits the full declared MCP baseline before optional actions', 'does not invent unavailable native integrations'), so widening the agent set does not silently widen the MCP configuration. Evidence 11/11 is `bunx vitest run --root packages/core tests/src/lib/hosts`.
 
 ### S3 — Agents are declared once and rendered per host
 
